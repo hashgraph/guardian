@@ -18,7 +18,7 @@ export class ModuleBlock {
         if (Array.isArray(ref.options.variables)) {
             for (const variable of ref.options.variables) {
                 if (!ref.options[variable.name]) {
-                    validator.addError(`Option "${variable.name}" does not set`);
+                    validator.addError(`Option "${variable.name}" is not set`);
                 } else {
                     const value = ref.options[variable.name];
                     switch (variable.type) {

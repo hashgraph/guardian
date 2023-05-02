@@ -1,34 +1,56 @@
 import { User } from '@entity/user';
 import {
-    MessageBrokerChannel,
     MessageResponse,
     MessageError,
     Logger,
-    DataBaseHelper,
+    DataBaseHelper, NatsService, Singleton,
 } from '@guardian/common';
 import {
     WalletEvents,
     IGetKeyMessage,
     ISetKeyMessage,
     IGetKeyResponse,
-    IGetGlobalApplicationKey, ISetGlobalApplicationKey
+    IGetGlobalApplicationKey, ISetGlobalApplicationKey, GenerateUUIDv4
 } from '@guardian/interfaces';
 import { IVault } from '../vaults';
 
 /**
  * Wallet service
  */
-export class WalletService {
-    constructor(
-        private readonly channel: MessageBrokerChannel,
-        private readonly vault: IVault
-    ) { }
+@Singleton
+export class WalletService extends NatsService {
+
+    /**
+     * Message queue name
+     */
+    public messageQueueName = 'wallet-queue';
+
+    /**
+     * Reply subject
+     * @private
+     */
+    public replySubject = 'wallet-queue-reply-' + GenerateUUIDv4();
+
+    /**
+     * Vault
+     * @private
+     */
+    private vault: IVault
+
+    /**
+     * Register vault
+     * @param vault
+     */
+    registerVault(vault: IVault): WalletService {
+        this.vault = vault;
+        return this;
+    }
 
     /**
      * Register listeners
      */
     registerListeners(): void {
-        this.channel.response<IGetKeyMessage, IGetKeyResponse>(WalletEvents.GET_KEY, async (msg) => {
+        this.getMessages<IGetKeyMessage, IGetKeyResponse>(WalletEvents.GET_KEY, async (msg) => {
             const { token, type, key } = msg;
 
             try {
@@ -40,7 +62,8 @@ export class WalletService {
             }
         });
 
-        this.channel.response<ISetKeyMessage, null>(WalletEvents.SET_KEY, async (msg) => {
+        this.getMessages<ISetKeyMessage, null>(WalletEvents.SET_KEY, async (msg) => {
+            console.log(msg);
             const { token, type, key, value } = msg;
 
             try {
@@ -52,7 +75,7 @@ export class WalletService {
             }
         });
 
-        this.channel.response<any, IGetKeyResponse>(WalletEvents.GET_USER_KEY, async (msg) => {
+        this.getMessages<any, IGetKeyResponse>(WalletEvents.GET_USER_KEY, async (msg) => {
             const { did, type, key } = msg;
 
             try {
@@ -68,7 +91,7 @@ export class WalletService {
             }
         });
 
-        this.channel.response<any, null>(WalletEvents.SET_USER_KEY, async (msg) => {
+        this.getMessages<any, null>(WalletEvents.SET_USER_KEY, async (msg) => {
             const { did, type, key, value } = msg;
 
             try {
@@ -84,7 +107,7 @@ export class WalletService {
             }
         });
 
-        this.channel.response<IGetGlobalApplicationKey, IGetKeyResponse>(WalletEvents.GET_GLOBAL_APPLICATION_KEY, async (msg) => {
+        this.getMessages<IGetGlobalApplicationKey, IGetKeyResponse>(WalletEvents.GET_GLOBAL_APPLICATION_KEY, async (msg) => {
             const {type} = msg;
 
             try {
@@ -96,7 +119,7 @@ export class WalletService {
             }
         });
 
-        this.channel.response<ISetGlobalApplicationKey, null>(WalletEvents.SET_GLOBAL_APPLICATION_KEY, async (msg) => {
+        this.getMessages<ISetGlobalApplicationKey, null>(WalletEvents.SET_GLOBAL_APPLICATION_KEY, async (msg) => {
             const {type, key} = msg;
 
             try {

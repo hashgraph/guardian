@@ -42,6 +42,7 @@ import { TokenActionBlock } from './blocks/token-action-block';
 import { TokenConfirmationBlock } from './blocks/token-confirmation-block';
 import { ModuleValidator } from './module-validator';
 import { ModuleBlock } from './blocks/module';
+import { TagsManagerBlock } from './blocks/tag-manager';
 
 export const validators = [
     InterfaceDocumentActionBlock,
@@ -82,7 +83,8 @@ export const validators = [
     TimerBlock,
     TokenActionBlock,
     TokenConfirmationBlock,
-    ModuleBlock
+    ModuleBlock,
+    TagsManagerBlock
 ];
 
 /**

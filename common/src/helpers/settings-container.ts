@@ -1,17 +1,23 @@
 import { Singleton } from '../decorators/singleton';
-import { ServiceRequestsBase } from './service-requests-base';
 import { Logger } from './logger';
-import { IGetKeyResponse, WalletEvents } from '@guardian/interfaces';
+import { GenerateUUIDv4, IGetKeyResponse, WalletEvents } from '@guardian/interfaces';
+import { NatsService } from '../mq';
 
 /**
  * Application settings container
  */
 @Singleton
-export class SettingsContainer extends ServiceRequestsBase {
+export class SettingsContainerOLD extends NatsService {
     /**
-     * Message broker target
+     * Message queue name
      */
-    public target: string = 'auth-service'
+    public messageQueueName = 'settings-queue';
+
+    /**
+     * Reply subject
+     * @private
+     */
+    public replySubject = 'settings-reply-' + GenerateUUIDv4();
 
     /**
      * Initialized flag
@@ -45,6 +51,7 @@ export class SettingsContainer extends ServiceRequestsBase {
      * Initialize settings
      */
     public async init(...settings: string[]): Promise<void> {
+        await super.init();
         if (this.initialized) {
             throw new Error('Settings already initialized');
         }
@@ -92,7 +99,7 @@ export class SettingsContainer extends ServiceRequestsBase {
      * @param type
      */
     private async getGlobalApplicationKey(type: string): Promise<string> {
-        const item = await this.request<IGetKeyResponse>(WalletEvents.GET_GLOBAL_APPLICATION_KEY, { type });
+        const item = await this.sendMessage<IGetKeyResponse>(WalletEvents.GET_GLOBAL_APPLICATION_KEY, { type });
         return item.key
     }
 
@@ -101,7 +108,7 @@ export class SettingsContainer extends ServiceRequestsBase {
      * @param type
      */
     private async setGlobalApplicationKey(type: string, key: string): Promise<void> {
-        await this.request<IGetKeyResponse>(WalletEvents.SET_GLOBAL_APPLICATION_KEY, { type, key });
+        await this.sendMessage<IGetKeyResponse>(WalletEvents.SET_GLOBAL_APPLICATION_KEY, { type, key });
         this._settings[type] = key;
     }
 }

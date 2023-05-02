@@ -106,7 +106,7 @@ form {
     min-width: 300px;
 }
 
-a {
+:host ::ng-deep a {
     color: rgb(0, 0, 238);
     cursor: pointer;
     text-decoration: underline;
@@ -311,4 +311,36 @@ a[disabled="true"]{
 
 .approved-request {
     background-color: #d1f1c8;
+}
+
+.token-table .mat-column-tags {
+    max-width: 175px;
+    min-width: 175px;
+    width: 175px;
+    border-left: 1px solid #dddddd;
+    padding-left: 10px;
+}
+
+@media (max-width: 810px) {
+    form {
+        display: flex;
+        flex-direction: column;
+        width: 80vw;
+        margin: 0 auto;
+    }
+
+    .list {
+        width: 80vw;
+        padding: 20px 20px 20px 20px;
+        margin: 20px;
+        border: 1px solid #c7c7c7;
+        border-radius: 6px;
+        position: relative;
+    }
+
+    .generate-btn {
+        border: 1px solid #2C78F6;
+        background: none !important;
+        color: #2C78F6;
+    }
 }

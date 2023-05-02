@@ -4,16 +4,21 @@ import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
-import { VcHelper } from '@helpers/vc-helper';
+import {
+    VcHelper,
+    DIDDocument,
+    DIDMessage,
+    MessageAction,
+    MessageServer,
+    KeyType,
+    DatabaseServer,
+} from '@guardian/common';
 import { ArtifactType, GenerateUUIDv4, SchemaHelper } from '@guardian/interfaces';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { DIDDocument, DIDMessage, MessageAction, MessageServer } from '@hedera-modules';
-import { KeyType } from '@helpers/wallet';
 import { BlockActionError } from '@policy-engine/errors';
-import { DatabaseServer } from '@database-modules';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**

@@ -1,6 +1,12 @@
 import { loggerAPI } from '@api/logger.service';
 import { Log } from '@entity/log';
-import { ApplicationState, COMMON_CONNECTION_CONFIG, DataBaseHelper, DB_DI, MessageBrokerChannel, Migration } from '@guardian/common';
+import {
+    ApplicationState,
+    COMMON_CONNECTION_CONFIG,
+    DataBaseHelper,
+    MessageBrokerChannel,
+    Migration
+} from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
@@ -23,17 +29,20 @@ Promise.all([
     MessageBrokerChannel.connect('LOGGER_SERVICE'),
 ]).then(async values => {
     const [_, db, mqConnection] = values;
-    DB_DI.orm = db;
-    const channel = new MessageBrokerChannel(mqConnection, 'logger-service');
-    const state = new ApplicationState('LOGGER_SERVICE');
-    state.setChannel(channel);
+    DataBaseHelper.orm = db;
+    const state = new ApplicationState();
+    await state.setServiceName('LOGGER_SERVICE').setConnection(mqConnection).init();
     state.updateState(ApplicationStates.STARTED);
     const logRepository = new DataBaseHelper(Log);
 
     state.updateState(ApplicationStates.INITIALIZING);
-    await loggerAPI(channel, logRepository);
+    await loggerAPI(mqConnection, logRepository);
 
     state.updateState(ApplicationStates.READY);
+    // const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
+    // if (Number.isInteger(maxPayload)) {
+    //     new LargePayloadContainer().runServer();
+    // }
     console.log('logger service started', await state.getState());
 }, (reason) => {
     console.log(reason);

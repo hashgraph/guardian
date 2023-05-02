@@ -17,7 +17,7 @@ export class MultiSignBlock {
     public static async validate(validator: BlockValidator, ref: IBlockProp): Promise<void> {
         try {
             if (!ref.options.threshold) {
-                validator.addError('Option "threshold" does not set');
+                validator.addError('Option "threshold" is not set');
             } else {
                 try {
                     const t = parseFloat(ref.options.threshold);

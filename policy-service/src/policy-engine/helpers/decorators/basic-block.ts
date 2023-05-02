@@ -6,8 +6,7 @@ import { AnyBlockType, IPolicyBlock, IPolicyDocument, ISerializedBlock, } from '
 import { PolicyComponentsUtils } from '../../policy-components-utils';
 import { IPolicyEvent, PolicyLink } from '@policy-engine/interfaces/policy-event';
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
-import { Logger } from '@guardian/common';
-import { DatabaseServer } from '@database-modules';
+import { Logger, DatabaseServer } from '@guardian/common';
 import deepEqual from 'deep-equal';
 import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
 

@@ -1,25 +1,30 @@
-import { Policy } from '@entity/policy';
 import {
     IPolicyBlock,
     IPolicyInstance,
     IPolicyInterfaceBlock
 } from './policy-engine.interface';
 import { PolicyComponentsUtils } from './policy-components-utils';
-import { Singleton } from '@helpers/decorators/singleton';
 import { GenerateUUIDv4, IUser, PolicyEvents, UserRole } from '@guardian/interfaces';
-import { Logger, MessageResponse } from '@guardian/common';
-import { DatabaseServer } from '@database-modules';
-import { ServiceRequestsBase } from '@helpers/service-requests-base';
+import {
+    Logger,
+    MessageError,
+    MessageResponse,
+    NatsService,
+    Policy,
+    Singleton,
+    DatabaseServer,
+    Users,
+} from '@guardian/common';
 import { IPolicyUser, PolicyUser } from './policy-user';
-import { Users } from '@helpers/users';
-import { Inject } from '@helpers/decorators/inject';
 import { ISerializedErrors, PolicyValidator } from '@policy-engine/block-validators';
+import { headers } from 'nats';
+import { Inject } from '@helpers/decorators/inject';
 
 /**
  * Block tree generator
  */
 @Singleton
-export class BlockTreeGenerator extends ServiceRequestsBase {
+export class BlockTreeGenerator extends NatsService {
     /**
      * Users helper
      * @private
@@ -28,9 +33,15 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
     private readonly users: Users;
 
     /**
-     * Target
+     * Message queue name
      */
-    public target = 'guardians';
+    public messageQueueName = 'block-tree-generator-queue';
+
+    /**
+     * Reply subject
+     * @private
+     */
+    public replySubject = 'block-tree-generator-reply-' + GenerateUUIDv4();
 
     /**
      * Policy models map
@@ -69,10 +80,42 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
     }
 
     /**
+     * Get messages
+     * @param subject
+     * @param cb
+     */
+    public getPolicyMessages<T, A>(subject: string, policyId, cb: Function) {
+        this.connection.subscribe([policyId, subject].join('-'), {
+            queue: this.messageQueueName,
+            callback: async (error, msg) => {
+                try {
+                    const pId = msg.headers.get('policyId');
+                    if (pId === policyId) {
+                        const messageId = msg.headers.get('messageId');
+                        const head = headers();
+                        head.append('messageId', messageId);
+                        const respond = await cb(await this.codec.decode(msg.data), msg.headers);
+                        msg.respond(await this.codec.encode(respond), {headers: head});
+                    }
+                } catch (error) {
+                    const messageId = msg.headers.get('messageId');
+                    const head = headers();
+                    head.append('messageId', messageId);
+                    msg.respond(await this.codec.encode(new MessageError(error.message)), {headers: head});
+                }
+            }
+        });
+    }
+
+    /**
      * Init policy events
      */
     async initPolicyEvents(policyId: string, policyInstance: any): Promise<void> {
-        this.channel.response(PolicyEvents.GET_ROOT_BLOCK_DATA, async (msg: any) => {
+        this.getPolicyMessages(PolicyEvents.CHECK_IF_ALIVE, policyId,async (msg: any) => {
+            return new MessageResponse(true);
+        });
+
+        this.getPolicyMessages(PolicyEvents.GET_ROOT_BLOCK_DATA, policyId,async (msg: any) => {
 
             const { user } = msg;
 
@@ -86,7 +129,7 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
             }
         });
 
-        this.channel.response(PolicyEvents.GET_POLICY_GROUPS, async (msg: any) => {
+        this.getPolicyMessages(PolicyEvents.GET_POLICY_GROUPS, policyId,async (msg: any) => {
 
             const { user } = msg;
 
@@ -100,7 +143,7 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
             return new MessageResponse(groups);
         });
 
-        this.channel.response(PolicyEvents.SELECT_POLICY_GROUP, async (msg: any) => {
+        this.getPolicyMessages(PolicyEvents.SELECT_POLICY_GROUP, policyId,async (msg: any) => {
 
             const { user, uuid } = msg;
 
@@ -114,7 +157,7 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
             return new MessageResponse(true as any);
         });
 
-        this.channel.response(PolicyEvents.GET_BLOCK_DATA, async (msg: any) => {
+        this.getPolicyMessages(PolicyEvents.GET_BLOCK_DATA, policyId,async (msg: any) => {
 
             const { user, blockId } = msg;
 
@@ -129,7 +172,7 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
             }
         });
 
-        this.channel.response(PolicyEvents.GET_BLOCK_DATA_BY_TAG, async (msg: any) => {
+        this.getPolicyMessages(PolicyEvents.GET_BLOCK_DATA_BY_TAG, policyId,async (msg: any) => {
             const { user, tag } = msg;
 
             const userFull = await this.getUser(policyInstance, user);
@@ -143,7 +186,7 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
             }
         });
 
-        this.channel.response(PolicyEvents.SET_BLOCK_DATA, async (msg: any) => {
+        this.getPolicyMessages(PolicyEvents.SET_BLOCK_DATA, policyId,async (msg: any) => {
 
             const { user, blockId, data } = msg;
 
@@ -158,7 +201,7 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
             }
         });
 
-        this.channel.response(PolicyEvents.SET_BLOCK_DATA_BY_TAG, async (msg: any) => {
+        this.getPolicyMessages(PolicyEvents.SET_BLOCK_DATA_BY_TAG, policyId,async (msg: any) => {
             const { user, tag, data } = msg;
 
             const userFull = await this.getUser(policyInstance, user);
@@ -172,13 +215,13 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
             }
         });
 
-        this.channel.response(PolicyEvents.BLOCK_BY_TAG, async (msg: any) => {
+        this.getPolicyMessages(PolicyEvents.BLOCK_BY_TAG, policyId,async (msg: any) => {
             const { tag } = msg;
             const block = PolicyComponentsUtils.GetBlockByTag<IPolicyBlock>(policyId, tag);
             return new MessageResponse({ id: block.uuid });
         });
 
-        this.channel.response(PolicyEvents.GET_BLOCK_PARENTS, async (msg: any) => {
+        this.getPolicyMessages(PolicyEvents.GET_BLOCK_PARENTS, policyId,async (msg: any) => {
             const { blockId } = msg;
             const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
             let tmpBlock: IPolicyBlock = block;
@@ -190,7 +233,7 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
             return new MessageResponse(parents);
         });
 
-        this.channel.response(PolicyEvents.MRV_DATA, async (msg: any) => {
+        this.getPolicyMessages(PolicyEvents.MRV_DATA, policyId,async (msg: any) => {
             const { data } = msg;
 
             for (const block of PolicyComponentsUtils.ExternalDataBlocks.values()) {

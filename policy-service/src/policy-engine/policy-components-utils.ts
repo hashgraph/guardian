@@ -10,15 +10,14 @@ import {
 } from '@policy-engine/interfaces';
 import { GenerateUUIDv4, PolicyEvents, PolicyType } from '@guardian/interfaces';
 import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock, IPolicyInstance, IPolicyInterfaceBlock, ISerializedBlock, ISerializedBlockExtend } from './policy-engine.interface';
-import { Policy } from '@entity/policy';
+import { Policy, DatabaseServer } from '@guardian/common';
 import { STATE_KEY } from '@policy-engine/helpers/constants';
 import { GetBlockByType } from '@policy-engine/blocks/get-block-by-type';
 import { GetOtherOptions } from '@policy-engine/helpers/get-other-options';
 import { GetBlockAbout } from '@policy-engine/blocks';
-import { DatabaseServer } from '@database-modules';
 import { IPolicyUser } from './policy-user';
 import { ExternalEvent } from './interfaces/external-event';
-import { CommonVariables } from '@helpers/common-variables';
+import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
 
 /**
  * Policy action map type
@@ -31,10 +30,7 @@ export type PolicyActionMap = Map<string, Map<PolicyInputEventType, EventCallbac
  * @param args
  */
 export function blockUpdate(type: string, args: any[]) {
-    const commonVars = new CommonVariables();
-    const channel = commonVars.getVariable('channel');
-
-    channel.publish(PolicyEvents.BLOCK_UPDATE_BROADCAST, { type, args });
+    new BlockTreeGenerator().sendMessage(PolicyEvents.BLOCK_UPDATE_BROADCAST, { type, args });
 }
 
 /**
@@ -97,11 +93,32 @@ export class PolicyComponentsUtils {
     private static readonly PolicyById: Map<string, IPolicyInstance> = new Map();
 
     /**
+     * Document cache fieldsmap
+     * policyId -> fields
+     * @private
+     */
+    private static readonly DocumentCacheFieldsMap: Map<string, Set<string>> = new Map();
+
+    /**
      * Policy Internal Events
      * policyId -> eventType -> callback
      * @private
      */
     private static readonly InternalListeners: Map<string, Map<string, Function[]>> = new Map();
+
+    /**
+     * Get document cache fields
+     * @param policyId Policy identifier
+     * @returns Fields
+     */
+    public static getDocumentCacheFields(policyId: string) {
+        let cache = PolicyComponentsUtils.DocumentCacheFieldsMap.get(policyId);
+        if (!cache) {
+            cache = new Set<string>();
+            PolicyComponentsUtils.DocumentCacheFieldsMap.set(policyId, cache);
+        }
+        return cache;
+    }
 
     /**
      * Log events

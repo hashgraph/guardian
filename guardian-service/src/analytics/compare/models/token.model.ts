@@ -1,4 +1,4 @@
-import { Token } from '@entity/token';
+import { Token } from '@guardian/common';
 import { ICompareOptions } from '../interfaces/compare-options.interface';
 import MurmurHash3 from 'imurmurhash';
 

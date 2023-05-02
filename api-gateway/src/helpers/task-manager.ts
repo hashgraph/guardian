@@ -1,7 +1,34 @@
 import { WebSocketsService } from '@api/service/websockets';
-import { MessageBrokerChannel, MessageResponse } from '@guardian/common';
+import { MessageResponse, NatsService } from '@guardian/common';
 import { GenerateUUIDv4, IStatus, MessageAPI, StatusType } from '@guardian/interfaces';
 import { Singleton } from '@helpers/decorators/singleton';
+import { NatsConnection } from 'nats';
+
+/**
+ * WebSocketsServiceChannel
+ */
+@Singleton
+export class TaskManagerChannel extends NatsService {
+    /**
+     * Message queue name
+     */
+    public messageQueueName = 'task-queue';
+
+    /**
+     * Reply subject
+     * @private
+     */
+    public replySubject = 'task-reply-' + GenerateUUIDv4();
+
+    /**
+     * Register listener
+     * @param event
+     * @param cb
+     */
+    registerListener(event: string, cb: Function): void {
+        this.getMessages(event, cb);
+    }
+}
 
 /**
  * Task manager
@@ -19,7 +46,7 @@ export class TaskManager {
     /**
      * Message broker channel
      */
-    private channel: MessageBrokerChannel;
+    private channel: TaskManagerChannel;
 
     /**
      * Cache of task expectations
@@ -47,12 +74,13 @@ export class TaskManager {
     /**
      * Set task manager dependecies
      * @param wsService
-     * @param channel
+     * @param cn
      */
-    public setDependecies(wsService: WebSocketsService, channel: MessageBrokerChannel) {
+    public setDependecies(wsService: WebSocketsService, cn: NatsConnection) {
         this.wsService = wsService;
-        this.channel = channel;
-        this.channel.response<any, any>(MessageAPI.UPDATE_TASK_STATUS, async (msg) => {
+        this.channel = new TaskManagerChannel();
+        this.channel.setConnection(cn);
+        this.channel.subscribe(MessageAPI.UPDATE_TASK_STATUS, async (msg) => {
             const { taskId, statuses, result, error } = msg;
             if (taskId) {
                 if (statuses) {
@@ -68,6 +96,12 @@ export class TaskManager {
 
             return new MessageResponse({});
         });
+        this.channel.subscribe(MessageAPI.PUBLISH_TASK, async (msg) => {
+            const {taskId, taskName} = msg;
+            if (!this.tasks[taskId]) {
+                this.tasks[taskId] = new Task(taskName);
+            }
+        })
     }
 
     /**
@@ -82,6 +116,10 @@ export class TaskManager {
         }
 
         this.tasks[taskId] = new Task(taskName);
+        this.channel.publish(MessageAPI.PUBLISH_TASK, {
+            taskId,
+            taskName
+        })
 
         const expectation = this.getExpectation(taskName);
         return { taskId, expectation };

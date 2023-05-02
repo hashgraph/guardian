@@ -1,9 +1,14 @@
-import { Logger, MessageBrokerChannel, SettingsContainer, ValidateConfiguration } from '@guardian/common';
 import {
-    ExternalMessageEvents,
+    Logger,
+    MessageBrokerChannel,
+    MessageResponse,
+    NatsService,
+    ValidateConfiguration
+} from '@guardian/common';
+import {
+    ExternalMessageEvents, GenerateUUIDv4,
     ITask,
     ITaskResult,
-    IWorkerRequest,
     WorkerEvents,
     WorkerTaskType
 } from '@guardian/interfaces';
@@ -13,6 +18,8 @@ import Blob from 'cross-blob';
 import { AccountId, ContractFunctionParameters, PrivateKey, TokenId } from '@hashgraph/sdk';
 import { HederaUtils } from './helpers/utils';
 import axios from 'axios';
+import process from 'process';
+import { SecretManager } from '@guardian/common/dist/secret-manager';
 
 /**
  * Sleep helper
@@ -29,12 +36,29 @@ function rejectTimeout(t: number): Promise<void> {
 /**
  * Worker class
  */
-export class Worker {
+export class Worker extends NatsService {
     /**
      * Logger instance
      * @private
      */
     private readonly logger: Logger;
+
+    /**
+     * Message queue name
+     */
+    public messageQueueName = 'workers-queue';
+
+    /**
+     * Reply subject
+     * @private
+     */
+    public replySubject = 'workers-queue-reply-' + GenerateUUIDv4();
+
+    /**
+     * Old channel
+     * @private
+     */
+    private channel: MessageBrokerChannel;
 
     /**
      * Ipfs client
@@ -45,12 +69,6 @@ export class Worker {
      * Current task ID
      */
     private currentTaskId: string;
-
-    /**
-     * Update event received flag
-     * @private
-     */
-    private updateEventReceived = false;
 
     /**
      * Worker in use
@@ -93,13 +111,16 @@ export class Worker {
     private readonly taskTimeout: number;
 
     constructor(
-        private readonly channel: MessageBrokerChannel,
-        private readonly channelName: string
     ) {
-        const { IPFS_STORAGE_API_KEY } = new SettingsContainer().settings;
+        super();
+        const secretManager = SecretManager.New()
+        secretManager.getSecrets('apikey/ipfs').
+            then(secrets => {
+                const { IPFS_STORAGE_API_KEY } = secrets;
+                this.ipfsClient = new IpfsClient(IPFS_STORAGE_API_KEY);
+            });
 
         this.logger = new Logger();
-        this.ipfsClient = new IpfsClient(IPFS_STORAGE_API_KEY);
 
         this.minPriority = parseInt(process.env.MIN_PRIORITY, 10);
         this.maxPriority = parseInt(process.env.MAX_PRIORITY, 10);
@@ -109,65 +130,100 @@ export class Worker {
     /**
      * Initialize worker
      */
-    public init(): void {
-        setInterval(() => {
-            if (!this.isInUse) {
-                this.getItem().then();
-            }
-        }, parseInt(process.env.REFRESH_INTERVAL, 10) * 1000);
+    public async init(): Promise<void> {
+        await super.init();
+        this.channel = new MessageBrokerChannel(this.connection, 'worker');
 
-        this.channel.subscribe(WorkerEvents.QUEUE_UPDATED, () => {
+        this.subscribe(WorkerEvents.GET_FREE_WORKERS, async (msg) => {
             if (!this.isInUse) {
-                this.getItem().then();
-            } else {
-                this.updateEventReceived = true;
+                this.publish(msg.replySubject, {
+                    subject: [this.replySubject, WorkerEvents.SEND_TASK_TO_WORKER].join('.'),
+                    minPriority: this.minPriority,
+                    maxPriority: this.maxPriority
+                })
             }
         });
 
-        this.channel.subscribe(WorkerEvents.UPDATE_SETTINGS, async (msg: any) => {
-            await new SettingsContainer().updateSetting('IPFS_STORAGE_API_KEY', msg.ipfsStorageApiKey);
+        const runTask = async (task) => {
+            this.isInUse = true;
+            this.currentTaskId = task.id;
+
+            this.logger.info(`Task started: ${task.id}, ${task.type}`, [process.env.SERVICE_CHANNEL]);
+
+            const result = await this.processTaskWithTimeout(task);
+
+            try {
+                // await this.publish([task.reply, WorkerEvents.TASK_COMPLETE].join('-'), result);
+                if (result?.error) {
+                    this.logger.error(`Task error: ${this.currentTaskId}, ${result?.error}`, [process.env.SERVICE_CHANNEL]);
+                } else {
+                    this.logger.info(`Task completed: ${this.currentTaskId}`, [process.env.SERVICE_CHANNEL]);
+                }
+            } catch (error) {
+                this.logger.error(error.message, [process.env.SERVICE_CHANNEL]);
+                this.clearState();
+
+            }
+
+            const completeTask = (data) => {
+                // let count = 0;
+                const fn = async () => {
+                    await this.publish([task.reply, WorkerEvents.TASK_COMPLETE].join('.'), data);
+                    // if (count < 5) {
+                    //     setTimeout(async () => {
+                    //         await fn()
+                    //     })
+                    //     count++
+                    // }
+                }
+                fn();
+            }
+
+            await completeTask(result);
+            // await this.publish([task.reply, WorkerEvents.TASK_COMPLETE].join('.'), result);
+            await this.publish(WorkerEvents.WORKER_READY);
+            this.isInUse = false;
+        }
+
+        this.getMessages([this.replySubject, WorkerEvents.SEND_TASK_TO_WORKER].join('.'), async (task) => {
+            if (!this.isInUse) {
+                runTask(task);
+
+                return new MessageResponse({
+                    result: true
+                })
+            }
+            return new MessageResponse({
+                result: false
+            })
+        })
+
+        this.subscribe(WorkerEvents.UPDATE_SETTINGS, async (msg: any) => {
+            const secretManager = SecretManager.New();
+            await secretManager.setSecrets('apikey/ipfs', {
+                IPFS_STORAGE_API_KEY: msg.ipfsStorageApiKey
+            });
             try {
                 this.ipfsClient = new IpfsClient(msg.ipfsStorageApiKey);
                 const validator = new ValidateConfiguration();
                 await validator.validate();
             } catch (error) {
-                this.logger.error(`Update settings error, ${error.message}`, [this.channelName]);
+                this.logger.error(`Update settings error, ${error.message}`, ['WORKER']);
             }
         });
 
-        HederaSDKHelper.setTransactionResponseCallback(async (client: any) => {
+        HederaSDKHelper.setTransactionResponseCallback(async (operatorAccountId: string) => {
             try {
-                const balance = await HederaSDKHelper.balance(client, client.operatorAccountId);
-                await this.channel.request(['api-gateway', 'update-user-balance'].join('.'), {
+                const balance = await HederaSDKHelper.balanceRest(operatorAccountId);
+                await this.sendMessage('update-user-balance', {
                     balance,
                     unit: 'Hbar',
-                    operatorAccountId: client.operatorAccountId.toString()
+                    operatorAccountId
                 });
             } catch (error) {
                 throw new Error(`Worker (${['api-gateway', 'update-user-balance'].join('.')}) send: ` + error);
             }
         })
-    }
-
-    /**
-     * Request to guardian service method
-     * @param entity
-     * @param params
-     * @param type
-     */
-    private async request<T extends any>(entity: string, params?: IWorkerRequest | ITaskResult, type?: string): Promise<T> {
-        try {
-            const response = await this.channel.request<any, T>(`guardians.${entity}`, params);
-            if (!response) {
-                throw new Error('Server is not available');
-            }
-            if (response.error) {
-                throw new Error(response.error);
-            }
-            return response.body;
-        } catch (error) {
-            throw new Error(`Guardian (${entity}) send: ` + error);
-        }
     }
 
     /**
@@ -177,7 +233,6 @@ export class Worker {
     private clearState(): void {
         this.isInUse = false;
         this.currentTaskId = null;
-        this.updateEventReceived = false;
     }
 
     /**
@@ -206,7 +261,7 @@ export class Worker {
                     }
                     const blob: any = new Blob([fileContent]);
                     const r = await this.ipfsClient.addFile(blob);
-                    this.channel.publish(ExternalMessageEvents.IPFS_ADDED_FILE, r);
+                    this.publish(ExternalMessageEvents.IPFS_ADDED_FILE, r);
                     result.data = r;
                     break;
                 }
@@ -259,6 +314,7 @@ export class Worker {
                     const client = new HederaSDKHelper(operatorId, operatorKey, dryRun, networkOptions);
                     const { topicId, buffer, submitKey, memo } = task.data;
                     result.data = await client.submitMessage(topicId, buffer, submitKey, memo);
+                    client.destroy();
                     break;
                 }
 
@@ -270,6 +326,7 @@ export class Worker {
                         id: treasury.id.toString(),
                         key: treasury.key.toString()
                     };
+                    client.destroy();
                     break;
                 }
 
@@ -277,6 +334,7 @@ export class Worker {
                     const { hederaAccountId, hederaAccountKey } = task.data;
                     const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, null, networkOptions);
                     result.data = await client.balance(hederaAccountId);
+                    client.destroy();
 
                     break;
                 }
@@ -285,6 +343,7 @@ export class Worker {
                     const { userID, userKey, hederaAccountId } = task.data;
                     const client = new HederaSDKHelper(userID, userKey, null, networkOptions);
                     result.data = await client.accountInfo(hederaAccountId);
+                    client.destroy();
 
                     break;
                 }
@@ -293,6 +352,7 @@ export class Worker {
                     const {
                         operatorId,
                         operatorKey,
+                        memo,
                         decimals,
                         enableAdmin,
                         enableFreeze,
@@ -314,7 +374,7 @@ export class Worker {
                     const freezeKey = enableFreeze ? PrivateKey.generate() : null;
                     const kycKey = enableKYC ? PrivateKey.generate() : null;
                     const wipeKey = enableWipe ? PrivateKey.generate() : null;
-                    const tokenMemo = '';
+                    const tokenMemo = memo || '';
                     const tokenId = await client.newToken(
                         tokenName,
                         tokenSymbol,
@@ -345,6 +405,8 @@ export class Worker {
                         kycKey: kycKey ? kycKey.toString() : null,
                         wipeKey: wipeKey ? wipeKey.toString() : null
                     }
+                    client.destroy();
+
                     break;
                 }
 
@@ -379,6 +441,7 @@ export class Worker {
                         kycKey: changes.kycKey ? changes.kycKey.toString() : null,
                         wipeKey: changes.wipeKey ? changes.wipeKey.toString() : null
                     }
+                    client.destroy();
 
                     break;
                 }
@@ -396,6 +459,7 @@ export class Worker {
                         TokenId.fromString(tokenId),
                         HederaUtils.parsPrivateKey(adminKey, true, 'Admin Key')
                     )
+                    client.destroy();
 
                     break;
                 }
@@ -408,6 +472,7 @@ export class Worker {
                     } else {
                         result.data = await client.dissociate(tokenId, userID, userKey);
                     }
+                    client.destroy();
 
                     break;
                 }
@@ -429,6 +494,7 @@ export class Worker {
                     } else {
                         result.data = await client.revokeKyc(tokenId, userHederaAccountId, kycKey);
                     }
+                    client.destroy();
 
                     break;
                 }
@@ -449,6 +515,7 @@ export class Worker {
                     } else {
                         result.data = await client.unfreeze(tokenId, userHederaAccountId, freezeKey);
                     }
+                    client.destroy();
 
                     break;
                 }
@@ -466,6 +533,8 @@ export class Worker {
                         data = [new Uint8Array(Buffer.from(metaData))];
                     }
                     result.data = await client.mintNFT(tokenId, supplyKey, data, transactionMemo);
+                    client.destroy();
+
                     break;
                 }
 
@@ -483,6 +552,8 @@ export class Worker {
                     } = task.data;
                     const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun, networkOptions);
                     result.data = await client.transferNFT(tokenId, targetAccount, treasuryId, treasuryKey, element, transactionMemo);
+                    client.destroy();
+
                     break;
                 }
 
@@ -490,6 +561,8 @@ export class Worker {
                     const { hederaAccountId, hederaAccountKey, dryRun, tokenId, supplyKey, tokenValue, transactionMemo } = task.data;
                     const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun, networkOptions);
                     result.data = await client.mint(tokenId, supplyKey, tokenValue, transactionMemo);
+                    client.destroy();
+
                     break;
                 }
 
@@ -507,6 +580,8 @@ export class Worker {
                     } = task.data;
                     const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun, networkOptions);
                     result.data = await client.transfer(tokenId, targetAccount, treasuryId, treasuryKey, tokenValue, transactionMemo);
+                    client.destroy();
+
                     break;
                 }
 
@@ -528,6 +603,8 @@ export class Worker {
                         await client.wipe(token.tokenId, targetAccount, wipeKey, tokenValue, uuid);
                         result.data = {}
                     }
+                    client.destroy();
+
                     break;
                 }
 
@@ -552,6 +629,7 @@ export class Worker {
                         submitKey,
                         topicMemo
                     );
+                    client.destroy();
 
                     break;
                 }
@@ -565,6 +643,7 @@ export class Worker {
                     } = task.data;
                     const client = new HederaSDKHelper(operatorId, operatorKey, dryRun, networkOptions);
                     result.data = await client.getTopicMessage(timeStamp);
+                    client.destroy();
 
                     break;
                 }
@@ -578,6 +657,7 @@ export class Worker {
                     } = task.data;
                     const client = new HederaSDKHelper(operatorId, operatorKey, dryRun, networkOptions);
                     result.data = await client.getTopicMessages(topic);
+                    client.destroy();
 
                     break;
                 }
@@ -595,7 +675,9 @@ export class Worker {
                         hederaAccountKey,
                         topicKey,
                         bytecodeFileId,
+                        memo
                     } = task.data;
+                    const contractMemo = memo || '';
                     const client = new HederaSDKHelper(
                         hederaAccountId,
                         hederaAccountKey,
@@ -604,8 +686,11 @@ export class Worker {
                     );
                     result.data = await client.createContract(
                         bytecodeFileId,
-                        new ContractFunctionParameters().addString(topicKey)
+                        new ContractFunctionParameters().addString(topicKey),
+                        contractMemo
                     );
+                    client.destroy();
+
                     break;
                 }
 
@@ -626,6 +711,8 @@ export class Worker {
                         contractId, 'addUser',
                         new ContractFunctionParameters().addAddress(AccountId.fromString(userId).toSolidityAddress())
                     );
+                    client.destroy();
+
                     break;
                 }
 
@@ -653,21 +740,23 @@ export class Worker {
                             .addAddress(
                                 baseTokenId
                                     ? TokenId.fromString(
-                                          baseTokenId
-                                      ).toSolidityAddress()
+                                        baseTokenId
+                                    ).toSolidityAddress()
                                     : new TokenId(0).toSolidityAddress()
                             )
                             .addAddress(
                                 oppositeTokenId
                                     ? TokenId.fromString(
-                                          oppositeTokenId
-                                      ).toSolidityAddress()
+                                        oppositeTokenId
+                                    ).toSolidityAddress()
                                     : new TokenId(0).toSolidityAddress()
                             )
                             .addUint32(Math.floor(baseTokenCount || 0))
                             .addUint32(Math.floor(oppositeTokenCount || 0)),
                         grantKycKeys
                     );
+                    client.destroy();
+
                     break;
                 }
 
@@ -683,15 +772,19 @@ export class Worker {
                         null,
                         networkOptions
                     );
-                    result.data = AccountId.fromSolidityAddress(
-                        (
-                            await client.contractQuery(
-                                contractId,
-                                'getOwner',
-                                new ContractFunctionParameters()
-                            )
-                        ).getAddress()
-                    ).toString();
+                    const address = await client.contractQuery(
+                        contractId,
+                        'getOwner',
+                        new ContractFunctionParameters()
+                    );
+                    const owner = AccountId.fromSolidityAddress(address.getAddress()).toString();
+                    const info = await client.getContractInfo(contractId);
+                    result.data = {
+                        owner,
+                        memo: info.contractMemo
+                    };
+                    client.destroy();
+
                     break;
                 }
 
@@ -711,6 +804,8 @@ export class Worker {
                         contractId, 'checkStatus',
                         new ContractFunctionParameters()
                     )).getBool();
+                    client.destroy();
+
                     break;
                 }
 
@@ -740,19 +835,21 @@ export class Worker {
                             .addAddress(
                                 baseTokenId
                                     ? TokenId.fromString(
-                                          baseTokenId
-                                      ).toSolidityAddress()
+                                        baseTokenId
+                                    ).toSolidityAddress()
                                     : new TokenId(0).toSolidityAddress()
                             )
                             .addAddress(
                                 oppositeTokenId
                                     ? TokenId.fromString(
-                                          oppositeTokenId
-                                      ).toSolidityAddress()
+                                        oppositeTokenId
+                                    ).toSolidityAddress()
                                     : new TokenId(0).toSolidityAddress()
                             ),
                         wipeKeys
                     );
+                    client.destroy();
+
                     break;
                 }
 
@@ -777,18 +874,20 @@ export class Worker {
                             .addAddress(
                                 baseTokenId
                                     ? TokenId.fromString(
-                                          baseTokenId
-                                      ).toSolidityAddress()
+                                        baseTokenId
+                                    ).toSolidityAddress()
                                     : new TokenId(0).toSolidityAddress()
                             )
                             .addAddress(
                                 oppositeTokenId
                                     ? TokenId.fromString(
-                                          oppositeTokenId
-                                      ).toSolidityAddress()
+                                        oppositeTokenId
+                                    ).toSolidityAddress()
                                     : new TokenId(0).toSolidityAddress()
                             )
                     );
+                    client.destroy();
+
                     break;
                 }
 
@@ -813,15 +912,15 @@ export class Worker {
                             .addAddress(
                                 baseTokenId
                                     ? TokenId.fromString(
-                                          baseTokenId
-                                      ).toSolidityAddress()
+                                        baseTokenId
+                                    ).toSolidityAddress()
                                     : new TokenId(0).toSolidityAddress()
                             )
                             .addAddress(
                                 oppositeTokenId
                                     ? TokenId.fromString(
-                                          oppositeTokenId
-                                      ).toSolidityAddress()
+                                        oppositeTokenId
+                                    ).toSolidityAddress()
                                     : new TokenId(0).toSolidityAddress()
                             )
                     );
@@ -830,6 +929,8 @@ export class Worker {
                         oppositeTokenRate: contractQueryResult.getUint32(1),
                         contractId
                     };
+                    client.destroy();
+
                     break;
                 }
 
@@ -858,15 +959,15 @@ export class Worker {
                             .addAddress(
                                 baseTokenId
                                     ? TokenId.fromString(
-                                          baseTokenId
-                                      ).toSolidityAddress()
+                                        baseTokenId
+                                    ).toSolidityAddress()
                                     : new TokenId(0).toSolidityAddress()
                             )
                             .addAddress(
                                 oppositeTokenId
                                     ? TokenId.fromString(
-                                          oppositeTokenId
-                                      ).toSolidityAddress()
+                                        oppositeTokenId
+                                    ).toSolidityAddress()
                                     : new TokenId(0).toSolidityAddress()
                             )
                             .addUint32(baseTokenCount)
@@ -883,6 +984,8 @@ export class Worker {
                                     : [0]
                             )
                     );
+                    client.destroy();
+
                     break;
                 }
 
@@ -911,15 +1014,15 @@ export class Worker {
                             .addAddress(
                                 baseTokenId
                                     ? TokenId.fromString(
-                                          baseTokenId
-                                      ).toSolidityAddress()
+                                        baseTokenId
+                                    ).toSolidityAddress()
                                     : new TokenId(0).toSolidityAddress()
                             )
                             .addAddress(
                                 oppositeTokenId
                                     ? TokenId.fromString(
-                                          oppositeTokenId
-                                      ).toSolidityAddress()
+                                        oppositeTokenId
+                                    ).toSolidityAddress()
                                     : new TokenId(0).toSolidityAddress()
                             )
                     );
@@ -927,6 +1030,8 @@ export class Worker {
                         baseTokenCount: contractQueryResult.getUint32(0) || contractQueryResult.getUint32(2),
                         oppositeTokenCount: contractQueryResult.getUint32(1) || contractQueryResult.getUint32(3)
                     }
+                    client.destroy();
+
                     break;
                 }
 
@@ -947,6 +1052,8 @@ export class Worker {
                         }
                     });
                     result.data = serials;
+                    client.destroy();
+
                     break;
                 }
 
@@ -985,63 +1092,5 @@ export class Worker {
                 resolve(error);
             }
         })
-    }
-
-    /**
-     * Get item from queue
-     */
-    public async getItem(): Promise<any> {
-        this.isInUse = true;
-
-        // this.logger.info(`Search task`, [this.channelName]);
-
-        let task: any = null;
-        try {
-            task = await Promise.race([
-                this.request(WorkerEvents.QUEUE_GET, {
-                    minPriority: this.minPriority,
-                    maxPriority: this.maxPriority,
-                    taskTimeout: this.taskTimeout
-                }),
-                rejectTimeout(this.taskTimeout)
-            ]);
-        } catch (e) {
-            this.clearState();
-            return;
-        }
-
-        if (!task) {
-            this.isInUse = false;
-
-            // this.logger.info(`Task not found`, [this.channelName]);
-
-            if (this.updateEventReceived) {
-                this.updateEventReceived = false;
-                this.getItem().then();
-            }
-
-            return;
-        }
-
-        this.currentTaskId = task.id;
-
-        this.logger.info(`Task started: ${task.id}, ${task.type}`, [this.channelName]);
-
-        const result = await this.processTaskWithTimeout(task);
-
-        try {
-            await this.request(WorkerEvents.TASK_COMPLETE, result);
-            if (result?.error) {
-                this.logger.error(`Task error: ${this.currentTaskId}, ${result?.error}`, [this.channelName]);
-            } else {
-                this.logger.info(`Task completed: ${this.currentTaskId}`, [this.channelName]);
-            }
-        } catch (error) {
-            this.logger.error(error.message, [this.channelName]);
-            this.clearState();
-
-        }
-
-        this.getItem().then();
     }
 }

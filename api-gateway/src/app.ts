@@ -1,6 +1,9 @@
+import hpp from 'hpp';
+
 import {
     accountAPI,
     trustchainsAPI,
+    trustChainsAPI,
     demoAPI,
     profileAPI,
     schemaAPI,
@@ -8,7 +11,9 @@ import {
     externalAPI,
     ipfsAPI,
     analyticsAPI,
-    moduleAPI
+    moduleAPI,
+    tagsAPI,
+    themesAPI
 } from '@api/service';
 import { Guardians } from '@helpers/guardians';
 import express from 'express';
@@ -22,13 +27,14 @@ import { Users } from '@helpers/users';
 import { Wallet } from '@helpers/wallet';
 import { settingsAPI } from '@api/service/settings';
 import { loggerAPI } from '@api/service/logger';
-import { MessageBrokerChannel, Logger } from '@guardian/common';
+import { MessageBrokerChannel, Logger, LargePayloadContainer } from '@guardian/common';
 import { taskAPI } from '@api/service/task';
 import { TaskManager } from '@helpers/task-manager';
 import { singleSchemaRoute } from '@api/service/schema';
 import { artifactAPI } from '@api/service/artifact';
 import fileupload from 'express-fileupload';
 import { contractAPI } from '@api/service/contract';
+import { mapAPI } from '@api/service/map';
 
 const PORT = process.env.PORT || 3002;
 const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
@@ -39,6 +45,7 @@ Promise.all([
 ]).then(async ([cn]) => {
     try {
         const app = express();
+
         app.use(express.json({
             limit: JSON_REQUEST_LIMIT
         }));
@@ -48,44 +55,62 @@ Promise.all([
             type: 'binary/octet-stream'
         }));
         app.use(fileupload());
-        const channel = new MessageBrokerChannel(cn, 'guardian');
-        const apiGatewayChannel = new MessageBrokerChannel(cn, 'api-gateway');
-        new Logger().setChannel(channel);
-        new Guardians().setChannel(channel);
-        new IPFS().setChannel(channel);
-        new PolicyEngine().setChannel(channel);
-        new Users().setChannel(channel);
-        new Wallet().setChannel(channel);
+        app.use(hpp());
+        new Logger().setConnection(cn);
+        await new Guardians().setConnection(cn).init();
+        await new IPFS().setConnection(cn).init();
+        await new PolicyEngine().setConnection(cn).init();
+        await new Users().setConnection(cn).init();
+        await new Wallet().setConnection(cn).init();
 
         const server = createServer(app);
-        const wsService = new WebSocketsService(server, apiGatewayChannel);
+        const wsService = new WebSocketsService(server, cn);
         wsService.init();
 
-        new TaskManager().setDependecies(wsService, apiGatewayChannel);
+        new TaskManager().setDependecies(wsService, cn);
 
         ////////////////////////////////////////
 
         // Config routes
         app.use('/policies', authorizationHelper, policyAPI);
-        app.use('/accounts/', accountAPI);
-        app.use('/profiles/', authorizationHelper, profileAPI);
-        app.use('/settings/', authorizationHelper, settingsAPI);
+        app.use('/accounts', accountAPI);
+        app.use('/profiles', authorizationHelper, profileAPI);
+        app.use('/settings', authorizationHelper, settingsAPI);
         app.use('/schema', authorizationHelper, singleSchemaRoute);
         app.use('/schemas', authorizationHelper, schemaAPI);
         app.use('/tokens', authorizationHelper, tokenAPI);
-        app.use('/artifact', authorizationHelper, artifactAPI);
-        app.use('/trustchains/', authorizationHelper, trustchainsAPI);
+        app.use('/artifacts', authorizationHelper, artifactAPI);
+        app.use('/trust-chains/', authorizationHelper, trustChainsAPI);
         app.use('/external/', externalAPI);
         app.use('/demo/', demoAPI);
         app.use('/ipfs', authorizationHelper, ipfsAPI);
         app.use('/logs', authorizationHelper, loggerAPI);
-        app.use('/tasks/', taskAPI);
-        app.use('/analytics/', authorizationHelper, analyticsAPI);
+        app.use('/tasks', taskAPI);
+        app.use('/analytics', authorizationHelper, analyticsAPI);
         app.use('/contracts', authorizationHelper, contractAPI);
         app.use('/modules', authorizationHelper, moduleAPI);
+        app.use('/tags', authorizationHelper, tagsAPI);
+        app.use('/map', mapAPI);
+        app.use('/themes', authorizationHelper, themesAPI);
+
+        /**
+         * @deprecated 2023-03-01
+         */
+        app.use('/trustchains/', authorizationHelper, trustchainsAPI);
+        app.use('/artifact', authorizationHelper, artifactAPI);
         /////////////////////////////////////////
 
-        server.listen(PORT, () => {
+        // middleware error handler
+        app.use((err, req, res, next) => {
+            return res.status(err?.status || 500).json({ code: err?.status || 500, message: err.message })
+        });
+
+        server.setTimeout();
+        const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
+        if (Number.isInteger(maxPayload)) {
+            new LargePayloadContainer().runServer();
+        }
+        server.setTimeout(12000000).listen(PORT, () => {
             new Logger().info(`Started on ${PORT}`, ['API_GATEWAY']);
         });
     } catch (error) {

@@ -37,7 +37,11 @@
 
             <div class="list-item">
                 <h4 mat-line>Hedera Account Id</h4>
-                <p mat-line class="root-field"> {{profile.hederaAccountId}} </p>
+                <p mat-line class="root-field">
+                    <hedera-explorer type="accounts"
+                        [params]="profile.hederaAccountId || ''">{{profile.hederaAccountId}}
+                    </hedera-explorer>
+                </p>
                 <mat-divider></mat-divider>
             </div>
 
@@ -49,13 +53,21 @@
 
             <div *ngIf="profile.topicId" class="list-item">
                 <h4 mat-line>User Topic</h4>
-                <p mat-line class="root-field"> {{profile.topicId}} </p>
+                <p mat-line class="root-field">
+                    <hedera-explorer type="topics"
+                        [params]="profile.topicId">{{profile.topicId}}
+                    </hedera-explorer>
+                </p>
                 <mat-divider></mat-divider>
             </div>
 
             <div *ngIf="profile.parentTopicId" class="list-item">
                 <h4 mat-line>Initialization topic</h4>
-                <p mat-line class="root-field"> {{profile.parentTopicId}} </p>
+                <p mat-line class="root-field">
+                    <hedera-explorer type="topics"
+                        [params]="profile.parentTopicId">{{profile.parentTopicId}}
+                    </hedera-explorer>
+                </p>
                 <mat-divider></mat-divider>
             </div>
 
@@ -98,11 +110,11 @@
                 </div>
             </div>
             <div *ngIf="!generated" class="list-button">
-                <button mat-raised-button type="button" class="generate-btn" (click)="randomKey()">Generate</button>
+                <button mat-raised-button type="button" class="generate-btn" id="generate-btn-mobile" (click)="randomKey()">Generate</button>
             </div>
             <div class="list-item" *ngIf="showForm && generated">
                 <app-schema-form [formGroup]="vcForm" [schema]="schema" [private-fields]="hideVC"
-                    (change)="onChangeForm()">
+                    (change)="onChangeForm()" [showButtons]="false">
                 </app-schema-form>
             </div>
         </div>
@@ -118,7 +130,8 @@
                     (click)="onActionChange(actionType.type)">{{actionType.label}}</button>
             </mat-menu>
         </div>
-        <div class="list-button" *ngIf="showForm && generated">
+        <div *ngIf="showForm && generated" class="white-space"></div>
+        <div class="list-button" id="connect-btn" *ngIf="showForm && generated">
             <button mat-raised-button type="submit" [disabled]="!formValid" color="primary">Connect</button>
         </div>
     </form>

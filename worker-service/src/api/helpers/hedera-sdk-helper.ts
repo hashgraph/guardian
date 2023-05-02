@@ -35,16 +35,20 @@ import {
     TopicId,
     TopicMessageSubmitTransaction,
     Transaction,
+    TransactionId,
     TransactionReceipt,
+    TransactionReceiptQuery,
     TransactionRecord,
+    TransactionRecordQuery,
     TransferTransaction
 } from '@hashgraph/sdk';
 import { HederaUtils, timeout } from './utils';
 import axios from 'axios';
 import { Environment } from './environment';
-import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { GenerateUUIDv4, HederaResponseCode } from '@guardian/interfaces';
 import Long from 'long';
 import { TransactionLogger } from './transaction-logger';
+import process from 'process';
 
 export const MAX_FEE = Math.abs(+process.env.MAX_TRANSACTION_FEE) || 30;
 export const INITIAL_BALANCE = 30;
@@ -126,7 +130,7 @@ export class HederaSDKHelper {
     /**
      * Max timeout
      */
-    public static readonly MAX_TIMEOUT: number = 120000;
+    public static readonly MAX_TIMEOUT: number = (process.env.MAX_HEDERA_TIMEOUT) ? parseInt(process.env.MAX_HEDERA_TIMEOUT, 10) * 1000 : 10 * 60 * 1000;
     /**
      * Callback
      * @private
@@ -991,7 +995,10 @@ export class HederaSDKHelper {
      * @private
      */
     private async executeAndReceipt(
-        client: Client, transaction: Transaction, type: string, metadata?: any
+        client: Client,
+        transaction: Transaction,
+        type: string,
+        metadata?: any
     ): Promise<TransactionReceipt> {
         if (this.dryRun) {
             await this.virtualTransactionLog(this.dryRun, type);
@@ -1005,16 +1012,71 @@ export class HederaSDKHelper {
         } else {
             const id = GenerateUUIDv4();
             try {
+                const account = client.operatorAccountId.toString();
                 await this.transactionStartLog(id, type);
-                const result = await transaction.execute(client);
-                const receipt = await result.getReceipt(client);
+                let receipt;
+                try {
+                    const result = await transaction.execute(client);
+                    receipt = await result.getReceipt(client);
+                } catch (error) {
+                    const errorMessage =
+                        typeof error === 'string' ? error : error?.message;
+                    if (
+                        !errorMessage ||
+                        errorMessage.indexOf(
+                            HederaResponseCode.DUPLICATE_TRANSACTION
+                        ) === -1
+                    ) {
+                        throw error;
+                    }
+                    receipt = await this.receiptQuery(
+                        client,
+                        transaction.transactionId
+                    );
+                }
                 await this.transactionEndLog(id, type, transaction, metadata);
-                HederaSDKHelper.transactionResponse(client);
+                HederaSDKHelper.transactionResponse(account);
                 return receipt;
             } catch (error) {
                 await this.transactionErrorLog(id, type, transaction, error);
                 throw error;
             }
+        }
+    }
+
+    /**
+     * Receipt query
+     * @param client Client
+     * @param transacationId Transaction identifier
+     * @returns Transaction result
+     */
+    private async receiptQuery(
+        client: Client,
+        transactionId: string | TransactionId,
+        count = 0
+    ): Promise<TransactionReceipt> {
+        try {
+            let receiptQuery = new TransactionReceiptQuery()
+                .setMaxQueryPayment(new Hbar(MAX_FEE))
+                .setTransactionId(transactionId);
+            const transactionCost = await receiptQuery.getCost(client);
+            const newCost = transactionCost.toTinybars().multiply(2);
+            receiptQuery = receiptQuery.setQueryPayment(
+                Hbar.fromTinybars(newCost)
+            );
+            return await receiptQuery.execute(client);
+        } catch (error) {
+            const errorMessage =
+                typeof error === 'string' ? error : error?.message;
+            if (
+                count < 10 &&
+                errorMessage &&
+                errorMessage.indexOf(HederaResponseCode.DUPLICATE_TRANSACTION) >
+                    -1
+            ) {
+                return await this.receiptQuery(client, transactionId, count++);
+            }
+            throw error;
         }
     }
 
@@ -1027,7 +1089,10 @@ export class HederaSDKHelper {
      * @private
      */
     private async executeAndRecord(
-        client: Client, transaction: Transaction, type: string, metadata?: any
+        client: Client,
+        transaction: Transaction,
+        type: string,
+        metadata?: any
     ): Promise<TransactionRecord> {
         if (this.dryRun) {
             await this.virtualTransactionLog(this.dryRun, type);
@@ -1037,16 +1102,71 @@ export class HederaSDKHelper {
         } else {
             const id = GenerateUUIDv4();
             try {
+                const account = client.operatorAccountId.toString();
                 await this.transactionStartLog(id, type);
-                const result = await transaction.execute(client);
-                const record = await result.getRecord(client);
+                let record;
+                try {
+                    const result = await transaction.execute(client);
+                    record = await result.getRecord(client);
+                } catch (error) {
+                    const errorMessage =
+                        typeof error === 'string' ? error : error?.message;
+                    if (
+                        !errorMessage ||
+                        errorMessage.indexOf(
+                            HederaResponseCode.DUPLICATE_TRANSACTION
+                        ) === -1
+                    ) {
+                        throw error;
+                    }
+                    record = await this.recordQuery(
+                        client,
+                        transaction.transactionId
+                    );
+                }
                 await this.transactionEndLog(id, type, transaction, metadata);
-                HederaSDKHelper.transactionResponse(client);
+                HederaSDKHelper.transactionResponse(account);
                 return record;
             } catch (error) {
                 await this.transactionErrorLog(id, type, transaction, error);
                 throw error;
             }
+        }
+    }
+
+    /**
+     * Record query
+     * @param client Client
+     * @param transacationId Transaction identifier
+     * @returns Transaction result
+     */
+    private async recordQuery(
+        client: Client,
+        transactionId: string | TransactionId,
+        count = 0
+    ): Promise<TransactionRecord> {
+        try {
+            let recordQuery = new TransactionRecordQuery()
+                .setMaxQueryPayment(new Hbar(MAX_FEE))
+                .setTransactionId(transactionId);
+            const transactionCost = await recordQuery.getCost(client);
+            const newCost = transactionCost.toTinybars().multiply(2);
+            recordQuery = recordQuery.setQueryPayment(
+                Hbar.fromTinybars(newCost)
+            );
+            return await recordQuery.execute(client);
+        } catch (error) {
+            const errorMessage =
+                typeof error === 'string' ? error : error?.message;
+            if (
+                count < 10 &&
+                errorMessage &&
+                errorMessage.indexOf(HederaResponseCode.DUPLICATE_TRANSACTION) >
+                    -1
+            ) {
+                return await this.recordQuery(client, transactionId, count++);
+            }
+            throw error;
         }
     }
 
@@ -1060,13 +1180,13 @@ export class HederaSDKHelper {
 
     /**
      * Transaction response
-     * @param client
+     * @param account
      * @private
      */
-    private static transactionResponse(client: Client) {
+    private static transactionResponse(account: string) {
         if (HederaSDKHelper.fn) {
             try {
-                const result = HederaSDKHelper.fn(client);
+                const result = HederaSDKHelper.fn(account);
                 if (typeof result.then === 'function') {
                     result.then(null, (error) => {
                         console.error(error);
@@ -1114,19 +1234,22 @@ export class HederaSDKHelper {
      *
      * @param {string | FileId} bytecodeFileId - Code File Id
      * @param {ContractFunctionParameters} parameters - Contract Parameters
+     * @param {string} contractMemo - Memo
      *
      * @returns {string} - Contract Id
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
     public async createContract(
         bytecodeFileId: string | FileId,
-        parameters: ContractFunctionParameters
+        parameters: ContractFunctionParameters,
+        contractMemo: string
     ): Promise<string> {
         const client = this.client;
         const contractInstantiateTx = new ContractCreateTransaction()
             .setBytecodeFileId(bytecodeFileId)
             .setGas(1000000)
             .setConstructorParameters(parameters)
+            .setContractMemo(contractMemo)
             .setMaxTransactionFee(MAX_FEE);
         const contractInstantiateSubmit = await contractInstantiateTx.execute(
             client
@@ -1292,5 +1415,52 @@ export class HederaSDKHelper {
             id: newAccountId,
             key: newPrivateKey
         };
+    }
+
+    /**
+     * Get Contract Info
+     *
+     * @param {string | ContractId} contractId - Contract Id
+     *
+     * @returns {any} - Contract Info
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    public async getContractInfoRest(contractId: string): Promise<any> {
+        const res = await axios.get(
+            `${Environment.HEDERA_CONTRACT_API}/${contractId}`,
+            { responseType: 'json' }
+        );
+        if (!res || !res.data) {
+            throw new Error(`Invalid contract '${contractId}'`);
+        }
+        return res.data;
+    }
+
+    /**
+     * Destroy client
+     */
+    public destroy() {
+        this.client.close();
+    }
+
+    /**
+     * Get balance account (Rest API)
+     *
+     * @param {string} accountId - Account Id
+     *
+     * @returns {string} - balance
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    public static async balanceRest(accountId: string): Promise<string> {
+        const res = await axios.get(
+            `${Environment.HEDERA_BALANCES_API}?account.id=${accountId}`,
+            { responseType: 'json' }
+        );
+        if (!res || !res.data || !res.data.balances || !res.data.balances.length) {
+            throw new Error(`Invalid balance '${accountId}'`);
+        }
+        const balances = res.data.balances[0];
+        const hbars = new Hbar(balances.balance, HbarUnit.Tinybar);
+        return hbars.toString();
     }
 }

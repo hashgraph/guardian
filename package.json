@@ -14,7 +14,8 @@
     "topic-viewer",
     "tree-viewer",
     "worker-service",
-    "policy-service"
+    "policy-service",
+    "api-tests"
   ],
-  "version": "2.10.0"
+  "version": "2.12.0"
 }

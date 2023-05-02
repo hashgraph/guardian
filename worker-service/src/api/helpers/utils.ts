@@ -67,7 +67,7 @@ export class HederaUtils {
                 throw new Error(`Invalid ${keyName}`);
             }
         } else if (notNull) {
-            throw new Error(`${keyName} not set`);
+            throw new Error(`${keyName} is not set`);
         } else {
             return null;
         }

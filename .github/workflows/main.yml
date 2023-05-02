@@ -1,5 +1,7 @@
 name: Guardian CI
 on:
+  workflow_dispatch:
+    description: 'Manual run'
   push:
     branches-ignore:
       - 'dependabot/**'
@@ -32,6 +34,8 @@ jobs:
           pushd frontend
           npm install
           npm run build
+          npm run build:prod
+          npm run build:demo
           popd
           pushd auth-service
           npm install
@@ -85,6 +89,12 @@ jobs:
           CI: true
       - name: Test
         run: |
+          pushd common
+          npm run test
+          popd
+          pushd policy-service
+          npm run test
+          popd
           pushd guardian-service
           npm run test
           popd

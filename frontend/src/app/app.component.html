@@ -1,7 +1,7 @@
 <div class="app" [class.signed-in]="authState.value | async">
     <div class="background"></div>
     <app-header></app-header>
-    <div class="content">
+    <div class="content" id="main-content">
         <router-outlet></router-outlet>
     </div>
 </div>

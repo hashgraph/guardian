@@ -6,11 +6,11 @@ We can now perform a detailed comparison between two policies.
 
 To compare the policies, we need to click on **Compare** button in the policies tab as shown below:
 
-<figure><img src="../../../.gitbook/assets/image (2) (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2) (3) (1).png" alt=""><figcaption></figcaption></figure>
 
 When Compare button is clicked, we get a pop up to select policies, which we want to perform comparison off.
 
-<figure><img src="../../../.gitbook/assets/image (5) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (5) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 ## 2. Comparison Result
 
@@ -63,9 +63,9 @@ There are different sections in the comparison such as&#x20;
 
 We have several Display settings in Policy Blocks section:
 
-<figure><img src="../../../.gitbook/assets/image (12).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (12) (4).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (18).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (18) (4).png" alt=""><figcaption></figcaption></figure>
 
 **Display Settings:** description and show/hide settings for each color/type of difference:
 
@@ -78,4 +78,4 @@ We have several Display settings in Policy Blocks section:
 
 Block comparison displays can be unfolded to display a detailed view of the block Properties.
 
-<figure><img src="../../../.gitbook/assets/image (9) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (9) (1) (4).png" alt=""><figcaption></figcaption></figure>

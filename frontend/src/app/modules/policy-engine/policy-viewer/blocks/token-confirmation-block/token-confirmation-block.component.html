@@ -1,0 +1,32 @@
+<div class="content" [hidden]="!isActive">
+    <div *ngIf="loading || disabled" class="loading">
+        <mat-spinner></mat-spinner>
+    </div>
+    <div class="dialog">
+        <div class="title">Token {{action}}</div>
+        <div class="description">
+            Please enter the private key for the account
+            (<hedera-explorer type="accounts" [params]="accountId">{{accountId}}</hedera-explorer>)
+            to <span>{{action}}</span> it with the token <span>{{tokenName}}</span>
+            (<hedera-explorer type="tokens" [params]="tokenId">{{tokenId}}</hedera-explorer>)
+        </div>
+        <form class="form" [formGroup]="dataForm">
+            <mat-form-field appearance="outline">
+                <mat-label>* Private Key</mat-label>
+                <input #privateKeyInput matInput type="password" placeholder="Private Key" formControlName="privateKey">
+                <button matSuffix mat-icon-button aria-label="Visibility"
+                    (click)="privateKeyInput.type === 'password' ? privateKeyInput.type = 'text' : privateKeyInput.type = 'password'">
+                    <mat-icon>{{ privateKeyInput.type === 'password' ? 'visibility' : 'visibility_off' }}</mat-icon>
+                </button>
+            </mat-form-field>
+            <div style="margin-top: 15px">
+                <button mat-raised-button color="primary" type="submit" [disabled]="!dataForm.valid"
+                    (click)="onConfirm()">Enter</button>
+                <button mat-raised-button type="submit" (click)="onSkip()" style="margin-left: 20px">
+                    I have <span>{{action === 'associate' ? 'associated' : action === 'dissociate' ? 'dissociated' : action}}</span> manually
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>

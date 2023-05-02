@@ -1,0 +1,1 @@
+"# Read-only permission on secrets stored at 'secret/data/apikey/ipfs'\npath\"secret/data/apikey/ipfs\" {\n  capabilities = [ \"create\", \"read\", \"update\", \"list\" ]\n}"

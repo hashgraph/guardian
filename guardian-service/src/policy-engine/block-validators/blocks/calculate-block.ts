@@ -21,7 +21,7 @@ export class CalculateContainerBlock {
         try {
             // Test schema options
             if (!ref.options.inputSchema) {
-                validator.addError('Option "inputSchema" does not set');
+                validator.addError('Option "inputSchema" is not set');
                 return;
             }
             if (typeof ref.options.inputSchema !== 'string') {
@@ -35,7 +35,7 @@ export class CalculateContainerBlock {
 
             // Test schema options
             if (!ref.options.outputSchema) {
-                validator.addError('Option "outputSchema" does not set');
+                validator.addError('Option "outputSchema" is not set');
                 return;
             }
             if (typeof ref.options.outputSchema !== 'string') {

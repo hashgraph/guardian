@@ -1,7 +1,7 @@
 import { ActionCallback, BasicBlock, EventBlock } from '@policy-engine/helpers/decorators';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { AnyBlockType, IPolicyEventState, IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
-import { Message, MessageServer } from '@hedera-modules';
+import { Message, MessageServer } from '@guardian/common';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';

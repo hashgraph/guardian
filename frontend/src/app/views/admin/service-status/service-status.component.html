@@ -15,34 +15,43 @@
             All services are running
         </h1>
         <table class="status-table">
-            <tr *ngFor="let service of servicesStates" [ngSwitch]="service.state" class="service-status-row">
+            <tr *ngFor="let service of servicesStates" class="service-status-row">
                 <td class="">
                     <b>{{ service.serviceName }}</b>
                 </td>
                 <td class="">-</td>
-                <td class="">
-                    <div *ngSwitchCase="'READY'" class="icon-row">
-                        <mat-icon class="icon-status ready-status">check</mat-icon>
-                        <span>(Ready)</span>
+                <td class="flex-line">
+                    <div *ngFor="let state of service.states" [ngSwitch]="state">
+                        <div *ngSwitchCase="'READY'" class="icon-row">
+                            <mat-icon class="icon-status ready-status">check</mat-icon>
+<!--                            <span>(Ready)</span>-->
+                        </div>
+                        <div *ngSwitchCase="'BAD_CONFIGURATION'" class="icon-row">
+                            <mat-icon class="icon-status bad-configuration-status">build</mat-icon>
+<!--                            <span>(Wrong configuration, <a [routerLink]="'/admin/logs'" [queryParams]="{ attr: service.serviceName }">View-->
+<!--                                    Logs</a>, <a [routerLink]="'/admin/settings'">Update</a>)</span>-->
+                        </div>
+                        <div *ngSwitchCase="'INITIALIZING'" class="icon-row">
+                            <mat-spinner [diameter]="35" *ngSwitchCase="'INITIALIZING'"></mat-spinner>
+<!--                            <span>(Initializing)</span>-->
+                        </div>
+                        <div *ngSwitchCase="'STARTED'" class="icon-row">
+                            <mat-spinner [diameter]="35" *ngSwitchCase="'STARTED'"></mat-spinner>
+<!--                            <span>(Started)</span>-->
+                        </div>
+                        <div *ngSwitchCase="'STOPPED'" class="icon-row">
+                            <mat-icon *ngSwitchCase="'STOPPED'" class="icon-status stopped-status">close</mat-icon>
+<!--                            <span>-->
+<!--                                (Stopped, <a [routerLink]="'/admin/logs'" [queryParams]="{ attr: service.serviceName }">View-->
+<!--                                    Logs</a>)-->
+<!--                            </span>-->
+                        </div>
                     </div>
-                    <div *ngSwitchCase="'BAD_CONFIGURATION'" class="icon-row">
-                        <mat-icon class="icon-status bad-configuration-status">build</mat-icon>
-                        <span>(Wrong configuration, <a [routerLink]="'/admin/logs'" [queryParams]="{ attr: service.serviceName }">View
-                                Logs</a>, <a [routerLink]="'/admin/settings'">Update</a>)</span>
-                    </div>
-                    <div *ngSwitchCase="'INITIALIZING'" class="icon-row">
-                        <mat-spinner [diameter]="35" *ngSwitchCase="'INITIALIZING'"></mat-spinner>
-                        <span>(Initializing)</span>
-                    </div>
-                    <div *ngSwitchCase="'STARTED'" class="icon-row">
-                        <mat-spinner [diameter]="35" *ngSwitchCase="'STARTED'"></mat-spinner>
-                        <span>(Started)</span>
-                    </div>
-                    <div *ngSwitchCase="'STOPPED'" class="icon-row">
-                        <mat-icon *ngSwitchCase="'STOPPED'" class="icon-status stopped-status">close</mat-icon>
+                    <div *ngIf="!service.states.length" class="icon-row">
+                        <mat-icon class="icon-status stopped-status">close</mat-icon>
                         <span>
                             (Stopped, <a [routerLink]="'/admin/logs'" [queryParams]="{ attr: service.serviceName }">View
-                                Logs</a>)
+                            Logs</a>)
                         </span>
                     </div>
                 </td>

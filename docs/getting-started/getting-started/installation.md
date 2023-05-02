@@ -1,5 +1,7 @@
 # 🛠 Installation
 
+### Build Guardian from source and run as docker containers
+
 1.  Clone the repo
 
     ```
@@ -24,7 +26,9 @@ in `guardian-service/.env.docker`:
 ```
 
 {% hint style="info" %}
-**Note:** You can use the Schema Topic ID (`INITIALIZATION_TOPIC_ID`) already present in the configuration files, or you can specify your own.
+**Note:**&#x20;
+
+1. You can use the Schema Topic ID (`INITIALIZATION_TOPIC_ID`) already present in the configuration files, or you can specify your own.
 {% endhint %}
 
 3\. Now, we have two options to setup IPFS node : 1. Local node 2. IPFS Web3Storage node.
@@ -61,7 +65,7 @@ IPFS_PROVIDER="web3storage"
 
 To generate Web3.Storage API KEY. Please follow the steps from [https://web3.storage/docs/#quickstart](https://web3.storage/docs/#quickstart) to obtain it. To know complete information on generating API Key please check : [how-to-generate-web3.storage-api-key.md](how-to-generate-web3.storage-api-key.md "mention")
 
-4\. Build and launch with Docker. Please note that this build is meant to be used in production and will not contain any debug information. From the project's root folder:
+4\. Build and launch with Docker. Make sure you use Docker Compose V2 (comes with Docker Desktop > 3.6.0) as at https://docs.docker.com/compose/install/. Please note that this build is meant to be used in production and will not contain any debug information. From the project's root folder:
 
 ```
 docker-compose up -d --build
@@ -69,7 +73,9 @@ docker-compose up -d --build
 
 5\. Browse to [http://localhost:3000](http://localhost:3000) and complete the setup.
 
-### Docker compose configuration for apple M1 using images:
+### Run pre-build containers from the repository
+
+#### Docker compose configuration for apple M1 using images:
 
 ```
 version: "3.8"
@@ -178,7 +184,7 @@ volumes:
   #  volume-message-broker:
 ```
 
-### Manual Installation
+### (Advanced) Build executables and run manually
 
 If you want to manually build every component with debug information, then build and run the services and packages in the following sequence: Interfaces, Logger Helper, Message Broker, Logger Service, Auth Service, IPFS, Guardian Service, UI Service, and lastly, the MRV Sender Service. See below for commands.
 
@@ -448,17 +454,29 @@ cd message-broker
 npm run test
 ```
 
+### INITIALIZATION\_TOPIC\_ID for different Hedera Networks
+
+| Network    | INITIALIZATION\_TOPIC\_ID |
+| ---------- | ------------------------- |
+| Mainnet    | 0.0.1368856               |
+| Testnet    | 0.0.2030                  |
+| Previewnet | 0.0.155110                |
+
 ### Launching the Guardian
 
 Once [http://localhost:3000](http://localhost:3000) is launched, we need to first generate Operator ID and Operator Key by clicking on Generate button as shown below:
 
 <figure><img src="../../.gitbook/assets/image (18) (3).png" alt=""><figcaption></figcaption></figure>
 
+{% hint style="info" %}
+Note: If OPERATORID and OPERATOR KEY are added in .env file, we can click on Generate button directly without entering the details again in the UI.
+{% endhint %}
+
 Once you generated Operator ID and Operator Key, we can either click on Next or restore the Data, by selecting Restore Data from the Next button dropdown to setup Registry as shown below.
 
 **Note**: Restore Data can be restored from Hedera if data is available for setting up the Registry.
 
-<figure><img src="../../.gitbook/assets/image (21) (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (2) (6).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 **Limitations on restoring the data:**\
@@ -469,7 +487,7 @@ Once you generated Operator ID and Operator Key, we can either click on Next or 
 
 If Next is clicked, we need to manually setup the Registry or if Restore Data is clicked, it is filled automatically.
 
-![](<../../.gitbook/assets/image (14) (3).png>)
+![](<../../.gitbook/assets/image (23) (1).png>)
 
 **Note:** The above fields in UI are mandatory only for this default Schema.
 
@@ -513,39 +531,56 @@ Where the list of `attributes` is extendable, and all attributes in it are **opt
 
 ### .env / .env.docker Parameters in `guardian-service`
 
-| Parameter                              | Purpose                                                                            | Example                            |
-| -------------------------------------- | ---------------------------------------------------------------------------------- | ---------------------------------- |
-| MQ\_ADDRESS                            | Web Socket Address                                                                 | localhost                          |
-| SERVICE\_CHANNEL                       | Version of the Guardian                                                            | guardian.1                         |
-| DB\_HOST                               | Hostname of the Database                                                           | localhost                          |
-| DB\_DATABASE                           | Database Name                                                                      | guardian\_db                       |
-| INITIAL\_BALANCE                       | Initial Balance Value                                                              | 500                                |
-| INITIAL\__STANDARD\_REGISTRY\_BALANCE_ | Setting Initial Standard Registry Balance                                          | 500                                |
-| OPERATOR\_ID                           | The ID of the operation                                                            | -                                  |
-| OPERATOR\_KEY                          | Private key of the operator                                                        | -                                  |
-| LOCALNODE\_ADDRESS                     | The address of the localnode server. This can be its IP address or a domain name   | 1.1.1.1                            |
-| LOCALNODE\_PROTOCOL                    | Communication protocol for interactions with the local node, can be http or https. | http/https                         |
-| HEDERA\_NET                            | Type of the Hedera node to transact with                                           | testnet, localnode, mainnet        |
-| INITIALIZATION\__TOPIC\_ID_            | The ID of the initialization topic.                                                | 0.0.2030                           |
-| MESSAGE\_LANG                          | Language of the message text of all messages                                       | en-US                              |
-| LOG\_LEVEL                             | Level of the Logs                                                                  | 2                                  |
-| SEND\_KEYS\_TO\_VAULT                  | Checked if keys to be sent to vault                                                | True/False                         |
-| MULTI\_POLICY\_SCHEDULER               | to set custom cron mask (timer mask) for sync job                                  | 0 0 \* \* \*                       |
-| CONTRACT\_FILE\_ID                     | Defines the file identifier in hedera to create smart-contract.                    | 0.0.6276                           |
-| MQ\_MESSAGE\_CHUNK                     | To set up the message chunk size                                                   | 500000                             |
-| HEDERA\_CUSTOM\_NODES                  | Define hedera nodes to execute and pay transaction fee                             | 0.testnet.hedera.com:50211":"0.0.3 |
-| HEDERA\_CUSTOM\_MIRROR\_NODES          | Define hedera mirror nodes                                                         | testnet.mirrornode.hedera.com:443" |
+| Parameter                              | Purpose                                                                                                                             | Example                            |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| MQ\_ADDRESS                            | Web Socket Address                                                                                                                  | localhost                          |
+| SERVICE\_CHANNEL                       | Version of the Guardian                                                                                                             | guardian.1                         |
+| DB\_HOST                               | Hostname of the Database                                                                                                            | localhost                          |
+| DB\_DATABASE                           | Database Name                                                                                                                       | guardian\_db                       |
+| INITIAL\_BALANCE                       | Initial Balance Value                                                                                                               | 500                                |
+| INITIAL\__STANDARD\_REGISTRY\_BALANCE_ | Setting Initial Standard Registry Balance                                                                                           | 500                                |
+| OPERATOR\_ID                           | The ID of the operation                                                                                                             | -                                  |
+| OPERATOR\_KEY                          | Private key of the operator                                                                                                         | -                                  |
+| LOCALNODE\_ADDRESS                     | The address of the localnode server. This can be its IP address or a domain name                                                    | 1.1.1.1                            |
+| LOCALNODE\_PROTOCOL                    | Communication protocol for interactions with the local node, can be http or https.                                                  | http/https                         |
+| HEDERA\_NET                            | Type of the Hedera node to transact with                                                                                            | testnet, localnode, mainnet        |
+| INITIALIZATION\__TOPIC\_ID_            | The ID of the initialization topic.                                                                                                 | 0.0.2030                           |
+| MESSAGE\_LANG                          | Language of the message text of all messages                                                                                        | en-US                              |
+| LOG\_LEVEL                             | Level of the Logs                                                                                                                   | 2                                  |
+| SEND\_KEYS\_TO\_VAULT                  | Checked if keys to be sent to vault                                                                                                 | True/False                         |
+| MULTI\_POLICY\_SCHEDULER               | to set custom cron mask (timer mask) for sync job                                                                                   | 0 0 \* \* \*                       |
+| CONTRACT\_FILE\_ID                     | Defines the file identifier in hedera to create smart-contract.                                                                     | 0.0.6276                           |
+| MQ\_MESSAGE\_CHUNK                     | To set up the message chunk size                                                                                                    | 500000                             |
+| HEDERA\_CUSTOM\_NODES                  | Define hedera nodes to execute and pay transaction fee                                                                              | 0.testnet.hedera.com:50211":"0.0.3 |
+| HEDERA\_CUSTOM\_MIRROR\_NODES          | Define hedera mirror nodes                                                                                                          | testnet.mirrornode.hedera.com:443" |
+| MAP\_API\_KEY                          | Defines api to integrate Map schema type                                                                                            | ALZ\_X.....                        |
+| DOCUMENT\_CACHE\_FIELD\_LIMIT          | Defines document field symbols limit for caching.                                                                                   | 500                                |
+| BATCH\_NFT\_MINT\_SIZE                 | Defines size of batch of mint NFT transaction                                                                                       | 10                                 |
+| DIRECT\_MESSAGE\_PORT                  | Port for direct messages (if not set generate random port)                                                                          | 300                                |
+| DIRECT\_MESSAGE\_HOST                  | Host for direct messages (if not set get hostname)                                                                                  | localhost                          |
+| DIRECT\_MESSAGE\_PROTOCOL              | Protocol https or http (http by default, https need additional server like nginx)                                                   | http                               |
+| MQ\_MAX\_PAYLOAD                       | Max message size for send via message-broker (otherwise create direct message) if not set always send messages using message broker | 35                                 |
+
+{% hint style="info" %}
+**Important Note:**
+
+Values from .env file need to be set up only on first start (when db or vault are empty). Then later if you want it to be changed, you can change it through Settings from admin Panel or through API.
+{% endhint %}
 
 ### .env / .env.docker Parameters in api-gateway
 
-| Parameter            | Purpose                              | Example                   |
-| -------------------- | ------------------------------------ | ------------------------- |
-| MQ\_ADDRESS          | Web Socket Address                   | message-broker            |
-| SERVICE\_CHANNEL     | Channel of the service               | api-gateway               |
-| MRV\_ADDRESS         | MRV Address location                 | http://message-broker/mrv |
-| MQ\_MESSAGE\_CHUNK   | To set up the message chunk size     | 500000                    |
-| RAW\_REQUEST\_LIMIT  | Define request limit                 | 1 gb                      |
-| JSON\_REQUEST\_LIMIT | Define limit for body in Json format | 1 gb                      |
+| Parameter                 | Purpose                                                                                                                             | Example                   |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| MQ\_ADDRESS               | Web Socket Address                                                                                                                  | message-broker            |
+| SERVICE\_CHANNEL          | Channel of the service                                                                                                              | api-gateway               |
+| MRV\_ADDRESS              | MRV Address location                                                                                                                | http://message-broker/mrv |
+| MQ\_MESSAGE\_CHUNK        | To set up the message chunk size                                                                                                    | 500000                    |
+| RAW\_REQUEST\_LIMIT       | Define request limit                                                                                                                | 1 gb                      |
+| JSON\_REQUEST\_LIMIT      | Define limit for body in Json format                                                                                                | 1 gb                      |
+| DIRECT\_MESSAGE\_PORT     | Port for direct messages (if not set generate random port)                                                                          | 300                       |
+| DIRECT\_MESSAGE\_HOST     | Host for direct messages (if not set get hostname)                                                                                  | localhost                 |
+| DIRECT\_MESSAGE\_PROTOCOL | Protocol https or http (http by default, https need additional server like nginx)                                                   | http                      |
+| MQ\_MAX\_PAYLOAD          | Max message size for send via message-broker (otherwise create direct message) if not set always send messages using message broker | 35                        |
 
 ### Restoring account from Database/Hashicorp vault during Setup.
 

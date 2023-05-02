@@ -1,0 +1,68 @@
+<div class="content-{{type}}" [hidden]="!isExist">
+    <div *ngIf="loading || disabled" class="loading">
+        <mat-spinner></mat-spinner>
+    </div>
+    <ng-container *ngIf="type=='page'">
+        <form *ngIf="schema" [formGroup]="dataForm" (ngSubmit)="onSubmit()" class="form-{{type}}">
+            <h1 *ngIf="title" mat-dialog-title>{{title}}</h1>
+            <div *ngIf="description" class="description">{{description}}</div>
+            <div *ngIf="restoreData" class="restore-data">
+                <mat-icon>info</mat-icon><b>There is some data to restore. You can restore latest values:</b>
+                <button mat-raised-button aria-label="Restore Values" type="button" (click)="onRestoreClick()">
+                    Restore Values<mat-icon>restore</mat-icon>
+                </button>
+            </div>
+            <div class="schema-form">
+                <app-schema-form [formGroup]="dataForm" [schema]="schema" [private-fields]="hideFields"
+                    [preset]="presetDocument" [readonly-fields]="presetReadonlyFields" [disableSubmitBtn]="true">
+                </app-schema-form>
+            </div>
+            <button *ngIf="innerWidth <= 810" class="registrant-application-create-btn" mat-raised-button color="primary" type="submit" [disabled]="!dataForm.valid">Create</button>
+            <div *ngIf="innerWidth > 810" class="page-btns">
+                <button mat-raised-button color="primary" type="submit" [disabled]="!dataForm.valid">Ok</button>
+            </div>
+        </form>
+    </ng-container>
+    <ng-container *ngIf="type=='dialog'">
+        <button mat-raised-button color="primary" class="btn-block-{{buttonClass}}"
+            (click)="onDialog()">{{content}}</button>
+    </ng-container>
+</div>
+
+<ng-template #dialogTemplate let-data>
+    <div>
+        <h1 mat-dialog-title class="title">{{data.dialogContent}}</h1>
+        <div class="description">
+            {{description}}
+        </div>
+        <div *ngIf="restoreData" class="restore-data">
+            <mat-icon>info</mat-icon><b>There is some data to restore. You can restore latest values:</b>
+            <button mat-raised-button aria-label="Restore Values" type="button" (click)="onRestoreClick()">
+                Restore Values<mat-icon>restore</mat-icon>
+            </button>
+        </div>
+        <div *ngIf="data.schema" mat-dialog-content class="body-dialog-template">
+            <div *ngIf="dialogLoading || disabled" class="loading-dialog">
+                <mat-spinner></mat-spinner>
+            </div>
+            <form [formGroup]="dataForm" (ngSubmit)="data.onSubmit()">
+                <div class="form-{{data.type}}">
+                    <app-schema-form [formGroup]="data.dataForm" [schema]="data.schema" [readonly-fields]="presetReadonlyFields"
+                        [private-fields]="data.hideFields" [preset]="presetDocument" [comesFromDialog]="true"
+                        (cancelBtnEvent)="handleCancelBtnEvent($event, data)" (submitBtnEvent)="handleSubmitBtnEvent($event, data)">
+                    </app-schema-form>
+                </div>
+                <div *ngIf="innerWidth > 810" class="dialog-actions-container" style="z-index: 400">
+                    <div mat-dialog-actions>
+                        <button mat-raised-button id="ok-btn" color="primary" type="submit"
+                            [disabled]="!data.dataForm.valid || loading || dialogLoading">Ok</button>
+                        <button mat-button type="button" id="cancel-btn" (click)="data.onCancel()">Cancel</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div *ngIf="!data.schema" mat-dialog-actions>
+            <button mat-button type="button" (click)="data.onCancel()">Cancel</button>
+        </div>
+    </div>
+</ng-template>

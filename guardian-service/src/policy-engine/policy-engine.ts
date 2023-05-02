@@ -8,11 +8,19 @@ import {
     PolicyType,
     IRootConfig,
     GenerateUUIDv4,
-    PolicyEvents,
-    WorkerTaskType,
+    PolicyEvents
 } from '@guardian/interfaces';
-import { DataBaseHelper, IAuthUser, Logger, ServiceRequestsBase, Singleton } from '@guardian/common';
 import {
+    DataBaseHelper,
+    IAuthUser,
+    Logger,
+    NatsService,
+    Singleton,
+    Token,
+    MultiPolicy,
+    Artifact,
+    Topic,
+    Policy,
     MessageAction,
     MessageServer,
     MessageType,
@@ -20,27 +28,29 @@ import {
     SynchronizationMessage,
     TokenMessage,
     TopicConfig,
-    TopicHelper
-} from '@hedera-modules'
-import { findAllEntities, getArtifactType, replaceAllEntities, replaceAllVariables, replaceArtifactProperties, SchemaFields } from '@helpers/utils';
-import { incrementSchemaVersion, findAndPublishSchema, findAndDryRunSchema, deleteSchema, publishSystemSchemas } from '@api/schema.service';
+    TopicHelper,
+    VcHelper,
+    Users,
+    DatabaseServer,
+    findAllEntities,
+    getArtifactType,
+    replaceAllEntities,
+    replaceAllVariables,
+    replaceArtifactProperties,
+    SchemaFields,
+} from '@guardian/common';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
-import { VcHelper } from '@helpers/vc-helper';
-import { Users } from '@helpers/users';
-import { Inject } from '@helpers/decorators/inject';
-import { Policy } from '@entity/policy';
-import { Topic } from '@entity/topic';
 import { PolicyConverterUtils } from './policy-converter-utils';
-import { DatabaseServer } from '@database-modules';
 import { emptyNotifier, INotifier } from '@helpers/notifier';
 import { ISerializedErrors } from './policy-validation-results-container';
-import { Artifact } from '@entity/artifact';
-import { MultiPolicy } from '@entity/multi-policy';
 import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels-container';
-import { KeyType, Wallet } from '@helpers/wallet';
-import { Workers } from '@helpers/workers';
-import { Token } from '@entity/token';
 import { PolicyValidator } from '@policy-engine/block-validators';
+import { publishPolicyTags } from '@api/tag.service';
+import { createHederaToken } from '@api/token.service';
+import { GuardiansService } from '@helpers/guardians';
+import { Inject } from '@helpers/decorators/inject';
+import { findAndDryRunSchema, findAndPublishSchema, publishSystemSchemas } from '@api/helpers/schema-publish-helper';
+import { deleteSchema, incrementSchemaVersion } from '@api/helpers/schema-helper';
 
 /**
  * Result of publishing
@@ -64,21 +74,28 @@ interface IPublishResult {
  * Policy engine service
  */
 @Singleton
-export class PolicyEngine extends ServiceRequestsBase {
+export class PolicyEngine extends NatsService {
 
     /**
      * Run ready event
      * @param policyId
      * @param data
+     * @param error
      */
-    public static runReadyEvent(policyId: string, data: any): void {
-        new PolicyEngine().runReadyEvent(policyId, data);
+    public static runReadyEvent(policyId: string, data: any, error?: any): void {
+        new PolicyEngine().runReadyEvent(policyId, data, error);
     }
 
     /**
-     * Target
+     * Message queue name
      */
-    public target: string = 'policy-service';
+    public messageQueueName = 'policy-service-queue';
+
+    /**
+     * Reply subject
+     * @private
+     */
+    public replySubject = 'policy-service-reply-' + GenerateUUIDv4();
 
     /**
      * Users helper
@@ -91,12 +108,18 @@ export class PolicyEngine extends ServiceRequestsBase {
      * Policy ready callbacks
      * @private
      */
-    private readonly policyReadyCallbacks: Map<string, (data: any) => void> = new Map();
+    private readonly policyReadyCallbacks: Map<string, (data: any, error?: any) => void> = new Map();
 
     /**
      * Initialization
      */
     public async init(): Promise<void> {
+        await super.init();
+
+        this.subscribe(PolicyEvents.POLICY_READY, (msg: any) => {
+            PolicyEngine.runReadyEvent(msg.policyId, msg.data, msg.error);
+        });
+
         const policies = await DatabaseServer.getPolicies({
             where: {
                 status: { $in: [PolicyType.PUBLISH, PolicyType.DRY_RUN] }
@@ -109,17 +132,18 @@ export class PolicyEngine extends ServiceRequestsBase {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
             }
         }));
+
     }
 
     /**
      * Run ready event
      * @param policyId
      * @param data
+     * @param error
      */
-    private runReadyEvent(policyId: string, data?: any): void {
-        console.log('policy ready', policyId);
+    private runReadyEvent(policyId: string, data?: any, error?: any): void {
         if (this.policyReadyCallbacks.has(policyId)) {
-            this.policyReadyCallbacks.get(policyId)(data);
+            this.policyReadyCallbacks.get(policyId)(data, error);
         }
     }
 
@@ -127,6 +151,7 @@ export class PolicyEngine extends ServiceRequestsBase {
      * Create policy
      * @param data
      * @param owner
+     * @param notifier
      */
     public async createPolicy(data: Policy, owner: string, notifier: INotifier): Promise<Policy> {
         const logger = new Logger();
@@ -294,9 +319,7 @@ export class PolicyEngine extends ServiceRequestsBase {
             artifact.data = await DatabaseServer.getArtifactFileByUUID(artifact.uuid);
         }
 
-        const dataToCreate = {
-            policy, schemas, tokens, artifacts
-        };
+        const dataToCreate = { policy, schemas, tokens, artifacts, tags: [] };
         return await PolicyImportExportHelper.importPolicy(dataToCreate, owner, null, notifier, data);
     }
 
@@ -443,89 +466,24 @@ export class PolicyEngine extends ServiceRequestsBase {
         try {
             notifier.completedAndStart('Generate file');
             this.regenerateIds(model.config);
-            const zip = await PolicyImportExportHelper.generateZipFile(model);
-            const buffer = await zip.generateAsync({
-                type: 'arraybuffer',
-                compression: 'DEFLATE',
-                compressionOptions: {
-                    level: 3
-                }
-            });
 
             notifier.completedAndStart('Token');
             const tokenIds = findAllEntities(model.config, ['tokenId']);
             const tokens = await DatabaseServer.getTokens({ tokenId: { $in: tokenIds }, owner: model.owner });
             for (const token of tokens) {
+                let _token = token;
                 if (token.draftToken) {
-                    const workers = new Workers();
-                    const tokenData = await workers.addRetryableTask({
-                        type: WorkerTaskType.CREATE_TOKEN,
-                        data: {
-                            operatorId: root.hederaAccountId,
-                            operatorKey: root.hederaAccountKey,
-                            tokenName: token.tokenName,
-                            tokenSymbol: token.tokenSymbol,
-                            tokenType: token.tokenType,
-                            initialSupply: token.initialSupply,
-                            decimals: token.decimals,
-                            changeSupply: true,
-                            enableAdmin: token.enableAdmin,
-                            enableFreeze: token.enableFreeze,
-                            enableKYC: token.enableKYC,
-                            enableWipe: token.enableWipe,
-                        }
-                    }, 1);
-                    const wallet = new Wallet();
-                    await Promise.all([
-                        wallet.setUserKey(
-                            root.did,
-                            KeyType.TOKEN_TREASURY_KEY,
-                            tokenData.tokenId,
-                            tokenData.treasuryKey
-                        ),
-                        wallet.setUserKey(
-                            root.did,
-                            KeyType.TOKEN_ADMIN_KEY,
-                            tokenData.tokenId,
-                            tokenData.adminKey
-                        ),
-                        wallet.setUserKey(
-                            root.did,
-                            KeyType.TOKEN_FREEZE_KEY,
-                            tokenData.tokenId,
-                            tokenData.freezeKey
-                        ),
-                        wallet.setUserKey(
-                            root.did,
-                            KeyType.TOKEN_KYC_KEY,
-                            tokenData.tokenId,
-                            tokenData.kycKey
-                        ),
-                        wallet.setUserKey(
-                            root.did,
-                            KeyType.TOKEN_SUPPLY_KEY,
-                            tokenData.tokenId,
-                            tokenData.supplyKey
-                        ),
-                        wallet.setUserKey(
-                            root.did,
-                            KeyType.TOKEN_WIPE_KEY,
-                            tokenData.tokenId,
-                            tokenData.wipeKey
-                        )
-                    ]);
+                    const oldId = token.tokenId;
+                    const newToken = await createHederaToken({ ...token, changeSupply: true }, root);
+                    _token = await new DataBaseHelper(Token).update(newToken, token?.id);
 
-                    replaceAllEntities(model.config, ['tokenId'], token.tokenId, tokenData.tokenId);
-                    replaceAllVariables(model.config, 'Token', token.tokenId, tokenData.tokenId);
-
-                    token.tokenId = tokenData.tokenId;
-                    token.draftToken = false;
-                    token.adminId = tokenData.treasuryId;
-                    await new DataBaseHelper(Token).save(token);
+                    replaceAllEntities(model.config, ['tokenId'], oldId, newToken.tokenId);
+                    replaceAllVariables(model.config, 'Token', oldId, newToken.tokenId);
                     await DatabaseServer.updatePolicy(model);
                 }
+
                 const tokenMessage = new TokenMessage(MessageAction.UseToken);
-                tokenMessage.setDocument(token);
+                tokenMessage.setDocument(_token);
                 await messageServer
                     .sendMessage(tokenMessage);
             }
@@ -581,6 +539,15 @@ export class PolicyEngine extends ServiceRequestsBase {
                 await createSynchronizationTopic();
             }
 
+            const zip = await PolicyImportExportHelper.generateZipFile(model);
+            const buffer = await zip.generateAsync({
+                type: 'arraybuffer',
+                compression: 'DEFLATE',
+                compressionOptions: {
+                    level: 3
+                }
+            });
+
             notifier.completedAndStart('Publish policy');
             const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);
             message.setDocument(model, buffer);
@@ -598,15 +565,15 @@ export class PolicyEngine extends ServiceRequestsBase {
             const vcHelper = new VcHelper();
             let credentialSubject: any = {
                 id: messageId,
-                name: model.name,
-                description: model.description,
-                topicDescription: model.topicDescription,
-                version: model.version,
-                policyTag: model.policyTag,
-                owner: model.owner,
-                cid: url.cid,
-                url: url.url,
-                uuid: model.uuid,
+                name: model.name || '',
+                description: model.description || '',
+                topicDescription: model.topicDescription || '',
+                version: model.version || '',
+                policyTag: model.policyTag || '',
+                owner: model.owner || '',
+                cid: url.cid || '',
+                url: url.url || '',
+                uuid: model.uuid || '',
                 operation: 'PUBLISH'
             }
             if (policySchema) {
@@ -623,13 +590,20 @@ export class PolicyEngine extends ServiceRequestsBase {
             });
 
             logger.info('Published Policy', ['GUARDIAN_SERVICE']);
-
         } catch (error) {
             model.status = PolicyType.PUBLISH_ERROR;
             model.version = '';
             await DatabaseServer.updatePolicy(model);
             throw error
         }
+
+        notifier.completedAndStart('Publish tags');
+        try {
+            await publishPolicyTags(model, root);
+        } catch (error) {
+            logger.error(error, ['GUARDIAN_SERVICE, TAGS']);
+        }
+
         notifier.completedAndStart('Saving in DB');
         model.status = PolicyType.PUBLISH;
         const retVal = await DatabaseServer.updatePolicy(model);
@@ -660,14 +634,6 @@ export class PolicyEngine extends ServiceRequestsBase {
         model.version = version;
 
         this.regenerateIds(model.config);
-        const zip = await PolicyImportExportHelper.generateZipFile(model);
-        const buffer = await zip.generateAsync({
-            type: 'arraybuffer',
-            compression: 'DEFLATE',
-            compressionOptions: {
-                level: 3
-            }
-        });
 
         const rootTopic = await topicHelper.create({
             type: TopicType.InstancePolicyTopic,
@@ -680,6 +646,15 @@ export class PolicyEngine extends ServiceRequestsBase {
         await rootTopic.saveKeys();
         await databaseServer.saveTopic(rootTopic.toObject());
         model.instanceTopicId = rootTopic.topicId;
+
+        const zip = await PolicyImportExportHelper.generateZipFile(model);
+        const buffer = await zip.generateAsync({
+            type: 'arraybuffer',
+            compression: 'DEFLATE',
+            compressionOptions: {
+                level: 3
+            }
+        });
 
         const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);
         message.setDocument(model, buffer);
@@ -694,15 +669,15 @@ export class PolicyEngine extends ServiceRequestsBase {
         const vcHelper = new VcHelper();
         let credentialSubject: any = {
             id: messageId,
-            name: model.name,
-            description: model.description,
-            topicDescription: model.topicDescription,
-            version: model.version,
-            policyTag: model.policyTag,
-            owner: model.owner,
-            cid: url.cid,
-            url: url.url,
-            uuid: model.uuid,
+            name: model.name || '',
+            description: model.description || '',
+            topicDescription: model.topicDescription || '',
+            version: model.version || '',
+            policyTag: model.policyTag || '',
+            owner: model.owner || '',
+            cid: url.cid || '',
+            url: url.url || '',
+            uuid: model.uuid || '',
             operation: 'PUBLISH'
         }
 
@@ -894,41 +869,55 @@ export class PolicyEngine extends ServiceRequestsBase {
      * @param policyId
      */
     public async destroyModel(policyId: string): Promise<void> {
-        const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
-        if (serviceChannelEntity) {
-            const { name } = serviceChannelEntity;
-            PolicyServiceChannelsContainer.deletePolicyServiceChannel(policyId);
-            this.channel.publish(PolicyEvents.DELETE_POLICY, {
-                policyId,
-                policyServiceName: name
-
-            });
-        }
+        PolicyServiceChannelsContainer.deletePolicyServiceChannel(policyId);
+        new GuardiansService().sendPolicyMessage(PolicyEvents.DELETE_POLICY, policyId, {});
     }
 
     /**
      * Generate Model
      * @param policyId
      */
-    public async generateModel(policyId: string): Promise<void> {
+    public async generateModel(policyId: string): Promise<any> {
         const policy = await DatabaseServer.getPolicyById(policyId);
         if (!policy || (typeof policy !== 'object')) {
             throw new Error('Policy was not exist');
         }
-        const { name } = PolicyServiceChannelsContainer.createPolicyServiceChannel(policyId);
 
-        this.channel.publish(PolicyEvents.GENERATE_POLICY, {
-            policy,
-            policyId,
-            policyServiceName: name,
-            skipRegistration: false
-        });
+        const exist = await new GuardiansService().checkIfPolicyAlive(policyId);
 
-        return new Promise((resolve) => {
-            this.policyReadyCallbacks.set(policyId, (data) => {
-                resolve(data);
-            })
-        });
+        if (!exist) {
+            let confirmed: boolean;
+
+            try {
+                const r = await this.sendMessageWithTimeout<any>(PolicyEvents.GENERATE_POLICY, 1000, {
+                    policy,
+                    policyId,
+                    skipRegistration: false
+                });
+                confirmed = r.confirmed;
+            } catch (e) {
+                confirmed = false
+                console.error(e.message);
+            }
+
+            if (confirmed) {
+                return new Promise((resolve, reject) => {
+                    this.policyReadyCallbacks.set(policyId, (data, error) => {
+                        if (error) {
+                            reject(new Error(error));
+                        }
+                        resolve(data);
+                        this.policyReadyCallbacks.delete(policyId);
+                    })
+                });
+            } else {
+                await new Promise(resolve => setTimeout(resolve, 10000));
+
+                return this.generateModel(policyId);
+            }
+        } else {
+            return Promise.resolve();
+        }
     }
 
     /**

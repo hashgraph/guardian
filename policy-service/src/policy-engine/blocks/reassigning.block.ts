@@ -1,15 +1,15 @@
 import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
-import { Inject } from '@helpers/decorators/inject';
+import { VcHelper } from '@guardian/common';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { AnyBlockType, IPolicyBlock, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { VcHelper } from '@helpers/vc-helper';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IRootConfig } from '@guardian/interfaces';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { Inject } from '@helpers/decorators/inject';
 
 /**
  * Reassigning block

@@ -14,7 +14,7 @@ Second step of policy execution is data input and document submission. To enable
 
 To enable document submission we will use document input block (**requestVcDocumentBlock**) and document persistence block (**sendToGuardianBlock**)
 
-![creating new\_user\_registration Block](<../../../../.gitbook/assets/0 (1) (1).png>)
+![creating new\_user\_registration Block](<../../../../.gitbook/assets/0 (1) (1) (1).png>)
 
 **Please see** [**example 2**](data-input-via-forms-using-roles-to-partition-user-activities..md) **for the more in-depth guide of working with documents in Guardian Policies.**
 
@@ -32,17 +32,17 @@ Switch to the ‘**Tokens**’ tab and create a new token
 
 2.1.1 Add ‘**tokenActionBlock**_**’**_ immediately after the user registration
 
-![Adding TokenActionBlock](<../../../../.gitbook/assets/2 (2).png>)
+![Adding TokenActionBlock](<../../../../.gitbook/assets/2 (2) (1).png>)
 
 2.1.2 Select token and action type
 
-![Selecting Token and Token Action Type](<../../../../.gitbook/assets/3 (1).png>)
+![Selecting Token and Token Action Type](<../../../../.gitbook/assets/3 (1) (1) (1).png>)
 
 2.2 Set user KYC
 
 2.2.1 Add ‘_**tokenActionBlock’**_ immediately after ‘_token\_associate’_
 
-![Adding tokenActionBlock ](<../../../../.gitbook/assets/4 (1) (1).png>)
+![Adding tokenActionBlock ](<../../../../.gitbook/assets/4 (1) (1) (1).png>)
 
 2.2.2 Select token and the action type
 
@@ -52,7 +52,7 @@ Switch to the ‘**Tokens**’ tab and create a new token
 
 3.1 Add ‘**mintDocumentBlock**_**’**_ immediately after saving the new document (**save\_new\_documents**)
 
-![Adding mintDocumentBlock](../../../../.gitbook/assets/6.png)
+![Adding mintDocumentBlock](<../../../../.gitbook/assets/6 (1) (2).png>)
 
 3.2 Select token which will be minted
 
@@ -78,17 +78,17 @@ Switch to the ‘**Tokens**’ tab and create a new token
 
 1.2.1 In the parent block set property ‘**Type’** to ‘Tabs’
 
-![Setting the Property Type to TABS](<../../../../.gitbook/assets/11 (1).png>)
+![Setting the Property Type to TABS](<../../../../.gitbook/assets/11 (1) (1).png>)
 
 1.2.2 Set the property ‘**Title’** to configure tab titles
 
 1.3 Add **‘interfaceDocumentsSourceBlock**_**’** into the ‘_tokens_’_ container and configure its columns
 
-![Adding interfaceDocumentsSourceBlock](<../../../../.gitbook/assets/12 (1).png>)
+![Adding interfaceDocumentsSourceBlock](<../../../../.gitbook/assets/12 (1) (1).png>)
 
 1.4 Use ‘_**documentsSourceAddon’**_ block to retrieve data from the database.
 
-![Adding documentSourceAddon Block](<../../../../.gitbook/assets/13 (1).png>)
+![Adding documentSourceAddon Block](<../../../../.gitbook/assets/13 (1) (2).png>)
 
 ## **Result:**
 

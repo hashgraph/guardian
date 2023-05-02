@@ -1,19 +1,13 @@
-import { ApiResponse } from '@api/api-response';
-import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
+import { ApiResponse, ApiResponseSubscribe } from '@api/helpers/api-response';
+import { MessageResponse, MessageError, Logger, IPFS } from '@guardian/common';
 import { ExternalMessageEvents, MessageAPI } from '@guardian/interfaces';
-import { IPFS } from '@helpers/ipfs';
 import { IPFSTaskManager } from '@helpers/ipfs-task-manager';
 
 /**
  * TODO
- *
- * @param externalEventsChannel - channel
  */
-export async function ipfsAPI(
-    externalEventsChannel: MessageBrokerChannel,
-    mainChannel: MessageBrokerChannel
-): Promise<void> {
-    ApiResponse(externalEventsChannel, ExternalMessageEvents.IPFS_ADDED_FILE, async (msg) => {
+export async function ipfsAPI(): Promise<void> {
+    ApiResponseSubscribe(ExternalMessageEvents.IPFS_ADDED_FILE, async (msg) => {
         try {
             if (!msg) {
                 throw new Error('Invalid Params');
@@ -27,15 +21,12 @@ export async function ipfsAPI(
                     IPFSTaskManager.Resolve(taskId, { cid, url });
                 }
             }
-
-            return Promise.resolve(new MessageResponse<unknown>(null));
         } catch (error) {
             new Logger().error(error, ['IPFS_SERVICE']);
-            return new MessageError(error);
         }
     });
 
-    ApiResponse(externalEventsChannel, ExternalMessageEvents.IPFS_LOADED_FILE, async (msg) => {
+    ApiResponseSubscribe(ExternalMessageEvents.IPFS_LOADED_FILE, async (msg) => {
         try {
             if (!msg) {
                 throw new Error('Invalid Params');
@@ -49,15 +40,12 @@ export async function ipfsAPI(
                     IPFSTaskManager.Resolve(taskId, fileContent);
                 }
             }
-
-            return Promise.resolve(new MessageResponse<unknown>(null));
         } catch (error) {
             new Logger().error(error, ['IPFS_SERVICE']);
-            return new MessageError(error);
         }
     });
 
-    ApiResponse(mainChannel, MessageAPI.IPFS_ADD_FILE, async (msg) => {
+    ApiResponse( MessageAPI.IPFS_ADD_FILE, async (msg) => {
         try {
             const result = await IPFS.addFile(msg);
             return new MessageResponse(result);
@@ -68,7 +56,7 @@ export async function ipfsAPI(
         }
     })
 
-    ApiResponse(mainChannel, MessageAPI.IPFS_GET_FILE, async (msg) => {
+    ApiResponse(MessageAPI.IPFS_GET_FILE, async (msg) => {
         try {
             if (!msg) {
                 throw new Error('Invalid payload');
