@@ -72,14 +72,12 @@ export class PolicyComponentsUtils {
         blocksToUpdate.add(block?.uuid);
         if (!PolicyComponentsUtils._blockUpdateTimeout) {
             PolicyComponentsUtils._blockUpdateTimeout = setTimeout(() => {
-                const commonBlocksToUpdate =
+                blockUpdate(
+                    'update',
                     PolicyComponentsUtils.getCommonBlocksToUpdate(
                         block?.policyInstance?.config,
                         blocksToUpdate
-                    );
-                blockUpdate(
-                    'update',
-                    Array.from(commonBlocksToUpdate),
+                    ),
                     state,
                     user,
                     tag
@@ -98,19 +96,17 @@ export class PolicyComponentsUtils {
      */
     private static getCommonBlocksToUpdate(
         root: any,
-        blocksToUpdate: Set<string>,
-        result = new Set<string>()
-    ) {
-        if (!blocksToUpdate.has(root?.id)) {
-            root?.children?.forEach((child) => {
-                PolicyComponentsUtils.getCommonBlocksToUpdate(
-                    child,
-                    blocksToUpdate,
-                    result
-                );
-            });
-        } else {
-            result.add(root?.id);
+        blocksToUpdate: Set<string>
+    ): string[] {
+        const stack: any[] = [root];
+        const result = [];
+        while (stack.length > 0) {
+            const block = stack.pop();
+            if (blocksToUpdate.has(block?.id)) {
+                result.push(block?.id);
+            } else if (Array.isArray(block?.children)) {
+                block.children.forEach(stack.push.bind(stack));
+            }
         }
         return result;
     }
