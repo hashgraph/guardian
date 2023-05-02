@@ -11,24 +11,24 @@
                 <div class="nav-list-item" [attr.active]="isActiveLink('SR_UP')" (click)="routActive('SR_UP')">
                     User Profile
                 </div>
+                <div class="nav-list-item" [matMenuTriggerFor]="subMenu2" [attr.active]="isActiveLink('SR_POLICIES')">
+                    <span class="nav-menu-item">
+                        Policies
+                        <mat-icon>arrow_drop_down</mat-icon>
+                    </span>
+                </div>
                 <div class="nav-list-item" [matMenuTriggerFor]="subMenu1" [attr.active]="isActiveLink('SR_TOKENS')">
                     <span class="nav-menu-item">
                         Tokens
                         <mat-icon>arrow_drop_down</mat-icon>
                     </span>
-            </div>
-            <div class="nav-list-item" [matMenuTriggerFor]="subMenu2" [attr.active]="isActiveLink('SR_POLICIES')">
-                <span class="nav-menu-item">
-                    Policies
-                    <mat-icon>arrow_drop_down</mat-icon>
-                </span>
-            </div>
-            <div class="nav-list-item" [matMenuTriggerFor]="subMenu3" [attr.active]="isActiveLink('SR_ADMIN')">
-                <span class="nav-menu-item">
-                    Administration
-                    <mat-icon>arrow_drop_down</mat-icon>
-                </span>
-            </div>
+                </div>
+                <div class="nav-list-item" [matMenuTriggerFor]="subMenu3" [attr.active]="isActiveLink('SR_ADMIN')">
+                    <span class="nav-menu-item">
+                        Administration
+                        <mat-icon>arrow_drop_down</mat-icon>
+                    </span>
+                </div>
             </div>
             <mat-menu #subMenu1="matMenu" class="sub-nav-menu" backdropClass="sub-nav-backdrop">
                 <div class="sub-nav-list">
@@ -98,15 +98,15 @@
                 <div class="nav-list-item" [attr.active]="isActiveLink('USER_UP')" (click)="routActive('USER_UP')">
                     User Profile
                 </div>
+                <div class="nav-list-item" [attr.active]="isActiveLink('USER_POLICIES')"
+                    (click)="routActive('USER_POLICIES')">
+                    Policies
+                </div>
                 <div class="nav-list-item" [attr.active]="isActiveLink('USER_TOKENS')" (click)="routActive('USER_TOKENS')">
                     Tokens
                 </div>
                 <div class="nav-list-item" [attr.active]="isActiveLink('USER_RETIRE')" (click)="routActive('USER_RETIRE')">
                     Token Retire
-                </div>
-                <div class="nav-list-item" [attr.active]="isActiveLink('USER_POLICIES')"
-                    (click)="routActive('USER_POLICIES')">
-                    Policies
                 </div>
             </div>
 
@@ -178,23 +178,6 @@
                     <div class="nav-list-item" [attr.active]="isActiveLink('SR_UP')" (click)="routActive('SR_UP')">
                         User Profile
                     </div>
-                    <div id="tokens-nav" class="nav-list-item" (click)="openSubMenu('1')" [attr.active]="isActiveLink('SR_TOKENS')">
-                        Tokens
-                    </div>
-                    <div id="subMenu1" class="subnav-list">
-                        <div class="nav-list-item" [attr.active]="isActiveLink('SR_TOKENS_LIST')"
-                            (click)="routActive('SR_TOKENS_LIST')">
-                            Tokens
-                        </div>
-                        <div class="nav-list-item" [attr.active]="isActiveLink('SR_CONTRACTS')"
-                            (click)="routActive('SR_CONTRACTS')">
-                            Contracts
-                        </div>
-                        <div class="nav-list-item only-active" [attr.active]="isActiveLink('SR_CONTRACTS_PAIRS')"
-                            (click)="routActive('SR_CONTRACTS_PAIRS')">
-                            Token Pairs
-                        </div>
-                    </div>
                     <div id="policies-nav" class="nav-list-item" (click)="openSubMenu('2')" [attr.active]="isActiveLink('SR_POLICIES')">
                         Policies
                     </div>
@@ -228,6 +211,23 @@
                             Compare
                         </div>
                     </div>
+                    <div id="tokens-nav" class="nav-list-item" (click)="openSubMenu('1')" [attr.active]="isActiveLink('SR_TOKENS')">
+                        Tokens
+                    </div>
+                    <div id="subMenu1" class="subnav-list">
+                        <div class="nav-list-item" [attr.active]="isActiveLink('SR_TOKENS_LIST')"
+                            (click)="routActive('SR_TOKENS_LIST')">
+                            Tokens
+                        </div>
+                        <div class="nav-list-item" [attr.active]="isActiveLink('SR_CONTRACTS')"
+                            (click)="routActive('SR_CONTRACTS')">
+                            Contracts
+                        </div>
+                        <div class="nav-list-item only-active" [attr.active]="isActiveLink('SR_CONTRACTS_PAIRS')"
+                            (click)="routActive('SR_CONTRACTS_PAIRS')">
+                            Token Pairs
+                        </div>
+                    </div>
                     <div id="admin-nav" class="nav-list-item" (click)="openSubMenu('3')" [attr.active]="isActiveLink('SR_ADMIN')">
                         Admin Panel
                     </div>
@@ -242,7 +242,7 @@
                         <div class="nav-list-item" [attr.active]="isActiveLink('SR_STATUS')" (click)="routActive('SR_STATUS')">
                             Status
                         </div>
-                    </div>                    
+                    </div>
                 </div>
             </div>
 
@@ -254,15 +254,15 @@
                     <div class="nav-list-item" [attr.active]="isActiveLink('USER_UP')" (click)="routActive('USER_UP')">
                         User Profile
                     </div>
+                    <div class="nav-list-item" [attr.active]="isActiveLink('USER_POLICIES')"
+                        (click)="routActive('USER_POLICIES')">
+                        Policies
+                    </div>
                     <div class="nav-list-item" [attr.active]="isActiveLink('USER_TOKENS')" (click)="routActive('USER_TOKENS')">
                         Tokens
                     </div>
                     <div class="nav-list-item" [attr.active]="isActiveLink('USER_RETIRE')" (click)="routActive('USER_RETIRE')">
                         Token Retire
-                    </div>
-                    <div class="nav-list-item" [attr.active]="isActiveLink('USER_POLICIES')"
-                        (click)="routActive('USER_POLICIES')">
-                        Policies
                     </div>
                 </div>
             </div>
@@ -305,7 +305,7 @@
                     </div>
                 </div>
             </div>
-            
+
         </div>
 
         <div class="user-content-info" *ngIf="isLogin || displayDemoAccounts">

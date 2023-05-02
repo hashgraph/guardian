@@ -56,7 +56,7 @@ export class AggregateVC extends BaseEntity {
     /**
      * Document instance
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     document?: IVC;
 
     /**
