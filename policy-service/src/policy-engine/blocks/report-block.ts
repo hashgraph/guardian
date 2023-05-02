@@ -76,7 +76,7 @@ export class ReportBlock {
      * @param documents
      * @param map
      */
-    async itemUserMap(documents: any[], map) {
+    async itemUserMap(documents: any[], map: any) {
         if (!documents) {
             return;
         }

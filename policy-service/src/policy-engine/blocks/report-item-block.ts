@@ -68,7 +68,7 @@ export class ReportItemBlock {
         const multiple = ref.options.multiple;
         const dynamicFilters = ref.options.dynamicFilters;
 
-        const filtersToVc:any = {};
+        const filtersToVc: any = {};
         if (ref.options.filters) {
             for (const filter of ref.options.filters) {
                 let expr: any;
@@ -118,11 +118,12 @@ export class ReportItemBlock {
             visible,
             iconType,
             multiple,
-            dynamicFilters
+            dynamicFilters,
+            document: multiple ? [] : null
         }
         resultFields.push(item);
 
-        const vcDocuments: any = multiple
+        const vcDocuments: any[] = multiple
             ? await ref.databaseServer.getVcDocuments(filtersToVc)
             : [await ref.databaseServer.getVcDocument(filtersToVc)];
         const notFoundDocuments = vcDocuments.filter((vc) => vc).length < 1;
