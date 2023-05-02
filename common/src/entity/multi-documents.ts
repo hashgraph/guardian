@@ -61,7 +61,7 @@ export class MultiDocuments extends BaseEntity {
     /**
      * Document instance
      */
-    @Property({ persist: false })
+    @Property({ persist: false, type: 'unknown' })
     document?: IVC;
 
     /**
