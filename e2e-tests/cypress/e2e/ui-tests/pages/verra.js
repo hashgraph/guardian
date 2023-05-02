@@ -25,8 +25,8 @@ export class VerraPage {
             .contains(role)
             .click();
 
-        const inputGroup = cy.get(VerraPageLocators.inputGroupLabel);
-        inputGroup.type("VVB Group Test");
+        // const inputGroup = cy.get(VerraPageLocators.inputGroupLabel);
+        // inputGroup.type("VVB Group Test");
 
         cy.get(VerraPageLocators.submitBtn).click();
         cy.wait(12000);

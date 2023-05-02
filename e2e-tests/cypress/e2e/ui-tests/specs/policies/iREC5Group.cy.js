@@ -28,7 +28,6 @@ describe("Workflow iREC 5 Policy",  { tags: '@ui' }, () => {
         registrant.createGroup("Registrant");
         home.logOut("Registrant");
 
-        // Installer
         home.login("Installer");
         home.checkSetup("Installer");
         installer.createGroup("Approvers");
@@ -40,12 +39,21 @@ describe("Workflow iREC 5 Policy",  { tags: '@ui' }, () => {
         registrant.createDevice();
         home.logOut("Registrant");
 
-         // Installer
-         home.login("Installer");
-         installer.approveDevice();
-         home.logOut("Installer");
- 
-         home.login("StandardRegistry");
+
+        home.login("Installer");
+        policies.openPoliciesTab();
+        installer.approveDevice();
+        home.logOut("Installer");
+
+        home.login("Registrant");
+        registrant.createIssueRequest();
+        home.logOut("Registrant");
+
+        home.login("Installer");
+        policies.openPoliciesTab();
+        policies.approveRequest();
+        home.logOut("Installer");
+
 
     });
 });

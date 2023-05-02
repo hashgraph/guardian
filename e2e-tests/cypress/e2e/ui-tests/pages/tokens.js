@@ -1,14 +1,37 @@
 import ASSERT from "../../../support/CustomHelpers/assertions";
 import TIMEOUTS from "../../../support/CustomHelpers/timeouts";
 import URL from "../../../support/GuardianUrls";
+import {log} from "util";
 
 const TokensPageLocators = {
     importBtn: "Tokens",
+    createTokenBtn: " Create Token ",
+    publishedBtn: "Published",
+    createFinalBtn: "div.g-dialog-actions",
+    tokensList: "/api/v1/tokens",
+    tokenNameInput: '[data-placeholder = "Token Name"]',
+    tokenName: "td.mat-column-tokenName",
+    tokenId: "td > hedera-explorer > a"
 };
 
 export class TokensPage {
     openTokensTab() {
         cy.visit(URL.Root + URL.Tokens);
+    }
+    static waitForTokens()
+    {
+        cy.intercept(TokensPageLocators.tokensList).as(
+            "waitForTokensList"
+        );
+        cy.wait("@waitForTokensList", { timeout: 200000 })
+    }
+    createToken(name) {
+        cy.contains(TokensPageLocators.createTokenBtn).click();
+        cy.contains(TokensPageLocators.publishedBtn).click();
+        cy.get(TokensPageLocators.tokenNameInput).clear().type(name);
+        cy.get(TokensPageLocators.createFinalBtn).click();
+        TokensPage.waitForTokens();
+        cy.contains(TokensPageLocators.tokenName, name).should(ASSERT.exist);
     }
 
     grantKYC() {
@@ -49,7 +72,4 @@ export class TokensPage {
              })
            })
     }
-
-   
-
 }

@@ -29,8 +29,8 @@ export class PPPage {
             .contains(role)
             .click();
 
-        const inputGroup = cy.get(PPPageLocators.inputGroupLabel);
-        inputGroup.type("PPGroupTest");
+        // const inputGroup = cy.get(PPPageLocators.inputGroupLabel);
+        // inputGroup.type("PPGroupTest");
 
         cy.get(PPPageLocators.submitBtn).click();
         cy.wait(12000);

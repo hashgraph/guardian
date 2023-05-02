@@ -45,7 +45,7 @@ export class InstallerPage {
 
     createGroup(role) {
         cy.contains("Policies").click({ force: true });
-
+        cy.wait(5000);
         cy.get("td").first().parent().get("td").eq("4").click();
         cy.wait(8000);
         cy.get(InstallerPageLocators.roleSelect)

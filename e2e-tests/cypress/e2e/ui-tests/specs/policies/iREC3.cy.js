@@ -10,8 +10,8 @@ const registrant = new RegistrantPage();
 const installer = new InstallerPage();
 const tokens = new TokensPage();
 
-describe("Workflow iREC 5 Policy",  { tags: '@ui' }, () => {
-    it("checks iREC 5 policy workflow", () => {
+describe("Workflow iREC 3 Policy",  { tags: '@ui' }, () => {
+    it("checks iREC 3 policy workflow", () => {
         cy.viewport(1230, 800);
 
         home.visit();
@@ -22,31 +22,36 @@ describe("Workflow iREC 5 Policy",  { tags: '@ui' }, () => {
         policies.publishPolicy();
         home.logOut("StandardRegistry");
 
-        // Registrant
+        //Registrant
         home.login("Registrant");
         home.checkSetup("Registrant");
         registrant.createGroup("Registrant");
         home.logOut("Registrant");
 
-        // Installer
-        home.login("Installer");
-        home.checkSetup("Installer");
-        installer.createGroup("Registrant");
-        installer.okButton();
-        // installer.signApplication();
-        home.logOut("Installer");
+        home.login("StandardRegistry");
+        policies.openPoliciesTab();
+        policies.approveUser();
+        home.logOut("StandardRegistry");
 
-        // Registrant
+        // Registrant?
         home.login("Registrant");
         registrant.createDevice();
         home.logOut("Registrant");
 
-         // Installer
-         home.login("Installer");
-         installer.approveDevice();
-         home.logOut("Installer");
- 
-         home.login("StandardRegistry");
+        home.login("StandardRegistry");
+        policies.openPoliciesTab();
+        policies.approveDevice();
+        home.logOut("StandardRegistry");
+
+        home.login("Registrant");
+        registrant.createIssueRequest();
+        home.logOut("Registrant");
+
+        home.login("StandardRegistry");
+        policies.openPoliciesTab();
+        policies.approveRequest();
+        home.logOut("StandardRegistry");
+
 
     });
 });

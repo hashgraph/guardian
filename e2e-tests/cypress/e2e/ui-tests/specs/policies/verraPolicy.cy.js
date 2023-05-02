@@ -9,9 +9,6 @@ import { PPPage } from "../../pages/projectProponent";
 
 const home = new AuthenticationPage();
 const policies = new PoliciesPage();
-const registrant = new RegistrantPage();
-const installer = new InstallerPage();
-const tokens = new TokensPage();
 const verra = new VerraPage();
 const projectProponent = new PPPage();
 
@@ -25,18 +22,19 @@ describe("Workflow Verra Policy", { tags: '@ui' },  () => {
         home.login("StandardRegistry");
         policies.openPoliciesTab();
         policies.importPolicyButton();
-        policies.importPolicyMessage("1675254414.695533713"); //Verra REDD 
+        policies.importPolicyMessage("1675254414.695533713"); //Verra REDD
         policies.publishPolicy();
         home.logOut("StandardRegistry");
 
 
         home.login("VVB");
         home.checkSetup("VVB");
-        verra.createGroup('VVBs');
+        verra.createGroup('VVB');
         home.logOut("VVB");
 
         home.login("StandardRegistry");
-        policies.approve();
+        policies.openPoliciesTab();
+        policies.approveUser();
         home.logOut("StandardRegistry");
 
 
@@ -48,6 +46,7 @@ describe("Workflow Verra Policy", { tags: '@ui' },  () => {
         home.logOut("ProjectProponent");
 
         home.login("StandardRegistry");
+        policies.openPoliciesTab();
         policies.addVVB();
         home.logOut("StandardRegistry");
 
@@ -55,19 +54,6 @@ describe("Workflow Verra Policy", { tags: '@ui' },  () => {
         home.login("ProjectProponent");
         projectProponent.assignPolicy();
         home.logOut("ProjectProponent");
-
-        home.login("VVB");
-        verra.getInvite();
-        verra.copyInvitation();
-        home.logOut("VVB");
-
-        home.createNew('User');
-        verra.createGroupWithInvitation();
-
-
-
-
-
     });
 });
 

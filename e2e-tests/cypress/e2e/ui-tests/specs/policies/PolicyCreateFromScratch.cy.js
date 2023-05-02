@@ -21,8 +21,6 @@ describe("Workflow  Policy",  { tags: '@ui' }, () => {
         policies.openPoliciesTab();
         policies.createPolicyButton();
         policies.fillNewPolicyForm(name);
-        // policies.editPolicy(name);
-        // policies.checkType();
 
     
 

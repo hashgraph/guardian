@@ -39,12 +39,11 @@ export class AuthenticationPage {
                     .then(() => {
                         cy.get('[role="option"]').contains('StandardRegistry').click();
                         cy.contains(AuthPageLocators.generateBtn).click();
-
                         cy.wait(5000);
                     });
                 cy.contains("Submit").click();
-                cy.intercept("/api/v1/profiles/" + role).as("waitForRegister");
-                cy.wait("@waitForRegister", { timeout: 180000 }).then(() => {
+                cy.intercept("/api/v1/profiles/" + role).as("waitForRegister" + role);
+                cy.wait("@waitForRegister" + role, { timeout: 180000 }).then(() => {
                     cy.contains("Policies").click({ force: true });
                 });
             }

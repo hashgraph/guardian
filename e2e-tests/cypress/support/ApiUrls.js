@@ -14,6 +14,16 @@ const API = {
     Profiles: "profiles/",
     //Tokens
     ListOfTokens: "tokens/",
+    //Contracts
+    ListOfContracts: "contracts/",
+    ListOfPairs: "contracts/pairs/",
+    ListOfRequests: "contracts/retire/request/",
+    //Modules
+    ListOfAllModules: "modules/",
+    ListOfModules: "modules/menu/",
+    ExportMessage: "export/message/",
+    ImportMessage: "import/message/",
+    ImportFile: "import/file/",
     //Logs
     Logs: "logs",
     LogsAttributes: "logs/attributes/",

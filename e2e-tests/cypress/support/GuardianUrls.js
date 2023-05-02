@@ -8,6 +8,7 @@ const URL = {
     //Tabs
     Policies: "/policy-viewer",
     Tokens: "tokens",
+    Contracts: "/contracts",
   
   };
   

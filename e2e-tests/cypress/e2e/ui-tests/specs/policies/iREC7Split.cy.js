@@ -25,22 +25,15 @@ describe("Workflow iREC 7 Policy", () => {
         policies.publishPolicy();
         home.logOut("StandardRegistry");
 
-
-
-        // Registrant
+        //Registrant
         home.login("Registrant");
         home.checkSetup("Registrant");
-        registrant.chooseRole("Registrant");
+        registrant.createGroup("Registrant");
         home.logOut("Registrant");
 
-        // // Installer
-        // home.login("Installer");
-        // home.checkSetup("Installer");
-        // registrant.chooseRole("Registrant");
-        // home.logOut("Installer");
-
         home.login("StandardRegistry");
-        policies.approve();
+        policies.openPoliciesTab();
+        policies.approveUser();
         home.logOut("StandardRegistry");
 
         // Registrant
@@ -49,13 +42,18 @@ describe("Workflow iREC 7 Policy", () => {
         home.logOut("Registrant");
 
         home.login("StandardRegistry");
-        policies.approveDevicebySR();
+        policies.openPoliciesTab();
+        policies.approveDevice();
         home.logOut("StandardRegistry");
 
-       
-        // Registrant
         home.login("Registrant");
         registrant.createIssueRequest();
+        home.logOut("Registrant");
+
+        home.login("StandardRegistry");
+        policies.openPoliciesTab();
+        policies.approveRequest();
+        home.logOut("StandardRegistry");
 
 
     });

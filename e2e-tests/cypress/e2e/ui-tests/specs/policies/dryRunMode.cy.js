@@ -24,7 +24,6 @@ describe("Dry run  Policy",  { tags: '@ui' }, () => {
         policies.checkDraftStatus(name);
         policies.startDryRun(name);
         policies.stopDryRun(name);
-
     });
 });
 
