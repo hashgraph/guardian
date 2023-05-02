@@ -220,7 +220,7 @@ export async function importTag(
         } else {
             tags = tags.filter(tag => newIds.has(tag.localTarget));
             for (const tag of tags) {
-                tag.localTarget = newIds.get(tag.target);
+                tag.localTarget = newIds.get(tag.localTarget);
             }
         }
     }
