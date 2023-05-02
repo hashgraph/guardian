@@ -69,8 +69,8 @@ export class RolesBlockComponent implements OnInit {
         }
     }
 
-    onUpdate(id: string): void {
-        if (this.id == id) {
+    onUpdate(blocks: string[]): void {
+        if (Array.isArray(blocks) && blocks.includes(this.id)) {
             this.loadData();
         }
     }
@@ -147,7 +147,7 @@ export class RolesBlockComponent implements OnInit {
             this.policyEngineService
                 .setBlockData(this.id, this.policyId, data)
                 .subscribe(
-                    () => undefined,
+                    () => {},
                     (e) => {
                         console.error(e.error);
                         this.loading = false;

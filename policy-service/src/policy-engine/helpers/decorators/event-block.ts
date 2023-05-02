@@ -2,7 +2,6 @@ import { PolicyBlockDecoratorOptions } from '@policy-engine/interfaces/block-opt
 import { BasicBlock } from './basic-block';
 import { BlockActionError } from '@policy-engine/errors';
 import { IPolicyUser } from '@policy-engine/policy-user';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 
 /**
  * Event block decorator
@@ -55,19 +54,16 @@ export function EventBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                     throw new BlockActionError('Block is unavailable', this.blockType, this.uuid);
                 }
                 this._accessMap.set(user?.did, true);
-                PolicyComponentsUtils.BlockUpdateFn(super.parent.uuid, {}, user, super.tag);
                 let result = {};
                 if (typeof super.getData === 'function') {
                     try {
                         result = await super.setData(...args);
                     } catch (err) {
                         this._accessMap.delete(user?.did);
-                        PolicyComponentsUtils.BlockUpdateFn(super.parent.uuid, {}, user, super.tag);
                         throw err;
                     }
                 }
                 this._accessMap.delete(user?.did);
-                PolicyComponentsUtils.BlockUpdateFn(super.parent.uuid, {}, user, super.tag);
                 return result;
             }
 

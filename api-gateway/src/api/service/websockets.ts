@@ -113,7 +113,7 @@ export class WebSocketsService {
                     if (this.checkUserByDid(client, msg)) {
                         this.send(client, {
                             type: 'update-event',
-                            data: msg.uuid
+                            data: msg.blocks
                         });
                     }
                 });
