@@ -183,6 +183,12 @@ export class AggregateVC extends BaseEntity {
     messageIds?: string[];
 
     /**
+     * Source document identifier
+     */
+    @Property({ nullable: true })
+    sourceDocumentId?: ObjectId;
+
+    /**
      * Create document
      */
     @BeforeCreate()

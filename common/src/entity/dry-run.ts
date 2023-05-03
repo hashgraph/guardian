@@ -546,6 +546,12 @@ export class DryRun extends BaseEntity {
     uri?: string;
 
     /**
+     * Source document identifier
+     */
+    @Property({ nullable: true })
+    sourceDocumentId?: ObjectId;
+
+    /**
      * Default document values
      */
     @BeforeCreate()

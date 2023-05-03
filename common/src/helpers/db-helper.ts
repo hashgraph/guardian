@@ -130,7 +130,9 @@ export class DataBaseHelper<T extends BaseEntity> {
             }
             return arrResult;
         }
-        entity._id = new ObjectId(ObjectId.generate());
+        if (!entity._id) {
+            entity._id = new ObjectId(ObjectId.generate());
+        }
         return this._em.fork().create(this.entityClass, entity);
     }
 

@@ -126,7 +126,7 @@ export class AggregateBlock {
         const groupByUser = !disableUserGrouping;
 
         const map = new Map<string, AggregateVC[]>();
-        const removeMsp: AggregateVC[] = [];
+        let removeMsp: AggregateVC[] = [];
 
         for (const element of rawEntities) {
             const id = PolicyUtils.getScopeId(element);
@@ -155,9 +155,7 @@ export class AggregateBlock {
             }
         }
 
-        if (removeMsp.length) {
-            await ref.databaseServer.removeAggregateDocuments(removeMsp);
-        }
+        removeMsp = await this.removeDocuments(ref, removeMsp);
 
         for (const [key, documents] of map) {
             await this.sendCronDocuments(
@@ -174,10 +172,7 @@ export class AggregateBlock {
      * @param documents Documents
      */
     private async sendCronDocuments(ref: AnyBlockType, userId: string, documents: AggregateVC[]) {
-        if (documents.length) {
-            await ref.databaseServer.removeAggregateDocuments(documents);
-        }
-
+        documents = await this.removeDocuments(ref, documents);
         if (documents.length || ref.options.emptyData) {
             const state = { data: documents };
             const user = PolicyUtils.getPolicyUserById(ref, userId);
@@ -264,7 +259,7 @@ export class AggregateBlock {
             }
         }
 
-        const rawEntities = await ref.databaseServer.getAggregateDocuments(ref.policyId, ref.uuid, filters);
+        let rawEntities = await ref.databaseServer.getAggregateDocuments(ref.policyId, ref.uuid, filters);
 
         const scopes: any[] = [];
         for (const doc of rawEntities) {
@@ -281,7 +276,7 @@ export class AggregateBlock {
 
         if (result === true) {
             const user = PolicyUtils.getPolicyUser(ref, document.owner, document.group);
-            await ref.databaseServer.removeAggregateDocuments(rawEntities);
+            rawEntities = await this.removeDocuments(ref, rawEntities);
             const state = { data: rawEntities };
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
@@ -296,9 +291,37 @@ export class AggregateBlock {
      * @param ref
      * @param doc
      */
-    async saveDocuments(ref: AnyBlockType, doc: IPolicyDocument): Promise<void> {
-        const item = PolicyUtils.cloneVC(ref, doc);
+    private async saveDocuments(
+        ref: AnyBlockType,
+        doc: IPolicyDocument
+    ): Promise<void> {
+        const item: any = PolicyUtils.cloneVC(ref, doc);
+        item.sourceDocumentId = item._id;
+        delete item._id;
+        delete item.id;
         await ref.databaseServer.createAggregateDocuments(item, ref.uuid);
+    }
+
+    /**
+     * Remove documents
+     * @param ref
+     * @param documents
+     */
+    private async removeDocuments(
+        ref: AnyBlockType,
+        documents: AggregateVC[]
+    ): Promise<AggregateVC[]> {
+        if (documents.length) {
+            await ref.databaseServer.removeAggregateDocuments(documents);
+            documents
+                .filter((document) => document.sourceDocumentId)
+                .forEach((document: any) => {
+                    document._id = document.sourceDocumentId;
+                    document.id = document.sourceDocumentId.toString();
+                    delete document.sourceDocumentId;
+                });
+        }
+        return documents;
     }
 
     /**
