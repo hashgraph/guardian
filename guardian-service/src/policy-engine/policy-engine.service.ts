@@ -107,14 +107,13 @@ export class PolicyEngineService {
      * @param uuid {string} - id of block
      * @param user {IPolicyUser} - short user object
      */
-    private async stateChangeCb(blocks: string[], state: any, user: IPolicyUser) {
+    private async stateChangeCb(blocks: string[], user: IPolicyUser) {
         if (!user || !user.did) {
             return;
         }
 
         await this.channel.publish('update-block', {
             blocks,
-            state,
             user
         });
     }
@@ -199,7 +198,7 @@ export class PolicyEngineService {
 
             switch (type) {
                 case 'update':
-                    PolicyComponentsUtils.BlockUpdateFn(args[0], args[1], args[2], args[3]);
+                    PolicyComponentsUtils.BlockUpdateFn(args[0], args[1]);
                     break;
 
                 case 'error':

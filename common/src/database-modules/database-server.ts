@@ -242,9 +242,25 @@ export class DatabaseServer {
      * @param criteria
      * @param row
      */
-    private async update<T extends BaseEntity>(entityClass: new () => T, criteria: any, row: T): Promise<T> {
+    private async update<T extends BaseEntity>(
+        entityClass: new () => T,
+        criteria: any,
+        row: any
+    ): Promise<T> {
         if (this.dryRun) {
-            return await new DataBaseHelper(DryRun).update(row, criteria) as any;
+            if (Array.isArray(row)) {
+                for (const i of row) {
+                    i.dryRunId = this.dryRun;
+                    i.dryRunClass = this.classMap.get(entityClass);
+                }
+            } else {
+                row.dryRunId = this.dryRun;
+                row.dryRunClass = this.classMap.get(entityClass);
+            }
+            return (await new DataBaseHelper(DryRun).update(
+                row,
+                criteria
+            )) as any;
         } else {
             return await new DataBaseHelper(entityClass).update(row, criteria);
         }

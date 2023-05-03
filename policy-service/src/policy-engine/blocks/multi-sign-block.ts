@@ -172,7 +172,7 @@ export class MultiSignBlock {
         await this.updateThreshold(users, sourceDoc, documentId, user);
 
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
-        PolicyComponentsUtils.BlockUpdateFn(ref.parent, {}, user, ref.tag);
+        PolicyComponentsUtils.BlockUpdateFn(ref.parent, user);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
             documents: ExternalDocuments(document)
         }));

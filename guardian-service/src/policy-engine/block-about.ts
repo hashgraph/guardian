@@ -408,8 +408,8 @@ export const BlockAbout = {
     'revokeBlock': {
         'label': 'Revoke Document',
         'title': 'Add \'Revoke\' Block',
-        'post': true,
-        'get': true,
+        'post': false,
+        'get': false,
         'children': 'None',
         'control': 'Server',
         'input': [
