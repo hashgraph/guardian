@@ -105,7 +105,7 @@ export class PolicyComponentsUtils {
             if (blocksToUpdate.has(block?.id)) {
                 result.push(block?.id);
             } else if (Array.isArray(block?.children)) {
-                block.children.forEach(stack.push.bind(stack));
+                stack.push(...block.children)
             }
         }
         return result;
