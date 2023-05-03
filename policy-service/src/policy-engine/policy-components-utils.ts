@@ -40,7 +40,10 @@ export class PolicyComponentsUtils {
     /**
      * Block update timeout
      */
-    private static _blockUpdateTimeout: any;
+    private static readonly _blockUpdateTimeoutMap: Map<string, any> = new Map<
+        string,
+        any
+    >();
 
     /**
      * Update block map
@@ -53,38 +56,35 @@ export class PolicyComponentsUtils {
     /**
      * Block update function
      */
-    public static BlockUpdateFn = (
-        block: IPolicyBlock,
-        state: any,
-        user: IPolicyUser,
-        tag?: string
-    ) => {
-        let blocksToUpdate = PolicyComponentsUtils._updateBlockMap.get(
-            user?.did
-        );
+    public static BlockUpdateFn = (block: IPolicyBlock, user: IPolicyUser) => {
+        const did = user?.did;
+        if (!did || !block?.uuid) {
+            return;
+        }
+
+        let blocksToUpdate = PolicyComponentsUtils._updateBlockMap.get(did);
         if (!blocksToUpdate) {
             blocksToUpdate = new Set<string>();
-            PolicyComponentsUtils._updateBlockMap.set(
-                user?.did,
-                blocksToUpdate
-            );
+            PolicyComponentsUtils._updateBlockMap.set(did, blocksToUpdate);
         }
         blocksToUpdate.add(block?.uuid);
-        if (!PolicyComponentsUtils._blockUpdateTimeout) {
-            PolicyComponentsUtils._blockUpdateTimeout = setTimeout(() => {
-                blockUpdate(
-                    'update',
-                    PolicyComponentsUtils.getCommonBlocksToUpdate(
-                        block?.policyInstance?.config,
-                        blocksToUpdate
-                    ),
-                    state,
-                    user,
-                    tag
-                );
-                PolicyComponentsUtils._blockUpdateTimeout = null;
-                blocksToUpdate.clear();
-            }, 2000);
+
+        if (!PolicyComponentsUtils._blockUpdateTimeoutMap.has(did)) {
+            PolicyComponentsUtils._blockUpdateTimeoutMap.set(
+                did,
+                setTimeout(() => {
+                    blockUpdate(
+                        'update',
+                        PolicyComponentsUtils.getParentBlocksToUpdate(
+                            block?.policyInstance?.config,
+                            blocksToUpdate
+                        ),
+                        user
+                    );
+                    PolicyComponentsUtils._blockUpdateTimeoutMap.delete(did);
+                    blocksToUpdate.clear();
+                }, 2000)
+            );
         }
     };
     /**
@@ -94,7 +94,7 @@ export class PolicyComponentsUtils {
      * @param result Result
      * @returns
      */
-    private static getCommonBlocksToUpdate(
+    private static getParentBlocksToUpdate(
         root: any,
         blocksToUpdate: Set<string>
     ): string[] {
@@ -105,7 +105,7 @@ export class PolicyComponentsUtils {
             if (blocksToUpdate.has(block?.id)) {
                 result.push(block?.id);
             } else if (Array.isArray(block?.children)) {
-                stack.push(...block.children)
+                stack.push(...block.children);
             }
         }
         return result;
