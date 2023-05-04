@@ -415,7 +415,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                     users[user.did] = user;
                 }
                 for (const item of Object.values(users)) {
-                    PolicyComponentsUtils.BlockUpdateFn(this as any, state, item, tag);
+                    PolicyComponentsUtils.BlockUpdateFn(this as any, item);
                 }
             }
 
