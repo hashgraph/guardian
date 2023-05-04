@@ -90,11 +90,3 @@ Tags which have been imported with the Policy or Schema are marked as _**History
 Any credentialed entity can create/remove a tag on any object at any point of time independently from the Guardian instance where this tagable object (document etc) has been created. This presents a challenge for displaying the up-to-date state of 3rd party tags associated with the object, since continuous search and import/updates of such tags can affect UI responsiveness and general UX. Guardian users can refresh (or ‘pull’) 3rd party tags and update their display in their local Guardian instance by clicking on the corresponding icon (highlighted on the screenshot below).
 
 ![synchronization icon](<../../../.gitbook/assets/8 (1) (1).png>)
-
-1. **Tag Schemas**
-
-Tags can have attached/linked documents. To add a document to the tag a schema is required. Such documents can be found under the **Tag Schemas** section.
-
-![image11.png](<../../../.gitbook/assets/10 (1).png>)
-
-Users can select one of the published schemas in the section when adding a tag to add a corresponding document to the tag being created.

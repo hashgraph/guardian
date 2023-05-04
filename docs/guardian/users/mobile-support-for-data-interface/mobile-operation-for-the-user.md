@@ -7,7 +7,7 @@ The first adaptation relates to the redesign of the creation of new accounts. Th
 Here the images below show the selection of account type and selection of username and password in order to create a new account.
 
 \
-![](<../../../.gitbook/assets/1 (1).png>)![](../../../.gitbook/assets/2.png)
+![](<../../../.gitbook/assets/1 (1) (4).png>)![](../../../.gitbook/assets/2.png)
 
 &#x20;
 

@@ -1,6 +1,6 @@
-# 💻 Creating System Schema using UI
+# 💻 Creating Schema using UI
 
-To create a new System Schemas, click on the **New** button at the top right corner.
+To create a new Schemas, click on the **New** button at the top right corner.
 
 ![](<../../../.gitbook/assets/image (16) (1).png>)
 
@@ -16,19 +16,70 @@ We can also customize the Field keys and Field Title by clicking on Advanced Tab
 
 ![](<../../../.gitbook/assets/image (27) (1).png>)
 
+Instead of creating a new Schema from scratch, there is also an option to import it via File or via IPFS.
+
+To import the Schema, click on the Import button.
+
+<figure><img src="../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+
+{% hint style="info" %}
+Files with **.schema** extension are only accepted. These files are in zip format, i.e. they are zip archives of the text file.
+{% endhint %}
+
+Import from IPFS: You can also import Schema from IPFS by entering the correct Schema timestamp. Sample iREC Schema timestamp is below:
+
+```
+1674821342.619996003 (iREC 3 Policy)
+```
+
+<figure><img src="../../../.gitbook/assets/image (31).png" alt=""><figcaption></figcaption></figure>
+
+Once the Schema is imported, we need to select the Policy from the Policy dropdown to connect the Schema and the Policy.
+
+<figure><img src="../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+
+{% hint style="info" %}
+**Note:**&#x20;
+
+The major difference between creating / importing System Schema and Policy Schema is that we only get policy selection dropdown when policy schema is imported.
+{% endhint %}
+
+After selecting the required Policy, click on the Import button.
+
+When the Schema is imported, it will be in draft status.
+
+{% hint style="info" %}
+**Note**: Initially when the Schema is created/imported, it will be in draft status.
+{% endhint %}
+
+Once the Schema is imported, we will have the following options:\
+1\. Export the Schema and save it as .zip file in the local machine
+
+2\. Editing the Schema
+
+3\. Deleting the Schema
+
+4\. Displaying JSON document
+
+To Publish the Schema, click on Publish button.
+
+<figure><img src="../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+
+After clicking on Publish, you will be prompted to enter the version. After entering the Version and pressing the submit button, the status will change to Published.
+
+{% hint style="info" %}
+**Note**: All Schemas connected to a Policy gets published automatically when Policy gets published.
+{% endhint %}
+
 There are different types of Schema Types:
 
 * None
 * Verifiable Credential
 * Encrypted Verifiable Credential
 
-{% hint style="info" %}
-**Note: Important points to be noted when "Encrypted Verifiable Credential" type is selected:**
-
-1. Fields in schema can be marked as private (only when schema has Encrypted Verifiable Credential type) as shown below.
-2. Encrypted Verifiable Credential will be published in IPFS with AES GCM encryption.
-3. If VP contains Encrypted Verifiable Credential, fields marked as private will be automatically removed.
-{% endhint %}
+To know more details regarding encrypted Verifiable Credential please look at [Selective Disclosure Demo](../selective-disclosure-demo.md)
 
 There are different types of Field Types:
 

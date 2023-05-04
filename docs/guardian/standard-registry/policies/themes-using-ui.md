@@ -10,7 +10,7 @@ Block’s display style is determined by their matching of the criteria defined 
 
 Policy Configurator contains a section, it can be navigated to by clicking the corresponding button named **Settings** in the top panel.
 
-<figure><img src="../../../.gitbook/assets/0 (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/0 (5) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/1 (5) (1).png" alt=""><figcaption></figcaption></figure>
 
