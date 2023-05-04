@@ -4706,9 +4706,9 @@ paths:
 
   /demo/randomKey:
     get:
+      deprecated: true
       tags:
         - demo
-      deprecated: true
       description: Generates a new Hedera account with a random private key.
       security:
         - bearerAuth: []
