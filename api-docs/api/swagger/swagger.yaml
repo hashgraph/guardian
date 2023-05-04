@@ -859,7 +859,7 @@ tags:
     description: "Operations with data schemas"
   - name: "tokens"
     description: "Everything about tokens"
-  - name: "trustchains"
+  - name: "trust-chains"
     description: "Audit and trust chain"
   - name: "policies"
     description: "Policy engine operations"
@@ -987,7 +987,7 @@ paths:
               $ref: "#/components/schemas/Credentials"
       responses:
         201:
-          description: Successful operation.
+          description: Created.
           content:
             application/json:
               schema:
@@ -1166,7 +1166,7 @@ paths:
               $ref: "#/components/schemas/User"
       responses:
         201:
-          description: Successful operation.
+          description: Created.
         401:
           description: Unauthorized.
         403:
@@ -1331,7 +1331,7 @@ paths:
               $ref: "#/components/schemas/Schema"
       responses:
         201:
-          description: Successful operation.
+          description: Created.
         401:
           description: Unauthorized.
         403:
@@ -1639,7 +1639,7 @@ paths:
         required: true
       responses:
         201:
-          description: Successful operation.
+          description: Created.
           content:
             application/json:
               schema:
@@ -1733,7 +1733,7 @@ paths:
                   type: string
       responses:
         201:
-          description: Successful operation.
+          description: Created.
           content:
             application/json:
               schema:
@@ -2026,7 +2026,7 @@ paths:
               $ref: "#/components/schemas/Schema"
       responses:
         201:
-          description: Successful operation.
+          description: Created.
         401:
           description: Unauthorized.
         403:
@@ -2302,7 +2302,7 @@ paths:
               $ref: "#/components/schemas/Token"
       responses:
         201:
-          description: Successful operation.
+          description: Created.
           content:
             application/json:
               schema:
@@ -2534,8 +2534,178 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+  /tokens/{tokenId}/{username}/grant-kyc:
+    put:
+      tags:
+        - tokens
+      description: Sets the KYC flag for the user. Only users with the Standard Registry role are allowed to make the request.
+      parameters:
+        - in: path
+          name: tokenId
+          schema:
+            type: string
+          required: true
+          description: Token ID.
+        - in: path
+          name: username
+          schema:
+            type: string
+          required: true
+          description: Username.
+      security:
+        - bearerAuth: []
+      summary: Sets the KYC flag for the user.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenInfo"
+        400:
+          description: Bad Request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /tokens/push/{tokenId}/{username}/grant-kyc:
+    put:
+      tags:
+        - tokens
+      description: Sets the KYC flag for the user. Only users with the Standard Registry role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Sets the KYC flag for the user.
+      parameters:
+        - in: path
+          name: tokenId
+          schema:
+            type: string
+          required: true
+          description: Token ID.
+        - in: path
+          name: username
+          schema:
+            type: string
+          required: true
+          description: Username.
+      responses:
+        202:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /tokens/{tokenId}/{username}/revoke-kyc:
+    put:
+      tags:
+        - tokens
+      description: Unsets the KYC flag for the user. Only users with the Standard Registry role are allowed to make the request.
+      parameters:
+        - in: path
+          name: tokenId
+          schema:
+            type: string
+          required: true
+          description: Token ID.
+        - in: path
+          name: username
+          schema:
+            type: string
+          required: true
+          description: Username.
+      security:
+        - bearerAuth: []
+      summary: Unsets the KYC flag for the user.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenInfo"
+        400:
+          description: Bad Request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /tokens/push/{tokenId}/{username}/revoke-kyc:
+    put:
+      tags:
+        - tokens
+      description: Unsets the KYC flag for the user. Only users with the Standard Registry role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Unsets the KYC flag for the user.
+      parameters:
+        - in: path
+          name: tokenId
+          schema:
+            type: string
+          required: true
+          description: Token ID.
+        - in: path
+          name: username
+          schema:
+            type: string
+          required: true
+          description: Username.
+      responses:
+        202:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+
   /tokens/{tokenId}/{username}/grantKyc:
     put:
+      deprecated: true
       tags:
         - tokens
       description: Sets the KYC flag for the user. Only users with the Standard Registry role are allowed to make the request.
@@ -2581,6 +2751,7 @@ paths:
 
   /tokens/push/{tokenId}/{username}/grantKyc:
     put:
+      deprecated: true
       tags:
         - tokens
       description: Sets the KYC flag for the user. Only users with the Standard Registry role are allowed to make the request.
@@ -2620,6 +2791,7 @@ paths:
 
   /tokens/{tokenId}/{username}/revokeKyc:
     put:
+      deprecated: true
       tags:
         - tokens
       description: Unsets the KYC flag for the user. Only users with the Standard Registry role are allowed to make the request.
@@ -2665,6 +2837,7 @@ paths:
 
   /tokens/push/{tokenId}/{username}/revokeKyc:
     put:
+      deprecated: true
       tags:
         - tokens
       description: Unsets the KYC flag for the user. Only users with the Standard Registry role are allowed to make the request.
@@ -2872,6 +3045,103 @@ paths:
 
   /trustchains:
     get:
+      deprecated: true
+      tags:
+        - trust-chains
+      description: Requests all VP documents. Only users with the Auditor role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Returns a list of all VP documents.
+      parameters:
+        - in: query
+          name: pageIndex
+          schema:
+            type: integer
+          description: The number of pages to skip before starting to collect the result set
+          examples:
+            pageIndex:
+              summary: Example of a pageIndex
+              value: 0
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+          description: The numbers of items to return
+          examples:
+            pageSize:
+              summary: Example of a pageSize
+              value: 100
+        - in: query
+          name: policyId
+          schema:
+            type: string
+          description: Selected policy ID.
+        - in: query
+          name: policyOwner
+          schema:
+            type: string
+          description: Selected Standard Registry (DID).
+      responses:
+        200:
+          description: Successful operation.
+          headers:
+            x-total-count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VerifiablePresentation"
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /trustchains/{hash}:
+    get:
+      deprecated: true
+      tags:
+        - trust-chains
+      description: Builds and returns a trustchain, from the VP to the root VC document. Only users with the Auditor role are allowed to make the request.
+      parameters:
+        - in: path
+          name: hash
+          schema:
+            type: string
+          required: true
+          description: Hash or ID of a VP document.
+      security:
+        - bearerAuth: []
+      summary: Returns a trustchain for a VP document.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrustChains"
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+                
+  /trust-chains:
+    get:
       tags:
         - trustchains
       description: Requests all VP documents. Only users with the Auditor role are allowed to make the request.
@@ -2932,7 +3202,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /trustchains/{hash}:
+  /trust-chains/{hash}:
     get:
       tags:
         - trustchains
@@ -3039,7 +3309,7 @@ paths:
               $ref: "#/components/schemas/PolicyConfig"
       responses:
         201:
-          description: Successful operation.
+          description: Created.
         401:
           description: Unauthorized.
         403:
@@ -3616,7 +3886,7 @@ paths:
                   type: string
       responses:
         201:
-          description: Successful operation.
+          description: Created.
           content:
             application/json:
               schema:
@@ -3698,7 +3968,7 @@ paths:
               format: binary
       responses:
         201:
-          description: Successful operation.
+          description: Created.
           content:
             application/json:
               schema:
@@ -3872,8 +4142,8 @@ paths:
           required: true
           description: Policy ID.
       responses:
-        200:
-          description: Successful operation.
+        201:
+          description: Created.
           content:
             application/json:
               schema:
@@ -4555,7 +4825,7 @@ paths:
         - bearerAuth: []
       responses:
         201:
-          description: Successful operation.
+          description: Created.
           content:
             binary/octet-stream:
               schema:
@@ -4588,7 +4858,7 @@ paths:
         - bearerAuth: []
       responses:
         201:
-          description: Successful operation.
+          description: Created.
           content:
             application/json:
               schema:
@@ -4636,8 +4906,8 @@ paths:
         - bearerAuth: []
       summary: Set settings.
       responses:
-        200:
-          description: Successful operation.
+        201:
+          description: Created.
         401:
           description: Unauthorized.
         403:
@@ -4988,8 +5258,8 @@ paths:
             example:
               description: "Smart Contract Description"
       responses:
-        200:
-          description: Successful operation.
+        201:
+          description: Created.
           content:
             application/json:
               schema:
@@ -4998,6 +5268,8 @@ paths:
           description: Unauthorized.
         403:
           description: Forbidden.
+        422:
+          description: Unprocessable Entity.
         500:
           description: Internal server error.
           content:
@@ -5490,7 +5762,7 @@ paths:
               $ref: "#/components/schemas/Module"
       responses:
         201:
-          description: Successful operation.
+          description: Created.
         401:
           description: Unauthorized.
         403:
@@ -5747,7 +6019,7 @@ paths:
                   type: string
       responses:
         201:
-          description: Successful operation.
+          description: Created.
           content:
             application/json:
               schema:
@@ -5781,7 +6053,7 @@ paths:
               format: binary
       responses:
         201:
-          description: Successful operation.
+          description: Created.
           content:
             application/json:
               schema:
@@ -5940,7 +6212,7 @@ paths:
               $ref: "#/components/schemas/Tag"
       responses:
         201:
-          description: Successful operation.
+          description: Created.
           content:
             application/json:
               schema:
@@ -6189,7 +6461,7 @@ paths:
               $ref: "#/components/schemas/Schema"
       responses:
         201:
-          description: Successful operation.
+          description: Created.
           content:
             application/json:
               schema:
@@ -6381,7 +6653,7 @@ paths:
               $ref: "#/components/schemas/Theme"
       responses:
         201:
-          description: Successful operation.
+          description: Created.
         401:
           description: Unauthorized.
         403:
@@ -6511,7 +6783,7 @@ paths:
               format: binary
       responses:
         201:
-          description: Successful operation.
+          description: Created.
           content:
             application/json:
               schema:
