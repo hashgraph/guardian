@@ -333,7 +333,7 @@ a {
 @media (max-width: 810px) {
     
     .actions {
-        width: 100vw;
+        width: 100%;
         grid-template-columns: 1fr 1fr;
         grid-column-gap: 10px;
     }
