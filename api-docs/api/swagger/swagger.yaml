@@ -915,7 +915,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /accounts/session:
     get:
       tags:
@@ -972,7 +972,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /accounts/register:
     post:
       tags:
@@ -998,7 +998,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /accounts/login:
     post:
       tags:
@@ -1024,7 +1024,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /accounts/root-authorities:
     get:
       deprecated: true
@@ -1051,7 +1051,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /accounts/standard-registries:
     get:
       tags:
@@ -1077,7 +1077,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /profiles/{username}/balance:
     get:
       tags:
@@ -1110,7 +1110,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /profiles/{username}:
     get:
       tags:
@@ -1177,7 +1177,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /profiles/push/{username}:
     put:
       tags:
@@ -1217,7 +1217,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /schemas:
     get:
       tags:
@@ -1269,7 +1269,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /schema/{schemaId}:
     get:
       tags:
@@ -1302,7 +1302,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /schemas/{topicId}:
     post:
       tags:
@@ -1402,7 +1402,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /schemas/push/{topicId}:
     post:
       tags:
@@ -1446,7 +1446,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /schemas/{schemaId}/publish:
     put:
       tags:
@@ -1491,7 +1491,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /schemas/push/{schemaId}/publish:
     put:
       tags:
@@ -1534,7 +1534,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /schemas/{schemaId}:
     put:
       tags:
@@ -1609,7 +1609,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /schemas/{topicId}/import/file:
     post:
       tags:
@@ -1656,7 +1656,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /schemas/push/{topicId}/import/file:
     post:
       tags:
@@ -1701,7 +1701,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /schemas/{topicId}/import/message:
     post:
       tags:
@@ -1750,7 +1750,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /schemas/push/{topicId}/import/message:
     post:
       tags:
@@ -1797,7 +1797,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /schemas/import/message/preview:
     post:
       tags:
@@ -1835,7 +1835,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /schemas/push/import/message/preview:
     post:
       tags:
@@ -1871,7 +1871,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /schemas/import/file/preview:
     post:
       tags:
@@ -1907,7 +1907,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /schemas/{schemaId}/export/message:
     post:
       tags:
@@ -1940,7 +1940,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /schemas/{schemaId}/export/file:
     post:
       tags:
@@ -1969,7 +1969,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /schemas/type/{type}:
     get:
       tags:
@@ -2223,12 +2223,12 @@ paths:
             type: string
             enum:
               [
-                STANDARD_REGISTRY,
-                USER,
-                POLICY,
-                MINT_TOKEN,
-                WIPE_TOKEN,
-                MINT_NFTOKEN,
+                  STANDARD_REGISTRY,
+                  USER,
+                  POLICY,
+                  MINT_TOKEN,
+                  WIPE_TOKEN,
+                  MINT_NFTOKEN,
               ]
           required: true
           description: schema type.
@@ -2332,7 +2332,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /tokens/push:
     post:
       tags:
@@ -2365,7 +2365,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /tokens/{tokenId}/{username}/info:
     get:
       tags:
@@ -2409,7 +2409,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /tokens/{tokenId}/associate:
     put:
       tags:
@@ -2438,7 +2438,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /tokens/push/{tokenId}/associate:
     put:
       tags:
@@ -2471,7 +2471,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /tokens/{tokenId}/dissociate:
     put:
       tags:
@@ -2500,7 +2500,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /tokens/push/{tokenId}/dissociate:
     put:
       tags:
@@ -2533,7 +2533,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /tokens/{tokenId}/{username}/grant-kyc:
     put:
       tags:
@@ -2578,7 +2578,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /tokens/push/{tokenId}/{username}/grant-kyc:
     put:
       tags:
@@ -2617,7 +2617,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /tokens/{tokenId}/{username}/revoke-kyc:
     put:
       tags:
@@ -2662,7 +2662,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /tokens/push/{tokenId}/{username}/revoke-kyc:
     put:
       tags:
@@ -2701,8 +2701,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
-
+  
+  
   /tokens/{tokenId}/{username}/grantKyc:
     put:
       deprecated: true
@@ -2748,7 +2748,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /tokens/push/{tokenId}/{username}/grantKyc:
     put:
       deprecated: true
@@ -2788,7 +2788,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /tokens/{tokenId}/{username}/revokeKyc:
     put:
       deprecated: true
@@ -2834,7 +2834,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /tokens/push/{tokenId}/{username}/revokeKyc:
     put:
       deprecated: true
@@ -2874,7 +2874,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /tokens/{tokenId}/{username}/freeze:
     put:
       tags:
@@ -2919,7 +2919,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /tokens/push/{tokenId}/{username}/freeze:
     put:
       tags:
@@ -2958,7 +2958,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /tokens/{tokenId}/{username}/unfreeze:
     put:
       tags:
@@ -3003,7 +3003,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /tokens/push/{tokenId}/{username}/unfreeze:
     put:
       tags:
@@ -3042,7 +3042,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /trustchains:
     get:
       deprecated: true
@@ -3105,7 +3105,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /trustchains/{hash}:
     get:
       deprecated: true
@@ -3139,7 +3139,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-                
+  
   /trust-chains:
     get:
       tags:
@@ -3201,7 +3201,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /trust-chains/{hash}:
     get:
       tags:
@@ -3234,7 +3234,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /policies:
     get:
       tags:
@@ -3320,7 +3320,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /policies/push:
     post:
       tags:
@@ -3353,7 +3353,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /policies/{policyId}:
     get:
       tags:
@@ -3431,7 +3431,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /policies/{policyId}/publish:
     put:
       tags:
@@ -3474,7 +3474,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /policies/push/{policyId}/publish:
     put:
       tags:
@@ -3517,7 +3517,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /policies/validate:
     post:
       tags:
@@ -3550,7 +3550,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /policies/{policyId}/groups:
     get:
       tags:
@@ -3635,7 +3635,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /policies/{policyId}/blocks:
     get:
       tags:
@@ -3668,7 +3668,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /policies/{policyId}/blocks/{uuid}:
     get:
       tags:
@@ -3747,7 +3747,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /policies/{policyId}/tag/{tag}:
     get:
       tags:
@@ -3789,7 +3789,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /policies/{policyId}/export/message:
     get:
       tags:
@@ -3822,7 +3822,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /policies/{policyId}/export/file:
     get:
       tags:
@@ -3855,7 +3855,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /policies/import/message:
     post:
       tags:
@@ -3903,7 +3903,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /policies/push/import/message:
     post:
       tags:
@@ -3939,7 +3939,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /policies/import/file:
     post:
       tags:
@@ -3985,7 +3985,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /policies/push/import/file:
     post:
       tags:
@@ -4019,7 +4019,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /policies/import/message/preview:
     post:
       tags:
@@ -4055,7 +4055,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /policies/push/import/message/preview:
     post:
       tags:
@@ -4091,7 +4091,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /policies/import/file/preview:
     post:
       tags:
@@ -4125,7 +4125,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /policies/{policyId}/dry-run:
     put:
       tags:
@@ -4158,7 +4158,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /policies/{policyId}/draft:
     put:
       tags:
@@ -4191,7 +4191,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /policies/{policyId}/dry-run/users:
     get:
       tags:
@@ -4231,7 +4231,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /policies/{policyId}/dry-run/user:
     post:
       tags:
@@ -4271,7 +4271,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /policies/{policyId}/dry-run/login:
     post:
       tags:
@@ -4321,7 +4321,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /policies/{policyId}/dry-run/restart:
     post:
       tags:
@@ -4350,7 +4350,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /policies/{policyId}/dry-run/transactions:
     get:
       tags:
@@ -4392,7 +4392,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /policies/{policyId}/dry-run/artifacts:
     get:
       tags:
@@ -4434,7 +4434,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /policies/{policyId}/dry-run/ipfs:
     get:
       tags:
@@ -4476,7 +4476,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /policies/{policyId}/tag/{tag}/blocks:
     post:
       tags:
@@ -4659,7 +4659,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /demo/registeredUsers:
     get:
       tags:
@@ -4703,7 +4703,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /demo/randomKey:
     get:
       deprecated: true
@@ -4729,7 +4729,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /demo/random-key:
     get:
       tags:
@@ -4754,7 +4754,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /demo/push/randomKey:
     get:
       tags:
@@ -4781,7 +4781,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /demo/push/random-key:
     get:
       tags:
@@ -4807,7 +4807,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /ipfs/file/{cid}:
     get:
       tags:
@@ -4839,7 +4839,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /ipfs/file/:
     post:
       tags:
@@ -4872,7 +4872,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /settings:
     get:
       tags:
@@ -4940,7 +4940,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /logs:
     post:
       tags:
@@ -4977,7 +4977,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /logs/attributes:
     get:
       tags:
@@ -5018,7 +5018,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /tasks/{taskId}:
     get:
       tags:
@@ -5051,7 +5051,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /artifact:
     get:
       tags:
@@ -5108,7 +5108,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /artifact/{policyId}:
     post:
       tags:
@@ -5154,7 +5154,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /artifact/{artifactId}:
     delete:
       tags:
@@ -5187,7 +5187,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /contracts:
     get:
       tags:
@@ -5276,7 +5276,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /contracts/import:
     post:
       tags:
@@ -5299,7 +5299,7 @@ paths:
             example:
               contractId: "0.0.49176956"
               description: "Smart Contract Description"
-
+      
       responses:
         200:
           description: Successful operation.
@@ -5317,7 +5317,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /contracts/{contractId}/user:
     post:
       tags:
@@ -5362,7 +5362,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /contracts/{contractId}/status:
     post:
       tags:
@@ -5396,7 +5396,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /contracts/{contractId}/pair:
     post:
       tags:
@@ -5450,7 +5450,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /contracts/pair:
     get:
       tags:
@@ -5505,7 +5505,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /contracts/{contractId}/retire/request:
     post:
       tags:
@@ -5569,7 +5569,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /contracts/retire/request:
     get:
       tags:
@@ -5659,7 +5659,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /contracts/retire:
     post:
       tags:
@@ -5696,7 +5696,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /modules:
     get:
       tags:
@@ -5773,7 +5773,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /modules/menu:
     get:
       tags:
@@ -5801,7 +5801,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /modules/{uuid}:
     get:
       tags:
@@ -5903,7 +5903,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /modules/{uuid}/publish:
     put:
       tags:
@@ -5936,7 +5936,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /modules/{uuid}/export/message:
     get:
       tags:
@@ -5969,7 +5969,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /modules/{uuid}/export/file:
     get:
       tags:
@@ -5998,7 +5998,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /modules/import/message:
     post:
       tags:
@@ -6034,7 +6034,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /modules/import/file:
     post:
       tags:
@@ -6068,7 +6068,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /modules/import/message/preview:
     post:
       tags:
@@ -6104,7 +6104,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /modules/import/file/preview:
     post:
       tags:
@@ -6138,7 +6138,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /modules/validate:
     post:
       tags:
@@ -6194,7 +6194,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /tags/:
     post:
       tags:
@@ -6256,12 +6256,12 @@ paths:
                       type: string
                       enum:
                         [
-                          Schema,
-                          Policy,
-                          Token,
-                          Module,
-                          Contract,
-                          PolicyDocument,
+                            Schema,
+                            Policy,
+                            Token,
+                            Module,
+                            Contract,
+                            PolicyDocument,
                         ]
                     target:
                       type: string
@@ -6274,12 +6274,12 @@ paths:
                       type: string
                       enum:
                         [
-                          Schema,
-                          Policy,
-                          Token,
-                          Module,
-                          Contract,
-                          PolicyDocument,
+                            Schema,
+                            Policy,
+                            Token,
+                            Module,
+                            Contract,
+                            PolicyDocument,
                         ]
                     targets:
                       type: array
@@ -6609,7 +6609,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /themes:
     get:
       tags:
@@ -6664,7 +6664,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /themes/{themeId}:
     put:
       tags:
@@ -6735,7 +6735,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /themes/{themeId}/export/file:
     get:
       tags:
@@ -6764,7 +6764,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  
   /themes/import/file:
     post:
       tags:
