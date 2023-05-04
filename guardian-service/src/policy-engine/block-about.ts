@@ -884,6 +884,31 @@ export const BlockAbout = {
         'input': null,
         'output': null,
         'defaultEvent': false
+    },
+    'externalTopicBlock': {
+        'label': 'External Topic',
+        'title': 'Add \'External Topic\' Block',
+        'post': true,
+        'get': true,
+        'children': 'Special',
+        'control': 'Server',
+        'input': [
+            'TimerEvent',
+        ],
+        'output': [
+            'RunEvent',
+            'RefreshEvent',
+            'ErrorEvent'
+        ],
+        'defaultEvent': true,
+        'properties': [
+            {
+                'name': 'schema',
+                'label': 'Schema',
+                'title': 'Schema',
+                'type': 'Schemas'
+            },
+        ]
     }
 }
 

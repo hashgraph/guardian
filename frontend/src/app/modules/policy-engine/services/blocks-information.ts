@@ -40,6 +40,8 @@ import { MultiSignBlockComponent } from '../policy-viewer/blocks/multi-sign-bloc
 import { CreateTokenConfigComponent } from '../policy-configuration/blocks/tokens/create-token-config/create-token-config.component';
 import { CreateTokenBlockComponent } from '../policy-viewer/blocks/create-token-block/create-token-block.component';
 import { HttpRequestConfigComponent } from '../policy-configuration/blocks/main/http-request-config/http-request-config.component';
+import { ExternalTopicBlockComponent } from '../policy-viewer/blocks/external-topic-block/external-topic-block.component';
+
 import {
     BlockType,
     BlockGroup,
@@ -85,7 +87,8 @@ const Container: IBlockSetting = {
         { type: BlockType.DocumentValidatorBlock },
         { type: BlockType.MultiSignBlock },
         { type: BlockType.CreateToken },
-        { type: BlockType.SplitBlock }
+        { type: BlockType.SplitBlock },
+        { type: BlockType.ExternalTopic }
     ]
 }
 
@@ -125,7 +128,8 @@ const Step: IBlockSetting = {
         { type: BlockType.DocumentValidatorBlock },
         { type: BlockType.MultiSignBlock },
         { type: BlockType.CreateToken },
-        { type: BlockType.SplitBlock }
+        { type: BlockType.SplitBlock },
+        { type: BlockType.ExternalTopic }
     ]
 }
 
@@ -309,6 +313,19 @@ const ExternalData: IBlockSetting = {
     header: BlockHeaders.ServerBlocks,
     factory: null,
     property: ExternalDataConfigComponent,
+    allowedChildren: [{
+        type: BlockType.DocumentValidatorBlock,
+        group: BlockGroup.UnGrouped
+    }]
+}
+
+const ExternalTopic: IBlockSetting = {
+    type: BlockType.ExternalTopic,
+    icon: 'cloud',
+    group: BlockGroup.Documents,
+    header: BlockHeaders.UIComponents,
+    factory: ExternalTopicBlockComponent,
+    property: null,
     allowedChildren: [{
         type: BlockType.DocumentValidatorBlock,
         group: BlockGroup.UnGrouped
@@ -609,5 +626,6 @@ export default [
     ReportItem,
     HistoryAddon,
     SelectiveAttributes,
-    TagManager
+    TagManager,
+    ExternalTopic
 ];

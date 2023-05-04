@@ -95,6 +95,7 @@ import { NewPolicyDialog } from './helpers/new-policy-dialog/new-policy-dialog.c
 import { PolicySettingsComponent } from './policy-configuration/policy-settings/policy-settings.component';
 import { ImportFileDialog } from './helpers/import-file-dialog/import-file-dialog.component';
 import { NewThemeDialog } from './helpers/new-theme-dialog/new-theme-dialog.component';
+import { ExternalTopicBlockComponent } from './policy-viewer/blocks/external-topic-block/external-topic-block.component';
 
 @NgModule({
     declarations: [
@@ -173,7 +174,8 @@ import { NewThemeDialog } from './helpers/new-theme-dialog/new-theme-dialog.comp
         NewPolicyDialog,
         PolicySettingsComponent,
         ImportFileDialog,
-        NewThemeDialog
+        NewThemeDialog,
+        ExternalTopicBlockComponent
     ],
     imports: [
         CommonModule,

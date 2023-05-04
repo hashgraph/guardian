@@ -46,6 +46,7 @@ import deepEqual from 'deep-equal';
     },
     variables: [
         { path: 'options.schema', alias: 'schema', type: 'Schema' }
+        
     ]
 })
 export class RequestVcDocumentBlock {
