@@ -1,0 +1,12 @@
+guardian_build:
+	cd interfaces && npm install && npm  run build --prod
+	cd common && npm install && npm  run build --prod
+	cd logger-service && npm install && npm  run build --prod
+	cd api-gateway && npm install && npm  run build --prod
+	cd auth-service && npm install && npm  run build --prod
+	cd worker-service && npm install && npm  run build --prod
+	cd guardian-service && npm install && npm  run build --prod
+	cd policy-service && npm install && npm  run build --prod
+	cd topic-viewer && npm install && npm  run build --prod
+	cd mrv-sender && npm install && npm  run build --prod
+	cd frontend && npm install && export NODE_OPTIONS=--openssl-legacy-provider && npm  run build --prod

@@ -1,3 +1,4 @@
+.env
 node_modules/
 dist/
 .vscode/
@@ -16,6 +17,7 @@ tsconfig.tsbuildinfo
 .pnp.*
 node_modules
 runtime-data/
+000_*
 
 # OSX related metadata removal and IDE nonsense
 .DS_store

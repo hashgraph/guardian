@@ -144,6 +144,7 @@ Promise.all([
     Environment.setLocalNodeProtocol(process.env.LOCALNODE_PROTOCOL);
     Environment.setLocalNodeAddress(process.env.LOCALNODE_ADDRESS);
     Environment.setNetwork(process.env.HEDERA_NET);
+    console.log(Environment);
     if (process.env.HEDERA_CUSTOM_NODES) {
         try {
             const nodes = JSON.parse(process.env.HEDERA_CUSTOM_NODES);
@@ -172,6 +173,7 @@ Promise.all([
         }
     }
     MessageServer.setLang(process.env.MESSAGE_LANG);
+    //TransactionLogger.init(channel, process.env.LOG_LEVEL as TransactionLogLvl);
     IPFS.setChannel(channel);
     new ExternalEventChannel().setChannel(channel);
 
@@ -226,7 +228,6 @@ Promise.all([
 
         return true;
     });
-
     validator.setValidAction(async () => {
         if (!process.env.INITIALIZATION_TOPIC_ID && process.env.HEDERA_NET === 'localnode') {
             process.env.INITIALIZATION_TOPIC_ID = await workersHelper.addRetryableTask({
@@ -284,15 +285,12 @@ Promise.all([
             console.error(error.message);
         }
     });
-
     validator.setInvalidAction(async () => {
         timer = setInterval(async () => {
             await state.updateState(ApplicationStates.BAD_CONFIGURATION);
         }, 1000)
     });
-
     await validator.validate();
-
 }, (reason) => {
     console.log(reason);
     process.exit(0);

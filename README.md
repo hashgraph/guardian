@@ -37,7 +37,7 @@ When building the reference implementation, you can [manually build every compon
 
 * [Docker](https://www.docker.com)
 
-If you build with docker [MongoDB V6](https://www.mongodb.com), [NodeJS V16](https://nodejs.org) and [Nats 1.12.2](https://nats.io/) will be installed and configured automatically. Make sure you use Docker Compose V2 (comes with Docker Desktop > 3.6.0) as at https://docs.docker.com/compose/install/
+If you build with docker [MongoDB V6](https://www.mongodb.com), [NodeJS V16](https://nodejs.org) and [Nats 1.12.2](https://nats.io/) will be installed and configured automatically.
 
 ### Installation
 
@@ -47,22 +47,20 @@ If you build with docker [MongoDB V6](https://www.mongodb.com), [NodeJS V16](htt
    git clone https://github.com/hashgraph/guardian.git
    ```
 
-2. Update the following files with your Hedera Testnet account info (see prerequisites) as indicated. Please check complete steps to generate Operation ID and Operator Key by looking at link : [How to Create Operator ID and Operator Key](https://docs.hedera.com/guardian/getting-started/getting-started/how-to-create-operator-id-and-operator-key). There will be other steps in the Demo Usage Guide that will require the generation of Operator IDs and Operator Keys. It is important to mention that the Operator IDs and Operator Keys in the .env will be used to generate demo accounts.
+2. Update the following files with your Hedera Testnet account info (see prerequisites) as indicated. Please check complete steps to generate Operation ID and Operator Key by looking at link : [How to Create Operator ID and Operator Key](https://docs.hedera.com/guardian/getting-started/getting-started/how-to-create-operator-id-and-operator-key). There will be other steps in the Demo Usage Guide that will require the generation of Operator IDs and Operator Keys. It is important to mention that the Operator IDs and Operator Keys in the ./guardian/configs/.env.\<GUARDIAN_ENV\>.guardian.system will be used to generate demo accounts.
 
    For example:
 
-   in `guardian-service/.env`:
-
+   in ./guardian/.env you may choose name of the Guardian platform. Leave the field empty or unspecified if you update a production environment to keep previous data (for more details read at https://github.com/IntellectEU/guardian/blob/feature/environment/docs/environments/Ecosystem-Envitonment.md)
    ```plaintext
-   OPERATOR_ID=""
-   OPERATOR_KEY=""
+      GUARDIAN_ENV="develop"
    ```
-
-   in `guardian-service/.env.docker`:
+   
+   in ./guardian/configs/.env.develop.guardian.system
 
    ```plaintext
-   OPERATOR_ID=""
-   OPERATOR_KEY=""
+   OPERATOR_ID="..."
+   OPERATOR_KEY="..."
    ```
 
    **Note**. You can use the Schema Topic ID (`INITIALIZATION_TOPIC_ID`) already present in the configuration files, or you can specify your own.
@@ -71,24 +69,24 @@ If you build with docker [MongoDB V6](https://www.mongodb.com), [NodeJS V16](htt
 
    **3.1 Setting up IPFS Local node:**
 
-   3.1.1 We need to install and configure any IPFS node. 
+   - 3.1.1 We need to install and configure any IPFS node. 
 
    For example: https://github.com/yeasy/docker-ipfs
 
-   3.1.2 For setup IPFS local node you need to set variables in `worker-service` folder
+   - 3.1.2 For setup IPFS local node you need to set variables in the same file ./guardian/configs/.env.develop.guardian.system
 
    ```
    IPFS_NODE_ADDRESS="..." # Default IPFS_NODE_ADDRESS="http://localhost:5002"
-   IPFS_PUBLIC_GATEWAY="..." # Default IPFS_PUBLIC_GATEWAY="https://localhost:8080/ipfs/${cid}"
+   IPFS_PUBLIC_GATEWAY='...' # Default IPFS_PUBLIC_GATEWAY='https://localhost:8080/ipfs/${cid}'
    IPFS_PROVIDER="local"
    ```
    **Note**
    1. Default IPFS_NODE_ADDRESS="http://localhost:5002"
-   2. Default IPFS_PUBLIC_GATEWAY="https://localhost:8080/ipfs/${cid}"
+   2. Default IPFS_PUBLIC_GATEWAY='https://localhost:8080/ipfs/${cid}' 
    
    **3.2 Setting up IPFS Web3Storage node:**
    
-   3.2.1 For setup IPFS web3storage node you need to set variables in `worker-service` folder:
+   3.2.1 For setup IPFS web3storage node you need to set variables in the same file ./guardian/configs/.env.develop.guardian.system
    
    ```
    IPFS_STORAGE_API_KEY="..."
@@ -100,8 +98,10 @@ If you build with docker [MongoDB V6](https://www.mongodb.com), [NodeJS V16](htt
 4. Build and launch with Docker. Please note that this build is meant to be used in production and will not contain any debug information. From the project's root folder:
 
    ```shell
-   docker-compose up -d --build
+   docker compose up -d --build
    ```
+**Note**. about docker-compose: from the end of June 2023 Compose V1 won’t be supported anymore and will be removed from all Docker Desktop versions. Make sure you use Docker Compose V2 (comes with Docker Desktop > 3.6.0) as at https://docs.docker.com/compose/install/
+
 
 5. Browse to <http://localhost:3000> and complete the setup.
 
@@ -118,6 +118,25 @@ If you want to manually build every component with debug information, then build
 ### Build and start each component
 
 Install, configure and start all the prerequisites, then build and start each component.
+Configure .env file in each service
+
+   For example:
+
+   in `guardian-service/.env`:
+   ```plaintext
+       GUARDIAN_ENV="develop"
+   ```
+
+   If need to configure OVERRIDE variables add it in .env file.
+   ```plaintext
+       OVERRIDE="false" 
+   ```
+
+   in `guardian-service/configs/.env.guardian.develop`:
+   ```plaintext
+   OPERATOR_ID="..."
+   OPERATOR_KEY="..."
+   ```
 
 **Note: Once you start each service, please wait for the initialization process to be completed.**
 
@@ -329,7 +348,7 @@ Install, configure and start all the prerequisites, then build and start each co
 2. Start local development using docker compose
 
    ```shell
-   docker-compose -f docker-compose-dev.yml up --build
+   docker compose -f docker-compose-dev.yml up --build
    ```
 
 3. Access local development using <http://localhost:3000> or <http://localhost:4200>
@@ -345,7 +364,7 @@ Install, configure and start all the prerequisites, then build and start each co
 **To run by cleaning Docker cache**:
 
    ```shell
-   docker-compose build --no-cache
+   docker compose build --no-cache
    ```
 
 ([back to top](readme))
