@@ -85,6 +85,8 @@ export class CommonPropertyComponent implements OnInit {
                 }
                 this.childrenBlocks = this.allBlocks.filter(item => item.parent === this.data?.id);
                 this.schemas = moduleVariables?.schemas || [];
+            } else if(this.property.type === 'Schemas') {
+                this.schemas = moduleVariables?.schemas || [];
             }
             if (this.property.type !== 'Group' && this.property.type !== 'Array') {
                 if (this.property.default && !this.data.hasOwnProperty(this.property.name)) {

@@ -2,17 +2,71 @@
     <mat-spinner></mat-spinner>
 </div>
 
-<div *ngIf="!topic" class="content">
-    <div class="btn-link" (click)="setTopic()">setTopic</div>
-</div>
+<div class="content">
+    <div *ngIf="!topic" class="page">
+        <form class="form" [formGroup]="topicForm" (submit)="setTopic()">
+            <mat-form-field appearance="outline">
+                <mat-label>* Topic Id</mat-label>
+                <input matInput placeholder="Topic Id" formControlName="topicId">
+            </mat-form-field>
+            <div style="margin-top: 15px">
+                <button mat-raised-button color="primary" type="submit" [disabled]="!topicForm.valid">
+                    Enter
+                </button>
+            </div>
+        </form>
+    </div>
 
-<div *ngIf="topic && !schemaId" class="content">
-    <div class="btn-link" (click)="setSchema()">setSchema</div>
-</div>
+    <div *ngIf="topic && !schema" class="page">
+        <div *ngIf="topic" class="field">
+            <div class="field-name">Topic Id</div>
+            <div class="field-value">{{topic}}</div>
+        </div>
+        <div *ngIf="policy" class="field">
+            <div class="field-name">Policy Name</div>
+            <div class="field-value">{{policy}}</div>
+        </div>
+        <div *ngIf="policyTopic" class="field">
+            <div class="field-name">Policy Instance</div>
+            <div class="field-value">{{policyTopic}}</div>
+        </div>
 
-<div *ngIf="topic && schemaId" class="content">
-    <div>{{topic}}</div>
-    <div>{{policy}}</div>
-    <div>{{policyTopic}}</div>
-    <div>{{schemaId}}</div>
+        <form class="form" [formGroup]="schemaForm" (submit)="setSchema()">
+            <mat-form-field appearance="outline">
+                <mat-label>* Schema</mat-label>
+                <mat-select formControlName="schemaId" placeholder="Schema">
+                    <mat-option *ngFor="let s of schemas" [value]="s.id">{{s.name}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <div style="margin-top: 15px">
+                <button mat-raised-button color="primary" type="submit" [disabled]="!topicForm.valid">
+                    Enter
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div *ngIf="topic && schema" class="page">
+        <div *ngIf="topic" class="field">
+            <div class="field-name">Topic Id</div>
+            <div class="field-value">{{topic}}</div>
+        </div>
+        <div *ngIf="policy" class="field">
+            <div class="field-name">Policy Name</div>
+            <div class="field-value">{{policy}}</div>
+        </div>
+        <div *ngIf="policyTopic" class="field">
+            <div class="field-name">Policy Instance</div>
+            <div class="field-value">{{policyTopic}}</div>
+        </div>
+        <div *ngIf="schema" class="field">
+            <div class="field-name">Schema</div>
+            <div class="field-value">{{schema}}</div>
+        </div>
+        <div *ngIf="lastUpdate" class="field">
+            <div class="field-name">Last Update</div>
+            <div class="field-value">{{lastUpdate}}</div>
+        </div>
+    </div>
 </div>

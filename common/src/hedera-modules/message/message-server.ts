@@ -351,7 +351,7 @@ export class MessageServer {
     private async getTopicMessages(topicId: string | TopicId, type?: MessageType, action?: MessageAction): Promise<Message[]> {
         const { operatorId, operatorKey, dryRun } = this.clientOptions;
 
-        if(!topicId) {
+        if (!topicId) {
             throw new Error(`Invalid Topic Id`);
         }
 
@@ -490,6 +490,84 @@ export class MessageServer {
                     }
                 }, 10);
                 return topicId;
+            }
+            return null;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    /**
+     * Get messages
+     * @param topicId
+     * @param type
+     * @param action
+     */
+    public static async getMessages<T extends Message>(
+        topicId: string | TopicId,
+        type?: MessageType,
+        action?: MessageAction
+    ): Promise<T[]> {
+        if (!topicId) {
+            throw new Error(`Invalid Topic Id`);
+        }
+        const topic = topicId.toString();
+        const workers = new Workers();
+        const messages = await workers.addRetryableTask({
+            type: WorkerTaskType.GET_TOPIC_MESSAGES,
+            data: {
+                topic
+            }
+        }, 10);
+        new Logger().info(`getTopicMessages, ${topic}`, ['GUARDIAN_SERVICE']);
+        const result: Message[] = [];
+        for (const message of messages) {
+            try {
+                const item = MessageServer.fromMessage(message.message);
+                let filter = true;
+                if (type) {
+                    filter = filter && item.type === type;
+                }
+                if (action) {
+                    filter = filter && item.action === action;
+                }
+                if (filter) {
+                    item.setId(message.id);
+                    item.setTopicId(topic);
+                    result.push(item);
+                }
+            } catch (error) {
+                continue;
+            }
+        }
+        return result as T[];
+    }
+
+    /**
+     * Get messages
+     * @param topicId
+     */
+    public static async getTopic(topicId: string | TopicId): Promise<TopicMessage> {
+        if (!topicId) {
+            throw new Error(`Invalid Topic Id`);
+        }
+        const topic = topicId.toString();
+        const workers = new Workers();
+        const message = await workers.addRetryableTask({
+            type: WorkerTaskType.GET_TOPIC_MESSAGE_BY_INDEX,
+            data: {
+                topic,
+                index: 1
+            }
+        }, 10);
+        new Logger().info(`getTopic, ${topic}`, ['GUARDIAN_SERVICE']);
+        try {
+            const json = JSON.parse(message.message);
+            if (json.type === MessageType.Topic) {
+                const item = TopicMessage.fromMessageObject(json);
+                item.setId(message.id);
+                item.setTopicId(topic);
+                return item;
             }
             return null;
         } catch (error) {

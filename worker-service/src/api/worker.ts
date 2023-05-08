@@ -635,30 +635,26 @@ export class Worker extends NatsService {
                 }
 
                 case WorkerTaskType.GET_TOPIC_MESSAGE: {
-                    const {
-                        operatorId,
-                        operatorKey,
-                        dryRun,
-                        timeStamp
-                    } = task.data;
-                    const client = new HederaSDKHelper(operatorId, operatorKey, dryRun, networkOptions);
-                    result.data = await client.getTopicMessage(timeStamp);
-                    client.destroy();
-
+                    const { timeStamp } = task.data;
+                    result.data = await HederaSDKHelper
+                        .setNetwork(networkOptions)
+                        .getTopicMessage(timeStamp);
                     break;
                 }
 
                 case WorkerTaskType.GET_TOPIC_MESSAGES: {
-                    const {
-                        operatorId,
-                        operatorKey,
-                        dryRun,
-                        topic
-                    } = task.data;
-                    const client = new HederaSDKHelper(operatorId, operatorKey, dryRun, networkOptions);
-                    result.data = await client.getTopicMessages(topic);
-                    client.destroy();
+                    const { topic } = task.data;
+                    result.data = await HederaSDKHelper
+                        .setNetwork(networkOptions)
+                        .getTopicMessages(topic);
+                    break;
+                }
 
+                case WorkerTaskType.GET_TOPIC_MESSAGE_BY_INDEX: {
+                    const { topic, index } = task.data;
+                    result.data = await HederaSDKHelper
+                        .setNetwork(networkOptions)
+                        .getTopicMessageByIndex(topic, index);
                     break;
                 }
 

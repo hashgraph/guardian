@@ -1,4 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { FormBuilder, Validators } from '@angular/forms';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
@@ -22,19 +23,30 @@ export class ExternalTopicBlockComponent implements OnInit {
     topic: string | null;
     policy: string | null;
     policyTopic: string | null;
-    schemas: string[];
-    schemaId: string | null;
+    schemas: any[];
+    schema: string | null;
+    lastUpdate: string | null;
+
+    topicForm = this.fb.group({
+        topicId: ['', Validators.required],
+    });
+
+    schemaForm = this.fb.group({
+        schemaId: ['', Validators.required],
+    });
 
     constructor(
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
-        private policyHelper: PolicyHelper
+        private policyHelper: PolicyHelper,
+        private fb: FormBuilder
     ) {
         this.topic = null;
         this.policy = null;
         this.policyTopic = null;
         this.schemas = [];
-        this.schemaId = null;
+        this.schema = null;
+        this.lastUpdate = null;
     }
 
     ngOnInit(): void {
@@ -82,21 +94,24 @@ export class ExternalTopicBlockComponent implements OnInit {
             this.policy = data.policy;
             this.policyTopic = data.policyTopic;
             this.schemas = data.schemas || [];
-            this.schemaId = data.schemaId;
+            this.schema = data.schema?.name;
+            this.lastUpdate = data.lastUpdate;
         } else {
             this.topic = null;
             this.policy = null;
             this.policyTopic = null;
             this.schemas = [];
-            this.schemaId = null;
+            this.schema = null;
+            this.lastUpdate = null;
         }
     }
 
     setTopic() {
         this.loading = true;
+        const form = this.topicForm.value;
         const data = {
             operation: 'SetTopic',
-            value: null
+            value: form?.topicId
         };
         this.policyEngineService.setBlockData(this.id, this.policyId, data).subscribe(() => {
             this.loadData();
@@ -108,9 +123,10 @@ export class ExternalTopicBlockComponent implements OnInit {
 
     setSchema() {
         this.loading = true;
+        const form = this.schemaForm.value;
         const data = {
             operation: 'SetSchema',
-            value: null
+            value: form?.schemaId
         };
         this.policyEngineService.setBlockData(this.id, this.policyId, data).subscribe(() => {
             this.loadData();

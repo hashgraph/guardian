@@ -162,6 +162,20 @@ export class HederaSDKHelper {
     }
 
     /**
+     * Set Network
+     * @param networkOptions
+     * @private
+     */
+    public static setNetwork(networkOptions: NetworkOptions) {
+        Environment.setNetwork(networkOptions.network);
+        Environment.setLocalNodeAddress(networkOptions.localNodeAddress);
+        Environment.setLocalNodeProtocol(networkOptions.localNodeProtocol);
+        Environment.setNodes(networkOptions.nodes);
+        Environment.setMirrorNodes(networkOptions.mirrorNodes);
+        return this;
+    }
+
+    /**
      * Transaction starting
      * @param id
      * @param transactionName
@@ -904,7 +918,7 @@ export class HederaSDKHelper {
      * @returns Message
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
-    public async getTopicMessage(timeStamp: string): Promise<{
+    public static async getTopicMessage(timeStamp: string): Promise<{
         /**
          * Topic ID
          */
@@ -935,7 +949,7 @@ export class HederaSDKHelper {
      * @returns Messages
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
-    public async getTopicMessages(topicId: string): Promise<{
+    public static async getTopicMessages(topicId: string): Promise<{
         /**
          * ID
          */
@@ -984,6 +998,36 @@ export class HederaSDKHelper {
         }
 
         return result;
+    }
+
+    /**
+     * Returns topic message
+     * @param topicId Topic identifier
+     * @param index message index
+     * @returns Message
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    public static async getTopicMessageByIndex(topicId: string, index: number): Promise<{
+        /**
+         * ID
+         */
+        id: string,
+        /**
+         * Message
+         */
+        message: string
+    }> {
+        let url = `${Environment.HEDERA_TOPIC_API}${topicId}/messages/${index}`;
+        const res = await axios.get(url, { responseType: 'json' });
+        if (!res || !res.data || !res.data.message) {
+            throw new Error(`Invalid message. TopicId: '${topicId}', index: '${index}'`);
+        }
+        const buffer = Buffer.from(res.data.message, 'base64').toString();
+        const id = res.data.consensus_timestamp;
+        return {
+            id,
+            message: buffer
+        }
     }
 
     /**
@@ -1072,7 +1116,7 @@ export class HederaSDKHelper {
                 count < 10 &&
                 errorMessage &&
                 errorMessage.indexOf(HederaResponseCode.DUPLICATE_TRANSACTION) >
-                    -1
+                -1
             ) {
                 return await this.receiptQuery(client, transactionId, count++);
             }
@@ -1162,7 +1206,7 @@ export class HederaSDKHelper {
                 count < 10 &&
                 errorMessage &&
                 errorMessage.indexOf(HederaResponseCode.DUPLICATE_TRANSACTION) >
-                    -1
+                -1
             ) {
                 return await this.recordQuery(client, transactionId, count++);
             }
