@@ -922,16 +922,16 @@
     node-forge "0.10.0"
     yaml "^1.6.0"
 
-"@mikro-orm/core@~5.7.2":
-  version "5.7.2"
-  resolved "https://registry.npmjs.org/@mikro-orm/core/-/core-5.7.2.tgz"
+"@mikro-orm/core@~5.7.4":
+  version "5.7.4"
+  resolved "https://registry.yarnpkg.com/@mikro-orm/core/-/core-5.7.4.tgz#625353b5c370646624de719769173e8acfc877a6"
   dependencies:
     acorn-loose "8.3.0"
     acorn-walk "8.2.0"
     dotenv "16.0.3"
     fs-extra "11.1.1"
     globby "11.1.0"
-    mikro-orm "~5.7.2"
+    mikro-orm "~5.7.4"
     reflect-metadata "0.1.13"
 
 "@mikro-orm/migrations-mongodb@~5.7.2":
@@ -4977,9 +4977,9 @@ micromatch@^4.0.4:
     braces "^3.0.2"
     picomatch "^2.3.1"
 
-mikro-orm@~5.7.2:
-  version "5.7.2"
-  resolved "https://registry.npmjs.org/mikro-orm/-/mikro-orm-5.7.2.tgz"
+mikro-orm@~5.7.4:
+  version "5.7.4"
+  resolved "https://registry.yarnpkg.com/mikro-orm/-/mikro-orm-5.7.4.tgz#37d5353f1f0b8cede99f997157b6cd1e895ed81e"
 
 mime-db@1.52.0:
   version "1.52.0"
