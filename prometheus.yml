@@ -1,0 +1,33 @@
+global:
+    scrape_interval: 15s
+scrape_configs:
+    - job_name: "api-gateway"
+      scrape_interval: 5s
+      metrics_path: /api/v1/metrics
+      static_configs:
+        - targets: ["host.docker.internal:3000"]
+        
+    - job_name: "guardian-service"
+      scrape_interval: 5s
+      static_configs:
+        - targets: ["host.docker.internal:5007"]
+    
+    - job_name: "auth-service"
+      scrape_interval: 5s
+      static_configs:
+        - targets: [ "host.docker.internal:5005" ]
+    
+    - job_name: "policy-service"
+      scrape_interval: 5s
+      static_configs:
+        - targets: [ "host.docker.internal:5006" ]
+    
+    - job_name: "topic-viewer"
+      scrape_interval: 5s
+      static_configs:
+        - targets: [ "host.docker.internal:5009" ]
+    
+    - job_name: "mrv-sender"
+      scrape_interval: 5s
+      static_configs:
+        - targets: [ "host.docker.internal:5008" ]

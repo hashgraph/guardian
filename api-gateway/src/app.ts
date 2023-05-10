@@ -1,4 +1,6 @@
 import hpp from 'hpp';
+import client from 'prom-client';
+import apiDefaultPrometheusMetrics from 'prometheus-api-metrics';
 
 import {
     accountAPI,
@@ -13,7 +15,8 @@ import {
     analyticsAPI,
     moduleAPI,
     tagsAPI,
-    themesAPI
+    themesAPI,
+    metricsAPI,
 } from '@api/service';
 import { Guardians } from '@helpers/guardians';
 import express from 'express';
@@ -39,6 +42,13 @@ import { mapAPI } from '@api/service/map';
 const PORT = process.env.PORT || 3002;
 const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
 const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
+
+const restResponseTimeHistogram = new client.Histogram({
+    name: 'api_gateway_rest_response_time_duration_seconds',
+    help: 'api-gateway a histogram metric',
+    labelNames: ['method', 'route', 'statusCode'],
+    buckets: [0.1, 5, 15, 50, 100, 500],
+});
 
 Promise.all([
     MessageBrokerChannel.connect('API_GATEWAY'),
@@ -92,6 +102,7 @@ Promise.all([
         app.use('/tags', authorizationHelper, tagsAPI);
         app.use('/map', mapAPI);
         app.use('/themes', authorizationHelper, themesAPI);
+        app.use('/metrics', metricsAPI);
 
         /**
          * @deprecated 2023-03-01
@@ -99,6 +110,21 @@ Promise.all([
         app.use('/trustchains/', authorizationHelper, trustchainsAPI);
         app.use('/artifact', authorizationHelper, artifactAPI);
         /////////////////////////////////////////
+        app.use((req, res, next) => {
+            const start = Date.now();
+            res.on('finish', () => {
+                const responseTime = Date.now() - start;
+                restResponseTimeHistogram
+                  .observe(
+                    {
+                        method: req.method,
+                        route: req?.route?.path || '/',
+                        statusCode: res.statusCode,
+                    },
+                    responseTime * 1000);
+            });
+            next();
+        });
 
         // middleware error handler
         app.use((err, req, res, next) => {
