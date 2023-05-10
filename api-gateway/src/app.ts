@@ -1,6 +1,5 @@
 import hpp from 'hpp';
 import client from 'prom-client';
-import apiDefaultPrometheusMetrics from 'prometheus-api-metrics';
 
 import {
     accountAPI,
