@@ -486,7 +486,7 @@ policyAPI.post('/:policyId/dry-run/user', permissionHelper(UserRole.STANDARD_REG
             return next(createError(403, 'Invalid owner.'));
         }
 
-        res.send(await engineService.createVirtualUser(req.params.policyId, req.user.did));
+        res.status(201).send(await engineService.createVirtualUser(req.params.policyId, req.user.did));
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
         return next(error);
