@@ -3,7 +3,7 @@
   "dependencies": {
     "@guardian/common": "^2.12.0",
     "@guardian/interfaces": "^2.12.0",
-    "@mikro-orm/core": "~5.7.2",
+    "@mikro-orm/core": "~5.7.5",
     "@mikro-orm/mongodb": "~5.7.5",
     "@web-std/fetch": "3.0.0",
     "cors": "^2.8.5",
