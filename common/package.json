@@ -25,7 +25,7 @@
     "lodash.get": "^4.4.2",
     "lodash.set": "^4.3.2",
     "moment": "^2.29.2",
-    "mongodb": "5.3.0",
+    "mongodb": "5.4.0",
     "nats": "^2.6.1",
     "node-vault": "^0.9.22",
     "reflect-metadata": "^0.1.13",
