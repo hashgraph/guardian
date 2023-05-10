@@ -66,7 +66,7 @@ export class GuardiansService extends NatsService {
             new Promise<T>((resolve, reject) => {
                 setTimeout(() => {
                     resolve(null);
-                }, 1 * 1000)
+                }, 60 * 1000)
             }),
         ])
     }
