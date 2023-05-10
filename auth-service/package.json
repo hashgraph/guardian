@@ -22,7 +22,7 @@
   "description": "",
   "devDependencies": {
     "@types/jsonwebtoken": "^8.5.4",
-    "@types/node": "^18.16.0",
+    "@types/node": "^20.1.1",
     "@types/node-vault": "^0",
     "chai": "^4.3.4",
     "cross-env": "^7.0.3",
