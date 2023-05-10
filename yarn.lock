@@ -1062,7 +1062,7 @@ __metadata:
     "@meeco/cryppo": ^2.0.2
     "@mikro-orm/core": ~5.7.2
     "@mikro-orm/migrations-mongodb": ~5.7.2
-    "@mikro-orm/mongodb": ~5.7.2
+    "@mikro-orm/mongodb": ~5.7.5
     "@transmute/credentials-context": ^0.7.0-unstable.80
     "@transmute/did-context": ^0.7.0-unstable.80
     "@transmute/ed25519-signature-2018": ^0.7.0-unstable.80
@@ -1432,6 +1432,31 @@ __metadata:
     "@mikro-orm/seeder":
       optional: true
   checksum: 9f8c5999f59abce89587bd3e70dda1fc1dc7d87340cc82c93c0ef06c5a6c8b4547c156444c3201232de49aee826e20ec3a28a29ffe589163fc55d50d72f2ad8d
+  languageName: node
+  linkType: hard
+
+"@mikro-orm/mongodb@npm:~5.7.5":
+  version: 5.7.5
+  resolution: "@mikro-orm/mongodb@npm:5.7.5"
+  dependencies:
+    bson: ^5.2.0
+    mongodb: 5.4.0
+  peerDependencies:
+    "@mikro-orm/core": ^5.0.0
+    "@mikro-orm/entity-generator": ^5.0.0
+    "@mikro-orm/migrations": ^5.0.0
+    "@mikro-orm/migrations-mongodb": ^5.0.0
+    "@mikro-orm/seeder": ^5.0.0
+  peerDependenciesMeta:
+    "@mikro-orm/entity-generator":
+      optional: true
+    "@mikro-orm/migrations":
+      optional: true
+    "@mikro-orm/migrations-mongodb":
+      optional: true
+    "@mikro-orm/seeder":
+      optional: true
+  checksum: 891671c08933bcbb731cf06cad5f239be75c22d38f4638eddc466a192562e843ea3f6e5c78c03fca3c1d3c057110f80b3da9287b976c048f03a04cae3499fee9
   languageName: node
   linkType: hard
 
@@ -3080,7 +3105,7 @@ __metadata:
     "@guardian/common": ^2.12.0
     "@guardian/interfaces": ^2.12.0
     "@mikro-orm/core": ~5.7.2
-    "@mikro-orm/mongodb": ~5.7.2
+    "@mikro-orm/mongodb": ~5.7.5
     "@types/jsonwebtoken": ^8.5.4
     "@types/node": ^18.16.0
     "@types/node-vault": ^0
@@ -5692,7 +5717,7 @@ __metadata:
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
     "@mikro-orm/core": ~5.7.2
-    "@mikro-orm/mongodb": ~5.7.2
+    "@mikro-orm/mongodb": ~5.7.5
     "@transmute/credentials-context": ^0.7.0-unstable.80
     "@transmute/did-context": ^0.7.0-unstable.80
     "@transmute/ed25519-signature-2018": ^0.7.0-unstable.80
@@ -7716,7 +7741,7 @@ __metadata:
     "@guardian/common": ^2.12.0
     "@guardian/interfaces": ^2.12.0
     "@mikro-orm/core": ~5.7.2
-    "@mikro-orm/mongodb": ~5.7.2
+    "@mikro-orm/mongodb": ~5.7.5
     "@types/fs-extra": ^9.0.12
     "@types/node": ^18.16.0
     "@web-std/fetch": 3.0.0
@@ -8336,6 +8361,32 @@ __metadata:
     snappy:
       optional: true
   checksum: da86069555f3f700a0ef338a4676de2254ef64f7700427c0e23ccd5bd9ca9cd5f08651f2eb5083edfdc1e7eed1b40c60041b16e6d4851f353a26d9469d274299
+  languageName: node
+  linkType: hard
+
+"mongodb@npm:5.4.0":
+  version: 5.4.0
+  resolution: "mongodb@npm:5.4.0"
+  dependencies:
+    bson: ^5.2.0
+    mongodb-connection-string-url: ^2.6.0
+    saslprep: ^1.0.3
+    socks: ^2.7.1
+  peerDependencies:
+    "@aws-sdk/credential-providers": ^3.201.0
+    mongodb-client-encryption: ">=2.3.0 <3"
+    snappy: ^7.2.2
+  dependenciesMeta:
+    saslprep:
+      optional: true
+  peerDependenciesMeta:
+    "@aws-sdk/credential-providers":
+      optional: true
+    mongodb-client-encryption:
+      optional: true
+    snappy:
+      optional: true
+  checksum: f0e0f5559186d041f93ddb94d2e7276240b03936da2d043cc76c3d541e1242ddb62b1f105d5033867819592be2dad27e178d875d1ed0c567f5785c275d996869
   languageName: node
   linkType: hard
 
@@ -9322,7 +9373,7 @@ __metadata:
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
     "@mikro-orm/core": ~5.7.2
-    "@mikro-orm/mongodb": ~5.7.2
+    "@mikro-orm/mongodb": ~5.7.5
     "@transmute/credentials-context": 0.7.0-unstable.80
     "@transmute/did-context": 0.7.0-unstable.80
     "@transmute/ed25519-signature-2018": 0.7.0-unstable.80
