@@ -1,8 +1,6 @@
 <form *ngIf="options" [formGroup]="options">
     <ng-container *ngFor="let item of fields; let i = index">
-        <!--PARECE QUE O PROBLEMA E QUE OS DIVS QUE ESTAO A SER GERADOS POR ESTE NGIF QUANDO SAO VERDADEIROS SAO NOVOS E NAO OS MESMOS-->
         <div *ngIf="!item.hide" class="form-field-container" [id]="buttonOnceRaised ? '' : i" [ngStyle]="{'display': (innerWidth <= 810 ? (isShown[i] || showChildSchemaForm) : true) ? 'flex' : 'none'}">
-        <!--<div *ngIf="!item.hide && (innerWidth <= 810 ? (isShown[i] || showChildSchemaForm) : true)" class="form-field-container" [id]="buttonOnceRaised ? '' : i">-->
             <div *ngIf="!item.isArray && !item.isRef" class="form-field">
                 <div class="invalid-field-label"
                     *ngIf="options.controls[item.name] && !options.controls[item.name].valid && !options.controls[item.name].disabled">

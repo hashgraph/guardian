@@ -54,7 +54,7 @@ moduleAPI.delete('/:uuid', permissionHelper(UserRole.STANDARD_REGISTRY), async (
             return next(createError(422, 'Invalid uuid'));
         }
         const result = await guardian.deleteModule(req.params.uuid, req.user.did);
-        res.status(201).json(result);
+        res.status(200).json(result);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
         return next(error);

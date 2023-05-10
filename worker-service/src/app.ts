@@ -18,13 +18,11 @@ Promise.all([
     const channelName = (process.env.SERVICE_CHANNEL || `worker.${Date.now()}`).toUpperCase()
     const [cn] = values;
     const channel = new MessageBrokerChannel(cn, 'worker');
-
     const logger = new Logger();
     logger.setConnection(cn);
     const state = new ApplicationState();
     await state.setServiceName('WORKER').setConnection(cn).init();
     await state.updateState(ApplicationStates.STARTED);
-
     await new OldSecretManager().setConnection(cn).init();
 
     const validator = new ValidateConfiguration();

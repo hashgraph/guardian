@@ -35,7 +35,7 @@ contractAPI.post(
       const user = req.user;
       const {description} = req.body;
       const guardians = new Guardians();
-      return res.json(
+      return res.status(201).json(
         await guardians.createContract(user.did, description)
       );
     } catch (error) {

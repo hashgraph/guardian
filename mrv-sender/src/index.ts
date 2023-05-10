@@ -5,6 +5,7 @@ import { DefaultDocumentLoader } from './document-loader/document-loader-default
 import { VCHelper } from './vc-helper';
 import path from 'path';
 import fs from 'fs';
+import { startMetricsServer } from './utils/metrics';
 
 enum GenerateMode {
     TEMPLATES = "TEMPLATES",
@@ -122,6 +123,7 @@ const PORT = process.env.PORT || 3005;
         res.status(200).json(document);
     });
 
+    startMetricsServer();
     app.listen(PORT, () => {
         console.log('Sender started at port', PORT);
     })

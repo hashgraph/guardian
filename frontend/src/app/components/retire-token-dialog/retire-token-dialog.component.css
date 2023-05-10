@@ -146,9 +146,13 @@
         display: none !important;
     }
 
+    .g-dialog-content {
+        height: calc(100% - 87px);
+    }
+
     .g-dialog-body {
         width: 90%;
-        max-height: 48vh;
+        max-height: calc(100% - 90px);
         margin: 0 auto !important;
         padding: 0;
     }
@@ -197,8 +201,6 @@
         padding: 20px 0;
         position: fixed;
         bottom: 0;
-        left: 50%;
-        transform: translateX(-50%);
     }
 
     .lack-input {

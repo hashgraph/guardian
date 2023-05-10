@@ -22,7 +22,7 @@ settingsAPI.post('/', validate(updateSettings()), permissionHelper(UserRole.STAN
         await Promise.all([
             guardians.updateSettings(settings)
         ]);
-        res.json(null);
+        res.status(201).json(null);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
         return next(error);
