@@ -20,7 +20,7 @@ Instead of creating a new Schema from scratch, there is also an option to import
 
 To import the Schema, click on the Import button.
 
-<figure><img src="../../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 Files with **.schema** extension are only accepted. These files are in zip format, i.e. they are zip archives of the text file.
@@ -32,11 +32,11 @@ Import from IPFS: You can also import Schema from IPFS by entering the correct S
 1674821342.619996003 (iREC 3 Policy)
 ```
 
-<figure><img src="../../../.gitbook/assets/image (31) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (31).png" alt=""><figcaption></figcaption></figure>
 
 Once the Schema is imported, we need to select the Policy from the Policy dropdown to connect the Schema and the Policy.
 
-<figure><img src="../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
 
@@ -65,7 +65,7 @@ Once the Schema is imported, we will have the following options:\
 
 To Publish the Schema, click on Publish button.
 
-<figure><img src="../../../.gitbook/assets/image (2) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
 
 After clicking on Publish, you will be prompted to enter the version. After entering the Version and pressing the submit button, the status will change to Published.
 

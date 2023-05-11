@@ -7,7 +7,7 @@ The first adaptation relates to the redesign of the creation of new accounts. Th
 Here the images below show the selection of account type and selection of username and password in order to create a new account.
 
 \
-![](<../../../.gitbook/assets/1 (1) (3).png>)![](../../../.gitbook/assets/2.png)
+![](<../../../.gitbook/assets/1 (1) (4).png>)![](../../../.gitbook/assets/2.png)
 
 &#x20;
 
@@ -42,7 +42,7 @@ The user registration form into a policy has also been redesigned. This makes th
 
 The images below are the registration forms which have been redesigned&#x20;
 
-![](../../../.gitbook/assets/8.png)![](<../../../.gitbook/assets/9 (2).png>)
+![](../../../.gitbook/assets/8.png)![](<../../../.gitbook/assets/9 (1) (4) (1).png>)
 
 
 

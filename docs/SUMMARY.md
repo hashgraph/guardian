@@ -186,7 +186,7 @@
       * [Returns List of Artifacts](dry-run-apis/returns-list-of-artifacts.md)
       * [Returns List of IPFS Files](dry-run-apis/returns-list-of-ipfs-files.md)
       * [Returning Policy to Editing](dry-run-apis/returning-policy-to-editing.md)
-    * [⚙ APIs for Asynchronous Execution](guardian/tokens/token-operations/apis-for-asynchronous-execution/README.md)
+    * [⚙ APIs for Asynchronous Execution](guardian/standard-registry/policies/apis-for-asynchronous-execution/README.md)
       * [Creates new Policy](policy-related-apis-for-asynchronous-execution/creates-new-policy.md)
       * [Publishing a Policy](policy-related-apis-for-asynchronous-execution/publishing-a-policy.md)
       * [Importing a Policy from IPFS](policy-related-apis-for-asynchronous-execution/importing-a-policy-from-ipfs.md)
@@ -319,7 +319,7 @@
       * [(deprecated) Revoke KYC of the user](guardian/tokens/token-operations/token-apis/revoke-kyc-of-the-user-1.md)
       * [Freeze Tokens of a user](token-apis/freeze-tokens-of-a-user.md)
       * [UnFreeze Tokens of a user](token-apis/unfreeze-tokens-of-a-user.md)
-    * [⚙ APIs for Asynchronous Execution](guardian/standard-registry/policies/apis-for-asynchronous-execution/README.md)
+    * [⚙ APIs for Asynchronous Execution](guardian/tokens/token-operations/apis-for-asynchronous-execution/README.md)
       * [Token Creation](token-related-apis-for-asynchronous-execution/token-creation.md)
       * [Associating User with the Hedera Token](token-related-apis-for-asynchronous-execution/associating-user-with-the-hedera-token.md)
       * [Disassociating User with the Hedera Token](token-related-apis-for-asynchronous-execution/disassociating-user-with-the-hedera-token.md)
@@ -349,3 +349,7 @@
       * [💻 Remote GHG Policy Demo Guide](guardian/demo-guide/carbon-emissions/remote-work-ghg-policy/remote-ghg-policy-demo-guide.md)
     * [🏢 Carbon Emissions Measurement - GHG Corporate Standard Policy Guide](guardian/demo-guide/carbon-emissions/carbon-emissions-measurement-ghg-corporate-standard-policy-guide.md)
 * [❓ FAQs](faqs/faqs.md)
+
+***
+
+* [📉 Monitoring tools](monitoring-tools.md)
