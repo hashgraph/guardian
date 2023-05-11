@@ -186,19 +186,76 @@
     <ng-template #elseTemplate>
         <mat-stepper *ngIf="isNewAccount && !isFailed" class="user-onboarding-wizard" [linear]="false" #stepper>
             <mat-step label="Standard Registries">
-                <div class="user-onboarding-wizard__content">
-                    <h1 class="user-onboarding-wizard__title">Standard Registries</h1>
+                <h1 class="user-onboarding-wizard__title">Standard Registries</h1>
 
-                    <div class="user-onboarding-wizard__footer">
-                        <button mat-raised-button type="button" color="primary" matStepperNext>Next</button>
-                    </div>
+                <div class="user-onboarding-wizard__content">
+                    <ul class="standard-registry">
+                        <li *ngFor="let registry of standardRegistries" class="standard-registry__card">
+                            <div class="standard-registry__header">
+                                <div class="standard-registry__topic">
+                                    <label>Standard registry</label>
+                                    <span>0.0.1367491</span>
+                                </div>
+
+                                <mat-form-field appearance="outline" class="policies-dropdown">
+                                    <mat-label>2 policies</mat-label>
+                                    <mat-select>
+                                        <mat-option value="Verra">Verra</mat-option>
+                                        <mat-option value="iREC">iREC</mat-option>
+                                        <mat-option value="DOU">DOU</mat-option>
+                                    </mat-select>
+                                </mat-form-field>
+                            </div>
+
+                            <ul class="standard-registry__details">
+                                <li class="standard-registry__detail">
+                                    <label>Standard registry did</label>
+                                    <span>did:hedera:testnet:HfuNxyguZPwoeo511iFBsWvecUSxxH47tHLFncXMprPZ_0.0.46059667</span>
+                                </li>
+
+                                <li class="standard-registry__detail">
+                                    <label>Standard registry id</label>
+                                    <span>511iFBsWvecU-SxxH47tHLFncXMprP-46059897</span>
+                                </li>
+
+                                <li class="standard-registry__detail">
+                                    <label>Language</label>
+                                    <span>en-US</span>
+                                </li>
+
+                                <li class="standard-registry__detail">
+                                    <label>Law</label>
+                                    <span>USA</span>
+                                </li>
+
+                                <li class="standard-registry__detail">
+                                    <label>Geography</label>
+                                    <span>Global</span>
+                                </li>
+
+                                <li class="standard-registry__detail">
+                                    <label>ISIC</label>
+                                    <span>051</span>
+                                </li>
+
+                                <li class="standard-registry__detail">
+                                    <label>Tags</label>
+                                    <span>iREC, Verra, Tolam Earth</span>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="user-onboarding-wizard__footer">
+                    <button mat-raised-button type="button" color="primary" matStepperNext>Next</button>
                 </div>
             </mat-step>
             <mat-step label="Key Generation">
+                <h1 class="user-onboarding-wizard__title centered-text">Key Generation</h1>
+
                 <div class="user-onboarding-wizard__content">
                     <div class="list">
-                        <h1 class="user-onboarding-wizard__title list__title">Key Generation</h1>
-
                         <form [formGroup]="hederaForm" (ngSubmit)="onHederaSubmit()">
                             <!-- <div class="list-item"
                                 style="border-bottom: 1px solid #c8c8c8;padding-bottom: 32px;margin-bottom: 46px;">
@@ -240,11 +297,10 @@
                                 (click)="randomKey()">Generate</button>
                         </form>
                     </div>
-
-                    <div class="user-onboarding-wizard__footer">
-                        <button mat-stroked-button color="primary" matStepperPrevious>Back</button>
-                        <button mat-raised-button type="button" color="primary" matStepperNext [disabled]="!hederaForm.valid">Submit</button>
-                    </div>
+                </div>
+                <div class="user-onboarding-wizard__footer">
+                    <button mat-stroked-button color="primary" matStepperPrevious>Back</button>
+                    <button mat-raised-button type="button" color="primary" matStepperNext [disabled]="!hederaForm.valid">Submit</button>
                 </div>
             </mat-step>
         </mat-stepper>
