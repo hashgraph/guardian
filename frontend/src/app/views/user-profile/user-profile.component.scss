@@ -188,11 +188,16 @@ a[disabled="true"]{
 
 .list {
     width: 800px;
-    padding: 20px 20px 20px 20px;
+    padding: 0 20px 20px 20px;
     margin: 20px;
     border: 1px solid #c7c7c7;
     border-radius: 6px;
     position: relative;
+    text-align: center;
+
+    &__title {
+        margin-bottom: 35px;
+    }
 }
 
 .clock-loader {
@@ -272,6 +277,7 @@ a[disabled="true"]{
 
 .generate-btn {
     margin-bottom: 20px;
+    width: 100% !important;
 }
 
 
@@ -343,4 +349,72 @@ a[disabled="true"]{
         background: none !important;
         color: #2C78F6;
     }
+}
+
+:host::ng-deep {
+
+    .mat-stepper-horizontal {
+        height: 100%;
+    }
+
+    .mat-horizontal-stepper-header-container {
+        padding: 20px 70px 0;
+    }
+
+    .mat-horizontal-content-container {
+        height: 88%;
+        padding: 15px 100px 24px;
+    }
+
+    .mat-horizontal-stepper-content {
+        height: 100%;
+    }
+
+    .mat-step-label {
+        font-size: 18px;
+        font-weight: 400;
+    }
+
+    .mat-step-icon {
+        padding: 4px;
+        font-size: 16px;
+        background-color: var(--button-primary-color);
+    }
+
+    .mat-step-icon:not(.mat-step-icon-selected),
+    .mat-step-label:not(.mat-step-label-selected) {
+        opacity: 0.3;
+    }
+
+    .mat-stroked-button {
+        color: var(--button-primary-color);
+        border: 1px solid var(--button-primary-color);
+        border-radius: 25px;
+        font-size: 16px;
+        width: 180px;
+        height: 50px;
+    }
+
+    .mat-raised-button {
+        font-size: 16px;
+        width: 180px;
+        height: 50px;
+        margin-left: auto;
+    }
+}
+
+.user-onboarding-wizard__title {
+    font-size: 40px;
+    font-weight: 400;
+}
+
+.user-onboarding-wizard__content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+}
+
+.user-onboarding-wizard__footer {
+    display: flex;
 }

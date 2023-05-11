@@ -184,48 +184,71 @@
         </div>
     </ng-container>
     <ng-template #elseTemplate>
-        <div *ngIf="isNewAccount && !isFailed" class="list">
-            <form [formGroup]="hederaForm" (ngSubmit)="onHederaSubmit()">
-                <div class="list-item"
-                    style="border-bottom: 1px solid #c8c8c8;padding-bottom: 32px;margin-bottom: 46px;">
-                    <mat-form-field appearance="outline" floatLabel="always">
-                        <mat-label>Standard Registry:</mat-label>
-                        <mat-select formControlName="standardRegistry" placeholder="Choose Standard Registry">
-                            <mat-option *ngFor="let user of standardRegistries" [value]="user.did">
-                                <span>{{user.username}}</span>
-                            </mat-option>
-                        </mat-select>
-                    </mat-form-field>
+        <mat-stepper *ngIf="isNewAccount && !isFailed" class="user-onboarding-wizard" [linear]="false" #stepper>
+            <mat-step label="Standard Registries">
+                <div class="user-onboarding-wizard__content">
+                    <h1 class="user-onboarding-wizard__title">Standard Registries</h1>
+
+                    <div class="user-onboarding-wizard__footer">
+                        <button mat-raised-button type="button" color="primary" matStepperNext>Next</button>
+                    </div>
                 </div>
+            </mat-step>
+            <mat-step label="Key Generation">
+                <div class="user-onboarding-wizard__content">
+                    <div class="list">
+                        <h1 class="user-onboarding-wizard__title list__title">Key Generation</h1>
 
-                <div *ngIf="schema" class="list-item">
-                    <app-schema-form [formGroup]="vcForm" [schema]="schema" [private-fields]="hideVC"
-                        (change)="onChangeForm()">
-                    </app-schema-form>
+                        <form [formGroup]="hederaForm" (ngSubmit)="onHederaSubmit()">
+                            <!-- <div class="list-item"
+                                style="border-bottom: 1px solid #c8c8c8;padding-bottom: 32px;margin-bottom: 46px;">
+                                <mat-form-field appearance="outline" floatLabel="always">
+                                    <mat-label>Standard Registry:</mat-label>
+                                    <mat-select formControlName="standardRegistry" placeholder="Choose Standard Registry">
+                                        <mat-option *ngFor="let user of standardRegistries" [value]="user.did">
+                                            <span>{{user.username}}</span>
+                                        </mat-option>
+                                    </mat-select>
+                                </mat-form-field>
+                            </div> -->
+            
+                            <div *ngIf="schema" class="list-item">
+                                <app-schema-form [formGroup]="vcForm" [schema]="schema" [private-fields]="hideVC"
+                                    (change)="onChangeForm()">
+                                </app-schema-form>
+                            </div>
+            
+                            <div class="list-item">
+                                <mat-form-field class="example-full-width" appearance="outline">
+                                    <mat-label>OPERATOR ID:</mat-label>
+                                    <input matInput placeholder="0.0.1548173" formControlName="id">
+                                </mat-form-field>
+                            </div>
+            
+                            <div class="list-item">
+                                <mat-form-field class="example-full-width" appearance="outline">
+                                    <mat-label>OPERATOR KEY:</mat-label>
+                                    <input matInput placeholder="302e020100300506.........7e74946abca993f543cf9509c8edc"
+                                        formControlName="key">
+                                </mat-form-field>
+                            </div>
+            
+                            <button *ngIf="innerWidth > 810" mat-raised-button type="button" color="primary" class="generate-btn"
+                                (click)="randomKey()">Generate</button>
+
+                            <button *ngIf="innerWidth <= 810" mat-raised-button type="button" class="generate-btn"
+                                (click)="randomKey()">Generate</button>
+                        </form>
+                    </div>
+
+                    <div class="user-onboarding-wizard__footer">
+                        <button mat-stroked-button color="primary" matStepperPrevious>Back</button>
+                        <button mat-raised-button type="button" color="primary" matStepperNext [disabled]="!hederaForm.valid">Submit</button>
+                    </div>
                 </div>
+            </mat-step>
+        </mat-stepper>
 
-                <div class="list-item">
-                    <mat-form-field class="example-full-width" appearance="outline">
-                        <mat-label>OPERATOR ID:</mat-label>
-                        <input matInput placeholder="0.0.1548173" formControlName="id">
-                    </mat-form-field>
-
-                    <mat-form-field class="example-full-width" appearance="outline">
-                        <mat-label>OPERATOR KEY:</mat-label>
-                        <input matInput placeholder="302e020100300506.........7e74946abca993f543cf9509c8edc"
-                            formControlName="key">
-                    </mat-form-field>
-                </div>
-
-                <button *ngIf="innerWidth > 810" mat-raised-button type="button" color="primary" class="generate-btn"
-                    (click)="randomKey()">Generate</button>
-                <button *ngIf="innerWidth > 810" mat-raised-button type="submit" [disabled]="!hederaForm.valid">Submit</button>
-
-                <button *ngIf="innerWidth <= 810" mat-raised-button type="button" class="generate-btn"
-                    (click)="randomKey()">Generate</button>
-                <button *ngIf="innerWidth <= 810" mat-raised-button type="submit" color="primary" [disabled]="!hederaForm.valid">Submit</button>
-            </form>
-        </div>
         <div *ngIf="!isNewAccount && !isFailed" class="clock-list">
             <div class="clock-loader"></div>
             <p>Creating DID ... </p>

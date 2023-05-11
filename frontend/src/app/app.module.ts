@@ -69,8 +69,6 @@ import { CommonComponentsModule } from './modules/common/common-components.modul
 import { TagEngineModule } from './modules/tag-engine/tag-engine.module';
 import { SchemaEngineModule } from './modules/schema-engine/schema-engine.module'
 import { ThemeService } from './services/theme.service';
-import { StandardRegistryOnboardingWizardComponent } from './components/standard-registry-onboarding-wizard/standard-registry-onboarding-wizard.component';
-import { AccountSetupStepComponent } from './components/standard-registry-onboarding-wizard/steps/account-setup-step/account-setup-step.component';
 
 @NgModule({
     declarations: [
@@ -96,8 +94,6 @@ import { AccountSetupStepComponent } from './components/standard-registry-onboar
         RetireTokenDialogComponent,
         DataInputDialogComponent,
         SchemaConfigComponent,
-        StandardRegistryOnboardingWizardComponent,
-        AccountSetupStepComponent,
     ],
     imports: [
         BrowserModule,
