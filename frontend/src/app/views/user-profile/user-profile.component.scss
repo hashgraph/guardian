@@ -190,11 +190,16 @@ a[disabled="true"] {
 
 .list {
     width: 800px;
-    padding: 20px;
+    padding: 0 20px 20px 20px;
     margin: 20px;
     border: 1px solid #c7c7c7;
     border-radius: 6px;
     position: relative;
+    text-align: center;
+
+    &__title {
+        margin-bottom: 35px;
+    }
 }
 
 .clock-loader {
@@ -486,47 +491,72 @@ a[disabled="true"] {
         background: none !important;
         color: #2C78F6;
     }
+}
 
-    .policies-dropdown {
-        width: 50%;
-        margin-bottom: 15px;
+:host::ng-deep {
+
+    .mat-stepper-horizontal {
+        height: 100%;
     }
 
-    .user-onboarding-wizard__title {
-        font-size: 30px;
-        margin-bottom: 8px;
+    .mat-horizontal-stepper-header-container {
+        padding: 20px 70px 0;
     }
 
-    .user-onboarding-wizard__content {
-        height: calc(100vh - 275px);
+    .mat-horizontal-content-container {
+        height: 88%;
+        padding: 15px 100px 24px;
     }
 
-    .user-onboarding-wizard__footer {
-        height: 80px;
+    .mat-horizontal-stepper-content {
+        height: 100%;
     }
 
-    .standard-registry {
-        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    .mat-step-label {
+        font-size: 18px;
+        font-weight: 400;
     }
 
-    :host::ng-deep {
-        .mat-horizontal-stepper-header-container {
-            padding: 0 0 6px;
-        }
+    .mat-step-icon {
+        padding: 4px;
+        font-size: 16px;
+        background-color: var(--button-primary-color);
+    }
 
-        .mat-horizontal-content-container {
-            padding: 0 20px;
-        }
+    .mat-step-icon:not(.mat-step-icon-selected),
+    .mat-step-label:not(.mat-step-label-selected) {
+        opacity: 0.3;
+    }
 
-        .mat-stroked-button,
-        .mat-raised-button {
-            width: 45%;
-        }
+    .mat-stroked-button {
+        color: var(--button-primary-color);
+        border: 1px solid var(--button-primary-color);
+        border-radius: 25px;
+        font-size: 16px;
+        width: 180px;
+        height: 50px;
+    }
+
+    .mat-raised-button {
+        font-size: 16px;
+        width: 180px;
+        height: 50px;
+        margin-left: auto;
     }
 }
 
-@media (max-width: 350px) {
-    .standard-registry__topic span {
-        font-size: 18px;
-    }
+.user-onboarding-wizard__title {
+    font-size: 40px;
+    font-weight: 400;
+}
+
+.user-onboarding-wizard__content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+}
+
+.user-onboarding-wizard__footer {
+    display: flex;
 }
