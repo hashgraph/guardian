@@ -1,8 +1,8 @@
-# Requesting
+# (deprecated) Requesting
 
 ### REQUESTS ALL VP DOCUMENTS
 
-{% swagger method="get" path="" baseUrl="/trust-chains" summary="Returns a list of all VP documents" %}
+{% swagger method="get" path="" baseUrl="/trustchains" summary="Returns a list of all VP documents" %}
 {% swagger-description %}
 Requests all VP documents. Only users with the Auditor role are allowed to make the request
 {% endswagger-description %}

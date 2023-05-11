@@ -1,21 +1,23 @@
-# Previews the Schema from IPFS
+# (deprecated) Delete Artifact
 
-{% swagger method="post" path="" baseUrl="/schemas/push/import/message/preview" summary="Schema preview from IPFS" %}
+
+
+{% swagger method="delete" path="" baseUrl="/artifact/{artifactId}" summary="Delete artifact." %}
 {% swagger-description %}
-Previews the schema from IPFS without loading it into the local DB. Only users with the Standard Registry role are allowed to make the request.
+Delete artifact.
 {% endswagger-description %}
 
-{% swagger-parameter in="body" required="true" type="String" name="messageId" %}
-Object that contains the identifier of the Hedera message which contains the IPFS CID of the schema.
+{% swagger-parameter in="path" name="artifactID" type="String" required="true" %}
+Artifact identifier
 {% endswagger-parameter %}
 
-{% swagger-response status="202: Accepted" description="Accepted" %}
+{% swagger-response status="204: No Content" description="No Content" %}
 ```javascript
 {
    content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Task'
+                type: boolean
 }
 ```
 {% endswagger-response %}
@@ -39,7 +41,7 @@ Object that contains the identifier of the Hedera message which contains the IPF
 {% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
 ```javascript
 {
-    content:
+   content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'

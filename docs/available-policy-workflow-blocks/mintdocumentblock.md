@@ -25,7 +25,7 @@ This block is responsible for adding configurations on calculating the amount of
 | Use Template       | This needs to be enabled if we need to use token template, which is created already.                                                                                | Enabled/Disabled                                                                  |
 | Token Template     | Which will take created tokenId from input document by template name                                                                                                | token\_template_\__0                                                              |
 
-<figure><img src="../.gitbook/assets/image (31) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (31) (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 **Notes:**

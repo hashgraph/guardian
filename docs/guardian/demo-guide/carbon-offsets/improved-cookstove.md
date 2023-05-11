@@ -106,7 +106,7 @@ Once the Standard Registry approved the Project Developer's Project Registration
 
 <figure><img src="../../../.gitbook/assets/image (3) (2).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1) (5).png" alt=""><figcaption></figcaption></figure>
 
 Once the Monitoring Report has been submitted to the Verifier, the Verifier can log into their Policy screen, review it, and fill out the review form.
 

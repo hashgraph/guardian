@@ -8,7 +8,7 @@ Although Cloud infrastructures like Google, Azure and AWS offer secure Secret Ma
 
 In the current Architecture, each service has permission to read/write/update secrets directly instead of handling operations through a central service like Auth Service. Secrets are considered as resources and categorized into different divisions and according to categories and subcategories Policies are created and consequently based on need-to-know basis principal roles per services with essential policies are generated in order that each service is assigned permissions that it requires to access the secrets. As an example, Auth Service does not need to know anything about the user wallets, but only requires access to auth secret key.
 
-<figure><img src="../../.gitbook/assets/image (1) (10).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
 
 As expected in production all connections between vault and services are secured by TLS communication. Communication with AWS Secrets Manager is handled within a private network.
 

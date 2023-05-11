@@ -1,12 +1,14 @@
-# Unsetting KYC for the User
+# (deprecated) Grants KYC for the user
 
-{% swagger method="put" path="" baseUrl="/tokens/push/{tokenId}/{username}/revoke-kyc" summary="Unsets the KYC flag for the user." %}
+### GRANTS KYC FLAG FOR THE USER
+
+{% swagger method="put" path="" baseUrl="/tokens/{tokenId}/{username}/grantKyc" summary="Sets the KYC flag for the user." %}
 {% swagger-description %}
-Unsets the KYC flag for the user. Only users with the Standard Registry role are allowed to make the request.
+Sets the KYC flag for the user. Only users with the Standard Registry role are allowed to make the request.
 {% endswagger-description %}
 
-{% swagger-parameter in="path" name="tokenId" type="String" required="true" %}
-TokenID
+{% swagger-parameter in="path" name="tokenID" type="String" required="true" %}
+Token ID
 {% endswagger-parameter %}
 
 {% swagger-parameter in="path" name="username" type="String" required="true" %}
@@ -19,7 +21,18 @@ Username
     content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Task'
+                $ref: '#/components/schemas/TokenInfo'
+}
+```
+{% endswagger-response %}
+
+{% swagger-response status="400: Bad Request" description="Bad Request" %}
+```javascript
+{
+   content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 }
 ```
 {% endswagger-response %}
@@ -51,3 +64,4 @@ Username
 ```
 {% endswagger-response %}
 {% endswagger %}
+

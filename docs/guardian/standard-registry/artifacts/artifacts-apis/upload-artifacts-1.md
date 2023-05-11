@@ -1,19 +1,27 @@
-# Importing Zip file containing Schema
+# (deprecated) Upload Artifacts
 
-{% swagger method="post" path="" baseUrl="/schemas/{topicId}/import/file" summary="Imports schemas from a file for the selected topic (policy)" %}
+{% swagger method="post" path="" baseUrl="/artifact/{policyId}" summary="Upload Artifact" expanded="false" %}
 {% swagger-description %}
-Imports new schema from a zip file into the local DB. Only users with the Standard Registry role are allowed to make the request.
+Upload artifact. For users with the Standard Registry role only.
 {% endswagger-description %}
 
-{% swagger-parameter in="path" name="topicId" type="Integer" required="true" %}
-Topic ID
+{% swagger-parameter in="body" name="schema" type="Object" required="true" %}
+
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" type="file" required="true" %}
-A zip file containing schema to be imported
+{% swagger-parameter in="body" name="artifacts" type="Array" required="true" %}
+
 {% endswagger-parameter %}
 
-{% swagger-response status="201: Created" description="Successful Operation" %}
+{% swagger-parameter in="body" name="items" type="String" required="true" %}
+
+{% endswagger-parameter %}
+
+{% swagger-parameter in="path" name="policyID" type="String" required="true" %}
+Policy Identifier
+{% endswagger-parameter %}
+
+{% swagger-response status="201: Created" description="Created" %}
 ```javascript
 {
     content:
@@ -21,7 +29,7 @@ A zip file containing schema to be imported
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Schema'
+                  $ref: '#/components/schemas/Artifact'
 }
 ```
 {% endswagger-response %}
@@ -44,6 +52,14 @@ A zip file containing schema to be imported
 
 {% swagger-response status="422: Unprocessable Entity" description="Unprocessable Entity" %}
 
+
+```
+There are no files to upload
+```
+
+```
+There is no appropriate policy or policy is not in DRAFT status
+```
 {% endswagger-response %}
 
 {% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}

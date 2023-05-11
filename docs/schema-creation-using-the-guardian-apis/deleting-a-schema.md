@@ -40,6 +40,14 @@ Schema ID
 ```
 {% endswagger-response %}
 
+{% swagger-response status="422: Unprocessable Entity" description="" %}
+
+
+```
+Schema is published.
+```
+{% endswagger-response %}
+
 {% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
 ```javascript
 {

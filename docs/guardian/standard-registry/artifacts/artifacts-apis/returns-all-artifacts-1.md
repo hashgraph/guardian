@@ -1,29 +1,36 @@
-# Publishes the Schema
+# (deprecated) Returns all Artifacts
 
-### PUBLISHES THE SCHEMA
-
-{% swagger method="put" path="" baseUrl="/schemas/{schemaId}/active" summary="Publishes the Schema" %}
+{% swagger method="get" path="" baseUrl="/artifact" summary="Returns all artifacts." %}
 {% swagger-description %}
-Makes the selected schema active. Other schemas of the same type become inactive. Only suers with the Standard Registry role are allowed to make the request.
+Returns all artifacts.
 {% endswagger-description %}
 
-{% swagger-parameter in="path" name="schemaID" type="String" required="true" %}
-schema ID
+{% swagger-parameter in="query" name="policyID" type="String" required="true" %}
+Policy Identifier
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" required="true" %}
-Object that contains Policy Version
+{% swagger-parameter in="query" name="pageIndex" type="Integer" required="true" %}
+The number of pages to skip before starting to collect the result set
+{% endswagger-parameter %}
+
+{% swagger-parameter in="query" name="pageSize" type="Integer" required="true" %}
+The numbers of items to return
 {% endswagger-parameter %}
 
 {% swagger-response status="200: OK" description="Successful Operation" %}
 ```javascript
 {
-    content:
+    headers:
+            x-total-count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Schema'
+                  $ref: '#/components/schemas/Artifact'
 }
 ```
 {% endswagger-response %}
@@ -38,23 +45,9 @@ Object that contains Policy Version
 
 {% swagger-response status="403: Forbidden" description="Forbidden" %}
 ```javascript
-Schema is not system.
-```
-{% endswagger-response %}
-
-{% swagger-response status="404: Not Found" description="Not Found" %}
-
-
-```
-Schema not found.
-```
-{% endswagger-response %}
-
-{% swagger-response status="422: Unprocessable Entity" description="Unprocessable Entity" %}
-
-
-```
-Schema is active.
+{
+    // Response
+}
 ```
 {% endswagger-response %}
 
@@ -69,3 +62,4 @@ Schema is active.
 ```
 {% endswagger-response %}
 {% endswagger %}
+
