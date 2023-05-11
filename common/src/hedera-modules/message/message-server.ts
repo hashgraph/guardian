@@ -227,7 +227,7 @@ export class MessageServer {
         message.setLang(MessageServer.lang);
         const time = await this.messageStartLog('Hedera');
         const buffer = message.toMessage();
-        const id = await new Workers().addRetryableTask({
+        const timestamp = await new Workers().addRetryableTask({
             type: WorkerTaskType.SEND_HEDERA,
             data: {
                 topicId: this.topicId,
@@ -241,7 +241,7 @@ export class MessageServer {
             }
         }, 10);
         await this.messageEndLog(time, 'Hedera');
-        message.setId(id);
+        message.setId(timestamp);
         message.setTopicId(this.topicId);
         return message;
     }
@@ -336,6 +336,8 @@ export class MessageServer {
 
         new Logger().info(`getTopicMessage, ${timeStamp}, ${topicId}, ${message}`, ['GUARDIAN_SERVICE']);
         const result = MessageServer.fromMessage<T>(message, type);
+        result.setAccount(message.payer_account_id);
+        result.setIndex(message.sequence_number);
         result.setId(timeStamp);
         result.setTopicId(topicId);
         return result;
@@ -346,9 +348,15 @@ export class MessageServer {
      * @param topicId
      * @param type
      * @param action
+     * @param timestamp
      * @private
      */
-    private async getTopicMessages(topicId: string | TopicId, type?: MessageType, action?: MessageAction): Promise<Message[]> {
+    private async getTopicMessages(
+        topicId: string | TopicId, 
+        type?: MessageType, 
+        action?: MessageAction,
+        timestamp?: string
+    ): Promise<Message[]> {
         const { operatorId, operatorKey, dryRun } = this.clientOptions;
 
         if (!topicId) {
@@ -363,7 +371,8 @@ export class MessageServer {
                 operatorId,
                 operatorKey,
                 dryRun,
-                topic
+                topic,
+                timestamp
             }
         }, 10);
 
@@ -380,6 +389,8 @@ export class MessageServer {
                     filter = filter && item.action === action;
                 }
                 if (filter) {
+                    item.setAccount(message.payer_account_id);
+                    item.setIndex(message.sequence_number);
                     item.setId(message.id);
                     item.setTopicId(topic);
                     result.push(item);
@@ -471,6 +482,40 @@ export class MessageServer {
     }
 
     /**
+     * Load documents
+     * @param message
+     */
+    public async loadDocuments<T extends Message>(messages: T[]): Promise<T[]> {
+        for (const message of messages) {
+            const urls = message.getUrls();
+            const documents: any[] = [];
+            for (const url of urls) {
+                const doc = await this.getFile(url.cid, message.responseType);
+                documents.push(doc);
+            }
+            await message.loadDocuments(documents, this.clientOptions.operatorKey);
+        }
+        return messages;
+    }
+
+    /**
+     * Load documents
+     * @param message
+     */
+    public static async loadDocuments<T extends Message>(messages: T[], cryptoKey?: string): Promise<T[]> {
+        for (const message of messages) {
+            const urls = message.getUrls();
+            const documents: any[] = [];
+            for (const url of urls) {
+                const doc = await IPFS.getFile(url.cid, message.responseType);
+                documents.push(doc);
+            }
+            await message.loadDocuments(documents, cryptoKey);
+        }
+        return messages;
+    }
+
+    /**
      * Find topic
      * @param messageId
      */
@@ -506,7 +551,8 @@ export class MessageServer {
     public static async getMessages<T extends Message>(
         topicId: string | TopicId,
         type?: MessageType,
-        action?: MessageAction
+        action?: MessageAction,
+        timestamp?: string
     ): Promise<T[]> {
         if (!topicId) {
             throw new Error(`Invalid Topic Id`);
@@ -516,7 +562,8 @@ export class MessageServer {
         const messages = await workers.addRetryableTask({
             type: WorkerTaskType.GET_TOPIC_MESSAGES,
             data: {
-                topic
+                topic,
+                timestamp
             }
         }, 10);
         new Logger().info(`getTopicMessages, ${topic}`, ['GUARDIAN_SERVICE']);
@@ -532,6 +579,8 @@ export class MessageServer {
                     filter = filter && item.action === action;
                 }
                 if (filter) {
+                    item.setAccount(message.payer_account_id);
+                    item.setIndex(message.sequence_number);
                     item.setId(message.id);
                     item.setTopicId(topic);
                     result.push(item);
@@ -565,6 +614,8 @@ export class MessageServer {
             const json = JSON.parse(message.message);
             if (json.type === MessageType.Topic) {
                 const item = TopicMessage.fromMessageObject(json);
+                item.setAccount(message.payer_account_id);
+                item.setIndex(message.sequence_number);
                 item.setId(message.id);
                 item.setTopicId(topic);
                 return item;

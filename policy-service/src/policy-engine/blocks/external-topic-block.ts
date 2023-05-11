@@ -1,5 +1,5 @@
 import { ActionCallback, EventBlock } from '@policy-engine/helpers/decorators';
-import { DocumentSignature, Schema, TopicType } from '@guardian/interfaces';
+import { IVC, IVCDocument, Schema, TopicType } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
@@ -9,30 +9,34 @@ import { BlockActionError } from '@policy-engine/errors';
 import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import {
-    VcDocument as VcDocumentCollection,
-    VcDocumentDefinition as VcDocument,
-    VcHelper,
     MessageServer,
     MessageAction,
     SchemaMessage,
     UrlType,
-    MessageType,
+    PolicyMessage,
     TopicMessage,
+    ExternalDocument,
+    Message,
+    MessageType,
+    VCMessage,
 } from '@guardian/common';
-import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import {
+    ExternalDocuments,
+    ExternalEvent,
+    ExternalEventType
+} from '@policy-engine/interfaces/external-event';
 
-interface ExternalTopic {
-    blockUUID: string,
-    owner: string,
-    topicId: string,
-    schemas: any[],
-    schema: any,
-    schemaId: string,
-    lastIndex: number,
-    policy: any,
-    instance: any,
-    status: boolean,
-    lastUpdate: string,
+
+/**
+ * Search Topic Result
+ */
+interface TopicResult {
+    count?: number;
+    schemas?: SchemaMessage[];
+    instance?: PolicyMessage;
+    root?: TopicMessage;
+    instanceTopic?: TopicMessage;
+    policyTopic?: TopicMessage;
 }
 
 /**
@@ -69,9 +73,6 @@ interface ExternalTopic {
     ]
 })
 export class ExternalTopicBlock {
-    private __map = new Map<string, ExternalTopic>();
-
-
     /**
      * Schema
      * @private
@@ -137,7 +138,7 @@ export class ExternalTopicBlock {
         return this.schema;
     }
 
-    private async searchTopic(topicId: string, topicTree: any = {}): Promise<any> {
+    private async searchTopic(topicId: string, topicTree: TopicResult = {}): Promise<TopicResult> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         if (topicTree.count) {
             topicTree.count++;
@@ -149,23 +150,30 @@ export class ExternalTopicBlock {
         }
         const topicMessage = await MessageServer.getTopic(topicId);
         if (!topicTree.root) {
-            if(topicMessage && (
+            if (topicMessage && (
                 topicMessage.messageType === TopicType.InstancePolicyTopic ||
                 topicMessage.messageType === TopicType.DynamicTopic
             )) {
                 topicTree.root = topicMessage;
             } else {
-                throw new BlockActionError('Invalid topic', ref.blockType, ref.uuid);   
+                throw new BlockActionError('Invalid topic', ref.blockType, ref.uuid);
             }
         }
         if (topicMessage) {
             if (topicMessage.messageType === TopicType.PolicyTopic) {
-                topicTree.policy = topicMessage;
-                const messages = await MessageServer.getMessages(topicId);
-                topicTree.schemas = messages.filter(m => m.action === MessageAction.PublishSchema);
+                if (!topicTree.instanceTopic) {
+                    throw new BlockActionError('Invalid topic', ref.blockType, ref.uuid);
+                }
+                topicTree.policyTopic = topicMessage;
+                const messages: any[] = await MessageServer.getMessages(topicId);
+                topicTree.schemas = messages.filter((m: SchemaMessage) =>
+                    m.action === MessageAction.PublishSchema);
+                topicTree.instance = messages.find((m: PolicyMessage) =>
+                    m.action === MessageAction.PublishPolicy &&
+                    m.instanceTopicId === topicTree.instanceTopic.topicId);
                 return topicTree;
             } else if (topicMessage.messageType === TopicType.InstancePolicyTopic) {
-                topicTree.instance = topicMessage;
+                topicTree.instanceTopic = topicMessage;
                 return await this.searchTopic(topicMessage.parentId, topicTree);
             } else if (topicMessage.messageType === TopicType.DynamicTopic) {
                 return await this.searchTopic(topicMessage.parentId, topicTree);
@@ -174,54 +182,55 @@ export class ExternalTopicBlock {
         throw new BlockActionError('Invalid topic', ref.blockType, ref.uuid);
     }
 
-    private async addTopic(user: IPolicyUser, topicId: string): Promise<ExternalTopic> {
+    private async addTopic(user: IPolicyUser, topicId: string): Promise<ExternalDocument> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
 
-        if (this.__map.has(user.did)) {
+        const current = await ref.databaseServer.getExternalTopic(ref.policyId, ref.uuid, user.did);
+        if (current) {
             throw new BlockActionError('', ref.blockType, ref.uuid);
         }
 
         const topicTree = await this.searchTopic(topicId);
-        console.log('???');
-        console.log(topicTree)
-        console.log('???');
 
-        const policy = topicTree.policy;
+        const topic = topicTree.root;
+        const policy = topicTree.policyTopic;
         const instance = topicTree.instance;
-        const schemas = topicTree.schemas.map((s: SchemaMessage) => {
+        const list = topicTree.schemas.map((s: SchemaMessage) => {
             return {
                 id: s.getContextUrl(UrlType.url),
                 name: s.name
             }
         });
 
-        const item: ExternalTopic = {
-            blockUUID: ref.uuid,
+        const item = await ref.databaseServer.createExternalTopic({
+            policyId: ref.policyId,
+            blockId: ref.uuid,
             owner: user.did,
-            topicId: topicId,
-            schemas,
+            documentTopicId: topic.topicId?.toString(),
+            policyTopicId: policy.topicId?.toString(),
+            instanceTopicId: instance.instanceTopicId?.toString(),
+            documentMessage: topic.toMessageObject(),
+            policyMessage: policy.toMessageObject(),
+            policyInstanceMessage: instance.toMessageObject(),
+            schemas: list,
             schema: null,
-            schemaId: '',
+            schemaId: null,
+            active: false,
             lastIndex: 0,
-            policy,
-            instance,
-            status: false,
             lastUpdate: ''
-        }
-        this.__map.set(user.did, item);
-
+        });
         return item;
     }
 
-    private async addSchema(user: IPolicyUser, schemaId: string): Promise<ExternalTopic> {
+    private async addSchema(user: IPolicyUser, schemaId: string): Promise<ExternalDocument> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
 
-        const item = this.__map.get(user.did);
+        const item = await ref.databaseServer.getExternalTopic(ref.policyId, ref.uuid, user.did);
 
         if (!item) {
             throw new BlockActionError('Topic not set.', ref.blockType, ref.uuid);
         }
-        if (item.status) {
+        if (item.active) {
             throw new BlockActionError('Schema already set', ref.blockType, ref.uuid);
         }
         if (!item.schemas) {
@@ -235,16 +244,46 @@ export class ExternalTopicBlock {
 
         item.schemaId = schemaId;
         item.schema = schema;
-        item.status = true;
-        this.__map.set(user.did, item);
+        item.active = true;
+        await ref.databaseServer.updateExternalTopic(item);
 
         return item;
     }
 
-    private async receiveData(item: ExternalTopic): Promise<IPolicyDocument[]> {
-        const result: IPolicyDocument[] = [];
-        const schema = await this.getSchema();
+    private async receiveData(item: ExternalDocument): Promise<IPolicyDocument[]> {
+        console.log('--- receiveData ---');
+        const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+        const hederaAccount = await PolicyUtils.getHederaAccount(ref, item.owner);
+        const user = await PolicyUtils.createPolicyUser(ref, item.owner);
 
+        let messages: VCMessage[] = await MessageServer.getMessages(
+            item.documentTopicId,
+            null,
+            null,
+            item.lastMessage
+        );
+        const lastMessage = messages[messages.length - 1];
+        // messages = messages.filter(m =>
+        //     m.type === MessageType.VCDocument &&
+        //     m.issuer === item.owner
+        // );
+        messages = messages.filter(m => m.type === MessageType.VCDocument);
+
+        await MessageServer.loadDocuments(messages, hederaAccount.hederaAccountKey);
+
+        console.log(messages);
+
+        const result: IPolicyDocument[] = [];
+        for (const message of messages) {
+            const document: IVC = message.getDocument();
+            const item = PolicyUtils.createPolicyDocument(ref, user, document);
+            result.push(item);
+        }
+
+        console.log(result);
+
+
+        // const schema = await this.getSchema();
         // const docOwner = await PolicyUtils.getHederaAccount(ref, data.owner);
         // const vc = VcDocument.fromJsonTree(data.document);
         // const accounts = PolicyUtils.getHederaAccounts(vc, docOwner.hederaAccountId, schema);
@@ -256,34 +295,35 @@ export class ExternalTopicBlock {
         //     DocumentSignature.VERIFIED :
         //     DocumentSignature.INVALID);
         // doc = PolicyUtils.setDocumentRef(doc, documentRef);
+        // for (const message of data) {
+        // const error = await this.validateDocuments(user, message);
+        // if (error) {
+        //     continue;
+        // }
+        // let verify: boolean;
+        // try {
+        //     const VCHelper = new VcHelper();
+        //     const res = await VCHelper.verifySchema(data.document);
+        //     verify = res.ok;
+        //     if (verify) {
+        //         verify = await VCHelper.verifyVC(data.document);
+        //     }
+        // } catch (error) {
+        //     ref.error(`Verify VC: ${PolicyUtils.getErrorMessage(error)}`)
+        //     verify = false;
+        // }
+        // result.push(message);
+        // }
 
-        const data: any[] = [];
-        for (const message of data) {
-            // const error = await this.validateDocuments(user, message);
-            // if (error) {
-            //     continue;
-            // }
-            // let verify: boolean;
-            // try {
-            //     const VCHelper = new VcHelper();
-            //     const res = await VCHelper.verifySchema(data.document);
-            //     verify = res.ok;
-            //     if (verify) {
-            //         verify = await VCHelper.verifyVC(data.document);
-            //     }
-            // } catch (error) {
-            //     ref.error(`Verify VC: ${PolicyUtils.getErrorMessage(error)}`)
-            //     verify = false;
-            // }
-
-            result.push(message);
-        }
         item.lastUpdate = (new Date()).toISOString();
-        this.__map.set(item.owner, item);
+        if (lastMessage && lastMessage.id) {
+            item.lastMessage = lastMessage.id;
+        }
+        await ref.databaseServer.updateExternalTopic(item);
         return result;
     }
 
-    private async runByUser(item: ExternalTopic): Promise<void> {
+    private async runByUser(item: ExternalDocument): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const documents = await this.receiveData(item);
         if (documents && documents.length) {
@@ -313,7 +353,8 @@ export class ExternalTopicBlock {
     })
     @CatchErrors()
     public async run(event: IPolicyEvent<string[]>) {
-        const items = this.__map.values();
+        const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+        const items = await ref.databaseServer.getActiveExternalTopics(ref.policyId, ref.uuid);
         for (const item of items) {
             await this.runByUser(item);
         }
@@ -334,8 +375,6 @@ export class ExternalTopicBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         ref.log(`setData`);
 
-        console.log(JSON.stringify(data));
-
         if (!user?.did) {
             throw new BlockActionError('User have no any did', ref.blockType, ref.uuid);
         }
@@ -347,7 +386,6 @@ export class ExternalTopicBlock {
         }
 
         try {
-
             switch (operation) {
                 case 'SetTopic': {
                     await this.addTopic(user, value);
@@ -355,6 +393,11 @@ export class ExternalTopicBlock {
                 }
                 case 'SetSchema': {
                     const item = await this.addSchema(user, value);
+                    // await this.runByUser(item);
+                    return true;
+                }
+                case 'Refresh': {
+                    const item = await ref.databaseServer.getExternalTopic(ref.policyId, ref.uuid, user.did);
                     await this.runByUser(item);
                     return true;
                 }
@@ -374,15 +417,19 @@ export class ExternalTopicBlock {
      */
     public async getData(user: IPolicyUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const item = this.__map.get(user?.did);
+        const item = await ref.databaseServer.getExternalTopic(ref.policyId, ref.uuid, user.did);
+        console.log('getData');
         if (item) {
             return {
-                topic: item.topicId,
-                policy: item.policy,
-                instance: item.instance,
+                documentTopicId: item.documentTopicId,
+                policyTopicId: item.policyTopicId,
+                instanceTopicId: item.instanceTopicId,
+                documentMessage: item.documentMessage,
+                policyMessage: item.policyMessage,
+                policyInstanceMessage: item.policyInstanceMessage,
                 schemas: item.schemas,
                 schema: item.schema,
-                lastUpdate: item.lastUpdate
+                lastUpdate: item.lastUpdate,
             };
         } else {
             return {};

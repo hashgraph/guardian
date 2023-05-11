@@ -249,8 +249,6 @@ export class RequestVcDocumentBlock {
             ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }
-
-        return {};
     }
 
     /**

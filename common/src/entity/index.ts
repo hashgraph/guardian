@@ -25,3 +25,4 @@ export * from './topic';
 export * from './vc-document';
 export * from './vp-document';
 export * from './theme';
+export * from './external-document';

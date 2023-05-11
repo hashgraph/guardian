@@ -20,18 +20,20 @@ export class ExternalTopicBlockComponent implements OnInit {
     loading: boolean = true;
     socket: any;
 
-    topic: string | null;
-    policy: string | null;
-    policyTopic: string | null;
-    schemas: any[];
-    schema: string | null;
-    lastUpdate: string | null;
+    public documentTopicId: string | null = null;
+    public instanceTopicId: string | null = null;
+    public policyTopicId: string | null = null;
+    public documentMessage: any = null;
+    public policyInstanceMessage: any = null;
+    public policyMessage: any = null;
+    public schemas: any[] | null = null;
+    public schema: any = null;
+    public lastUpdate: string | null = null;
 
-    topicForm = this.fb.group({
-        topicId: ['', Validators.required],
+    public topicForm = this.fb.group({
+        topicId: ['0.0.4605481', Validators.required],
     });
-
-    schemaForm = this.fb.group({
+    public schemaForm = this.fb.group({
         schemaId: ['', Validators.required],
     });
 
@@ -41,10 +43,13 @@ export class ExternalTopicBlockComponent implements OnInit {
         private policyHelper: PolicyHelper,
         private fb: FormBuilder
     ) {
-        this.topic = null;
-        this.policy = null;
-        this.policyTopic = null;
-        this.schemas = [];
+        this.documentTopicId = null;
+        this.instanceTopicId = null;
+        this.policyTopicId = null;
+        this.documentMessage = null;
+        this.policyInstanceMessage = null;
+        this.policyMessage = null;
+        this.schemas = null;
         this.schema = null;
         this.lastUpdate = null;
     }
@@ -90,23 +95,29 @@ export class ExternalTopicBlockComponent implements OnInit {
 
     setData(data: any) {
         if (data) {
-            this.topic = data.topic;
-            this.policy = data.policy;
-            this.policyTopic = data.policyTopic;
-            this.schemas = data.schemas || [];
-            this.schema = data.schema?.name;
+            this.documentTopicId = data.documentTopicId;
+            this.instanceTopicId = data.instanceTopicId;
+            this.policyTopicId = data.policyTopicId;
+            this.documentMessage = data.documentMessage;
+            this.policyInstanceMessage = data.policyInstanceMessage;
+            this.policyMessage = data.policyMessage;
+            this.schemas = data.schemas;
+            this.schema = data.schema;
             this.lastUpdate = data.lastUpdate;
         } else {
-            this.topic = null;
-            this.policy = null;
-            this.policyTopic = null;
-            this.schemas = [];
+            this.documentTopicId = null;
+            this.instanceTopicId = null;
+            this.policyTopicId = null;
+            this.documentMessage = null;
+            this.policyInstanceMessage = null;
+            this.policyMessage = null;
+            this.schemas = null;
             this.schema = null;
             this.lastUpdate = null;
         }
     }
 
-    setTopic() {
+    public setTopic() {
         this.loading = true;
         const form = this.topicForm.value;
         const data = {
@@ -114,19 +125,37 @@ export class ExternalTopicBlockComponent implements OnInit {
             value: form?.topicId
         };
         this.policyEngineService.setBlockData(this.id, this.policyId, data).subscribe(() => {
-            this.loadData();
+            setTimeout(() => {
+                this.loadData();
+            }, 2000);
         }, (e) => {
             console.error(e.error);
             this.loading = false;
         });
     }
 
-    setSchema() {
+    public setSchema() {
         this.loading = true;
         const form = this.schemaForm.value;
         const data = {
             operation: 'SetSchema',
             value: form?.schemaId
+        };
+        this.policyEngineService.setBlockData(this.id, this.policyId, data).subscribe(() => {
+            setTimeout(() => {
+                this.loadData();
+            }, 2000);
+        }, (e) => {
+            console.error(e.error);
+            this.loading = false;
+        });
+    }
+
+    public onRefresh() {
+        this.loading = true;
+        const data = {
+            operation: 'Refresh',
+            value: 'Refresh'
         };
         this.policyEngineService.setBlockData(this.id, this.policyId, data).subscribe(() => {
             this.loadData();

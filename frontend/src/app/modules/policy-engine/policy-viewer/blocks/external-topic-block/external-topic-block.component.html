@@ -3,7 +3,7 @@
 </div>
 
 <div class="content">
-    <div *ngIf="!topic" class="page">
+    <div *ngIf="!documentTopicId" class="page">
         <form class="form" [formGroup]="topicForm" (submit)="setTopic()">
             <mat-form-field appearance="outline">
                 <mat-label>* Topic Id</mat-label>
@@ -17,18 +17,30 @@
         </form>
     </div>
 
-    <div *ngIf="topic && !schema" class="page">
-        <div *ngIf="topic" class="field">
-            <div class="field-name">Topic Id</div>
-            <div class="field-value">{{topic}}</div>
+    <div *ngIf="documentTopicId && !schema" class="page">
+        <div *ngIf="policyTopicId" class="field">
+            <div class="field-name">Policy Topic Id</div>
+            <div class="field-value">{{policyTopicId}}</div>
         </div>
-        <div *ngIf="policy" class="field">
+        <div *ngIf="policyInstanceMessage" class="field">
             <div class="field-name">Policy Name</div>
-            <div class="field-value">{{policy}}</div>
+            <div class="field-value">{{policyInstanceMessage.name}}</div>
         </div>
-        <div *ngIf="policyTopic" class="field">
-            <div class="field-name">Policy Instance</div>
-            <div class="field-value">{{policyTopic}}</div>
+        <div *ngIf="policyInstanceMessage" class="field">
+            <div class="field-name">Policy Version</div>
+            <div class="field-value">{{policyInstanceMessage.version}}</div>
+        </div>
+        <div *ngIf="instanceTopicId" class="field">
+            <div class="field-name">Instance Topic Id</div>
+            <div class="field-value">{{instanceTopicId}}</div>
+        </div>
+        <div *ngIf="documentMessage" class="field">
+            <div class="field-name">Document Topic</div>
+            <div class="field-value">{{documentMessage.name}}</div>
+        </div>
+        <div *ngIf="documentTopicId" class="field">
+            <div class="field-name">Document Topic Id</div>
+            <div class="field-value">{{documentTopicId}}</div>
         </div>
 
         <form class="form" [formGroup]="schemaForm" (submit)="setSchema()">
@@ -47,26 +59,44 @@
         </form>
     </div>
 
-    <div *ngIf="topic && schema" class="page">
-        <div *ngIf="topic" class="field">
-            <div class="field-name">Topic Id</div>
-            <div class="field-value">{{topic}}</div>
+    <div *ngIf="documentTopicId && schema" class="page">
+        <div *ngIf="policyTopicId" class="field">
+            <div class="field-name">Policy Topic Id</div>
+            <div class="field-value">{{policyTopicId}}</div>
         </div>
-        <div *ngIf="policy" class="field">
+        <div *ngIf="policyInstanceMessage" class="field">
             <div class="field-name">Policy Name</div>
-            <div class="field-value">{{policy}}</div>
+            <div class="field-value">{{policyInstanceMessage.name}}</div>
         </div>
-        <div *ngIf="policyTopic" class="field">
-            <div class="field-name">Policy Instance</div>
-            <div class="field-value">{{policyTopic}}</div>
+        <div *ngIf="policyInstanceMessage" class="field">
+            <div class="field-name">Policy Version</div>
+            <div class="field-value">{{policyInstanceMessage.version}}</div>
+        </div>
+        <div *ngIf="instanceTopicId" class="field">
+            <div class="field-name">Instance Topic Id</div>
+            <div class="field-value">{{instanceTopicId}}</div>
+        </div>
+        <div *ngIf="documentMessage" class="field">
+            <div class="field-name">Document Topic</div>
+            <div class="field-value">{{documentMessage.name}}</div>
+        </div>
+        <div *ngIf="documentTopicId" class="field">
+            <div class="field-name">Document Topic Id</div>
+            <div class="field-value">{{documentTopicId}}</div>
         </div>
         <div *ngIf="schema" class="field">
             <div class="field-name">Schema</div>
-            <div class="field-value">{{schema}}</div>
+            <div class="field-value">{{schema.name}}</div>
         </div>
-        <div *ngIf="lastUpdate" class="field">
+        <div class="field">
             <div class="field-name">Last Update</div>
             <div class="field-value">{{lastUpdate}}</div>
+        </div>
+
+        <div style="margin-top: 15px">
+            <button mat-raised-button color="primary" (click)="onRefresh()">
+                Load Documents
+            </button>
         </div>
     </div>
 </div>
