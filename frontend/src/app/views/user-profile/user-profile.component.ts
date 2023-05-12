@@ -24,13 +24,6 @@ enum OperationMode {
     None, Generate, SetProfile, Associate
 }
 
-interface IHederaForm {
-    id: string,
-    key: string,
-    standardRegistry: string,
-    vc?: any
-}
-
 /**
  * The page with the profile settings of a regular user.
  */
@@ -50,7 +43,7 @@ export class UserProfileComponent implements OnInit {
     contractRequests?: any[];
     didDocument?: any;
     vcDocument?: any;
-    standardRegistries?: IUser[];
+    standardRegistries?: any[];
     selectedIndex: number = 0;
     tagEntity = TagType.Token;
     owner: any;
@@ -58,8 +51,9 @@ export class UserProfileComponent implements OnInit {
     public innerWidth: any;
     public innerHeight: any;
 
+    standardRegistryControl = this.fb.control('', Validators.required);
+
     hederaForm = this.fb.group({
-        standardRegistry: ['', Validators.required],
         id: ['', Validators.required],
         key: ['', Validators.required],
     });
@@ -232,12 +226,12 @@ export class UserProfileComponent implements OnInit {
         forkJoin([
             this.profileService.getProfile(),
             this.profileService.getBalance(),
-            this.auth.getStandardRegistries(),
+            this.auth.getAggregatedStandardRegistries(),
             this.schemaService.getSystemSchemasByEntity(SchemaEntity.USER),
         ]).subscribe((value) => {
             this.profile = value[0] as IUser;
             this.balance = value[1] as string;
-            this.standardRegistries = value[2] || [];
+            this.standardRegistries = value[2].default || [];
             const schema = value[3];
 
             this.isConfirmed = !!this.profile.confirmed;
@@ -249,7 +243,7 @@ export class UserProfileComponent implements OnInit {
             }
             this.owner = this.profile?.did;
 
-            this.standardRegistries = this.standardRegistries.filter(sr => !!sr.did);
+            this.standardRegistries = this.standardRegistries?.filter(sr => !!sr.did);
             if (schema) {
                 this.schema = new Schema(schema);
                 this.hederaForm.addControl('vc', this.vcForm);
@@ -278,18 +272,19 @@ export class UserProfileComponent implements OnInit {
 
     onHederaSubmit() {
         if (this.hederaForm.valid) {
-            this.createDID(this.hederaForm.value);
+            this.createDID();
         }
     }
 
-    createDID(data: IHederaForm) {
+    createDID() {
         this.loading = true;
         this.headerProps.setLoading(true);
+        const data = this.hederaForm.value;
         const vcDocument = data.vc;
         const profile: any = {
             hederaAccountId: data.id,
             hederaAccountKey: data.key,
-            parent: data.standardRegistry,
+            parent: this.standardRegistryControl.value,
         }
         if (vcDocument) {
             profile.vcDocument = vcDocument;
@@ -310,7 +305,7 @@ export class UserProfileComponent implements OnInit {
     randomKey() {
         this.loading = true;
         const value: any = {
-            standardRegistry: this.hederaForm.value.standardRegistry,
+            standardRegistry: this.standardRegistryControl.value,
         }
         if (this.hederaForm.value.vc) {
             value.vc = this.hederaForm.value.vc;
@@ -538,5 +533,17 @@ export class UserProfileComponent implements OnInit {
                 this.headerProps.setLoading(false);
             }, 200);
         }
+    }
+
+    selectStandardRegistry(did: string): void {
+        this.standardRegistryControl.setValue(did);
+    }
+
+    isRegistrySelected(did: string): boolean {
+        return this.standardRegistryControl.value === did;
+    }
+
+    get isStandardRegistrySelected(): boolean {
+        return !!this.standardRegistryControl.value;
     }
 }

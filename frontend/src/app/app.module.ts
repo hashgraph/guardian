@@ -69,6 +69,7 @@ import { CommonComponentsModule } from './modules/common/common-components.modul
 import { TagEngineModule } from './modules/tag-engine/tag-engine.module';
 import { SchemaEngineModule } from './modules/schema-engine/schema-engine.module'
 import { ThemeService } from './services/theme.service';
+import { StandardRegistryCardComponent } from './components/standard-registry-card/standard-registry-card.component';
 
 @NgModule({
     declarations: [
@@ -94,6 +95,7 @@ import { ThemeService } from './services/theme.service';
         RetireTokenDialogComponent,
         DataInputDialogComponent,
         SchemaConfigComponent,
+        StandardRegistryCardComponent,
     ],
     imports: [
         BrowserModule,

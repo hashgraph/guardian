@@ -1,0 +1,313 @@
+[
+    {
+        "did": "did:hedera:testnet:FiLAc3aay7iF2zKFdjV1zQfcki5yhECEdCzDwjqf7PKh_0.0.4637441",
+        "vcDocument": {
+            "_id": "645d2227215248b7d3dc0063",
+            "createDate": "2023-05-11T17:13:11.349Z",
+            "updateDate": "2023-05-11T17:13:15.638Z",
+            "owner": "did:hedera:testnet:FiLAc3aay7iF2zKFdjV1zQfcki5yhECEdCzDwjqf7PKh_0.0.4637441",
+            "hash": "7fKksiXbUMYK7JTrXGBXFHChD2AM583obdAVsoqq93VG",
+            "document": {
+                "id": "urn:uuid:dcf93079-8c80-4865-9a39-60d596101281",
+                "type": ["VerifiableCredential"],
+                "issuer": "did:hedera:testnet:FiLAc3aay7iF2zKFdjV1zQfcki5yhECEdCzDwjqf7PKh_0.0.4637441",
+                "issuanceDate": "2023-05-11T17:13:11.196Z",
+                "@context": [
+                    "https://www.w3.org/2018/credentials/v1",
+                    "ipfs://bafkreiam7a2vox6q7yweh4xsebpp4vnonasxlzcdsaxt2cicviax4f7ruq"
+                ],
+                "credentialSubject": [
+                    {
+                        "geography": "geography",
+                        "law": "low 123",
+                        "tags": "tags, tags b, tags c",
+                        "ISIC": "isic sheet",
+                        "@context": [
+                            "ipfs://bafkreiam7a2vox6q7yweh4xsebpp4vnonasxlzcdsaxt2cicviax4f7ruq"
+                        ],
+                        "id": "did:hedera:testnet:FiLAc3aay7iF2zKFdjV1zQfcki5yhECEdCzDwjqf7PKh_0.0.4637441",
+                        "type": "StandardRegistry"
+                    }
+                ],
+                "proof": {
+                    "type": "Ed25519Signature2018",
+                    "created": "2023-05-11T17:13:11Z",
+                    "verificationMethod": "did:hedera:testnet:FiLAc3aay7iF2zKFdjV1zQfcki5yhECEdCzDwjqf7PKh_0.0.4637441#did-root-key",
+                    "proofPurpose": "assertionMethod",
+                    "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..XxQha-Vm1xy0wJEV40YCNdXvsWFP6apz_Cyq1htMK86XVMSOvapos5QeNmM7WnKwUWmutZJk9p5FgzfWxNEyAg"
+                }
+            },
+            "documentFileId": "645d222b215248b7d3dc0064",
+            "hederaStatus": "ISSUE",
+            "signature": 0,
+            "type": "STANDARD_REGISTRY",
+            "option": {},
+            "messageId": "1683825194.689747751",
+            "topicId": "0.0.4637441",
+            "id": "645d2227215248b7d3dc0063"
+        },
+        "policies": [],
+        "username": "01u9ssii",
+		"hederaAccountId": "0.0.4645736"
+    },
+    {
+        "did": "did:hedera:testnet:2EdyBmCSHPybess1xSJcqcJkhWRVbXRVYUotrLGLta5M_0.0.4637798",
+        "vcDocument": {
+            "_id": "645d327dd95fb9d519547b42",
+            "createDate": "2023-05-11T18:22:53.427Z",
+            "updateDate": "2023-05-11T18:22:57.966Z",
+            "owner": "did:hedera:testnet:2EdyBmCSHPybess1xSJcqcJkhWRVbXRVYUotrLGLta5M_0.0.4637798",
+            "hash": "uhAaZc7SF9avguNuyRr1vu5EDSuYZ2Wk82D2QX8YNvo",
+            "document": {
+                "id": "urn:uuid:5ade8897-102c-4df5-b79c-d2e93f66c95a",
+                "type": ["VerifiableCredential"],
+                "issuer": "did:hedera:testnet:2EdyBmCSHPybess1xSJcqcJkhWRVbXRVYUotrLGLta5M_0.0.4637798",
+                "issuanceDate": "2023-05-11T18:22:53.286Z",
+                "@context": [
+                    "https://www.w3.org/2018/credentials/v1",
+                    "ipfs://bafkreiam7a2vox6q7yweh4xsebpp4vnonasxlzcdsaxt2cicviax4f7ruq"
+                ],
+                "credentialSubject": [
+                    {
+                        "geography": "fasfads",
+                        "law": "fasdfads",
+                        "tags": "fasdfads",
+                        "ISIC": "asdfsd",
+                        "@context": [
+                            "ipfs://bafkreiam7a2vox6q7yweh4xsebpp4vnonasxlzcdsaxt2cicviax4f7ruq"
+                        ],
+                        "id": "did:hedera:testnet:2EdyBmCSHPybess1xSJcqcJkhWRVbXRVYUotrLGLta5M_0.0.4637798",
+                        "type": "StandardRegistry"
+                    }
+                ],
+                "proof": {
+                    "type": "Ed25519Signature2018",
+                    "created": "2023-05-11T18:22:53Z",
+                    "verificationMethod": "did:hedera:testnet:2EdyBmCSHPybess1xSJcqcJkhWRVbXRVYUotrLGLta5M_0.0.4637798#did-root-key",
+                    "proofPurpose": "assertionMethod",
+                    "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..Pw_tcwth4VUXqH7c3o3G98KbyVFe97OYdU9HAOAKuqCDcaTh87XYpdoYSNzthyk1aI8KsRKkOeJKO6jI1q5PDg"
+                }
+            },
+            "documentFileId": "645d3281d95fb9d519547b43",
+            "hederaStatus": "ISSUE",
+            "signature": 0,
+            "type": "STANDARD_REGISTRY",
+            "option": {},
+            "messageId": "1683829376.542120003",
+            "topicId": "0.0.4637798",
+            "id": "645d327dd95fb9d519547b42"
+        },
+        "policies": [
+            {
+                "_id": "645d3429d95fb9d519547b45",
+                "createDate": "2023-05-11T18:30:01.654Z",
+                "uuid": "973ae100-cfe9-448f-9b37-63dc32a9b844",
+                "name": "iREC",
+                "description": "",
+                "status": "DRAFT",
+                "creator": "did:hedera:testnet:2EdyBmCSHPybess1xSJcqcJkhWRVbXRVYUotrLGLta5M_0.0.4637798",
+                "owner": "did:hedera:testnet:2EdyBmCSHPybess1xSJcqcJkhWRVbXRVYUotrLGLta5M_0.0.4637798",
+                "topicId": "0.0.4637817",
+                "policyTag": "Tag_1683829788961",
+                "codeVersion": "1.5.1",
+                "userRoles": ["Administrator"],
+                "userGroups": [],
+                "userRole": "Administrator",
+                "userGroup": null,
+                "id": "645d3429d95fb9d519547b45"
+            }
+        ],
+        "username": "027sfdrfe",
+		"hederaAccountId": "0.0.4645839"
+    },
+    {
+        "did": "did:hedera:testnet:AyZTjXq2HC3pmEvzJMYoNjkPNZzgNAtvQZntKTtLXZ2B_0.0.4638261",
+        "vcDocument": {
+            "_id": "645d60e071a0f0e5620056b5",
+            "createDate": "2023-05-11T21:40:48.214Z",
+            "updateDate": "2023-05-11T21:40:52.861Z",
+            "owner": "did:hedera:testnet:AyZTjXq2HC3pmEvzJMYoNjkPNZzgNAtvQZntKTtLXZ2B_0.0.4638261",
+            "hash": "3aERUXDqjwJ7GcnbPyoNPfueUNXCeWoqzbK5cCwYWBax",
+            "document": {
+                "id": "urn:uuid:eb743b9c-135b-4b8f-a39a-7dc548d6770f",
+                "type": ["VerifiableCredential"],
+                "issuer": "did:hedera:testnet:AyZTjXq2HC3pmEvzJMYoNjkPNZzgNAtvQZntKTtLXZ2B_0.0.4638261",
+                "issuanceDate": "2023-05-11T21:40:48.058Z",
+                "@context": [
+                    "https://www.w3.org/2018/credentials/v1",
+                    "ipfs://bafkreiam7a2vox6q7yweh4xsebpp4vnonasxlzcdsaxt2cicviax4f7ruq"
+                ],
+                "credentialSubject": [
+                    {
+                        "geography": "local xpto",
+                        "law": "low xpto",
+                        "tags": "tags xpto, a, b, c",
+                        "ISIC": "isic value IDK",
+                        "@context": [
+                            "ipfs://bafkreiam7a2vox6q7yweh4xsebpp4vnonasxlzcdsaxt2cicviax4f7ruq"
+                        ],
+                        "id": "did:hedera:testnet:AyZTjXq2HC3pmEvzJMYoNjkPNZzgNAtvQZntKTtLXZ2B_0.0.4638261",
+                        "type": "StandardRegistry"
+                    }
+                ],
+                "proof": {
+                    "type": "Ed25519Signature2018",
+                    "created": "2023-05-11T21:40:48Z",
+                    "verificationMethod": "did:hedera:testnet:AyZTjXq2HC3pmEvzJMYoNjkPNZzgNAtvQZntKTtLXZ2B_0.0.4638261#did-root-key",
+                    "proofPurpose": "assertionMethod",
+                    "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..dxkB4m5aSWc8NNse_i6YTvmWOTtVseSVd-nLr8fWLHMABg_L90Vq1VM2l6FJKPLuCqggDzJ8lNLxFme7okfBCQ"
+                }
+            },
+            "documentFileId": "645d60e471a0f0e5620056b6",
+            "hederaStatus": "ISSUE",
+            "signature": 0,
+            "type": "STANDARD_REGISTRY",
+            "option": {},
+            "messageId": "1683841250.922460003",
+            "topicId": "0.0.4638261",
+            "id": "645d60e071a0f0e5620056b5"
+        },
+        "policies": [],
+        "username": "7893ndkflw",
+		"hederaAccountId": "0.0.4875736"
+    },
+    {
+        "did": "did:hedera:testnet:AyZTjXq2HC3pmEvzJyu57vdctvQZntKTtLXZ2B_0.0.4638261",
+        "vcDocument": {
+            "_id": "645d60e071a0f0e5620056b5",
+            "createDate": "2023-05-11T21:40:48.214Z",
+            "updateDate": "2023-05-11T21:40:52.861Z",
+            "owner": "did:hedera:testnet:AyZTjXq2HC3pmEvzJMYoNjkPNZzgNAtvQZntKTtLXZ2B_0.0.4638261",
+            "hash": "3aERUXDqjwJ7GcnbPyoNPfueUNXCeWoqzbK5cCwYWBax",
+            "document": {
+                "id": "urn:uuid:eb743b9c-135b-4b8f-a39a-7dc548d6770f",
+                "type": ["VerifiableCredential"],
+                "issuer": "did:hedera:testnet:AyZTjXq2HC3pmEvzJMYoNjkPNZzgNAtvQZntKTtLXZ2B_0.0.4638261",
+                "issuanceDate": "2023-05-11T21:40:48.058Z",
+                "@context": [
+                    "https://www.w3.org/2018/credentials/v1",
+                    "ipfs://bafkreiam7a2vox6q7yweh4xsebpp4vnonasxlzcdsaxt2cicviax4f7ruq"
+                ],
+                "credentialSubject": [
+                    {
+                        "geography": "local xpto",
+                        "law": "low xpto",
+                        "tags": "tags xpto, a, b, c",
+                        "ISIC": "isic value IDK",
+                        "@context": [
+                            "ipfs://bafkreiam7a2vox6q7yweh4xsebpp4vnonasxlzcdsaxt2cicviax4f7ruq"
+                        ],
+                        "id": "did:hedera:testnet:AyZTjXq2HC3pmEvzJMYoNjkPNZzgNAtvQZntKTtLXZ2B_0.0.4638261",
+                        "type": "StandardRegistry"
+                    }
+                ],
+                "proof": {
+                    "type": "Ed25519Signature2018",
+                    "created": "2023-05-11T21:40:48Z",
+                    "verificationMethod": "did:hedera:testnet:AyZTjXq2HC3pmEvzJMYoNjkPNZzgNAtvQZntKTtLXZ2B_0.0.4638261#did-root-key",
+                    "proofPurpose": "assertionMethod",
+                    "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..dxkB4m5aSWc8NNse_i6YTvmWOTtVseSVd-nLr8fWLHMABg_L90Vq1VM2l6FJKPLuCqggDzJ8lNLxFme7okfBCQ"
+                }
+            },
+            "documentFileId": "645d60e471a0f0e5620056b6",
+            "hederaStatus": "ISSUE",
+            "signature": 0,
+            "type": "STANDARD_REGISTRY",
+            "option": {},
+            "messageId": "1683841250.922460003",
+            "topicId": "0.0.4638261",
+            "id": "645d60e071a0f0e5620056b5"
+        },
+        "policies": [
+            {
+                "_id": "645d3429d95fb9d519547b45",
+                "createDate": "2023-05-11T18:30:01.654Z",
+                "uuid": "973ae100-cfe9-448f-9b37-63dc32a9b844",
+                "name": "Verra",
+                "description": "",
+                "status": "DRAFT",
+                "creator": "did:hedera:testnet:2EdyBmCSHPybess1xSJcqcJkhWRVbXRVYUotrLGLta5M_0.0.4637798",
+                "owner": "did:hedera:testnet:2EdyBmCSHPybess1xSJcqcJkhWRVbXRVYUotrLGLta5M_0.0.4637798",
+                "topicId": "0.0.4637817",
+                "policyTag": "Tag_1683829788961",
+                "codeVersion": "1.5.1",
+                "userRoles": ["Administrator"],
+                "userGroups": [],
+                "userRole": "Administrator",
+                "userGroup": null,
+                "id": "645d3429d95fb9d519547b45"
+            },
+            {
+                "_id": "645d3429d95fb9d519547b45",
+                "createDate": "2023-05-11T18:30:01.654Z",
+                "uuid": "973ae100-cfe9-448f-9b37-63dc32a9b844",
+                "name": "DOVU",
+                "description": "",
+                "status": "DRAFT",
+                "creator": "did:hedera:testnet:2EdyBmCSHPybess1xSJcqcJkhWRVbXRVYUotrLGLta5M_0.0.4637798",
+                "owner": "did:hedera:testnet:2EdyBmCSHPybess1xSJcqcJkhWRVbXRVYUotrLGLta5M_0.0.4637798",
+                "topicId": "0.0.4637817",
+                "policyTag": "Tag_1683829788961",
+                "codeVersion": "1.5.1",
+                "userRoles": ["Administrator"],
+                "userGroups": [],
+                "userRole": "Administrator",
+                "userGroup": null,
+                "id": "645d3429d95fb9d519547b45"
+            }
+        ],
+        "username": "82hnmssq8",
+		"hederaAccountId": "0.0.4775731"
+    },
+        {
+        "did": "did:hedera:testnet:AyZTjXq2HC3pmEvzJMYoNjkPNZzgNAtvQ65hgfjngZ2B_0.0.4638261",
+        "vcDocument": {
+            "_id": "645d60e071a0f0e5620056b5",
+            "createDate": "2023-05-11T21:40:48.214Z",
+            "updateDate": "2023-05-11T21:40:52.861Z",
+            "owner": "did:hedera:testnet:AyZTjXq2HC3pmEvzJMYoNjkPNZzgNAtvQZntKTtLXZ2B_0.0.4638261",
+            "hash": "3aERUXDqjwJ7GcnbPyoNPfueUNXCeWoqzbK5cCwYWBax",
+            "document": {
+                "id": "urn:uuid:eb743b9c-135b-4b8f-a39a-7dc548d6770f",
+                "type": ["VerifiableCredential"],
+                "issuer": "did:hedera:testnet:AyZTjXq2HC3pmEvzJMYoNjkPNZzgNAtvQZntKTtLXZ2B_0.0.4638261",
+                "issuanceDate": "2023-05-11T21:40:48.058Z",
+                "@context": [
+                    "https://www.w3.org/2018/credentials/v1",
+                    "ipfs://bafkreiam7a2vox6q7yweh4xsebpp4vnonasxlzcdsaxt2cicviax4f7ruq"
+                ],
+                "credentialSubject": [
+                    {
+                        "geography": "local xpto",
+                        "law": "low xpto",
+                        "tags": "tags xpto, a, b, c",
+                        "ISIC": "isic value IDK",
+                        "@context": [
+                            "ipfs://bafkreiam7a2vox6q7yweh4xsebpp4vnonasxlzcdsaxt2cicviax4f7ruq"
+                        ],
+                        "id": "did:hedera:testnet:AyZTjXq2HC3pmEvzJMYoNjkPNZzgNAtvQZntKTtLXZ2B_0.0.4638261",
+                        "type": "StandardRegistry"
+                    }
+                ],
+                "proof": {
+                    "type": "Ed25519Signature2018",
+                    "created": "2023-05-11T21:40:48Z",
+                    "verificationMethod": "did:hedera:testnet:AyZTjXq2HC3pmEvzJMYoNjkPNZzgNAtvQZntKTtLXZ2B_0.0.4638261#did-root-key",
+                    "proofPurpose": "assertionMethod",
+                    "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..dxkB4m5aSWc8NNse_i6YTvmWOTtVseSVd-nLr8fWLHMABg_L90Vq1VM2l6FJKPLuCqggDzJ8lNLxFme7okfBCQ"
+                }
+            },
+            "documentFileId": "645d60e471a0f0e5620056b6",
+            "hederaStatus": "ISSUE",
+            "signature": 0,
+            "type": "STANDARD_REGISTRY",
+            "option": {},
+            "messageId": "1683841250.922460003",
+            "topicId": "0.0.4638261",
+            "id": "645d60e071a0f0e5620056b5"
+        },
+        "policies": [],
+        "username": "027njhg72",
+		"hederaAccountId": "0.0.4321724"
+    }
+]
