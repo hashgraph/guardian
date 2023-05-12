@@ -7,7 +7,7 @@ import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfac
 import { AnyBlockType, IPolicyDocument, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
 import { BlockActionError } from '@policy-engine/errors';
 import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
 import {
     MessageServer,
     MessageAction,
@@ -19,6 +19,7 @@ import {
     Message,
     MessageType,
     VCMessage,
+    VcHelper,
 } from '@guardian/common';
 import {
     ExternalDocuments,
@@ -138,6 +139,32 @@ export class ExternalTopicBlock {
         return this.schema;
     }
 
+    private async getUser(user: IPolicyUser): Promise<ExternalDocument> {
+        const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+        let item = await ref.databaseServer.getExternalTopic(ref.policyId, ref.uuid, user.did);
+        if (!item) {
+            item = await ref.databaseServer.createExternalTopic({
+                policyId: ref.policyId,
+                blockId: ref.uuid,
+                owner: user.did,
+                documentTopicId: '',
+                policyTopicId: '',
+                instanceTopicId: '',
+                documentMessage: '',
+                policyMessage: '',
+                policyInstanceMessage: '',
+                schemas: [],
+                schema: null,
+                schemaId: null,
+                active: false,
+                lastMessage: '',
+                lastUpdate: '',
+                status: 'NEED_TOPIC'
+            });
+        }
+        return item;
+    }
+
     private async searchTopic(topicId: string, topicTree: TopicResult = {}): Promise<TopicResult> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         if (topicTree.count) {
@@ -182,13 +209,11 @@ export class ExternalTopicBlock {
         throw new BlockActionError('Invalid topic', ref.blockType, ref.uuid);
     }
 
-    private async addTopic(user: IPolicyUser, topicId: string): Promise<ExternalDocument> {
+    private async addTopic(item: ExternalDocument, topicId: string): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
 
-        const current = await ref.databaseServer.getExternalTopic(ref.policyId, ref.uuid, user.did);
-        if (current) {
-            throw new BlockActionError('', ref.blockType, ref.uuid);
-        }
+        item.status = 'SEARCH';
+        await ref.databaseServer.updateExternalTopic(item);
 
         const topicTree = await this.searchTopic(topicId);
 
@@ -202,35 +227,27 @@ export class ExternalTopicBlock {
             }
         });
 
-        const item = await ref.databaseServer.createExternalTopic({
-            policyId: ref.policyId,
-            blockId: ref.uuid,
-            owner: user.did,
-            documentTopicId: topic.topicId?.toString(),
-            policyTopicId: policy.topicId?.toString(),
-            instanceTopicId: instance.instanceTopicId?.toString(),
-            documentMessage: topic.toMessageObject(),
-            policyMessage: policy.toMessageObject(),
-            policyInstanceMessage: instance.toMessageObject(),
-            schemas: list,
-            schema: null,
-            schemaId: null,
-            active: false,
-            lastIndex: 0,
-            lastUpdate: ''
-        });
-        return item;
+        item.status = 'NEED_SCHEMA';
+        item.documentTopicId = topic.topicId?.toString();
+        item.policyTopicId = policy.topicId?.toString();
+        item.instanceTopicId = instance.instanceTopicId?.toString();
+        item.documentMessage = topic.toMessageObject();
+        item.policyMessage = policy.toMessageObject();
+        item.policyInstanceMessage = instance.toMessageObject();
+        item.schemas = list;
+        item.active = false;
+        item.lastMessage = '';
+        item.lastUpdate = '';
+        await ref.databaseServer.updateExternalTopic(item);
     }
 
-    private async addSchema(user: IPolicyUser, schemaId: string): Promise<ExternalDocument> {
+    private async addSchema(item: ExternalDocument, schemaId: string): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
 
-        const item = await ref.databaseServer.getExternalTopic(ref.policyId, ref.uuid, user.did);
-
-        if (!item) {
+        if (item.status === 'NEED_TOPIC') {
             throw new BlockActionError('Topic not set.', ref.blockType, ref.uuid);
         }
-        if (item.active) {
+        if (item.status !== 'NEED_SCHEMA') {
             throw new BlockActionError('Schema already set', ref.blockType, ref.uuid);
         }
         if (!item.schemas) {
@@ -242,99 +259,114 @@ export class ExternalTopicBlock {
             throw new BlockActionError('Schema not found', ref.blockType, ref.uuid);
         }
 
+        item.status = 'FREE';
         item.schemaId = schemaId;
         item.schema = schema;
         item.active = true;
         await ref.databaseServer.updateExternalTopic(item);
-
-        return item;
     }
 
-    private async receiveData(item: ExternalDocument): Promise<IPolicyDocument[]> {
+    private async checkDocument(item: ExternalDocument, document: IVC): Promise<string> {
+        if (!document) {
+            return 'Invalid document';
+        }
+
+        if (
+            !Array.isArray(document['@context']) ||
+            document['@context'].indexOf(item.schemaId) === -1
+        ) {
+            return 'Invalid schema';
+        }
+
+        let verify: boolean;
+        try {
+            const VCHelper = new VcHelper();
+            const res = await VCHelper.verifySchema(document);
+            verify = res.ok;
+            if (verify) {
+                verify = await VCHelper.verifyVC(document);
+            }
+        } catch (error) {
+            verify = false;
+        }
+
+        if (!verify) {
+            return 'Invalid proof';
+        }
+
+        return null;
+    }
+
+    private async checkMessage(
+        ref: AnyBlockType,
+        item: ExternalDocument,
+        hederaAccount: IHederaAccount,
+        user: IPolicyUser,
+        message: VCMessage
+    ): Promise<void> {
+        if (message.type !== MessageType.VCDocument) {
+            console.log(' --- ', message.type);
+            return;
+        }
+        // if (message.payer !== hederaAccount.hederaAccountId) {
+        //     console.log(' --- ', message.payer);
+        //     return;
+        // }
+
+        await MessageServer.loadDocument(message, hederaAccount.hederaAccountKey);
+
+        const document: IVC = message.getDocument();
+        const error = await this.checkDocument(item, document);
+        if (error) {
+            console.log(' --- ', error);
+            return;
+        }
+
+        const result: IPolicyDocument = PolicyUtils.createPolicyDocument(ref, user, document);
+
+        const state = { data: result };
+        ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
+        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
+            documents: ExternalDocuments(result)
+        }));
+    }
+
+    private async receiveData(item: ExternalDocument): Promise<void> {
         console.log('--- receiveData ---');
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const hederaAccount = await PolicyUtils.getHederaAccount(ref, item.owner);
         const user = await PolicyUtils.createPolicyUser(ref, item.owner);
-
-        let messages: VCMessage[] = await MessageServer.getMessages(
+        const messages: VCMessage[] = await MessageServer.getMessages(
             item.documentTopicId,
             null,
             null,
             item.lastMessage
         );
-        const lastMessage = messages[messages.length - 1];
-        // messages = messages.filter(m =>
-        //     m.type === MessageType.VCDocument &&
-        //     m.issuer === item.owner
-        // );
-        messages = messages.filter(m => m.type === MessageType.VCDocument);
-
-        await MessageServer.loadDocuments(messages, hederaAccount.hederaAccountKey);
-
-        console.log(messages);
-
-        const result: IPolicyDocument[] = [];
         for (const message of messages) {
-            const document: IVC = message.getDocument();
-            const item = PolicyUtils.createPolicyDocument(ref, user, document);
-            result.push(item);
+            await this.checkMessage(ref, item, hederaAccount, user, message);
+            item.lastMessage = message.id;
+            await ref.databaseServer.updateExternalTopic(item);
         }
-
-        console.log(result);
-
-
-        // const schema = await this.getSchema();
-        // const docOwner = await PolicyUtils.getHederaAccount(ref, data.owner);
-        // const vc = VcDocument.fromJsonTree(data.document);
-        // const accounts = PolicyUtils.getHederaAccounts(vc, docOwner.hederaAccountId, schema);
-        // let doc = PolicyUtils.createVC(ref, user, vc);
-        // doc.type = ref.options.entityType;
-        // doc.schema = ref.options.schema;
-        // doc.accounts = accounts;
-        // doc.signature = (verify ?
-        //     DocumentSignature.VERIFIED :
-        //     DocumentSignature.INVALID);
-        // doc = PolicyUtils.setDocumentRef(doc, documentRef);
-        // for (const message of data) {
-        // const error = await this.validateDocuments(user, message);
-        // if (error) {
-        //     continue;
-        // }
-        // let verify: boolean;
-        // try {
-        //     const VCHelper = new VcHelper();
-        //     const res = await VCHelper.verifySchema(data.document);
-        //     verify = res.ok;
-        //     if (verify) {
-        //         verify = await VCHelper.verifyVC(data.document);
-        //     }
-        // } catch (error) {
-        //     ref.error(`Verify VC: ${PolicyUtils.getErrorMessage(error)}`)
-        //     verify = false;
-        // }
-        // result.push(message);
-        // }
-
-        item.lastUpdate = (new Date()).toISOString();
-        if (lastMessage && lastMessage.id) {
-            item.lastMessage = lastMessage.id;
-        }
-        await ref.databaseServer.updateExternalTopic(item);
-        return result;
     }
 
     private async runByUser(item: ExternalDocument): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-        const documents = await this.receiveData(item);
-        if (documents && documents.length) {
-            const state = { data: documents };
-            const user = new PolicyUser(item.owner, !!ref.dryRun);
-            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
-            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
-            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
-                documents: ExternalDocuments(documents)
-            }));
+        if (item.status === 'PROCESSING') {
+            throw new BlockActionError('Process already started', ref.blockType, ref.uuid);
+        }
+        item.status = 'PROCESSING';
+        item.lastUpdate = (new Date()).toISOString();
+        await ref.databaseServer.updateExternalTopic(item);
+        try {
+            await this.receiveData(item);
+            item.status = 'FREE';
+            await ref.databaseServer.updateExternalTopic(item);
+        } catch (error) {
+            item.status = 'FREE';
+            await ref.databaseServer.updateExternalTopic(item);
+            ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
         }
     }
 
@@ -386,18 +418,17 @@ export class ExternalTopicBlock {
         }
 
         try {
+            const item = await this.getUser(user);
             switch (operation) {
                 case 'SetTopic': {
-                    await this.addTopic(user, value);
+                    await this.addTopic(item, value);
                     return true;
                 }
                 case 'SetSchema': {
-                    const item = await this.addSchema(user, value);
-                    // await this.runByUser(item);
+                    await this.addSchema(item, value);
                     return true;
                 }
                 case 'Refresh': {
-                    const item = await ref.databaseServer.getExternalTopic(ref.policyId, ref.uuid, user.did);
                     await this.runByUser(item);
                     return true;
                 }
@@ -418,7 +449,6 @@ export class ExternalTopicBlock {
     public async getData(user: IPolicyUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const item = await ref.databaseServer.getExternalTopic(ref.policyId, ref.uuid, user.did);
-        console.log('getData');
         if (item) {
             return {
                 documentTopicId: item.documentTopicId,
@@ -430,9 +460,11 @@ export class ExternalTopicBlock {
                 schemas: item.schemas,
                 schema: item.schema,
                 lastUpdate: item.lastUpdate,
+                status: item.status
             };
         } else {
             return {};
         }
     }
 }
+

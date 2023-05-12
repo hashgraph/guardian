@@ -352,8 +352,8 @@ export class MessageServer {
      * @private
      */
     private async getTopicMessages(
-        topicId: string | TopicId, 
-        type?: MessageType, 
+        topicId: string | TopicId,
+        type?: MessageType,
         action?: MessageAction,
         timestamp?: string
     ): Promise<Message[]> {
@@ -496,6 +496,21 @@ export class MessageServer {
             await message.loadDocuments(documents, this.clientOptions.operatorKey);
         }
         return messages;
+    }
+
+    /**
+     * Load document
+     * @param message
+     */
+    public static async loadDocument<T extends Message>(message: T, cryptoKey?: string): Promise<T> {
+        const urls = message.getUrls();
+        const documents: any[] = [];
+        for (const url of urls) {
+            const doc = await IPFS.getFile(url.cid, message.responseType);
+            documents.push(doc);
+        }
+        await message.loadDocuments(documents, cryptoKey);
+        return message;
     }
 
     /**

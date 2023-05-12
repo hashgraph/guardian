@@ -91,6 +91,12 @@ export class ExternalDocument extends BaseEntity {
     lastUpdate?: string;
 
     /**
+     * Status
+     */
+    @Property({ nullable: true })
+    status?: string;
+
+    /**
      * Default document values
      */
     @BeforeCreate()
