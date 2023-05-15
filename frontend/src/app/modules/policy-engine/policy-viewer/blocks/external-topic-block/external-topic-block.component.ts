@@ -29,6 +29,7 @@ export class ExternalTopicBlockComponent implements OnInit {
     public schemas: any[] | null = null;
     public schema: any = null;
     public lastUpdate: string | null = null;
+    public status: string | null = null;
 
     public topicForm = this.fb.group({
         topicId: ['0.0.4605481', Validators.required],
@@ -95,6 +96,7 @@ export class ExternalTopicBlockComponent implements OnInit {
 
     setData(data: any) {
         if (data) {
+            this.status = data.status;
             this.documentTopicId = data.documentTopicId;
             this.instanceTopicId = data.instanceTopicId;
             this.policyTopicId = data.policyTopicId;
@@ -104,7 +106,13 @@ export class ExternalTopicBlockComponent implements OnInit {
             this.schemas = data.schemas;
             this.schema = data.schema;
             this.lastUpdate = data.lastUpdate;
+            if(this.status === 'NEED_SCHEMA' && this.schemas?.length === 1) {
+                this.schemaForm.setValue({ 
+                    schemaId: this.schemas[0].id
+                })
+            }
         } else {
+            this.status = null;
             this.documentTopicId = null;
             this.instanceTopicId = null;
             this.policyTopicId = null;
@@ -125,9 +133,7 @@ export class ExternalTopicBlockComponent implements OnInit {
             value: form?.topicId
         };
         this.policyEngineService.setBlockData(this.id, this.policyId, data).subscribe(() => {
-            setTimeout(() => {
-                this.loadData();
-            }, 2000);
+            this.loadData();
         }, (e) => {
             console.error(e.error);
             this.loading = false;
@@ -142,9 +148,7 @@ export class ExternalTopicBlockComponent implements OnInit {
             value: form?.schemaId
         };
         this.policyEngineService.setBlockData(this.id, this.policyId, data).subscribe(() => {
-            setTimeout(() => {
-                this.loadData();
-            }, 2000);
+            this.loadData();
         }, (e) => {
             console.error(e.error);
             this.loading = false;

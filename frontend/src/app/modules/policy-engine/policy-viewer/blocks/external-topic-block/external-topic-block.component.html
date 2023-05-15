@@ -3,7 +3,7 @@
 </div>
 
 <div class="content">
-    <div *ngIf="!documentTopicId" class="page">
+    <div *ngIf="!status || status === 'NEED_TOPIC'" class="page">
         <form class="form" [formGroup]="topicForm" (submit)="setTopic()">
             <mat-form-field appearance="outline">
                 <mat-label>* Topic Id</mat-label>
@@ -11,13 +11,13 @@
             </mat-form-field>
             <div style="margin-top: 15px">
                 <button mat-raised-button color="primary" type="submit" [disabled]="!topicForm.valid">
-                    Enter
+                    Search
                 </button>
             </div>
         </form>
     </div>
 
-    <div *ngIf="documentTopicId && !schema" class="page">
+    <div *ngIf="status === 'NEED_SCHEMA'" class="page">
         <div *ngIf="policyTopicId" class="field">
             <div class="field-name">Policy Topic Id</div>
             <div class="field-value">{{policyTopicId}}</div>
@@ -47,19 +47,21 @@
             <mat-form-field appearance="outline">
                 <mat-label>* Schema</mat-label>
                 <mat-select formControlName="schemaId" placeholder="Schema">
-                    <mat-option *ngFor="let s of schemas" [value]="s.id">{{s.name}}</mat-option>
+                    <mat-option *ngFor="let s of schemas" [value]="s.id" class="schema-status-{{s.status}}">
+                        {{s.name}}
+                    </mat-option>
                 </mat-select>
             </mat-form-field>
 
             <div style="margin-top: 15px">
                 <button mat-raised-button color="primary" type="submit" [disabled]="!topicForm.valid">
-                    Enter
+                    Submit
                 </button>
             </div>
         </form>
     </div>
 
-    <div *ngIf="documentTopicId && schema" class="page">
+    <div *ngIf="status === 'FREE'" class="page">
         <div *ngIf="policyTopicId" class="field">
             <div class="field-name">Policy Topic Id</div>
             <div class="field-value">{{policyTopicId}}</div>
@@ -97,6 +99,24 @@
             <button mat-raised-button color="primary" (click)="onRefresh()">
                 Load Documents
             </button>
+        </div>
+    </div>
+
+    <div *ngIf="status === 'PROCESSING'" class="page">
+        <div class="sub-loading">
+            <div>Processing...</div>
+        </div>
+    </div>
+
+    <div *ngIf="status === 'SEARCH'" class="page">
+        <div class="sub-loading">
+            <div>Search...</div>
+        </div>
+    </div>
+
+    <div *ngIf="status === 'VERIFICATION'" class="page">
+        <div class="sub-loading">
+            <div>Verification...</div>
         </div>
     </div>
 </div>

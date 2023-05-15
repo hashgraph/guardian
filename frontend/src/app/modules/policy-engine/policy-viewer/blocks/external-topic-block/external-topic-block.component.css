@@ -13,12 +13,33 @@
     align-content: center;
 }
 
+.sub-loading {
+    background: #fff;
+    position: absolute;
+    z-index: 9;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
+}
+
+.content {
+    position: relative;
+}
+
 .page {
     width: 650px;
+    min-height: 150px;
     margin: 40px auto;
     padding: 10px;
     border: 1px solid #c3c3c3;
     border-radius: 4px;
+    position: relative;
 }
 
 .form {
@@ -57,4 +78,8 @@
     padding-left: 8px;
     min-width: 240px;
     position: relative;
+}
+
+.schema-status-INCOMPATIBLE {
+    color: #e50000 !important;
 }

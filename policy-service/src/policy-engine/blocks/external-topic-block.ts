@@ -1,5 +1,5 @@
 import { ActionCallback, EventBlock } from '@policy-engine/helpers/decorators';
-import { IVC, IVCDocument, Schema, TopicType } from '@guardian/interfaces';
+import { IVC, IVCDocument, Schema, SchemaField, SchemaHelper, TopicType } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
@@ -20,6 +20,7 @@ import {
     MessageType,
     VCMessage,
     VcHelper,
+    IPFS,
 } from '@guardian/common';
 import {
     ExternalDocuments,
@@ -121,6 +122,83 @@ export class ExternalTopicBlock {
         return null;
     }
 
+    private updateStatus(ref: AnyBlockType, item: ExternalDocument, user: IPolicyUser) {
+        console.log('updateStatus', item.status);
+        ref.updateBlock({ status: item.status }, user);
+    }
+
+    private getSchemaFields(document: any) {
+        try {
+            if (typeof document === 'string') {
+                document = JSON.parse(document);
+            }
+            return SchemaHelper.parseFields(document, null, null, false);
+        } catch (error) {
+            return null;
+        }
+    }
+
+    private compareFields(f1: SchemaField, f2: SchemaField): boolean {
+        if (
+            f1.name !== f2.name ||
+            f1.title !== f2.title ||
+            f1.description !== f2.description ||
+            f1.required !== f2.required ||
+            f1.isArray !== f2.isArray ||
+            f1.isRef !== f2.isRef
+        ) {
+            return false;
+        }
+        if (f1.isRef) {
+            return true;
+        } else {
+            return (
+                f1.type === f2.type &&
+                f1.format === f2.format &&
+                f1.pattern === f2.pattern &&
+                f1.unit === f2.unit &&
+                f1.unitSystem === f2.unitSystem &&
+                f1.customType === f2.customType
+            );
+        }
+        // remoteLink?: string;
+        // enum?: string[];
+    }
+
+    private ifExtendFields(extension: SchemaField[], base: SchemaField[]): boolean {
+        try {
+            if (!extension || !base) {
+                console.log('-- 1')
+                return false;
+            }
+            const map = new Map<string, SchemaField>();
+            for (const f of extension) {
+                map.set(f.name, f);
+            }
+            for (const baseField of base) {
+                const extensionField = map.get(baseField.name)
+                if (!extensionField) {
+                    console.log('-- 2')
+                    return false;
+                }
+                if (!this.compareFields(baseField, extensionField)) {
+                    console.log('-- 3')
+                    return false;
+                }
+                if (baseField.isRef) {
+                    if (!this.ifExtendFields(extensionField.fields, baseField.fields)) {
+                        console.log('-- 4')
+                        return false;
+                    }
+                }
+            }
+            return true;
+        } catch (error) {
+            console.log('-- 5', error)
+            return false;
+        }
+    }
+
     /**
      * Get Schema
      */
@@ -137,6 +215,28 @@ export class ExternalTopicBlock {
             }
         }
         return this.schema;
+    }
+
+    private async verificationSchema(item: any): Promise<void> {
+        try {
+            const schema = await this.getSchema();
+            if (!schema) {
+                item.status = 'INCOMPATIBLE';
+                return;
+            }
+            if (!item) {
+                item.status = 'INCOMPATIBLE';
+                return;
+            }
+            const document = await IPFS.getFile(item.cid, 'str');
+            const base = this.getSchemaFields(schema.document);
+            const extension = this.getSchemaFields(document);
+            const verified = this.ifExtendFields(extension, base);
+            item.status = verified ? 'COMPATIBLE' : 'INCOMPATIBLE';
+        } catch (error) {
+            item.status = 'INCOMPATIBLE';
+            return;
+        }
     }
 
     private async getUser(user: IPolicyUser): Promise<ExternalDocument> {
@@ -209,7 +309,11 @@ export class ExternalTopicBlock {
         throw new BlockActionError('Invalid topic', ref.blockType, ref.uuid);
     }
 
-    private async addTopic(item: ExternalDocument, topicId: string): Promise<void> {
+    private async addTopic(
+        item: ExternalDocument,
+        topicId: string,
+        user: IPolicyUser
+    ): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
 
         item.status = 'SEARCH';
@@ -220,13 +324,15 @@ export class ExternalTopicBlock {
         const topic = topicTree.root;
         const policy = topicTree.policyTopic;
         const instance = topicTree.instance;
-        const list = topicTree.schemas.map((s: SchemaMessage) => {
-            return {
-                id: s.getContextUrl(UrlType.url),
-                name: s.name
-            }
-        });
-
+        const list = [];
+        for (const schema of topicTree.schemas) {
+            list.push({
+                id: schema.getContextUrl(UrlType.url),
+                name: schema.name,
+                cid: schema.getDocumentUrl(UrlType.cid),
+                status: 'NOT_VERIFIED'
+            });
+        }
         item.status = 'NEED_SCHEMA';
         item.documentTopicId = topic.topicId?.toString();
         item.policyTopicId = policy.topicId?.toString();
@@ -239,9 +345,14 @@ export class ExternalTopicBlock {
         item.lastMessage = '';
         item.lastUpdate = '';
         await ref.databaseServer.updateExternalTopic(item);
+        this.updateStatus(ref, item, user);
     }
 
-    private async addSchema(item: ExternalDocument, schemaId: string): Promise<void> {
+    private async addSchema(
+        item: ExternalDocument,
+        schemaId: string,
+        user: IPolicyUser
+    ): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
 
         if (item.status === 'NEED_TOPIC') {
@@ -259,11 +370,24 @@ export class ExternalTopicBlock {
             throw new BlockActionError('Schema not found', ref.blockType, ref.uuid);
         }
 
+        item.status = 'VERIFICATION';
+        await ref.databaseServer.updateExternalTopic(item);
+
+        await this.verificationSchema(schema);
+
+        item.status = 'NEED_SCHEMA';
+        await ref.databaseServer.updateExternalTopic(item);
+
+        if (schema.status !== 'COMPATIBLE') {
+            throw new BlockActionError('Schema is incompatible', ref.blockType, ref.uuid);
+        }
+
         item.status = 'FREE';
         item.schemaId = schemaId;
         item.schema = schema;
         item.active = true;
         await ref.databaseServer.updateExternalTopic(item);
+        this.updateStatus(ref, item, user);
     }
 
     private async checkDocument(item: ExternalDocument, document: IVC): Promise<string> {
@@ -333,11 +457,10 @@ export class ExternalTopicBlock {
         }));
     }
 
-    private async receiveData(item: ExternalDocument): Promise<void> {
+    private async receiveData(item: ExternalDocument, user: IPolicyUser): Promise<void> {
         console.log('--- receiveData ---');
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const hederaAccount = await PolicyUtils.getHederaAccount(ref, item.owner);
-        const user = await PolicyUtils.createPolicyUser(ref, item.owner);
         const messages: VCMessage[] = await MessageServer.getMessages(
             item.documentTopicId,
             null,
@@ -353,14 +476,20 @@ export class ExternalTopicBlock {
 
     private async runByUser(item: ExternalDocument): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+
         if (item.status === 'PROCESSING') {
             throw new BlockActionError('Process already started', ref.blockType, ref.uuid);
         }
+
+        const user = await PolicyUtils.createPolicyUser(ref, item.owner);
+
         item.status = 'PROCESSING';
         item.lastUpdate = (new Date()).toISOString();
         await ref.databaseServer.updateExternalTopic(item);
+        this.updateStatus(ref, item, user);
+
         try {
-            await this.receiveData(item);
+            await this.receiveData(item, user);
             item.status = 'FREE';
             await ref.databaseServer.updateExternalTopic(item);
         } catch (error) {
@@ -368,6 +497,7 @@ export class ExternalTopicBlock {
             await ref.databaseServer.updateExternalTopic(item);
             ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
         }
+        this.updateStatus(ref, item, user);
     }
 
     /**
@@ -421,11 +551,11 @@ export class ExternalTopicBlock {
             const item = await this.getUser(user);
             switch (operation) {
                 case 'SetTopic': {
-                    await this.addTopic(item, value);
+                    await this.addTopic(item, value, user);
                     return true;
                 }
                 case 'SetSchema': {
-                    await this.addSchema(item, value);
+                    await this.addSchema(item, value, user);
                     return true;
                 }
                 case 'Refresh': {
