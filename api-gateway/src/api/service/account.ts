@@ -1,11 +1,14 @@
-import { Request, Response, Router, NextFunction } from 'express';
-import { permissionHelper, authorizationHelper } from '@auth/authorization-helper';
+import { NextFunction, Request, Response, Router } from 'express';
+import { authorizationHelper, permissionHelper } from '@auth/authorization-helper';
 import { Users } from '@helpers/users';
 import { AuthenticatedRequest, Logger } from '@guardian/common';
 import { Guardians } from '@helpers/guardians';
-import { UserRole } from '@guardian/interfaces';
+import { SchemaEntity, UserRole } from '@guardian/interfaces';
 import validate, { prepareValidationResponse } from '@middlewares/validation';
-import { registerSchema, loginSchema } from '@middlewares/validation/schemas/accounts';
+import { loginSchema, registerSchema } from '@middlewares/validation/schemas/accounts';
+import { PolicyEngine } from '@helpers/policy-engine';
+import { PolicyListResponse } from '@entities/policy';
+import { StandardRegistryAccountResponse } from '@entities/account';
 
 /**
  * User account route
@@ -84,6 +87,41 @@ accountAPI.get('/standard-registries', authorizationHelper, async (req: Request,
         const users = new Users();
         const standardRegistries = await users.getAllStandardRegistryAccounts();
         res.json(standardRegistries);
+    } catch (error) {
+        new Logger().error(error.message, ['API_GATEWAY']);
+        return next(error);
+    }
+});
+
+accountAPI.get('/standard-registries/aggregated', authorizationHelper, async (req: Request, res: Response, next: NextFunction) => {
+    const engineService = new PolicyEngine();
+    const guardians = new Guardians();
+    try {
+        const users = new Users();
+        const standardRegistries = await users.getAllStandardRegistryAccounts() as StandardRegistryAccountResponse[];
+        const promises = standardRegistries.filter(({ did, username }) => !!did && !!username)
+          .map(async ({ did, username }) => {
+            let vcDocument = {};
+            const user = await users.getUser(username);
+            const vcDocuments = await guardians.getVcDocuments({
+                owner: did,
+                type: SchemaEntity.STANDARD_REGISTRY
+            });
+            if (vcDocuments && vcDocuments.length) {
+                vcDocument = vcDocuments[vcDocuments.length - 1];
+            }
+            const { policies } = await engineService.getPolicies(
+              { filters: { owner: did }, userDid: did }
+            ) as PolicyListResponse;
+            return {
+                did,
+                vcDocument,
+                policies,
+                username,
+                hederaAccountId: user.hederaAccountId
+            }
+        })
+        res.json(await Promise.all(promises));
     } catch (error) {
         new Logger().error(error.message, ['API_GATEWAY']);
         return next(error);
