@@ -33,7 +33,8 @@ import {
     TopicMemo,
     TransactionLogger,
     TransactionLogLvl,
-    Workers, LargePayloadContainer
+    Workers, LargePayloadContainer,
+    SecretManager, OldSecretManager
 } from '@guardian/common';
 import { ApplicationStates, WorkerTaskType } from '@guardian/interfaces';
 import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
@@ -53,8 +54,6 @@ import { GridFSBucket } from 'mongodb';
 import { tagsAPI } from '@api/tag.service';
 import { setDefaultSchema } from '@api/helpers/schema-helper';
 import { demoAPI } from '@api/demo.service';
-import { SecretManager } from '@guardian/common/dist/secret-manager';
-import { OldSecretManager } from '@guardian/common/dist/secret-manager/old-style/old-secret-manager';
 import { themeAPI } from '@api/theme.service';
 import { startMetricsServer } from './utils/metrics';
 

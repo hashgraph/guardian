@@ -3,7 +3,8 @@ import {
     MessageBrokerChannel,
     MessageResponse,
     NatsService,
-    ValidateConfiguration
+    ValidateConfiguration,
+    SecretManager
 } from '@guardian/common';
 import {
     ExternalMessageEvents, GenerateUUIDv4,
@@ -19,7 +20,6 @@ import { AccountId, ContractFunctionParameters, PrivateKey, TokenId } from '@has
 import { HederaUtils } from './helpers/utils';
 import axios from 'axios';
 import process from 'process';
-import { SecretManager } from '@guardian/common/dist/secret-manager';
 
 /**
  * Sleep helper

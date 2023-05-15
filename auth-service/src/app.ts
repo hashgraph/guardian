@@ -8,7 +8,8 @@ import {
     DataBaseHelper,
     Migration,
     COMMON_CONNECTION_CONFIG,
-    LargePayloadContainer
+    LargePayloadContainer,
+    SecretManager, OldSecretManager
 } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
@@ -16,8 +17,6 @@ import { MongoDriver } from '@mikro-orm/mongodb';
 import { InitializeVault } from './vaults';
 import { ImportKeysFromDatabase } from '@helpers/import-keys-from-database';
 import process from 'process';
-import { SecretManager } from '@guardian/common/dist/secret-manager';
-import { OldSecretManager } from '@guardian/common/dist/secret-manager/old-style/old-secret-manager';
 import { startMetricsServer } from './utils/metrics';
 
 Promise.all([
