@@ -6,7 +6,7 @@
     "@hashgraph/sdk": "^2.24.2",
     "@mattrglobal/jsonld-signatures-bbs": "^1.1.2",
     "@meeco/cryppo": "^2.0.2",
-    "@mikro-orm/core": "~5.7.5",
+    "@mikro-orm/core": "~5.7.7",
     "@mikro-orm/migrations-mongodb": "~5.7.5",
     "@mikro-orm/mongodb": "~5.7.5",
     "@transmute/credentials-context": "^0.7.0-unstable.80",
