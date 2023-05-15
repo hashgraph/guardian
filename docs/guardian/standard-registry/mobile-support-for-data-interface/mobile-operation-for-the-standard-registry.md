@@ -9,7 +9,7 @@ Here the images below to show the selection of account type and selection of use
 \
 
 
-<figure><img src="../../../.gitbook/assets/2.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/2 (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/1 (1) (4).png" alt=""><figcaption></figcaption></figure>
 
@@ -59,7 +59,7 @@ The importing of policies was also adapted from the click on the "Import" button
 
 Below you can see the preview of the imported policy&#x20;
 
-<figure><img src="../../../.gitbook/assets/20 (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/20 (1) (3).png" alt=""><figcaption></figcaption></figure>
 
 
 

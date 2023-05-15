@@ -53,7 +53,7 @@ Tags can be created by clicking on "Create Tag" button.
 
 Tag can be created with label and the description as shown below:
 
-![Label and Description ](<../../../.gitbook/assets/1 (6).png>)
+![Label and Description ](<../../../.gitbook/assets/1 (5).png>)
 
 An additional document can be added/linked with the tag using _**Add Document** button and then selecting a suitable document schema_
 
