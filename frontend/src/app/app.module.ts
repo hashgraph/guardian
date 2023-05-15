@@ -57,11 +57,13 @@ import { ServiceStatusComponent } from './views/admin/service-status/service-sta
 import { ContractConfigComponent } from './views/contract-config/contract-config.component';
 import { ContractRequestConfigComponent } from './views/contract-request-config/contract-request-config.component';
 import { SchemaConfigComponent } from './views/schemas/schemas.component';
+import { BrandingDialogComponent } from './components/branding-dialog/branding-dialog.component';
 //Components
 import { InfoComponent } from './components/info/info/info.component';
 import { AddPairDialogComponent } from './components/add-pair-dialog/add-pair-dialog.component';
 import { RetireTokenDialogComponent } from './components/retire-token-dialog/retire-token-dialog.component';
 import { DataInputDialogComponent } from './components/data-input-dialog/data-input-dialog.component';
+import { BrandingComponent } from './views/branding/branding.component';
 //Modules
 import { MaterialModule } from './modules/common/material.module';
 import { PolicyEngineModule } from './modules/policy-engine/policy-engine.module';
@@ -94,7 +96,9 @@ import { ThemeService } from './services/theme.service';
         AddPairDialogComponent,
         RetireTokenDialogComponent,
         DataInputDialogComponent,
-        SchemaConfigComponent
+        SchemaConfigComponent,
+        BrandingComponent,
+        BrandingDialogComponent,
     ],
     imports: [
         BrowserModule,
