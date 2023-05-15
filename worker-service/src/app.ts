@@ -2,15 +2,14 @@ import {
     ApplicationState, LargePayloadContainer,
     Logger,
     MessageBrokerChannel,
-    ValidateConfiguration
+    ValidateConfiguration,
+    SecretManager, OldSecretManager
 } from '@guardian/common';
 import { Worker } from './api/worker';
 import { HederaSDKHelper } from './api/helpers/hedera-sdk-helper';
 import { ApplicationStates } from '@guardian/interfaces';
 import { decode } from 'jsonwebtoken';
 import * as process from 'process';
-import { OldSecretManager } from '@guardian/common/dist/secret-manager/old-style/old-secret-manager';
-import { SecretManager } from '@guardian/common/dist/secret-manager';
 
 Promise.all([
     MessageBrokerChannel.connect('WORKERS_SERVICE')

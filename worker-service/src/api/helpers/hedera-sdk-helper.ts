@@ -867,6 +867,8 @@ export class HederaSDKHelper {
      * @param topicId Topic identifier
      * @param message Message to publish
      *
+     * @param privateKey
+     * @param transactionMemo
      * @returns Message timestamp
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
@@ -878,9 +880,11 @@ export class HederaSDKHelper {
     ): Promise<string> {
         const client = this.client;
 
+        const maxChunks = (process.env.HEDERA_MAX_CHUNKS) ? parseInt(process.env.HEDERA_MAX_CHUNKS, 10) : 20;
         let messageTransaction: Transaction = new TopicMessageSubmitTransaction({
             topicId,
             message,
+            maxChunks
         }).setMaxTransactionFee(MAX_FEE);
 
         if (transactionMemo) {
