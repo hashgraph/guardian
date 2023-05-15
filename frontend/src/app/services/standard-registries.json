@@ -1,6 +1,6 @@
 [
     {
-        "did": "did:hedera:testnet:FiLAc3aay7iF2zKFdjV1zQfcki5yhECEdCzDwjqf7PKh_0.0.4637441",
+        "did": "did:hedera:testnet:1gdvchaF5Wk2qdokvgMGY1xPHxJB9rQa9uBZJTkat4c_0.0.4634182",
         "vcDocument": {
             "_id": "645d2227215248b7d3dc0063",
             "createDate": "2023-05-11T17:13:11.349Z",
@@ -43,12 +43,12 @@
             "type": "STANDARD_REGISTRY",
             "option": {},
             "messageId": "1683825194.689747751",
-            "topicId": "0.0.4637441",
+            "topicId": "0.0.4634182",
             "id": "645d2227215248b7d3dc0063"
         },
         "policies": [],
-        "username": "01u9ssii",
-		"hederaAccountId": "0.0.4645736"
+        "username": "srv02n1q",
+		"hederaAccountId": "0.0.4634180"
     },
     {
         "did": "did:hedera:testnet:2EdyBmCSHPybess1xSJcqcJkhWRVbXRVYUotrLGLta5M_0.0.4637798",
@@ -168,8 +168,7 @@
             "id": "645d60e071a0f0e5620056b5"
         },
         "policies": [],
-        "username": "7893ndkflw",
-		"hederaAccountId": "0.0.4875736"
+        "username": "7893ndkflw"
     },
     {
         "did": "did:hedera:testnet:AyZTjXq2HC3pmEvzJyu57vdctvQZntKTtLXZ2B_0.0.4638261",
@@ -248,7 +247,6 @@
                 "owner": "did:hedera:testnet:2EdyBmCSHPybess1xSJcqcJkhWRVbXRVYUotrLGLta5M_0.0.4637798",
                 "topicId": "0.0.4637817",
                 "policyTag": "Tag_1683829788961",
-                "codeVersion": "1.5.1",
                 "userRoles": ["Administrator"],
                 "userGroups": [],
                 "userRole": "Administrator",

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { forkJoin, Subscription } from 'rxjs';
 import { IUser, Token, SchemaEntity, Schema, TagType, SchemaHelper } from '@guardian/interfaces';
@@ -51,9 +51,8 @@ export class UserProfileComponent implements OnInit {
     public innerWidth: any;
     public innerHeight: any;
 
-    standardRegistryControl = this.fb.control('', Validators.required);
-
     hederaForm = this.fb.group({
+        standardRegistry: ['', Validators.required],
         id: ['', Validators.required],
         key: ['', Validators.required],
     });
@@ -284,7 +283,7 @@ export class UserProfileComponent implements OnInit {
         const profile: any = {
             hederaAccountId: data.id,
             hederaAccountKey: data.key,
-            parent: this.standardRegistryControl.value,
+            parent: data.standardRegistry,
         }
         if (vcDocument) {
             profile.vcDocument = vcDocument;
@@ -305,7 +304,7 @@ export class UserProfileComponent implements OnInit {
     randomKey() {
         this.loading = true;
         const value: any = {
-            standardRegistry: this.standardRegistryControl.value,
+            standardRegistry: this.hederaForm.value.standardRegistry,
         }
         if (this.hederaForm.value.vc) {
             value.vc = this.hederaForm.value.vc;
@@ -536,14 +535,18 @@ export class UserProfileComponent implements OnInit {
     }
 
     selectStandardRegistry(did: string): void {
-        this.standardRegistryControl.setValue(did);
+        this.standardRegistryControl?.setValue(did);
     }
 
     isRegistrySelected(did: string): boolean {
-        return this.standardRegistryControl.value === did;
+        return this.standardRegistryControl?.value === did;
+    }
+
+    get standardRegistryControl(): AbstractControl | null {
+        return this.hederaForm.get('standardRegistry');
     }
 
     get isStandardRegistrySelected(): boolean {
-        return !!this.standardRegistryControl.value;
+        return !!this.standardRegistryControl?.valid;
     }
 }

@@ -23,7 +23,8 @@
             <mat-menu #policiesList="matMenu">
                 <ul class="policies-list">
                     <li *ngFor="let policy of registry.policies" class="policies-list__item" value="policy.name">
-                        {{ policy.name }} ({{ policy.codeVersion }})
+                        <span>{{ policy.name }} </span>
+                        <span *ngIf="policy.codeVersion">({{ policy.codeVersion }})</span>
                     </li>
                 </ul>
             </mat-menu>
@@ -40,7 +41,7 @@
             <span>{{ registry.did }}</span>
         </li>
 
-        <li class="standard-registry__detail">
+        <li *ngIf="registry.hederaAccountId" class="standard-registry__detail">
             <label>Hedera account id</label>
             <span>{{ registry.hederaAccountId }}</span>
         </li>
