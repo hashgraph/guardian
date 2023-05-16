@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core
 import { MatIconRegistry } from '@angular/material/icon';
 import { MatMenuTrigger } from '@angular/material/menu';
 import { DomSanitizer } from '@angular/platform-browser';
+import { IStandardRegistryResponse } from '@guardian/interfaces';
 
 @Component({
     selector: 'app-standard-registry-card',
@@ -10,7 +11,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 })
 export class StandardRegistryCardComponent {
     @ViewChild(MatMenuTrigger) policiesMenuTrigger!: MatMenuTrigger;
-    @Input() registry: any;
+    @Input() registry!: IStandardRegistryResponse;
     @Input() isRegistrySelected!: boolean;
     @Output() registrySelected: EventEmitter<string> = new EventEmitter<string>();
 

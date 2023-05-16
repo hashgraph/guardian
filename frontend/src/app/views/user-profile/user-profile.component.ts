@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { forkJoin, Subscription } from 'rxjs';
-import { IUser, Token, SchemaEntity, Schema, TagType, SchemaHelper } from '@guardian/interfaces';
+import { IUser, Token, SchemaEntity, Schema, TagType, SchemaHelper, IStandardRegistryResponse } from '@guardian/interfaces';
 import { ActivatedRoute, Router } from '@angular/router';
 //services
 import { AuthService } from '../../services/auth.service';
@@ -43,7 +43,7 @@ export class UserProfileComponent implements OnInit {
     contractRequests?: any[];
     didDocument?: any;
     vcDocument?: any;
-    standardRegistries?: any[];
+    standardRegistries?: IStandardRegistryResponse[];
     selectedIndex: number = 0;
     tagEntity = TagType.Token;
     owner: any;
@@ -230,7 +230,6 @@ export class UserProfileComponent implements OnInit {
         ]).subscribe((value) => {
             this.profile = value[0] as IUser;
             this.balance = value[1] as string;
-            console.log('loadDate: ', value[2]);
             this.standardRegistries = value[2] || [];
             const schema = value[3];
 

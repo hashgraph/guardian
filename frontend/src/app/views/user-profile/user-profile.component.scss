@@ -412,7 +412,7 @@ a[disabled="true"] {
 .standard-registry {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(385px, 1fr));
-    grid-template-rows: repeat(auto-fit, minmax(375px, 1fr));
+    grid-template-rows: auto;
     grid-gap: 16px;
     padding: 0;
 }
@@ -455,7 +455,7 @@ a[disabled="true"] {
     }
 
     .standard-registry {
-        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        grid-template-columns: auto;
     }
 
     :host::ng-deep {

@@ -46,24 +46,26 @@
             <span>{{ registry.username }}</span>
         </li>
 
-        <li class="standard-registry__detail">
-            <label>Law</label>
-            <span>{{ registry.vcDocument.document.credentialSubject[0].law }}</span>
-        </li>
-
-        <li class="standard-registry__detail">
-            <label>Geography</label>
-            <span>{{ registry.vcDocument.document.credentialSubject[0].geography }}</span>
-        </li>
-
-        <li *ngIf="registry.vcDocument.document.credentialSubject[0].ISIC" class="standard-registry__detail">
-            <label>ISIC</label>
-            <span>{{ registry.vcDocument.document.credentialSubject[0].ISIC }}</span>
-        </li>
-
-        <li *ngIf="registry.vcDocument.document.credentialSubject[0].tags" class="standard-registry__detail">
-            <label>Tags</label>
-            <span>{{ registry.vcDocument.document.credentialSubject[0].tags }}</span>
-        </li>
+        <ng-container *ngIf="registry.vcDocument.document">
+            <li class="standard-registry__detail">
+                <label>Law</label>
+                <span>{{ registry.vcDocument.document.credentialSubject[0].law }}</span>
+            </li>
+    
+            <li class="standard-registry__detail">
+                <label>Geography</label>
+                <span>{{ registry.vcDocument.document.credentialSubject[0].geography }}</span>
+            </li>
+    
+            <li *ngIf="registry.vcDocument.document.credentialSubject[0].ISIC" class="standard-registry__detail">
+                <label>ISIC</label>
+                <span>{{ registry.vcDocument.document.credentialSubject[0].ISIC }}</span>
+            </li>
+    
+            <li *ngIf="registry.vcDocument.document.credentialSubject[0].tags" class="standard-registry__detail">
+                <label>Tags</label>
+                <span>{{ registry.vcDocument.document.credentialSubject[0].tags }}</span>
+            </li>
+        </ng-container>
     </ul>
 </li>
