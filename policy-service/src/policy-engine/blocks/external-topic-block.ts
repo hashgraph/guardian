@@ -217,7 +217,7 @@ export class ExternalTopicBlock {
         return this.schema;
     }
 
-    private async verificationSchema(item: any): Promise<void> {
+    private async verification(item: any): Promise<void> {
         try {
             const schema = await this.getSchema();
             if (!schema) {
@@ -315,79 +315,83 @@ export class ExternalTopicBlock {
         user: IPolicyUser
     ): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-
-        item.status = 'SEARCH';
-        await ref.databaseServer.updateExternalTopic(item);
-
-        const topicTree = await this.searchTopic(topicId);
-
-        const topic = topicTree.root;
-        const policy = topicTree.policyTopic;
-        const instance = topicTree.instance;
-        const list = [];
-        for (const schema of topicTree.schemas) {
-            list.push({
-                id: schema.getContextUrl(UrlType.url),
-                name: schema.name,
-                cid: schema.getDocumentUrl(UrlType.cid),
-                status: 'NOT_VERIFIED'
-            });
+        try {
+            const topicTree = await this.searchTopic(topicId);
+            const topic = topicTree.root;
+            const policy = topicTree.policyTopic;
+            const instance = topicTree.instance;
+            const list = [];
+            for (const schema of topicTree.schemas) {
+                list.push({
+                    id: schema.getContextUrl(UrlType.url),
+                    name: schema.name,
+                    cid: schema.getDocumentUrl(UrlType.cid),
+                    status: 'NOT_VERIFIED'
+                });
+            }
+            item.status = 'NEED_SCHEMA';
+            item.documentTopicId = topic.topicId?.toString();
+            item.policyTopicId = policy.topicId?.toString();
+            item.instanceTopicId = instance.instanceTopicId?.toString();
+            item.documentMessage = topic.toMessageObject();
+            item.policyMessage = policy.toMessageObject();
+            item.policyInstanceMessage = instance.toMessageObject();
+            item.schemas = list;
+            item.active = false;
+            item.lastMessage = '';
+            item.lastUpdate = '';
+            await ref.databaseServer.updateExternalTopic(item);
+            this.updateStatus(ref, item, user); 
+        } catch (error) {
+            item.status = 'ERROR';
+            ref.databaseServer.updateExternalTopic(item);
+            ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
         }
-        item.status = 'NEED_SCHEMA';
-        item.documentTopicId = topic.topicId?.toString();
-        item.policyTopicId = policy.topicId?.toString();
-        item.instanceTopicId = instance.instanceTopicId?.toString();
-        item.documentMessage = topic.toMessageObject();
-        item.policyMessage = policy.toMessageObject();
-        item.policyInstanceMessage = instance.toMessageObject();
-        item.schemas = list;
-        item.active = false;
-        item.lastMessage = '';
-        item.lastUpdate = '';
-        await ref.databaseServer.updateExternalTopic(item);
-        this.updateStatus(ref, item, user);
     }
 
-    private async addSchema(
+    private async verificationSchema(
         item: ExternalDocument,
-        schemaId: string,
+        schema: any,
         user: IPolicyUser
     ): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-
-        if (item.status === 'NEED_TOPIC') {
-            throw new BlockActionError('Topic not set.', ref.blockType, ref.uuid);
+        try {
+            await this.verification(schema);
+            item.status = 'NEED_SCHEMA';
+            await ref.databaseServer.updateExternalTopic(item);
+            this.updateStatus(ref, item, user);
+        } catch (error) {
+            ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
+            item.status = 'ERROR';
+            await ref.databaseServer.updateExternalTopic(item);
+            this.updateStatus(ref, item, user);
         }
-        if (item.status !== 'NEED_SCHEMA') {
-            throw new BlockActionError('Schema already set', ref.blockType, ref.uuid);
+    }
+
+    private async setSchema(
+        item: ExternalDocument,
+        schema: any,
+        user: IPolicyUser
+    ): Promise<void> {
+        const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+        try {
+            await this.verification(schema);
+            if(schema.status === 'COMPATIBLE') {
+                item.status = 'FREE';
+                item.schemaId = schema.id;
+                item.schema = schema;
+                item.active = true;
+            } else {
+                item.status = 'NEED_SCHEMA';
+            }
+            await ref.databaseServer.updateExternalTopic(item);
+            this.updateStatus(ref, item, user);
+        } catch (error) {
+            ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
+            item.status = 'ERROR';
+            await ref.databaseServer.updateExternalTopic(item);
+            this.updateStatus(ref, item, user);
         }
-        if (!item.schemas) {
-            throw new BlockActionError('Schema not found', ref.blockType, ref.uuid);
-        }
-
-        const schema = item.schemas.find(s => s.id === schemaId);
-        if (!schema) {
-            throw new BlockActionError('Schema not found', ref.blockType, ref.uuid);
-        }
-
-        item.status = 'VERIFICATION';
-        await ref.databaseServer.updateExternalTopic(item);
-
-        await this.verificationSchema(schema);
-
-        item.status = 'NEED_SCHEMA';
-        await ref.databaseServer.updateExternalTopic(item);
-
-        if (schema.status !== 'COMPATIBLE') {
-            throw new BlockActionError('Schema is incompatible', ref.blockType, ref.uuid);
-        }
-
-        item.status = 'FREE';
-        item.schemaId = schemaId;
-        item.schema = schema;
-        item.active = true;
-        await ref.databaseServer.updateExternalTopic(item);
-        this.updateStatus(ref, item, user);
     }
 
     private async checkDocument(item: ExternalDocument, document: IVC): Promise<string> {
@@ -477,20 +481,15 @@ export class ExternalTopicBlock {
     private async runByUser(item: ExternalDocument): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
 
-        if (item.status === 'PROCESSING') {
-            throw new BlockActionError('Process already started', ref.blockType, ref.uuid);
-        }
+        item.status = 'PROCESSING';
+        await ref.databaseServer.updateExternalTopic(item);
 
         const user = await PolicyUtils.createPolicyUser(ref, item.owner);
-
-        item.status = 'PROCESSING';
-        item.lastUpdate = (new Date()).toISOString();
-        await ref.databaseServer.updateExternalTopic(item);
         this.updateStatus(ref, item, user);
-
         try {
             await this.receiveData(item, user);
             item.status = 'FREE';
+            item.lastUpdate = (new Date()).toISOString();
             await ref.databaseServer.updateExternalTopic(item);
         } catch (error) {
             item.status = 'FREE';
@@ -518,7 +517,9 @@ export class ExternalTopicBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const items = await ref.databaseServer.getActiveExternalTopics(ref.policyId, ref.uuid);
         for (const item of items) {
-            await this.runByUser(item);
+            if (item.status === 'FREE') {
+                await this.runByUser(item);
+            }
         }
     }
 
@@ -551,17 +552,100 @@ export class ExternalTopicBlock {
             const item = await this.getUser(user);
             switch (operation) {
                 case 'SetTopic': {
-                    await this.addTopic(item, value, user);
-                    return true;
+                    if (item.status !== 'NEED_TOPIC') {
+                        throw new BlockActionError('Topic already set', ref.blockType, ref.uuid);
+                    }
+
+                    item.status = 'SEARCH';
+                    await ref.databaseServer.updateExternalTopic(item);
+
+                    this.addTopic(item, value, user);
+                    break;
+                }
+                case 'VerificationSchema': {
+                    if (item.status === 'NEED_TOPIC') {
+                        throw new BlockActionError('Topic not set.', ref.blockType, ref.uuid);
+                    }
+
+                    if (item.status !== 'NEED_SCHEMA') {
+                        throw new BlockActionError('Schema already set', ref.blockType, ref.uuid);
+                    }
+
+                    if (!item.schemas) {
+                        throw new BlockActionError('Schema not found', ref.blockType, ref.uuid);
+                    }
+
+                    const schema = item.schemas.find(s => s.id === value);
+                    if (!schema) {
+                        throw new BlockActionError('Schema not found', ref.blockType, ref.uuid);
+                    }
+
+                    item.status = 'VERIFICATION';
+                    await ref.databaseServer.updateExternalTopic(item);
+
+                    this.verificationSchema(item, schema, user);
+                    break;
                 }
                 case 'SetSchema': {
-                    await this.addSchema(item, value, user);
-                    return true;
+                    if (item.status === 'NEED_TOPIC') {
+                        throw new BlockActionError('Topic not set.', ref.blockType, ref.uuid);
+                    }
+
+                    if (item.status !== 'NEED_SCHEMA') {
+                        throw new BlockActionError('Schema already set', ref.blockType, ref.uuid);
+                    }
+
+                    if (!item.schemas) {
+                        throw new BlockActionError('Schema not found', ref.blockType, ref.uuid);
+                    }
+
+                    const schema = item.schemas.find(s => s.id === value);
+                    if (!schema) {
+                        throw new BlockActionError('Schema not found', ref.blockType, ref.uuid);
+                    }
+
+                    item.status = 'VERIFICATION';
+                    await ref.databaseServer.updateExternalTopic(item);
+
+                    this.setSchema(item, schema, user);
+                    break;
                 }
                 case 'Refresh': {
-                    await this.runByUser(item);
-                    return true;
+                    if (item.status !== 'FREE') {
+                        throw new BlockActionError('Process already started', ref.blockType, ref.uuid);
+                    }
+
+                    item.status = 'PROCESSING';
+                    await ref.databaseServer.updateExternalTopic(item);
+
+                    this.runByUser(item).then(null, (error) => {
+                        item.status = 'ERROR';
+                        ref.databaseServer.updateExternalTopic(item);
+                        ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
+                    });
+                    break;
                 }
+                case 'Restart': {
+                    if (item.status !== 'NEED_TOPIC' && item.status !== 'NEED_SCHEMA') {
+                        throw new BlockActionError('', ref.blockType, ref.uuid);
+                    }
+                    item.documentTopicId = '';
+                    item.policyTopicId = '';
+                    item.instanceTopicId = '';
+                    item.documentMessage = '';
+                    item.policyMessage = '';
+                    item.policyInstanceMessage = '';
+                    item.schemas = [];
+                    item.schema = null;
+                    item.schemaId = null;
+                    item.active = false;
+                    item.lastMessage = '';
+                    item.lastUpdate = '';
+                    item.status = 'NEED_TOPIC';
+                    await ref.databaseServer.updateExternalTopic(item);
+                    break;
+                }
+
                 default: {
                     throw new BlockActionError('Invalid operation', ref.blockType, ref.uuid);
                 }

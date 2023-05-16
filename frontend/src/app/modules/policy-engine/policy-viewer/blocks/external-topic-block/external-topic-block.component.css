@@ -28,6 +28,34 @@
     align-content: center;
 }
 
+.page-content {
+    width: 800px;
+    min-height: 500px;
+    margin: 40px auto;
+    padding: 10px 10px 10px 10px;
+    border: 1px solid #c3c3c3;
+    border-radius: 4px;
+    position: relative;
+}
+
+.form-content {
+    min-height: 350px;
+    width: 100%;
+    padding: 20px 0px;
+    position: relative;
+}
+
+.form-buttons {
+    width: 100%;
+    position: relative;
+    height: 50px;
+    text-align: end;
+}
+
+.form-buttons button {
+    margin-left: 18px;
+}
+
 .content {
     position: relative;
 }
@@ -80,6 +108,27 @@
     position: relative;
 }
 
+.schema-status-NOT_VERIFIED {
+    color: #0000ee;
+    font-weight: 500;
+}
+
 .schema-status-INCOMPATIBLE {
-    color: #e50000 !important;
+    color: #f44336;
+    font-weight: 500;
+}
+
+.schema-status-COMPATIBLE {
+    color: #4caf50;
+    font-weight: 500;
+}
+
+.schema-row {
+    display: grid;
+    grid-template-columns: 40px auto 150px;
+    height: 40px;
+}
+
+.schema-row > div {
+    padding: 4px;
 }

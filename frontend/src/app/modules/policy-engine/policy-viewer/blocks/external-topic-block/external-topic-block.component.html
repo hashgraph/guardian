@@ -2,66 +2,153 @@
     <mat-spinner></mat-spinner>
 </div>
 
-<div class="content">
-    <div *ngIf="!status || status === 'NEED_TOPIC'" class="page">
-        <form class="form" [formGroup]="topicForm" (submit)="setTopic()">
-            <mat-form-field appearance="outline">
-                <mat-label>* Topic Id</mat-label>
-                <input matInput placeholder="Topic Id" formControlName="topicId">
-            </mat-form-field>
-            <div style="margin-top: 15px">
-                <button mat-raised-button color="primary" type="submit" [disabled]="!topicForm.valid">
-                    Search
+<div class="page-content" *ngIf="status === 'NEED_TOPIC' || status === 'NEED_SCHEMA'">
+    <mat-stepper linear="false" #stepper [selectedIndex]="stepIndex">
+        <ng-template matStepperIcon="description">
+            <mat-icon>description</mat-icon>
+        </ng-template>
+
+        <mat-step [stepControl]="topicForm" label="Search Policy" [completed]="completed[0]" [editable]="editable[0]">
+            <form [formGroup]="topicForm" (submit)="setTopic()">
+                <div class="form-content">
+                    <mat-form-field appearance="outline">
+                        <mat-label>* Topic Id</mat-label>
+                        <input matInput placeholder="Topic Id" formControlName="topicId">
+                    </mat-form-field>
+                </div>
+                <div class="form-buttons">
+                    <button mat-raised-button color="primary" type="submit" [disabled]="!topicForm.valid">
+                        Next
+                    </button>
+                </div>
+            </form>
+        </mat-step>
+
+        <mat-step label="Policy Information" state="description" [completed]="completed[1]" [editable]="editable[1]">
+            <div class="form-content">
+                <div *ngIf="policyTopicId" class="field">
+                    <div class="field-name">Policy Topic Id</div>
+                    <div class="field-value">{{policyTopicId}}</div>
+                </div>
+                <div *ngIf="policyInstanceMessage" class="field">
+                    <div class="field-name">Policy Name</div>
+                    <div class="field-value">{{policyInstanceMessage.name}}</div>
+                </div>
+                <div *ngIf="policyInstanceMessage" class="field">
+                    <div class="field-name">Policy Version</div>
+                    <div class="field-value">{{policyInstanceMessage.version}}</div>
+                </div>
+                <div *ngIf="instanceTopicId" class="field">
+                    <div class="field-name">Instance Topic Id</div>
+                    <div class="field-value">{{instanceTopicId}}</div>
+                </div>
+                <div *ngIf="documentMessage" class="field">
+                    <div class="field-name">Document Topic</div>
+                    <div class="field-value">{{documentMessage.name}}</div>
+                </div>
+                <div *ngIf="documentTopicId" class="field">
+                    <div class="field-name">Document Topic Id</div>
+                    <div class="field-value">{{documentTopicId}}</div>
+                </div>
+            </div>
+            <div class="form-buttons">
+                <button mat-button (click)="restart()">Back</button>
+                <button mat-raised-button color="primary" matStepperNext>
+                    Next
                 </button>
             </div>
-        </form>
-    </div>
+        </mat-step>
 
-    <div *ngIf="status === 'NEED_SCHEMA'" class="page">
-        <div *ngIf="policyTopicId" class="field">
-            <div class="field-name">Policy Topic Id</div>
-            <div class="field-value">{{policyTopicId}}</div>
-        </div>
-        <div *ngIf="policyInstanceMessage" class="field">
-            <div class="field-name">Policy Name</div>
-            <div class="field-value">{{policyInstanceMessage.name}}</div>
-        </div>
-        <div *ngIf="policyInstanceMessage" class="field">
-            <div class="field-name">Policy Version</div>
-            <div class="field-value">{{policyInstanceMessage.version}}</div>
-        </div>
-        <div *ngIf="instanceTopicId" class="field">
-            <div class="field-name">Instance Topic Id</div>
-            <div class="field-value">{{instanceTopicId}}</div>
-        </div>
-        <div *ngIf="documentMessage" class="field">
-            <div class="field-name">Document Topic</div>
-            <div class="field-value">{{documentMessage.name}}</div>
-        </div>
-        <div *ngIf="documentTopicId" class="field">
-            <div class="field-name">Document Topic Id</div>
-            <div class="field-value">{{documentTopicId}}</div>
-        </div>
+        <mat-step [stepControl]="schemaForm" label="Schema verification" [completed]="completed[2]"
+            [editable]="editable[2]">
+            <form [formGroup]="schemaForm" (submit)="setSchema()">
+                <div class="form-content">
+                    <mat-radio-group formControlName="schemaId">
+                        <div *ngFor="let s of schemas" class="schema-row">
+                            <div>
+                                <mat-radio-button [value]="s.id" color="primary" [disabled]="s.status === 'INCOMPATIBLE'"></mat-radio-button>
+                            </div>
+                            <div>{{s.name}}</div>
+                            <div *ngIf="s.status === 'NOT_VERIFIED'" class="schema-status-NOT_VERIFIED">Need verification</div>
+                            <div *ngIf="s.status === 'INCOMPATIBLE'" class="schema-status-INCOMPATIBLE">Incompatible</div>
+                            <div *ngIf="s.status === 'COMPATIBLE'" class="schema-status-COMPATIBLE">Verified</div>
+                        </div>
+                    </mat-radio-group>
+                </div>
+                <div class="form-buttons">
+                    <button mat-button type="button" matStepperPrevious>Back</button>
+                    <button mat-raised-button color="primary" type="submit" [disabled]="!schemaForm.valid">
+                        Next
+                    </button>
+                </div>
+            </form>
+        </mat-step>
 
-        <form class="form" [formGroup]="schemaForm" (submit)="setSchema()">
-            <mat-form-field appearance="outline">
-                <mat-label>* Schema</mat-label>
-                <mat-select formControlName="schemaId" placeholder="Schema">
-                    <mat-option *ngFor="let s of schemas" [value]="s.id" class="schema-status-{{s.status}}">
-                        {{s.name}}
-                    </mat-option>
-                </mat-select>
-            </mat-form-field>
-
-            <div style="margin-top: 15px">
-                <button mat-raised-button color="primary" type="submit" [disabled]="!topicForm.valid">
-                    Submit
-                </button>
+        <mat-step label="Finish" [completed]="completed[3]" [editable]="editable[3]">
+            <div class="form-content">
+                <div *ngIf="policyTopicId" class="field">
+                    <div class="field-name">Policy Topic Id</div>
+                    <div class="field-value">{{policyTopicId}}</div>
+                </div>
+                <div *ngIf="policyInstanceMessage" class="field">
+                    <div class="field-name">Policy Name</div>
+                    <div class="field-value">{{policyInstanceMessage.name}}</div>
+                </div>
+                <div *ngIf="policyInstanceMessage" class="field">
+                    <div class="field-name">Policy Version</div>
+                    <div class="field-value">{{policyInstanceMessage.version}}</div>
+                </div>
+                <div *ngIf="instanceTopicId" class="field">
+                    <div class="field-name">Instance Topic Id</div>
+                    <div class="field-value">{{instanceTopicId}}</div>
+                </div>
+                <div *ngIf="documentMessage" class="field">
+                    <div class="field-name">Document Topic</div>
+                    <div class="field-value">{{documentMessage.name}}</div>
+                </div>
+                <div *ngIf="documentTopicId" class="field">
+                    <div class="field-name">Document Topic Id</div>
+                    <div class="field-value">{{documentTopicId}}</div>
+                </div>
+                <div *ngIf="schema" class="field">
+                    <div class="field-name">Schema</div>
+                    <div class="field-value">{{schema.name}}</div>
+                </div>
             </div>
-        </form>
-    </div>
+            <div class="form-buttons">
+                <button mat-button matStepperPrevious>Back</button>
+                <button mat-button matStepperNext>Finish</button>
+            </div>
+        </mat-step>
+    </mat-stepper>
+</div>
 
-    <div *ngIf="status === 'FREE'" class="page">
+<div class="page-content" *ngIf="status === 'PROCESSING'">
+    <div class="sub-loading">
+        <div>Processing...</div>
+    </div>
+</div>
+
+<div class="page-content" *ngIf="status === 'SEARCH' ">
+    <div class="sub-loading">
+        <div>Search...</div>
+    </div>
+</div>
+
+<div class="page-content" *ngIf="status === 'VERIFICATION'">
+    <div class="sub-loading">
+        <div>Verification...</div>
+    </div>
+</div>
+
+<div class="page-content" *ngIf="status === 'ERROR'">
+    <div class="sub-loading">
+        <div>Error</div>
+    </div>
+</div>
+
+<div class="page-content" *ngIf="status === 'FREE'">
+    <div class="form-content">
         <div *ngIf="policyTopicId" class="field">
             <div class="field-name">Policy Topic Id</div>
             <div class="field-value">{{policyTopicId}}</div>
@@ -94,29 +181,10 @@
             <div class="field-name">Last Update</div>
             <div class="field-value">{{lastUpdate}}</div>
         </div>
-
-        <div style="margin-top: 15px">
-            <button mat-raised-button color="primary" (click)="onRefresh()">
-                Load Documents
-            </button>
-        </div>
     </div>
-
-    <div *ngIf="status === 'PROCESSING'" class="page">
-        <div class="sub-loading">
-            <div>Processing...</div>
-        </div>
-    </div>
-
-    <div *ngIf="status === 'SEARCH'" class="page">
-        <div class="sub-loading">
-            <div>Search...</div>
-        </div>
-    </div>
-
-    <div *ngIf="status === 'VERIFICATION'" class="page">
-        <div class="sub-loading">
-            <div>Verification...</div>
-        </div>
+    <div class="form-buttons">
+        <button mat-raised-button color="primary" (click)="onRefresh()">
+            Load Documents
+        </button>
     </div>
 </div>

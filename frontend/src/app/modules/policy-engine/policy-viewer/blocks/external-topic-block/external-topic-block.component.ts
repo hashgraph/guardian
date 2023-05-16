@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
@@ -30,6 +30,9 @@ export class ExternalTopicBlockComponent implements OnInit {
     public schema: any = null;
     public lastUpdate: string | null = null;
     public status: string | null = null;
+    public stepIndex: number = 0;
+    public completed: boolean[] = [];
+    public editable: boolean[] = [];
 
     public topicForm = this.fb.group({
         topicId: ['0.0.4605481', Validators.required],
@@ -42,7 +45,8 @@ export class ExternalTopicBlockComponent implements OnInit {
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
         private policyHelper: PolicyHelper,
-        private fb: FormBuilder
+        private fb: FormBuilder,
+        private changeDetector: ChangeDetectorRef,
     ) {
         this.documentTopicId = null;
         this.instanceTopicId = null;
@@ -76,6 +80,7 @@ export class ExternalTopicBlockComponent implements OnInit {
 
     loadData() {
         this.loading = true;
+        this.status = null;
         if (this.static) {
             this.setData(this.static);
             setTimeout(() => {
@@ -96,20 +101,40 @@ export class ExternalTopicBlockComponent implements OnInit {
 
     setData(data: any) {
         if (data) {
-            this.status = data.status;
+            this.status = data.status || 'NEED_TOPIC';
             this.documentTopicId = data.documentTopicId;
             this.instanceTopicId = data.instanceTopicId;
             this.policyTopicId = data.policyTopicId;
             this.documentMessage = data.documentMessage;
             this.policyInstanceMessage = data.policyInstanceMessage;
             this.policyMessage = data.policyMessage;
-            this.schemas = data.schemas;
+            this.schemas = data.schemas || [];
             this.schema = data.schema;
             this.lastUpdate = data.lastUpdate;
-            if(this.status === 'NEED_SCHEMA' && this.schemas?.length === 1) {
-                this.schemaForm.setValue({ 
-                    schemaId: this.schemas[0].id
-                })
+            switch (this.status) {
+                case 'NEED_TOPIC':
+                    this.topicForm.reset();
+                    this.stepIndex = 0;
+                    this.completed = [false, false, false, false, false];
+                    this.editable = [true, false, false, false, false];
+                    break;
+                case 'NEED_SCHEMA':
+                    this.schemaForm.reset();
+                    const index = this.schemas?.findIndex(s=>s.status === 'INCOMPATIBLE' || s.status === 'COMPATIBLE');
+                    this.stepIndex = index === -1 ? 1 : 2;
+                    this.completed = [true, true, false, false, false];
+                    this.editable = [false, true, true, false, false];
+                    break;
+                case 'FREE':
+                    this.stepIndex = 3;
+                    this.completed = [true, true, true, true, true];
+                    this.editable = [false, false, false, false, false];
+                    break;
+                default:
+                    this.stepIndex = 0;
+                    this.completed = [false, false, false, false, false];
+                    this.editable = [false, false, false, false, false];
+                    break;
             }
         } else {
             this.status = null;
@@ -122,6 +147,7 @@ export class ExternalTopicBlockComponent implements OnInit {
             this.schemas = null;
             this.schema = null;
             this.lastUpdate = null;
+            this.stepIndex = 0;
         }
     }
 
@@ -160,6 +186,20 @@ export class ExternalTopicBlockComponent implements OnInit {
         const data = {
             operation: 'Refresh',
             value: 'Refresh'
+        };
+        this.policyEngineService.setBlockData(this.id, this.policyId, data).subscribe(() => {
+            this.loadData();
+        }, (e) => {
+            console.error(e.error);
+            this.loading = false;
+        });
+    }
+
+    public restart() {
+        this.loading = true;
+        const data = {
+            operation: 'Restart',
+            value: 'Restart'
         };
         this.policyEngineService.setBlockData(this.id, this.policyId, data).subscribe(() => {
             this.loadData();
