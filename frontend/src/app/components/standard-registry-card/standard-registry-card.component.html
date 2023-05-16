@@ -2,7 +2,7 @@
     <div class="standard-registry__header">
         <div class="standard-registry__topic">
             <label>Standard registry</label>
-            <span>{{ registry.vcDocument.topicId }}</span>
+            <span>{{ registry.hederaAccountId }}</span>
         </div>
 
         <ng-container *ngIf="registry.policies.length > 0; else noPolicies">
@@ -24,7 +24,7 @@
                 <ul class="policies-list">
                     <li *ngFor="let policy of registry.policies" class="policies-list__item" value="policy.name">
                         <span>{{ policy.name }} </span>
-                        <span *ngIf="policy.codeVersion">({{ policy.codeVersion }})</span>
+                        <span *ngIf="policy.version">({{ policy.version }})</span>
                     </li>
                 </ul>
             </mat-menu>
@@ -39,11 +39,6 @@
         <li class="standard-registry__detail">
             <label>Standard registry did</label>
             <span>{{ registry.did }}</span>
-        </li>
-
-        <li *ngIf="registry.hederaAccountId" class="standard-registry__detail">
-            <label>Hedera account id</label>
-            <span>{{ registry.hederaAccountId }}</span>
         </li>
 
         <li class="standard-registry__detail">

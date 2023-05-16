@@ -3,9 +3,6 @@ import { Injectable } from '@angular/core';
 import { ISession, IUser } from '@guardian/interfaces';
 import { Observable, of, Subject, Subscription } from 'rxjs';
 import { API_BASE_URL } from './api';
-import * as data from './standard-registries.json';
-
-const MOCK_SR = data;
 
 /**
  * Services for working from accounts.
@@ -81,7 +78,7 @@ export class AuthService {
     }
 
     public getAggregatedStandardRegistries(): Observable<any> {
-        return of(MOCK_SR);
+        return this.http.get<any>(`${this.url}/standard-registries/aggregated`);
     }
 
     public balance(): Observable<any> {

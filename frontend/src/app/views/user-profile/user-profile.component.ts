@@ -230,7 +230,8 @@ export class UserProfileComponent implements OnInit {
         ]).subscribe((value) => {
             this.profile = value[0] as IUser;
             this.balance = value[1] as string;
-            this.standardRegistries = value[2].default || [];
+            console.log('loadDate: ', value[2]);
+            this.standardRegistries = value[2] || [];
             const schema = value[3];
 
             this.isConfirmed = !!this.profile.confirmed;
