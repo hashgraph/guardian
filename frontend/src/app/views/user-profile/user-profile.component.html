@@ -9,50 +9,52 @@
     </div>
 
     <ng-container *ngIf="isConfirmed; else elseTemplate">
-        <div *ngIf="profile" class="user-profile">
+        <div *ngIf="profile" class="profile">
             <mat-tab-group (selectedIndexChange)="onChange($event)" [selectedIndex]="selectedIndex">
-                <mat-tab label="ACCOUNT">
-                    <div class="profile-item">
-                        <div class="profile-item-name">HEDERA ID:</div>
-                        <div class="profile-item-value">
-                            <hedera-explorer type="accounts"
-                                [params]="profile.hederaAccountId || ''">{{profile.hederaAccountId}}
-                            </hedera-explorer>
+                <mat-tab label="Account">
+                    <div class="account">
+                        <div class="account-item">
+                            <div class="account-item-name">HEDERA ID</div>
+                            <div class="account-item-value">
+                                <hedera-explorer type="accounts"
+                                    [params]="profile.hederaAccountId || ''">{{profile.hederaAccountId}}
+                                </hedera-explorer>
+                            </div>
                         </div>
-                    </div>
-                    <div class="profile-item">
-                        <div class="profile-item-name"> BALANCE:</div>
-                        <div class="profile-item-value"> {{balance}}</div>
-                    </div>
-                    <div *ngIf="profile.topicId" class="profile-item">
-                        <div class="profile-item-name"> USER TOPIC:</div>
-                        <div class="profile-item-value">
-                            <hedera-explorer type="topics" [params]="profile.topicId">{{profile.topicId}}
-                            </hedera-explorer>
+                        <div class="account-item">
+                            <div class="account-item-name"> BALANCE</div>
+                            <div class="account-item-value"> {{balance}}</div>
                         </div>
-                    </div>
-                    <div class="profile-item">
-                        <div class="profile-item-name"> Standard Registry:</div>
-                        <div class="profile-item-value"> {{profile.parent}} </div>
-                    </div>
-                    <div class="profile-item">
-                        <div class="profile-item-name"> DID:</div>
-                        <div class="profile-item-value"> {{profile.did}} </div>
-                    </div>
-                    <div class="profile-item">
-                        <div class="profile-item-name"> DID Document:</div>
-                        <div class="profile-item-value">
-                            <a (click)="openDIDDocument(didDocument, 'DID')">View Document</a>
+                        <div *ngIf="profile.topicId" class="account-item">
+                            <div class="account-item-name"> USER TOPIC</div>
+                            <div class="account-item-value">
+                                <hedera-explorer type="topics" [params]="profile.topicId">{{profile.topicId}}
+                                </hedera-explorer>
+                            </div>
                         </div>
-                    </div>
-                    <div *ngIf="vcDocument" class="profile-item">
-                        <div class="profile-item-name"> VC Document:</div>
-                        <div class="profile-item-value">
-                            <a (click)="openVCDocument(vcDocument, 'VC')">View Document</a>
+                        <div class="account-item">
+                            <div class="account-item-name"> Standard Registry</div>
+                            <div class="account-item-value"> {{profile.parent}} </div>
+                        </div>
+                        <div class="account-item">
+                            <div class="account-item-name"> DID</div>
+                            <div class="account-item-value"> {{profile.did}} </div>
+                        </div>
+                        <div class="account-item">
+                            <div class="account-item-name"> DID Document</div>
+                            <div class="account-item-value">
+                                <a (click)="openDIDDocument(didDocument, 'DID')">View Document</a>
+                            </div>
+                        </div>
+                        <div *ngIf="vcDocument" class="account-item">
+                            <div class="account-item-name"> VC Document</div>
+                            <div class="account-item-value">
+                                <a (click)="openVCDocument(vcDocument, 'VC')">View Document</a>
+                            </div>
                         </div>
                     </div>
                 </mat-tab>
-                <mat-tab label="TOKENS">
+                <mat-tab label="Tokens">
                     <ng-container *ngIf="tokens; else elseTemplate">
                         <table mat-table [dataSource]="tokens" class="token-table">
                             <ng-container matColumnDef="name">
@@ -118,7 +120,7 @@
                         </table>
                     </ng-container>
                 </mat-tab>
-                <mat-tab label="RETIRE">
+                <mat-tab label="Retire">
                     <ng-container *ngIf="contractRequests; else elseTemplate">
                         <table mat-table [dataSource]="contractRequests" class="retire-table">
                             <ng-container matColumnDef="contractId">

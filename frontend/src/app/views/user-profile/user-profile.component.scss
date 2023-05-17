@@ -61,28 +61,29 @@ form {
     width: 300px;
 }
 
-.profile-item {
-    padding: 20px 20px 0px 20px;
+.profile {
+    padding: 30px 100px;
+}
+
+.account {
+    max-width: fit-content;
+    word-break: break-word;
+}
+
+.account-item {
+    padding: 15px 0px;
     display: flex;
+    border-bottom: 1px solid #E0E0E0;
+    font-size: 16px;
 }
 
-.profile-item-name {
-    color: rgb(146 146 146);
+.account-item-name {
+    color: #BABABA;
     font-family: Roboto, "Helvetica Neue", sans-serif;
-    font-size: 14px;
-    font-weight: 500;
-    padding-right: 20px;
+    font-size: 16px;
+    font-weight: 400;
+    min-width: 20%;
 }
-
-.profile-item-json {
-    white-space: pre;
-    background: rgba(0, 0, 0, .01);
-    color: rgba(0, 0, 0, .87);
-    border-radius: 4px;
-    border: 1px solid rgba(0, 0, 0, .2);
-    padding: 20px;
-}
-
 
 .token-table,
 .retire-table {
@@ -107,7 +108,7 @@ form {
 }
 
 :host ::ng-deep a {
-    color: rgb(0, 0, 238);
+    color: #2C78F6;
     cursor: pointer;
     text-decoration: underline;
 }
@@ -277,7 +278,6 @@ a[disabled="true"] {
     width: 100% !important;
 }
 
-
 .list-item {
     display: flex;
     flex-direction: column;
@@ -330,6 +330,24 @@ a[disabled="true"] {
 }
 
 :host::ng-deep {
+    .mat-tab-header {
+        max-width: fit-content;
+    }
+
+    .mat-tab-label {
+        font-size: 16px;
+        font-weight: 400;
+        opacity: unset;
+
+        &-active {
+            color: #2C78F6;
+        }
+    }
+
+    .mat-ink-bar {
+        background-color: #2C78F6 !important;
+    }
+
     .mat-stepper-horizontal {
         height: 100%;
         display: flex;
@@ -418,6 +436,21 @@ a[disabled="true"] {
 }
 
 @media (max-width: 810px) {
+    .profile {
+        padding: 20px 15px;
+    }
+
+    .account {
+        border: 1px solid #E0E0E0;
+        border-radius: 10px;
+        padding: 2px 20px 20px;
+        margin-top: 20px;
+
+        &-item-name {
+            min-width: 38%;
+        }
+    }
+
     form {
         display: flex;
         flex-direction: column;
@@ -459,6 +492,14 @@ a[disabled="true"] {
     }
 
     :host::ng-deep {
+        .mat-tab-header {
+            max-width: 100%;
+        }
+
+        .mat-tab-labels {
+            justify-content: space-around;
+        }
+
         .mat-horizontal-stepper-header-container {
             padding: 0 0 6px;
         }

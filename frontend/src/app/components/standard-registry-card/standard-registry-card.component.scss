@@ -84,6 +84,8 @@
 .policies-list {
     padding: 0;
     list-style: none;
+    max-height: 230px;
+    margin: 0;
 
     &__item {
         padding: 8px 16px;
