@@ -3,10 +3,12 @@
     flex-direction: column;
     border: 1px solid #E0E0E0;
     border-radius: 10px;
-    padding: 16px;
+    padding: 16px 10px 16px 16px;
     font-size: 16px;
-    overflow: hidden;
     word-break: break-word;
+    height: 92%;
+    max-height: 455px;
+    overflow-y: scroll;
     cursor: pointer;
 
     &--selected {
@@ -35,7 +37,7 @@
 
     label {
         font-size: 14px;
-        margin-bottom: 15px;
+        margin-bottom: 20px;
         cursor: pointer;
     }
 
@@ -91,6 +93,10 @@
         padding: 8px 16px;
         font-size: 16px;
     }
+}
+
+.no-policies {
+    color: #8A8A8A;
 }
 
 @media (max-width: 810px) {

@@ -534,6 +534,10 @@ export class UserProfileComponent implements OnInit {
         }
     }
 
+    trackByDid(index: number, registry: IStandardRegistryResponse): string {
+        return registry.did;
+    }
+
     selectStandardRegistry(did: string): void {
         this.standardRegistryControl?.setValue(did);
     }

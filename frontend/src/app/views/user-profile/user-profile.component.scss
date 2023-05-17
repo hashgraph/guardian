@@ -431,7 +431,8 @@ a[disabled="true"] {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(385px, 1fr));
     grid-template-rows: auto;
-    grid-gap: 16px;
+    column-gap: 25px;
+    row-gap: 30px;
     padding: 0;
 }
 

@@ -193,7 +193,7 @@
                 <div class="user-onboarding-wizard__content">
                     <ul class="standard-registry">
                         <app-standard-registry-card
-                            *ngFor="let registry of standardRegistries"
+                            *ngFor="let registry of standardRegistries; trackBy:trackByDid"
                             [registry]="registry"
                             (registrySelected)="selectStandardRegistry($event)"
                             [isRegistrySelected]="isRegistrySelected(registry.did)"
