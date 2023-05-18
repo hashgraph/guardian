@@ -109,18 +109,28 @@
 }
 
 .schema-status-NOT_VERIFIED {
-    color: #0000ee;
     font-weight: 500;
+    text-align: end;
 }
 
 .schema-status-INCOMPATIBLE {
     color: #f44336;
     font-weight: 500;
+    text-align: end;
 }
 
 .schema-status-COMPATIBLE {
     color: #4caf50;
     font-weight: 500;
+    text-align: end;
+}
+
+.form-link {
+    color: #0000ee;
+    width: 110px;
+    display: inline-block;
+    cursor: pointer;
+    padding: 10px 4px;
 }
 
 .schema-row {
@@ -129,6 +139,45 @@
     height: 40px;
 }
 
-.schema-row > div {
+.schema-row>div {
     padding: 4px;
+}
+
+.synchronization {
+    padding: 0px 30px 0px 0px;
+    height: 24px;
+    position: relative;
+    width: auto;
+    width: fit-content;
+}
+
+.synchronization-time {
+    width: auto;
+}
+
+.synchronization-update {
+    position: absolute;
+    top: -3px;
+    right: 0px;
+    display: block;
+    color: #005edf;
+    cursor: pointer;
+    height: 24px;
+    width: 24px;
+    line-height: 24px;
+    border-radius: 4px;
+}
+
+.synchronization-update mat-icon {
+    position: absolute;
+    pointer-events: none;
+    font-size: 22px;
+    height: 22px;
+    width: 22px;
+    left: 1px;
+    top: 1px;
+}
+
+.synchronization-update:hover {
+    background: #f1f1f1;
 }

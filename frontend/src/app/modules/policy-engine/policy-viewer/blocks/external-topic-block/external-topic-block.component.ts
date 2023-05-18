@@ -184,8 +184,7 @@ export class ExternalTopicBlockComponent implements OnInit {
     public onRefresh() {
         this.loading = true;
         const data = {
-            operation: 'Refresh',
-            value: 'Refresh'
+            operation: 'LoadDocuments'
         };
         this.policyEngineService.setBlockData(this.id, this.policyId, data).subscribe(() => {
             this.loadData();
@@ -198,8 +197,20 @@ export class ExternalTopicBlockComponent implements OnInit {
     public restart() {
         this.loading = true;
         const data = {
-            operation: 'Restart',
-            value: 'Restart'
+            operation: 'Restart'
+        };
+        this.policyEngineService.setBlockData(this.id, this.policyId, data).subscribe(() => {
+            this.loadData();
+        }, (e) => {
+            console.error(e.error);
+            this.loading = false;
+        });
+    }
+
+    public verificationAll() {
+        this.loading = true;
+        const data = {
+            operation: 'VerificationSchemas'
         };
         this.policyEngineService.setBlockData(this.id, this.policyId, data).subscribe(() => {
             this.loadData();

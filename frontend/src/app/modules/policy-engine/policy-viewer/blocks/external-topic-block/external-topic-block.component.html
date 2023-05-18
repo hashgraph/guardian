@@ -66,19 +66,25 @@
                     <mat-radio-group formControlName="schemaId">
                         <div *ngFor="let s of schemas" class="schema-row">
                             <div>
-                                <mat-radio-button [value]="s.id" color="primary" [disabled]="s.status === 'INCOMPATIBLE'"></mat-radio-button>
+                                <mat-radio-button [value]="s.id" color="primary"
+                                    [disabled]="s.status === 'INCOMPATIBLE'"></mat-radio-button>
                             </div>
                             <div>{{s.name}}</div>
-                            <div *ngIf="s.status === 'NOT_VERIFIED'" class="schema-status-NOT_VERIFIED">Need verification</div>
-                            <div *ngIf="s.status === 'INCOMPATIBLE'" class="schema-status-INCOMPATIBLE">Incompatible</div>
+                            <div *ngIf="s.status === 'NOT_VERIFIED'" class="schema-status-NOT_VERIFIED">Need
+                                verification</div>
+                            <div *ngIf="s.status === 'INCOMPATIBLE'" class="schema-status-INCOMPATIBLE">Incompatible
+                            </div>
                             <div *ngIf="s.status === 'COMPATIBLE'" class="schema-status-COMPATIBLE">Verified</div>
                         </div>
                     </mat-radio-group>
+                    <div class="form-buttons">
+                        <div class="form-link" (click)="verificationAll()">Verify All</div>
+                    </div>
                 </div>
                 <div class="form-buttons">
                     <button mat-button type="button" matStepperPrevious>Back</button>
                     <button mat-raised-button color="primary" type="submit" [disabled]="!schemaForm.valid">
-                        Next
+                        Verify & Finish
                     </button>
                 </div>
             </form>
@@ -179,12 +185,18 @@
         </div>
         <div class="field">
             <div class="field-name">Last Update</div>
-            <div class="field-value">{{lastUpdate}}</div>
+            <div class="field-value">
+                <div class="synchronization">
+                    <div *ngIf="lastUpdate" class="synchronization-time">{{lastUpdate}}</div>
+                    <div *ngIf="!lastUpdate" class="synchronization-time">
+                        -
+                    </div>
+                    <div class="synchronization-update" (click)="onRefresh()">
+                        <mat-icon>sync</mat-icon>
+                    </div>
+                </div>
+
+            </div>
         </div>
-    </div>
-    <div class="form-buttons">
-        <button mat-raised-button color="primary" (click)="onRefresh()">
-            Load Documents
-        </button>
     </div>
 </div>

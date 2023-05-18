@@ -13,6 +13,15 @@ export class ExternalDocument extends BaseEntity {
     blockId?: string;
 
     /**
+     * Policy id
+     */
+    @Property({
+        nullable: true,
+        index: true,
+    })
+    policyId?: string;
+
+    /**
      * User
      */
     @Property({ nullable: true })
@@ -39,31 +48,31 @@ export class ExternalDocument extends BaseEntity {
     /**
      * Document Message
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     documentMessage?: any;
 
     /**
      * Policy Message
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     policyMessage?: any;
 
     /**
      * Policy Instance Message
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     policyInstanceMessage?: any;
 
     /**
      * Schemas
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     schemas?: any[];
 
     /**
      * Schema
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     schema?: any;
 
     /**
