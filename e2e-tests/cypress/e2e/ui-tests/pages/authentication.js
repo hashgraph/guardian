@@ -1,4 +1,6 @@
 import URL from "../../../support/GuardianUrls";
+import API from "../../../support/ApiUrls";
+import {METHOD} from "../../../support/api/api-const";
 
 const AuthPageLocators = {
     usernameInput: '[formcontrolname="login"]',
@@ -12,9 +14,18 @@ const AuthPageLocators = {
     title :  'h1.user-onboarding-wizard__title',
     card : '.standard-registry__card',
     taskReq: '/api/v1/tasks/**',
+    hederaIdInput: '[formcontrolname="hederaAccountId"]',
+    hederaKeyInput: '[formcontrolname="hederaAccountKey"]',
+    nextButton: ' Next ',
+    geographyInput: '[ng-reflect-name="geography"]',
+    lawInput: '[ng-reflect-name="law"]',
+    tagsInput: '[ng-reflect-name="tags"]',
+    connectButton: 'Connect',
+    userWaiting: '/api/v1/profiles/',
 };
 
 export class AuthenticationPage {
+
     visit() {
         cy.visit(URL.Root);
     }
@@ -25,7 +36,7 @@ export class AuthenticationPage {
       );
       cy.wait("@waitForTastToComplete", { timeout: 100000 })
       }
-      
+
 
     login(username) {
         const inputName = cy.get(AuthPageLocators.usernameInput);
@@ -43,12 +54,12 @@ export class AuthenticationPage {
 
     checkSetup(role) {
         cy.wait(2000);
-       
+
 
         cy.get("body").then((body) => {
             if (body.find(AuthPageLocators.card).length) {
                 cy.log("Requires registration")
-           
+
                 cy.contains('StandardRegistry').click();
                 cy.contains('Next').click();
                 cy.contains(AuthPageLocators.generateBtn).click();

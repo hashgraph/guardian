@@ -101,10 +101,6 @@ export class PoliciesPage {
         cy.wait("@waitForPoliciesList", { timeout: 300000 })
     }
 
-    waitForEditPage() {
-        cy.get(PoliciesPageLocators.matTypography, { timeout: 60000 }).should('be.visible');
-    }
-
     fillNewPolicyForm(name) {
         const inputName = cy.get(PoliciesPageLocators.inputName);
         inputName.type(name);
@@ -424,7 +420,7 @@ export class PoliciesPage {
     verifyIfValidationCountContains(count) {
         cy.get(PoliciesPageLocators.errorCountElement).should('have.text', count);
     }
-    
+
     verifyIfValidationIsSuccessful() {
         cy.get(PoliciesPageLocators.successValidationElement).should('have.attr', 'errors-count', '0');
     }

@@ -158,8 +158,8 @@ export class HomePage {
      confirminputPass.click().clear();
      confirminputPass.type('test123');
      cy.get(HomePageLocators.submitBtn).click();
-   
-  
+
+
 
   }
 
@@ -235,7 +235,7 @@ cy.get(HomePageLocators.submitBtn).should('be.disabled');
 }
 
 checkCreateDisabledPasswordEmpty() {
- 
+
 const inputName = cy.get(HomePageLocators.passInput);
 inputName.click().clear();
 cy.get(HomePageLocators.submitBtn).click({force: true});
@@ -270,7 +270,6 @@ cy.get(HomePageLocators.confirmpassinput).parent().children('span.field-error').
 
 
 }
- 
+
 
   }
-  
