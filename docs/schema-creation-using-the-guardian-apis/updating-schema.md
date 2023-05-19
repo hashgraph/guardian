@@ -44,6 +44,10 @@ Object that contains a valid schema including the id of the schema that is to be
 ```
 {% endswagger-response %}
 
+{% swagger-response status="422: Unprocessable Entity" description="" %}
+
+{% endswagger-response %}
+
 {% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
 ```javascript
 {

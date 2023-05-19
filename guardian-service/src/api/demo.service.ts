@@ -7,11 +7,11 @@ import {
     Policy,
     Settings,
     DatabaseServer,
-    Workers
+    Workers,
+    SecretManager
 } from '@guardian/common';
 import { MessageAPI, WorkerTaskType } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
-import { SecretManager } from '@guardian/common/dist/secret-manager';
 
 /**
  * Demo key

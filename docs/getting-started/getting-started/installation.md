@@ -26,7 +26,7 @@ in `guardian-service/.env.docker`:
 ```
 
 {% hint style="info" %}
-**Note:**&#x20;
+**Note:**
 
 1. You can use the Schema Topic ID (`INITIALIZATION_TOPIC_ID`) already present in the configuration files, or you can specify your own.
 {% endhint %}

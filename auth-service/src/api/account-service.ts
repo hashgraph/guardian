@@ -7,7 +7,8 @@ import {
     MessageResponse,
     MessageError,
     Logger,
-    DataBaseHelper, NatsService, Singleton
+    DataBaseHelper, NatsService, Singleton,
+    SecretManager
 } from '@guardian/common';
 import {
     AuthEvents, UserRole,
@@ -27,7 +28,6 @@ import {
     IStandardRegistryUserResponse,
     IGetUsersByAccountMessage, GenerateUUIDv4
 } from '@guardian/interfaces';
-import { SecretManager } from '@guardian/common/dist/secret-manager';
 
 /**
  * Account service

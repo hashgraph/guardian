@@ -5052,8 +5052,144 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
   
+  /artifacts:
+    get:
+      tags:
+        - artifacts
+      description: Returns all artifacts.
+      security:
+        - bearerAuth: []
+      summary: Returns all artifacts.
+      parameters:
+        - in: query
+          name: policyId
+          schema:
+            type: string
+          description: Policy identifier
+        - in: query
+          name: pageIndex
+          schema:
+            type: integer
+          description: The number of pages to skip before starting to collect the result set
+          examples:
+            pageIndex:
+              summary: Example of a pageIndex
+              value: 0
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+          description: The numbers of items to return
+          examples:
+            pageSize:
+              summary: Example of a pageSize
+              value: 100
+      responses:
+        200:
+          description: Successful operation.
+          headers:
+            x-total-count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Artifact"
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  
+  /artifacts/{policyId}:
+    post:
+      tags:
+        - artifacts
+      description: Upload artifact. For users with the Standard Registry role only.
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                artifacts:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      parameters:
+        - in: path
+          name: policyId
+          schema:
+            type: string
+          required: true
+          description: Policy identifier
+      summary: Upload Artifact.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Artifact"
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  
+  /artifacts/{artifactId}:
+    delete:
+      tags:
+        - artifacts
+      description: Delete artifact.
+      security:
+        - bearerAuth: []
+      summary: Delete artifact.
+      parameters:
+        - in: path
+          name: artifactId
+          schema:
+            type: string
+          required: true
+          description: Artifact identifier
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
   /artifact:
     get:
+      deprecated: true
       tags:
         - artifacts
       description: Returns all artifacts.
@@ -5111,6 +5247,7 @@ paths:
   
   /artifact/{policyId}:
     post:
+      deprecated: true
       tags:
         - artifacts
       description: Upload artifact. For users with the Standard Registry role only.
@@ -5157,6 +5294,7 @@ paths:
   
   /artifact/{artifactId}:
     delete:
+      deprecated: true
       tags:
         - artifacts
       description: Delete artifact.

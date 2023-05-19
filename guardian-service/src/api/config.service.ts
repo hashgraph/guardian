@@ -8,11 +8,11 @@ import {
     Topic,
     Settings,
     Environment,
-    Workers
+    Workers,
+    SecretManager
 } from '@guardian/common';
 import { MessageAPI, CommonSettings } from '@guardian/interfaces';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
-import { SecretManager } from '@guardian/common/dist/secret-manager';
 
 /**
  * Connecting to the message broker methods of working with root address book.

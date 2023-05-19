@@ -13,7 +13,7 @@ Object that contains the identifier of the Hedera message which contains the IPF
 Topic ID
 {% endswagger-parameter %}
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% swagger-response status="202: Accepted" description="Accepted" %}
 ```javascript
 {
     content:
