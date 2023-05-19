@@ -28,7 +28,7 @@ context("Schemas",{ tags: '@schemas' },  () => {
                     messageId: "1663856382.530222947",
                 },
             }).then((response) => {
-                expect(response.status).eql(STATUS_CODE.SUCCESS);
+                expect(response.status).eql(STATUS_CODE.ACCEPTED);
                 expect(response.body).to.not.be.oneOf([null, ""]);
             });
         });

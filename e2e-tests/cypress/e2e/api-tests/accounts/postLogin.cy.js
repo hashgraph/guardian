@@ -38,7 +38,7 @@ context('Accounts',  { tags: '@accounts' }, () => {
             },
             failOnStatusCode:false,
         }).should(response => {
-            expect(response.status).eql(STATUS_CODE.ERROR);
+            expect(response.status).eql(STATUS_CODE.UNPROCESSABLE);
         });
     });
 })

@@ -22,7 +22,7 @@ context("Tokens", { tags: '@tokens' },() => {
                 "tokenType": "string" 
             },
         }).then((response) => {
-            expect(response.status).eql(STATUS_CODE.SUCCESS);
+            expect(response.status).eql(STATUS_CODE.ACCEPTED);
         });
     });
 });

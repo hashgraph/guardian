@@ -15,7 +15,7 @@ context("Artifacts", { tags: "@artifacts" }, () => {
             },
             timeout: 180000,
         }).then((response) => {
-            expect(response.status).to.eq(201);
+            expect(response.status).eql(STATUS_CODE.SUCCESS);
         });
         
         const urlPolicies = {
@@ -74,9 +74,9 @@ context("Artifacts", { tags: "@artifacts" }, () => {
                 headers: {
                     Authorization: authorization,
                 },
-            })
-                .its("status")
-                .should("be.equal", 201);
+            }).then((response) => {
+                expect(response.status).eql(STATUS_CODE.NO_CONTENT);
+            });
         });
     });
 });

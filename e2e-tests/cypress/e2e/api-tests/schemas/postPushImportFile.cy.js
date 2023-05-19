@@ -67,7 +67,7 @@ context("Schemas",{ tags: '@schemas' },  () => {
                             authorization,
                         },
                     }).then((response) => {
-                        expect(response.status).eql(STATUS_CODE.SUCCESS);
+                        expect(response.status).to.eq(STATUS_CODE.ACCEPTED);
                         expect(response.body).to.not.be.oneOf([null, ""]);
                     });
                 });

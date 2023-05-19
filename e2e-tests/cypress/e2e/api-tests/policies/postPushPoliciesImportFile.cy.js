@@ -59,7 +59,7 @@ context("Policies", { tags: '@policies' }, () => {
                     },
                     timeout: 180000,
                 }).then((response) => {
-                    expect(response.status).to.eq(201);
+                    expect(response.status).to.eq(STATUS_CODE.ACCEPTED);
                 });
             });
     });

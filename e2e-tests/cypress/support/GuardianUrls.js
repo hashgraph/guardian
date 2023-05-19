@@ -9,7 +9,8 @@ const URL = {
     Policies: "/policy-viewer",
     Tokens: "tokens",
     Contracts: "/contracts",
-  
+    Modules: "/modules",
+    Profile: "/user-profile",
   };
   
   export default URL;

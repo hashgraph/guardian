@@ -17,7 +17,7 @@ export class VerraPage {
     createGroup(role) {
         cy.contains("Policies").click({ force: true });
 
-        cy.get("td").first().parent().get("td").eq("4").click();
+        cy.get("td").first().parent().get("td").eq("5").click();
         cy.wait(8000);
         cy.get(VerraPageLocators.roleSelect)
             .click()

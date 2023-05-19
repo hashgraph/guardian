@@ -1,11 +1,11 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
+import {METHOD, STATUS_CODE} from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Schemas", { tags: '@schemas' }, () => {
+context("Schemas", {tags: '@schemas'}, () => {
     const authorization = Cypress.env("authorization");
-    const schemaUUID = ("0000b23a-b1ea-408f-a573"+ Math.floor(Math.random() * 999999) + "a2060a")
+    const schemaUUID = ("0000b23a-b1ea-408f-a573" + Math.floor(Math.random() * 999999) + "a2060a");
+    let topicUid;
     // const schemaUUID = "0000b23a-b1ea-408f-a573-6d8bd1a2060a";
-
     before(() => {
         cy.request({
             method: METHOD.GET,
@@ -14,12 +14,12 @@ context("Schemas", { tags: '@schemas' }, () => {
                 authorization,
             },
         }).then((resp) => {
-            const topicUid = resp.body.at(-1).topicId;
+            topicUid = resp.body.at(-1).topicId;
             //Create new schema
             cy.request({
                 method: "POST",
                 url: API.ApiServer + API.Schemas + topicUid,
-                headers: { authorization },
+                headers: {authorization},
                 body: {
                     uuid: schemaUUID,
                     description: "new",
@@ -40,16 +40,12 @@ context("Schemas", { tags: '@schemas' }, () => {
     it("delete new schema", () => {
         cy.request({
             method: METHOD.GET,
-            url: API.ApiServer + API.Schemas,
+            url: API.ApiServer + API.Schemas + topicUid,
             headers: {
                 authorization,
             },
         }).then((response) => {
-            expect(response.status).eql(STATUS_CODE.OK);
             let schemaId = response.body.at(-1).id;
-
-            const versionNum = "1." + Math.floor(Math.random() * 999);
-
             expect(response.status).eql(STATUS_CODE.OK);
 
             //Delete schema

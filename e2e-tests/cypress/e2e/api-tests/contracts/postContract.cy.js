@@ -16,7 +16,7 @@ context("Contracts", { tags: '@contracts' },() => {
                 "description": contractName,
             },
         }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.OK);
+            expect(resp.status).eql(STATUS_CODE.SUCCESS);
             expect(resp.body).to.have.property("_id");
             expect(resp.body).to.have.property("description", contractName);
             expect(resp.body).to.have.property("contractId");

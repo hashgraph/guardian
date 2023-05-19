@@ -53,7 +53,7 @@ context("Modules", { tags: '@modules' },() => {
     //     });
     // });
 
-    it("import policy", () => {
+    it("import module ipfs", () => {
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.ListOfAllModules + API.ImportMessage,

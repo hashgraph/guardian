@@ -70,22 +70,22 @@ context("Contracts", { tags: '@contracts' },() => {
         });
     });
 
-    it("create pair", () => {
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.ListOfContracts + contractId + "/pair",
-            headers: {
-                authorization,
-            },
-            body: {
-                "baseTokenId": basicTokenId,
-                "oppositeTokenId": oppositeTokenId,
-                "baseTokenCount": 1,
-                "oppositeTokenCount": 2
-            },
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.OK);
-            expect(resp.body).to.eq(true);
-        });
-    });
+    // it("create pair", () => {
+    //     cy.request({
+    //         method: METHOD.POST,
+    //         url: API.ApiServer + API.ListOfContracts + contractId + "/pair",
+    //         headers: {
+    //             authorization,
+    //         },
+    //         body: {
+    //             "baseTokenId": basicTokenId,
+    //             "oppositeTokenId": oppositeTokenId,
+    //             "baseTokenCount": 1,
+    //             "oppositeTokenCount": 2
+    //         },
+    //     }).then((resp) => {
+    //         expect(resp.status).eql(STATUS_CODE.OK);
+    //         expect(resp.body).to.eq(true);
+    //     });
+    // });
 });

@@ -26,9 +26,8 @@ export class InstallerPage {
 
     signApplication() {
         cy.contains("Sign").click({ force: true });
-
+        cy.wait(20000);
     }
-
 
     okButton() {
         cy.get(InstallerPageLocators.submitBtn).click();
@@ -36,27 +35,26 @@ export class InstallerPage {
 
     approveDevice() {
         cy.contains("Policies").click({ force: true });
-        cy.get("td").first().parent().get("td").eq("4").click();
+        cy.get("td").first().parent().get("td").eq("5").click();
         cy.contains("Devices").click({ force: true });
         cy.wait(8000);
         cy.contains("Sign").click({ force: true });
+        cy.wait(20000);
     }
 
 
     createGroup(role) {
         cy.contains("Policies").click({ force: true });
         cy.wait(5000);
-        cy.get("td").first().parent().get("td").eq("4").click();
+        cy.get("td").first().parent().get("td").eq("5").click();
         cy.wait(8000);
         cy.get(InstallerPageLocators.roleSelect)
             .click()
             .get("mat-option")
             .contains(role)
             .click();
-
         cy.get(InstallerPageLocators.submitBtn).click();
-        cy.wait(12000);
-
+        cy.wait(20000);
     }
 
     accociateUserWithToken() {

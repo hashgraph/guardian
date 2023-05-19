@@ -1,5 +1,4 @@
 import ASSERT from "../../../support/CustomHelpers/assertions";
-import TIMEOUTS from "../../../support/CustomHelpers/timeouts";
 import URL from "../../../support/GuardianUrls";
 
 const ContractsPageLocators = {
@@ -21,9 +20,18 @@ const ContractsPageLocators = {
     createFinalBtn: "div.g-dialog-actions-btn",
     basicTokenCount: '[formcontrolname="baseTokenCount"]',
     oppositeTokenCount: '[formcontrolname="oppositeTokenCount"]',
-    userIdInput: '[data-placeholder="User Identifier"]'
-
+    userIdInput: '[data-placeholder="User Identifier"]',
+    importedContractIdInput: '[ng-reflect-name="contractId"]',
+    tagNameInput: '[ng-reflect-name="name"]',
+    tagDescInput: '[ng-reflect-name="description"]',
+    importedContractDescInput: '[ng-reflect-name="description"]',
+    headerSelector: 'th[role="columnheader"]',
+    contractRowSelector: 'tbody>tr[role="row"]',
+    tagCreationModal: 'tags-create-dialog',
+    createTagButton: ' Create Tag ',
+    closeWindowButton: 'div.g-dialog-cancel-btn',
 };
+
 export class ContractsPage {
     openContractsTab() {
         cy.visit(URL.Root + URL.Contracts);
@@ -64,16 +72,60 @@ export class ContractsPage {
         cy.get(ContractsPageLocators.createFinalBtn).click();
     }
 
-    addUserToContract(name, userId) {
+    addUserToContract(name) {
         cy.intercept(ContractsPageLocators.tokenPairingStart).as(
             "waitForPairing"
         );
-        cy.log(userId)
         cy.contains(ContractsPageLocators.contractName, name).parent().
             contains(ContractsPageLocators.operationsBtn).click();
         cy.contains(ContractsPageLocators.addUserBtn).click({force: true});
-        cy.get(ContractsPageLocators.userIdInput).type(userId);
+        let userId;
+        cy.readFile('cypress/fixtures/regId.txt').then(file =>{
+            userId = file;
+        }).then(()=>{
+            cy.get(ContractsPageLocators.userIdInput).type(userId);
+            cy.contains(ContractsPageLocators.okBtn).click();
+            ContractsPage.waitForContracts();
+        })
+    }
+
+    importContract(importedContract) {
+        cy.contains(ContractsPageLocators.importContractBtn).click();
+        cy.get(ContractsPageLocators.importedContractIdInput).type("0.0.3886183");
+        cy.get(ContractsPageLocators.importedContractDescInput).type(importedContract);
         cy.contains(ContractsPageLocators.okBtn).click();
         ContractsPage.waitForContracts();
+        cy.contains(ContractsPageLocators.contractName, importedContract).should(ASSERT.exist);
+    }
+
+    verifyButtonsAndHeaders() {
+        cy.contains(ContractsPageLocators.createContractBtn).should("exist");
+        cy.contains(ContractsPageLocators.importContractBtn).should("exist");
+        cy.get(ContractsPageLocators.headerSelector).then(($header) => {
+            expect($header.get(0).innerText).to.eq('Hedera Contract Id')
+            expect($header.get(1).innerText).to.eq('Description')
+            expect($header.get(2).innerText).to.eq('Tags')
+            expect($header.get(3).innerText).to.eq('Operations')
+            expect($header.get(4).innerText).to.eq('Retirement Requests')
+        })
+    }
+
+    verifyContractDataAndActions(importedContract) {
+        cy.contains(ContractsPageLocators.createTagButton).click();
+        cy.get(ContractsPageLocators.tagCreationModal).should('exist');
+        cy.get(ContractsPageLocators.createFinalBtn).should('exist');
+        cy.get(ContractsPageLocators.tagNameInput).should('exist');
+        cy.get(ContractsPageLocators.importedContractDescInput).should('exist');
+        cy.get(ContractsPageLocators.closeWindowButton).click();
+        cy.contains(ContractsPageLocators.operationsBtn).click();
+        cy.contains(ContractsPageLocators.addPairBtn).should("exist");
+        cy.contains(ContractsPageLocators.addUserBtn).should("exist");
+        cy.get(ContractsPageLocators.contractRowSelector).should(($contract) => {
+            const contractElements = $contract.get(0).childNodes;
+            expect(contractElements.item(1).innerText).to.eq(importedContract);
+            expect(contractElements.item(3).getElementsByClassName("select-menu").item(0).innerText).to.eq("Operations\narrow_drop_down");
+            expect(contractElements.item(4).firstChild.firstChild.innerText).to.eq("View");
+            expect(contractElements.item(2).getElementsByClassName("tag-name").item(0).innerText).to.eq("Create Tag");
+        })
     }
 }

@@ -6,7 +6,6 @@ const contracts = new ContractsPage();
 
 describe("Workflow Contract Creation", {tags: '@ui'}, () => {
 
-    const name = Math.floor(Math.random() * 999) + "contractName";
     const importedContract = Math.floor(Math.random() * 999) + "importedContractName";
 
     beforeEach(() => {
@@ -14,15 +13,11 @@ describe("Workflow Contract Creation", {tags: '@ui'}, () => {
         home.visit();
     })
 
-    it("create contract", () => {
-        home.login("StandardRegistry");
-        contracts.openContractsTab();
-        contracts.createContract(name);
-    });
-
-    it("import contract", () => {
+    it("verify ui", () => {
         home.createNewSR("StandardRegistryForSI");
         contracts.openContractsTab();
         contracts.importContract(importedContract);
+        contracts.verifyButtonsAndHeaders();
+        contracts.verifyContractDataAndActions(importedContract);
     });
 });

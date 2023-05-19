@@ -7,8 +7,7 @@ context("Policies", { tags: '@policies' }, () => {
     const authorization = Cypress.env("authorization");
 
     it("should push create a new policy", () => {
-        const nameTag = Math.floor(Math.random() * 999) + "test001";
-
+        const nameTag = Math.floor(Math.random() * 999) + "test666";
         const urlPolicies = {
             method: "POST",
             url: API.ApiServer + "policies/push",
@@ -138,7 +137,8 @@ context("Policies", { tags: '@policies' }, () => {
         };
 
         cy.request(urlPolicies).should((response) => {
-            expect(response.status).to.eq(201);
+            console.log(response);
+            expect(response.status).to.eq(STATUS_CODE.ACCEPTED);
         });
     });
 });

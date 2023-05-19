@@ -27,7 +27,7 @@ context('Policy - Import', { tags: '@policies' },() => {
             timeout: 600000
           })
             .should((response) => {
-              expect(response.status).to.eq(201)
+                expect(response.status).to.eq(STATUS_CODE.ACCEPTED);
             })
         })
     })
