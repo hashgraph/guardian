@@ -498,6 +498,9 @@ export class PolicyWizardHelper {
             const currentSchema = schemaConfigs.find(
                 (item) => item.iri === iri
             );
+            if (!currentSchema) {
+                return result;
+            }
             const dependencySchema = schemaConfigs.find(
                 (item) => item.dependencySchemaIri === iri
             );
@@ -543,7 +546,7 @@ export class PolicyWizardHelper {
                 firstReportItemApproved,
                 firstReportItemCreated
             );
-        } else {
+        } else if (mintSchema) {
             let firstReportItemCreated;
             [firstReportItemCreated, relationshipsVariableName] =
                 this.getReportFirstItem(
