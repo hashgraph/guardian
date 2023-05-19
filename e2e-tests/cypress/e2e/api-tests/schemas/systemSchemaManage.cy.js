@@ -68,7 +68,7 @@ context("Schemas", { tags: '@schemas' }, () => {
                         schemaId,
                     headers: { authorization },
                 }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.OK);
+                    expect(response.status).eql(STATUS_CODE.NO_CONTENT);
                 });
             });
         });

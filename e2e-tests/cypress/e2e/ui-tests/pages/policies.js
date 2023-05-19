@@ -42,25 +42,27 @@ export class PoliciesPage {
 
     approveUser() {
         cy.contains("Go").first().click();
-        cy.wait(10000);
         cy.get(PoliciesPageLocators.approveBtn).click();
+        cy.wait(20000);
     }
     approveDevice() {
         cy.contains("Go").first().click();
         cy.contains("Devices").click({ force: true });
         cy.contains("Approve").click({ force: true });
+        cy.wait(20000);
     }
     approveRequest() {
         cy.contains("Go").first().click();
         cy.contains("Issue Requests").click({ force: true });
         cy.contains("Approve").click({ force: true });
+        cy.wait(20000);
     }
 
     static waitForPolicyList(){
         cy.intercept(PoliciesPageLocators.policiesList).as(
             "waitForPoliciesList"
         );
-        cy.wait("@waitForPoliciesList", { timeout: 100000 })
+        cy.wait("@waitForPoliciesList", { timeout: 300000 })
     }
 
     fillNewPolicyForm(name) {
@@ -125,7 +127,7 @@ export class PoliciesPage {
         cy.get("tbody>tr").eq("0").find("td").eq("0").within((firstCell) => {
             cy.wrap(firstCell.text()).as("policyName").then(() => {
                 cy.get("@policyName").then((policyName) => {
-                    cy.contains(policyName).parent().find("td").eq("7").click();
+                    cy.contains(policyName).parent().find("td").eq("8").click();
                 });
             });
         })

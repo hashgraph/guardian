@@ -8,6 +8,8 @@ context("Accounts", { tags: "@accounts" }, () => {
         cy.request("POST", API.ApiServer + "accounts/register", {
             username: name,
             password: "test",
+            password_confirmation: "test",
+            role: "USER",
         })
             .should((response) => {
                 expect(response.status).to.eq(201);
@@ -41,8 +43,8 @@ context("Accounts", { tags: "@accounts" }, () => {
             headers: {
             },
             failOnStatusCode:false,
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.ERROR);
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNPROCESSABLE);
         });
     });
 
@@ -56,7 +58,7 @@ context("Accounts", { tags: "@accounts" }, () => {
             },
             failOnStatusCode:false,
         }).then(resp => {
-            expect(resp.status).eql(STATUS_CODE.ERROR);
+            expect(resp.status).eql(STATUS_CODE.UNPROCESSABLE);
         });
     });
 
@@ -70,7 +72,7 @@ context("Accounts", { tags: "@accounts" }, () => {
             },
             failOnStatusCode:false,
         }).then(resp => {
-            expect(resp.status).eql(STATUS_CODE.ERROR);
+            expect(resp.status).eql(STATUS_CODE.UNPROCESSABLE);
         });
     });
 
@@ -85,7 +87,7 @@ context("Accounts", { tags: "@accounts" }, () => {
             },
             failOnStatusCode:false,
         }).then(response => {
-            expect(response.status).eql(STATUS_CODE.ERROR);
+            expect(response.status).eql(STATUS_CODE.UNPROCESSABLE);
         });
     });
 
@@ -100,7 +102,7 @@ context("Accounts", { tags: "@accounts" }, () => {
             },
             failOnStatusCode:false,
         }).then(response => {
-            expect(response.status).eql(STATUS_CODE.ERROR);
+            expect(response.status).eql(STATUS_CODE.UNPROCESSABLE);
         });
     });
 
@@ -147,7 +149,7 @@ context("Accounts", { tags: "@accounts" }, () => {
             },
             failOnStatusCode:false,
         }).then(response => {
-            expect(response.status).eql(STATUS_CODE.ERROR);
+            expect(response.status).eql(STATUS_CODE.UNPROCESSABLE);
         });
     });
 
@@ -161,7 +163,7 @@ context("Accounts", { tags: "@accounts" }, () => {
             },
             failOnStatusCode:false,
         }).should(response => {
-            expect(response.status).eql(STATUS_CODE.ERROR);
+            expect(response.status).eql(STATUS_CODE.UNPROCESSABLE);
         });
     });
 

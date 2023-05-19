@@ -1,22 +1,19 @@
-import { AuthenticationPage } from "../../pages/authentication";
-import { PoliciesPage } from "../../pages/policies";
-import { InstallerPage } from "../../pages/intaller-page";
-import { RegistrantPage } from "../../pages/registrant-page";
-import { TokensPage } from "../../pages/tokens";
+import {AuthenticationPage} from "../../pages/authentication";
+import {PoliciesPage} from "../../pages/policies";
 
 const home = new AuthenticationPage();
 const policies = new PoliciesPage();
-const registrant = new RegistrantPage();
-const installer = new InstallerPage();
-const tokens = new TokensPage();
 
-describe("Dry run  Policy",  { tags: '@ui' }, () => {
+describe("Dry run  Policy", {tags: '@ui'}, () => {
+
     const name = Math.floor(Math.random() * 999) + "testName";
-    it("checks dry run workflow", () => {
 
-        cy.viewport(1440, 900);
-
+    beforeEach(() => {
+        cy.viewport(1920, 1080);
         home.visit();
+    })
+
+    it("checks dry run workflow", () => {
         home.login("StandardRegistry");
         policies.openPoliciesTab();
         policies.createPolicyButton();
@@ -26,5 +23,3 @@ describe("Dry run  Policy",  { tags: '@ui' }, () => {
         policies.stopDryRun(name);
     });
 });
-
-export {};

@@ -15,7 +15,7 @@ context("Schemas", { tags: '@policies' },() => {
                 "messageId":"1650282926.728623821"
             },
         }).then((response) => {
-            expect(response.status).eql(STATUS_CODE.SUCCESS);
+            expect(response.status).to.eq(STATUS_CODE.ACCEPTED);
         });
     });
 });

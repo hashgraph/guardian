@@ -1,24 +1,25 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
+import {METHOD, STATUS_CODE} from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Schemas", { tags: '@schemas' }, () => {
+context("Schemas", {tags: '@schemas'}, () => {
     const authorization = Cypress.env("authorization");
-    const schemaUUID = ("0000b23a-b1ea-408f-a573"+ Math.floor(Math.random() * 999999) + "a2060a")
+    const schemaUUID = ("0000b23a-b1ea-408f-a573" + Math.floor(Math.random() * 999999) + "a2060a");
+    let topicUid;
 
     it("should push to create new schema", () => {
         cy.request({
             method: METHOD.GET,
-            url: API.ApiServer + API.Schemas, 
+            url: API.ApiServer + API.Schemas,
             headers: {
                 authorization,
             },
         }).then((resp) => {
-            const topicUid = resp.body[0].topicId;
+            topicUid = resp.body[0].topicId;
             //Create new schema
             cy.request({
                 method: "POST",
                 url: API.ApiServer + API.Schemas + topicUid,
-                headers: { authorization },
+                headers: {authorization},
                 body: {
                     uuid: schemaUUID,
                     description: "new",
@@ -32,22 +33,30 @@ context("Schemas", { tags: '@schemas' }, () => {
                 },
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.SUCCESS);
-                let schemaId = response.body.at(-1).id;
-
+            });
+            cy.request({
+                method: METHOD.GET,
+                url: API.ApiServer + API.Schemas + topicUid,
+                headers: {
+                    authorization,
+                },
+            }).then((resp) => {
+                expect(resp.status).eql(STATUS_CODE.OK);
+                const schemaId = resp.body.at(-1).id;
                 const versionNum = ("1." + Math.floor(Math.random() * 999))
                 //Publish schema
                 cy.request({
                     method: "PUT",
                     url: API.ApiServer + API.Schemas + "push/" + schemaId + "/publish",
-                    headers: { authorization },
+                    headers: {authorization},
                     body: {
                         version: versionNum,
                     },
                 }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.OK);
+                    expect(response.status).eql(STATUS_CODE.ACCEPTED);
                 });
             });
         });
+
     });
-    
 });

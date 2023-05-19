@@ -8,6 +8,9 @@ context("Accounts", { tags: '@accounts' }, () => {
         cy.request({
             method: METHOD.GET,
             url: API.ApiServer + API.Balance,
+            headers: {
+                authorization,
+            },
         }).then((resp) => {
             expect(resp.status).eql(STATUS_CODE.OK);
         });

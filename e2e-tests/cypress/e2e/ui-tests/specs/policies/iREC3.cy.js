@@ -1,20 +1,19 @@
-import { AuthenticationPage } from "../../pages/authentication";
-import { PoliciesPage } from "../../pages/policies";
-import { InstallerPage } from "../../pages/intaller-page";
-import { RegistrantPage } from "../../pages/registrant-page";
-import { TokensPage } from "../../pages/tokens";
+import {AuthenticationPage} from "../../pages/authentication";
+import {PoliciesPage} from "../../pages/policies";
+import {RegistrantPage} from "../../pages/registrant-page";
 
 const home = new AuthenticationPage();
 const policies = new PoliciesPage();
 const registrant = new RegistrantPage();
-const installer = new InstallerPage();
-const tokens = new TokensPage();
 
-describe("Workflow iREC 3 Policy",  { tags: '@ui' }, () => {
-    it("checks iREC 3 policy workflow", () => {
-        cy.viewport(1230, 800);
+describe("Workflow iREC 3 Policy", {tags: '@ui'}, () => {
 
+    beforeEach(() => {
+        cy.viewport(1920, 1080);
         home.visit();
+    })
+
+    it("checks iREC 3 policy workflow", () => {
         home.login("StandardRegistry");
         policies.openPoliciesTab();
         policies.importPolicyButton();
@@ -22,7 +21,6 @@ describe("Workflow iREC 3 Policy",  { tags: '@ui' }, () => {
         policies.publishPolicy();
         home.logOut("StandardRegistry");
 
-        //Registrant
         home.login("Registrant");
         home.checkSetup("Registrant");
         registrant.createGroup("Registrant");
@@ -33,7 +31,6 @@ describe("Workflow iREC 3 Policy",  { tags: '@ui' }, () => {
         policies.approveUser();
         home.logOut("StandardRegistry");
 
-        // Registrant?
         home.login("Registrant");
         registrant.createDevice();
         home.logOut("Registrant");
@@ -51,9 +48,5 @@ describe("Workflow iREC 3 Policy",  { tags: '@ui' }, () => {
         policies.openPoliciesTab();
         policies.approveRequest();
         home.logOut("StandardRegistry");
-
-
     });
 });
-
-export {};

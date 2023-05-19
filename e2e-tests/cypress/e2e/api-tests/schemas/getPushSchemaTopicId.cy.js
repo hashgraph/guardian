@@ -24,7 +24,7 @@ context("Schemas", { tags: '@schemas' },() => {
                     authorization,
                 },
             }).then((resp) => {
-                expect(resp.status).eql(STATUS_CODE.SUCCESS);
+                expect(resp.status).to.eq(STATUS_CODE.ACCEPTED);
             });
         });
     });

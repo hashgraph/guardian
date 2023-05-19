@@ -32,7 +32,7 @@ context("Schemas", { tags: '@schemas' }, () => {
                 "messageId":"11678453951.999421572"
             },
         }).then((response) => {
-            expect(response.status).eql(STATUS_CODE.SUCCESS);
+            expect(response.status).to.eq(STATUS_CODE.ACCEPTED);
             expect(response.body).to.not.be.oneOf([null, ""]);
         });
     });

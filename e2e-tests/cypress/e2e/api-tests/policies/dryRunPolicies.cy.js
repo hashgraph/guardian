@@ -182,7 +182,7 @@ context("Dry Run Policies",  { tags: '@dry-run' }, () => {
                     authorization,
                 },
             }).then((response) => {
-                expect(response.status).to.eq(200);
+                expect(response.status).eql(STATUS_CODE.SUCCESS);
                 const did = response.body[0].did;
 
                 cy.request({
