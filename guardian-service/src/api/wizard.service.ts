@@ -110,7 +110,6 @@ export async function wizardAPI(): Promise<void> {
         try {
             // tslint:disable-next-line:prefer-const
             let { config, owner } = msg;
-            const schemaIris = config.schemas.map((schema: any) => schema.iri);
             const policyEngine = new PolicyEngine();
             const wizardHelper = new PolicyWizardHelper();
             config = await createExistingPolicySchemas(config, owner);
