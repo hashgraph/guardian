@@ -1,0 +1,92 @@
+.wizard-container {
+    display: flex;
+    position: relative;
+    height: 100%;
+    max-height: 100%;
+}
+
+.wizard-steps-container {
+    min-width: 150px;
+    overflow-y: hidden;
+    position: relative;
+    padding-right: 10px;
+}
+
+.wizard-steps-container::after {
+    content: '';
+    background-color: lightgray;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 1px;
+    padding: 0 4px;
+    height: 100%;
+    border-radius: 10px;
+    cursor: ew-resize;
+    background-clip: content-box;
+}
+
+.wizard-steps {
+    height: 100%;
+    overflow-y: scroll;
+    padding-right: 20px;
+}
+
+.wizard-view-container {
+    flex: 1;
+    overflow: hidden;
+    padding: 10px 30px 30px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: column;
+}
+
+.wizard-view-content {
+    width: 100%;
+    padding-right: 5px;
+    overflow-y: scroll;
+    position: relative;
+}
+
+.wizard-view-header {
+    z-index: 2;
+    background-color: white;
+    top: 0;
+    position: sticky;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+
+.title-icon {
+    color: #3f51b5;
+    width: 35px;
+    height: 35px;
+    font-size: 35px;
+}
+
+.title-label {
+    font-size: 24px;
+}
+
+.step-action-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+    margin-top: 25px;
+    width: 100%;
+}
+
+.step-action-buttons button {
+    flex: 1;
+}
+
+.step-action-prev-btn {
+    border: 1px solid rgba(0, 0, 0, .12);
+}

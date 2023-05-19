@@ -154,7 +154,13 @@ schemaAPI.post('/:topicId', permissionHelper(UserRole.STANDARD_REGISTRY), async 
         const newSchema = req.body;
         SchemaUtils.fromOld(newSchema);
         const topicId = req.params.topicId;
-        const schemas = await createSchema(newSchema, user.did, topicId);
+        const schemas = await createSchema(
+            newSchema,
+            user.did,
+            topicId && ['null', 'undefined', ''].includes(topicId)
+                ? undefined
+                : topicId
+        );
         return res.status(201).json(SchemaUtils.toOld(schemas));
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
@@ -171,7 +177,14 @@ schemaAPI.post('/push/:topicId', permissionHelper(UserRole.STANDARD_REGISTRY), a
     const topicId = req.params.topicId;
     RunFunctionAsync<ServiceError>(async () => {
         SchemaUtils.fromOld(newSchema);
-        await createSchemaAsync(newSchema, user.did, topicId, taskId);
+        await createSchemaAsync(
+            newSchema,
+            user.did,
+            topicId && ['null', 'undefined', ''].includes(topicId)
+                ? undefined
+                : topicId,
+            taskId
+        );
     }, async (error) => {
         new Logger().error(error, ['API_GATEWAY']);
         taskManager.addError(taskId, { code: 500, message: error.message });

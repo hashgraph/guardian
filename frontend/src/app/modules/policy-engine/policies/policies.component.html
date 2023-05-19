@@ -16,6 +16,11 @@
 
     <ng-container *ngIf="isConfirmed && policies">
         <div class="actions-container" [attr.role]="role">
+            <button style="background-color: #9c27b0;" mat-raised-button color="primary" (click)="policyWizard()"
+                class="toolbar-btn wizard-btn">
+                <mat-icon>auto_awesome</mat-icon>
+                <span>Policy Wizard</span>
+            </button>
             <button mat-raised-button color="primary" (click)="newPolicy()" class="toolbar-btn add">
                 <mat-icon>add</mat-icon>
                 <span>Create New</span>

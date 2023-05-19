@@ -83,6 +83,7 @@ import { SelectBlock } from './helpers/select-block/select-block.component';
 import { MultiPolicyDialogComponent } from './helpers/multi-policy-dialog/multi-policy-dialog.component';
 import { ComparePolicyDialog } from './helpers/compare-policy-dialog/compare-policy-dialog.component';
 import { NewModuleDialog } from './helpers/new-module-dialog/new-module-dialog.component';
+import { PolicyWizardDialogComponent } from './helpers/policy-wizard-dialog/policy-wizard-dialog.component';
 //Modules
 import { ModulesListComponent } from './modules-list/modules-list.component';
 //Registered Service
@@ -177,7 +178,8 @@ import { UploadDocumentBlockComponent } from './policy-viewer/blocks/upload-docu
         PolicySettingsComponent,
         ImportFileDialog,
         NewThemeDialog,
-        ExternalTopicBlockComponent
+        ExternalTopicBlockComponent,
+        PolicyWizardDialogComponent,
     ],
     imports: [
         CommonModule,
