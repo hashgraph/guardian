@@ -27,10 +27,6 @@ import ObjSet from 'lodash.set';
  * VC documents collection
  */
 @Entity()
-@Unique({
-    properties: ['hash'],
-    options: { partialFilterExpression: { hash: { $type: 'string' } } },
-})
 export class VcDocument extends BaseEntity implements IVCDocument {
     /**
      * Document owner
@@ -64,7 +60,7 @@ export class VcDocument extends BaseEntity implements IVCDocument {
      */
     @Property({
         nullable: true,
-        // index: true
+        index: true
     })
     hash?: string;
 

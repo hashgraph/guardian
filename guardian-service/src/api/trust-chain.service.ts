@@ -281,7 +281,7 @@ export async function trustChainAPI(
                 const vpDocument = HVpDocument.fromJsonTree(root.document);
                 const vcpDocument = vpDocument.getVerifiableCredential(0);
                 const hashVc = vcpDocument.toCredentialHash();
-                const vc = await vcDocumentRepository.findOne({ hash: hashVc });
+                const vc = await vcDocumentRepository.findOne({ hash: hashVc, policyId });
                 await getParents(chain, vc, {}, policyId);
                 await getPolicyInfo(chain, policyId);
                 return new MessageResponse(chain);

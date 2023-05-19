@@ -2,14 +2,14 @@ import { CronJob } from 'cron';
 import { ActionCallback, EventBlock } from '@policy-engine/helpers/decorators';
 import { IVC, Schema, SchemaField, SchemaHelper, TopicType } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
+import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
-import { AnyBlockType, IPolicyDocument, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
+import { AnyBlockType, IPolicyAddonBlock, IPolicyDocument, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
 import { BlockActionError } from '@policy-engine/errors';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
 import {
+    VcDocument as VcDocumentCollection,
     MessageServer,
     MessageAction,
     SchemaMessage,
@@ -27,7 +27,6 @@ import {
     ExternalEvent,
     ExternalEventType
 } from '@policy-engine/interfaces/external-event';
-
 
 /**
  * Search Topic Result
@@ -491,13 +490,15 @@ export class ExternalTopicBlock {
         user: IPolicyUser,
         message: VCMessage
     ): Promise<void> {
+        const documentRef = await this.getRelationships(ref, user);
+
         if (message.type !== MessageType.VCDocument) {
             return;
         }
-        // if (message.payer !== hederaAccount.hederaAccountId) {
-        //     console.log(' --- ', message.payer);
-        //     return;
-        // }
+        if (message.payer !== hederaAccount.hederaAccountId) {
+            console.log(' --- ', message.payer);
+            return;
+        }
 
         await MessageServer.loadDocument(message, hederaAccount.hederaAccountKey);
 
@@ -510,6 +511,17 @@ export class ExternalTopicBlock {
 
         const result: IPolicyDocument = PolicyUtils.createPolicyDocument(ref, user, document);
         result.schema = ref.options.schema;
+        if (documentRef) {
+            PolicyUtils.setDocumentRef(result, documentRef);
+        }
+        if (result.relationships) {
+            result.relationships.push(message.getId());
+        } else {
+            result.relationships = [message.getId()];
+        }
+
+        console.log('1111');
+        console.log(JSON.stringify(result, null, 4));
 
         const state = { data: result };
         ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
@@ -555,6 +567,28 @@ export class ExternalTopicBlock {
             ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
         }
         this.updateStatus(ref, item, user);
+    }
+
+    /**
+     * Get Relationships
+     * @param ref
+     * @param refId
+     */
+    private async getRelationships(ref: AnyBlockType, user: IPolicyUser): Promise<VcDocumentCollection> {
+        try {
+            for (const child of ref.children) {
+                if (child.blockClassName === 'SourceAddon') {
+                    const childData = await (child as IPolicyAddonBlock).getFromSource(user, null);
+                    if (childData && childData.length) {
+                        return childData[0];
+                    }
+                }
+            }
+            return null;
+        } catch (error) {
+            ref.error(PolicyUtils.getErrorMessage(error));
+            return null;
+        }
     }
 
     /**

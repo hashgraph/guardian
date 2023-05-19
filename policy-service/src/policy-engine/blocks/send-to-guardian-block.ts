@@ -86,6 +86,7 @@ export class SendToGuardianBlock {
         if (document.hash) {
             old = await ref.databaseServer.getVcDocument({
                 where: {
+                    policyId: { $eq: ref.policyId },
                     hash: { $eq: document.hash },
                     hederaStatus: { $not: { $eq: DocumentStatus.REVOKE } }
                 }
@@ -138,6 +139,7 @@ export class SendToGuardianBlock {
         if (document.hash) {
             old = await ref.databaseServer.getVpDocument({
                 where: {
+                    policyId: { $eq: ref.policyId },
                     hash: { $eq: document.hash },
                     hederaStatus: { $not: { $eq: DocumentStatus.REVOKE } }
                 }
