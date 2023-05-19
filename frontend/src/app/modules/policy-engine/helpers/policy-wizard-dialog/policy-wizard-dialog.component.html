@@ -117,7 +117,6 @@
 
         <ng-container *ngTemplateOutlet="infoBtn; context: {
                 formControl : control.get('isMintSchema'),
-                helpSrc: '/assets/approve.gif',
                 title: 'Is Schema Mint?',
                 visible: true}">
         </ng-container>
@@ -161,7 +160,7 @@
 
         <ng-container *ngTemplateOutlet="infoBtn; context: {
             formControl : control.get('isCreator'),
-            helpSrc: '/assets/approve.gif',
+            helpSrc: '/assets/create.gif',
             title: 'Is Creator?',
             visible: true}">
         </ng-container>
@@ -229,7 +228,6 @@
         </mat-form-field>
         <ng-container *ngTemplateOutlet="infoBtn; context: {
             formControl : control.get('viewOnlyOwnDocuments'),
-            helpSrc: '/assets/approve.gif',
             title: 'View only own documents?',
             visible: true}">
         </ng-container>
@@ -238,7 +236,7 @@
 
 <ng-template #infoBtn let-formControl="formControl" let-helpSrc="helpSrc" let-title="title" let-visible='visible'>
     <div class="info-btn-container" *ngIf="visible">
-        <button mat-mini-fab color="primary" [matMenuTriggerFor]="menu" class="info-btn">
+        <button [disabled]="!helpSrc" mat-mini-fab color="primary" [matMenuTriggerFor]="menu" class="info-btn">
             i
         </button>
         <mat-menu #menu="matMenu" yPosition="below">
