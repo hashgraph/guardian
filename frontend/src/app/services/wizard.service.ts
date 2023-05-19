@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
+import { IWizardConfig } from '@guardian/interfaces';
 
 /**
  * Services for working with contracts.
@@ -16,7 +17,7 @@ export class WizardService {
         config: any
     ): Observable<{ taskId: string; expectation: number }> {
         return this.http.post<{ taskId: string; expectation: number }>(
-            `${this.url}/push/policy`,
+            `${this.url}/policy/push`,
             config
         );
     }
@@ -24,7 +25,7 @@ export class WizardService {
     public getPolicyConfig(
         policyId: string,
         config: any
-    ): Observable<{ wizardConfig: any; policyConfig: any }> {
+    ): Observable<{ wizardConfig: IWizardConfig; policyConfig: any }> {
         return this.http.post<any>(`${this.url}/${policyId}/config`, config);
     }
 }

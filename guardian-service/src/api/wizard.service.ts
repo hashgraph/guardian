@@ -30,8 +30,8 @@ async function createExistingPolicySchemas(
     const schemasToCreate = schemas.filter(
         (schema) =>
             schemaIris.includes(schema.iri) &&
-            schema.topicId &&
-            schema.topicId !== policyTopicId
+            (!schema.topicId ||
+            schema.topicId !== policyTopicId)
     );
     const schemaToCreateIris = schemasToCreate.map((schema) => schema.iri);
     const relationships = await exportSchemas(
@@ -73,9 +73,6 @@ export async function wizardAPI(): Promise<void> {
         const notifier = initNotifier(taskId);
         RunFunctionAsync(
             async () => {
-                const schemaIris = config.schemas.map(
-                    (schema: any) => schema.iri
-                );
                 const policyEngine = new PolicyEngine();
                 const wizardHelper = new PolicyWizardHelper();
                 config = await createExistingPolicySchemas(config, owner);
@@ -83,13 +80,17 @@ export async function wizardAPI(): Promise<void> {
                 const policy = await policyEngine.createPolicy(
                     Object.assign(config.policy, {
                         config: policyConfig,
-                        policyRoles: config.roles,
+                        policyRoles: config.roles.filter(
+                            (role: string) => role !== 'OWNER'
+                        ),
                     }),
                     owner,
                     notifier
                 );
                 await policyEngine.setupPolicySchemas(
-                    schemaIris,
+                    config.schemas.map(
+                        (schema: any) => schema.iri
+                    ),
                     policy.topicId,
                     owner
                 );
@@ -117,13 +118,17 @@ export async function wizardAPI(): Promise<void> {
             const policy = await policyEngine.createPolicy(
                 Object.assign(config.policy, {
                     config: policyConfig,
-                    policyRoles: config.roles,
+                    policyRoles: config.roles.filter(
+                        (role: string) => role !== 'OWNER'
+                    ),
                 }),
                 owner,
                 emptyNotifier()
             );
             await policyEngine.setupPolicySchemas(
-                schemaIris,
+                config.schemas.map(
+                    (schema: any) => schema.iri
+                ),
                 policy.topicId,
                 owner
             );
@@ -142,7 +147,6 @@ export async function wizardAPI(): Promise<void> {
             let { policyId, config, owner } = msg;
             const policyEngine = new PolicyEngine();
             const wizardHelper = new PolicyWizardHelper();
-            const schemaIris = config.schemas.map((schema: any) => schema.iri);
             const policy = await DatabaseServer.getPolicy({
                 owner,
                 _id: policyId,
@@ -157,7 +161,9 @@ export async function wizardAPI(): Promise<void> {
             );
             const policyConfig = wizardHelper.createPolicyConfig(config);
             await policyEngine.setupPolicySchemas(
-                schemaIris,
+                config.schemas.map(
+                    (schema: any) => schema.iri
+                ),
                 policy.topicId,
                 owner
             );

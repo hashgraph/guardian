@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IUser, Schema, SchemaHelper, TagType, Token, UserRole } from '@guardian/interfaces';
+import { IUser, IWizardConfig, Schema, SchemaHelper, TagType, Token, UserRole } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TokenService } from 'src/app/services/token.service';
@@ -56,7 +56,7 @@ export class PoliciesComponent implements OnInit, OnDestroy {
     tagEntity = TagType.Policy;
     tagSchemas: any[] = [];
 
-    latestWizardNode: string = '';
+    saveWizardState: boolean = false;
 
     mode: OperationMode = OperationMode.None;
     taskId: string | undefined = undefined;
@@ -254,6 +254,8 @@ export class PoliciesComponent implements OnInit, OnDestroy {
                     const taskId = this.taskId;
                     this.taskId = undefined;
                     this.processCreateWizardResult(taskId);
+                    this.mode = OperationMode.None;
+                    this.loadAllPolicy();
                 }
                 break;
             default:
@@ -491,12 +493,10 @@ export class PoliciesComponent implements OnInit, OnDestroy {
     private processCreateWizardResult(taskId: string): void {
         this.taskService.get(taskId).subscribe((task: any) => {
             const { result } = task;
-            if (this.latestWizardNode) {
+            if (this.saveWizardState) {
                 this.setWizardPreset(result.policyId, {
                     data: result.wizardConfig,
-                    currentNode: this.latestWizardNode,
                 });
-                this.latestWizardNode = '';
             }
         });
     }
@@ -668,42 +668,48 @@ export class PoliciesComponent implements OnInit, OnDestroy {
                     schemas: schemas,
                     tokens: tokens,
                     state: preset,
-                    policies
+                    policies,
                 },
             });
-            dialogRef.afterClosed().subscribe((value) => {
-                if (!value.create) {
-                    return;
-                }
-                const dialogRef = this.dialog.open(
-                    ConfirmationDialogComponent,
-                    {
-                        data: {
-                            dialogTitle: 'Save progress',
-                            dialogText: 'Do you want to save progress?',
-                        },
-                    }
-                );
-                dialogRef.afterClosed().subscribe((saveState) => {
-                    if (saveState) {
-                        this.latestWizardNode = value?.currentNode;
-                    }
-                    this.loading = true;
-                    this.wizardService
-                        .createPolicyAsync(value.config)
-                        .subscribe(
-                            (result) => {
-                                const { taskId, expectation } = result;
-                                this.taskId = taskId;
-                                this.expectedTaskMessages = expectation;
-                                this.mode = OperationMode.Create;
-                            },
-                            (e) => {
-                                this.loading = false;
+            dialogRef
+                .afterClosed()
+                .subscribe(
+                    (value: {
+                        create: boolean;
+                        config: IWizardConfig;
+                        currentNode: any;
+                    }) => {
+                        if (!value.create) {
+                            return;
+                        }
+                        const dialogRef = this.dialog.open(
+                            ConfirmationDialogComponent,
+                            {
+                                data: {
+                                    dialogTitle: 'Save progress',
+                                    dialogText: 'Do you want to save progress?',
+                                },
                             }
                         );
-                });
-            });
+                        dialogRef.afterClosed().subscribe((saveState) => {
+                            this.saveWizardState = saveState;
+                            this.loading = true;
+                            this.wizardService
+                                .createPolicyAsync(value.config)
+                                .subscribe(
+                                    (result) => {
+                                        const { taskId, expectation } = result;
+                                        this.taskId = taskId;
+                                        this.expectedTaskMessages = expectation;
+                                        this.mode = OperationMode.WizardCreate;
+                                    },
+                                    (e) => {
+                                        this.loading = false;
+                                    }
+                                );
+                        });
+                    }
+                );
         });
     }
 
@@ -756,7 +762,6 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         } catch (error) {
             localStorage.removeItem('wizard');
             this.openWizardDialog(this.policies as any);
-            console.log(error);
         }
     }
 }

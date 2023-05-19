@@ -4,7 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Schema, SchemaHelper, Token } from '@guardian/interfaces';
+import { IWizardConfig, Schema, SchemaHelper, Token } from '@guardian/interfaces';
 import * as yaml from 'js-yaml';
 import { forkJoin, Observable } from 'rxjs';
 import { ConfirmationDialogComponent } from 'src/app/modules/common/confirmation-dialog/confirmation-dialog.component';
@@ -1232,52 +1232,57 @@ export class PolicyConfigurationComponent implements OnInit {
                 policy
             },
         });
-        dialogRef.afterClosed().subscribe((value) => {
-            const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-                data: {
-                    dialogTitle: 'Save progress',
-                    dialogText: 'Do you want to save progress?',
-                },
-            });
-            dialogRef.afterClosed().subscribe((saveState) => {
-                if (value.create) {
-                    this.loading = true;
-                    this.wizardService
-                        .getPolicyConfig(this.policyId, value.config)
-                        .subscribe((result) => {
-                            this.loading = false;
-                            this.policyModel.setPolicyDataForm(
-                                value?.config?.policy
-                            );
-                            const roles = value?.config?.roles;
-                            const policy = this.policyModel.getJSON();
-                            policy.policyRoles = roles.filter(
-                                (role: string) => role !== 'OWNER'
-                            );
-                            policy.config = result.policyConfig;
-                            this.updatePolicyModel(policy);
-                            if (saveState) {
-                                this.setWizardPreset(this.policyId, {
-                                    data: result?.wizardConfig,
-                                    currentNode: value?.currentNode,
-                                });
-                            }
+        dialogRef
+            .afterClosed()
+            .subscribe((value: { create: boolean; config: IWizardConfig, currentNode: any }) => {
+                const dialogRef = this.dialog.open(
+                    ConfirmationDialogComponent,
+                    {
+                        data: {
+                            dialogTitle: 'Save progress',
+                            dialogText: 'Do you want to save progress?',
+                        },
+                    }
+                );
+                dialogRef.afterClosed().subscribe((saveState: boolean) => {
+                    if (value.create) {
+                        this.loading = true;
+                        this.wizardService
+                            .getPolicyConfig(this.policyId, value.config)
+                            .subscribe((result) => {
+                                this.loading = false;
+                                this.policyModel.setPolicyDataForm(
+                                    value?.config?.policy
+                                );
+                                const roles = value?.config?.roles;
+                                const policy = this.policyModel.getJSON();
+                                policy.policyRoles = roles.filter(
+                                    (role: string) => role !== 'OWNER'
+                                );
+                                policy.config = result.policyConfig;
+                                this.updatePolicyModel(policy);
+                                if (saveState) {
+                                    this.setWizardPreset(this.policyId, {
+                                        data: result?.wizardConfig,
+                                        currentNode: value?.currentNode,
+                                    });
+                                }
+                            });
+                    }
+
+                    if (saveState) {
+                        this.setWizardPreset(this.policyId, {
+                            data: value?.config,
+                            currentNode: value?.currentNode,
                         });
-                }
+                    }
 
-                if (saveState) {
-                    this.setWizardPreset(this.policyId, {
-                        data: value?.config,
-                        currentNode: value?.currentNode,
-                    });
-                }
-
-                if (!saveState) {
-                    this.removeWizardPreset(this.policyId);
-                    return;
-                }
+                    if (!saveState) {
+                        this.removeWizardPreset(this.policyId);
+                        return;
+                    }
+                });
             });
-        });
     }
 
     policyWizard() {

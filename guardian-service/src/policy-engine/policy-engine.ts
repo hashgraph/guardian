@@ -50,7 +50,7 @@ import { createHederaToken } from '@api/token.service';
 import { GuardiansService } from '@helpers/guardians';
 import { Inject } from '@helpers/decorators/inject';
 import { findAndDryRunSchema, findAndPublishSchema, publishSystemSchemas } from '@api/helpers/schema-publish-helper';
-import { createSchema, deleteSchema, incrementSchemaVersion, sendSchemaMessage } from '@api/helpers/schema-helper';
+import { deleteSchema, incrementSchemaVersion, sendSchemaMessage } from '@api/helpers/schema-helper';
 
 /**
  * Result of publishing

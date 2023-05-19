@@ -34,7 +34,7 @@ wizardAPI.post(
 );
 
 wizardAPI.post(
-    '/push/policy',
+    '/policy/push',
     permissionHelper(UserRole.STANDARD_REGISTRY),
     async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
         const taskManager = new TaskManager();

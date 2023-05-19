@@ -15,7 +15,7 @@ import {
     AbstractControl,
 } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { Schema, SchemaField, Token } from '@guardian/interfaces';
+import { IWizardConfig, Schema, SchemaField, Token } from '@guardian/interfaces';
 import { Subject } from 'rxjs';
 import { RetireTokenDialogComponent } from 'src/app/components/retire-token-dialog/retire-token-dialog.component';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
@@ -69,7 +69,6 @@ export class PolicyWizardDialogComponent implements OnInit {
     });
 
     treeData: any;
-
     currentNode: any;
 
     destroy$: Subject<boolean> = new Subject<boolean>();
@@ -181,12 +180,7 @@ export class PolicyWizardDialogComponent implements OnInit {
     }
 
     loadData(
-        data: {
-            policy: any;
-            roles: string[];
-            schemas: any[];
-            trustChain: any[];
-        },
+        data: IWizardConfig,
         schemasNode: any,
         trustChainNode: any,
         currentNodeId?: string
@@ -243,7 +237,11 @@ export class PolicyWizardDialogComponent implements OnInit {
                 );
             }
         }
-        this.dataForm.patchValue(data);
+        this.dataForm.patchValue({
+            roles: data.roles,
+            schemas: data.schemas,
+            trustChain: data.trustChain
+        });
         const currentNode = this.findCurrentNode(
             this.treeData,
             currentNodeId?.split('.')
@@ -254,12 +252,13 @@ export class PolicyWizardDialogComponent implements OnInit {
     }
 
     findCurrentNode(node: any, indexes: string[] = []) {
+        if (!Array.isArray(indexes)) {
+            return node;
+        }
         let result = node;
-
         for (const index of indexes) {
             result = result.children[+index - 1];
         }
-
         return result;
     }
 

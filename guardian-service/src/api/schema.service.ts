@@ -22,7 +22,6 @@ import {
     checkForCircularDependency,
     createSchema,
     deleteSchema,
-    getDefs,
     incrementSchemaVersion,
     sendSchemaMessage,
     updateSchemaDefs
