@@ -89,7 +89,7 @@
     padding: 0 40px;
 }
 
-.form-page  .page-btns {
+.form-page .page-btns {
     padding: 0px 40px 40px 40px;
 }
 
@@ -134,7 +134,30 @@
     margin-left: 3px;
 }
 
+.registrant-application-create-btn {
+    display: none;
+}
+
 @media (max-width: 810px) {
+    .loading {
+        top: 75px;
+        z-index: 999;
+    }
+
+    .loading-dialog {
+        position: fixed;
+        top: 75px;
+        z-index: 999;
+        bottom: 0;
+    }
+
+    .page-btns {
+        display: none !important;
+    }
+
+    .dialog-actions-container {
+        display: none !important;
+    }
 
     h1 {
         height: 40px;
@@ -161,10 +184,10 @@
     .form-dialog {
         width: 90%;
         margin: 0 auto;
-        padding: 0;
+        padding: 0px 0px 0px 0px;
         border: none;
-        max-height: 55vh;
-        max-width: 90vh;
+        max-height: none;
+        max-width: 90vw;
     }
 
     .schema-form {
@@ -186,6 +209,7 @@
     }
 
     .registrant-application-create-btn {
+        display: block !important;
         position: fixed;
         width: calc(45% - 5px);
         right: 5%;
