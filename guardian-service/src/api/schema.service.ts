@@ -114,10 +114,6 @@ export async function schemaAPI(): Promise<void> {
                         MessageAction.CreateSchema,
                         item
                     );
-                } else if (msg.topicId) {
-                    throw new Error(
-                        `Topic identifier already exists in schema: ${item.topicId}`
-                    );
                 }
                 item.status = SchemaStatus.DRAFT;
                 SchemaHelper.setVersion(item, null, item.version);
