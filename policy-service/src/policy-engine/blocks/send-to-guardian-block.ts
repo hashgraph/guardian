@@ -260,7 +260,8 @@ export class SendToGuardianBlock {
             } else {
                 old.messageIds = [document.messageId];
             }
-            return await ref.databaseServer.updateVC(old);
+            await ref.databaseServer.updateVC(old);
+            return document;
         } else {
             if (Array.isArray(document.messageIds)) {
                 document.messageIds.push(document.messageId);
@@ -290,7 +291,8 @@ export class SendToGuardianBlock {
             } else {
                 old.messageIds = [document.messageId];
             }
-            return await ref.databaseServer.updateDid(old);
+            await ref.databaseServer.updateDid(old);
+            return document;
         } else {
             if (Array.isArray(document.messageIds)) {
                 document.messageIds.push(document.messageId);
@@ -318,7 +320,8 @@ export class SendToGuardianBlock {
             } else {
                 old.messageIds = [document.messageId];
             }
-            return await ref.databaseServer.updateVP(old);
+            await ref.databaseServer.updateVP(old);
+            return document;
         } else {
             if (Array.isArray(document.messageIds)) {
                 document.messageIds.push(document.messageId);
