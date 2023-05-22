@@ -119,12 +119,11 @@ export async function contractAPI(
                 );
 
             for (const retireRequest of retireRequestsAndCount[0] as any[]) {
-                if (retireRequest.vcDocumentHash) {
-                    //TODO Hash
+                if (retireRequest.documentId) {
                     retireRequest.vcDocument = await new DataBaseHelper(
                         VcDocumentCollection
                     ).findOne({
-                        hash: retireRequest.vcDocumentHash,
+                        _id: retireRequest.documentId,
                     });
                 }
             }
@@ -584,7 +583,7 @@ export async function contractAPI(
                         },
                     ],
                     owner: did,
-                    vcDocumentHash: null,
+                    documentId: null,
                 }
             );
 
@@ -799,7 +798,6 @@ export async function contractAPI(
             await messageServer
                 .sendMessage(vcMessage);
 
-            //TODO Hash
             const vcDoc = await new DataBaseHelper(VcDocumentCollection).save({
                 hash: vcMessage.hash,
                 owner: did,
@@ -809,7 +807,7 @@ export async function contractAPI(
 
             await retireRequestRepository.update(
                 {
-                    vcDocumentHash: vcDoc.hash,
+                    documentId: vcDoc._id,
                 },
                 {
                     id: retireRequest.id,
