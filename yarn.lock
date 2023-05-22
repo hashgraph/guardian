@@ -1060,7 +1060,7 @@ __metadata:
     "@hashgraph/sdk": ^2.24.2
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
-    "@mikro-orm/core": ~5.7.7
+    "@mikro-orm/core": ~5.7.8
     "@mikro-orm/migrations-mongodb": ~5.7.7
     "@mikro-orm/mongodb": ~5.7.7
     "@transmute/credentials-context": ^0.7.0-unstable.80
@@ -1349,16 +1349,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mikro-orm/core@npm:~5.7.7":
-  version: 5.7.7
-  resolution: "@mikro-orm/core@npm:5.7.7"
+"@mikro-orm/core@npm:~5.7.8":
+  version: 5.7.8
+  resolution: "@mikro-orm/core@npm:5.7.8"
   dependencies:
     acorn-loose: 8.3.0
     acorn-walk: 8.2.0
     dotenv: 16.0.3
     fs-extra: 11.1.1
     globby: 11.1.0
-    mikro-orm: ~5.7.7
+    mikro-orm: ~5.7.8
     reflect-metadata: 0.1.13
   peerDependencies:
     "@mikro-orm/better-sqlite": ^5.0.0
@@ -1392,7 +1392,7 @@ __metadata:
       optional: true
     "@mikro-orm/sqlite":
       optional: true
-  checksum: 47ad526597bfa120e93be81ef5923e7032fd9ed588e804758a36bee7d5edf79fe99ada5a778d2974006a21355a5d1bfb2bbe2e4ebb182f95a42d58031d6e50ae
+  checksum: 21cf9259cfa49c54e4d1a31ab64009ca66df88e79b852967ec83371fc21846af386c8b9ec5447f0e7fc6592c9684578b1969188ddf3ec03cba1114bbdd9a6201
   languageName: node
   linkType: hard
 
@@ -3079,7 +3079,7 @@ __metadata:
   dependencies:
     "@guardian/common": ^2.12.0
     "@guardian/interfaces": ^2.12.0
-    "@mikro-orm/core": ~5.7.7
+    "@mikro-orm/core": ~5.7.8
     "@mikro-orm/mongodb": ~5.7.7
     "@types/jsonwebtoken": ^8.5.4
     "@types/node": ^18.16.0
@@ -5691,7 +5691,7 @@ __metadata:
     "@hashgraph/sdk": ^2.24.2
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
-    "@mikro-orm/core": ~5.7.7
+    "@mikro-orm/core": ~5.7.8
     "@mikro-orm/mongodb": ~5.7.7
     "@transmute/credentials-context": ^0.7.0-unstable.80
     "@transmute/did-context": ^0.7.0-unstable.80
@@ -7715,7 +7715,7 @@ __metadata:
   dependencies:
     "@guardian/common": ^2.12.0
     "@guardian/interfaces": ^2.12.0
-    "@mikro-orm/core": ~5.7.7
+    "@mikro-orm/core": ~5.7.8
     "@mikro-orm/mongodb": ~5.7.7
     "@types/fs-extra": ^9.0.12
     "@types/node": ^18.16.0
@@ -8011,10 +8011,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mikro-orm@npm:~5.7.7":
-  version: 5.7.7
-  resolution: "mikro-orm@npm:5.7.7"
-  checksum: 49b3e2cd4b0273ef63383240b0e7d21b543e632473d54f6cf3c7c0d9d4c3a7f64816459c258f72912445e22444659002954eeb828968e2e1c55e247bdf1ecd6a
+"mikro-orm@npm:~5.7.8":
+  version: 5.7.8
+  resolution: "mikro-orm@npm:5.7.8"
+  checksum: acce1cd40a0639691c453865440ff91728ca2f9378030b62709dd3706b09bcde25018b248613691417ba14df258f9f0a6a8b340ed335ab1b0b74c381f48ceb18
   languageName: node
   linkType: hard
 
@@ -9321,7 +9321,7 @@ __metadata:
     "@hashgraph/sdk": ^2.24.2
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
-    "@mikro-orm/core": ~5.7.7
+    "@mikro-orm/core": ~5.7.8
     "@mikro-orm/mongodb": ~5.7.7
     "@transmute/credentials-context": 0.7.0-unstable.80
     "@transmute/did-context": 0.7.0-unstable.80
