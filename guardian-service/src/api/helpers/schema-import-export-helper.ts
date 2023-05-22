@@ -167,8 +167,12 @@ export async function importSchemaByFiles(
 
     notifier.info(`Found ${files.length} schemas`);
     for (const file of files) {
-        file.document = replaceValueRecursive(file.document, uuidMap);
-        file.context = replaceValueRecursive(file.context, uuidMap);
+        if (file.document) {
+            file.document = replaceValueRecursive(file.document, uuidMap);
+        }
+        if (file.context) {
+            file.context = replaceValueRecursive(file.context, uuidMap);
+        }
         SchemaHelper.setVersion(file, '', '');
     }
 
