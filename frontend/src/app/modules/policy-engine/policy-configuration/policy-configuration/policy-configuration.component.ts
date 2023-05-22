@@ -1292,10 +1292,7 @@ export class PolicyConfigurationComponent implements OnInit {
             );
             if (wizardStates) {
                 const wizardPolicies = Object.keys(wizardStates);
-                if (!wizardPolicies.length) {
-                    this.openWizardDialog(this.allPolicies);
-                    return;
-                }
+
                 const options = this.allPolicies
                     ?.filter((policy) => wizardPolicies.includes(policy.id))
                     .map((policy) =>
@@ -1304,6 +1301,10 @@ export class PolicyConfigurationComponent implements OnInit {
                             value: policy.id,
                         })
                     );
+                if (!options.length) {
+                    this.openWizardDialog(this.allPolicies);
+                    return;
+                }
                 options?.unshift({
                     name: 'New Policy',
                 });

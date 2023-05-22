@@ -720,10 +720,6 @@ export class PoliciesComponent implements OnInit, OnDestroy {
             );
             if (wizardStates) {
                 const wizardPolicies = Object.keys(wizardStates);
-                if (!wizardPolicies.length) {
-                    this.openWizardDialog(this.policies as any);
-                    return;
-                }
                 const options: any = this.policies
                     ?.filter((policy) => wizardPolicies.includes(policy.id))
                     .map((policy) =>
@@ -732,6 +728,10 @@ export class PoliciesComponent implements OnInit, OnDestroy {
                             value: policy.id,
                         })
                     );
+                if (!options.length) {
+                    this.openWizardDialog(this.policies as any);
+                    return;
+                }
                 const selectorDialog = this.dialog.open(
                     SelectorDialogComponent,
                     {

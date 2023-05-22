@@ -30,7 +30,7 @@ async function createExistingPolicySchemas(
     const schemasToCreate = schemas.filter(
         (schema) =>
             schemaIris.includes(schema.iri) &&
-            (!schema.topicId ||
+            (schema.topicId &&
             schema.topicId !== policyTopicId)
     );
     const schemaToCreateIris = schemasToCreate.map((schema) => schema.iri);
