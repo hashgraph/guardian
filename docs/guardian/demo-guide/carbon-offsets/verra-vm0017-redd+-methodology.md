@@ -50,7 +50,7 @@ Create additional users by clicking the “Create User” button.
 
 Once the users have been created go to each one and assign the appropriate role (i.e. Project Proponent and VVB).
 
-<figure><img src="../../../.gitbook/assets/image (11).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (11) (3).png" alt=""><figcaption></figcaption></figure>
 
 Go to the Standard Registry profile and approve the VVB in the “Approve VVB” tab.
 
@@ -58,7 +58,7 @@ Go to the Standard Registry profile and approve the VVB in the “Approve VVB”
 
 Click on the Project Proponent profile and select “New Project”.
 
-<figure><img src="../../../.gitbook/assets/image (41).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (41) (2).png" alt=""><figcaption></figcaption></figure>
 
 Now, we can input all the project details and data associated with the project in the “New Project” form. In the schema Excel file, if the final CRU calculations do not result in a positive integer, selecting "Ok" after completing the form will trigger errors.
 
@@ -96,6 +96,6 @@ By accessing the "Token History" tab, you can view the number of tokens that hav
 
 The Trust Chain view presents critical elements that are publicly available for discovery, such as token information, policy information, and all the necessary details concerning the Verifiable Credentials comprising the Verifiable Presentation. On the bottom of the screen, you will find "Cards" showcasing the Verifiable Credentials in chronological order.
 
-<figure><img src="../../../.gitbook/assets/image (36).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (36) (2).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/image (99).png" alt=""><figcaption></figcaption></figure>

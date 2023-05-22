@@ -30,7 +30,7 @@ Create a Standard Registry user if you haven't done so already.
 
 You'll now be prompted to configure your Standard Registry account. Go through the user profile setup screen. At the last step of the user profile screen, Standard Registry users will need to fill out the Standard Registry attribute form (see screenshot below). Press Connect when finished. This will now initialize the Guardian instance on the correct Hedera Consensus Service Topics, create a DID document, create a Verifiable Credential, etc.
 
-<figure><img src="../../../.gitbook/assets/image (38).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (38) (2).png" alt=""><figcaption></figcaption></figure>
 
 Now we will be creating the Policy. Click on the "Policies" tab and select "Policies." We have two ways to create policies.&#x20;
 
@@ -46,7 +46,7 @@ Create additional users by clicking the “Create User” button.
 
 Once the users have been created go to each one and assign the appropriate role (i.e. Project Proponent and VVB).
 
-<figure><img src="../../../.gitbook/assets/image (37).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (37) (2).png" alt=""><figcaption></figcaption></figure>
 
 Go to the Standard Registry profile and approve the VVB in the “Approve VVB” tab.
 

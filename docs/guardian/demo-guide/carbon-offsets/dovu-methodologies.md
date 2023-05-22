@@ -38,7 +38,7 @@ The first step towards compliance was building a system to support manual attest
 
 For AgreCalc we see below form:
 
-<figure><img src="../../../.gitbook/assets/image (7).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (7) (5).png" alt=""><figcaption></figcaption></figure>
 
 for Cool Farm, we see below form:
 
@@ -52,11 +52,11 @@ for Cool Farm, we see below form:
 
 8. Once filled and clicked on OK, Registrant waits for approval from Standard Registry:
 
-<figure><img src="../../../.gitbook/assets/image (4) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (4) (1) (3).png" alt=""><figcaption></figcaption></figure>
 
 9. Now we login as Standard Registry and click on Farm Projects tab, we can see the Request being submitted by Registrant for Approve/Reject
 
-<figure><img src="../../../.gitbook/assets/image (30).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (30) (2).png" alt=""><figcaption></figcaption></figure>
 
 For testing purpose, we will approve the farm project.
 
@@ -66,16 +66,16 @@ For testing purpose, we will approve the farm project.
 
 For Cool Farm Tool methodology, you will see the below request form:
 
-<figure><img src="../../../.gitbook/assets/image (9) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (9) (1) (5).png" alt=""><figcaption></figcaption></figure>
 
 11. Once the Request is submitted, Registrant is waiting for it to be approved by Verifier.
 12. Now we logout and login as Verifier, we verify the documents by clicking on approve.
 
-<figure><img src="../../../.gitbook/assets/image (6) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (6) (1) (3).png" alt=""><figcaption></figcaption></figure>
 
 13. Once approved, we login as SR and check the Token History by clicking on Token History Tab:
 
-<figure><img src="../../../.gitbook/assets/image (8).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (8) (4).png" alt=""><figcaption></figcaption></figure>
 
 14. We can also check the TrustChain by clicking on View TrustChain button:
 
