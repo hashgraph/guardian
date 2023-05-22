@@ -36,7 +36,7 @@ Import from IPFS: You can also import Schema from IPFS by entering the correct S
 
 Once the Schema is imported, we need to select the Policy from the Policy dropdown to connect the Schema and the Policy.
 
-<figure><img src="../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
 

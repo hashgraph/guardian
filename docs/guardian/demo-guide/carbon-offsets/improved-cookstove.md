@@ -48,7 +48,7 @@ Fill out the Agent Application and wait for the approval.
 
 The next step is to create a user account for the verifier. Once created and entered into the Policy, select the Verifier role from the drop-down.
 
-<figure><img src="../../../.gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (5) (1).png" alt=""><figcaption></figcaption></figure>
 
 Fill out the Agent Application to become a verifier and wait for approval.
 
@@ -62,7 +62,7 @@ The next step is for the Project Developer to create a new project. Do this by l
 
 <figure><img src="../../../.gitbook/assets/image (13).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (28).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (28) (2).png" alt=""><figcaption></figcaption></figure>
 
 Logging back into the Standard Registry role, you can see that the Project Listings now has a new review request.
 
@@ -78,7 +78,7 @@ Now, the Project Developer must go into their screen and "Submit a PDD" and fill
 
 Now, the Project Developer must go into their screen and "Submit a PDD" and fill out the Project Design Document form.
 
-<figure><img src="../../../.gitbook/assets/image (11).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (11) (3).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/image (19).png" alt=""><figcaption></figcaption></figure>
 
@@ -94,7 +94,7 @@ After that, the Verifer can select a Review ID and "Finalise review."
 
 Once the PDD has been verified, the Project Developer can "Request registration."
 
-<figure><img src="../../../.gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (4) (2).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/image (15).png" alt=""><figcaption></figcaption></figure>
 
@@ -120,7 +120,7 @@ The Verifier can submit the Review ID and "Finalise review"
 
 At this point in the methodology workflow, the Project Developer can "request credit issuance" by clicking on the "Request credit issuance button" and filling out the Request ICCC issuance form.
 
-<figure><img src="../../../.gitbook/assets/image (24).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (24) (2).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/image (22).png" alt=""><figcaption></figcaption></figure>
 

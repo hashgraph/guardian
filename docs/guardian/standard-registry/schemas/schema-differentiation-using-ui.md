@@ -27,7 +27,7 @@ We click on **Compare** button present in Schemas tab as shown below:
 
 <figure><img src="../../../.gitbook/assets/image (1) (1) (3).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (24) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (24) (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 **Display settings** _–_ description and show/hide settings for each color/type of difference
 
