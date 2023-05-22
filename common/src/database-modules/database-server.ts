@@ -1363,13 +1363,12 @@ export class DatabaseServer {
         });
     }
 
-
     /**
      * Get External Topic
      * @param policyId
      * @param blockId
      * @param userId
-     * 
+     *
      * @virtual
      */
     public async getExternalTopic(
@@ -1411,7 +1410,7 @@ export class DatabaseServer {
      * Get Active External Topic
      * @param policyId
      * @param blockId
-     * 
+     *
      * @virtual
      */
     public async getActiveExternalTopics(

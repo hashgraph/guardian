@@ -172,7 +172,7 @@ export class HederaSDKHelper {
         Environment.setLocalNodeProtocol(networkOptions.localNodeProtocol);
         Environment.setNodes(networkOptions.nodes);
         Environment.setMirrorNodes(networkOptions.mirrorNodes);
-        return this;
+        return HederaSDKHelper;
     }
 
     /**
@@ -1003,7 +1003,7 @@ export class HederaSDKHelper {
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
     public static async getTopicMessageByIndex(topicId: string, index: number): Promise<any> {
-        let url = `${Environment.HEDERA_TOPIC_API}${topicId}/messages/${index}`;
+        const url = `${Environment.HEDERA_TOPIC_API}${topicId}/messages/${index}`;
         const res = await axios.get(url, { responseType: 'json' });
         if (!res || !res.data || !res.data.message) {
             throw new Error(`Invalid message. TopicId: '${topicId}', index: '${index}'`);

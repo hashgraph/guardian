@@ -1,8 +1,5 @@
 
 import {
-    DidDocumentStatus,
-    DocumentSignature,
-    DocumentStatus,
     IDidObject,
     IVCDocument,
     MessageAPI,
@@ -16,8 +13,7 @@ import {
     DidDocument,
     VcDocument,
     VpDocument,
-    Policy,
-    VcHelper
+    Policy
 } from '@guardian/common';
 /**
  * Connect to the message broker methods of working with VC, VP and DID Documents

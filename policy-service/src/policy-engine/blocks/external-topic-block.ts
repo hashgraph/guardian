@@ -32,14 +32,35 @@ import {
  * Search Topic Result
  */
 interface TopicResult {
+    /**
+     * Topic count
+     */
     count?: number;
+    /**
+     * Policy Schemas
+     */
     schemas?: SchemaMessage[];
+    /**
+     * Policy Version
+     */
     instance?: PolicyMessage;
+    /**
+     * Search Topic Result
+     */
     root?: TopicMessage;
+    /**
+     * Policy Instance Topic
+     */
     instanceTopic?: TopicMessage;
+    /**
+     * Policy Topic
+     */
     policyTopic?: TopicMessage;
 }
 
+/**
+ * Task Status
+ */
 enum TaskStatus {
     NeedTopic = 'NEED_TOPIC',
     NeedSchema = 'NEED_SCHEMA',
@@ -50,6 +71,9 @@ enum TaskStatus {
     Error = 'ERROR'
 }
 
+/**
+ * Schema Status
+ */
 enum SchemaStatus {
     NotVerified = 'NOT_VERIFIED',
     Incompatible = 'INCOMPATIBLE',
@@ -162,12 +186,20 @@ export class ExternalTopicBlock {
         return null;
     }
 
+    /**
+     * Update user state
+     * @private
+     */
     private updateStatus(ref: AnyBlockType, item: ExternalDocument, user: IPolicyUser) {
-        console.log('updateStatus', item.status);
         ref.updateBlock({ status: item.status }, user);
     }
 
-    private getSchemaFields(document: any) {
+    /**
+     * Get Schema Fields
+     * @param document
+     * @private
+     */
+    private getSchemaFields(document: any): SchemaField[] {
         try {
             if (typeof document === 'string') {
                 document = JSON.parse(document);
@@ -178,6 +210,12 @@ export class ExternalTopicBlock {
         }
     }
 
+    /**
+     * Compare Schema Fields
+     * @param f1
+     * @param f2
+     * @private
+     */
     private compareFields(f1: SchemaField, f2: SchemaField): boolean {
         if (
             f1.name !== f2.name ||
@@ -205,6 +243,12 @@ export class ExternalTopicBlock {
         // enum?: string[];
     }
 
+    /**
+     * Compare Schemas
+     * @param extension
+     * @param base
+     * @private
+     */
     private ifExtendFields(extension: SchemaField[], base: SchemaField[]): boolean {
         try {
             if (!extension || !base) {
@@ -236,6 +280,7 @@ export class ExternalTopicBlock {
 
     /**
      * Get Schema
+     * @private
      */
     private async getSchema(): Promise<Schema> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
@@ -252,6 +297,11 @@ export class ExternalTopicBlock {
         return this.schema;
     }
 
+    /**
+     * Load and Verify Schema
+     * @param item
+     * @private
+     */
     private async verification(item: any): Promise<void> {
         try {
             const schema = await this.getSchema();
@@ -274,6 +324,11 @@ export class ExternalTopicBlock {
         }
     }
 
+    /**
+     * Get user task
+     * @param user
+     * @private
+     */
     private async getUser(user: IPolicyUser): Promise<ExternalDocument> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         let item = await ref.databaseServer.getExternalTopic(ref.policyId, ref.uuid, user.did);
@@ -300,6 +355,12 @@ export class ExternalTopicBlock {
         return item;
     }
 
+    /**
+     * Search Policy Topic
+     * @param topicId
+     * @param topicTree
+     * @private
+     */
     private async searchTopic(topicId: string, topicTree: TopicResult = {}): Promise<TopicResult> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         if (topicTree.count) {
@@ -344,6 +405,13 @@ export class ExternalTopicBlock {
         throw new BlockActionError('Invalid topic', ref.blockType, ref.uuid);
     }
 
+    /**
+     * Select Topic
+     * @param item
+     * @param topicId
+     * @param user
+     * @private
+     */
     private async addTopic(
         item: ExternalDocument,
         topicId: string,
@@ -384,6 +452,13 @@ export class ExternalTopicBlock {
         }
     }
 
+    /**
+     * Verify Schema
+     * @param item
+     * @param schema
+     * @param user
+     * @private
+     */
     private async verificationSchema(
         item: ExternalDocument,
         schema: any,
@@ -403,6 +478,13 @@ export class ExternalTopicBlock {
         }
     }
 
+    /**
+     * Verify Schemas
+     * @param item
+     * @param schemas
+     * @param user
+     * @private
+     */
     private async verificationSchemas(
         item: ExternalDocument,
         schemas: any[],
@@ -426,6 +508,13 @@ export class ExternalTopicBlock {
         }
     }
 
+    /**
+     * Select Schema
+     * @param item
+     * @param schema
+     * @param user
+     * @private
+     */
     private async setSchema(
         item: ExternalDocument,
         schema: any,
@@ -452,6 +541,12 @@ export class ExternalTopicBlock {
         }
     }
 
+    /**
+     * Verify VC document
+     * @param item
+     * @param document
+     * @private
+     */
     private async checkDocument(item: ExternalDocument, document: IVC): Promise<string> {
         if (!document) {
             return 'Invalid document';
@@ -483,6 +578,15 @@ export class ExternalTopicBlock {
         return null;
     }
 
+    /**
+     * Check message and create document
+     * @param ref
+     * @param item
+     * @param hederaAccount
+     * @param user
+     * @param message
+     * @private
+     */
     private async checkMessage(
         ref: AnyBlockType,
         item: ExternalDocument,
@@ -495,8 +599,8 @@ export class ExternalTopicBlock {
         if (message.type !== MessageType.VCDocument) {
             return;
         }
+
         if (message.payer !== hederaAccount.hederaAccountId) {
-            console.log(' --- ', message.payer);
             return;
         }
 
@@ -505,7 +609,6 @@ export class ExternalTopicBlock {
         const document: IVC = message.getDocument();
         const error = await this.checkDocument(item, document);
         if (error) {
-            console.log('--- error', error);
             return;
         }
 
@@ -520,9 +623,6 @@ export class ExternalTopicBlock {
             result.relationships = [message.getId()];
         }
 
-        console.log('1111');
-        console.log(JSON.stringify(result, null, 4));
-
         const state = { data: result };
         ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
         ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
@@ -532,6 +632,12 @@ export class ExternalTopicBlock {
         }));
     }
 
+    /**
+     * Load messages by user
+     * @param item
+     * @param user
+     * @private
+     */
     private async receiveData(item: ExternalDocument, user: IPolicyUser): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const hederaAccount = await PolicyUtils.getHederaAccount(ref, item.owner);
@@ -548,6 +654,11 @@ export class ExternalTopicBlock {
         }
     }
 
+    /**
+     * Load documents
+     * @param item
+     * @private
+     */
     private async runByUser(item: ExternalDocument): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
 
@@ -792,4 +903,3 @@ export class ExternalTopicBlock {
         }
     }
 }
-

@@ -1110,7 +1110,7 @@ export class PolicyUtils {
         return {
             policyId: ref.policyId,
             tag: ref.tag,
-            document: document,
+            document,
             owner: owner.did,
             group: owner.group
         };

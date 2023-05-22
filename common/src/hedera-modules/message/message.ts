@@ -174,9 +174,9 @@ export abstract class Message {
     }
 
     /**
-    * Set index
-    * @param index
-    */
+     * Set index
+     * @param index
+     */
     public setIndex(index: string | number): void {
         this.index = index;
     }

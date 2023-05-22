@@ -10,7 +10,6 @@ import {
     Property,
     Enum,
     BeforeCreate,
-    Unique,
     OnLoad,
     BeforeUpdate,
     AfterDelete,

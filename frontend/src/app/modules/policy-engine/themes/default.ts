@@ -26,7 +26,8 @@ export const defaultTheme = {
                 'policyRolesBlock',
                 'interfaceStepBlock',
                 'tagsManager',
-                'tokenConfirmationBlock'
+                'tokenConfirmationBlock',
+                'externalTopicBlock'
             ]
         },
         {
