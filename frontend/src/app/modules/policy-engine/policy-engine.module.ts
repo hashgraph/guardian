@@ -96,6 +96,7 @@ import { PolicySettingsComponent } from './policy-configuration/policy-settings/
 import { ImportFileDialog } from './helpers/import-file-dialog/import-file-dialog.component';
 import { NewThemeDialog } from './helpers/new-theme-dialog/new-theme-dialog.component';
 import { ExternalTopicBlockComponent } from './policy-viewer/blocks/external-topic-block/external-topic-block.component';
+import { UploadDocumentBlockComponent } from './policy-viewer/blocks/upload-document-block/upload-document-block.component';
 
 @NgModule({
     declarations: [
@@ -117,6 +118,7 @@ import { ExternalTopicBlockComponent } from './policy-viewer/blocks/external-top
         SourceAddonConfigComponent,
         ActionBlockComponent,
         RequestDocumentBlockComponent,
+        UploadDocumentBlockComponent,
         ContainerBlockComponent,
         DocumentsSourceBlockComponent,
         PolicyViewerComponent,

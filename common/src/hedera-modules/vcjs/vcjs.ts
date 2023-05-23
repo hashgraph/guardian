@@ -291,16 +291,21 @@ export class VCJS {
      *
      * @param {HcsVcDocument<VcSubject>} vcDocument - VC Document
      *
+     * @param loader
      * @returns {Promise<boolean>} - is verified
      */
-    public async verifyVC(vcDocument: VcDocument | any): Promise<boolean> {
+    public async verifyVC(vcDocument: VcDocument | any, loader?: DocumentLoaderFunction): Promise<boolean> {
         let vc: IVC;
         if (vcDocument && typeof vcDocument.toJsonTree === 'function') {
             vc = vcDocument.toJsonTree();
         } else {
             vc = vcDocument;
         }
-        return await this.verify(vc, this.loader);
+        if (!loader) {
+            return await this.verify(vc, this.loader);
+        } else {
+            return await this.verify(vc, loader)
+        }
     }
 
     /**

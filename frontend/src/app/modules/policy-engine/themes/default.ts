@@ -23,6 +23,7 @@ export const defaultTheme = {
                 'multiSignBlock',
                 'reportBlock',
                 'requestVcDocumentBlock',
+                'uploadVcDocumentBlock',
                 'policyRolesBlock',
                 'interfaceStepBlock',
                 'tagsManager',
@@ -79,9 +80,3 @@ export const defaultTheme = {
         }
     ]
 }
-
-
-
-
-
-
