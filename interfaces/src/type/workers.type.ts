@@ -23,6 +23,7 @@ export enum WorkerTaskType {
     CHECK_ACCOUNT = 'check-account',
     GET_TOPIC_MESSAGE = 'get-topic-message',
     GET_TOPIC_MESSAGES = 'get-topic-messages',
+    GET_TOPIC_MESSAGE_BY_INDEX = 'get-topic-message-by-index',
     CREATE_CONTRACT = 'create-contract',
     ADD_CONTRACT_USER = 'add-contract-user',
     CHECK_STATUS = 'check-status',

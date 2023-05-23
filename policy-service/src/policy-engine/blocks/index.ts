@@ -40,4 +40,5 @@ export { HistoryAddon } from './history-addon';
 export { SelectiveAttributes } from './selective-attributes-addon';
 export { ModuleBlock } from './module';
 export { TagsManagerBlock } from './tag-manager';
+export { ExternalTopicBlock } from './external-topic-block';
 export { UploadVcDocumentBlock } from './upload-vc-document-block';

@@ -73,6 +73,7 @@ export async function artifactAPI(): Promise<void> {
                 otherOptions.limit = _pageSize;
                 otherOptions.offset = _pageIndex * _pageSize;
             } else {
+                otherOptions.orderBy = { createDate: 'DESC' };
                 otherOptions.limit = 100;
             }
 

@@ -2,7 +2,7 @@
     <div *ngIf="loading>0" class="loading">
         <mat-spinner></mat-spinner>
     </div>
-    <div *ngIf="loading<1">
+    <div *ngIf="loading<1 && this.document">
         <div class="form-field">
             <div class="label-field">Id</div>
             <mat-form-field class="example-full-width" appearance="outline">

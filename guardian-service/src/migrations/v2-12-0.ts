@@ -8,6 +8,7 @@ export class ReleaseMigration extends Migration {
      * Up migration
      */
     async up(): Promise<void> {
+        await this.updateVcIndexDocument();
         await this.retireRequestDocument();
     }
 
@@ -46,5 +47,20 @@ export class ReleaseMigration extends Migration {
                 },
             }
         );
+    }
+
+    /**
+     * Update index
+     */
+    async updateVcIndexDocument() {
+        const vcDocumentCollection = this.getCollection('VcDocument');
+        const listIndexes = vcDocumentCollection.listIndexes();
+        while (await listIndexes.hasNext()) {
+            const index = await listIndexes.next();
+            if (index.key.hash !== undefined) {
+                await vcDocumentCollection.dropIndex(index.name);
+            }
+        }
+        await vcDocumentCollection.createIndex({ hash: 1 }, { sparse: true });
     }
 }

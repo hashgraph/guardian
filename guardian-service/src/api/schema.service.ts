@@ -183,6 +183,7 @@ export async function schemaAPI(): Promise<void> {
                 otherOptions.limit = Math.min(100, _pageSize);
                 otherOptions.offset = _pageIndex * _pageSize;
             } else {
+                otherOptions.orderBy = { createDate: 'DESC' };
                 otherOptions.limit = 100;
             }
 
@@ -548,6 +549,9 @@ export async function schemaAPI(): Promise<void> {
                 otherOptions.orderBy = { createDate: 'DESC' };
                 otherOptions.limit = _pageSize;
                 otherOptions.offset = _pageIndex * _pageSize;
+            } else {
+                otherOptions.orderBy = { createDate: 'DESC' };
+                otherOptions.limit = 100;
             }
             const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
             return new MessageResponse({

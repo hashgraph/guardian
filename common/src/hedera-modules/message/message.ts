@@ -49,6 +49,14 @@ export abstract class Message {
      * Message type
      */
     public type: MessageType;
+    /**
+     * Payer
+     */
+    public payer: string;
+    /**
+     * Index
+     */
+    public index: string | number;
 
     /**
      * Response type
@@ -155,6 +163,22 @@ export abstract class Message {
      */
     public setTopicId(topicId: string | TopicId): void {
         this.topicId = topicId;
+    }
+
+    /**
+     * Set payer
+     * @param payer
+     */
+    public setAccount(payer: string): void {
+        this.payer = payer;
+    }
+
+    /**
+     * Set index
+     * @param index
+     */
+    public setIndex(index: string | number): void {
+        this.index = index;
     }
 
     /**

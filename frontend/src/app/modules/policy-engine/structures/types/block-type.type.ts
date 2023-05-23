@@ -40,4 +40,5 @@ export enum BlockType {
     SelectiveAttributes = 'selectiveAttributes',
     Module = 'module',
     TagsManager = 'tagsManager',
+    ExternalTopic = 'externalTopicBlock',
 }

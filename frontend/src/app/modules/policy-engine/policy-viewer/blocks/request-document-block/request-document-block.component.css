@@ -65,7 +65,7 @@
     margin: 0;
     padding: 0;
     padding-bottom: 70px;
-    max-height: calc(70 * var(--vh)) !important;
+    max-height: calc(65 * var(--vh)) !important;
     position: relative;
     overflow: visible;
 }
