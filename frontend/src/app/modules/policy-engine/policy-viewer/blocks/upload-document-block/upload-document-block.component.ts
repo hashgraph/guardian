@@ -5,7 +5,6 @@ import { IUser } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { ProfileService } from 'src/app/services/profile.service';
-import { global } from '@angular/compiler/src/util';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 
 /**
@@ -27,28 +26,15 @@ export class UploadDocumentBlockComponent implements OnInit {
     loading: boolean = true;
     socket: any;
     dialogLoading: boolean = false;
-    dataForm: FormGroup;
-    schema: any;
-    hideFields: any;
     type!: string;
-    content: any;
-    dialogContent: any;
-    dialogClass: any;
+    buttonText: string = '';
+    dialogTitle: string = '';
+    dialogClass: string = '';
     dialogRef: any;
-    ref: any;
-    title: any;
-    description: any;
-    presetDocument: any;
-    rowDocument: any;
-    needPreset: any;
-    presetFields: any;
-    presetReadonlyFields: any;
-    buttonClass: any;
-    user!: IUser;
-    restoreData: any;
-
-    public innerWidth: any;
-    public innerHeight: any;
+    pageTitle: string = '';
+    pageDescription: string = '';
+    dialogDescription: string = '';
+    buttonClass: string = '';
 
     public items: unknown[] = []
 
@@ -57,27 +43,15 @@ export class UploadDocumentBlockComponent implements OnInit {
         private wsService: WebSocketService,
         private profile: ProfileService,
         private policyHelper: PolicyHelper,
-        private fb: FormBuilder,
         private dialog: MatDialog,
-        private changeDetectorRef: ChangeDetectorRef
     ) {
-        this.dataForm = fb.group({});
     }
 
     ngOnInit(): void {
-        this.innerWidth = window.innerWidth;
-        this.innerHeight = window.innerHeight;
         if (!this.static) {
             this.socket = this.wsService.blockSubscribe(this.onUpdate.bind(this));
         }
-        this.profile.getProfile()
-            .subscribe((user: IUser) => {
-                this.user = user;
-                this.loadData();
-            });
-        (window as any).__requestLast = this;
-        (window as any).__request = (window as any).__request || {};
-        (window as any).__request[this.id] = this;
+        this.loadData();
     }
 
     ngOnDestroy(): void {
@@ -112,80 +86,23 @@ export class UploadDocumentBlockComponent implements OnInit {
         }
     }
 
-    getJson(data: any, presetFields: any[]) {
-        try {
-            if (data) {
-                const json: any = {};
-                let cs: any = {};
-                if (Array.isArray(data.document.credentialSubject)) {
-                    cs = data.document.credentialSubject[0];
-                } else {
-                    cs = data.document.credentialSubject;
-                }
-                for (let i = 0; i < presetFields.length; i++) {
-                    const f = presetFields[i];
-                    if (f.value === 'username') {
-                        json[f.name] = this.user.username;
-                        continue;
-                    }
-                    if (f.value === 'hederaAccountId') {
-                        json[f.name] = this.user.hederaAccountId;
-                        continue;
-                    }
-
-                    json[f.name] = cs[f.value];
-                }
-                return json;
-            }
-        } catch (error) {
-            return null;
-        }
-        return null;
-    }
-
     setData(data: any) {
         if (data) {
-            const uiMetaData = data.uiMetaData;
-            const row = data.data;
-            const schema = data.schema;
-            const active = data.active;
-            this.ref = row;
-            this.type = uiMetaData.type;
-            this.schema = schema;
-            this.hideFields = {};
-            if (uiMetaData.privateFields) {
-                for (let index = 0; index < uiMetaData.privateFields.length; index++) {
-                    const field = uiMetaData.privateFields[index];
-                    this.hideFields[field] = true;
-                }
-            }
+            this.type = data.uiMetaData.type;
             if (this.type == 'dialog') {
-                this.content = uiMetaData.content;
-                this.buttonClass = uiMetaData.buttonClass;
-                this.dialogContent = uiMetaData.dialogContent;
-                this.dialogClass = uiMetaData.dialogClass;
-                this.description = uiMetaData.description;
+                this.buttonText = data.uiMetaData.buttonText;
+                this.buttonClass = data.uiMetaData.buttonClass;
+                this.dialogTitle = data.uiMetaData.dialogTitle;
+                this.dialogClass = data.uiMetaData.dialogClass;
+                this.dialogDescription = data.uiMetaData.dialogDescription;
             }
             if (this.type == 'page') {
-                this.title = uiMetaData.title;
-                this.description = uiMetaData.description;
+                this.pageTitle = data.uiMetaData.pageTitle;
+                this.pageDescription = data.uiMetaData.pageDescription;
             }
-            this.disabled = active === false;
+            this.disabled = false;
             this.isExist = true;
-            this.needPreset = !!data.presetSchema;
-            this.presetFields = data.presetFields || [];
-            this.restoreData = data.restoreData;
-            this.presetReadonlyFields = this.presetFields.filter(
-                (item: any) => item.readonly && item.value
-            );
-            if (this.needPreset && row) {
-                this.rowDocument = this.getJson(row, this.presetFields);
-                this.preset(this.rowDocument);
-            }
         } else {
-            this.ref = null;
-            this.schema = null;
-            this.hideFields = null;
             this.disabled = false;
             this.isExist = false;
         }
@@ -211,41 +128,6 @@ export class UploadDocumentBlockComponent implements OnInit {
             });
     }
 
-    prepareDataFrom(data: any) {
-        if (Array.isArray(data)) {
-            for (let j = 0; j < data.length; j++) {
-                let dataArrayElem = data[j];
-                if (dataArrayElem === "" || dataArrayElem === null) {
-                    data.splice(j, 1);
-                    j--;
-                }
-                if (Object.getPrototypeOf(dataArrayElem) === Object.prototype
-                    || Array.isArray(dataArrayElem)) {
-                    this.prepareDataFrom(dataArrayElem);
-                }
-            }
-        }
-
-        if (Object.getPrototypeOf(data) === Object.prototype) {
-            let dataKeys = Object.keys(data);
-            for (let i = 0; i < dataKeys.length; i++) {
-                const dataElem = data[dataKeys[i]];
-                if (dataElem === "" || dataElem === null) {
-                    delete data[dataKeys[i]];
-                }
-                if (Object.getPrototypeOf(dataElem) === Object.prototype
-                    || Array.isArray(dataElem)) {
-                    this.prepareDataFrom(dataElem);
-                }
-            }
-        }
-    }
-
-    preset(document: any) {
-        this.presetDocument = document;
-        this.changeDetectorRef.detectChanges();
-    }
-
     onCancel(): void {
         if (this.dialogRef) {
             this.dialogRef.close();
@@ -254,20 +136,13 @@ export class UploadDocumentBlockComponent implements OnInit {
     }
 
     onDialog() {
-        this.dataForm.reset();
-        if (this.needPreset && this.rowDocument) {
-            this.preset(this.rowDocument);
-        } else {
-            this.presetDocument = null;
-        }
-
-        if (this.innerWidth <= 810) {
+        if (window.innerWidth <= 810) {
             const bodyStyles = window.getComputedStyle(document.body);
             const headerHeight: number = parseInt(bodyStyles.getPropertyValue('--header-height'));
             this.dialogRef = this.dialog.open(this.dialogTemplate, {
                 width: `100vw`,
                 maxWidth: '100vw',
-                height: `${this.innerHeight - headerHeight}px`,
+                height: `${window.innerHeight - headerHeight}px`,
                 position: {
                     'bottom': '0'
                 },
@@ -283,17 +158,6 @@ export class UploadDocumentBlockComponent implements OnInit {
                 disableClose: true,
                 data: this
             });
-        }
-    }
-
-
-    handleCancelBtnEvent(value: boolean, data: any) {
-        data.onCancel()
-    }
-
-    handleSubmitBtnEvent(value: boolean, data: any) {
-        if (data.dataForm.valid || !this.loading || !this.dialogLoading) {
-            data.onSubmit();
         }
     }
 

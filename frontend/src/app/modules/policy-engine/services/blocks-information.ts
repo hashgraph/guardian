@@ -48,7 +48,6 @@ import {
     IBlockSetting
 } from "../structures";
 import { TagsManagerBlockComponent } from '../policy-viewer/blocks/tags-manager-block/tags-manager-block.component';
-import { UploadConfigComponent } from '../policy-configuration/blocks/documents/upload-config/upload-config.component';
 import { UploadDocumentBlockComponent } from '../policy-viewer/blocks/upload-document-block/upload-document-block.component';
 
 const Container: IBlockSetting = {
@@ -294,7 +293,7 @@ const Upload: IBlockSetting = {
     group: BlockGroup.Documents,
     header: BlockHeaders.UIComponents,
     factory: UploadDocumentBlockComponent,
-    property: UploadConfigComponent,
+    property: null,
     allowedChildren: [{
         type: BlockType.DocumentsSourceAddon,
         group: BlockGroup.UnGrouped

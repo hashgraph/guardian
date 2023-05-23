@@ -241,3 +241,10 @@
     margin: auto;
     width: 600px;
 }
+
+.page-header {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+}
