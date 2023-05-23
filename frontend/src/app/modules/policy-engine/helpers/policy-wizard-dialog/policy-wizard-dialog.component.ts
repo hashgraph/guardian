@@ -555,8 +555,8 @@ export class PolicyWizardDialogComponent implements OnInit {
             parent: node,
             template: this.schemaConfig,
             schema,
-            mintFields: schema.fields.filter(
-                (field) => field.type === 'number'
+            mintFields: schema.fields.filter((field) =>
+                ['integer', 'number'].includes(field.type)
             ),
             control: schemaConfigControl,
             options: {
