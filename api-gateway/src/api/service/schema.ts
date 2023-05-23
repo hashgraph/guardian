@@ -516,7 +516,7 @@ schemaAPI.get('/:schemaId/export/message', permissionHelper(UserRole.STANDARD_RE
         const schemas = await guardians.exportSchemas([id]);
         const scheme = schemas[0];
         if (!scheme) {
-            return next(createError(422, `Cannot export policy ${req.params.schemaId}`));
+            return next(createError(422, `Cannot export schema ${req.params.schemaId}`));
         }
         res.send({
             id: scheme.id,
@@ -538,7 +538,7 @@ schemaAPI.get('/:schemaId/export/file', permissionHelper(UserRole.STANDARD_REGIS
         const id = req.params.schemaId;
         const schemas = await guardians.exportSchemas([id]);
         if (!schemas || !schemas.length) {
-            return next(createError(422, `Cannot export policy ${req.params.schemaId}`));
+            return next(createError(422, `Cannot export schema ${req.params.schemaId}`));
         }
         const ids = schemas.map(s => s.id);
         const tags = await guardians.exportTags('Schema', ids);

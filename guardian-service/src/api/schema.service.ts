@@ -467,7 +467,7 @@ export async function schemaAPI(): Promise<void> {
      */
     ApiResponse(MessageAPI.EXPORT_SCHEMAS, async (msg) => {
         try {
-            return new MessageResponse(exportSchemas(msg));
+            return new MessageResponse(await exportSchemas(msg));
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
