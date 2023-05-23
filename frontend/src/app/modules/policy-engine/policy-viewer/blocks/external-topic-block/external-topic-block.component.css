@@ -26,6 +26,7 @@
     justify-items: center;
     justify-content: center;
     align-content: center;
+    flex-direction: column;
 }
 
 .page-content {
@@ -82,7 +83,7 @@
 .field {
     display: flex;
     flex-direction: row;
-    padding: 10px 35px;
+    padding: 10px 20px;
 }
 
 .field-name {
@@ -180,4 +181,28 @@
 
 .synchronization-update:hover {
     background: #f1f1f1;
+}
+
+.text {
+    padding-bottom: 16px;
+    padding-left: 15px;
+}
+
+.text.note {
+    padding-bottom: 16px;
+}
+
+.mat-form-field {
+    width: 100%;
+    padding-left: 15px;
+    box-sizing: border-box;
+}
+
+.error-text {
+    padding-bottom: 24px;
+    font-size: 20px;
+}
+
+.loading-text {
+    font-size: 18px;
 }

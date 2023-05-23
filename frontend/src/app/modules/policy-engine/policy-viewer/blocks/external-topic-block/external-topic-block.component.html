@@ -8,9 +8,13 @@
             <mat-icon>description</mat-icon>
         </ng-template>
 
-        <mat-step [stepControl]="topicForm" label="Search Policy" [completed]="completed[0]" [editable]="editable[0]">
+        <mat-step [stepControl]="topicForm" label="Source topic selection" [completed]="completed[0]"
+            [editable]="editable[0]">
             <form [formGroup]="topicForm" (submit)="setTopic()">
                 <div class="form-content">
+                    <div class="text">
+                        Enter Hedera topic ID which contains messages about ingress VC documents.
+                    </div>
                     <mat-form-field appearance="outline">
                         <mat-label>* Topic Id</mat-label>
                         <input matInput placeholder="Topic Id" formControlName="topicId">
@@ -26,6 +30,9 @@
 
         <mat-step label="Policy Information" state="description" [completed]="completed[1]" [editable]="editable[1]">
             <div class="form-content">
+                <div class="text">
+                    Selected topic belongs to the following policy:
+                </div>
                 <div *ngIf="policyTopicId" class="field">
                     <div class="field-name">Policy Topic Id</div>
                     <div class="field-value">{{policyTopicId}}</div>
@@ -59,10 +66,17 @@
             </div>
         </mat-step>
 
-        <mat-step [stepControl]="schemaForm" label="Schema verification" [completed]="completed[2]"
+        <mat-step [stepControl]="schemaForm" label="Document schema selection" [completed]="completed[2]"
             [editable]="editable[2]">
             <form [formGroup]="schemaForm" (submit)="setSchema()">
                 <div class="form-content">
+                    <div class="text">
+                        Select the ingress documents schema. Note: selected schema must be compatible with the current
+                        policy.
+                    </div>
+                    <div class="text">
+                        Only documents conforming to the schema would be accepted into the system.
+                    </div>
                     <mat-radio-group formControlName="schemaId">
                         <div *ngFor="let s of schemas" class="schema-row">
                             <div>
@@ -131,30 +145,43 @@
 
 <div class="page-content" *ngIf="status === 'PROCESSING'">
     <div class="sub-loading">
-        <div>Processing...</div>
+        <div class="loading-text">Processing...</div>
     </div>
 </div>
 
 <div class="page-content" *ngIf="status === 'SEARCH' ">
     <div class="sub-loading">
-        <div>Search...</div>
+        <div class="loading-text">Search...</div>
     </div>
 </div>
 
 <div class="page-content" *ngIf="status === 'VERIFICATION'">
     <div class="sub-loading">
-        <div>Verification...</div>
+        <div class="loading-text">Verification...</div>
     </div>
 </div>
 
 <div class="page-content" *ngIf="status === 'ERROR'">
     <div class="sub-loading">
-        <div>Error</div>
+        <div class="error-text">
+            An unexpected error occurred.
+        </div>
+        <div>
+            <button mat-raised-button color="primary" (click)="restart()">
+                Retry
+            </button>
+        </div>
     </div>
 </div>
 
 <div class="page-content" *ngIf="status === 'FREE'">
     <div class="form-content">
+        <div class="text">
+            Successfully registered source topic. Target documents will be loaded accordingly to the schedule.
+        </div>
+        <div class="text note">
+            Note: manual refreshes can be trigged as required.
+        </div>
         <div *ngIf="policyTopicId" class="field">
             <div class="field-name">Policy Topic Id</div>
             <div class="field-value">{{policyTopicId}}</div>

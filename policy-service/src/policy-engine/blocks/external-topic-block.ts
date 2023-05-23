@@ -847,9 +847,10 @@ export class ExternalTopicBlock {
                 case 'Restart': {
                     if (
                         item.status !== TaskStatus.NeedTopic &&
-                        item.status !== TaskStatus.NeedSchema
+                        item.status !== TaskStatus.NeedSchema &&
+                        item.status !== TaskStatus.Error
                     ) {
-                        throw new BlockActionError('', ref.blockType, ref.uuid);
+                        throw new BlockActionError('Invalid status', ref.blockType, ref.uuid);
                     }
                     item.documentTopicId = '';
                     item.policyTopicId = '';
