@@ -68,7 +68,7 @@ Logging back into the Standard Registry role, you can see that the Project Listi
 
 <figure><img src="../../../.gitbook/assets/image (27) (2).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (21).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (21) (1).png" alt=""><figcaption></figcaption></figure>
 
 Now, the Project Developer must go into their screen and "Submit a PDD" and fill out the Project Design Document form.
 
@@ -106,7 +106,7 @@ Once the Standard Registry approved the Project Developer's Project Registration
 
 <figure><img src="../../../.gitbook/assets/image (3) (2).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1) (5).png" alt=""><figcaption></figcaption></figure>
 
 Once the Monitoring Report has been submitted to the Verifier, the Verifier can log into their Policy screen, review it, and fill out the review form.
 
@@ -130,4 +130,4 @@ The Standard Registry can now see the Credit Issuance request and approve it.
 
 Once approved, you can see the Trustchain in the Token History tab of the Standard Registry's policy account.
 
-<figure><img src="../../../.gitbook/assets/image (20).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (20) (2).png" alt=""><figcaption></figcaption></figure>

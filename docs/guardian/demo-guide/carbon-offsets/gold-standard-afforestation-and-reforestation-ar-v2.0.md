@@ -74,7 +74,7 @@ After successfully assigning the VVB to the project, the next step is to access 
 
 To proceed with the workflow, the Standard Registry will validate the project details and schemas. Access the Standard Registry profile and go to the "Project Pipeline" tab. Here, select "Approve" to continue.
 
-<figure><img src="../../../.gitbook/assets/image (16).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (16) (3).png" alt=""><figcaption></figcaption></figure>
 
 If you access the Technical Advisory Committee profile, you will find a "Comment" button. You can utilize this button to provide any feedback or comments regarding the project details and schemas.
 
@@ -108,7 +108,7 @@ Similarly, you can leave comments for the NGO supporter profile. Navigate to the
 
 This is the final step in the workflow. Access the Standard Registry profile and navigate to the "Monitoring Reports" tab. Here, you will find a "Mint" button - select that to mint the tokens for this monitoring period.
 
-<figure><img src="../../../.gitbook/assets/image (27).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (27) (1).png" alt=""><figcaption></figcaption></figure>
 
 By accessing the "Token History" tab, you can view the number of tokens that have been minted. Additionally, clicking on the "View TrustChain" button will allow you to view the TrustChain.
 
@@ -116,6 +116,6 @@ By accessing the "Token History" tab, you can view the number of tokens that hav
 
 The Trust Chain view presents critical elements that are publicly available for discovery, such as token information, policy information, and all the necessary details concerning the Verifiable Credentials comprising the Verifiable Presentation. On the bottom of the screen, you will find "Cards" showcasing the Verifiable Credentials in chronological order.
 
-<figure><img src="../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (13).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (11).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (11) (1).png" alt=""><figcaption></figcaption></figure>

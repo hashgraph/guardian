@@ -129,7 +129,7 @@ Registry is allowed to publish and edit policy config, schemas, tokens and all t
 
 <figure><img src="../../../.gitbook/assets/image (38).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (13).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (13) (1).png" alt=""><figcaption></figcaption></figure>
 
 3. Once project is approved by registry, a detailed PDD(project design document) needs to be submitted. This is the most important document highlighting the technical details of project. It includes calculations around baseline, project and leakage scenarios for accurate calculation of avoided emissions.
 
@@ -185,7 +185,7 @@ This workflow includes a bonus flow which is a major distinction from other exis
 
 <figure><img src="../../../.gitbook/assets/image (6).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (5) (1).png" alt=""><figcaption></figcaption></figure>
 
 4. After an approval from VVB for the automated monitoring report, VER mint will be initiated in owner account. This will help in faster crediting cycles along with a transparent process for tracking all the intermediate steps. It'll be a huge boost to scaling up the supply of credits in VCM(Voluntary carbon markets).
 

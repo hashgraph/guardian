@@ -27,12 +27,12 @@ The first step towards compliance was building a system to support manual attest
 
 1. We need to download the policy from open source repo and import it by clicking on Import button.
 
-<figure><img src="../../../.gitbook/assets/image (11) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (11) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 2. Once, imported the policy, you can publish the policy to Hedera by clicking on publish button.
 3. Now, we will logout and login as a Registrant role and click on Go on the respective policy:
 
-<figure><img src="../../../.gitbook/assets/image (3) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 4. We need to fill the Registrant Application form and click on OK as shown below:
 
@@ -42,13 +42,13 @@ For AgreCalc we see below form:
 
 for Cool Farm, we see below form:
 
-<figure><img src="../../../.gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2) (1) (4).png" alt=""><figcaption></figcaption></figure>
 
 5. Once submitted, it is waiting for Standard Registry to approve it.
 6. Now we log out and login as Standard Registry, once viewing the registrant documents, we approve the application by clicking on Approve button.
 7. Once approved, we again login back as Registrant and submit Farm Registrant form by clicking on Create Farm button:
 
-<figure><img src="../../../.gitbook/assets/image (5) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (5) (1) (1) (4).png" alt=""><figcaption></figcaption></figure>
 
 8. Once filled and clicked on OK, Registrant waits for approval from Standard Registry:
 
