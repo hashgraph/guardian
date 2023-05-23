@@ -4,11 +4,9 @@ import { BlockActionError } from '@policy-engine/errors';
 import { ActionCallback } from '@policy-engine/helpers/decorators';
 import { IPolicyDocument, IPolicyRequestBlock } from '@policy-engine/policy-engine.interface';
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
+import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
 import { EventBlock } from '@policy-engine/helpers/decorators/event-block';
-import {
-    VcHelper,
-} from '@guardian/common';
+import { VcHelper, } from '@guardian/common';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
@@ -27,6 +25,75 @@ import { VcDocumentDefinition as VcDocument } from '@guardian/common/dist/hedera
         get: true,
         children: ChildrenType.Special,
         control: ControlType.UI,
+
+        properties: [
+            {
+                name: 'uiMetaData',
+                label: 'UI',
+                title: 'UI Properties',
+                type: PropertyType.Group,
+                properties: [
+                    {
+                        name: 'type',
+                        label: 'Type',
+                        title: 'Type',
+                        type: PropertyType.Select,
+                        items: [
+                            {
+                                label: 'Page',
+                                value: 'page'
+                            },
+                            {
+                                label: 'Dialog',
+                                value: 'dialog'
+                            }
+                        ]
+                    },
+                    {
+                        name: 'buttonClass',
+                        label: 'Dialog button class',
+                        title: 'Dialog button class',
+                        type: PropertyType.Input
+                    },
+                    {
+                        name: 'buttonText',
+                        label: 'Dialog button text',
+                        title: 'Dialog button text',
+                        type: PropertyType.Input
+                    },
+                    {
+                        name: 'dialogTitle',
+                        label: 'Dialog title',
+                        title: 'Dialog title',
+                        type: PropertyType.Input
+                    },
+                    {
+                        name: 'dialogClass',
+                        label: 'Dialog class',
+                        title: 'Dialog class',
+                        type: PropertyType.Input
+                    },
+                    {
+                        name: 'dialogDescription',
+                        label: 'Dialog description',
+                        title: 'Dialog description',
+                        type: PropertyType.Input
+                    },
+                    {
+                        name: 'pageTitle',
+                        label: 'Page title',
+                        title: 'Page title',
+                        type: PropertyType.Input
+                    },
+                    {
+                        name: 'pageDescription',
+                        label: 'Page description',
+                        title: 'Page description',
+                        type: PropertyType.Input
+                    }
+                ]
+            }
+        ],
         input: [
             PolicyInputEventType.RunEvent,
             PolicyInputEventType.RefreshEvent,

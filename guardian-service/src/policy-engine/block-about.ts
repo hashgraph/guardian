@@ -19,7 +19,75 @@ export const BlockAbout = {
             'RunEvent',
             'RefreshEvent'
         ],
-        'defaultEvent': true
+        'defaultEvent': true,
+        properties: [
+            {
+                name: 'uiMetaData',
+                label: 'UI',
+                title: 'UI Properties',
+                type: 'Group',
+                properties: [
+                    {
+                        name: 'type',
+                        label: 'Type',
+                        title: 'Type',
+                        type: 'Select',
+                        items: [
+                            {
+                                label: 'Page',
+                                value: 'page'
+                            },
+                            {
+                                label: 'dialog',
+                                value: 'dialog'
+                            }
+                        ]
+                    },
+                    {
+                        name: 'buttonClass',
+                        label: 'Dialog button class',
+                        title: 'Dialog button class',
+                        type: 'Input'
+                    },
+                    {
+                        name: 'buttonText',
+                        label: 'Dialog button text',
+                        title: 'Dialog button text',
+                        type: 'Input'
+                    },
+                    {
+                        name: 'dialogTitle',
+                        label: 'Dialog title',
+                        title: 'Dialog title',
+                        type: 'Input'
+                    },
+                    {
+                        name: 'dialogClass',
+                        label: 'Dialog class',
+                        title: 'Dialog class',
+                        type: 'Input'
+                    },
+                    {
+                        name: 'dialogDescription',
+                        label: 'Dialog description',
+                        title: 'Dialog description',
+                        type: 'Input'
+                    },
+                    {
+                        name: 'pageTitle',
+                        label: 'Page title',
+                        title: 'Page title',
+                        type: 'Input'
+                    },
+                    {
+                        name: 'pageDescription',
+                        label: 'Page description',
+                        title: 'Page description',
+                        type: 'Input'
+                    }
+                ]
+            }
+        ]
     },
     'aggregateDocumentBlock': {
         'label': 'Aggregate Data',
