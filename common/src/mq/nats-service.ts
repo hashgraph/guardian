@@ -1,4 +1,4 @@
-import { NatsConnection, headers, Subscription } from 'nats';
+import { NatsConnection, headers, Subscription, JSONCodec } from 'nats';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { ZipCodec } from './zip-codec';
 
@@ -32,7 +32,8 @@ export abstract class NatsService {
     protected responseCallbacksMap: Map<string, Function> = new Map();
 
     constructor() {
-        this.codec = ZipCodec();
+        // this.codec = ZipCodec();
+        this.codec = JSONCodec();
     }
 
     /**

@@ -44,7 +44,7 @@ import { ipfsAPI } from '@api/ipfs.service';
 import { artifactAPI } from '@api/artifact.service';
 import { sendKeysToVault } from '@helpers/send-keys-to-vault';
 import { contractAPI } from '@api/contract.service';
-import { analyticsAPI } from '@api/analytics.service';
+// import { analyticsAPI } from '@api/analytics.service';
 import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels-container';
 import { PolicyEngine } from '@policy-engine/policy-engine';
 import { modulesAPI } from '@api/module.service';
@@ -56,6 +56,10 @@ import { setDefaultSchema } from '@api/helpers/schema-helper';
 import { demoAPI } from '@api/demo.service';
 import { themeAPI } from '@api/theme.service';
 import { startMetricsServer } from './utils/metrics';
+import { NestFactory } from '@nestjs/core';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import process from 'process';
+import { AppModule } from './app.module';
 
 export const obj = {};
 
@@ -76,9 +80,21 @@ Promise.all([
         ensureIndexes: true,
         entities
     }),
-    MessageBrokerChannel.connect('GUARDIANS_SERVICE')
+    MessageBrokerChannel.connect('GUARDIANS_SERVICE'),
+    NestFactory.createMicroservice<MicroserviceOptions>(AppModule,{
+        transport: Transport.NATS,
+        options: {
+            name: `${process.env.SERVICE_CHANNEL}`,
+            servers: [
+                `nats://${process.env.MQ_ADDRESS}:4222`
+            ]
+        },
+    }),
 ]).then(async values => {
-    const [_, db, cn] = values;
+    const [_, db, cn, app] = values;
+
+    app.listen();
+
     DataBaseHelper.orm = db;
     DataBaseHelper.gridFS = new GridFSBucket(
         db.em.getDriver().getConnection().getDb()
@@ -133,7 +149,7 @@ Promise.all([
         await contractAPI(contractRepository, retireRequestRepository);
         await modulesAPI();
         await tagsAPI();
-        await analyticsAPI();
+        // await analyticsAPI();
         await mapAPI();
         await themeAPI();
     } catch (error) {

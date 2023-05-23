@@ -1,11 +1,12 @@
 import { Request, Response, Router, NextFunction } from 'express';
 import { permissionHelper, authorizationHelper } from '@auth/authorization-helper';
 import { Users } from '@helpers/users';
-import { AuthenticatedRequest, Logger } from '@guardian/common';
+import { AuthenticatedRequest, InboundMessageIdentityDeserializer, Logger, OutboundResponseIdentitySerializer, Singleton } from '@guardian/common';
 import { Guardians } from '@helpers/guardians';
 import { UserRole } from '@guardian/interfaces';
 import validate, { prepareValidationResponse } from '@middlewares/validation';
 import { registerSchema, loginSchema } from '@middlewares/validation/schemas/accounts';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 
 /**
  * User account route
@@ -92,6 +93,18 @@ accountAPI.get('/standard-registries', authorizationHelper, async (req: Request,
 
 accountAPI.get('/balance', authorizationHelper, async (req: Request, res: Response, next: NextFunction) => {
     try {
+        const client = ClientsModule.register([{
+                name: 'profile-service',
+                transport: Transport.NATS,
+                options: {
+                    servers: [
+                        `nats://${process.env.MQ_ADDRESS}:4222`
+                    ],
+                    queue: 'profile-service',
+                    serializer: new OutboundResponseIdentitySerializer(),
+                    deserializer: new InboundMessageIdentityDeserializer(),
+                }
+            }]);
         const authHeader = req.headers.authorization;
         const users = new Users();
         if (authHeader) {

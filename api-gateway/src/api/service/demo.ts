@@ -1,9 +1,33 @@
 import { Request, Response, Router, NextFunction } from 'express';
 import { Guardians } from '@helpers/guardians';
 import { Users } from '@helpers/users';
-import { Logger, RunFunctionAsync } from '@guardian/common';
+import { InboundMessageIdentityDeserializer, Logger, OutboundResponseIdentitySerializer, RunFunctionAsync } from '@guardian/common';
 import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
+import { Controller, Module } from '@nestjs/common';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+
+@Module({
+    imports: [
+        ClientsModule.register([{
+            name: 'demo-api',
+            transport: Transport.NATS,
+            options: {
+                servers: [
+                    `nats://${process.env.MQ_ADDRESS}:4222`
+                ],
+                queue: 'demo-api',
+                serializer: new OutboundResponseIdentitySerializer(),
+                deserializer: new InboundMessageIdentityDeserializer(),
+            }
+        }]),
+    ],
+    controllers: [
+    ]
+})
+
+@Controller()
+export class DemoController {}
 
 /**
  * Route for demo api
