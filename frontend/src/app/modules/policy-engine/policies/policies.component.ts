@@ -504,7 +504,7 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         this.taskService.get(taskId).subscribe((task: any) => {
             const { result } = task;
             if (result) {
-                const { isValid, errors } = result;
+                const { isValid, errors, policyId } = result;
                 if (!isValid) {
                     let text = [];
                     const blocks = errors.blocks;
@@ -527,6 +527,8 @@ export class PoliciesComponent implements OnInit, OnDestroy {
                         }
                     }
                     this.informService.errorMessage(text.join(''), 'The policy is invalid');
+                } else {
+                    this.wizardService.removeWizardPreset(policyId)
                 }
                 this.loadAllPolicy();
             }

@@ -1080,8 +1080,9 @@ export class PolicyConfigurationComponent implements OnInit {
                         break;
                     case OperationMode.publish:
                         const { result } = task;
-                        const { isValid, errors } = result;
+                        const { isValid, errors, policyId } = result;
                         if (isValid) {
+                            this.wizardService.removeWizardPreset(policyId);
                             this.loadData();
                         } else {
                             this.setErrors(errors);
@@ -1213,6 +1214,13 @@ export class PolicyConfigurationComponent implements OnInit {
                                     }
                                 );
                             }
+                            this.schemaService
+                                .getSchemas()
+                                .subscribe((value) => {
+                                    this.allSchemas = value.map(
+                                        (schema) => new Schema(schema)
+                                    );
+                                });
                         });
                 } else if (value.saveState) {
                     this.wizardService.setWizardPreset(this.policyId, {
