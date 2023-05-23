@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IUser, IWizardConfig, Schema, SchemaHelper, TagType, Token, UserRole } from '@guardian/interfaces';
+import { IUser, Schema, SchemaHelper, TagType, Token, UserRole } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TokenService } from 'src/app/services/token.service';
@@ -19,10 +19,8 @@ import { ComparePolicyDialog } from '../helpers/compare-policy-dialog/compare-po
 import { TagsService } from 'src/app/services/tag.service';
 import { SetVersionDialog } from '../../schema-engine/set-version-dialog/set-version-dialog.component';
 import { forkJoin } from 'rxjs';
-import { PolicyWizardDialogComponent } from '../helpers/policy-wizard-dialog/policy-wizard-dialog.component';
 import { SchemaService } from 'src/app/services/schema.service';
-import { SelectorDialogComponent } from '../../common/selector-dialog/selector-dialog.component';
-import { WizardService } from 'src/app/services/wizard.service';
+import { WizardMode, WizardService } from 'src/app/modules/policy-engine/services/wizard.service';
 
 enum OperationMode {
     None,
@@ -494,9 +492,10 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         this.taskService.get(taskId).subscribe((task: any) => {
             const { result } = task;
             if (this.saveWizardState) {
-                this.setWizardPreset(result.policyId, {
+                this.wizardService.setWizardPreset(result.policyId, {
                     data: result.wizardConfig,
                 });
+                this.saveWizardState = false;
             }
         });
     }
@@ -620,148 +619,38 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         });
     }
 
-    removeWizardPreset(policyId: string) {
-        if (!policyId) {
-            return;
-        }
-        try {
-            const wizardStates = JSON.parse(
-                localStorage.getItem('wizard') || 'null'
-            );
-            delete wizardStates[policyId];
-            localStorage.setItem('wizard', JSON.stringify(wizardStates));
-        } catch {}
-    }
-
-    setWizardPreset(policyId: string, preset: any) {
-        if (!preset || !policyId) {
-            return;
-        }
-        try {
-            const wizardStates = JSON.parse(
-                localStorage.getItem('wizard') || 'null'
-            );
-            wizardStates[policyId] = preset;
-            localStorage.setItem('wizard', JSON.stringify(wizardStates));
-        } catch {
-            const wizardStates: any = {};
-            wizardStates[policyId] = preset;
-            localStorage.setItem('wizard', JSON.stringify(wizardStates));
-        }
-    }
-
-    openWizardDialog(policies: any[], preset?: any) {
+    openPolicyWizardDialog() {
         this.loading = true;
         forkJoin([
             this.tokenService.getTokens(),
             this.schemaService.getSchemas(),
-        ]).subscribe((value) => {
-            const schemas = value[1].map((schema) => new Schema(schema));
-            const tokens = value[0].map((token) => new Token(token));
+        ]).subscribe((result) => {
+            const schemas = result[1].map((schema) => new Schema(schema));
+            const tokens = result[0].map((token) => new Token(token));
             this.loading = false;
-            const dialogRef = this.dialog.open(PolicyWizardDialogComponent, {
-                width: '1100px',
-                panelClass: 'g-dialog',
-                disableClose: true,
-                autoFocus: false,
-                data: {
-                    schemas: schemas,
-                    tokens: tokens,
-                    state: preset,
-                    policies,
-                },
-            });
-            dialogRef
-                .afterClosed()
-                .subscribe(
-                    (value: {
-                        create: boolean;
-                        config: IWizardConfig;
-                        currentNode: any;
-                    }) => {
-                        if (!value.create) {
-                            return;
-                        }
-                        const dialogRef = this.dialog.open(
-                            ConfirmationDialogComponent,
-                            {
-                                data: {
-                                    dialogTitle: 'Save progress',
-                                    dialogText: 'Do you want to save progress?',
-                                },
+            this.wizardService.openPolicyWizardDialog(
+                WizardMode.CREATE,
+                (value) => {
+                    this.saveWizardState = value.saveState;
+                    this.loading = true;
+                    this.wizardService
+                        .createPolicyAsync(value.config)
+                        .subscribe(
+                            (result) => {
+                                const { taskId, expectation } = result;
+                                this.taskId = taskId;
+                                this.expectedTaskMessages = expectation;
+                                this.mode = OperationMode.WizardCreate;
+                            },
+                            (e) => {
+                                this.loading = false;
                             }
                         );
-                        dialogRef.afterClosed().subscribe((saveState) => {
-                            this.saveWizardState = saveState;
-                            this.loading = true;
-                            this.wizardService
-                                .createPolicyAsync(value.config)
-                                .subscribe(
-                                    (result) => {
-                                        const { taskId, expectation } = result;
-                                        this.taskId = taskId;
-                                        this.expectedTaskMessages = expectation;
-                                        this.mode = OperationMode.WizardCreate;
-                                    },
-                                    (e) => {
-                                        this.loading = false;
-                                    }
-                                );
-                        });
-                    }
-                );
-        });
-    }
-
-    policyWizard() {
-        try {
-            const wizardStates = JSON.parse(
-                localStorage.getItem('wizard') || 'null'
+                },
+                tokens,
+                schemas,
+                this.policies as any[]
             );
-            if (wizardStates) {
-                const wizardPolicies = Object.keys(wizardStates);
-                const options: any = this.policies
-                    ?.filter((policy) => wizardPolicies.includes(policy.id))
-                    .map((policy) =>
-                        Object({
-                            name: policy.name,
-                            value: policy.id,
-                        })
-                    );
-                if (!options.length) {
-                    this.openWizardDialog(this.policies as any);
-                    return;
-                }
-                const selectorDialog = this.dialog.open(
-                    SelectorDialogComponent,
-                    {
-                        width: '400px',
-                        data: {
-                            title: 'Restore progress',
-                            description: 'Choose policy',
-                            options: [
-                                {
-                                    name: 'New Policy',
-                                },
-                            ].concat(options),
-                        },
-                    }
-                );
-                selectorDialog.afterClosed().subscribe((value) => {
-                    if (!value?.ok) {
-                        return;
-                    }
-                    this.openWizardDialog(
-                        this.policies as any,
-                        value?.result && wizardStates[value.result]
-                    );
-                });
-            } else {
-                this.openWizardDialog(this.policies as any);
-            }
-        } catch (error) {
-            localStorage.removeItem('wizard');
-            this.openWizardDialog(this.policies as any);
-        }
+        });
     }
 }

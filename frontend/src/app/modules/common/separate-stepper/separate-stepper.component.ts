@@ -22,8 +22,8 @@ export class SeparateStepperComponent implements OnInit {
     hasNextStep: boolean = false;
 
     @ViewChild(StepTreeComponent) matTree!: StepTreeComponent;
-    @ViewChild('wizardContainer', { read: ElementRef })
-    wizardContainer!: ElementRef;
+    @ViewChild('stepperContainer', { read: ElementRef })
+    stepperContainer!: ElementRef;
 
     @Input('treeData') treeData!: any;
     @Input('currentNode') currentNode: any;
@@ -124,7 +124,7 @@ export class SeparateStepperComponent implements OnInit {
         if (e.offsetX < e.currentTarget.offsetWidth - 9) {
             return;
         }
-        this.wizardContainer.nativeElement.style.userSelect = 'none';
+        this.stepperContainer.nativeElement.style.userSelect = 'none';
         this.mousePosition = e.x;
         this.resizeFunc = (ev: any) => this.resize.apply(this, [ev, e.target]);
         document.addEventListener('mousemove', this.resizeFunc, false);
@@ -132,7 +132,7 @@ export class SeparateStepperComponent implements OnInit {
 
     @HostListener('document:mouseup', ['$event'])
     onEndResize(e: any) {
-        this.wizardContainer.nativeElement.style.userSelect = '';
+        this.stepperContainer.nativeElement.style.userSelect = '';
         document.removeEventListener('mousemove', this.resizeFunc, false);
     }
 }

@@ -12,18 +12,20 @@ export interface SelectorDialogOptions {
     styleUrls: ['./selector-dialog.component.css'],
 })
 export class SelectorDialogComponent implements OnInit {
-    public title!: string;
-    public description!: string;
-    public multiple!: boolean;
-    public options!: SelectorDialogOptions[];
+    title!: string;
+    description!: string;
+    label: string = 'Choose an option';
+    multiple!: boolean;
+    options!: SelectorDialogOptions[];
 
-    public result: any;
+    result: any;
 
     constructor(
         @Inject(MAT_DIALOG_DATA)
         public data: {
             title: string;
             description: string;
+            label?: string;
             options: SelectorDialogOptions[];
             multiple?: boolean;
         }
@@ -32,6 +34,9 @@ export class SelectorDialogComponent implements OnInit {
         this.description = data?.description;
         this.multiple = !!data?.multiple;
         this.options = data?.options || [];
+        if (data?.label) {
+            this.label = data?.label;
+        }
     }
 
     ngOnInit(): void {}

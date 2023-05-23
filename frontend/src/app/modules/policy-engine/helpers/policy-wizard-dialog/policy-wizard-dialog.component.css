@@ -186,3 +186,16 @@ form {
     justify-content: space-between;
     gap: 10px;
 }
+
+.form-field-info {
+    width: 100%;
+    display: flex;
+}
+
+.form-field-info .info-btn {
+    transform: translateY(8px) scale(.5);
+}
+
+.slide-toggle {
+    margin: 10px;
+}

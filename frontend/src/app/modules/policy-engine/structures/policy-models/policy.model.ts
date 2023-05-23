@@ -428,16 +428,11 @@ export class PolicyModel {
         return type;
     }
 
-    public getPolicyDataForm(): any {
-        return {
-            name: this.name,
-            description: this.description,
-            topicDescription: this.topicDescription,
-            policyTag: this.policyTag,
-        }
-    }
-
-    public setPolicyDataForm(policyData: any): any {
+    public setPolicyInfo(policyData: {
+        name: string,
+        description: string,
+        topicDescription: string
+    }) {
         if (!policyData) {
             return;
         }

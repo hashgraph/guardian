@@ -87,13 +87,23 @@
                 <mat-option *ngFor="let role of policyRolesForm.value" [value]="role">{{role}}</mat-option>
             </mat-select>
         </mat-form-field>
-        <mat-form-field appearance="outline">
-            <mat-label>Produced schema:</mat-label>
-            <mat-select formControlName="dependencySchemaIri">
-                <mat-option></mat-option>
-                <mat-option *ngFor="let schema of selectedSchemas" [value]="schema.iri">{{schema.name}}</mat-option>
-            </mat-select>
-        </mat-form-field>
+
+        <div class="form-field-info">
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Produced schema:</mat-label>
+                <mat-select formControlName="dependencySchemaIri">
+                    <mat-option></mat-option>
+                    <mat-option *ngFor="let schema of selectedSchemas" [value]="schema.iri">{{schema.name}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+            <button mat-mini-fab color="primary" [matMenuTriggerFor]="producedSchemaHelp" class="info-btn">
+                i
+            </button>
+            <mat-menu #producedSchemaHelp="matMenu" yPosition="below">
+                <img [src]="'/assets/produced-schema.gif'" class="help-img">
+            </mat-menu>
+        </div>
+
         <mat-form-field appearance="outline">
             <mat-label>Relationship schema:</mat-label>
             <mat-select formControlName="relationshipsSchemaIri">
@@ -101,25 +111,33 @@
                 <mat-option *ngFor="let schema of selectedSchemas" [value]="schema.iri">{{schema.name}}</mat-option>
             </mat-select>
         </mat-form-field>
-        <mat-form-field appearance="outline">
-            <mat-label>Initial for roles:</mat-label>
-            <mat-select formControlName="initialRolesFor" multiple>
-                <mat-option *ngFor="let role of policyRolesForm.value" [value]="role">{{role}}</mat-option>
-            </mat-select>
-        </mat-form-field>
+
+        <div class="form-field-info">
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Initial for roles:</mat-label>
+                <mat-select formControlName="initialRolesFor" multiple>
+                    <mat-option *ngFor="let role of policyRolesForm.value" [value]="role">{{role}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+            <button mat-mini-fab color="primary" [matMenuTriggerFor]="initialStepHelp" class="info-btn">
+                i
+            </button>
+            <mat-menu #initialStepHelp="matMenu" yPosition="below">
+                <img [src]="'/assets/initial-step.gif'" class="help-img">
+            </mat-menu>
+        </div>
 
         <ng-container *ngTemplateOutlet="infoBtn; context: {
                 formControl : control.get('isApproveEnable'),
                 helpSrc: '/assets/approve.gif',
-                title: 'Approve/Reject functionality',
+                title: 'Approve and reject functionality',
                 visible: true}">
         </ng-container>
 
-        <ng-container *ngTemplateOutlet="infoBtn; context: {
-                formControl : control.get('isMintSchema'),
-                title: 'Is Schema Mint?',
-                visible: true}">
-        </ng-container>
+        <mat-slide-toggle class="slide-toggle" [formControl]="control.get('isMintSchema')" labelPosition="after"
+            color="primary">
+            Minting tokens
+        </mat-slide-toggle>
     </form>
     <form [formGroup]="control.get('mintOptions')" *ngIf="control.get('isMintSchema')?.value">
         <mat-form-field appearance="outline">
@@ -145,7 +163,7 @@
         <ng-container *ngTemplateOutlet="infoBtn; context: {
             formControl : control.get('isApprover'),
             helpSrc: '/assets/approve.gif',
-            title: 'Is Approver?',
+            title: 'Is approver?',
             visible: approveEnable}">
         </ng-container>
 
@@ -158,15 +176,14 @@
             </mat-select>
         </mat-form-field>
 
-        <ng-container *ngTemplateOutlet="infoBtn; context: {
-            formControl : control.get('isCreator'),
-            helpSrc: '/assets/create.gif',
-            title: 'Is Creator?',
-            visible: true}">
-        </ng-container>
+        <mat-slide-toggle class="slide-toggle" [formControl]="control.get('isCreator')" labelPosition="after"
+            color="primary">
+            Is creator?
+        </mat-slide-toggle>
 
         <ng-container
             *ngTemplateOutlet="roleGridColumns; context: {gridColumns: control.get('gridColumns')?.value , fields, approveEnable, dependencySchema }"></ng-container>
+
         <ng-template #roleGridColumns let-gridColumns="gridColumns" let-fields="fields">
             <h2 class="grid-columns-title">Grid Columns</h2>
             <div class="grid-columns-container">
@@ -220,30 +237,29 @@
 
 <ng-template #trustChainRoleConfig let-control="control">
     <form [formGroup]="control">
-        <mat-form-field appearance="outline">
+        <mat-form-field appearance="outline" class="full-width">
             <mat-label>Minted Schema</mat-label>
             <mat-select formControlName="mintSchemaIri">
                 <mat-option *ngFor="let schema of mintedSchemas" [value]="schema.iri">{{schema.name}}</mat-option>
             </mat-select>
         </mat-form-field>
-        <ng-container *ngTemplateOutlet="infoBtn; context: {
-            formControl : control.get('viewOnlyOwnDocuments'),
-            title: 'View only own documents?',
-            visible: true}">
-        </ng-container>
+        <mat-slide-toggle class="slide-toggle" [formControl]="control.get('viewOnlyOwnDocuments')" labelPosition="after"
+            color="primary">
+            View only own documents?
+        </mat-slide-toggle>
     </form>
 </ng-template>
 
 <ng-template #infoBtn let-formControl="formControl" let-helpSrc="helpSrc" let-title="title" let-visible='visible'>
     <div class="info-btn-container" *ngIf="visible">
+        <mat-slide-toggle class="slide-toggle" [formControl]="formControl" labelPosition="after" color="primary">
+            {{title}}
+        </mat-slide-toggle>
         <button [disabled]="!helpSrc" mat-mini-fab color="primary" [matMenuTriggerFor]="menu" class="info-btn">
             i
         </button>
         <mat-menu #menu="matMenu" yPosition="below">
             <img [src]="helpSrc" class="help-img">
         </mat-menu>
-        <mat-slide-toggle [formControl]="formControl" labelPosition="before" color="primary">
-            {{title}}
-        </mat-slide-toggle>
     </div>
 </ng-template>

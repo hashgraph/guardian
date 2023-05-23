@@ -15,7 +15,12 @@ import {
     AbstractControl,
 } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { IWizardConfig, Schema, SchemaField, Token } from '@guardian/interfaces';
+import {
+    IWizardConfig,
+    Schema,
+    SchemaField,
+    Token,
+} from '@guardian/interfaces';
 import { Subject } from 'rxjs';
 import { RetireTokenDialogComponent } from 'src/app/components/retire-token-dialog/retire-token-dialog.component';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
@@ -41,7 +46,6 @@ export class PolicyWizardDialogComponent implements OnInit {
 
     tokens!: Token[];
     schemas!: Schema[];
-    policy?: any;
     policies!: any[];
     groupedSchemas: {
         name: string;
@@ -86,20 +90,55 @@ export class PolicyWizardDialogComponent implements OnInit {
         }
     ) {
         this.schemas = data?.schemas || [];
-        this.policy = data?.policy;
         this.policies = data?.policies || [];
-        const groupByTopic = this.schemas.reduce((group: any, schema: any) => {
-            const { topicId } = schema;
-            group[topicId] = group[topicId] ?? [];
-            group[topicId].push(schema);
-            return group;
-        }, {});
-        for (const group of Object.entries(groupByTopic)) {
-            if (group[0] && group[0] !== this.policy?.topicId) {
-                const policy = this.policies.find(
+        this.groupedSchemas = this.mapGroupedSchemas(
+            this.groupSchemasByTopics(this.schemas),
+            this.policies,
+            data?.policy
+        );
+        if (data?.policy) {
+            this.policyForm.patchValue({
+                name: data?.policy.name,
+                description: data?.policy.description,
+                policyTag: data?.policy.policyTag,
+                topicDescription: data?.policy.topicDescription,
+            });
+            this.policyForm.get('policyTag')?.disable();
+        }
+        this.tokens = data?.tokens || [];
+        this.preset = data?.state || [];
+    }
+
+    private mapGroupedSchemas(
+        groupedSchemasByTopic: any,
+        policies: any[],
+        policy?: any
+    ) {
+        const mappedSchemas = policy
+            ? [
+                  {
+                      name:
+                          policy.name +
+                          (policy.version ? ' (' + policy.version + ')' : ''),
+                      schemas: groupedSchemasByTopic[policy?.topicId],
+                  },
+                  {
+                      name: 'Ungrouped schemas',
+                      schemas: groupedSchemasByTopic[''],
+                  },
+              ]
+            : [
+                  {
+                      name: 'Ungrouped schemas',
+                      schemas: groupedSchemasByTopic[''],
+                  },
+              ];
+        for (const group of Object.entries(groupedSchemasByTopic)) {
+            if (group[0] && group[0] !== policy?.topicId) {
+                const policy = policies.find(
                     (policy) => policy.topicId === group[0]
                 );
-                this.groupedSchemas.push({
+                mappedSchemas.push({
                     name:
                         policy.name +
                         (policy.version ? ' (' + policy.version + ')' : ''),
@@ -107,25 +146,19 @@ export class PolicyWizardDialogComponent implements OnInit {
                 });
             }
         }
-        this.groupedSchemas.unshift({
-            name: 'Ungrouped schemas',
-            schemas: groupByTopic[''],
-        });
-        if (data?.policyDataForm) {
-            this.groupedSchemas.unshift({
-                name:
-                    this.policy.name +
-                    (this.policy.version
-                        ? ' (' + this.policy.version + ')'
-                        : ''),
-                schemas: groupByTopic[this.policy?.topicId],
-            });
-            this.policyForm.patchValue(data.policyDataForm);
-            this.policyForm.get('policyTag')?.disable();
-        }
-        this.tokens = data?.tokens || [];
-        this.preset = data?.state || [];
+        return mappedSchemas;
     }
+
+    private groupSchemasByTopics(schemas: Schema[]) {
+        return this.schemas.reduce((group: any, schema: any) => {
+            const { topicId } = schema;
+            group[topicId] = group[topicId] ?? [];
+            group[topicId].push(schema);
+            return group;
+        }, {});
+    }
+
+    ngOnInit() {}
 
     ngAfterViewInit() {
         const schemasNode = {
@@ -240,7 +273,7 @@ export class PolicyWizardDialogComponent implements OnInit {
         this.dataForm.patchValue({
             roles: data.roles,
             schemas: data.schemas,
-            trustChain: data.trustChain
+            trustChain: data.trustChain,
         });
         const currentNode = this.findCurrentNode(
             this.treeData,
@@ -268,8 +301,6 @@ export class PolicyWizardDialogComponent implements OnInit {
             this.setParents(child);
         });
     }
-
-    ngOnInit() {}
 
     onSchemaRolesConfigChange(
         schemaConfigControl: FormGroup,
@@ -384,7 +415,7 @@ export class PolicyWizardDialogComponent implements OnInit {
         const rolesSubscription = this.policyRolesForm.valueChanges
             .pipe(takeUntil(this.destroy$))
             .subscribe((value) => {
-                if (!value.includes(role) && role !== 'OWNER') {
+                if (!value.includes(role)) {
                     node.children.splice(node.children.indexOf(newNode), 1);
                     this.deleteControlsFromFormArray(
                         schemaRoleConfigControl,
@@ -475,12 +506,12 @@ export class PolicyWizardDialogComponent implements OnInit {
 
     onSelectedSchemasChange(value: any) {
         const deletedSchemas = this.selectedSchemas.filter(
-            (schema) => !value.find((item: any) => item.iri === schema.iri)
+            (schema) => !value.some((item: any) => item.iri === schema.iri)
         );
         this.currentNode.children =
             this.currentNode.children.filter(
                 (schema: any) =>
-                    !deletedSchemas.find(
+                    !deletedSchemas.some(
                         (deletedSchema) =>
                             deletedSchema.iri === schema.schema.iri
                     )
@@ -496,7 +527,7 @@ export class PolicyWizardDialogComponent implements OnInit {
         this.mintedSchemas =
             this.mintedSchemas.filter(
                 (schema: any) =>
-                    !deletedSchemas.find(
+                    !deletedSchemas.some(
                         (deletedSchema) => deletedSchema.iri === schema.iri
                     )
             ) || [];
@@ -504,7 +535,7 @@ export class PolicyWizardDialogComponent implements OnInit {
 
         const addedSchemas = value.filter(
             (item: any) =>
-                !this.selectedSchemas.find((schema) => item.iri === schema.iri)
+                !this.selectedSchemas.some((schema) => item.iri === schema.iri)
         );
         for (const schema of addedSchemas) {
             this.onSelectedSchemaChange(schema, this.currentNode);
@@ -574,11 +605,14 @@ export class PolicyWizardDialogComponent implements OnInit {
         this.currentNode.children =
             this.currentNode.children.filter(
                 (roleSchemaNode: any) =>
-                    !deletedRoles.find(
-                        (deletedRole: string) =>
-                            roleSchemaNode.role === deletedRole
-                    )
+                    !deletedRoles.includes(roleSchemaNode.role)
             ) || [];
+        this.deleteControlsFromFormArray(
+            this.trustChainForm,
+            this.trustChainForm.controls.filter((control) =>
+                deletedRoles.includes(control.value?.role)
+            )
+        );
 
         const addedRoles = value.filter(
             (existingRole: any) =>

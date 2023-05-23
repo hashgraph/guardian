@@ -370,6 +370,6 @@
     top: 7px;
 }
 
-.wizard-btn {
+.toolbar-btn.wizard-btn {
     background-color: #9c27b0;
 }

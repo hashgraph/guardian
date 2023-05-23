@@ -4,7 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IWizardConfig, Schema, SchemaHelper, Token } from '@guardian/interfaces';
+import { Schema, SchemaHelper, Token } from '@guardian/interfaces';
 import * as yaml from 'js-yaml';
 import { forkJoin, Observable } from 'rxjs';
 import { ConfirmationDialogComponent } from 'src/app/modules/common/confirmation-dialog/confirmation-dialog.component';
@@ -23,9 +23,7 @@ import { PolicyBlockModel, PolicyModel, PolicyModuleModel, PolicyStorage, Templa
 import { Options } from '../../structures/storage/config-options';
 import { PolicyTreeComponent } from '../policy-tree/policy-tree.component';
 import { ThemeService } from '../../../../services/theme.service';
-import { PolicyWizardDialogComponent } from '../../helpers/policy-wizard-dialog/policy-wizard-dialog.component';
-import { SelectorDialogComponent } from 'src/app/modules/common/selector-dialog/selector-dialog.component';
-import { WizardService } from 'src/app/services/wizard.service';
+import { WizardMode, WizardService } from 'src/app/modules/policy-engine/services/wizard.service';
 
 enum OperationMode {
     none,
@@ -1186,154 +1184,49 @@ export class PolicyConfigurationComponent implements OnInit {
         return rule.legend;
     }
 
-    removeWizardPreset(policyId: string) {
-        if (!policyId) {
-            return;
-        }
-        try {
-            const wizardStates = JSON.parse(
-                localStorage.getItem('wizard') || 'null'
-            );
-            delete wizardStates[policyId];
-            localStorage.setItem('wizard', JSON.stringify(wizardStates));
-        } catch {}
-    }
-
-    setWizardPreset(policyId: string, preset: any) {
-        if (!preset || !policyId) {
-            return;
-        }
-        try {
-            const wizardStates = JSON.parse(
-                localStorage.getItem('wizard') || 'null'
-            );
-            wizardStates[policyId] = preset;
-            localStorage.setItem('wizard', JSON.stringify(wizardStates));
-        } catch {
-            const wizardStates: any = {};
-            wizardStates[policyId] = preset;
-            localStorage.setItem('wizard', JSON.stringify(wizardStates));
-        }
-    }
-
-    openWizardDialog(policies: any[], preset?: any,) {
-        const policy = policies.find(item => item.id === this.policyId);
-        const dialogRef = this.dialog.open(PolicyWizardDialogComponent, {
-            width: '1100px',
-            panelClass: 'g-dialog',
-            disableClose: true,
-            autoFocus: false,
-            data: {
-                policyDataForm: this.policyModel.getPolicyDataForm(),
-                schemas: this.allSchemas,
-                tokens: this.tokens,
-                state: preset,
-                policies,
-                policy
-            },
-        });
-        dialogRef
-            .afterClosed()
-            .subscribe((value: { create: boolean; config: IWizardConfig, currentNode: any }) => {
-                const dialogRef = this.dialog.open(
-                    ConfirmationDialogComponent,
-                    {
-                        data: {
-                            dialogTitle: 'Save progress',
-                            dialogText: 'Do you want to save progress?',
-                        },
-                    }
-                );
-                dialogRef.afterClosed().subscribe((saveState: boolean) => {
-                    if (value.create) {
-                        this.loading = true;
-                        this.wizardService
-                            .getPolicyConfig(this.policyId, value.config)
-                            .subscribe((result) => {
-                                this.loading = false;
-                                this.policyModel.setPolicyDataForm(
-                                    value?.config?.policy
-                                );
-                                const roles = value?.config?.roles;
-                                const policy = this.policyModel.getJSON();
-                                policy.policyRoles = roles.filter(
-                                    (role: string) => role !== 'OWNER'
-                                );
-                                policy.config = result.policyConfig;
-                                this.updatePolicyModel(policy);
-                                if (saveState) {
-                                    this.setWizardPreset(this.policyId, {
+    public openPolicyWizardDialog() {
+        this.wizardService.openPolicyWizardDialog(
+            WizardMode.EDIT,
+            (value) => {
+                if (value.create) {
+                    this.loading = true;
+                    this.wizardService
+                        .getPolicyConfig(this.policyId, value.config)
+                        .subscribe((result) => {
+                            this.loading = false;
+                            this.policyModel.setPolicyInfo(
+                                value.config.policy
+                            );
+                            const roles = value.config.roles;
+                            const policy = this.policyModel.getJSON();
+                            policy.policyRoles = roles.filter(
+                                (role: string) => role !== 'OWNER'
+                            );
+                            policy.config = result.policyConfig;
+                            this.updatePolicyModel(policy);
+                            if (value.saveState) {
+                                this.wizardService.setWizardPreset(
+                                    this.policyId,
+                                    {
                                         data: result?.wizardConfig,
                                         currentNode: value?.currentNode,
-                                    });
-                                }
-                            });
-                    }
-
-                    if (saveState) {
-                        this.setWizardPreset(this.policyId, {
-                            data: value?.config,
-                            currentNode: value?.currentNode,
+                                    }
+                                );
+                            }
                         });
-                    }
-
-                    if (!saveState) {
-                        this.removeWizardPreset(this.policyId);
-                        return;
-                    }
-                });
-            });
-    }
-
-    policyWizard() {
-        try {
-            const wizardStates = JSON.parse(
-                localStorage.getItem('wizard') || 'null'
-            );
-            if (wizardStates) {
-                const wizardPolicies = Object.keys(wizardStates);
-
-                const options = this.allPolicies
-                    ?.filter((policy) => wizardPolicies.includes(policy.id))
-                    .map((policy) =>
-                        Object({
-                            name: policy.name,
-                            value: policy.id,
-                        })
-                    );
-                if (!options.length) {
-                    this.openWizardDialog(this.allPolicies);
-                    return;
+                } else if (value.saveState) {
+                    this.wizardService.setWizardPreset(this.policyId, {
+                        data: value.config,
+                        currentNode: value.currentNode,
+                    });
+                } else {
+                    this.wizardService.removeWizardPreset(this.policyId);
                 }
-                options?.unshift({
-                    name: 'New Policy',
-                });
-                const selectorDialog = this.dialog.open(
-                    SelectorDialogComponent,
-                    {
-                        width: '400px',
-                        data: {
-                            title: 'Restore progress',
-                            description: 'Choose policy',
-                            options,
-                        },
-                    }
-                );
-                selectorDialog.afterClosed().subscribe((value) => {
-                    if (!value?.ok) {
-                        return;
-                    }
-                    this.openWizardDialog(
-                        this.allPolicies,
-                        value?.result && wizardStates[value.result]
-                    );
-                });
-            } else {
-                this.openWizardDialog(this.allPolicies);
-            }
-        } catch (error) {
-            localStorage.removeItem('wizard');
-            this.openWizardDialog(this.allPolicies);
-        }
+            },
+            this.tokens,
+            this.allSchemas,
+            this.allPolicies,
+            this.policyModel
+        );
     }
 }
