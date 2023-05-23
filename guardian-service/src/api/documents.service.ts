@@ -117,7 +117,8 @@ export async function documentsAPI(
             }
         } else {
             const [items, count] = await vpDocumentRepository.findAndCount(null, {
-                limit: 100
+                limit: 100,
+                orderBy: { createDate: 'DESC' }
             });
             return new MessageResponse({ items, count });
         }
