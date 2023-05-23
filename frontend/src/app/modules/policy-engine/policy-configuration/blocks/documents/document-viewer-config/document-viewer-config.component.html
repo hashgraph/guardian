@@ -104,10 +104,10 @@
                 <mat-icon class="icon-link">add_link</mat-icon> Bind Group
             </td>
             <td class="propRowCell">
-                <select-block 
+                <select-block
                     [root]="module"
-                    [(value)]="field.bindGroup" 
-                    [readonly]="readonly" 
+                    [(value)]="field.bindGroup"
+                    [readonly]="readonly"
                     [blocks]="allBlocks"
                 ></select-block>
             </td>
@@ -125,6 +125,7 @@
                     <mat-select [(value)]="field.action" [disabled]="readonly" (change)="onSave()">
                         <mat-option value="link">LINK</mat-option>
                         <mat-option value="dialog">DIALOG</mat-option>
+                        <mat-option value="download">DOWNLOAD</mat-option>
                     </mat-select>
                 </td>
             </tr>
@@ -138,9 +139,9 @@
                         Bind Block
                     </td>
                     <td class="propRowCell">
-                        <select-block 
+                        <select-block
                             [root]="module"
-                            [(value)]="field.bindBlock" 
+                            [(value)]="field.bindBlock"
                             [readonly]="readonly"
                             [blocks]="allBlocks"
                         ></select-block>
@@ -181,9 +182,9 @@
                         Bind Block
                     </td>
                     <td class="propRowCell">
-                        <select-block 
+                        <select-block
                             [root]="module"
-                            [(value)]="field.bindBlock" 
+                            [(value)]="field.bindBlock"
                             [readonly]="readonly"
                             [blocks]="allBlocks"
                         ></select-block>
@@ -201,10 +202,10 @@
                     Bind Block
                 </td>
                 <td class="propRowCell">
-                    <select-block 
+                    <select-block
                         [root]="module"
-                        [(value)]="field.bindBlock" 
-                        [readonly]="readonly" 
+                        [(value)]="field.bindBlock"
+                        [readonly]="readonly"
                         [blocks]="allBlocks"
                     ></select-block>
                 </td>

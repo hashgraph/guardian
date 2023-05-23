@@ -1,0 +1,148 @@
+import { DocumentSignature, Schema } from '@guardian/interfaces';
+import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { BlockActionError } from '@policy-engine/errors';
+import { ActionCallback } from '@policy-engine/helpers/decorators';
+import { IPolicyDocument, IPolicyRequestBlock } from '@policy-engine/policy-engine.interface';
+import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
+import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
+import { EventBlock } from '@policy-engine/helpers/decorators/event-block';
+import {
+    VcHelper,
+} from '@guardian/common';
+import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
+import { IPolicyUser } from '@policy-engine/policy-user';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { VcDocumentDefinition as VcDocument } from '@guardian/common/dist/hedera-modules';
+
+/**
+ * Request VC document block
+ */
+@EventBlock({
+    blockType: 'uploadVcDocumentBlock',
+    commonBlock: false,
+    about: {
+        label: 'Upload',
+        title: `Add 'Upload' Block`,
+        post: true,
+        get: true,
+        children: ChildrenType.Special,
+        control: ControlType.UI,
+        input: [
+            PolicyInputEventType.RunEvent,
+            PolicyInputEventType.RefreshEvent,
+            PolicyInputEventType.RestoreEvent
+        ],
+        output: [
+            PolicyOutputEventType.RunEvent,
+            PolicyOutputEventType.RefreshEvent
+        ],
+        defaultEvent: true
+    },
+    variables: [
+        { path: 'options.schema', alias: 'schema', type: 'Schema' }
+    ]
+})
+export class UploadVcDocumentBlock {
+    /**
+     * Schema
+     * @private
+     */
+    private schema: Schema | null;
+
+    /**
+     * Get Schema
+     */
+    async getSchema(): Promise<Schema> {
+        if (!this.schema) {
+            const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
+            const schema = await ref.databaseServer.getSchemaByIRI(ref.options.schema, ref.topicId);
+            this.schema = schema ? new Schema(schema) : null;
+            if (!this.schema) {
+                throw new BlockActionError('Waiting for schema', ref.blockType, ref.uuid);
+            }
+        }
+        return this.schema;
+    }
+
+    /**
+     * Get block data
+     * @param user
+     */
+    async getData(user: IPolicyUser): Promise<any> {
+        const options = PolicyComponentsUtils.GetBlockUniqueOptionsObject(this);
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
+
+        return {
+            id: ref.uuid,
+            blockType: ref.blockType,
+            uiMetaData: options.uiMetaData || {},
+        };
+    }
+
+    /**
+     * Set block data
+     * @param user
+     * @param data
+     */
+    @ActionCallback({
+        output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
+    })
+    async setData(user: IPolicyUser, data: IPolicyDocument): Promise<any> {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
+
+        if (!user.did) {
+            throw new BlockActionError('User have no any did', ref.blockType, ref.uuid);
+        }
+
+        const retArray: unknown[] = [];
+        const badArray: unknown[] =  [];
+
+        try {
+            for (const document of data.documents) {
+                let verify: boolean;
+                try {
+                    const VCHelper = new VcHelper();
+                    const res = await VCHelper.verifySchema(document);
+                    verify = res.ok;
+                    if (verify) {
+                        verify = await VCHelper.verifyVC(document);
+                    }
+                } catch (error) {
+                    ref.error(`Verify VC: ${PolicyUtils.getErrorMessage(error)}`)
+                    verify = false;
+                }
+
+                if (verify) {;
+                    const vc = VcDocument.fromJsonTree(document);
+
+                    const doc = PolicyUtils.createVC(ref, user, vc);
+                    doc.type = ref.options.entityType;
+                    doc.schema = ref.options.schema;
+                    doc.signature = DocumentSignature.VERIFIED;
+
+                    retArray.push(doc);
+                } else {
+                    badArray.push(document);
+                    // PolicyComponentsUtils.BlockErrorFn(ref.blockType, `Set data: document ${document.id} unverified`, user);
+                }
+            }
+
+            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, {data: retArray});
+            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, {data: retArray});
+            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
+                documents: ExternalDocuments(retArray)
+            }));
+
+            return {
+                verified: retArray,
+                invalid: badArray
+            };
+        } catch (error) {
+            ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
+            throw new BlockActionError(error, ref.blockType, ref.uuid);
+        }
+
+        return {};
+    }
+}

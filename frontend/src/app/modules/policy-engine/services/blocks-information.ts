@@ -48,6 +48,8 @@ import {
     IBlockSetting
 } from "../structures";
 import { TagsManagerBlockComponent } from '../policy-viewer/blocks/tags-manager-block/tags-manager-block.component';
+import { UploadConfigComponent } from '../policy-configuration/blocks/documents/upload-config/upload-config.component';
+import { UploadDocumentBlockComponent } from '../policy-viewer/blocks/upload-document-block/upload-document-block.component';
 
 const Container: IBlockSetting = {
     type: BlockType.Container,
@@ -67,6 +69,7 @@ const Container: IBlockSetting = {
         { type: BlockType.HttpRequest },
         { type: BlockType.DocumentsViewer },
         { type: BlockType.Request },
+        { type: BlockType.Upload },
         { type: BlockType.SendToGuardian },
         { type: BlockType.ExternalData },
         { type: BlockType.AggregateDocument },
@@ -107,6 +110,7 @@ const Step: IBlockSetting = {
         { type: BlockType.HttpRequest },
         { type: BlockType.DocumentsViewer },
         { type: BlockType.Request },
+        { type: BlockType.Upload },
         { type: BlockType.SendToGuardian },
         { type: BlockType.ExternalData },
         { type: BlockType.AggregateDocument },
@@ -275,6 +279,22 @@ const Request: IBlockSetting = {
     header: BlockHeaders.UIComponents,
     factory: RequestDocumentBlockComponent,
     property: RequestConfigComponent,
+    allowedChildren: [{
+        type: BlockType.DocumentsSourceAddon,
+        group: BlockGroup.UnGrouped
+    }, {
+        type: BlockType.DocumentValidatorBlock,
+        group: BlockGroup.UnGrouped
+    }]
+}
+
+const Upload: IBlockSetting = {
+    type: BlockType.Upload,
+    icon: 'dynamic_form',
+    group: BlockGroup.Documents,
+    header: BlockHeaders.UIComponents,
+    factory: UploadDocumentBlockComponent,
+    property: UploadConfigComponent,
     allowedChildren: [{
         type: BlockType.DocumentsSourceAddon,
         group: BlockGroup.UnGrouped
@@ -582,6 +602,7 @@ export default [
     HttpRequest,
     DocumentsViewer,
     Request,
+    Upload,
     MultiSignBlock,
     SendToGuardian,
     ExternalData,

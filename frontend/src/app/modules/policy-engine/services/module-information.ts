@@ -31,6 +31,7 @@ const Module: IBlockSetting = {
         { type: BlockType.HttpRequest },
         { type: BlockType.DocumentsViewer },
         { type: BlockType.Request },
+        { type: BlockType.Upload },
         { type: BlockType.SendToGuardian },
         { type: BlockType.ExternalData },
         { type: BlockType.AggregateDocument },

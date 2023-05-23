@@ -48,6 +48,7 @@ export class RegisteredService {
             defaultEvent: false
         })
 
+        console.log(blocks);
         for (const config of blocks) {
             this.registerBlock(config);
         }

@@ -9,7 +9,7 @@ import {
     VCSchemaLoader,
     SubjectSchemaLoader,
     DIDDocumentLoader,
-    ContextDocumentLoader,
+    ContextDocumentLoader, DryRunLoader, HederaLoader,
 } from '../document-loader';
 import {
     ICredentialSubject,
@@ -35,7 +35,9 @@ export class VcHelper extends VCJS {
     constructor() {
         super();
         const defaultDocumentLoader = new DefaultDocumentLoader();
+        const dryRunLoader = new DryRunLoader();
         const didDocumentLoader = new DIDDocumentLoader();
+        const hederaLoader = new HederaLoader();
         const schemaDocumentLoader = new SchemaDocumentLoader();
         const contextDocumentLoader = new ContextDocumentLoader('');
 
@@ -43,6 +45,8 @@ export class VcHelper extends VCJS {
         const subjectSchemaObjectLoader = new SubjectSchemaLoader('');
 
         this.addDocumentLoader(defaultDocumentLoader);
+        this.addDocumentLoader(dryRunLoader);
+        this.addDocumentLoader(hederaLoader);
         this.addDocumentLoader(didDocumentLoader);
         this.addDocumentLoader(schemaDocumentLoader);
         this.addDocumentLoader(contextDocumentLoader);
