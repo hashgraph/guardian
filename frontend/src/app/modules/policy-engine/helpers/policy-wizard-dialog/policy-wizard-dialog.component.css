@@ -58,7 +58,7 @@ form {
     align-items: center;
     margin-bottom: 20px;
     gap: 30px;
-    overflow-y: scroll;
+    overflow-x: scroll;
     padding: 20px;
 }
 
@@ -97,7 +97,6 @@ form {
 .info-btn-container {
     display: flex;
     align-items: center;
-    margin: 5px 0;
 }
 
 .help-img {
@@ -197,5 +196,9 @@ form {
 }
 
 .slide-toggle {
-    margin: 10px;
+    margin: 8px;
+}
+
+.info-btn-container .slide-toggle {
+    margin: 0 8px;
 }

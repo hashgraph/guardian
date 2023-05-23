@@ -81,7 +81,7 @@
 <ng-template #schemaConfig let-control="control" let-schema="schema" let-options="options" let-mintFields="mintFields">
     <form [formGroup]="control">
         <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Which users will see grid?</mat-label>
+            <mat-label>Which users are able to view?</mat-label>
             <mat-select [value]="options.displayedInRoles"
                 (selectionChange)="onSchemaRolesConfigChange(control, $event.value, schema.fields, options)" multiple>
                 <mat-option *ngFor="let role of policyRolesForm.value" [value]="role">{{role}}</mat-option>
@@ -227,7 +227,7 @@
 
 <ng-template #trustChainConfig>
     <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Roles</mat-label>
+        <mat-label>Which users are able to view?</mat-label>
         <mat-select [value]="selectedTrustChainRoles" (selectionChange)="onSelectedTrustChainRolesChange($event.value)"
             multiple>
             <mat-option *ngFor="let role of policyRolesForm.value" [value]="role">{{role}}</mat-option>
@@ -238,14 +238,14 @@
 <ng-template #trustChainRoleConfig let-control="control">
     <form [formGroup]="control">
         <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Minted Schema</mat-label>
+            <mat-label>Minting Schema:</mat-label>
             <mat-select formControlName="mintSchemaIri">
                 <mat-option *ngFor="let schema of mintedSchemas" [value]="schema.iri">{{schema.name}}</mat-option>
             </mat-select>
         </mat-form-field>
         <mat-slide-toggle class="slide-toggle" [formControl]="control.get('viewOnlyOwnDocuments')" labelPosition="after"
             color="primary">
-            View only own documents?
+            View only own VPs?
         </mat-slide-toggle>
     </form>
 </ng-template>

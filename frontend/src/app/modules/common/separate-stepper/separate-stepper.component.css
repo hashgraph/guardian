@@ -37,7 +37,6 @@
     overflow: auto;
     padding: 10px 30px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
     flex-direction: column;
 
@@ -61,7 +60,8 @@
     justify-content: center;
     gap: 12px;
     width: 100%;
-    margin-bottom: 10px;
+    padding-bottom: 10px;
+    background-origin: content-box;
 }
 
 
@@ -74,13 +74,15 @@
 
 .title-label {
     font-size: 24px;
+    text-align: center;
 }
 
 .step-action-buttons {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 15px;
+    margin-top: auto;
+    padding-top: 15px;
     gap: 30px;
     width: 100%;
 }
