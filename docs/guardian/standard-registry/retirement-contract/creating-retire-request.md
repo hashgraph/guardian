@@ -32,4 +32,4 @@ In addition to creation of requests, Users also can see created requests, they c
 
 Standard Registry can see all retire requests by each contract. He can also view VC if it is already approved, or approve retire by clicking on “Retire Tokens” button.
 
-<figure><img src="../../../.gitbook/assets/image (4) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (4) (2) (2).png" alt=""><figcaption></figcaption></figure>
