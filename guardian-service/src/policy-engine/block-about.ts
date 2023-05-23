@@ -3,6 +3,24 @@
  * TODO: Create real block about
  */
 export const BlockAbout = {
+    'uploadVcDocumentBlock': {
+        'label': 'Upload',
+        'title': `Add 'Upload' Block`,
+        'post': true,
+        'get': true,
+        'children': 'Special',
+        'control': 'UI',
+        'input': [
+            'RunEvent',
+            'RefreshEvent',
+            'RestoreEvent'
+        ],
+        'output': [
+            'RunEvent',
+            'RefreshEvent'
+        ],
+        'defaultEvent': true
+    },
     'aggregateDocumentBlock': {
         'label': 'Aggregate Data',
         'title': 'Add \'Aggregate\' Block',

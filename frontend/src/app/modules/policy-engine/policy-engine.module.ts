@@ -95,6 +95,8 @@ import { NewPolicyDialog } from './helpers/new-policy-dialog/new-policy-dialog.c
 import { PolicySettingsComponent } from './policy-configuration/policy-settings/policy-settings.component';
 import { ImportFileDialog } from './helpers/import-file-dialog/import-file-dialog.component';
 import { NewThemeDialog } from './helpers/new-theme-dialog/new-theme-dialog.component';
+import { UploadConfigComponent } from './policy-configuration/blocks/documents/upload-config/upload-config.component';
+import { UploadDocumentBlockComponent } from './policy-viewer/blocks/upload-document-block/upload-document-block.component';
 
 @NgModule({
     declarations: [
@@ -105,6 +107,7 @@ import { NewThemeDialog } from './helpers/new-theme-dialog/new-theme-dialog.comp
         ActionConfigComponent,
         ContainerConfigComponent,
         RequestConfigComponent,
+        UploadConfigComponent,
         PolicyPropertiesComponent,
         MintConfigComponent,
         SendConfigComponent,
@@ -116,6 +119,7 @@ import { NewThemeDialog } from './helpers/new-theme-dialog/new-theme-dialog.comp
         SourceAddonConfigComponent,
         ActionBlockComponent,
         RequestDocumentBlockComponent,
+        UploadDocumentBlockComponent,
         ContainerBlockComponent,
         DocumentsSourceBlockComponent,
         PolicyViewerComponent,
