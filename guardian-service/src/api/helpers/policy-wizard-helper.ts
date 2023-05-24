@@ -239,40 +239,54 @@ export class PolicyWizardHelper {
             roleConfig.role,
             roleConfig.gridColumns
         );
+        container.children?.push(gridBlock);
 
         let createDependencySchemaAddonTag;
         if (schemaConfig.isApproveEnable) {
-            if (roleConfig.isApprover) {
-                const toApproveOrRejectAddon = this.getDocumentsSourceAddon(
-                    roleConfig.role,
-                    schemaConfig.iri,
-                    false,
-                    [
-                        {
-                            value: 'Waiting for approval',
-                            field: 'option.status',
-                            type: 'equal',
-                        },
-                    ]
-                );
-                const approvedAddon = this.getDocumentsSourceAddon(
-                    roleConfig.role,
-                    schemaConfig.iri,
-                    false,
-                    [
-                        {
-                            value: 'approved_entity',
-                            field: 'type',
-                            type: 'equal',
-                        },
-                    ]
-                );
-                createDependencySchemaAddonTag = approvedAddon.tag;
-                gridBlock?.children?.push(
-                    toApproveOrRejectAddon,
-                    approvedAddon
-                );
+            const toApproveOrRejectAddon = this.getDocumentsSourceAddon(
+                roleConfig.role,
+                schemaConfig.iri,
+                !roleConfig.isApprover,
+                [
+                    {
+                        value: 'Waiting for approval',
+                        field: 'option.status',
+                        type: 'equal',
+                    },
+                ]
+            );
+            const approvedAddon = this.getDocumentsSourceAddon(
+                roleConfig.role,
+                schemaConfig.iri,
+                !roleConfig.isApprover,
+                [
+                    {
+                        value: 'approved_entity',
+                        field: 'type',
+                        type: 'equal',
+                    },
+                ]
+            );
+            const rejectedAddon = this.getDocumentsSourceAddon(
+                roleConfig.role,
+                schemaConfig.iri,
+                !roleConfig.isApprover,
+                [
+                    {
+                        value: 'rejected_entity',
+                        field: 'type',
+                        type: 'equal',
+                    },
+                ]
+            );
+            createDependencySchemaAddonTag = approvedAddon.tag;
+            gridBlock?.children?.push(
+                toApproveOrRejectAddon,
+                approvedAddon,
+                rejectedAddon
+            );
 
+            if (roleConfig.isApprover) {
                 const saveDocumentApprove =
                     this.getChangeDocumentStatusSendBlock(
                         roleConfig.role,
@@ -295,7 +309,7 @@ export class PolicyWizardHelper {
                 );
 
                 gridBlock.uiMetaData.fields.push(approveRejectField);
-                container.children?.push(gridBlock, buttonsBlock);
+                container.children?.push(buttonsBlock);
                 if (!approveBtnTag && !rejectBtnTag) {
                     container.children?.push(
                         saveDocumentApprove,
@@ -327,37 +341,6 @@ export class PolicyWizardHelper {
                         )
                     );
                 }
-            } else {
-                const toApproveOrRejectAddon = this.getDocumentsSourceAddon(
-                    roleConfig.role,
-                    schemaConfig.iri,
-                    true,
-                    [
-                        {
-                            value: 'Waiting for approval',
-                            field: 'option.status',
-                            type: 'equal',
-                        },
-                    ]
-                );
-                const approvedAddon = this.getDocumentsSourceAddon(
-                    roleConfig.role,
-                    schemaConfig.iri,
-                    true,
-                    [
-                        {
-                            value: 'approved_entity',
-                            field: 'type',
-                            type: 'equal',
-                        },
-                    ]
-                );
-                createDependencySchemaAddonTag = approvedAddon.tag;
-                gridBlock?.children?.push(
-                    toApproveOrRejectAddon,
-                    approvedAddon
-                );
-                container.children?.push(gridBlock);
             }
         } else {
             const documentsSourceAddon = this.getDocumentsSourceAddon(
@@ -366,7 +349,6 @@ export class PolicyWizardHelper {
             );
             createDependencySchemaAddonTag = documentsSourceAddon.tag;
             gridBlock?.children?.push(documentsSourceAddon);
-            container.children?.push(gridBlock);
         }
 
         if (roleConfig.isCreator) {
