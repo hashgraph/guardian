@@ -13,13 +13,15 @@ import {
     SchemaMessage, UrlType,
     replaceValueRecursive,
     SchemaConverterUtils,
-    Logger
+    Logger,
+    DatabaseServer
 } from '@guardian/common';
 import { emptyNotifier, INotifier } from '@helpers/notifier';
 import { importTag } from './../tag.service';
 import {
     createSchema,
     fixSchemaDefsOnImport,
+    getDefs,
     ImportResult,
     onlyUnique
 } from './schema-helper';
@@ -94,6 +96,34 @@ export async function importTagsByFiles(
 }
 
 /**
+ * Export schemas
+ * @param ids Schemas ids
+ * @returns Schemas to export
+ */
+export async function exportSchemas(ids: string[]) {
+    const schemas = await DatabaseServer.getSchemasByIds(ids);
+    const map: any = {};
+    const relationships: ISchema[] = [];
+    for (const schema of schemas) {
+        if (!map[schema.iri]) {
+            map[schema.iri] = schema;
+            relationships.push(schema);
+            const keys = getDefs(schema);
+            const defs = await DatabaseServer.getSchemas({
+                where: { iri: { $in: keys } }
+            });
+            for (const element of defs) {
+                if (!map[element.iri]) {
+                    map[element.iri] = element;
+                    relationships.push(element);
+                }
+            }
+        }
+    }
+    return relationships;
+}
+
+/**
  * Import schema by files
  * @param owner
  * @param files
@@ -137,8 +167,12 @@ export async function importSchemaByFiles(
 
     notifier.info(`Found ${files.length} schemas`);
     for (const file of files) {
-        file.document = replaceValueRecursive(file.document, uuidMap);
-        file.context = replaceValueRecursive(file.context, uuidMap);
+        if (file.document) {
+            file.document = replaceValueRecursive(file.document, uuidMap);
+        }
+        if (file.context) {
+            file.context = replaceValueRecursive(file.context, uuidMap);
+        }
         SchemaHelper.setVersion(file, '', '');
     }
 

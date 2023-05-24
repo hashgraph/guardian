@@ -16,7 +16,7 @@ We then set the Id Type using the drop-down, and select “Owner” as the type 
 
 Next, we select the “Type” drop-down in the UI box and select “PAGE” indicating that the UI used for this request will be a full UI window. This will open up the Title and Description fields which we will fill in next.
 
-![](../.gitbook/assets/PW\_image\_7.png)
+![](../.gitbook/assets/PW\_image\_6.png)
 
 **Programmatically this workflow step looks like this:**
 
