@@ -370,9 +370,11 @@ export class PolicyWizardHelper {
         }
 
         if (roleConfig.isCreator) {
-            const requestDocumentBlock = this.getDialogRequestDocumentBlock(
+            let requestDocumentBlock = this.getDialogRequestDocumentBlock(
                 roleConfig.role,
-                schemaConfig.iri
+                schemaConfig.iri,
+                false,
+                schemaConfig.name
             );
             container.children?.push(requestDocumentBlock);
             if (relationshipSchema) {
@@ -408,14 +410,14 @@ export class PolicyWizardHelper {
                 }
             }
             if (dependencySchema && createDependencySchemaAddonTag) {
-                const requestDependencySchemaDocumentBlock =
-                    this.getDialogRequestDocumentBlock(
-                        roleConfig.role,
-                        dependencySchema.iri,
-                        true
-                    );
+                requestDocumentBlock = this.getDialogRequestDocumentBlock(
+                    roleConfig.role,
+                    dependencySchema.iri,
+                    true,
+                    dependencySchema.name
+                );
                 container.children?.push(
-                    requestDependencySchemaDocumentBlock,
+                    requestDocumentBlock,
                     this.getDocumentSendBlock(
                         roleConfig.role,
                         !dependencySchema.isMintSchema,
