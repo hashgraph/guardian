@@ -1,3 +1,6 @@
+/**
+ * Block Type
+ */
 export enum BlockType {
     Container = 'interfaceContainerBlock',
     DocumentsViewer = 'interfaceDocumentsSourceBlock',

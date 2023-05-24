@@ -53,6 +53,7 @@ import { tagsAPI } from '@api/tag.service';
 import { setDefaultSchema } from '@api/helpers/schema-helper';
 import { demoAPI } from '@api/demo.service';
 import { themeAPI } from '@api/theme.service';
+import { wizardAPI } from '@api/wizard.service';
 import { startMetricsServer } from './utils/metrics';
 
 export const obj = {};
@@ -136,6 +137,7 @@ Promise.all([
         await analyticsAPI();
         await mapAPI();
         await themeAPI();
+        await wizardAPI();
     } catch (error) {
         console.error(error.message);
         process.exit(0);

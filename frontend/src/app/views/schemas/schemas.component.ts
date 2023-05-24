@@ -116,8 +116,8 @@ export class SchemaConfigComponent implements OnInit {
     ngOnInit() {
         const type = this.route.snapshot.queryParams['type'];
         const topic = this.route.snapshot.queryParams['topic'];
-        this.type = 
-            type === 'tag' ? 'tag' : 
+        this.type =
+            type === 'tag' ? 'tag' :
             (type === 'system' ? 'system' : 'policy');
         this.currentTopicPolicy = topic && topic != 'all' ? topic : '';
         this.loadProfile()
@@ -289,13 +289,11 @@ export class SchemaConfigComponent implements OnInit {
     schemaMapping(schemas: ISchema[]) {
         this.schemasMap = {};
         for (let i = 0; i < schemas.length; i++) {
-            const schema = schemas[i];
-            if (schema.topicId) {
-                if (this.schemasMap[schema.topicId]) {
-                    this.schemasMap[schema.topicId].push(schema);
-                } else {
-                    this.schemasMap[schema.topicId] = [schema];
-                }
+            const schema: any = schemas[i];
+            if (this.schemasMap[schema.topicId]) {
+                this.schemasMap[schema.topicId].push(schema);
+            } else {
+                this.schemasMap[schema.topicId] = [schema];
             }
         }
     }

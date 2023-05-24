@@ -249,6 +249,28 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             }
 
             /**
+             * Get block data
+             * @param args
+             */
+            async getData(...args) {
+                if (typeof super.getData === 'function') {
+                    return await super.getData(...args);
+                }
+                return {};
+            }
+
+            /**
+             * Set block data
+             * @param args
+             */
+            async setData(...args) {
+                if (typeof super.getData === 'function') {
+                    return await super.setData(...args);
+                }
+                return {};
+            }
+
+            /**
              * Get child by UUID
              * @param uuid
              */
