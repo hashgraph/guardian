@@ -1,4 +1,12 @@
-import { BlockType, GenerateUUIDv4, IGridConfig, ISchemaRoleConfig, IWizardConfig, IWizardSchemaConfig, IWizardTrustChainConfig } from '@guardian/interfaces';
+import {
+    BlockType,
+    GenerateUUIDv4,
+    IGridConfig,
+    ISchemaRoleConfig,
+    IWizardConfig,
+    IWizardSchemaConfig,
+    IWizardTrustChainConfig,
+} from '@guardian/interfaces';
 
 /**
  * Policy wizard helper
@@ -224,6 +232,9 @@ export class PolicyWizardHelper {
         const dependencySchema = schemaConfigs.find(
             (schema) => schema.iri === schemaConfig.dependencySchemaIri
         );
+        const relationshipSchema = schemaConfigs.find(
+            (schema) => schema.iri === schemaConfig.relationshipsSchemaIri
+        );
         const gridBlock = this.getDocumentsGrid(
             roleConfig.role,
             roleConfig.gridColumns
@@ -359,57 +370,34 @@ export class PolicyWizardHelper {
         }
 
         if (roleConfig.isCreator) {
-            if (schemaConfig.isApproveEnable) {
-                const requestDocumentBlock = this.getDialogRequestDocumentBlock(
-                    roleConfig.role,
-                    schemaConfig.iri
+            const requestDocumentBlock = this.getDialogRequestDocumentBlock(
+                roleConfig.role,
+                schemaConfig.iri
+            );
+            container.children?.push(requestDocumentBlock);
+            if (relationshipSchema) {
+                container.children?.push(
+                    this.getSetRelationshipsBlock(
+                        roleConfig.role,
+                        relationshipSchema.iri,
+                        relationshipSchema.isApproveEnable
+                    )
                 );
-                container.children?.push(requestDocumentBlock);
-                if (
-                    schemaConfig.relationshipsSchemaIri &&
-                    !schemaConfig.dependencySchemaIri
-                ) {
-                    container.children?.push(
-                        this.getSetRelationshipsBlock(
-                            roleConfig.role,
-                            schemaConfig.relationshipsSchemaIri,
-                            schemaConfig.isApproveEnable
-                        )
-                    );
-                }
+            }
+            if (schemaConfig.isApproveEnable) {
                 container.children?.push(
                     this.getDocumentSendBlock(roleConfig.role, true, true)
                 );
             } else {
-                const requestDocumentBlock = this.getDialogRequestDocumentBlock(
-                    roleConfig.role,
-                    schemaConfig.iri
-                );
-                container.children?.push(requestDocumentBlock);
-                if (
-                    schemaConfig.relationshipsSchemaIri &&
-                    !schemaConfig.dependencySchemaIri
-                ) {
-                    container.children?.push(
-                        this.getSetRelationshipsBlock(
-                            roleConfig.role,
-                            schemaConfig.relationshipsSchemaIri,
-                            schemaConfig.isApproveEnable
-                        )
-                    );
-                }
                 container.children?.push(
                     this.getDocumentSendBlock(
                         roleConfig.role,
                         !schemaConfig.isMintSchema,
-                        true
+                        false
                     )
                 );
 
-                if (
-                    !schemaConfig.isApproveEnable &&
-                    schemaConfig.isMintSchema
-                ) {
+                if (schemaConfig.isMintSchema) {
                     container.children?.push(
                         this.getMintBlock(
                             roleConfig.role,
@@ -420,13 +408,14 @@ export class PolicyWizardHelper {
                 }
             }
             if (dependencySchema && createDependencySchemaAddonTag) {
-                const requestDocumentBlock = this.getDialogRequestDocumentBlock(
-                    roleConfig.role,
-                    dependencySchema.iri,
-                    true
-                );
+                const requestDependencySchemaDocumentBlock =
+                    this.getDialogRequestDocumentBlock(
+                        roleConfig.role,
+                        dependencySchema.iri,
+                        true
+                    );
                 container.children?.push(
-                    requestDocumentBlock,
+                    requestDependencySchemaDocumentBlock,
                     this.getDocumentSendBlock(
                         roleConfig.role,
                         !dependencySchema.isMintSchema,

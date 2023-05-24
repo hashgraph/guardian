@@ -6,7 +6,7 @@ import {
     DatabaseServer,
     Logger,
 } from '@guardian/common';
-import { MessageAPI } from '@guardian/interfaces';
+import { IWizardConfig, MessageAPI } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier } from '@helpers/notifier';
 import { PolicyEngine } from '@policy-engine/policy-engine';
 import {
@@ -21,7 +21,7 @@ import { PolicyWizardHelper } from './helpers/policy-wizard-helper';
  * @param owner Owner
  */
 async function createExistingPolicySchemas(
-    config: any,
+    config: IWizardConfig,
     owner: string,
     policyTopicId?: string
 ) {
@@ -50,6 +50,18 @@ async function createExistingPolicySchemas(
                 (item) => item.oldIRI === schema.iri
             );
             schema.iri = schemaMap.newIRI;
+        }
+        if (schemaToCreateIris.includes(schema.dependencySchemaIri)) {
+            const schemaMap = schemasMap.find(
+                (item) => item.oldIRI === schema.dependencySchemaIri
+            );
+            schema.dependencySchemaIri = schemaMap.newIRI;
+        }
+        if (schemaToCreateIris.includes(schema.relationshipsSchemaIri)) {
+            const schemaMap = schemasMap.find(
+                (item) => item.oldIRI === schema.relationshipsSchemaIri
+            );
+            schema.relationshipsSchemaIri = schemaMap.newIRI;
         }
     }
     for (const trustChainConfig of config.trustChain) {
