@@ -87,7 +87,7 @@ export class GcpSecretManager implements SecretManagerBase {
       });  
       const payload = version.payload.data.toString();
           
-      return payload;
+      return JSON.parse(payload);
     } catch (ex) {
       if (ex.details.includes('not found')) {
         return null;
