@@ -81,7 +81,7 @@ export class AzureSecretManager implements SecretManagerBase {
       const { value } = await this.client.getSecret(this.getSecretId(path));
       return JSON.parse(value);
     } catch (ex) {
-      if (ex.details.error.code === 'SecretNotFound') {
+      if (ex.details && ex.details.error.code === 'SecretNotFound') {
         return null;
       } else {
         throw ex;
