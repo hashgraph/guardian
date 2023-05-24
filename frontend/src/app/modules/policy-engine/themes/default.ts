@@ -23,10 +23,12 @@ export const defaultTheme = {
                 'multiSignBlock',
                 'reportBlock',
                 'requestVcDocumentBlock',
+                'uploadVcDocumentBlock',
                 'policyRolesBlock',
                 'interfaceStepBlock',
                 'tagsManager',
-                'tokenConfirmationBlock'
+                'tokenConfirmationBlock',
+                'externalTopicBlock'
             ]
         },
         {
@@ -78,9 +80,3 @@ export const defaultTheme = {
         }
     ]
 }
-
-
-
-
-
-

@@ -1,4 +1,4 @@
-import { Component, ComponentFactoryResolver, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core';
+import { Component, ComponentFactoryResolver, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core';
 import { FlatBlockNode } from '../../structures/tree-model/block-node';
 import { CdkDropList } from '@angular/cdk/drag-drop';
 import { PolicyBlockModel, BlocLine, BlockRect, EventCanvas, PolicyModel, PolicyModuleModel } from '../../structures';
@@ -67,6 +67,7 @@ export class PolicyTreeComponent implements OnInit {
 
     private _allCollapse: string = '2';
     private _visibleMoveActions: string = '0';
+    private _resizeTimer: any = null;
 
     constructor(
         private registeredService: RegisteredService,
@@ -605,7 +606,19 @@ export class PolicyTreeComponent implements OnInit {
         return { type, data };
     }
 
-    public blockStyle(node: FlatBlockNode):any {
+    public blockStyle(node: FlatBlockNode): any {
         return this.themeService.getStyle(node.node);
+    }
+
+    @HostListener('window:resize', ['$event'])
+    public onResize(event:any) {
+        if(this._resizeTimer) {
+            clearTimeout(this._resizeTimer);
+            this._resizeTimer = null;
+        }
+        this._resizeTimer = setTimeout(() => {
+            this._resizeTimer = null;
+            this.render();
+        }, 200);
     }
 }

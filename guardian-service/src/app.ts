@@ -38,8 +38,6 @@ import {
 } from '@guardian/common';
 import { ApplicationStates, WorkerTaskType } from '@guardian/interfaces';
 import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
-import { MikroORM } from '@mikro-orm/core';
-import { MongoDriver } from '@mikro-orm/mongodb';
 import { ipfsAPI } from '@api/ipfs.service';
 import { artifactAPI } from '@api/artifact.service';
 import { sendKeysToVault } from '@helpers/send-keys-to-vault';
@@ -66,19 +64,21 @@ Promise.all([
             path: 'dist/migrations',
             transactional: false
         },
-        entities
-    }),
-    MikroORM.init<MongoDriver>({
-        ...COMMON_CONNECTION_CONFIG,
         driverOptions: {
             useUnifiedTopology: true
         },
         ensureIndexes: true,
         entities
-    }),
+    }, [
+        'v2-4-0',
+        'v2-7-0',
+        'v2-9-0',
+        'v2-11-0',
+        'v2-12-0'
+    ]),
     MessageBrokerChannel.connect('GUARDIANS_SERVICE')
 ]).then(async values => {
-    const [_, db, cn] = values;
+    const [db, cn] = values;
     DataBaseHelper.orm = db;
     DataBaseHelper.gridFS = new GridFSBucket(
         db.em.getDriver().getConnection().getDb()
@@ -166,7 +166,7 @@ Promise.all([
         } catch (error) {
             await new Logger().warn(
                 'HEDERA_CUSTOM_MIRROR_NODES field in settings: ' +
-                    error.message,
+                error.message,
                 ['GUARDIAN_SERVICE']
             );
             console.warn(error);

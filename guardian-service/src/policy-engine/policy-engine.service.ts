@@ -302,6 +302,9 @@ export class PolicyEngineService {
                     otherOptions.orderBy = { createDate: 'DESC' };
                     otherOptions.limit = _pageSize;
                     otherOptions.offset = _pageIndex * _pageSize;
+                } else {
+                    otherOptions.orderBy = { createDate: 'DESC' };
+                    otherOptions.limit = 100;
                 }
                 const [policies, count] = await DatabaseServer.getPoliciesAndCount(filter, otherOptions);
 

@@ -4,6 +4,7 @@ export enum BlockType {
     Information = 'informationBlock',
     PolicyRoles = 'policyRolesBlock',
     Request = 'requestVcDocumentBlock',
+    Upload = 'uploadVcDocumentBlock',
     SendToGuardian = 'sendToGuardianBlock',
     Action = 'interfaceActionBlock',
     Step = 'interfaceStepBlock',
@@ -39,4 +40,5 @@ export enum BlockType {
     SelectiveAttributes = 'selectiveAttributes',
     Module = 'module',
     TagsManager = 'tagsManager',
+    ExternalTopic = 'externalTopicBlock',
 }

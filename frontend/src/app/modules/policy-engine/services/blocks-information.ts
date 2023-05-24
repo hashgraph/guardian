@@ -40,6 +40,9 @@ import { MultiSignBlockComponent } from '../policy-viewer/blocks/multi-sign-bloc
 import { CreateTokenConfigComponent } from '../policy-configuration/blocks/tokens/create-token-config/create-token-config.component';
 import { CreateTokenBlockComponent } from '../policy-viewer/blocks/create-token-block/create-token-block.component';
 import { HttpRequestConfigComponent } from '../policy-configuration/blocks/main/http-request-config/http-request-config.component';
+import { ExternalTopicBlockComponent } from '../policy-viewer/blocks/external-topic-block/external-topic-block.component';
+import { UploadDocumentBlockComponent } from '../policy-viewer/blocks/upload-document-block/upload-document-block.component';
+
 import {
     BlockType,
     BlockGroup,
@@ -67,6 +70,7 @@ const Container: IBlockSetting = {
         { type: BlockType.HttpRequest },
         { type: BlockType.DocumentsViewer },
         { type: BlockType.Request },
+        { type: BlockType.Upload },
         { type: BlockType.SendToGuardian },
         { type: BlockType.ExternalData },
         { type: BlockType.AggregateDocument },
@@ -85,7 +89,8 @@ const Container: IBlockSetting = {
         { type: BlockType.DocumentValidatorBlock },
         { type: BlockType.MultiSignBlock },
         { type: BlockType.CreateToken },
-        { type: BlockType.SplitBlock }
+        { type: BlockType.SplitBlock },
+        { type: BlockType.ExternalTopic }
     ]
 }
 
@@ -107,6 +112,7 @@ const Step: IBlockSetting = {
         { type: BlockType.HttpRequest },
         { type: BlockType.DocumentsViewer },
         { type: BlockType.Request },
+        { type: BlockType.Upload },
         { type: BlockType.SendToGuardian },
         { type: BlockType.ExternalData },
         { type: BlockType.AggregateDocument },
@@ -125,7 +131,8 @@ const Step: IBlockSetting = {
         { type: BlockType.DocumentValidatorBlock },
         { type: BlockType.MultiSignBlock },
         { type: BlockType.CreateToken },
-        { type: BlockType.SplitBlock }
+        { type: BlockType.SplitBlock },
+        { type: BlockType.ExternalTopic }
     ]
 }
 
@@ -284,6 +291,22 @@ const Request: IBlockSetting = {
     }]
 }
 
+const Upload: IBlockSetting = {
+    type: BlockType.Upload,
+    icon: 'dynamic_form',
+    group: BlockGroup.Documents,
+    header: BlockHeaders.UIComponents,
+    factory: UploadDocumentBlockComponent,
+    property: null,
+    allowedChildren: [{
+        type: BlockType.DocumentsSourceAddon,
+        group: BlockGroup.UnGrouped
+    }, {
+        type: BlockType.DocumentValidatorBlock,
+        group: BlockGroup.UnGrouped
+    }]
+}
+
 const MultiSignBlock: IBlockSetting = {
     type: BlockType.MultiSignBlock,
     icon: 'done_all',
@@ -309,6 +332,19 @@ const ExternalData: IBlockSetting = {
     header: BlockHeaders.ServerBlocks,
     factory: null,
     property: ExternalDataConfigComponent,
+    allowedChildren: [{
+        type: BlockType.DocumentValidatorBlock,
+        group: BlockGroup.UnGrouped
+    }]
+}
+
+const ExternalTopic: IBlockSetting = {
+    type: BlockType.ExternalTopic,
+    icon: 'cloud',
+    group: BlockGroup.Documents,
+    header: BlockHeaders.UIComponents,
+    factory: ExternalTopicBlockComponent,
+    property: null,
     allowedChildren: [{
         type: BlockType.DocumentValidatorBlock,
         group: BlockGroup.UnGrouped
@@ -582,6 +618,7 @@ export default [
     HttpRequest,
     DocumentsViewer,
     Request,
+    Upload,
     MultiSignBlock,
     SendToGuardian,
     ExternalData,
@@ -609,5 +646,6 @@ export default [
     ReportItem,
     HistoryAddon,
     SelectiveAttributes,
-    TagManager
+    TagManager,
+    ExternalTopic
 ];
