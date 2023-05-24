@@ -1,10 +1,11 @@
 import { IAwsSecretManagerConfigs } from './aws/aws-secret-manager-configs'
+import { IGcpSecretManagerConfigs } from './gcp/gcp-secret-manager-configs';
 import { IHcpVaultSecretManagerConfigs } from './hashicorp/hcp-vault-secret-manager-configs'
 
 /**
  * Interface for secret manager configs
  */
-export type ISecretManagerConfigs = IHcpVaultSecretManagerConfigs | IAwsSecretManagerConfigs;
+export type ISecretManagerConfigs = IHcpVaultSecretManagerConfigs | IAwsSecretManagerConfigs | IGcpSecretManagerConfigs;
 
 /**
  * Base class for secret manager configs
