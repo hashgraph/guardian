@@ -1,5 +1,5 @@
 import { Guardians } from '@helpers/guardians';
-import { NextFunction, Response, Router } from 'express';
+import { NextFunction, Router } from 'express';
 import { UserRole } from '@guardian/interfaces';
 import { permissionHelper } from '@auth/authorization-helper';
 import {
@@ -9,34 +9,27 @@ import {
 } from '@guardian/common';
 import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
+import { Controller, Post, Req, Response } from '@nestjs/common';
 
-/**
- * Wizard route
- */
-export const wizardAPI = Router();
-
-wizardAPI.post(
-    '/policy',
-    permissionHelper(UserRole.STANDARD_REGISTRY),
-    async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+@Controller('wizard')
+export class WizardApi {
+    @Post('/policy')
+    async setPolicy(@Req() req, @Response() res): Promise<any> {
         try {
             const wizardConfig = req.body;
             const user = req.user;
             const guardians = new Guardians();
-            res.status(201).json(
+            return res.status(201).json(
                 await guardians.wizardPolicyCreate(wizardConfig, user.did)
             );
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            return next(error);
+            throw error;
         }
     }
-);
 
-wizardAPI.post(
-    '/policy/push',
-    permissionHelper(UserRole.STANDARD_REGISTRY),
-    async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    @Post('/policy/push')
+    async setPolicyAsync(@Req() req, @Response() res): Promise<any> {
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Create policy');
         const wizardConfig = req.body;
@@ -58,20 +51,17 @@ wizardAPI.post(
                 });
             }
         );
-        res.status(202).send({ taskId, expectation });
+        return res.status(202).send({ taskId, expectation });
     }
-);
 
-wizardAPI.post(
-    '/:policyId/config',
-    permissionHelper(UserRole.STANDARD_REGISTRY),
-    async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    @Post('/:policyId/config')
+    async setPolicyConfig(@Req() req, @Response() res): Promise<any> {
         try {
             const wizardConfig = req.body;
             const user = req.user;
             const { policyId } = req.params;
             const guardians = new Guardians();
-            res.json(
+            return res.json(
                 await guardians.wizardGetPolicyConfig(
                     policyId,
                     wizardConfig,
@@ -80,7 +70,82 @@ wizardAPI.post(
             );
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            return next(error);
+            throw error;
         }
     }
-);
+}
+
+/**
+ * Wizard route
+ */
+// export const wizardAPI = Router();
+//
+// wizardAPI.post(
+//     '/policy',
+//     permissionHelper(UserRole.STANDARD_REGISTRY),
+//     async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+//         try {
+//             const wizardConfig = req.body;
+//             const user = req.user;
+//             const guardians = new Guardians();
+//             res.status(201).json(
+//                 await guardians.wizardPolicyCreate(wizardConfig, user.did)
+//             );
+//         } catch (error) {
+//             new Logger().error(error, ['API_GATEWAY']);
+//             return next(error);
+//         }
+//     }
+// );
+
+// wizardAPI.post(
+//     '/policy/push',
+//     permissionHelper(UserRole.STANDARD_REGISTRY),
+//     async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+//         const taskManager = new TaskManager();
+//         const { taskId, expectation } = taskManager.start('Create policy');
+//         const wizardConfig = req.body;
+//         const user = req.user;
+//         RunFunctionAsync<ServiceError>(
+//             async () => {
+//                 const guardians = new Guardians();
+//                 await guardians.wizardPolicyCreateAsync(
+//                     wizardConfig,
+//                     user.did,
+//                     taskId
+//                 );
+//             },
+//             async (error) => {
+//                 new Logger().error(error, ['API_GATEWAY']);
+//                 taskManager.addError(taskId, {
+//                     code: 500,
+//                     message: error.message,
+//                 });
+//             }
+//         );
+//         res.status(202).send({ taskId, expectation });
+//     }
+// );
+
+// wizardAPI.post(
+//     '/:policyId/config',
+//     permissionHelper(UserRole.STANDARD_REGISTRY),
+//     async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+//         try {
+//             const wizardConfig = req.body;
+//             const user = req.user;
+//             const { policyId } = req.params;
+//             const guardians = new Guardians();
+//             res.json(
+//                 await guardians.wizardGetPolicyConfig(
+//                     policyId,
+//                     wizardConfig,
+//                     user.did
+//                 )
+//             );
+//         } catch (error) {
+//             new Logger().error(error, ['API_GATEWAY']);
+//             return next(error);
+//         }
+//     }
+// );

@@ -21,6 +21,7 @@ import { TagsApi } from '@api/service/tags';
 import { TaskApi } from '@api/service/task';
 import { TokensApi } from '@api/service/tokens';
 import { TrustChainsApi } from '@api/service/trust-chains';
+import { WizardApi } from '@api/service/wizard';
 
 @Module({
     imports: [
@@ -46,7 +47,8 @@ import { TrustChainsApi } from '@api/service/trust-chains';
         TagsApi,
         TaskApi,
         TokensApi,
-        TrustChainsApi
+        TrustChainsApi,
+        WizardApi
     ],
     providers: [
         // WebSocketsService
@@ -68,5 +70,6 @@ export class AppModule {
         consumer.apply(authorizationHelper).forRoutes(TagsApi);
         consumer.apply(authorizationHelper).forRoutes(TokensApi);
         consumer.apply(authorizationHelper).forRoutes(TrustChainsApi);
+        consumer.apply(authorizationHelper).forRoutes(WizardApi);
     }
 }
