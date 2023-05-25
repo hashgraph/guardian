@@ -44,7 +44,7 @@ import { ipfsAPI } from '@api/ipfs.service';
 import { artifactAPI } from '@api/artifact.service';
 import { sendKeysToVault } from '@helpers/send-keys-to-vault';
 import { contractAPI } from '@api/contract.service';
-// import { analyticsAPI } from '@api/analytics.service';
+import { analyticsAPI } from '@api/analytics.service';
 import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels-container';
 import { PolicyEngine } from '@policy-engine/policy-engine';
 import { modulesAPI } from '@api/module.service';
@@ -55,6 +55,7 @@ import { tagsAPI } from '@api/tag.service';
 import { setDefaultSchema } from '@api/helpers/schema-helper';
 import { demoAPI } from '@api/demo.service';
 import { themeAPI } from '@api/theme.service';
+import { wizardAPI } from '@api/wizard.service';
 import { startMetricsServer } from './utils/metrics';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
@@ -90,7 +91,16 @@ Promise.all([
             ]
         },
     }),
+    }, [
+        'v2-4-0',
+        'v2-7-0',
+        'v2-9-0',
+        'v2-11-0',
+        'v2-12-0'
+    ]),
+    MessageBrokerChannel.connect('GUARDIANS_SERVICE')
 ]).then(async values => {
+    const [db, cn] = values;
     const [_, db, cn, app] = values;
 
     app.listen();
@@ -149,9 +159,10 @@ Promise.all([
         await contractAPI(contractRepository, retireRequestRepository);
         await modulesAPI();
         await tagsAPI();
-        // await analyticsAPI();
+        await analyticsAPI();
         await mapAPI();
         await themeAPI();
+        await wizardAPI();
     } catch (error) {
         console.error(error.message);
         process.exit(0);
@@ -182,7 +193,7 @@ Promise.all([
         } catch (error) {
             await new Logger().warn(
                 'HEDERA_CUSTOM_MIRROR_NODES field in settings: ' +
-                    error.message,
+                error.message,
                 ['GUARDIAN_SERVICE']
             );
             console.warn(error);

@@ -50,7 +50,7 @@ import { createHederaToken } from '@api/token.service';
 import { GuardiansService } from '@helpers/guardians';
 import { Inject } from '@helpers/decorators/inject';
 import { findAndDryRunSchema, findAndPublishSchema, publishSystemSchemas } from '@api/helpers/schema-publish-helper';
-import { deleteSchema, incrementSchemaVersion } from '@api/helpers/schema-helper';
+import { deleteSchema, incrementSchemaVersion, sendSchemaMessage } from '@api/helpers/schema-helper';
 
 /**
  * Result of publishing
@@ -148,12 +148,57 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
+     * Setup policy schemas
+     * @param schemaIris Schema iris
+     * @param policyTopicId Policy topic identifier
+     */
+    public async setupPolicySchemas(
+        schemaIris: string[],
+        policyTopicId: string,
+        owner: string
+    ) {
+        if (!Array.isArray(schemaIris)) {
+            return;
+        }
+        const schemas = await DatabaseServer.getSchemas({
+            iri: { $in: schemaIris },
+            topicId: { $eq: null },
+            owner
+        });
+        const users = new Users();
+        for (const schema of schemas) {
+            schema.topicId = policyTopicId;
+            const topic = await TopicConfig.fromObject(
+                await DatabaseServer.getTopicById(policyTopicId),
+                true
+            );
+            const root = await users.getHederaAccount(schema.owner);
+            await sendSchemaMessage(
+                root,
+                topic,
+                MessageAction.CreateSchema,
+                schema
+            );
+            const dependencySchemas = await DatabaseServer.getSchemas({
+                iri: { $in: schema.defs },
+                topicId: { $eq: null }
+            });
+            dependencySchemas.forEach(dependencySchema => {
+                dependencySchema.topicId = policyTopicId;
+            });
+            await DatabaseServer.updateSchemas(dependencySchemas);
+        }
+        await DatabaseServer.updateSchemas(schemas);
+    }
+
+    /**
      * Create policy
      * @param data
      * @param owner
      * @param notifier
      */
-    public async createPolicy(data: Policy, owner: string, notifier: INotifier): Promise<Policy> {
+    // tslint:disable-next-line:completed-docs
+    public async createPolicy(data: Policy & { policySchemas?: string[] }, owner: string, notifier: INotifier): Promise<Policy> {
         const logger = new Logger();
         logger.info('Create Policy', ['GUARDIAN_SERVICE']);
         notifier.start('Save in DB');

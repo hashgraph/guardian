@@ -17,6 +17,9 @@ import { NgxFileDropModule } from 'ngx-file-drop';
 import { FileExplorer } from './file-explorer/file-explorer.component';
 import { NgxColorsModule } from 'ngx-colors';
 import { ConfirmDialog } from './confirm-dialog/confirm-dialog.component';
+import { SelectorDialogComponent } from './selector-dialog/selector-dialog.component';
+import { StepTreeComponent } from './step-tree/step-tree.component';
+import { SeparateStepperComponent } from './separate-stepper/separate-stepper.component';
 
 @NgModule({
     declarations: [
@@ -31,7 +34,10 @@ import { ConfirmDialog } from './confirm-dialog/confirm-dialog.component';
         TokenConfigurationComponent,
         TokenDialog,
         FileExplorer,
-        ConfirmDialog
+        ConfirmDialog,
+        SelectorDialogComponent,
+        StepTreeComponent,
+        SeparateStepperComponent
     ],
     imports: [
         CommonModule,
@@ -54,7 +60,9 @@ import { ConfirmDialog } from './confirm-dialog/confirm-dialog.component';
         TokenDialog,
         FileExplorer,
         ConfirmDialog,
-        NgxColorsModule
+        NgxColorsModule,
+        SelectorDialogComponent,
+        SeparateStepperComponent
     ]
 })
 export class CommonComponentsModule { }

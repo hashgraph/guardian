@@ -43,3 +43,4 @@ export { StatusType, IStatus } from './interface/async.interface';
 export { IArtifact } from './interface/artifact.interface';
 export { default as GeoJsonSchema } from './helpers/geojson-schema/geo-json';
 export { default as GeoJsonContext } from './helpers/geojson-schema/geo-json-context';
+export * from './interface/wizard-config.interface';

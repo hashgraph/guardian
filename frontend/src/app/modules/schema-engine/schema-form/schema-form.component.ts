@@ -2,9 +2,7 @@ import { NgxMatDateAdapter, NGX_MAT_DATE_FORMATS } from '@angular-material-compo
 import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { AbstractControl, FormArray, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
-import { GoogleMap } from '@angular/google-maps';
-import { Schema, SchemaCondition, SchemaField, UnitSystem } from '@guardian/interfaces';
+import { GenerateUUIDv4, Schema, SchemaField, UnitSystem } from '@guardian/interfaces';
 import { fullFormats } from 'ajv-formats/dist/formats';
 import * as moment from 'moment';
 import { Subject } from 'rxjs';
@@ -77,35 +75,28 @@ export class SchemaFormComponent implements OnInit {
     @Input('readonly-fields') readonly?: any;
     @Input('schema') schema!: Schema;
     @Input('fields') schemaFields!: SchemaField[];
-    @Input('context') context!: {
-        type: any;
-        context: any;
-    };
+    @Input('context') context!: { type: any; context: any };
     @Input('formGroup') group!: FormGroup;
     @Input('delimiter-hide') delimiterHide: boolean = false;
     @Input('conditions') conditions: any = null;
     @Input('preset') presetDocument: any = null;
+    @Input() cancelText: string = 'Cancel';
+    @Input() submitText: string = 'Submit';
+    @Input() cancelHidden: boolean = false;
+    @Input() submitHidden: boolean = false;
+    @Input() showButtons: boolean = true;
+    @Input() isChildSchema: boolean = false;
+    @Input() comesFromDialog: boolean = false;
 
     @Output('change') change = new EventEmitter<Schema | null>();
     @Output('destroy') destroy = new EventEmitter<void>();
-
-    destroy$: Subject<boolean> = new Subject<boolean>();
-    options: FormGroup | undefined;
-    fields: any[] | undefined = [];
-    conditionFields: SchemaField[] = [];
-
-    @Input() cancelHidden: boolean = true;
-    @Input('disableSubmitBtn') disableSubmitBtn: boolean = false;
     @Output() cancelBtnEvent = new EventEmitter<boolean>();
     @Output() submitBtnEvent = new EventEmitter<boolean>();
 
-    @Input() showChildSchemaForm: boolean = false;
-    @Input() buttonOnceRaised: boolean = false;
-    @Input() showButtons: boolean = true;
-    @Input() comesFromDialog: boolean = false;
-
-    public innerWidth: any;
-    public innerHeight: any;
+    public destroy$: Subject<boolean> = new Subject<boolean>();
+    public options: FormGroup | undefined;
+    public fields: any[] | undefined = [];
+    public conditionFields: SchemaField[] = [];
     public isShown: boolean[] = [true, true];
     public currentIndex: number = 0;
 
@@ -116,24 +107,11 @@ export class SchemaFormComponent implements OnInit {
 
     constructor(
         private ipfs: IPFSService,
-        protected changeDetectorRef: ChangeDetectorRef,
-        private router: Router
+        protected changeDetectorRef: ChangeDetectorRef
     ) { }
 
 
     ngOnInit(): void {
-        this.innerWidth = window.innerWidth;
-        this.innerHeight = window.innerHeight;
-
-        if (this.fields) {
-            for (let i = 0; i < this.fields.length; i++) {
-                if (this.fields[i].isRef) {
-                    this.isShown[i] = true;
-                    break;
-                }
-                this.isShown[i] = true;
-            }
-        }
     }
 
     ngOnChanges() {
@@ -182,7 +160,13 @@ export class SchemaFormComponent implements OnInit {
         this.update(schemaFields);
     }
 
-    update(schemaFields?: SchemaField[]) {
+    ngOnDestroy() {
+        this.destroy.emit();
+        this.destroy$.next(true);
+        this.destroy$.unsubscribe();
+    }
+
+    private update(schemaFields?: SchemaField[]) {
         if (!schemaFields) {
             return;
         }
@@ -217,6 +201,16 @@ export class SchemaFormComponent implements OnInit {
             this.options.addControl("@context", new FormControl(this.context.context));
         }
 
+        if (this.fields) {
+            for (let i = 0; i < this.fields.length; i++) {
+                if (this.fields[i].isRef) {
+                    this.isShown[i] = true;
+                    break;
+                }
+                this.isShown[i] = true;
+            }
+        }
+
         this.options?.updateValueAndValidity();
         this.changeDetectorRef.detectChanges();
     }
@@ -224,7 +218,8 @@ export class SchemaFormComponent implements OnInit {
     private createFieldControl(field: SchemaField): any {
         const item: any = {
             ...field,
-            hide: false
+            hide: false,
+            id: GenerateUUIDv4()
         }
 
         if (this.presetDocument) {
@@ -452,7 +447,7 @@ export class SchemaFormComponent implements OnInit {
             });
     }
 
-    addItem(item: any) {
+    public addItem(item: any) {
         const listItem = this.createListControl(item);
         item.list.push(listItem);
         setTimeout(() => {
@@ -462,7 +457,7 @@ export class SchemaFormComponent implements OnInit {
         });
     }
 
-    addGroup(item: any) {
+    public addGroup(item: any) {
         item.control =
             item.customType === 'geo' ? new FormControl({}) : new FormGroup({});
         this.options?.addControl(item.name, item.control);
@@ -470,14 +465,14 @@ export class SchemaFormComponent implements OnInit {
         this.changeDetectorRef.detectChanges();
     }
 
-    removeGroup(item: any) {
+    public removeGroup(item: any) {
         this.options?.removeControl(item.name);
         this.options?.updateValueAndValidity();
         item.control = null;
         this.change.emit();
     }
 
-    removeItem(item: any, listItem: any) {
+    public removeItem(item: any, listItem: any) {
         const index = item.list.indexOf(listItem);
         item.control.removeAt(index);
         item.list.splice(index, 1);
@@ -490,7 +485,7 @@ export class SchemaFormComponent implements OnInit {
     }
 
 
-    onFileSelected(event: any, control: AbstractControl, item: any) {
+    public onFileSelected(event: any, control: AbstractControl, item: any) {
         control.patchValue("");
         const file = event?.target?.files[0];
 
@@ -511,7 +506,7 @@ export class SchemaFormComponent implements OnInit {
             });
     }
 
-    GetInvalidMessageByFieldType(item: SchemaField): string {
+    public getInvalidMessageByFieldType(item: SchemaField): string {
         const type = item.format || item.type;
         const messages = item.isArray
             ? ErrorArrayMessageByFieldType
@@ -538,11 +533,11 @@ export class SchemaFormComponent implements OnInit {
         }
     }
 
-    GetPlaceholderByFieldType(item: SchemaField): string {
+    public getPlaceholderByFieldType(item: SchemaField): string {
         const type = item.format || item.type;
         const pattern = item.pattern;
         const customType = item.customType;
-        if(customType) {
+        if (customType) {
             switch (customType) {
                 case 'hederaAccount':
                     return PlaceholderByFieldType.HederaAccount;
@@ -587,7 +582,7 @@ export class SchemaFormComponent implements OnInit {
         };
     }
 
-    getConditions(field: any) {
+    public getConditions(field: any) {
         if (!this.conditions) {
             return [];
         }
@@ -596,7 +591,7 @@ export class SchemaFormComponent implements OnInit {
         }
     }
 
-    removeConditionFields(fields: SchemaField[], condition: any) {
+    public removeConditionFields(fields: SchemaField[], condition: any) {
         condition.conditionForm = new FormGroup({});
         this.subscribeCondition(condition.conditionForm);
         fields.forEach(item => {
@@ -629,39 +624,32 @@ export class SchemaFormComponent implements OnInit {
             });
     }
 
-
-    ngOnDestroy() {
-        this.destroy.emit();
-        this.destroy$.next(true);
-        this.destroy$.unsubscribe();
-    }
-
-    isHelpText(item: SchemaField): boolean {
+    public isHelpText(item: SchemaField): boolean {
         return item.type === 'null';
     }
 
-    isTime(item: SchemaField): boolean {
+    public isTime(item: SchemaField): boolean {
         return item.type === 'string' && item.format === 'time';
     }
 
-    isDate(item: SchemaField): boolean {
+    public isDate(item: SchemaField): boolean {
         return item.type === 'string' && item.format === 'date';
     }
 
-    isDateTime(item: SchemaField): boolean {
+    public isDateTime(item: SchemaField): boolean {
         return item.type === 'string' && item.format === 'date-time';
     }
 
-    isBoolean(item: SchemaField): boolean {
+    public isBoolean(item: SchemaField): boolean {
         return item.type === 'boolean';
     }
 
-    isIPFS(item: SchemaField): boolean {
+    public isIPFS(item: SchemaField): boolean {
         return item.pattern === '^((https):\/\/)?ipfs.io\/ipfs\/.+'
             || item.pattern === '^ipfs:\/\/.+';
     }
 
-    isInput(item: SchemaField): boolean {
+    public isInput(item: SchemaField): boolean {
         return (
             (
                 item.type === 'string' ||
@@ -676,21 +664,19 @@ export class SchemaFormComponent implements OnInit {
         );
     }
 
-    isEnum(item: SchemaField) {
+    public isEnum(item: SchemaField) {
         return item.remoteLink || item.enum;
     }
 
-    isPrefix(item: SchemaField): boolean {
+    public isPrefix(item: SchemaField): boolean {
         return item.unitSystem === UnitSystem.Prefix;
     }
 
-    isPostfix(item: SchemaField): boolean {
+    public isPostfix(item: SchemaField): boolean {
         return item.unitSystem === UnitSystem.Postfix;
     }
 
-
-
-    getNextShownFields(fields: SchemaField[]): boolean[] {
+    public getNextShownFields(fields: SchemaField[]): boolean[] {
         this.isShown = new Array(fields.length).fill(false);
         let nextRefIndex = -1;
         let initialDivision = 0;
@@ -738,7 +724,7 @@ export class SchemaFormComponent implements OnInit {
         return this.isShown;
     }
 
-    getPrevShownFields(fields: SchemaField[]): boolean[] {
+    public getPrevShownFields(fields: SchemaField[]): boolean[] {
         this.isShown = new Array(fields.length).fill(false);
         let prevRefIndex = -1;
         if (this.currentIndex === 0) {
@@ -790,30 +776,20 @@ export class SchemaFormComponent implements OnInit {
                 behavior: 'smooth'
             });
         }, 100)
-        
+
 
         return this.isShown;
     }
-      
 
-
-
-
-
-    navigatePolicyViewer() {
-        this.router.navigate(['/policy-viewer']);
-    }
-
-    closeWindow() {
+    public closeWindow() {
         window.close();
     }
 
-    onCancelBtnClick() {
-        this.cancelBtnEvent.emit(false); // PENSO QUE ISTO FOI O QUE O FILIPE ME AJUDOU A FAZER
-        this.navigatePolicyViewer();
+    public onCancelBtnClick() {
+        this.cancelBtnEvent.emit(false);
     }
 
-    onSubmitBtnClick(fields: any) {
+    public onSubmitBtnClick(fields: any) {
         this.submitBtnEvent.emit(fields);
     }
 }

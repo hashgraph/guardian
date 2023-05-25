@@ -1,7 +1,7 @@
 import { ModuleComponent } from "../policy-configuration/blocks/module/module.component";
 import { ContainerBlockComponent } from "../policy-viewer/blocks/container-block/container-block.component";
+import { BlockType } from '@guardian/interfaces';
 import {
-    BlockType,
     BlockGroup,
     BlockHeaders,
     IBlockAbout,
@@ -31,6 +31,7 @@ const Module: IBlockSetting = {
         { type: BlockType.HttpRequest },
         { type: BlockType.DocumentsViewer },
         { type: BlockType.Request },
+        { type: BlockType.Upload },
         { type: BlockType.SendToGuardian },
         { type: BlockType.ExternalData },
         { type: BlockType.AggregateDocument },

@@ -200,7 +200,7 @@
 
                 <div *ngIf="schema" class="list-item">
                     <app-schema-form [formGroup]="vcForm" [schema]="schema" [private-fields]="hideVC"
-                        (change)="onChangeForm()">
+                        (change)="onChangeForm()" [showButtons]="false">
                     </app-schema-form>
                 </div>
 

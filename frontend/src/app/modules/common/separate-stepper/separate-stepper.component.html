@@ -1,0 +1,22 @@
+<div class="stepper-container" #stepperContainer *ngIf="treeData">
+    <div class="stepper-steps-container" draggable="false" (mousedown)="onStartResizeDivider($event)">
+        <div class="stepper-steps">
+            <app-step-tree [treeData]="treeData.children" [currentNode]="currentNode"
+                (currentNodeChange)="onSelectNode($event)"></app-step-tree>
+        </div>
+    </div>
+    <div class="stepper-view-container">
+        <div class="stepper-view-header">
+            <mat-icon class="title-icon">{{currentNode.icon}}</mat-icon>
+            <div class="title-label"><b>{{currentNode.name}}</b></div>
+        </div>
+        <div class="stepper-view-content">
+            <ng-container *ngTemplateOutlet="currentNode.template; context: currentNode"></ng-container>
+        </div>
+        <div class="step-action-buttons">
+            <button mat-flat-button class="step-action-prev-btn" (click)="onPrevClick()"
+                *ngIf="hasPrevStep">Prev</button>
+            <button mat-flat-button color="primary" (click)="onNextClick()" *ngIf="hasNextStep">Next</button>
+        </div>
+    </div>
+</div>

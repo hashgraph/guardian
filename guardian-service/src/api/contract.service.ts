@@ -55,6 +55,7 @@ export async function contractAPI(
                 otherOptions.limit = Math.min(100, _pageSize);
                 otherOptions.offset = _pageIndex * _pageSize;
             } else {
+                otherOptions.orderBy = { createDate: 'DESC' };
                 otherOptions.limit = 100;
             }
 
@@ -109,6 +110,7 @@ export async function contractAPI(
                 otherOptions.limit = Math.min(100, _pageSize);
                 otherOptions.offset = _pageIndex * _pageSize;
             } else {
+                otherOptions.orderBy = { createDate: 'DESC' };
                 otherOptions.limit = 100;
             }
 

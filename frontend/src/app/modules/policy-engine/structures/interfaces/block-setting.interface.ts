@@ -1,4 +1,4 @@
-import { BlockType } from "../types/block-type.type";
+import { BlockType } from "@guardian/interfaces";
 import { BlockGroup } from "../types/block-group.type";
 import { BlockHeaders } from "../types/block-headers.type";
 import { ChildrenDisplaySettings } from "./children-display-settings.interface";
