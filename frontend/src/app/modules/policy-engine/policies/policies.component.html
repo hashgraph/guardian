@@ -16,7 +16,7 @@
 
     <ng-container *ngIf="isConfirmed && policies">
         <div class="actions-container" [attr.role]="role">
-            <form *ngIf="policiesList.length > 0" class="policy-filters" [formGroup]="filtersForm">
+            <form *ngIf="hasPolicies" class="policy-filters" [formGroup]="filtersForm">
                 <span>Filter by</span>
 
                 <div>
@@ -24,7 +24,7 @@
                         <input matInput placeholder="Policy name" formControlName="policyName">
                     </mat-form-field>
 
-                    <mat-form-field *ngIf="tagOptions.length > 0" class="policy-filters__control" appearance="outline">
+                    <mat-form-field *ngIf="hasTagOptions" class="policy-filters__control" appearance="outline">
                         <mat-label>Tags</mat-label>
                         <mat-select formControlName="tag">
                             <mat-option *ngFor="let tag of tagOptions" [value]="tag">
@@ -37,13 +37,13 @@
                 <button
                     mat-raised-button
                     color="primary"
-                    [disabled]="areFilterButtonsDisabled"
+                    [disabled]="isFilterButtonDisabled"
                     (click)="applyFilters()"
                 >Apply</button>
 
                 <button
                     mat-stroked-button
-                    [disabled]="areFilterButtonsDisabled"
+                    [disabled]="!filtersForm.dirty"
                     (click)="clearFilters()"
                 >Clear filters</button>
             </form>

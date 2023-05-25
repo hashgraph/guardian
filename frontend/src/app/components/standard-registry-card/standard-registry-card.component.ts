@@ -34,6 +34,10 @@ export class StandardRegistryCardComponent {
         event.stopPropagation();
     }
 
+    getPoliciesLabel(policiesArrLength: number): string {
+        return policiesArrLength === 1 ? 'policy' : 'policies';
+    }
+
     get isPoliciesMenuOpened(): boolean {
         return this.policiesMenuTrigger?.menuOpen;
     }

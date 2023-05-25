@@ -192,7 +192,7 @@
                     <h1 class="user-onboarding-wizard__title">Standard Registries</h1>
 
                     <form
-                        *ngIf="standardRegistriesList.length > 0"
+                        *ngIf="hasRegistries"
                         class="user-onboarding-wizard__filters"
                         [formGroup]="filtersForm"
                     >
@@ -212,13 +212,13 @@
                             <button
                                 mat-raised-button
                                 color="primary"
-                                [disabled]="areFilterButtonsDisabled"
+                                [disabled]="isFilterButtonDisabled"
                                 (click)="applyFilters()"
                             >Apply</button>
 
                             <button
                                 mat-stroked-button
-                                [disabled]="areFilterButtonsDisabled"
+                                [disabled]="!filtersForm.dirty"
                                 (click)="clearFilters()"
                             >Clear filters</button>
                         </div>
@@ -227,7 +227,9 @@
 
                 <div class="user-onboarding-wizard__content">
                     <ng-container *ngIf="!noFilterResults; else noResults">
-                        <p *ngIf="standardRegistriesList.length === 0" class="no-results">Standard registries have not been created yet.</p>
+                        <p *ngIf="!hasRegistries" class="no-results">
+                            Standard registries have not been created yet.
+                        </p>
 
                         <ul class="standard-registry">
                             <app-standard-registry-card
@@ -253,8 +255,8 @@
                     >Next</button>
                 </div>
             </mat-step>
-            <mat-step label="Key Generation">
-                <h1 class="user-onboarding-wizard__title centered-text">Key Generation</h1>
+            <mat-step label="Hedera Credentials">
+                <h1 class="user-onboarding-wizard__title centered-text">Hedera Credentials</h1>
 
                 <div class="user-onboarding-wizard__content">
                     <div class="list">
@@ -280,11 +282,7 @@
                                 </mat-form-field>
                             </div>
             
-                            <button *ngIf="innerWidth > 810" mat-raised-button type="button" color="primary" class="generate-btn"
-                                (click)="randomKey()">Generate</button>
-
-                            <button *ngIf="innerWidth <= 810" mat-raised-button type="button" class="generate-btn"
-                                (click)="randomKey()">Generate</button>
+                            <button mat-raised-button class="generate-btn" (click)="randomKey()">Generate</button>
                         </form>
                     </div>
                 </div>

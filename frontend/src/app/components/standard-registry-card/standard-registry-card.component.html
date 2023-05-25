@@ -12,7 +12,9 @@
                 (click)="stopPropagation($event)"
                 [ngClass]="{ 'policies-menu-trigger--opened': isPoliciesMenuOpened }"
             >
-                <span>{{ registry.policies.length }} policies</span>
+                <span>
+                    {{ registry.policies.length }} {{ getPoliciesLabel(registry.policies.length) }}
+                </span>
                 <mat-icon
                     class="policies-menu-icon"
                     [ngClass]="{ 'policies-menu-icon--opened': isPoliciesMenuOpened }"

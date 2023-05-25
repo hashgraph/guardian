@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AbstractControl, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { forkJoin, Subscription } from 'rxjs';
 import { IUser, Token, SchemaEntity, Schema, TagType, SchemaHelper, IStandardRegistryResponse, IPolicy } from '@guardian/interfaces';
@@ -54,15 +54,15 @@ export class UserProfileComponent implements OnInit {
     public innerWidth: any;
     public innerHeight: any;
 
-    hederaForm = this.fb.group({
-        standardRegistry: ['', Validators.required],
-        id: ['', Validators.required, noWhitespaceValidator()],
-        key: ['', Validators.required, noWhitespaceValidator()],
+    hederaForm = new FormGroup({
+        standardRegistry: new FormControl('', [Validators.required]),
+        id: new FormControl('', [Validators.required, noWhitespaceValidator()]),
+        key: new FormControl('', [Validators.required, noWhitespaceValidator()]),
     });
 
-    filtersForm = this.fb.group({
-        policyName: '',
-        username: '',
+    filtersForm = new FormGroup({
+        policyName: new FormControl(''),
+        username: new FormControl(''),
     });
 
     displayedColumns: string[] = [
@@ -112,7 +112,6 @@ export class UserProfileComponent implements OnInit {
         private contractService: ContractService,
         private route: ActivatedRoute,
         private router: Router,
-        private fb: FormBuilder,
         public dialog: MatDialog,
         private headerProps: HeaderPropsService
     ) {
@@ -641,11 +640,15 @@ export class UserProfileComponent implements OnInit {
             : this.standardRegistries;
     }
 
+    get hasRegistries(): boolean {
+        return this.standardRegistriesList.length > 0;
+    }
+
     get isStandardRegistrySelected(): boolean {
         return !!this.standardRegistryControl.valid;
     }
 
-    get areFilterButtonsDisabled(): boolean {
+    get isFilterButtonDisabled(): boolean {
         return (
             this.filters.policyName.length === 0 &&
             this.filters.username.length === 0

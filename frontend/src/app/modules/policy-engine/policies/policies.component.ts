@@ -731,7 +731,7 @@ export class PoliciesComponent implements OnInit {
         };
     }
 
-    get areFilterButtonsDisabled(): boolean {
+    get isFilterButtonDisabled(): boolean {
         return (
             this.filters.policyName.length === 0 &&
             !this.filters.tag
@@ -742,5 +742,13 @@ export class PoliciesComponent implements OnInit {
         return this.filteredPolicies.length > 0
             ? this.filteredPolicies
             : this.policies || [];
+    }
+
+    get hasPolicies(): boolean {
+        return this.policiesList.length > 0;
+    }
+
+    get hasTagOptions(): boolean {
+        return this.tagOptions.length > 0;
     }
 }
