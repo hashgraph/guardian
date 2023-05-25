@@ -13,18 +13,21 @@ import {
     Logger,
     RunFunctionAsync,
     DatabaseServer,
-    Users
+    Users,
+    TopicConfig,
+    MessageAction
 } from '@guardian/common';
 import { emptyNotifier, initNotifier } from '@helpers/notifier';
 import {
     checkForCircularDependency,
     createSchema,
     deleteSchema,
-    getDefs,
     incrementSchemaVersion,
+    sendSchemaMessage,
     updateSchemaDefs
 } from './helpers/schema-helper';
 import {
+    exportSchemas,
     importSchemaByFiles,
     importSchemasByMessages,
     importTagsByFiles,
@@ -97,6 +100,21 @@ export async function schemaAPI(): Promise<void> {
                 item.description = msg.description;
                 item.entity = msg.entity;
                 item.document = msg.document;
+                if (!item.topicId && msg.topicId) {
+                    item.topicId = msg.topicId;
+                    const topic = await TopicConfig.fromObject(
+                        await DatabaseServer.getTopicById(msg.topicId),
+                        true
+                    );
+                    const users = new Users();
+                    const root = await users.getHederaAccount(item.owner);
+                    await sendSchemaMessage(
+                        root,
+                        topic,
+                        MessageAction.CreateSchema,
+                        item
+                    );
+                }
                 item.status = SchemaStatus.DRAFT;
                 SchemaHelper.setVersion(item, null, item.version);
                 SchemaHelper.updateIRI(item);
@@ -449,27 +467,7 @@ export async function schemaAPI(): Promise<void> {
      */
     ApiResponse(MessageAPI.EXPORT_SCHEMAS, async (msg) => {
         try {
-            const ids = msg as string[];
-            const schemas = await DatabaseServer.getSchemasByIds(ids);
-            const map: any = {};
-            const relationships: ISchema[] = [];
-            for (const schema of schemas) {
-                if (!map[schema.iri]) {
-                    map[schema.iri] = schema;
-                    relationships.push(schema);
-                    const keys = getDefs(schema);
-                    const defs = await DatabaseServer.getSchemas({
-                        where: { iri: { $in: keys } }
-                    });
-                    for (const element of defs) {
-                        if (!map[element.iri]) {
-                            map[element.iri] = element;
-                            relationships.push(element);
-                        }
-                    }
-                }
-            }
-            return new MessageResponse(relationships);
+            return new MessageResponse(await exportSchemas(msg));
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);

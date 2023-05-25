@@ -44,13 +44,13 @@ import { ExternalTopicBlockComponent } from '../policy-viewer/blocks/external-to
 import { UploadDocumentBlockComponent } from '../policy-viewer/blocks/upload-document-block/upload-document-block.component';
 
 import {
-    BlockType,
     BlockGroup,
     BlockHeaders,
     PolicyBlockModel,
     IBlockSetting
 } from "../structures";
 import { TagsManagerBlockComponent } from '../policy-viewer/blocks/tags-manager-block/tags-manager-block.component';
+import { BlockType } from '@guardian/interfaces';
 
 const Container: IBlockSetting = {
     type: BlockType.Container,

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { BlockAbout, BlockType, ChildrenType, ControlType, IBlockAbout, IBlockSetting, PolicyBlockModel, PolicyModel, PolicyModuleModel } from '../structures';
+import { BlockType, GenerateUUIDv4 } from '@guardian/interfaces';
+import { BlockAbout, ChildrenType, ControlType, IBlockAbout, IBlockSetting, PolicyBlockModel, PolicyModel, PolicyModuleModel } from '../structures';
 import blocks from './blocks-information';
 import modules from './module-information';
 
@@ -48,7 +48,6 @@ export class RegisteredService {
             defaultEvent: false
         })
 
-        console.log(blocks);
         for (const config of blocks) {
             this.registerBlock(config);
         }

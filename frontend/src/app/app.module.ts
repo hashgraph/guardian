@@ -38,6 +38,7 @@ import { AnalyticsService } from './services/analytics.service';
 import { ModulesService } from './services/modules.service';
 import { TagsService } from './services/tag.service';
 import { MapService } from './services/map.service';
+import { WizardService } from './modules/policy-engine/services/wizard.service';
 //Views
 import { UserProfileComponent } from './views/user-profile/user-profile.component';
 import { LoginComponent } from './views/login/login.component';
@@ -139,6 +140,7 @@ import { StandardRegistryCardComponent } from './components/standard-registry-ca
         MapService,
         TagsService,
         ThemeService,
+        WizardService,
         {
             provide: HTTP_INTERCEPTORS,
             useClass: HandleErrorsService,

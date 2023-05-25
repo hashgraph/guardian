@@ -440,6 +440,10 @@ a.go-back-link mat-icon {
         border: none;
     }
 
+    .policy-header[policy-status='DRY-RUN'] {
+        top: 45px;
+    }
+
     .dry-run-content {
         top: var(--header-height);
     }

@@ -12,7 +12,7 @@ description: Policy developed by Envision Blockchain
 
 ## **Policy Description**:
 
-tbd
+The Verra VM0042 methodology is used to calculate the emissions reductions and carbon storage increases that result from using improved land management practices in agriculture. It takes into account emissions from fossil fuel combustion, manure deposition, biomass burning, and nitrogen fertilizers. Improved land management practices can include reducing the use of fertilizers and tillage, improving water management, managing crop residue, planting, and harvesting cover crops, and improving grazing practices. Currently, there are 35 VM0042 projects listed on Verra’s registry and a total of 21,722,438 (tCO2e) estimated annual emission reductions.
 
 ## **Workflow Description**:
 
@@ -26,7 +26,7 @@ Roles in the below Workflow Diagram are represented as follows : Project Propone
 
 ## Policy Guide
 
-Typically, the way we start the demonstration is by logging in as a Standard Registry.&#x20;
+Typically, the way we start the demonstration is by logging in as a Standard Registry.
 
 Create a Standard Registry user if you haven't done so already.
 
@@ -34,7 +34,7 @@ You'll now be prompted to configure your Standard Registry account. Go through t
 
 <figure><img src="../../../.gitbook/assets/image (38) (2).png" alt=""><figcaption></figcaption></figure>
 
-Now we will be creating the Policy. Click on the "Policies" tab and select "Policies." We have two ways to create policies.&#x20;
+Now we will be creating the Policy. Click on the "Policies" tab and select "Policies." We have two ways to create policies.
 
 For this demo guide, we will use the "Import from Open Source" way. Click on that button and find the policy for this guide and click on the import button.
 

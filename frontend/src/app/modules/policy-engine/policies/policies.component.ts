@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IUser, SchemaHelper, TagType, UserRole } from '@guardian/interfaces';
+import { IUser, Schema, SchemaHelper, TagType, Token, UserRole } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TokenService } from 'src/app/services/token.service';
@@ -19,13 +19,16 @@ import { ComparePolicyDialog } from '../helpers/compare-policy-dialog/compare-po
 import { TagsService } from 'src/app/services/tag.service';
 import { SetVersionDialog } from '../../schema-engine/set-version-dialog/set-version-dialog.component';
 import { forkJoin } from 'rxjs';
+import { SchemaService } from 'src/app/services/schema.service';
+import { WizardMode, WizardService } from 'src/app/modules/policy-engine/services/wizard.service';
 
 enum OperationMode {
     None,
     Create,
     Import,
     Publish,
-    Delete
+    Delete,
+    WizardCreate
 }
 
 /**
@@ -50,6 +53,8 @@ export class PoliciesComponent implements OnInit, OnDestroy {
     owner: any;
     tagEntity = TagType.Policy;
     tagSchemas: any[] = [];
+
+    saveWizardState: boolean = false;
 
     mode: OperationMode = OperationMode.None;
     taskId: string | undefined = undefined;
@@ -108,7 +113,9 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         private dialog: MatDialog,
         private taskService: TasksService,
         private informService: InformService,
-        private toastr: ToastrService
+        private toastr: ToastrService,
+        private schemaService: SchemaService,
+        private wizardService: WizardService,
     ) {
         this.policies = null;
         this.pageIndex = 0;
@@ -238,6 +245,15 @@ export class PoliciesComponent implements OnInit, OnDestroy {
                     const taskId = this.taskId;
                     this.taskId = undefined;
                     this.processPublishResult(taskId);
+                }
+                break;
+            case OperationMode.WizardCreate:
+                if (this.taskId) {
+                    const taskId = this.taskId;
+                    this.taskId = undefined;
+                    this.processCreateWizardResult(taskId);
+                    this.mode = OperationMode.None;
+                    this.loadAllPolicy();
                 }
                 break;
             default:
@@ -472,11 +488,23 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         // }
     }
 
+    private processCreateWizardResult(taskId: string): void {
+        this.taskService.get(taskId).subscribe((task: any) => {
+            const { result } = task;
+            if (this.saveWizardState) {
+                this.wizardService.setWizardPreset(result.policyId, {
+                    data: result.wizardConfig,
+                });
+                this.saveWizardState = false;
+            }
+        });
+    }
+
     private processPublishResult(taskId: string): void {
         this.taskService.get(taskId).subscribe((task: any) => {
             const { result } = task;
             if (result) {
-                const { isValid, errors } = result;
+                const { isValid, errors, policyId } = result;
                 if (!isValid) {
                     let text = [];
                     const blocks = errors.blocks;
@@ -499,6 +527,8 @@ export class PoliciesComponent implements OnInit, OnDestroy {
                         }
                     }
                     this.informService.errorMessage(text.join(''), 'The policy is invalid');
+                } else {
+                    this.wizardService.removeWizardPreset(policyId)
                 }
                 this.loadAllPolicy();
             }
@@ -588,6 +618,41 @@ export class PoliciesComponent implements OnInit, OnDestroy {
                     this.loading = false;
                 });
             }
+        });
+    }
+
+    openPolicyWizardDialog() {
+        this.loading = true;
+        forkJoin([
+            this.tokenService.getTokens(),
+            this.schemaService.getSchemas(),
+        ]).subscribe((result) => {
+            const schemas = result[1].map((schema) => new Schema(schema));
+            const tokens = result[0].map((token) => new Token(token));
+            this.loading = false;
+            this.wizardService.openPolicyWizardDialog(
+                WizardMode.CREATE,
+                (value) => {
+                    this.saveWizardState = value.saveState;
+                    this.loading = true;
+                    this.wizardService
+                        .createPolicyAsync(value.config)
+                        .subscribe(
+                            (result) => {
+                                const { taskId, expectation } = result;
+                                this.taskId = taskId;
+                                this.expectedTaskMessages = expectation;
+                                this.mode = OperationMode.WizardCreate;
+                            },
+                            (e) => {
+                                this.loading = false;
+                            }
+                        );
+                },
+                tokens,
+                schemas,
+                this.policies as any[]
+            );
         });
     }
 }

@@ -7,6 +7,7 @@ import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { global } from '@angular/compiler/src/util';
 import { WebSocketService } from 'src/app/services/web-socket.service';
+import { Router } from '@angular/router';
 
 /**
  * Component for display block of 'requestVcDocument' types.
@@ -47,9 +48,6 @@ export class RequestDocumentBlockComponent implements OnInit {
     user!: IUser;
     restoreData: any;
 
-    public innerWidth: any;
-    public innerHeight: any;
-
     constructor(
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
@@ -57,14 +55,13 @@ export class RequestDocumentBlockComponent implements OnInit {
         private policyHelper: PolicyHelper,
         private fb: FormBuilder,
         private dialog: MatDialog,
+        private router: Router,
         private changeDetectorRef: ChangeDetectorRef
     ) {
         this.dataForm = fb.group({});
     }
 
     ngOnInit(): void {
-        this.innerWidth = window.innerWidth;
-        this.innerHeight = window.innerHeight;
         if (!this.static) {
             this.socket = this.wsService.blockSubscribe(this.onUpdate.bind(this));
         }
@@ -264,13 +261,13 @@ export class RequestDocumentBlockComponent implements OnInit {
             this.presetDocument = null;
         }
 
-        if (this.innerWidth <= 810) {
+        if (window.innerWidth <= 810) {
             const bodyStyles = window.getComputedStyle(document.body);
             const headerHeight: number = parseInt(bodyStyles.getPropertyValue('--header-height'));
             this.dialogRef = this.dialog.open(this.dialogTemplate, {
                 width: `100vw`,
                 maxWidth: '100vw',
-                height: `${this.innerHeight - headerHeight}px`,
+                height: `${window.innerHeight - headerHeight}px`,
                 position: {
                     'bottom': '0'
                 },
@@ -307,5 +304,9 @@ export class RequestDocumentBlockComponent implements OnInit {
         if (data.dataForm.valid || !this.loading || !this.dialogLoading) {
             data.onSubmit();
         }
+    }
+
+    onCancelPage(value: boolean) {
+        this.router.navigate(['/policy-viewer']);
     }
 }
