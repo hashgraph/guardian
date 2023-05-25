@@ -45,7 +45,8 @@ export class RegisteredService {
             output: null,
             children: ChildrenType.None,
             control: ControlType.None,
-            defaultEvent: false
+            defaultEvent: false,
+            deprecated: false,
         })
 
         for (const config of blocks) {
@@ -99,8 +100,12 @@ export class RegisteredService {
         const types: BlockType[] = Object.keys(config) as BlockType[];
         for (const type of types) {
             const setting = config[type];
-            this.blockName[type] = setting.label;
-            this.blockTitle[type] = setting.title;
+            this.blockName[type] = setting.deprecated
+                ? `${setting.label} (Deprecated)`
+                : setting.label;
+            this.blockTitle[type] = setting.deprecated
+                ? `${setting.title} (Deprecated)`
+                : setting.title;
             this.blockAbout[type] = new BlockAbout(setting, this.about[type]);
             this.blockProperties[type] = setting.properties;
         }
