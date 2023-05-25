@@ -13,6 +13,7 @@
     "@nestjs/common": "^9.4.1",
     "@nestjs/core": "^9.4.1",
     "@nestjs/microservices": "^9.4.1",
+    "@nestjs/platform-express": "^9.4.2",
     "@types/express-fileupload": "^1.4.1",
     "dotenv": "^16.0.0",
     "express": "^4.17.1",

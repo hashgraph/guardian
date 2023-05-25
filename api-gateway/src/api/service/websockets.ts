@@ -13,6 +13,7 @@ import {
     Singleton
 } from '@guardian/common';
 import { NatsConnection } from 'nats';
+import { Injectable } from '@nestjs/common';
 // import { Guardians } from '@helpers/guardians';
 
 /**
@@ -44,7 +45,7 @@ export class WebSocketsServiceChannel extends NatsService {
 /**
  * WebSocket service class
  */
-@Singleton
+@Injectable()
 export class WebSocketsService {
     /**
      * Channel

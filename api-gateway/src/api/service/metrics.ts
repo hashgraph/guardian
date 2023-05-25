@@ -1,9 +1,19 @@
-import { Request, Response, Router } from 'express';
+import { Request, Router } from 'express';
 import client from 'prom-client';
+import { Controller, Get, Response } from '@nestjs/common';
 
-export const metricsAPI = Router();
+@Controller('metrics')
+export class MetricsApi {
+    @Get('/')
+    async getMetrics(@Response() res) {
+        res.set('Content-Type', client.register.contentType);
+        return res.send(await client.register.metrics());
+    }
+}
 
-metricsAPI.get('/', async (req: Request, res: Response) => {
-    res.set('Content-Type', client.register.contentType);
-    return res.send(await client.register.metrics());
-});
+// export const metricsAPI = Router();
+//
+// metricsAPI.get('/', async (req: Request, res: Response) => {
+//     res.set('Content-Type', client.register.contentType);
+//     return res.send(await client.register.metrics());
+// });

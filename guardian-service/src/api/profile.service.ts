@@ -315,60 +315,8 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
 
 @Controller()
 export class ProfileController {
-    @MessagePattern(MessageAPI.GET_BALANCE)
-    async getBalance(@Payload() msg: any, @Ctx() context: NatsContext) {
-        try {
-            const { username } = msg;
-            const wallet = new Wallet();
-            const users = new Users();
-            const workers = new Workers();
-            const user = await users.getUser(username);
-
-            if (!user) {
-                return new MessageResponse(null);
-            }
-
-            if (!user.hederaAccountId) {
-                return new MessageResponse(null);
-            }
-
-            const key = await wallet.getKey(user.walletToken, KeyType.KEY, user.did);
-            const balance = await workers.addNonRetryableTask({
-                type: WorkerTaskType.GET_USER_BALANCE,
-                data: {
-                    hederaAccountId: user.hederaAccountId,
-                    hederaAccountKey: key
-                }
-            }, 20);
-            // return {
-            //     balance,
-            //     unit: 'Hbar',
-            //     user: user ? {
-            //         username: user.username,
-            //         did: user.did
-            //     } : null
-            // }
-            return new MessageResponse({
-                balance,
-                unit: 'Hbar',
-                user: user ? {
-                    username: user.username,
-                    did: user.did
-                } : null
-            });
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            console.error(error);
-            return new MessageError(error, 500);
-        }
-    }
-}
-
-/**
- * Connect to the message broker methods of working with Address books.
- */
-export function profileAPI() {
-    // ApiResponse(MessageAPI.GET_BALANCE, async (msg) => {
+    // @MessagePattern(MessageAPI.GET_BALANCE)
+    // async getBalance(@Payload() msg: any, @Ctx() context: NatsContext) {
     //     try {
     //         const { username } = msg;
     //         const wallet = new Wallet();
@@ -392,6 +340,14 @@ export function profileAPI() {
     //                 hederaAccountKey: key
     //             }
     //         }, 20);
+    //         // return {
+    //         //     balance,
+    //         //     unit: 'Hbar',
+    //         //     user: user ? {
+    //         //         username: user.username,
+    //         //         did: user.did
+    //         //     } : null
+    //         // }
     //         return new MessageResponse({
     //             balance,
     //             unit: 'Hbar',
@@ -405,7 +361,51 @@ export function profileAPI() {
     //         console.error(error);
     //         return new MessageError(error, 500);
     //     }
-    // });
+    // }
+}
+
+/**
+ * Connect to the message broker methods of working with Address books.
+ */
+export function profileAPI() {
+    ApiResponse(MessageAPI.GET_BALANCE, async (msg) => {
+        try {
+            const { username } = msg;
+            const wallet = new Wallet();
+            const users = new Users();
+            const workers = new Workers();
+            const user = await users.getUser(username);
+
+            if (!user) {
+                return new MessageResponse(null);
+            }
+
+            if (!user.hederaAccountId) {
+                return new MessageResponse(null);
+            }
+
+            const key = await wallet.getKey(user.walletToken, KeyType.KEY, user.did);
+            const balance = await workers.addNonRetryableTask({
+                type: WorkerTaskType.GET_USER_BALANCE,
+                data: {
+                    hederaAccountId: user.hederaAccountId,
+                    hederaAccountKey: key
+                }
+            }, 20);
+            return new MessageResponse({
+                balance,
+                unit: 'Hbar',
+                user: user ? {
+                    username: user.username,
+                    did: user.did
+                } : null
+            });
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            console.error(error);
+            return new MessageError(error, 500);
+        }
+    });
 
     ApiResponse(MessageAPI.GET_USER_BALANCE, async (msg) => {
         try {
