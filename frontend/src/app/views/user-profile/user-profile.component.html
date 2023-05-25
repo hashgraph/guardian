@@ -188,23 +188,61 @@
     <ng-template #elseTemplate>
         <mat-stepper *ngIf="isNewAccount && !isFailed" class="user-onboarding-wizard" [linear]="false" #stepper>
             <mat-step label="Standard Registries">
-                <h1 class="user-onboarding-wizard__title">Standard Registries</h1>
+                <div class="user-onboarding-wizard__header">
+                    <h1 class="user-onboarding-wizard__title">Standard Registries</h1>
+
+                    <form
+                        *ngIf="standardRegistriesList.length > 0"
+                        class="user-onboarding-wizard__filters"
+                        [formGroup]="filtersForm"
+                    >
+                        <div>
+                            <span>Filter by</span>
+                            
+                            <mat-form-field class="user-onboarding-wizard__control" appearance="outline">
+                                <input matInput placeholder="Policy name" formControlName="policyName">
+                            </mat-form-field>
+    
+                            <mat-form-field class="user-onboarding-wizard__control" appearance="outline">
+                                <input matInput placeholder="Username" formControlName="username">
+                            </mat-form-field>
+                        </div>
+
+                        <div class="user-onboarding-wizard__filter-btns">
+                            <button
+                                mat-raised-button
+                                color="primary"
+                                [disabled]="areFilterButtonsDisabled"
+                                (click)="applyFilters()"
+                            >Apply</button>
+
+                            <button
+                                mat-stroked-button
+                                [disabled]="areFilterButtonsDisabled"
+                                (click)="clearFilters()"
+                            >Clear filters</button>
+                        </div>
+                    </form>
+                </div>
 
                 <div class="user-onboarding-wizard__content">
-                    <ul class="standard-registry">
+                    <ul *ngIf="!noFilterResults; else noResults" class="standard-registry">
                         <app-standard-registry-card
-                            *ngFor="let registry of standardRegistries; trackBy:trackByDid"
+                            *ngFor="let registry of standardRegistriesList; trackBy:trackByDid"
                             [registry]="registry"
                             (registrySelected)="selectStandardRegistry($event)"
                             [isRegistrySelected]="isRegistrySelected(registry.did)"
                         ></app-standard-registry-card>
                     </ul>
+
+                    <ng-template #noResults>
+                        <p *ngIf="noFilterResults" class="no-results-found">No results found.</p>
+                    </ng-template>
                 </div>
 
                 <div class="user-onboarding-wizard__footer">
                     <button
                         mat-raised-button
-                        type="button"
                         color="primary"
                         matStepperNext
                         [disabled]="!isStandardRegistrySelected"
@@ -247,13 +285,12 @@
                     </div>
                 </div>
                 <div class="user-onboarding-wizard__footer">
-                    <button mat-stroked-button color="primary" matStepperPrevious>Back</button>
+                    <button mat-stroked-button matStepperPrevious>Back</button>
                     <button
                         mat-raised-button
-                        type="button"
                         color="primary"
                         matStepperNext
-                        [disabled]="!hederaForm.valid"
+                        [disabled]="hederaForm.invalid"
                         (click)="onHederaSubmit()"
                     >Submit</button>
                 </div>

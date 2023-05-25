@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { forkJoin, Subscription } from 'rxjs';
-import { IUser, Token, SchemaEntity, Schema, TagType, SchemaHelper, IStandardRegistryResponse } from '@guardian/interfaces';
+import { IUser, Token, SchemaEntity, Schema, TagType, SchemaHelper, IStandardRegistryResponse, IPolicy } from '@guardian/interfaces';
 import { ActivatedRoute, Router } from '@angular/router';
 //services
 import { AuthService } from '../../services/auth.service';
@@ -19,6 +19,7 @@ import { ContractService } from '../../services/contract.service';
 //modules
 import { VCViewerDialog } from '../../modules/schema-engine/vc-dialog/vc-dialog.component';
 import { RetireTokenDialogComponent } from 'src/app/components/retire-token-dialog/retire-token-dialog.component';
+import { noWhitespaceValidator } from 'src/app/validators/no-whitespace-validator';
 
 enum OperationMode {
     None, Generate, SetProfile, Associate
@@ -37,13 +38,15 @@ export class UserProfileComponent implements OnInit {
     isConfirmed: boolean = false;
     isFailed: boolean = false;
     isNewAccount: boolean = false;
+    noFilterResults: boolean = false;
     profile?: IUser | null;
     balance?: string | null;
     tokens?: Token[] | null;
     contractRequests?: any[];
     didDocument?: any;
     vcDocument?: any;
-    standardRegistries?: IStandardRegistryResponse[];
+    standardRegistries: IStandardRegistryResponse[] = [];
+    filteredRegistries: IStandardRegistryResponse[] = [];
     selectedIndex: number = 0;
     tagEntity = TagType.Token;
     owner: any;
@@ -53,10 +56,14 @@ export class UserProfileComponent implements OnInit {
 
     hederaForm = this.fb.group({
         standardRegistry: ['', Validators.required],
-        id: ['', Validators.required],
-        key: ['', Validators.required],
+        id: ['', Validators.required, noWhitespaceValidator()],
+        key: ['', Validators.required, noWhitespaceValidator()],
     });
 
+    filtersForm = this.fb.group({
+        policyName: '',
+        username: '',
+    });
 
     displayedColumns: string[] = [
         'name',
@@ -109,7 +116,6 @@ export class UserProfileComponent implements OnInit {
         public dialog: MatDialog,
         private headerProps: HeaderPropsService
     ) {
-        this.standardRegistries = [];
         this.hideVC = {
             id: true
         }
@@ -123,7 +129,7 @@ export class UserProfileComponent implements OnInit {
         this.loadDate();
         this.update();
         this.subscription.add(
-            this.route.queryParams.subscribe(params => {
+            this.route.queryParams.subscribe((params) => {
                 const tab = this.route.snapshot.queryParams['tab'] || '';
                 this.selectedIndex = 0;
                 for (let index = 0; index < this.tabs.length; index++) {
@@ -162,58 +168,58 @@ export class UserProfileComponent implements OnInit {
             this.tokenService.getTokens(),
             this.tagsService.getPublishedSchemas()
         ]).subscribe((value) => {
-            const tokens: any[] = value[0];
-            const tagSchemas: any[] = value[1] || [];
+                const tokens: any[] = value[0];
+                const tagSchemas: any[] = value[1] || [];
 
-            this.tokens = tokens.map((e: any) => {
-                return {
-                    ...new Token(e),
-                    policies: e.policies,
-                    serials: e.serials,
+                this.tokens = tokens.map((e: any) => {
+                    return {
+                        ...new Token(e),
+                        policies: e.policies,
+                        serials: e.serials,
                     decimals: e.decimals
                 }
-            });
-            this.tagSchemas = SchemaHelper.map(tagSchemas);
+                });
+                this.tagSchemas = SchemaHelper.map(tagSchemas);
 
             const ids = this.tokens.map(e => e.id);
             this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
-                if (this.tokens) {
-                    for (const token of this.tokens) {
-                        (token as any)._tags = data[token.id];
-                    }
-                }
-                setTimeout(() => {
-                    this.loading = false;
-                }, 500);
+                        if (this.tokens) {
+                            for (const token of this.tokens) {
+                                (token as any)._tags = data[token.id];
+                            }
+                        }
+                        setTimeout(() => {
+                            this.loading = false;
+                        }, 500);
             }, (e) => {
-                console.error(e.error);
-                this.loading = false;
+                        console.error(e.error);
+                        this.loading = false;
             });
 
 
-            setTimeout(() => {
-                this.loading = false;
-                this.headerProps.setLoading(false);
+                setTimeout(() => {
+                    this.loading = false;
+                    this.headerProps.setLoading(false);
             }, 200)
         }, (error) => {
-            this.loading = false;
-            this.headerProps.setLoading(false);
-            console.error(error);
+                this.loading = false;
+                this.headerProps.setLoading(false);
+                console.error(error);
         });
     }
 
     private loadRetireData() {
         this.loading = true;
         this.contractService.getRetireRequestsAll().subscribe((contracts) => {
-            this.contractRequests = contracts;
-            setTimeout(() => {
-                this.loading = false;
-                this.headerProps.setLoading(false);
+                this.contractRequests = contracts;
+                setTimeout(() => {
+                    this.loading = false;
+                    this.headerProps.setLoading(false);
             }, 200)
         }, (error) => {
-            this.loading = false;
-            this.headerProps.setLoading(false);
-            console.error(error);
+                this.loading = false;
+                this.headerProps.setLoading(false);
+                console.error(error);
         });
     }
 
@@ -228,44 +234,44 @@ export class UserProfileComponent implements OnInit {
             this.auth.getAggregatedStandardRegistries(),
             this.schemaService.getSystemSchemasByEntity(SchemaEntity.USER),
         ]).subscribe((value) => {
-            this.profile = value[0] as IUser;
-            this.balance = value[1] as string;
-            this.standardRegistries = value[2] || [];
-            const schema = value[3];
+                this.profile = value[0] as IUser;
+                this.balance = value[1] as string;
+                this.standardRegistries = value[2] || [];
+                const schema = value[3];
 
-            this.isConfirmed = !!this.profile.confirmed;
-            this.isFailed = !!this.profile.failed;
-            this.isNewAccount = !this.profile.didDocument;
-            if (this.isConfirmed) {
-                this.didDocument = this.profile?.didDocument;
-                this.vcDocument = this.profile?.vcDocument;
-            }
-            this.owner = this.profile?.did;
+                this.isConfirmed = !!this.profile.confirmed;
+                this.isFailed = !!this.profile.failed;
+                this.isNewAccount = !this.profile.didDocument;
+                if (this.isConfirmed) {
+                    this.didDocument = this.profile?.didDocument;
+                    this.vcDocument = this.profile?.vcDocument;
+                }
+                this.owner = this.profile?.did;
 
-            this.standardRegistries = this.standardRegistries?.filter(sr => !!sr.did);
-            if (schema) {
-                this.schema = new Schema(schema);
-                this.hederaForm.addControl('vc', this.vcForm);
-            } else {
-                this.schema = null;
-            }
+            this.standardRegistries = this.standardRegistries.filter(sr => !!sr.did);
+                if (schema) {
+                    this.schema = new Schema(schema);
+                    this.hederaForm.addControl('vc', this.vcForm);
+                } else {
+                    this.schema = null;
+                }
 
-            if (this.selectedIndex === 0) {
-                this.loadAccountData();
-            } else if (this.selectedIndex === 1) {
-                this.loadTokenData();
-            } else if (this.selectedIndex === 2) {
-                this.loadRetireData();
-            } else {
-                setTimeout(() => {
-                    this.loading = false;
-                    this.headerProps.setLoading(false);
-                }, 200);
-            }
+                if (this.selectedIndex === 0) {
+                    this.loadAccountData();
+                } else if (this.selectedIndex === 1) {
+                    this.loadTokenData();
+                } else if (this.selectedIndex === 2) {
+                    this.loadRetireData();
+                } else {
+                    setTimeout(() => {
+                        this.loading = false;
+                        this.headerProps.setLoading(false);
+                    }, 200);
+                }
         }, (error) => {
-            this.loading = false;
-            this.headerProps.setLoading(false);
-            console.error(error);
+                this.loading = false;
+                this.headerProps.setLoading(false);
+                console.error(error);
         });
     }
 
@@ -290,14 +296,14 @@ export class UserProfileComponent implements OnInit {
         }
 
         this.profileService.pushSetProfile(profile).subscribe((result) => {
-            const { taskId, expectation } = result;
-            this.taskId = taskId;
-            this.expectedTaskMessages = expectation;
-            this.operationMode = OperationMode.SetProfile;
+                const { taskId, expectation } = result;
+                this.taskId = taskId;
+                this.expectedTaskMessages = expectation;
+                this.operationMode = OperationMode.SetProfile;
         }, (error) => {
-            this.loading = false;
-            this.headerProps.setLoading(false);
-            console.error(error);
+                this.loading = false;
+                this.headerProps.setLoading(false);
+                console.error(error);
         });
     }
 
@@ -311,16 +317,16 @@ export class UserProfileComponent implements OnInit {
         }
 
         this.otherService.pushGetRandomKey().subscribe((result) => {
-            const { taskId, expectation } = result;
-            this.taskId = taskId;
-            this.expectedTaskMessages = expectation;
-            this.operationMode = OperationMode.Generate;
-            this.value = value;
+                const { taskId, expectation } = result;
+                this.taskId = taskId;
+                this.expectedTaskMessages = expectation;
+                this.operationMode = OperationMode.Generate;
+                this.value = value;
         }, (e) => {
-            this.loading = false;
-            value.id = '';
-            value.key = '';
-            this.hederaForm.setValue(value);
+                this.loading = false;
+                value.id = '';
+                value.key = '';
+                this.hederaForm.setValue(value);
         });
     }
 
@@ -332,14 +338,19 @@ export class UserProfileComponent implements OnInit {
 
     associate(token: Token) {
         this.loading = true;
-        this.tokenService.pushAssociate(token.tokenId, token.associated != 'Yes').subscribe((result) => {
-            const { taskId, expectation } = result;
-            this.taskId = taskId;
-            this.expectedTaskMessages = expectation;
-            this.operationMode = OperationMode.Associate;
-        }, (error) => {
-            this.loading = false;
-        });
+        this.tokenService
+            .pushAssociate(token.tokenId, token.associated != 'Yes')
+            .subscribe(
+                (result) => {
+                    const { taskId, expectation } = result;
+                    this.taskId = taskId;
+                    this.expectedTaskMessages = expectation;
+                    this.operationMode = OperationMode.Associate;
+                },
+                (error) => {
+                    this.loading = false;
+                }
+            );
     }
 
     openVCDocument(document: any, title: string) {
@@ -538,19 +549,106 @@ export class UserProfileComponent implements OnInit {
         return registry.did;
     }
 
+    applyFilters(): void {
+        if (this.filters.policyName && this.filters.username) {
+            this.filterByPolicyNameAndUsername();
+            this.handleFiltering();
+            return;
+        }
+
+        this.filters.policyName
+            ? this.filterByPolicyName()
+            : this.filterByUsername();
+        this.handleFiltering();
+    }
+
+    clearFilters(): void {
+        this.filtersForm.reset({ policyName: '', username: '' });
+        this.filteredRegistries = [];
+        this.noFilterResults = false;
+        this.selectStandardRegistry('');
+    }
+
     selectStandardRegistry(did: string): void {
-        this.standardRegistryControl?.setValue(did);
+        this.standardRegistryControl.setValue(did);
     }
 
     isRegistrySelected(did: string): boolean {
-        return this.standardRegistryControl?.value === did;
+        return this.standardRegistryControl.value === did;
     }
 
-    get standardRegistryControl(): AbstractControl | null {
-        return this.hederaForm.get('standardRegistry');
+    private filterByPolicyName(): void {
+        this.filteredRegistries = this.standardRegistries.filter(
+            (registry: IStandardRegistryResponse) =>
+                this.isRegistryContainPolicy(registry)
+        );
+    }
+
+    private filterByUsername(): void {
+        this.filteredRegistries = this.standardRegistries.filter(
+            (registry: IStandardRegistryResponse) =>
+                this.isRegistryNameEqualToFilter(registry)
+        );
+    }
+
+    private filterByPolicyNameAndUsername(): void {
+        this.filteredRegistries = this.standardRegistries.filter(
+            (registry: IStandardRegistryResponse) =>
+                this.isRegistryNameEqualToFilter(registry) &&
+                this.isRegistryContainPolicy(registry)
+        );
+    }
+
+    private isRegistryContainPolicy(
+        registry: IStandardRegistryResponse
+    ): boolean {
+        return (
+            registry.policies.filter((policy: IPolicy) =>
+                policy.name
+                    .toLowerCase()
+                    .includes(this.filters.policyName.toLowerCase())
+            ).length > 0
+        );
+    }
+
+    private isRegistryNameEqualToFilter(
+        registry: IStandardRegistryResponse
+    ): boolean {
+        return registry.username
+            .toLowerCase()
+            .includes(this.filters.username.toLowerCase());
+    }
+
+    private handleFiltering(): void {
+        this.noFilterResults = this.filteredRegistries.length === 0;
+        this.selectStandardRegistry('');
+    }
+
+    private get filters(): { policyName: string; username: string } {
+        return {
+            policyName: this.filtersForm.value?.policyName?.trim(),
+            username: this.filtersForm.value?.username?.trim(),
+        };
+    }
+
+    private get standardRegistryControl(): AbstractControl {
+        return this.hederaForm.get('standardRegistry') as AbstractControl;
+    }
+
+    get standardRegistriesList(): IStandardRegistryResponse[] {
+        return this.filteredRegistries.length > 0
+            ? this.filteredRegistries
+            : this.standardRegistries;
     }
 
     get isStandardRegistrySelected(): boolean {
-        return !!this.standardRegistryControl?.valid;
+        return !!this.standardRegistryControl.valid;
+    }
+
+    get areFilterButtonsDisabled(): boolean {
+        return (
+            this.filters.policyName.length === 0 &&
+            this.filters.username.length === 0
+        );
     }
 }

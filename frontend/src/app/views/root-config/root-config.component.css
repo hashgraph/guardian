@@ -76,7 +76,7 @@
 .list {
     width: 800px;
     padding: 20px 20px 0px 20px;
-    margin: 20px;
+    margin: 0 auto;
     border: 1px solid #c7c7c7;
     border-radius: 6px;
     position: relative;
