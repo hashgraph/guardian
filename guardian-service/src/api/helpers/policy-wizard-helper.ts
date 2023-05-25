@@ -446,7 +446,7 @@ export class PolicyWizardHelper {
         const vpGrid = this.getVpGrid(
             trustChainConfig.role,
             trustChainTag,
-            !trustChainConfig.viewOnlyOwnDocuments
+            trustChainConfig.viewOnlyOwnDocuments
         );
         container.children.push(vpGrid);
         return container;
