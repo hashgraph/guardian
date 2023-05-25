@@ -149,6 +149,7 @@ get_approle_credentials() {
     ENV_NAMES=$(echo $ROLE | jq -r '.env_name[]')
 
     COUNTER=0
+
     for ENV_PATH in ${ENV_PATHS[@]}; do
 
     if [ -z "$GUARDIAN_ENV" ]
@@ -159,10 +160,9 @@ get_approle_credentials() {
         fi
       
       echo "file to write: $ENV_FILE"
-
       if grep -q "^VAULT_APPROLE_ROLE_ID=" "$ENV_FILE"; then
         # replace the value of the key if it exists
-        sed -i "s/^VAULT_APPROLE_ROLE_ID=.*/VAULT_APPROLE_ROLE_ID=$ROLE_ID/" $ENV_FILE
+        sed -i '' "s/^VAULT_APPROLE_ROLE_ID=.*/VAULT_APPROLE_ROLE_ID=$ROLE_ID/" $ENV_FILE
       else
         # add the key and its value if it doesn't exist
         echo -e "\nVAULT_APPROLE_ROLE_ID=$ROLE_ID" >> "$ENV_FILE"
@@ -170,7 +170,7 @@ get_approle_credentials() {
 
       if grep -q "^VAULT_APPROLE_SECRET_ID=" "$ENV_FILE"; then
         # replace the value of the key if it exists
-        sed -i "s/^VAULT_APPROLE_SECRET_ID=.*/VAULT_APPROLE_SECRET_ID=$SECRET_ID/" $ENV_FILE
+        sed -i '' "s/^VAULT_APPROLE_SECRET_ID=.*/VAULT_APPROLE_SECRET_ID=$SECRET_ID/" $ENV_FILE
       else
         # add the key and its value if it doesn't exist
         echo "VAULT_APPROLE_SECRET_ID=$SECRET_ID" >> "$ENV_FILE"
