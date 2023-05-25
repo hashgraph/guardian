@@ -405,7 +405,6 @@ export class PolicyWizardDialogComponent implements OnInit {
             role: [role],
             isApprover: [false],
             isCreator: [false],
-            approverRoleFor: [],
             gridColumns: [[]],
         });
         schemaRoleConfigControl.push(schemaRoleConfigForm);
