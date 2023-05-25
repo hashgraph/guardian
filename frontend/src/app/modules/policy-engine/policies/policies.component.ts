@@ -626,10 +626,11 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         forkJoin([
             this.tokenService.getTokens(),
             this.schemaService.getSchemas(),
+            this.policyEngineService.all(),
         ]).subscribe((result) => {
-            const schemas = result[1].map((schema) => new Schema(schema));
             const tokens = result[0].map((token) => new Token(token));
-            this.loading = false;
+            const schemas = result[1].map((schema) => new Schema(schema));
+            const policies = result[2];
             this.wizardService.openPolicyWizardDialog(
                 WizardMode.CREATE,
                 (value) => {
@@ -651,8 +652,8 @@ export class PoliciesComponent implements OnInit, OnDestroy {
                 },
                 tokens,
                 schemas,
-                this.policies as any[]
+                policies
             );
-        });
+        }, () => undefined, () => this.loading = false);
     }
 }
