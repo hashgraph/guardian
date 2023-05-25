@@ -226,17 +226,21 @@
                 </div>
 
                 <div class="user-onboarding-wizard__content">
-                    <ul *ngIf="!noFilterResults; else noResults" class="standard-registry">
-                        <app-standard-registry-card
-                            *ngFor="let registry of standardRegistriesList; trackBy:trackByDid"
-                            [registry]="registry"
-                            (registrySelected)="selectStandardRegistry($event)"
-                            [isRegistrySelected]="isRegistrySelected(registry.did)"
-                        ></app-standard-registry-card>
-                    </ul>
+                    <ng-container *ngIf="!noFilterResults; else noResults">
+                        <p *ngIf="standardRegistriesList.length === 0" class="no-results">Standard registries have not been created yet.</p>
+
+                        <ul class="standard-registry">
+                            <app-standard-registry-card
+                                *ngFor="let registry of standardRegistriesList; trackBy:trackByDid"
+                                [registry]="registry"
+                                (registrySelected)="selectStandardRegistry($event)"
+                                [isRegistrySelected]="isRegistrySelected(registry.did)"
+                            ></app-standard-registry-card>
+                        </ul>
+                    </ng-container>
 
                     <ng-template #noResults>
-                        <p *ngIf="noFilterResults" class="no-results-found">No results found.</p>
+                        <p *ngIf="noFilterResults" class="no-results">No results found.</p>
                     </ng-template>
                 </div>
 
