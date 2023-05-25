@@ -48,6 +48,7 @@ export const defaultTheme = {
                 'reassigningBlock',
                 'httpRequestBlock',
                 'revokeBlock',
+                'revocationBlock',
                 'sendToGuardianBlock',
                 'setRelationshipsBlock',
                 'splitBlock',

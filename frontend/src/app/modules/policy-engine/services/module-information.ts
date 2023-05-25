@@ -43,6 +43,7 @@ const Module: IBlockSetting = {
         { type: BlockType.CustomLogicBlock },
         { type: BlockType.Report },
         { type: BlockType.RevokeBlock },
+        { type: BlockType.RevocationBlock },
         { type: BlockType.SetRelationshipsBlock },
         { type: BlockType.ButtonBlock },
         { type: BlockType.TokenActionBlock },
