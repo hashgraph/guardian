@@ -158,7 +158,8 @@ services:
       - DB_DATABASE=${POLICY_DB_DATABASE}
       - LOG_LEVEL=${POLICY_LOG_LEVEL}
       - MULTI_POLICY_SCHEDULER=${POLICY_MULTI_POLICY_SCHEDULER}
-      
+      - EXTERNAL_DOCUMENTS_SCHEDULER=${EXTERNAL_DOCUMENTS_SCHEDULER}
+
   guardian-service:
     env_file:
       - ./.env.${GUARDIAN_ENV}.guardian.system

@@ -47,7 +47,7 @@ import { NgxMaskModule } from 'ngx-mask';
         NgxMatDatetimePickerModule,
         NgxFileDropModule,
         NgxColorsModule,
-        NgxMaskModule.forRoot(),
+        NgxMaskModule.forRoot()
     ],
     exports: [
         DatetimePicker,

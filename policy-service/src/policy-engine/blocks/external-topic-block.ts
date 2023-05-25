@@ -131,7 +131,8 @@ export class ExternalTopicBlock {
      * After init callback
      */
     protected afterInit() {
-        this.job = new CronJob(`0 0 * * *`, () => {
+        const cronMask = process.env.EXTERNAL_DOCUMENTS_SCHEDULER || '0 0 * * *';
+        this.job = new CronJob(cronMask, () => {
             this.run().then();
         }, null, false, 'UTC');
         this.job.start();
