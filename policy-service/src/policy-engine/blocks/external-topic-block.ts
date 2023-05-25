@@ -27,6 +27,7 @@ import {
     ExternalEvent,
     ExternalEventType
 } from '@policy-engine/interfaces/external-event';
+import { TopicId } from '@hashgraph/sdk';
 
 /**
  * Search Topic Result
@@ -449,6 +450,7 @@ export class ExternalTopicBlock {
             item.status = TaskStatus.Error;
             ref.databaseServer.updateExternalTopic(item);
             ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
+            this.updateStatus(ref, item, user);
         }
     }
 
@@ -744,6 +746,12 @@ export class ExternalTopicBlock {
                         throw new BlockActionError('Invalid value', ref.blockType, ref.uuid);
                     }
 
+                    try {
+                        TopicId.fromString(value);
+                    } catch (error) {
+                        throw new BlockActionError('Invalid value format', ref.blockType, ref.uuid);
+                    }
+
                     if (item.status !== TaskStatus.NeedTopic) {
                         throw new BlockActionError('Topic already set', ref.blockType, ref.uuid);
                     }
@@ -841,6 +849,7 @@ export class ExternalTopicBlock {
                         item.status = TaskStatus.Error;
                         ref.databaseServer.updateExternalTopic(item);
                         ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
+                        this.updateStatus(ref, item, user);
                     });
                     break;
                 }
