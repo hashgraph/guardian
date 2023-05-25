@@ -1,11 +1,36 @@
 import { permissionHelper } from '@auth/authorization-helper';
 import { Request, Router, NextFunction } from 'express';
-import { IPageParameters, UserRole } from '@guardian/interfaces';
+import { IPageParameters, MessageAPI, UserRole } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
-import { Controller, Get, Post, Req, Response } from '@nestjs/common';
+import { Controller, Get, Inject, Injectable, Post, Req, Response } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
+
+@Injectable()
+export class LoggerService {
+    constructor(@Inject('GUARDIANS') private readonly client: ClientProxy) {
+    }
+
+    async getLogs(filters?: any, pageParameters?: IPageParameters, sortDirection?: string): Promise<any> {
+        const logs = await this.client.send(MessageAPI.GET_LOGS, {
+            filters, pageParameters, sortDirection
+        }).toPromise();
+        return logs.body;
+    }
+
+    async getAttributes(name?: string, existingAttributes: string[] = []): Promise<any> {
+        const logs = await this.client.send(MessageAPI.GET_ATTRIBUTES, {
+            name, existingAttributes
+        }).toPromise();
+        return logs.body;
+    }
+}
 
 @Controller('logs')
 export class LoggerApi {
+    constructor(private loggerService: LoggerService) {
+        console.log(this.loggerService);
+    }
+
     @Post('/')
     async getLogs(@Req() req, @Response() res): Promise<any> {
         try {
@@ -38,7 +63,7 @@ export class LoggerApi {
                 pageParameters.limit = req.body.pageSize;
             }
             const logger = new Logger();
-            const logsObj = await logger.getLogs(filters, pageParameters, req.body.sortDirection);
+            const logsObj = await this.loggerService.getLogs(filters, pageParameters, req.body.sortDirection);
             return res.send(logsObj);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
@@ -53,7 +78,7 @@ export class LoggerApi {
             if (req.query.existingAttributes && !Array.isArray(req.query.existingAttributes)) {
                 req.query.existingAttributes = [req.query.existingAttributes as string];
             }
-            const attributes = await logger.getAttributes(escapeRegExp(req.query.name as string), req.query.existingAttributes as string[]);
+            const attributes = await this.loggerService.getAttributes(escapeRegExp(req.query.name as string), req.query.existingAttributes as string[]);
             return res.send(attributes);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);

@@ -1,28 +1,16 @@
-import hpp from 'hpp';
 import client from 'prom-client';
 import { Guardians } from '@helpers/guardians';
-import express from 'express';
-import { createServer } from 'http';
-import { authorizationHelper } from '@auth/authorization-helper';
 import { IPFS } from '@helpers/ipfs';
-// import { policyAPI } from '@api/service/policy';
 import { PolicyEngine } from '@helpers/policy-engine';
 import { WebSocketsService } from '@api/service/websockets';
 import { Users } from '@helpers/users';
 import { Wallet } from '@helpers/wallet';
-// import { settingsAPI } from '@api/service/settings';
-// import { loggerAPI } from '@api/service/logger';
 import { MessageBrokerChannel, Logger, LargePayloadContainer } from '@guardian/common';
-// import { taskAPI } from '@api/service/task';
 import { TaskManager } from '@helpers/task-manager';
-// import { singleSchemaRoute } from '@api/service/schema';
-// import { artifactAPI } from '@api/service/artifact';
-import fileupload from 'express-fileupload';
-// import { contractAPI } from '@api/service/contract';
-// import { mapAPI } from '@api/service/map';
-import { wizardAPI } from '@api/service/wizard';
 import { AppModule } from './app.module';
 import { NestFactory } from '@nestjs/core';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import process from 'process';
 
 const PORT = process.env.PORT || 3002;
 const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
@@ -40,6 +28,17 @@ Promise.all([
     MessageBrokerChannel.connect('API_GATEWAY'),
 ]).then(async ([app, cn]) => {
     try {
+        app.connectMicroservice<MicroserviceOptions>({
+            transport: Transport.NATS,
+            options: {
+                name: `${process.env.SERVICE_CHANNEL}`,
+                servers: [
+                    `nats://${process.env.MQ_ADDRESS}:4222`
+                ]
+            },
+        });
+
+
         // const express1 = express();
 
         // express1.use(express.json({

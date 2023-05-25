@@ -29,8 +29,75 @@ export class LoggerService {
      * @param context
      */
     @MessagePattern(MessageAPI.WRITE_LOG)
-    writeLog(@Payload() data: number[], @Ctx() context: NatsContext) {
-        console.log(data, context);
+    async writeLog(@Payload() message: any, @Ctx() context: NatsContext) {
+        const logRepository = new DataBaseHelper(Log);
+        try {
+            if (!message) {
+                throw new Error('Log message is empty');
+            }
+
+            await logRepository.save(message);
+
+            // if (message.type === LogType.ERROR) {
+            //     channel.publish(ExternalMessageEvents.ERROR_LOG, message);
+            // }
+            return new MessageResponse(true);
+        }
+        catch (error) {
+            return new MessageError(error);
+        }
+    }
+
+    @MessagePattern(MessageAPI.GET_LOGS)
+    async getLogs(@Payload() msg: any, @Ctx() context: NatsContext) {
+        try {
+            const logRepository = new DataBaseHelper(Log);
+
+            const filters = msg && msg.filters || {};
+            if (filters.datetime && filters.datetime.$gte && filters.datetime.$lt) {
+                filters.datetime.$gte = new Date(filters.datetime.$gte);
+                filters.datetime.$lt = new Date(filters.datetime.$lt);
+            }
+            const pageParameters = msg && msg.pageParameters || {};
+            const logs = await logRepository.find(filters, {
+                    orderBy: {
+                        datetime: msg.sortDirection && msg.sortDirection.toUpperCase() || 'DESC'
+                    },
+                    ...pageParameters
+            });
+            const totalCount = await logRepository.count(filters as any);
+            return new MessageResponse({
+                logs,
+                totalCount
+            });
+        }
+        catch (error) {
+            return new MessageError(error);
+        }
+    }
+
+    @MessagePattern(MessageAPI.GET_ATTRIBUTES)
+    async getAttributes(@Payload() msg: any, @Ctx() context: NatsContext) {
+        const logRepository = new DataBaseHelper(Log);
+
+        try {
+            const nameFilter = `.*${msg.name || ''}.*`;
+            const existingAttributes = msg.existingAttributes || [];
+            const aggregateAttrResult = await logRepository.aggregate([
+                { $project: { attributes: '$attributes' } },
+                { $unwind: { path: '$attributes' } },
+                { $match: { attributes: { $regex: nameFilter, $options: 'i' } } },
+                { $match: { attributes: { $not: { $in: existingAttributes } } } },
+                { $group: { _id: null, uniqueValues: { $addToSet: '$attributes' } } },
+                { $unwind: { path: '$uniqueValues' } },
+                { $limit: 20 },
+                { $group: { _id: null, uniqueValues: { $addToSet: '$uniqueValues' } } }
+            ]);
+            return new MessageResponse(aggregateAttrResult[0].uniqueValues?.sort() || []);
+        }
+        catch (error) {
+            return new MessageError<string>(error.toString());
+        }
     }
 }
 

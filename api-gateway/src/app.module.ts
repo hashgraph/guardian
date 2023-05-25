@@ -7,7 +7,7 @@ import { ContractsApi } from '@api/service/contract';
 import { DemoApi } from '@api/service/demo';
 import { ExternalApi } from '@api/service/external';
 import { IpfsApi } from '@api/service/ipfs';
-import { LoggerApi } from '@api/service/logger';
+import { LoggerApi, LoggerService } from '@api/service/logger';
 import { MapApi } from '@api/service/map';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { MetricsApi } from '@api/service/metrics';
@@ -22,10 +22,20 @@ import { TaskApi } from '@api/service/task';
 import { TokensApi } from '@api/service/tokens';
 import { TrustChainsApi } from '@api/service/trust-chains';
 import { WizardApi } from '@api/service/wizard';
+import process from 'process';
 
 @Module({
     imports: [
-        ClientsModule.register([{ name: 'GUARDIANS', transport: Transport.TCP }]),
+        ClientsModule.register([{
+            name: 'GUARDIANS',
+            transport: Transport.NATS,
+            options: {
+                name: `${process.env.SERVICE_CHANNEL}`,
+                servers: [
+                    `nats://${process.env.MQ_ADDRESS}:4222`
+                ]
+            }
+        }]),
     ],
     controllers: [
         AccountApi,
@@ -51,7 +61,7 @@ import { WizardApi } from '@api/service/wizard';
         WizardApi
     ],
     providers: [
-        // WebSocketsService
+        LoggerService
     ]
 })
 export class AppModule {
