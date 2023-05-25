@@ -941,7 +941,7 @@ components:
           type: string
         id:
           type: string
-          
+
     VCWithPolicies:
       type: object
       properties:
@@ -955,7 +955,93 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Policy'
-    
+
+    WizardConfig:
+      type: object
+      required:
+        - policy
+        - roles
+        - schemas
+        - trustChain
+      properties:
+        roles:
+          type: array
+          items:
+            type: string
+        policy:
+          type: object
+          properties:
+            name:
+              type: string
+            description:
+              type: string
+            topicDescription:
+              type: string
+            policyTag:
+              type: string
+        schemas:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              iri:
+                type: string
+              isApproveEnable:
+                type: boolean
+              isMintSchema:
+                type: boolean
+              mintOptions:
+                type: object
+                properties:
+                  tokenId:
+                    type: string
+                  rule:
+                    type: string
+              dependencySchemaIri:
+                type: string
+              relationshipsSchemaIri:
+                type: string
+              initialRolesFor:
+                type: array
+                items:
+                  type: string
+              rolesConfig:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    role:
+                      type: string
+                    isApprover:
+                      type: boolean
+                    isCreator:
+                      type: boolean
+                    approverRoleFor:
+                      type: string
+                    gridColumns:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          field:
+                            type: string
+                          title:
+                            type: string
+        trustChain:
+          type: array
+          items:
+            type: object
+            properties:
+              role:
+                type: string
+              mintSchemaIri:
+                type: string
+              viewOnlyOwnDocuments:
+                type: boolean
+
+
 tags:
   - name: "accounts"
     description: "Operations related to Guardian users"
@@ -995,6 +1081,8 @@ tags:
     description: "Operations with Tags"
   - name: "themes"
     description: "Operations with Themes"
+  - name: "wizard"
+    description: "Operations with policy wizard"
 paths:
   /accounts:
     get:
@@ -7060,6 +7148,122 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Theme"
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /policy:
+    post:
+      tags:
+        - wizard
+      description: Creates a new policy by wizard. Only users with the Standard Registry role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Creates a new policy.
+      requestBody:
+        description: Object that contains wizard configuration.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WizardConfig"
+      responses:
+        201:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  policyId:
+                    type: string
+                  wizardConfig:
+                    $ref: "#/components/schemas/WizardConfig"
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /policy/push:
+    post:
+      tags:
+        - wizard
+      description: Creates a new policy by wizard. Only users with the Standard Registry role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Creates a new policy.
+      requestBody:
+        description: Object that contains wizard configuration.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WizardConfig"
+      responses:
+        202:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /{policyId}/config:
+    post:
+      tags:
+        - wizard
+      description: Get policy config by wizard. Only users with the Standard Registry role are allowed to make the request.
+      parameters:
+        - in: path
+          name: policyId
+          schema:
+            type: string
+          required: true
+          description: Policy identifier.
+      security:
+        - bearerAuth: []
+      summary: Get policy config.
+      requestBody:
+        description: Object that contains wizard configuration.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WizardConfig"
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  policyConfig: 
+                    $ref: "#/components/schemas/PolicyConfig"
+                  wizardConfig:
+                    $ref: "#/components/schemas/WizardConfig"
         401:
           description: Unauthorized.
         403:

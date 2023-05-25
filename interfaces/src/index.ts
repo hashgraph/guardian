@@ -45,3 +45,4 @@ export { IStandardRegistryResponse } from './interface/standard-registry-respons
 export { IPolicy as Policy } from './interface/policy.interface';
 export { default as GeoJsonSchema } from './helpers/geojson-schema/geo-json';
 export { default as GeoJsonContext } from './helpers/geojson-schema/geo-json-context';
+export * from './interface/wizard-config.interface';

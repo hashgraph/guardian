@@ -27,7 +27,6 @@ export { EventCanvas } from './tree-model/event-canvas';
 export { BlocLine } from './tree-model/event-line';
 export { BlockGroup } from './types/block-group.type';
 export { BlockHeaders } from './types/block-headers.type';
-export { BlockType } from './types/block-type.type';
 export { ChildrenType } from './types/children-type.type';
 export { ControlType } from './types/control-type.type';
 export { IModuleVariables } from './policy-models/variables/module-variables.interface';
