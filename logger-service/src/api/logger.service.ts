@@ -1,21 +1,6 @@
 import { Log } from '@entity/log';
-import { NatsConnection } from 'nats';
-import {
-    MessageResponse,
-    MessageError,
-    DataBaseHelper,
-    Singleton,
-    NatsService,
-    ZipCodec, InboundMessageIdentityDeserializer, OutboundResponseIdentitySerializer
-} from '@guardian/common';
-import {
-    MessageAPI,
-    ILog,
-    IGetLogsMessage,
-    IGetLogsResponse,
-    IGetLogAttributesMessage,
-    GenerateUUIDv4
-} from '@guardian/interfaces';
+import { DataBaseHelper, InboundMessageIdentityDeserializer, MessageError, MessageResponse, OutboundResponseIdentitySerializer, ZipCodec } from '@guardian/common';
+import { MessageAPI } from '@guardian/interfaces';
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Ctx, MessagePattern, NatsContext, Payload, Transport } from '@nestjs/microservices';
 import process from 'process';

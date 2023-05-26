@@ -1,22 +1,13 @@
 import { fixtures } from '@helpers/fixtures';
 import { AccountService } from '@api/account-service';
 import { WalletService } from '@api/wallet-service';
-import {
-    ApplicationState,
-    Logger,
-    DataBaseHelper,
-    Migration,
-    COMMON_CONNECTION_CONFIG,
-    LargePayloadContainer,
-    SecretManager, OldSecretManager, MessageBrokerChannel
-} from '@guardian/common';
+import { ApplicationState, COMMON_CONNECTION_CONFIG, DataBaseHelper, LargePayloadContainer, Logger, MessageBrokerChannel, Migration, OldSecretManager, SecretManager } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { InitializeVault } from './vaults';
 import { ImportKeysFromDatabase } from '@helpers/import-keys-from-database';
 import process from 'process';
-import { startMetricsServer } from './utils/metrics';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';

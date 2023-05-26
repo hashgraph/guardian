@@ -1,26 +1,7 @@
-import {
-    ISchema,
-    SchemaEntity,
-    SchemaStatus,
-    SchemaHelper,
-    Schema,
-    TopicType,
-    SchemaCategory,
-    IRootConfig
-} from '@guardian/interfaces';
+import { IRootConfig, ISchema, Schema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
 import path from 'path';
 import { readJSON } from 'fs-extra';
-import {
-    MessageAction,
-    MessageServer,
-    SchemaMessage,
-    TopicConfig,
-    TopicHelper,
-    Schema as SchemaCollection,
-    DatabaseServer,
-    Users,
-    SchemaConverterUtils,
-} from '@guardian/common';
+import { DatabaseServer, MessageAction, MessageServer, Schema as SchemaCollection, SchemaConverterUtils, SchemaMessage, TopicConfig, TopicHelper, Users, } from '@guardian/common';
 import { INotifier } from '@helpers/notifier';
 
 /**

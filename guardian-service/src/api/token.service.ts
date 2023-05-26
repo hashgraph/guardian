@@ -1,26 +1,6 @@
 import { ApiResponse } from '@api/helpers/api-response';
-import {
-    MessageResponse,
-    MessageError,
-    Logger,
-    DataBaseHelper,
-    RunFunctionAsync,
-    Token,
-    KeyType,
-    Wallet,
-    Users,
-    Workers,
-    TopicHelper,
-    DatabaseServer,
-} from '@guardian/common';
-import {
-    MessageAPI,
-    IToken,
-    WorkerTaskType,
-    GenerateUUIDv4,
-    IRootConfig,
-    TopicType
-} from '@guardian/interfaces';
+import { DataBaseHelper, DatabaseServer, KeyType, Logger, MessageError, MessageResponse, RunFunctionAsync, Token, TopicHelper, Users, Wallet, Workers, } from '@guardian/common';
+import { GenerateUUIDv4, IRootConfig, IToken, MessageAPI, TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
 import { publishTokenTags } from './tag.service';
 

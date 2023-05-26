@@ -7,39 +7,39 @@ import { tokenAPI } from '@api/token.service';
 import { trustChainAPI } from '@api/trust-chain.service';
 import { PolicyEngineService } from '@policy-engine/policy-engine.service';
 import {
-    MessageBrokerChannel,
     ApplicationState,
-    Logger,
-    ExternalEventChannel,
-    DataBaseHelper,
-    Migration,
     COMMON_CONNECTION_CONFIG,
-    ValidateConfiguration,
-    Topic,
-    VpDocument,
-    VcDocument,
-    Token,
-    Schema,
-    DidDocument,
-    Settings,
-    Policy,
     Contract,
-    RetireRequest,
+    DataBaseHelper,
+    DidDocument,
     entities,
-    IPFS,
-    Users,
     Environment,
+    ExternalEventChannel,
+    IPFS,
+    LargePayloadContainer,
+    Logger,
+    MessageBrokerChannel,
     MessageServer,
+    Migration,
+    OldSecretManager,
+    Policy,
+    RetireRequest,
+    Schema,
+    SecretManager,
+    Settings,
+    Token,
+    Topic,
     TopicMemo,
     TransactionLogger,
     TransactionLogLvl,
-    Workers, LargePayloadContainer,
-    SecretManager, OldSecretManager
+    Users,
+    ValidateConfiguration,
+    VcDocument,
+    VpDocument,
+    Workers
 } from '@guardian/common';
 import { ApplicationStates, WorkerTaskType } from '@guardian/interfaces';
 import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
-import { MikroORM } from '@mikro-orm/core';
-import { MongoDriver } from '@mikro-orm/mongodb';
 import { ipfsAPI } from '@api/ipfs.service';
 import { artifactAPI } from '@api/artifact.service';
 import { sendKeysToVault } from '@helpers/send-keys-to-vault';

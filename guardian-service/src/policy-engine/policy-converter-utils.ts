@@ -1,6 +1,6 @@
 import { Policy } from '@guardian/common';
 import { GenerateUUIDv4, UserType } from '@guardian/interfaces';
-import { EventConfig, PolicyInputEventType, PolicyOutputEventType, EventActor } from './interfaces';
+import { EventActor, EventConfig, PolicyInputEventType, PolicyOutputEventType } from './interfaces';
 
 /**
  * Policy converter utils

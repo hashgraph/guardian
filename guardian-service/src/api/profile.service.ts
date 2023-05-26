@@ -1,44 +1,38 @@
-import {
-    DidDocumentStatus,
-    DocumentStatus,
-    MessageAPI,
-    Schema,
-    SchemaEntity,
-    SchemaHelper,
-    TopicType,
-    UserRole, WorkerTaskType
-} from '@guardian/interfaces';
+import { DidDocumentStatus, DocumentStatus, MessageAPI, Schema, SchemaEntity, SchemaHelper, TopicType, UserRole, WorkerTaskType } from '@guardian/interfaces';
 import { ApiResponse } from '@api/helpers/api-response';
 import {
-    MessageResponse,
-    MessageError,
-    Logger,
     DataBaseHelper,
-    IAuthUser, RunFunctionAsync,
-    Topic,
     DidDocument as DidDocumentCollection,
-    VcDocument as VcDocumentCollection,
-    Schema as SchemaCollection,
-    Settings,
     DIDDocument,
     DIDMessage,
+    IAuthUser,
+    InboundMessageIdentityDeserializer,
+    KeyType,
+    Logger,
     MessageAction,
+    MessageError,
+    MessageResponse,
     MessageServer,
+    OutboundResponseIdentitySerializer,
     RegistrationMessage,
+    RunFunctionAsync,
+    Schema as SchemaCollection,
+    Settings,
+    Topic,
     TopicConfig,
     TopicHelper,
-    VCMessage,
     Users,
-    KeyType,
-    Wallet,
+    VcDocument as VcDocumentCollection,
     VcHelper,
-    Workers, OutboundResponseIdentitySerializer, InboundMessageIdentityDeserializer
+    VCMessage,
+    Wallet,
+    Workers
 } from '@guardian/common';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
 import { RestoreDataFromHedera } from '@helpers/restore-data-from-hedera';
 import { publishSystemSchema } from './helpers/schema-publish-helper';
 import { Controller, Module } from '@nestjs/common';
-import { ClientsModule, Ctx, MessagePattern, NatsContext, Payload, Transport } from '@nestjs/microservices';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 
 /**
  * Get global topic

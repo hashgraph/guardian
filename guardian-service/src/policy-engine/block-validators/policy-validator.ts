@@ -1,4 +1,4 @@
-import { Policy, DatabaseServer } from '@guardian/common';
+import { DatabaseServer, Policy } from '@guardian/common';
 import { PolicyType } from '@guardian/interfaces';
 import { BlockValidator } from './block-validator';
 import { ModuleValidator } from './module-validator';

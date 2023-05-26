@@ -1,6 +1,6 @@
 import { ErrorCode, JSONCodec, NatsError } from 'nats';
-import util from 'util';
-import { gzip, unzip } from 'zlib';
+// import util from 'util';
+// import { gzip, unzip } from 'zlib';
 import { LargePayloadContainer } from './large-payload-container';
 import axios from 'axios';
 
@@ -22,9 +22,12 @@ export function ZipCodec() {
                 if (Number.isInteger(maxPayload) && maxPayload <= zipped.length) {
                     const directLink = new LargePayloadContainer().addObject(zipped.buffer as Buffer);
                     console.log(directLink.toString(), zipped.length);
-                    return  await util.promisify(gzip)(JSON.stringify({
+                    return JSONCodec().encode({
                         directLink
-                    }))
+                    })
+                    // return  await util.promisify(gzip)(JSON.stringify({
+                    //     directLink
+                    // }))
                 } else {
                     return zipped;
                 }

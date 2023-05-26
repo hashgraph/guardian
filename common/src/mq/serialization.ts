@@ -1,4 +1,4 @@
-import { Serializer, OutgoingResponse, ConsumerDeserializer, IncomingRequest } from '@nestjs/microservices';
+import { Serializer, ConsumerDeserializer, IncomingRequest } from '@nestjs/microservices';
 
 /**
  * NestJS deserializer
