@@ -19,6 +19,7 @@ export class RegisteredService {
 
     private blockName: { [type: string]: string };
     private blockTitle: { [type: string]: string };
+    private blockDeprecation: { [type: string]: boolean };
     private blockAbout: { [type: string]: BlockAbout };
     private blockProperties: { [type: string]: BlockAbout };
 
@@ -38,6 +39,7 @@ export class RegisteredService {
         this.blockTitle = {};
         this.blockAbout = {};
         this.blockProperties = {};
+        this.blockDeprecation = {};
         this.defaultAbout = new BlockAbout({
             post: false,
             get: false,
@@ -100,14 +102,11 @@ export class RegisteredService {
         const types: BlockType[] = Object.keys(config) as BlockType[];
         for (const type of types) {
             const setting = config[type];
-            this.blockName[type] = setting.deprecated
-                ? `${setting.label} (Deprecated)`
-                : setting.label;
-            this.blockTitle[type] = setting.deprecated
-                ? `${setting.title} (Deprecated)`
-                : setting.title;
+            this.blockName[type] = setting.label;
+            this.blockTitle[type] = setting.title;
             this.blockAbout[type] = new BlockAbout(setting, this.about[type]);
             this.blockProperties[type] = setting.properties;
+            this.blockDeprecation[type] = !!setting.deprecated;
         }
         this.update();
     }
@@ -124,7 +123,8 @@ export class RegisteredService {
                 group: this.group[type],
                 header: this.header[type],
                 title: this.blockTitle[type],
-                data: `new:${type}`
+                data: `new:${type}`,
+                deprecated: this.blockDeprecation[type],
             });
         }
         this.list = this.list.sort((a, b) => a.name > b.name ? 1 : -1);
@@ -186,4 +186,8 @@ export class RegisteredService {
     public getHeader(blockType: string): string {
         return this.header[blockType] || '';
     }
-}
+
+    public getDeprecated(blockType: string): boolean {
+        return this.blockDeprecation[blockType];
+    }
+ }

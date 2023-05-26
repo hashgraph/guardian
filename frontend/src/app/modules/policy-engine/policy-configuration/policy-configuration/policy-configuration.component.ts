@@ -488,7 +488,10 @@ export class PolicyConfigurationComponent implements OnInit {
         this.componentsList.unGrouped = [];
         const search = this.search ? this.search.toLowerCase() : null;
         for (const block of all) {
-            if (search && block.search.indexOf(search) === -1) {
+            if (
+                (search && block.search.indexOf(search) === -1) ||
+                block?.deprecated
+            ) {
                 continue;
             }
             if (block.header === 'UI Components') {
