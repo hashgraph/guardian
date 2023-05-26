@@ -157,9 +157,7 @@ schemaAPI.post('/:topicId', permissionHelper(UserRole.STANDARD_REGISTRY), async 
         const schemas = await createSchema(
             newSchema,
             user.did,
-            topicId && ['null', 'undefined', ''].includes(topicId)
-                ? undefined
-                : topicId
+            topicId,
         );
         return res.status(201).json(SchemaUtils.toOld(schemas));
     } catch (error) {
@@ -180,9 +178,7 @@ schemaAPI.post('/push/:topicId', permissionHelper(UserRole.STANDARD_REGISTRY), a
         await createSchemaAsync(
             newSchema,
             user.did,
-            topicId && ['null', 'undefined', ''].includes(topicId)
-                ? undefined
-                : topicId,
+            topicId,
             taskId
         );
     }, async (error) => {

@@ -161,7 +161,7 @@ export async function importSchemaByFiles(
         file.messageId = null;
         file.creator = owner;
         file.owner = owner;
-        file.topicId = topicId;
+        file.topicId = topicId || 'draft';
         file.status = SchemaStatus.DRAFT;
     }
 
