@@ -55,7 +55,7 @@ The atma GHG policy issues an NFT token (AtmaProductToken) for every product tha
 
 Once the product has been defined, you'll need to define the life cycle stage. Click on the "life cycle stage" button and fill out the life cycle stage form.
 
-<figure><img src="../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (45).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
 
@@ -69,6 +69,6 @@ You can select the "Production Emission Data" tab to view the emissions from the
 
 <figure><img src="../../../.gitbook/assets/image (31).png" alt=""><figcaption></figcaption></figure>
 
-Please note that the atma policy has a default "aggregation timer" to mint tokens every month. If you do not customize this option prior to publishing (or running on dry run) you will not see any tokens mint immediately.&#x20;
+Please note that the atma policy has a default "aggregation timer" to mint tokens every month. If you do not customize this option prior to publishing (or running on dry run) you will not see any tokens mint immediately.
 
 <figure><img src="../../../.gitbook/assets/image (35).png" alt=""><figcaption></figcaption></figure>
