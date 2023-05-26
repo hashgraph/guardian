@@ -545,6 +545,31 @@ export class SchemaApi {
     }
 
     @Get('/:schemaId/export/message')
+    async exportMessage(@Req() req, @Response() res): Promise<any> {
+        try {
+            const guardians = new Guardians();
+            const id = req.params.schemaId;
+            const schemas = await guardians.exportSchemas([id]);
+            const scheme = schemas[0];
+            if (!scheme) {
+                throw new Error(`Cannot export schema ${req.params.schemaId}`));
+                // return next(createError(422, `Cannot export schema ${req.params.schemaId}`));
+            }
+            return res.send({
+                id: scheme.id,
+                name: scheme.name,
+                description: scheme.description,
+                version: scheme.version,
+                messageId: scheme.messageId,
+                owner: scheme.owner
+            });
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw error
+        }
+    }
+
+    @Get('/:schemaId/export/file')
     async exportToFile(@Req() req, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();
@@ -568,7 +593,7 @@ export class SchemaApi {
             res.setHeader('Content-disposition', `attachment; filename=${name}`);
             res.setHeader('Content-type', 'application/zip');
             arcStream.pipe(res);
-            return arcStream;
+            return res;
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error;

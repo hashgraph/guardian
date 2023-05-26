@@ -1,4 +1,3 @@
-import { Router, NextFunction } from 'express';
 import { PolicyType, UserRole } from '@guardian/interfaces';
 import { PolicyEngine } from '@helpers/policy-engine';
 import { Users } from '@helpers/users';
@@ -6,8 +5,7 @@ import { AuthenticatedRequest, Logger, RunFunctionAsync } from '@guardian/common
 import { permissionHelper } from '@auth/authorization-helper';
 import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
-import createError from 'http-errors';
-import { Controller, Delete, Get, Post, Put, Req, Response } from '@nestjs/common';
+import { Controller, Delete, Get, Post, Put, RawBodyRequest, Req, Response } from '@nestjs/common';
 
 @Controller('policies')
 export class PolicyApi {
@@ -454,7 +452,7 @@ export class PolicyApi {
     }
 
     @Post('/import/file/preview')
-    async importPolicyFromFilePreview(@Req() req, @Response() res) {
+    async importPolicyFromFilePreview(@Req() req: RawBodyRequest<AuthenticatedRequest>, @Response() res) {
         const engineService = new PolicyEngine();
         try {
             return res.send(await engineService.importFilePreview(req.user, req.body));

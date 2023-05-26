@@ -1,6 +1,5 @@
 import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { AccountApi } from '@api/service/account';
-import { WebSocketsService } from '@api/service/websockets';
 import { AnalyticsApi } from '@api/service/analytics';
 import { ArtifactApi } from '@api/service/artifact';
 import { ContractsApi } from '@api/service/contract';
@@ -23,6 +22,11 @@ import { TokensApi } from '@api/service/tokens';
 import { TrustChainsApi } from '@api/service/trust-chains';
 import { WizardApi } from '@api/service/wizard';
 import process from 'process';
+import express from 'express';
+import fileUpload from 'express-fileupload';
+import hpp from 'hpp';
+
+const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
 
 @Module({
     imports: [
@@ -81,5 +85,13 @@ export class AppModule {
         consumer.apply(authorizationHelper).forRoutes(TokensApi);
         consumer.apply(authorizationHelper).forRoutes(TrustChainsApi);
         consumer.apply(authorizationHelper).forRoutes(WizardApi);
+
+        consumer.apply(express.raw({
+            inflate: true,
+            limit: RAW_REQUEST_LIMIT,
+            type: 'binary/octet-stream'
+        })).forRoutes('*');
+        consumer.apply(fileUpload()).forRoutes('*');
+        consumer.apply(hpp()).forRoutes('*');
     }
 }

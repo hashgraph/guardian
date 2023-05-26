@@ -24,7 +24,9 @@ const restResponseTimeHistogram = new client.Histogram({
 });
 
 Promise.all([
-    NestFactory.create(AppModule),
+    NestFactory.create(AppModule, {
+        rawBody: true
+    }),
     MessageBrokerChannel.connect('API_GATEWAY'),
 ]).then(async ([app, cn]) => {
     try {
