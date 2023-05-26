@@ -42,20 +42,44 @@ form,
     align-items: center;
 }
 
+.select-role-title {
+    text-align: center;
+}
 
+.select-role-title,
 .login-header {
     font-size: 20px;
     color: #838383;
     padding-bottom: 20px;
+}
+
+.login-header {
     display: flex;
-    cursor: pointer;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
 }
 
 .login-header mat-icon {
     font-size: 30px;
-    position: relative;
-    top: -4px;
-    left: -10px;
+    margin-right: 4px;
+}
+
+.login-header__title {
+    flex-grow: 1;
+    text-align: center;
+    padding-right: 10%;
+}
+
+.login-header__back-button {
+    display: flex;
+    align-items: flex-end;
+    font-size: 16px;
+    color: #2C78F6;
+    cursor: pointer;
+    border: none;
+    background-color: transparent;
+    max-width: fit-content;
 }
 
 .overlay {

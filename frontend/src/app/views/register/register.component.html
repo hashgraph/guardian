@@ -1,8 +1,12 @@
 <div class="content login">
     <div class="overlay" (click)="goBack()"></div>
     <form class="credential-creation" [formGroup]="loginForm" (ngSubmit)="signup()" *ngIf="isRoleSelected$ | async; else selectRoleTemplate">
-        <div class="login-header" (click)="setRole('')">
-            <mat-icon>chevron_left</mat-icon> Create Account
+        <div class="login-header">
+            <button class="login-header__back-button" (click)="setRole('')">
+                <mat-icon>chevron_left</mat-icon>
+                <span>Back</span>
+            </button>
+            <span class="login-header__title">Create Account</span>
         </div>
 
         <mat-form-field class="example-full-width" appearance="outline">
@@ -26,9 +30,7 @@
 
     <ng-template #selectRoleTemplate>
         <div class="role-select-step">
-            <div class="login-header">
-                Select Account Type
-            </div>
+            <span class="select-role-title">Select Account Type</span>
             <button mat-button (click)="setRole('STANDARD_REGISTRY')">
                 <span class="role-name">Standard Registry</span>
                 <span class="role-description">Creating/importing policies, managing users, managing tokens.</span>
