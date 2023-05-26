@@ -178,9 +178,7 @@ export class SchemaApi {
             const schemas = await createSchema(
                 newSchema,
                 user.did,
-                topicId && ['null', 'undefined', ''].includes(topicId)
-                    ? undefined
-                    : topicId
+                topicId,
             );
             return res.status(201).json(SchemaUtils.toOld(schemas));
         } catch (error) {
@@ -202,10 +200,8 @@ export class SchemaApi {
             await createSchemaAsync(
                 newSchema,
                 user.did,
-                topicId && ['null', 'undefined', ''].includes(topicId)
-                    ? undefined
-                    : topicId,
-                taskId
+                topicId,
+                taskId,
             );
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);

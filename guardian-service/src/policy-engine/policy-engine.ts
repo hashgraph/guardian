@@ -151,7 +151,7 @@ export class PolicyEngine extends NatsService {
         }
         const schemas = await DatabaseServer.getSchemas({
             iri: { $in: schemaIris },
-            topicId: { $eq: null },
+            topicId: { $eq: 'draft' },
             owner
         });
         const users = new Users();
@@ -170,7 +170,7 @@ export class PolicyEngine extends NatsService {
             );
             const dependencySchemas = await DatabaseServer.getSchemas({
                 iri: { $in: schema.defs },
-                topicId: { $eq: null }
+                topicId: { $eq: 'draft' }
             });
             dependencySchemas.forEach(dependencySchema => {
                 dependencySchema.topicId = policyTopicId;

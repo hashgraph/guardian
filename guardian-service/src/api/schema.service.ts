@@ -71,7 +71,11 @@ export async function schemaAPI(): Promise<void> {
                 item.description = msg.description;
                 item.entity = msg.entity;
                 item.document = msg.document;
-                if (!item.topicId && msg.topicId) {
+                if (
+                    (item.topicId === 'draft') &&
+                    msg.topicId &&
+                    msg.topicId !== 'draft'
+                ) {
                     item.topicId = msg.topicId;
                     const topic = await TopicConfig.fromObject(
                         await DatabaseServer.getTopicById(msg.topicId),
