@@ -552,7 +552,7 @@ export class SchemaApi {
             const schemas = await guardians.exportSchemas([id]);
             const scheme = schemas[0];
             if (!scheme) {
-                throw new Error(`Cannot export schema ${req.params.schemaId}`));
+                throw new Error(`Cannot export schema ${req.params.schemaId}`);
                 // return next(createError(422, `Cannot export schema ${req.params.schemaId}`));
             }
             return res.send({
