@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { Subscription, NatsConnection, StringCodec, connect, headers } from 'nats';
+import { Subscription, NatsConnection, StringCodec, connect, headers, JSONCodec } from 'nats';
 import { IMessageResponse, MessageError } from '../models/message-response';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { ZipCodec } from './zip-codec';

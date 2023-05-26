@@ -32,8 +32,8 @@ export abstract class NatsService {
     protected responseCallbacksMap: Map<string, Function> = new Map();
 
     constructor() {
-        // this.codec = ZipCodec();
-        this.codec = JSONCodec();
+        this.codec = ZipCodec();
+        // this.codec = JSONCodec();
     }
 
     /**
