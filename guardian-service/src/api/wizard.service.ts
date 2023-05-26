@@ -9,10 +9,7 @@ import {
 import { IWizardConfig, MessageAPI } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier } from '@helpers/notifier';
 import { PolicyEngine } from '@policy-engine/policy-engine';
-import {
-    exportSchemas,
-    importSchemaByFiles,
-} from './helpers/schema-import-export-helper';
+import { exportSchemas, importSchemaByFiles, } from './helpers/schema-import-export-helper';
 import { PolicyWizardHelper } from './helpers/policy-wizard-helper';
 
 /**

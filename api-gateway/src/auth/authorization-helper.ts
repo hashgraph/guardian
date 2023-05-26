@@ -1,6 +1,53 @@
-import { Response } from 'express';
+import { NextFunction, Response } from 'express';
 import { Users } from '@helpers/users';
 import { AuthenticatedRequest, IAuthUser, Logger } from '@guardian/common';
+import { Injectable, NestMiddleware } from '@nestjs/common';
+
+/**
+ * Auth middleware
+ */
+@Injectable()
+export class AuthMiddleware implements NestMiddleware {
+
+    /**
+     * Use
+     * @param req
+     * @param res
+     * @param next
+     */
+    async use(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+        const authHeader = req.headers.authorization;
+        const users = new Users();
+        if (authHeader) {
+            const token = authHeader.split(' ')[1];
+            try {
+                req.user = await users.getUserByToken(token) as IAuthUser;
+                next();
+                return;
+            } catch (error) {
+                new Logger().error(error, ['API_GATEWAY']);
+            }
+        }
+        res.sendStatus(401);
+    }
+}
+
+/**
+ * Permission middleware
+ */
+@Injectable()
+export class PermissionMiddleware implements NestMiddleware {
+
+    /**
+     * Permission middleware
+     * @param req
+     * @param res
+     * @param next
+     */
+    use(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+        next();
+    }
+}
 
 /**
  * Authorization middleware

@@ -1,25 +1,5 @@
-import {
-    PolicyEngineEvents,
-    TopicType,
-    PolicyType,
-    ExternalMessageEvents, PolicyEvents, GenerateUUIDv4
-} from '@guardian/interfaces';
-import {
-    IAuthUser,
-    MessageResponse,
-    MessageError,
-    BinaryMessageResponse,
-    Logger,
-    RunFunctionAsync,
-    NatsService,
-    Singleton,
-    Policy,
-    DIDDocument,
-    TopicConfig,
-    Users,
-    DatabaseServer,
-    findAllEntities
-} from '@guardian/common';
+import { ExternalMessageEvents, GenerateUUIDv4, PolicyEngineEvents, PolicyEvents, PolicyType, TopicType } from '@guardian/interfaces';
+import { BinaryMessageResponse, DatabaseServer, DIDDocument, findAllEntities, IAuthUser, Logger, MessageError, MessageResponse, NatsService, Policy, RunFunctionAsync, Singleton, TopicConfig, Users } from '@guardian/common';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 import { PolicyComponentsUtils } from './policy-components-utils';
 import { IPolicyUser } from './policy-user';

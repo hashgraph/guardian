@@ -1,240 +1,227 @@
 import { Guardians } from '@helpers/guardians';
-import { Response, Router, NextFunction } from 'express';
-import { UserRole} from '@guardian/interfaces';
-import { permissionHelper } from '@auth/authorization-helper';
-import { AuthenticatedRequest, Logger } from '@guardian/common';
-import validate from '@middlewares/validation';
-import { importSchema, retireRequestSchema, retireSchema } from '@middlewares/validation/schemas/contracts';
+import { UserRole } from '@guardian/interfaces';
+import { Logger } from '@guardian/common';
+import { Controller, Delete, Get, Post, Req, Response } from '@nestjs/common';
 
 /**
- * Contract route
+ * Contracts api
  */
-export const contractAPI = Router();
+@Controller('contracts')
+export class ContractsApi {
 
-contractAPI.get('/', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-  try {
-    const user = req.user;
-    const guardians = new Guardians();
-    const [contracts, count] = await guardians.getContracts(
-      user.parent || user.did,
-      req.query.pageIndex as any,
-      req.query.pageSize as any
-    );
-    return res.setHeader('X-Total-Count', count).json(contracts);
-  } catch (error) {
-    new Logger().error(error, ['API_GATEWAY']);
-    return next(error)
-  }
-});
-
-contractAPI.post(
-  '/',
-  permissionHelper(UserRole.STANDARD_REGISTRY),
-  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    try {
-      const user = req.user;
-      const {description} = req.body;
-      const guardians = new Guardians();
-      return res.status(201).json(
-        await guardians.createContract(user.did, description)
-      );
-    } catch (error) {
-      new Logger().error(error, ['API_GATEWAY']);
-      return next(error)
+    /**
+     * Get contracts
+     * @param req
+     * @param res
+     */
+    @Get()
+    async getContracts(@Req() req, @Response() res): Promise<any> {
+        try {
+            const user = req.user;
+            const guardians = new Guardians();
+            const [contracts, count] = await guardians.getContracts(
+                user.parent || user.did,
+                req.query.pageIndex as any,
+                req.query.pageSize as any
+            );
+            return res.setHeader('X-Total-Count', count).json(contracts);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw error
+        }
     }
-  }
-);
 
-contractAPI.post(
-  '/import',
-  [validate(importSchema()), permissionHelper(UserRole.STANDARD_REGISTRY)],
-  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    try {
-      const user = req.user;
-      const {contractId, description} = req.body;
-      const guardians = new Guardians();
-      return res.json(
-        await guardians.importContract(
-          user.did,
-          contractId,
-          description
-        )
-      );
-    } catch (error) {
-      new Logger().error(error, ['API_GATEWAY']);
-      return next(error)
+    /**
+     * Set contracts
+     * @param req
+     * @param res
+     */
+    @Post('/')
+    async setContracts(@Req() req, @Response() res): Promise<any> {
+        try {
+            const user = req.user;
+            const {description} = req.body;
+            const guardians = new Guardians();
+            return res.status(201).json(
+                await guardians.createContract(user.did, description)
+            );
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw error;
+        }
     }
-  }
-);
 
-contractAPI.post(
-  '/:contractId/user',
-  permissionHelper(UserRole.STANDARD_REGISTRY),
-  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    try {
-      const user = req.user;
-      const {userId} = req.body;
-      const guardians = new Guardians();
-      return res.json(
-        await guardians.addUser(user.did, userId, req.params.contractId)
-      );
-    } catch (error) {
-      new Logger().error(error, ['API_GATEWAY']);
-      return next(error)
+    @Post('/import')
+    async importContracts(@Req() req, @Response() res): Promise<any> {
+        try {
+            const user = req.user;
+            const {contractId, description} = req.body;
+            const guardians = new Guardians();
+            return res.json(
+                await guardians.importContract(
+                    user.did,
+                    contractId,
+                    description
+                )
+            );
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw error;
+        }
     }
-  }
-);
 
-contractAPI.post(
-  '/:contractId/status',
-  permissionHelper(UserRole.STANDARD_REGISTRY),
-  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    try {
-      const user = req.user;
-      const guardians = new Guardians();
-      return res.json(
-        await guardians.updateStatus(user.did, req.params.contractId)
-      );
-    } catch (error) {
-      new Logger().error(error, ['API_GATEWAY']);
-      return next(error)
+    @Post('/:contractId/user')
+    async userContract(@Req() req, @Response() res): Promise<any> {
+        try {
+            const user = req.user;
+            const {userId} = req.body;
+            const guardians = new Guardians();
+            return res.json(
+                await guardians.addUser(user.did, userId, req.params.contractId)
+            );
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw error;
+        }
     }
-  }
-);
 
-contractAPI.get('/pair', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-  try {
-    const user = req.user;
-    const guardians = new Guardians();
-    return res.json(
-      await guardians.getContractPair(
-        user.did,
-        user.parent || user.did,
-        req.query?.baseTokenId as string,
-        req.query?.oppositeTokenId as string
-      )
-    );
-  } catch (error) {
-    new Logger().error(error, ['API_GATEWAY']);
-    return next(error);
-  }
-});
-
-contractAPI.post(
-  '/:contractId/pair',
-  permissionHelper(UserRole.STANDARD_REGISTRY),
-  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    try {
-      const user = req.user;
-      const {
-        baseTokenId,
-        oppositeTokenId,
-        baseTokenCount,
-        oppositeTokenCount,
-      } = req.body;
-      const guardians = new Guardians();
-      return res.json(
-        await guardians.addContractPair(
-          user.did,
-          req.params.contractId,
-          baseTokenId,
-          oppositeTokenId,
-          baseTokenCount,
-          oppositeTokenCount
-        )
-      );
-    } catch (error) {
-      new Logger().error(error, ['API_GATEWAY']);
-      return next(error);
+    @Post(':contractId/status')
+    async contractStatus(@Req() req, @Response() res): Promise<any> {
+        try {
+            const user = req.user;
+            const guardians = new Guardians();
+            return res.json(
+                await guardians.updateStatus(user.did, req.params.contractId)
+            );
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw error;
+        }
     }
-  }
-);
 
-contractAPI.get(
-  '/retire/request',
-  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    try {
-      const user = req.user;
-      const guardians = new Guardians();
-      const [requests, count] = await guardians.getRetireRequests(
-        user.parent || user.did,
-        user.role === UserRole.USER ? user.did : null,
-        req.query?.contractId as string,
-        req.query?.pageIndex as any,
-        req.query?.pageSize as any
-      );
-      return res.setHeader('X-Total-Count', count).json(requests);
-    } catch (error) {
-      new Logger().error(error, ['API_GATEWAY']);
-      return next(error);
+    @Get('/pair')
+    async contractPair(@Req() req, @Response() res): Promise<any> {
+        try {
+            const user = req.user;
+            const guardians = new Guardians();
+            return res.json(
+                await guardians.getContractPair(
+                    user.did,
+                    user.parent || user.did,
+                    req.query?.baseTokenId as string,
+                    req.query?.oppositeTokenId as string
+                )
+            );
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw error;
+        }
     }
-  }
-);
 
-contractAPI.post(
-  '/:contractId/retire/request', validate(retireRequestSchema()),
-  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    try {
-      const user = req.user;
-      const {
-        baseTokenId,
-        oppositeTokenId,
-        baseTokenCount,
-        oppositeTokenCount,
-        baseTokenSerials,
-        oppositeTokenSerials,
-      } = req.body;
-      const guardians = new Guardians();
-      return res.json(
-        await guardians.retireRequest(
-          user.did,
-          req.params.contractId,
-          baseTokenId,
-          oppositeTokenId,
-          baseTokenCount,
-          oppositeTokenCount,
-          baseTokenSerials,
-          oppositeTokenSerials
-        )
-      );
-    } catch (error) {
-      new Logger().error(error, ['API_GATEWAY']);
-      return next(error)
+    @Post('/:contractId/pair')
+    async setPair(@Req() req, @Response() res): Promise<any> {
+        try {
+            const user = req.user;
+            const {
+                baseTokenId,
+                oppositeTokenId,
+                baseTokenCount,
+                oppositeTokenCount,
+            } = req.body;
+            const guardians = new Guardians();
+            return res.json(
+                await guardians.addContractPair(
+                    user.did,
+                    req.params.contractId,
+                    baseTokenId,
+                    oppositeTokenId,
+                    baseTokenCount,
+                    oppositeTokenCount
+                )
+            );
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw error;
+        }
     }
-  }
-);
 
-contractAPI.delete(
-  '/retire/request',
-  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    try {
-      const user = req.user;
-      const guardians = new Guardians();
-      return res.json(
-        await guardians.cancelRetireRequest(
-          user.did,
-          req.query?.requestId as string
-        )
-      );
-    } catch (error) {
-      new Logger().error(error, ['API_GATEWAY']);
-      return next(error)
+    @Get('/retire/request')
+    async retireRequest(@Req() req, @Response() res): Promise<any> {
+        try {
+            const user = req.user;
+            const guardians = new Guardians();
+            const [requests, count] = await guardians.getRetireRequests(
+                user.parent || user.did,
+                user.role === UserRole.USER ? user.did : null,
+                req.query?.contractId as string,
+                req.query?.pageIndex as any,
+                req.query?.pageSize as any
+            );
+            return res.setHeader('X-Total-Count', count).json(requests);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw error;
+        }
     }
-  }
-);
 
-contractAPI.post(
-  '/retire',
-  [validate(retireSchema()), permissionHelper(UserRole.STANDARD_REGISTRY)],
-  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    try {
-      const user = req.user;
-      const { requestId } = req.body;
-      const guardians = new Guardians();
-      return res.json(await guardians.retire(user.did, requestId));
-    } catch (error) {
-      new Logger().error(error, ['API_GATEWAY']);
-      return next(error)
+    @Post('/:contractId/retire/request')
+    async postRetireRequest(@Req() req, @Response() res): Promise<any> {
+        try {
+            const user = req.user;
+            const {
+                baseTokenId,
+                oppositeTokenId,
+                baseTokenCount,
+                oppositeTokenCount,
+                baseTokenSerials,
+                oppositeTokenSerials,
+            } = req.body;
+            const guardians = new Guardians();
+            return res.json(
+                await guardians.retireRequest(
+                    user.did,
+                    req.params.contractId,
+                    baseTokenId,
+                    oppositeTokenId,
+                    baseTokenCount,
+                    oppositeTokenCount,
+                    baseTokenSerials,
+                    oppositeTokenSerials
+                )
+            );
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw error;
+        }
     }
-  }
-);
+
+    @Delete('/retire/request')
+    async deleteRetireRequest(@Req() req, @Response() res): Promise<any> {
+        try {
+            const user = req.user;
+            const guardians = new Guardians();
+            return res.json(
+                await guardians.cancelRetireRequest(
+                    user.did,
+                    req.query?.requestId as string
+                )
+            );
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw error;
+        }
+    }
+
+    @Post('/retire')
+    async retire(@Req() req, @Response() res): Promise<any> {
+        try {
+            const user = req.user;
+            const { requestId } = req.body;
+            const guardians = new Guardians();
+            return res.json(await guardians.retire(user.did, requestId));
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw error;
+        }
+    }
+}

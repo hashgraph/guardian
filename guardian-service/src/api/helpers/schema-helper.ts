@@ -9,17 +9,7 @@ import {
 } from '@guardian/interfaces';
 import path from 'path';
 import { readJSON } from 'fs-extra';
-import {
-    MessageAction,
-    MessageServer,
-    SchemaMessage,
-    TopicConfig,
-    TopicHelper,
-    Schema as SchemaCollection,
-    DatabaseServer,
-    Users,
-    SchemaConverterUtils,
-} from '@guardian/common';
+import { DatabaseServer, MessageAction, MessageServer, Schema as SchemaCollection, SchemaConverterUtils, SchemaMessage, TopicConfig, TopicHelper, Users, } from '@guardian/common';
 import { INotifier } from '@helpers/notifier';
 
 /**
