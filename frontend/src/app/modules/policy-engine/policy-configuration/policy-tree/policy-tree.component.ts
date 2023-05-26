@@ -220,6 +220,7 @@ export class PolicyTreeComponent implements OnInit {
             node.level = level;
             node.root = block === this.root;
             node.expandable = block.expandable && !node.root;
+            node.deprecated = this.registeredService.getDeprecated(block.blockType);
             node.about = this.registeredService.getAbout(block, this.module);
             node.icon = this.registeredService.getIcon(block.blockType);
             node.type = this.registeredService.getHeader(block.blockType);

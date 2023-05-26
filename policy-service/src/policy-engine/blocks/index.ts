@@ -24,6 +24,7 @@ export { SendToGuardianBlock } from './send-to-guardian-block';
 export { SwitchBlock } from './switch-block';
 export { TimerBlock } from './timer-block';
 export { RevokeBlock } from './revoke-block';
+export { RevocationBlock } from './revocation-block';
 export { SetRelationshipsBlock } from './set-relationships-block';
 export { ButtonBlock } from './button-block';
 export { TokenActionBlock } from './token-action-block';

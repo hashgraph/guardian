@@ -31,6 +31,7 @@ import { ReportItemBlock } from './blocks/report-item-block';
 import { RequestVcDocumentBlock } from './blocks/request-vc-document-block';
 import { RetirementBlock } from './blocks/retirement-block';
 import { RevokeBlock } from './blocks/revoke-block';
+import { RevocationBlock } from './blocks/revocation-block';
 import { SelectiveAttributes } from './blocks/selective-attributes-addon';
 import { SendToGuardianBlock } from './blocks/send-to-guardian-block';
 import { SetRelationshipsBlock } from './blocks/set-relationships-block';
@@ -75,6 +76,7 @@ export const validators = [
     RequestVcDocumentBlock,
     RetirementBlock,
     RevokeBlock,
+    RevocationBlock,
     SelectiveAttributes,
     SendToGuardianBlock,
     SetRelationshipsBlock,

@@ -1,6 +1,6 @@
 import { Policy } from '@guardian/common';
-import { GenerateUUIDv4, UserType } from '@guardian/interfaces';
-import { EventActor, EventConfig, PolicyInputEventType, PolicyOutputEventType } from './interfaces';
+import { BlockType, GenerateUUIDv4, UserType } from '@guardian/interfaces';
+import { EventConfig, PolicyInputEventType, PolicyOutputEventType, EventActor } from './interfaces';
 
 /**
  * Policy converter utils
@@ -390,7 +390,7 @@ export class PolicyConverterUtils {
                 const currentBlock = stack.pop();
                 if (
                     currentBlock?.blockType ===
-                        'interfaceDocumentsSourceBlock' &&
+                        BlockType.DocumentsViewer &&
                     Array.isArray(currentBlock.uiMetaData?.fields)
                 ) {
                     currentBlock.uiMetaData.fields =
@@ -404,6 +404,10 @@ export class PolicyConverterUtils {
             }
         };
         clearOldRevokeColumns(root, block.tag);
+        block.blockType = BlockType.RevocationBlock;
+        block.updatePrevDoc = block.uiMetaData.updatePrevDoc;
+        block.prevDocStatus = block.uiMetaData.prevDocStatus;
+        delete block.uiMetaData;
         return block;
     }
 }
