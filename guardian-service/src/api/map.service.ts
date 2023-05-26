@@ -1,9 +1,5 @@
 import { ApiResponse } from '@api/helpers/api-response';
-import {
-    MessageResponse,
-    MessageError,
-    Logger,
-} from '@guardian/common';
+import { Logger, MessageError, MessageResponse, } from '@guardian/common';
 import { MessageAPI } from '@guardian/interfaces';
 
 /**

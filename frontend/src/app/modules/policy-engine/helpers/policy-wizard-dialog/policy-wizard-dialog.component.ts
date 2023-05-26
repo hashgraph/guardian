@@ -123,21 +123,28 @@ export class PolicyWizardDialogComponent implements OnInit {
                       schemas: groupedSchemasByTopic[policy?.topicId],
                   },
                   {
-                      name: 'Ungrouped schemas',
-                      schemas: groupedSchemasByTopic[''],
+                      name: 'Draft schemas',
+                      schemas: groupedSchemasByTopic['draft'],
                   },
               ]
             : [
                   {
-                      name: 'Ungrouped schemas',
-                      schemas: groupedSchemasByTopic[''],
+                      name: 'Draft schemas',
+                      schemas: groupedSchemasByTopic['draft'],
                   },
               ];
         for (const group of Object.entries(groupedSchemasByTopic)) {
-            if (group[0] && group[0] !== policy?.topicId) {
+            if (
+                group[0] &&
+                group[0] !== 'draft' &&
+                group[0] !== policy?.topicId
+            ) {
                 const policy = policies.find(
                     (policy) => policy.topicId === group[0]
                 );
+                if (!policy) {
+                    continue;
+                }
                 mappedSchemas.push({
                     name:
                         policy.name +
@@ -405,7 +412,6 @@ export class PolicyWizardDialogComponent implements OnInit {
             role: [role],
             isApprover: [false],
             isCreator: [false],
-            approverRoleFor: [],
             gridColumns: [[]],
         });
         schemaRoleConfigControl.push(schemaRoleConfigForm);

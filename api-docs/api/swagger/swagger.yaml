@@ -910,8 +910,6 @@ components:
                       type: boolean
                     isCreator:
                       type: boolean
-                    approverRoleFor:
-                      type: string
                     gridColumns:
                       type: array
                       items:

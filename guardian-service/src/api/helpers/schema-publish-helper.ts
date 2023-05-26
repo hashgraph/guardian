@@ -1,26 +1,7 @@
-import {
-    SchemaStatus,
-    SchemaHelper,
-    IRootConfig,
-    GeoJsonContext
-} from '@guardian/interfaces';
+import { GeoJsonContext, IRootConfig, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
 
-import {
-    checkForCircularDependency,
-    incrementSchemaVersion,
-    updateSchemaDefs,
-    updateSchemaDocument
-} from './schema-helper';
-import {
-    schemasToContext,
-    MessageAction,
-    MessageServer,
-    SchemaMessage,
-    TopicConfig,
-    UrlType,
-    DatabaseServer,
-    Schema as SchemaCollection
-} from '@guardian/common';
+import { checkForCircularDependency, incrementSchemaVersion, updateSchemaDefs, updateSchemaDocument } from './schema-helper';
+import { DatabaseServer, MessageAction, MessageServer, Schema as SchemaCollection, SchemaMessage, schemasToContext, TopicConfig, UrlType } from '@guardian/common';
 import { emptyNotifier, INotifier } from '@helpers/notifier';
 import { publishSchemaTags } from './../tag.service';
 

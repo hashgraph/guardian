@@ -1,35 +1,6 @@
 import { ApiResponse } from '@api/helpers/api-response';
-import {
-    MessageResponse,
-    MessageError,
-    Logger,
-    DataBaseHelper,
-    Contract,
-    RetireRequest,
-    Schema as SchemaCollection,
-    Topic,
-    VcDocument as VcDocumentCollection,
-    Workers,
-    Users,
-    KeyType,
-    Wallet,
-    MessageAction,
-    MessageServer,
-    TopicConfig,
-    TopicHelper,
-    VCMessage,
-    DatabaseServer,
-    VcHelper
-} from '@guardian/common';
-import {
-    ContractStatus,
-    MessageAPI,
-    Schema,
-    SchemaEntity,
-    SchemaHelper,
-    TopicType,
-    WorkerTaskType,
-} from '@guardian/interfaces';
+import { Contract, DataBaseHelper, DatabaseServer, KeyType, Logger, MessageAction, MessageError, MessageResponse, MessageServer, RetireRequest, Schema as SchemaCollection, Topic, TopicConfig, TopicHelper, Users, VcDocument as VcDocumentCollection, VcHelper, VCMessage, Wallet, Workers } from '@guardian/common';
+import { ContractStatus, MessageAPI, Schema, SchemaEntity, SchemaHelper, TopicType, WorkerTaskType, } from '@guardian/interfaces';
 import { publishSystemSchema } from './helpers/schema-publish-helper';
 
 /**

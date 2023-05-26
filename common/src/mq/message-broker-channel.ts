@@ -1,6 +1,6 @@
 import assert from 'assert';
 import { Subscription, NatsConnection, StringCodec, connect, headers } from 'nats';
-import { IMessageResponse, MessageError } from '../models/message-response';
+import { IMessageResponse, MessageError } from '../models';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { ZipCodec } from './zip-codec';
 
