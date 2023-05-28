@@ -8,20 +8,20 @@ description: Policy developed by Gautam Prajapati during the SBS Hackathon
 
 * [Table of content](goldstandard-metered-energy-cooking.md#table-of-content)
 * [Introduction](goldstandard-metered-energy-cooking.md#introduction)
-* [Why ME\&ED(Metered and Measured Energy) Methodology?](broken-reference)
-* [Demo Video](broken-reference)
-* [Policy Workflow](broken-reference)
-* [Policy Guide](broken-reference)
-  * [Available Roles](broken-reference)
-  * [Important Documents & Schemas](broken-reference)
-  * [Token(Carbon credit)](broken-reference)
-  * [Step By Step](broken-reference)
-    * [Registry(Gold Standard) Flow](broken-reference)
-    * [Project Proponent Flow](broken-reference)
-    * [VVB Flow](broken-reference)
-* [Futureproofing(Automated credit issuance)](broken-reference)
-* [TODO](broken-reference)
-* [Existing Cookstove Policy Comparison](broken-reference)
+* [Why ME\&ED(Metered and Measured Energy) Methodology?](broken-reference/)
+* [Demo Video](broken-reference/)
+* [Policy Workflow](broken-reference/)
+* [Policy Guide](broken-reference/)
+  * [Available Roles](broken-reference/)
+  * [Important Documents & Schemas](broken-reference/)
+  * [Token(Carbon credit)](broken-reference/)
+  * [Step By Step](broken-reference/)
+    * [Registry(Gold Standard) Flow](broken-reference/)
+    * [Project Proponent Flow](broken-reference/)
+    * [VVB Flow](broken-reference/)
+* [Futureproofing(Automated credit issuance)](broken-reference/)
+* [TODO](broken-reference/)
+* [Existing Cookstove Policy Comparison](broken-reference/)
 
 ### Introduction
 
@@ -111,7 +111,7 @@ Registry is allowed to publish and edit policy config, schemas, tokens and all t
 
 5. Once PDD and MR are approved by VVB, project proponents can submit credit issue requests(VER) which registries have to take decisions on.
 
-<figure><img src="../../../.gitbook/assets/image (17).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (17) (2).png" alt=""><figcaption></figcaption></figure>
 
 6. Once VER issue request is approved, an end-to-end trust chain can be viewed by administrator. Since everything is happening transparently on public ledger(Hedera), anyone can trace the source of credits and each step that happened in the process.
 
@@ -129,7 +129,7 @@ Registry is allowed to publish and edit policy config, schemas, tokens and all t
 
 <figure><img src="../../../.gitbook/assets/image (38).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (13) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (13) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 3. Once project is approved by registry, a detailed PDD(project design document) needs to be submitted. This is the most important document highlighting the technical details of project. It includes calculations around baseline, project and leakage scenarios for accurate calculation of avoided emissions.
 
@@ -185,7 +185,7 @@ This workflow includes a bonus flow which is a major distinction from other exis
 
 <figure><img src="../../../.gitbook/assets/image (6).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (5) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (5) (1) (4).png" alt=""><figcaption></figcaption></figure>
 
 4. After an approval from VVB for the automated monitoring report, VER mint will be initiated in owner account. This will help in faster crediting cycles along with a transparent process for tracking all the intermediate steps. It'll be a huge boost to scaling up the supply of credits in VCM(Voluntary carbon markets).
 

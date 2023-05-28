@@ -24,7 +24,7 @@ The Gold Standard AR methodology promotes sustainable land use practices that co
 
 ## Policy Guide
 
-Typically, the way we start the demonstration is by logging in as a Standard Registry.&#x20;
+Typically, the way we start the demonstration is by logging in as a Standard Registry.
 
 Create a Standard Registry user if you haven't done so already.
 
@@ -32,7 +32,7 @@ You'll now be prompted to configure your Standard Registry account. Go through t
 
 <figure><img src="../../../.gitbook/assets/image (61) (1).png" alt=""><figcaption></figcaption></figure>
 
-Now we will be creating the Policy. Click on the "Policies" tab and select "Policies." We have two ways to create policies.&#x20;
+Now we will be creating the Policy. Click on the "Policies" tab and select "Policies." We have two ways to create policies.
 
 For this demo guide, we will use the "Import from Open Source" way. Click on that button and find the policy for this guide and click on the import button.
 
@@ -90,11 +90,11 @@ Navigate back to the Project Proponent profile to complete the monitoring report
 
 Upon selecting "Add Report", a file will open containing the project details and schemas previously filled out. Here, you can update the information based on the relevant monitoring plan provided by the methodology. After updating the information and including a project area map, you may click on "Ok" to proceed. (For this demo, we utilized the same values from the provided Excel file.)
 
-<figure><img src="../../../.gitbook/assets/image (14).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (14) (5).png" alt=""><figcaption></figcaption></figure>
 
 Once you have completed the monitoring report, please access the VVB profile and go to the monitoring reports tab. Here, you will find a "Verify" button - select that to proceed.
 
-<figure><img src="../../../.gitbook/assets/image (25).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (25) (3).png" alt=""><figcaption></figcaption></figure>
 
 Return to the Standard Registry profile and go to the monitoring reports tab. Here, select "Approve" to proceed.
 
@@ -112,10 +112,10 @@ This is the final step in the workflow. Access the Standard Registry profile and
 
 By accessing the "Token History" tab, you can view the number of tokens that have been minted. Additionally, clicking on the "View TrustChain" button will allow you to view the TrustChain.
 
-<figure><img src="../../../.gitbook/assets/image (43).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (43) (2).png" alt=""><figcaption></figcaption></figure>
 
 The Trust Chain view presents critical elements that are publicly available for discovery, such as token information, policy information, and all the necessary details concerning the Verifiable Credentials comprising the Verifiable Presentation. On the bottom of the screen, you will find "Cards" showcasing the Verifiable Credentials in chronological order.
 
-<figure><img src="../../../.gitbook/assets/image (13).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (13) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (11) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (11) (1) (2).png" alt=""><figcaption></figcaption></figure>

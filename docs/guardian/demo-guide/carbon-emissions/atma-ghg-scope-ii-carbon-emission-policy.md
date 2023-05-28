@@ -29,9 +29,9 @@ Currently, only a single product type is supported per policy instance, however,
 
 Once the Policy is imported, you will need to create another user account to be assigned the role of "Organization. Once you are signed in with the new user account, associate with the corresponding tokens, and go into the Policy screen. You will see a drop-down box to select the role of "Organization."
 
-<figure><img src="../../../.gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2) (1) (6).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (11).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (11) (1).png" alt=""><figcaption></figcaption></figure>
 
 Next, fill out the Organization data form.
 
@@ -41,11 +41,11 @@ Once completed, add a new entity by clicking on the "New Entity" button and fill
 
 <figure><img src="../../../.gitbook/assets/image (20).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (16) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (16) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 Once the form has been submitted, you'll need to define a product. Click on the "Define Product" button and fill out the product form.
 
-<figure><img src="../../../.gitbook/assets/image (3) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3) (1) (4).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/image (21).png" alt=""><figcaption></figcaption></figure>
 
@@ -63,7 +63,7 @@ Once the life cycle for the product has been defined, you now need to record pro
 
 <figure><img src="../../../.gitbook/assets/image (33).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (5) (1).png" alt=""><figcaption></figcaption></figure>
 
 You can select the "Production Emission Data" tab to view the emissions from the product we just created.
 
