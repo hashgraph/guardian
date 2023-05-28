@@ -230,6 +230,7 @@
       * [Deleting theme](guardian/standard-registry/policies/themes-apis/deleting-theme.md)
       * [Returning zip file containing themes](guardian/standard-registry/policies/themes-apis/returning-zip-file-containing-themes.md)
       * [Importing theme](guardian/standard-registry/policies/themes-apis/importing-theme.md)
+    * [💻 Demo on Integrating external policies using UI](guardian/standard-registry/policies/demo-on-integrating-external-policies-using-ui.md)
     * [📔 Library of Policy Examples](guardian/standard-registry/policies/library-of-policy-examples/README.md)
       * [💻 Creating and using Roles](guardian/standard-registry/policies/library-of-policy-examples/creating-and-using-roles.md)
       * [🔢 Data input via Forms, using Roles to partition user activities.](guardian/standard-registry/policies/library-of-policy-examples/data-input-via-forms-using-roles-to-partition-user-activities..md)

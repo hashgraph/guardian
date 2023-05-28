@@ -2,7 +2,7 @@
 
 To create a new Schemas, click on the **New** button at the top right corner.
 
-![](<../../../.gitbook/assets/image (16) (1).png>)
+![](<../../../.gitbook/assets/image (16) (1) (1).png>)
 
 After clicking on the New button, you will be asked to enter Schema details such as Schema Name, Policy Dropdown, Entity : VC/MRV/NONE, Schema Description and any other required fields.
 
@@ -20,7 +20,7 @@ Instead of creating a new Schema from scratch, there is also an option to import
 
 To import the Schema, click on the Import button.
 
-<figure><img src="../../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 Files with **.schema** extension are only accepted. These files are in zip format, i.e. they are zip archives of the text file.
@@ -38,10 +38,10 @@ Once the Schema is imported, we need to select the Policy from the Policy dropdo
 
 <figure><img src="../../../.gitbook/assets/image (5) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (3) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
-**Note:**&#x20;
+**Note:**
 
 The major difference between creating / importing System Schema and Policy Schema is that we only get policy selection dropdown when policy schema is imported.
 {% endhint %}
@@ -65,7 +65,7 @@ Once the Schema is imported, we will have the following options:\
 
 To Publish the Schema, click on Publish button.
 
-<figure><img src="../../../.gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2) (1) (5).png" alt=""><figcaption></figcaption></figure>
 
 After clicking on Publish, you will be prompted to enter the version. After entering the Version and pressing the submit button, the status will change to Published.
 
@@ -135,7 +135,7 @@ Example of URL which has correct format: [https://ipfs.io/ipfs/bafkreihgbx6fsqup
 {% hint style="info" %}
 **Note: Important points to be noted when "String" type is selected:**
 
-1. Pattern input field is added in the advanced mode configuration.&#x20;
+1. Pattern input field is added in the advanced mode configuration.
 
 Detailed information for patterns is available on [https://json-schema.org/understanding-json-schema/reference/regular\_expressions.html](https://json-schema.org/understanding-json-schema/reference/regular\_expressions.html).
 {% endhint %}
