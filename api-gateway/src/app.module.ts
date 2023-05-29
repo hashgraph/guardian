@@ -25,6 +25,7 @@ import process from 'process';
 import express from 'express';
 import fileUpload from 'express-fileupload';
 import hpp from 'hpp';
+import { ThemesApi } from '@api/service/themes';
 
 const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
 
@@ -61,6 +62,7 @@ const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
         TagsApi,
         TaskApi,
         TokensApi,
+        ThemesApi,
         TrustChainsApi,
         WizardApi
     ],
@@ -83,6 +85,7 @@ export class AppModule {
         consumer.apply(authorizationHelper).forRoutes(ContractsApi);
         consumer.apply(authorizationHelper).forRoutes(ModulesApi);
         consumer.apply(authorizationHelper).forRoutes(TagsApi);
+        consumer.apply(authorizationHelper).forRoutes(ThemesApi);
         consumer.apply(authorizationHelper).forRoutes(TokensApi);
         consumer.apply(authorizationHelper).forRoutes(TrustChainsApi);
         consumer.apply(authorizationHelper).forRoutes(WizardApi);
