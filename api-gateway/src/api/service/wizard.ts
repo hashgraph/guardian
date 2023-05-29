@@ -3,12 +3,15 @@ import { Logger, RunFunctionAsync, } from '@guardian/common';
 import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
 import { Controller, HttpCode, HttpStatus, Post, Req, Response } from '@nestjs/common';
+import { checkPermission } from '@auth/authorization-helper';
+import { UserRole } from '@guardian/interfaces';
 
 @Controller('wizard')
 export class WizardApi {
     @Post('/policy')
     @HttpCode(HttpStatus.CREATED)
     async setPolicy(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const wizardConfig = req.body;
             const user = req.user;
@@ -25,6 +28,7 @@ export class WizardApi {
     @Post('/policy/push')
     @HttpCode(HttpStatus.ACCEPTED)
     async setPolicyAsync(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Create policy');
         const wizardConfig = req.body;
@@ -52,6 +56,7 @@ export class WizardApi {
     @Post('/:policyId/config')
     @HttpCode(HttpStatus.OK)
     async setPolicyConfig(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const wizardConfig = req.body;
             const user = req.user;

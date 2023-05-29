@@ -6,6 +6,7 @@ import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
 import { prepareValidationResponse } from '@middlewares/validation';
 import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response } from '@nestjs/common';
+import { checkPermission } from '@auth/authorization-helper';
 
 /**
  * Token route
@@ -72,6 +73,7 @@ export class TokensApi {
     @Get('/')
     @HttpCode(HttpStatus.OK)
     async getTokens(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         try {
             const guardians = new Guardians();
             const engineService = new PolicyEngine();
@@ -101,6 +103,7 @@ export class TokensApi {
     @Post('/')
     @HttpCode(HttpStatus.CREATED)
     async newToken(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardians = new Guardians();
             const engineService = new PolicyEngine();
@@ -129,6 +132,7 @@ export class TokensApi {
     @Post('/push')
     @HttpCode(HttpStatus.ACCEPTED)
     async pushTokenAsync(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Create token');
         const user = req.user;
@@ -151,6 +155,7 @@ export class TokensApi {
     @Put('/push')
     @HttpCode(HttpStatus.ACCEPTED)
     async updateTokenAsync(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const taskManager = new TaskManager();
             const { taskId, expectation } = taskManager.start('Update token');
@@ -194,6 +199,7 @@ export class TokensApi {
     @Delete('/push/:tokenId')
     @HttpCode(HttpStatus.ACCEPTED)
     async deleteTokenAsync(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const taskManager = new TaskManager();
             const { taskId, expectation } = taskManager.start('Update token');
@@ -233,6 +239,7 @@ export class TokensApi {
     @Put('/:tokenId/associate')
     @HttpCode(HttpStatus.OK)
     async associateToken(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.USER)(req.user);
         try {
             const guardians = new Guardians();
             const tokenId = req.params.tokenId;
@@ -257,6 +264,7 @@ export class TokensApi {
     @Put('/push/:tokenId/associate')
     @HttpCode(HttpStatus.ACCEPTED)
     async associateTokenAsync(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.USER)(req.user);
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Associate/dissociate token');
 
@@ -280,6 +288,7 @@ export class TokensApi {
     @Put('/:tokenId/dissociate')
     @HttpCode(HttpStatus.OK)
     async dissociateToken(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.USER)(req.user);
         try {
             const guardians = new Guardians();
             const tokenId = req.params.tokenId;
@@ -304,6 +313,7 @@ export class TokensApi {
     @Put('/push/:tokenId/dissociate')
     @HttpCode(HttpStatus.ACCEPTED)
     async dissociateTokenAsync(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.USER)(req.user);
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Associate/dissociate token');
 
@@ -329,6 +339,7 @@ export class TokensApi {
     @Put('/:tokenId/:username/grantKyc')
     @HttpCode(HttpStatus.OK)
     async grantKycOld(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardians = new Guardians();
             const tokenId = req.params.tokenId;
@@ -352,6 +363,7 @@ export class TokensApi {
     @Put('/:tokenId/:username/grantKyc')
     @HttpCode(HttpStatus.OK)
     async grantKycOld2(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardians = new Guardians();
             const tokenId = req.params.tokenId;
@@ -371,6 +383,7 @@ export class TokensApi {
     @Put('/:tokenId/:username/grant-kyc')
     @HttpCode(HttpStatus.OK)
     async grantKyc(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardians = new Guardians();
             const tokenId = req.params.tokenId;
@@ -398,6 +411,7 @@ export class TokensApi {
     @Put('/push/:tokenId/:username/grantKyc')
     @HttpCode(HttpStatus.OK)
     async grantKycAsyncOld(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Grant KYC');
 
@@ -423,6 +437,7 @@ export class TokensApi {
     @Put('/push/:tokenId/:username/grant-kyc')
     @HttpCode(HttpStatus.ACCEPTED)
     async grantKycAsync(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Grant KYC');
 
@@ -450,6 +465,7 @@ export class TokensApi {
     @Put('/:tokenId/:username/revokeKyc')
     @HttpCode(HttpStatus.OK)
     async revokeKycOld(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardians = new Guardians();
             const tokenId = req.params.tokenId;
@@ -470,6 +486,7 @@ export class TokensApi {
     @Put('/:tokenId/:username/revoke-kyc')
     @HttpCode(HttpStatus.OK)
     async revokeKyc(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardians = new Guardians();
             const tokenId = req.params.tokenId;
@@ -498,6 +515,7 @@ export class TokensApi {
     @Put('/push/:tokenId/:username/revokeKyc')
     @HttpCode(HttpStatus.OK)
     async revokeKycAsyncOld(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Revoke KYC');
 
@@ -522,6 +540,7 @@ export class TokensApi {
     @Put('/push/:tokenId/:username/revoke-kyc')
     @HttpCode(HttpStatus.ACCEPTED)
     async revokeKycAsync(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Revoke KYC');
 
@@ -546,6 +565,7 @@ export class TokensApi {
     @Put('/:tokenId/:username/freeze')
     @HttpCode(HttpStatus.OK)
     async freezeToken(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardians = new Guardians();
             const tokenId = req.params.tokenId;
@@ -571,6 +591,7 @@ export class TokensApi {
     @Put('/:tokenId/:username/unfreeze')
     @HttpCode(HttpStatus.OK)
     async unfreezeToken(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardians = new Guardians();
             const tokenId = req.params.tokenId;
@@ -596,6 +617,7 @@ export class TokensApi {
     @Put('/push/:tokenId/:username/freeze')
     @HttpCode(HttpStatus.ACCEPTED)
     async freezeTokenAsync(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Freeze Token');
 
@@ -620,6 +642,7 @@ export class TokensApi {
     @Put('/push/:tokenId/:username/unfreeze')
     @HttpCode(HttpStatus.ACCEPTED)
     async unfreezeTokenAsync(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Freeze Token');
 
@@ -644,6 +667,7 @@ export class TokensApi {
     @Get('/:tokenId/:username/info')
     @HttpCode(HttpStatus.OK)
     async getTokenInfo(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardians = new Guardians();
             const tokenId = req.params.tokenId;

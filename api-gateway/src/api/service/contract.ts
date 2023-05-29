@@ -1,7 +1,8 @@
 import { Guardians } from '@helpers/guardians';
 import { UserRole } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
-import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Req, Response } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, HttpStatus, Post, Req, Response } from '@nestjs/common';
+import { checkPermission } from '@auth/authorization-helper';
 
 /**
  * Contracts api
@@ -40,6 +41,7 @@ export class ContractsApi {
     @Post('/')
     @HttpCode(HttpStatus.OK)
     async setContracts(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const {description} = req.body;
@@ -56,6 +58,7 @@ export class ContractsApi {
     @Post('/import')
     @HttpCode(HttpStatus.OK)
     async importContracts(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const {contractId, description} = req.body;
@@ -76,6 +79,7 @@ export class ContractsApi {
     @Post('/:contractId/user')
     @HttpCode(HttpStatus.OK)
     async userContract(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const {userId} = req.body;
@@ -92,6 +96,7 @@ export class ContractsApi {
     @Post(':contractId/status')
     @HttpCode(HttpStatus.OK)
     async contractStatus(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
@@ -127,6 +132,7 @@ export class ContractsApi {
     @Post('/:contractId/pair')
     @HttpCode(HttpStatus.OK)
     async setPair(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const {
@@ -225,6 +231,7 @@ export class ContractsApi {
     @Post('/retire')
     @HttpCode(HttpStatus.OK)
     async retire(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const { requestId } = req.body;

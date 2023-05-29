@@ -3,7 +3,8 @@ import { Logger } from '@guardian/common';
 import { Guardians } from '@helpers/guardians';
 import { UserRole } from '@guardian/interfaces';
 import { ClientProxy } from '@nestjs/microservices';
-import { Body, Controller, Get, Headers, HttpCode, HttpException, HttpStatus, Inject, Post } from '@nestjs/common';
+import { Body, Controller, Get, Headers, HttpCode, HttpException, HttpStatus, Inject, Post, Req } from '@nestjs/common';
+import { checkPermission } from '@auth/authorization-helper';
 
 /**
  * User account route
@@ -79,7 +80,8 @@ export class AccountApi {
      */
     @Get()
     @HttpCode(HttpStatus.OK)
-    async getAllAccounts(): Promise<any> {
+    async getAllAccounts(@Req() req): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const users = new Users();
             return await users.getAllUserAccounts();

@@ -1,10 +1,11 @@
 import { Guardians } from '@helpers/guardians';
 import { Users } from '@helpers/users';
-import { DidDocumentStatus, IUser, SchemaEntity, TopicType } from '@guardian/interfaces';
+import { DidDocumentStatus, IUser, SchemaEntity, TopicType, UserRole } from '@guardian/interfaces';
 import { Logger, RunFunctionAsync } from '@guardian/common';
 import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
 import { Controller, Get, HttpCode, HttpException, HttpStatus, Put, Req, Response } from '@nestjs/common';
+import { checkPermission } from '@auth/authorization-helper';
 
 @Controller('profiles')
 export class ProfileApi {
@@ -119,6 +120,7 @@ export class ProfileApi {
   @Put('/restore/:username')
   @HttpCode(HttpStatus.ACCEPTED)
   async resoreUserProfile(@Req() req, @Response() res): Promise<any> {
+    await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
     const taskManager = new TaskManager();
     const {taskId, expectation} = taskManager.start('Restore user profile');
 
@@ -139,6 +141,7 @@ export class ProfileApi {
   @Put('/restore/topics/:username')
   @HttpCode(HttpStatus.ACCEPTED)
   async restoreTopic(@Req() req, @Response() res): Promise<any> {
+    await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
     const taskManager = new TaskManager();
     const {taskId, expectation} = taskManager.start('Get user topics');
 

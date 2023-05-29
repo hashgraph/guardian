@@ -3,7 +3,7 @@ import { Users } from '@helpers/users';
 import { Logger, RunFunctionAsync } from '@guardian/common';
 import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
-import { Controller, Get, HttpCode, HttpException, HttpStatus, Req, Response } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Req, Response } from '@nestjs/common';
 
 @Controller('demo')
 export class DemoApi {

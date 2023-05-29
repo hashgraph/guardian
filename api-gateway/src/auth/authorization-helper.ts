@@ -1,7 +1,7 @@
 import { NextFunction, Response } from 'express';
 import { Users } from '@helpers/users';
 import { AuthenticatedRequest, IAuthUser, Logger } from '@guardian/common';
-import { Injectable, NestMiddleware } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, NestMiddleware } from '@nestjs/common';
 
 /**
  * Auth middleware
@@ -69,6 +69,25 @@ export async function authorizationHelper(req: AuthenticatedRequest, res: Respon
         }
     }
     res.sendStatus(401);
+}
+
+/**
+ * Calculate user permissions
+ * @param roles
+ */
+export function checkPermission(...roles: string[]) {
+    return async (user: IAuthUser): Promise<void> => {
+        if (user) {
+            if(user.role) {
+                if(roles.indexOf(user.role) !== -1) {
+                    return;
+                }
+            }
+            throw new HttpException('Forbidden', HttpStatus.FORBIDDEN)
+        } else {
+            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
+        }
+    }
 }
 
 /**

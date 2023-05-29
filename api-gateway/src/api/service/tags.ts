@@ -1,8 +1,9 @@
 import { Logger } from '@guardian/common';
 import { Guardians } from '@helpers/guardians';
-import { SchemaCategory, SchemaHelper } from '@guardian/interfaces';
+import { SchemaCategory, SchemaHelper, UserRole } from '@guardian/interfaces';
 import { SchemaUtils } from '@helpers/schema-utils';
 import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response } from '@nestjs/common';
+import { checkPermission } from '@auth/authorization-helper';
 
 @Controller('tags')
 export class TagsApi {
@@ -123,6 +124,7 @@ export class TagsApi {
     @Get('/schemas')
     @HttpCode(HttpStatus.OK)
     async getSchemas(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
@@ -147,6 +149,7 @@ export class TagsApi {
     @Post('/schemas')
     @HttpCode(HttpStatus.CREATED)
     async postSchemas(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const newSchema = req.body;
@@ -178,6 +181,7 @@ export class TagsApi {
     @Delete('/schemas/:schemaId')
     @HttpCode(HttpStatus.OK)
     async deleteSchema(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
@@ -198,6 +202,7 @@ export class TagsApi {
     @Put('/schemas/:schemaId')
     @HttpCode(HttpStatus.OK)
     async setTag(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const newSchema = req.body;
@@ -223,6 +228,7 @@ export class TagsApi {
     @Put('/schemas/:schemaId/publish')
     @HttpCode(HttpStatus.OK)
     async publishTag(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();

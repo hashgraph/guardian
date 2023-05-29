@@ -1,6 +1,6 @@
 import { PolicyEngine } from '@helpers/policy-engine';
 import { Logger } from '@guardian/common';
-import { Controller, HttpCode, HttpException, HttpStatus, Post, Req, Response } from '@nestjs/common';
+import { Controller, HttpCode, HttpStatus, Post, Req, Response } from '@nestjs/common';
 
 @Controller('external')
 export class ExternalApi {

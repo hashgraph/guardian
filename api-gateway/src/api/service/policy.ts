@@ -5,6 +5,7 @@ import { AuthenticatedRequest, Logger, RunFunctionAsync } from '@guardian/common
 import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
 import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, RawBodyRequest, Req, Response } from '@nestjs/common';
+import { checkPermission } from '@auth/authorization-helper';
 
 @Controller('policies')
 export class PolicyApi {
@@ -69,6 +70,7 @@ export class PolicyApi {
     @Post('/')
     @HttpCode(HttpStatus.CREATED)
     async createPolicy(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
             const policies = await engineService.createPolicy(req.body, req.user)
@@ -82,6 +84,7 @@ export class PolicyApi {
     @Post('/push')
     @HttpCode(HttpStatus.ACCEPTED)
     async createPolicyAsync(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Create policy');
         const model = req.body;
@@ -99,6 +102,7 @@ export class PolicyApi {
     @Post('/push/:policyId')
     @HttpCode(HttpStatus.ACCEPTED)
     async updatePolicyAsync(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Clone policy');
         const policyId = req.params.policyId;
@@ -118,6 +122,7 @@ export class PolicyApi {
     @Delete('/push/:policyId')
     @HttpCode(HttpStatus.ACCEPTED)
     async deletePOlicyAsync(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Delete policy');
         const policyId = req.params.policyId;
@@ -179,6 +184,7 @@ export class PolicyApi {
     @Put('/:policyId/publish')
     @HttpCode(HttpStatus.OK)
     async publishPolicy(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
             return res.json(await engineService.publishPolicy(req.body, req.user, req.params.policyId));
@@ -191,6 +197,7 @@ export class PolicyApi {
     @Put('/push/:policyId/publish')
     @HttpCode(HttpStatus.ACCEPTED)
     async publishPolicyAsync(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Publish policy');
 
@@ -211,6 +218,7 @@ export class PolicyApi {
     @Put('/:policyId/dry-run')
     @HttpCode(HttpStatus.OK)
     async dryRunPolicy(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
             return res.json(await engineService.dryRunPolicy(req.user, req.params.policyId));
@@ -223,6 +231,7 @@ export class PolicyApi {
     @Put('/:policyId/draft')
     @HttpCode(HttpStatus.OK)
     async draftPolicy(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
             return res.json(await engineService.draft(req.user, req.params.policyId));
@@ -357,6 +366,7 @@ export class PolicyApi {
     @Get('/:policyId/export/file')
     @HttpCode(HttpStatus.OK)
     async getPolicyExportFile(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
             const policyFile: any = await engineService.exportFile(req.user, req.params.policyId);
@@ -373,6 +383,7 @@ export class PolicyApi {
     @Get('/:policyId/export/message')
     @HttpCode(HttpStatus.OK)
     async getPolicyExportMessage(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
             return res.send(await engineService.exportMessage(req.user, req.params.policyId));
@@ -385,6 +396,7 @@ export class PolicyApi {
     @Post('/import/message')
     @HttpCode(HttpStatus.CREATED)
     async importPolicyFromMessage(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;
         try {
@@ -399,6 +411,7 @@ export class PolicyApi {
     @Post('/push/import/message')
     @HttpCode(HttpStatus.ACCEPTED)
     async importPolicyFromMessageAsync(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Import policy message');
 
@@ -418,6 +431,7 @@ export class PolicyApi {
     @Post('/import/file')
     @HttpCode(HttpStatus.CREATED)
     async importPolicyFromFile(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;
         try {
@@ -432,6 +446,7 @@ export class PolicyApi {
     @Post('/push/import/file')
     @HttpCode(HttpStatus.ACCEPTED)
     async importPolicyFromFileAsync(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Import policy file');
 
@@ -451,6 +466,7 @@ export class PolicyApi {
     @Post('/import/message/preview')
     @HttpCode(HttpStatus.OK)
     async importMessage(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
             return res.send(await engineService.importMessagePreview(req.user, req.body.messageId));
@@ -463,6 +479,7 @@ export class PolicyApi {
     @Post('/push/import/message/preview')
     @HttpCode(HttpStatus.ACCEPTED)
     async importFromMessagePreview(@Req() req, @Response() res) {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Preview policy message');
 
@@ -482,6 +499,7 @@ export class PolicyApi {
     @Post('/import/file/preview')
     @HttpCode(HttpStatus.OK)
     async importPolicyFromFilePreview(@Req() req: RawBodyRequest<AuthenticatedRequest>, @Response() res) {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
             return res.send(await engineService.importFilePreview(req.user, req.body));
@@ -506,6 +524,7 @@ export class PolicyApi {
     @Get('/:policyId/dry-run/users')
     @HttpCode(HttpStatus.OK)
     async getDryRunUsers(@Req() req, @Response() res) {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
             const policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
@@ -526,6 +545,7 @@ export class PolicyApi {
     @Post('/:policyId/dry-run/user')
     @HttpCode(HttpStatus.CREATED)
     async setDryRunUser(@Req() req, @Response() res) {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
             const policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
@@ -546,6 +566,7 @@ export class PolicyApi {
     @Post('/:policyId/dry-run/login')
     @HttpCode(HttpStatus.OK)
     async loginDryRunUser(@Req() req, @Response() res) {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
             const policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
@@ -566,6 +587,7 @@ export class PolicyApi {
     @Post('/:policyId/dry-run/restart')
     @HttpCode(HttpStatus.OK)
     async restartDryRun(@Req() req, @Response() res) {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
             const policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
@@ -586,6 +608,7 @@ export class PolicyApi {
     @Get('/:policyId/dry-run/transactions')
     @HttpCode(HttpStatus.OK)
     async getDryRunTransactions(@Req() req, @Response() res) {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
             const policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
@@ -613,6 +636,7 @@ export class PolicyApi {
     @Get('/:policyId/dry-run/artifacts')
     @HttpCode(HttpStatus.OK)
     async getDryRunArtifacts(@Req() req, @Response() res) {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
             const policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
@@ -640,6 +664,7 @@ export class PolicyApi {
     @Get('/:policyId/dry-run/ipfs')
     @HttpCode(HttpStatus.OK)
     async getDryRunIpfs(@Req() req, @Response() res) {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
             const policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;

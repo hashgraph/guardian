@@ -1,14 +1,16 @@
 import { Guardians } from '@helpers/guardians';
-import { CommonSettings } from '@guardian/interfaces';
+import { CommonSettings, UserRole } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
 import { prepareValidationResponse } from '@middlewares/validation';
 import { Controller, Get, HttpCode, HttpStatus, Post, Req, Response } from '@nestjs/common';
+import { checkPermission } from '@auth/authorization-helper';
 
 @Controller('settings')
 export class SettingsApi {
     @Post('/')
     @HttpCode(HttpStatus.CREATED)
     async updateSettings(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const settings = req.body as CommonSettings;
             if (!settings || Object.keys(settings).length === 0) {
@@ -28,6 +30,7 @@ export class SettingsApi {
     @Get('/')
     @HttpCode(HttpStatus.OK)
     async getSettings(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardians = new Guardians();
             const [guardiansSettings] = await Promise.all([

@@ -1,7 +1,8 @@
-import { IPageParameters, MessageAPI } from '@guardian/interfaces';
+import { IPageParameters, MessageAPI, UserRole } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
-import { Controller, Get, HttpCode, HttpException, HttpStatus, Inject, Injectable, Post, Req, Response } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Inject, Injectable, Post, Req, Response } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
+import { checkPermission } from '@auth/authorization-helper';
 
 @Injectable()
 export class LoggerService {
@@ -31,6 +32,7 @@ export class LoggerApi {
     @Post('/')
     @HttpCode(HttpStatus.OK)
     async getLogs(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const filters: any = {};
             const pageParameters: IPageParameters = {};
@@ -71,6 +73,7 @@ export class LoggerApi {
     @Get('attributes')
     @HttpCode(HttpStatus.OK)
     async getAttributes(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             if (req.query.existingAttributes && !Array.isArray(req.query.existingAttributes)) {
                 req.query.existingAttributes = [req.query.existingAttributes as string];

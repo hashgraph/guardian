@@ -2,12 +2,15 @@ import { Guardians } from '@helpers/guardians';
 import { Users } from '@helpers/users';
 import { IAuthUser, Logger } from '@guardian/common';
 import { Controller, Get, HttpCode, HttpStatus, Req, Response } from '@nestjs/common';
+import { checkPermission } from '@auth/authorization-helper';
+import { UserRole } from '@guardian/interfaces';
 
 @Controller('trust-chains')
 export class TrustChainsApi {
     @Get('/')
     @HttpCode(HttpStatus.OK)
     async getTrustChains(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.AUDITOR)(req.user);
         try {
             const guardians = new Guardians();
             let pageIndex: any;
@@ -43,6 +46,7 @@ export class TrustChainsApi {
     @Get('/:hash')
     @HttpCode(HttpStatus.OK)
     async getTrustChainByHash(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.AUDITOR)(req.user);
         try {
             const guardians = new Guardians();
             const hash = req.params.hash;

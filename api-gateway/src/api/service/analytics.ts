@@ -1,6 +1,6 @@
 import { Guardians } from '@helpers/guardians';
 import { Logger } from '@guardian/common';
-import { Body, Controller, HttpCode, HttpException, HttpStatus, Post, Req } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post, Req } from '@nestjs/common';
 
 @Controller('analytics')
 export class AnalyticsApi {

@@ -1,8 +1,9 @@
-import { PolicyType } from '@guardian/interfaces';
+import { PolicyType, UserRole } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
 import { Guardians } from '@helpers/guardians';
 import { PolicyEngine } from '@helpers/policy-engine';
 import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Req, Response } from '@nestjs/common';
+import { checkPermission } from '@auth/authorization-helper';
 
 @Controller('artifacts')
 export class ArtifactApi {
@@ -15,6 +16,7 @@ export class ArtifactApi {
     @Get('/')
     @HttpCode(HttpStatus.OK)
     async getArtifacts(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const policyId = req.query.policyId as string;
             const guardians = new Guardians();
@@ -40,6 +42,7 @@ export class ArtifactApi {
     @Post('/:policyId')
     @HttpCode(HttpStatus.CREATED)
     async uploadArtifacts(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardian = new Guardians();
             const policyEngine = new PolicyEngine();
@@ -75,6 +78,7 @@ export class ArtifactApi {
     @Delete('/:artifactId')
     @HttpCode(HttpStatus.NO_CONTENT)
     async deleteArtifact(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardian = new Guardians();
             await guardian.deleteArtifact(req.params.artifactId, req.user.did)

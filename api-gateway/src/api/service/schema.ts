@@ -6,6 +6,7 @@ import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
 import { SchemaUtils } from '@helpers/schema-utils';
 import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response } from '@nestjs/common';
+import { checkPermission } from '@auth/authorization-helper';
 
 /**
  * Prepare new schema object
@@ -137,6 +138,7 @@ export class SchemaApi {
     @Post('/:topicId')
     @HttpCode(HttpStatus.CREATED)
     async setTopicId(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const newSchema = req.body;
@@ -157,6 +159,7 @@ export class SchemaApi {
     @Post('/push/:topicId')
     @HttpCode(HttpStatus.ACCEPTED)
     async setTopicIdAsync(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Create schema');
 
@@ -224,6 +227,7 @@ export class SchemaApi {
     @Put('/')
     @HttpCode(HttpStatus.OK)
     async setSchema(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const newSchema = req.body;
@@ -251,6 +255,7 @@ export class SchemaApi {
     @Delete('/:schemaId')
     @HttpCode(HttpStatus.OK)
     async deleteSchema(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
@@ -278,6 +283,7 @@ export class SchemaApi {
     @Put('/:schemaId/publish')
     @HttpCode(HttpStatus.OK)
     async publishSchema(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
@@ -313,6 +319,7 @@ export class SchemaApi {
     @Put('/push/:schemaId/publish')
     @HttpCode(HttpStatus.ACCEPTED)
     async publishSchemaAsync(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Publish schema');
 
@@ -351,6 +358,7 @@ export class SchemaApi {
     @Post('/import/message/preview')
     @HttpCode(HttpStatus.OK)
     async importFromMessagePreview(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const messageId = req.body.messageId;
             const guardians = new Guardians();
@@ -365,6 +373,7 @@ export class SchemaApi {
     @Post('/push/import/message/preview')
     @HttpCode(HttpStatus.ACCEPTED)
     async importFromMessagePreviewAsync(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Preview schema message');
 
@@ -386,6 +395,7 @@ export class SchemaApi {
     @Post('/import/file/preview')
     @HttpCode(HttpStatus.OK)
     async importFromFilePreview(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const zip = req.body;
             if (!zip) {
@@ -404,6 +414,7 @@ export class SchemaApi {
     @Post('/:topicId/import/message')
     @HttpCode(HttpStatus.CREATED)
     async importFromMessage(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const topicId = req.params.topicId;
@@ -422,6 +433,7 @@ export class SchemaApi {
     @Post('/push/:topicId/import/message')
     @HttpCode(HttpStatus.ACCEPTED)
     async importFromMessageAsync(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Import schema message');
 
@@ -442,6 +454,7 @@ export class SchemaApi {
     @Post('/:topicId/import/file')
     @HttpCode(HttpStatus.CREATED)
     async importToTopicFromFile(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
@@ -464,6 +477,7 @@ export class SchemaApi {
     @Post('/push/:topicId/import/file')
     @HttpCode(HttpStatus.ACCEPTED)
     async importToTopicFromFileAsync(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Import schema file');
 
@@ -490,6 +504,7 @@ export class SchemaApi {
     @Get('/:schemaId/export/message')
     @HttpCode(HttpStatus.OK)
     async exportMessage(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardians = new Guardians();
             const id = req.params.schemaId;
@@ -515,6 +530,7 @@ export class SchemaApi {
     @Get('/:schemaId/export/file')
     @HttpCode(HttpStatus.OK)
     async exportToFile(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardians = new Guardians();
             const id = req.params.schemaId;
@@ -571,6 +587,7 @@ export class SchemaApi {
     @Post('/system/:username')
     @HttpCode(HttpStatus.CREATED)
     async postSystemSchema(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const newSchema = req.body;
@@ -603,6 +620,7 @@ export class SchemaApi {
     @Get('/system/:username')
     @HttpCode(HttpStatus.OK)
     async getSystemSchema(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
@@ -625,6 +643,7 @@ export class SchemaApi {
     @Delete('/system/:schemaId')
     @HttpCode(HttpStatus.NO_CONTENT)
     async deleteSystemSchema(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
@@ -651,6 +670,7 @@ export class SchemaApi {
     @Put('/system/:schemaId')
     @HttpCode(HttpStatus.OK)
     async setSystemSchema(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const newSchema = req.body;
@@ -703,6 +723,7 @@ export class SchemaApi {
     @Get('/list/all')
     @HttpCode(HttpStatus.OK)
     async getAll(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();

@@ -1,6 +1,5 @@
 import { Logger } from '@guardian/common';
 import { Guardians } from '@helpers/guardians';
-import { prepareValidationResponse } from '@middlewares/validation';
 import { Controller, Get, HttpCode, HttpException, HttpStatus, Post, Req, Response } from '@nestjs/common';
 
 @Controller('ipfs')

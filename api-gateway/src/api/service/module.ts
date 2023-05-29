@@ -1,12 +1,15 @@
 import { Logger } from '@guardian/common';
 import { Guardians } from '@helpers/guardians';
 import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response } from '@nestjs/common';
+import { checkPermission } from '@auth/authorization-helper';
+import { UserRole } from '@guardian/interfaces';
 
 @Controller('modules')
 export class ModulesApi {
     @Post('/')
     @HttpCode(HttpStatus.CREATED)
     async postModules(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardian = new Guardians();
             const module = req.body;
@@ -24,6 +27,7 @@ export class ModulesApi {
     @Get('/')
     @HttpCode(HttpStatus.OK)
     async getModules(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardians = new Guardians();
 
@@ -48,6 +52,7 @@ export class ModulesApi {
     @Delete('/:uuid')
     @HttpCode(HttpStatus.OK)
     async deleteModule(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardian = new Guardians();
             if (!req.params.uuid) {
@@ -64,6 +69,7 @@ export class ModulesApi {
     @Get('/menu')
     @HttpCode(HttpStatus.OK)
     async getMenu(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardians = new Guardians();
             const items = await guardians.getMenuModule(req.user.did);
@@ -77,6 +83,7 @@ export class ModulesApi {
     @Get('/:uuid')
     @HttpCode(HttpStatus.OK)
     async getModule(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardian = new Guardians();
             if (!req.params.uuid) {
@@ -93,6 +100,7 @@ export class ModulesApi {
     @Put('/:uuid')
     @HttpCode(HttpStatus.CREATED)
     async putModule(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardian = new Guardians();
             if (!req.params.uuid) {
@@ -113,6 +121,7 @@ export class ModulesApi {
     @Get('/:uuid/export/file')
     @HttpCode(HttpStatus.OK)
     async moduleExportFile(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardian = new Guardians();
         try {
             const file: any = await guardian.exportModuleFile(req.params.uuid, req.user.did);
@@ -128,6 +137,7 @@ export class ModulesApi {
     @Get('/:uuid/export/message')
     @HttpCode(HttpStatus.OK)
     async moduleExportMessage(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardian = new Guardians();
         try {
             return res.send(await guardian.exportModuleMessage(req.params.uuid, req.user.did));
@@ -140,6 +150,7 @@ export class ModulesApi {
     @Post('/import/message')
     @HttpCode(HttpStatus.CREATED)
     async moduleImportMessage(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardian = new Guardians();
         try {
             const module = await guardian.importModuleMessage(req.body.messageId, req.user.did);
@@ -153,6 +164,7 @@ export class ModulesApi {
     @Post('/import/file')
     @HttpCode(HttpStatus.CREATED)
     async moduleImportFile(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardian = new Guardians();
         try {
             const module = await guardian.importModuleFile(req.body, req.user.did);
@@ -166,6 +178,7 @@ export class ModulesApi {
     @Post('/import/message/preview')
     @HttpCode(HttpStatus.OK)
     async moduleImportMessagePreview(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardian = new Guardians();
         try {
             const module = await guardian.previewModuleMessage(req.body.messageId, req.user.did);
@@ -179,6 +192,7 @@ export class ModulesApi {
     @Post('/import/file/preview')
     @HttpCode(HttpStatus.OK)
     async moduleImportFilePreview(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardian = new Guardians();
         try {
             const module = await guardian.previewModuleFile(req.body, req.user.did);
@@ -192,6 +206,7 @@ export class ModulesApi {
     @Put('/:uuid/publish')
     @HttpCode(HttpStatus.OK)
     async publishModule(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardian = new Guardians();
         try {
             const module = await guardian.publishModule(req.params.uuid, req.user.did, req.body);
