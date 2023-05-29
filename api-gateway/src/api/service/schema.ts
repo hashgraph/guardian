@@ -564,23 +564,23 @@ export class SchemaApi {
     async getSchemaType(@Req() req, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();
-            const id = req.params.schemaId;
-            const schemas = await guardians.exportSchemas([id]);
-            const scheme = schemas[0];
-            if (!scheme) {
-                throw new HttpException(`Cannot export schema ${req.params.schemaId}`, HttpStatus.UNPROCESSABLE_ENTITY)
+            const schema = await guardians.getSchemaByType(req.params.schemaType);
+            if (!schema) {
+                throw new HttpException( `Schema not found: ${req.params.schemaType}`, HttpStatus.NOT_FOUND);
             }
             return res.send({
-                id: scheme.id,
-                name: scheme.name,
-                description: scheme.description,
-                version: scheme.version,
-                messageId: scheme.messageId,
-                owner: scheme.owner
+                uuid: schema.uuid,
+                iri: schema.iri,
+                name: schema.name,
+                version: schema.version,
+                document: schema.document,
+                documentURL: schema.documentURL,
+                context: schema.context,
+                contextURL: schema.contextURL,
             });
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            return error
         }
     }
 

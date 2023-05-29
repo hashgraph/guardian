@@ -3,6 +3,9 @@ import { Singleton } from '../decorators/singleton';
 import { NatsService } from '../mq';
 import { createLogger, Logger as WinstonLogger, format } from 'winston';
 import Transport from 'winston-transport';
+import { Controller } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
+import { Client } from '@hashgraph/sdk';
 
 /**
  * Logger connection
