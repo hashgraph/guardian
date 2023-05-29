@@ -1,10 +1,11 @@
 import { Guardians } from '@helpers/guardians';
 import { Logger } from '@guardian/common';
-import { Body, Controller, Post, Req } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpException, HttpStatus, Post, Req } from '@nestjs/common';
 
 @Controller('analytics')
 export class AnalyticsApi {
     @Post('/compare/policies')
+    @HttpCode(HttpStatus.OK)
     async comparePolicies(@Body() body, @Req() req): Promise<any> {
         const guardians = new Guardians();
         const policyId1 = body ? body.policyId1 : null;
@@ -36,6 +37,7 @@ export class AnalyticsApi {
      * Compare schemas
      */
     @Post('/compare/schemas')
+    @HttpCode(HttpStatus.OK)
     async compareSchemas(@Body() body, @Req() req): Promise<any> {
         const guardians = new Guardians();
         const schemaId1 = body ? body.schemaId1 : null;
@@ -56,6 +58,7 @@ export class AnalyticsApi {
      * @param req
      */
     @Post('/compare/policies/export')
+    @HttpCode(HttpStatus.OK)
     async comparePoliciesExport(@Body() body, @Req() req): Promise<any> {
         const guardians = new Guardians();
         const type = req.query ? req.query.type : null;
@@ -90,6 +93,7 @@ export class AnalyticsApi {
      * @param req
      */
     @Post('/compare/schemas/export')
+    @HttpCode(HttpStatus.OK)
     async compareSchemasExport(@Body() body, @Req() req): Promise<any> {
         const guardians = new Guardians();
         const type = req.query ? req.query.type : null;

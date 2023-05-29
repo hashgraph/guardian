@@ -1,7 +1,7 @@
 import { Guardians } from '@helpers/guardians';
 import { UserRole } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
-import { Controller, Delete, Get, Post, Req, Response } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Req, Response } from '@nestjs/common';
 
 /**
  * Contracts api
@@ -15,6 +15,7 @@ export class ContractsApi {
      * @param res
      */
     @Get()
+    @HttpCode(HttpStatus.OK)
     async getContracts(@Req() req, @Response() res): Promise<any> {
         try {
             const user = req.user;
@@ -27,7 +28,7 @@ export class ContractsApi {
             return res.setHeader('X-Total-Count', count).json(contracts);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error
+            throw error;
         }
     }
 
@@ -37,6 +38,7 @@ export class ContractsApi {
      * @param res
      */
     @Post('/')
+    @HttpCode(HttpStatus.OK)
     async setContracts(@Req() req, @Response() res): Promise<any> {
         try {
             const user = req.user;
@@ -52,6 +54,7 @@ export class ContractsApi {
     }
 
     @Post('/import')
+    @HttpCode(HttpStatus.OK)
     async importContracts(@Req() req, @Response() res): Promise<any> {
         try {
             const user = req.user;
@@ -71,6 +74,7 @@ export class ContractsApi {
     }
 
     @Post('/:contractId/user')
+    @HttpCode(HttpStatus.OK)
     async userContract(@Req() req, @Response() res): Promise<any> {
         try {
             const user = req.user;
@@ -86,6 +90,7 @@ export class ContractsApi {
     }
 
     @Post(':contractId/status')
+    @HttpCode(HttpStatus.OK)
     async contractStatus(@Req() req, @Response() res): Promise<any> {
         try {
             const user = req.user;
@@ -100,6 +105,7 @@ export class ContractsApi {
     }
 
     @Get('/pair')
+    @HttpCode(HttpStatus.OK)
     async contractPair(@Req() req, @Response() res): Promise<any> {
         try {
             const user = req.user;
@@ -119,6 +125,7 @@ export class ContractsApi {
     }
 
     @Post('/:contractId/pair')
+    @HttpCode(HttpStatus.OK)
     async setPair(@Req() req, @Response() res): Promise<any> {
         try {
             const user = req.user;
@@ -146,6 +153,7 @@ export class ContractsApi {
     }
 
     @Get('/retire/request')
+    @HttpCode(HttpStatus.OK)
     async retireRequest(@Req() req, @Response() res): Promise<any> {
         try {
             const user = req.user;
@@ -165,6 +173,7 @@ export class ContractsApi {
     }
 
     @Post('/:contractId/retire/request')
+    @HttpCode(HttpStatus.OK)
     async postRetireRequest(@Req() req, @Response() res): Promise<any> {
         try {
             const user = req.user;
@@ -196,6 +205,7 @@ export class ContractsApi {
     }
 
     @Delete('/retire/request')
+    @HttpCode(HttpStatus.OK)
     async deleteRetireRequest(@Req() req, @Response() res): Promise<any> {
         try {
             const user = req.user;
@@ -213,6 +223,7 @@ export class ContractsApi {
     }
 
     @Post('/retire')
+    @HttpCode(HttpStatus.OK)
     async retire(@Req() req, @Response() res): Promise<any> {
         try {
             const user = req.user;

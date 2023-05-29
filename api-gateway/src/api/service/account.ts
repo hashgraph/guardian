@@ -3,7 +3,7 @@ import { Logger } from '@guardian/common';
 import { Guardians } from '@helpers/guardians';
 import { UserRole } from '@guardian/interfaces';
 import { ClientProxy } from '@nestjs/microservices';
-import { Body, Controller, Get, Headers, Inject, Post } from '@nestjs/common';
+import { Body, Controller, Get, Headers, HttpCode, HttpException, HttpStatus, Inject, Post } from '@nestjs/common';
 
 /**
  * User account route
@@ -19,6 +19,7 @@ export class AccountApi {
      * @param headers
      */
     @Get('/session')
+    @HttpCode(HttpStatus.CREATED)
     async getSession(@Headers() headers): Promise<any> {
         const users = new Users();
         try {
@@ -37,6 +38,7 @@ export class AccountApi {
      * @param body
      */
     @Post('/register')
+    @HttpCode(HttpStatus.OK)
     async register(@Body() body): Promise<any> {
         const users = new Users();
         try {
@@ -49,9 +51,9 @@ export class AccountApi {
             return await users.registerNewUser(username, password, role);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            // if (error.message.includes('already exists')) {
-            //     return res.status(422).json(prepareValidationResponse('An account with the same name already exists.'));
-            // }
+            if (error.message.includes('already exists')) {
+                throw new HttpException('An account with the same name already exists.', HttpStatus.INTERNAL_SERVER_ERROR);
+            }
             throw error;
         }
     }
@@ -60,6 +62,7 @@ export class AccountApi {
      * Login
      */
     @Post('/login')
+    @HttpCode(HttpStatus.OK)
     async login(@Body() body): Promise<any> {
         const users = new Users();
         try {
@@ -75,13 +78,14 @@ export class AccountApi {
      * Accounts
      */
     @Get()
+    @HttpCode(HttpStatus.OK)
     async getAllAccounts(): Promise<any> {
         try {
             const users = new Users();
             return await users.getAllUserAccounts();
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error
+            throw error;
         }
     }
 
@@ -90,6 +94,7 @@ export class AccountApi {
      * @deprecated 2022-10-01
      */
     @Get('/root-authorities')
+    @HttpCode(HttpStatus.OK)
     async getRootAuthorities(): Promise<any> {
         try {
             const users = new Users();
@@ -104,6 +109,7 @@ export class AccountApi {
      * Get SAs
      */
     @Get('/standard-registries')
+    @HttpCode(HttpStatus.OK)
     async getStandatdRegistries(): Promise<any> {
         try {
             const users = new Users();
@@ -115,6 +121,7 @@ export class AccountApi {
     }
 
     @Get('/balance')
+    @HttpCode(HttpStatus.OK)
     async getBalance(@Headers() headers): Promise<any> {
         try {
             const authHeader = headers.authorization;

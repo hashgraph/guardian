@@ -2,11 +2,12 @@ import { Guardians } from '@helpers/guardians';
 import { CommonSettings } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
 import { prepareValidationResponse } from '@middlewares/validation';
-import { Controller, Get, Post, Req, Response } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Post, Req, Response } from '@nestjs/common';
 
 @Controller('settings')
 export class SettingsApi {
     @Post('/')
+    @HttpCode(HttpStatus.CREATED)
     async updateSettings(@Req() req, @Response() res): Promise<any> {
         try {
             const settings = req.body as CommonSettings;
@@ -25,6 +26,7 @@ export class SettingsApi {
     }
 
     @Get('/')
+    @HttpCode(HttpStatus.OK)
     async getSettings(@Req() req, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();
@@ -41,6 +43,7 @@ export class SettingsApi {
     }
 
     @Get('/environment')
+    @HttpCode(HttpStatus.OK)
     async getEnvironment(@Req() req, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();

@@ -5,7 +5,7 @@ import { PolicyEngine } from '@helpers/policy-engine';
 import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
 import { prepareValidationResponse } from '@middlewares/validation';
-import { Controller, Delete, Get, Post, Put, Req, Response } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response } from '@nestjs/common';
 
 /**
  * Token route
@@ -70,6 +70,7 @@ async function setDynamicTokenPolicy(tokens: any[], engineService?: PolicyEngine
 @Controller('tokens')
 export class TokensApi {
     @Get('/')
+    @HttpCode(HttpStatus.OK)
     async getTokens(@Req() req, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();
@@ -98,6 +99,7 @@ export class TokensApi {
     }
 
     @Post('/')
+    @HttpCode(HttpStatus.CREATED)
     async newToken(@Req() req, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();
@@ -108,10 +110,10 @@ export class TokensApi {
                 return res.status(422).json(prepareValidationResponse('User not registered'));
             }
 
-            let tokens = (await guardians.setToken({
+            let tokens = await guardians.setToken({
                 token: req.body,
                 owner: user.did
-            }));
+            });
 
             tokens = await guardians.getTokens({ did: user.did });
             const map = await engineService.getTokensMap(user.did);
@@ -125,6 +127,7 @@ export class TokensApi {
     }
 
     @Post('/push')
+    @HttpCode(HttpStatus.ACCEPTED)
     async pushTokenAsync(@Req() req, @Response() res): Promise<any> {
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Create token');
@@ -146,6 +149,7 @@ export class TokensApi {
     }
 
     @Put('/push')
+    @HttpCode(HttpStatus.ACCEPTED)
     async updateTokenAsync(@Req() req, @Response() res): Promise<any> {
         try {
             const taskManager = new TaskManager();
@@ -166,13 +170,11 @@ export class TokensApi {
             const tokenObject = await guardians.getTokenById(token.tokenId);
 
             if (!tokenObject) {
-                throw new Error('Token not found')
-                // return next(createError(404, 'Token not found'));
+                throw new HttpException('Token not found', HttpStatus.NOT_FOUND)
             }
 
             if (tokenObject.owner !== user.did) {
-                throw new Error('Invalid creator.')
-                // return next(createError(403, 'Invalid creator.'));
+                throw new HttpException('Invalid creator.', HttpStatus.FORBIDDEN)
             }
 
             RunFunctionAsync<ServiceError>(async () => {
@@ -190,6 +192,7 @@ export class TokensApi {
     }
 
     @Delete('/push/:tokenId')
+    @HttpCode(HttpStatus.ACCEPTED)
     async deleteTokenAsync(@Req() req, @Response() res): Promise<any> {
         try {
             const taskManager = new TaskManager();
@@ -206,13 +209,11 @@ export class TokensApi {
             const tokenObject = await guardians.getTokenById(tokenId);
 
             if (!tokenObject) {
-                throw new Error('Token does not exist.')
-                // return next(createError(404, 'Token does not exist.'));
+                throw new HttpException('Token does not exist.', HttpStatus.NOT_FOUND)
             }
 
             if (tokenObject.owner !== user.did) {
-                throw new Error('Invalid creator.');
-                // return next(createError(403, 'Invalid creator.'));
+                throw new HttpException('Invalid creator.', HttpStatus.FORBIDDEN);
             }
 
             RunFunctionAsync<ServiceError>(async () => {
@@ -230,6 +231,7 @@ export class TokensApi {
     }
 
     @Put('/:tokenId/associate')
+    @HttpCode(HttpStatus.OK)
     async associateToken(@Req() req, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();
@@ -243,18 +245,17 @@ export class TokensApi {
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {
-                throw new Error('User not found')
-                // return next(createError(404, 'User not found'));
+                throw new HttpException('User not found', HttpStatus.NOT_FOUND)
             }
             if (error?.message?.toLowerCase().includes('token not found')) {
-                throw new Error('Token does not exist.')
-                // return next(createError(404, 'Token not found'));
+                throw new HttpException('Token does not exist.', HttpStatus.NOT_FOUND)
             }
             throw error;
         }
     }
 
     @Put('/push/:tokenId/associate')
+    @HttpCode(HttpStatus.ACCEPTED)
     async associateTokenAsync(@Req() req, @Response() res): Promise<any> {
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Associate/dissociate token');
@@ -277,6 +278,7 @@ export class TokensApi {
     }
 
     @Put('/:tokenId/dissociate')
+    @HttpCode(HttpStatus.OK)
     async dissociateToken(@Req() req, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();
@@ -290,20 +292,17 @@ export class TokensApi {
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {
-                throw new Error('User not found')
-
-                // return next(createError(404, 'User not found'));
+                throw new HttpException('User not found', HttpStatus.NOT_FOUND)
             }
             if (error?.message?.toLowerCase().includes('token not found')) {
-                throw new Error('Token does not exist.')
-
-                // return next(createError(404, 'Token not found'));
+                throw new HttpException('Token does not exist.', HttpStatus.NOT_FOUND)
             }
             throw error;
         }
     }
 
     @Put('/push/:tokenId/dissociate')
+    @HttpCode(HttpStatus.ACCEPTED)
     async dissociateTokenAsync(@Req() req, @Response() res): Promise<any> {
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Associate/dissociate token');
@@ -328,6 +327,7 @@ export class TokensApi {
      * @deprecated
      */
     @Put('/:tokenId/:username/grantKyc')
+    @HttpCode(HttpStatus.OK)
     async grantKycOld(@Req() req, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();
@@ -350,6 +350,7 @@ export class TokensApi {
      * @deprecated
      */
     @Put('/:tokenId/:username/grantKyc')
+    @HttpCode(HttpStatus.OK)
     async grantKycOld2(@Req() req, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();
@@ -368,6 +369,7 @@ export class TokensApi {
     }
 
     @Put('/:tokenId/:username/grant-kyc')
+    @HttpCode(HttpStatus.OK)
     async grantKyc(@Req() req, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();
@@ -381,12 +383,10 @@ export class TokensApi {
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {
-                throw new Error('User not found')
-                // return next(createError(404, 'User not found'));
+                throw new HttpException('User not found', HttpStatus.NOT_FOUND)
             }
             if (error?.message?.toLowerCase().includes('token not found')) {
-                throw new Error('Token not found')
-                // return next(createError(404, 'Token not found'));
+                throw new HttpException('Token not found', HttpStatus.NOT_FOUND)
             }
             throw error;
         }
@@ -396,6 +396,7 @@ export class TokensApi {
      * @deprecated
      */
     @Put('/push/:tokenId/:username/grantKyc')
+    @HttpCode(HttpStatus.OK)
     async grantKycAsyncOld(@Req() req, @Response() res): Promise<any> {
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Grant KYC');
@@ -420,6 +421,7 @@ export class TokensApi {
     }
 
     @Put('/push/:tokenId/:username/grant-kyc')
+    @HttpCode(HttpStatus.ACCEPTED)
     async grantKycAsync(@Req() req, @Response() res): Promise<any> {
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Grant KYC');
@@ -446,6 +448,7 @@ export class TokensApi {
      * @deprecated
      */
     @Put('/:tokenId/:username/revokeKyc')
+    @HttpCode(HttpStatus.OK)
     async revokeKycOld(@Req() req, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();
@@ -465,6 +468,7 @@ export class TokensApi {
     }
 
     @Put('/:tokenId/:username/revoke-kyc')
+    @HttpCode(HttpStatus.OK)
     async revokeKyc(@Req() req, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();
@@ -479,12 +483,10 @@ export class TokensApi {
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {
-                throw new Error('User not found')
-                // return next(createError(404, 'User not found'));
+                throw new HttpException('User not found', HttpStatus.NOT_FOUND)
             }
             if (error?.message?.toLowerCase().includes('token not found')) {
-                throw new Error('Token not found')
-                // return next(createError(404, 'Token not found'));
+                throw new HttpException('Token not found', HttpStatus.NOT_FOUND)
             }
             throw error;
         }
@@ -494,6 +496,7 @@ export class TokensApi {
      * @deprecated
      */
     @Put('/push/:tokenId/:username/revokeKyc')
+    @HttpCode(HttpStatus.OK)
     async revokeKycAsyncOld(@Req() req, @Response() res): Promise<any> {
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Revoke KYC');
@@ -517,6 +520,7 @@ export class TokensApi {
     }
 
     @Put('/push/:tokenId/:username/revoke-kyc')
+    @HttpCode(HttpStatus.ACCEPTED)
     async revokeKycAsync(@Req() req, @Response() res): Promise<any> {
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Revoke KYC');
@@ -525,8 +529,7 @@ export class TokensApi {
         const username = req.params.username;
         const userDid = req.user.did;
         if (!userDid) {
-            throw new Error('User not registered');
-            // return next(createError(422, 'User not registered'));
+            throw new HttpException('User not registered', HttpStatus.UNPROCESSABLE_ENTITY);
         }
 
         RunFunctionAsync<ServiceError>(async () => {
@@ -541,6 +544,7 @@ export class TokensApi {
     }
 
     @Put('/:tokenId/:username/freeze')
+    @HttpCode(HttpStatus.OK)
     async freezeToken(@Req() req, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();
@@ -555,18 +559,17 @@ export class TokensApi {
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {
-                throw new Error('User not registered');
-                // return next(createError(404, 'User not found'));
+                throw new HttpException('User not registered', HttpStatus.NOT_FOUND);
             }
             if (error?.message?.toLowerCase().includes('token not found')) {
-                throw new Error('Token not registered');
-                // return next(createError(404, 'Token not found'));
+                throw new HttpException('Token not registered', HttpStatus.NOT_FOUND);
             }
             throw error
         }
     }
 
     @Put('/:tokenId/:username/unfreeze')
+    @HttpCode(HttpStatus.OK)
     async unfreezeToken(@Req() req, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();
@@ -581,18 +584,17 @@ export class TokensApi {
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {
-                throw new Error('User not registered');
-                // return next(createError(404, 'User not found'));
+                throw new HttpException('User not registered', HttpStatus.NOT_FOUND);
             }
             if (error?.message?.toLowerCase().includes('token not found')) {
-                throw new Error('Token not registered');
-                // return next(createError(404, 'Token not found'));
+                throw new HttpException('Token not registered', HttpStatus.NOT_FOUND);
             }
             throw error;
         }
     }
 
     @Put('/push/:tokenId/:username/freeze')
+    @HttpCode(HttpStatus.ACCEPTED)
     async freezeTokenAsync(@Req() req, @Response() res): Promise<any> {
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Freeze Token');
@@ -616,6 +618,7 @@ export class TokensApi {
     }
 
     @Put('/push/:tokenId/:username/unfreeze')
+    @HttpCode(HttpStatus.ACCEPTED)
     async unfreezeTokenAsync(@Req() req, @Response() res): Promise<any> {
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Freeze Token');
@@ -639,6 +642,7 @@ export class TokensApi {
     }
 
     @Get('/:tokenId/:username/info')
+    @HttpCode(HttpStatus.OK)
     async getTokenInfo(@Req() req, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();
@@ -653,12 +657,10 @@ export class TokensApi {
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {
-                throw new Error('User not registered');
-                // return next(createError(404, 'User not found'));
+                throw new HttpException('User not registered', HttpStatus.NOT_FOUND);
             }
             if (error?.message?.toLowerCase().includes('token not found')) {
-                throw new Error('Token not registered');
-                // return next(createError(404, 'Token not found'));
+                throw new HttpException('Token not registered', HttpStatus.NOT_FOUND);
             }
             throw error;
         }

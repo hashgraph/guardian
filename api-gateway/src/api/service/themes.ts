@@ -1,10 +1,11 @@
 import { Logger } from '@guardian/common';
 import { Guardians } from '@helpers/guardians';
-import { Controller, Delete, Get, Post, Put, Req, Response } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response } from '@nestjs/common';
 
 @Controller('themes')
 export class ThemesApi {
     @Post('/')
+    @HttpCode(HttpStatus.CREATED)
     async setThemes(@Req() req, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();
@@ -17,19 +18,18 @@ export class ThemesApi {
     }
 
     @Put('/:themeId')
+    @HttpCode(HttpStatus.OK)
     async updateTheme(@Req() req, @Response() res): Promise<any> {
         try {
             const user = req.user;
             const newTheme = req.body;
             const guardians = new Guardians();
             if (!req.params.themeId) {
-                throw new Error('Invalid theme id')
-                // return next(createError(422, 'Invalid theme id'));
+                throw new HttpException('Invalid theme id', HttpStatus.UNPROCESSABLE_ENTITY)
             }
             const oldTheme = await guardians.getThemeById(req.params.themeId);
             if (!oldTheme) {
-                throw new Error('Theme not found.')
-                // return next(createError(404, 'Theme not found.'));
+                throw new HttpException('Theme not found.', HttpStatus.NOT_FOUND)
             }
             const theme = await guardians.updateTheme(req.params.themeId, newTheme, user.did);
             return res.json(theme);
@@ -40,13 +40,12 @@ export class ThemesApi {
     }
 
     @Delete('/:themeId')
+    @HttpCode(HttpStatus.OK)
     async deleteTheme(@Req() req, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();
             if (!req.params.themeId) {
-                throw new Error('Invalid theme id')
-
-                // return next(createError(422, 'Invalid theme id'));
+                throw new HttpException('Invalid theme id', HttpStatus.UNPROCESSABLE_ENTITY)
             }
             const result = await guardians.deleteTheme(req.params.themeId, req.user.did);
             return res.json(result);
@@ -57,6 +56,7 @@ export class ThemesApi {
     }
 
     @Get('/')
+    @HttpCode(HttpStatus.OK)
     async getThemes(@Req() req, @Response() res): Promise<any> {
         try {
             const user = req.user;
@@ -73,6 +73,7 @@ export class ThemesApi {
     }
 
     @Post('/import/file')
+    @HttpCode(HttpStatus.CREATED)
     async importTheme(@Req() req, @Response() res): Promise<any> {
         const guardian = new Guardians();
         try {
@@ -85,6 +86,7 @@ export class ThemesApi {
     }
 
     @Get('/:themeId/export/file')
+    @HttpCode(HttpStatus.OK)
     async exportTheme(@Req() req, @Response() res): Promise<any> {
         const guardian = new Guardians();
         try {

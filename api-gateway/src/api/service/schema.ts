@@ -5,7 +5,7 @@ import { PolicyEngine } from '@helpers/policy-engine';
 import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
 import { SchemaUtils } from '@helpers/schema-utils';
-import { Controller, Delete, Get, Post, Put, Req, Response } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response } from '@nestjs/common';
 
 /**
  * Prepare new schema object
@@ -101,6 +101,7 @@ export async function updateSchema(newSchema: ISchema, owner: string): Promise<I
 @Controller('schema')
 export class SingleSchemaApi {
     @Get('/:schemaId')
+    @HttpCode(HttpStatus.OK)
     async getSchema(@Req() req, @Response() res): Promise<any> {
         try {
             const user = req.user;
@@ -108,17 +109,15 @@ export class SingleSchemaApi {
             const guardians = new Guardians();
             const schema = await guardians.getSchemaById(schemaId);
             if (!schema) {
-                throw new Error('Schema not found')
-                // return next(createError(404, 'Schema not found'));
+                throw new HttpException('Schema not found', HttpStatus.NOT_FOUND)
             }
             let owner = user.parent;
             if (user.role === UserRole.STANDARD_REGISTRY) {
                 owner = user.did;
             }
             if (!schema.system && schema.owner && schema.owner !== owner) {
-                throw new Error('Invalid creator.')
+                throw new HttpException('Invalid creator.', HttpStatus.FORBIDDEN)
 
-                // return next(createError(403, 'Invalid creator.'));
             }
             if (schema.system) {
                 schema.readonly = schema.readonly || schema.owner !== owner;
@@ -133,42 +132,10 @@ export class SingleSchemaApi {
     }
 }
 
-/**
- * Single schema route
- */
-// export const singleSchemaRoute = Router();
-//
-// singleSchemaRoute.get('/:schemaId', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-//     try {
-//         const user = req.user;
-//         const schemaId = req.params.schemaId;
-//         const guardians = new Guardians();
-//         const schema = await guardians.getSchemaById(schemaId);
-//         if (!schema) {
-//             return next(createError(404, 'Schema not found'));
-//         }
-//         let owner = user.parent;
-//         if (user.role === UserRole.STANDARD_REGISTRY) {
-//             owner = user.did;
-//         }
-//         if (!schema.system && schema.owner && schema.owner !== owner) {
-//             return next(createError(403, 'Invalid creator.'));
-//         }
-//         if (schema.system) {
-//             schema.readonly = schema.readonly || schema.owner !== owner;
-//         } else {
-//             SchemaHelper.updatePermission([schema], owner);
-//         }
-//         res.json(SchemaUtils.toOld(schema));
-//     } catch (error) {
-//         new Logger().error(error, ['API_GATEWAY']);
-//         return next(error);
-//     }
-// });
-
 @Controller('schemas')
 export class SchemaApi {
     @Post('/:topicId')
+    @HttpCode(HttpStatus.CREATED)
     async setTopicId(@Req() req, @Response() res): Promise<any> {
         try {
             const user = req.user;
@@ -188,6 +155,7 @@ export class SchemaApi {
     }
 
     @Post('/push/:topicId')
+    @HttpCode(HttpStatus.ACCEPTED)
     async setTopicIdAsync(@Req() req, @Response() res): Promise<any> {
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Create schema');
@@ -212,6 +180,7 @@ export class SchemaApi {
     }
 
     @Get('/')
+    @HttpCode(HttpStatus.OK)
     async getSchemas(@Req() req, @Response() res): Promise<any> {
         try {
             const user = req.user;
@@ -237,6 +206,7 @@ export class SchemaApi {
     }
 
     @Get('/:topicId')
+    @HttpCode(HttpStatus.OK)
     async getByTopicId(@Req() req, @Response() res): Promise<any> {
         try {
             const user = req.user;
@@ -252,6 +222,7 @@ export class SchemaApi {
     }
 
     @Put('/')
+    @HttpCode(HttpStatus.OK)
     async setSchema(@Req() req, @Response() res): Promise<any> {
         try {
             const user = req.user;
@@ -259,19 +230,14 @@ export class SchemaApi {
             const guardians = new Guardians();
             const schema = await guardians.getSchemaById(newSchema.id);
             if (!schema) {
-                throw new Error('Schema not found.')
-                // return next(createError(404, 'Schema not found.'));
+                throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND)
             }
             const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.POLICY);
             if (error) {
-                throw new Error(error)
-
-                // return next(createError(403, error));
+                throw new HttpException(error, HttpStatus.FORBIDDEN)
             }
             if (schema.status === SchemaStatus.PUBLISHED) {
-                throw new Error('Schema is published.')
-
-                // return next(createError(422, 'Schema is published.'));
+                throw new HttpException('Schema is published.', HttpStatus.UNPROCESSABLE_ENTITY)
             }
             SchemaUtils.fromOld(newSchema);
             const schemas = await updateSchema(newSchema, user.did);
@@ -283,6 +249,7 @@ export class SchemaApi {
     }
 
     @Delete('/:schemaId')
+    @HttpCode(HttpStatus.OK)
     async deleteSchema(@Req() req, @Response() res): Promise<any> {
         try {
             const user = req.user;
@@ -290,19 +257,14 @@ export class SchemaApi {
             const schemaId = req.params.schemaId;
             const schema = await guardians.getSchemaById(schemaId);
             if (!schema) {
-                throw new Error('Schema not found.')
-                // return next(createError(404, 'Schema not found.'));
+                throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND)
             }
             const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.POLICY);
             if (error) {
-                throw new Error(error)
-
-                // return next(createError(403, error));
+                throw new HttpException(error, HttpStatus.FORBIDDEN)
             }
             if (schema.status === SchemaStatus.PUBLISHED) {
-                throw new Error('Schema is published.')
-
-                // return next(createError(422, 'Schema is published.'));
+                throw new HttpException('Schema is published.', HttpStatus.UNPROCESSABLE_ENTITY)
             }
             const schemas = (await guardians.deleteSchema(schemaId, true) as ISchema[]);
             SchemaHelper.updatePermission(schemas, user.did);
@@ -314,6 +276,7 @@ export class SchemaApi {
     }
 
     @Put('/:schemaId/publish')
+    @HttpCode(HttpStatus.OK)
     async publishSchema(@Req() req, @Response() res): Promise<any> {
         try {
             const user = req.user;
@@ -321,25 +284,19 @@ export class SchemaApi {
             const schemaId = req.params.schemaId;
             const schema = await guardians.getSchemaById(schemaId);
             if (!schema) {
-                throw new Error('Schema not found.')
-                // return next(createError(404, 'Schema not found.'));
+                throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND)
             }
             const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.POLICY);
             if (error) {
-                throw new Error(error)
-
-                // return next(createError(403, error));
+                throw new HttpException(error, HttpStatus.FORBIDDEN)
             }
             if (schema.status === SchemaStatus.PUBLISHED) {
-                throw new Error('Schema is published.')
-
-                // return next(createError(422, 'Schema is published.'));
+                throw new HttpException('Schema is published.', HttpStatus.UNPROCESSABLE_ENTITY)
             }
             const allVersion = await guardians.getSchemasByUUID(schema.uuid);
             const { version } = req.body;
             if (allVersion.findIndex(s => s.version === version) !== -1) {
-                throw new Error('Version already exists.')
-                // return next(createError(422, 'Version already exists.'));
+                throw new HttpException('Version already exists.', HttpStatus.UNPROCESSABLE_ENTITY)
             }
 
             await guardians.publishSchema(schemaId, version, user.did);
@@ -354,6 +311,7 @@ export class SchemaApi {
     }
 
     @Put('/push/:schemaId/publish')
+    @HttpCode(HttpStatus.ACCEPTED)
     async publishSchemaAsync(@Req() req, @Response() res): Promise<any> {
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Publish schema');
@@ -363,13 +321,11 @@ export class SchemaApi {
         const guardians = new Guardians();
         const schema = await guardians.getSchemaById(schemaId);
         if (!schema) {
-            throw new Error('Schema not found')
-            // return next(createError(404, 'Schema not found'));
+            throw new HttpException('Schema not found', HttpStatus.NOT_FOUND)
         }
         const notAllowed = SchemaUtils.checkPermission(schema, user, SchemaCategory.POLICY);
         if (notAllowed) {
-            throw new Error(notAllowed)
-            // return next(createError(403, notAllowed));
+            throw new HttpException(notAllowed, HttpStatus.FORBIDDEN)
         }
         const version = req.body.version;
         RunFunctionAsync<ServiceError>(async () => {
@@ -393,6 +349,7 @@ export class SchemaApi {
     }
 
     @Post('/import/message/preview')
+    @HttpCode(HttpStatus.OK)
     async importFromMessagePreview(@Req() req, @Response() res): Promise<any> {
         try {
             const messageId = req.body.messageId;
@@ -406,6 +363,7 @@ export class SchemaApi {
     }
 
     @Post('/push/import/message/preview')
+    @HttpCode(HttpStatus.ACCEPTED)
     async importFromMessagePreviewAsync(@Req() req, @Response() res): Promise<any> {
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Preview schema message');
@@ -426,12 +384,12 @@ export class SchemaApi {
     }
 
     @Post('/import/file/preview')
+    @HttpCode(HttpStatus.OK)
     async importFromFilePreview(@Req() req, @Response() res): Promise<any> {
         try {
             const zip = req.body;
             if (!zip) {
-                throw new Error('File in body is empty')
-                // return next(createError(422, 'File in body is empty'));
+                throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
             }
             const guardians = new Guardians();
             const { schemas } = await SchemaUtils.parseZipFile(zip);
@@ -444,6 +402,7 @@ export class SchemaApi {
     }
 
     @Post('/:topicId/import/message')
+    @HttpCode(HttpStatus.CREATED)
     async importFromMessage(@Req() req, @Response() res): Promise<any> {
         try {
             const user = req.user;
@@ -461,6 +420,7 @@ export class SchemaApi {
     }
 
     @Post('/push/:topicId/import/message')
+    @HttpCode(HttpStatus.ACCEPTED)
     async importFromMessageAsync(@Req() req, @Response() res): Promise<any> {
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Import schema message');
@@ -480,6 +440,7 @@ export class SchemaApi {
     }
 
     @Post('/:topicId/import/file')
+    @HttpCode(HttpStatus.CREATED)
     async importToTopicFromFile(@Req() req, @Response() res): Promise<any> {
         try {
             const user = req.user;
@@ -487,8 +448,7 @@ export class SchemaApi {
             const zip = req.body;
             const topicId = req.params.topicId;
             if (!zip) {
-                throw new Error('File in body is empty')
-                // return next(createError(422, 'File in body is empty'));
+                throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
             }
             const files = await SchemaUtils.parseZipFile(zip);
             await guardians.importSchemasByFile(files, req.user.did, topicId);
@@ -502,6 +462,7 @@ export class SchemaApi {
     }
 
     @Post('/push/:topicId/import/file')
+    @HttpCode(HttpStatus.ACCEPTED)
     async importToTopicFromFileAsync(@Req() req, @Response() res): Promise<any> {
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Import schema file');
@@ -509,8 +470,7 @@ export class SchemaApi {
         const user = req.user;
         const zip = req.body;
         if (!zip) {
-            throw new Error('File in body is empty')
-            // return next(createError(422, 'File in body is empty'));
+            throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
         }
         const topicId = req.params.topicId;
         RunFunctionAsync<ServiceError>(async () => {
@@ -528,6 +488,7 @@ export class SchemaApi {
     }
 
     @Get('/:schemaId/export/message')
+    @HttpCode(HttpStatus.OK)
     async exportMessage(@Req() req, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();
@@ -535,8 +496,7 @@ export class SchemaApi {
             const schemas = await guardians.exportSchemas([id]);
             const scheme = schemas[0];
             if (!scheme) {
-                throw new Error(`Cannot export schema ${req.params.schemaId}`);
-                // return next(createError(422, `Cannot export schema ${req.params.schemaId}`));
+                throw new HttpException(`Cannot export schema ${req.params.schemaId}`, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             return res.send({
                 id: scheme.id,
@@ -553,14 +513,14 @@ export class SchemaApi {
     }
 
     @Get('/:schemaId/export/file')
+    @HttpCode(HttpStatus.OK)
     async exportToFile(@Req() req, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();
             const id = req.params.schemaId;
             const schemas = await guardians.exportSchemas([id]);
             if (!schemas || !schemas.length) {
-                throw new Error(`Cannot export schema ${req.params.schemaId}`)
-                // return next(createError(422, `Cannot export schema ${req.params.schemaId}`));
+                throw new HttpException(`Cannot export schema ${req.params.schemaId}`, HttpStatus.UNPROCESSABLE_ENTITY)
             }
             const ids = schemas.map(s => s.id);
             const tags = await guardians.exportTags('Schema', ids);
@@ -584,6 +544,7 @@ export class SchemaApi {
     }
 
     @Get('/type/:schemaType')
+    @HttpCode(HttpStatus.OK)
     async getSchemaType(@Req() req, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();
@@ -591,9 +552,7 @@ export class SchemaApi {
             const schemas = await guardians.exportSchemas([id]);
             const scheme = schemas[0];
             if (!scheme) {
-                throw new Error(`Cannot export schema ${req.params.schemaId}`)
-
-                // return next(createError(422, `Cannot export schema ${req.params.schemaId}`));
+                throw new HttpException(`Cannot export schema ${req.params.schemaId}`, HttpStatus.UNPROCESSABLE_ENTITY)
             }
             return res.send({
                 id: scheme.id,
@@ -610,6 +569,7 @@ export class SchemaApi {
     }
 
     @Post('/system/:username')
+    @HttpCode(HttpStatus.CREATED)
     async postSystemSchema(@Req() req, @Response() res): Promise<any> {
         try {
             const user = req.user;
@@ -617,10 +577,7 @@ export class SchemaApi {
 
             if (newSchema.entity !== SchemaEntity.STANDARD_REGISTRY
                 && newSchema.entity !== SchemaEntity.USER) {
-                throw new Error(`Invalid schema types. Entity must be ${SchemaEntity.STANDARD_REGISTRY} or ${SchemaEntity.USER}`)
-                // return next(createError(422,
-                //     `Invalid schema types. Entity must be ${SchemaEntity.STANDARD_REGISTRY} or ${SchemaEntity.USER}`
-                // ));
+                throw new HttpException(`Invalid schema types. Entity must be ${SchemaEntity.STANDARD_REGISTRY} or ${SchemaEntity.USER}`, HttpStatus.UNPROCESSABLE_ENTITY)
             }
 
             const guardians = new Guardians();
@@ -644,6 +601,7 @@ export class SchemaApi {
     }
 
     @Get('/system/:username')
+    @HttpCode(HttpStatus.OK)
     async getSystemSchema(@Req() req, @Response() res): Promise<any> {
         try {
             const user = req.user;
@@ -665,6 +623,7 @@ export class SchemaApi {
     }
 
     @Delete('/system/:schemaId')
+    @HttpCode(HttpStatus.NO_CONTENT)
     async deleteSystemSchema(@Req() req, @Response() res): Promise<any> {
         try {
             const user = req.user;
@@ -672,17 +631,14 @@ export class SchemaApi {
             const schemaId = req.params.schemaId;
             const schema = await guardians.getSchemaById(schemaId);
             if (!schema) {
-                throw new Error('Schema not found.')
-                // return next(createError(404, 'Schema not found.'));
+                throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND)
             }
             const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.SYSTEM);
             if (error) {
-                throw new Error(error);
-                // return next(createError(403, error))
+                throw new HttpException(error, HttpStatus.FORBIDDEN);
             }
             if (schema.active) {
-                throw new Error('Schema is active.');
-                // return next(createError(422, 'Schema is active.'));
+                throw new HttpException('Schema is active.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
             await guardians.deleteSchema(schemaId);
             return res.status(204).send();
@@ -693,6 +649,7 @@ export class SchemaApi {
     }
 
     @Put('/system/:schemaId')
+    @HttpCode(HttpStatus.OK)
     async setSystemSchema(@Req() req, @Response() res): Promise<any> {
         try {
             const user = req.user;
@@ -700,17 +657,14 @@ export class SchemaApi {
             const guardians = new Guardians();
             const schema = await guardians.getSchemaById(newSchema.id);
             if (!schema) {
-                throw new Error('Schema not found.');
-                // return next(createError(404, 'Schema not found.'));
+                throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND);
             }
             const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.SYSTEM);
             if (error) {
-                throw new Error(error);
-                // return next(createError(403, error))
+                throw new HttpException(error, HttpStatus.FORBIDDEN);
             }
             if (schema.active) {
-                throw new Error('Schema is active.');
-                // return next(createError(422, 'Schema is active.'));
+                throw new HttpException('Schema is active.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
             SchemaUtils.fromOld(newSchema);
             const schemas = await updateSchema(newSchema, user.username);
@@ -722,6 +676,7 @@ export class SchemaApi {
     }
 
     @Get('/system/entity/:schemaEntity')
+    @HttpCode(HttpStatus.OK)
     async getSchemaEntity(@Req() req, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();
@@ -746,6 +701,7 @@ export class SchemaApi {
     }
 
     @Get('/list/all')
+    @HttpCode(HttpStatus.OK)
     async getAll(@Req() req, @Response() res): Promise<any> {
         try {
             const user = req.user;

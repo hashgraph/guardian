@@ -2,11 +2,12 @@ import { Logger } from '@guardian/common';
 import { Guardians } from '@helpers/guardians';
 import { SchemaCategory, SchemaHelper } from '@guardian/interfaces';
 import { SchemaUtils } from '@helpers/schema-utils';
-import { Controller, Delete, Get, Post, Put, Req, Response } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response } from '@nestjs/common';
 
 @Controller('tags')
 export class TagsApi {
     @Post('/')
+    @HttpCode(HttpStatus.CREATED)
     async setTags(@Req() req, @Response() res): Promise<any> {
         try {
             const guardian = new Guardians();
@@ -19,32 +20,29 @@ export class TagsApi {
     }
 
     @Post('/search')
+    @HttpCode(HttpStatus.OK)
     async searchTags(@Req() req, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();
             const { entity, target, targets } = req.body;
             let _targets: string[];
             if (!entity) {
-                throw new Error('Invalid entity')
-                // return next(createError(422, 'Invalid entity'));
+                throw new HttpException('Invalid entity', HttpStatus.UNPROCESSABLE_ENTITY)
             }
             if (target) {
                 if (typeof target !== 'string') {
-                    throw new Error('Invalid target')
-                    // return next(createError(422, 'Invalid target'));
+                    throw new HttpException('Invalid target', HttpStatus.UNPROCESSABLE_ENTITY)
                 } else {
                     _targets = [target];
                 }
             } else if (targets) {
                 if (!Array.isArray(targets)) {
-                    throw new Error('Invalid target')
-                    // return next(createError(422, 'Invalid target'));
+                    throw new HttpException('Invalid target', HttpStatus.UNPROCESSABLE_ENTITY)
                 } else {
                     _targets = targets;
                 }
             } else {
-                throw new Error('Invalid target')
-                // return next(createError(422, 'Invalid target'));
+                throw new HttpException('Invalid target', HttpStatus.UNPROCESSABLE_ENTITY)
             }
 
             const items = await guardians.getTags(entity, _targets);
@@ -76,12 +74,12 @@ export class TagsApi {
     }
 
     @Delete('/:uuid')
+    @HttpCode(HttpStatus.OK)
     async deleteTag(@Req() req, @Response() res): Promise<any> {
         try {
             const guardian = new Guardians();
             if (!req.params.uuid) {
-                throw new Error('Invalid uuid')
-                // return next(createError(422, 'Invalid uuid'));
+                throw new HttpException('Invalid uuid', HttpStatus.UNPROCESSABLE_ENTITY)
             }
             const result = await guardian.deleteTag(req.params.uuid, req.user.did);
             return res.json(result);
@@ -93,19 +91,18 @@ export class TagsApi {
     }
 
     @Post('/synchronization')
+    @HttpCode(HttpStatus.OK)
     async synchronizationTags(@Req() req, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();
             const { entity, target } = req.body;
 
             if (!entity) {
-                throw new Error('Invalid entity')
-                // return next(createError(422, 'Invalid entity'));
+                throw new HttpException('Invalid entity', HttpStatus.UNPROCESSABLE_ENTITY)
             }
 
             if (typeof target !== 'string') {
-                throw new Error('Invalid target')
-                // return next(createError(422, 'Invalid target'));
+                throw new HttpException('Invalid target', HttpStatus.UNPROCESSABLE_ENTITY)
             }
 
             const tags = await guardians.synchronizationTags(entity, target);
@@ -124,6 +121,7 @@ export class TagsApi {
     }
 
     @Get('/schemas')
+    @HttpCode(HttpStatus.OK)
     async getSchemas(@Req() req, @Response() res): Promise<any> {
         try {
             const user = req.user;
@@ -147,14 +145,14 @@ export class TagsApi {
     }
 
     @Post('/schemas')
+    @HttpCode(HttpStatus.CREATED)
     async postSchemas(@Req() req, @Response() res): Promise<any> {
         try {
             const user = req.user;
             const newSchema = req.body;
 
             if (!newSchema) {
-                throw new Error('Schema does not exist.')
-                // return next(createError(422, 'Schema does not exist.'));
+                throw new HttpException('Schema does not exist.', HttpStatus.UNPROCESSABLE_ENTITY)
             }
 
             const guardians = new Guardians();
@@ -178,6 +176,7 @@ export class TagsApi {
     }
 
     @Delete('/schemas/:schemaId')
+    @HttpCode(HttpStatus.OK)
     async deleteSchema(@Req() req, @Response() res): Promise<any> {
         try {
             const user = req.user;
@@ -186,8 +185,7 @@ export class TagsApi {
             const schema = await guardians.getSchemaById(schemaId);
             const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.TAG);
             if (error) {
-                throw error
-                // return next(createError(403, error));
+                throw new HttpException('error', HttpStatus.FORBIDDEN)
             }
             await guardians.deleteSchema(schemaId);
             return res.json(true);
@@ -198,6 +196,7 @@ export class TagsApi {
     }
 
     @Put('/schemas/:schemaId')
+    @HttpCode(HttpStatus.OK)
     async setTag(@Req() req, @Response() res): Promise<any> {
         try {
             const user = req.user;
@@ -207,8 +206,7 @@ export class TagsApi {
             const schema = await guardians.getSchemaById(newSchema.id);
             const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.TAG);
             if (error) {
-                throw new Error(error)
-                // return next(createError(403, error));
+                throw new HttpException('error', HttpStatus.FORBIDDEN)
             }
             SchemaUtils.fromOld(newSchema);
             SchemaHelper.checkSchemaKey(newSchema);
@@ -223,6 +221,7 @@ export class TagsApi {
     }
 
     @Put('/schemas/:schemaId/publish')
+    @HttpCode(HttpStatus.OK)
     async publishTag(@Req() req, @Response() res): Promise<any> {
         try {
             const user = req.user;
@@ -232,8 +231,7 @@ export class TagsApi {
             const version = '1.0.0';
             const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.TAG);
             if (error) {
-                throw new Error(error)
-                // return next(createError(403, error));
+                throw new HttpException('error', HttpStatus.FORBIDDEN)
             }
             const result = await guardians.publishTagSchema(schemaId, version, user.did);
             return res.json(result);
@@ -244,6 +242,7 @@ export class TagsApi {
     }
 
     @Get('/schemas/published')
+    @HttpCode(HttpStatus.OK)
     async getPublished(@Req() req, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();

@@ -1,26 +1,28 @@
 import { Logger } from '@guardian/common';
 import { Guardians } from '@helpers/guardians';
-import { Controller, Delete, Get, Post, Put, Req, Response } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response } from '@nestjs/common';
 
 @Controller('modules')
 export class ModulesApi {
     @Post('/')
+    @HttpCode(HttpStatus.CREATED)
     async postModules(@Req() req, @Response() res): Promise<any> {
         try {
             const guardian = new Guardians();
             const module = req.body;
             if (!module.config || module.config.blockType !== 'module') {
-                throw new Error('Invalid module config');
+                throw new HttpException('Invalid module config', HttpStatus.UNPROCESSABLE_ENTITY);
             }
             const item = await guardian.createModule(module, req.user.did);
             return res.status(201).json(item);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Get('/')
+    @HttpCode(HttpStatus.OK)
     async getModules(@Req() req, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();
@@ -39,11 +41,12 @@ export class ModulesApi {
             return res.setHeader('X-Total-Count', count).json(items);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Delete('/:uuid')
+    @HttpCode(HttpStatus.OK)
     async deleteModule(@Req() req, @Response() res): Promise<any> {
         try {
             const guardian = new Guardians();
@@ -54,11 +57,12 @@ export class ModulesApi {
             return res.status(200).json(result);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Get('/menu')
+    @HttpCode(HttpStatus.OK)
     async getMenu(@Req() req, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();
@@ -66,17 +70,17 @@ export class ModulesApi {
             return res.json(items);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Get('/:uuid')
+    @HttpCode(HttpStatus.OK)
     async getModule(@Req() req, @Response() res): Promise<any> {
         try {
             const guardian = new Guardians();
             if (!req.params.uuid) {
-                throw new Error('Invalid uuid')
-                // return next(createError(422, ));
+                throw new HttpException('Invalid uuid', HttpStatus.UNPROCESSABLE_ENTITY)
             }
             const item = await guardian.getModuleById(req.params.uuid, req.user.did);
             return res.json(item);
@@ -87,28 +91,27 @@ export class ModulesApi {
     }
 
     @Put('/:uuid')
+    @HttpCode(HttpStatus.CREATED)
     async putModule(@Req() req, @Response() res): Promise<any> {
         try {
             const guardian = new Guardians();
             if (!req.params.uuid) {
-                throw new Error('Invalid uuid')
-                // return next(createError(422, 'Invalid uuid'));
+                throw new HttpException('Invalid uuid', HttpStatus.UNPROCESSABLE_ENTITY);
             }
             const module = req.body;
             if (!module.config || module.config.blockType !== 'module') {
-                throw new Error('Invalid module config')
-                // return next(createError(422, 'Invalid module config'));
+                throw new HttpException('Invalid module config', HttpStatus.UNPROCESSABLE_ENTITY)
             }
             const result = await guardian.updateModule(req.params.uuid, module, req.user.did);
             return res.status(201).json(result);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error;
-            // return next(error);
         }
     }
 
     @Get('/:uuid/export/file')
+    @HttpCode(HttpStatus.OK)
     async moduleExportFile(@Req() req, @Response() res): Promise<any> {
         const guardian = new Guardians();
         try {
@@ -123,6 +126,7 @@ export class ModulesApi {
     }
 
     @Get('/:uuid/export/message')
+    @HttpCode(HttpStatus.OK)
     async moduleExportMessage(@Req() req, @Response() res): Promise<any> {
         const guardian = new Guardians();
         try {
@@ -134,6 +138,7 @@ export class ModulesApi {
     }
 
     @Post('/import/message')
+    @HttpCode(HttpStatus.CREATED)
     async moduleImportMessage(@Req() req, @Response() res): Promise<any> {
         const guardian = new Guardians();
         try {
@@ -146,6 +151,7 @@ export class ModulesApi {
     }
 
     @Post('/import/file')
+    @HttpCode(HttpStatus.CREATED)
     async moduleImportFile(@Req() req, @Response() res): Promise<any> {
         const guardian = new Guardians();
         try {
@@ -158,6 +164,7 @@ export class ModulesApi {
     }
 
     @Post('/import/message/preview')
+    @HttpCode(HttpStatus.OK)
     async moduleImportMessagePreview(@Req() req, @Response() res): Promise<any> {
         const guardian = new Guardians();
         try {
@@ -170,6 +177,7 @@ export class ModulesApi {
     }
 
     @Post('/import/file/preview')
+    @HttpCode(HttpStatus.OK)
     async moduleImportFilePreview(@Req() req, @Response() res): Promise<any> {
         const guardian = new Guardians();
         try {
@@ -182,6 +190,7 @@ export class ModulesApi {
     }
 
     @Put('/:uuid/publish')
+    @HttpCode(HttpStatus.OK)
     async publishModule(@Req() req, @Response() res): Promise<any> {
         const guardian = new Guardians();
         try {
@@ -194,6 +203,7 @@ export class ModulesApi {
     }
 
     @Post('/validate')
+    @HttpCode(HttpStatus.OK)
     async validateModule(@Req() req, @Response() res): Promise<any> {
         const guardian = new Guardians();
         try {

@@ -4,11 +4,12 @@ import { DidDocumentStatus, IUser, SchemaEntity, TopicType } from '@guardian/int
 import { Logger, RunFunctionAsync } from '@guardian/common';
 import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
-import { Controller, Get, Put, Req, Response } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpException, HttpStatus, Put, Req, Response } from '@nestjs/common';
 
 @Controller('profiles')
 export class ProfileApi {
   @Get('/:username/')
+  @HttpCode(HttpStatus.OK)
   async getProfile(@Req() req, @Response() res): Promise<any> {
     try {
       const guardians = new Guardians();
@@ -79,6 +80,7 @@ export class ProfileApi {
   }
 
   @Put('/:username')
+  @HttpCode(HttpStatus.NO_CONTENT)
   async setUserProfile(@Req() req, @Response() res): Promise<any> {
     try {
       const guardians = new Guardians();
@@ -96,6 +98,7 @@ export class ProfileApi {
   }
 
   @Put('/push/:username')
+  @HttpCode(HttpStatus.ACCEPTED)
   async setUserProfileAsync(@Req() req, @Response() res): Promise<any> {
     const taskManager = new TaskManager();
     const {taskId, expectation} = taskManager.start('Connect user');
@@ -114,6 +117,7 @@ export class ProfileApi {
   }
 
   @Put('/restore/:username')
+  @HttpCode(HttpStatus.ACCEPTED)
   async resoreUserProfile(@Req() req, @Response() res): Promise<any> {
     const taskManager = new TaskManager();
     const {taskId, expectation} = taskManager.start('Restore user profile');
@@ -133,6 +137,7 @@ export class ProfileApi {
   }
 
   @Put('/restore/topics/:username')
+  @HttpCode(HttpStatus.ACCEPTED)
   async restoreTopic(@Req() req, @Response() res): Promise<any> {
     const taskManager = new TaskManager();
     const {taskId, expectation} = taskManager.start('Get user topics');
@@ -152,13 +157,13 @@ export class ProfileApi {
   }
 
   @Get('/:username/balance')
+  @HttpCode(HttpStatus.OK)
   async getUserBalance(@Req() req, @Response() res): Promise<any> {
     try {
       const guardians = new Guardians();
       const balance = await guardians.getUserBalance(req.params.username);
       if (balance.toLowerCase().includes('invalid account')) {
-        throw new Error('Account not found')
-        // return next(createError(404, 'Account not found'));
+        throw new HttpException('Account not found', HttpStatus.NOT_FOUND)
       }
       return res.json(balance);
     } catch (error) {

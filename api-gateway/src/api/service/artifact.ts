@@ -2,7 +2,7 @@ import { PolicyType } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
 import { Guardians } from '@helpers/guardians';
 import { PolicyEngine } from '@helpers/policy-engine';
-import { Controller, Delete, Get, Post, Req, Response } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Req, Response } from '@nestjs/common';
 
 @Controller('artifacts')
 export class ArtifactApi {
@@ -13,6 +13,7 @@ export class ArtifactApi {
      * @param res
      */
     @Get('/')
+    @HttpCode(HttpStatus.OK)
     async getArtifacts(@Req() req, @Response() res): Promise<any> {
         try {
             const policyId = req.query.policyId as string;
@@ -27,7 +28,7 @@ export class ArtifactApi {
             return res.setHeader('X-Total-Count', count).json(artifacts);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error
+            throw error;
         }
     }
 
@@ -37,6 +38,7 @@ export class ArtifactApi {
      * @param res
      */
     @Post('/:policyId')
+    @HttpCode(HttpStatus.CREATED)
     async uploadArtifacts(@Req() req, @Response() res): Promise<any> {
         try {
             const guardian = new Guardians();
@@ -48,12 +50,11 @@ export class ArtifactApi {
                 }
             });
             if (!policy || policy.status !== PolicyType.DRAFT) {
-                throw new Error('There is no appropriate policy or policy is not in DRAFT status')
-                // return next(createError(422, 'There is no appropriate policy or policy is not in DRAFT status'));
+                throw new HttpException('There is no appropriate policy or policy is not in DRAFT status', HttpStatus.UNPROCESSABLE_ENTITY);
             }
             const files = req.files;
             if (!files) {
-                throw new Error('There are no files to upload')
+                throw new HttpException('There are no files to upload', HttpStatus.UNPROCESSABLE_ENTITY)
                 // return next(createError(422, 'There are no files to upload'));
             }
             const artifacts = Array.isArray(files.artifacts) ? files.artifacts : [files.artifacts];
@@ -72,6 +73,7 @@ export class ArtifactApi {
     }
 
     @Delete('/:artifactId')
+    @HttpCode(HttpStatus.NO_CONTENT)
     async deleteArtifact(@Req() req, @Response() res): Promise<any> {
         try {
             const guardian = new Guardians();

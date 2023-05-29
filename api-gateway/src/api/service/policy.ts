@@ -4,11 +4,12 @@ import { Users } from '@helpers/users';
 import { AuthenticatedRequest, Logger, RunFunctionAsync } from '@guardian/common';
 import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
-import { Controller, Delete, Get, Post, Put, RawBodyRequest, Req, Response } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, RawBodyRequest, Req, Response } from '@nestjs/common';
 
 @Controller('policies')
 export class PolicyApi {
     @Get('/')
+    @HttpCode(HttpStatus.OK)
     async getPolicies(@Req() req, @Response() res): Promise<any> {
         const users = new Users();
         const engineService = new PolicyEngine();
@@ -66,6 +67,7 @@ export class PolicyApi {
     }
 
     @Post('/')
+    @HttpCode(HttpStatus.CREATED)
     async createPolicy(@Req() req, @Response() res): Promise<any> {
         const engineService = new PolicyEngine();
         try {
@@ -78,6 +80,7 @@ export class PolicyApi {
     }
 
     @Post('/push')
+    @HttpCode(HttpStatus.ACCEPTED)
     async createPolicyAsync(@Req() req, @Response() res): Promise<any> {
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Create policy');
@@ -94,6 +97,7 @@ export class PolicyApi {
     }
 
     @Post('/push/:policyId')
+    @HttpCode(HttpStatus.ACCEPTED)
     async updatePolicyAsync(@Req() req, @Response() res): Promise<any> {
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Clone policy');
@@ -112,6 +116,7 @@ export class PolicyApi {
     }
 
     @Delete('/push/:policyId')
+    @HttpCode(HttpStatus.ACCEPTED)
     async deletePOlicyAsync(@Req() req, @Response() res): Promise<any> {
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Delete policy');
@@ -129,6 +134,7 @@ export class PolicyApi {
     }
 
     @Get('/:policyId')
+    @HttpCode(HttpStatus.OK)
     async getPolicy(@Req() req, @Response() res): Promise<any> {
         const users = new Users();
         const engineService = new PolicyEngine();
@@ -146,6 +152,7 @@ export class PolicyApi {
     }
 
     @Put('/:policyId')
+    @HttpCode(HttpStatus.OK)
     async updatePolicy(@Req() req, @Response() res): Promise<any> {
         const engineService = new PolicyEngine();
         try {
@@ -170,6 +177,7 @@ export class PolicyApi {
     }
 
     @Put('/:policyId/publish')
+    @HttpCode(HttpStatus.OK)
     async publishPolicy(@Req() req, @Response() res): Promise<any> {
         const engineService = new PolicyEngine();
         try {
@@ -181,6 +189,7 @@ export class PolicyApi {
     }
 
     @Put('/push/:policyId/publish')
+    @HttpCode(HttpStatus.ACCEPTED)
     async publishPolicyAsync(@Req() req, @Response() res): Promise<any> {
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Publish policy');
@@ -200,6 +209,7 @@ export class PolicyApi {
     }
 
     @Put('/:policyId/dry-run')
+    @HttpCode(HttpStatus.OK)
     async dryRunPolicy(@Req() req, @Response() res): Promise<any> {
         const engineService = new PolicyEngine();
         try {
@@ -211,6 +221,7 @@ export class PolicyApi {
     }
 
     @Put('/:policyId/draft')
+    @HttpCode(HttpStatus.OK)
     async draftPolicy(@Req() req, @Response() res): Promise<any> {
         const engineService = new PolicyEngine();
         try {
@@ -222,6 +233,7 @@ export class PolicyApi {
     }
 
     @Post('/validate')
+    @HttpCode(HttpStatus.OK)
     async validatePolicy(@Req() req, @Response() res): Promise<any> {
         const engineService = new PolicyEngine();
         try {
@@ -233,6 +245,7 @@ export class PolicyApi {
     }
 
     @Get('/:policyId/groups')
+    @HttpCode(HttpStatus.OK)
     async getPolicyGroups(@Req() req, @Response() res): Promise<any> {
         const engineService = new PolicyEngine();
         try {
@@ -244,6 +257,7 @@ export class PolicyApi {
     }
 
     @Post('/:policyId/groups')
+    @HttpCode(HttpStatus.OK)
     async setPolicyGroups(@Req() req, @Response() res): Promise<any> {
         const engineService = new PolicyEngine();
         try {
@@ -255,6 +269,7 @@ export class PolicyApi {
     }
 
     @Get('/:policyId/blocks')
+    @HttpCode(HttpStatus.OK)
     async getPolicyBlocks(@Req() req, @Response() res): Promise<any> {
         const engineService = new PolicyEngine();
         try {
@@ -266,6 +281,7 @@ export class PolicyApi {
     }
 
     @Get('/:policyId/blocks/:uuid')
+    @HttpCode(HttpStatus.OK)
     async getBlockData(@Req() req, @Response() res): Promise<any> {
         const engineService = new PolicyEngine();
         try {
@@ -277,6 +293,7 @@ export class PolicyApi {
     }
 
     @Post('/:policyId/blocks/:uuid')
+    @HttpCode(HttpStatus.OK)
     async setBlockData(@Req() req, @Response() res): Promise<any> {
         const engineService = new PolicyEngine();
         try {
@@ -290,6 +307,7 @@ export class PolicyApi {
     }
 
     @Post('/:policyId/tag/:tagName/blocks')
+    @HttpCode(HttpStatus.OK)
     async setBlocksByTagName(@Req() req, @Response() res): Promise<any> {
         const engineService = new PolicyEngine();
         try {
@@ -301,6 +319,7 @@ export class PolicyApi {
     }
 
     @Get('/:policyId/tag/:tagName')
+    @HttpCode(HttpStatus.OK)
     async getBlockByTagName(@Req() req, @Response() res): Promise<any> {
         const engineService = new PolicyEngine();
         try {
@@ -312,6 +331,7 @@ export class PolicyApi {
     }
 
     @Get('/:policyId/tag/:tagName/blocks')
+    @HttpCode(HttpStatus.OK)
     async getBlocksByTagName(@Req() req, @Response() res): Promise<any> {
         const engineService = new PolicyEngine();
         try {
@@ -323,6 +343,7 @@ export class PolicyApi {
     }
 
     @Get('/:policyId/blocks/:uuid/parents')
+    @HttpCode(HttpStatus.OK)
     async getBlockParents(@Req() req, @Response() res): Promise<any> {
         const engineService = new PolicyEngine();
         try {
@@ -334,6 +355,7 @@ export class PolicyApi {
     }
 
     @Get('/:policyId/export/file')
+    @HttpCode(HttpStatus.OK)
     async getPolicyExportFile(@Req() req, @Response() res): Promise<any> {
         const engineService = new PolicyEngine();
         try {
@@ -349,6 +371,7 @@ export class PolicyApi {
     }
 
     @Get('/:policyId/export/message')
+    @HttpCode(HttpStatus.OK)
     async getPolicyExportMessage(@Req() req, @Response() res): Promise<any> {
         const engineService = new PolicyEngine();
         try {
@@ -360,6 +383,7 @@ export class PolicyApi {
     }
 
     @Post('/import/message')
+    @HttpCode(HttpStatus.CREATED)
     async importPolicyFromMessage(@Req() req, @Response() res): Promise<any> {
         const engineService = new PolicyEngine();
         const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;
@@ -373,6 +397,7 @@ export class PolicyApi {
     }
 
     @Post('/push/import/message')
+    @HttpCode(HttpStatus.ACCEPTED)
     async importPolicyFromMessageAsync(@Req() req, @Response() res): Promise<any> {
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Import policy message');
@@ -391,6 +416,7 @@ export class PolicyApi {
     }
 
     @Post('/import/file')
+    @HttpCode(HttpStatus.CREATED)
     async importPolicyFromFile(@Req() req, @Response() res): Promise<any> {
         const engineService = new PolicyEngine();
         const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;
@@ -404,6 +430,7 @@ export class PolicyApi {
     }
 
     @Post('/push/import/file')
+    @HttpCode(HttpStatus.ACCEPTED)
     async importPolicyFromFileAsync(@Req() req, @Response() res): Promise<any> {
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Import policy file');
@@ -422,6 +449,7 @@ export class PolicyApi {
     }
 
     @Post('/import/message/preview')
+    @HttpCode(HttpStatus.OK)
     async importMessage(@Req() req, @Response() res): Promise<any> {
         const engineService = new PolicyEngine();
         try {
@@ -433,6 +461,7 @@ export class PolicyApi {
     }
 
     @Post('/push/import/message/preview')
+    @HttpCode(HttpStatus.ACCEPTED)
     async importFromMessagePreview(@Req() req, @Response() res) {
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Preview policy message');
@@ -451,6 +480,7 @@ export class PolicyApi {
     }
 
     @Post('/import/file/preview')
+    @HttpCode(HttpStatus.OK)
     async importPolicyFromFilePreview(@Req() req: RawBodyRequest<AuthenticatedRequest>, @Response() res) {
         const engineService = new PolicyEngine();
         try {
@@ -462,6 +492,7 @@ export class PolicyApi {
     }
 
     @Get('/blocks/about')
+    @HttpCode(HttpStatus.OK)
     async getBlockAbout(@Req() req, @Response() res) {
         const engineService = new PolicyEngine();
         try {
@@ -473,17 +504,16 @@ export class PolicyApi {
     }
 
     @Get('/:policyId/dry-run/users')
+    @HttpCode(HttpStatus.OK)
     async getDryRunUsers(@Req() req, @Response() res) {
         const engineService = new PolicyEngine();
         try {
             const policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
             if (!policy) {
-                throw new Error('Policy does not exist.')
-                // return next(createError(404, 'Policy does not exist.'));
+                throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
             }
             if (policy.owner !== req.user.did) {
-                throw new Error('Invalid owner.')
-                // return next(createError(403, 'Invalid owner.'));
+                throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
             }
 
             return res.send(await engineService.getVirtualUsers(req.params.policyId));
@@ -494,17 +524,16 @@ export class PolicyApi {
     }
 
     @Post('/:policyId/dry-run/user')
+    @HttpCode(HttpStatus.CREATED)
     async setDryRunUser(@Req() req, @Response() res) {
         const engineService = new PolicyEngine();
         try {
             const policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
             if (!policy) {
-                throw new Error('Policy does not exist.')
-                // return next(createError(404, 'Policy does not exist.'));
+                throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
             }
             if (policy.owner !== req.user.did) {
-                throw new Error('Invalid owner.')
-                // return next(createError(403, 'Invalid owner.'));
+                throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
             }
 
             return res.status(201).send(await engineService.createVirtualUser(req.params.policyId, req.user.did));
@@ -515,19 +544,16 @@ export class PolicyApi {
     }
 
     @Post('/:policyId/dry-run/login')
+    @HttpCode(HttpStatus.OK)
     async loginDryRunUser(@Req() req, @Response() res) {
         const engineService = new PolicyEngine();
         try {
             const policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
             if (!policy) {
-                throw new Error('Policy does not exist.')
-
-                // return next(createError(404, 'Policy does not exist.'));
+                throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
             }
             if (policy.owner !== req.user.did) {
-                throw new Error('Invalid owner.')
-
-                // return next(createError(403, 'Invalid owner.'));
+                throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
             }
 
             return res.send(await engineService.loginVirtualUser(req.params.policyId, req.body.did));
@@ -538,19 +564,16 @@ export class PolicyApi {
     }
 
     @Post('/:policyId/dry-run/restart')
+    @HttpCode(HttpStatus.OK)
     async restartDryRun(@Req() req, @Response() res) {
         const engineService = new PolicyEngine();
         try {
             const policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
             if (!policy) {
-                throw new Error('Policy does not exist.')
-
-                // return next(createError(404, 'Policy does not exist.'));
+                throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
             }
             if (policy.owner !== req.user.did) {
-                throw new Error('Invalid owner.')
-
-                // return next(createError(403, 'Invalid owner.'));
+                throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
             }
 
             return res.json(await engineService.restartDryRun(req.body, req.user, req.params.policyId));
@@ -561,19 +584,16 @@ export class PolicyApi {
     }
 
     @Get('/:policyId/dry-run/transactions')
+    @HttpCode(HttpStatus.OK)
     async getDryRunTransactions(@Req() req, @Response() res) {
         const engineService = new PolicyEngine();
         try {
             const policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
             if (!policy) {
-                throw new Error('Policy does not exist.')
-
-                // return next(createError(404, 'Policy does not exist.'));
+                throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
             }
             if (policy.owner !== req.user.did) {
-                throw new Error('Invalid owner.')
-
-                // return next(createError(403, 'Invalid owner.'));
+                throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
             }
 
             let pageIndex: any;
@@ -591,19 +611,16 @@ export class PolicyApi {
     }
 
     @Get('/:policyId/dry-run/artifacts')
+    @HttpCode(HttpStatus.OK)
     async getDryRunArtifacts(@Req() req, @Response() res) {
         const engineService = new PolicyEngine();
         try {
             const policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
             if (!policy) {
-                throw new Error('Policy does not exist.')
-
-                // return next(createError(404, 'Policy does not exist.'));
+                throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
             }
             if (policy.owner !== req.user.did) {
-                throw new Error('Invalid owner.')
-
-                // return next(createError(403, 'Invalid owner.'));
+                throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
             }
 
             let pageIndex: any;
@@ -621,19 +638,16 @@ export class PolicyApi {
     }
 
     @Get('/:policyId/dry-run/ipfs')
+    @HttpCode(HttpStatus.OK)
     async getDryRunIpfs(@Req() req, @Response() res) {
         const engineService = new PolicyEngine();
         try {
             const policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
             if (!policy) {
-                throw new Error('Policy does not exist.')
-
-                // return next(createError(404, 'Policy does not exist.'));
+                throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
             }
             if (policy.owner !== req.user.did) {
-                throw new Error('Invalid owner.')
-
-                // return next(createError(403, 'Invalid owner.'));
+                throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
             }
 
             let pageIndex: any;
@@ -651,6 +665,7 @@ export class PolicyApi {
     }
 
     @Get('/:policyId/multiple')
+    @HttpCode(HttpStatus.OK)
     async getMultiplePolicies(@Req() req, @Response() res) {
         const engineService = new PolicyEngine();
         try {
@@ -662,6 +677,7 @@ export class PolicyApi {
     }
 
     @Post('/:policyId/multiple/')
+    @HttpCode(HttpStatus.OK)
     async setMultiplePolicies(@Req() req, @Response() res) {
         const engineService = new PolicyEngine();
         try {

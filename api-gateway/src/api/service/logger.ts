@@ -1,6 +1,6 @@
 import { IPageParameters, MessageAPI } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
-import { Controller, Get, Inject, Injectable, Post, Req, Response } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpException, HttpStatus, Inject, Injectable, Post, Req, Response } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 
 @Injectable()
@@ -26,10 +26,10 @@ export class LoggerService {
 @Controller('logs')
 export class LoggerApi {
     constructor(private readonly loggerService: LoggerService) {
-        console.log(this.loggerService);
     }
 
     @Post('/')
+    @HttpCode(HttpStatus.OK)
     async getLogs(@Req() req, @Response() res): Promise<any> {
         try {
             const filters: any = {};
@@ -69,6 +69,7 @@ export class LoggerApi {
     }
 
     @Get('attributes')
+    @HttpCode(HttpStatus.OK)
     async getAttributes(@Req() req, @Response() res): Promise<any> {
         try {
             if (req.query.existingAttributes && !Array.isArray(req.query.existingAttributes)) {

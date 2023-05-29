@@ -2,11 +2,12 @@ import { Guardians } from '@helpers/guardians';
 import { Logger, RunFunctionAsync, } from '@guardian/common';
 import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
-import { Controller, Post, Req, Response } from '@nestjs/common';
+import { Controller, HttpCode, HttpStatus, Post, Req, Response } from '@nestjs/common';
 
 @Controller('wizard')
 export class WizardApi {
     @Post('/policy')
+    @HttpCode(HttpStatus.CREATED)
     async setPolicy(@Req() req, @Response() res): Promise<any> {
         try {
             const wizardConfig = req.body;
@@ -22,6 +23,7 @@ export class WizardApi {
     }
 
     @Post('/policy/push')
+    @HttpCode(HttpStatus.ACCEPTED)
     async setPolicyAsync(@Req() req, @Response() res): Promise<any> {
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Create policy');
@@ -48,6 +50,7 @@ export class WizardApi {
     }
 
     @Post('/:policyId/config')
+    @HttpCode(HttpStatus.OK)
     async setPolicyConfig(@Req() req, @Response() res): Promise<any> {
         try {
             const wizardConfig = req.body;

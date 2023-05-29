@@ -1,11 +1,12 @@
 import { Guardians } from '@helpers/guardians';
 import { Users } from '@helpers/users';
 import { IAuthUser, Logger } from '@guardian/common';
-import { Controller, Get, Req, Response } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Req, Response } from '@nestjs/common';
 
 @Controller('trust-chains')
 export class TrustChainsApi {
     @Get('/')
+    @HttpCode(HttpStatus.OK)
     async getTrustChains(@Req() req, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();
@@ -40,6 +41,7 @@ export class TrustChainsApi {
     }
 
     @Get('/:hash')
+    @HttpCode(HttpStatus.OK)
     async getTrustChainByHash(@Req() req, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();

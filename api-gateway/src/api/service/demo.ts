@@ -3,7 +3,7 @@ import { Users } from '@helpers/users';
 import { Logger, RunFunctionAsync } from '@guardian/common';
 import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
-import { Controller, Get, Req, Response } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpException, HttpStatus, Req, Response } from '@nestjs/common';
 
 @Controller('demo')
 export class DemoApi {
@@ -12,6 +12,7 @@ export class DemoApi {
      * @deprecated 2023-03-01
      */
     @Get('/registeredUsers')
+    @HttpCode(HttpStatus.OK)
     async registeredUsers(@Req() req, @Response() res): Promise<any> {
         const users = new Users();
         const guardians = new Guardians();
@@ -37,6 +38,7 @@ export class DemoApi {
      * @deprecated 2023-03-01
      */
     @Get('/randomKey')
+    @HttpCode(HttpStatus.OK)
     async randomKey(@Req() req, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();
@@ -56,7 +58,7 @@ export class DemoApi {
             return demoKey;
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            return res.status(500).json({ code: 500, message: error.message });
+            throw error;
         }
     }
 
@@ -64,6 +66,7 @@ export class DemoApi {
      * @deprecated 2023-03-01
      */
     @Get('/push/randomKey')
+    @HttpCode(HttpStatus.CREATED)
     async pushRandomKey(@Req() req, @Response() res): Promise<any> {
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Create random key');
@@ -93,6 +96,7 @@ export class DemoApi {
     }
 
     @Get('/registered-users')
+    @HttpCode(HttpStatus.OK)
     async registeredUsers2(@Req() req, @Response() res): Promise<any> {
         const users = new Users();
         const guardians = new Guardians();
@@ -115,6 +119,7 @@ export class DemoApi {
     }
 
     @Get('/random-key')
+    @HttpCode(HttpStatus.OK)
     async randomKey2(@Req() req): Promise<any> {
         try {
             const guardians = new Guardians();
@@ -139,6 +144,7 @@ export class DemoApi {
     }
 
     @Get('/push/random-key')
+    @HttpCode(HttpStatus.ACCEPTED)
     async pushRandomKey2(@Req() req, @Response() res): Promise<any> {
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Create random key');

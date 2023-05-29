@@ -1,10 +1,11 @@
 import { Logger } from '@guardian/common';
 import { TaskManager } from '@helpers/task-manager';
-import { Controller, Get, Req, Response } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Req, Response } from '@nestjs/common';
 
 @Controller('tasks')
 export class TaskApi {
     @Get('/:taskId')
+    @HttpCode(HttpStatus.OK)
     async getTask(@Req() req, @Response() res): Promise<any> {
         const taskManager = new TaskManager();
         try {
