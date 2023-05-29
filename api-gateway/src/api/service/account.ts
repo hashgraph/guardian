@@ -5,6 +5,7 @@ import { UserRole } from '@guardian/interfaces';
 import { ClientProxy } from '@nestjs/microservices';
 import { Body, Controller, Get, Headers, HttpCode, HttpException, HttpStatus, Inject, Post, Req } from '@nestjs/common';
 import { checkPermission } from '@auth/authorization-helper';
+import { LoginUserDTO, RegisterUserDTO } from '@middlewares/validation/schemas/accounts';
 
 /**
  * User account route
@@ -40,7 +41,7 @@ export class AccountApi {
      */
     @Post('/register')
     @HttpCode(HttpStatus.CREATED)
-    async register(@Body() body): Promise<any> {
+    async register(@Body() body: RegisterUserDTO): Promise<any> {
         const users = new Users();
         try {
             const {username, password} = body;
@@ -64,7 +65,7 @@ export class AccountApi {
      */
     @Post('/login')
     @HttpCode(HttpStatus.OK)
-    async login(@Body() body): Promise<any> {
+    async login(@Body() body: LoginUserDTO): Promise<any> {
         const users = new Users();
         try {
             const {username, password} = body;

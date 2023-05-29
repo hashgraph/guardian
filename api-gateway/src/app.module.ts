@@ -26,6 +26,7 @@ import express from 'express';
 import fileUpload from 'express-fileupload';
 import hpp from 'hpp';
 import { ThemesApi } from '@api/service/themes';
+import { TrustChainsOldApi } from '@api/service/trustchains';
 
 const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
 
@@ -64,6 +65,7 @@ const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
         TokensApi,
         ThemesApi,
         TrustChainsApi,
+        TrustChainsOldApi,
         WizardApi
     ],
     providers: [
