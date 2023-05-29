@@ -7,7 +7,6 @@ import { exportSchemas, importSchemaByFiles, importSchemasByMessages, importTags
 import { findAndPublishSchema } from './helpers/schema-publish-helper';
 import { getPageOptions } from './helpers/api-helper';
 import { Controller } from '@nestjs/common';
-import { Ctx, MessagePattern, NatsContext, Payload } from '@nestjs/microservices';
 
 @Controller()
 export class SchemaService {
