@@ -57,6 +57,10 @@ export class PermissionMiddleware implements NestMiddleware {
  */
 export async function authorizationHelper(req: AuthenticatedRequest, res: Response, next: Function): Promise<void> {
     const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        next();
+        return;
+    }
     const users = new Users();
     if (authHeader) {
         const token = authHeader.split(' ')[1];

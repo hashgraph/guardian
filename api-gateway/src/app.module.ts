@@ -70,6 +70,7 @@ const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
 })
 export class AppModule {
     configure(consumer: MiddlewareConsumer) {
+        consumer.apply(authorizationHelper).forRoutes(AccountApi);
         consumer.apply(authorizationHelper).forRoutes(ProfileApi);
         consumer.apply(authorizationHelper).forRoutes(PolicyApi);
         consumer.apply(authorizationHelper).forRoutes(SettingsApi);
