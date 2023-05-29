@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { FormBuilder, Validators, ValidatorFn, AbstractControl, ValidationErrors } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { AuthStateService } from 'src/app/services/auth-state.service';
@@ -21,7 +21,7 @@ const checkPasswords: ValidatorFn = (group: AbstractControl): ValidationErrors |
 @Component({
     selector: 'app-register',
     templateUrl: './register.component.html',
-    styleUrls: ['./register.component.css']
+    styleUrls: ['./register.component.scss']
 })
 export class RegisterComponent implements OnInit {
     loading: boolean = false;
@@ -40,7 +40,6 @@ export class RegisterComponent implements OnInit {
         private auth: AuthService,
         private authState: AuthStateService,
         private fb: FormBuilder,
-        private route: ActivatedRoute,
         private router: Router) {
         this._isRoleSelected$.next(false);
     }
@@ -72,10 +71,11 @@ export class RegisterComponent implements OnInit {
                     } else {
                         this.router.navigate(['/']);
                     }
-                }, (error) => {
+                }, () => {
                     this.loading = false;
                 })
-            }, (error) => {
+            }, ({ error }) => {
+                this.error = error.message[0];
                 this.loading = false;
             })
         }

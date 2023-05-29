@@ -202,10 +202,10 @@ export class UserProfileComponent implements OnInit {
                 this.loading = false;
                 this.headerProps.setLoading(false);
             }, 200)
-        }, (error) => {
+        }, ({ message }) => {
             this.loading = false;
             this.headerProps.setLoading(false);
-            console.error(error);
+            console.error(message);
         });
     }
 
@@ -217,10 +217,10 @@ export class UserProfileComponent implements OnInit {
                 this.loading = false;
                 this.headerProps.setLoading(false);
             }, 200)
-        }, (error) => {
+        }, ({ message }) => {
             this.loading = false;
             this.headerProps.setLoading(false);
-            console.error(error);
+            console.error(message);
         });
     }
 
@@ -269,10 +269,10 @@ export class UserProfileComponent implements OnInit {
                     this.headerProps.setLoading(false);
                 }, 200);
             }
-        }, (error) => {
+        }, ({ message }) => {
             this.loading = false;
             this.headerProps.setLoading(false);
-            console.error(error);
+            console.error(message);
         });
     }
 
@@ -300,10 +300,10 @@ export class UserProfileComponent implements OnInit {
             this.taskId = taskId;
             this.expectedTaskMessages = expectation;
             this.operationMode = OperationMode.SetProfile;
-        }, (error) => {
+        }, ({ message }) => {
             this.loading = false;
             this.headerProps.setLoading(false);
-            console.error(error);
+            console.error(message);
         });
     }
 
@@ -410,8 +410,8 @@ export class UserProfileComponent implements OnInit {
         this.loading = true;
         this.tokenService
             .getTokens()
-            .subscribe(this.openRetireDialog.bind(this), (error) => {
-                console.error(error);
+            .subscribe(this.openRetireDialog.bind(this), ({ message }) => {
+                console.error(message);
                 this.loading = false;
             });
     }

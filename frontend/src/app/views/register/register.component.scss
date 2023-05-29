@@ -58,28 +58,28 @@ form,
     justify-content: space-between;
     align-items: center;
     width: 100%;
-}
 
-.login-header mat-icon {
-    font-size: 30px;
-    margin-right: 4px;
-}
+    mat-icon {
+        font-size: 30px;
+        margin-right: 4px;
+    }
 
-.login-header__title {
-    flex-grow: 1;
-    text-align: center;
-    padding-right: 10%;
-}
+    &__title {
+        flex-grow: 1;
+        text-align: center;
+        padding-right: 10%;
+    }
 
-.login-header__back-button {
-    display: flex;
-    align-items: flex-end;
-    font-size: 16px;
-    color: var(--button-primary-color);
-    cursor: pointer;
-    border: none;
-    background-color: transparent;
-    max-width: fit-content;
+    &__back-button {
+        display: flex;
+        align-items: flex-end;
+        font-size: 16px;
+        color: var(--button-primary-color);
+        cursor: pointer;
+        border: none;
+        background-color: transparent;
+        max-width: fit-content;
+    }
 }
 
 .overlay {

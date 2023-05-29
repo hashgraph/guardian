@@ -70,9 +70,9 @@ export class CompareComponent implements OnInit {
             setTimeout(() => {
                 this.loading = false;
             }, 500);
-        }, (error) => {
+        }, ({ message }) => {
             this.loading = false;
-            console.error(error);
+            console.error(message);
         });
     }
 
@@ -91,9 +91,9 @@ export class CompareComponent implements OnInit {
             setTimeout(() => {
                 this.loading = false;
             }, 500);
-        }, (error) => {
+        }, ({ message }) => {
             this.loading = false;
-            console.error(error);
+            console.error(message);
         });
     }
 
@@ -163,9 +163,9 @@ export class CompareComponent implements OnInit {
                 this.downloadObjectAsJson(data, 'report');
             }
             this.loading = false;
-        }, (error) => {
+        }, ({ message }) => {
             this.loading = false;
-            console.error(error);
+            console.error(message);
         });
     }
 
@@ -183,9 +183,9 @@ export class CompareComponent implements OnInit {
                 this.downloadObjectAsJson(data, 'report');
             }
             this.loading = false;
-        }, (error) => {
+        }, ({ message }) => {
             this.loading = false;
-            console.error(error);
+            console.error(message);
         });
     }
 
