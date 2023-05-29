@@ -117,54 +117,54 @@ export class SchemaService {
     //     }
     // }
 
-    @MessagePattern(MessageAPI.GET_SCHEMAS)
-    async getSchemas(@Payload() msg: any, @Ctx() context: NatsContext) {
-        try {
-            if (!msg) {
-                return new MessageError('Invalid load schema parameter');
-            }
-
-            const { owner, uuid, topicId, pageIndex, pageSize } = msg;
-            const filter: any = {
-                where: {
-                    readonly: false,
-                    system: false,
-                    category: { $ne: SchemaCategory.TAG }
-                }
-            }
-
-            if (owner) {
-                filter.where.owner = owner;
-            }
-
-            if (topicId) {
-                filter.where.topicId = topicId;
-            }
-
-            if (uuid) {
-                filter.where.uuid = uuid;
-            }
-
-            const otherOptions: any = {};
-            const _pageSize = parseInt(pageSize, 10);
-            const _pageIndex = parseInt(pageIndex, 10);
-            if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
-                otherOptions.orderBy = { createDate: 'DESC' };
-                otherOptions.limit = Math.min(100, _pageSize);
-                otherOptions.offset = _pageIndex * _pageSize;
-            } else {
-                otherOptions.orderBy = { createDate: 'DESC' };
-                otherOptions.limit = 100;
-            }
-
-            const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
-
-            return new MessageResponse({ items, count });
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    }
+    // @MessagePattern(MessageAPI.GET_SCHEMAS)
+    // async getSchemas(@Payload() msg: any, @Ctx() context: NatsContext) {
+    //     try {
+    //         if (!msg) {
+    //             return new MessageError('Invalid load schema parameter');
+    //         }
+    //
+    //         const { owner, uuid, topicId, pageIndex, pageSize } = msg;
+    //         const filter: any = {
+    //             where: {
+    //                 readonly: false,
+    //                 system: false,
+    //                 category: { $ne: SchemaCategory.TAG }
+    //             }
+    //         }
+    //
+    //         if (owner) {
+    //             filter.where.owner = owner;
+    //         }
+    //
+    //         if (topicId) {
+    //             filter.where.topicId = topicId;
+    //         }
+    //
+    //         if (uuid) {
+    //             filter.where.uuid = uuid;
+    //         }
+    //
+    //         const otherOptions: any = {};
+    //         const _pageSize = parseInt(pageSize, 10);
+    //         const _pageIndex = parseInt(pageIndex, 10);
+    //         if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
+    //             otherOptions.orderBy = { createDate: 'DESC' };
+    //             otherOptions.limit = Math.min(100, _pageSize);
+    //             otherOptions.offset = _pageIndex * _pageSize;
+    //         } else {
+    //             otherOptions.orderBy = { createDate: 'DESC' };
+    //             otherOptions.limit = 100;
+    //         }
+    //
+    //         const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
+    //
+    //         return new MessageResponse({ items, count });
+    //     } catch (error) {
+    //         new Logger().error(error, ['GUARDIAN_SERVICE']);
+    //         return new MessageError(error);
+    //     }
+    // }
 
     // @MessagePattern(MessageAPI.PUBLISH_SCHEMA)
     // async publishSchema(@Payload() msg: any, @Ctx() context: NatsContext) {
@@ -403,53 +403,53 @@ export async function schemaAPI(): Promise<void> {
      *
      * @returns {ISchema[]} - all schemas
      */
-    // ApiResponse(MessageAPI.GET_SCHEMAS, async (msg) => {
-    //     try {
-    //         if (!msg) {
-    //             return new MessageError('Invalid load schema parameter');
-    //         }
-    //
-    //         const { owner, uuid, topicId, pageIndex, pageSize } = msg;
-    //         const filter: any = {
-    //             where: {
-    //                 readonly: false,
-    //                 system: false,
-    //                 category: { $ne: SchemaCategory.TAG }
-    //             }
-    //         }
-    //
-    //         if (owner) {
-    //             filter.where.owner = owner;
-    //         }
-    //
-    //         if (topicId) {
-    //             filter.where.topicId = topicId;
-    //         }
-    //
-    //         if (uuid) {
-    //             filter.where.uuid = uuid;
-    //         }
-    //
-    //         const otherOptions: any = {};
-    //         const _pageSize = parseInt(pageSize, 10);
-    //         const _pageIndex = parseInt(pageIndex, 10);
-    //         if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
-    //             otherOptions.orderBy = { createDate: 'DESC' };
-    //             otherOptions.limit = Math.min(100, _pageSize);
-    //             otherOptions.offset = _pageIndex * _pageSize;
-    //         } else {
-    //             otherOptions.orderBy = { createDate: 'DESC' };
-    //             otherOptions.limit = 100;
-    //         }
-    //
-    //         const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
-    //
-    //         return new MessageResponse({ items, count });
-    //     } catch (error) {
-    //         new Logger().error(error, ['GUARDIAN_SERVICE']);
-    //         return new MessageError(error);
-    //     }
-    // });
+    ApiResponse(MessageAPI.GET_SCHEMAS, async (msg) => {
+        try {
+            if (!msg) {
+                return new MessageError('Invalid load schema parameter');
+            }
+
+            const { owner, uuid, topicId, pageIndex, pageSize } = msg;
+            const filter: any = {
+                where: {
+                    readonly: false,
+                    system: false,
+                    category: { $ne: SchemaCategory.TAG }
+                }
+            }
+
+            if (owner) {
+                filter.where.owner = owner;
+            }
+
+            if (topicId) {
+                filter.where.topicId = topicId;
+            }
+
+            if (uuid) {
+                filter.where.uuid = uuid;
+            }
+
+            const otherOptions: any = {};
+            const _pageSize = parseInt(pageSize, 10);
+            const _pageIndex = parseInt(pageIndex, 10);
+            if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
+                otherOptions.orderBy = { createDate: 'DESC' };
+                otherOptions.limit = Math.min(100, _pageSize);
+                otherOptions.offset = _pageIndex * _pageSize;
+            } else {
+                otherOptions.orderBy = { createDate: 'DESC' };
+                otherOptions.limit = 100;
+            }
+
+            const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
+
+            return new MessageResponse({ items, count });
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
 
     /**
      * Change the status of a schema on PUBLISHED.

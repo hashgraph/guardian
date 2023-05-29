@@ -213,14 +213,14 @@ export class SchemaApi {
                 topicId = model?.topicId;
             }
 
-            // const { items, count } = await guardians.getSchemasByOwner(owner, topicId, pageIndex, pageSize);
-            const result = await this.client.send(MessageAPI.GET_SCHEMAS, {
-                owner,
-                topicId,
-                pageIndex,
-                pageSize
-            }).toPromise();
-            const { items, count } = result.body;
+            const { items, count } = await guardians.getSchemasByOwner(owner, topicId, pageIndex, pageSize);
+            // const result = await this.client.send(MessageAPI.GET_SCHEMAS, {
+            //     owner,
+            //     topicId,
+            //     pageIndex,
+            //     pageSize
+            // }).toPromise();
+            // const { items, count } = result.body;
             SchemaHelper.updatePermission(items, user.did);
             return res.setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
         } catch (error) {
