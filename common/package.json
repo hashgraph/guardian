@@ -2,13 +2,16 @@
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "^3.319.0",
-    "@guardian/interfaces": "^2.12.2",
-    "@hashgraph/sdk": "^2.22.0",
+    "@guardian/interfaces": "^2.13.0-prerelease",
+    "@hashgraph/sdk": "^2.24.2",
     "@mattrglobal/jsonld-signatures-bbs": "^1.1.2",
     "@meeco/cryppo": "^2.0.2",
-    "@mikro-orm/core": "~5.7.5",
-    "@mikro-orm/migrations-mongodb": "~5.7.5",
-    "@mikro-orm/mongodb": "~5.7.5",
+    "@mikro-orm/core": "~5.7.7",
+    "@mikro-orm/migrations-mongodb": "~5.7.7",
+    "@mikro-orm/mongodb": "~5.7.7",
+    "@nestjs/common": "^9.4.1",
+    "@nestjs/core": "^9.4.1",
+    "@nestjs/microservices": "^9.4.1",
     "@transmute/credentials-context": "^0.7.0-unstable.80",
     "@transmute/did-context": "^0.7.0-unstable.80",
     "@transmute/ed25519-signature-2018": "^0.7.0-unstable.80",
@@ -25,8 +28,9 @@
     "lodash.get": "^4.4.2",
     "lodash.set": "^4.3.2",
     "moment": "^2.29.2",
-    "mongodb": "^5.4.0",
+    "mongodb": "5.5.0",
     "nats": "^2.6.1",
+    "nestjs": "^0.0.1",
     "node-vault": "^0.9.22",
     "reflect-metadata": "^0.1.13",
     "winston": "^3.8.1",
@@ -59,5 +63,6 @@
     "test:local": "mocha tests/**/*.test.js --exit",
     "test:stability": "mocha tests/stability.test.js"
   },
-  "version": "2.12.2"
+  "version": "2.13.0-prerelease",
+  "stableVersion": "2.12.0"
 }

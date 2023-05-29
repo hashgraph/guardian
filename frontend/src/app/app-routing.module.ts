@@ -140,7 +140,8 @@ export class ServicesStatusGuard implements CanActivate {
     }
 
     canActivate() {
-        return this.status.IsServicesReady();
+        return true;
+        // return this.status.IsServicesReady();
     }
 }
 

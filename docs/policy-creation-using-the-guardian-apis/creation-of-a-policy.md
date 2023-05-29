@@ -11,7 +11,7 @@ Creates a new policy. Only users with the Standard Registry role are allowed to 
 Object that contains policy configuration.
 {% endswagger-parameter %}
 
-{% swagger-response status="201: Created" description="Successful operation" %}
+{% swagger-response status="201: Created" description="Created" %}
 
 {% endswagger-response %}
 

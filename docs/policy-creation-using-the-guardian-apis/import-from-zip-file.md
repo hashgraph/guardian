@@ -11,7 +11,7 @@ Imports new policy and all associated artifacts, such as schemas and VCs, from t
 A zip file that contains the policy and associated schemas and VCs to be imported
 {% endswagger-parameter %}
 
-{% swagger-response status="201: Created" description="Successful Operation" %}
+{% swagger-response status="201: Created" description="Created" %}
 ```javascript
 {
     content:

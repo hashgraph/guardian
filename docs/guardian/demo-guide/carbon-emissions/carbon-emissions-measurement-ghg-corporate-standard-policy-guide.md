@@ -60,7 +60,7 @@ Associate owner with CET (Click on tokens from the nav link and click on the ass
 
 After confirming the roles, enter the Project Owner information in the dialog.
 
-<figure><img src="../../../.gitbook/assets/image (63).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (63) (1).png" alt=""><figcaption></figcaption></figure>
 
 ## Installer
 
@@ -172,7 +172,7 @@ Click on `Add MRV` and fill up all the values for your MRV
 
 Submit MRV then the new MRV will display in the list, Aggregation will run in the background and respect the token mint rule same with realtime data ingression.
 
-<figure><img src="../../../.gitbook/assets/image (58).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (58) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 Note:&#x20;

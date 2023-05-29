@@ -1,32 +1,10 @@
 import JSZip from 'jszip';
-import { SchemaEntity, TopicType, GenerateUUIDv4, TagType } from '@guardian/interfaces';
+import { GenerateUUIDv4, SchemaEntity, TagType, TopicType } from '@guardian/interfaces';
 import { publishSystemSchemas } from '@api/helpers/schema-publish-helper';
 import { importSchemaByFiles } from '@api/helpers/schema-import-export-helper';
 import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
 import { INotifier } from '@helpers/notifier';
-import {
-    DataBaseHelper,
-    Artifact,
-    Topic,
-    Schema,
-    Token,
-    Policy,
-    findAllEntities,
-    getArtifactType,
-    regenerateIds,
-    replaceAllEntities,
-    replaceAllVariables,
-    replaceArtifactProperties,
-    SchemaFields,
-    DatabaseServer,
-    Users,
-    MessageAction,
-    MessageServer,
-    MessageType,
-    PolicyMessage,
-    TopicConfig,
-    TopicHelper,
-} from '@guardian/common';
+import { Artifact, DataBaseHelper, DatabaseServer, findAllEntities, getArtifactType, MessageAction, MessageServer, MessageType, Policy, PolicyMessage, regenerateIds, replaceAllEntities, replaceAllVariables, replaceArtifactProperties, Schema, SchemaFields, Token, Topic, TopicConfig, TopicHelper, Users, } from '@guardian/common';
 import { exportTag, importTag } from '@api/tag.service';
 
 /**

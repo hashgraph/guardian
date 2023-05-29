@@ -42,7 +42,7 @@ In order to mint tokens into another account (not into the account of the mintin
 
 5. Create the token
 
-![image5.png](<../../../../.gitbook/assets/4 (1) (1) (2).png>)
+![image5.png](<../../../../.gitbook/assets/4 (1) (1) (2) (1) (1).png>)
 
 ## **Document Operations**
 
@@ -120,7 +120,7 @@ _(Please see_ [_example 2_](data-input-via-forms-using-roles-to-partition-user-a
 
 1.5.3 Add Approve button into the grid
 
-![Adding Approve button to the grid](<../../../../.gitbook/assets/20 (1) (1).png>)
+![Adding Approve button to the grid](<../../../../.gitbook/assets/20 (1) (1) (1) (1).png>)
 
 1.5.4 After the Approve, setup the KYC for the account connected to the project
 

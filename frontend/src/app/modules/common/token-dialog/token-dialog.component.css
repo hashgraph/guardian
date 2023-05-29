@@ -43,10 +43,14 @@
         margin-right: 0 !important;
     }
 
+    .g-dialog-content {
+        height: calc(100% - 87px);
+    }
+
     .g-dialog-body {
         width: 90%;
         margin: 0 auto !important;
-        max-height: calc(var(--vh, 1vh) * 100 - var(--header-height) - 90px - 107px - 55px);
+        max-height: calc(100% - 90px);
         padding: 0;
     }
 

@@ -1,6 +1,6 @@
 # Unsetting KYC for the User
 
-{% swagger method="put" path="" baseUrl="/tokens/push/{tokenId}/{username}/revokeKyc" summary="Unsets the KYC flag for the user." %}
+{% swagger method="put" path="" baseUrl="/tokens/push/{tokenId}/{username}/revoke-kyc" summary="Unsets the KYC flag for the user." %}
 {% swagger-description %}
 Unsets the KYC flag for the user. Only users with the Standard Registry role are allowed to make the request.
 {% endswagger-description %}

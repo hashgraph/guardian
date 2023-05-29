@@ -9,7 +9,7 @@ Creates new contract. Only users with the Standard Registry role are allowed to 
 Request Object Parameters.
 {% endswagger-parameter %}
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% swagger-response status="201: Created" description="Created" %}
 ```javascript
 {
     content:

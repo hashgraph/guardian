@@ -455,6 +455,23 @@
     grid-template-columns: auto 1px !important;
 }
 
+.block-container[deprecated="true"] .block-item {
+    background-color: lightgray !important;
+    border-color: lightgray !important;
+}
+
+.block-container[deprecated="true"] .block-item::after {
+    content: "";
+    width: 110%;
+    height: 3px;
+    background-color: black;
+    position: absolute;
+    left: -5%;
+}
+
+.block-container[selected="true"][deprecated="true"] .block-item {
+    border-color: #5161e1 !important;
+}
 
 .cdk-drag-animating {
     transition: transform 50ms cubic-bezier(0, 0, 0.2, 1);

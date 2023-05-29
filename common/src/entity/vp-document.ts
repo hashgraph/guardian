@@ -33,7 +33,7 @@ export class VpDocument extends BaseEntity implements IVPDocument {
     /**
      * Document instance
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     document?: IVP;
 
     /**

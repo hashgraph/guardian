@@ -179,6 +179,11 @@ export class BlockTreeGenerator extends NatsService {
             const block = PolicyComponentsUtils.GetBlockByTag<IPolicyInterfaceBlock>(policyId, tag);
 
             if (block && (await block.isAvailable(userFull))) {
+                if (typeof block.getData !== 'function') {
+                    throw new Error(
+                        'Block is not supporting get data functions'
+                    );
+                }
                 const data = await block.getData(userFull, block.uuid, null);
                 return new MessageResponse(data);
             } else {
@@ -194,6 +199,11 @@ export class BlockTreeGenerator extends NatsService {
             const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
 
             if (block && (await block.isAvailable(userFull))) {
+                if (typeof block.setData !== 'function') {
+                    throw new Error(
+                        'Block is not supporting set data functions'
+                    );
+                }
                 const result = await block.setData(userFull, data);
                 return new MessageResponse(result);
             } else {

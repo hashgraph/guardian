@@ -1,42 +1,38 @@
-import {
-    DidDocumentStatus,
-    DocumentStatus,
-    MessageAPI,
-    Schema,
-    SchemaEntity,
-    SchemaHelper,
-    TopicType,
-    UserRole, WorkerTaskType
-} from '@guardian/interfaces';
+import { DidDocumentStatus, DocumentStatus, MessageAPI, Schema, SchemaEntity, SchemaHelper, TopicType, UserRole, WorkerTaskType } from '@guardian/interfaces';
 import { ApiResponse } from '@api/helpers/api-response';
 import {
-    MessageResponse,
-    MessageError,
-    Logger,
     DataBaseHelper,
-    IAuthUser, RunFunctionAsync,
-    Topic,
     DidDocument as DidDocumentCollection,
-    VcDocument as VcDocumentCollection,
-    Schema as SchemaCollection,
-    Settings,
     DIDDocument,
     DIDMessage,
+    IAuthUser,
+    InboundMessageIdentityDeserializer,
+    KeyType,
+    Logger,
     MessageAction,
+    MessageError,
+    MessageResponse,
     MessageServer,
+    OutboundResponseIdentitySerializer,
     RegistrationMessage,
+    RunFunctionAsync,
+    Schema as SchemaCollection,
+    Settings,
+    Topic,
     TopicConfig,
     TopicHelper,
-    VCMessage,
     Users,
-    KeyType,
-    Wallet,
+    VcDocument as VcDocumentCollection,
     VcHelper,
+    VCMessage,
+    Wallet,
     Workers
 } from '@guardian/common';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
 import { RestoreDataFromHedera } from '@helpers/restore-data-from-hedera';
 import { publishSystemSchema } from './helpers/schema-publish-helper';
+import { Controller, Module } from '@nestjs/common';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 
 /**
  * Get global topic
@@ -311,6 +307,57 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
     return userDID;
 }
 
+@Controller()
+export class ProfileController {
+    // @MessagePattern(MessageAPI.GET_BALANCE)
+    // async getBalance(@Payload() msg: any, @Ctx() context: NatsContext) {
+    //     try {
+    //         const { username } = msg;
+    //         const wallet = new Wallet();
+    //         const users = new Users();
+    //         const workers = new Workers();
+    //         const user = await users.getUser(username);
+    //
+    //         if (!user) {
+    //             return new MessageResponse(null);
+    //         }
+    //
+    //         if (!user.hederaAccountId) {
+    //             return new MessageResponse(null);
+    //         }
+    //
+    //         const key = await wallet.getKey(user.walletToken, KeyType.KEY, user.did);
+    //         const balance = await workers.addNonRetryableTask({
+    //             type: WorkerTaskType.GET_USER_BALANCE,
+    //             data: {
+    //                 hederaAccountId: user.hederaAccountId,
+    //                 hederaAccountKey: key
+    //             }
+    //         }, 20);
+    //         // return {
+    //         //     balance,
+    //         //     unit: 'Hbar',
+    //         //     user: user ? {
+    //         //         username: user.username,
+    //         //         did: user.did
+    //         //     } : null
+    //         // }
+    //         return new MessageResponse({
+    //             balance,
+    //             unit: 'Hbar',
+    //             user: user ? {
+    //                 username: user.username,
+    //                 did: user.did
+    //             } : null
+    //         });
+    //     } catch (error) {
+    //         new Logger().error(error, ['GUARDIAN_SERVICE']);
+    //         console.error(error);
+    //         return new MessageError(error, 500);
+    //     }
+    // }
+}
+
 /**
  * Connect to the message broker methods of working with Address books.
  */
@@ -500,3 +547,24 @@ export function profileAPI() {
         return new MessageResponse({ taskId });
     });
 }
+
+@Module({
+    imports: [
+        ClientsModule.register([{
+            name: 'profile-service',
+            transport: Transport.NATS,
+            options: {
+                servers: [
+                    `nats://${process.env.MQ_ADDRESS}:4222`
+                ],
+                queue: 'profile-service',
+                serializer: new OutboundResponseIdentitySerializer(),
+                deserializer: new InboundMessageIdentityDeserializer(),
+            }
+        }]),
+    ],
+    controllers: [
+        ProfileController
+    ]
+})
+export class ProfileModule {}

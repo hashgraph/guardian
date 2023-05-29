@@ -3,31 +3,27 @@ import { sign, verify } from 'jsonwebtoken';
 import { User } from '@entity/user';
 import * as util from 'util';
 import crypto from 'crypto';
+import { DataBaseHelper, Logger, MessageError, MessageResponse, NatsService, SecretManager, Singleton } from '@guardian/common';
 import {
-    MessageResponse,
-    MessageError,
-    Logger,
-    DataBaseHelper, NatsService, Singleton
-} from '@guardian/common';
-import {
-    AuthEvents, UserRole,
-    IGetUserByTokenMessage,
-    IRegisterNewUserMessage,
+    AuthEvents,
+    GenerateUUIDv4,
     IGenerateTokenMessage,
     IGenerateTokenResponse,
     IGetAllUserResponse,
     IGetDemoUserResponse,
-    IGetUserMessage,
-    IUpdateUserMessage,
-    ISaveUserMessage,
     IGetUserByIdMessage,
+    IGetUserByTokenMessage,
+    IGetUserMessage,
+    IGetUsersByAccountMessage,
     IGetUsersByIdMessage,
     IGetUsersByIRoleMessage,
-    IUser,
+    IRegisterNewUserMessage,
+    ISaveUserMessage,
     IStandardRegistryUserResponse,
-    IGetUsersByAccountMessage, GenerateUUIDv4
+    IUpdateUserMessage,
+    IUser,
+    UserRole
 } from '@guardian/interfaces';
-import { SecretManager } from '@guardian/common/dist/secret-manager';
 
 /**
  * Account service

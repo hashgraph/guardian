@@ -1,19 +1,6 @@
-import {
-    IChainItem,
-    MessageAPI,
-    SchemaEntity
-} from '@guardian/interfaces';
+import { IChainItem, MessageAPI, SchemaEntity } from '@guardian/interfaces';
 import { ApiResponse } from '@api/helpers/api-response';
-import {
-    MessageResponse,
-    MessageError,
-    Logger,
-    DataBaseHelper,
-    DidDocument,
-    VcDocument,
-    VpDocument,
-    VpDocumentDefinition as HVpDocument
-} from '@guardian/common';
+import { DataBaseHelper, DidDocument, Logger, MessageError, MessageResponse, VcDocument, VpDocument, VpDocumentDefinition as HVpDocument } from '@guardian/common';
 
 /**
  * Get field
@@ -281,7 +268,7 @@ export async function trustChainAPI(
                 const vpDocument = HVpDocument.fromJsonTree(root.document);
                 const vcpDocument = vpDocument.getVerifiableCredential(0);
                 const hashVc = vcpDocument.toCredentialHash();
-                const vc = await vcDocumentRepository.findOne({ hash: hashVc });
+                const vc = await vcDocumentRepository.findOne({ hash: hashVc, policyId });
                 await getParents(chain, vc, {}, policyId);
                 await getPolicyInfo(chain, policyId);
                 return new MessageResponse(chain);

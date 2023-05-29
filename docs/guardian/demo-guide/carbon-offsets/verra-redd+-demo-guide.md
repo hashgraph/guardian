@@ -1,4 +1,4 @@
-# 💻 Verra Redd+ Demo UI Guide
+# 💻 Verra Redd VM0007 Demo UI Guide
 
 This folder contains a sample file that is referenced in the Demo Usage Guide
 

@@ -22,7 +22,8 @@ import {
     PolicyModule,
     Tag,
     TagCache,
-    Contract as ContractCollection
+    Contract as ContractCollection,
+    ExternalDocument
 } from '../entity';
 import { Binary } from 'bson';
 import {
@@ -77,6 +78,7 @@ export class DatabaseServer {
         this.classMap.set(SplitDocuments, 'SplitDocuments');
         this.classMap.set(Tag, 'Tag');
         this.classMap.set(TagCache, 'TagCache');
+        this.classMap.set(ExternalDocument, 'ExternalDocument');
     }
 
     /**
@@ -242,9 +244,25 @@ export class DatabaseServer {
      * @param criteria
      * @param row
      */
-    private async update<T extends BaseEntity>(entityClass: new () => T, criteria: any, row: T): Promise<T> {
+    private async update<T extends BaseEntity>(
+        entityClass: new () => T,
+        criteria: any,
+        row: any
+    ): Promise<T> {
         if (this.dryRun) {
-            return await new DataBaseHelper(DryRun).update(row, criteria) as any;
+            if (Array.isArray(row)) {
+                for (const i of row) {
+                    i.dryRunId = this.dryRun;
+                    i.dryRunClass = this.classMap.get(entityClass);
+                }
+            } else {
+                row.dryRunId = this.dryRun;
+                row.dryRunClass = this.classMap.get(entityClass);
+            }
+            return (await new DataBaseHelper(DryRun).update(
+                row,
+                criteria
+            )) as any;
         } else {
             return await new DataBaseHelper(entityClass).update(row, criteria);
         }
@@ -1342,6 +1360,69 @@ export class DatabaseServer {
             userId,
             value,
             document
+        });
+    }
+
+    /**
+     * Get External Topic
+     * @param policyId
+     * @param blockId
+     * @param userId
+     *
+     * @virtual
+     */
+    public async getExternalTopic(
+        policyId: string,
+        blockId: string,
+        userId: string
+    ): Promise<ExternalDocument> {
+        return await this.findOne(ExternalDocument, {
+            where: {
+                policyId: { $eq: policyId },
+                blockId: { $eq: blockId },
+                owner: { $eq: userId }
+            }
+        });
+    }
+
+    /**
+     * Create External Topic
+     * @param row
+     *
+     * @virtual
+     */
+    public async createExternalTopic(row: any): Promise<ExternalDocument> {
+        const item = this.create(ExternalDocument, row);
+        return await this.save(ExternalDocument, item);
+    }
+
+    /**
+     * Update External Topic
+     * @param row
+     *
+     * @virtual
+     */
+    public async updateExternalTopic(item: ExternalDocument): Promise<ExternalDocument> {
+        return await this.save(ExternalDocument, item);
+    }
+
+    /**
+     * Get Active External Topic
+     * @param policyId
+     * @param blockId
+     *
+     * @virtual
+     */
+    public async getActiveExternalTopics(
+        policyId: string,
+        blockId: string
+    ): Promise<ExternalDocument[]> {
+        return await this.find(ExternalDocument, {
+            where: {
+                policyId: { $eq: policyId },
+                blockId: { $eq: blockId },
+                active: { $eq: true }
+            }
         });
     }
 

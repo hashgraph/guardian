@@ -41,10 +41,14 @@ export class VCViewerDialog {
             toggle
         } = this.data;
         this.title = title;
-        this.json = JSON.stringify((document), null, 4);
+        this.json = document ? JSON.stringify((document), null, 4) : '';
         this.document = document;
         this.type = type || 'JSON';
         this.toggle = toggle !== false;
+        if(!this.document) {
+            this.type = 'JSON';
+            this.toggle = false;
+        }
 
         this.isVcDocument = false;
         this.isVpDocument = false;

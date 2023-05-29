@@ -34,6 +34,7 @@ export class BlockAbout {
         this._setProp(about, dynamic, 'children');
         this._setProp(about, dynamic, 'control');
         this._setProp(about, dynamic, 'defaultEvent');
+        this._setProp(about, dynamic, 'deprecated');
     }
 
     public getAbout(
@@ -48,6 +49,7 @@ export class BlockAbout {
             children: this._propFunc.children(this._propVal.children, block, module),
             control: this._propFunc.control(this._propVal.control, block, module),
             defaultEvent: this._propFunc.defaultEvent(this._propVal.defaultEvent, block, module),
+            deprecated: this._propFunc.deprecated(this._propVal.deprecated, block, module),
         };
     }
 
@@ -80,6 +82,9 @@ export class BlockAbout {
             },
             get defaultEvent() {
                 return this._func.defaultEvent(this._val.defaultEvent, this._block, this._module);
+            },
+            get deprecated() {
+                return this._func.defaultEvent(this._val.deprecated, this._block, this._module);
             },
             set module(value: PolicyModel | PolicyModuleModel) {
                 this._module = value;

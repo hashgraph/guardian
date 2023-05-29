@@ -1,13 +1,6 @@
 import { ICompareOptions } from '../interfaces/compare-options.interface';
 import { IKeyMap } from '../interfaces/key-map.interface';
-import {
-    AnyPropertyModel,
-    ArrayPropertyModel,
-    ObjectPropertyModel,
-    PropertyModel,
-    SchemaPropertyModel,
-    TokenPropertyModel
-} from './property.model';
+import { AnyPropertyModel, ArrayPropertyModel, ObjectPropertyModel, PropertyModel, SchemaPropertyModel, TokenPropertyModel } from './property.model';
 import { PropertyType } from '../types/property.type';
 import { SchemaModel } from './schema.model';
 import { TokenModel } from './token.model';

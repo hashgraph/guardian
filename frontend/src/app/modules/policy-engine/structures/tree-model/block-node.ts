@@ -18,6 +18,7 @@ export class FlatBlockNode {
     public parentNode!: FlatBlockNode;
     public data!: any;
     public error!: boolean;
+    public deprecated!: boolean;
 
     constructor(node: PolicyBlockModel) {
         this.node = node;

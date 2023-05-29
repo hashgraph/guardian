@@ -189,7 +189,7 @@ body {
 @media (max-width: 810px) {
 
     .app {
-        /* fallback */
+        width: 100%;
         height: 100vh;
         /* apply the --vh variable as the height */
         height: calc(var(--vh, 1vh) * 100);

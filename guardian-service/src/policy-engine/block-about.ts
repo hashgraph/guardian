@@ -3,6 +3,92 @@
  * TODO: Create real block about
  */
 export const BlockAbout = {
+    'uploadVcDocumentBlock': {
+        'label': 'Upload',
+        'title': `Add 'Upload' Block`,
+        'post': true,
+        'get': true,
+        'children': 'Special',
+        'control': 'UI',
+        'input': [
+            'RunEvent',
+            'RefreshEvent',
+            'RestoreEvent'
+        ],
+        'output': [
+            'RunEvent',
+            'RefreshEvent'
+        ],
+        'defaultEvent': true,
+        properties: [
+            {
+                name: 'uiMetaData',
+                label: 'UI',
+                title: 'UI Properties',
+                type: 'Group',
+                properties: [
+                    {
+                        name: 'type',
+                        label: 'Type',
+                        title: 'Type',
+                        type: 'Select',
+                        items: [
+                            {
+                                label: 'Page',
+                                value: 'page'
+                            },
+                            {
+                                label: 'dialog',
+                                value: 'dialog'
+                            }
+                        ]
+                    },
+                    {
+                        name: 'buttonClass',
+                        label: 'Dialog button class',
+                        title: 'Dialog button class',
+                        type: 'Input'
+                    },
+                    {
+                        name: 'buttonText',
+                        label: 'Dialog button text',
+                        title: 'Dialog button text',
+                        type: 'Input'
+                    },
+                    {
+                        name: 'dialogTitle',
+                        label: 'Dialog title',
+                        title: 'Dialog title',
+                        type: 'Input'
+                    },
+                    {
+                        name: 'dialogClass',
+                        label: 'Dialog class',
+                        title: 'Dialog class',
+                        type: 'Input'
+                    },
+                    {
+                        name: 'dialogDescription',
+                        label: 'Dialog description',
+                        title: 'Dialog description',
+                        type: 'Input'
+                    },
+                    {
+                        name: 'pageTitle',
+                        label: 'Page title',
+                        title: 'Page title',
+                        type: 'Input'
+                    },
+                    {
+                        name: 'pageDescription',
+                        label: 'Page description',
+                        title: 'Page description',
+                        type: 'Input'
+                    }
+                ]
+            }
+        ]
+    },
     'aggregateDocumentBlock': {
         'label': 'Aggregate Data',
         'title': 'Add \'Aggregate\' Block',
@@ -419,7 +505,40 @@ export const BlockAbout = {
             'RunEvent',
             'ErrorEvent'
         ],
-        'defaultEvent': true
+        'defaultEvent': true,
+        'deprecated': true,
+    },
+    'revocationBlock': {
+        'label': 'Revocation',
+        'title': 'Add \'Revocation\' Block',
+        'post': false,
+        'get': false,
+        'children': 'None',
+        'control': 'Server',
+        'input': [
+            'RunEvent'
+        ],
+        'output': [
+            'RunEvent',
+            'ErrorEvent'
+        ],
+        'defaultEvent': true,
+        'properties': [
+            {
+                'name': 'updatePrevDoc',
+                'label': 'Update previous document status',
+                'title': 'Update previous document status',
+                'type': 'Checkbox',
+                'default': false
+            },
+            {
+                'name': 'prevDocStatus',
+                'label': 'Status value',
+                'title': 'Status value',
+                'type': 'Input',
+                'default': ''
+            },
+        ],
     },
     'setRelationshipsBlock': {
         'label': 'Set Relationships',
@@ -884,6 +1003,31 @@ export const BlockAbout = {
         'input': null,
         'output': null,
         'defaultEvent': false
+    },
+    'externalTopicBlock': {
+        'label': 'External Topic',
+        'title': 'Add \'External Topic\' Block',
+        'post': true,
+        'get': true,
+        'children': 'Special',
+        'control': 'Server',
+        'input': [
+            'TimerEvent',
+        ],
+        'output': [
+            'RunEvent',
+            'RefreshEvent',
+            'ErrorEvent'
+        ],
+        'defaultEvent': true,
+        'properties': [
+            {
+                'name': 'schema',
+                'label': 'Schema',
+                'title': 'Schema',
+                'type': 'Schemas'
+            },
+        ]
     }
 }
 

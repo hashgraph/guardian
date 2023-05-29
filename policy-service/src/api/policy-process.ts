@@ -12,6 +12,7 @@ import {
     Workers,
     IPFS,
     DatabaseServer, LargePayloadContainer,
+    OldSecretManager
 } from '@guardian/common';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
@@ -21,7 +22,6 @@ import process from 'process';
 import { CommonVariables } from '@helpers/common-variables';
 import { PolicyEvents } from '@guardian/interfaces';
 import { GridFSBucket } from 'mongodb';
-import { OldSecretManager } from '@guardian/common/dist/secret-manager/old-style/old-secret-manager';
 import { SynchronizationService } from '@policy-engine/multi-policy-service';
 
 const {

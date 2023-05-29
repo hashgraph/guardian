@@ -4,13 +4,7 @@ This block is responsible for adding configurations on calculating the amount of
 
 ### Properties
 
-| Block Property   | Definition                                                                        | Example Input                                                                         | Status |
-| ---------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ------ |
-| tag              | Unique name for the logic block.                                                  | mintDocumentBlock                                                                     |        |
-| permissions      | Which entity has rights to interact at this part of the workflow.                 | VVB                                                                                   |        |
-| defaultActive    | Shows whether this block is active at this time and whether it needs to be shown. | Checked or unchecked.                                                                 |        |
-| On errors        | Called if the system error has occurs in the Block                                | <p></p><ul><li>No action</li><li>Retry</li><li>Go to step</li><li>Go to tag</li></ul> |        |
-| Stop Propagation | End processing here, don't pass control to the next block.                        | Checked or unchecked.                                                                 |        |
+<table><thead><tr><th width="208">Block Property</th><th>Definition</th><th>Example Input</th><th>Status</th></tr></thead><tbody><tr><td>tag</td><td>Unique name for the logic block.</td><td>mintDocumentBlock</td><td></td></tr><tr><td>permissions</td><td>Which entity has rights to interact at this part of the workflow.</td><td>VVB</td><td></td></tr><tr><td>defaultActive</td><td>Shows whether this block is active at this time and whether it needs to be shown.</td><td>Checked or unchecked.</td><td></td></tr><tr><td>On errors</td><td>Called if the system error has occurs in the Block</td><td><p></p><ul><li>No action</li><li>Retry</li><li>Go to step</li><li>Go to tag</li></ul></td><td></td></tr><tr><td>Stop Propagation</td><td>End processing here, don't pass control to the next block.</td><td>Checked or unchecked.</td><td></td></tr></tbody></table>
 
 ### UI Properties
 
@@ -25,7 +19,7 @@ This block is responsible for adding configurations on calculating the amount of
 | Use Template       | This needs to be enabled if we need to use token template, which is created already.                                                                                | Enabled/Disabled                                                                  |
 | Token Template     | Which will take created tokenId from input document by template name                                                                                                | token\_template_\__0                                                              |
 
-<figure><img src="../.gitbook/assets/image (31) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (31) (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 **Notes:**

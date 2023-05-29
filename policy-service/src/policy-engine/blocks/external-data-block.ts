@@ -26,7 +26,7 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-eng
         title: `Add 'External Data' Block`,
         post: true,
         get: false,
-        children: ChildrenType.None,
+        children: ChildrenType.Special,
         control: ControlType.Server,
         input: null,
         output: [

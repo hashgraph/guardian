@@ -2,7 +2,7 @@
 
 ### GRANTS KYC FLAG FOR THE USER
 
-{% swagger method="put" path="" baseUrl="/tokens/{tokenId}/{username}/grantKyc" summary="Sets the KYC flag for the user." %}
+{% swagger method="put" path="" baseUrl="/tokens/{tokenId}/{username}/grant-kyc" summary="Sets the KYC flag for the user." %}
 {% swagger-description %}
 Sets the KYC flag for the user. Only users with the Standard Registry role are allowed to make the request.
 {% endswagger-description %}
