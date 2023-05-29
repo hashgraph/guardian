@@ -21,9 +21,9 @@ export class PolicyWizardHelper {
      * Generate block tag
      * @returns Tag
      */
-    private generateBlockTag() {
+    private generateBlockTag(role: string, blockType: BlockType) {
         this.blockCounter++;
-        return 'Block_' + this.blockCounter;
+        return `${role}_${blockType}_${this.blockCounter}`;
     }
 
     /**
@@ -548,7 +548,7 @@ export class PolicyWizardHelper {
     private getChooseRoleBlock(roles: string[]) {
         return {
             id: GenerateUUIDv4(),
-            tag: this.generateBlockTag(),
+            tag: 'choose_role',
             roles: roles?.filter((role) => role !== 'OWNER'),
             blockType: BlockType.PolicyRoles,
             defaultActive: true,
@@ -571,7 +571,7 @@ export class PolicyWizardHelper {
     getRoleContainer(role: string) {
         return {
             id: GenerateUUIDv4(),
-            tag: this.generateBlockTag(),
+            tag: this.generateBlockTag(role, BlockType.Container),
             blockType: BlockType.Container,
             defaultActive: true,
             children: [],
@@ -590,10 +590,11 @@ export class PolicyWizardHelper {
      * @returns Block
      */
     getRoleStep(role: string) {
+        const blockType = BlockType.Step;
         return {
             id: GenerateUUIDv4(),
-            tag: this.generateBlockTag(),
-            blockType: BlockType.Step,
+            tag: this.generateBlockTag(role, blockType),
+            blockType,
             defaultActive: true,
             children: [] as any,
             permissions: [role],
@@ -609,10 +610,11 @@ export class PolicyWizardHelper {
      * @returns Block
      */
     getTabContainer(role: string, title: string) {
+        const blockType = BlockType.Container;
         return {
             id: GenerateUUIDv4(),
-            tag: this.generateBlockTag(),
-            blockType: BlockType.Container,
+            tag: this.generateBlockTag(role, blockType),
+            blockType,
             defaultActive: true,
             children: [] as any,
             permissions: [role],
@@ -632,9 +634,10 @@ export class PolicyWizardHelper {
      * @returns Block
      */
     getDocumentsGrid(role: string, fieldsConfig: IGridConfig[]) {
+        const blockType = BlockType.DocumentsViewer;
         return {
             id: GenerateUUIDv4(),
-            blockType: 'interfaceDocumentsSourceBlock',
+            blockType,
             defaultActive: true,
             permissions: [role],
             onErrorAction: 'no-action',
@@ -663,7 +666,7 @@ export class PolicyWizardHelper {
                     },
                 ],
             },
-            tag: this.generateBlockTag(),
+            tag: this.generateBlockTag(role, blockType),
             children: [this.getHistoryAddon(role)] as any,
         };
     }
@@ -673,13 +676,14 @@ export class PolicyWizardHelper {
      * @param role Role
      */
     private getHistoryAddon(role: string) {
+        const blockType = BlockType.HistoryAddon;
         return {
             id: GenerateUUIDv4(),
-            blockType: BlockType.HistoryAddon,
+            blockType,
             defaultActive: false,
             permissions: [role],
             onErrorAction: 'no-action',
-            tag: this.generateBlockTag(),
+            tag: this.generateBlockTag(role, blockType),
         };
     }
 
@@ -689,9 +693,10 @@ export class PolicyWizardHelper {
      * @returns Block
      */
     private getChangeDocumentStatusSendBlock(role: string, status: string) {
+        const blockType = BlockType.SendToGuardian;
         return {
             id: GenerateUUIDv4(),
-            blockType: BlockType.SendToGuardian,
+            blockType,
             defaultActive: false,
             permissions: [role],
             onErrorAction: 'no-action',
@@ -705,7 +710,7 @@ export class PolicyWizardHelper {
             stopPropagation: false,
             dataSource: 'database',
             documentType: 'vc',
-            tag: this.generateBlockTag(),
+            tag: this.generateBlockTag(role, blockType),
         };
     }
 
@@ -724,10 +729,11 @@ export class PolicyWizardHelper {
         entityType?: string,
         blockTagsToTriggerRunEvent?: string[]
     ) {
-        const tag = this.generateBlockTag();
+        const blockType = BlockType.SendToGuardian;
+        const tag = this.generateBlockTag(role, blockType);
         return {
             id: GenerateUUIDv4(),
-            blockType: BlockType.SendToGuardian,
+            blockType,
             defaultActive: false,
             permissions: [role],
             onErrorAction: 'no-action',
@@ -765,16 +771,17 @@ export class PolicyWizardHelper {
      * @returns Block
      */
     private getReassignBlock(role: string, actorIsOwner: boolean = false) {
+        const blockType = BlockType.ReassigningBlock;
         return {
             id: GenerateUUIDv4(),
-            blockType: BlockType.ReassigningBlock,
+            blockType,
             defaultActive: false,
             permissions: [role],
             onErrorAction: 'no-action',
             uiMetaData: {},
             issuer: '',
             actor: actorIsOwner ? 'owner' : '',
-            tag: this.generateBlockTag(),
+            tag: this.generateBlockTag(role, blockType),
         };
     }
 
@@ -790,10 +797,11 @@ export class PolicyWizardHelper {
         approveDocumentBlockTag: string,
         rejectDocumentBlockTag: string
     ) {
-        const buttonBlockTag = this.generateBlockTag();
+        const blockType = BlockType.ButtonBlock;
+        const buttonBlockTag = this.generateBlockTag(role, blockType);
         return {
             id: GenerateUUIDv4(),
-            blockType: BlockType.ButtonBlock,
+            blockType,
             defaultActive: false,
             permissions: [role],
             onErrorAction: 'no-action',
@@ -882,9 +890,10 @@ export class PolicyWizardHelper {
         filters: any[] = [],
         dataType: string = 'vc-documents'
     ) {
+        const blockType = BlockType.DocumentsSourceAddon;
         return {
             id: GenerateUUIDv4(),
-            blockType: BlockType.DocumentsSourceAddon,
+            blockType,
             defaultActive: false,
             permissions: [role],
             onErrorAction: 'no-action',
@@ -892,7 +901,7 @@ export class PolicyWizardHelper {
             dataType,
             schema,
             onlyOwnDocuments,
-            tag: this.generateBlockTag(),
+            tag: this.generateBlockTag(role, blockType),
         };
     }
 
@@ -910,9 +919,10 @@ export class PolicyWizardHelper {
         dependencySchema: boolean = false,
         schemaName?: string
     ) {
+        const blockType = BlockType.Request;
         return {
             id: GenerateUUIDv4(),
-            blockType: BlockType.Request,
+            blockType,
             defaultActive: !dependencySchema,
             permissions: [role],
             onErrorAction: 'no-action',
@@ -925,7 +935,7 @@ export class PolicyWizardHelper {
             presetFields: [],
             idType: 'UUID',
             schema: schemaIri,
-            tag: this.generateBlockTag(),
+            tag: this.generateBlockTag(role, blockType),
         };
     }
 
@@ -936,9 +946,10 @@ export class PolicyWizardHelper {
      * @returns Block
      */
     private getRequestDocumentBlock(role: string, schemaIri: string) {
+        const blockType = BlockType.Request;
         return {
             id: GenerateUUIDv4(),
-            blockType: BlockType.Request,
+            blockType,
             defaultActive: true,
             permissions: [role],
             onErrorAction: 'no-action',
@@ -948,7 +959,7 @@ export class PolicyWizardHelper {
             },
             schema: schemaIri,
             idType: 'UUID',
-            tag: this.generateBlockTag(),
+            tag: this.generateBlockTag(role, blockType),
         };
     }
 
@@ -960,9 +971,10 @@ export class PolicyWizardHelper {
      * @returns Block
      */
     private getInfoBlock(role: string, title: string, description: string) {
+        const blockType = BlockType.Information;
         return {
             id: GenerateUUIDv4(),
-            blockType: BlockType.Information,
+            blockType,
             defaultActive: true,
             permissions: [role],
             onErrorAction: 'no-action',
@@ -972,7 +984,7 @@ export class PolicyWizardHelper {
                 title,
             },
             stopPropagation: true,
-            tag: this.generateBlockTag(),
+            tag: this.generateBlockTag(role, blockType),
         };
     }
 
@@ -982,13 +994,14 @@ export class PolicyWizardHelper {
      * @returns Block
      */
     private getReportBlock(role: string) {
+        const blockType = BlockType.Report;
         return {
             id: GenerateUUIDv4(),
             blockType: BlockType.Report,
             defaultActive: true,
             permissions: [role],
             onErrorAction: 'no-action',
-            tag: this.generateBlockTag(),
+            tag: this.generateBlockTag(role, blockType),
             children: [] as any,
         };
     }
@@ -999,9 +1012,10 @@ export class PolicyWizardHelper {
      * @returns Block
      */
     private getReportMintItem(role: string) {
+        const blockType = BlockType.ReportItem;
         return {
             id: GenerateUUIDv4(),
-            blockType: BlockType.ReportItem,
+            blockType,
             defaultActive: false,
             permissions: [role],
             onErrorAction: 'no-action',
@@ -1019,7 +1033,7 @@ export class PolicyWizardHelper {
             title: 'Token',
             description: 'Token[s] minted.',
             dynamicFilters: [],
-            tag: this.generateBlockTag(),
+            tag: this.generateBlockTag(role, blockType),
         };
     }
 
@@ -1035,11 +1049,12 @@ export class PolicyWizardHelper {
         title: string,
         description: string
     ): [config: any, relationshipsVariableName: string] {
+        const blockType = BlockType.ReportItem;
         const generatedVariableName = GenerateUUIDv4();
         return [
             {
                 id: GenerateUUIDv4(),
-                blockType: BlockType.ReportItem,
+                blockType,
                 defaultActive: false,
                 permissions: [role],
                 onErrorAction: 'no-action',
@@ -1062,7 +1077,7 @@ export class PolicyWizardHelper {
                 title,
                 description,
                 dynamicFilters: [],
-                tag: this.generateBlockTag(),
+                tag: this.generateBlockTag(role, blockType),
             },
             generatedVariableName,
         ];
@@ -1082,11 +1097,12 @@ export class PolicyWizardHelper {
         description: string,
         relationshipsVariableName: string
     ): [config: any, relationshipsVariableName: string] {
+        const blockType = BlockType.ReportItem;
         const generatedVariableName = GenerateUUIDv4();
         return [
             {
                 id: GenerateUUIDv4(),
-                blockType: BlockType.ReportItem,
+                blockType,
                 defaultActive: false,
                 permissions: [role],
                 onErrorAction: 'no-action',
@@ -1109,7 +1125,7 @@ export class PolicyWizardHelper {
                 title,
                 description,
                 dynamicFilters: [],
-                tag: this.generateBlockTag(),
+                tag: this.generateBlockTag(role, blockType),
             },
             generatedVariableName,
         ];
@@ -1127,9 +1143,10 @@ export class PolicyWizardHelper {
         trustChainTag: string,
         onlyOwnDocuments: boolean
     ) {
+        const blockType = BlockType.DocumentsViewer;
         return {
             id: GenerateUUIDv4(),
-            blockType: BlockType.DocumentsViewer,
+            blockType,
             defaultActive: true,
             permissions: [role],
             onErrorAction: 'no-action',
@@ -1175,7 +1192,7 @@ export class PolicyWizardHelper {
                     },
                 ],
             },
-            tag: this.generateBlockTag(),
+            tag: this.generateBlockTag(role, blockType),
             children: [
                 this.getDocumentsSourceAddon(
                     role,
@@ -1196,9 +1213,10 @@ export class PolicyWizardHelper {
      * @returns Block
      */
     private getMintBlock(role: string, tokenId: string, rule: string) {
+        const blockType = BlockType.Mint;
         return {
             id: GenerateUUIDv4(),
-            blockType: BlockType.Mint,
+            blockType,
             stopPropagation: true,
             defaultActive: false,
             permissions: [role],
@@ -1207,7 +1225,7 @@ export class PolicyWizardHelper {
             tokenId,
             rule,
             accountType: 'default',
-            tag: this.generateBlockTag(),
+            tag: this.generateBlockTag(role, blockType),
         };
     }
 
@@ -1250,14 +1268,15 @@ export class PolicyWizardHelper {
         schemaIri: string,
         isApproveEnable: boolean
     ) {
+        const blockType = BlockType.SetRelationshipsBlock;
         return {
             id: GenerateUUIDv4(),
-            blockType: 'setRelationshipsBlock',
+            blockType,
             defaultActive: false,
             permissions: [role],
             onErrorAction: 'no-action',
             includeAccounts: false,
-            tag: this.generateBlockTag(),
+            tag: this.generateBlockTag(role, blockType),
             children: [
                 isApproveEnable
                     ? this.getDocumentsSourceAddon(role, schemaIri, true, [
