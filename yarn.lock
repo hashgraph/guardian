@@ -1087,7 +1087,7 @@ __metadata:
     mocha-junit-reporter: ^2.0.2
     moment: ^2.29.2
     mongodb: 5.5.0
-    nats: ^2.6.1
+    nats: ^2.14.0
     nestjs: ^0.0.1
     node-vault: ^0.9.22
     reflect-metadata: ^0.1.13
@@ -2531,13 +2531,6 @@ __metadata:
   version: 18.16.0
   resolution: "@types/node@npm:18.16.0"
   checksum: 63e0042136663b9e85ce503a4c65406cc6621fdba63ea66c74b4b1364a9aa9bdb57cadcb76696abab177f38a819b0fa6ace9e7f1647dcb990aedb1b4bd01012f
-  languageName: node
-  linkType: hard
-
-"@types/node@npm:^14.0.26":
-  version: 14.18.21
-  resolution: "@types/node@npm:14.18.21"
-  checksum: 4ed35b76609647a4e36a194702e31cdda9ed42174ddaf7937bc5498984e98a99e8a42ea895ea17dd9c5ec18080112c29ab670c34f90eb9f7a4703b85b31e34fa
   languageName: node
   linkType: hard
 
@@ -8802,12 +8795,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nats@npm:^2.6.1":
-  version: 2.7.1
-  resolution: "nats@npm:2.7.1"
+"nats@npm:^2.14.0":
+  version: 2.14.0
+  resolution: "nats@npm:2.14.0"
   dependencies:
-    nkeys.js: ^1.0.0-9
-  checksum: 6022d8b924d947f51d58e25f7790f3b532c26b1dd1ffddf1139c1ac8ab54c2c41ad5423127809f5bbbce54df63adb808a3a1cf5715a4d75f807fafc63ca294ac
+    nkeys.js: 1.0.5
+  checksum: c350f52917c3f6397ea99d84f216cde6d50ee5b01f22eefe8e709253241ecec1e990a680834c7dbe73c7883793505db514eb788483d3e20c1dfd6c2788fdf7e5
   languageName: node
   linkType: hard
 
@@ -8913,13 +8906,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nkeys.js@npm:^1.0.0-9":
-  version: 1.0.0-9
-  resolution: "nkeys.js@npm:1.0.0-9"
+"nkeys.js@npm:1.0.5":
+  version: 1.0.5
+  resolution: "nkeys.js@npm:1.0.5"
   dependencies:
-    "@types/node": ^14.0.26
-    tweetnacl: ^1.0.3
-  checksum: fed901db93dea03075f5a6eb5bc19983c99342a16b7e4589cabd8f0974a535bb0520e63ca3da1b3d7e613bad5a68208a09a4208bde3970fd34fbca1b47e4ae82
+    tweetnacl: 1.0.3
+  checksum: 37f6968532f3b534714cf8d095bfc90aa1c8e491cd782f88d431959ffeb9d8e00b931f3d4422e7d79e16e3d749ec74c3ebe0ecb38907938e1ddcf80d6ffb1189
   languageName: node
   linkType: hard
 
@@ -11511,17 +11503,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tweetnacl@npm:1.0.3, tweetnacl@npm:^1.0.3":
+  version: 1.0.3
+  resolution: "tweetnacl@npm:1.0.3"
+  checksum: e4a57cac188f0c53f24c7a33279e223618a2bfb5fea426231991652a13247bea06b081fd745d71291fcae0f4428d29beba1b984b1f1ce6f66b06a6d1ab90645c
+  languageName: node
+  linkType: hard
+
 "tweetnacl@npm:^0.14.3, tweetnacl@npm:~0.14.0":
   version: 0.14.5
   resolution: "tweetnacl@npm:0.14.5"
   checksum: 6061daba1724f59473d99a7bb82e13f211cdf6e31315510ae9656fefd4779851cb927adad90f3b488c8ed77c106adc0421ea8055f6f976ff21b27c5c4e918487
-  languageName: node
-  linkType: hard
-
-"tweetnacl@npm:^1.0.3":
-  version: 1.0.3
-  resolution: "tweetnacl@npm:1.0.3"
-  checksum: e4a57cac188f0c53f24c7a33279e223618a2bfb5fea426231991652a13247bea06b081fd745d71291fcae0f4428d29beba1b984b1f1ce6f66b06a6d1ab90645c
   languageName: node
   linkType: hard
 
