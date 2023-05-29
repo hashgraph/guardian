@@ -716,6 +716,31 @@ export class SchemaApi {
         }
     }
 
+    @Put('/system/:schemaId/active')
+    @HttpCode(HttpStatus.OK)
+    async activeSystemSchema(@Req() req: any): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        try {
+            const guardians = new Guardians();
+            const schemaId = req.params.schemaId;
+            const schema = await guardians.getSchemaById(schemaId);
+            if (!schema) {
+                throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND);
+            }
+            if (!schema.system) {
+                throw new HttpException('Schema not found.', HttpStatus.FORBIDDEN);
+            }
+            if (schema.active) {
+                throw new HttpException('Schema is active.', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            await guardians.activeSchema(schemaId);
+            return null;
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw error;
+        }
+    }
+
     @Get('/system/entity/:schemaEntity')
     @HttpCode(HttpStatus.OK)
     async getSchemaEntity(@Req() req, @Response() res): Promise<any> {
