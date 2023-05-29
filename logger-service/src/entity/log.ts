@@ -1,4 +1,4 @@
-import { Entity, Property, Enum } from '@mikro-orm/core';
+import { Entity, Enum, Property } from '@mikro-orm/core';
 import { ILog, LogType } from '@guardian/interfaces';
 import { BaseEntity } from '@guardian/common';
 

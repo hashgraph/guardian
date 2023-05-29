@@ -1,43 +1,32 @@
+import { GenerateUUIDv4, IRootConfig, ModelHelper, PolicyEvents, PolicyType, Schema, SchemaEntity, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
 import {
-    SchemaEntity,
-    SchemaStatus,
-    TopicType,
-    ModelHelper,
-    SchemaHelper,
-    Schema,
-    PolicyType,
-    IRootConfig,
-    GenerateUUIDv4,
-    PolicyEvents
-} from '@guardian/interfaces';
-import {
-    DataBaseHelper,
-    IAuthUser,
-    Logger,
-    NatsService,
-    Singleton,
-    Token,
-    MultiPolicy,
     Artifact,
-    Topic,
-    Policy,
-    MessageAction,
-    MessageServer,
-    MessageType,
-    PolicyMessage,
-    SynchronizationMessage,
-    TokenMessage,
-    TopicConfig,
-    TopicHelper,
-    VcHelper,
-    Users,
+    DataBaseHelper,
     DatabaseServer,
     findAllEntities,
     getArtifactType,
+    IAuthUser,
+    Logger,
+    MessageAction,
+    MessageServer,
+    MessageType,
+    MultiPolicy,
+    NatsService,
+    Policy,
+    PolicyMessage,
     replaceAllEntities,
     replaceAllVariables,
     replaceArtifactProperties,
     SchemaFields,
+    Singleton,
+    SynchronizationMessage,
+    Token,
+    TokenMessage,
+    Topic,
+    TopicConfig,
+    TopicHelper,
+    Users,
+    VcHelper,
 } from '@guardian/common';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 import { PolicyConverterUtils } from './policy-converter-utils';
@@ -162,7 +151,7 @@ export class PolicyEngine extends NatsService {
         }
         const schemas = await DatabaseServer.getSchemas({
             iri: { $in: schemaIris },
-            topicId: { $eq: null },
+            topicId: { $eq: 'draft' },
             owner
         });
         const users = new Users();
@@ -181,7 +170,7 @@ export class PolicyEngine extends NatsService {
             );
             const dependencySchemas = await DatabaseServer.getSchemas({
                 iri: { $in: schema.defs },
-                topicId: { $eq: null }
+                topicId: { $eq: 'draft' }
             });
             dependencySchemas.forEach(dependencySchema => {
                 dependencySchema.topicId = policyTopicId;

@@ -1,20 +1,7 @@
-
-import {
-    IDidObject,
-    IVCDocument,
-    MessageAPI,
-    PolicyType,
-} from '@guardian/interfaces';
+import { IDidObject, IVCDocument, MessageAPI, PolicyType, } from '@guardian/interfaces';
 import { ApiResponse } from '@api/helpers/api-response';
-import {
-    MessageResponse,
-    MessageError,
-    DataBaseHelper,
-    DidDocument,
-    VcDocument,
-    VpDocument,
-    Policy
-} from '@guardian/common';
+import { DataBaseHelper, DidDocument, MessageError, MessageResponse, Policy, VcDocument, VpDocument } from '@guardian/common';
+
 /**
  * Connect to the message broker methods of working with VC, VP and DID Documents
  *

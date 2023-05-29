@@ -910,8 +910,6 @@ components:
                       type: boolean
                     isCreator:
                       type: boolean
-                    approverRoleFor:
-                      type: string
                     gridColumns:
                       type: array
                       items:
@@ -7025,7 +7023,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /policy:
+  /wizard/policy:
     post:
       tags:
         - wizard
@@ -7063,7 +7061,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /policy/push:
+  /wizard/policy/push:
     post:
       tags:
         - wizard
@@ -7096,7 +7094,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /{policyId}/config:
+  /wizard/{policyId}/config:
     post:
       tags:
         - wizard

@@ -82,6 +82,7 @@ const Container: IBlockSetting = {
         { type: BlockType.CustomLogicBlock },
         { type: BlockType.Report },
         { type: BlockType.RevokeBlock },
+        { type: BlockType.RevocationBlock },
         { type: BlockType.SetRelationshipsBlock },
         { type: BlockType.ButtonBlock },
         { type: BlockType.TokenActionBlock },
@@ -124,6 +125,7 @@ const Step: IBlockSetting = {
         { type: BlockType.CustomLogicBlock },
         { type: BlockType.Report },
         { type: BlockType.RevokeBlock },
+        { type: BlockType.RevocationBlock },
         { type: BlockType.SetRelationshipsBlock },
         { type: BlockType.ButtonBlock },
         { type: BlockType.TokenActionBlock },
@@ -378,6 +380,15 @@ const RevokeBlock: IBlockSetting = {
     property: RevokeConfigComponent,
 }
 
+const RevocationBlock: IBlockSetting = {
+    type: BlockType.RevocationBlock,
+    icon: 'restart_alt',
+    group: BlockGroup.Documents,
+    header: BlockHeaders.ServerBlocks,
+    factory: null,
+    property: null,
+}
+
 const SetRelationshipsBlock: IBlockSetting = {
     type: BlockType.SetRelationshipsBlock,
     icon: 'settings',
@@ -625,6 +636,7 @@ export default [
     AggregateDocument,
     ReassigningBlock,
     RevokeBlock,
+    RevocationBlock,
     SetRelationshipsBlock,
     SplitBlock,
     FiltersAddon,

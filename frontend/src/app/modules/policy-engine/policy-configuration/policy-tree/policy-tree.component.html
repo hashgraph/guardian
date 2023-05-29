@@ -15,7 +15,7 @@
                 [attr.collapsed]="item.collapsed" [attr.selected]="isSelect(item)" [attr.error]="item.error"
                 [attr.root]="item.root" [attr.block-id]="item.id" [attr.block-instance]="item.node.tag"
                 [attr.block-type]="item.type" [style.paddingLeft]="item.offset" cdkDrag [cdkDragData]="item.level"
-                [cdkDragDisabled]="item.root">
+                [cdkDragDisabled]="item.root" [attr.deprecated]="item.deprecated">
                 <div class="block-expand" (click)="onCollapse($event, item)">
                     <mat-icon>arrow_drop_down</mat-icon>
                 </div>

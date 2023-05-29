@@ -1,12 +1,5 @@
 import { ApiResponse } from '@api/helpers/api-response';
-import {
-    MessageResponse,
-    MessageError,
-    Logger,
-    getArtifactExtention,
-    getArtifactType,
-    DatabaseServer,
-} from '@guardian/common';
+import { DatabaseServer, getArtifactExtention, getArtifactType, Logger, MessageError, MessageResponse, } from '@guardian/common';
 import { MessageAPI, PolicyType } from '@guardian/interfaces';
 
 /**

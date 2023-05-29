@@ -27,6 +27,7 @@ export enum BlockType {
     CustomLogicBlock = 'customLogicBlock',
     Switch = 'switchBlock',
     RevokeBlock = 'revokeBlock',
+    RevocationBlock = 'revocationBlock',
     SetRelationshipsBlock = 'setRelationshipsBlock',
     ButtonBlock = 'buttonBlock',
     TokenActionBlock = 'tokenActionBlock',

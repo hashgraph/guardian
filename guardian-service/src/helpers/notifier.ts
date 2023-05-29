@@ -1,4 +1,4 @@
-import { MessageAPI, StatusType, IStatus } from '@guardian/interfaces';
+import { IStatus, MessageAPI, StatusType } from '@guardian/interfaces';
 import { GuardiansService } from '@helpers/guardians';
 
 /**
