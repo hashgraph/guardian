@@ -3,13 +3,19 @@
         <mat-form-field class="example-full-width" appearance="outline">
             <mat-label>Username</mat-label>
             <input matInput formControlName="login">
+            <span *ngIf="showLoginRequiredError" class="field-error">
+                Value is required
+            </span>
         </mat-form-field>
 
         <mat-form-field class="example-full-width" appearance="outline">
             <mat-label>Password</mat-label>
             <input matInput formControlName="password" type="password">
+            <span *ngIf="showPasswordRequiredError" class="field-error">
+                Value is required
+            </span>
         </mat-form-field>
-        <p *ngIf="errorMessage">{{errorMessage}}</p>
+        <p *ngIf="errorMessage" class="field-error">{{errorMessage}}</p>
 
         <button mat-raised-button type="submit" color="primary" [disabled]="!loginForm.valid">Log In</button>
 

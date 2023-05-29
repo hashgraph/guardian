@@ -152,8 +152,11 @@ mat-form-field {
     color: #f00;
     bottom: -20px;
     left: 0;
-}
 
+    & + .field-error {
+        bottom: -40px;
+    }
+}
 
 @media (max-width: 810px) {
 

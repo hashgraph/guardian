@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { FormBuilder, Validators, ValidatorFn, AbstractControl, ValidationErrors } from '@angular/forms';
+import { FormBuilder, Validators, ValidatorFn, AbstractControl, ValidationErrors, FormGroup, FormControl } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { AuthStateService } from 'src/app/services/auth-state.service';
 import { UserRole } from '@guardian/interfaces';
 import { Observable, ReplaySubject } from 'rxjs';
+import { noWhitespaceValidator } from 'src/app/validators/no-spaces.validator';
 
 const checkPasswords: ValidatorFn = (group: AbstractControl): ValidationErrors | null => {
     let pass = group.get('password');
@@ -27,11 +28,11 @@ export class RegisterComponent implements OnInit {
     loading: boolean = false;
     error?: string;
 
-    loginForm = this.fb.group({
-        login: [Math.random().toString(36).substring(2,10), Validators.required],
-        role: ['USER', Validators.required],
-        password: ['test', Validators.required],
-        confirmPassword: ['test', Validators.required],
+    loginForm = new FormGroup({
+        login: new FormControl(Math.random().toString(36).substring(2,10), [Validators.required, noWhitespaceValidator()]),
+        role: new FormControl('USER', [Validators.required]),
+        password: new FormControl('test', [Validators.required, noWhitespaceValidator()]),
+        confirmPassword: new FormControl('test', [Validators.required, noWhitespaceValidator()]),
     }, { validators: checkPasswords });
 
     private _isRoleSelected$ = new ReplaySubject<boolean>(1);
@@ -39,17 +40,8 @@ export class RegisterComponent implements OnInit {
     constructor(
         private auth: AuthService,
         private authState: AuthStateService,
-        private fb: FormBuilder,
         private router: Router) {
         this._isRoleSelected$.next(false);
-    }
-
-    public get isRoleSelected$(): Observable<boolean> {
-        return this._isRoleSelected$;
-    }
-
-    get formErrors(): ValidationErrors | null {
-        return this.loginForm.errors;
     }
 
     ngOnInit() {
@@ -96,5 +88,37 @@ export class RegisterComponent implements OnInit {
 
     onInput() {
         this.error = "";
+    }
+
+    private get usernameControl(): AbstractControl {
+        return this.loginForm.get('login') as AbstractControl;
+    }
+
+    private get passwordControl(): AbstractControl {
+        return this.loginForm.get('password') as AbstractControl;
+    }
+
+    private get usernameErrors(): ValidationErrors {
+        return this.usernameControl.errors || {};
+    }
+
+    private get passwordErrors(): ValidationErrors {
+        return this.passwordControl.errors || {};
+    }
+
+    get showUsernameRequiredError(): boolean {
+        return this.usernameControl.touched && (this.usernameErrors.required || this.usernameErrors.whitespace);
+    }
+
+    get showPasswordRequiredError(): boolean {
+        return this.passwordControl.touched && (this.passwordErrors.required || this.passwordErrors.whitespace);
+    }
+
+    get formErrors(): ValidationErrors | null {
+        return this.loginForm.errors;
+    }
+
+    get isRoleSelected$(): Observable<boolean> {
+        return this._isRoleSelected$;
     }
 }
