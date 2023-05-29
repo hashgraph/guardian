@@ -340,6 +340,22 @@ export interface IPolicyBlock {
      * @param data
      */
     triggerInternalEvent(type: string, data: any): void;
+
+    /**
+     * Get Cache
+     * @param {string} name - variable name
+     * @param {IPolicyUser | string} [user] - user DID
+     * @returns {T} - variable value
+     */
+    getCache<T>(name: string, user?: IPolicyUser | string): Promise<T>
+
+    /**
+     * Set Cache
+     * @param {string} name - variable name
+     * @param {T} value - variable value
+     * @param {IPolicyUser | string} [user] - user DID
+     */
+    setCache<T>(name: string, value: T, user?: IPolicyUser | string): Promise<void>
 }
 
 /**

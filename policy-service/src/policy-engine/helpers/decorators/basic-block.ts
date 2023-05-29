@@ -507,7 +507,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              */
             public registerVariables(): void {
                 const modules = PolicyComponentsUtils.GetModule<any>(this);
-                if(!modules) {
+                if (!modules) {
                     return;
                 }
 
@@ -713,6 +713,30 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              */
             protected triggerInternalEvent(type: string, data: any) {
                 PolicyComponentsUtils.TriggerInternalEvent(type, this.policyId, data);
+            }
+
+            /**
+             * Get Cache
+             * @param {string} name - variable name
+             * @param {IPolicyUser | string} [user] - user DID
+             * @returns {T} - variable value
+             * @protected
+             */
+            protected async getCache<T>(name: string, user?: IPolicyUser | string): Promise<T> {
+                const did = user ? (typeof user === 'object' ? user.did : user) : 'all';
+                return await this.databaseServer.getBlockCache(this.policyId, this.uuid, did, name);
+            }
+
+            /**
+             * Set Cache
+             * @param {string} name - variable name
+             * @param {T} value - variable value
+             * @param {IPolicyUser | string} [user] - user DID
+             * @protected
+             */
+            protected async setCache<T>(name: string, value: T, user?: IPolicyUser | string): Promise<void> {
+                const did = user ? (typeof user === 'object' ? user.did : user) : 'all';
+                await this.databaseServer.saveBlockCache(this.policyId, this.uuid, did, name, value);
             }
         };
     };
