@@ -110,7 +110,7 @@
                 </div>
             </div>
             <div *ngIf="!generated" class="list-button">
-                <button mat-raised-button type="button" class="generate-btn" id="generate-btn-mobile" (click)="randomKey()">Generate</button>
+                <button mat-raised-button type="button" id="generate-btn-mobile" (click)="randomKey()">Generate</button>
             </div>
             <div class="list-item" *ngIf="showForm && generated">
                 <app-schema-form [formGroup]="vcForm" [schema]="schema" [private-fields]="hideVC"
@@ -118,17 +118,36 @@
                 </app-schema-form>
             </div>
         </div>
-        <div class="list-button" *ngIf="!generated">
-            <button [disabled]="!hederaForm.valid || (!selectedTokenId.valid && !showForm && !generated)"
-                mat-raised-button type="button" color="primary" class="generate-btn" (click)="onActionClick($event)">
-                {{currentKeyAction.label}}
-                <mat-icon (click)="onActionMenuClick($event)"
-                    [matMenuTriggerFor]="actionMenu">arrow_drop_down</mat-icon>
+        <div class="list-button action-btns" *ngIf="!generated">
+             <button
+                mat-stroked-button
+                class="action-btns__item action-btns__item--stroked"
+                [disabled]="shouldDisableActionBtns"
+                color="primary"
+                (click)="onRestoreDataClick()"
+            >
+                <mat-icon class="refresh-btn">refresh</mat-icon>
+                <span>Restore data</span>
             </button>
-            <mat-menu #actionMenu="matMenu">
-                <button *ngFor="let actionType of startActions" mat-menu-item
-                    (click)="onActionChange(actionType.type)">{{actionType.label}}</button>
-            </mat-menu>
+
+            <div
+                class="action-btns__separator"
+                [attr.aria-disabled]="shouldDisableActionBtns"
+            >
+                <div class="separator-line"></div>
+                <span>OR</span>
+                <div class="separator-line"></div>
+            </div>
+
+             <button
+                mat-raised-button
+                class="action-btns__item"
+                [disabled]="shouldDisableActionBtns"
+                color="primary"
+                (click)="onNextClick()"
+            >
+                Next
+            </button>
         </div>
         <div *ngIf="showForm && generated" class="white-space"></div>
         <div class="list-button" id="connect-btn" *ngIf="showForm && generated">

@@ -75,7 +75,7 @@ form,
     display: flex;
     align-items: flex-end;
     font-size: 16px;
-    color: #2C78F6;
+    color: var(--button-primary-color);
     cursor: pointer;
     border: none;
     background-color: transparent;
@@ -220,7 +220,7 @@ mat-form-field {
         margin: 18px 0 0;
     }
 
-    .credential-creation button {
+    .credential-creation button:not(.login-header__back-button) {
         margin-top: 36px;
         width: 81vw;
     }

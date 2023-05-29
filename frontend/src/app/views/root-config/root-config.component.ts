@@ -20,13 +20,18 @@ enum OperationMode {
     GetAllUserTopics
 }
 
+enum StartActions {
+    NEXT = 'next-action',
+    RESTORE_DATA = 'restore-data',
+}
+
 /**
  * Standard Registry profile settings page.
  */
 @Component({
     selector: 'app-root-config',
     templateUrl: './root-config.component.html',
-    styleUrls: ['./root-config.component.css']
+    styleUrls: ['./root-config.component.scss']
 })
 export class RootConfigComponent implements OnInit {
     @ViewChild('actionMenu') actionMenu: any;
@@ -38,14 +43,14 @@ export class RootConfigComponent implements OnInit {
     startActions = [
         {
             label: 'Next',
-            type: 'next-action',
+            type: StartActions.NEXT,
             action: () => {
                 this.generated = true;
             }
         },
         {
             label: 'Restore data',
-            type: 'restore-data',
+            type: StartActions.RESTORE_DATA,
             action: () => {
                 const { hederaAccountId, hederaAccountKey } = this.hederaForm.value;
                 const topicId = this.selectedTokenId.value;
@@ -64,7 +69,11 @@ export class RootConfigComponent implements OnInit {
         }
     ]
     get showForm(): boolean {
-        return this.currentKeyAction.type === 'next-action'
+        return this.currentKeyAction.type === StartActions.NEXT
+    }
+
+    get shouldDisableActionBtns(): boolean {
+        return !this.hederaForm.valid || (!this.selectedTokenId.valid && !this.showForm && !this.generated);
     }
 
     isConfirmed: boolean = false;
@@ -251,13 +260,13 @@ export class RootConfigComponent implements OnInit {
         event.stopPropagation();
     }
 
-    onActionClick(event: MouseEvent): void {
-        event.preventDefault();
+    onNextClick(): void {
         this.currentKeyAction.action();
     }
 
-    onActionChange(actionType: string): void {
-        this.currentKeyActionIndex = this.startActions.findIndex(a => a.type === actionType);
+    onRestoreDataClick(): void {
+        this.currentKeyActionIndex = this.startActions.findIndex(a => a.type === StartActions.RESTORE_DATA);
+        this.currentKeyAction.action();
     }
 
     randomKey() {
