@@ -20,7 +20,7 @@ export function ZipCodec() {
                 const zipped =  JSONCodec().encode(d);
                 const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
                 if (Number.isInteger(maxPayload) && maxPayload <= zipped.length) {
-                    const directLink = new LargePayloadContainer().addObject(zipped.buffer as Buffer);
+                    const directLink = new LargePayloadContainer().addObject(Buffer.from(zipped));
                     console.log(directLink.toString(), zipped.length);
                     return JSONCodec().encode({
                         directLink
@@ -46,7 +46,7 @@ export function ZipCodec() {
                     const response = await axios.get(directLink, {
                         responseType: 'arraybuffer'
                     });
-                    const compressedData = response.data.buffer;
+                    const compressedData = response.data;
                     // const _decompressed = await util.promisify(unzip)(compressedData)
                     const _decompressed = compressedData;
                     console.log(directLink, JSON.parse(_decompressed.toString()));

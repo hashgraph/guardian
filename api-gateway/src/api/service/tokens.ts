@@ -642,9 +642,8 @@ export class TokensApi {
     @Put('/push/:tokenId/:username/unfreeze')
     @HttpCode(HttpStatus.ACCEPTED)
     async unfreezeTokenAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const taskManager = new TaskManager();
-        const { taskId, expectation } = taskManager.start('Freeze Token');
+        const { taskId, expectation } = taskManager.start('Unfreeze Token');
 
         const tokenId = req.params.tokenId;
         const username = req.params.username;
@@ -655,7 +654,7 @@ export class TokensApi {
 
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
-            await guardians.freezeTokenAsync(tokenId, username, userDid, taskId);
+            await guardians.unfreezeTokenAsync(tokenId, username, userDid, taskId);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(taskId, { code: error.code || 500, message: error.message });
