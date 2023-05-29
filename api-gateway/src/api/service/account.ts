@@ -39,7 +39,7 @@ export class AccountApi {
      * @param body
      */
     @Post('/register')
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(HttpStatus.CREATED)
     async register(@Body() body): Promise<any> {
         const users = new Users();
         try {
