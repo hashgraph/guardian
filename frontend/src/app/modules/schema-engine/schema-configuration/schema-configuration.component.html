@@ -7,9 +7,11 @@
     </mat-form-field>
 
     <div class="optional-row">
-        <mat-form-field *ngIf="isPolicy" appearance="outline" [attr.disabled]="type=='version' || type=='edit'">
+        <mat-form-field *ngIf="isPolicy" appearance="outline"
+            [attr.disabled]="type=='version' || (value?.topicId && (value?.topicId !== 'draft'))">
             <mat-label>* Policy</mat-label>
             <mat-select formControlName="topicId" tabindex='-1' (selectionChange)="onFilter($event)">
+                <mat-option [value]="'draft'">Draft</mat-option>
                 <mat-option *ngFor="let policy of policies" [value]="policy.topicId">{{policy.name}}</mat-option>
             </mat-select>
         </mat-form-field>

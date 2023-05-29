@@ -86,6 +86,7 @@ export class SendToGuardianBlock {
         if (document.hash) {
             old = await ref.databaseServer.getVcDocument({
                 where: {
+                    policyId: { $eq: ref.policyId },
                     hash: { $eq: document.hash },
                     hederaStatus: { $not: { $eq: DocumentStatus.REVOKE } }
                 }
@@ -138,6 +139,7 @@ export class SendToGuardianBlock {
         if (document.hash) {
             old = await ref.databaseServer.getVpDocument({
                 where: {
+                    policyId: { $eq: ref.policyId },
                     hash: { $eq: document.hash },
                     hederaStatus: { $not: { $eq: DocumentStatus.REVOKE } }
                 }
@@ -258,7 +260,8 @@ export class SendToGuardianBlock {
             } else {
                 old.messageIds = [document.messageId];
             }
-            return await ref.databaseServer.updateVC(old);
+            await ref.databaseServer.updateVC(old);
+            return document;
         } else {
             if (Array.isArray(document.messageIds)) {
                 document.messageIds.push(document.messageId);
@@ -288,7 +291,8 @@ export class SendToGuardianBlock {
             } else {
                 old.messageIds = [document.messageId];
             }
-            return await ref.databaseServer.updateDid(old);
+            await ref.databaseServer.updateDid(old);
+            return document;
         } else {
             if (Array.isArray(document.messageIds)) {
                 document.messageIds.push(document.messageId);
@@ -316,7 +320,8 @@ export class SendToGuardianBlock {
             } else {
                 old.messageIds = [document.messageId];
             }
-            return await ref.databaseServer.updateVP(old);
+            await ref.databaseServer.updateVP(old);
+            return document;
         } else {
             if (Array.isArray(document.messageIds)) {
                 document.messageIds.push(document.messageId);

@@ -81,8 +81,8 @@ export class ReportBlockComponent implements OnInit {
         }
     }
 
-    onUpdate(id: string): void {
-        if (this.id == id) {
+    onUpdate(blocks: string[]): void {
+        if (Array.isArray(blocks) && blocks.includes(this.id)) {
             this.loadData();
         }
     }

@@ -69,8 +69,8 @@ export class TagsManagerBlockComponent implements OnInit {
         }
     }
 
-    public onUpdate(id: string): void {
-        if (this.id == id) {
+    public onUpdate(blocks: string[]): void {
+        if (Array.isArray(blocks) && blocks.includes(this.id)) {
             this.loadData();
         }
     }

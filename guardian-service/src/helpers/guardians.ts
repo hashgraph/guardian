@@ -32,7 +32,7 @@ export class GuardiansService extends NatsService {
      * @param policyId
      */
     public async checkIfPolicyAlive(policyId: string): Promise<boolean> {
-        const exist = await this.sendPolicyMessage<boolean>(PolicyEvents.CHECK_IF_ALIVE, policyId, {}, 1000);
+        const exist = await this.sendPolicyMessage<boolean>(PolicyEvents.CHECK_IF_ALIVE, policyId, {})
         return !!exist
     }
 
@@ -41,15 +41,12 @@ export class GuardiansService extends NatsService {
      * @param subject
      * @param policyId
      * @param data
-     * @param customTimeout
      */
-    public sendPolicyMessage<T>(subject: string, policyId: string, data?: unknown, customTimeout?: number): Promise<T>{
+    public sendPolicyMessage<T>(subject: string, policyId: string, data?: unknown): Promise<T>{
         const messageId = GenerateUUIDv4();
         const head = headers();
         head.append('messageId', messageId);
         head.append('policyId', policyId);
-
-        const timeout = customTimeout ? customTimeout : 60 * 1000;
 
         return Promise.race([
             new Promise<T>(async (resolve, reject) => {
@@ -69,7 +66,7 @@ export class GuardiansService extends NatsService {
             new Promise<T>((resolve, reject) => {
                 setTimeout(() => {
                     resolve(null);
-                }, timeout)
+                }, 1 * 1000)
             }),
         ])
     }

@@ -32,6 +32,10 @@ export class DocumentViewComponent implements OnInit {
     }
 
     ngOnInit(): void {
+        if(!this.document) {
+            return;
+        }
+
         this.issuerOptions = [];
         this.proofJson = this.document.proof
             ? JSON.stringify(this.document.proof, null, 4)

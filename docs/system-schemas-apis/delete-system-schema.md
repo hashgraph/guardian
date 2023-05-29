@@ -11,7 +11,7 @@ Deletes the system schema with the provided Schema ID. Only users with the Stand
 SchemaID
 {% endswagger-parameter %}
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% swagger-response status="204: No Content" description="No Content" %}
 ```javascript
 {
     content:

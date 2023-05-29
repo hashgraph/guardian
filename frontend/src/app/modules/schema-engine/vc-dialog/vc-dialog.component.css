@@ -8,13 +8,14 @@
     margin-bottom: 8px;
     font-family: monospace;
     cursor: text;
-    height: 640px;
+    height: 630px;
     width: 780px;
     overflow: auto;
     border: 1px solid #eee;
     border-radius: 4px;
     padding: 10px;
     box-sizing: border-box;
+    margin-top: 10px;
 }
 
 .content {
@@ -26,6 +27,7 @@
 
 .dialog-content {
     overflow: hidden;
+    width: 100%;
 }
 
 .view-toggle {

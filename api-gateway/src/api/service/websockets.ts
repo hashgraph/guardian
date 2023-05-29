@@ -1,19 +1,10 @@
 import WebSocket from 'ws';
 import { IncomingMessage, Server } from 'http';
 import { Users } from '@helpers/users';
-import {
-    MessageAPI,
-    IStatus,
-    ApplicationStates, GenerateUUIDv4
-} from '@guardian/interfaces';
-import {
-    MessageResponse,
-    Logger,
-    NatsService,
-    Singleton
-} from '@guardian/common';
+import { ApplicationStates, GenerateUUIDv4, IStatus, MessageAPI } from '@guardian/interfaces';
+import { Logger, MessageResponse, NatsService, Singleton } from '@guardian/common';
 import { NatsConnection } from 'nats';
-// import { Guardians } from '@helpers/guardians';
+import { Injectable } from '@nestjs/common';
 
 /**
  * WebSocketsServiceChannel
@@ -44,7 +35,7 @@ export class WebSocketsServiceChannel extends NatsService {
 /**
  * WebSocket service class
  */
-@Singleton
+@Injectable()
 export class WebSocketsService {
     /**
      * Channel
@@ -113,7 +104,7 @@ export class WebSocketsService {
                     if (this.checkUserByDid(client, msg)) {
                         this.send(client, {
                             type: 'update-event',
-                            data: msg.uuid
+                            data: msg.blocks
                         });
                     }
                 });

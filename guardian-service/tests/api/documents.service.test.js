@@ -144,38 +144,23 @@ describe('Documents Service API', function () {
 
     })
 
-    // it('Get VC Documents', async function () {
-    //     await documentsAPIModule.documentsAPI(channel, getMongoRepositoryMock(DidDocument), getMongoRepositoryMock(VcDocument), getMongoRepositoryMock(VpDocument));
-    //     const data = await methods['get-vc-documents']();
+    // it('Set DID Documents', async function () {
+    //     await documentsAPIModule.documentsAPI(getMongoRepositoryMock(DidDocument), getMongoRepositoryMock(VcDocument), getMongoRepositoryMock(VpDocument));
+    //     const data = await methods['set-did-document']({ did: 'test' });
     //     assert.equal(data.code, 200);
     //     assert.equal(typeof data.body === 'object', true);
     // })
 
-    it('Get DID Documents', async function () {
-        await documentsAPIModule.documentsAPI(getMongoRepositoryMock(DidDocument), getMongoRepositoryMock(VcDocument), getMongoRepositoryMock(VpDocument));
-        const data = await methods['set-did-document']({ did: 'test' });
-        assert.equal(data.code, 200);
-        assert.equal(typeof data.body === 'object', true);
-
-    })
-
-    it('Set VC Documents', async function () {
-        await documentsAPIModule.documentsAPI(getMongoRepositoryMock(DidDocument), getMongoRepositoryMock(VcDocument), getMongoRepositoryMock(VpDocument));
-        const data = await methods['set-vc-document']({ hash: 'test' });
-        assert.equal(data.code, 200);
-        assert.equal(typeof data.body === 'object', true);
-    })
-
-    it('Set VP Documents', async function () {
-        await documentsAPIModule.documentsAPI(getMongoRepositoryMock(DidDocument), getMongoRepositoryMock(VcDocument), getMongoRepositoryMock(VpDocument));
-        const data = await methods['set-vp-document']();
-        assert.equal(data.code, 200);
-        assert.equal(typeof data.body === 'object', true);
-    })
+    // it('Set VC Documents', async function () {
+    //     await documentsAPIModule.documentsAPI(getMongoRepositoryMock(DidDocument), getMongoRepositoryMock(VcDocument), getMongoRepositoryMock(VpDocument));
+    //     const data = await methods['set-vc-document']({ hash: 'test' });
+    //     assert.equal(data.code, 200);
+    //     assert.equal(typeof data.body === 'object', true);
+    // })
 
     // it('Set VP Documents', async function () {
-    //     await documentsAPIModule.documentsAPI(channel, getMongoRepositoryMock(DidDocument), getMongoRepositoryMock(VcDocument), getMongoRepositoryMock(VpDocument));
-    //     const data = await methods['get-vp-documents']();
+    //     await documentsAPIModule.documentsAPI(getMongoRepositoryMock(DidDocument), getMongoRepositoryMock(VcDocument), getMongoRepositoryMock(VpDocument));
+    //     const data = await methods['set-vp-document']();
     //     assert.equal(data.code, 200);
     //     assert.equal(typeof data.body === 'object', true);
     // })

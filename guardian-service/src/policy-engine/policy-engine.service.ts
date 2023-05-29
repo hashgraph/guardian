@@ -1,25 +1,5 @@
-import {
-    PolicyEngineEvents,
-    TopicType,
-    PolicyType,
-    ExternalMessageEvents, PolicyEvents, GenerateUUIDv4
-} from '@guardian/interfaces';
-import {
-    IAuthUser,
-    MessageResponse,
-    MessageError,
-    BinaryMessageResponse,
-    Logger,
-    RunFunctionAsync,
-    NatsService,
-    Singleton,
-    Policy,
-    DIDDocument,
-    TopicConfig,
-    Users,
-    DatabaseServer,
-    findAllEntities
-} from '@guardian/common';
+import { ExternalMessageEvents, GenerateUUIDv4, PolicyEngineEvents, PolicyEvents, PolicyType, TopicType } from '@guardian/interfaces';
+import { BinaryMessageResponse, DatabaseServer, DIDDocument, findAllEntities, IAuthUser, Logger, MessageError, MessageResponse, NatsService, Policy, RunFunctionAsync, Singleton, TopicConfig, Users } from '@guardian/common';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 import { PolicyComponentsUtils } from './policy-components-utils';
 import { IPolicyUser } from './policy-user';
@@ -107,14 +87,13 @@ export class PolicyEngineService {
      * @param uuid {string} - id of block
      * @param user {IPolicyUser} - short user object
      */
-    private async stateChangeCb(uuid: string, state: any, user: IPolicyUser) {
+    private async stateChangeCb(blocks: string[], user: IPolicyUser) {
         if (!user || !user.did) {
             return;
         }
 
         await this.channel.publish('update-block', {
-            uuid,
-            state,
+            blocks,
             user
         });
     }
@@ -199,7 +178,7 @@ export class PolicyEngineService {
 
             switch (type) {
                 case 'update':
-                    PolicyComponentsUtils.BlockUpdateFn(args[0], args[1], args[2], args[3]);
+                    PolicyComponentsUtils.BlockUpdateFn(args[0], args[1]);
                     break;
 
                 case 'error':
@@ -303,6 +282,9 @@ export class PolicyEngineService {
                     otherOptions.orderBy = { createDate: 'DESC' };
                     otherOptions.limit = _pageSize;
                     otherOptions.offset = _pageIndex * _pageSize;
+                } else {
+                    otherOptions.orderBy = { createDate: 'DESC' };
+                    otherOptions.limit = 100;
                 }
                 const [policies, count] = await DatabaseServer.getPoliciesAndCount(filter, otherOptions);
 

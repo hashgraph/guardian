@@ -23,6 +23,7 @@ import { PolicyBlockModel, PolicyModel, PolicyModuleModel, PolicyStorage, Templa
 import { Options } from '../../structures/storage/config-options';
 import { PolicyTreeComponent } from '../policy-tree/policy-tree.component';
 import { ThemeService } from '../../../../services/theme.service';
+import { WizardMode, WizardService } from 'src/app/modules/policy-engine/services/wizard.service';
 
 enum OperationMode {
     none,
@@ -36,7 +37,7 @@ enum OperationMode {
 @Component({
     selector: 'app-policy-configuration',
     templateUrl: './policy-configuration.component.html',
-    styleUrls: ['./policy-configuration.component.scss']
+    styleUrls: ['./policy-configuration.component.scss'],
 })
 export class PolicyConfigurationComponent implements OnInit {
     public loading: boolean = true;
@@ -178,7 +179,8 @@ export class PolicyConfigurationComponent implements OnInit {
         private domSanitizer: DomSanitizer,
         private registeredService: RegisteredService,
         private modulesService: ModulesService,
-        private themeService: ThemeService
+        private themeService: ThemeService,
+        private wizardService: WizardService,
     ) {
         this.options = new Options();
         this.policyModel = new PolicyModel();
@@ -477,7 +479,10 @@ export class PolicyConfigurationComponent implements OnInit {
         this.componentsList.unGrouped = [];
         const search = this.search ? this.search.toLowerCase() : null;
         for (const block of all) {
-            if (search && block.search.indexOf(search) === -1) {
+            if (
+                (search && block.search.indexOf(search) === -1) ||
+                block?.deprecated
+            ) {
                 continue;
             }
             if (block.header === 'UI Components') {
@@ -1069,8 +1074,9 @@ export class PolicyConfigurationComponent implements OnInit {
                         break;
                     case OperationMode.publish:
                         const { result } = task;
-                        const { isValid, errors } = result;
+                        const { isValid, errors, policyId } = result;
                         if (isValid) {
+                            this.wizardService.removeWizardPreset(policyId);
                             this.loadData();
                         } else {
                             this.setErrors(errors);
@@ -1171,5 +1177,61 @@ export class PolicyConfigurationComponent implements OnInit {
     public getLegendText(rule: ThemeRule): string {
         rule.updateLegend(this.openModule);
         return rule.legend;
+    }
+
+    public openPolicyWizardDialog() {
+        this.loading = true;
+        forkJoin([
+            this.tokenService.getTokens(),
+            this.schemaService.getSchemas(),
+            this.policyEngineService.all(),
+        ]).subscribe((result) => {
+            const tokens = result[0].map((token) => new Token(token));
+            const schemas = result[1].map((schema) => new Schema(schema));
+            const policies = result[2];
+            this.wizardService.openPolicyWizardDialog(
+                WizardMode.EDIT,
+                (value) => {
+                    if (value.create) {
+                        this.loading = true;
+                        this.wizardService
+                            .getPolicyConfig(this.policyId, value.config)
+                            .subscribe((result) => {
+                                this.loading = false;
+                                this.policyModel.setPolicyInfo(
+                                    value.config.policy
+                                );
+                                const roles = value.config.roles;
+                                const policy = this.policyModel.getJSON();
+                                policy.policyRoles = roles.filter(
+                                    (role: string) => role !== 'OWNER'
+                                );
+                                policy.config = result.policyConfig;
+                                this.updatePolicyModel(policy);
+                                if (value.saveState) {
+                                    this.wizardService.setWizardPreset(
+                                        this.policyId,
+                                        {
+                                            data: result?.wizardConfig,
+                                            currentNode: value?.currentNode,
+                                        }
+                                    );
+                                }
+                            });
+                    } else if (value.saveState) {
+                        this.wizardService.setWizardPreset(this.policyId, {
+                            data: value.config,
+                            currentNode: value.currentNode,
+                        });
+                    } else {
+                        this.wizardService.removeWizardPreset(this.policyId);
+                    }
+                },
+                tokens,
+                schemas,
+                policies,
+                this.policyModel
+            );
+        }, () => undefined, () => this.loading = false);
     }
 }

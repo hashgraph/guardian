@@ -1,15 +1,11 @@
-import { loggerAPI } from '@api/logger.service';
-import { Log } from '@entity/log';
-import {
-    ApplicationState,
-    COMMON_CONNECTION_CONFIG,
-    DataBaseHelper,
-    MessageBrokerChannel,
-    Migration
-} from '@guardian/common';
+import { ApplicationState, COMMON_CONNECTION_CONFIG, DataBaseHelper, MessageBrokerChannel, Migration } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
+import { NestFactory } from '@nestjs/core';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import process from 'process';
+import { AppModule } from './app.module';
 
 Promise.all([
     Migration({
@@ -27,16 +23,26 @@ Promise.all([
         ensureIndexes: true
     }),
     MessageBrokerChannel.connect('LOGGER_SERVICE'),
+    NestFactory.createMicroservice<MicroserviceOptions>(AppModule,{
+        transport: Transport.NATS,
+        options: {
+            name: `${process.env.SERVICE_CHANNEL}`,
+            servers: [
+                `nats://${process.env.MQ_ADDRESS}:4222`
+            ]
+        },
+    }),
 ]).then(async values => {
-    const [_, db, mqConnection] = values;
+    const [_, db, mqConnection, app] = values;
     DataBaseHelper.orm = db;
+
+    app.listen();
+
     const state = new ApplicationState();
     await state.setServiceName('LOGGER_SERVICE').setConnection(mqConnection).init();
     state.updateState(ApplicationStates.STARTED);
-    const logRepository = new DataBaseHelper(Log);
 
     state.updateState(ApplicationStates.INITIALIZING);
-    await loggerAPI(mqConnection, logRepository);
 
     state.updateState(ApplicationStates.READY);
     // const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);

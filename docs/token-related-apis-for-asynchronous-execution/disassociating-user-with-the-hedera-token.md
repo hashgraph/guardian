@@ -9,7 +9,7 @@ Disassociates the user with the provided Hedera token. Only users with the Stand
 Token ID
 {% endswagger-parameter %}
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% swagger-response status="202: Accepted" description="Accepted" %}
 ```javascript
 {
     content:
@@ -36,6 +36,14 @@ Token ID
 ```
 {% endswagger-response %}
 
+{% swagger-response status="422: Unprocessable Entity" description="Unprocessable Entity" %}
+
+
+```
+User not registered
+```
+{% endswagger-response %}
+
 {% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
 ```javascript
 {
@@ -47,3 +55,4 @@ Token ID
 ```
 {% endswagger-response %}
 {% endswagger %}
+

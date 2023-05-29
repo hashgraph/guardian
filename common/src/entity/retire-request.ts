@@ -1,5 +1,6 @@
 import { Entity, Property } from '@mikro-orm/core';
 import { BaseEntity } from '../models';
+import { ObjectId } from 'mongodb';
 
 /**
  * Retire Request
@@ -58,5 +59,5 @@ export class RetireRequest extends BaseEntity {
      * Vc Document Hash
      */
     @Property({ nullable: true })
-    vcDocumentHash?: string;
+    documentId?: ObjectId;
 }

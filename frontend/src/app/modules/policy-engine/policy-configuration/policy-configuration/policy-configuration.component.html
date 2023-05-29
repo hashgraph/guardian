@@ -26,6 +26,11 @@
                     <span>Save As</span>
                 </div>
 
+                <div class="top-toolbar-btn readonly-status wizard-btn" (click)="openPolicyWizardDialog()" title="Policy Wizard">
+                    <mat-icon>auto_awesome</mat-icon>
+                    <span>Wizard</span>
+                </div>
+
                 <div class="delimiter"></div>
 
                 <div *ngIf="policyModel.isDraft" class="top-toolbar-group all-status" [matMenuTriggerFor]="publishMenu">
@@ -136,9 +141,9 @@
                 </ng-container>
 
                 <ng-container *ngIf="
-                    rootType === 'Policy' && 
+                    rootType === 'Policy' &&
                     openType !== 'Sub' &&
-                    !currentBlock?.isModule && 
+                    !currentBlock?.isModule &&
                     !currentBlock?.isRoot">
                     <div class="top-toolbar-btn readonly-status" title="Create New Module" (click)="onCreateModule()">
                         <mat-icon>create_new_folder</mat-icon>

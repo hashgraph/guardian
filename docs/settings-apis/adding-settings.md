@@ -19,7 +19,7 @@ Key of the operator
 API key of NFT
 {% endswagger-parameter %}
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% swagger-response status="201: Created" description="Created" %}
 ```javascript
 {
     // Response

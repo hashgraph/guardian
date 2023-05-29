@@ -83,10 +83,12 @@ import { SelectBlock } from './helpers/select-block/select-block.component';
 import { MultiPolicyDialogComponent } from './helpers/multi-policy-dialog/multi-policy-dialog.component';
 import { ComparePolicyDialog } from './helpers/compare-policy-dialog/compare-policy-dialog.component';
 import { NewModuleDialog } from './helpers/new-module-dialog/new-module-dialog.component';
+import { PolicyWizardDialogComponent } from './helpers/policy-wizard-dialog/policy-wizard-dialog.component';
 //Modules
 import { ModulesListComponent } from './modules-list/modules-list.component';
-//Registered Service
+//Services
 import { RegisteredService } from './services/registered.service';
+import { WizardService } from './services/wizard.service';
 //Policies Grid
 import { PoliciesComponent } from './policies/policies.component';
 //Routing
@@ -95,6 +97,8 @@ import { NewPolicyDialog } from './helpers/new-policy-dialog/new-policy-dialog.c
 import { PolicySettingsComponent } from './policy-configuration/policy-settings/policy-settings.component';
 import { ImportFileDialog } from './helpers/import-file-dialog/import-file-dialog.component';
 import { NewThemeDialog } from './helpers/new-theme-dialog/new-theme-dialog.component';
+import { ExternalTopicBlockComponent } from './policy-viewer/blocks/external-topic-block/external-topic-block.component';
+import { UploadDocumentBlockComponent } from './policy-viewer/blocks/upload-document-block/upload-document-block.component';
 
 @NgModule({
     declarations: [
@@ -116,6 +120,7 @@ import { NewThemeDialog } from './helpers/new-theme-dialog/new-theme-dialog.comp
         SourceAddonConfigComponent,
         ActionBlockComponent,
         RequestDocumentBlockComponent,
+        UploadDocumentBlockComponent,
         ContainerBlockComponent,
         DocumentsSourceBlockComponent,
         PolicyViewerComponent,
@@ -173,7 +178,9 @@ import { NewThemeDialog } from './helpers/new-theme-dialog/new-theme-dialog.comp
         NewPolicyDialog,
         PolicySettingsComponent,
         ImportFileDialog,
-        NewThemeDialog
+        NewThemeDialog,
+        ExternalTopicBlockComponent,
+        PolicyWizardDialogComponent,
     ],
     imports: [
         CommonModule,
@@ -190,7 +197,8 @@ import { NewThemeDialog } from './helpers/new-theme-dialog/new-theme-dialog.comp
     exports: [
     ],
     providers: [
-        RegisteredService
+        RegisteredService,
+        WizardService
     ]
 })
 export class PolicyEngineModule { }

@@ -7,43 +7,44 @@ import { tokenAPI } from '@api/token.service';
 import { trustChainAPI } from '@api/trust-chain.service';
 import { PolicyEngineService } from '@policy-engine/policy-engine.service';
 import {
-    MessageBrokerChannel,
     ApplicationState,
-    Logger,
-    ExternalEventChannel,
-    DataBaseHelper,
-    Migration,
     COMMON_CONNECTION_CONFIG,
-    ValidateConfiguration,
-    Topic,
-    VpDocument,
-    VcDocument,
-    Token,
-    Schema,
-    DidDocument,
-    Settings,
-    Policy,
     Contract,
-    RetireRequest,
+    DataBaseHelper,
+    DidDocument,
     entities,
-    IPFS,
-    Users,
     Environment,
+    ExternalEventChannel,
+    IPFS,
+    LargePayloadContainer,
+    Logger,
+    MessageBrokerChannel,
     MessageServer,
+    Migration,
+    OldSecretManager,
+    Policy,
+    RetireRequest,
+    Schema,
+    SecretManager,
+    Settings,
+    Token,
+    Topic,
     TopicMemo,
     TransactionLogger,
     TransactionLogLvl,
-    Workers, LargePayloadContainer
+    Users,
+    ValidateConfiguration,
+    VcDocument,
+    VpDocument,
+    Workers
 } from '@guardian/common';
 import { ApplicationStates, WorkerTaskType } from '@guardian/interfaces';
 import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
-import { MikroORM } from '@mikro-orm/core';
-import { MongoDriver } from '@mikro-orm/mongodb';
 import { ipfsAPI } from '@api/ipfs.service';
 import { artifactAPI } from '@api/artifact.service';
 import { sendKeysToVault } from '@helpers/send-keys-to-vault';
 import { contractAPI } from '@api/contract.service';
-import { analyticsAPI } from '@api/analytics.service';
+// import { analyticsAPI } from '@api/analytics.service';
 import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels-container';
 import { PolicyEngine } from '@policy-engine/policy-engine';
 import { modulesAPI } from '@api/module.service';
@@ -53,9 +54,13 @@ import { GridFSBucket } from 'mongodb';
 import { tagsAPI } from '@api/tag.service';
 import { setDefaultSchema } from '@api/helpers/schema-helper';
 import { demoAPI } from '@api/demo.service';
-import { SecretManager } from '@guardian/common/dist/secret-manager';
-import { OldSecretManager } from '@guardian/common/dist/secret-manager/old-style/old-secret-manager';
 import { themeAPI } from '@api/theme.service';
+import { wizardAPI } from '@api/wizard.service';
+import { startMetricsServer } from './utils/metrics';
+import { NestFactory } from '@nestjs/core';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import process from 'process';
+import { AppModule } from './app.module';
 
 export const obj = {};
 
@@ -66,19 +71,34 @@ Promise.all([
             path: 'dist/migrations',
             transactional: false
         },
-        entities
-    }),
-    MikroORM.init<MongoDriver>({
-        ...COMMON_CONNECTION_CONFIG,
         driverOptions: {
             useUnifiedTopology: true
         },
         ensureIndexes: true,
         entities
+    }, [
+        'v2-4-0',
+        'v2-7-0',
+        'v2-9-0',
+        'v2-11-0',
+        'v2-12-0'
+    ]),
+    MessageBrokerChannel.connect('GUARDIANS_SERVICE'),
+    NestFactory.createMicroservice<MicroserviceOptions>(AppModule,{
+        transport: Transport.NATS,
+        options: {
+            name: `${process.env.SERVICE_CHANNEL}`,
+            servers: [
+                `nats://${process.env.MQ_ADDRESS}:4222`
+            ]
+        },
     }),
     MessageBrokerChannel.connect('GUARDIANS_SERVICE')
 ]).then(async values => {
-    const [_, db, cn] = values;
+    const [db, cn, app] = values;
+
+    app.listen();
+
     DataBaseHelper.orm = db;
     DataBaseHelper.gridFS = new GridFSBucket(
         db.em.getDriver().getConnection().getDb()
@@ -133,9 +153,10 @@ Promise.all([
         await contractAPI(contractRepository, retireRequestRepository);
         await modulesAPI();
         await tagsAPI();
-        await analyticsAPI();
+        // await analyticsAPI();
         await mapAPI();
         await themeAPI();
+        await wizardAPI();
     } catch (error) {
         console.error(error.message);
         process.exit(0);
@@ -144,6 +165,7 @@ Promise.all([
     Environment.setLocalNodeProtocol(process.env.LOCALNODE_PROTOCOL);
     Environment.setLocalNodeAddress(process.env.LOCALNODE_ADDRESS);
     Environment.setNetwork(process.env.HEDERA_NET);
+    console.log(Environment);
     if (process.env.HEDERA_CUSTOM_NODES) {
         try {
             const nodes = JSON.parse(process.env.HEDERA_CUSTOM_NODES);
@@ -165,13 +187,14 @@ Promise.all([
         } catch (error) {
             await new Logger().warn(
                 'HEDERA_CUSTOM_MIRROR_NODES field in settings: ' +
-                    error.message,
+                error.message,
                 ['GUARDIAN_SERVICE']
             );
             console.warn(error);
         }
     }
     MessageServer.setLang(process.env.MESSAGE_LANG);
+    // TransactionLogger.init(channel, process.env.LOG_LEVEL as TransactionLogLvl);
     IPFS.setChannel(channel);
     new ExternalEventChannel().setChannel(channel);
 
@@ -226,7 +249,6 @@ Promise.all([
 
         return true;
     });
-
     validator.setValidAction(async () => {
         if (!process.env.INITIALIZATION_TOPIC_ID && process.env.HEDERA_NET === 'localnode') {
             process.env.INITIALIZATION_TOPIC_ID = await workersHelper.addRetryableTask({
@@ -284,15 +306,14 @@ Promise.all([
             console.error(error.message);
         }
     });
-
     validator.setInvalidAction(async () => {
         timer = setInterval(async () => {
             await state.updateState(ApplicationStates.BAD_CONFIGURATION);
         }, 1000)
     });
-
     await validator.validate();
 
+    startMetricsServer();
 }, (reason) => {
     console.log(reason);
     process.exit(0);

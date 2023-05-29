@@ -17,5 +17,6 @@
     "policy-service",
     "api-tests"
   ],
-  "version": "2.12.2"
+  "version": "2.13.0-prerelease",
+  "stableVersion": "2.12.0"
 }

@@ -308,7 +308,7 @@ export class DryRun extends BaseEntity {
     /**
      * IRI
      */
-    @Property({ nullable: true, type: 'unknown'})
+    @Property({ nullable: true, type: 'unknown' })
     iri?: any;
 
     /**
@@ -546,6 +546,66 @@ export class DryRun extends BaseEntity {
     uri?: string;
 
     /**
+     * Source document identifier
+     */
+    @Property({ nullable: true })
+    sourceDocumentId?: ObjectId;
+
+    /**
+     * Document Topic Id
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    documentTopicId?: any;
+
+    /**
+     * Policy Topic Id
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    policyTopicId?: any;
+
+    /**
+     * Document Message
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    documentMessage?: any;
+
+    /**
+     * Policy Message
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    policyMessage?: any;
+
+    /**
+     * Policy Instance Message
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    policyInstanceMessage?: any;
+
+    /**
+     * Schemas
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    schemas?: any;
+
+    /**
+     * Schema Id
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    schemaId?: any;
+
+    /**
+     * Last Message
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    lastMessage?: any;
+
+    /**
+     * Last Update
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    lastUpdate?: any;
+
+    /**
      * Default document values
      */
     @BeforeCreate()
@@ -584,9 +644,9 @@ export class DryRun extends BaseEntity {
                             if (
                                 (typeof fieldValue === 'string' &&
                                     fieldValue.length <
-                                        (+process.env
-                                            .DOCUMENT_CACHE_FIELD_LIMIT ||
-                                            100)) ||
+                                    (+process.env
+                                        .DOCUMENT_CACHE_FIELD_LIMIT ||
+                                        100)) ||
                                 typeof fieldValue === 'number'
                             ) {
                                 ObjSet(newDocument, field, fieldValue);

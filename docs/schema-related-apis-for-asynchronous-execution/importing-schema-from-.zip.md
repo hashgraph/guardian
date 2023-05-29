@@ -13,7 +13,7 @@ A zip file containing schema to be imported
 topic ID
 {% endswagger-parameter %}
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% swagger-response status="202: Accepted" description="Accepted" %}
 ```javascript
 {
     content:

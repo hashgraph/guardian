@@ -76,7 +76,7 @@ export class ReportBlock {
      * @param documents
      * @param map
      */
-    async itemUserMap(documents: any[], map) {
+    async itemUserMap(documents: any[], map: any) {
         if (!documents) {
             return;
         }
@@ -272,7 +272,7 @@ export class ReportBlock {
         report.policyDocument = policyDocument;
 
         const policyCreator = await ref.databaseServer.getVcDocument({
-            type: SchemaEntity.POLICY,
+            type: SchemaEntity.STANDARD_REGISTRY,
             owner: policy.owner
         });
 
