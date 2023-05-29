@@ -21,7 +21,7 @@ export class AccountApi {
      * @param headers
      */
     @Get('/session')
-    @HttpCode(HttpStatus.CREATED)
+    @HttpCode(HttpStatus.OK)
     async getSession(@Headers() headers): Promise<any> {
         const users = new Users();
         try {
