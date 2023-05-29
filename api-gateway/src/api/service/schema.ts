@@ -1,5 +1,5 @@
 import { Guardians } from '@helpers/guardians';
-import { ISchema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus, StatusType, UserRole } from '@guardian/interfaces';
+import { ISchema, MessageAPI, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus, StatusType, UserRole } from '@guardian/interfaces';
 import { Logger, RunFunctionAsync } from '@guardian/common';
 import { PolicyEngine } from '@helpers/policy-engine';
 import { TaskManager } from '@helpers/task-manager';
@@ -7,6 +7,8 @@ import { ServiceError } from '@helpers/service-requests-base';
 import { SchemaUtils } from '@helpers/schema-utils';
 import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response } from '@nestjs/common';
 import { checkPermission } from '@auth/authorization-helper';
+import { Client, ClientProxy, Transport } from '@nestjs/microservices';
+import process from 'process';
 
 /**
  * Prepare new schema object
@@ -135,6 +137,18 @@ export class SingleSchemaApi {
 
 @Controller('schemas')
 export class SchemaApi {
+
+    @Client({
+        transport: Transport.NATS,
+        options: {
+            // name: `${process.env.SERVICE_CHANNEL}`,
+            servers: [
+                `nats://${process.env.MQ_ADDRESS}:4222`
+            ]
+        }
+    })
+    client: ClientProxy;
+
     @Post('/:topicId')
     @HttpCode(HttpStatus.CREATED)
     async setTopicId(@Req() req, @Response() res): Promise<any> {
@@ -199,7 +213,14 @@ export class SchemaApi {
                 topicId = model?.topicId;
             }
 
-            const { items, count } = await guardians.getSchemasByOwner(owner, topicId, pageIndex, pageSize);
+            // const { items, count } = await guardians.getSchemasByOwner(owner, topicId, pageIndex, pageSize);
+            const result = await this.client.send(MessageAPI.GET_SCHEMAS, {
+                owner,
+                topicId,
+                pageIndex,
+                pageSize
+            }).toPromise();
+            const { items, count } = result.body;
             SchemaHelper.updatePermission(items, user.did);
             return res.setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
         } catch (error) {
