@@ -12,17 +12,20 @@
         <mat-form-field class="example-full-width" appearance="outline">
             <mat-label>Username:</mat-label>
             <input matInput formControlName="login" (input)="onInput()">
-            <div *ngIf="error" class="field-error">{{error}}</div>
+            <span *ngIf="error" class="field-error">{{error}}</span>
         </mat-form-field>
 
         <mat-form-field class="example-full-width" appearance="outline">
             <mat-label>Password:</mat-label>
-            <input matInput formControlName="password" type="password">
+            <input matInput formControlName="password">
         </mat-form-field>
 
         <mat-form-field class="example-full-width" appearance="outline">
             <mat-label>Confirm Password:</mat-label>
-            <input matInput formControlName="confirmPassword" type="password">
+            <input matInput formControlName="confirmPassword">
+            <span *ngIf="formErrors && formErrors.passwordsMismatch" class="field-error">
+                The entered passwords do not match.
+            </span>
         </mat-form-field>
 
         <button mat-raised-button type="submit" color="primary" [disabled]="!loginForm.valid">Create</button>

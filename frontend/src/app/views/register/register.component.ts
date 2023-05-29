@@ -12,7 +12,7 @@ const checkPasswords: ValidatorFn = (group: AbstractControl): ValidationErrors |
     return (
         pass && confirmPass &&
         pass.value === confirmPass.value
-    ) ? null : { notSame: true };
+    ) ? null : { passwordsMismatch: true };
 }
 
 /**
@@ -46,6 +46,10 @@ export class RegisterComponent implements OnInit {
 
     public get isRoleSelected$(): Observable<boolean> {
         return this._isRoleSelected$;
+    }
+
+    get formErrors(): ValidationErrors | null {
+        return this.loginForm.errors;
     }
 
     ngOnInit() {
