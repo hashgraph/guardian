@@ -109,7 +109,7 @@ export async function findAndPublishSchema(
     if (item.creator !== owner) {
         throw new Error('Invalid owner');
     }
-    if (!item.topicId) {
+    if (!item.topicId || item.topicId === 'draft') {
         throw new Error('Invalid topicId');
     }
     if (item.status === SchemaStatus.PUBLISHED) {
