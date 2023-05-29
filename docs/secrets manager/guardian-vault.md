@@ -67,3 +67,24 @@ _Note_: Before running the scripts it is necessary to login into AWS service by 
 1. __Create Roles and Policies__: `aws_iam_init.sh` script in `aws/scripts` directory initiates a role with a specific name configured by `GUARDIAN_SECRETS_ROLE_NAME` in .env file, creates policies that are stored in `aws/configs/policies` path and attach the policy to the role.
 
 2. __Push Secrets__: The initial secrets such as IPFS_API_KEY, AUTH_SECRET_KEY, OPERATOR_KEY is stored to vault secret manager. A template secret file is created in `aws/configs/secrets` that must be coned and customized into `secret.json` file. The `push_secrets.sh` script in `aws/secripts` folder will push all secrets into their specified secret path.
+
+
+## Azure Key Vault
+
+Azure Vault provides a centralised service to manage sensitive data safe and secure. It provides three services to manage Secrets, Keys and Certificates:
+
+* Secrets Manager: Azure Key Vault enables secure storage of secrets such as Passwordds, API Keys, etc. Secrets can be easily managed, rotated, and accessed programmatically.
+
+* Key Manager: Cryptographic keys can be generated and managed within Azure Key Vault. These keys can be used for encryption, decryption, signing, and verification purposes. Azure Key Vault supports a variety of key types and algorithms.
+
+* Certificate Manager: Azure Key Vault allows you to store and manage SSL/TLS certificates. You can import certificates or generate new ones within the Key Vault. Key Vault can also automate the renewal and deployment of certificates.
+
+Guardian is supporting Azure Vault Secrets Manager to handle securely the secrets, keys and wallets. At the moment Default Azure Credential is used for authenticating to Azure Key Vault that requires following steps to enable any machine to access Secrets:
+
+1. __Create a Key Vault__: From the Azure Portal navigate to __Key Vaults__, choose a Resource Group has been created before from the list, insert a name for the Vault instance, select the region and carefully prepare other configurations and follow to the Next page.
+
+2. Choose __Vault Access Policy__ as Permission model and __Azure Virtual Machines for deployment__ as Resource Access. Under Access Policies, click on __Create__ and in the prompt window choose all neccessary permissions required to grant to a User. For Guardian at least __Get__ and __Set__ of __Secrets__ are required. Next find the registered User to grant access. In the last step choose a registered application if has been created in Azure Active Directory before; otherwise select Next and finalize the process.
+
+3. Configure Networking, Add Tags and create the Vault.
+
+4. Now in the directory of auth-service, guardian-service, policy-service and worker-service set __AZURE_VAULT_NAME__ environment variable by the name chosen as Vault previously.

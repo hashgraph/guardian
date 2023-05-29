@@ -5,6 +5,8 @@ import { AwsSecretManager } from './aws/aws-secret-manager';
 import { IHcpVaultSecretManagerConfigs } from './hashicorp/hcp-vault-secret-manager-configs';
 import { IAwsSecretManagerConfigs } from './aws/aws-secret-manager-configs';
 import { OldSecretManager } from './old-style/old-secret-manager';
+import { AzureSecretManager } from './azure/azure-secret-manager';
+import { IAzureSecretManagerConfigs } from './azure/azure-secret-manager-configs';
 
 /**
  * Class to get secret manager
@@ -59,7 +61,7 @@ export class SecretManager {
       case SecretManagerType.GCP:
         return /* new GcpSecretManager(config) */
       case SecretManagerType.AZURE:
-        return /* new AzureSecretManager(config) */
+        return new AzureSecretManager(configs as IAzureSecretManagerConfigs)
       case SecretManagerType.OLD_STYLE:
         return new OldSecretManager()
       default:
