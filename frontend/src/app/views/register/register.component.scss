@@ -56,7 +56,7 @@ form,
 .login-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-end;
     width: 100%;
 
     mat-icon {
@@ -80,6 +80,17 @@ form,
         background-color: transparent;
         max-width: fit-content;
     }
+}
+
+.login-content {
+    display: flex;
+    flex-direction: column;
+    padding: 0 40px;
+}
+
+.password-control {
+    display: flex;
+    align-items: center;
 }
 
 .overlay {
@@ -158,6 +169,11 @@ mat-form-field {
     }
 }
 
+.eye-icon {
+    margin: 0 0 10px 15px;
+    cursor: pointer;
+}
+
 @media (max-width: 810px) {
 
     /* Role Select Menu */
@@ -219,12 +235,16 @@ mat-form-field {
     }
 
     .credential-creation .example-full-width {
-        width: 81vw;
+        width: 70vw;
         margin: 18px 0 0;
     }
 
     .credential-creation button:not(.login-header__back-button) {
         margin-top: 36px;
         width: 81vw;
+    }
+
+    .eye-icon {
+        margin: 24px 0 10px 15px;
     }
 }

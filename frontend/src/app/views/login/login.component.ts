@@ -18,6 +18,7 @@ import { noWhitespaceValidator } from 'src/app/validators/no-spaces.validator';
 export class LoginComponent implements OnInit, OnDestroy {
     loading: boolean = false;
     errorMessage: string = "";
+    passFieldType: 'password' | 'text' = 'password';
 
     loginForm = new FormGroup({
         login: new FormControl('', [Validators.required, noWhitespaceValidator()]),
@@ -77,6 +78,10 @@ export class LoginComponent implements OnInit, OnDestroy {
         })
     }
 
+    togglePasswordShow(): void {
+        this.passFieldType = this.passFieldType === 'password' ? 'text': 'password';
+    }
+
     private get loginControl(): AbstractControl {
         return this.loginForm.get('login') as AbstractControl;
     }
@@ -94,10 +99,20 @@ export class LoginComponent implements OnInit, OnDestroy {
     }
 
     get showLoginRequiredError(): boolean {
-        return this.loginControl.touched && (this.loginErrors.required || this.loginErrors.whitespace);
+        return (
+            this.loginControl.touched &&
+            (this.loginErrors.required || this.loginErrors.whitespace)
+        );
     }
 
     get showPasswordRequiredError(): boolean {
-        return this.passwordControl.touched && (this.passwordErrors.required || this.passwordErrors.whitespace);
+        return (
+            this.passwordControl.touched &&
+            (this.passwordErrors.required || this.passwordErrors.whitespace)
+        );
+    }
+
+    get showPasswordValue(): boolean {
+        return this.passFieldType === 'text';
     }
 }

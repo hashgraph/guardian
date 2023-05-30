@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { FormBuilder, Validators, ValidatorFn, AbstractControl, ValidationErrors, FormGroup, FormControl } from '@angular/forms';
+import { Validators, ValidatorFn, AbstractControl, ValidationErrors, FormGroup, FormControl } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { AuthStateService } from 'src/app/services/auth-state.service';
 import { UserRole } from '@guardian/interfaces';
@@ -36,6 +36,8 @@ export class RegisterComponent implements OnInit {
     }, { validators: checkPasswords });
 
     private _isRoleSelected$ = new ReplaySubject<boolean>(1);
+    passFieldType: 'password' | 'text' = 'text';
+    confirmPassFieldType: 'password' | 'text' = 'text';
 
     constructor(
         private auth: AuthService,
@@ -90,6 +92,14 @@ export class RegisterComponent implements OnInit {
         this.error = "";
     }
 
+    togglePasswordShow(): void {
+        this.passFieldType = this.passFieldType === 'password' ? 'text': 'password';
+    }
+
+    toggleConfirmPasswordShow(): void {
+        this.confirmPassFieldType = this.confirmPassFieldType === 'password' ? 'text': 'password';
+    }
+
     private get usernameControl(): AbstractControl {
         return this.loginForm.get('login') as AbstractControl;
     }
@@ -107,11 +117,25 @@ export class RegisterComponent implements OnInit {
     }
 
     get showUsernameRequiredError(): boolean {
-        return this.usernameControl.touched && (this.usernameErrors.required || this.usernameErrors.whitespace);
+        return (
+            this.usernameControl.touched &&
+            (this.usernameErrors.required || this.usernameErrors.whitespace)
+        );
     }
 
     get showPasswordRequiredError(): boolean {
-        return this.passwordControl.touched && (this.passwordErrors.required || this.passwordErrors.whitespace);
+        return (
+            this.passwordControl.touched &&
+            (this.passwordErrors.required || this.passwordErrors.whitespace)
+        );
+    }
+
+    get showPasswordValue(): boolean {
+        return this.passFieldType === 'text';
+    }
+
+    get showConfirmPasswordValue(): boolean {
+        return this.confirmPassFieldType === 'text';
     }
 
     get formErrors(): ValidationErrors | null {
