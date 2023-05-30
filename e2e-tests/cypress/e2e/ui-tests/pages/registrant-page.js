@@ -8,6 +8,7 @@ const RegistrantPageLocators = {
     passInput: '[formcontrolname="password"]',
     submitBtn: '[type="submit"]',
     appRegistrantDetails: "/api/v1/profiles/Registrant",
+    tokensWaiter: "/api/v1/tokens",
     registrantRole: "Registrant",
     inputGroupLabel: '[formcontrolname="groupLabel"]',
     profileTab: "Profile",
@@ -22,6 +23,8 @@ const RegistrantPageLocators = {
     profileValue: "div.profile-item-value",
     profilePage: '/api/v1/schemas/system/entity/USER',
     approvalLabel: 'app-information-block',
+    tokenId: 'hedera-explorer > a',
+    tokenIdByHistory: 'td.cdk-column-1',
 };
 
 
@@ -29,6 +32,11 @@ export class RegistrantPage {
 
     openUserProfile() {
         cy.visit(URL.Root + URL.Profile);
+    }
+
+
+    openTokensTab() {
+        cy.visit(URL.Root + URL.UserTokens);
     }
 
     createGroup(role) {
@@ -108,7 +116,7 @@ export class RegistrantPage {
         cy.contains(RegistrantPageLocators.requiredFillNumberLabel).parent().parent().parent().find('input').type('123')
         cy.get(RegistrantPageLocators.submitBtn).click();
         cy.wait(20000);
-        cy.contains("Issue Requests").click({ force: true });
+        cy.contains("Issue Requests").click({force: true});
         cy.contains("Waiting for approval").should("exist");
     }
 
@@ -117,6 +125,31 @@ export class RegistrantPage {
         cy.contains(RegistrantPageLocators.hederaId).parent().find(RegistrantPageLocators.profileValue).find("a")
             .then(($div) => {
                 cy.writeFile('cypress/fixtures/regId.txt', $div.get(0).innerText);
+            });
+    }
+
+    checkTokenBalance() {
+        cy.intercept(RegistrantPageLocators.tokensWaiter).as(
+            "waitForTokens"
+        );
+        cy.wait("@waitForTokens", {timeout: 20000})
+        cy.get("td").first().parent().get("td").eq("2").should('have.text', " 123 ");
+        let tokenId;
+        cy.readFile('cypress/fixtures/tokenId.txt').then(file => {
+            tokenId = file;
+        }).then(() => {
+            cy.contains(tokenId.trim()).should("exist");
+        })
+    }
+
+    checkTokenHistory() {
+        cy.contains("Policies").click({force: true});
+        cy.wait(2000);
+        cy.get("td").first().parent().get("td").eq("5").click();
+        cy.contains("Token History").click({force: true});
+        cy.get(RegistrantPageLocators.tokenIdByHistory)
+            .then(($a) => {
+                cy.writeFile('cypress/fixtures/tokenId.txt', $a.find('.text').text());
             });
     }
 }
