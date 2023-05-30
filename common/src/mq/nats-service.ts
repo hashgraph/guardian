@@ -33,6 +33,7 @@ export abstract class NatsService {
 
     constructor() {
         this.codec = ZipCodec();
+        // this.codec = JSONCodec();
     }
 
     /**

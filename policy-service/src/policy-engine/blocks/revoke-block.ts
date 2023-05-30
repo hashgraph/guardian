@@ -1,4 +1,4 @@
-import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
+import { ActionCallback, EventBlock } from '@policy-engine/helpers/decorators';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { AnyBlockType, IPolicyEventState, IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
 import { Message, MessageServer } from '@guardian/common';
@@ -13,13 +13,13 @@ export const RevokedStatus = 'Revoked';
 /**
  * Revoke document action with UI
  */
-@BasicBlock({
+@EventBlock({
     blockType: 'revokeBlock',
     about: {
         label: 'Revoke Document',
         title: `Add 'Revoke' Block`,
-        post: false,
-        get: false,
+        post: true,
+        get: true,
         children: ChildrenType.None,
         control: ControlType.Server,
         input: [

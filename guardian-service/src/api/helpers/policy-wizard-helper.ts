@@ -1,4 +1,12 @@
-import { BlockType, GenerateUUIDv4, IGridConfig, ISchemaRoleConfig, IWizardConfig, IWizardSchemaConfig, IWizardTrustChainConfig } from '@guardian/interfaces';
+import {
+    BlockType,
+    GenerateUUIDv4,
+    IGridConfig,
+    ISchemaRoleConfig,
+    IWizardConfig,
+    IWizardSchemaConfig,
+    IWizardTrustChainConfig,
+} from '@guardian/interfaces';
 
 /**
  * Policy wizard helper
@@ -13,9 +21,9 @@ export class PolicyWizardHelper {
      * Generate block tag
      * @returns Tag
      */
-    private generateBlockTag() {
+    private generateBlockTag(role: string, blockType: BlockType) {
         this.blockCounter++;
-        return 'Block_' + this.blockCounter;
+        return `${role}_${blockType}_${this.blockCounter}`;
     }
 
     /**
@@ -34,34 +42,40 @@ export class PolicyWizardHelper {
         root.children = [this.getChooseRoleBlock(roles)];
         const children = root.children;
         const roleContainers: any = {};
+        const roleTabContainers: any = {};
         roles.forEach((role) => {
             roleContainers[role] = this.getRoleContainer(role);
+            roleTabContainers[role] = roleContainers[role];
         });
 
-        const initialApproveButtonTags: any = {};
-        const roleTabContainers: any = {};
-
+        const approveRejectInitialSteps: {
+            [key: string]: {
+                // tslint:disable-next-line:completed-docs
+                approveBlockTags: string[];
+                // tslint:disable-next-line:completed-docs
+                rejectBlockTags: string[];
+            };
+        } = {};
         for (const schema of schemas) {
+            const approveBlockTags = [];
+            const rejectBlockTags = [];
+            approveRejectInitialSteps[schema.iri] = {
+                approveBlockTags,
+                rejectBlockTags,
+            };
             for (const roleInitialSchemaFor of schema.initialRolesFor) {
-                const tabsContainer = roleContainers[roleInitialSchemaFor];
                 const stepContainer = this.getRoleStep(roleInitialSchemaFor);
                 roleContainers[roleInitialSchemaFor] = stepContainer;
-                stepContainer.children.push(tabsContainer);
-
-                const [_, approveBtnTag, rejectBtnTag] =
-                    this.createInitialSchemaSteps(
-                        roleInitialSchemaFor,
-                        stepContainer,
-                        schema
-                    );
-
-                roleTabContainers[roleInitialSchemaFor] = tabsContainer;
-
-                initialApproveButtonTags[schema.iri] ||= {};
-                initialApproveButtonTags[schema.iri][roleInitialSchemaFor] = {
-                    approveBtnTag,
-                    rejectBtnTag,
-                };
+                const [_, rejectInfoBlockTag] = this.createInitialSchemaSteps(
+                    roleInitialSchemaFor,
+                    stepContainer,
+                    roleTabContainers[roleInitialSchemaFor],
+                    schema
+                );
+                approveBlockTags.push(
+                    roleTabContainers[roleInitialSchemaFor].tag
+                );
+                rejectBlockTags.push(rejectInfoBlockTag);
             }
         }
 
@@ -73,14 +87,8 @@ export class PolicyWizardHelper {
                         schema,
                         schemas,
                         this.getTabContainer(roleConfig.role, schema.name),
-                        initialApproveButtonTags[schema.iri] &&
-                            initialApproveButtonTags[schema.iri][
-                                roleConfig.approverRoleFor
-                            ]?.approveBtnTag,
-                        initialApproveButtonTags[schema.iri] &&
-                            initialApproveButtonTags[schema.iri][
-                                roleConfig.approverRoleFor
-                            ]?.rejectBtnTag
+                        approveRejectInitialSteps[schema.iri]?.approveBlockTags,
+                        approveRejectInitialSteps[schema.iri]?.rejectBlockTags
                     );
 
                 if (roleTabContainers[roleConfig.role]) {
@@ -137,6 +145,7 @@ export class PolicyWizardHelper {
     private createInitialSchemaSteps(
         role: string,
         container: any,
+        roleTabContainer: any,
         schemaConfig: IWizardSchemaConfig
     ) {
         const requestDocument = this.getRequestDocumentBlock(
@@ -148,59 +157,31 @@ export class PolicyWizardHelper {
             false,
             schemaConfig.isApproveEnable
         );
+        container.children?.push(requestDocument, sendBlock);
 
-        let approveBtnTag;
         if (schemaConfig.isApproveEnable) {
             const infoBlock = this.getInfoBlock(
                 role,
                 'Submitted to approve',
                 'The page will be automatically refreshed'
             );
-            const sendApproveBlock = this.getChangeDocumentStatusSendBlock(
-                role,
-                'Approved'
-            );
-            const reassignBlock = this.getReassignBlock(role, true);
-            const sendApproveReassignBlock = this.getDocumentSendBlock(
-                role,
-                false,
-                false,
-                'approved_entity'
-            );
-            approveBtnTag = sendApproveBlock.tag;
-            container.children?.unshift(
-                infoBlock,
-                sendApproveBlock,
-                reassignBlock,
-                sendApproveReassignBlock
-            );
+            container.children?.push(infoBlock);
         }
 
-        container.children?.unshift(requestDocument, sendBlock);
+        container?.children.push(roleTabContainer);
 
-        let rejectBtnTag;
+        let rejectInfoBlockTag;
         if (schemaConfig.isApproveEnable) {
-            const rejectApproveBlock = this.getChangeDocumentStatusSendBlock(
+            const rejectInfoBlock = this.getInfoBlock(
                 role,
-                'Reject'
+                'Rejected',
+                'Document was rejected'
             );
-            container.children?.push(rejectApproveBlock);
-            const reassignBlock = this.getReassignBlock(role, true);
-            container.children?.push(reassignBlock);
-            const sendRejectReassignBlock = this.getDocumentSendBlock(
-                role,
-                false,
-                false,
-                'rejected_entity'
-            );
-            rejectBtnTag = rejectApproveBlock.tag;
-            container.children?.push(sendRejectReassignBlock);
-            container.children?.push(
-                this.getInfoBlock(role, 'Rejected', 'Document was rejected')
-            );
+            rejectInfoBlockTag = rejectInfoBlock.tag;
+            container.children?.push(rejectInfoBlock);
         }
 
-        return [container, approveBtnTag, rejectBtnTag];
+        return [container, rejectInfoBlockTag];
     }
 
     /**
@@ -218,50 +199,67 @@ export class PolicyWizardHelper {
         schemaConfig: IWizardSchemaConfig,
         schemaConfigs: IWizardSchemaConfig[],
         container: any,
-        approveBtnTag?: string,
-        rejectBtnTag?: string
+        approvedBlockTags: string[] = [],
+        rejectedBlockTags: string[] = []
     ) {
         const dependencySchema = schemaConfigs.find(
             (schema) => schema.iri === schemaConfig.dependencySchemaIri
+        );
+        const relationshipSchema = schemaConfigs.find(
+            (schema) => schema.iri === schemaConfig.relationshipsSchemaIri
         );
         const gridBlock = this.getDocumentsGrid(
             roleConfig.role,
             roleConfig.gridColumns
         );
+        container.children?.push(gridBlock);
 
         let createDependencySchemaAddonTag;
         if (schemaConfig.isApproveEnable) {
-            if (roleConfig.isApprover) {
-                const toApproveOrRejectAddon = this.getDocumentsSourceAddon(
-                    roleConfig.role,
-                    schemaConfig.iri,
-                    false,
-                    [
-                        {
-                            value: 'Waiting for approval',
-                            field: 'option.status',
-                            type: 'equal',
-                        },
-                    ]
-                );
-                const approvedAddon = this.getDocumentsSourceAddon(
-                    roleConfig.role,
-                    schemaConfig.iri,
-                    false,
-                    [
-                        {
-                            value: 'approved_entity',
-                            field: 'type',
-                            type: 'equal',
-                        },
-                    ]
-                );
-                createDependencySchemaAddonTag = approvedAddon.tag;
-                gridBlock?.children?.push(
-                    toApproveOrRejectAddon,
-                    approvedAddon
-                );
+            const toApproveOrRejectAddon = this.getDocumentsSourceAddon(
+                roleConfig.role,
+                schemaConfig.iri,
+                !roleConfig.isApprover,
+                [
+                    {
+                        value: 'Waiting for approval',
+                        field: 'option.status',
+                        type: 'equal',
+                    },
+                ]
+            );
+            const approvedAddon = this.getDocumentsSourceAddon(
+                roleConfig.role,
+                schemaConfig.iri,
+                !roleConfig.isApprover,
+                [
+                    {
+                        value: 'approved_entity',
+                        field: 'type',
+                        type: 'equal',
+                    },
+                ]
+            );
+            const rejectedAddon = this.getDocumentsSourceAddon(
+                roleConfig.role,
+                schemaConfig.iri,
+                !roleConfig.isApprover,
+                [
+                    {
+                        value: 'rejected_entity',
+                        field: 'type',
+                        type: 'equal',
+                    },
+                ]
+            );
+            createDependencySchemaAddonTag = approvedAddon.tag;
+            gridBlock?.children?.push(
+                toApproveOrRejectAddon,
+                approvedAddon,
+                rejectedAddon
+            );
 
+            if (roleConfig.isApprover) {
                 const saveDocumentApprove =
                     this.getChangeDocumentStatusSendBlock(
                         roleConfig.role,
@@ -272,81 +270,48 @@ export class PolicyWizardHelper {
                         roleConfig.role,
                         'Rejected'
                     );
-
                 const buttonsBlock = this.getApproveRejectButtonsBlock(
                     roleConfig.role,
-                    approveBtnTag || saveDocumentApprove.tag,
-                    rejectBtnTag || saveDocumentReject.tag
+                    saveDocumentApprove.tag,
+                    saveDocumentReject.tag
                 );
                 const approveRejectField = this.getApproveRejectField(
                     buttonsBlock.tag,
                     toApproveOrRejectAddon.tag
                 );
-
                 gridBlock.uiMetaData.fields.push(approveRejectField);
-                container.children?.push(gridBlock, buttonsBlock);
-                if (!approveBtnTag && !rejectBtnTag) {
+                container.children?.push(
+                    buttonsBlock,
+                    saveDocumentApprove,
+                    this.getReassignBlock(roleConfig.role),
+                    this.getDocumentSendBlock(
+                        roleConfig.role,
+                        !schemaConfig.isMintSchema,
+                        false,
+                        'approved_entity',
+                        approvedBlockTags
+                    )
+                );
+                if (schemaConfig.isMintSchema) {
                     container.children?.push(
-                        saveDocumentApprove,
-                        this.getReassignBlock(roleConfig.role),
-                        this.getDocumentSendBlock(
+                        this.getMintBlock(
                             roleConfig.role,
-                            !schemaConfig.isMintSchema,
-                            false,
-                            'approved_entity'
-                        )
-                    );
-                    if (schemaConfig.isMintSchema) {
-                        container.children?.push(
-                            this.getMintBlock(
-                                roleConfig.role,
-                                schemaConfig.mintOptions.tokenId,
-                                schemaConfig.mintOptions.rule
-                            )
-                        );
-                    }
-                    container.children?.push(
-                        saveDocumentReject,
-                        this.getReassignBlock(roleConfig.role),
-                        this.getDocumentSendBlock(
-                            roleConfig.role,
-                            true,
-                            false,
-                            'rejected_entity'
+                            schemaConfig.mintOptions.tokenId,
+                            schemaConfig.mintOptions.rule
                         )
                     );
                 }
-            } else {
-                const toApproveOrRejectAddon = this.getDocumentsSourceAddon(
-                    roleConfig.role,
-                    schemaConfig.iri,
-                    true,
-                    [
-                        {
-                            value: 'Waiting for approval',
-                            field: 'option.status',
-                            type: 'equal',
-                        },
-                    ]
+                container.children?.push(
+                    saveDocumentReject,
+                    this.getReassignBlock(roleConfig.role),
+                    this.getDocumentSendBlock(
+                        roleConfig.role,
+                        true,
+                        false,
+                        'rejected_entity',
+                        rejectedBlockTags
+                    )
                 );
-                const approvedAddon = this.getDocumentsSourceAddon(
-                    roleConfig.role,
-                    schemaConfig.iri,
-                    true,
-                    [
-                        {
-                            value: 'approved_entity',
-                            field: 'type',
-                            type: 'equal',
-                        },
-                    ]
-                );
-                createDependencySchemaAddonTag = approvedAddon.tag;
-                gridBlock?.children?.push(
-                    toApproveOrRejectAddon,
-                    approvedAddon
-                );
-                container.children?.push(gridBlock);
             }
         } else {
             const documentsSourceAddon = this.getDocumentsSourceAddon(
@@ -355,61 +320,39 @@ export class PolicyWizardHelper {
             );
             createDependencySchemaAddonTag = documentsSourceAddon.tag;
             gridBlock?.children?.push(documentsSourceAddon);
-            container.children?.push(gridBlock);
         }
 
         if (roleConfig.isCreator) {
-            if (schemaConfig.isApproveEnable) {
-                const requestDocumentBlock = this.getDialogRequestDocumentBlock(
-                    roleConfig.role,
-                    schemaConfig.iri
+            let requestDocumentBlock = this.getDialogRequestDocumentBlock(
+                roleConfig.role,
+                schemaConfig.iri,
+                false,
+                schemaConfig.name
+            );
+            container.children?.push(requestDocumentBlock);
+            if (relationshipSchema) {
+                container.children?.push(
+                    this.getSetRelationshipsBlock(
+                        roleConfig.role,
+                        relationshipSchema.iri,
+                        relationshipSchema.isApproveEnable
+                    )
                 );
-                container.children?.push(requestDocumentBlock);
-                if (
-                    schemaConfig.relationshipsSchemaIri &&
-                    !schemaConfig.dependencySchemaIri
-                ) {
-                    container.children?.push(
-                        this.getSetRelationshipsBlock(
-                            roleConfig.role,
-                            schemaConfig.relationshipsSchemaIri,
-                            schemaConfig.isApproveEnable
-                        )
-                    );
-                }
+            }
+            if (schemaConfig.isApproveEnable) {
                 container.children?.push(
                     this.getDocumentSendBlock(roleConfig.role, true, true)
                 );
             } else {
-                const requestDocumentBlock = this.getDialogRequestDocumentBlock(
-                    roleConfig.role,
-                    schemaConfig.iri
-                );
-                container.children?.push(requestDocumentBlock);
-                if (
-                    schemaConfig.relationshipsSchemaIri &&
-                    !schemaConfig.dependencySchemaIri
-                ) {
-                    container.children?.push(
-                        this.getSetRelationshipsBlock(
-                            roleConfig.role,
-                            schemaConfig.relationshipsSchemaIri,
-                            schemaConfig.isApproveEnable
-                        )
-                    );
-                }
                 container.children?.push(
                     this.getDocumentSendBlock(
                         roleConfig.role,
                         !schemaConfig.isMintSchema,
-                        true
+                        false
                     )
                 );
 
-                if (
-                    !schemaConfig.isApproveEnable &&
-                    schemaConfig.isMintSchema
-                ) {
+                if (schemaConfig.isMintSchema) {
                     container.children?.push(
                         this.getMintBlock(
                             roleConfig.role,
@@ -420,10 +363,11 @@ export class PolicyWizardHelper {
                 }
             }
             if (dependencySchema && createDependencySchemaAddonTag) {
-                const requestDocumentBlock = this.getDialogRequestDocumentBlock(
+                requestDocumentBlock = this.getDialogRequestDocumentBlock(
                     roleConfig.role,
                     dependencySchema.iri,
-                    true
+                    true,
+                    dependencySchema.name
                 );
                 container.children?.push(
                     requestDocumentBlock,
@@ -473,7 +417,7 @@ export class PolicyWizardHelper {
         const vpGrid = this.getVpGrid(
             trustChainConfig.role,
             trustChainTag,
-            !trustChainConfig.viewOnlyOwnDocuments
+            trustChainConfig.viewOnlyOwnDocuments
         );
         container.children.push(vpGrid);
         return container;
@@ -604,7 +548,7 @@ export class PolicyWizardHelper {
     private getChooseRoleBlock(roles: string[]) {
         return {
             id: GenerateUUIDv4(),
-            tag: this.generateBlockTag(),
+            tag: 'choose_role',
             roles: roles?.filter((role) => role !== 'OWNER'),
             blockType: BlockType.PolicyRoles,
             defaultActive: true,
@@ -627,7 +571,7 @@ export class PolicyWizardHelper {
     getRoleContainer(role: string) {
         return {
             id: GenerateUUIDv4(),
-            tag: this.generateBlockTag(),
+            tag: this.generateBlockTag(role, BlockType.Container),
             blockType: BlockType.Container,
             defaultActive: true,
             children: [],
@@ -646,10 +590,11 @@ export class PolicyWizardHelper {
      * @returns Block
      */
     getRoleStep(role: string) {
+        const blockType = BlockType.Step;
         return {
             id: GenerateUUIDv4(),
-            tag: this.generateBlockTag(),
-            blockType: BlockType.Step,
+            tag: this.generateBlockTag(role, blockType),
+            blockType,
             defaultActive: true,
             children: [] as any,
             permissions: [role],
@@ -665,10 +610,11 @@ export class PolicyWizardHelper {
      * @returns Block
      */
     getTabContainer(role: string, title: string) {
+        const blockType = BlockType.Container;
         return {
             id: GenerateUUIDv4(),
-            tag: this.generateBlockTag(),
-            blockType: BlockType.Container,
+            tag: this.generateBlockTag(role, blockType),
+            blockType,
             defaultActive: true,
             children: [] as any,
             permissions: [role],
@@ -688,9 +634,10 @@ export class PolicyWizardHelper {
      * @returns Block
      */
     getDocumentsGrid(role: string, fieldsConfig: IGridConfig[]) {
+        const blockType = BlockType.DocumentsViewer;
         return {
             id: GenerateUUIDv4(),
-            blockType: 'interfaceDocumentsSourceBlock',
+            blockType,
             defaultActive: true,
             permissions: [role],
             onErrorAction: 'no-action',
@@ -719,7 +666,7 @@ export class PolicyWizardHelper {
                     },
                 ],
             },
-            tag: this.generateBlockTag(),
+            tag: this.generateBlockTag(role, blockType),
             children: [this.getHistoryAddon(role)] as any,
         };
     }
@@ -729,13 +676,14 @@ export class PolicyWizardHelper {
      * @param role Role
      */
     private getHistoryAddon(role: string) {
+        const blockType = BlockType.HistoryAddon;
         return {
             id: GenerateUUIDv4(),
-            blockType: BlockType.HistoryAddon,
+            blockType,
             defaultActive: false,
             permissions: [role],
             onErrorAction: 'no-action',
-            tag: this.generateBlockTag(),
+            tag: this.generateBlockTag(role, blockType),
         };
     }
 
@@ -745,9 +693,10 @@ export class PolicyWizardHelper {
      * @returns Block
      */
     private getChangeDocumentStatusSendBlock(role: string, status: string) {
+        const blockType = BlockType.SendToGuardian;
         return {
             id: GenerateUUIDv4(),
-            blockType: BlockType.SendToGuardian,
+            blockType,
             defaultActive: false,
             permissions: [role],
             onErrorAction: 'no-action',
@@ -761,7 +710,7 @@ export class PolicyWizardHelper {
             stopPropagation: false,
             dataSource: 'database',
             documentType: 'vc',
-            tag: this.generateBlockTag(),
+            tag: this.generateBlockTag(role, blockType),
         };
     }
 
@@ -777,11 +726,14 @@ export class PolicyWizardHelper {
         role: string,
         stopPropagation: boolean = false,
         needApprove: boolean = false,
-        entityType?: string
+        entityType?: string,
+        blockTagsToTriggerRunEvent?: string[]
     ) {
+        const blockType = BlockType.SendToGuardian;
+        const tag = this.generateBlockTag(role, blockType);
         return {
             id: GenerateUUIDv4(),
-            blockType: BlockType.SendToGuardian,
+            blockType,
             defaultActive: false,
             permissions: [role],
             onErrorAction: 'no-action',
@@ -796,9 +748,19 @@ export class PolicyWizardHelper {
                 : [],
             dataSource: 'auto',
             documentType: 'vc',
-            tag: this.generateBlockTag(),
+            tag,
             stopPropagation,
             entityType,
+            events: Array.isArray(blockTagsToTriggerRunEvent)
+                ? blockTagsToTriggerRunEvent.map((target) => ({
+                      target,
+                      source: tag,
+                      input: 'RunEvent',
+                      output: 'RunEvent',
+                      actor: 'owner',
+                      disabled: false,
+                  }))
+                : [],
         };
     }
 
@@ -809,16 +771,17 @@ export class PolicyWizardHelper {
      * @returns Block
      */
     private getReassignBlock(role: string, actorIsOwner: boolean = false) {
+        const blockType = BlockType.ReassigningBlock;
         return {
             id: GenerateUUIDv4(),
-            blockType: BlockType.ReassigningBlock,
+            blockType,
             defaultActive: false,
             permissions: [role],
             onErrorAction: 'no-action',
             uiMetaData: {},
             issuer: '',
             actor: actorIsOwner ? 'owner' : '',
-            tag: this.generateBlockTag(),
+            tag: this.generateBlockTag(role, blockType),
         };
     }
 
@@ -834,10 +797,11 @@ export class PolicyWizardHelper {
         approveDocumentBlockTag: string,
         rejectDocumentBlockTag: string
     ) {
-        const buttonBlockTag = this.generateBlockTag();
+        const blockType = BlockType.ButtonBlock;
+        const buttonBlockTag = this.generateBlockTag(role, blockType);
         return {
             id: GenerateUUIDv4(),
-            blockType: BlockType.ButtonBlock,
+            blockType,
             defaultActive: false,
             permissions: [role],
             onErrorAction: 'no-action',
@@ -926,9 +890,10 @@ export class PolicyWizardHelper {
         filters: any[] = [],
         dataType: string = 'vc-documents'
     ) {
+        const blockType = BlockType.DocumentsSourceAddon;
         return {
             id: GenerateUUIDv4(),
-            blockType: BlockType.DocumentsSourceAddon,
+            blockType,
             defaultActive: false,
             permissions: [role],
             onErrorAction: 'no-action',
@@ -936,7 +901,7 @@ export class PolicyWizardHelper {
             dataType,
             schema,
             onlyOwnDocuments,
-            tag: this.generateBlockTag(),
+            tag: this.generateBlockTag(role, blockType),
         };
     }
 
@@ -954,9 +919,10 @@ export class PolicyWizardHelper {
         dependencySchema: boolean = false,
         schemaName?: string
     ) {
+        const blockType = BlockType.Request;
         return {
             id: GenerateUUIDv4(),
-            blockType: BlockType.Request,
+            blockType,
             defaultActive: !dependencySchema,
             permissions: [role],
             onErrorAction: 'no-action',
@@ -969,7 +935,7 @@ export class PolicyWizardHelper {
             presetFields: [],
             idType: 'UUID',
             schema: schemaIri,
-            tag: this.generateBlockTag(),
+            tag: this.generateBlockTag(role, blockType),
         };
     }
 
@@ -980,9 +946,10 @@ export class PolicyWizardHelper {
      * @returns Block
      */
     private getRequestDocumentBlock(role: string, schemaIri: string) {
+        const blockType = BlockType.Request;
         return {
             id: GenerateUUIDv4(),
-            blockType: BlockType.Request,
+            blockType,
             defaultActive: true,
             permissions: [role],
             onErrorAction: 'no-action',
@@ -992,7 +959,7 @@ export class PolicyWizardHelper {
             },
             schema: schemaIri,
             idType: 'UUID',
-            tag: this.generateBlockTag(),
+            tag: this.generateBlockTag(role, blockType),
         };
     }
 
@@ -1004,9 +971,10 @@ export class PolicyWizardHelper {
      * @returns Block
      */
     private getInfoBlock(role: string, title: string, description: string) {
+        const blockType = BlockType.Information;
         return {
             id: GenerateUUIDv4(),
-            blockType: BlockType.Information,
+            blockType,
             defaultActive: true,
             permissions: [role],
             onErrorAction: 'no-action',
@@ -1016,7 +984,7 @@ export class PolicyWizardHelper {
                 title,
             },
             stopPropagation: true,
-            tag: this.generateBlockTag(),
+            tag: this.generateBlockTag(role, blockType),
         };
     }
 
@@ -1026,13 +994,14 @@ export class PolicyWizardHelper {
      * @returns Block
      */
     private getReportBlock(role: string) {
+        const blockType = BlockType.Report;
         return {
             id: GenerateUUIDv4(),
             blockType: BlockType.Report,
             defaultActive: true,
             permissions: [role],
             onErrorAction: 'no-action',
-            tag: this.generateBlockTag(),
+            tag: this.generateBlockTag(role, blockType),
             children: [] as any,
         };
     }
@@ -1043,9 +1012,10 @@ export class PolicyWizardHelper {
      * @returns Block
      */
     private getReportMintItem(role: string) {
+        const blockType = BlockType.ReportItem;
         return {
             id: GenerateUUIDv4(),
-            blockType: BlockType.ReportItem,
+            blockType,
             defaultActive: false,
             permissions: [role],
             onErrorAction: 'no-action',
@@ -1063,7 +1033,7 @@ export class PolicyWizardHelper {
             title: 'Token',
             description: 'Token[s] minted.',
             dynamicFilters: [],
-            tag: this.generateBlockTag(),
+            tag: this.generateBlockTag(role, blockType),
         };
     }
 
@@ -1079,11 +1049,12 @@ export class PolicyWizardHelper {
         title: string,
         description: string
     ): [config: any, relationshipsVariableName: string] {
+        const blockType = BlockType.ReportItem;
         const generatedVariableName = GenerateUUIDv4();
         return [
             {
                 id: GenerateUUIDv4(),
-                blockType: BlockType.ReportItem,
+                blockType,
                 defaultActive: false,
                 permissions: [role],
                 onErrorAction: 'no-action',
@@ -1106,7 +1077,7 @@ export class PolicyWizardHelper {
                 title,
                 description,
                 dynamicFilters: [],
-                tag: this.generateBlockTag(),
+                tag: this.generateBlockTag(role, blockType),
             },
             generatedVariableName,
         ];
@@ -1126,11 +1097,12 @@ export class PolicyWizardHelper {
         description: string,
         relationshipsVariableName: string
     ): [config: any, relationshipsVariableName: string] {
+        const blockType = BlockType.ReportItem;
         const generatedVariableName = GenerateUUIDv4();
         return [
             {
                 id: GenerateUUIDv4(),
-                blockType: BlockType.ReportItem,
+                blockType,
                 defaultActive: false,
                 permissions: [role],
                 onErrorAction: 'no-action',
@@ -1153,7 +1125,7 @@ export class PolicyWizardHelper {
                 title,
                 description,
                 dynamicFilters: [],
-                tag: this.generateBlockTag(),
+                tag: this.generateBlockTag(role, blockType),
             },
             generatedVariableName,
         ];
@@ -1171,9 +1143,10 @@ export class PolicyWizardHelper {
         trustChainTag: string,
         onlyOwnDocuments: boolean
     ) {
+        const blockType = BlockType.DocumentsViewer;
         return {
             id: GenerateUUIDv4(),
-            blockType: BlockType.DocumentsViewer,
+            blockType,
             defaultActive: true,
             permissions: [role],
             onErrorAction: 'no-action',
@@ -1219,7 +1192,7 @@ export class PolicyWizardHelper {
                     },
                 ],
             },
-            tag: this.generateBlockTag(),
+            tag: this.generateBlockTag(role, blockType),
             children: [
                 this.getDocumentsSourceAddon(
                     role,
@@ -1240,9 +1213,10 @@ export class PolicyWizardHelper {
      * @returns Block
      */
     private getMintBlock(role: string, tokenId: string, rule: string) {
+        const blockType = BlockType.Mint;
         return {
             id: GenerateUUIDv4(),
-            blockType: BlockType.Mint,
+            blockType,
             stopPropagation: true,
             defaultActive: false,
             permissions: [role],
@@ -1251,7 +1225,7 @@ export class PolicyWizardHelper {
             tokenId,
             rule,
             accountType: 'default',
-            tag: this.generateBlockTag(),
+            tag: this.generateBlockTag(role, blockType),
         };
     }
 
@@ -1294,14 +1268,15 @@ export class PolicyWizardHelper {
         schemaIri: string,
         isApproveEnable: boolean
     ) {
+        const blockType = BlockType.SetRelationshipsBlock;
         return {
             id: GenerateUUIDv4(),
-            blockType: 'setRelationshipsBlock',
+            blockType,
             defaultActive: false,
             permissions: [role],
             onErrorAction: 'no-action',
             includeAccounts: false,
-            tag: this.generateBlockTag(),
+            tag: this.generateBlockTag(role, blockType),
             children: [
                 isApproveEnable
                     ? this.getDocumentsSourceAddon(role, schemaIri, true, [

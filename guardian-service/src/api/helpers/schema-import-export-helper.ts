@@ -1,30 +1,8 @@
-import {
-    ISchema, SchemaEntity,
-    SchemaStatus, SchemaHelper,
-    ModelHelper,
-    GenerateUUIDv4,
-    Schema,
-    SchemaCategory
-} from '@guardian/interfaces';
-import {
-    MessageAction,
-    MessageServer,
-    MessageType,
-    SchemaMessage, UrlType,
-    replaceValueRecursive,
-    SchemaConverterUtils,
-    Logger,
-    DatabaseServer
-} from '@guardian/common';
+import { GenerateUUIDv4, ISchema, ModelHelper, Schema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
+import { DatabaseServer, Logger, MessageAction, MessageServer, MessageType, replaceValueRecursive, SchemaConverterUtils, SchemaMessage, UrlType } from '@guardian/common';
 import { emptyNotifier, INotifier } from '@helpers/notifier';
 import { importTag } from './../tag.service';
-import {
-    createSchema,
-    fixSchemaDefsOnImport,
-    getDefs,
-    ImportResult,
-    onlyUnique
-} from './schema-helper';
+import { createSchema, fixSchemaDefsOnImport, getDefs, ImportResult, onlyUnique } from './schema-helper';
 
 export const schemaCache = {};
 
@@ -161,7 +139,7 @@ export async function importSchemaByFiles(
         file.messageId = null;
         file.creator = owner;
         file.owner = owner;
-        file.topicId = topicId;
+        file.topicId = topicId || 'draft';
         file.status = SchemaStatus.DRAFT;
     }
 

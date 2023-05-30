@@ -1,4 +1,4 @@
-import { Logger, KeyType, Wallet } from '@guardian/common';
+import { KeyType, Logger, Wallet } from '@guardian/common';
 import { MongoEntityManager } from '@mikro-orm/mongodb';
 
 /**

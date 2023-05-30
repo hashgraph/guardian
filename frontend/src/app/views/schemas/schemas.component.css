@@ -109,6 +109,11 @@ a {
     text-align: center;
 }
 
+.btn-approve[disabled="true"] {
+    background: gray;
+    pointer-events: none;
+}
+
 .btn-unpublished {
     background: #f44336;
     border-radius: 6px;

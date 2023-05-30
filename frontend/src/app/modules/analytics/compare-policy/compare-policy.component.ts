@@ -48,6 +48,7 @@ export class ComparePolicyComponent implements OnInit {
         "aggregateDocumentBlock": "calendar_month",
         "reassigningBlock": "content_copy",
         "revokeBlock": "restart_alt",
+        "revocationBlock": "restart_alt",
         "setRelationshipsBlock": "settings",
         "splitBlock": "content_cut",
         "filtersAddon": "filter_alt",
