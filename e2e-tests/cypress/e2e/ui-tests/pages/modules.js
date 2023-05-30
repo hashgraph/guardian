@@ -29,6 +29,10 @@ const ModulesPageLocators = {
     createFinalBtn: "div.g-dialog-actions-btn",
     tagNameInput: '[ng-reflect-name="name"]',
     tagDescInput: '[ng-reflect-name="description"]',
+    tagsListRequest: "/api/v1/tags/",
+    tagsDeleteRequest: "/api/v1/tags/*",
+    tagDeleteButton: "div.delete-tag",
+    moduleDeleteButton: "div.btn-icon-delete",
 };
 
 export class ModulesPage {
@@ -157,5 +161,36 @@ export class ModulesPage {
     exportIPFS(moduleName) {
         cy.contains(moduleName).parent().find(ModulesPageLocators.exportButton).click();
         cy.contains(ModulesPageLocators.exportIPFSLabel).click();
+    }
+
+
+
+    addTag(tagName) {
+        cy.intercept(ModulesPageLocators.tagsListRequest).as(
+            "waitForTags"
+        );
+        cy.contains(ModulesPageLocators.createTagButton).click();
+        cy.get(ModulesPageLocators.tagNameInput).type(tagName);
+        cy.get(ModulesPageLocators.tagDescInput).type(tagName);
+        cy.get(ModulesPageLocators.createFinalBtn).click();
+        cy.wait("@waitForTags", { timeout: 30000 })
+        cy.contains(tagName).should("exist");
+    }
+
+    deleteTag(tagName) {
+        cy.intercept(ModulesPageLocators.tagsDeleteRequest).as(
+            "waitForTags"
+        );
+        cy.contains(tagName).click();
+        cy.get(ModulesPageLocators.tagDeleteButton).click();
+        cy.wait("@waitForTags", { timeout: 30000 })
+        cy.get(ModulesPageLocators.closeWindowButton).click();
+        cy.contains(tagName).should("not.exist");
+    }
+
+    deleteModule(moduleName) {
+        cy.contains(moduleName).parent().find(ModulesPageLocators.moduleDeleteButton).click();
+        cy.contains("OK").click();
+        cy.contains(moduleName).should("not.exist")
     }
 }

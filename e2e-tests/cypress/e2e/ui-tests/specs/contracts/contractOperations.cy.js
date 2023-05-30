@@ -12,6 +12,7 @@ describe("Workflow Contract Operations", {tags: '@ui'}, () => {
     const name = Math.floor(Math.random() * 999) + "contractName";
     const basicTokenName = Math.floor(Math.random() * 999) + "contractsToken";
     const oppositeTokenName = Math.floor(Math.random() * 999) + "contractsToken";
+    const tagName = Math.floor(Math.random() * 999) + "tag";
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
@@ -46,5 +47,17 @@ describe("Workflow Contract Operations", {tags: '@ui'}, () => {
         home.login("StandardRegistryForSI");
         contracts.openContractsTab();
         contracts.addUserToContract(name)
+    });
+
+    it("add contract tag", () => {
+        home.login("StandardRegistryForSI");
+        contracts.openContractsTab();
+        contracts.addTag(tagName);
+    });
+
+    it("delete contract tag", () => {
+        home.login("StandardRegistryForSI");
+        contracts.openContractsTab();
+        contracts.deleteTag(tagName);
     });
 });

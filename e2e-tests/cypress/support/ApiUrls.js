@@ -55,5 +55,6 @@ const API = {
     PolicisImportMsgPreviewPush: "policies/push/import/message/preview",
     //Artifacts
     Artifacts: "artifact/",
+    Tags: "tags/",
 };
 export default API;

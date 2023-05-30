@@ -30,6 +30,9 @@ const ContractsPageLocators = {
     tagCreationModal: 'tags-create-dialog',
     createTagButton: ' Create Tag ',
     closeWindowButton: 'div.g-dialog-cancel-btn',
+    tagsListRequest: "/api/v1/tags/",
+    tagsDeleteRequest: "/api/v1/tags/*",
+    tagDeleteButton: "div.delete-tag",
 };
 
 export class ContractsPage {
@@ -127,5 +130,28 @@ export class ContractsPage {
             expect(contractElements.item(4).firstChild.firstChild.innerText).to.eq("View");
             expect(contractElements.item(2).getElementsByClassName("tag-name").item(0).innerText).to.eq("Create Tag");
         })
+    }
+
+    addTag(tagName) {
+        cy.intercept(ContractsPageLocators.tagsListRequest).as(
+            "waitForTags"
+        );
+        cy.contains(ContractsPageLocators.createTagButton).click();
+        cy.get(ContractsPageLocators.tagNameInput).type(tagName);
+        cy.get(ContractsPageLocators.tagDescInput).type(tagName);
+        cy.get(ContractsPageLocators.createFinalBtn).click();
+        cy.wait("@waitForTags", { timeout: 30000 })
+        cy.contains(tagName).should("exist");
+    }
+
+    deleteTag(tagName) {
+        cy.intercept(ContractsPageLocators.tagsDeleteRequest).as(
+            "waitForTags"
+        );
+        cy.contains(tagName).click();
+        cy.get(ContractsPageLocators.tagDeleteButton).click();
+        cy.wait("@waitForTags", { timeout: 30000 })
+        cy.get(ContractsPageLocators.closeWindowButton).click();
+        cy.contains(tagName).should("not.exist");
     }
 }
