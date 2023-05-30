@@ -17,7 +17,7 @@ This folder contains a sample file that is referenced in the Demo Usage Guide
 
 3\. You'll now be prompted to configure your Verra account. Enter the details and then press the Generate button to generate a Hedera Operator ID and an Operator Key and enter the name of your Standard Registry. Press Connect when finished. This will now create Hedera Consensus Service Topics, fill the account with test hBar, create a DID document, create a Verifiable Credential, etc.
 
-![](../../../.gitbook/assets/Verra\_2.2.png)
+![](../../../.gitbook/assets/iREC\_4.2.png)
 
 4\. This could be one of the most interesting parts of the reference implementation. Now we will be creating the Policy. We have two ways to "create policies." The first way is to import an existing policy. This is the easiest way to get started. When you import a policy, all schemas and tokens that are required in the policy are automatically populated. To do this, you can use the sample policy that we have already uploaded to IPFS. Click on the import button and enter the one of the following Hedera message IDs:
 
@@ -61,7 +61,7 @@ Once, VVB name is submitted, its waiting for the approval.
 
 9\. Now, we logout as VVB and login as Standard Registry and review the document and approve VVB by clicking on Approve button.
 
-<figure><img src="../../../.gitbook/assets/3_9.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/3_9 (1).png" alt=""><figcaption></figcaption></figure>
 
 10\. Now we login as Project Proponent and repeat same steps as Step 5, Step 6.
 

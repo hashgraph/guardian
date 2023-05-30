@@ -52,7 +52,7 @@ Login as the new owner user
 
 Associate owner with CET (Click on tokens from the nav link and click on the associate button on the table, see picture below)&#x20;
 
-<figure><img src="../../../.gitbook/assets/image (59) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (59) (1).png" alt=""><figcaption></figcaption></figure>
 
 &#x20;Open policy `Tymlez CET` and fill in the owner information when the screen has loaded and select role as `TOKEN_OWNER`
 
@@ -70,7 +70,7 @@ Login as the new Installer and finish the setup steps.
 
 Associate owner with CET (Click on tokens from the nav link and click on the associating button on the table, see picture below).
 
-<figure><img src="../../../.gitbook/assets/image (59) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (59) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Open the policy and fill in the installer information when the screen loads.
 
