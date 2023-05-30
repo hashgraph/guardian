@@ -49,12 +49,10 @@ export function ZipCodec() {
                     const compressedData = response.data;
                     // const _decompressed = await util.promisify(unzip)(compressedData)
                     const _decompressed = compressedData;
-                    console.log(directLink, JSON.parse(_decompressed.toString()));
                     return JSON.parse(_decompressed.toString());
                 }
                 return parsed;
             } catch (error) {
-                console.log(error);
                 throw NatsError.errorForCode(ErrorCode.BadJson, error);
             }
         }
