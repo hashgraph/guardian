@@ -35,10 +35,10 @@ export class ExternalTopicBlockComponent implements OnInit {
     public editable: boolean[] = [];
 
     public topicForm = this.fb.group({
-        topicId: ['0.0.4605481', Validators.required],
+        topicId: ['', Validators.required]
     });
     public schemaForm = this.fb.group({
-        schemaId: ['', Validators.required],
+        schemaId: ['', Validators.required]
     });
 
     constructor(

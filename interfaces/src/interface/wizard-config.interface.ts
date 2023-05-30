@@ -25,10 +25,6 @@ export interface ISchemaRoleConfig {
      */
     isApprover: boolean;
     /**
-     * Approver role for
-     */
-    approverRoleFor?: string;
-    /**
      * Is creator
      */
     isCreator: boolean;
@@ -136,7 +132,7 @@ export interface IWizardConfig {
     /**
      * Policy
      */
-    policy: IPolicyForm
+    policy: IPolicyForm;
     /**
      * Roles
      */

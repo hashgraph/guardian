@@ -9,4 +9,5 @@ export interface IBlockAboutConfig {
     children: ChildrenType;
     control: ControlType;
     defaultEvent: boolean;
+    deprecated?: boolean;
 }

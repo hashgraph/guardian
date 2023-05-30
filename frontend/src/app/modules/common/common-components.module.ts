@@ -20,6 +20,7 @@ import { ConfirmDialog } from './confirm-dialog/confirm-dialog.component';
 import { SelectorDialogComponent } from './selector-dialog/selector-dialog.component';
 import { StepTreeComponent } from './step-tree/step-tree.component';
 import { SeparateStepperComponent } from './separate-stepper/separate-stepper.component';
+import { NgxMaskModule } from 'ngx-mask';
 
 @NgModule({
     declarations: [
@@ -45,7 +46,8 @@ import { SeparateStepperComponent } from './separate-stepper/separate-stepper.co
         MaterialModule,
         NgxMatDatetimePickerModule,
         NgxFileDropModule,
-        NgxColorsModule
+        NgxColorsModule,
+        NgxMaskModule.forRoot()
     ],
     exports: [
         DatetimePicker,
@@ -62,7 +64,8 @@ import { SeparateStepperComponent } from './separate-stepper/separate-stepper.co
         ConfirmDialog,
         NgxColorsModule,
         SelectorDialogComponent,
-        SeparateStepperComponent
+        SeparateStepperComponent,
+        NgxMaskModule
     ]
 })
 export class CommonComponentsModule { }

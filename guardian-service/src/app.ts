@@ -7,34 +7,36 @@ import { tokenAPI } from '@api/token.service';
 import { trustChainAPI } from '@api/trust-chain.service';
 import { PolicyEngineService } from '@policy-engine/policy-engine.service';
 import {
-    MessageBrokerChannel,
     ApplicationState,
-    Logger,
-    ExternalEventChannel,
-    DataBaseHelper,
-    Migration,
     COMMON_CONNECTION_CONFIG,
-    ValidateConfiguration,
-    Topic,
-    VpDocument,
-    VcDocument,
-    Token,
-    Schema,
-    DidDocument,
-    Settings,
-    Policy,
     Contract,
-    RetireRequest,
+    DataBaseHelper,
+    DidDocument,
     entities,
-    IPFS,
-    Users,
     Environment,
+    ExternalEventChannel,
+    IPFS,
+    LargePayloadContainer,
+    Logger,
+    MessageBrokerChannel,
     MessageServer,
+    Migration,
+    OldSecretManager,
+    Policy,
+    RetireRequest,
+    Schema,
+    SecretManager,
+    Settings,
+    Token,
+    Topic,
     TopicMemo,
     TransactionLogger,
     TransactionLogLvl,
-    Workers, LargePayloadContainer,
-    SecretManager, OldSecretManager
+    Users,
+    ValidateConfiguration,
+    VcDocument,
+    VpDocument,
+    Workers
 } from '@guardian/common';
 import { ApplicationStates, WorkerTaskType } from '@guardian/interfaces';
 import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
@@ -42,7 +44,7 @@ import { ipfsAPI } from '@api/ipfs.service';
 import { artifactAPI } from '@api/artifact.service';
 import { sendKeysToVault } from '@helpers/send-keys-to-vault';
 import { contractAPI } from '@api/contract.service';
-import { analyticsAPI } from '@api/analytics.service';
+// import { analyticsAPI } from '@api/analytics.service';
 import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels-container';
 import { PolicyEngine } from '@policy-engine/policy-engine';
 import { modulesAPI } from '@api/module.service';
@@ -55,6 +57,11 @@ import { demoAPI } from '@api/demo.service';
 import { themeAPI } from '@api/theme.service';
 import { wizardAPI } from '@api/wizard.service';
 import { startMetricsServer } from './utils/metrics';
+import { NestFactory } from '@nestjs/core';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import process from 'process';
+import { AppModule } from './app.module';
+import { analyticsAPI } from '@api/analytics.service';
 
 export const obj = {};
 
@@ -77,9 +84,22 @@ Promise.all([
         'v2-11-0',
         'v2-12-0'
     ]),
+    MessageBrokerChannel.connect('GUARDIANS_SERVICE'),
+    NestFactory.createMicroservice<MicroserviceOptions>(AppModule,{
+        transport: Transport.NATS,
+        options: {
+            name: `${process.env.SERVICE_CHANNEL}`,
+            servers: [
+                `nats://${process.env.MQ_ADDRESS}:4222`
+            ]
+        },
+    }),
     MessageBrokerChannel.connect('GUARDIANS_SERVICE')
 ]).then(async values => {
-    const [db, cn] = values;
+    const [db, cn, app] = values;
+
+    app.listen();
+
     DataBaseHelper.orm = db;
     DataBaseHelper.gridFS = new GridFSBucket(
         db.em.getDriver().getConnection().getDb()
@@ -175,7 +195,7 @@ Promise.all([
         }
     }
     MessageServer.setLang(process.env.MESSAGE_LANG);
-    //TransactionLogger.init(channel, process.env.LOG_LEVEL as TransactionLogLvl);
+    // TransactionLogger.init(channel, process.env.LOG_LEVEL as TransactionLogLvl);
     IPFS.setChannel(channel);
     new ExternalEventChannel().setChannel(channel);
 

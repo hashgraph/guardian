@@ -52,7 +52,6 @@
             <mat-icon class="delete-icon delete-policy-role-icon">delete</mat-icon>
         </div>
     </div>
-
     <div class="policy-roles-add-container">
         <mat-form-field class="full-width" appearance="outline">
             <mat-label>* NAME:</mat-label>
@@ -87,7 +86,6 @@
                 <mat-option *ngFor="let role of policyRolesForm.value" [value]="role">{{role}}</mat-option>
             </mat-select>
         </mat-form-field>
-
         <div class="form-field-info">
             <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Produced schema:</mat-label>
@@ -103,7 +101,6 @@
                 <img [src]="'/assets/produced-schema.gif'" class="help-img">
             </mat-menu>
         </div>
-
         <mat-form-field appearance="outline">
             <mat-label>Relationship schema:</mat-label>
             <mat-select formControlName="relationshipsSchemaIri">
@@ -111,7 +108,6 @@
                 <mat-option *ngFor="let schema of selectedSchemas" [value]="schema.iri">{{schema.name}}</mat-option>
             </mat-select>
         </mat-form-field>
-
         <div class="form-field-info">
             <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Initial for roles:</mat-label>
@@ -126,14 +122,12 @@
                 <img [src]="'/assets/initial-step.gif'" class="help-img">
             </mat-menu>
         </div>
-
         <ng-container *ngTemplateOutlet="infoBtn; context: {
                 formControl : control.get('isApproveEnable'),
                 helpSrc: '/assets/approve.gif',
                 title: 'Approve and reject functionality',
                 visible: true}">
         </ng-container>
-
         <mat-slide-toggle class="slide-toggle" [formControl]="control.get('isMintSchema')" labelPosition="after"
             color="primary">
             Minting tokens
@@ -166,24 +160,14 @@
             title: 'Is approver?',
             visible: approveEnable}">
         </ng-container>
-
-        <mat-form-field appearance="outline" class="full-width"
-            *ngIf="control.get('isApprover').value && initialSchemaFor.length">
-            <mat-label>Approver for initial step of roles:</mat-label>
-            <mat-select formControlName="approverRoleFor">
-                <mat-option></mat-option>
-                <mat-option *ngFor="let role of initialSchemaFor" [value]="role">{{role}}</mat-option>
-            </mat-select>
-        </mat-form-field>
-
-        <mat-slide-toggle class="slide-toggle" [formControl]="control.get('isCreator')" labelPosition="after"
-            color="primary">
-            Is creator?
-        </mat-slide-toggle>
-
+        <ng-container *ngTemplateOutlet="infoBtn; context: {
+            formControl : control.get('isCreator'),
+            helpSrc: '/assets/create.gif',
+            title: 'Is creator?',
+            visible: true}">
+        </ng-container>
         <ng-container
             *ngTemplateOutlet="roleGridColumns; context: {gridColumns: control.get('gridColumns')?.value , fields, approveEnable, dependencySchema }"></ng-container>
-
         <ng-template #roleGridColumns let-gridColumns="gridColumns" let-fields="fields">
             <h2 class="grid-columns-title">Grid Columns</h2>
             <div class="grid-columns-container">

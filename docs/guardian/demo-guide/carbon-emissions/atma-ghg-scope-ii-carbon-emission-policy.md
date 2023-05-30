@@ -6,7 +6,7 @@ description: Policy developed by atma
 
 ## Process Overview
 
-<figure><img src="../../../.gitbook/assets/image (34).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (34) (1).png" alt=""><figcaption></figcaption></figure>
 
 ## Process description
 
@@ -29,9 +29,9 @@ Currently, only a single product type is supported per policy instance, however,
 
 Once the Policy is imported, you will need to create another user account to be assigned the role of "Organization. Once you are signed in with the new user account, associate with the corresponding tokens, and go into the Policy screen. You will see a drop-down box to select the role of "Organization."
 
-<figure><img src="../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2) (1) (6).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (11).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (11) (1).png" alt=""><figcaption></figcaption></figure>
 
 Next, fill out the Organization data form.
 
@@ -41,11 +41,11 @@ Once completed, add a new entity by clicking on the "New Entity" button and fill
 
 <figure><img src="../../../.gitbook/assets/image (20).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (16).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (16) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 Once the form has been submitted, you'll need to define a product. Click on the "Define Product" button and fill out the product form.
 
-<figure><img src="../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3) (1) (4).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/image (21).png" alt=""><figcaption></figcaption></figure>
 
@@ -55,20 +55,20 @@ The atma GHG policy issues an NFT token (AtmaProductToken) for every product tha
 
 Once the product has been defined, you'll need to define the life cycle stage. Click on the "life cycle stage" button and fill out the life cycle stage form.
 
-<figure><img src="../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (45) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Once the life cycle for the product has been defined, you now need to record production data. Click on the "production data button" and fill out the production data form.
 
 <figure><img src="../../../.gitbook/assets/image (33).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (5) (1).png" alt=""><figcaption></figcaption></figure>
 
 You can select the "Production Emission Data" tab to view the emissions from the product we just created.
 
 <figure><img src="../../../.gitbook/assets/image (31).png" alt=""><figcaption></figcaption></figure>
 
-Please note that the atma policy has a default "aggregation timer" to mint tokens every month. If you do not customize this option prior to publishing (or running on dry run) you will not see any tokens mint immediately.&#x20;
+Please note that the atma policy has a default "aggregation timer" to mint tokens every month. If you do not customize this option prior to publishing (or running on dry run) you will not see any tokens mint immediately.
 
 <figure><img src="../../../.gitbook/assets/image (35).png" alt=""><figcaption></figcaption></figure>

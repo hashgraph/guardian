@@ -494,6 +494,23 @@ export const BlockAbout = {
     'revokeBlock': {
         'label': 'Revoke Document',
         'title': 'Add \'Revoke\' Block',
+        'post': true,
+        'get': true,
+        'children': 'None',
+        'control': 'Server',
+        'input': [
+            'RunEvent'
+        ],
+        'output': [
+            'RunEvent',
+            'ErrorEvent'
+        ],
+        'defaultEvent': true,
+        'deprecated': true,
+    },
+    'revocationBlock': {
+        'label': 'Revocation',
+        'title': 'Add \'Revocation\' Block',
         'post': false,
         'get': false,
         'children': 'None',
@@ -505,7 +522,23 @@ export const BlockAbout = {
             'RunEvent',
             'ErrorEvent'
         ],
-        'defaultEvent': true
+        'defaultEvent': true,
+        'properties': [
+            {
+                'name': 'updatePrevDoc',
+                'label': 'Update previous document status',
+                'title': 'Update previous document status',
+                'type': 'Checkbox',
+                'default': false
+            },
+            {
+                'name': 'prevDocStatus',
+                'label': 'Status value',
+                'title': 'Status value',
+                'type': 'Input',
+                'default': ''
+            },
+        ],
     },
     'setRelationshipsBlock': {
         'label': 'Set Relationships',

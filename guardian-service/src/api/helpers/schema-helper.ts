@@ -5,22 +5,11 @@ import {
     SchemaHelper,
     Schema,
     TopicType,
-    SchemaCategory,
     IRootConfig
 } from '@guardian/interfaces';
 import path from 'path';
 import { readJSON } from 'fs-extra';
-import {
-    MessageAction,
-    MessageServer,
-    SchemaMessage,
-    TopicConfig,
-    TopicHelper,
-    Schema as SchemaCollection,
-    DatabaseServer,
-    Users,
-    SchemaConverterUtils,
-} from '@guardian/common';
+import { DatabaseServer, MessageAction, MessageServer, Schema as SchemaCollection, SchemaConverterUtils, SchemaMessage, TopicConfig, TopicHelper, Users, } from '@guardian/common';
 import { INotifier } from '@helpers/notifier';
 
 /**
@@ -328,7 +317,6 @@ export async function createSchema(
     if (checkForCircularDependency(newSchema)) {
         throw new Error(`There is circular dependency in schema: ${newSchema.iri}`);
     }
-    newSchema.topicId ||= undefined;
     delete newSchema.id;
     delete newSchema._id;
     const users = new Users();
@@ -345,7 +333,7 @@ export async function createSchema(
         topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(newSchema.topicId), true);
     }
 
-    if (!topic && newSchema.category !== SchemaCategory.POLICY) {
+    if (!topic && newSchema.topicId !== 'draft') {
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
         topic = await topicHelper.create({
             type: TopicType.SchemaTopic,
@@ -362,7 +350,7 @@ export async function createSchema(
 
     SchemaHelper.updateIRI(schemaObject);
     schemaObject.status = SchemaStatus.DRAFT;
-    schemaObject.topicId = topic?.topicId;
+    schemaObject.topicId = topic?.topicId || 'draft';
     schemaObject.iri = schemaObject.iri || `${schemaObject.uuid}`;
     schemaObject.codeVersion = SchemaConverterUtils.VERSION;
     const errorsCount = await DatabaseServer.getSchemasCount({

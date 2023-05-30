@@ -248,7 +248,7 @@ export class SchemaConfigurationComponent implements OnInit {
                 props = {
                     name: ['', Validators.required],
                     description: [''],
-                    topicId: [this.topicId],
+                    topicId: [this.topicId, Validators.required],
                     entity: new FormControl(SchemaEntity.VC, Validators.required),
                     fields: this.fieldsForm,
                     conditions: this.conditionsForm
@@ -271,10 +271,10 @@ export class SchemaConfigurationComponent implements OnInit {
         this.updateSubSchemas(topicId);
     }
 
-    updateSubSchemas(topicId: any) {
+    updateSubSchemas(topicId: string | null) {
         this.schemaTypes = [];
-        if (this.schemasMap) {
-            this.schemas = this.schemasMap[topicId || '']
+        if (this.schemasMap && topicId) {
+            this.schemas = this.schemasMap[topicId]
                 ?.filter(s => {
                     if (this.value?.document?.$id) {
                         const isInDefs = Object.keys(s.document?.$defs || {})
