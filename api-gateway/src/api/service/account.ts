@@ -1,11 +1,7 @@
-import { NextFunction, Request, Response, Router } from 'express';
-import { authorizationHelper, permissionHelper } from '@auth/authorization-helper';
 import { Users } from '@helpers/users';
 import { Logger } from '@guardian/common';
 import { Guardians } from '@helpers/guardians';
 import { SchemaEntity, UserRole } from '@guardian/interfaces';
-import validate, { prepareValidationResponse } from '@middlewares/validation';
-import { loginSchema, registerSchema } from '@middlewares/validation/schemas/accounts';
 import { PolicyEngine } from '@helpers/policy-engine';
 import { PolicyListResponse } from '@entities/policy';
 import { StandardRegistryAccountResponse } from '@entities/account';
