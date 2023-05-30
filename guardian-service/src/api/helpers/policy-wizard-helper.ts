@@ -79,6 +79,12 @@ export class PolicyWizardHelper {
             }
         }
 
+        const schemaRefreshEvents: {
+            [key: string]: {
+                sendBlocks: { tag: string; events?: any[] }[];
+                gridBlockTags: string[];
+            };
+        } = {};
         for (const schema of schemas) {
             for (const roleConfig of schema.rolesConfig) {
                 const roleSchemaTabContainer =
@@ -88,7 +94,8 @@ export class PolicyWizardHelper {
                         schemas,
                         this.getTabContainer(roleConfig.role, schema.name),
                         approveRejectInitialSteps[schema.iri]?.approveBlockTags,
-                        approveRejectInitialSteps[schema.iri]?.rejectBlockTags
+                        approveRejectInitialSteps[schema.iri]?.rejectBlockTags,
+                        schemaRefreshEvents
                     );
 
                 if (roleTabContainers[roleConfig.role]) {
@@ -101,6 +108,13 @@ export class PolicyWizardHelper {
                     );
                 }
             }
+        }
+
+        for (const eventConfigs of Object.entries(schemaRefreshEvents)) {
+            this.addRefreshEvent(
+                eventConfigs[1].sendBlocks,
+                eventConfigs[1].gridBlockTags
+            );
         }
 
         for (const trustChainConfig of trustChain) {
@@ -200,8 +214,18 @@ export class PolicyWizardHelper {
         schemaConfigs: IWizardSchemaConfig[],
         container: any,
         approvedBlockTags: string[] = [],
-        rejectedBlockTags: string[] = []
+        rejectedBlockTags: string[] = [],
+        schemaRefreshEvents: {
+            [key: string]: {
+                sendBlocks: { tag: string; events?: any[] }[];
+                gridBlockTags: string[];
+            };
+        }
     ) {
+        schemaRefreshEvents[schemaConfig.iri] ||= {
+            sendBlocks: [],
+            gridBlockTags: [],
+        };
         const dependencySchema = schemaConfigs.find(
             (schema) => schema.iri === schemaConfig.dependencySchemaIri
         );
@@ -213,7 +237,7 @@ export class PolicyWizardHelper {
             roleConfig.gridColumns
         );
         container.children?.push(gridBlock);
-
+        schemaRefreshEvents[schemaConfig.iri].gridBlockTags.push(gridBlock.tag);
         let createDependencySchemaAddonTag;
         if (schemaConfig.isApproveEnable) {
             const toApproveOrRejectAddon = this.getDocumentsSourceAddon(
@@ -280,17 +304,21 @@ export class PolicyWizardHelper {
                     toApproveOrRejectAddon.tag
                 );
                 gridBlock.uiMetaData.fields.push(approveRejectField);
+                const sendApprovedBlock = this.getDocumentSendBlock(
+                    roleConfig.role,
+                    !schemaConfig.isMintSchema,
+                    false,
+                    'approved_entity',
+                    approvedBlockTags
+                );
+                schemaRefreshEvents[schemaConfig.iri].sendBlocks.push(
+                    sendApprovedBlock
+                );
                 container.children?.push(
                     buttonsBlock,
                     saveDocumentApprove,
                     this.getReassignBlock(roleConfig.role),
-                    this.getDocumentSendBlock(
-                        roleConfig.role,
-                        !schemaConfig.isMintSchema,
-                        false,
-                        'approved_entity',
-                        approvedBlockTags
-                    )
+                    sendApprovedBlock
                 );
                 if (schemaConfig.isMintSchema) {
                     container.children?.push(
@@ -301,16 +329,20 @@ export class PolicyWizardHelper {
                         )
                     );
                 }
+                const sendRejectedBlock = this.getDocumentSendBlock(
+                    roleConfig.role,
+                    true,
+                    false,
+                    'rejected_entity',
+                    rejectedBlockTags
+                );
+                schemaRefreshEvents[schemaConfig.iri].sendBlocks.push(
+                    sendRejectedBlock
+                );
                 container.children?.push(
                     saveDocumentReject,
                     this.getReassignBlock(roleConfig.role),
-                    this.getDocumentSendBlock(
-                        roleConfig.role,
-                        true,
-                        false,
-                        'rejected_entity',
-                        rejectedBlockTags
-                    )
+                    sendRejectedBlock
                 );
             }
         } else {
@@ -339,45 +371,47 @@ export class PolicyWizardHelper {
                     )
                 );
             }
-            if (schemaConfig.isApproveEnable) {
+            const sendCreatedBlock = this.getDocumentSendBlock(
+                roleConfig.role,
+                !schemaConfig.isMintSchema,
+                schemaConfig.isApproveEnable
+            );
+            container.children?.push(sendCreatedBlock);
+            schemaRefreshEvents[schemaConfig.iri].sendBlocks.push(
+                sendCreatedBlock
+            );
+            if (!schemaConfig.isApproveEnable && schemaConfig.isMintSchema) {
                 container.children?.push(
-                    this.getDocumentSendBlock(roleConfig.role, true, true)
-                );
-            } else {
-                container.children?.push(
-                    this.getDocumentSendBlock(
+                    this.getMintBlock(
                         roleConfig.role,
-                        !schemaConfig.isMintSchema,
-                        false
+                        schemaConfig.mintOptions.tokenId,
+                        schemaConfig.mintOptions.rule
                     )
                 );
-
-                if (schemaConfig.isMintSchema) {
-                    container.children?.push(
-                        this.getMintBlock(
-                            roleConfig.role,
-                            schemaConfig.mintOptions.tokenId,
-                            schemaConfig.mintOptions.rule
-                        )
-                    );
-                }
             }
             if (dependencySchema && createDependencySchemaAddonTag) {
+                schemaRefreshEvents[dependencySchema.iri] ||= {
+                    gridBlockTags: [],
+                    sendBlocks: [],
+                };
                 requestDocumentBlock = this.getDialogRequestDocumentBlock(
                     roleConfig.role,
                     dependencySchema.iri,
                     true,
                     dependencySchema.name
                 );
+                const sendCreatedDependencyBlock = this.getDocumentSendBlock(
+                    roleConfig.role,
+                    !dependencySchema.isMintSchema,
+                    dependencySchema.isApproveEnable
+                );
                 container.children?.push(
                     requestDocumentBlock,
-                    this.getDocumentSendBlock(
-                        roleConfig.role,
-                        !dependencySchema.isMintSchema,
-                        dependencySchema.isApproveEnable
-                    )
+                    sendCreatedDependencyBlock
                 );
-
+                schemaRefreshEvents[dependencySchema.iri].sendBlocks.push(
+                    sendCreatedDependencyBlock
+                );
                 if (
                     !dependencySchema.isApproveEnable &&
                     dependencySchema.isMintSchema
@@ -1289,5 +1323,24 @@ export class PolicyWizardHelper {
                     : this.getDocumentsSourceAddon(role, schemaIri, true),
             ],
         };
+    }
+
+    addRefreshEvent(
+        blocks: { tag: string; events?: any[] }[],
+        targetBlockTags: string[]
+    ) {
+        for (const block of blocks) {
+            block.events ||= [];
+            block.events.push(
+                ...targetBlockTags.map((target) => ({
+                    target,
+                    source: block.tag,
+                    input: 'RefreshEvent',
+                    output: 'RefreshEvent',
+                    actor: '',
+                    disabled: false,
+                }))
+            );
+        }
     }
 }
