@@ -71,7 +71,7 @@
         <div class="form-field-group schema-form-field-array-group" [ngSwitch]="this.type">
             <ng-template [ngSwitchCase]="'VC'">
                 <div class="label-field">Credential Subject</div>
-                <div *ngFor="let credentialSubject of this.subjects" class="form-field-array-item"
+                <div *ngFor="let credentialSubject of getItemsPage(subjects, pageEvent)" class="form-field-array-item"
                     [attr.index]="this.subjects.indexOf(credentialSubject)">
                     <div class="form-field-group">
                         <app-schema-form-view [private-fields]="hideFields" [schema]="schemaMap[credentialSubject.type]"
@@ -82,11 +82,14 @@
                         <div class="delimiter"></div>
                     </div>
                 </div>
+                <mat-paginator *ngIf="pageSize < this.subjects.length" [length]="this.subjects.length"
+                    [pageSize]="pageSize" [pageSizeOptions]="[5, 10, 20]" (page)="pageEvent = $event">
+                </mat-paginator>
             </ng-template>
 
             <ng-template [ngSwitchCase]="'VP'">
                 <div class="label-header">Verifiable Credential</div>
-                <div *ngFor="let vcDocument of this.subjects" class="form-field-array-item"
+                <div *ngFor="let vcDocument of getItemsPage(subjects, pageEvent)" class="form-field-array-item"
                     [attr.index]="this.subjects.indexOf(vcDocument)">
                     <div class="form-field-group">
                         <app-document-view [document]="vcDocument" [hide-fields]="this.hideFields" type="VC">
@@ -96,6 +99,9 @@
                         <div class="delimiter"></div>
                     </div>
                 </div>
+                <mat-paginator *ngIf="pageSize < this.subjects.length" [length]="this.subjects.length"
+                    [pageSize]="pageSize" [pageSizeOptions]="[5, 10, 20]" (page)="pageEvent = $event">
+                </mat-paginator>
             </ng-template>
         </div>
     </div>
