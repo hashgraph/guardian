@@ -4,7 +4,7 @@ Guardian Vault is intended to provide supports in securely storing sensitive dat
 
 Although Cloud infrastructures like Google, Azure and AWS offer secure Secret Manager Service to make the configuration very simple without the burden of deployment process, there are on-premise native technologies such as Hashicorp Vault that provide Cloud Agnostic solutions. Currently, Guardian supports **AWS Secrets Manager** and **Hashicorp Vault** as its core secrets manager.
 
-<figure><img src="../../.gitbook/assets/image (3) (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (2) (9).png" alt=""><figcaption></figcaption></figure>
 
 In the current Architecture, each service has permission to read/write/update secrets directly instead of handling operations through a central service like Auth Service. Secrets are considered as resources and categorized into different divisions and according to categories and subcategories Policies are created and consequently based on need-to-know basis principal roles per services with essential policies are generated in order that each service is assigned permissions that it requires to access the secrets. As an example, Auth Service does not need to know anything about the user wallets, but only requires access to auth secret key.
 
