@@ -13,8 +13,8 @@
                 <mat-form-field appearance="outline">
                     <mat-label>Policy</mat-label>
                     <mat-select [(value)]="currentTopicPolicy" (selectionChange)="onFilter()">
-                        <mat-option value="">All policies</mat-option>
-                        <mat-option value="draft">Draft</mat-option>
+                        <mat-option value="">All</mat-option>
+                        <mat-option class="draft-topic-option" value="draft">No binding</mat-option>
                         <mat-option *ngFor="let policy of policies" [value]="policy.topicId">
                             <span>{{policy.name}}</span>
                             <span> ({{policy.topicId}})</span>

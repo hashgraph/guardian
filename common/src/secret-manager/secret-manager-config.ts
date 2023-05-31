@@ -1,4 +1,5 @@
 import { AwsSecretManagerConfigs } from './aws/aws-secret-manager-configs'
+import { AzureSecretManagerConfigs } from './azure/azure-secret-manager-configs'
 import { HcpVaultSecretManagerConfigs } from './hashicorp/hcp-vault-secret-manager-configs'
 import { ISecretManagerConfigs } from './secret-manager-config-base'
 
@@ -49,7 +50,7 @@ export class SecretManagerConfigs {
       case SecretManagerType.GCP:
         return /* GoogleSecretManagerConfigs.getConfigs() */
       case SecretManagerType.AZURE:
-        return /* AzureSecretsManagerConfig.getConfigs() */
+        return AzureSecretManagerConfigs.getConfigs()
       case SecretManagerType.OLD_STYLE:
         return
       default:

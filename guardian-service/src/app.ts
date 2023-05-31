@@ -61,6 +61,7 @@ import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import process from 'process';
 import { AppModule } from './app.module';
+import { analyticsAPI } from '@api/analytics.service';
 
 export const obj = {};
 
@@ -153,7 +154,7 @@ Promise.all([
         await contractAPI(contractRepository, retireRequestRepository);
         await modulesAPI();
         await tagsAPI();
-        // await analyticsAPI();
+        await analyticsAPI();
         await mapAPI();
         await themeAPI();
         await wizardAPI();
