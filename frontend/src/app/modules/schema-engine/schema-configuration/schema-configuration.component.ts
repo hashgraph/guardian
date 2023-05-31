@@ -288,8 +288,10 @@ export class SchemaConfigurationComponent implements OnInit {
             for (let i = 0; i < this.schemas.length; i++) {
                 const value = this.getId('schemas');
                 this.schemaTypes.push({
-                    name: this.schemas[i].name,
-                    value: value
+                    name: this.schemas[i].version
+                        ? `${this.schemas[i].name} (${this.schemas[i].version})`
+                        : this.schemas[i].name,
+                    value: value,
                 });
                 this.schemaTypeMap[value] = {
                     type: this.schemas[i].iri,
