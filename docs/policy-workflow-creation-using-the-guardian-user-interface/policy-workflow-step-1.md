@@ -12,7 +12,7 @@ We then select “Default Active” as true since this policy action must always
 
 Now we have a Policy Action defined, however, without any specific actions
 
-![](../.gitbook/assets/PW\_image\_7.png)
+![](../.gitbook/assets/PW\_image\_6.png)
 
 **Programmatically this workflow step looks like this:**
 

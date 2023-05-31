@@ -11,14 +11,7 @@
 
 For example:
 
-in `guardian-service/.env`:
-
-```
- OPERATOR_ID=""
- OPERATOR_KEY=""
-```
-
-in `guardian-service/.env.docker`:
+in `/configs/.env..guardian.system`
 
 ```
  OPERATOR_ID=""
@@ -56,7 +49,7 @@ Note:
 
 #### 3.2 Setting up IPFS Web3Storage node:
 
-3.2.1 For setup IPFS web3storage node you need to set variables in `worker-service/.env`:
+3.2.1 For setup IPFS web3storage node you need to set variables in `/configs/.env..guardian.system`:
 
 ```
 IPFS_STORAGE_API_KEY="..."
@@ -476,7 +469,7 @@ Once you generated Operator ID and Operator Key, we can either click on Next or 
 
 **Note**: Restore Data can be restored from Hedera if data is available for setting up the Registry.
 
-<figure><img src="../../.gitbook/assets/image (21) (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (2) (6).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 **Limitations on restoring the data:**\
@@ -487,7 +480,7 @@ Once you generated Operator ID and Operator Key, we can either click on Next or 
 
 If Next is clicked, we need to manually setup the Registry or if Restore Data is clicked, it is filled automatically.
 
-![](<../../.gitbook/assets/image (14) (3).png>)
+![](<../../.gitbook/assets/image (23) (1).png>)
 
 **Note:** The above fields in UI are mandatory only for this default Schema.
 
