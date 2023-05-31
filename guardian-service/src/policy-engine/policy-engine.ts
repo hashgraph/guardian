@@ -163,9 +163,12 @@ export class PolicyEngine extends NatsService {
             );
             const root = await users.getHederaAccount(schema.owner);
             const dependencySchemas = await DatabaseServer.getSchemas({
-                iri: { $in: schema.defs },
-                topicId: { $eq: 'draft' },
-                owner
+                $and: [
+                    { iri: { $in: schema.defs } },
+                    { iri: { $nin: schemaIris } },
+                    { topicId: 'draft' },
+                    { owner },
+                ],
             });
             for (const dependencySchema of dependencySchemas) {
                 dependencySchema.topicId = policyTopicId;
