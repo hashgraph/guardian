@@ -332,25 +332,6 @@ export async function schemaAPI(): Promise<void> {
                 item.description = msg.description;
                 item.entity = msg.entity;
                 item.document = msg.document;
-                if (
-                    (item.topicId === 'draft') &&
-                    msg.topicId &&
-                    msg.topicId !== 'draft'
-                ) {
-                    item.topicId = msg.topicId;
-                    const topic = await TopicConfig.fromObject(
-                        await DatabaseServer.getTopicById(msg.topicId),
-                        true
-                    );
-                    const users = new Users();
-                    const root = await users.getHederaAccount(item.owner);
-                    await sendSchemaMessage(
-                        root,
-                        topic,
-                        MessageAction.CreateSchema,
-                        item
-                    );
-                }
                 item.status = SchemaStatus.DRAFT;
                 SchemaHelper.setVersion(item, null, item.version);
                 SchemaHelper.updateIRI(item);
