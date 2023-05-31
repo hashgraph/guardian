@@ -22,7 +22,7 @@ We have included a full schema for the CET policy [here](https://github.com/hash
 \
 
 
-<figure><img src="../../../.gitbook/assets/image (57).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (57) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Scope 3 data
 
@@ -34,7 +34,7 @@ Typically, the way we start the demonstration is by logging in as a Standard Reg
 
 You'll now be prompted to configure your Standard Registry account. Enter the details and then press the Generate button to generate a Hedera Operator ID and an Operator Key and enter the name of your Standard Registry. Press Connect when finished. This will now create Hedera Consensus Service Topics, fill the account with test hBar, create a DID document, create a Verifiable Credential, etc.
 
-<figure><img src="../../../.gitbook/assets/image (55).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (55) (1).png" alt=""><figcaption></figcaption></figure>
 
 Now we will be creating the Policy. We have three ways to "create policies." The first way is to actually create the policy from scratch. The second way is to import an existing policy; either the policy file itself or from IPFS. When you import a policy, all schemas and tokens that are required in the policy are automatically populated. To do this, you can find the policy file and the IPFS timestamp on the open-source Guardian policy page [here](https://github.com/hashgraph/guardian/tree/main/Methodology%20Library/CET%20%26%20CRU/Tymlez/policies). For this demo guide, we will be using the 3rd way to create a policy, which is through the preloaded drop-down list.&#x20;
 
@@ -52,7 +52,7 @@ Login as the new owner user
 
 Associate owner with CET (Click on tokens from the nav link and click on the associate button on the table, see picture below)&#x20;
 
-<figure><img src="../../../.gitbook/assets/image (59) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (59) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 &#x20;Open policy `Tymlez CET` and fill in the owner information when the screen has loaded and select role as `TOKEN_OWNER`
 
@@ -70,13 +70,13 @@ Login as the new Installer and finish the setup steps.
 
 Associate owner with CET (Click on tokens from the nav link and click on the associating button on the table, see picture below).
 
-<figure><img src="../../../.gitbook/assets/image (59) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (59) (1).png" alt=""><figcaption></figcaption></figure>
 
 Open the policy and fill in the installer information when the screen loads.
 
 Select role as `INSTALLER.`
 
-<figure><img src="../../../.gitbook/assets/image (54).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (54) (1).png" alt=""><figcaption></figcaption></figure>
 
 After confirming the roles, enter the owner information in the dialog
 
@@ -86,7 +86,7 @@ Download the device config from the list.
 
 The installer can add a new device (meter, sensor, IoT... from devices tabs)
 
-<figure><img src="../../../.gitbook/assets/image (60).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (60) (1).png" alt=""><figcaption></figcaption></figure>
 
 Click on `New Sensor` and fill in information for the device. Note that the site-ID is the DID of the Site that was created in the StandardRegistry step earlier in the workflow.
 
@@ -168,7 +168,7 @@ Open MRV tabs
 
 Click on `Add MRV` and fill up all the values for your MRV
 
-<figure><img src="../../../.gitbook/assets/image (62).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (62) (1).png" alt=""><figcaption></figcaption></figure>
 
 Submit MRV then the new MRV will display in the list, Aggregation will run in the background and respect the token mint rule same with realtime data ingression.
 
@@ -191,4 +191,4 @@ VP data looks like this:
 
 Trustchain viewer looks like this:
 
-<figure><img src="../../../.gitbook/assets/image (65).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (65) (1).png" alt=""><figcaption></figcaption></figure>

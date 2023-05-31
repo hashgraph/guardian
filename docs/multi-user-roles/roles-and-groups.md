@@ -10,7 +10,7 @@ Roles can be created by adding Role Property and its Value in Policy Configurato
 
 <figure><img src="../.gitbook/assets/image (13) (3).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../.gitbook/assets/Role1.1.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/Role1.1 (1).png" alt=""><figcaption></figcaption></figure>
 
 #### 1.2 Usage
 
