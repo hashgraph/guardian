@@ -10,15 +10,15 @@ There are different ways to start the Dry Run Mode after importing Policy.
 
 When the Policy is imported, its in Draft status by default. This status can be seen in the Status/Actions column. To change the Draft status to Dry Run status, click on the drop down arrow and select **Dry Run** option.
 
-![](../.gitbook/assets/dr1.png)
+![](../../../../.gitbook/assets/dr1.png)
 
-![](../.gitbook/assets/dr2.png)
+![](../../../../.gitbook/assets/dr2.png)
 
 #### 1.2 From Policy Configurator Page:
 
 When imported Policy is opened for editing, there's an option of changing the Policy status from Draft to Dry Run. The Dry Run option can be selected by clicking on drop down arrow and selecting **Dry Run** option as shown below:
 
-![](../.gitbook/assets/dr3.png)
+![](../../../../.gitbook/assets/dr3.png)
 
 #### 1.3 By calling the API
 
@@ -28,7 +28,7 @@ Dry Run mode can be started by calling the following API:
 PUT: /api/v1/policies/{policyId}/dry-run
 ```
 
-To get complete information on the above API, please check : [#dry-run-policy](../dry-run-apis/running-policy-without-making-any-changes.md#dry-run-policy "mention")
+To get complete information on the above API, please check : [#dry-run-policy](dry-run-mode-using-apis/running-policy-without-making-any-changes.md#dry-run-policy "mention")
 
 ### 2. Exit Dry Run and return to Draft status
 
@@ -38,13 +38,13 @@ There are different ways to exit from Dry Run to Draft mode.
 
 Policy, which are in the Dry Run status, can be changed to Draft/Publish state by selecting respective option from the drop down arrow. To change the Policy status to Draft, please select **Stop** option and to change the Policy status to Publish, please select **Publish** option.
 
-![](../.gitbook/assets/dr4.png)
+![](../../../../.gitbook/assets/dr4.png)
 
 #### 2.2 From the Policy Configurator Page
 
 Policy status can be changed from Dry Run to Draft/Publish by selecting from the drop down option in Policy Configurator Page.
 
-![](../.gitbook/assets/dr5.png)
+![](../../../../.gitbook/assets/dr5.png)
 
 #### 2.3 By calling the API
 
@@ -54,7 +54,7 @@ Dry Run mode can be exited to Draft status by calling following API:
 PUT: /api/v1/policies/{policyId}/draft
 ```
 
-To get complete information on the above API, please check : [#return-policy-to-editing](../dry-run-apis/returning-policy-to-editing.md#return-policy-to-editing "mention")
+To get complete information on the above API, please check : [#return-policy-to-editing](dry-run-mode-using-apis/returning-policy-to-editing.md#return-policy-to-editing "mention")
 
 ### 3. Opening of a running Policy in Dry Run mode
 
@@ -64,13 +64,13 @@ There are two ways to open the Policy in Dry Run mode:
 
 To open the Policy in Dry Run mode, click on a **Go** button in the Operation column.
 
-![](../.gitbook/assets/dr6.png)
+![](../../../../.gitbook/assets/dr6.png)
 
 #### 3.2 From the Policy Configurator Page
 
 There's a **Go** option in Policy Configurator page to view the Policy in Dry Run mode.
 
-![](../.gitbook/assets/dr7.png)
+![](../../../../.gitbook/assets/dr7.png)
 
 ### 4. Policy Instance
 
@@ -78,7 +78,7 @@ There's a **Go** option in Policy Configurator page to view the Policy in Dry Ru
 
 This option is used to navigate back to the Policy Configurator page to edit the Policy in Dry Run mode.
 
-![](../.gitbook/assets/dr8.png)
+![](../../../../.gitbook/assets/dr8.png)
 
 #### 4.2 Restart
 
@@ -88,7 +88,7 @@ Restart is used to reset the state of the Policy by removing all the records for
 
 By clicking on **Restart** button, which is located beside View Config.
 
-![](../.gitbook/assets/dr9.png)
+![](../../../../.gitbook/assets/dr9.png)
 
 #### 4.2.2 By calling the API
 
@@ -98,7 +98,7 @@ Restart can also be performed by calling the following API:
 POST: /api/v1/policies/{policyId}/dry-run/restart
 ```
 
-To get complete information on above API, please check :[#restarts-the-execution-of-the-policy](../dry-run-apis/restarting-the-execution-of-policy.md#restarts-the-execution-of-the-policy "mention")
+To get complete information on above API, please check :[#restarts-the-execution-of-the-policy](dry-run-mode-using-apis/restarting-the-execution-of-policy.md#restarts-the-execution-of-the-policy "mention")
 
 #### 4.3 Create User
 
@@ -108,7 +108,7 @@ The system provides a facility for the creation of ‘virtual’ users to enable
 
 Virtual User can be created by clicking on **Create User** button as shown below:
 
-![](../.gitbook/assets/dr10.png)
+![](../../../../.gitbook/assets/dr10.png)
 
 #### 4.3.2 By calling an API
 
@@ -118,7 +118,7 @@ Virtual User for Dry Run can also be created by calling following API:
 POST: /api/v1/policies/{policyId}/dry-run/user
 ```
 
-To get complete information on the above API, please check : [#create-a-new-virtual-account](../dry-run-apis/creating-virtual-account.md#create-a-new-virtual-account "mention")
+To get complete information on the above API, please check : [#create-a-new-virtual-account](dry-run-mode-using-apis/creating-virtual-account.md#create-a-new-virtual-account "mention")
 
 #### 4.4 Users
 
@@ -130,7 +130,7 @@ Virtual user can be selected in multiple ways:
 
 Virtual user can be selected by clicking on respective users in the drop down list as shown below:
 
-![](../.gitbook/assets/dr11.png)
+![](../../../../.gitbook/assets/dr11.png)
 
 #### 4.4.2 By calling the API
 
@@ -140,13 +140,13 @@ Virtual user also can be selected by calling the following API:
 POST: /api/v1/policies/{policyId}/dry-run/login
 ```
 
-To get complete information on above API, please check : [#logs-virtual-user-into-the-system](../dry-run-apis/logging-virtual-user.md#logs-virtual-user-into-the-system "mention")
+To get complete information on above API, please check : [#logs-virtual-user-into-the-system](dry-run-mode-using-apis/logging-virtual-user.md#logs-virtual-user-into-the-system "mention")
 
 #### 4.5 Policy View
 
 This option is used to view complete Policy with its tabs in it.
 
-![](<../.gitbook/assets/Screen Shot 2022-08-15 at 12.21.49 PM.png>)
+![](<../../../../.gitbook/assets/Screen Shot 2022-08-15 at 12.21.49 PM.png>)
 
 #### 4.6 Transactions
 
@@ -158,7 +158,7 @@ These transactions can be viewed in different ways:
 
 All the transactions can be viewed by clicking on **Transactions** tab as shown below:
 
-![](../.gitbook/assets/dr13.png)
+![](../../../../.gitbook/assets/dr13.png)
 
 #### 4.6.2 By calling an API
 
@@ -168,7 +168,7 @@ Transactions can also be viewed by calling the following API:
 GET: /api/v1/policies/{policyId}/dry-run/transactions?pageIndex=0&pageSize=100
 ```
 
-To get more information on the above API, please check:[#returns-lists-of-virtual-transactions](../dry-run-apis/returns-list-of-transactions.md#returns-lists-of-virtual-transactions "mention")
+To get more information on the above API, please check:[#returns-lists-of-virtual-transactions](dry-run-mode-using-apis/returns-list-of-transactions.md#returns-lists-of-virtual-transactions "mention")
 
 #### 4.7 Artifacts
 
@@ -180,7 +180,7 @@ These Artifacts can be viewed in different ways:
 
 All the Artifacts can be viewed by clicking on **Artifacts** option as shown below:
 
-![](../.gitbook/assets/dr14.png)
+![](../../../../.gitbook/assets/dr14.png)
 
 #### 4.7.2 By calling an API
 
@@ -190,7 +190,7 @@ We can also view Artifacts list by calling the following API:
 GET: /api/v1/policies/{policyId}/dry-run/artifacts?pageIndex=0&pageSize=100
 ```
 
-To get complete information on the above API, please check : [#returns-lists-of-virtual-artifacts](../dry-run-apis/returns-list-of-artifacts.md#returns-lists-of-virtual-artifacts "mention")
+To get complete information on the above API, please check : [#returns-lists-of-virtual-artifacts](dry-run-mode-using-apis/returns-list-of-artifacts.md#returns-lists-of-virtual-artifacts "mention")
 
 #### 4.8 IPFS
 
@@ -202,7 +202,7 @@ There are different ways to view the list of files:
 
 To view the list of the files, that will be stored in IPFS, click on **IPFS** option as shown below:
 
-![](../.gitbook/assets/dr15.png)
+![](../../../../.gitbook/assets/dr15.png)
 
 #### 4.8.2 By calling an API
 
@@ -212,4 +212,4 @@ The IPFS files list can also be viewed by calling the following API:
 GET: /api/v1/policies/{policyId}/dry-run/ipfs?pageIndex=0&pageSize=100
 ```
 
-To get complete information on above API, please check : [#returns-lists-of-ipfs-files.](../dry-run-apis/returns-list-of-ipfs-files.md#returns-lists-of-ipfs-files. "mention")
+To get complete information on above API, please check : [#returns-lists-of-ipfs-files.](dry-run-mode-using-apis/returns-list-of-ipfs-files.md#returns-lists-of-ipfs-files. "mention")
