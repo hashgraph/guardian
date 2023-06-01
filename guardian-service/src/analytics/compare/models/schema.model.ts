@@ -45,6 +45,12 @@ export class SchemaModel {
     public readonly version: string;
 
     /**
+     * Schema source version
+     * @public
+     */
+    public readonly sourceVersion: string;
+
+    /**
      * Schema URL
      * @public
      */
@@ -96,6 +102,7 @@ export class SchemaModel {
         this.description = '';
         this.topicId = '';
         this.version = '';
+        this.sourceVersion = '';
         this.iri = '';
         this._weight = '';
         if (schema) {
@@ -105,6 +112,7 @@ export class SchemaModel {
             this.description = schema.description;
             this.topicId = schema.topicId;
             this.version = schema.version;
+            this.sourceVersion = schema.sourceVersion;
             this.iri = schema.iri;
             if (schema.document) {
                 const document = (typeof schema.document === 'string') ?
@@ -128,6 +136,7 @@ export class SchemaModel {
             uuid: this.uuid,
             topicId: this.topicId,
             version: this.version,
+            sourceVersion: this.sourceVersion,
             iri: this.iri,
             policy: this._policyName
         };
