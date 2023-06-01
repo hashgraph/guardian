@@ -28,7 +28,6 @@ export class TokenDialog {
     title: string = "New Token";
     description: string = "";
     token: any = null;
-    valid: boolean = true;
     readonly: boolean = false;
 
     public innerWidth: any;

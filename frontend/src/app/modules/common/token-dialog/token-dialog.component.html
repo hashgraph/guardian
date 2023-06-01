@@ -13,13 +13,17 @@
         </div>
 
         <div *ngIf="innerWidth > 810" class="g-dialog-actions">
-            <div *ngIf="!token" class="g-dialog-actions-btn" (click)="onCreate()"
-                [attr.disabled]="!(valid && started)">
+            <button
+                *ngIf="!token"
+                class="g-dialog-actions-btn"
+                (click)="onCreate()"
+                [disabled]="!(dataForm.valid && started)"
+            >
                 Create
-            </div>
-            <div *ngIf="token" class="g-dialog-actions-btn" (click)="onSave()" [attr.disabled]="!(valid && started)">
+            </button>
+            <button *ngIf="token" class="g-dialog-actions-btn" (click)="onSave()" [disabled]="!(dataForm.valid && started)">
                 Save
-            </div>
+            </button>
         </div>
     </div>
     <div class="g-dialog-body">
@@ -32,7 +36,7 @@
     </div>
     <div *ngIf="innerWidth <= 810" class="page-btns">
         <button mat-raised-button color="primary" id="cancel-btn" (click)="onNoClick()">Cancel</button>
-        <button *ngIf="!token" mat-raised-button color="primary" id="create-btn" (click)="onCreate()" [disabled]="!(valid && started)">Create</button>
-        <button *ngIf="token" mat-raised-button color="primary" id="save-btn" (click)="onSave()" [disabled]="!(valid && started)">Save</button>
+        <button *ngIf="!token" mat-raised-button color="primary" id="create-btn" (click)="onCreate()" [disabled]="!(dataForm.valid && started)">Create</button>
+        <button *ngIf="token" mat-raised-button color="primary" id="save-btn" (click)="onSave()" [disabled]="!(dataForm.valid && started)">Save</button>
     </div>
 </div>
