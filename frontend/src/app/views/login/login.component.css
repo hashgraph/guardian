@@ -110,18 +110,10 @@ form ::ng-deep .mat-raised-button.mat-button-disabled.mat-button-disabled {
     left: 0;
 }
 
-.server-error {
-    bottom: -35px;
-}
-
 .eye-icon {
     margin: 15px 0 10px 15px;
     position: absolute;
     cursor: pointer;
-}
-
-.login-footer {
-    position: relative;
 }
 
 @media (max-width: 810px) {
