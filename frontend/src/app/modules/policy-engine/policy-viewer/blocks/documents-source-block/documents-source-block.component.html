@@ -25,7 +25,7 @@
             </ng-container>
 
             <ng-container *ngFor="let field of fields" [matColumnDef]="field.index">
-                <ng-container *ngIf="field.name; then sortingColumn else notSortingColumn">
+                <ng-container *ngIf="field.type === 'text' && field.name; then sortingColumn else notSortingColumn">
                 </ng-container>
                 <ng-template #sortingColumn>
                     <th mat-header-cell *matHeaderCellDef mat-sort-header>
