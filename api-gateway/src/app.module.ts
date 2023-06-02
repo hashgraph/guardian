@@ -28,6 +28,7 @@ import hpp from 'hpp';
 import { ThemesApi } from '@api/service/themes';
 import { TrustChainsOldApi } from '@api/service/trustchains';
 
+const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
 const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
 
 @Module({
@@ -92,6 +93,9 @@ export class AppModule {
         consumer.apply(authorizationHelper).forRoutes(TrustChainsApi);
         consumer.apply(authorizationHelper).forRoutes(WizardApi);
 
+        consumer.apply(express.json({
+            limit: JSON_REQUEST_LIMIT
+        })).forRoutes('*');
         consumer.apply(express.raw({
             inflate: true,
             limit: RAW_REQUEST_LIMIT,
