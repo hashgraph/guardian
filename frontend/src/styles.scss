@@ -103,7 +103,8 @@ body {
 }
 
 .guardian-tooltip {
-    font-size: 16px;
+    font-size: inherit !important;
+    overflow-wrap: break-word !important;
 }
 
 button.mat-raised-button,

@@ -1,7 +1,8 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
+import { Component, EventEmitter, Inject, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema } from '@guardian/interfaces';
 import { RegisteredService } from '../../services/registered.service';
 import { PolicyBlockModel, SchemaVariables } from '../../structures';
+import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
 
 /**
  * common property
@@ -46,8 +47,11 @@ export class CommonPropertyComponent implements OnInit {
     loaded: boolean = false;
     schemas!: SchemaVariables[];
 
-    constructor(private registeredService: RegisteredService) {
-    }
+    constructor(
+        private registeredService: RegisteredService,
+        @Inject(GET_SCHEMA_NAME)
+        public getSchemaName: any
+    ) {}
 
     ngOnInit(): void {
         this.needUpdate = true;

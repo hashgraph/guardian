@@ -1,5 +1,6 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
+import { Component, EventEmitter, Inject, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { IModuleVariables, PolicyBlockModel, SchemaVariables } from '../../../../structures';
+import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
 
 /**
  * Settings for block of 'sendToGuardian' type.
@@ -17,7 +18,7 @@ export class DocumentValidatorConfigComponent implements OnInit {
 
     private moduleVariables!: IModuleVariables | null;
     private item!: PolicyBlockModel;
-    
+
     propHidden: any = {
         main: false,
         conditionsGroup: false,
@@ -26,9 +27,11 @@ export class DocumentValidatorConfigComponent implements OnInit {
 
     properties!: any;
     schemas!: SchemaVariables[];
-    
-    constructor() {
-    }
+
+    constructor(
+        @Inject(GET_SCHEMA_NAME)
+        public getSchemaName: any
+    ) {}
 
     ngOnInit(): void {
         this.schemas = [];
@@ -59,7 +62,7 @@ export class DocumentValidatorConfigComponent implements OnInit {
             type: 'equal',
         })
     }
-    
+
     onSave() {
         this.item.changed = true;
     }

@@ -1,5 +1,6 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
+import { Component, EventEmitter, Inject, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { IModuleVariables, PolicyBlockModel, SchemaVariables } from '../../../../structures';
+import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
 
 /**
  * Settings for block of 'requestVcDocument' type.
@@ -17,7 +18,7 @@ export class RequestConfigComponent implements OnInit {
 
     private moduleVariables!: IModuleVariables | null;
     private item!: PolicyBlockModel;
-    
+
     propHidden: any = {
         main: false,
         privateFieldsGroup: false,
@@ -30,7 +31,10 @@ export class RequestConfigComponent implements OnInit {
 
     presetMap: any;
 
-    constructor() {
+    constructor(
+        @Inject(GET_SCHEMA_NAME)
+        public getSchemaName: any
+    ) {
         this.presetMap = [];
     }
 
@@ -116,7 +120,7 @@ export class RequestConfigComponent implements OnInit {
             f.value = dMap[f.title];
         }
     }
-    
+
     onSave() {
         this.item.changed = true;
     }

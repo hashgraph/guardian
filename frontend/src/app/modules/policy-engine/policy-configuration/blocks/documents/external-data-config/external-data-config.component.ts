@@ -1,5 +1,6 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
+import { Component, EventEmitter, Inject, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { IModuleVariables, PolicyBlockModel, SchemaVariables } from '../../../../structures';
+import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
 
 /**
  * Settings for block of 'externalDataBlock' type.
@@ -17,7 +18,7 @@ export class ExternalDataConfigComponent implements OnInit {
 
     private moduleVariables!: IModuleVariables | null;
     private item!: PolicyBlockModel;
-    
+
     propHidden: any = {
         main: false,
     };
@@ -25,8 +26,10 @@ export class ExternalDataConfigComponent implements OnInit {
     properties!: any;
     schemas!: SchemaVariables[];
 
-    constructor() {
-    }
+    constructor(
+        @Inject(GET_SCHEMA_NAME)
+        public getSchemaName: any
+    ) {}
 
     ngOnInit(): void {
         this.schemas = [];
@@ -49,7 +52,7 @@ export class ExternalDataConfigComponent implements OnInit {
     onHide(item: any, prop: any) {
         item[prop] = !item[prop];
     }
-    
+
     onSave() {
         this.item.changed = true;
     }
