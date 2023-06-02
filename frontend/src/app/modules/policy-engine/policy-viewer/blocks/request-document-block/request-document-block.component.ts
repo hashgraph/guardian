@@ -274,6 +274,7 @@ export class RequestDocumentBlockComponent implements OnInit {
                 panelClass: 'g-dialog',
                 hasBackdrop: true, // Shadows beyond the dialog
                 closeOnNavigation: true,
+                disableClose: true,
                 autoFocus: false,
                 data: this
             });

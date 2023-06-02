@@ -159,7 +159,8 @@ export class PolicySettingsComponent implements OnInit {
             data: {
                 type,
                 theme: newTheme
-            }
+            },
+            disableClose: true,
         });
         dialogRef.afterClosed().subscribe(async (r) => {
             if (r) {
@@ -186,7 +187,8 @@ export class PolicySettingsComponent implements OnInit {
             data: {
                 title: 'Delete theme',
                 description: 'Are you sure you want to delete this theme?'
-            }
+            },
+            disableClose: true,
         });
         dialogRef.afterClosed().subscribe(result => {
             if (result) {
@@ -209,6 +211,7 @@ export class PolicySettingsComponent implements OnInit {
         const dialogRef = this.dialog.open(ImportFileDialog, {
             width: '500px',
             autoFocus: false,
+            disableClose: true,
             data: {}
         });
         dialogRef.afterClosed().subscribe(async (arrayBuffer) => {
@@ -264,7 +267,8 @@ export class PolicySettingsComponent implements OnInit {
             data: {
                 type: 'edit',
                 theme: theme
-            }
+            },
+            disableClose: true,
         });
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {

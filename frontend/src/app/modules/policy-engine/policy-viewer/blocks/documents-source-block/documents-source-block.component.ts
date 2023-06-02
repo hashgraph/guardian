@@ -217,7 +217,8 @@ export class DocumentsSourceBlockComponent implements OnInit {
                     title: field.dialogContent,
                     type: 'VC',
                     viewDocument: true
-                }
+                },
+                disableClose: true,
             });
             dialogRef.afterClosed().subscribe(async (result) => { });
         }

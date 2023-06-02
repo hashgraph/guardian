@@ -13,11 +13,20 @@ form {
 }
 
 .login-header {
+    width: 100%;
     font-size: 20px;
     color: #838383;
     padding-bottom: 20px;
     display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
     cursor: pointer;
+}
+
+.login-header-title {
+    flex-grow: 1;
+    text-align: center;
+    padding-left: 24px;
 }
 
 .action-name {

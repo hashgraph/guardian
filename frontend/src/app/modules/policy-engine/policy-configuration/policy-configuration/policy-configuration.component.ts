@@ -1016,6 +1016,7 @@ export class PolicyConfigurationComponent implements OnInit {
             const dialogRef = this.dialog.open(SaveBeforeDialogComponent, {
                 width: '500px',
                 autoFocus: false,
+                disableClose: true,
             });
             dialogRef.afterClosed().subscribe((result) => {
                 if (result) {
@@ -1034,6 +1035,7 @@ export class PolicyConfigurationComponent implements OnInit {
             const dialogRef = this.dialog.open(SaveBeforeDialogComponent, {
                 width: '500px',
                 autoFocus: false,
+                disableClose: true,
             });
             dialogRef.afterClosed().subscribe((result) => {
                 if (result) {

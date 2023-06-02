@@ -196,7 +196,8 @@ export class LogsViewComponent implements OnInit {
 
     openDetails(element: any) {
         this.dialog.open(DetailsLogDialog, {
-            data: element
+            data: element,
+            disableClose: true,
         });
     }
 }

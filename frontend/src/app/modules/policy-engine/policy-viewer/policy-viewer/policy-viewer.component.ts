@@ -262,6 +262,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 panelClass: 'g-dialog',
                 hasBackdrop: true, // Shadows beyond the dialog
                 closeOnNavigation: true,
+                disableClose: true,
                 autoFocus: false,
                 data: this
             });
@@ -272,7 +273,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                     document: element,
                     title: 'Document',
                     type: 'JSON',
-                }
+                },
+                disableClose: true,
             });
         }
         dialogRef.afterClosed().subscribe(async (result) => { });

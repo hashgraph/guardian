@@ -175,7 +175,8 @@ export class TagsExplorerDialog {
                 type: 'Document',
                 viewDocument: false,
                 toggle: false
-            }
+            },
+            disableClose: true,
         });
         dialogRef.afterClosed().subscribe(async (result) => {
         });

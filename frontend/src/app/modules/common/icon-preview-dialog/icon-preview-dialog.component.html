@@ -1,4 +1,8 @@
-<h1 mat-dialog-title class="dialog-title">Icon Preview</h1>
+<div mat-dialog-title class="header">
+  <span class="header-title">Icon Preview</span>
+  <mat-icon class="close-icon" (click)="onClose()">close</mat-icon>
+</div>
+
 <div mat-dialog-content class="content-container">
     <ng-container [ngSwitch]="iconType">
         <div *ngSwitchCase="'custom'">

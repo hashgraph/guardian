@@ -304,6 +304,7 @@ export class PoliciesComponent implements OnInit, OnDestroy {
     setVersion(element: any) {
         const dialogRef = this.dialog.open(SetVersionDialog, {
             width: '350px',
+            disableClose: true,
             data: {}
         });
         dialogRef.afterClosed().subscribe((version) => {
@@ -333,6 +334,7 @@ export class PoliciesComponent implements OnInit, OnDestroy {
                     ? 'Are you sure to delete policy with related schemas?'
                     : 'Are you sure to delete policy?'
             },
+            disableClose: true,
             autoFocus: false
         });
         dialogRef.afterClosed().subscribe((result) => {
@@ -360,6 +362,7 @@ export class PoliciesComponent implements OnInit, OnDestroy {
                 data: {
                     policy: exportedPolicy
                 },
+                disableClose: true,
                 autoFocus: false
             }));
     }
@@ -368,6 +371,7 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         const dialogRef = this.dialog.open(ImportPolicyDialog, {
             width: '500px',
             autoFocus: false,
+            disableClose: true,
             data: {
                 timeStamp: messageId
             }
@@ -397,6 +401,7 @@ export class PoliciesComponent implements OnInit, OnDestroy {
                 hasBackdrop: true, // Shadows beyond the dialog
                 closeOnNavigation: true,
                 autoFocus: false,
+                disableClose: true,
                 data: {
                     policy: policy,
                     policies: distinctPolicies
@@ -406,6 +411,7 @@ export class PoliciesComponent implements OnInit, OnDestroy {
             dialogRef = this.dialog.open(PreviewPolicyDialog, {
                 width: '950px',
                 panelClass: 'g-dialog',
+                disableClose: true,
                 data: {
                     policy: policy,
                     policies: distinctPolicies
@@ -551,6 +557,7 @@ export class PoliciesComponent implements OnInit, OnDestroy {
                 hasBackdrop: true, // Shadows beyond the dialog
                 closeOnNavigation: true,
                 autoFocus: false,
+                disableClose: true,
                 data: {
                     policyId: element.id
                 }
