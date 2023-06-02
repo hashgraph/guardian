@@ -7,10 +7,12 @@ const URL = {
   
     //Tabs
     Policies: "/policy-viewer",
-    Tokens: "tokens",
+    Tokens: "/tokens",
     Contracts: "/contracts",
     Modules: "/modules",
     Profile: "/user-profile",
+    UserTokens: "/user-profile?tab=tokens",
+    Schemas: "/schemas",
   };
   
   export default URL;
