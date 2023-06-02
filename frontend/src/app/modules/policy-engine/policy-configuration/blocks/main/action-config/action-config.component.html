@@ -166,9 +166,9 @@
             <td class="propRowCell cellName">Schema</td>
             <td class="propRowCell">
                 <mat-select [(value)]="properties.schema" [disabled]="readonly" (change)="onSave()">
-                    <mat-option [matTooltip]="getSchemaName(schema.name, schema.sourceVersion || schema.version, schema.status)"
+                    <mat-option [matTooltip]="getSchemaName(schema.name, schema.version || schema.sourceVersion, schema.status)"
                         matTooltipPosition="below" matTooltipClass="guardian-tooltip" matTooltipShowDelay="500"
-                        *ngFor="let schema of schemas" [value]="schema">{{getSchemaName(schema.name, schema.sourceVersion ||
+                        *ngFor="let schema of schemas" [value]="schema.value">{{getSchemaName(schema.name, schema.sourceVersion ||
                         schema.version, schema.status)}}</mat-option>
                 </mat-select>
             </td>
