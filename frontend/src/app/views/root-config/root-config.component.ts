@@ -266,7 +266,6 @@ export class RootConfigComponent implements OnInit {
 
     onRestoreDataClick(): void {
         this.currentKeyActionIndex = this.startActions.findIndex(a => a.type === StartActions.RESTORE_DATA);
-        this.currentKeyAction.action();
     }
 
     randomKey() {
@@ -289,6 +288,7 @@ export class RootConfigComponent implements OnInit {
     getAllUserTopics(event: any) {
         event.stopPropagation();
         event.preventDefault();
+        console.log('getAllUserTopics: ', this.hederaForm.invalid);
         if (this.hederaForm.invalid) {
             return;
         }
@@ -302,9 +302,11 @@ export class RootConfigComponent implements OnInit {
         this.profileService.getAllUserTopics(profile).subscribe((result) => {
             const { taskId, expectation } = result;
             this.taskId = taskId;
+            console.log('getAllUserTopics result: ', result);
             this.expectedTaskMessages = expectation;
             this.operationMode = OperationMode.GetAllUserTopics;
         }, (e) => {
+            console.log('getAllUserTopics error: ', e);
             this.loading = false;
             this.taskId = undefined;
         })

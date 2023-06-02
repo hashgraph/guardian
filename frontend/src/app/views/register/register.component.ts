@@ -8,8 +8,8 @@ import { Observable, ReplaySubject } from 'rxjs';
 import { noWhitespaceValidator } from 'src/app/validators/no-spaces.validator';
 
 const checkPasswords: ValidatorFn = (group: AbstractControl): ValidationErrors | null => {
-    let pass = group.get('password');
-    let confirmPass = group.get('confirmPassword');
+    const pass = group.get('password');
+    const confirmPass = group.get('confirmPassword');
     return (
         pass && confirmPass &&
         pass.value === confirmPass.value
@@ -100,34 +100,19 @@ export class RegisterComponent implements OnInit {
         this.confirmPassFieldType = this.confirmPassFieldType === 'password' ? 'text': 'password';
     }
 
-    private get usernameControl(): AbstractControl {
-        return this.loginForm.get('login') as AbstractControl;
+    shouldShowRequiredError(controlName: string): boolean {
+        const errors = this.getControlErrors(controlName);
+        const control = this.loginForm.get(controlName);
+
+        return control?.touched && (errors.required || errors.whitespace);
     }
 
-    private get passwordControl(): AbstractControl {
-        return this.loginForm.get('password') as AbstractControl;
+    private getControlErrors(control: string): ValidationErrors {
+        return this.loginForm.get(control)?.errors || {};
     }
 
-    private get usernameErrors(): ValidationErrors {
-        return this.usernameControl.errors || {};
-    }
-
-    private get passwordErrors(): ValidationErrors {
-        return this.passwordControl.errors || {};
-    }
-
-    get showUsernameRequiredError(): boolean {
-        return (
-            this.usernameControl.touched &&
-            (this.usernameErrors.required || this.usernameErrors.whitespace)
-        );
-    }
-
-    get showPasswordRequiredError(): boolean {
-        return (
-            this.passwordControl.touched &&
-            (this.passwordErrors.required || this.passwordErrors.whitespace)
-        );
+    get showPassMismatchError(): boolean {
+        return !this.shouldShowRequiredError('confirmPassword') && this.formErrors?.passwordsMismatch;
     }
 
     get showPasswordValue(): boolean {

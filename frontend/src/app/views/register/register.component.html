@@ -15,7 +15,7 @@
                 <input matInput formControlName="login" (input)="onInput()">
     
                 <span *ngIf="error" class="field-error">{{error}}</span>
-                <span *ngIf="showUsernameRequiredError" class="field-error">
+                <span *ngIf="shouldShowRequiredError('username')" class="field-error">
                     Value is required
                 </span>
             </mat-form-field>
@@ -25,7 +25,7 @@
                     <mat-label>Password:</mat-label>
                     <input matInput formControlName="password" [type]="passFieldType">
         
-                    <span *ngIf="showPasswordRequiredError" class="field-error">
+                    <span *ngIf="shouldShowRequiredError('password')" class="field-error">
                         Value is required
                     </span>
                 </mat-form-field>
@@ -48,7 +48,10 @@
                     <mat-label>Confirm Password:</mat-label>
                     <input matInput formControlName="confirmPassword" [type]="confirmPassFieldType">
         
-                    <span *ngIf="formErrors && formErrors.passwordsMismatch" class="field-error">
+                    <span *ngIf="shouldShowRequiredError('confirmPassword')" class="field-error">
+                        Value is required
+                    </span>
+                    <span *ngIf="showPassMismatchError" class="field-error">
                         The entered passwords do not match
                     </span>
                 </mat-form-field>

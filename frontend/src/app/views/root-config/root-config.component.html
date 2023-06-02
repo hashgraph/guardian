@@ -119,35 +119,46 @@
             </div>
         </div>
         <div class="list-button action-btns" *ngIf="!generated">
-             <button
-                mat-stroked-button
-                class="action-btns__item action-btns__item--stroked"
-                [disabled]="shouldDisableActionBtns"
-                color="primary"
-                (click)="onRestoreDataClick()"
-            >
-                <mat-icon class="refresh-btn">refresh</mat-icon>
-                <span>Restore data</span>
-            </button>
-
-            <div
-                class="action-btns__separator"
-                [attr.aria-disabled]="shouldDisableActionBtns"
-            >
-                <div class="separator-line"></div>
-                <span>OR</span>
-                <div class="separator-line"></div>
-            </div>
-
-             <button
-                mat-raised-button
-                class="action-btns__item"
-                [disabled]="shouldDisableActionBtns"
-                color="primary"
-                (click)="onNextClick()"
-            >
-                Next
-            </button>
+            <ng-container *ngIf="showForm; else proceedButton">
+                <button
+                    mat-stroked-button
+                    class="action-btns__item action-btns__item--stroked"
+                    [disabled]="shouldDisableActionBtns"
+                    color="primary"
+                    (click)="onRestoreDataClick()"
+                >
+                    <mat-icon class="refresh-btn">refresh</mat-icon>
+                    <span>Restore data</span>
+                </button>
+                
+                <div class="action-btns__separator" [attr.aria-disabled]="shouldDisableActionBtns">
+                    <div class="separator-line"></div>
+                    <span>OR</span>
+                    <div class="separator-line"></div>
+                </div>
+                
+                <button
+                    mat-raised-button
+                    class="action-btns__item"
+                    [disabled]="shouldDisableActionBtns"
+                    color="primary"
+                    (click)="onNextClick()"
+                >
+                    Next
+                </button>
+            </ng-container>
+             
+            <ng-template #proceedButton>
+                <button
+                    mat-raised-button
+                    class="action-btns__item"
+                    [disabled]="shouldDisableActionBtns"
+                    color="primary"
+                    (click)="onNextClick()"
+                >
+                    Proceed
+                </button>
+            </ng-template>
         </div>
         <div *ngIf="showForm && generated" class="white-space"></div>
         <div class="list-button" id="connect-btn" *ngIf="showForm && generated">
