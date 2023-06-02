@@ -13,7 +13,6 @@ const ASSERT = {
     equal: "eq",
     includeText: "include.text",
     haveCss: "have.css",
-  };
-  
-  export default ASSERT;
-  
+};
+
+export default ASSERT;

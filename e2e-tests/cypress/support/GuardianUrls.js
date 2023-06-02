@@ -12,6 +12,7 @@ const URL = {
     Modules: "/modules",
     Profile: "/user-profile",
     UserTokens: "/user-profile?tab=tokens",
+    Schemas: "/schemas",
   };
   
   export default URL;
