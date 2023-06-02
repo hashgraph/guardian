@@ -15,7 +15,7 @@
                 <input matInput formControlName="login" (input)="onInput()">
     
                 <span *ngIf="error" class="field-error">{{error}}</span>
-                <span *ngIf="shouldShowRequiredError('username')" class="field-error">
+                <span *ngIf="shouldShowRequiredError('login')" class="field-error">
                     Value is required
                 </span>
             </mat-form-field>
