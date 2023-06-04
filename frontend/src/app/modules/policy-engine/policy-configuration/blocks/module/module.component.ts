@@ -45,7 +45,11 @@ export class ModuleComponent implements OnInit {
 
     constructor(
         @Inject(GET_SCHEMA_NAME)
-        public getSchemaName: any
+        public getSchemaName: (
+            name?: string,
+            version?: string,
+            status?: string
+        ) => string,
     ) {}
 
     ngOnInit(): void {

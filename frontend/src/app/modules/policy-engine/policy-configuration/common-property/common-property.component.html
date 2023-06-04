@@ -108,7 +108,7 @@
         <td *ngIf="loaded" [ngSwitch]="property.items" class="propRowCell ns">
             <mat-select *ngSwitchCase="'Schemas'" multiple [(value)]="value" [disabled]="readonly" (change)="onSave()">
                 <mat-option [matTooltip]="getSchemaName(schema.name, schema.version || schema.sourceVersion, schema.status)"
-                    matTooltipPosition="below" matTooltipClass="guardian-tooltip" matTooltipShowDelay="500"
+                    matTooltipPosition="below" matTooltipClass="guardian-tooltip small-guardian-tooltip" matTooltipShowDelay="500"
                     *ngFor="let schema of schemas" [value]="schema.value">{{getSchemaName(schema.name, schema.version ||
                     schema.sourceVersion, schema.status)}}</mat-option>
             </mat-select>
@@ -156,7 +156,7 @@
         <td class="propRowCell ns">
             <mat-select [(value)]="value" [disabled]="readonly" (change)="onSave()">
                 <mat-option [matTooltip]="getSchemaName(schema.name, schema.version || schema.sourceVersion, schema.status)"
-                    matTooltipPosition="below" matTooltipClass="guardian-tooltip" matTooltipShowDelay="500"
+                    matTooltipPosition="below" matTooltipClass="guardian-tooltip small-guardian-tooltip" matTooltipShowDelay="500"
                     *ngFor="let schema of schemas" [value]="schema.value">{{getSchemaName(schema.name, schema.version ||
                     schema.sourceVersion, schema.status)}}</mat-option>
             </mat-select>

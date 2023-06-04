@@ -85,7 +85,11 @@ export class PolicyWizardDialogComponent implements OnInit {
         private fb: FormBuilder,
         private cdRef: ChangeDetectorRef,
         @Inject(GET_SCHEMA_NAME)
-        public getSchemaName: any,
+        public getSchemaName: (
+            name?: string,
+            version?: string,
+            status?: string
+        ) => string,
         @Inject(MAT_DIALOG_DATA)
         public data: {
             schemas: Schema[];
