@@ -32,27 +32,29 @@ export class PolicyWizardHelper {
      * @returns Policy config
      */
     public createPolicyConfig(wizardConfig: IWizardConfig): any {
+        this.blockCounter = 0;
+        const { roles, schemas, trustChain } = wizardConfig;
         const root: any = {
             id: GenerateUUIDv4(),
             blockType: BlockType.Container,
             permissions: ['ANY_ROLE'],
+            children: [this.getChooseRoleBlock(roles)],
         };
-        this.blockCounter = 0;
-        const { roles, schemas, trustChain } = wizardConfig;
-        root.children = [this.getChooseRoleBlock(roles)];
-        const children = root.children;
         const roleContainers: any = {};
         const roleTabContainers: any = {};
         roles.forEach((role) => {
             roleContainers[role] = this.getRoleContainer(role);
             roleTabContainers[role] = roleContainers[role];
         });
-
+        const schemaRefreshEvents: {
+            [key: string]: {
+                sendBlocks: { tag: string; events?: any[] }[];
+                gridBlockTags: string[];
+            };
+        } = {};
         const approveRejectInitialSteps: {
             [key: string]: {
-                // tslint:disable-next-line:completed-docs
                 approveBlockTags: string[];
-                // tslint:disable-next-line:completed-docs
                 rejectBlockTags: string[];
             };
         } = {};
@@ -70,7 +72,8 @@ export class PolicyWizardHelper {
                     roleInitialSchemaFor,
                     stepContainer,
                     roleTabContainers[roleInitialSchemaFor],
-                    schema
+                    schema,
+                    schemaRefreshEvents
                 );
                 approveBlockTags.push(
                     roleTabContainers[roleInitialSchemaFor].tag
@@ -79,12 +82,6 @@ export class PolicyWizardHelper {
             }
         }
 
-        const schemaRefreshEvents: {
-            [key: string]: {
-                sendBlocks: { tag: string; events?: any[] }[];
-                gridBlockTags: string[];
-            };
-        } = {};
         for (const schema of schemas) {
             for (const roleConfig of schema.rolesConfig) {
                 const roleSchemaTabContainer =
@@ -97,24 +94,10 @@ export class PolicyWizardHelper {
                         approveRejectInitialSteps[schema.iri]?.rejectBlockTags,
                         schemaRefreshEvents
                     );
-
-                if (roleTabContainers[roleConfig.role]) {
-                    roleTabContainers[roleConfig.role].children.push(
-                        roleSchemaTabContainer
-                    );
-                } else {
-                    roleContainers[roleConfig.role].children.push(
-                        roleSchemaTabContainer
-                    );
-                }
+                roleTabContainers[roleConfig.role].children.push(
+                    roleSchemaTabContainer
+                );
             }
-        }
-
-        for (const eventConfigs of Object.entries(schemaRefreshEvents)) {
-            this.addRefreshEvent(
-                eventConfigs[1].sendBlocks,
-                eventConfigs[1].gridBlockTags
-            );
         }
 
         for (const trustChainConfig of trustChain) {
@@ -124,26 +107,31 @@ export class PolicyWizardHelper {
                     schemas,
                     this.getTabContainer(trustChainConfig.role, 'Trust Chain')
                 );
-            const vpGridTabContainer = this.createVPGrid(
+            const [vpGridTabContainer, vpGrid] = this.createVPGrid(
                 trustChainConfig,
                 trustChainTag,
                 this.getTabContainer(trustChainConfig.role, 'Token History')
             );
-            if (roleTabContainers[trustChainConfig.role]) {
-                roleTabContainers[trustChainConfig.role].children.push(
-                    vpGridTabContainer,
-                    roleTrustChainTabContainer
-                );
-            } else {
-                roleContainers[trustChainConfig.role].children.push(
-                    vpGridTabContainer,
-                    roleTrustChainTabContainer
-                );
+            if (schemaRefreshEvents[trustChainConfig.mintSchemaIri]) {
+                schemaRefreshEvents[
+                    trustChainConfig.mintSchemaIri
+                ].gridBlockTags.push(vpGrid.tag);
             }
+            roleTabContainers[trustChainConfig.role].children.push(
+                vpGridTabContainer,
+                roleTrustChainTabContainer
+            );
+        }
+
+        for (const eventConfigs of Object.entries(schemaRefreshEvents)) {
+            this.addRefreshEvent(
+                eventConfigs[1].sendBlocks,
+                eventConfigs[1].gridBlockTags
+            );
         }
 
         for (const roleContainer of Object.values(roleContainers)) {
-            children.push(roleContainer);
+            root.children.push(roleContainer);
         }
 
         return root;
@@ -160,8 +148,18 @@ export class PolicyWizardHelper {
         role: string,
         container: any,
         roleTabContainer: any,
-        schemaConfig: IWizardSchemaConfig
+        schemaConfig: IWizardSchemaConfig,
+        schemaRefreshEvents: {
+            [key: string]: {
+                sendBlocks: { tag: string; events?: any[] }[];
+                gridBlockTags: string[];
+            };
+        }
     ) {
+        schemaRefreshEvents[schemaConfig.iri] ||= {
+            gridBlockTags: [],
+            sendBlocks: [],
+        };
         const requestDocument = this.getRequestDocumentBlock(
             role,
             schemaConfig.iri
@@ -172,7 +170,7 @@ export class PolicyWizardHelper {
             schemaConfig.isApproveEnable
         );
         container.children?.push(requestDocument, sendBlock);
-
+        schemaRefreshEvents[schemaConfig.iri].sendBlocks.push(sendBlock);
         if (schemaConfig.isApproveEnable) {
             const infoBlock = this.getInfoBlock(
                 role,
@@ -181,9 +179,7 @@ export class PolicyWizardHelper {
             );
             container.children?.push(infoBlock);
         }
-
         container?.children.push(roleTabContainer);
-
         let rejectInfoBlockTag;
         if (schemaConfig.isApproveEnable) {
             const rejectInfoBlock = this.getInfoBlock(
@@ -194,7 +190,6 @@ export class PolicyWizardHelper {
             rejectInfoBlockTag = rejectInfoBlock.tag;
             container.children?.push(rejectInfoBlock);
         }
-
         return [container, rejectInfoBlockTag];
     }
 
@@ -222,10 +217,6 @@ export class PolicyWizardHelper {
             };
         }
     ) {
-        schemaRefreshEvents[schemaConfig.iri] ||= {
-            sendBlocks: [],
-            gridBlockTags: [],
-        };
         const dependencySchema = schemaConfigs.find(
             (schema) => schema.iri === schemaConfig.dependencySchemaIri
         );
@@ -237,6 +228,10 @@ export class PolicyWizardHelper {
             roleConfig.gridColumns
         );
         container.children?.push(gridBlock);
+        schemaRefreshEvents[schemaConfig.iri] ||= {
+            sendBlocks: [],
+            gridBlockTags: [],
+        };
         schemaRefreshEvents[schemaConfig.iri].gridBlockTags.push(gridBlock.tag);
         let createDependencySchemaAddonTag;
         if (schemaConfig.isApproveEnable) {
@@ -282,7 +277,6 @@ export class PolicyWizardHelper {
                 approvedAddon,
                 rejectedAddon
             );
-
             if (roleConfig.isApprover) {
                 const saveDocumentApprove =
                     this.getChangeDocumentStatusSendBlock(
@@ -454,7 +448,7 @@ export class PolicyWizardHelper {
             trustChainConfig.viewOnlyOwnDocuments
         );
         container.children.push(vpGrid);
-        return container;
+        return [container, vpGrid];
     }
 
     /**
@@ -502,7 +496,6 @@ export class PolicyWizardHelper {
         const mintSchema = schemaConfigs.find(
             (item) => item.iri === trustChainConfig.mintSchemaIri
         );
-
         let relationshipsVariableName = '';
         if (mintSchema?.isApproveEnable) {
             let firstReportItemApproved;
@@ -1325,6 +1318,11 @@ export class PolicyWizardHelper {
         };
     }
 
+    /**
+     * Add refresh events
+     * @param blocks Blocks
+     * @param targetBlockTags Target block tags
+     */
     addRefreshEvent(
         blocks: { tag: string; events?: any[] }[],
         targetBlockTags: string[]
