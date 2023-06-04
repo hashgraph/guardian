@@ -46,7 +46,7 @@ export class InterfaceDocumentsSource {
         const documentCacheFields =
             PolicyComponentsUtils.getDocumentCacheFields(ref.policyId);
         ref.options?.uiMetaData?.fields
-            ?.filter((field) => field.name?.startsWith('document.'))
+            ?.filter((field) => field?.name?.startsWith('document.'))
             .forEach((field) => {
                 documentCacheFields.add(field.name.replace('document.', ''));
             });
