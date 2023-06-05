@@ -40,7 +40,7 @@
         "lodash.get": "^4.4.2",
         "lodash.set": "^4.3.2",
         "mathjs": "^10.1.0",
-        "module-alias": "^2.2.2",
+        "module-alias": "^2.2.3",
         "moment": "^2.29.2",
         "mongodb": "5.5.0",
         "prom-client": "^14.1.1",

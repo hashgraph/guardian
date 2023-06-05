@@ -23,7 +23,7 @@
     "hpp": "^0.2.3",
     "http-errors": "^2.0.0",
     "jszip": "^3.7.1",
-    "module-alias": "^2.2.2",
+    "module-alias": "^2.2.3",
     "prom-client": "^14.1.1",
     "prometheus-api-metrics": "3.2.2",
     "reflect-metadata": "^0.1.13",
