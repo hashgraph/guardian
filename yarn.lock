@@ -1281,7 +1281,7 @@ __metadata:
     node-vault: ^0.9.22
     reflect-metadata: ^0.1.13
     tslint: ^6.1.3
-    typescript: ^4.5.5
+    typescript: ^5.1.3
     winston: ^3.8.1
     ws: ^8.2.1
     zlib: ^1.0.5
@@ -1296,7 +1296,7 @@ __metadata:
     mocha-junit-reporter: ^2.0.2
     reflect-metadata: ^0.1.13
     tslint: ^6.1.3
-    typescript: ^4.5.5
+    typescript: ^5.1.3
   languageName: unknown
   linkType: soft
 
@@ -3192,7 +3192,7 @@ __metadata:
     js-yaml: ^4.1.0
     swagger-ui-express: ^4.3.0
     tslint: ^6.1.3
-    typescript: ^4.6.3
+    typescript: ^5.1.3
   languageName: unknown
   linkType: soft
 
@@ -3231,7 +3231,7 @@ __metadata:
     rewire: ^6.0.0
     sinon: ^15.0.4
     tslint: ^6.1.3
-    typescript: ^4.5.5
+    typescript: ^5.1.3
     ws: ^8.2.1
     yup: ^1.1.1
   languageName: unknown
@@ -3445,7 +3445,7 @@ __metadata:
     prometheus-api-metrics: 3.2.2
     reflect-metadata: ^0.1.13
     tslint: ^6.1.3
-    typescript: ^4.5.5
+    typescript: ^5.1.3
   languageName: unknown
   linkType: soft
 
@@ -6218,7 +6218,7 @@ __metadata:
     reflect-metadata: ^0.1.13
     rewire: ^6.0.0
     tslint: ^6.1.3
-    typescript: ^4.5.5
+    typescript: ^5.1.3
   languageName: unknown
   linkType: soft
 
@@ -8285,7 +8285,7 @@ __metadata:
     nodemon: ^2.0.12
     reflect-metadata: ^0.1.13
     tslint: ^6.1.3
-    typescript: ^4.5.5
+    typescript: ^5.1.3
   languageName: unknown
   linkType: soft
 
@@ -8929,7 +8929,7 @@ __metadata:
     nodemon: ^2.0.12
     prom-client: ^14.1.1
     prometheus-api-metrics: 3.2.2
-    typescript: ^4.6.3
+    typescript: ^5.1.3
   languageName: unknown
   linkType: soft
 
@@ -9950,7 +9950,7 @@ __metadata:
     reflect-metadata: ^0.1.13
     rewire: ^6.0.0
     tslint: ^6.1.3
-    typescript: ^4.5.5
+    typescript: ^5.1.3
   languageName: unknown
   linkType: soft
 
@@ -11608,7 +11608,7 @@ __metadata:
     nodemon: ^2.0.12
     prom-client: ^14.1.1
     prometheus-api-metrics: 3.2.2
-    typescript: ^4.6.3
+    typescript: ^5.1.3
   languageName: unknown
   linkType: soft
 
@@ -11682,7 +11682,7 @@ __metadata:
     "@types/express": ^4.17.13
     express: ^4.17.3
     nodemon: ^2.0.12
-    typescript: ^4.6.3
+    typescript: ^5.1.3
   languageName: unknown
   linkType: soft
 
@@ -11912,23 +11912,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:^4.5.5, typescript@npm:^4.6.3":
-  version: 4.7.3
-  resolution: "typescript@npm:4.7.3"
+"typescript@npm:^5.1.3":
+  version: 5.1.3
+  resolution: "typescript@npm:5.1.3"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: fd13a1ce53790a36bb8350e1f5e5e384b5f6cb9b0635114a6d01d49cb99916abdcfbc13c7521cdae2f2d3f6d8bc4a8ae7625edf645a04ee940588cd5e7597b2f
+  checksum: d9d51862d98efa46534f2800a1071a613751b1585dc78884807d0c179bcd93d6e9d4012a508e276742f5f33c480adefc52ffcafaf9e0e00ab641a14cde9a31c7
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@^4.5.5#~builtin<compat/typescript>, typescript@patch:typescript@^4.6.3#~builtin<compat/typescript>":
-  version: 4.7.3
-  resolution: "typescript@patch:typescript@npm%3A4.7.3#~builtin<compat/typescript>::version=4.7.3&hash=7ad353"
+"typescript@patch:typescript@^5.1.3#~builtin<compat/typescript>":
+  version: 5.1.3
+  resolution: "typescript@patch:typescript@npm%3A5.1.3#~builtin<compat/typescript>::version=5.1.3&hash=7ad353"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 137d18a77f52254a284960b16ab53d0619f57b69b5d585804b8413f798a1175ce3e774fb95e6a101868577aafe357d8fcfc9171f0dc9fc0c210e9ae59d107cc0
+  checksum: 32a25b2e128a4616f999d4ee502aabb1525d5647bc8955e6edf05d7fbc53af8aa98252e2f6ba80bcedfc0260c982b885f3c09cfac8bb65d2924f3133ad1e1e62
   languageName: node
   linkType: hard
 
@@ -12504,7 +12504,7 @@ __metadata:
     reflect-metadata: ^0.1.13
     rewire: ^6.0.0
     tslint: ^6.1.3
-    typescript: ^4.5.5
+    typescript: ^5.1.3
     web3.storage: ^4.3.0
   languageName: unknown
   linkType: soft
