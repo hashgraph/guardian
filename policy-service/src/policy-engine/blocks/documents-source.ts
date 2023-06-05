@@ -38,6 +38,20 @@ export class InterfaceDocumentsSource {
     @StateField()
     private state;
 
+    /**
+     * Before init callback
+     */
+    public async beforeInit(): Promise<void> {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
+        const documentCacheFields =
+            PolicyComponentsUtils.getDocumentCacheFields(ref.policyId);
+        ref.options?.uiMetaData?.fields
+            ?.filter((field) => field?.name?.startsWith('document.'))
+            .forEach((field) => {
+                documentCacheFields.add(field.name.replace('document.', ''));
+            });
+    }
+
     constructor() {
         if (!this.state) {
             this.state = {};
