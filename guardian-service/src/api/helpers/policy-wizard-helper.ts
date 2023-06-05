@@ -50,6 +50,8 @@ export class PolicyWizardHelper {
             [key: string]: {
                 sendBlocks: { tag: string; events?: any[] }[];
                 gridBlockTags: string[];
+                mintBlocks: { tag: string; events?: any[] }[];
+                vpGridBlockTags: string[];
             };
         } = {};
         const approveRejectInitialSteps: {
@@ -115,7 +117,7 @@ export class PolicyWizardHelper {
             if (schemaRefreshEvents[trustChainConfig.mintSchemaIri]) {
                 schemaRefreshEvents[
                     trustChainConfig.mintSchemaIri
-                ].gridBlockTags.push(vpGrid.tag);
+                ].vpGridBlockTags.push(vpGrid.tag);
             }
             roleTabContainers[trustChainConfig.role].children.push(
                 vpGridTabContainer,
@@ -127,6 +129,10 @@ export class PolicyWizardHelper {
             this.addRefreshEvent(
                 eventConfigs[1].sendBlocks,
                 eventConfigs[1].gridBlockTags
+            );
+            this.addRefreshEvent(
+                eventConfigs[1].mintBlocks,
+                eventConfigs[1].vpGridBlockTags
             );
         }
 
@@ -153,12 +159,16 @@ export class PolicyWizardHelper {
             [key: string]: {
                 sendBlocks: { tag: string; events?: any[] }[];
                 gridBlockTags: string[];
+                mintBlocks: { tag: string; events?: any[] }[];
+                vpGridBlockTags: string[];
             };
         }
     ) {
         schemaRefreshEvents[schemaConfig.iri] ||= {
             gridBlockTags: [],
             sendBlocks: [],
+            mintBlocks: [],
+            vpGridBlockTags: [],
         };
         const requestDocument = this.getRequestDocumentBlock(
             role,
@@ -178,6 +188,14 @@ export class PolicyWizardHelper {
                 'The page will be automatically refreshed'
             );
             container.children?.push(infoBlock);
+        } else if (schemaConfig.isMintSchema) {
+            const mintBlock = this.getMintBlock(
+                role,
+                schemaConfig.mintOptions.tokenId,
+                schemaConfig.mintOptions.rule
+            );
+            schemaRefreshEvents[schemaConfig.iri].mintBlocks.push(mintBlock);
+            container.children?.push(mintBlock);
         }
         container?.children.push(roleTabContainer);
         let rejectInfoBlockTag;
@@ -214,6 +232,8 @@ export class PolicyWizardHelper {
             [key: string]: {
                 sendBlocks: { tag: string; events?: any[] }[];
                 gridBlockTags: string[];
+                mintBlocks: { tag: string; events?: any[] }[];
+                vpGridBlockTags: string[];
             };
         }
     ) {
@@ -231,6 +251,8 @@ export class PolicyWizardHelper {
         schemaRefreshEvents[schemaConfig.iri] ||= {
             sendBlocks: [],
             gridBlockTags: [],
+            mintBlocks: [],
+            vpGridBlockTags: [],
         };
         schemaRefreshEvents[schemaConfig.iri].gridBlockTags.push(gridBlock.tag);
         let createDependencySchemaAddonTag;
@@ -315,13 +337,15 @@ export class PolicyWizardHelper {
                     sendApprovedBlock
                 );
                 if (schemaConfig.isMintSchema) {
-                    container.children?.push(
-                        this.getMintBlock(
-                            roleConfig.role,
-                            schemaConfig.mintOptions.tokenId,
-                            schemaConfig.mintOptions.rule
-                        )
+                    const mintBlock = this.getMintBlock(
+                        roleConfig.role,
+                        schemaConfig.mintOptions.tokenId,
+                        schemaConfig.mintOptions.rule
                     );
+                    schemaRefreshEvents[schemaConfig.iri].mintBlocks.push(
+                        mintBlock
+                    );
+                    container.children?.push(mintBlock);
                 }
                 const sendRejectedBlock = this.getDocumentSendBlock(
                     roleConfig.role,
@@ -375,18 +399,22 @@ export class PolicyWizardHelper {
                 sendCreatedBlock
             );
             if (!schemaConfig.isApproveEnable && schemaConfig.isMintSchema) {
-                container.children?.push(
-                    this.getMintBlock(
-                        roleConfig.role,
-                        schemaConfig.mintOptions.tokenId,
-                        schemaConfig.mintOptions.rule
-                    )
+                const mintBlock = this.getMintBlock(
+                    roleConfig.role,
+                    schemaConfig.mintOptions.tokenId,
+                    schemaConfig.mintOptions.rule
                 );
+                schemaRefreshEvents[schemaConfig.iri].mintBlocks.push(
+                    mintBlock
+                );
+                container.children?.push(mintBlock);
             }
             if (dependencySchema && createDependencySchemaAddonTag) {
                 schemaRefreshEvents[dependencySchema.iri] ||= {
-                    gridBlockTags: [],
                     sendBlocks: [],
+                    gridBlockTags: [],
+                    mintBlocks: [],
+                    vpGridBlockTags: [],
                 };
                 requestDocumentBlock = this.getDialogRequestDocumentBlock(
                     roleConfig.role,
@@ -410,13 +438,15 @@ export class PolicyWizardHelper {
                     !dependencySchema.isApproveEnable &&
                     dependencySchema.isMintSchema
                 ) {
-                    container.children?.push(
-                        this.getMintBlock(
-                            roleConfig.role,
-                            dependencySchema.mintOptions.tokenId,
-                            dependencySchema.mintOptions.rule
-                        )
+                    const mintBlock = this.getMintBlock(
+                        roleConfig.role,
+                        dependencySchema.mintOptions.tokenId,
+                        dependencySchema.mintOptions.rule
                     );
+                    schemaRefreshEvents[dependencySchema.iri].mintBlocks.push(
+                        mintBlock
+                    );
+                    container.children?.push(mintBlock);
                 }
                 gridBlock.uiMetaData.fields.push(
                     this.getCreateDependencySchemaColumn(
