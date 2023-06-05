@@ -13,7 +13,7 @@
     "@nestjs/common": "^9.4.1",
     "@nestjs/core": "^9.4.1",
     "@nestjs/microservices": "^9.4.1",
-    "dotenv": "^16.0.0",
+    "dotenv": "^16.1.4",
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",
     "module-alias": "^2.2.2",
