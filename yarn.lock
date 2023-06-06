@@ -1253,7 +1253,7 @@ __metadata:
     "@mikro-orm/core": ~5.7.7
     "@mikro-orm/migrations-mongodb": ~5.7.7
     "@mikro-orm/mongodb": ~5.7.7
-    "@nestjs/common": ^9.4.1
+    "@nestjs/common": ^9.4.2
     "@nestjs/core": ^9.4.1
     "@nestjs/microservices": ^9.4.1
     "@transmute/credentials-context": ^0.7.0-unstable.80
@@ -1645,12 +1645,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nestjs/common@npm:^9.4.1":
-  version: 9.4.1
-  resolution: "@nestjs/common@npm:9.4.1"
+"@nestjs/common@npm:^9.4.2":
+  version: 9.4.2
+  resolution: "@nestjs/common@npm:9.4.2"
   dependencies:
     iterare: 1.2.1
-    tslib: 2.5.0
+    tslib: 2.5.2
     uid: 2.0.2
   peerDependencies:
     cache-manager: <=5
@@ -1665,7 +1665,7 @@ __metadata:
       optional: true
     class-validator:
       optional: true
-  checksum: cafe8a29d8ade0876c6397662197dedb6143c1632995ca00d42b34c13cc578b8b36bded7c8f8f266ad08c4263b11fae8fb0cba6ffef0b8cbc4fb81b9054bc90c
+  checksum: d4f0b32da2499af46947c84073b863ff20358be0e093975208958dcebd8d459121ec582bae2f2f9f2caa90897df36173d11b6760053e644a8bca76a26f9d45fd
   languageName: node
   linkType: hard
 
@@ -3202,7 +3202,7 @@ __metadata:
   dependencies:
     "@guardian/common": ^2.13.1
     "@guardian/interfaces": ^2.13.1
-    "@nestjs/common": ^9.4.1
+    "@nestjs/common": ^9.4.2
     "@nestjs/core": ^9.4.1
     "@nestjs/microservices": ^9.4.1
     "@nestjs/platform-express": ^9.4.2
@@ -3425,7 +3425,7 @@ __metadata:
     "@guardian/interfaces": ^2.13.1
     "@mikro-orm/core": ~5.7.7
     "@mikro-orm/mongodb": ~5.7.7
-    "@nestjs/common": ^9.4.1
+    "@nestjs/common": ^9.4.2
     "@nestjs/core": ^9.4.1
     "@nestjs/microservices": ^9.4.1
     "@types/jsonwebtoken": ^8.5.4
@@ -6177,7 +6177,7 @@ __metadata:
     "@meeco/cryppo": ^2.0.2
     "@mikro-orm/core": ~5.7.7
     "@mikro-orm/mongodb": ~5.7.7
-    "@nestjs/common": ^9.4.1
+    "@nestjs/common": ^9.4.2
     "@nestjs/core": ^9.4.1
     "@nestjs/microservices": ^9.4.1
     "@transmute/credentials-context": ^0.7.0-unstable.80
@@ -8269,7 +8269,7 @@ __metadata:
     "@guardian/interfaces": ^2.13.1
     "@mikro-orm/core": ~5.7.7
     "@mikro-orm/mongodb": ~5.7.7
-    "@nestjs/common": ^9.4.1
+    "@nestjs/common": ^9.4.2
     "@nestjs/core": ^9.4.1
     "@nestjs/microservices": ^9.4.1
     "@types/fs-extra": ^9.0.12
