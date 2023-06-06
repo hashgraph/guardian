@@ -3,7 +3,7 @@
     [(ngModel)]="viewDocument" color="primary">View as form</mat-slide-toggle>
 <div mat-dialog-content class="dialog-content">
     <div class="content" [ngSwitch]="viewDocument">
-        <app-document-view [document]="document" [type]="type" *ngSwitchCase="true">
+        <app-document-view [document]="document" [type]="type" [schema]="schema" *ngSwitchCase="true">
         </app-document-view>
         <div class="json" *ngSwitchCase="false">
             {{json}}

@@ -51,7 +51,8 @@ const Module: IBlockSetting = {
         { type: BlockType.DocumentValidatorBlock },
         { type: BlockType.MultiSignBlock },
         { type: BlockType.CreateToken },
-        { type: BlockType.SplitBlock }
+        { type: BlockType.SplitBlock },
+        { type: BlockType.AutoReportBlock }
     ],
     about: {
         post: false,

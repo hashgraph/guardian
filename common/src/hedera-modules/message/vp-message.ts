@@ -159,7 +159,7 @@ export class VPMessage extends Message {
      * To hash
      */
     public override toHash(): string {
-        const map:any = {
+        const map: any = {
             status: this._status,
             type: this.type,
             action: this.action,
@@ -171,5 +171,24 @@ export class VPMessage extends Message {
         const json: string = JSON.stringify(map);
         const hash: Uint8Array = Hashing.sha256.digest(json);
         return Hashing.base58.encode(hash);
+    }
+
+    /**
+     * Relationship message
+     */
+    public getRelationships(): string[] {
+        return this.relationships || [];
+    }
+
+    /**
+     * To JSON
+     */
+    public override toJson(): any {
+        const result = super.toJson();
+        result.issuer = this.issuer;
+        result.hash = this.hash;
+        result.relationships = this.relationships;
+        result.document = this.document;
+        return result;
     }
 }

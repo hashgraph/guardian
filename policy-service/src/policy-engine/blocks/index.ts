@@ -43,3 +43,4 @@ export { ModuleBlock } from './module';
 export { TagsManagerBlock } from './tag-manager';
 export { ExternalTopicBlock } from './external-topic-block';
 export { UploadVcDocumentBlock } from './upload-vc-document-block';
+export { AutoReportBlock } from './auto-report-block';

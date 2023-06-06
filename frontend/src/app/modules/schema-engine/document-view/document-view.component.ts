@@ -15,6 +15,7 @@ export class DocumentViewComponent implements OnInit {
     @Input('document') document: any;
     @Input('hide-fields') hideFields!: { [x: string]: boolean };
     @Input('type') type!: 'VC' | 'VP';
+    @Input('schema') schema!: any;
 
     subjects: any[] = [];
     proofJson!: string;
@@ -32,7 +33,7 @@ export class DocumentViewComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        if(!this.document) {
+        if (!this.document) {
             return;
         }
 
@@ -78,13 +79,18 @@ export class DocumentViewComponent implements OnInit {
     }
 
     loadSchema(type: string) {
+        if (this.schema) {
+            this.schemaMap[type] =  new Schema(this.schema);
+            this.loading--;
+            this.ref.detectChanges();
+        }
         if (type) {
             this.schemaService.getSchemasByType(type).subscribe((result) => {
                 if (result) {
                     try {
-                        this.schemaMap[type] = new Schema(result);   
+                        this.schemaMap[type] = new Schema(result);
                     } catch (error) {
-                        this.schemaMap[type] = null;  
+                        this.schemaMap[type] = null;
                     }
                 } else {
                     this.schemaMap[type] = null;

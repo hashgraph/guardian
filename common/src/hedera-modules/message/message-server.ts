@@ -348,14 +348,14 @@ export class MessageServer {
      * @param topicId
      * @param type
      * @param action
-     * @param timestamp
+     * @param timeStamp
      * @private
      */
     private async getTopicMessages(
         topicId: string | TopicId,
         type?: MessageType,
         action?: MessageAction,
-        timestamp?: string
+        timeStamp?: string
     ): Promise<Message[]> {
         const { operatorId, operatorKey, dryRun } = this.clientOptions;
 
@@ -372,7 +372,7 @@ export class MessageServer {
                 operatorKey,
                 dryRun,
                 topic,
-                timestamp
+                timeStamp
             }
         }, 10);
 
@@ -559,15 +559,40 @@ export class MessageServer {
 
     /**
      * Get messages
+     * @param timeStamp
+     */
+    public static async getMessage<T extends Message>(timeStamp: string): Promise<T> {
+        const workers = new Workers();
+        const message = await workers.addRetryableTask({
+            type: WorkerTaskType.GET_TOPIC_MESSAGE,
+            data: {
+                timeStamp
+            }
+        }, 10);
+        try {
+            const item = MessageServer.fromMessage(message.message);
+            item.setAccount(message.payer_account_id);
+            item.setIndex(message.sequence_number);
+            item.setId(message.id);
+            item.setTopicId(message.topicId);
+            return item as T;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    /**
+     * Get messages
      * @param topicId
      * @param type
      * @param action
+     * @param timeStamp
      */
     public static async getMessages<T extends Message>(
         topicId: string | TopicId,
         type?: MessageType,
         action?: MessageAction,
-        timestamp?: string
+        timeStamp?: string
     ): Promise<T[]> {
         if (!topicId) {
             throw new Error(`Invalid Topic Id`);
@@ -578,7 +603,7 @@ export class MessageServer {
             type: WorkerTaskType.GET_TOPIC_MESSAGES,
             data: {
                 topic,
-                timestamp
+                timeStamp
             }
         }, 10);
         new Logger().info(`getTopicMessages, ${topic}`, ['GUARDIAN_SERVICE']);

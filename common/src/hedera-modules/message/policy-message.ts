@@ -174,9 +174,10 @@ export class PolicyMessage extends Message {
         message.topicDescription = json.topicDescription;
         message.version = json.version;
         message.policyTag = json.policyTag;
-        message.policyTag = json.owner;
+        message.owner = json.owner;
         message.policyTopicId = json.topicId;
         message.instanceTopicId = json.instanceTopicId;
+        message.synchronizationTopicId = json.synchronizationTopicId;
 
         if (json.cid) {
             const urls = [{
@@ -211,5 +212,24 @@ export class PolicyMessage extends Message {
      */
     public getDocumentUrl(type: UrlType): string | null {
         return this.getUrlValue(0, type);
+    }
+
+    /**
+     * To JSON
+     */
+    public override toJson(): any {
+        const result = super.toJson();
+        result.uuid = this.uuid;
+        result.name = this.name;
+        result.description = this.description;
+        result.owner = this.owner;
+        result.topicDescription = this.topicDescription;
+        result.version = this.version;
+        result.policyTag = this.policyTag;
+        result.policyTopicId = this.policyTopicId;
+        result.instanceTopicId = this.instanceTopicId;
+        result.synchronizationTopicId = this.synchronizationTopicId;
+        result.document = this.document;
+        return result;
     }
 }

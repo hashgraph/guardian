@@ -556,34 +556,34 @@ export class DatabaseServer {
      * Save Block State
      * @param {string} policyId - policy ID
      * @param {string} blockId - block UUID
-     * @param {string} user - user DID
+     * @param {string} did - user DID
      * @param {string} name - variable name
      * @param {any} value - variable value
      * @virtual
      */
     public async saveBlockCache(
-        policyId: string, 
-        blockId: string, 
-        user: string, 
+        policyId: string,
+        blockId: string,
+        did: string,
         name: string,
         value: any
     ): Promise<void> {
         let stateEntity = await this.findOne(BlockCache, {
             policyId,
             blockId,
-            user,
+            did,
             name
         });
         if (stateEntity) {
+            stateEntity.value = value;
+        } else {
             stateEntity = this.create(BlockCache, {
                 policyId,
                 blockId,
-                user,
+                did,
                 name,
                 value
             })
-        } else {
-            stateEntity.value = value;
         }
         await this.save(BlockCache, stateEntity);
     }
@@ -592,21 +592,21 @@ export class DatabaseServer {
      * Get Block State
      * @param {string} policyId - policy ID
      * @param {string} blockId - block UUID
-     * @param {string} user - user DID
+     * @param {string} did - user DID
      * @param {string} name - variable name
      * @returns {any} - variable value
      * @virtual
      */
     public async getBlockCache(
-        policyId: string, 
-        blockId: string, 
-        user: string, 
+        policyId: string,
+        blockId: string,
+        did: string,
         name: string
     ): Promise<any> {
         return await this.findOne(BlockCache, {
             policyId,
             blockId,
-            user,
+            did,
             name
         });
     }

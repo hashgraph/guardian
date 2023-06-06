@@ -643,10 +643,10 @@ export class Worker extends NatsService {
                 }
 
                 case WorkerTaskType.GET_TOPIC_MESSAGES: {
-                    const { topic, timestamp } = task.data;
+                    const { topic, timeStamp } = task.data;
                     result.data = await HederaSDKHelper
                         .setNetwork(networkOptions)
-                        .getTopicMessages(topic, timestamp);
+                        .getTopicMessages(topic, timeStamp);
                     break;
                 }
 

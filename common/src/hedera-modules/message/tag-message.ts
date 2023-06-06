@@ -190,4 +190,20 @@ export class TagMessage extends Message {
     public getDocumentUrl(type: UrlType): string | null {
         return this.getUrlValue(0, type);
     }
+
+    /**
+     * To JSON
+     */
+    public override toJson(): any {
+        const result = super.toJson();
+        result.uuid = this.uuid;
+        result.name = this.name;
+        result.description = this.description;
+        result.owner = this.owner;
+        result.target = this.target;
+        result.operation = this.operation;
+        result.entity = this.entity;
+        result.date = this.date;
+        return result;
+    }
 }

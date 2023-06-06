@@ -1,0 +1,333 @@
+<div class="content">
+    <div *ngIf="loading" class="loading">
+        <mat-spinner></mat-spinner>
+    </div>
+
+    <button mat-icon-button (click)="onSearch()">
+        <mat-icon>search</mat-icon>
+    </button>
+
+    <div *ngIf="!status" class="dashboard">
+        <button mat-icon-button (click)="onSearch()">
+            <mat-icon>search</mat-icon>
+        </button>
+    </div>
+
+    <div *ngIf="status === 'STARTED'" class="dashboard">
+        STARTED
+    </div>
+
+    <div *ngIf="status === 'FAILED'" class="dashboard">
+        FAILED
+    </div>
+
+    <div *ngIf="status === 'FINISHED'" class="dashboard">
+        <div class="dashboard-grid">
+            <div class="dashboard-left">
+                <div class="dashboard-top">
+                    Topics
+                </div>
+                <div class="dashboard-rows" [style.gridTemplateRows]="gridTemplateRows">
+                    <ng-container *ngFor="let topic of topics">
+                        <div class="dashboard-header" [style.gridRow]="topic.__order"
+                            [style.paddingLeft.px]="topic.__offset">
+                            <div class="topic-info" (click)="onSelect(topic.message)"
+                                [attr.selected]="topic.message && topic.message === selected">
+                                <div class="topic-header">
+                                    <mat-icon>cloud</mat-icon>
+                                    {{getTopicHeader(topic)}}
+                                </div>
+                                <div *ngIf="!topic.message" class="topic-data">
+                                    <div>{{topic.topicId}}</div>
+                                </div>
+                                <div *ngIf="topic.message" class="topic-data">
+                                    <div>{{topic.topicId}}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div *ngIf="topic.__parent" class="topic-line" [style.top.px]="topic.__start"
+                            [style.height.px]="topic.__height" [style.left.px]="topic.__offset"></div>
+                    </ng-container>
+                </div>
+            </div>
+            <div class="dashboard-center">
+                <div class="dashboard-top">
+                    Messages
+                </div>
+                <div class="dashboard-rows dashboard-scroll" [style.gridTemplateRows]="gridTemplateRows"
+                    id="leader-line-container">
+                    <div class="dashboard-row" *ngFor="let topic of topics" [style.gridRow]="topic.__order"
+                        [style.gridTemplateColumns]="gridTemplateColumns">
+                        <div class="dashboard-col" *ngFor="let message of topic.messages"
+                            [style.gridColumn]="message.__order">
+                            <div class="message-info" [id]="message.id" (click)="onSelect(message)"
+                                [attr.selected]="message === selected">
+
+                                <ng-container *ngIf="message.type === 'Policy'">
+                                    <div class="message-header">
+                                        <mat-icon>policy</mat-icon>
+                                        Create Policy
+                                    </div>
+                                    <div class="message-data">
+                                        <div class="message-name">{{message.name}}</div>
+                                        <div class="message-name">{{message.owner}}</div>
+                                    </div>
+                                </ng-container>
+                                <ng-container *ngIf="message.type === 'Instance-Policy'">
+                                    <div class="message-header">
+                                        <mat-icon>policy</mat-icon>
+                                        Publish Policy
+                                    </div>
+                                    <div class="message-data">
+                                        <div class="message-name">{{message.name}}</div>
+                                        <div class="message-name">Version: {{message.version}}</div>
+                                    </div>
+                                </ng-container>
+                                <ng-container *ngIf="message.type === 'VC-Document'">
+                                    <div class="message-header">
+                                        <mat-icon>description</mat-icon>
+                                        Document
+                                    </div>
+                                    <div class="message-data">
+                                        <div *ngIf="message.__schemaName" class="message-name">{{message.__schemaName}}
+                                        </div>
+                                        <div class="message-owner">{{message.issuer}}</div>
+                                    </div>
+                                </ng-container>
+                                <ng-container *ngIf="message.type === 'VP-Document'">
+                                    <div class="message-header">
+                                        <mat-icon>receipt</mat-icon>
+                                        Document
+                                    </div>
+                                    <div class="message-data">
+                                        <!-- <div>{{message.name}}</div> -->
+                                        <div class="message-owner">{{message.issuer}}</div>
+                                    </div>
+                                </ng-container>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="dashboard-right" *ngIf="selected">
+                <div class="dashboard-right-header">
+                    <span>{{selected.topicId}}</span>
+                    <span>
+                        <mat-icon>chevron_right</mat-icon>
+                    </span>
+                    <span>{{selected.id}}</span>
+                    <div (click)="onSelect(null)" class="dashboard-right-close">
+                        <mat-icon>close</mat-icon>
+                    </div>
+                </div>
+                <div class="dashboard-right-body">
+                    <ng-container *ngIf="selected.type === 'Policy'">
+                        <div class="document-header">
+                            <mat-icon>policy</mat-icon>
+                            Policy
+                        </div>
+
+                        <div class="field">
+                            <div class="field-name">Topic Id:</div>
+                            <div class="field-value">{{selected.topicId}}</div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Message Id:</div>
+                            <div class="field-value">{{selected.id}}</div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Sender:</div>
+                            <div class="field-value">{{selected.payer}}</div>
+                        </div>
+
+                        <div class="field-delimiter"></div>
+
+                        <div class="field">
+                            <div class="field-name">Policy Name:</div>
+                            <div class="field-value">{{selected.name}}</div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Policy Description:</div>
+                            <div class="field-value">{{selected.description}}</div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Policy Creator:</div>
+                            <div class="field-value">{{selected.owner}}</div>
+                        </div>
+                    </ng-container>
+
+                    <ng-container *ngIf="selected.type === 'Instance-Policy'">
+                        <div class="document-header">
+                            <mat-icon>policy</mat-icon>
+                            Instance Policy
+                        </div>
+
+                        <div class="field">
+                            <div class="field-name">Topic Id:</div>
+                            <div class="field-value">{{selected.topicId}}</div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Message Id:</div>
+                            <div class="field-value">{{selected.id}}</div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Sender:</div>
+                            <div class="field-value">{{selected.payer}}</div>
+                        </div>
+
+                        <div class="field-delimiter"></div>
+
+                        <div class="field">
+                            <div class="field-name">Policy Name:</div>
+                            <div class="field-value">{{selected.name}}</div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Policy Description:</div>
+                            <div class="field-value">{{selected.description}}</div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Policy Creator:</div>
+                            <div class="field-value">{{selected.owner}}</div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Policy Version:</div>
+                            <div class="field-value">{{selected.version}}</div>
+                        </div>
+                    </ng-container>
+
+                    <ng-container *ngIf="selected.type === 'VC-Document'">
+                        <div class="document-header">
+                            <mat-icon>description</mat-icon>
+                            Document
+                        </div>
+
+                        <div class="field-delimiter" data-label="Document"></div>
+
+                        <div class="field" *ngIf="selected.__schemaName">
+                            <div class="field-name">Schema:</div>
+                            <div class="field-value">{{selected.__schemaName}}</div>
+                        </div>
+
+                        <div class="field">
+                            <div class="field-name">Issuer:</div>
+                            <div class="field-value">{{selected.issuer}}</div>
+                        </div>
+
+                        <div class="field" *ngIf="selected.document">
+                            <div class="field-name">Document Artifact:</div>
+                            <div class="field-value">
+                                <span class="field-link" (click)="onOpenDocument(selected)">Open</span>
+                            </div>
+                        </div>
+
+                        <div class="field-delimiter" data-label="Hedera Information"></div>
+
+                        <div class="field">
+                            <div class="field-name">Topic Id:</div>
+                            <div class="field-value">{{selected.topicId}}</div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Message Id:</div>
+                            <div class="field-value">{{selected.id}}</div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Sender:</div>
+                            <div class="field-value">{{selected.payer}}</div>
+                        </div>
+
+                        <ng-container *ngIf="selected.__relationships && selected.__relationships.length">
+                            <div class="field-delimiter" data-label="Relationships"></div>
+                            <div class="array-field">
+                                <div *ngFor="let relationship of selected.__relationships" class="array-value">
+                                    <div class="relationship-document" (click)="onSelectById(relationship)">
+                                        <mat-icon>description</mat-icon>
+                                        {{relationship.name}}
+                                    </div>
+                                </div>
+                            </div>
+                        </ng-container>
+                    </ng-container>
+
+                    <ng-container *ngIf="selected.type === 'VP-Document'">
+                        <div class="document-header">
+                            <mat-icon>receipt</mat-icon>
+                            Document
+                        </div>
+
+                        <div class="field">
+                            <div class="field-name">Topic Id:</div>
+                            <div class="field-value">{{selected.topicId}}</div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Message Id:</div>
+                            <div class="field-value">{{selected.id}}</div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Sender:</div>
+                            <div class="field-value">{{selected.payer}}</div>
+                        </div>
+
+                        <div class="field-delimiter"></div>
+
+                        <div class="field">
+                            <div class="field-name">Issuer:</div>
+                            <div class="field-value">{{selected.issuer}}</div>
+                        </div>
+
+                        <ng-container *ngIf="selected.__relationships && selected.__relationships.length">
+                            <div class="field-delimiter"></div>
+                            <div class="array-field">
+                                <div class="array-name">Relationships:</div>
+                                <div *ngFor="let relationship of selected.__relationships" class="array-value">
+                                    <div class="relationship-document" (click)="onSelectById(relationship)">
+                                        <mat-icon>description</mat-icon>
+                                        {{relationship.name}}
+                                    </div>
+                                </div>
+                            </div>
+                        </ng-container>
+                    </ng-container>
+
+                    <ng-container *ngIf="selected.type === 'Topic'">
+                        <div class="document-header">
+                            <mat-icon>cloud</mat-icon>
+                            Topic
+                        </div>
+
+                        <div class="field">
+                            <div class="field-name">Topic Id:</div>
+                            <div class="field-value">{{selected.topicId}}</div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Message Id:</div>
+                            <div class="field-value">{{selected.id}}</div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Sender:</div>
+                            <div class="field-value">{{selected.payer}}</div>
+                        </div>
+
+                        <div class="field-delimiter"></div>
+
+                        <div class="field">
+                            <div class="field-name">Topic Name:</div>
+                            <div class="field-value">{{selected.name}}</div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Topic Description:</div>
+                            <div class="field-value">{{selected.description}}</div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Topic Type:</div>
+                            <div class="field-value">{{selected.messageType}}</div>
+                        </div>
+                        <div class="field" *ngIf="selected.owner">
+                            <div class="field-name">Topic Creator:</div>
+                            <div class="field-value">{{selected.owner}}</div>
+                        </div>
+                    </ng-container>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

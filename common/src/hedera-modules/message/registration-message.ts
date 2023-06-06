@@ -128,4 +128,15 @@ export class RegistrationMessage extends Message {
     public getUrls(): IURL[] {
         return [];
     }
+
+    /**
+     * To JSON
+     */
+    public override toJson(): any {
+        const result = super.toJson();
+        result.did = this.did;
+        result.registrantTopicId = this.registrantTopicId;
+        result.attributes = this.attributes;
+        return result;
+    }
 }

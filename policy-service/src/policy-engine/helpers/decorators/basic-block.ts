@@ -702,7 +702,8 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              */
             protected async getCache<T>(name: string, user?: IPolicyUser | string): Promise<T> {
                 const did = user ? (typeof user === 'object' ? user.did : user) : 'all';
-                return await this.databaseServer.getBlockCache(this.policyId, this.uuid, did, name);
+                const record = await this.databaseServer.getBlockCache(this.policyId, this.uuid, did, name);
+                return record ? record.value : null;
             }
 
             /**

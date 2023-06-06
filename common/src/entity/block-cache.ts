@@ -5,7 +5,7 @@ import { BaseEntity } from '../models';
  * Block state
  */
 @Entity()
-@Index({ name: 'variable_idx', properties: ['policyId', 'blockId', 'name', 'user'] })
+@Index({ name: 'variable_idx', properties: ['policyId', 'blockId', 'name', 'did'] })
 export class BlockCache extends BaseEntity {
     /**
      * Policy id
@@ -32,7 +32,7 @@ export class BlockCache extends BaseEntity {
      * User DID
      */
     @Property({ nullable: true })
-    user?: string;
+    did?: string;
 
     /**
      * Variable name

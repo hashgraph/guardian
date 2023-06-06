@@ -161,4 +161,22 @@ export class DIDMessage extends Message {
         const hash: Uint8Array = Hashing.sha256.digest(json);
         return Hashing.base58.encode(hash);
     }
+
+    /**
+     * Relationship message
+     */
+    public getRelationships(): string[] {
+        return this.relationships || [];
+    }
+
+    /**
+     * To JSON
+     */
+    public override toJson(): any {
+        const result = super.toJson();
+        result.did = this.did;
+        result.relationships = this.relationships;
+        result.document = this.document;
+        return result;
+    }
 }

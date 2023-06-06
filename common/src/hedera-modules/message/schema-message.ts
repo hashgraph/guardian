@@ -205,4 +205,25 @@ export class SchemaMessage extends Message {
     public override validate(): boolean {
         return true;
     }
+
+    /**
+     * To JSON
+     */
+    public override toJson(): any {
+        const result = super.toJson();
+        result.name = this.name;
+        result.description = this.description;
+        result.entity = this.entity;
+        result.owner = this.owner;
+        result.uuid = this.uuid;
+        result.version = this.version;
+        result.codeVersion = this.codeVersion;
+        result.documentUrl = this.getDocumentUrl(UrlType.url);
+        result.contextUrl = this.getContextUrl(UrlType.url);
+        if (this.documents) {
+            result.document = this.documents[0];
+            result.context = this.documents[1];
+        }
+        return result;
+    }
 }
