@@ -92,4 +92,4 @@ By accessing the "Token History" tab, you can view the number of tokens that hav
 
 The Trust Chain view presents critical elements that are publicly available for discovery, such as token information, policy information, and all the necessary details concerning the Verifiable Credentials comprising the Verifiable Presentation. On the bottom of the screen, you will find "Cards" showcasing the Verifiable Credentials in chronological order.
 
-<figure><img src="../../../.gitbook/assets/image (74).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (74) (1).png" alt=""><figcaption></figcaption></figure>

@@ -1,5 +1,8 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, } from '@angular/core';
+import { PageEvent } from '@angular/material/paginator';
 import { Schema } from '@guardian/interfaces';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { SchemaService } from 'src/app/services/schema.service';
 
 /**
@@ -24,6 +27,9 @@ export class DocumentViewComponent implements OnInit {
     loading: number = 0;
     isIssuerObject: boolean = false;
     issuerOptions: any[] = [];
+    pageEvent?: PageEvent;
+    pageSize: number = 5;
+    destroy$: Subject<boolean> = new Subject<boolean>();
 
     constructor(
         private schemaService: SchemaService,
@@ -85,27 +91,51 @@ export class DocumentViewComponent implements OnInit {
             this.ref.detectChanges();
         }
         if (type) {
-            this.schemaService.getSchemasByType(type).subscribe((result) => {
-                if (result) {
-                    try {
-                        this.schemaMap[type] = new Schema(result);
-                    } catch (error) {
+            this.schemaService.getSchemasByType(type)
+                .pipe(takeUntil(this.destroy$))
+                .subscribe((result) => {
+                    if (result) {
+                        try {
+                            this.schemaMap[type] = new Schema(result);
+                        } catch (error) {
+                            this.schemaMap[type] = null;
+                        }
+                    } else {
                         this.schemaMap[type] = null;
                     }
-                } else {
+                    this.loading--;
+                    this.ref.detectChanges();
+                }, (error) => {
                     this.schemaMap[type] = null;
-                }
-                this.loading--;
-                this.ref.detectChanges();
-            }, (error) => {
-                this.schemaMap[type] = null;
-                this.loading--;
-                this.ref.detectChanges();
-            });
+                    this.loading--;
+                    this.ref.detectChanges();
+                });
         } else {
             this.schemaMap[type] = null;
             this.loading--;
             this.ref.detectChanges();
         }
+    }
+
+    getItemsPage(items: any[], pageEvent?: PageEvent) {
+        const result = [];
+        if (!pageEvent) {
+            for (let i = 0; i < this.pageSize && i < items.length; i++) {
+                result.push(items[i]);
+            }
+            return result;
+        }
+
+        const startIndex = pageEvent.pageIndex * pageEvent.pageSize;
+        const endIndex = startIndex + pageEvent.pageSize;
+        for (let i = startIndex; i < endIndex && i < items.length; i++) {
+            result.push(items[i]);
+        }
+        return result;
+    }
+
+    ngOnDestroy() {
+        this.destroy$.next(true);
+        this.destroy$.unsubscribe();
     }
 }

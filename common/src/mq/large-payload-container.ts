@@ -35,7 +35,7 @@ export class LargePayloadContainer {
      * Objects map
      * @private
      */
-    private readonly objectsMap: Map<string, Buffer>;
+    private readonly objectsMap: Map<string, Buffer | Uint8Array>;
 
     /**
      * Protocol
@@ -93,7 +93,7 @@ export class LargePayloadContainer {
      * Add object to share
      * @param o
      */
-    public addObject(o: Buffer): URL {
+    public addObject(o: Buffer | Uint8Array): URL {
         const objectID = GenerateUUIDv4();
         this.objectsMap.set(objectID, o);
         return new URL(`/${objectID}`, `${this.PROTOCOL}://${this.DOMAIN}:${this.PORT}`);

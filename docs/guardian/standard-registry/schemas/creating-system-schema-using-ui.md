@@ -79,7 +79,7 @@ There are different types of Schema Types:
 * Verifiable Credential
 * Encrypted Verifiable Credential
 
-To know more details regarding encrypted Verifiable Credential please look at [Selective Disclosure Demo](../selective-disclosure-demo.md)
+To know more details regarding encrypted Verifiable Credential please look at [Selective Disclosure Demo](../selective-disclosure/selective-disclosure-demo.md)
 
 There are different types of Field Types:
 

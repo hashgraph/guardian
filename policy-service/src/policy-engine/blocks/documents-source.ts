@@ -38,6 +38,20 @@ export class InterfaceDocumentsSource {
     @StateField()
     private state;
 
+    /**
+     * Before init callback
+     */
+    public async beforeInit(): Promise<void> {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
+        const documentCacheFields =
+            PolicyComponentsUtils.getDocumentCacheFields(ref.policyId);
+        ref.options?.uiMetaData?.fields
+            ?.filter((field) => field?.name?.startsWith('document.'))
+            .forEach((field) => {
+                documentCacheFields.add(field.name.replace('document.', ''));
+            });
+    }
+
     constructor() {
         if (!this.state) {
             this.state = {};
@@ -98,22 +112,14 @@ export class InterfaceDocumentsSource {
             return addon.blockType === 'historyAddon';
         }) as IPolicyAddonBlock;
 
-        // Property viewHistory was deprecated in documentsSourceAddon blocks 11.02.23
-        const deprecatedViewHistory = !!commonAddonBlocks
-            .filter((addon) => addon.blockType === 'documentsSourceAddon')
-            .find((addon) => {
-                return addon.options.viewHistory;
-            });
-
         const enableCommonSorting = ref.options.uiMetaData.enableSorting;
         const sortState = this.state[user.id] || {};
         let data: any = enableCommonSorting
-            ? await this.getDataByAggregationFilters(ref, user, sortState, paginationData, deprecatedViewHistory, history)
+            ? await this.getDataByAggregationFilters(ref, user, sortState, paginationData, history)
             : await ref.getGlobalSources(user, paginationData);
 
         if (
-            !enableCommonSorting &&
-            (history || deprecatedViewHistory)
+            !enableCommonSorting && history
         ) {
             for (const document of data) {
                 document.history = (
@@ -156,7 +162,7 @@ export class InterfaceDocumentsSource {
                 commonAddons,
             },
             Object.assign(ref.options.uiMetaData, {
-                viewHistory: !!history || deprecatedViewHistory,
+                viewHistory: !!history,
             }),
             sortState
         );
@@ -170,7 +176,7 @@ export class InterfaceDocumentsSource {
      * @param paginationData Paginaton data
      * @returns Data
      */
-    private async getDataByAggregationFilters(ref: IPolicySourceBlock, user: IPolicyUser, sortState: any, paginationData: any, deprecatedHistory?: boolean, history? : IPolicyAddonBlock) {
+    private async getDataByAggregationFilters(ref: IPolicySourceBlock, user: IPolicyUser, sortState: any, paginationData: any, history? : IPolicyAddonBlock) {
         const filtersAndDataType = await ref.getGlobalSourcesFilters(user);
         const aggregation = [...filtersAndDataType.filters, {
             $match: {
@@ -195,7 +201,7 @@ export class InterfaceDocumentsSource {
             $unset: 'newOptions',
         }];
 
-        if (history || deprecatedHistory) {
+        if (history) {
             aggregation.push({
                 $lookup: {
                     from: `${

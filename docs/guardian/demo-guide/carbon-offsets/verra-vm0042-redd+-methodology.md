@@ -2,7 +2,7 @@
 description: Policy developed by Envision Blockchain
 ---
 
-# 🧑🌾 Verra VM0042 REDD+ Methodology
+# 🧑🌾 🧑🌾 Verra VM0042 REDD+ Methodology
 
 * [Policy Description](verra-vm0042-redd+-methodology.md#policy-description)
 * [Workflow Description](verra-vm0042-redd+-methodology.md#workflow-description)
@@ -60,7 +60,7 @@ Click on the Project Proponent profile and select “New Project”.
 
 Now, we can input all the project details and data associated with the project in the “New Project” form. In the schema Excel file, if the final CRU calculations do not result in a positive integer, selecting "Ok" after completing the form will trigger errors.
 
-<figure><img src="../../../.gitbook/assets/image (73).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (73) (1).png" alt=""><figcaption></figcaption></figure>
 
 To proceed with the flow, the next step is to access the Standard Registry profile and include the project in the project pipeline. This can be achieved by navigating to the "Project Pipeline" tab and selecting the "Add" option.
 
@@ -68,7 +68,7 @@ To proceed with the flow, the next step is to access the Standard Registry profi
 
 Next, proceed to the Project Proponent profile and locate the "Projects" section. Then, click on the downward arrow and assign the VVB to the project.
 
-<figure><img src="../../../.gitbook/assets/image (72).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (72) (1).png" alt=""><figcaption></figcaption></figure>
 
 After successfully assigning the VVB to the project, the next step is to access the VVB profile and click on the "validate" option located in the Projects tab.
 

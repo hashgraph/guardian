@@ -11,14 +11,7 @@
 
 For example:
 
-in `guardian-service/.env`:
-
-```
- OPERATOR_ID=""
- OPERATOR_KEY=""
-```
-
-in `guardian-service/.env.docker`:
+in `/configs/.env..guardian.system`
 
 ```
  OPERATOR_ID=""
@@ -56,7 +49,7 @@ Note:
 
 #### 3.2 Setting up IPFS Web3Storage node:
 
-3.2.1 For setup IPFS web3storage node you need to set variables in `worker-service/.env`:
+3.2.1 For setup IPFS web3storage node you need to set variables in `/configs/.env..guardian.system`:
 
 ```
 IPFS_STORAGE_API_KEY="..."

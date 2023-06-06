@@ -842,6 +842,194 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@azure/abort-controller@npm:^1.0.0, @azure/abort-controller@npm:^1.0.4":
+  version: 1.1.0
+  resolution: "@azure/abort-controller@npm:1.1.0"
+  dependencies:
+    tslib: ^2.2.0
+  checksum: 0f45e504d4aea799486867179afe7589255f6c111951279958e9d0aa5faebb2c96b8f88e3e3c958ce07b02bcba0b0cddb1bbec94705f573a48ecdb93eec1a92a
+  languageName: node
+  linkType: hard
+
+"@azure/core-auth@npm:^1.3.0, @azure/core-auth@npm:^1.4.0":
+  version: 1.4.0
+  resolution: "@azure/core-auth@npm:1.4.0"
+  dependencies:
+    "@azure/abort-controller": ^1.0.0
+    tslib: ^2.2.0
+  checksum: 1c76c296fe911ad39fc780b033c25a92c41c5a15f011b816d42c13584f627a4dd153dfb4334900ec93eb5b006e14bdda37e8412a7697c5a9636a0abaccffad39
+  languageName: node
+  linkType: hard
+
+"@azure/core-client@npm:^1.3.0, @azure/core-client@npm:^1.4.0, @azure/core-client@npm:^1.5.0":
+  version: 1.7.2
+  resolution: "@azure/core-client@npm:1.7.2"
+  dependencies:
+    "@azure/abort-controller": ^1.0.0
+    "@azure/core-auth": ^1.4.0
+    "@azure/core-rest-pipeline": ^1.9.1
+    "@azure/core-tracing": ^1.0.0
+    "@azure/core-util": ^1.0.0
+    "@azure/logger": ^1.0.0
+    tslib: ^2.2.0
+  checksum: 2c6af345ed7f97d7d214873cf08c2564603c659abc8950a1b866b137dfb8b68cc367f75a1c0d0ea840ac8f66a50604661f6f2569184dcda717ec4e62c3c6d977
+  languageName: node
+  linkType: hard
+
+"@azure/core-http-compat@npm:^1.3.0":
+  version: 1.3.0
+  resolution: "@azure/core-http-compat@npm:1.3.0"
+  dependencies:
+    "@azure/abort-controller": ^1.0.4
+    "@azure/core-client": ^1.3.0
+    "@azure/core-rest-pipeline": ^1.3.0
+  checksum: 26938e58348c44b7fe3ede0dececaa3bf1f8b2012bdd457a004da973dd3cfbfd093c44184ea3fa0e6b41d4c4bf62574c268bc4cf50325f5dadedb7500158b742
+  languageName: node
+  linkType: hard
+
+"@azure/core-lro@npm:^2.2.0":
+  version: 2.5.3
+  resolution: "@azure/core-lro@npm:2.5.3"
+  dependencies:
+    "@azure/abort-controller": ^1.0.0
+    "@azure/core-util": ^1.2.0
+    "@azure/logger": ^1.0.0
+    tslib: ^2.2.0
+  checksum: 443ae1884a6bc9edfeee1e62463b218a020f1be987ef755c13d5afe39803bbceb8ca9174bd516e1db9bc3f3762f71168167ea0ee9873c66e3d86a6667d5a0457
+  languageName: node
+  linkType: hard
+
+"@azure/core-paging@npm:^1.1.1":
+  version: 1.5.0
+  resolution: "@azure/core-paging@npm:1.5.0"
+  dependencies:
+    tslib: ^2.2.0
+  checksum: 156230f0fdf757a0353a2aac6d012d385ed88f8ab5bccf00eee27d8d75843e681674b2d10ed43309669f9cb93bf8d9d000232896593b6fcf399fa391442a59c5
+  languageName: node
+  linkType: hard
+
+"@azure/core-rest-pipeline@npm:^1.1.0, @azure/core-rest-pipeline@npm:^1.3.0, @azure/core-rest-pipeline@npm:^1.8.0, @azure/core-rest-pipeline@npm:^1.9.1":
+  version: 1.10.3
+  resolution: "@azure/core-rest-pipeline@npm:1.10.3"
+  dependencies:
+    "@azure/abort-controller": ^1.0.0
+    "@azure/core-auth": ^1.4.0
+    "@azure/core-tracing": ^1.0.1
+    "@azure/core-util": ^1.3.0
+    "@azure/logger": ^1.0.0
+    form-data: ^4.0.0
+    http-proxy-agent: ^5.0.0
+    https-proxy-agent: ^5.0.0
+    tslib: ^2.2.0
+  checksum: 6704101a2d6ca651ffc09e4d9fa77bc9718ed0d9b96b93d23a845dbac50a71bb089486808230ebaf59c9cb2557661ee5b020222ad5ad6d49d09b47c6ed11fce4
+  languageName: node
+  linkType: hard
+
+"@azure/core-tracing@npm:^1.0.0, @azure/core-tracing@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "@azure/core-tracing@npm:1.0.1"
+  dependencies:
+    tslib: ^2.2.0
+  checksum: ae4309f8ab0b52c37f699594d58ee095782649f538bd6a0ee03e3fea042f55df7ad95c2e6dec22f5b8c3907e4bcf98d6ca98faaf480d446b73d41bbc1519d891
+  languageName: node
+  linkType: hard
+
+"@azure/core-util@npm:^1.0.0, @azure/core-util@npm:^1.2.0, @azure/core-util@npm:^1.3.0":
+  version: 1.3.2
+  resolution: "@azure/core-util@npm:1.3.2"
+  dependencies:
+    "@azure/abort-controller": ^1.0.0
+    tslib: ^2.2.0
+  checksum: c26053a209ed99c5b31ec54bd456155a7e602fda0b680ba326063ee42427efe60042124fbf22701397647e822bee252f77fec449e8f8100c406b8ca7168c8359
+  languageName: node
+  linkType: hard
+
+"@azure/identity@npm:^3.2.2":
+  version: 3.2.2
+  resolution: "@azure/identity@npm:3.2.2"
+  dependencies:
+    "@azure/abort-controller": ^1.0.0
+    "@azure/core-auth": ^1.3.0
+    "@azure/core-client": ^1.4.0
+    "@azure/core-rest-pipeline": ^1.1.0
+    "@azure/core-tracing": ^1.0.0
+    "@azure/core-util": ^1.0.0
+    "@azure/logger": ^1.0.0
+    "@azure/msal-browser": ^2.32.2
+    "@azure/msal-common": ^9.0.2
+    "@azure/msal-node": ^1.14.6
+    events: ^3.0.0
+    jws: ^4.0.0
+    open: ^8.0.0
+    stoppable: ^1.1.0
+    tslib: ^2.2.0
+    uuid: ^8.3.0
+  checksum: cbedd293ed6360d98c87148686a1be3a38aad3eaeadcaa7d73e79469904aac2f949a1be67e868d3fd295e749a24ad91bc389ddb82d8574dd173c0583767ec6bf
+  languageName: node
+  linkType: hard
+
+"@azure/keyvault-secrets@npm:^4.7.0":
+  version: 4.7.0
+  resolution: "@azure/keyvault-secrets@npm:4.7.0"
+  dependencies:
+    "@azure/abort-controller": ^1.0.0
+    "@azure/core-auth": ^1.3.0
+    "@azure/core-client": ^1.5.0
+    "@azure/core-http-compat": ^1.3.0
+    "@azure/core-lro": ^2.2.0
+    "@azure/core-paging": ^1.1.1
+    "@azure/core-rest-pipeline": ^1.8.0
+    "@azure/core-tracing": ^1.0.0
+    "@azure/core-util": ^1.0.0
+    "@azure/logger": ^1.0.0
+    tslib: ^2.2.0
+  checksum: 915bfbbc7ae339985a218ae3603077dab847eba5a140a9e0fb975d54e7c6bd9194a2dc7fb1f4a0788b936707ef088f32f784937ebd8830d0d977bf0c410c9bb3
+  languageName: node
+  linkType: hard
+
+"@azure/logger@npm:^1.0.0":
+  version: 1.0.4
+  resolution: "@azure/logger@npm:1.0.4"
+  dependencies:
+    tslib: ^2.2.0
+  checksum: 2c243d4c667bbc5cd3e60d4473d0f1169fcef2498a02138398af15547fe1b2870197bcb4c487327451488e4d71dee05244771d51328f03611e193b99fb9aa9af
+  languageName: node
+  linkType: hard
+
+"@azure/msal-browser@npm:^2.32.2":
+  version: 2.37.0
+  resolution: "@azure/msal-browser@npm:2.37.0"
+  dependencies:
+    "@azure/msal-common": 13.0.0
+  checksum: e57d04517d51db4b608da6ca127c89e5c134b42743b00e95d8f1aae011d1cc6d5c02fb4f72cd0f96636e500a3eeee7c4884cd537ac8796bbd50f0ff9ac983b4e
+  languageName: node
+  linkType: hard
+
+"@azure/msal-common@npm:13.0.0":
+  version: 13.0.0
+  resolution: "@azure/msal-common@npm:13.0.0"
+  checksum: 89f56f9fbf0edffa6023d46c6970dd37a9ad571b7d2952fdef41950ec2f3b4b3fd22d9841e2caaf52619ad97ab415ed22c30797cdb896f459eb665d3d97f778a
+  languageName: node
+  linkType: hard
+
+"@azure/msal-common@npm:^9.0.2":
+  version: 9.1.1
+  resolution: "@azure/msal-common@npm:9.1.1"
+  checksum: d51d645ee485b699a0fbeab6d9bb01c91f4124704f756266e109c2d1d8ea0ca8d66a9ab81f62f9f76e7358906badcf7d2dd9911c18e20f57770ec9beb4fc4fcd
+  languageName: node
+  linkType: hard
+
+"@azure/msal-node@npm:^1.14.6":
+  version: 1.17.2
+  resolution: "@azure/msal-node@npm:1.17.2"
+  dependencies:
+    "@azure/msal-common": 13.0.0
+    jsonwebtoken: ^9.0.0
+    uuid: ^8.3.0
+  checksum: 5ac809dae6b02ab7de2aafb85733501ba6c3268f1d9371bc857215dad9d47e4f6e10b3e58ebda49504b375c96934761e9734acc241d3bc34d3b4cdeaabdf102e
+  languageName: node
+  linkType: hard
+
 "@babel/code-frame@npm:7.12.11":
   version: 7.12.11
   resolution: "@babel/code-frame@npm:7.12.11"
@@ -1051,12 +1239,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@guardian/common@^2.13.0-prerelease, @guardian/common@workspace:common":
+"@guardian/common@^2.13.1, @guardian/common@workspace:common":
   version: 0.0.0-use.local
   resolution: "@guardian/common@workspace:common"
   dependencies:
     "@aws-sdk/client-secrets-manager": ^3.319.0
-    "@guardian/interfaces": ^2.13.0-prerelease
+    "@azure/identity": ^3.2.2
+    "@azure/keyvault-secrets": ^4.7.0
+    "@guardian/interfaces": ^2.13.1
     "@hashgraph/sdk": ^2.24.2
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
@@ -1088,7 +1278,6 @@ __metadata:
     moment: ^2.29.2
     mongodb: 5.5.0
     nats: ^2.6.1
-    nestjs: ^0.0.1
     node-vault: ^0.9.22
     reflect-metadata: ^0.1.13
     tslint: ^6.1.3
@@ -1099,7 +1288,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@guardian/interfaces@^2.13.0-prerelease, @guardian/interfaces@workspace:interfaces":
+"@guardian/interfaces@^2.13.1, @guardian/interfaces@workspace:interfaces":
   version: 0.0.0-use.local
   resolution: "@guardian/interfaces@workspace:interfaces"
   dependencies:
@@ -3011,8 +3200,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "api-gateway@workspace:api-gateway"
   dependencies:
-    "@guardian/common": ^2.13.0-prerelease
-    "@guardian/interfaces": ^2.13.0-prerelease
+    "@guardian/common": ^2.13.1
+    "@guardian/interfaces": ^2.13.1
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
     "@nestjs/microservices": ^9.4.1
@@ -3232,8 +3421,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "auth-service@workspace:auth-service"
   dependencies:
-    "@guardian/common": ^2.13.0-prerelease
-    "@guardian/interfaces": ^2.13.0-prerelease
+    "@guardian/common": ^2.13.1
+    "@guardian/interfaces": ^2.13.1
     "@mikro-orm/core": ~5.7.7
     "@mikro-orm/mongodb": ~5.7.7
     "@nestjs/common": ^9.4.1
@@ -4558,6 +4747,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"define-lazy-prop@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "define-lazy-prop@npm:2.0.0"
+  checksum: 0115fdb065e0490918ba271d7339c42453d209d4cb619dfe635870d906731eff3e1ade8028bb461ea27ce8264ec5e22c6980612d332895977e89c1bbc80fcee2
+  languageName: node
+  linkType: hard
+
 "define-properties@npm:^1.1.3, define-properties@npm:^1.1.4":
   version: 1.1.4
   resolution: "define-properties@npm:1.1.4"
@@ -5167,7 +5363,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"events@npm:^3.3.0":
+"events@npm:^3.0.0, events@npm:^3.3.0":
   version: 3.3.0
   resolution: "events@npm:3.3.0"
   checksum: f6f487ad2198aa41d878fa31452f1a3c00958f46e9019286ff4787c84aac329332ab45c9cdc8c445928fc6d7ded294b9e005a7fce9426488518017831b272780
@@ -5974,8 +6170,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "guardian-service@workspace:guardian-service"
   dependencies:
-    "@guardian/common": ^2.13.0-prerelease
-    "@guardian/interfaces": ^2.13.0-prerelease
+    "@guardian/common": ^2.13.1
+    "@guardian/interfaces": ^2.13.1
     "@hashgraph/sdk": ^2.24.2
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
@@ -6956,6 +7152,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"is-docker@npm:^2.0.0, is-docker@npm:^2.1.1":
+  version: 2.2.1
+  resolution: "is-docker@npm:2.2.1"
+  bin:
+    is-docker: cli.js
+  checksum: 3fef7ddbf0be25958e8991ad941901bf5922ab2753c46980b60b05c1bf9c9c2402d35e6dc32e4380b980ef5e1970a5d9d5e5aa2e02d77727c3b6b5e918474c56
+  languageName: node
+  linkType: hard
+
 "is-electron@npm:^2.2.0":
   version: 2.2.1
   resolution: "is-electron@npm:2.2.1"
@@ -7212,6 +7417,15 @@ __metadata:
     call-bind: ^1.0.2
     get-intrinsic: ^1.1.1
   checksum: 5d8698d1fa599a0635d7ca85be9c26d547b317ed8fd83fc75f03efbe75d50001b5eececb1e9971de85fcde84f69ae6f8346bc92d20d55d46201d328e4c74a367
+  languageName: node
+  linkType: hard
+
+"is-wsl@npm:^2.2.0":
+  version: 2.2.0
+  resolution: "is-wsl@npm:2.2.0"
+  dependencies:
+    is-docker: ^2.0.0
+  checksum: 20849846ae414997d290b75e16868e5261e86ff5047f104027026fd61d8b5a9b0b3ade16239f35e1a067b3c7cc02f70183cb661010ed16f4b6c7c93dad1b19d8
   languageName: node
   linkType: hard
 
@@ -7697,6 +7911,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"jsonwebtoken@npm:^9.0.0":
+  version: 9.0.0
+  resolution: "jsonwebtoken@npm:9.0.0"
+  dependencies:
+    jws: ^3.2.2
+    lodash: ^4.17.21
+    ms: ^2.1.1
+    semver: ^7.3.8
+  checksum: b9181cecf9df99f1dc0253f91ba000a1aa4d91f5816d1608c0dba61a5623726a0bfe200b51df25de18c1a6000825d231ad7ce2788aa54fd48dcb760ad9eb9514
+  languageName: node
+  linkType: hard
+
 "jsprim@npm:^1.2.2":
   version: 1.4.2
   resolution: "jsprim@npm:1.4.2"
@@ -7739,6 +7965,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"jwa@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "jwa@npm:2.0.0"
+  dependencies:
+    buffer-equal-constant-time: 1.0.1
+    ecdsa-sig-formatter: 1.0.11
+    safe-buffer: ^5.0.1
+  checksum: 8f00b71ad5fe94cb55006d0d19202f8f56889109caada2f7eeb63ca81755769ce87f4f48101967f398462e3b8ae4faebfbd5a0269cb755dead5d63c77ba4d2f1
+  languageName: node
+  linkType: hard
+
 "jws@npm:^3.2.2":
   version: 3.2.2
   resolution: "jws@npm:3.2.2"
@@ -7746,6 +7983,16 @@ __metadata:
     jwa: ^1.4.1
     safe-buffer: ^5.0.1
   checksum: f0213fe5b79344c56cd443428d8f65c16bf842dc8cb8f5aed693e1e91d79c20741663ad6eff07a6d2c433d1831acc9814e8d7bada6a0471fbb91d09ceb2bf5c2
+  languageName: node
+  linkType: hard
+
+"jws@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "jws@npm:4.0.0"
+  dependencies:
+    jwa: ^2.0.0
+    safe-buffer: ^5.0.1
+  checksum: d68d07aa6d1b8cb35c363a9bd2b48f15064d342a5d9dc18a250dbbce8dc06bd7e4792516c50baa16b8d14f61167c19e851fd7f66b59ecc68b7f6a013759765f7
   languageName: node
   linkType: hard
 
@@ -8018,8 +8265,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "logger-service@workspace:logger-service"
   dependencies:
-    "@guardian/common": ^2.13.0-prerelease
-    "@guardian/interfaces": ^2.13.0-prerelease
+    "@guardian/common": ^2.13.1
+    "@guardian/interfaces": ^2.13.1
     "@mikro-orm/core": ~5.7.7
     "@mikro-orm/mongodb": ~5.7.7
     "@nestjs/common": ^9.4.1
@@ -8667,7 +8914,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "mrv-sender@workspace:mrv-sender"
   dependencies:
-    "@guardian/common": ^2.13.0-prerelease
+    "@guardian/common": ^2.13.1
     "@transmute/credentials-context": 0.7.0-unstable.80
     "@transmute/did-context": 0.7.0-unstable.80
     "@transmute/ed25519-signature-2018": 0.7.0-unstable.80
@@ -8890,13 +9137,6 @@ __metadata:
   bin:
     neon: bin/cli.js
   checksum: 4360745b66856a95251ce7e8e115a94169122d105314ec3697e56ac5b23285adc5c1df5250271b783fa1307f1c4ea2b5ae93b3f5d8740b9c047e82c6781f4d61
-  languageName: node
-  linkType: hard
-
-"nestjs@npm:^0.0.1":
-  version: 0.0.1
-  resolution: "nestjs@npm:0.0.1"
-  checksum: d59ca09648d12303b1772e2ed4f5384717a678a6caaf76fae32a96d25d351eeec9e243411a09a9b92d084f19f4aa1b52164abaf97f13fcb98cfd3c5498686d28
   languageName: node
   linkType: hard
 
@@ -9328,6 +9568,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"open@npm:^8.0.0":
+  version: 8.4.2
+  resolution: "open@npm:8.4.2"
+  dependencies:
+    define-lazy-prop: ^2.0.0
+    is-docker: ^2.1.1
+    is-wsl: ^2.2.0
+  checksum: 6388bfff21b40cb9bd8f913f9130d107f2ed4724ea81a8fd29798ee322b361ca31fa2cdfb491a5c31e43a3996cfe9566741238c7a741ada8d7af1cb78d85cf26
+  languageName: node
+  linkType: hard
+
 "optionator@npm:^0.8.1":
   version: 0.8.3
   resolution: "optionator@npm:0.8.3"
@@ -9653,8 +9904,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "policy-service@workspace:policy-service"
   dependencies:
-    "@guardian/common": ^2.13.0-prerelease
-    "@guardian/interfaces": ^2.13.0-prerelease
+    "@guardian/common": ^2.13.1
+    "@guardian/interfaces": ^2.13.1
     "@hashgraph/sdk": ^2.24.2
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
@@ -10610,6 +10861,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"semver@npm:^7.3.8":
+  version: 7.5.1
+  resolution: "semver@npm:7.5.1"
+  dependencies:
+    lru-cache: ^6.0.0
+  bin:
+    semver: bin/semver.js
+  checksum: d16dbedad53c65b086f79524b9ef766bf38670b2395bdad5c957f824dcc566b624988013564f4812bcace3f9d405355c3635e2007396a39d1bffc71cfec4a2fc
+  languageName: node
+  linkType: hard
+
 "send@npm:0.18.0":
   version: 0.18.0
   resolution: "send@npm:0.18.0"
@@ -10956,6 +11218,13 @@ __metadata:
   version: 1.1.1
   resolution: "stealthy-require@npm:1.1.1"
   checksum: 6805b857a9f3a6a1079fc6652278038b81011f2a5b22cbd559f71a6c02087e6f1df941eb10163e3fdc5391ab5807aa46758d4258547c1f5ede31e6d9bfda8dd3
+  languageName: node
+  linkType: hard
+
+"stoppable@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "stoppable@npm:1.1.0"
+  checksum: 63104fcbdece130bc4906fd982061e763d2ef48065ed1ab29895e5ad00552c625f8a4c50c9cd2e3bfa805c8a2c3bfdda0f07c5ae39694bd2d5cb0bee1618d1e9
   languageName: node
   linkType: hard
 
@@ -11445,7 +11714,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:2.5.2":
+"tslib@npm:2.5.2, tslib@npm:^2.2.0":
   version: 2.5.2
   resolution: "tslib@npm:2.5.2"
   checksum: 4d3c1e238b94127ed0e88aa0380db3c2ddae581dc0f4bae5a982345e9f50ee5eda90835b8bfba99b02df10a5734470be197158c36f9129ac49fdc14a6a9da222
@@ -11903,7 +12172,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uuid@npm:^8.3.2":
+"uuid@npm:^8.3.0, uuid@npm:^8.3.2":
   version: 8.3.2
   resolution: "uuid@npm:8.3.2"
   bin:
@@ -12210,8 +12479,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "worker-service@workspace:worker-service"
   dependencies:
-    "@guardian/common": ^2.13.0-prerelease
-    "@guardian/interfaces": ^2.13.0-prerelease
+    "@guardian/common": ^2.13.1
+    "@guardian/interfaces": ^2.13.1
     "@hashgraph/sdk": ^2.24.2
     "@transmute/credentials-context": ^0.7.0-unstable.80
     "@transmute/did-context": ^0.7.0-unstable.80
