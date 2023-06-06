@@ -3,7 +3,7 @@
   "dependencies": {
     "@guardian/common": "^2.13.1",
     "@guardian/interfaces": "^2.13.1",
-    "@hashgraph/sdk": "^2.24.2",
+    "@hashgraph/sdk": "^2.26.0",
     "@transmute/credentials-context": "^0.7.0-unstable.80",
     "@transmute/did-context": "^0.7.0-unstable.80",
     "@transmute/ed25519-signature-2018": "^0.7.0-unstable.80",
