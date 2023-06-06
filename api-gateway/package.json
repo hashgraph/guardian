@@ -12,7 +12,7 @@
     "@guardian/interfaces": "^2.13.1",
     "@nestjs/common": "^9.4.1",
     "@nestjs/core": "^9.4.1",
-    "@nestjs/microservices": "^9.4.1",
+    "@nestjs/microservices": "^9.4.2",
     "@nestjs/platform-express": "^9.4.2",
     "@types/express-fileupload": "^1.4.1",
     "class-transformer": "^0.5.1",
