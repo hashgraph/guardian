@@ -1254,7 +1254,7 @@ __metadata:
     "@mikro-orm/migrations-mongodb": ~5.7.7
     "@mikro-orm/mongodb": ~5.7.7
     "@nestjs/common": ^9.4.1
-    "@nestjs/core": ^9.4.1
+    "@nestjs/core": ^9.4.2
     "@nestjs/microservices": ^9.4.1
     "@transmute/credentials-context": ^0.7.0-unstable.80
     "@transmute/did-context": ^0.7.0-unstable.80
@@ -1669,15 +1669,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nestjs/core@npm:^9.4.1":
-  version: 9.4.1
-  resolution: "@nestjs/core@npm:9.4.1"
+"@nestjs/core@npm:^9.4.2":
+  version: 9.4.2
+  resolution: "@nestjs/core@npm:9.4.2"
   dependencies:
     "@nuxtjs/opencollective": 0.3.2
     fast-safe-stringify: 2.1.1
     iterare: 1.2.1
     path-to-regexp: 3.2.0
-    tslib: 2.5.0
+    tslib: 2.5.2
     uid: 2.0.2
   peerDependencies:
     "@nestjs/common": ^9.0.0
@@ -1693,7 +1693,7 @@ __metadata:
       optional: true
     "@nestjs/websockets":
       optional: true
-  checksum: 8c46d38c5f878a6a6ddbb3a07e28348243fa2ae4a56010ed97f17991135b3e0bdae0c9ccd01ded7bdfc7de5bb896687d4a8de351454edd3120185ceff0d5408b
+  checksum: 2e8e62828c7dc8bd32574e59f2174458b534c4a9228d8a760ab629dd7f27cd0c8edd0fe21922aa63f07266b40ea49a090e59590a47f114213ed753066c0eb5b3
   languageName: node
   linkType: hard
 
@@ -3203,7 +3203,7 @@ __metadata:
     "@guardian/common": ^2.13.1
     "@guardian/interfaces": ^2.13.1
     "@nestjs/common": ^9.4.1
-    "@nestjs/core": ^9.4.1
+    "@nestjs/core": ^9.4.2
     "@nestjs/microservices": ^9.4.1
     "@nestjs/platform-express": ^9.4.2
     "@types/express": ^4.17.13
@@ -3426,7 +3426,7 @@ __metadata:
     "@mikro-orm/core": ~5.7.7
     "@mikro-orm/mongodb": ~5.7.7
     "@nestjs/common": ^9.4.1
-    "@nestjs/core": ^9.4.1
+    "@nestjs/core": ^9.4.2
     "@nestjs/microservices": ^9.4.1
     "@types/jsonwebtoken": ^8.5.4
     "@types/node": ^18.16.0
@@ -6178,7 +6178,7 @@ __metadata:
     "@mikro-orm/core": ~5.7.7
     "@mikro-orm/mongodb": ~5.7.7
     "@nestjs/common": ^9.4.1
-    "@nestjs/core": ^9.4.1
+    "@nestjs/core": ^9.4.2
     "@nestjs/microservices": ^9.4.1
     "@transmute/credentials-context": ^0.7.0-unstable.80
     "@transmute/did-context": ^0.7.0-unstable.80
@@ -8270,7 +8270,7 @@ __metadata:
     "@mikro-orm/core": ~5.7.7
     "@mikro-orm/mongodb": ~5.7.7
     "@nestjs/common": ^9.4.1
-    "@nestjs/core": ^9.4.1
+    "@nestjs/core": ^9.4.2
     "@nestjs/microservices": ^9.4.1
     "@types/fs-extra": ^9.0.12
     "@types/node": ^18.16.0
