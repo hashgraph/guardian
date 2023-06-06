@@ -1252,7 +1252,7 @@ __metadata:
     "@meeco/cryppo": ^2.0.2
     "@mikro-orm/core": ~5.7.7
     "@mikro-orm/migrations-mongodb": ~5.7.7
-    "@mikro-orm/mongodb": ~5.7.7
+    "@mikro-orm/mongodb": ~5.7.11
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
     "@nestjs/microservices": ^9.4.1
@@ -1607,6 +1607,31 @@ __metadata:
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
   checksum: a2312399510147c8633e05a0c7a478fa463f61887b827fa8c8f7cd25b12c1b9978a8cb251ad601683f7ba5d394576479eca99107143a40961aef0d5c2c340a67
+  languageName: node
+  linkType: hard
+
+"@mikro-orm/mongodb@npm:~5.7.11":
+  version: 5.7.11
+  resolution: "@mikro-orm/mongodb@npm:5.7.11"
+  dependencies:
+    bson: ^5.3.0
+    mongodb: 5.5.0
+  peerDependencies:
+    "@mikro-orm/core": ^5.0.0
+    "@mikro-orm/entity-generator": ^5.0.0
+    "@mikro-orm/migrations": ^5.0.0
+    "@mikro-orm/migrations-mongodb": ^5.0.0
+    "@mikro-orm/seeder": ^5.0.0
+  peerDependenciesMeta:
+    "@mikro-orm/entity-generator":
+      optional: true
+    "@mikro-orm/migrations":
+      optional: true
+    "@mikro-orm/migrations-mongodb":
+      optional: true
+    "@mikro-orm/seeder":
+      optional: true
+  checksum: 945017f4678fa876cb2821d353e330e067f91de094552e24225d44ca361c4c5dd6b995da2699908ad8f9a90a4b03008e06a7c32214a3d912abc44f9ab31b2637
   languageName: node
   linkType: hard
 
@@ -3424,7 +3449,7 @@ __metadata:
     "@guardian/common": ^2.13.1
     "@guardian/interfaces": ^2.13.1
     "@mikro-orm/core": ~5.7.7
-    "@mikro-orm/mongodb": ~5.7.7
+    "@mikro-orm/mongodb": ~5.7.11
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
     "@nestjs/microservices": ^9.4.1
@@ -6176,7 +6201,7 @@ __metadata:
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
     "@mikro-orm/core": ~5.7.7
-    "@mikro-orm/mongodb": ~5.7.7
+    "@mikro-orm/mongodb": ~5.7.11
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
     "@nestjs/microservices": ^9.4.1
@@ -8268,7 +8293,7 @@ __metadata:
     "@guardian/common": ^2.13.1
     "@guardian/interfaces": ^2.13.1
     "@mikro-orm/core": ~5.7.7
-    "@mikro-orm/mongodb": ~5.7.7
+    "@mikro-orm/mongodb": ~5.7.11
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
     "@nestjs/microservices": ^9.4.1
@@ -9910,7 +9935,7 @@ __metadata:
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
     "@mikro-orm/core": ~5.7.7
-    "@mikro-orm/mongodb": ~5.7.7
+    "@mikro-orm/mongodb": ~5.7.11
     "@transmute/credentials-context": 0.7.0-unstable.80
     "@transmute/did-context": 0.7.0-unstable.80
     "@transmute/ed25519-signature-2018": 0.7.0-unstable.80
