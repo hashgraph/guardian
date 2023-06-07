@@ -4,11 +4,11 @@ Please check the steps involved in performing Selective Disclosure functionality
 
 1. We need to select  “Encrypted Verifiable Credential” option as an entity type while creating Schema.
 
-![](<../../.gitbook/assets/0 (5).png>)
+![](<../../../.gitbook/assets/0 (5).png>)
 
 2. Some of the fields in schema can be marked as private (only when schema has Encrypted Verifiable Credential type):
 
-![](<../../.gitbook/assets/1 (1).png>)
+![](<../../../.gitbook/assets/1 (1).png>)
 
 3. Encrypted Verifiable Credential will be published in IPFS with AES GCM encryption
 

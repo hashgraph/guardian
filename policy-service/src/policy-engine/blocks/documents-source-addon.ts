@@ -44,7 +44,7 @@ export class DocumentsSourceAddon {
         const documentCacheFields =
             PolicyComponentsUtils.getDocumentCacheFields(ref.policyId);
         ref.options?.filters
-            ?.filter((filter) => filter.field?.startsWith('document.'))
+            ?.filter((filter) => filter?.field?.startsWith('document.'))
             .forEach((filter) => {
                 documentCacheFields.add(filter.field.replace('document.', ''));
             });
