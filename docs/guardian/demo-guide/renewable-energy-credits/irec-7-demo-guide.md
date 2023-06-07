@@ -32,7 +32,7 @@ Following are the steps to run iREC 7 Policy.
 
 6\. Now, we login as Standard Registry and approve the Registrant role by clicking on Approve button:
 
-<figure><img src="../../../.gitbook/assets/iREC_&#x26;_10.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/iREC_&#x26;_10 (1).png" alt=""><figcaption></figcaption></figure>
 
 7\. Once approved, we logout as Standard Registry and login as Registrant. As a registrant, we register device by entering all the device details.
 

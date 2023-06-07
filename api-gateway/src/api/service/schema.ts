@@ -365,6 +365,7 @@ export class SchemaApi {
             const allVersion = await guardians.getSchemasByUUID(schema.uuid);
             if (allVersion.findIndex(s => s.version === version) !== -1) {
                 taskManager.addError(taskId, { code: 500, message: 'Version already exists.' });
+                return;
             }
             taskManager.addStatus(taskId, 'Load schema data', StatusType.COMPLETED);
             await guardians.publishSchemaAsync(schemaId, version, user.did, taskId);

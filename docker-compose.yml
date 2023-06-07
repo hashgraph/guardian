@@ -278,6 +278,7 @@ volumes:
   mongo:
   prometheus_data: {}
   grafana_data: {}
+  branding_data:
   # volume-guardian-service:
   # volume-ui-service:
   # volume-mrv-sender:

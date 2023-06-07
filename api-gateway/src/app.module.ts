@@ -27,7 +27,9 @@ import fileUpload from 'express-fileupload';
 import hpp from 'hpp';
 import { ThemesApi } from '@api/service/themes';
 import { TrustChainsOldApi } from '@api/service/trustchains';
+import { BrandingApi } from '@api/service/branding';
 
+const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
 const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
 
 @Module({
@@ -66,7 +68,8 @@ const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
         ThemesApi,
         TrustChainsApi,
         TrustChainsOldApi,
-        WizardApi
+        WizardApi,
+        BrandingApi
     ],
     providers: [
         LoggerService
@@ -91,7 +94,11 @@ export class AppModule {
         consumer.apply(authorizationHelper).forRoutes(TokensApi);
         consumer.apply(authorizationHelper).forRoutes(TrustChainsApi);
         consumer.apply(authorizationHelper).forRoutes(WizardApi);
+        consumer.apply(authorizationHelper).forRoutes(BrandingApi);
 
+        consumer.apply(express.json({
+            limit: JSON_REQUEST_LIMIT
+        })).forRoutes('*');
         consumer.apply(express.raw({
             inflate: true,
             limit: RAW_REQUEST_LIMIT,
