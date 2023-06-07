@@ -1,12 +1,27 @@
-import { Injectable, ViewChildren, QueryList , ElementRef } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { DomSanitizer } from '@angular/platform-browser';
+
+export interface BrandingPayload {
+    headerColor: string
+    primaryColor: string
+    companyName: string
+    companyLogoUrl: string
+    loginBannerUrl: string
+    faviconUrl: string
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class BrandingService {
-    private brandingData: any;
+    private brandingData: BrandingPayload = {
+        headerColor: '',
+        primaryColor: '',
+        companyName: '',
+        companyLogoUrl: '',
+        loginBannerUrl: '',
+        faviconUrl: '',
+    };
 
     constructor(
         private http: HttpClient
@@ -15,11 +30,11 @@ export class BrandingService {
     saveBrandingData(payload: any): boolean {
         // send POST request to server
         this.http.post('/api/v1/branding', payload).subscribe(
-        (response) => {
+        (response: any) => {
             console.log('Variables saved successfully', response);
             location.reload();
         },
-        (error) => {
+        (error: any) => {
             console.error(error);
             return false;
         }
@@ -27,30 +42,31 @@ export class BrandingService {
         return true;
     }
 
-    getBrandingData() {
+    getBrandingData(): Promise<BrandingPayload> {
         // send GET request
         return this.http.get('/api/v1/branding')
         .toPromise()
-        .then(data => {
-            this.brandingData = data as any;
-            return this.brandingData;
+        .then((data: any) => {
+            this.brandingData = data;
+            return this.brandingData as BrandingPayload;
         })
-        .catch(error => {
+        .catch((error: any) => {
             console.log(error)
-            return {}
+            return this.brandingData;
         });
     }
 
-    loadBrandingData(width: number) {
+    loadBrandingData(width: number): Promise<BrandingPayload> {
         // send GET request
-        this.getBrandingData()
-        .then(data => {
+        return this.getBrandingData()
+        .then((data: any) => {
             this.brandingData = data as any;
             this.applyBranding(this.brandingData, width);
+            return data
         })
-        .catch(error => {
+        .catch((error: any) => {
             console.log(error)
-            return {}
+            return this.brandingData;
         });
     }
 
@@ -89,10 +105,10 @@ export class BrandingService {
                 button.insertBefore(imgElement, button.firstChild);
             }
         }
-        if (this.brandingData.loginBannerUrl) {
+        if (this.brandingData?.loginBannerUrl) {
             loginBanner.style.background = `center/cover no-repeat url(${this.brandingData.loginBannerUrl})`;
         }
-        if (this.brandingData.faviconUrl) {
+        if (this.brandingData?.faviconUrl) {
             favicon[0].href = this.brandingData.faviconUrl;
         }
     }
