@@ -18,7 +18,7 @@ import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialo
 @Component({
     selector: 'app-policy-viewer',
     templateUrl: './policy-viewer.component.html',
-    styleUrls: ['./policy-viewer.component.css']
+    styleUrls: ['./policy-viewer.component.scss']
 })
 export class PolicyViewerComponent implements OnInit, OnDestroy {
     policyId!: string;

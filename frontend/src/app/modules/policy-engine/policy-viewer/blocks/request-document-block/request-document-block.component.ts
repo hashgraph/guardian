@@ -15,7 +15,7 @@ import { Router } from '@angular/router';
 @Component({
     selector: 'request-document-block',
     templateUrl: './request-document-block.component.html',
-    styleUrls: ['./request-document-block.component.css']
+    styleUrls: ['./request-document-block.component.scss']
 })
 export class RequestDocumentBlockComponent implements OnInit {
     @Input('id') id!: string;
