@@ -1549,4 +1549,23 @@ export class Guardians extends NatsService {
             owner,
         });
     }
+
+    /**
+     * Async create new branding json file
+     * @param config Branding JSON string
+     * @returns Branding JSON string
+     */
+    public async setBranding(config: string): Promise<any> {
+        return await this.sendMessage(MessageAPI.STORE_BRANDING, { config });
+    }
+
+    /**
+     * Gets the branding JSON.
+     * @returns A Promise that resolves to an object containing the branding configuration,
+     *          or null if the branding is not available.
+     */
+    // tslint:disable-next-line:completed-docs
+    public async getBranding(): Promise<{config: string} | null> {
+        return await this.sendMessage(MessageAPI.GET_BRANDING);
+    }
 }

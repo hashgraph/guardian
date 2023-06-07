@@ -3,6 +3,7 @@ import { Component, HostListener } from '@angular/core';
 import { AuthStateService } from './services/auth-state.service';
 import { MapService } from './services/map.service';
 import { WebSocketService } from './services/web-socket.service';
+import { BrandingService } from './services/branding.service';
 
 @Component({
     selector: 'app-root',
@@ -11,10 +12,12 @@ import { WebSocketService } from './services/web-socket.service';
 })
 export class AppComponent {
     title = 'guardian';
+    public innerWidth: any;
 
     constructor(
       public authState: AuthStateService,
       public wsService: WebSocketService,
+      private brandingService: BrandingService,
       mapService: MapService,
       httpClient: HttpClient
     ) {
@@ -29,6 +32,11 @@ export class AppComponent {
                 .subscribe();
         };
         mapService.getApiKey().subscribe(mapRequest, () => mapRequest());
+    }
+
+    ngOnInit(): void {
+      this.innerWidth = window.innerWidth;
+      this.brandingService.loadBrandingData(this.innerWidth);
     }
 
   @HostListener('window:resize')

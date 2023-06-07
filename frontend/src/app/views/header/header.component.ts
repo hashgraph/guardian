@@ -358,6 +358,10 @@ export class HeaderComponent implements OnInit {
         return false;
     }
 
+    doBranding() {
+        this.router.navigate(['/branding']);
+    }
+
     openNav() {
         document.getElementById("menu-backdrop")!.style.display = "flex";
         document.getElementById("menu-backdrop")!.style.zIndex = "1000";

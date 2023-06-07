@@ -1,0 +1,22 @@
+.page-btns {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap:15px;
+    justify-items: center;
+    background-color: white;
+    padding: 20px 0;
+}
+
+#cancel-btn {
+    width: 100%;
+    border: 1px solid var(--primary-color);
+    background: none !important;
+    color: var(--primary-color);
+    grid-column: 2;
+}
+
+#reset-btn {
+    width: 100%;
+    grid-column: 1;
+}
