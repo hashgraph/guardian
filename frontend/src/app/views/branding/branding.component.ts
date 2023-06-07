@@ -71,20 +71,16 @@ export class BrandingComponent implements OnInit {
 
     ngOnInit(): void {
         this.innerWidth = window.innerWidth;
-        /*this.router.events.subscribe((event) => {
-            if (event instanceof NavigationEnd) {*/
-                // Loads saved data
-                this.brandingService.loadBrandingData(this.innerWidth).then((brandingData: BrandingPayload) => {
-                    this.companyLogoUrl = brandingData.companyLogoUrl;
-                    this.loginBannerUrl = brandingData.loginBannerUrl;
-                    this.faviconUrl = brandingData.faviconUrl;
-                    this.headerHexColorControl.setValue(brandingData.headerColor);
-                    this.headerColorControl.setValue(brandingData.headerColor);
-                    this.primaryHexColorControl.setValue(brandingData.primaryColor);
-                    this.primaryColorControl.setValue(brandingData.primaryColor);
-                });
-            /*}
-        });*/
+        this.brandingService.loadBrandingData(this.innerWidth).then((brandingData: BrandingPayload) => {
+            this.companyLogoUrl = brandingData.companyLogoUrl;
+            this.loginBannerUrl = brandingData.loginBannerUrl;
+            this.faviconUrl = brandingData.faviconUrl;
+            this.headerHexColorControl.setValue(brandingData.headerColor);
+            this.headerColorControl.setValue(brandingData.headerColor);
+            this.primaryHexColorControl.setValue(brandingData.primaryColor);
+            this.primaryColorControl.setValue(brandingData.primaryColor);
+            this.companyNameControl.setValue(brandingData.companyName || 'Guardian');
+        });
     }
 
     updateColorFromHex(hexColorControl: FormControl, colorControl: FormControl) {
@@ -134,6 +130,7 @@ export class BrandingComponent implements OnInit {
                             }
                         };
                     };
+                    this.isChangesMade = true;
                     reader.readAsDataURL(files[0]);
                 }
             } else {
@@ -154,7 +151,6 @@ export class BrandingComponent implements OnInit {
             .catch((error: string) => {
                 console.log(error);
             });
-        this.isChangesMade = true;
     }
 
     handleLoginBannerInput(event: any) {
@@ -169,7 +165,6 @@ export class BrandingComponent implements OnInit {
             .catch((error: string) => {
                 console.log(error);
             });
-        this.isChangesMade = true;
     }
 
     handleFaviconInput(event: any) {
@@ -184,7 +179,6 @@ export class BrandingComponent implements OnInit {
             .catch((error: string) => {
                 console.log(error);
             });
-        this.isChangesMade = true;
     }
 
     clearCompanyLogo(): void {
@@ -248,30 +242,22 @@ export class BrandingComponent implements OnInit {
     async onPreview() {
         const favicon = document.querySelectorAll<HTMLLinkElement>('link[rel="shortcut icon"],link[rel="icon"]');
         const loginBanner = document.querySelector<HTMLElement>('.background')!;
-        const homeButton = document.querySelector<HTMLElement>('.btn-home')!;
-        const appName = homeButton.querySelector('.btn-home-name')!;
-        const companyLogo = homeButton.querySelector('img');
+        const companyLogo = document.querySelector<HTMLImageElement>('.company-logo')!;
+        const companyName = document.querySelector<HTMLElement>('.company-name')!;
         const brandingData = await this.brandingService.getBrandingData();
 
         if (this.isPreviewOn) {
             document.documentElement.style.setProperty('--header-background-color', brandingData.headerColor);
             document.documentElement.style.setProperty('--primary-color', brandingData.primaryColor);
             document.documentElement.style.setProperty('--button-primary-color', brandingData.primaryColor);
-            appName.innerHTML = brandingData.companyName;
+            companyName.innerHTML = brandingData.companyName;
             document.title = brandingData.companyName;
-            if (companyLogo) {
-                homeButton.removeChild(companyLogo);
-            }
+
             if (brandingData.companyLogoUrl) {
-                homeButton.style.display = 'flex';
-                homeButton.style.alignItems = 'center';
-                homeButton.style.margin = '0 0 0 22px';
-                const imgElement = document.createElement('img');
-                imgElement.src = brandingData.companyLogoUrl;
-                imgElement.style.width = '45px';
-                imgElement.style.height = '45px';
-                imgElement.style.margin = 'auto 10px auto 0';
-                homeButton.insertBefore(imgElement, homeButton.firstChild);
+                companyLogo.style.display = 'block';
+                companyLogo.src = brandingData.companyLogoUrl;
+            } else {
+                companyLogo.style.display = 'none';
             }
             loginBanner.style.background = `center/cover no-repeat url(${brandingData.loginBannerUrl})`;
             favicon[0].href = brandingData.faviconUrl;
@@ -286,26 +272,20 @@ export class BrandingComponent implements OnInit {
         document.documentElement.style.setProperty('--primary-color', primaryColor);
         document.documentElement.style.setProperty('--button-primary-color', primaryColor);
         if (this.companyNameControl.value) {
-            appName.innerHTML = this.companyNameControl.value;
+            companyName.innerHTML = this.companyNameControl.value;
             document.title = this.companyNameControl.value;
         }
         if (this.companyLogoUrl) {
-            if (companyLogo) {
-                homeButton.removeChild(companyLogo);
-            }
-            homeButton.style.display = 'flex';
-            homeButton.style.alignItems = 'center';
-            homeButton.style.margin = '0 0 0 22px';
-            const imgElement = document.createElement('img');
-            imgElement.src = this.companyLogoUrl;
-            imgElement.style.width = '45px';
-            imgElement.style.height = '45px';
-            imgElement.style.margin = 'auto 10px auto 0';
-            homeButton.insertBefore(imgElement, homeButton.firstChild);
+            companyLogo.style.display = 'block';
+            companyLogo.src = this.companyLogoUrl || brandingData.companyLogoUrl;
+        } else {
+            companyLogo.style.display = 'none';
         }
+
         if (this.loginBannerUrl) {
             loginBanner.style.background = `center/cover no-repeat url(${this.loginBannerUrl})`;
         }
+
         if (this.faviconUrl) {
             favicon[0].href = this.faviconUrl;
         }
@@ -334,6 +314,7 @@ export class BrandingComponent implements OnInit {
                 };
 
                 this.brandingService.saveBrandingData(payload);
+                this.isChangesMade = false;
                 this.loading = true;
             }
         });
@@ -342,14 +323,9 @@ export class BrandingComponent implements OnInit {
     public isSaveEnabled(): boolean {
         return (
             this.isChangesMade ||
-            this.headerHexColorControl.dirty ||
-            this.headerColorControl.dirty ||
-            this.primaryHexColorControl.dirty ||
-            this.primaryColorControl.dirty ||
-            this.companyNameControl.dirty ||
-            !!this.companyLogoUrl ||
-            !!this.loginBannerUrl ||
-            !!this.faviconUrl
+            this.headerColorControl.value !== '#000' ||
+            this.primaryColorControl.value !== '#2C78F6' ||
+            this.companyNameControl.value !== 'Guardian'
         );
     }
 
