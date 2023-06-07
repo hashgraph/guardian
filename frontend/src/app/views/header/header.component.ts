@@ -68,7 +68,7 @@ export class HeaderComponent implements OnInit {
         if (this.innerWidth <= 810) {
             document.documentElement.style.setProperty('--header-height', '75px');
         }
-        this.activeLink = "";
+        this.activeLink = '';
         this.update();
         this.ws = this.webSocketService.profileSubscribe((event) => {
             if (event.type === 'PROFILE_BALANCE') {
@@ -143,7 +143,7 @@ export class HeaderComponent implements OnInit {
     }
 
     async update() {
-        if (this.activeLink == this.router.url) {
+        if (this.activeLink === this.router.url) {
             return;
         }
         this.activeLink = this.router.url;
@@ -163,7 +163,7 @@ export class HeaderComponent implements OnInit {
     }
 
     setStatus(isLogin: boolean, role: any, username: any) {
-        if (this.isLogin != isLogin || this.role != role) {
+        if (this.isLogin !== isLogin || this.role !== role) {
             this.isLogin = isLogin;
             this.role = role;
             this.username = username;
@@ -274,9 +274,6 @@ export class HeaderComponent implements OnInit {
                 return this.activeLinkRoot === '/audit';
             case 'AUDITOR_TRUST_CHAIN':
                 return this.activeLinkRoot === '/trust-chain';
-
-
-
         }
         return false;
     }
@@ -423,6 +420,6 @@ export class HeaderComponent implements OnInit {
                 userInfo.style.display = "none";
                 userInfo.style.maxHeight = content.scrollHeight + "px";
             }
-        } 
+        }
     }
 }
