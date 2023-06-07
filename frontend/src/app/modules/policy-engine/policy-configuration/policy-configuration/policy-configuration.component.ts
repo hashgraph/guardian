@@ -76,7 +76,7 @@ export class PolicyConfigurationComponent implements OnInit {
 
     readonly codeMirrorOptions = {
         theme: 'default',
-        mode: 'application/ld+json',
+        mode: 'policy-json-lang',
         styleActiveLine: true,
         lineNumbers: true,
         lineWrapping: true,
@@ -758,7 +758,7 @@ export class PolicyConfigurationComponent implements OnInit {
                     code = this.yamlToJson(this.code);
                 }
                 this.code = code;
-                this.codeMirrorOptions.mode = 'application/ld+json';
+                this.codeMirrorOptions.mode = 'policy-json-lang';
             } else if (type == 'yaml') {
                 let code = "";
                 if (this.currentView == 'blocks') {
@@ -768,7 +768,7 @@ export class PolicyConfigurationComponent implements OnInit {
                     code = this.jsonToYaml(this.code);
                 }
                 this.code = code;
-                this.codeMirrorOptions.mode = 'text/x-yaml';
+                this.codeMirrorOptions.mode = 'policy-yaml-lang';
             }
             this.currentView = type;
         } catch (error: any) {
