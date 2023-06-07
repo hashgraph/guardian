@@ -67,7 +67,7 @@ export class AggregateBlock {
         const documentCacheFields =
             PolicyComponentsUtils.getDocumentCacheFields(ref.policyId);
         ref.options?.groupByFields
-            ?.filter((field) => field.fieldPath?.startsWith('document.'))
+            ?.filter((field) => field?.fieldPath?.startsWith('document.'))
             .forEach((field) => {
                 documentCacheFields.add(field.fieldPath.replace('document.', ''));
             });

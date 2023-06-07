@@ -26,7 +26,8 @@ const PORT = process.env.PORT || 3002;
 
 Promise.all([
     NestFactory.create(AppModule, {
-        rawBody: true
+        rawBody: true,
+        bodyParser: false
     }),
     MessageBrokerChannel.connect('API_GATEWAY'),
 ]).then(async ([app, cn]) => {
