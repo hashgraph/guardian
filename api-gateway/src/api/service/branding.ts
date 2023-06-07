@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, HttpStatus, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Post, Req, Res } from '@nestjs/common';
 import { Logger } from '@guardian/common';
 import { Response } from 'express';
 import { Guardians } from '@helpers/guardians';
