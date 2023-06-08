@@ -26,6 +26,7 @@ import { RetireTokenDialogComponent } from 'src/app/components/retire-token-dial
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { takeUntil } from 'rxjs/operators';
 import { SeparateStepperComponent } from 'src/app/modules/common/separate-stepper/separate-stepper.component';
+import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
 
 @Component({
     selector: 'app-policy-wizard-dialog',
@@ -83,6 +84,12 @@ export class PolicyWizardDialogComponent implements OnInit {
         public dialogRef: MatDialogRef<RetireTokenDialogComponent>,
         private fb: FormBuilder,
         private cdRef: ChangeDetectorRef,
+        @Inject(GET_SCHEMA_NAME)
+        public getSchemaName: (
+            name?: string,
+            version?: string,
+            status?: string
+        ) => string,
         @Inject(MAT_DIALOG_DATA)
         public data: {
             schemas: Schema[];
