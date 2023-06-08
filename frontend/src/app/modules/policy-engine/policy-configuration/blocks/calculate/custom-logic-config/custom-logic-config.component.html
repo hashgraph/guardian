@@ -5,11 +5,10 @@
         <td class="propRowCell cellName">Output Schema</td>
         <td class="propRowCell">
             <mat-select [(value)]="properties.outputSchema" [disabled]="readonly">
-                <mat-option *ngFor="let schema of schemas" [value]="schema.value">
-                    {{schema.name}}
-                    <span *ngIf="schema.version"> ({{schema.version}})</span>
-                    <span *ngIf="schema.status"> ({{schema.status}})</span>
-                </mat-option>
+                <mat-option [matTooltip]="getSchemaName(schema.name, schema.version || schema.sourceVersion, schema.status)"
+                    matTooltipPosition="below" matTooltipClass="guardian-tooltip small-guardian-tooltip" matTooltipShowDelay="500"
+                    *ngFor="let schema of schemas" [value]="schema.value">{{getSchemaName(schema.name, schema.version ||
+                    schema.sourceVersion, schema.status)}}</mat-option>
             </mat-select>
         </td>
     </tr>

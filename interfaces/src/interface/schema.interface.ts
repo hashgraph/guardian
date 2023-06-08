@@ -57,6 +57,10 @@ export interface ISchema {
      */
     version?: string;
     /**
+     * Source version
+     */
+    sourceVersion?: string;
+    /**
      * Creator
      */
     creator?: string;

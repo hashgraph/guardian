@@ -16,6 +16,7 @@ import {
     StandardRegistryGuard
 } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { SchemaHelper } from '@guardian/interfaces';
 //Services
 import { AuthInterceptor, AuthService } from './services/auth.service';
 import { ProfileService } from './services/profile.service';
@@ -72,6 +73,8 @@ import { CommonComponentsModule } from './modules/common/common-components.modul
 import { TagEngineModule } from './modules/tag-engine/tag-engine.module';
 import { SchemaEngineModule } from './modules/schema-engine/schema-engine.module';
 import { ThemeService } from './services/theme.service';
+// Injectors
+import { GET_SCHEMA_NAME } from './injectors/get-schema-name.injector';
 
 @NgModule({
     declarations: [
@@ -143,6 +146,10 @@ import { ThemeService } from './services/theme.service';
         TagsService,
         ThemeService,
         WizardService,
+        {
+            provide: GET_SCHEMA_NAME,
+            useValue: SchemaHelper.getSchemaName
+        },
         {
             provide: HTTP_INTERCEPTORS,
             useClass: HandleErrorsService,

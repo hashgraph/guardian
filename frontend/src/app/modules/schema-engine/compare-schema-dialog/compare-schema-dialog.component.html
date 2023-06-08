@@ -33,7 +33,8 @@
                     <mat-label>First schema:</mat-label>
                     <mat-select [(value)]="schemaId1" (valueChange)="onChange()">
                         <mat-option>None</mat-option>
-                        <mat-option *ngFor="let schema of list1" [value]="schema.id">{{schema.fullName}}</mat-option>
+                        <mat-option [matTooltip]="schema.fullName" matTooltipPosition="below" matTooltipClass="guardian-tooltip"
+                            matTooltipShowDelay="500" *ngFor="let schema of list1" [value]="schema.id">{{schema.fullName}}</mat-option>
                     </mat-select>
                 </mat-form-field>
             </div>
@@ -51,7 +52,8 @@
                     <mat-label>Secondary schema</mat-label>
                     <mat-select [(value)]="schemaId2" (valueChange)="onChange()">
                         <mat-option>None</mat-option>
-                        <mat-option *ngFor="let schema of list2" [value]="schema.id">{{schema.fullName}}</mat-option>
+                        <mat-option [matTooltip]="schema.fullName" matTooltipPosition="below" matTooltipClass="guardian-tooltip"
+                            matTooltipShowDelay="500" *ngFor="let schema of list2" [value]="schema.id">{{schema.fullName}}</mat-option>
                     </mat-select>
                 </mat-form-field>
             </div>
