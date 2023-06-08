@@ -883,4 +883,26 @@ export class SchemaHelper {
         }
         return true;
     }
+
+    /**
+     * Get schema name with detailed information
+     * @param name Name
+     * @param version Version
+     * @param status Status
+     * @returns Name
+     */
+    public static getSchemaName(
+        name?: string,
+        version?: string,
+        status?: string
+    ) {
+        let result = name || '';
+        if (version) {
+            result += ` (${version})`;
+        }
+        if (status) {
+            result += ` (${status})`;
+        }
+        return result;
+    }
 }

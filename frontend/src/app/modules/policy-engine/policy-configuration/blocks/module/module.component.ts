@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
+import { Component, EventEmitter, Inject, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import {
     GroupVariables,
     IModuleVariables,
@@ -10,6 +10,7 @@ import {
     TokenVariables,
     TopicVariables
 } from '../../../structures';
+import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
 
 /**
  * Settings for block of 'policyRolesBlock' type.
@@ -42,8 +43,14 @@ export class ModuleComponent implements OnInit {
     groups!: GroupVariables[];
     variablesHidden = [];
 
-    constructor() {
-    }
+    constructor(
+        @Inject(GET_SCHEMA_NAME)
+        public getSchemaName: (
+            name?: string,
+            version?: string,
+            status?: string
+        ) => string,
+    ) {}
 
     ngOnInit(): void {
         this.schemas = [];

@@ -57,6 +57,7 @@ export async function publishSchema(
     item.contextURL = contextUrl;
     item.messageId = messageId;
     item.topicId = topicId;
+    item.sourceVersion = '';
 
     SchemaHelper.updateIRI(item);
 
