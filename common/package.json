@@ -9,7 +9,7 @@
     "@mattrglobal/jsonld-signatures-bbs": "^1.1.2",
     "@meeco/cryppo": "^2.0.2",
     "@mikro-orm/core": "~5.7.7",
-    "@mikro-orm/migrations-mongodb": "~5.7.7",
+    "@mikro-orm/migrations-mongodb": "~5.7.12",
     "@mikro-orm/mongodb": "~5.7.7",
     "@nestjs/common": "^9.4.1",
     "@nestjs/core": "^9.4.1",
