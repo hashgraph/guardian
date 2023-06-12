@@ -1469,7 +1469,7 @@ __metadata:
     "@transmute/ed25519-signature-2018": ^0.7.0-unstable.80
     "@transmute/json-web-signature": ^0.7.0-unstable.80
     "@transmute/jsonld-schema": ^0.7.0-unstable.80
-    "@transmute/security-context": ^0.7.0-unstable.80
+    "@transmute/security-context": ^0.7.0-unstable.81
     "@transmute/vc.js": ^0.7.0-unstable.80
     "@types/express": ^4.17.13
     "@types/node": ^18.16.0
@@ -2606,10 +2606,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@transmute/security-context@npm:0.7.0-unstable.80, @transmute/security-context@npm:^0.7.0-unstable.80":
-  version: 0.7.0-unstable.80
-  resolution: "@transmute/security-context@npm:0.7.0-unstable.80"
-  checksum: c7902d433da8bb3380fe3b3344d400a77caf396a6cea29a00f11d26e934f50f34d238e9adbe7638ece2c968869d0f64d611aab5cf82ebc50c0f400c40949501a
+"@transmute/security-context@npm:0.7.0-unstable.81, @transmute/security-context@npm:^0.7.0-unstable.81":
+  version: 0.7.0-unstable.81
+  resolution: "@transmute/security-context@npm:0.7.0-unstable.81"
+  checksum: 17a4e05b3970dde2f54b78f5d134e03fb51865832afcd14fe0933898fdb29cb81aa50de32657ab46e168dc3e8abf4c2cf2f0d97aee7522b7229b0a1a576a35dc
   languageName: node
   linkType: hard
 
@@ -2617,6 +2617,13 @@ __metadata:
   version: 0.6.1-unstable.37
   resolution: "@transmute/security-context@npm:0.6.1-unstable.37"
   checksum: 2244a38617fe4f89afe55905c4a1b5455691041eb92a788e5b8d630468fef97983dd4694643578db814838d47b61b41e81ac0156c0736df515b002ce9ea61985
+  languageName: node
+  linkType: hard
+
+"@transmute/security-context@npm:^0.7.0-unstable.80":
+  version: 0.7.0-unstable.80
+  resolution: "@transmute/security-context@npm:0.7.0-unstable.80"
+  checksum: c7902d433da8bb3380fe3b3344d400a77caf396a6cea29a00f11d26e934f50f34d238e9adbe7638ece2c968869d0f64d611aab5cf82ebc50c0f400c40949501a
   languageName: node
   linkType: hard
 
@@ -6193,7 +6200,7 @@ __metadata:
     "@transmute/ed25519-signature-2018": ^0.7.0-unstable.80
     "@transmute/json-web-signature": ^0.7.0-unstable.80
     "@transmute/jsonld-schema": ^0.7.0-unstable.80
-    "@transmute/security-context": ^0.7.0-unstable.80
+    "@transmute/security-context": ^0.7.0-unstable.81
     "@transmute/vc.js": ^0.7.0-unstable.80
     "@types/deep-equal": ^1.0.1
     "@types/express": ^4.17.13
@@ -8829,7 +8836,7 @@ __metadata:
     "@transmute/ed25519-signature-2018": 0.7.0-unstable.80
     "@transmute/json-web-signature": 0.7.0-unstable.80
     "@transmute/jsonld-schema": 0.7.0-unstable.80
-    "@transmute/security-context": 0.7.0-unstable.80
+    "@transmute/security-context": 0.7.0-unstable.81
     "@transmute/vc.js": 0.7.0-unstable.80
     "@types/express": ^4.17.13
     axios: ^1.3.6
@@ -9876,7 +9883,7 @@ __metadata:
     "@transmute/ed25519-signature-2018": 0.7.0-unstable.80
     "@transmute/json-web-signature": 0.7.0-unstable.80
     "@transmute/jsonld-schema": 0.7.0-unstable.80
-    "@transmute/security-context": 0.7.0-unstable.80
+    "@transmute/security-context": 0.7.0-unstable.81
     "@transmute/vc.js": 0.7.0-unstable.80
     "@types/deep-equal": ^1.0.1
     "@types/express": ^4.17.13
@@ -12393,7 +12400,7 @@ __metadata:
     "@transmute/ed25519-signature-2018": ^0.7.0-unstable.80
     "@transmute/json-web-signature": ^0.7.0-unstable.80
     "@transmute/jsonld-schema": ^0.7.0-unstable.80
-    "@transmute/security-context": ^0.7.0-unstable.80
+    "@transmute/security-context": ^0.7.0-unstable.81
     "@transmute/vc.js": ^0.7.0-unstable.80
     "@types/node": ^18.16.0
     axios: ^1.3.6
