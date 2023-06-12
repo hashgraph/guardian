@@ -16,6 +16,7 @@ import {
     StandardRegistryGuard
 } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { SchemaHelper } from '@guardian/interfaces';
 //Services
 import { AuthInterceptor, AuthService } from './services/auth.service';
 import { ProfileService } from './services/profile.service';
@@ -57,11 +58,13 @@ import { ServiceStatusComponent } from './views/admin/service-status/service-sta
 import { ContractConfigComponent } from './views/contract-config/contract-config.component';
 import { ContractRequestConfigComponent } from './views/contract-request-config/contract-request-config.component';
 import { SchemaConfigComponent } from './views/schemas/schemas.component';
+import { BrandingDialogComponent } from './components/branding-dialog/branding-dialog.component';
 //Components
 import { InfoComponent } from './components/info/info/info.component';
 import { AddPairDialogComponent } from './components/add-pair-dialog/add-pair-dialog.component';
 import { RetireTokenDialogComponent } from './components/retire-token-dialog/retire-token-dialog.component';
 import { DataInputDialogComponent } from './components/data-input-dialog/data-input-dialog.component';
+import { BrandingComponent } from './views/branding/branding.component';
 //Modules
 import { MaterialModule } from './modules/common/material.module';
 import { PolicyEngineModule } from './modules/policy-engine/policy-engine.module';
@@ -70,6 +73,8 @@ import { CommonComponentsModule } from './modules/common/common-components.modul
 import { TagEngineModule } from './modules/tag-engine/tag-engine.module';
 import { SchemaEngineModule } from './modules/schema-engine/schema-engine.module';
 import { ThemeService } from './services/theme.service';
+// Injectors
+import { GET_SCHEMA_NAME } from './injectors/get-schema-name.injector';
 
 @NgModule({
     declarations: [
@@ -94,7 +99,9 @@ import { ThemeService } from './services/theme.service';
         AddPairDialogComponent,
         RetireTokenDialogComponent,
         DataInputDialogComponent,
-        SchemaConfigComponent
+        SchemaConfigComponent,
+        BrandingComponent,
+        BrandingDialogComponent,
     ],
     imports: [
         BrowserModule,
@@ -139,6 +146,10 @@ import { ThemeService } from './services/theme.service';
         TagsService,
         ThemeService,
         WizardService,
+        {
+            provide: GET_SCHEMA_NAME,
+            useValue: SchemaHelper.getSchemaName
+        },
         {
             provide: HTTP_INTERCEPTORS,
             useClass: HandleErrorsService,

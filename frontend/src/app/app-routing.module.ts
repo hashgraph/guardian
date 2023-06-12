@@ -21,6 +21,7 @@ import { InfoComponent } from './components/info/info/info.component';
 import { WebSocketService } from './services/web-socket.service';
 import { ContractConfigComponent } from './views/contract-config/contract-config.component';
 import { ContractRequestConfigComponent } from './views/contract-request-config/contract-request-config.component';
+import { BrandingComponent } from './views/branding/branding.component';
 //Modules
 import { PoliciesComponent } from './modules/policy-engine/policies/policies.component';
 import { PolicyConfigurationComponent } from './modules/policy-engine/policy-configuration/policy-configuration/policy-configuration.component';
@@ -176,6 +177,8 @@ const routes: Routes = [
     { path: 'modules', component: ModulesListComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
 
     { path: 'compare', component: CompareComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
+
+    { path: 'branding', component: BrandingComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
 
     { path: '', component: HomeComponent },
     { path: 'info', component: InfoComponent },

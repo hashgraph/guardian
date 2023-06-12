@@ -35,6 +35,7 @@ import {
     Users,
     ValidateConfiguration,
     VcDocument,
+    Branding,
     VpDocument,
     Workers
 } from '@guardian/common';
@@ -55,6 +56,7 @@ import { tagsAPI } from '@api/tag.service';
 import { setDefaultSchema } from '@api/helpers/schema-helper';
 import { demoAPI } from '@api/demo.service';
 import { themeAPI } from '@api/theme.service';
+import { brandingAPI } from '@api/branding.service';
 import { wizardAPI } from '@api/wizard.service';
 import { startMetricsServer } from './utils/metrics';
 import { NestFactory } from '@nestjs/core';
@@ -140,6 +142,7 @@ Promise.all([
     const policyRepository = new DataBaseHelper(Policy);
     const contractRepository = new DataBaseHelper(Contract);
     const retireRequestRepository = new DataBaseHelper(RetireRequest);
+    const brandingRepository = new DataBaseHelper(Branding);
 
     try {
         await configAPI(settingsRepository, topicRepository);
@@ -158,6 +161,7 @@ Promise.all([
         await mapAPI();
         await themeAPI();
         await wizardAPI();
+        await brandingAPI(brandingRepository);
     } catch (error) {
         console.error(error.message);
         process.exit(0);

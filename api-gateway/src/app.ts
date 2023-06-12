@@ -12,6 +12,7 @@ import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import process from 'process';
 import { HttpStatus, ValidationPipe } from '@nestjs/common';
+import { json } from 'express';
 
 const PORT = process.env.PORT || 3002;
 // const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
@@ -44,6 +45,8 @@ Promise.all([
         app.useGlobalPipes(new ValidationPipe({
             errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY
         }));
+
+        app.use(json({ limit: '2mb' }));
 
         new Logger().setConnection(cn);
         await new Guardians().setConnection(cn).init();
