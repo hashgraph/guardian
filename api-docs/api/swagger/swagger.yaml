@@ -848,6 +848,114 @@ components:
                     items:
                       type: string
                 example: ["type"]
+    Document:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: array
+          items:
+            type: string
+        issuer:
+          type: string
+        issuanceDate:
+          type: string
+          format: date-time
+        '@context':
+          type: array
+          items:
+            type: string
+        credentialSubject:
+          type: array
+          items:
+            type: object
+            properties:
+              geography:
+                type: string
+              law:
+                type: string
+              tags:
+                type: string
+              ISIC:
+                type: string
+              '@context':
+                type: array
+                items:
+                  type: string
+              id:
+                type: string
+              type:
+                type: string
+        proof:
+          type: object
+          properties:
+            type:
+              type: string
+            created:
+              type: string
+              format: date-time
+            verificationMethod:
+              type: string
+            proofPurpose:
+              type: string
+            jws:
+              type: string
+    Policy:
+      type: object
+      properties:
+        _id:
+          type: string
+        createDate:
+          type: string
+          format: date-time
+        uuid:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+        creator:
+          type: string
+        owner:
+          type: string
+        topicId:
+          type: string
+        policyTag:
+          type: string
+        codeVersion:
+          type: string
+        userRoles:
+          type: array
+          items:
+            type: string
+        userGroups:
+          type: array
+          items:
+            type: object
+        userRole:
+          type: string
+        userGroup:
+          type: string
+        id:
+          type: string
+
+    VCWithPolicies:
+      type: object
+      properties:
+        did:
+          type: string
+        hederaAccountId:
+          type: string
+        vcDocument:
+          $ref: '#/components/schemas/Document'
+        policies:
+          type: array
+          items:
+            $ref: '#/components/schemas/Policy'
+
     WizardConfig:
       type: object
       required:
@@ -1163,7 +1271,33 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+                
+  /accounts/standard-registries/aggregated:
+    get:
+      tags:
+        - accounts
+      description: Returns all Standard Registries aggregated with polices and vcDocuments
+      security:
+        - bearerAuth: []
+      summary: Returns all Standard Registries aggregated with polices and vcDocuments.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VCWithPolicies"
+        401:
+          description: Unauthorized.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  
   /profiles/{username}/balance:
     get:
       tags:
