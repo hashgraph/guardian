@@ -407,4 +407,11 @@ export abstract class Message {
             action: this._action,
         }
     }
+
+    /**
+     * Get User DID
+     */
+    public getOwner(): string {
+        return null;
+    }
 }

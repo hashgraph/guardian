@@ -916,6 +916,25 @@ export class HederaSDKHelper {
         return (seconds + '.' + ('000000000' + nanos).slice(-9));
     }
 
+
+
+    /**
+     * Returns token info
+     * @param tokenId token id
+     * @returns info
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    public static async getTokenInfo(tokenId: string): Promise<any> {
+        const res = await axios.get(
+            `${Environment.HEDERA_TOKENS_API}/${tokenId}`,
+            { responseType: 'json' }
+        );
+        if (!res || !res.data) {
+            throw new Error(`Invalid token info: '${tokenId}'`);
+        }
+        return res.data;
+    }
+
     /**
      * Returns topic message
      * @param timeStamp Message identifier

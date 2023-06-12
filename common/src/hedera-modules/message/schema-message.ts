@@ -226,4 +226,11 @@ export class SchemaMessage extends Message {
         }
         return result;
     }
+
+    /**
+     * Get User DID
+     */
+    public override getOwner(): string {
+        return this.owner;
+    }
 }

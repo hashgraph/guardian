@@ -139,4 +139,11 @@ export class RegistrationMessage extends Message {
         result.attributes = this.attributes;
         return result;
     }
+
+    /**
+     * Get User DID
+     */
+    public override getOwner(): string {
+        return this.did;
+    }
 }

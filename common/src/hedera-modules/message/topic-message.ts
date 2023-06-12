@@ -190,4 +190,11 @@ export class TopicMessage extends Message {
         result.rationale = this.rationale;
         return result;
     }
+
+    /**
+     * Get User DID
+     */
+    public override getOwner(): string {
+        return this.owner;
+    }
 }

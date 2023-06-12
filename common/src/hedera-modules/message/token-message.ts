@@ -189,4 +189,11 @@ export class TokenMessage extends Message {
         result.owner = this.owner;
         return result;
     }
+
+    /**
+     * Get User DID
+     */
+    public override getOwner(): string {
+        return this.owner;
+    }
 }

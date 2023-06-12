@@ -634,6 +634,14 @@ export class Worker extends NatsService {
                     break;
                 }
 
+                case WorkerTaskType.GET_TOKEN_INFO: {
+                    const { tokenId } = task.data;
+                    result.data = await HederaSDKHelper
+                        .setNetwork(networkOptions)
+                        .getTokenInfo(tokenId);
+                    break;
+                }
+
                 case WorkerTaskType.GET_TOPIC_MESSAGE: {
                     const { timeStamp } = task.data;
                     result.data = await HederaSDKHelper

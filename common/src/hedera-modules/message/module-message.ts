@@ -179,4 +179,11 @@ export class ModuleMessage extends Message {
         result.document = this.document;
         return result;
     }
+
+    /**
+     * Get User DID
+     */
+    public override getOwner(): string {
+        return this.owner;
+    }
 }

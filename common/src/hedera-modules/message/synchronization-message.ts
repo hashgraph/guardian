@@ -190,4 +190,11 @@ export class SynchronizationMessage extends Message {
         result.policyOwner = this.policyOwner;
         return result;
     }
+
+    /**
+     * Get User DID
+     */
+    public override getOwner(): string {
+        return this.policyOwner;
+    }
 }

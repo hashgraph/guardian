@@ -206,4 +206,11 @@ export class TagMessage extends Message {
         result.date = this.date;
         return result;
     }
+
+    /**
+     * Get User DID
+     */
+    public override getOwner(): string {
+        return this.owner;
+    }
 }

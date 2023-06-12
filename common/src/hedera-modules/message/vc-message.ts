@@ -255,4 +255,11 @@ export class VCMessage extends Message {
         result.documentStatus = this.documentStatus;
         return result;
     }
+
+    /**
+     * Get User DID
+     */
+    public override getOwner(): string {
+        return this.issuer;
+    }
 }
