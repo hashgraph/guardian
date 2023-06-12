@@ -1467,7 +1467,7 @@ __metadata:
     "@transmute/credentials-context": ^0.7.0-unstable.80
     "@transmute/did-context": ^0.7.0-unstable.80
     "@transmute/ed25519-signature-2018": ^0.7.0-unstable.80
-    "@transmute/json-web-signature": ^0.7.0-unstable.80
+    "@transmute/json-web-signature": ^0.7.0-unstable.81
     "@transmute/jsonld-schema": ^0.7.0-unstable.80
     "@transmute/security-context": ^0.7.0-unstable.80
     "@transmute/vc.js": ^0.7.0-unstable.80
@@ -2509,6 +2509,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@transmute/ed25519-key-pair@npm:^0.7.0-unstable.81":
+  version: 0.7.0-unstable.81
+  resolution: "@transmute/ed25519-key-pair@npm:0.7.0-unstable.81"
+  dependencies:
+    "@stablelib/ed25519": ^1.0.1
+    "@transmute/ld-key-pair": ^0.7.0-unstable.81
+    "@transmute/x25519-key-pair": ^0.7.0-unstable.81
+  checksum: df1f343a48837aa3ab69ca034117028f7f6c59311404986bfe0db965f0c9b460d24f1d34f3926cb1683b0ccd64fb04ce3ef762019c4e876c0070306878ef362b
+  languageName: node
+  linkType: hard
+
 "@transmute/ed25519-signature-2018@npm:0.7.0-unstable.80, @transmute/ed25519-signature-2018@npm:^0.7.0-unstable.80":
   version: 0.7.0-unstable.80
   resolution: "@transmute/ed25519-signature-2018@npm:0.7.0-unstable.80"
@@ -2536,7 +2547,35 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@transmute/json-web-signature@npm:0.7.0-unstable.80, @transmute/json-web-signature@npm:^0.7.0-unstable.80":
+"@transmute/jose-ld@npm:^0.7.0-unstable.81":
+  version: 0.7.0-unstable.81
+  resolution: "@transmute/jose-ld@npm:0.7.0-unstable.81"
+  dependencies:
+    "@peculiar/webcrypto": ^1.1.6
+    "@stablelib/aes-kw": ^1.0.0
+    "@stablelib/xchacha20poly1305": ^1.0.0
+    base64url: ^3.0.1
+    jose: ^4.3.8
+    web-streams-polyfill: ^3.0.3
+  checksum: a2d32203e7ea1eaea83c840ef3d6a4a394fac7d10ecd88b67d8d4a6cb7da2cabc56d4c9d28ce6d61924772ac47cae41d3d1a9485ec7d3e180365a87d82190fe0
+  languageName: node
+  linkType: hard
+
+"@transmute/json-web-signature@npm:0.7.0-unstable.81, @transmute/json-web-signature@npm:^0.7.0-unstable.81":
+  version: 0.7.0-unstable.81
+  resolution: "@transmute/json-web-signature@npm:0.7.0-unstable.81"
+  dependencies:
+    "@transmute/ed25519-key-pair": ^0.7.0-unstable.81
+    "@transmute/jose-ld": ^0.7.0-unstable.81
+    "@transmute/jsonld": 0.0.4
+    "@transmute/secp256k1-key-pair": ^0.7.0-unstable.81
+    "@transmute/security-context": ^0.7.0-unstable.81
+    "@transmute/web-crypto-key-pair": ^0.7.0-unstable.81
+  checksum: eb3841fae759b239798fadf788d67819d7e6efb97fc4938381a9c2bdce19d66e0d931d7bd715e83d4ad1fb3a0bd4488a8f35928e1c3440759dce38121c939fbe
+  languageName: node
+  linkType: hard
+
+"@transmute/json-web-signature@npm:^0.7.0-unstable.80":
   version: 0.7.0-unstable.80
   resolution: "@transmute/json-web-signature@npm:0.7.0-unstable.80"
   dependencies:
@@ -2585,6 +2624,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@transmute/ld-key-pair@npm:^0.7.0-unstable.81":
+  version: 0.7.0-unstable.81
+  resolution: "@transmute/ld-key-pair@npm:0.7.0-unstable.81"
+  checksum: cedfd46f82ccc6676c68be18b0ecd6b51c39b884cae6e07ea1bc09255bbf8fe9738a14ce1977ae4698eda4c33e67dcadc1ef380e05e1cdb88453a6e1ecf6177f
+  languageName: node
+  linkType: hard
+
 "@transmute/linked-data-proof@npm:^0.7.0-unstable.80":
   version: 0.7.0-unstable.80
   resolution: "@transmute/linked-data-proof@npm:0.7.0-unstable.80"
@@ -2606,6 +2652,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@transmute/secp256k1-key-pair@npm:^0.7.0-unstable.81":
+  version: 0.7.0-unstable.81
+  resolution: "@transmute/secp256k1-key-pair@npm:0.7.0-unstable.81"
+  dependencies:
+    "@bitauth/libauth": ^1.18.1
+    "@transmute/ld-key-pair": ^0.7.0-unstable.81
+    secp256k1: ^4.0.2
+  checksum: 40d13c162e37846ceee4a2cec91d7e9c8a0e8225dc996d5cc3d25e13e478fa2e214d0403c542b76cf5e70284fe300e0c084f9ec9c53894252a1a02a15e63eca4
+  languageName: node
+  linkType: hard
+
 "@transmute/security-context@npm:0.7.0-unstable.80, @transmute/security-context@npm:^0.7.0-unstable.80":
   version: 0.7.0-unstable.80
   resolution: "@transmute/security-context@npm:0.7.0-unstable.80"
@@ -2617,6 +2674,13 @@ __metadata:
   version: 0.6.1-unstable.37
   resolution: "@transmute/security-context@npm:0.6.1-unstable.37"
   checksum: 2244a38617fe4f89afe55905c4a1b5455691041eb92a788e5b8d630468fef97983dd4694643578db814838d47b61b41e81ac0156c0736df515b002ce9ea61985
+  languageName: node
+  linkType: hard
+
+"@transmute/security-context@npm:^0.7.0-unstable.81":
+  version: 0.7.0-unstable.81
+  resolution: "@transmute/security-context@npm:0.7.0-unstable.81"
+  checksum: 17a4e05b3970dde2f54b78f5d134e03fb51865832afcd14fe0933898fdb29cb81aa50de32657ab46e168dc3e8abf4c2cf2f0d97aee7522b7229b0a1a576a35dc
   languageName: node
   linkType: hard
 
@@ -2645,6 +2709,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@transmute/web-crypto-key-pair@npm:^0.7.0-unstable.81":
+  version: 0.7.0-unstable.81
+  resolution: "@transmute/web-crypto-key-pair@npm:0.7.0-unstable.81"
+  dependencies:
+    "@peculiar/webcrypto": ^1.1.6
+    "@transmute/ld-key-pair": ^0.7.0-unstable.81
+    big-integer: ^1.6.48
+  checksum: 0c325ee6b38b762cee6bed7278739dc20a3b3b4f7893f81cd05de84860652db38beaad3abc15d8939f99f4c97e7a48fa65a2e50bcd9a3a49bb0e0af30356f01b
+  languageName: node
+  linkType: hard
+
 "@transmute/x25519-key-pair@npm:^0.6.1-unstable.37":
   version: 0.6.1-unstable.37
   resolution: "@transmute/x25519-key-pair@npm:0.6.1-unstable.37"
@@ -2662,6 +2737,16 @@ __metadata:
     "@stablelib/x25519": ^1.0.0
     "@transmute/ld-key-pair": ^0.7.0-unstable.80
   checksum: d5985d7970637220d91ee6238ab5fdf7ef42ace66b798be91e31f041e9feed5c401ff76db33ed38a98f9c91539619c90d23fa47c67e1b61a3b95dcec648ea0e6
+  languageName: node
+  linkType: hard
+
+"@transmute/x25519-key-pair@npm:^0.7.0-unstable.81":
+  version: 0.7.0-unstable.81
+  resolution: "@transmute/x25519-key-pair@npm:0.7.0-unstable.81"
+  dependencies:
+    "@stablelib/x25519": ^1.0.0
+    "@transmute/ld-key-pair": ^0.7.0-unstable.81
+  checksum: 0bb142130a09ca2023910b1f36844446fa54841758a0927d5a1e5a9238a2a59cf91eea7c794dac2bbd3517db846f793bd7122d23a30ab79506e2b0d7e3d03cce
   languageName: node
   linkType: hard
 
@@ -6191,7 +6276,7 @@ __metadata:
     "@transmute/credentials-context": ^0.7.0-unstable.80
     "@transmute/did-context": ^0.7.0-unstable.80
     "@transmute/ed25519-signature-2018": ^0.7.0-unstable.80
-    "@transmute/json-web-signature": ^0.7.0-unstable.80
+    "@transmute/json-web-signature": ^0.7.0-unstable.81
     "@transmute/jsonld-schema": ^0.7.0-unstable.80
     "@transmute/security-context": ^0.7.0-unstable.80
     "@transmute/vc.js": ^0.7.0-unstable.80
@@ -8827,7 +8912,7 @@ __metadata:
     "@transmute/credentials-context": 0.7.0-unstable.80
     "@transmute/did-context": 0.7.0-unstable.80
     "@transmute/ed25519-signature-2018": 0.7.0-unstable.80
-    "@transmute/json-web-signature": 0.7.0-unstable.80
+    "@transmute/json-web-signature": 0.7.0-unstable.81
     "@transmute/jsonld-schema": 0.7.0-unstable.80
     "@transmute/security-context": 0.7.0-unstable.80
     "@transmute/vc.js": 0.7.0-unstable.80
@@ -9874,7 +9959,7 @@ __metadata:
     "@transmute/credentials-context": 0.7.0-unstable.80
     "@transmute/did-context": 0.7.0-unstable.80
     "@transmute/ed25519-signature-2018": 0.7.0-unstable.80
-    "@transmute/json-web-signature": 0.7.0-unstable.80
+    "@transmute/json-web-signature": 0.7.0-unstable.81
     "@transmute/jsonld-schema": 0.7.0-unstable.80
     "@transmute/security-context": 0.7.0-unstable.80
     "@transmute/vc.js": 0.7.0-unstable.80
@@ -12391,7 +12476,7 @@ __metadata:
     "@transmute/credentials-context": ^0.7.0-unstable.80
     "@transmute/did-context": ^0.7.0-unstable.80
     "@transmute/ed25519-signature-2018": ^0.7.0-unstable.80
-    "@transmute/json-web-signature": ^0.7.0-unstable.80
+    "@transmute/json-web-signature": ^0.7.0-unstable.81
     "@transmute/jsonld-schema": ^0.7.0-unstable.80
     "@transmute/security-context": ^0.7.0-unstable.80
     "@transmute/vc.js": ^0.7.0-unstable.80
