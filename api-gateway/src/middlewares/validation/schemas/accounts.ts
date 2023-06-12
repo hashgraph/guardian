@@ -1,7 +1,43 @@
 import * as yup from 'yup';
 import fieldsValidation from '../fields-validation'
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 import { UserRole } from '@guardian/interfaces';
+import { Expose } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
+
+export class AccountsResponseDTO {
+  @ApiProperty()
+  @IsString()
+  @Expose()
+  username: string;
+
+  @ApiProperty()
+  @IsString()
+  @Expose()
+  role: string;
+
+  @ApiProperty()
+  @IsString()
+  @Expose()
+  did: string
+}
+
+export class AccountsSessionResponseDTO {
+  @ApiProperty()
+  @IsString()
+  @Expose()
+  username: string;
+
+  @ApiProperty()
+  @IsString()
+  @Expose()
+  role: string;
+
+  @ApiProperty()
+  @IsString()
+  @Expose()
+  accessToken: string
+}
 
 export class LoginUserDTO {
   @IsNotEmpty()
@@ -12,16 +48,24 @@ export class LoginUserDTO {
 }
 
 export class RegisterUserDTO {
+  @ApiProperty()
+  @IsString()
   @IsNotEmpty()
   username: string;
 
+  @ApiProperty()
+  @IsString()
   @IsNotEmpty()
   password: string;
 
+  @ApiProperty()
+  @IsString()
   @IsNotEmpty()
-  // tslint:disable-next-line:variable-name
+      // tslint:disable-next-line:variable-name
   password_confirmation: string;
 
+  @ApiProperty()
+  @IsString()
   @IsNotEmpty()
   role: UserRole | string
 }

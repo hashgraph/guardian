@@ -12,7 +12,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { MetricsApi } from '@api/service/metrics';
 import { ModulesApi } from '@api/service/module';
 import { ProfileApi } from '@api/service/profile';
-import { authorizationHelper } from '@auth/authorization-helper';
+import { AuthGuard, authorizationHelper } from '@auth/authorization-helper';
 import { PolicyApi } from '@api/service/policy';
 import { SchemaApi, SingleSchemaApi } from '@api/service/schema';
 import { SettingsApi } from '@api/service/settings';
@@ -28,6 +28,7 @@ import hpp from 'hpp';
 import { ThemesApi } from '@api/service/themes';
 import { TrustChainsOldApi } from '@api/service/trustchains';
 import { BrandingApi } from '@api/service/branding';
+import { JwtModule } from '@nestjs/jwt';
 
 const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
 const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
@@ -44,6 +45,11 @@ const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
                 ]
             }
         }]),
+        JwtModule.register({
+            global: true,
+            secret: '123123123123123123',
+            signOptions: {expiresIn: '60s'},
+        }),
     ],
     controllers: [
         AccountApi,
@@ -72,12 +78,13 @@ const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
         BrandingApi
     ],
     providers: [
-        LoggerService
+        LoggerService,
+        AuthGuard
     ]
 })
 export class AppModule {
     configure(consumer: MiddlewareConsumer) {
-        consumer.apply(authorizationHelper).forRoutes(AccountApi);
+        // consumer.apply(authorizationHelper).forRoutes(AccountApi);
         consumer.apply(authorizationHelper).forRoutes(ProfileApi);
         consumer.apply(authorizationHelper).forRoutes(PolicyApi);
         consumer.apply(authorizationHelper).forRoutes(SettingsApi);

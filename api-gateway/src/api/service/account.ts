@@ -3,14 +3,18 @@ import { Logger } from '@guardian/common';
 import { Guardians } from '@helpers/guardians';
 import { UserRole } from '@guardian/interfaces';
 import { ClientProxy } from '@nestjs/microservices';
-import { Body, Controller, Get, Headers, HttpCode, HttpException, HttpStatus, Inject, Post, Req } from '@nestjs/common';
-import { checkPermission } from '@auth/authorization-helper';
-import { LoginUserDTO, RegisterUserDTO } from '@middlewares/validation/schemas/accounts';
+import { Body, Controller, Get, Headers, HttpCode, HttpException, HttpStatus, Inject, Post, Req, UseGuards } from '@nestjs/common';
+import { AuthGuard, checkPermission } from '@auth/authorization-helper';
+import { AccountsResponseDTO, AccountsSessionResponseDTO, LoginUserDTO, RegisterUserDTO } from '@middlewares/validation/schemas/accounts';
+import { ApiBearerAuth, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath } from '@nestjs/swagger';
+import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
+import { User } from '@helpers/decorators/user';
 
 /**
  * User account route
  */
 @Controller('accounts')
+@ApiTags('accounts')
 export class AccountApi {
 
     constructor(@Inject('GUARDIANS') public readonly client: ClientProxy) {
@@ -18,20 +22,43 @@ export class AccountApi {
 
     /**
      * getSession
-     * @param headers
+     * @param user
      */
-    @Get('/session')
-    @HttpCode(HttpStatus.OK)
-    async getSession(@Headers() headers): Promise<any> {
-        const users = new Users();
-        try {
-            const authHeader = headers.authorization;
-            const token = authHeader.split(' ')[1];
-            return await users.getUserByToken(token);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+    @ApiOperation({
+        summary: 'Returns current session of the user.',
+        description: 'Returns current user session.',
+    })
+    @ApiExtraModels(AccountsSessionResponseDTO, InternalServerErrorDTO)
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            $ref: getSchemaPath(AccountsSessionResponseDTO),
+        },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
         }
+    })
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard)
+    @HttpCode(HttpStatus.OK)
+    @Get('/session')
+    async getSession(@User() user): Promise<AccountsSessionResponseDTO> {
+        const users = new Users();
+        return user as any;
+        // try {
+        //     const authHeader = headers.authorization;
+        //     const token = authHeader.split(' ')[1];
+        //     return await users.getUserByToken(token) as any;
+        // } catch (error) {
+        //     new Logger().error(error, ['API_GATEWAY']);
+        //     throw error;
+        // }
 
     }
 
@@ -39,9 +66,26 @@ export class AccountApi {
      * register
      * @param body
      */
+    @ApiOperation({
+        summary: 'Registers a new user account.',
+        description: 'Object that contain username, password and role (optional) fields.',
+    })
+    @ApiExtraModels(AccountsResponseDTO, InternalServerErrorDTO)
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            $ref: getSchemaPath(AccountsResponseDTO),
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @Post('/register')
     @HttpCode(HttpStatus.CREATED)
-    async register(@Body() body: RegisterUserDTO): Promise<any> {
+    async register(@Body() body: RegisterUserDTO): Promise<AccountsResponseDTO> {
         const users = new Users();
         try {
             const {username, password} = body;
@@ -50,7 +94,7 @@ export class AccountApi {
             if (role === 'ROOT_AUTHORITY') {
                 role = UserRole.STANDARD_REGISTRY;
             }
-            return await users.registerNewUser(username, password, role);
+            return await users.registerNewUser(username, password, role) as any;
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             if (error.message.includes('already exists')) {
@@ -79,13 +123,39 @@ export class AccountApi {
     /**
      * Accounts
      */
+    @ApiOperation({
+        summary: 'Returns a list of users, excluding Standard Registry and Auditors.',
+        description: 'Returns all users except those with roles Standard ' +
+            'Registry and Auditor. Only users with the Standard ' +
+            'Registry role are allowed to make the request.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiExtraModels(AccountsResponseDTO, InternalServerErrorDTO)
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            $ref: getSchemaPath(AccountsResponseDTO),
+        },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @Get()
     @HttpCode(HttpStatus.OK)
-    async getAllAccounts(@Req() req): Promise<any> {
+    async getAllAccounts(@Req() req): Promise<AccountsResponseDTO[]> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const users = new Users();
-            return await users.getAllUserAccounts();
+            return await users.getAllUserAccounts() as any;
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error;

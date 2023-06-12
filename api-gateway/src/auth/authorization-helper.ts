@@ -1,13 +1,19 @@
-import { NextFunction, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { Users } from '@helpers/users';
 import { AuthenticatedRequest, IAuthUser, Logger } from '@guardian/common';
-import { HttpException, HttpStatus, Injectable, NestMiddleware } from '@nestjs/common';
+import { CanActivate, ExecutionContext, HttpException, HttpStatus, Injectable, NestMiddleware } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 
 /**
  * Auth middleware
  */
 @Injectable()
-export class AuthMiddleware implements NestMiddleware {
+export class AuthGuard implements CanActivate {
+
+    constructor(
+        private jwtService: JwtService
+    ) {
+    }
 
     /**
      * Use
@@ -15,20 +21,23 @@ export class AuthMiddleware implements NestMiddleware {
      * @param res
      * @param next
      */
-    async use(req: AuthenticatedRequest, res: Response, next: NextFunction) {
-        const authHeader = req.headers.authorization;
+    async canActivate(context: ExecutionContext): Promise<boolean> {
+        const request = context.switchToHttp().getRequest();
+        const token = this.extractTokenFromHeader(request);
         const users = new Users();
-        if (authHeader) {
-            const token = authHeader.split(' ')[1];
+        if (token) {
             try {
-                req.user = await users.getUserByToken(token) as IAuthUser;
-                next();
-                return;
+                request.user = await users.getUserByToken(token) as IAuthUser;
+                return true;
             } catch (error) {
-                new Logger().error(error, ['API_GATEWAY']);
+                return false
             }
         }
-        res.sendStatus(401);
+    }
+
+    private extractTokenFromHeader(request: Request): string | undefined {
+        const [type, token] = request.headers.authorization?.split(' ') ?? [];
+        return type === 'Bearer' ? token : undefined;
     }
 }
 
