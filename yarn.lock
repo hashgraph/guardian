@@ -1465,7 +1465,7 @@ __metadata:
     "@nestjs/core": ^9.4.1
     "@nestjs/microservices": ^9.4.1
     "@transmute/credentials-context": ^0.7.0-unstable.80
-    "@transmute/did-context": ^0.7.0-unstable.80
+    "@transmute/did-context": ^0.7.0-unstable.81
     "@transmute/ed25519-signature-2018": ^0.7.0-unstable.80
     "@transmute/json-web-signature": ^0.7.0-unstable.80
     "@transmute/jsonld-schema": ^0.7.0-unstable.80
@@ -2439,10 +2439,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@transmute/did-context@npm:0.7.0-unstable.80, @transmute/did-context@npm:^0.7.0-unstable.80":
-  version: 0.7.0-unstable.80
-  resolution: "@transmute/did-context@npm:0.7.0-unstable.80"
-  checksum: 6a1b2e17a76581c1e8f941105cbfbd42af6471d940409d18745ec991c473bdd198c5f779e0cacd13c1f1cfe878d1d076fc48f1e545e281fbcd061ae7485c53e7
+"@transmute/did-context@npm:0.7.0-unstable.81, @transmute/did-context@npm:^0.7.0-unstable.81":
+  version: 0.7.0-unstable.81
+  resolution: "@transmute/did-context@npm:0.7.0-unstable.81"
+  checksum: 62367c7499c629930b0f94d7bd6aedfafefa97fbda57a6cff16b7433e30b35cfcb139f324275ce8dcee2aa3125a5ac5b238a5c9544d74b67a6fcefd2cc7c585a
   languageName: node
   linkType: hard
 
@@ -6189,7 +6189,7 @@ __metadata:
     "@nestjs/core": ^9.4.1
     "@nestjs/microservices": ^9.4.1
     "@transmute/credentials-context": ^0.7.0-unstable.80
-    "@transmute/did-context": ^0.7.0-unstable.80
+    "@transmute/did-context": ^0.7.0-unstable.81
     "@transmute/ed25519-signature-2018": ^0.7.0-unstable.80
     "@transmute/json-web-signature": ^0.7.0-unstable.80
     "@transmute/jsonld-schema": ^0.7.0-unstable.80
@@ -8825,7 +8825,7 @@ __metadata:
   dependencies:
     "@guardian/common": ^2.13.1
     "@transmute/credentials-context": 0.7.0-unstable.80
-    "@transmute/did-context": 0.7.0-unstable.80
+    "@transmute/did-context": 0.7.0-unstable.81
     "@transmute/ed25519-signature-2018": 0.7.0-unstable.80
     "@transmute/json-web-signature": 0.7.0-unstable.80
     "@transmute/jsonld-schema": 0.7.0-unstable.80
@@ -9872,7 +9872,7 @@ __metadata:
     "@mikro-orm/core": ~5.7.7
     "@mikro-orm/mongodb": ~5.7.7
     "@transmute/credentials-context": 0.7.0-unstable.80
-    "@transmute/did-context": 0.7.0-unstable.80
+    "@transmute/did-context": 0.7.0-unstable.81
     "@transmute/ed25519-signature-2018": 0.7.0-unstable.80
     "@transmute/json-web-signature": 0.7.0-unstable.80
     "@transmute/jsonld-schema": 0.7.0-unstable.80
@@ -12389,7 +12389,7 @@ __metadata:
     "@guardian/interfaces": ^2.13.1
     "@hashgraph/sdk": ^2.24.2
     "@transmute/credentials-context": ^0.7.0-unstable.80
-    "@transmute/did-context": ^0.7.0-unstable.80
+    "@transmute/did-context": ^0.7.0-unstable.81
     "@transmute/ed25519-signature-2018": ^0.7.0-unstable.80
     "@transmute/json-web-signature": ^0.7.0-unstable.80
     "@transmute/jsonld-schema": ^0.7.0-unstable.80
