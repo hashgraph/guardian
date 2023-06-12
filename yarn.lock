@@ -1458,7 +1458,7 @@ __metadata:
     "@hashgraph/sdk": ^2.24.2
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
-    "@mikro-orm/core": ~5.7.7
+    "@mikro-orm/core": ~5.7.12
     "@mikro-orm/migrations-mongodb": ~5.7.7
     "@mikro-orm/mongodb": ~5.7.7
     "@nestjs/common": ^9.4.1
@@ -1760,16 +1760,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mikro-orm/core@npm:~5.7.7":
-  version: 5.7.11
-  resolution: "@mikro-orm/core@npm:5.7.11"
+"@mikro-orm/core@npm:~5.7.12":
+  version: 5.7.12
+  resolution: "@mikro-orm/core@npm:5.7.12"
   dependencies:
     acorn-loose: 8.3.0
     acorn-walk: 8.2.0
-    dotenv: 16.1.3
+    dotenv: 16.1.4
     fs-extra: 11.1.1
     globby: 11.1.0
-    mikro-orm: ~5.7.11
+    mikro-orm: ~5.7.12
     reflect-metadata: 0.1.13
   peerDependencies:
     "@mikro-orm/better-sqlite": ^5.0.0
@@ -1803,7 +1803,7 @@ __metadata:
       optional: true
     "@mikro-orm/sqlite":
       optional: true
-  checksum: a7fd6a2a27971bfca385da54c4ac2b52664d3b0ca2a9e427681efdd1896ecab36d5dcface8a1da6e0c6cd94b6bdc406ffefcdd6e88255a213684e1ffcc45debc
+  checksum: 13908c997e0bf2e7fd5a610a6550594754902e01c7ef9459f88fb09ea769721cac3142cd27098b6de73e3379498c448b41ae55187be18101e9e3a344a8c64a7e
   languageName: node
   linkType: hard
 
@@ -3620,7 +3620,7 @@ __metadata:
   dependencies:
     "@guardian/common": ^2.13.1
     "@guardian/interfaces": ^2.13.1
-    "@mikro-orm/core": ~5.7.7
+    "@mikro-orm/core": ~5.7.12
     "@mikro-orm/mongodb": ~5.7.7
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
@@ -4975,14 +4975,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dotenv@npm:16.1.3":
-  version: 16.1.3
-  resolution: "dotenv@npm:16.1.3"
-  checksum: 8f73bae720161cf365b679de162fe79a05f5b7a21d0d2b8bf9fb0601a2ed30f7e9dc49fa8b752d93206e4b7d427eccea2f383a1622cd5da4a1824f43bf8f780b
-  languageName: node
-  linkType: hard
-
-"dotenv@npm:^16.0.0, dotenv@npm:^16.0.1":
+"dotenv@npm:16.1.4, dotenv@npm:^16.0.0, dotenv@npm:^16.0.1":
   version: 16.1.4
   resolution: "dotenv@npm:16.1.4"
   checksum: c1b2e13df4d374a6a29e134c56c7b040ba20500677fe8b9939ea654f3b3badb9aaa0b172e40e4dfa1233a4177dbb8fb79d84cc79a50ac9c9641fe2ad98c14876
@@ -6183,7 +6176,7 @@ __metadata:
     "@hashgraph/sdk": ^2.24.2
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
-    "@mikro-orm/core": ~5.7.7
+    "@mikro-orm/core": ~5.7.12
     "@mikro-orm/mongodb": ~5.7.7
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
@@ -8197,7 +8190,7 @@ __metadata:
   dependencies:
     "@guardian/common": ^2.13.1
     "@guardian/interfaces": ^2.13.1
-    "@mikro-orm/core": ~5.7.7
+    "@mikro-orm/core": ~5.7.12
     "@mikro-orm/mongodb": ~5.7.7
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
@@ -8482,10 +8475,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mikro-orm@npm:~5.7.11":
-  version: 5.7.11
-  resolution: "mikro-orm@npm:5.7.11"
-  checksum: 400cf72e146816396cfe3d7f7d92d3e67d64c0b9aecff3910b7f1b09c968823e0877e87c67fc459c253fe1f505b6f06a4681b148c481e464cd51f83c7362c6f0
+"mikro-orm@npm:~5.7.12":
+  version: 5.7.12
+  resolution: "mikro-orm@npm:5.7.12"
+  checksum: bf121f540799ffaf06e67071e8c07c13e3d82ac7b1f540cde1b76ce830fbe31a442294a419710ab4fc5361fbc1ecb20a95fb184803ad86d87f3ed60c5cef9371
   languageName: node
   linkType: hard
 
@@ -9869,7 +9862,7 @@ __metadata:
     "@hashgraph/sdk": ^2.24.2
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
-    "@mikro-orm/core": ~5.7.7
+    "@mikro-orm/core": ~5.7.12
     "@mikro-orm/mongodb": ~5.7.7
     "@transmute/credentials-context": 0.7.0-unstable.80
     "@transmute/did-context": 0.7.0-unstable.80

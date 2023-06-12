@@ -8,7 +8,7 @@
   "dependencies": {
     "@guardian/common": "^2.13.1",
     "@guardian/interfaces": "^2.13.1",
-    "@mikro-orm/core": "~5.7.7",
+    "@mikro-orm/core": "~5.7.12",
     "@mikro-orm/mongodb": "~5.7.7",
     "@nestjs/common": "^9.4.1",
     "@nestjs/core": "^9.4.1",
