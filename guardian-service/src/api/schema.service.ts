@@ -855,7 +855,10 @@ export async function schemaAPI(): Promise<void> {
                     'id',
                     'name',
                     'description',
-                    'topicId'
+                    'topicId',
+                    'version',
+                    'sourceVersion',
+                    'status',
                 ]
             });
             return new MessageResponse(schema);

@@ -1,8 +1,10 @@
 import { Logger } from '@guardian/common';
 import { TaskManager } from '@helpers/task-manager';
 import { Controller, Get, HttpCode, HttpStatus, Req, Response } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('tasks')
+@ApiTags('tasks')
 export class TaskApi {
     @Get('/:taskId')
     @HttpCode(HttpStatus.OK)

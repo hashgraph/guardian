@@ -4,8 +4,13 @@ import { Guardians } from '@helpers/guardians';
 import { PolicyEngine } from '@helpers/policy-engine';
 import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Req, Response } from '@nestjs/common';
 import { checkPermission } from '@auth/authorization-helper';
+import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, getSchemaPath } from '@nestjs/swagger';
+import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
+import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator';
+import { ArtifactDTOItem } from '@middlewares/validation/schemas/atrifacts';
 
 @Controller('artifacts')
+@ApiTags('artifacts')
 export class ArtifactApi {
 
     /**
@@ -13,6 +18,44 @@ export class ArtifactApi {
      * @param req
      * @param res
      */
+    @ApiOperation({
+        summary: 'Returns all artifacts.',
+        description: 'Returns all artifacts.',
+    })
+    @ApiExtraModels(ArtifactDTOItem, InternalServerErrorDTO)
+    @ApiImplicitQuery({
+        name: 'policyId',
+        type: String,
+        description: 'Policy identifier',
+        required: false
+    })
+    @ApiImplicitQuery({
+        name: 'pageIndex',
+        type: Number,
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false
+    })
+    @ApiImplicitQuery({
+        name: 'pageSize',
+        type: Number,
+        description: 'The numbers of items to return',
+        required: false
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            type: 'array',
+            items: {
+                $ref: getSchemaPath(ArtifactDTOItem),
+            }
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @Get('/')
     @HttpCode(HttpStatus.OK)
     async getArtifacts(@Req() req, @Response() res): Promise<any> {

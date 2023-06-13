@@ -1,14 +1,16 @@
 import { Users } from '@helpers/users';
 import { Logger } from '@guardian/common';
 import { Guardians } from '@helpers/guardians';
-import { UserRole } from '@guardian/interfaces';
+import { SchemaEntity, UserRole } from '@guardian/interfaces';
+import { PolicyEngine } from '@helpers/policy-engine';
+import { PolicyListResponse } from '@entities/policy';
+import { StandardRegistryAccountResponse } from '@entities/account';
 import { ClientProxy } from '@nestjs/microservices';
 import { Body, Controller, Get, Headers, HttpCode, HttpException, HttpStatus, Inject, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard, checkPermission } from '@auth/authorization-helper';
-import { AccountsResponseDTO, AccountsSessionResponseDTO, LoginUserDTO, RegisterUserDTO } from '@middlewares/validation/schemas/accounts';
+import { AccountsResponseDTO, AccountsSessionResponseDTO, AggregatedDTOItem, BalanceResponseDTO, LoginUserDTO, RegisterUserDTO } from '@middlewares/validation/schemas/accounts';
 import { ApiBearerAuth, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath } from '@nestjs/swagger';
 import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
-import { User } from '@helpers/decorators/user';
 
 /**
  * User account route
@@ -48,17 +50,16 @@ export class AccountApi {
     @UseGuards(AuthGuard)
     @HttpCode(HttpStatus.OK)
     @Get('/session')
-    async getSession(@User() user): Promise<AccountsSessionResponseDTO> {
+    async getSession(@Headers() headers): Promise<AccountsSessionResponseDTO> {
         const users = new Users();
-        return user as any;
-        // try {
-        //     const authHeader = headers.authorization;
-        //     const token = authHeader.split(' ')[1];
-        //     return await users.getUserByToken(token) as any;
-        // } catch (error) {
-        //     new Logger().error(error, ['API_GATEWAY']);
-        //     throw error;
-        // }
+        try {
+            const authHeader = headers.authorization;
+            const token = authHeader.split(' ')[1];
+            return await users.getUserByToken(token) as any;
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw error;
+        }
 
     }
 
@@ -107,13 +108,29 @@ export class AccountApi {
     /**
      * Login
      */
+    @ApiOperation({
+        summary: 'Logs user into the system.',
+    })
+    @ApiExtraModels(AccountsSessionResponseDTO, InternalServerErrorDTO)
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            $ref: getSchemaPath(AccountsSessionResponseDTO),
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @Post('/login')
     @HttpCode(HttpStatus.OK)
-    async login(@Body() body: LoginUserDTO): Promise<any> {
+    async login(@Body() body: LoginUserDTO): Promise<AccountsSessionResponseDTO> {
         const users = new Users();
         try {
             const {username, password} = body;
-            return await users.generateNewToken(username, password);
+            return await users.generateNewToken(username, password) as any;
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error;
@@ -166,12 +183,37 @@ export class AccountApi {
      * Get root authorities
      * @deprecated 2022-10-01
      */
+    @ApiOperation({
+        summary: 'Returns all Standard Registries.',
+        description: 'Returns all Standard Registries.',
+        deprecated: true
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiExtraModels(AccountsResponseDTO, InternalServerErrorDTO)
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            $ref: getSchemaPath(AccountsResponseDTO),
+        },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @Get('/root-authorities')
     @HttpCode(HttpStatus.OK)
-    async getRootAuthorities(): Promise<any> {
+    async getRootAuthorities(): Promise<AccountsResponseDTO> {
         try {
             const users = new Users();
-            return await users.getAllStandardRegistryAccounts();
+            return await users.getAllStandardRegistryAccounts() as any;
         } catch (error) {
             new Logger().error(error.message, ['API_GATEWAY']);
             throw error;
@@ -181,6 +223,30 @@ export class AccountApi {
     /**
      * Get SAs
      */
+    @ApiOperation({
+        summary: 'Returns all Standard Registries.',
+        description: 'Returns all Standard Registries.'
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiExtraModels(AccountsResponseDTO, InternalServerErrorDTO)
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            $ref: getSchemaPath(AccountsResponseDTO),
+        },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @Get('/standard-registries')
     @HttpCode(HttpStatus.OK)
     async getStandatdRegistries(): Promise<any> {
@@ -193,6 +259,97 @@ export class AccountApi {
         }
     }
 
+    /**
+     * Get aggregated SAs
+     */
+    @ApiOperation({
+        summary: 'Returns all Standard Registries aggregated with polices and vcDocuments.',
+        description: 'Returns all Standard Registries aggregated with polices and vcDocuments'
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiExtraModels(AggregatedDTOItem, InternalServerErrorDTO)
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            type: 'array',
+            items: {
+                '$ref': getSchemaPath(AggregatedDTOItem)
+            }
+        },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @Get('/standard-registries/aggregated')
+    @HttpCode(HttpStatus.OK)
+    async getAggregatedStandardRegistries(): Promise<any> {
+        const engineService = new PolicyEngine();
+        const guardians = new Guardians();
+        try {
+            const users = new Users();
+            const standardRegistries = await users.getAllStandardRegistryAccounts() as StandardRegistryAccountResponse[];
+            const promises = standardRegistries.filter(({did, username}) => !!did && !!username)
+                .map(async ({did, username}) => {
+                let vcDocument = {};
+                const user = await users.getUser(username);
+                const vcDocuments = await guardians.getVcDocuments({
+                    owner: did,
+                    type: SchemaEntity.STANDARD_REGISTRY
+                });
+                if (vcDocuments && vcDocuments.length) {
+                    vcDocument = vcDocuments[vcDocuments.length - 1];
+                }
+                const { policies } = await engineService.getPolicies(
+                { filters: { owner: did }, userDid: did }
+                ) as PolicyListResponse;
+                return {
+                    did,
+                    vcDocument,
+                    policies,
+                    username,
+                    hederaAccountId: user.hederaAccountId
+                }
+                });
+            return await Promise.all(promises);
+        } catch (error) {
+            new Logger().error(error.message, ['API_GATEWAY']);
+            throw error;
+        }
+    }
+
+    @ApiOperation({
+        summary: 'Returns user\'s Hedera account balance.',
+        description: 'Requests current Hedera account balance.'
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiExtraModels(BalanceResponseDTO, InternalServerErrorDTO)
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            $ref: getSchemaPath(BalanceResponseDTO)
+        },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @Get('/balance')
     @HttpCode(HttpStatus.OK)
     async getBalance(@Headers() headers): Promise<any> {

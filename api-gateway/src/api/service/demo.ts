@@ -4,8 +4,10 @@ import { Logger, RunFunctionAsync } from '@guardian/common';
 import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
 import { Controller, Get, HttpCode, HttpStatus, Req, Response } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('demo')
+@ApiTags('demo')
 export class DemoApi {
 
     /**

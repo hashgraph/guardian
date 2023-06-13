@@ -241,7 +241,69 @@
 
 .actions-container[role='STANDARD_REGISTRY'],
 .actions-container[role='ROOT_AUTHORITY'] {
-    display: block;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    padding: 10px 15px 8px 24px;
+}
+
+.policy-filters {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-between;
+    font-size: 16px;
+
+    &__control {
+        margin-left: 20px;
+
+        &:last-child {
+            margin-right: 20px;
+        }
+    }
+
+    &::ng-deep {
+        .mat-stroked-button {
+            border-radius: 25px;
+            font-size: 16px;
+            width: 180px;
+            height: 50px;
+            margin-left: 20px;
+        }
+
+        .mat-stroked-button:not(.mat-button-disabled) {
+            color: var(--button-primary-color);
+            border: 1px solid var(--button-primary-color);
+        }
+
+        .mat-form-field-label {
+            top: 50%;
+            margin-top: 0;
+            color: #9e9e9e;
+        }
+
+        .mat-form-field-wrapper {
+            padding-bottom: 0;
+        }
+
+        .mat-form-field-infix {
+            padding: 1.3em 0 1em 0;
+            border-top: unset;
+            font-weight: 300;
+        }
+
+        .mat-select-arrow-wrapper {
+            transform: unset;
+        }
+    }
+}
+
+.no-results-found {
+    font-size: 24px;
+    color: #8A8A8A;
+    width: 100%;
+    text-align: center;
+    margin: 20px 0;
 }
 
 .table-paginator {

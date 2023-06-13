@@ -3,8 +3,10 @@ import { Guardians } from '@helpers/guardians';
 import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response } from '@nestjs/common';
 import { checkPermission } from '@auth/authorization-helper';
 import { UserRole } from '@guardian/interfaces';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('modules')
+@ApiTags('modules')
 export class ModulesApi {
     @Post('/')
     @HttpCode(HttpStatus.CREATED)

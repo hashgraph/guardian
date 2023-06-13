@@ -4,8 +4,10 @@ import { Logger } from '@guardian/common';
 import { prepareValidationResponse } from '@middlewares/validation';
 import { Controller, Get, HttpCode, HttpStatus, Post, Req, Response } from '@nestjs/common';
 import { checkPermission } from '@auth/authorization-helper';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('settings')
+@ApiTags('settings')
 export class SettingsApi {
     @Post('/')
     @HttpCode(HttpStatus.CREATED)

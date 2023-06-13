@@ -3,11 +3,13 @@ import { UserRole } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
 import { Controller, Delete, Get, HttpCode, HttpStatus, Post, Req, Response } from '@nestjs/common';
 import { checkPermission } from '@auth/authorization-helper';
+import { ApiTags } from '@nestjs/swagger';
 
 /**
  * Contracts api
  */
 @Controller('contracts')
+@ApiTags('contracts')
 export class ContractsApi {
 
     /**

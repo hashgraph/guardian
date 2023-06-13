@@ -1,8 +1,10 @@
 import { Logger } from '@guardian/common';
 import { Guardians } from '@helpers/guardians';
 import { Controller, Get, HttpCode, HttpException, HttpStatus, Post, Req, Response } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('ipfs')
+@ApiTags('ipfs')
 export class IpfsApi {
     @Post('/file')
     @HttpCode(HttpStatus.CREATED)

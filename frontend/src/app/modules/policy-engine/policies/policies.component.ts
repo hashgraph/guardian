@@ -1,6 +1,6 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { IUser, Schema, SchemaHelper, TagType, Token, UserRole } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -9,18 +9,17 @@ import { ExportPolicyDialog } from '../helpers/export-policy-dialog/export-polic
 import { NewPolicyDialog } from '../helpers/new-policy-dialog/new-policy-dialog.component';
 import { ImportPolicyDialog } from '../helpers/import-policy-dialog/import-policy-dialog.component';
 import { PreviewPolicyDialog } from '../helpers/preview-policy-dialog/preview-policy-dialog.component';
-import { WebSocketService } from 'src/app/services/web-socket.service';
 import { TasksService } from 'src/app/services/tasks.service';
 import { InformService } from 'src/app/services/inform.service';
 import { ConfirmationDialogComponent } from 'src/app/modules/common/confirmation-dialog/confirmation-dialog.component';
 import { MultiPolicyDialogComponent } from '../helpers/multi-policy-dialog/multi-policy-dialog.component';
-import { ToastrService } from 'ngx-toastr';
 import { ComparePolicyDialog } from '../helpers/compare-policy-dialog/compare-policy-dialog.component';
 import { TagsService } from 'src/app/services/tag.service';
 import { SetVersionDialog } from '../../schema-engine/set-version-dialog/set-version-dialog.component';
 import { forkJoin } from 'rxjs';
 import { SchemaService } from 'src/app/services/schema.service';
 import { WizardMode, WizardService } from 'src/app/modules/policy-engine/services/wizard.service';
+import { FormControl, FormGroup } from '@angular/forms';
 
 enum OperationMode {
     None,
@@ -38,9 +37,9 @@ enum OperationMode {
 @Component({
     selector: 'app-policies',
     templateUrl: './policies.component.html',
-    styleUrls: ['./policies.component.css']
+    styleUrls: ['./policies.component.scss']
 })
-export class PoliciesComponent implements OnInit, OnDestroy {
+export class PoliciesComponent implements OnInit {
     policies: any[] | null;
     columns: string[] = [];
     columnsRole: any = {};
@@ -61,26 +60,26 @@ export class PoliciesComponent implements OnInit, OnDestroy {
     expectedTaskMessages: number = 0;
 
     publishMenuOption = [{
-        id: 'Publish',
-        title: 'Publish',
-        description: 'Release version into public domain.',
+            id: 'Publish',
+            title: 'Publish',
+            description: 'Release version into public domain.',
         color: '#4caf50'
     }, {
-        id: 'Dry-run',
-        title: 'Dry Run',
+            id: 'Dry-run',
+            title: 'Dry Run',
         description: 'Run without making any persistent changes or executing transaction.',
         color: '#3f51b5'
     }];
 
     draftMenuOption = [{
-        id: 'Draft',
-        title: 'Stop',
-        description: 'Return to editing.',
+            id: 'Draft',
+            title: 'Stop',
+            description: 'Return to editing.',
         color: '#9c27b0'
     }, {
-        id: 'Publish',
-        title: 'Publish',
-        description: 'Release version into public domain.',
+            id: 'Publish',
+            title: 'Publish',
+            description: 'Release version into public domain.',
         color: '#4caf50'
     }];
 
@@ -99,23 +98,27 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         }
     ];
 
-    public innerWidth: any;
-    public innerHeight: any;
+    public innerWidth: number;
+    public innerHeight: number;
+    tagOptions: string[] = [];
+    filteredPolicies: any[] = [];
+    filtersForm = new FormGroup({
+        policyName: new FormControl(''),
+        tag: new FormControl(''),
+    });
+    noFilterResults: boolean = false;
 
     constructor(
         public tagsService: TagsService,
         private profileService: ProfileService,
         private policyEngineService: PolicyEngineService,
-        private wsService: WebSocketService,
-        private tokenService: TokenService,
-        private route: ActivatedRoute,
         private router: Router,
         private dialog: MatDialog,
         private taskService: TasksService,
         private informService: InformService,
-        private toastr: ToastrService,
         private schemaService: SchemaService,
         private wizardService: WizardService,
+        private tokenService: TokenService
     ) {
         this.policies = null;
         this.pageIndex = 0;
@@ -150,10 +153,7 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         this.innerWidth = window.innerWidth;
         this.innerHeight = window.innerHeight;
         this.loadPolicy();
-    }
-
-    ngOnDestroy() {
-
+        this.handleTagsUpdate();
     }
 
     loadPolicy() {
@@ -164,52 +164,57 @@ export class PoliciesComponent implements OnInit, OnDestroy {
             this.profileService.getProfile(),
             this.tagsService.getPublishedSchemas()
         ]).subscribe((value) => {
-            const profile: IUser | null = value[0];
-            const tagSchemas: any[] = value[1] || [];
+                const profile: IUser | null = value[0];
+                const tagSchemas: any[] = value[1] || [];
 
-            this.isConfirmed = !!(profile && profile.confirmed);
-            this.role = profile ? profile.role : null;
-            this.owner = profile?.did;
-            this.tagSchemas = SchemaHelper.map(tagSchemas);
+                this.isConfirmed = !!(profile && profile.confirmed);
+                this.role = profile ? profile.role : null;
+                this.owner = profile?.did;
+                this.tagSchemas = SchemaHelper.map(tagSchemas);
 
-            if (this.role == UserRole.STANDARD_REGISTRY) {
-                this.columns = this.columnsRole[UserRole.STANDARD_REGISTRY];
-            } else {
-                this.columns = this.columnsRole[UserRole.USER];
-            }
-            if (this.isConfirmed) {
-                this.loadAllPolicy();
-            } else {
-                setTimeout(() => {
-                    this.loading = false;
-                }, 500);
-            }
+                if (this.role == UserRole.STANDARD_REGISTRY) {
+                    this.columns = this.columnsRole[UserRole.STANDARD_REGISTRY];
+                } else {
+                    this.columns = this.columnsRole[UserRole.USER];
+                }
+                if (this.isConfirmed) {
+                    this.loadAllPolicy();
+                } else {
+                    setTimeout(() => {
+                        this.loading = false;
+                    }, 500);
+                }
         }, (e) => {
-            this.loading = false;
+                this.loading = false;
         });
     }
 
     loadAllPolicy() {
         this.loading = true;
+        this.tagOptions = [];
         this.policyEngineService.page(this.pageIndex, this.pageSize).subscribe((policiesResponse) => {
-            this.policies = policiesResponse.body || [];
+                this.policies = policiesResponse.body || [];
             this.policyCount = policiesResponse.headers.get('X-Total-Count') || this.policies.length;
             const ids = this.policies.map(e => e.id);
             this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
-                if (this.policies) {
-                    for (const policy of this.policies) {
-                        (policy as any)._tags = data[policy.id];
-                    }
-                }
-                setTimeout(() => {
-                    this.loading = false;
-                }, 500);
+                        if (this.policies) {
+                            for (const policy of this.policies) {
+                                (policy as any)._tags = data[policy.id];
+                                data[policy.id]?.tags.forEach((tag: any) => {
+                            const totalTagOptions = [...this.tagOptions, tag.name];
+                            this.tagOptions = [...new Set(totalTagOptions)];
+                                });
+                            }
+                        }
+                        setTimeout(() => {
+                            this.loading = false;
+                        }, 500);
             }, (e) => {
-                console.error(e.error);
-                this.loading = false;
+                        console.error(e.error);
+                        this.loading = false;
             });
         }, (e) => {
-            this.loading = false;
+                this.loading = false;
         });
     }
 
@@ -267,37 +272,37 @@ export class PoliciesComponent implements OnInit, OnDestroy {
     dryRun(element: any) {
         this.loading = true;
         this.policyEngineService.dryRun(element.id).subscribe((data: any) => {
-            const { policies, isValid, errors } = data;
-            if (!isValid) {
-                let text = [];
-                const blocks = errors.blocks;
+                const { policies, isValid, errors } = data;
+                if (!isValid) {
+                    let text = [];
+                    const blocks = errors.blocks;
                 const invalidBlocks = blocks.filter((block: any) => !block.isValid);
-                for (let i = 0; i < invalidBlocks.length; i++) {
-                    const block = invalidBlocks[i];
-                    for (let j = 0; j < block.errors.length; j++) {
-                        const error = block.errors[j];
-                        if (block.id) {
-                            text.push(`<div>${block.id}: ${error}</div>`);
-                        } else {
-                            text.push(`<div>${error}</div>`);
+                    for (let i = 0; i < invalidBlocks.length; i++) {
+                        const block = invalidBlocks[i];
+                        for (let j = 0; j < block.errors.length; j++) {
+                            const error = block.errors[j];
+                            if (block.id) {
+                                text.push(`<div>${block.id}: ${error}</div>`);
+                            } else {
+                                text.push(`<div>${error}</div>`);
+                            }
                         }
                     }
-                }
                 this.informService.errorMessage(text.join(''), 'The policy is invalid');
-            }
-            this.loadAllPolicy();
+                }
+                this.loadAllPolicy();
         }, (e) => {
-            this.loading = false;
+                this.loading = false;
         });
     }
 
     draft(element: any) {
         this.loading = true;
         this.policyEngineService.draft(element.id).subscribe((data: any) => {
-            const { policies, isValid, errors } = data;
-            this.loadAllPolicy();
+                const { policies, isValid, errors } = data;
+                this.loadAllPolicy();
         }, (e) => {
-            this.loading = false;
+                this.loading = false;
         });
     }
 
@@ -316,12 +321,12 @@ export class PoliciesComponent implements OnInit, OnDestroy {
     private publish(element: any, version: string) {
         this.loading = true;
         this.policyEngineService.pushPublish(element.id, version).subscribe((result) => {
-            const { taskId, expectation } = result;
-            this.taskId = taskId;
-            this.expectedTaskMessages = expectation;
-            this.mode = OperationMode.Publish;
+                const { taskId, expectation } = result;
+                this.taskId = taskId;
+                this.expectedTaskMessages = expectation;
+                this.mode = OperationMode.Publish;
         }, (e) => {
-            this.loading = false;
+                this.loading = false;
         });
     }
 
@@ -342,12 +347,12 @@ export class PoliciesComponent implements OnInit, OnDestroy {
 
             this.loading = true;
             this.policyEngineService.pushDelete(element.id).subscribe((result) => {
-                const { taskId, expectation } = result;
-                this.taskId = taskId;
-                this.expectedTaskMessages = expectation;
-                this.mode = OperationMode.Delete;
+                    const { taskId, expectation } = result;
+                    this.taskId = taskId;
+                    this.expectedTaskMessages = expectation;
+                    this.mode = OperationMode.Delete;
             }, (e) => {
-                this.loading = false;
+                    this.loading = false;
             });
         });
     }
@@ -355,11 +360,11 @@ export class PoliciesComponent implements OnInit, OnDestroy {
     exportPolicy(element: any) {
         this.policyEngineService.exportInMessage(element.id)
             .subscribe(exportedPolicy => this.dialog.open(ExportPolicyDialog, {
-                width: '700px',
-                panelClass: 'g-dialog',
-                data: {
+                    width: '700px',
+                    panelClass: 'g-dialog',
+                    data: {
                     policy: exportedPolicy
-                },
+                    },
                 autoFocus: false
             }));
     }
@@ -423,23 +428,23 @@ export class PoliciesComponent implements OnInit, OnDestroy {
                 this.loading = true;
                 if (type == 'message') {
                     this.policyEngineService.pushImportByMessage(data, versionOfTopicId).subscribe(
-                        (result) => {
-                            const { taskId, expectation } = result;
-                            this.taskId = taskId;
-                            this.expectedTaskMessages = expectation;
-                            this.mode = OperationMode.Import;
+                            (result) => {
+                                const { taskId, expectation } = result;
+                                this.taskId = taskId;
+                                this.expectedTaskMessages = expectation;
+                                this.mode = OperationMode.Import;
                         }, (e) => {
-                            this.loading = false;
+                                this.loading = false;
                         });
                 } else if (type == 'file') {
                     this.policyEngineService.pushImportByFile(data, versionOfTopicId).subscribe(
-                        (result) => {
-                            const { taskId, expectation } = result;
-                            this.taskId = taskId;
-                            this.expectedTaskMessages = expectation;
-                            this.mode = OperationMode.Import;
+                            (result) => {
+                                const { taskId, expectation } = result;
+                                this.taskId = taskId;
+                                this.expectedTaskMessages = expectation;
+                                this.mode = OperationMode.Import;
                         }, (e) => {
-                            this.loading = false;
+                                this.loading = false;
                         });
                 }
             }
@@ -610,12 +615,12 @@ export class PoliciesComponent implements OnInit, OnDestroy {
             if (result) {
                 this.loading = true;
                 this.policyEngineService.pushCreate(result).subscribe((result) => {
-                    const { taskId, expectation } = result;
-                    this.taskId = taskId;
-                    this.expectedTaskMessages = expectation;
-                    this.mode = OperationMode.Create;
+                        const { taskId, expectation } = result;
+                        this.taskId = taskId;
+                        this.expectedTaskMessages = expectation;
+                        this.mode = OperationMode.Create;
                 }, (e) => {
-                    this.loading = false;
+                        this.loading = false;
                 });
             }
         });
@@ -655,5 +660,95 @@ export class PoliciesComponent implements OnInit, OnDestroy {
                 policies
             );
         }, () => undefined, () => this.loading = false);
+    }
+
+    applyFilters(): void {
+        if (this.filters.policyName && this.filters.tag) {
+            this.filterByNameAndTag();
+            this.noFilterResults = this.filteredPolicies.length === 0;
+            return;
+        }
+        
+        this.filters.policyName
+            ? this.filterByPolicyName()
+            : this.filterByTag();
+        this.noFilterResults = this.filteredPolicies.length === 0;
+    }
+
+    clearFilters(): void {
+        this.filtersForm.reset({ policyName: '', tag: '' });
+        this.filteredPolicies = [];
+        this.noFilterResults = false;
+    }
+
+    private filterByPolicyName(): void {
+        this.filteredPolicies =
+            this.policies?.filter((policy) =>
+                this.isPolicyNameEqualToFilter(policy)
+            ) || [];
+    }
+
+    private filterByTag(): void {
+        this.filteredPolicies =
+            this.policies?.filter((policy) =>
+                this.isTagAssignedToPolicy(policy._tags)
+            ) || [];
+    }
+
+    private filterByNameAndTag(): void {
+        this.filteredPolicies =
+            this.policies?.filter(
+                (policy) =>
+                    this.isPolicyNameEqualToFilter(policy) &&
+                    this.isTagAssignedToPolicy(policy._tags)
+            ) || [];
+    }
+
+    private handleTagsUpdate(): void {
+        this.tagsService.tagsUpdated$.subscribe({
+            next: () => this.loadAllPolicy(),
+        });
+    }
+
+    private isPolicyNameEqualToFilter(policy: any): boolean {
+        return policy.name
+            .toLowerCase()
+            .includes(this.filters.policyName.toLowerCase());
+    }
+
+    private isTagAssignedToPolicy(_tags: any): boolean {
+        return (
+            _tags?.tags.filter((tag: any) =>
+                tag.name.toLowerCase().includes(this.filters.tag.toLowerCase())
+            ).length > 0
+        );
+    }
+
+    private get filters(): { policyName: string; tag: string } {
+        return {
+            policyName: this.filtersForm.value?.policyName?.trim(),
+            tag: this.filtersForm.value?.tag,
+        };
+    }
+
+    get isFilterButtonDisabled(): boolean {
+        return (
+            this.filters.policyName.length === 0 &&
+            !this.filters.tag
+        );
+    }
+
+    get policiesList(): any[] {
+        return this.filteredPolicies.length > 0
+            ? this.filteredPolicies
+            : this.policies || [];
+    }
+
+    get hasPolicies(): boolean {
+        return this.policiesList.length > 0;
+    }
+
+    get hasTagOptions(): boolean {
+        return this.tagOptions.length > 0;
     }
 }

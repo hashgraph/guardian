@@ -16,6 +16,7 @@ import {
     StandardRegistryGuard
 } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { SchemaHelper } from '@guardian/interfaces';
 //Services
 import { AuthInterceptor, AuthService } from './services/auth.service';
 import { ProfileService } from './services/profile.service';
@@ -64,14 +65,17 @@ import { AddPairDialogComponent } from './components/add-pair-dialog/add-pair-di
 import { RetireTokenDialogComponent } from './components/retire-token-dialog/retire-token-dialog.component';
 import { DataInputDialogComponent } from './components/data-input-dialog/data-input-dialog.component';
 import { BrandingComponent } from './views/branding/branding.component';
+import { StandardRegistryCardComponent } from './components/standard-registry-card/standard-registry-card.component';
 //Modules
 import { MaterialModule } from './modules/common/material.module';
 import { PolicyEngineModule } from './modules/policy-engine/policy-engine.module';
 import { CompareModule } from './modules/analytics/analytics.module';
 import { CommonComponentsModule } from './modules/common/common-components.module';
 import { TagEngineModule } from './modules/tag-engine/tag-engine.module';
-import { SchemaEngineModule } from './modules/schema-engine/schema-engine.module';
+import { SchemaEngineModule } from './modules/schema-engine/schema-engine.module'
 import { ThemeService } from './services/theme.service';
+// Injectors
+import { GET_SCHEMA_NAME } from './injectors/get-schema-name.injector';
 
 @NgModule({
     declarations: [
@@ -99,6 +103,7 @@ import { ThemeService } from './services/theme.service';
         SchemaConfigComponent,
         BrandingComponent,
         BrandingDialogComponent,
+        StandardRegistryCardComponent,
     ],
     imports: [
         BrowserModule,
@@ -143,6 +148,10 @@ import { ThemeService } from './services/theme.service';
         TagsService,
         ThemeService,
         WizardService,
+        {
+            provide: GET_SCHEMA_NAME,
+            useValue: SchemaHelper.getSchemaName
+        },
         {
             provide: HTTP_INTERCEPTORS,
             useClass: HandleErrorsService,

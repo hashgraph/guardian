@@ -6,8 +6,10 @@ import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
 import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, RawBodyRequest, Req, Response } from '@nestjs/common';
 import { checkPermission } from '@auth/authorization-helper';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('policies')
+@ApiTags('policies')
 export class PolicyApi {
     @Get('/')
     @HttpCode(HttpStatus.OK)
