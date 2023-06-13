@@ -8,6 +8,7 @@ import { trustChainAPI } from '@api/trust-chain.service';
 import { PolicyEngineService } from '@policy-engine/policy-engine.service';
 import {
     ApplicationState,
+    Branding,
     COMMON_CONNECTION_CONFIG,
     Contract,
     DataBaseHelper,
@@ -35,7 +36,6 @@ import {
     Users,
     ValidateConfiguration,
     VcDocument,
-    Branding,
     VpDocument,
     Workers
 } from '@guardian/common';
@@ -103,9 +103,8 @@ Promise.all([
     app.listen();
 
     DataBaseHelper.orm = db;
-    DataBaseHelper.gridFS = new GridFSBucket(
-        db.em.getDriver().getConnection().getDb()
-    );
+    // @ts-ignore
+    DataBaseHelper.gridFS = new GridFSBucket(db.em.getDriver().getConnection().getDb());
     new PolicyServiceChannelsContainer().setConnection(cn);
     new TransactionLogger().initialization(
         cn,
