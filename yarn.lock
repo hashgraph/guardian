@@ -1458,9 +1458,9 @@ __metadata:
     "@hashgraph/sdk": ^2.24.2
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
-    "@mikro-orm/core": ~5.7.7
-    "@mikro-orm/migrations-mongodb": ~5.7.7
-    "@mikro-orm/mongodb": ~5.7.7
+    "@mikro-orm/core": ~5.7.12
+    "@mikro-orm/migrations-mongodb": ~5.7.12
+    "@mikro-orm/mongodb": ~5.7.12
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
     "@nestjs/microservices": ^9.4.1
@@ -1478,13 +1478,14 @@ __metadata:
     ajv-formats: ^2.1.1
     axios: ^1.3.6
     bs58: ^4.0.1
+    bson: ^5.3.0
     express: ^4.17.1
     js-base64: ^3.6.1
     lodash.get: ^4.4.2
     lodash.set: ^4.3.2
     mocha-junit-reporter: ^2.0.2
     moment: ^2.29.2
-    mongodb: 5.5.0
+    mongodb: ^5.6.0
     nats: ^2.6.1
     node-vault: ^0.9.22
     reflect-metadata: ^0.1.13
@@ -1760,16 +1761,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mikro-orm/core@npm:~5.7.7":
-  version: 5.7.11
-  resolution: "@mikro-orm/core@npm:5.7.11"
+"@mikro-orm/core@npm:~5.7.12":
+  version: 5.7.12
+  resolution: "@mikro-orm/core@npm:5.7.12"
   dependencies:
     acorn-loose: 8.3.0
     acorn-walk: 8.2.0
-    dotenv: 16.1.3
+    dotenv: 16.1.4
     fs-extra: 11.1.1
     globby: 11.1.0
-    mikro-orm: ~5.7.11
+    mikro-orm: ~5.7.12
     reflect-metadata: 0.1.13
   peerDependencies:
     "@mikro-orm/better-sqlite": ^5.0.0
@@ -1803,30 +1804,30 @@ __metadata:
       optional: true
     "@mikro-orm/sqlite":
       optional: true
-  checksum: a7fd6a2a27971bfca385da54c4ac2b52664d3b0ca2a9e427681efdd1896ecab36d5dcface8a1da6e0c6cd94b6bdc406ffefcdd6e88255a213684e1ffcc45debc
+  checksum: 13908c997e0bf2e7fd5a610a6550594754902e01c7ef9459f88fb09ea769721cac3142cd27098b6de73e3379498c448b41ae55187be18101e9e3a344a8c64a7e
   languageName: node
   linkType: hard
 
-"@mikro-orm/migrations-mongodb@npm:~5.7.7":
-  version: 5.7.11
-  resolution: "@mikro-orm/migrations-mongodb@npm:5.7.11"
+"@mikro-orm/migrations-mongodb@npm:~5.7.12":
+  version: 5.7.12
+  resolution: "@mikro-orm/migrations-mongodb@npm:5.7.12"
   dependencies:
-    "@mikro-orm/mongodb": ~5.7.11
+    "@mikro-orm/mongodb": ~5.7.12
     fs-extra: 11.1.1
-    mongodb: 5.5.0
+    mongodb: 5.6.0
     umzug: 3.2.1
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
-  checksum: e5423e195f9f3defbe689ab922bf1ad17bfd0e3f55cc893347928e224396c62312c37f0601ef982da43f64270d7fc2efe0ac6561b9aaeb529c010faeae83a887
+  checksum: be1a5c822ee1bc37ba5ce8926884071a4c63bcd55dcdb285fc1ad2775dfd77e8ce3064ea53a4cc511fcbafcc00ad0d0962f41ff1c2aa6b6fbdd8828fc53ee8fa
   languageName: node
   linkType: hard
 
-"@mikro-orm/mongodb@npm:~5.7.11, @mikro-orm/mongodb@npm:~5.7.7":
-  version: 5.7.11
-  resolution: "@mikro-orm/mongodb@npm:5.7.11"
+"@mikro-orm/mongodb@npm:~5.7.12":
+  version: 5.7.12
+  resolution: "@mikro-orm/mongodb@npm:5.7.12"
   dependencies:
     bson: ^5.3.0
-    mongodb: 5.5.0
+    mongodb: 5.6.0
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
     "@mikro-orm/entity-generator": ^5.0.0
@@ -1842,7 +1843,7 @@ __metadata:
       optional: true
     "@mikro-orm/seeder":
       optional: true
-  checksum: 945017f4678fa876cb2821d353e330e067f91de094552e24225d44ca361c4c5dd6b995da2699908ad8f9a90a4b03008e06a7c32214a3d912abc44f9ab31b2637
+  checksum: 3005a47f057480f1cccefa3b2dae0484b3514eebe05eadcea09d71430ddde3a36ce244f9e4ede371ce641b0984ddfb4a30e33bb0ee95883f074f2408d901c31b
   languageName: node
   linkType: hard
 
@@ -3686,8 +3687,8 @@ __metadata:
   dependencies:
     "@guardian/common": ^2.13.1
     "@guardian/interfaces": ^2.13.1
-    "@mikro-orm/core": ~5.7.7
-    "@mikro-orm/mongodb": ~5.7.7
+    "@mikro-orm/core": ~5.7.12
+    "@mikro-orm/mongodb": ~5.7.12
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
     "@nestjs/microservices": ^9.4.1
@@ -4015,7 +4016,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bson@npm:^5.3.0":
+"bson@npm:^5.3.0, bson@npm:~5.3.0":
   version: 5.3.0
   resolution: "bson@npm:5.3.0"
   checksum: c1e57630fea6b82ad8bc0fb83fd8f16a2620a836ab69f6b9433250cd19704c0c8995681a3bfab9f967eae30512f0c8ee921d42ace4c1781726600c4a367593cf
@@ -5041,14 +5042,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dotenv@npm:16.1.3":
-  version: 16.1.3
-  resolution: "dotenv@npm:16.1.3"
-  checksum: 8f73bae720161cf365b679de162fe79a05f5b7a21d0d2b8bf9fb0601a2ed30f7e9dc49fa8b752d93206e4b7d427eccea2f383a1622cd5da4a1824f43bf8f780b
-  languageName: node
-  linkType: hard
-
-"dotenv@npm:^16.0.0, dotenv@npm:^16.0.1":
+"dotenv@npm:16.1.4, dotenv@npm:^16.0.0, dotenv@npm:^16.0.1":
   version: 16.1.4
   resolution: "dotenv@npm:16.1.4"
   checksum: c1b2e13df4d374a6a29e134c56c7b040ba20500677fe8b9939ea654f3b3badb9aaa0b172e40e4dfa1233a4177dbb8fb79d84cc79a50ac9c9641fe2ad98c14876
@@ -6249,8 +6243,8 @@ __metadata:
     "@hashgraph/sdk": ^2.24.2
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
-    "@mikro-orm/core": ~5.7.7
-    "@mikro-orm/mongodb": ~5.7.7
+    "@mikro-orm/core": ~5.7.12
+    "@mikro-orm/mongodb": ~5.7.12
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
     "@nestjs/microservices": ^9.4.1
@@ -6270,6 +6264,7 @@ __metadata:
     ajv-formats: ^2.1.1
     axios: ^1.3.6
     bs58: ^4.0.1
+    bson: ^5.3.0
     chai: 4.3.4
     cors: ^2.8.5
     cron: ^2.0.0
@@ -6285,7 +6280,7 @@ __metadata:
     mocha-junit-reporter: ^2.0.2
     module-alias: ^2.2.2
     moment: ^2.29.2
-    mongodb: 5.5.0
+    mongodb: ^5.6.0
     nodemon: ^2.0.12
     prom-client: ^14.1.1
     prometheus-api-metrics: 3.2.2
@@ -8266,8 +8261,8 @@ __metadata:
   dependencies:
     "@guardian/common": ^2.13.1
     "@guardian/interfaces": ^2.13.1
-    "@mikro-orm/core": ~5.7.7
-    "@mikro-orm/mongodb": ~5.7.7
+    "@mikro-orm/core": ~5.7.12
+    "@mikro-orm/mongodb": ~5.7.12
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
     "@nestjs/microservices": ^9.4.1
@@ -8551,10 +8546,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mikro-orm@npm:~5.7.11":
-  version: 5.7.11
-  resolution: "mikro-orm@npm:5.7.11"
-  checksum: 400cf72e146816396cfe3d7f7d92d3e67d64c0b9aecff3910b7f1b09c968823e0877e87c67fc459c253fe1f505b6f06a4681b148c481e464cd51f83c7362c6f0
+"mikro-orm@npm:~5.7.12":
+  version: 5.7.12
+  resolution: "mikro-orm@npm:5.7.12"
+  checksum: bf121f540799ffaf06e67071e8c07c13e3d82ac7b1f540cde1b76ce830fbe31a442294a419710ab4fc5361fbc1ecb20a95fb184803ad86d87f3ed60c5cef9371
   languageName: node
   linkType: hard
 
@@ -8846,9 +8841,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mongodb@npm:5.5.0":
-  version: 5.5.0
-  resolution: "mongodb@npm:5.5.0"
+"mongodb@npm:5.6.0, mongodb@npm:^5.6.0":
+  version: 5.6.0
+  resolution: "mongodb@npm:5.6.0"
   dependencies:
     bson: ^5.3.0
     mongodb-connection-string-url: ^2.6.0
@@ -8868,7 +8863,7 @@ __metadata:
       optional: true
     snappy:
       optional: true
-  checksum: fafb75195d605767cf7269aa82a1f4704c3357240d0fef7296d55e83eab592158844988af3b94165769459ff1b2a0af2fc49bc44c9bbabd10d6ddc319668a0e0
+  checksum: 5b1594b24795b2a7824095a917ede2fc37aaef31e60320c833ee9b11cc2f3de9dd87d5afacea2e41eb5eb579ac9780f5bc4b0bb11d3b1be78e8bf0014528192a
   languageName: node
   linkType: hard
 
@@ -9938,8 +9933,8 @@ __metadata:
     "@hashgraph/sdk": ^2.24.2
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
-    "@mikro-orm/core": ~5.7.7
-    "@mikro-orm/mongodb": ~5.7.7
+    "@mikro-orm/core": ~5.7.12
+    "@mikro-orm/mongodb": ~5.7.12
     "@transmute/credentials-context": 0.7.0-unstable.80
     "@transmute/did-context": 0.7.0-unstable.80
     "@transmute/ed25519-signature-2018": 0.7.0-unstable.80
@@ -9956,6 +9951,7 @@ __metadata:
     ajv-formats: ^2.1.1
     axios: ^1.3.6
     bs58: ^4.0.1
+    bson: ~5.3.0
     chai: 4.3.4
     cors: ^2.8.5
     cron: ^2.0.0
@@ -9972,7 +9968,7 @@ __metadata:
     mocha-junit-reporter: ^2.0.2
     module-alias: ^2.2.2
     moment: ^2.29.2
-    mongodb: 5.5.0
+    mongodb: ^5.6.0
     nodemon: ^2.0.12
     prom-client: ^14.1.1
     prometheus-api-metrics: 3.2.2
