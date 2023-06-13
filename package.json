@@ -17,9 +17,5 @@
     "policy-service",
     "api-tests"
   ],
-  "version": "2.13.1",
-  "dependencies": {
-    "@nestjs/jwt": "^10.0.3",
-    "@nestjs/swagger": "^6.3.0"
-  }
+  "version": "2.13.1"
 }
