@@ -66,8 +66,7 @@ export class LargePayloadContainer {
             this._portGenerated = false;
         } else {
             this._portGenerated = true;
-            // this.PORT = this.generateRandom(50000, 59999);
-            this.PORT = 3030;
+            this.PORT = this.generateRandom(50000, 59999);
         }
         this.DOMAIN = (process.env.DIRECT_MESSAGE_HOST) ? process.env.DIRECT_MESSAGE_HOST : hostname();
         this.PROTOCOL = (process.env.DIRECT_MESSAGE_PROTOCOL) ? process.env.DIRECT_MESSAGE_PROTOCOL as any : 'http';
