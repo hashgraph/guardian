@@ -85,7 +85,7 @@
                             <div class="message-info" [id]="message.id" (click)="onSelect(message)"
                                 [attr.selected]="message === selected">
 
-                                <ng-container *ngIf="message.type === 'Policy'">
+                                <ng-container *ngIf="message.__ifPolicyMessage">
                                     <div class="message-header">
                                         <mat-icon>policy</mat-icon>
                                         Create Policy
@@ -95,7 +95,7 @@
                                         <div class="message-owner">{{message.owner}}</div>
                                     </div>
                                 </ng-container>
-                                <ng-container *ngIf="message.type === 'Instance-Policy'">
+                                <ng-container *ngIf="message.__ifInstanceMessage">
                                     <div class="message-header">
                                         <mat-icon>policy</mat-icon>
                                         Publish Policy
@@ -106,52 +106,67 @@
                                     </div>
                                 </ng-container>
 
-                                <ng-container *ngIf="message.type === 'DID-Document'">
+                                <ng-container *ngIf="message.__ifDIDMessage">
                                     <div class="message-header">
-                                        <mat-icon>person</mat-icon>
-                                        User
+                                        <mat-icon>key</mat-icon>
+                                        User Registration
                                     </div>
                                     <div class="message-data">
                                         <div class="message-name">
-                                            User Registration
+                                            Create DID
                                         </div>
                                         <div class="message-owner">{{message.did}}</div>
                                     </div>
                                 </ng-container>
 
-                                <ng-container
-                                    *ngIf="message.type === 'VC-Document' && message.__schemaName!=='MintToken'">
+                                <ng-container *ngIf="message.__ifVCMessage">
                                     <div class="message-header">
                                         <mat-icon>description</mat-icon>
-                                        Document
+                                        {{message.__status}}
                                     </div>
                                     <div class="message-data">
-                                        <div *ngIf="message.__schemaName" class="message-name">{{message.__schemaName}}
+                                        <div *ngIf="message.__schemaLabel" class="message-name">
+                                            {{message.__schemaLabel}}
                                         </div>
-                                        <div class="message-owner">{{message.__issuer}}</div>
+                                        <div class="message-owner">{{message.__userName}}</div>
                                     </div>
                                 </ng-container>
 
-                                <ng-container
-                                    *ngIf="message.type === 'VC-Document' && message.__schemaName==='MintToken'">
+                                <ng-container *ngIf="message.__ifMintMessage">
                                     <div class="message-header">
                                         <mat-icon class="svg-icon" svgIcon="token"></mat-icon>
-                                        Mint
+                                        Mint Token
                                     </div>
                                     <div class="message-data">
                                         <div *ngIf="message.__tokenName" class="message-name">{{message.__tokenName}}
                                         </div>
-                                        <div class="message-owner">{{message.__issuer}}</div>
+                                        <div class="message-owner">{{message.__userName}}</div>
                                     </div>
                                 </ng-container>
 
-                                <ng-container *ngIf="message.type === 'VP-Document'">
+                                <ng-container *ngIf="message.__ifVPMessage">
                                     <div class="message-header">
                                         <mat-icon>receipt</mat-icon>
-                                        Document
+                                        {{message.__status}}
                                     </div>
                                     <div class="message-data">
                                         <!-- <div>{{message.name}}</div> -->
+                                        <div class="message-owner">{{message.__userName}}</div>
+                                    </div>
+                                </ng-container>
+
+                                <ng-container *ngIf="message.__ifRoleMessage">
+                                    <div class="message-header">
+                                        <mat-icon>person</mat-icon>
+                                        Roles & Groups
+                                    </div>
+                                    <div class="message-data">
+                                        <div *ngIf="message.role" class="message-name">
+                                            Role: {{message.role}}
+                                        </div>
+                                        <div *ngIf="!message.role && message.group" class="message-name">
+                                            Group: {{message.group}}
+                                        </div>
                                         <div class="message-owner">{{message.__issuer}}</div>
                                     </div>
                                 </ng-container>
@@ -179,7 +194,7 @@
                     </div>
                 </div>
                 <div class="dashboard-right-body">
-                    <ng-container *ngIf="selected.type === 'Policy'">
+                    <ng-container *ngIf="selected.__ifPolicyMessage">
                         <div class="document-header">
                             <mat-icon>policy</mat-icon>
                             Policy
@@ -225,7 +240,7 @@
                         </div>
                     </ng-container>
 
-                    <ng-container *ngIf="selected.type === 'Instance-Policy'">
+                    <ng-container *ngIf="selected.__ifInstanceMessage">
                         <div class="document-header">
                             <mat-icon>policy</mat-icon>
                             Instance Policy
@@ -275,10 +290,10 @@
                         </div>
                     </ng-container>
 
-                    <ng-container *ngIf="selected.type === 'DID-Document'">
+                    <ng-container *ngIf="selected.__ifDIDMessage">
                         <div class="document-header">
-                            <mat-icon>person</mat-icon>
-                            User
+                            <mat-icon>key</mat-icon>
+                            User Registration
                         </div>
 
                         <div class="field-delimiter" data-label="Document"></div>
@@ -319,7 +334,57 @@
                         </div>
                     </ng-container>
 
-                    <ng-container *ngIf="selected.type === 'VC-Document' && selected.__schemaName!=='MintToken'">
+                    <ng-container *ngIf="selected.__ifRoleMessage">
+                        <div class="document-header">
+                            <mat-icon>person</mat-icon>
+                            Roles & Groups
+                        </div>
+
+                        <div class="field-delimiter" data-label="Document"></div>
+
+                        <div class="field" *ngIf="selected.role">
+                            <div class="field-name">Role:</div>
+                            <div class="field-value">{{selected.role}}</div>
+                        </div>
+
+                        <div class="field" *ngIf="selected.group">
+                            <div class="field-name">Groups:</div>
+                            <div class="field-value">{{selected.group}}</div>
+                        </div>
+
+                        <div class="field" *ngIf="selected.document">
+                            <div class="field-name">Document Artifact:</div>
+                            <div class="field-value">
+                                <span class="field-link" (click)="onOpenDocument(selected)">Open</span>
+                            </div>
+                        </div>
+
+                        <div class="field-delimiter" data-label="Hedera Information"></div>
+
+                        <div class="field">
+                            <div class="field-name">Topic Id:</div>
+                            <div class="field-value">
+                                <hedera-explorer type="topics"
+                                    [params]="selected.topicId">{{selected.topicId}}</hedera-explorer>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Message Id:</div>
+                            <div class="field-value">
+                                <hedera-explorer type="topics" [params]="selected.topicId" subType="messages"
+                                    [subParams]="selected.index">{{selected.id}}</hedera-explorer>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Sender:</div>
+                            <div class="field-value">
+                                <hedera-explorer type="accounts"
+                                    [params]="selected.payer">{{selected.payer}}</hedera-explorer>
+                            </div>
+                        </div>
+                    </ng-container>
+
+                    <ng-container *ngIf="selected.__ifVCMessage">
                         <div class="document-header">
                             <mat-icon>description</mat-icon>
                             Document
@@ -327,9 +392,9 @@
 
                         <div class="field-delimiter" data-label="Document"></div>
 
-                        <div class="field" *ngIf="selected.__schemaName">
+                        <div class="field" *ngIf="selected.__schemaLabel">
                             <div class="field-name">Schema:</div>
-                            <div class="field-value">{{selected.__schemaName}}</div>
+                            <div class="field-value">{{selected.__schemaLabel}}</div>
                         </div>
 
                         <div class="field">
@@ -381,7 +446,7 @@
                         </ng-container>
                     </ng-container>
 
-                    <ng-container *ngIf="selected.type === 'VC-Document' && selected.__schemaName==='MintToken'">
+                    <ng-container *ngIf="selected.__ifMintMessage">
                         <div class="document-header">
                             <mat-icon class="svg-icon" svgIcon="token"></mat-icon>
                             Mint
@@ -457,7 +522,7 @@
                         </ng-container>
                     </ng-container>
 
-                    <ng-container *ngIf="selected.type === 'VP-Document'">
+                    <ng-container *ngIf="selected.__ifVPMessage">
                         <div class="document-header">
                             <mat-icon>receipt</mat-icon>
                             Document
@@ -534,7 +599,7 @@
                         </ng-container>
                     </ng-container>
 
-                    <ng-container *ngIf="selected.type === 'Topic'">
+                    <ng-container *ngIf="selected.__ifTopicMessage">
                         <div class="document-header">
                             <mat-icon>cloud</mat-icon>
                             Topic
@@ -559,7 +624,7 @@
                             <div class="field-value">{{selected.owner}}</div>
                         </div>
 
-                        <ng-container *ngIf="selected.__rationale && selected.__rationale.type === 'Policy'">
+                        <ng-container *ngIf="selected.__rationale && selected.__rationale.__ifPolicyMessage">
                             <div class="field-delimiter" data-label="Policy"></div>
 
                             <div class="field">
@@ -572,7 +637,7 @@
                             </div>
                         </ng-container>
 
-                        <ng-container *ngIf="selected.__rationale && selected.__rationale.type === 'Instance-Policy'">
+                        <ng-container *ngIf="selected.__rationale && selected.__rationale.__ifInstanceMessage">
                             <div class="field-delimiter" data-label="Policy"></div>
 
                             <div class="field">

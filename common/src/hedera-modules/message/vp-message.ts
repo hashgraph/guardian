@@ -31,6 +31,10 @@ export class VPMessage extends Message {
      * Relationships
      */
     public relationships: string[];
+    /**
+     * User Role
+     */
+    public userMessageId: string;
 
     constructor(action: MessageAction) {
         super(action, MessageType.VPDocument);
@@ -53,6 +57,32 @@ export class VPMessage extends Message {
      */
     public setRelationships(ids: string[]): void {
         this.relationships = ids;
+        if (this.userMessageId) {
+            if (this.relationships) {
+                if (this.relationships.indexOf(this.userMessageId) === -1) {
+                    this.relationships.push(this.userMessageId);
+                }
+            } else {
+                this.relationships = [this.userMessageId];
+            }
+        }
+    }
+
+    /**
+     * Set relationships
+     * @param messageId
+     */
+    public setUser(messageId: string): void {
+        this.userMessageId = messageId;
+        if (this.userMessageId) {
+            if (this.relationships) {
+                if (this.relationships.indexOf(this.userMessageId) === -1) {
+                    this.relationships.push(this.userMessageId);
+                }
+            } else {
+                this.relationships = [this.userMessageId];
+            }
+        }
     }
 
     /**

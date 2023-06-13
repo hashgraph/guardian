@@ -441,6 +441,7 @@ export class SendToGuardianBlock {
             document.hederaStatus = DocumentStatus.ISSUE;
             document.messageId = vcMessageResult.getId();
             document.topicId = vcMessageResult.getTopicId();
+            
             return document;
         } catch (error) {
             throw new BlockActionError(PolicyUtils.getErrorMessage(error), ref.blockType, ref.uuid)
@@ -461,6 +462,7 @@ export class SendToGuardianBlock {
         //
         let message: Message;
         let docObject: DIDDocument | VcDocument | VpDocument;
+        const owner = await PolicyUtils.getUserByIssuer(ref, document);
         if (type === DocumentType.DID) {
             const did = DIDDocument.fromJsonTree(document.document);
             const didMessage = new DIDMessage(MessageAction.CreateDID);
@@ -474,6 +476,7 @@ export class SendToGuardianBlock {
             vcMessage.setDocument(vc);
             vcMessage.setDocumentStatus(document.option?.status || DocumentStatus.NEW);
             vcMessage.setRelationships(document.relationships);
+            vcMessage.setUser(owner.roleMessage);
             message = vcMessage;
             docObject = vc;
         } else if (type === DocumentType.VerifiablePresentation) {
@@ -481,6 +484,7 @@ export class SendToGuardianBlock {
             const vpMessage = new VPMessage(MessageAction.CreateVP);
             vpMessage.setDocument(vp);
             vpMessage.setRelationships(document.relationships);
+            vpMessage.setUser(owner.roleMessage);
             message = vpMessage;
             docObject = vp;
         }

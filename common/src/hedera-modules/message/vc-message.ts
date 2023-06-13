@@ -44,6 +44,14 @@ export class VCMessage extends Message {
      * Document status
      */
     public documentStatus: string;
+    /**
+     * User Role
+     */
+    public userMessageId: string;
+    /**
+     * Encoded Data
+     */
+    public encodedData: boolean;
 
     constructor(
         action: MessageAction,
@@ -65,18 +73,27 @@ export class VCMessage extends Message {
      * @param document
      */
     public setDocument(document: VcDocument): void {
+        const proof = document.getProof();
         this.vcDocument = document;
         this.document = document.getDocument();
         this.hash = document.toCredentialHash();
         this.issuer = document.getIssuerDid();
-        const proof = document.getProof();
-        switch (proof.type) {
-            case SignatureType.BbsBlsSignature2020:
-                this.type = MessageType.EVCDocument;
-                break;
-            default:
-                this.type = MessageType.VCDocument;
-                break;
+        if (proof.type === SignatureType.BbsBlsSignature2020) {
+            this.encodedData = true;
+        } else {
+            this.encodedData = false;
+        }
+        this.changeType();
+    }
+
+    /**
+     * Support for old messages
+     */
+    protected changeType(): void {
+        if (this.encodedData) {
+            this.type = MessageType.EVCDocument;
+        } else {
+            this.type = MessageType.VCDocument;
         }
     }
 
@@ -86,6 +103,32 @@ export class VCMessage extends Message {
      */
     public setRelationships(ids: string[]): void {
         this.relationships = ids;
+        if (this.userMessageId) {
+            if (this.relationships) {
+                if (this.relationships.indexOf(this.userMessageId) === -1) {
+                    this.relationships.push(this.userMessageId);
+                }
+            } else {
+                this.relationships = [this.userMessageId];
+            }
+        }
+    }
+
+    /**
+     * Set relationships
+     * @param messageId
+     */
+    public setUser(messageId: string): void {
+        this.userMessageId = messageId;
+        if (this.userMessageId) {
+            if (this.relationships) {
+                if (this.relationships.indexOf(this.userMessageId) === -1) {
+                    this.relationships.push(this.userMessageId);
+                }
+            } else {
+                this.relationships = [this.userMessageId];
+            }
+        }
     }
 
     /**
@@ -107,9 +150,10 @@ export class VCMessage extends Message {
             lang: this.lang,
             issuer: this.issuer,
             relationships: this.relationships,
+            encodedData: this.encodedData,
+            documentStatus: this.documentStatus,
             cid: this.getDocumentUrl(UrlType.cid),
             uri: this.getDocumentUrl(UrlType.url),
-            documentStatus: this.documentStatus,
         };
     }
 
@@ -118,7 +162,7 @@ export class VCMessage extends Message {
      */
     public async toDocuments(key: string): Promise<ArrayBuffer[]> {
         let document = JSON.stringify(this.document);
-        if (this.type === MessageType.EVCDocument) {
+        if (this.encodedData || this.type === MessageType.EVCDocument) {
             if (!key) {
                 throw new Error(
                     'There is no appropriate private key to encode VC data'
@@ -144,7 +188,7 @@ export class VCMessage extends Message {
         documents: string[],
         key: string
     ): Promise<VCMessage> {
-        if (this.type === MessageType.EVCDocument) {
+        if (this.encodedData || this.type === MessageType.EVCDocument) {
             const decrypted = await decryptWithKeyDerivedFromString({
                 serialized: documents[0],
                 passphrase: key,
@@ -179,21 +223,31 @@ export class VCMessage extends Message {
         }
 
         let message = new VCMessage(json.action, json.type);
-        message = Message._fromMessageObject(message, json);
-        message._id = json.id;
-        message._status = json.status;
-        message.issuer = json.issuer;
-        message.relationships = json.relationships;
-        message.documentStatus = json.documentStatus;
+        message = VCMessage._fromMessageObject(message, json);
+        return message;
+    }
 
+    /**
+     * From message object
+     * @param message
+     * @param json
+     */
+    protected static override _fromMessageObject<T extends Message>(message: T, json: VcMessageBody): T {
+        const _message: VCMessage = super._fromMessageObject(message, json) as any;
+        _message._id = json.id;
+        _message._status = json.status;
+        _message.issuer = json.issuer;
+        _message.relationships = json.relationships;
+        _message.documentStatus = json.documentStatus;
+        _message.encodedData = json.encodedData || json.type === MessageType.EVCDocument;
         const urls = [
             {
                 cid: json.cid,
                 url: IPFS.IPFS_PROTOCOL + json.cid,
             },
         ];
-        message.setUrls(urls);
-        return message;
+        _message.setUrls(urls);
+        return _message as any;
     }
 
     /**
@@ -229,7 +283,8 @@ export class VCMessage extends Message {
             lang: this.lang,
             issuer: this.issuer,
             relationships: this.relationships,
-            hash: this.hash
+            hash: this.hash,
+            encodedData: this.encodedData
         }
         const json: string = JSON.stringify(map);
         const hash: Uint8Array = Hashing.sha256.digest(json);
@@ -253,6 +308,7 @@ export class VCMessage extends Message {
         result.relationships = this.relationships;
         result.document = this.document;
         result.documentStatus = this.documentStatus;
+        result.encodedData = this.encodedData;
         return result;
     }
 

@@ -38,6 +38,7 @@ export class AutoReportBlockComponent implements OnInit {
     public status!: string;
     public schemas!: any[];
     public tokens!: any[];
+    public roles!: any[];
 
     public selected: any;
 
@@ -154,6 +155,7 @@ export class AutoReportBlockComponent implements OnInit {
 
         this.schemas = [];
         this.tokens = [];
+        this.roles = [];
 
         this._gridTemplateRows1 = '';
         this._gridTemplateRows2 = '';
@@ -176,7 +178,7 @@ export class AutoReportBlockComponent implements OnInit {
 
     private createSmallReport() {
         for (const topic of this._topics1) {
-            if (topic.message?.messageType === "INSTANCE_POLICY_TOPIC") {
+            if (topic.message?.messageType === 'INSTANCE_POLICY_TOPIC') {
                 const t = { ...topic };
                 t.__parent = null;
                 t.__offset = 20;
@@ -218,12 +220,19 @@ export class AutoReportBlockComponent implements OnInit {
     private createReport(report: any) {
         this.schemas = report.schemas || [];
         this.tokens = report.tokens || [];
+        this.roles = report.roles || [];
         this.parseTopics(report.topics, null, 1);
         this.parseMessages();
+        this.parseRoles();
     }
 
     private parseTopics(topics: any[], parent: any, offset: number) {
         for (const topic of topics) {
+            if (topic.message && topic.message.messageType === 'INSTANCE_POLICY_TOPIC') {
+                topic.__policy = topic.topicId;
+            } else if (parent) {
+                topic.__policy = parent.__policy;
+            }
             topic.__parent = parent;
             topic.__offset = 15 * offset;
             topic.__order = this._topics1.length + 1;
@@ -238,7 +247,9 @@ export class AutoReportBlockComponent implements OnInit {
         let gridSize = 0;
         for (const topic of this._topics1) {
             for (const message of topic.messages) {
+                message.__policy = topic.__policy;
                 message.__order = message.order + 1;
+                message.__status = this.getStatusLabel(message);
                 message.__timestamp = this.getMessageTimestamp(message);
                 if (message.type === 'VP-Document') {
                     message.__issuer = this.getIssuer(message);
@@ -248,9 +259,14 @@ export class AutoReportBlockComponent implements OnInit {
                     message.__schema = this.searchSchema(message);
                     message.__issuer = this.getIssuer(message);
                 }
+                if (message.type === 'Role-Document') {
+                    message.__schema = this.searchSchema(message);
+                    message.__issuer = this.getIssuer(message);
+                }
                 if (message.__schema) {
                     message.__schemaName = message.__schema.name;
                     message.__schemaDocument = message.__schema.document;
+                    message.__schemaLabel = this.getSchemaLabel(message.__schema);
                 }
                 if (message.__documents) {
                     for (const item of message.__documents) {
@@ -269,6 +285,14 @@ export class AutoReportBlockComponent implements OnInit {
                 if (message.__token) {
                     message.__tokenName = message.__token.name;
                 }
+                message.__ifTopicMessage = this.ifTopicMessage(message);
+                message.__ifPolicyMessage = this.ifPolicyMessage(message);
+                message.__ifInstanceMessage = this.ifInstanceMessage(message);
+                message.__ifDIDMessage = this.ifDIDMessage(message);
+                message.__ifVCMessage = this.ifVCMessage(message);
+                message.__ifMintMessage = this.ifMintMessage(message);
+                message.__ifVPMessage = this.ifVPMessage(message);
+                message.__ifRoleMessage = this.ifRoleMessage(message);
                 gridSize = Math.max(gridSize, message.__order);
                 this._messages1.push(message);
             }
@@ -282,10 +306,7 @@ export class AutoReportBlockComponent implements OnInit {
             if (message.relationships) {
                 message.__relationships = [];
                 for (const relationship of message.relationships) {
-                    message.__relationships.push({
-                        id: relationship,
-                        name: this.getRelationship(this._messages1, relationship)?.__schemaName || 'Document'
-                    })
+                    message.__relationships.push(this.createRelationship(relationship));
                 }
             }
         }
@@ -297,6 +318,105 @@ export class AutoReportBlockComponent implements OnInit {
         }
         this._gridTemplateColumns1 = 'repeat(' + gridSize + ', 230px)';
         this._gridTemplateRows1 = 'repeat(' + this._topics1.length + ', 100px) 30px';
+    }
+
+    private parseRoles() {
+        const roles = new Map<string, any>();
+        for (const message of this._messages1) {
+            if (message.__ifRoleMessage) {
+                roles.set(message.id, {
+                    group: message.group,
+                    role: message.role,
+                    did: message.issuer,
+                    payer: message.payer,
+                    topicId: message.__policy,
+                });
+            }
+        }
+        for (const topic of this._topics1) {
+            if (topic.message && topic.message.messageType === 'INSTANCE_POLICY_TOPIC') {
+                roles.set(`${topic.topicId}:${topic.message.owner}`, {
+                    group: null,
+                    role: 'Standard Registry',
+                    did: topic.message.owner,
+                    payer: topic.message.payer,
+                    topicId: topic.topicId
+                });
+            }
+        }
+        for (const message of this._messages1) {
+            if (message.relationships) {
+                for (const relationship of message.relationships) {
+                    if (roles.has(relationship)) {
+                        message.__user = roles.get(relationship);
+                    }
+                }
+            }
+            if (!message.__user) {
+                message.__user = roles.get(`${message.__policy}:${message.__issuer}`);
+            }
+            if (!message.__user) {
+                message.__user = {
+                    group: null,
+                    role: null,
+                    did: message.__issuer,
+                    payer: message.payer,
+                    topicId: message.topicId
+                }
+            }
+            message.__userName = message.__user.role || message.__user.group || message.__user.did;
+        }
+    }
+
+    private createRelationship(messageId: string) {
+        const message = this._messages1.find((role: any) => role.id === messageId);
+        if (message) {
+            if (message.__ifRoleMessage) {
+                return {
+                    id: messageId,
+                    visible: false,
+                    name: 'Roles & Groups'
+                }
+            } else {
+                return {
+                    id: messageId,
+                    visible: true,
+                    name: message.__schemaLabel || 'Document'
+                }
+            }
+        } else {
+            return {
+                id: messageId,
+                visible: false,
+                name: 'Document'
+            }
+        }
+    }
+
+    private getSchemaLabel(schema: any): string {
+        switch (schema.name) {
+            case 'MintToken': {
+                return 'Mint Token';
+            }
+            case 'UserRole': {
+                return 'Role';
+            }
+            default: {
+                return schema.name;
+            }
+        }
+    }
+
+    private getStatusLabel(message:any) {
+        switch (message.documentStatus) {
+            case 'NEW': return 'Create Document';
+            case 'ISSUE': return 'Create Document';
+            case 'REVOKE': return 'Revoke Document';
+            case 'SUSPEND': return 'Suspend Document';
+            case 'RESUME': return 'Resume Document';
+            case 'FAILED': return 'Failed';
+            default: return message.documentStatus || 'Create Document';
+        }
     }
 
     private ifMint(message: any): boolean {
@@ -371,8 +491,9 @@ export class AutoReportBlockComponent implements OnInit {
                 if (item.__schema) {
                     item.__schemaName = item.__schema.name;
                     item.__schemaDocument = item.__schema.document;
+                    item.__schemaLabel = this.getSchemaLabel(item.__schema);
                 }
-                item.__name = item.__schemaName || 'Document';
+                item.__name = item.__schemaLabel || 'Document';
                 documents.push(item);
             }
         }
@@ -474,6 +595,39 @@ export class AutoReportBlockComponent implements OnInit {
         return null;
     }
 
+
+    private ifTopicMessage(message: any): boolean {
+        return message.type === 'Topic';
+    }
+
+    private ifPolicyMessage(message: any): boolean {
+        return message.type === 'Policy';
+    }
+
+    private ifInstanceMessage(message: any): boolean {
+        return message.type === 'Instance-Policy';
+    }
+
+    private ifDIDMessage(message: any): boolean {
+        return message.type === 'DID-Document';
+    }
+
+    private ifVCMessage(message: any): boolean {
+        return message.type === 'VC-Document' && message.__schemaName !== 'MintToken';
+    }
+
+    private ifMintMessage(message: any): boolean {
+        return message.type === 'VC-Document' && message.__schemaName === 'MintToken';
+    }
+
+    private ifVPMessage(message: any): boolean {
+        return message.type === 'VP-Document';
+    }
+
+    private ifRoleMessage(message: any): boolean {
+        return message.type === 'Role-Document';
+    }
+
     private render(messages: any[]) {
         this.onResize();
         LeaderLine.positionByWindowResize = false;
@@ -491,9 +645,10 @@ export class AutoReportBlockComponent implements OnInit {
         }
         const lines = [];
         for (const message of messages) {
-            if (message.relationships && message.relationships.length) {
-                const offset = 90 / (message.relationships.length + 1);
-                for (let index = 0; index < message.relationships.length; index++) {
+            if (message.__relationships) {
+                const relationships = message.__relationships.filter((r: any) => r.visible);
+                const offset = 90 / (relationships.length + 1);
+                for (let index = 0; index < relationships.length; index++) {
                     const options = {
                         x: -box.x,
                         y: -box.y + (offset * (index + 1)),
@@ -501,9 +656,9 @@ export class AutoReportBlockComponent implements OnInit {
                         height: 0,
                         color: 'transparent'
                     };
-                    const id = message.relationships[index];
+                    const relationship = relationships[index];
                     const line = new LeaderLine(
-                        LeaderLine.areaAnchor(document.getElementById(id), options),
+                        LeaderLine.areaAnchor(document.getElementById(relationship.id), options),
                         LeaderLine.areaAnchor(document.getElementById(message.id), options), {
                         color: 'rgba(30, 130, 250, 0.5)',
                     });
@@ -525,7 +680,7 @@ export class AutoReportBlockComponent implements OnInit {
     @HostListener('window:resize', ['$event'])
     onResize() {
         const container = this.element.nativeElement.children[0];
-        if(container) {
+        if (container) {
             const box = container.getBoundingClientRect();
             const height = window.innerHeight - box.top - 5;
             container.style.height = height + 'px';

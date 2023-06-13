@@ -7,7 +7,7 @@ import { GenerateUUIDv4, GroupAccessType, GroupRelationshipType, SchemaEntity, S
 import { BlockActionError } from '@policy-engine/errors';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
 import { DataTypes, PolicyUtils } from '@policy-engine/helpers/utils';
-import { VcHelper, MessageAction, MessageServer, VCMessage } from '@guardian/common';
+import { VcHelper, MessageAction, MessageServer, RoleMessage } from '@guardian/common';
 import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
@@ -335,11 +335,15 @@ export class PolicyRolesBlock {
 
         const rootTopic = await PolicyUtils.getInstancePolicyTopic(ref);
         const messageServer = new MessageServer(groupOwner.hederaAccountId, groupOwner.hederaAccountKey, ref.dryRun);
-        const vcMessage = new VCMessage(MessageAction.CreateVC);
+        const vcMessage = new RoleMessage(MessageAction.CreateVC);
         vcMessage.setDocument(mintVC);
+        vcMessage.setRole(group);
         const vcMessageResult = await messageServer
             .setTopicObject(rootTopic)
             .sendMessage(vcMessage);
+
+        console.log('RoleMessage: ', vcMessage.toMessageObject());
+        console.log('group: ', group);
 
         const vcDocument = PolicyUtils.createVC(ref, user, mintVC);
         vcDocument.type = DataTypes.USER_ROLE;

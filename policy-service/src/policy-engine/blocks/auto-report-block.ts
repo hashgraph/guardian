@@ -33,6 +33,14 @@ class MessagesReport {
         await this.checkUsers();
     }
 
+    private needDocument(message: Message): boolean {
+        return (
+            message.type === MessageType.VCDocument ||
+            message.type === MessageType.VPDocument ||
+            message.type === MessageType.RoleDocument
+        );
+    }
+
     private async checkMessage(timestamp: string) {
         if (this.messages.has(timestamp)) {
             return;
@@ -44,7 +52,7 @@ class MessagesReport {
             return;
         }
 
-        if (message.type === MessageType.VCDocument || message.type === MessageType.VPDocument) {
+        if (this.needDocument(message)) {
             await MessageServer.loadDocument(message);
         }
 
@@ -182,7 +190,13 @@ class MessagesReport {
                 messages: [],
             });
         }
-        const topics = [];
+        const topics: any[] = [];
+        const messages: any[] = [];
+        const roles: any[] = [];
+        const schemas: any[] = [];
+        const users: any[] = [];
+        const tokens: any[] = [];
+
         for (const topic of topicsMap.values()) {
             if (topicsMap.has(topic.parent)) {
                 topicsMap.get(topic.parent).children.push(topic);
@@ -190,32 +204,38 @@ class MessagesReport {
                 topics.push(topic);
             }
         }
-        const messages = [];
+
         for (const message of this.messages.values()) {
             if (message && topicsMap.has(message.topicId)) {
                 messages.push(message);
+                if (message.type === MessageType.RoleDocument) {
+                    roles.push(message);
+                }
                 topicsMap.get(message.topicId).messages.push(message);
             }
         }
+
         messages.sort((a, b) => a.id > b.id ? 1 : -1);
         for (let index = 0; index < messages.length; index++) {
             messages[index].order = index;
         }
-        const schemas = [];
+
         for (const schema of this.schemas.values()) {
             schemas.push(schema);
         }
-        const users = [];
+
         for (const document of this.users.values()) {
             if (document) {
                 users.push(document);
             }
         }
-        const tokens = [];
+
         for (const token of this.tokens.values()) {
             tokens.push(token);
         }
+
         const result: any = {
+            roles,
             topics,
             schemas,
             users,

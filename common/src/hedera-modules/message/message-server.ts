@@ -18,7 +18,7 @@ import { Environment } from '../environment';
 import { MessageMemo } from '../memo-mappings/message-memo';
 import { RegistrationMessage } from './registration-message';
 import { TopicMessage } from './topic-message';
-import { TopicConfig } from '../../hedera-modules';
+import { RoleMessage, TopicConfig } from '../../hedera-modules';
 import { TokenMessage } from './token-message';
 import { ModuleMessage } from './module-message';
 import { DatabaseServer } from '../../database-modules';
@@ -298,6 +298,9 @@ export class MessageServer {
                 break;
             case MessageType.Tag:
                 message = TagMessage.fromMessageObject(json);
+                break;
+            case MessageType.RoleDocument:
+                message = RoleMessage.fromMessageObject(json);
                 break;
             // Default schemas
             case 'schema-document':

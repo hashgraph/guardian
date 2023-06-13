@@ -874,7 +874,10 @@ export class PolicyUtils {
      */
     public static getPolicyUser(ref: AnyBlockType, did: string, uuid: string): IPolicyUser {
         const user = new PolicyUser(did, !!ref.dryRun);
-        return user.setGroup({ role: null, uuid });
+        if (uuid) {
+            return user.setGroup({ role: null, uuid });
+        }
+        return user;
     }
 
     /**
@@ -883,7 +886,13 @@ export class PolicyUtils {
      * @param userId
      */
     public static getPolicyUserById(ref: AnyBlockType, userId: string): IPolicyUser {
-        return PolicyUser.fromUserId(userId, null, !!ref.dryRun);
+        if (userId.startsWith('did:')) {
+            const did = userId;
+            return (new PolicyUser(did, !!ref.dryRun));
+        } else {
+            const [did, uuid] = userId.split(/:(.*)/s, 2);
+            return (new PolicyUser(did, !!ref.dryRun)).setGroup({ role: null, uuid });
+        }
     }
 
     /**
@@ -893,7 +902,30 @@ export class PolicyUtils {
      */
     public static getDocumentOwner(ref: AnyBlockType, document: IPolicyDocument): IPolicyUser {
         const user = new PolicyUser(document.owner, !!ref.dryRun);
-        return user.setGroup({ role: null, uuid: document.group });
+        if (document.group) {
+            return user.setGroup({ role: null, uuid: document.group });
+        }
+        return user;
+    }
+
+    /**
+     * Get Policy User
+     * @param ref
+     * @param document
+     */
+    public static async getUserByIssuer(ref: AnyBlockType, document: IPolicyDocument): Promise<PolicyUser> {
+        const did = PolicyUtils.getDocumentIssuer(document.document) || document.owner;
+        const user = new PolicyUser(did, !!ref.dryRun);
+        if (document.group) {
+            const group = await ref.databaseServer.getUserInGroup(ref.policyId, did, document.group);
+            return user.setGroup(group);
+        } else {
+            if (did !== ref.policyOwner) {
+                const group = await ref.databaseServer.getActiveGroupByUser(ref.policyId, did);
+                return user.setGroup(group);
+            }
+        }
+        return user;
     }
 
     /**
