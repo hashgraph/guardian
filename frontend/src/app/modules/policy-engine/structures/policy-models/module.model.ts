@@ -24,7 +24,7 @@ export class PolicyModuleModel extends PolicyBlockModel {
     protected _inputEvents!: ModuleEventModel[];
     protected _outputEvents!: ModuleEventModel[];
     protected _variables!: ModuleVariableModel[];
-    protected _innerEvents: PolicyEventModel[];
+    protected _innerEvents!: PolicyEventModel[];
     protected _lastVariables!: IModuleVariables;
 
     protected _name!: string;
@@ -48,7 +48,10 @@ export class PolicyModuleModel extends PolicyBlockModel {
 
     constructor(config: IModuleConfig, parent: PolicyBlockModel | null) {
         super(config, parent);
+    }
 
+    public init(config: IModuleConfig, parent: PolicyBlockModel | null) {
+        super.init(config, parent);
         this._name = config.name || '';
         this._description = config.description || '';
 
@@ -396,8 +399,9 @@ export class PolicyModuleModel extends PolicyBlockModel {
 
     public override createChild(block: IBlockConfig, index?: number) {
         block.tag = this.getNewTag('Block');
-        this._createChild(block, this, index);
+        const newBlock = this._createChild(block, this, index);
         this.refresh();
+        return newBlock;
     }
 
     public override pasteChild(block: IBlockConfig) {
@@ -504,5 +508,39 @@ export class PolicyModuleModel extends PolicyBlockModel {
             }
             return null;
         }
+    }
+
+    public rebuild(object?: any) {
+        this.init(object, this.parent);
+        if (object.children) {
+            for (const child of object.children) {
+                this.children.push(this._buildBlock(child, this, this));
+            }
+        }
+        this.refreshData();
+        this.emitUpdate();
+    }
+
+    private _buildBlock(
+        config: IBlockConfig,
+        parent: PolicyModuleModel | PolicyBlockModel | null,
+        module: PolicyModuleModel | PolicyModel
+    ) {
+        let block: PolicyModuleModel | PolicyBlockModel;
+        if (config.blockType === 'module') {
+            block = new PolicyModuleModel(config, parent);
+            block.setModule(module);
+            module = block as PolicyModuleModel;
+        } else {
+            block = new PolicyBlockModel(config, parent);
+            block.setModule(module);
+        }
+        if (Array.isArray(config.children)) {
+            for (const childConfig of config.children) {
+                const child = this._buildBlock(childConfig, block, module);
+                block.children.push(child);
+            }
+        }
+        return block;
     }
 }

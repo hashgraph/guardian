@@ -33,3 +33,6 @@ export * from './user.type';
 export * from './wallet-events';
 export * from './worker-events';
 export * from './workers.type';
+export * from './config.type';
+export * from './order-direction.type';
+export * from './config.type';

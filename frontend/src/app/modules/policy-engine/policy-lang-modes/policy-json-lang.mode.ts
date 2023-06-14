@@ -67,7 +67,7 @@ CodeMirror.defineMode('policy-json-lang', function (config, parserConfig) {
         },
     };
     return CodeMirror.overlayMode(
-        CodeMirror.getMode(config, parserConfig.backdrop || 'application/json'),
+        CodeMirror.getMode(config, parserConfig.backdrop || 'application/ld+json'),
         policySyntaxOverlay
     );
 });

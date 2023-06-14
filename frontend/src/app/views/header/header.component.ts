@@ -219,6 +219,7 @@ export class HeaderComponent implements OnInit {
                     this.activeLinkRoot === '/schemas' ||
                     this.activeLinkRoot === '/artifacts' ||
                     this.activeLinkRoot === '/modules' ||
+                    this.activeLinkRoot === '/suggestion' ||
                     this.activeLinkRoot === '/policy-viewer' ||
                     this.activeLinkRoot === '/policy-configuration' ||
                     this.activeLinkRoot === '/compare' ||
@@ -243,6 +244,8 @@ export class HeaderComponent implements OnInit {
                 return this.activeLinkRoot === '/artifacts';
             case 'SR_MODULES':
                 return this.activeLinkRoot === '/modules';
+            case 'SR_SUGGESTION':
+                return this.activeLinkRoot === '/suggestion';
             case 'SR_POLICIES_LIST':
                 return this.activeLinkRoot === '/policy-viewer';
             case 'SR_VIEWER':
@@ -314,6 +317,9 @@ export class HeaderComponent implements OnInit {
                 return true;
             case 'SR_POLICIES_LIST':
                 this.router.navigate(['/policy-viewer']);
+                return true;
+            case 'SR_SUGGESTION':
+                this.router.navigate(['/suggestion']);
                 return true;
             case 'SR_VIEWER':
                 return false;
@@ -423,6 +429,6 @@ export class HeaderComponent implements OnInit {
                 userInfo.style.display = "none";
                 userInfo.style.maxHeight = content.scrollHeight + "px";
             }
-        } 
+        }
     }
 }

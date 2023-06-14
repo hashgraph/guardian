@@ -76,6 +76,11 @@ import { SchemaEngineModule } from './modules/schema-engine/schema-engine.module
 import { ThemeService } from './services/theme.service';
 // Injectors
 import { GET_SCHEMA_NAME } from './injectors/get-schema-name.injector';
+import { SuggestionConfigurationComponent } from './views/suggestion-configuration/suggestion-configuration.component';
+import {
+    BLOCK_TYPE_TIPS,
+    BLOCK_TYPE_TIPS_VALUE,
+} from './injectors/block-type-tips.injector';
 
 @NgModule({
     declarations: [
@@ -103,6 +108,7 @@ import { GET_SCHEMA_NAME } from './injectors/get-schema-name.injector';
         SchemaConfigComponent,
         BrandingComponent,
         BrandingDialogComponent,
+        SuggestionConfigurationComponent,
         StandardRegistryCardComponent,
     ],
     imports: [
@@ -151,6 +157,10 @@ import { GET_SCHEMA_NAME } from './injectors/get-schema-name.injector';
         {
             provide: GET_SCHEMA_NAME,
             useValue: SchemaHelper.getSchemaName
+        },
+        {
+            provide: BLOCK_TYPE_TIPS,
+            useValue: BLOCK_TYPE_TIPS_VALUE
         },
         {
             provide: HTTP_INTERCEPTORS,

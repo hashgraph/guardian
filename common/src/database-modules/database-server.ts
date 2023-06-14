@@ -23,7 +23,8 @@ import {
     Tag,
     TagCache,
     Contract as ContractCollection,
-    ExternalDocument
+    ExternalDocument,
+    SuggestionConfig
 } from '../entity';
 import { Binary } from 'bson';
 import {
@@ -2426,5 +2427,37 @@ export class DatabaseServer {
      */
     public static async updateTheme(row: Theme): Promise<Theme> {
         return await new DataBaseHelper(Theme).update(row);
+    }
+
+    /**
+     * Save suggestion config
+     * @param config
+     * @returns config
+     */
+    public static async setSuggestionConfig(
+        config: SuggestionConfig
+    ): Promise<SuggestionConfig> {
+        const existingConfig = await DatabaseServer.getSuggestionConfig(
+            config.user
+        );
+        if (existingConfig) {
+            existingConfig.items = config.items;
+        }
+        return await new DataBaseHelper(SuggestionConfig).save(
+            existingConfig || config
+        );
+    }
+
+    /**
+     * Get suggestion config
+     * @param did
+     * @returns config
+     */
+    public static async getSuggestionConfig(
+        did: string
+    ): Promise<SuggestionConfig> {
+        return await new DataBaseHelper(SuggestionConfig).findOne({
+            user: did,
+        });
     }
 }

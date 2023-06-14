@@ -66,6 +66,9 @@ export class PolicyConfigurationComponent implements OnInit {
     public eventVisible: string = 'All';
     public templateModules: any[] = [];
     public code!: string;
+    public isSuggestionEnabled = false;
+    public nextBlock!: any;
+    public nestedBlock!: any;
 
     public openType: 'Root' | 'Sub' = 'Root';
     public rootType: 'Policy' | 'Module' = 'Policy';
@@ -105,6 +108,7 @@ export class PolicyConfigurationComponent implements OnInit {
         customModules: [],
     };
     private _searchTimeout!: any;
+    private currentCMStyles?: any;
 
     public dropListConnector: any = {
         menu: null,
@@ -207,6 +211,7 @@ export class PolicyConfigurationComponent implements OnInit {
             this.themeService.setThemes(themes);
             this.themes = this.themeService.getThemes();
             this.theme = this.themeService.getCurrent();
+            this.updateCodeMirrorStyles();
         }, (error) => {
             console.error(error);
         });
@@ -418,7 +423,7 @@ export class PolicyConfigurationComponent implements OnInit {
         }
         if (this.currentView !== root.view) {
             this.currentView = root.view;
-            this.chanceView(root.view);
+            this.changeView(root.view);
         }
         if (root.view === 'yaml' || root.view === 'json') {
             this.code = root.value;
@@ -527,6 +532,119 @@ export class PolicyConfigurationComponent implements OnInit {
         }
     }
 
+    private createNewBlock(parent: any, type: string) {
+        if (!parent) {
+            return;
+        }
+        const newBlock = this.registeredService.getBlockConfig(type);
+        return parent.createChild(newBlock);
+    }
+
+    private updateCodeMirrorStyles() {
+        if (this.currentCMStyles) {
+            this.currentCMStyles.remove();
+            this.currentCMStyles = null;
+        }
+        const style = document.createElement('style');
+        style.type = 'text/css';
+        style.innerHTML = `${this.theme.syntaxGroups
+            .map(
+                (item) => `.cm-${item.id} {
+            color: ${item.color}
+        }`
+            )
+            .join('')}`;
+        this.currentCMStyles = style;
+        document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    private generateSuggestionInput(
+        parent: PolicyBlockModel | null,
+        selected: PolicyBlockModel
+    ): any {
+        if (!parent) {
+            const res = {
+                type: selected.blockType,
+            };
+            return [res, res];
+        }
+        const [result, conf] = this.generateSuggestionInput(
+            parent.parent,
+            parent
+        );
+        conf.type = parent.blockType;
+        conf.children = [];
+        const childConfig: any = {};
+        for (const child of parent.children) {
+            if (child === selected) {
+                childConfig.type = child.blockType;
+                conf.children.push(childConfig);
+                break;
+            } else {
+                conf.children.push({
+                    type: child.blockType,
+                });
+            }
+        }
+        return [result, childConfig];
+    }
+
+    private findSuggestedBlocks(currentBlock: any) {
+        if (this.isSuggestionEnabled && currentBlock) {
+            this.policyEngineService
+                .suggestion(
+                    this.generateSuggestionInput(
+                        currentBlock.parent,
+                        currentBlock
+                    )[0]
+                )
+                .subscribe((result) => {
+                    if (this.currentBlock !== currentBlock) {
+                        return;
+                    }
+                    const nextBlockType = result[0]
+                    if (
+                        nextBlockType &&
+                        this.currentBlock?.parent?.children &&
+                        !this.currentBlock.parent.children[
+                            this.currentBlock.parent.children.indexOf(
+                                this.currentBlock
+                            ) + 1
+                        ]
+                    ) {
+                        this.nextBlock = {
+                            icon: this.registeredService.getIcon(nextBlockType),
+                            type: nextBlockType,
+                            node: {
+                                blockType: nextBlockType,
+                                permissionsNumber:
+                                    this.currentBlock?.permissionsNumber,
+                            },
+                            name: this.registeredService.getName(nextBlockType),
+                        };
+                    }
+
+                    const nestedBlockType = result[1];
+                    if (
+                        nestedBlockType &&
+                        (!this.currentBlock?.children ||
+                            !this.currentBlock.children.length)
+                    ) {
+                        this.nestedBlock = {
+                            icon: this.registeredService.getIcon(nestedBlockType),
+                            type: nestedBlockType,
+                            node: {
+                                blockType: nestedBlockType,
+                                permissionsNumber:
+                                    this.currentBlock?.permissionsNumber,
+                            },
+                            name: this.registeredService.getName(nestedBlockType),
+                        };
+                    }
+                });
+        }
+    }
+
     public setFavorite(event: any, item: any) {
         event.preventDefault();
         event.stopPropagation();
@@ -560,7 +678,7 @@ export class PolicyConfigurationComponent implements OnInit {
     public onView(type: string) {
         this.loading = true;
         setTimeout(() => {
-            this.chanceView(type);
+            this.changeView(type);
             this.loading = false;
         }, 0);
     }
@@ -570,18 +688,21 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     public onSelect(block: any) {
+        this.nextBlock = null;
+        this.nestedBlock = null;
         this.currentBlock = this.openModule.getBlock(block);
         this.selectType = this.currentBlock?.isModule ? 'Module' : 'Block';
         this.openModule.checkChange();
         this.changeDetector.detectChanges();
+        this.findSuggestedBlocks(this.currentBlock);
         return false;
     }
 
     public onAdd(btn: any) {
         this.currentBlock = this.openModule.getBlock(this.currentBlock);
         if (this.currentBlock) {
-            const newBlock = this.registeredService.getBlockConfig(btn.type);
-            this.currentBlock.createChild(newBlock);
+            this.createNewBlock(this.currentBlock, btn.type);
+            this.onSelect(this.currentBlock);
         }
     }
 
@@ -636,6 +757,12 @@ export class PolicyConfigurationComponent implements OnInit {
         if (item) {
             this.openType = 'Sub';
             this.openModule = item;
+            if (this.currentView === 'json') {
+                this.code = this.objectToJson(this.openModule.getJSON());
+            }
+            if (this.currentView === 'yaml') {
+                this.code = this.objectToYaml(this.openModule.getJSON());
+            }
             this.changeDetector.detectChanges();
         }
     }
@@ -695,6 +822,12 @@ export class PolicyConfigurationComponent implements OnInit {
         this.rootModule = root;
         this.openModule = root?.getRootModule();
         this.openType = 'Root';
+        if (this.currentView === 'json') {
+            this.code = this.objectToJson(this.openModule.getJSON());
+        }
+        if (this.currentView === 'yaml') {
+            this.code = this.objectToYaml(this.openModule.getJSON());
+        }
         this.changeDetector.detectChanges();
     }
 
@@ -734,7 +867,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.errorMessage(commonErrors);
     }
 
-    private chanceView(type: string) {
+    private changeView(type: string) {
         if (type == this.currentView) {
             return;
         }
@@ -749,11 +882,11 @@ export class PolicyConfigurationComponent implements OnInit {
                 } else if (this.currentView == 'yaml') {
                     root = this.yamlToObject(this.code);
                 }
-                this.policyModel.rebuild(root);
+                this.openModule.rebuild(root);
             } else if (type == 'json') {
                 let code = "";
                 if (this.currentView == 'blocks') {
-                    code = this.objectToJson(this.policyModel.getJSON());
+                    code = this.objectToJson(this.openModule.getJSON());
                 } else if (this.currentView == 'yaml') {
                     code = this.yamlToJson(this.code);
                 }
@@ -762,7 +895,7 @@ export class PolicyConfigurationComponent implements OnInit {
             } else if (type == 'yaml') {
                 let code = "";
                 if (this.currentView == 'blocks') {
-                    code = this.objectToYaml(this.policyModel.getJSON());
+                    code = this.objectToYaml(this.openModule.getJSON());
                 }
                 if (this.currentView == 'json') {
                     code = this.jsonToYaml(this.code);
@@ -914,7 +1047,7 @@ export class PolicyConfigurationComponent implements OnInit {
 
     private asyncUpdatePolicy(): Observable<void> {
         return new Observable<void>(subscriber => {
-            this.chanceView('blocks');
+            this.changeView('blocks');
             const root = this.policyModel.getJSON();
             if (root) {
                 this.loading = true;
@@ -1162,12 +1295,14 @@ export class PolicyConfigurationComponent implements OnInit {
         this.openSettings = false;
         this.themes = this.themeService.getThemes();
         this.theme = this.themeService.getCurrent();
+        this.updateCodeMirrorStyles();
     }
 
     public setTheme(theme: Theme) {
         this.themeService.setCurrent(theme);
         this.themeService.saveTheme();
         this.theme = this.themeService.getCurrent();
+        this.updateCodeMirrorStyles();
     }
 
     public blockStyle(rule: ThemeRule) {
@@ -1233,5 +1368,20 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.policyModel
             );
         }, () => undefined, () => this.loading = false);
+    }
+
+    public addSuggestionBlock(type: any, nested: boolean = false) {
+        this.currentBlock = this.createNewBlock(
+            nested ? this.currentBlock : this.currentBlock?.parent,
+            type
+        );
+        this.onSelect(this.currentBlock);
+    }
+
+    public onSuggestionClick() {
+        this.isSuggestionEnabled = !this.isSuggestionEnabled;
+        if (this.isSuggestionEnabled && this.currentBlock) {
+            this.onSelect(this.currentBlock);
+        }
     }
 }

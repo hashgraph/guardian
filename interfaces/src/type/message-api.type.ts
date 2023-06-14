@@ -135,6 +135,9 @@ export enum MessageAPI {
     WIZARD_GET_POLICY_CONFIG = 'WIZARD_GET_POLICY_CONFIG',
     GET_BRANDING = 'GET_BRANDING',
     STORE_BRANDING = 'STORE_BRANDING',
+    SUGGESTION = 'policy-engine-event-suggestion',
+    GET_SUGGESTION_CONFIG = 'policy-engine-event-get-suggestion-config',
+    SET_SUGGESTION_CONFIG = 'policy-engine-event-set-suggestion-config',
 }
 
 /**
