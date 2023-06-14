@@ -81,6 +81,7 @@ import {
     BLOCK_TYPE_TIPS,
     BLOCK_TYPE_TIPS_VALUE,
 } from './injectors/block-type-tips.injector';
+import { SuggestionService } from './services/suggestion.service';
 
 @NgModule({
     declarations: [
@@ -154,6 +155,7 @@ import {
         TagsService,
         ThemeService,
         WizardService,
+        SuggestionService,
         {
             provide: GET_SCHEMA_NAME,
             useValue: SchemaHelper.getSchemaName

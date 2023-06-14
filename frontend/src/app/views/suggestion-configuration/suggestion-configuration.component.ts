@@ -8,6 +8,7 @@ import { forkJoin } from 'rxjs';
 import { ModulesService } from 'src/app/services/modules.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ConfigType, sortObjectsArray } from '@guardian/interfaces';
+import { SuggestionService } from 'src/app/services/suggestion.service';
 
 interface SuggestionOrderPriorityItem {
     id: string;
@@ -29,6 +30,7 @@ export class SuggestionConfigurationComponent {
 
     constructor(
         private engineService: PolicyEngineService,
+        private suggestionService: SuggestionService,
         private moduleService: ModulesService
     ) {}
 
@@ -36,7 +38,7 @@ export class SuggestionConfigurationComponent {
         this.loading = true;
         forkJoin([
             this.engineService.all(),
-            this.engineService.getSuggestionConfig(),
+            this.suggestionService.getSuggestionConfig(),
             this.moduleService.menuList(),
         ]).subscribe((result) => {
             this.loading = false;
@@ -96,7 +98,7 @@ export class SuggestionConfigurationComponent {
 
     apply() {
         this.loading = true;
-        this.engineService
+        this.suggestionService
             .setSuggestionConfig(
                 this.suggestionOrderPriority.map((item, index) => ({
                     id: item.id,

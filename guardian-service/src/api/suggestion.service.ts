@@ -45,7 +45,7 @@ export async function suggestionAPI(): Promise<void> {
             if (
                 !srcChild ||
                 !destChild ||
-                !srcChild?.blockType !== destChild.type
+                srcChild?.blockType !== destChild.type
             ) {
                 return [null, null];
             }
@@ -66,13 +66,17 @@ export async function suggestionAPI(): Promise<void> {
      */
     function checkConfigsInTemplate(srcNode: any, destNode: any, parent?: any) {
         let [next, nested] = checkConfigInTemplate(srcNode, destNode, parent);
-        if (!next && !nested && srcNode.children) {
+        next = next === 'module' ? null : next;
+        nested = nested === 'module' ? null : nested;
+        if (!next && !nested && srcNode?.children) {
             for (const srcChild of srcNode.children) {
                 [next, nested] = checkConfigsInTemplate(
                     srcChild,
                     destNode,
                     srcNode
                 );
+                next = next === 'module' ? null : next;
+                nested = nested === 'module' ? null : nested;
                 if (next || nested) {
                     break;
                 }
@@ -125,6 +129,9 @@ export async function suggestionAPI(): Promise<void> {
                 suggestionInput,
                 user,
             }: { suggestionInput: any; user: IAuthUser } = msg;
+            if (!user?.did) {
+                throw new Error('Invalid user did');
+            }
             const suggestionConfig = await DatabaseServer.getSuggestionConfig(
                 user.did
             );
@@ -132,7 +139,7 @@ export async function suggestionAPI(): Promise<void> {
                 suggestionConfig?.items || [],
                 'index'
             );
-            const configs = [];
+            const configs: any[] = [];
             for (const item of suggestionConfigItems) {
                 const config =
                     item.type === ConfigType.POLICY

@@ -24,6 +24,7 @@ import { Options } from '../../structures/storage/config-options';
 import { PolicyTreeComponent } from '../policy-tree/policy-tree.component';
 import { ThemeService } from '../../../../services/theme.service';
 import { WizardMode, WizardService } from 'src/app/modules/policy-engine/services/wizard.service';
+import { SuggestionService } from 'src/app/services/suggestion.service';
 
 enum OperationMode {
     none,
@@ -185,6 +186,7 @@ export class PolicyConfigurationComponent implements OnInit {
         private modulesService: ModulesService,
         private themeService: ThemeService,
         private wizardService: WizardService,
+        private suggestionService: SuggestionService,
     ) {
         this.options = new Options();
         this.policyModel = new PolicyModel();
@@ -591,7 +593,7 @@ export class PolicyConfigurationComponent implements OnInit {
 
     private findSuggestedBlocks(currentBlock: any) {
         if (this.isSuggestionEnabled && currentBlock) {
-            this.policyEngineService
+            this.suggestionService
                 .suggestion(
                     this.generateSuggestionInput(
                         currentBlock.parent,

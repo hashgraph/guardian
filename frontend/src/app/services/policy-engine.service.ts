@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
-import { SuggestionOrderPriority } from '@guardian/interfaces';
 
 /**
  * Services for working from policy and separate blocks.
@@ -209,23 +208,5 @@ export class PolicyEngineService {
 
     public setMultiPolicy(policyId: string, data: any): Observable<any> {
         return this.http.post<void>(`${this.url}/${policyId}/multiple`, data);
-    }
-
-    public suggestion(
-        data: any
-    ): Observable<[nextBlock: string, nestedBlock: string]> {
-        return this.http.post<any>(`${this.url}/suggestion`, data);
-    }
-
-    public setSuggestionConfig(
-        items: SuggestionOrderPriority[]
-    ): Observable<SuggestionOrderPriority[]> {
-        return this.http.post<any>(`${this.url}/suggestion/config`, items);
-    }
-
-    public getSuggestionConfig(): Observable<SuggestionOrderPriority[]> {
-        return this.http.get<SuggestionOrderPriority[]>(
-            `${this.url}/suggestion/config`
-        );
     }
 }
