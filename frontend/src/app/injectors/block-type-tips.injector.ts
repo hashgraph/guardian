@@ -1,9 +1,9 @@
 import { InjectionToken } from '@angular/core';
 import { BlockType } from '@guardian/interfaces';
 
-export const BLOCK_TYPE_TIPS = new InjectionToken<
-    { [key: string]: string }
->('block-type-tips');
+export const BLOCK_TYPE_TIPS = new InjectionToken<{ [key: string]: string }>(
+    'block-type-tips'
+);
 
 export const BLOCK_TYPE_TIPS_VALUE: any = {};
 BLOCK_TYPE_TIPS_VALUE[BlockType.Container] =
@@ -39,7 +39,8 @@ BLOCK_TYPE_TIPS_VALUE[BlockType.CalculateMathAddon] =
 BLOCK_TYPE_TIPS_VALUE[BlockType.Report] = 'Displaying trustchain';
 BLOCK_TYPE_TIPS_VALUE[BlockType.ReportItem] = 'Displaying trustchain item';
 BLOCK_TYPE_TIPS_VALUE[BlockType.Switch] = 'Redirect flow control';
-BLOCK_TYPE_TIPS_VALUE[BlockType.AggregateDocument] = 'Aggregate input documents';
+BLOCK_TYPE_TIPS_VALUE[BlockType.AggregateDocument] =
+    'Aggregate input documents';
 BLOCK_TYPE_TIPS_VALUE[BlockType.TimerBlock] = 'Timer in policy';
 BLOCK_TYPE_TIPS_VALUE[BlockType.RevokeBlock] =
     'This block finds related messages in policy topics, and revokes those messages and sends it to Hedera topic, but it doesn’t save documents in DB';
@@ -54,6 +55,8 @@ BLOCK_TYPE_TIPS_VALUE[BlockType.TokenActionBlock] =
     'This block is responsible in performing automatic actions on the token';
 BLOCK_TYPE_TIPS_VALUE[BlockType.TokenConfirmationBlock] =
     'This block enables the owner of the private key for the account to manually perform operations with the token, including those not available in the ‘tokenActionBlock’';
+BLOCK_TYPE_TIPS_VALUE[BlockType.Mint] =
+    'This block is responsible for adding configurations on calculating the amount of tokens to be minted';
 BLOCK_TYPE_TIPS_VALUE[BlockType.GroupManagerBlock] =
     'This block allows to manage group membership, add and remove users from the group';
 BLOCK_TYPE_TIPS_VALUE[BlockType.MultiSignBlock] =
