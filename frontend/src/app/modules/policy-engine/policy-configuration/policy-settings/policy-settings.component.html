@@ -334,11 +334,11 @@
                         <div class="rule-color-number">
                         </div>
                         <div class="rule-color-syntax">
-                                <div class="rule-color-label">
+                                <div class="rule-color-syntax-label">
                                     Group Name
                                 </div>
-                                <div> {{syntaxGroup.name}}</div>
-                                <div class="rule-color-label">
+                                <div [ngStyle]="{ 'color': syntaxGroup.color }"> {{syntaxGroup.name}}</div>
+                                <div class="rule-color-syntax-label">
                                     Color
                                 </div>
                                 <div class="rule-color-prop">

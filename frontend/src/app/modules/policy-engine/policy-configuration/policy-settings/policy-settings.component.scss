@@ -367,6 +367,12 @@
             padding-top: 12px;
         }
 
+        .rule-color-syntax-label {
+            color: var(--pc-active-icon-color);
+            font-weight: 500;
+            width: 100px;
+        }
+
         .block-color-prev {
             height: 34px;
             position: relative;

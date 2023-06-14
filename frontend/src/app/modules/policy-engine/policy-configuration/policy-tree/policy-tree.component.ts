@@ -181,6 +181,11 @@ export class PolicyTreeComponent implements OnInit {
     private rebuildTree(data: PolicyBlockModel[]) {
         this.root = data[0];
         this.data = this.convertToArray([], data, 0, null);
+        if (this.currentBlock) {
+            this.selectedNode = this.data.find(
+                (item) => item.node === this.currentBlock
+            );
+        }
         this.render(true);
     }
 
@@ -643,10 +648,8 @@ export class PolicyTreeComponent implements OnInit {
         if (!this.currentBlock || !this.selectedNode) {
             return false;
         }
-        let current: any = this.data.find(
-            (item) => item.node === this.currentBlock
-        );
-        for (let i = this.data.indexOf(current); i < this.data.length; i++) {
+        let current: any = this.selectedNode
+        for (let i = this.data.indexOf(this.selectedNode); i < this.data.length; i++) {
             const next = this.data[i + 1];
             if (!next || next.level < this.selectedNode!.level) {
                 break;

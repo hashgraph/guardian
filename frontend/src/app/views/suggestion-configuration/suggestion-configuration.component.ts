@@ -44,12 +44,16 @@ export class SuggestionConfigurationComponent {
             this.loading = false;
             this.policies = result[0].map((item) => ({
                 id: item.id,
-                name: item.name,
+                name: item.version
+                    ? `${item.name} (${item.version})`
+                    : item.name,
                 type: ConfigType.POLICY,
             }));
             this.modules = result[2].map((item) => ({
                 id: item.id,
-                name: item.name,
+                name: item.version
+                    ? `${item.name} (${item.version})`
+                    : item.name,
                 type: ConfigType.MODULE,
             }));
             const suggestionOrderPriorities = sortObjectsArray(
