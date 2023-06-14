@@ -23,38 +23,55 @@ export async function suggestionAPI(): Promise<void> {
      * @param parent Parent node
      * @returns Next and nested nodes for destination config node
      */
-    function checkConfigInTemplate(srcNode: any, destNode: any, parent?: any) {
-        if (!destNode || !srcNode || srcNode.blockType !== destNode.type) {
-            return [null, null];
-        }
-        if (!destNode.children) {
-            return [
-                (parent?.children &&
-                    parent.children[parent.children.indexOf(srcNode) + 1]
-                        ?.blockType) ||
-                    null,
-                (srcNode?.children && srcNode?.children[0]?.blockType) || null,
-            ];
-        }
-        if (!srcNode.children?.length) {
-            return [null, null];
-        }
-        for (let i = 0; i < destNode.children.length; i++) {
-            const srcChild = srcNode.children[i];
-            const destChild = destNode.children[i];
-            if (
-                !srcChild ||
-                !destChild ||
-                srcChild?.blockType !== destChild.type
-            ) {
+    function checkConfigInTemplate(
+        srcNode: any,
+        destNode: any,
+        parent?: any
+    ): any {
+        const stack: any = [
+            {
+                srcNode,
+                destNode,
+                parent,
+            },
+        ];
+        while (stack.length > 0) {
+            // tslint:disable-next-line:no-shadowed-variable
+            const { srcNode, destNode, parent } = stack.pop();
+            if (!destNode || !srcNode || srcNode.blockType !== destNode.type) {
                 return [null, null];
             }
+            if (!destNode.children) {
+                return [
+                    (parent?.children &&
+                        parent.children[parent.children.indexOf(srcNode) + 1]
+                            ?.blockType) ||
+                        null,
+                    (srcNode?.children && srcNode?.children[0]?.blockType) ||
+                        null,
+                ];
+            }
+            if (!srcNode.children?.length) {
+                return [null, null];
+            }
+            for (let i = 0; i < destNode.children.length; i++) {
+                const srcChild = srcNode.children[i];
+                const destChild = destNode.children[i];
+                if (
+                    !srcChild ||
+                    !destChild ||
+                    srcChild?.blockType !== destChild.type
+                ) {
+                    return [null, null];
+                }
+            }
+            stack.push({
+                srcNode: srcNode.children[destNode.children.length - 1],
+                destNode: destNode.children[destNode.children.length - 1],
+                parent: srcNode,
+            });
         }
-        return checkConfigInTemplate(
-            srcNode.children[destNode.children.length - 1],
-            destNode.children[destNode.children.length - 1],
-            srcNode
-        );
+        return [null, null];
     }
 
     /**
@@ -65,24 +82,39 @@ export async function suggestionAPI(): Promise<void> {
      * @returns Next and nested nodes for destination config node
      */
     function checkConfigsInTemplate(srcNode: any, destNode: any, parent?: any) {
-        let [next, nested] = checkConfigInTemplate(srcNode, destNode, parent);
-        next = next === 'module' ? null : next;
-        nested = nested === 'module' ? null : nested;
-        if (!next && !nested && srcNode?.children) {
-            for (const srcChild of srcNode.children) {
-                [next, nested] = checkConfigsInTemplate(
-                    srcChild,
-                    destNode,
-                    srcNode
+        const stack: any = [
+            {
+                srcNode,
+                destNode,
+                parent,
+            },
+        ];
+        while (stack.length > 0) {
+            // tslint:disable-next-line:no-shadowed-variable
+            const { srcNode, destNode, parent } = stack.pop();
+            let [next, nested] = checkConfigInTemplate(
+                srcNode,
+                destNode,
+                parent
+            );
+            next = next === 'module' ? null : next;
+            nested = nested === 'module' ? null : nested;
+            if (next || nested) {
+                return [next, nested];
+            }
+            if (srcNode?.children) {
+                stack.push(
+                    ...srcNode.children
+                        .map((item) => ({
+                            srcNode: item,
+                            destNode,
+                            parent: srcNode,
+                        }))
+                        .reverse()
                 );
-                next = next === 'module' ? null : next;
-                nested = nested === 'module' ? null : nested;
-                if (next || nested) {
-                    break;
-                }
             }
         }
-        return [next, nested];
+        return [null, null];
     }
 
     /**
@@ -92,29 +124,39 @@ export async function suggestionAPI(): Promise<void> {
      * @returns Next and nested nodes for destination config node
      */
     function checkConfigsInTemplates(srcNodes: any[], destNode: any) {
-        let next = null;
-        let nested = null;
-        if (!destNode || !srcNodes.length) {
-            return [next, nested];
-        }
-        for (const srcNode of srcNodes) {
-            [next, nested] = checkConfigsInTemplate(srcNode, destNode);
-            if (next || nested) {
+        const stack: any = [
+            {
+                srcNodes,
+                destNode,
+            },
+        ];
+        while (stack.length > 0) {
+            // tslint:disable-next-line:no-shadowed-variable
+            const { srcNodes, destNode } = stack.pop();
+            let next = null;
+            let nested = null;
+            if (!destNode || !srcNodes.length) {
                 return [next, nested];
             }
-        }
-        if (
-            !next &&
-            !nested &&
-            destNode.children &&
-            destNode.children[destNode.children.length - 1]
-        ) {
-            [next, nested] = checkConfigsInTemplates(
-                srcNodes,
+            for (const srcNode of srcNodes) {
+                [next, nested] = checkConfigsInTemplate(srcNode, destNode);
+                if (next || nested) {
+                    return [next, nested];
+                }
+            }
+            if (
+                !next &&
+                !nested &&
+                destNode.children &&
                 destNode.children[destNode.children.length - 1]
-            );
+            ) {
+                stack.push({
+                    srcNodes,
+                    destNode: destNode.children[destNode.children.length - 1],
+                });
+            }
         }
-        return [next, nested];
+        return [null, null];
     }
 
     /**
