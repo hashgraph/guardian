@@ -37,7 +37,7 @@ export async function suggestionsAPI(): Promise<void> {
                 continue;
             }
             const i = srcNodes.findIndex(
-                (srcNode) => srcNode?.blockType === destNodes[0].type
+                (srcNode) => srcNode?.blockType === destNodes[0].blockType
             );
             if (i < 0) {
                 continue;
@@ -49,7 +49,7 @@ export async function suggestionsAPI(): Promise<void> {
                 if (
                     !destNode ||
                     !srcNode ||
-                    srcNode.blockType !== destNode.type
+                    srcNode.blockType !== destNode.blockType
                 ) {
                     notMatch = true;
                     break;

@@ -566,7 +566,7 @@ export class PolicyConfigurationComponent implements OnInit {
     ): any {
         if (!parent) {
             const res = {
-                type: selected.blockType,
+                blockType: selected.blockType,
             };
             return [res, res];
         }
@@ -574,17 +574,17 @@ export class PolicyConfigurationComponent implements OnInit {
             parent.parent,
             parent
         );
-        conf.type = parent.blockType;
+        conf.blockType = parent.blockType;
         conf.children = [];
         const childConfig: any = {};
         for (const child of parent.children) {
             if (child === selected) {
-                childConfig.type = child.blockType;
+                childConfig.blockType = child.blockType;
                 conf.children.push(childConfig);
                 break;
             } else {
                 conf.children.push({
-                    type: child.blockType,
+                    blockType: child.blockType,
                 });
             }
         }
