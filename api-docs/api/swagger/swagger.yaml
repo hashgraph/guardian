@@ -1039,6 +1039,16 @@ components:
               viewOnlyOwnDocuments:
                 type: boolean
 
+    SuggestionOrderPriority:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [Policy, Module]
+        index:
+          type: number
 
 tags:
   - name: "accounts"
@@ -1081,6 +1091,8 @@ tags:
     description: "Operations with Themes"
   - name: "wizard"
     description: "Operations with policy wizard"
+  - name: "suggestion"
+    description: "Operations with suggestion mechanism"
 paths:
   /accounts:
     get:
@@ -7262,6 +7274,108 @@ paths:
                     $ref: "#/components/schemas/PolicyConfig"
                   wizardConfig:
                     $ref: "#/components/schemas/WizardConfig"
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  
+  /suggestion:
+    post:
+      tags:
+        - suggestion
+      description: Get next and nested suggested block types. Only users with the Standard Registry role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Get policy config.
+      requestBody:
+        description: Object that contains suggestion input.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        200:
+          description: Successful operation. Suggested next and nested block types respectively.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  next:
+                    type: string
+                  nested:
+                    type: string
+
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /suggestion/config:
+    get:
+      tags:
+        - suggestion
+      description: Get suggestion config. Only users with the Standard Registry role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Returns a suggestion priority order array.
+      responses:
+        200:
+          description: Successful operation. Response suggestion priority order array
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SuggestionOrderPriority"
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      tags:
+        - suggestion
+      description: Set suggestion config. Only users with the Standard Registry role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Get policy config.
+      requestBody:
+        description: Object that contains suggestion priority order array.
+        required: true
+        content:
+          application/json:
+            schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SuggestionOrderPriority"
+      responses:
+        201:
+          description: Successful operation. Response setted suggestion priority order array
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SuggestionOrderPriority"
         401:
           description: Unauthorized.
         403:
