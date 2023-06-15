@@ -1,5 +1,16 @@
-import { Entity, Index, Property } from '@mikro-orm/core';
+import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { BaseEntity } from '../models';
+import { ObjectId } from '@mikro-orm/mongodb';
+import {
+    Entity,
+    Property,
+    Index,
+    BeforeCreate,
+    OnLoad,
+    BeforeUpdate,
+    AfterDelete,
+} from '@mikro-orm/core';
+import { DataBaseHelper } from '../helpers';
 
 /**
  * Block state
@@ -35,8 +46,86 @@ export class BlockCache extends BaseEntity {
     did?: string;
 
     /**
-     * Variable name
+     * Variable value
      */
     @Property({ nullable: true, type: 'unknown' })
-    value?: string;
+    value?: any;
+
+    /**
+     * If long value
+     */
+    @Property({ nullable: true })
+    isLongValue?: boolean;
+
+    /**
+     * File id (long value)
+     */
+    @Property({ nullable: true })
+    fileId?: ObjectId;
+
+    /**
+     * Create row
+     */
+    @BeforeCreate()
+    async createRow() {
+        await new Promise<void>((resolve, reject) => {
+            try {
+                if (this.isLongValue && this.value) {
+                    const fileStream = DataBaseHelper.gridFS.openUploadStream(GenerateUUIDv4());
+                    this.fileId = fileStream.id;
+                    const file = JSON.stringify(this.value);
+                    this.value = null;
+                    fileStream.write(file);
+                    fileStream.end(() => resolve());
+                } else {
+                    resolve();
+                }
+            } catch (error) {
+                reject(error)
+            }
+        });
+    }
+
+    /**
+     * Update row
+     */
+    @BeforeUpdate()
+    async updateRow() {
+        if (this.fileId) {
+            DataBaseHelper.gridFS
+                .delete(this.fileId)
+                .catch(console.error);
+        }
+        if (this.isLongValue && this.value) {
+            await this.createRow();
+        }
+    }
+
+    /**
+     * Load row
+     */
+    @OnLoad()
+    async loadRow() {
+        if (this.fileId && !this.value) {
+            const fileStream = DataBaseHelper.gridFS.openDownloadStream(this.fileId);
+            const bufferArray = [];
+            for await (const data of fileStream) {
+                bufferArray.push(data);
+            }
+            const buffer = Buffer.concat(bufferArray);
+            this.value = JSON.parse(buffer.toString());
+        }
+    }
+
+    /**
+     * Delete row
+     */
+    @AfterDelete()
+    deleteRow() {
+        if (this.fileId) {
+            DataBaseHelper.gridFS
+                .delete(this.fileId)
+                .catch(console.error);
+        }
+    }
 }

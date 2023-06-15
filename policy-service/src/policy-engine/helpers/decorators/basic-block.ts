@@ -1,5 +1,5 @@
 import { PolicyBlockDefaultOptions } from '@policy-engine/helpers/policy-block-default-options';
-import { EventConfig } from '@policy-engine/interfaces';
+import { BlockCacheType, EventConfig } from '@policy-engine/interfaces';
 import { PolicyBlockDecoratorOptions, PolicyBlockFullArgumentList } from '@policy-engine/interfaces/block-options';
 import { PolicyRole, PolicyType } from '@guardian/interfaces';
 import { AnyBlockType, IPolicyBlock, IPolicyDocument, ISerializedBlock, } from '../../policy-engine.interface';
@@ -708,14 +708,58 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
 
             /**
              * Set Cache
+             * @param {BlockCacheType} type - variable size
              * @param {string} name - variable name
              * @param {T} value - variable value
              * @param {IPolicyUser | string} [user] - user DID
              * @protected
              */
-            protected async setCache<T>(name: string, value: T, user?: IPolicyUser | string): Promise<void> {
+            protected async setCache<T>(
+                type: BlockCacheType,
+                name: string,
+                value: T,
+                user?: IPolicyUser | string
+            ): Promise<void> {
                 const did = user ? (typeof user === 'object' ? user.did : user) : 'all';
-                await this.databaseServer.saveBlockCache(this.policyId, this.uuid, did, name, value);
+                await this.databaseServer.saveBlockCache(
+                    this.policyId, this.uuid, did, name, value, type === BlockCacheType.Long
+                );
+            }
+
+            /**
+             * Set Cache
+             * @param {string} name - variable name
+             * @param {T} value - variable value
+             * @param {IPolicyUser | string} [user] - user DID
+             * @protected
+             */
+            protected async setShortCache<T>(
+                name: string,
+                value: T,
+                user?: IPolicyUser | string
+            ): Promise<void> {
+                const did = user ? (typeof user === 'object' ? user.did : user) : 'all';
+                await this.databaseServer.saveBlockCache(
+                    this.policyId, this.uuid, did, name, value, false
+                );
+            }
+
+            /**
+             * Set Cache (Big value)
+             * @param {string} name - variable name
+             * @param {T} value - variable value
+             * @param {IPolicyUser | string} [user] - user DID
+             * @protected
+             */
+            protected async setLongCache<T>(
+                name: string,
+                value: T,
+                user?: IPolicyUser | string
+            ): Promise<void> {
+                const did = user ? (typeof user === 'object' ? user.did : user) : 'all';
+                await this.databaseServer.saveBlockCache(
+                    this.policyId, this.uuid, did, name, value, true
+                );
             }
         };
     };

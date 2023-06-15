@@ -559,6 +559,7 @@ export class DatabaseServer {
      * @param {string} did - user DID
      * @param {string} name - variable name
      * @param {any} value - variable value
+     * @param {boolean} isLongValue - if long value
      * @virtual
      */
     public async saveBlockCache(
@@ -566,7 +567,8 @@ export class DatabaseServer {
         blockId: string,
         did: string,
         name: string,
-        value: any
+        value: any,
+        isLongValue: boolean
     ): Promise<void> {
         let stateEntity = await this.findOne(BlockCache, {
             policyId,
@@ -576,13 +578,15 @@ export class DatabaseServer {
         });
         if (stateEntity) {
             stateEntity.value = value;
+            stateEntity.isLongValue = isLongValue;
         } else {
             stateEntity = this.create(BlockCache, {
                 policyId,
                 blockId,
                 did,
                 name,
-                value
+                value,
+                isLongValue
             })
         }
         await this.save(BlockCache, stateEntity);

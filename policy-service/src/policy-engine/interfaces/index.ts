@@ -34,3 +34,5 @@ export {
 } from './event-config';
 
 export { EventActor } from './policy-event-type';
+
+export { BlockCacheType } from './block-cache.type';

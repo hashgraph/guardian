@@ -7,6 +7,7 @@ import { PolicyInputEventType } from '@policy-engine/interfaces';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 import { IReport, MessagesReport } from '../helpers/messages-report';
+import { PolicyUtils } from '@policy-engine/helpers/utils';
 
 /**
  * Report block
@@ -31,8 +32,20 @@ import { IReport, MessagesReport } from '../helpers/messages-report';
     variables: []
 })
 export class MessagesReportBlock {
+    /**
+     * Key (Message Id)
+     * @private
+     */
     private readonly USER_FILTER_VALUE = 'USER_FILTER_VALUE';
+    /**
+     * Key (Report)
+     * @private
+     */
     private readonly USER_REPORT = 'USER_REPORT';
+    /**
+     * Key (Status)
+     * @private
+     */
     private readonly USER_REPORT_STATUS = 'USER_REPORT_STATUS';
 
     /**
@@ -43,16 +56,23 @@ export class MessagesReportBlock {
         ref.updateBlock({ status: status }, user);
     }
 
+    /**
+     * Create Report
+     * @param user
+     * @param messageId
+     * @private
+     */
     private async createReport(user: IPolicyUser, messageId: string): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportBlock>(this);
         try {
             const report = new MessagesReport();
             await report.start(messageId);
-            await ref.setCache<IReport>(this.USER_REPORT, report.toJson(), user);
-            await ref.setCache<string>(this.USER_REPORT_STATUS, 'FINISHED', user);
+            await ref.setLongCache<IReport>(this.USER_REPORT, report.toJson(), user);
+            await ref.setShortCache<string>(this.USER_REPORT_STATUS, 'FINISHED', user);
             this.updateStatus(ref, 'FINISHED', user);
         } catch (error) {
-            await ref.setCache<string>(this.USER_REPORT_STATUS, 'FAILED', user);
+            await ref.setShortCache<string>(this.USER_REPORT_STATUS, 'FAILED', user);
+            ref.error(`Create Report: ${PolicyUtils.getErrorMessage(error)}`);
             this.updateStatus(ref, 'FAILED', user);
         }
     }
@@ -87,6 +107,18 @@ export class MessagesReportBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportBlock>(this);
         try {
             const value: string = data.filterValue;
+            if (!value) {
+                await ref.setShortCache<string>(this.USER_FILTER_VALUE, null, user);
+                await ref.setLongCache<IReport>(this.USER_REPORT, null, user);
+                await ref.setShortCache<string>(this.USER_REPORT_STATUS, null, user);
+                return false;
+            }
+
+            const old = await ref.getCache<string>(this.USER_FILTER_VALUE, user);
+            if (value === old) {
+                return true;
+            }
+
             let messageId: string;
             const vp = await ref.databaseServer.getVpDocument({ hash: value, policyId: ref.policyId });
             if (vp) {
@@ -100,17 +132,18 @@ export class MessagesReportBlock {
                 }
             }
             if (messageId) {
-                await ref.setCache<string>(this.USER_FILTER_VALUE, messageId, user);
-                await ref.setCache<IReport>(this.USER_REPORT, null, user);
-                await ref.setCache<string>(this.USER_REPORT_STATUS, 'STARTED', user);
+                await ref.setShortCache<string>(this.USER_FILTER_VALUE, messageId, user);
+                await ref.setLongCache<IReport>(this.USER_REPORT, null, user);
+                await ref.setShortCache<string>(this.USER_REPORT_STATUS, 'STARTED', user);
                 this.createReport(user, messageId).then();
                 PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
                     value: messageId
                 }));
+                return true;
             } else {
-                await ref.setCache<string>(this.USER_FILTER_VALUE, value, user);
-                await ref.setCache<IReport>(this.USER_REPORT, null, user);
-                await ref.setCache<string>(this.USER_REPORT_STATUS, null, user);
+                await ref.setShortCache<string>(this.USER_FILTER_VALUE, null, user);
+                await ref.setLongCache<IReport>(this.USER_REPORT, null, user);
+                await ref.setShortCache<string>(this.USER_REPORT_STATUS, null, user);
                 throw Error('Invalid MessageId/HASH');
             }
         } catch (error) {
@@ -118,4 +151,3 @@ export class MessagesReportBlock {
         }
     }
 }
-

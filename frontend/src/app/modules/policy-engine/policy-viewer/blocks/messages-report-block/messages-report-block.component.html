@@ -398,7 +398,10 @@
                             <div class="field-name">Schema:</div>
                             <div class="field-value">{{selected.__schemaLabel}}</div>
                         </div>
-
+                        <div class="field" *ngIf="selected.__status">
+                            <div class="field-name">Document Status:</div>
+                            <div class="field-value">{{selected.__status}}</div>
+                        </div>
                         <div class="field" *ngIf="selected.document">
                             <div class="field-name">Document Artifact:</div>
                             <div class="field-value">

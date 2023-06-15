@@ -724,9 +724,10 @@ export class MessagesReportBlockComponent implements OnInit {
     }
 
     public onSearch() {
-        //'1685474753.342826629'
+        //'1686745867.364178003'
         this.loading = true;
-        const filterValue = this.searchForm.value.value;
+        let filterValue = this.searchForm.value.value || '';
+        filterValue = filterValue.trim();
         this.policyEngineService.setBlockData(this.id, this.policyId, { filterValue }).subscribe(() => {
             this.loadData();
         }, (e) => {

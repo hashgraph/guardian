@@ -1,5 +1,5 @@
 import { DocumentStatus, PolicyRole } from '@guardian/interfaces';
-import { PolicyOutputEventType } from '@policy-engine/interfaces';
+import { BlockCacheType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { EventConfig, IPolicyEvent } from './interfaces';
 import { DatabaseServer } from '@guardian/common';
 import { IPolicyUser } from './policy-user';
@@ -347,15 +347,47 @@ export interface IPolicyBlock {
      * @param {IPolicyUser | string} [user] - user DID
      * @returns {T} - variable value
      */
-    getCache<T>(name: string, user?: IPolicyUser | string): Promise<T>
+    getCache<T>(name: string, user?: IPolicyUser | string): Promise<T>;
+
+    /**
+     * Set Cache
+     * @param {BlockCacheType} type - variable size
+     * @param {string} name - variable name
+     * @param {T} value - variable value
+     * @param {IPolicyUser | string} [user] - user DID
+     */
+    setCache<T>(
+        type: BlockCacheType,
+        name: string,
+        value: T,
+        user?: IPolicyUser | string
+    ): Promise<void>;
 
     /**
      * Set Cache
      * @param {string} name - variable name
      * @param {T} value - variable value
      * @param {IPolicyUser | string} [user] - user DID
+     * @protected
      */
-    setCache<T>(name: string, value: T, user?: IPolicyUser | string): Promise<void>
+    setShortCache<T>(
+        name: string,
+        value: T,
+        user?: IPolicyUser | string
+    ): Promise<void>;
+
+    /**
+     * Set Cache (Big value)
+     * @param {string} name - variable name
+     * @param {T} value - variable value
+     * @param {IPolicyUser | string} [user] - user DID
+     * @protected
+     */
+    setLongCache<T>(
+        name: string,
+        value: T,
+        user?: IPolicyUser | string
+    ): Promise<void>;
 }
 
 /**
