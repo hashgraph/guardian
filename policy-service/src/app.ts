@@ -64,7 +64,7 @@ Promise.all([
                 "children": [
                     {
                         "id": "e05659c8-3c7f-4b1e-9aa4-0d7a3795908a",
-                        "blockType": "autoReportBlock",
+                        "blockType": "messagesReportBlock",
                         "defaultActive": true,
                         "permissions": [
                             "ANY_ROLE"

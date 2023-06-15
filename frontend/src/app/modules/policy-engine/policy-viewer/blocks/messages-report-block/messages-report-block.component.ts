@@ -9,20 +9,172 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 
+/**
+ * Dashboard Type
+ */
 enum DashboardType {
     Advanced = 'Advanced',
     Simplified = 'Simplified'
 }
 
+class LineContainer {
+    public readonly elementId1: string;
+    public readonly elementId2: string;
+
+    private container1: HTMLElement | null;
+    private container2: HTMLElement | null;
+
+    constructor(
+        elementId1: string,
+        elementId2: string,
+    ) {
+        this.elementId1 = elementId1;
+        this.elementId2 = elementId2;
+        this.container1 = null;
+        this.container2 = null;
+    }
+
+    public append(element: Element) {
+        if (this.container1) {
+            this.container1.appendChild(element);
+        }
+    }
+
+    public render(): LineContainer | null {
+        this.container1 = document.getElementById(this.elementId1);
+        this.container2 = document.getElementById(this.elementId2);
+        if (!this.container1 || !this.container2) {
+            return null;
+        }
+        const parent = this.container1.parentElement;
+        if (!parent) {
+            return null;
+        }
+        const box = parent.getBoundingClientRect();
+        const boxOffsetX = parent.scrollLeft - box.x;
+        const boxOffsetY = parent.scrollTop - box.y;
+        this.container1.style.transform = `translate(${boxOffsetX}px, ${boxOffsetY}px)`;
+        this.container2.style.transform = `translate(${boxOffsetX}px, ${boxOffsetY}px)`;
+        return this;
+    }
+
+    public up(element: Element) {
+        if (this.container2) {
+            this.container2.appendChild(element);
+        }
+    }
+
+    public down(element: Element) {
+        if (this.container1) {
+            this.container1.appendChild(element);
+        }
+    }
+}
+
+class Line {
+    public readonly elementId1: string;
+    public readonly elementId2: string;
+    private readonly offset: number;
+    public line: any;
+    public anchor1: any;
+    public anchor2: any;
+    public leaderLine: Element | null;
+    public leaderAnchor1: Element | null;
+    public leaderAnchor2: Element | null;
+    private _parent: HTMLElement | null;
+    private _container: LineContainer | null;
+    private readonly color1 = 'rgba(30, 130, 250, 0.8)';
+    private readonly color2 = 'rgba(255, 152, 0, 0.9)';
+    constructor(
+        elementId1: string,
+        elementId2: string,
+        offset: number
+    ) {
+        this.elementId1 = elementId1;
+        this.elementId2 = elementId2;
+        this.offset = offset;
+        this.leaderLine = null;
+        this.leaderAnchor1 = null;
+        this.leaderAnchor2 = null;
+        this._parent = null;
+        this._container = null;
+    }
+
+    public render(container: LineContainer) {
+        this._container = container;
+        const options1 = {
+            x: 180,
+            y: this.offset,
+            width: 3,
+            height: 1,
+            color: 'transparent'
+        };
+        const options2 = {
+            x: 4,
+            y: this.offset,
+            width: 3,
+            height: 1,
+            color: 'transparent'
+        };
+        this.anchor1 = LeaderLine.areaAnchor(document.getElementById(this.elementId1), options1);
+        this.anchor2 = LeaderLine.areaAnchor(document.getElementById(this.elementId2), options2);
+        this.line = new LeaderLine(
+            this.anchor1,
+            this.anchor2,
+            {
+                color: this.color1,
+                startPlug: 'disc',
+                endPlug: 'arrow1'
+            }
+        );
+        const line = document.querySelectorAll('.leader-line');
+        const anchors = document.querySelectorAll('.leader-line-areaAnchor');
+        this.leaderLine = line[line.length - 1];
+        this.leaderAnchor1 = anchors[anchors.length - 2];
+        this.leaderAnchor2 = anchors[anchors.length - 1];
+        if (this.leaderLine) {
+            this._parent = this.leaderLine.parentElement;
+            container.append(this.leaderLine);
+            container.append(this.leaderAnchor1);
+            container.append(this.leaderAnchor2);
+        }
+        return this;
+    }
+
+    public remove() {
+        if (this._parent && this.leaderLine && this.leaderAnchor1 && this.leaderAnchor2) {
+            this._parent.appendChild(this.leaderLine);
+            this._parent.appendChild(this.leaderAnchor1);
+            this._parent.appendChild(this.leaderAnchor2);
+            this.anchor1.remove();
+            this.anchor2.remove()
+            this.line.remove();
+        }
+    }
+
+    public select(flag: boolean) {
+        if (this._container && this.leaderLine) {
+            if (flag) {
+                this.line.color = this.color2;
+                this._container.up(this.leaderLine);
+            } else {
+                this.line.color = this.color1;
+                this._container.down(this.leaderLine);
+            }
+            this.line.position();
+        }
+    }
+}
+
 /**
- * Component for display block of 'ReportBlock' types.
+ * Component for display block of 'messagesReportBlock' types.
  */
 @Component({
-    selector: 'app-auto-report-block',
-    templateUrl: './auto-report-block.component.html',
-    styleUrls: ['./auto-report-block.component.css']
+    selector: 'app-messages-report-block',
+    templateUrl: './messages-report-block.component.html',
+    styleUrls: ['./messages-report-block.component.css']
 })
-export class AutoReportBlockComponent implements OnInit {
+export class MessagesReportBlockComponent implements OnInit {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
@@ -85,6 +237,11 @@ export class AutoReportBlockComponent implements OnInit {
     public searchForm = this.fb.group({
         value: ['', Validators.required],
     });
+
+    private lineContainer = new LineContainer(
+        'leader-line-container-1', 'leader-line-container-2'
+    );
+    private lines!: Line[];
 
     constructor(
         private element: ElementRef,
@@ -171,8 +328,10 @@ export class AutoReportBlockComponent implements OnInit {
                 this.createSmallReport();
             }
         }
+        this.removeLines();
         setTimeout(() => {
-            this.render(this.messages);
+            this.onResize();
+            this.renderLines(this.messages);
         }, 100);
     }
 
@@ -227,6 +386,7 @@ export class AutoReportBlockComponent implements OnInit {
     }
 
     private parseTopics(topics: any[], parent: any, offset: number) {
+        topics.sort((a, b) => a.topicId < b.topicId ? -1 : 1);
         for (const topic of topics) {
             if (topic.message && topic.message.messageType === 'INSTANCE_POLICY_TOPIC') {
                 topic.__policy = topic.topicId;
@@ -246,55 +406,13 @@ export class AutoReportBlockComponent implements OnInit {
     private parseMessages() {
         let gridSize = 0;
         for (const topic of this._topics1) {
+            if (topic.message) {
+                this.parseMessage(topic, topic.message);
+            }
             for (const message of topic.messages) {
-                message.__policy = topic.__policy;
-                message.__order = message.order + 1;
-                message.__status = this.getStatusLabel(message);
-                message.__timestamp = this.getMessageTimestamp(message);
-                if (message.type === 'VP-Document') {
-                    message.__issuer = this.getIssuer(message);
-                    message.__documents = this.getVPDocuments(message);
-                }
-                if (message.type === 'VC-Document') {
-                    message.__schema = this.searchSchema(message);
-                    message.__issuer = this.getIssuer(message);
-                }
-                if (message.type === 'Role-Document') {
-                    message.__schema = this.searchSchema(message);
-                    message.__issuer = this.getIssuer(message);
-                }
-                if (message.__schema) {
-                    message.__schemaName = message.__schema.name;
-                    message.__schemaDocument = message.__schema.document;
-                    message.__schemaLabel = this.getSchemaLabel(message.__schema);
-                }
-                if (message.__documents) {
-                    for (const item of message.__documents) {
-                        if (this.ifMint(item)) {
-                            message.__amount = item.document.credentialSubject[0].amount;
-                            message.__tokenId = item.document.credentialSubject[0].tokenId;
-                            message.__token = this.searchToken(message);
-                        }
-                    }
-                }
-                if (this.ifMint(message)) {
-                    message.__amount = message.document.credentialSubject[0].amount;
-                    message.__tokenId = message.document.credentialSubject[0].tokenId;
-                    message.__token = this.searchToken(message);
-                }
-                if (message.__token) {
-                    message.__tokenName = message.__token.name;
-                }
-                message.__ifTopicMessage = this.ifTopicMessage(message);
-                message.__ifPolicyMessage = this.ifPolicyMessage(message);
-                message.__ifInstanceMessage = this.ifInstanceMessage(message);
-                message.__ifDIDMessage = this.ifDIDMessage(message);
-                message.__ifVCMessage = this.ifVCMessage(message);
-                message.__ifMintMessage = this.ifMintMessage(message);
-                message.__ifVPMessage = this.ifVPMessage(message);
-                message.__ifRoleMessage = this.ifRoleMessage(message);
-                gridSize = Math.max(gridSize, message.__order);
+                this.parseMessage(topic, message);
                 this._messages1.push(message);
+                gridSize = Math.max(gridSize, message.__order);
             }
             if (topic.__parent) {
                 topic.__start = 100 * topic.__parent.__order;
@@ -308,6 +426,7 @@ export class AutoReportBlockComponent implements OnInit {
                 for (const relationship of message.relationships) {
                     message.__relationships.push(this.createRelationship(relationship));
                 }
+                message.__relationships.sort((a: any, b: any) => a.id < b.id ? -1 : 1);
             }
         }
         for (const topic of this._topics1) {
@@ -318,6 +437,59 @@ export class AutoReportBlockComponent implements OnInit {
         }
         this._gridTemplateColumns1 = 'repeat(' + gridSize + ', 230px)';
         this._gridTemplateRows1 = 'repeat(' + this._topics1.length + ', 100px) 30px';
+    }
+
+    private parseMessage(topic: any, message: any): any {
+        message.__policy = topic.__policy;
+        message.__order = message.order + 1;
+        message.__status = this.getStatusLabel(message);
+        message.__timestamp = this.getMessageTimestamp(message);
+        if (message.type === 'DID-Document') {
+            message.__role = message.payer === topic.message?.payer ? 'Standard Registry' : 'User';
+        }
+        if (message.type === 'VP-Document') {
+            message.__issuer = this.getIssuer(message);
+            message.__documents = this.getVPDocuments(message);
+        }
+        if (message.type === 'VC-Document') {
+            message.__schema = this.searchSchema(message);
+            message.__issuer = this.getIssuer(message);
+        }
+        if (message.type === 'Role-Document') {
+            message.__schema = this.searchSchema(message);
+            message.__issuer = this.getIssuer(message);
+        }
+        if (message.__schema) {
+            message.__schemaName = message.__schema.name;
+            message.__schemaDocument = message.__schema.document;
+            message.__schemaLabel = this.getSchemaLabel(message.__schema);
+        }
+        if (message.__documents) {
+            for (const item of message.__documents) {
+                if (this.ifMint(item)) {
+                    message.__amount = item.document.credentialSubject[0].amount;
+                    message.__tokenId = item.document.credentialSubject[0].tokenId;
+                    message.__token = this.searchToken(message);
+                }
+            }
+        }
+        if (this.ifMint(message)) {
+            message.__amount = message.document.credentialSubject[0].amount;
+            message.__tokenId = message.document.credentialSubject[0].tokenId;
+            message.__token = this.searchToken(message);
+        }
+        if (message.__token) {
+            message.__tokenName = message.__token.name;
+        }
+        message.__ifTopicMessage = this.ifTopicMessage(message);
+        message.__ifPolicyMessage = this.ifPolicyMessage(message);
+        message.__ifInstanceMessage = this.ifInstanceMessage(message);
+        message.__ifDIDMessage = this.ifDIDMessage(message);
+        message.__ifVCMessage = this.ifVCMessage(message);
+        message.__ifMintMessage = this.ifMintMessage(message);
+        message.__ifVPMessage = this.ifVPMessage(message);
+        message.__ifRoleMessage = this.ifRoleMessage(message);
+        return message;
     }
 
     private parseRoles() {
@@ -407,7 +579,7 @@ export class AutoReportBlockComponent implements OnInit {
         }
     }
 
-    private getStatusLabel(message:any) {
+    private getStatusLabel(message: any) {
         switch (message.documentStatus) {
             case 'NEW': return 'Create Document';
             case 'ISSUE': return 'Create Document';
@@ -502,6 +674,7 @@ export class AutoReportBlockComponent implements OnInit {
 
     public onSelect(message: any) {
         this.selected = message;
+        this.update();
     }
 
     public onSelectById(relationship: any) {
@@ -510,6 +683,7 @@ export class AutoReportBlockComponent implements OnInit {
                 this.selected = message;
             }
         }
+        this.update();
     }
 
     public getTopicHeader(topic: any): string {
@@ -567,23 +741,38 @@ export class AutoReportBlockComponent implements OnInit {
         } else {
             this.dashboardType = DashboardType.Simplified;
         }
+        this.removeLines();
         setTimeout(() => {
-            this.render(this.messages);
+            this.onResize();
+            this.renderLines(this.messages);
         }, 0);
     }
 
     public onOpenDocument(message: any) {
-        const dialogRef = this.dialog.open(VCViewerDialog, {
-            width: '850px',
-            data: {
-                document: message.document,
-                title: 'Document',
-                type: 'VC',
-                viewDocument: true,
-                schema: message.__schema,
-            }
-        });
-        dialogRef.afterClosed().subscribe(async (result) => { });
+        if (message.type === 'DID-Document') {
+            const dialogRef = this.dialog.open(VCViewerDialog, {
+                width: '850px',
+                data: {
+                    document: message.document,
+                    title: 'Document',
+                    type: 'JSON',
+                    viewDocument: false
+                }
+            });
+            dialogRef.afterClosed().subscribe(async (result) => { });
+        } else {
+            const dialogRef = this.dialog.open(VCViewerDialog, {
+                width: '850px',
+                data: {
+                    document: message.document,
+                    title: 'Document',
+                    type: 'VC',
+                    viewDocument: true,
+                    schema: message.__schema,
+                }
+            });
+            dialogRef.afterClosed().subscribe(async (result) => { });
+        }
     }
 
     private getRelationship(messages: any[], id: string): any {
@@ -628,52 +817,54 @@ export class AutoReportBlockComponent implements OnInit {
         return message.type === 'Role-Document';
     }
 
-    private render(messages: any[]) {
-        this.onResize();
+    private removeLines() {
+        if (this.lines) {
+            for (const item of this.lines) {
+                item.remove();
+            }
+        }
+    }
+
+    private renderLines(messages: any[]) {
         LeaderLine.positionByWindowResize = false;
-        const container = document.getElementById('leader-line-container');
+        const container = this.lineContainer.render();
         if (!container) {
             return;
         }
-        container.scrollTo(0, 0);
-        const box = container.getBoundingClientRect();
-        for (const elm of document.querySelectorAll('#leader-line-container > .leader-line')) {
-            container.removeChild(elm);
-        }
-        for (const elm of document.querySelectorAll('#leader-line-container > .leader-line-areaAnchor')) {
-            container.removeChild(elm);
-        }
-        const lines = [];
+        this.lines = [];
         for (const message of messages) {
             if (message.__relationships) {
                 const relationships = message.__relationships.filter((r: any) => r.visible);
                 const offset = 90 / (relationships.length + 1);
                 for (let index = 0; index < relationships.length; index++) {
-                    const options = {
-                        x: -box.x,
-                        y: -box.y + (offset * (index + 1)),
-                        width: 190,
-                        height: 0,
-                        color: 'transparent'
-                    };
                     const relationship = relationships[index];
-                    const line = new LeaderLine(
-                        LeaderLine.areaAnchor(document.getElementById(relationship.id), options),
-                        LeaderLine.areaAnchor(document.getElementById(message.id), options), {
-                        color: 'rgba(30, 130, 250, 0.5)',
-                    });
-                    lines.push(line);
+                    const line = new Line(relationship.id, message.id, (offset * (index + 1)));
+                    line.render(container);
+                    this.lines.push(line);
                 }
             }
         }
-        for (const elm of document.querySelectorAll('.leader-line')) {
-            container.appendChild(elm);
+        for (const item of this.lines) {
+            item.select(this.selected && (
+                this.selected.id === item.elementId1 ||
+                this.selected.id === item.elementId2
+            ));
         }
-        for (const elm of document.querySelectorAll('.leader-line-areaAnchor')) {
-            container.appendChild(elm);
+    }
+
+    private update() {
+        const container = this.lineContainer.render();
+        if (!container) {
+            return;
         }
-        for (const line of lines) {
-            line.position();
+        if (!this.lines) {
+            return;
+        }
+        for (const item of this.lines) {
+            item.select(this.selected && (
+                this.selected.id === item.elementId1 ||
+                this.selected.id === item.elementId2
+            ));
         }
     }
 

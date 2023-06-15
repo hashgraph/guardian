@@ -68,7 +68,7 @@ export class ComparePolicyComponent implements OnInit {
         "calculateMathVariables": "123",
         "reportBlock": "addchart",
         "reportItemBlock": "list_alt",
-        "autoReportBlock": "addchart",
+        "messagesReportBlock": "addchart",
         "externalTopicBlock": "cloud",
     }
 

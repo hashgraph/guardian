@@ -3,11 +3,11 @@ import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
 /**
  * Report block
  */
-export class AutoReportBlock {
+export class MessagesReportBlock {
     /**
      * Block type
      */
-    public static readonly blockType: string = 'autoReportBlock';
+    public static readonly blockType: string = 'messagesReportBlock';
 
     /**
      * Validate block options

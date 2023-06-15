@@ -47,7 +47,7 @@
         <div class="dashboard-grid">
             <div class="dashboard-left">
                 <div class="dashboard-top">
-                    Hedera Topics
+                    Policy Message Catalog
                 </div>
                 <div class="dashboard-rows" [style.gridTemplateRows]="gridTemplateRows">
                     <ng-container *ngFor="let topic of topics">
@@ -74,10 +74,12 @@
             </div>
             <div class="dashboard-center">
                 <div class="dashboard-top">
-                    Policies Events
+                    Policy Events
                 </div>
-                <div id="leader-line-container" class="dashboard-rows dashboard-scroll"
+                <div class="dashboard-rows dashboard-scroll"
                     [style.gridTemplateRows]="gridTemplateRows">
+                    <div id="leader-line-container-1"></div>
+                    <div id="leader-line-container-2"></div>
                     <div class="dashboard-row" *ngFor="let topic of topics" [style.gridRow]="topic.__order"
                         [style.gridTemplateColumns]="gridTemplateColumns">
                         <div class="dashboard-col" *ngFor="let message of topic.messages"
@@ -109,11 +111,11 @@
                                 <ng-container *ngIf="message.__ifDIDMessage">
                                     <div class="message-header">
                                         <mat-icon>key</mat-icon>
-                                        User Registration
+                                        Registration
                                     </div>
                                     <div class="message-data">
                                         <div class="message-name">
-                                            Create DID
+                                            {{message.__role}}
                                         </div>
                                         <div class="message-owner">{{message.did}}</div>
                                     </div>
@@ -397,11 +399,6 @@
                             <div class="field-value">{{selected.__schemaLabel}}</div>
                         </div>
 
-                        <div class="field">
-                            <div class="field-name">Issuer:</div>
-                            <div class="field-value">{{selected.__issuer}}</div>
-                        </div>
-
                         <div class="field" *ngIf="selected.document">
                             <div class="field-name">Document Artifact:</div>
                             <div class="field-value">
@@ -409,8 +406,23 @@
                             </div>
                         </div>
 
-                        <div class="field-delimiter" data-label="Hedera Information"></div>
+                        <ng-container *ngIf="selected.__user">
+                            <div class="field-delimiter" data-label="Issuer"></div>
+                            <div *ngIf="selected.__user.did" class="field">
+                                <div class="field-name">DID:</div>
+                                <div class="field-value">{{selected.__user.did}}</div>
+                            </div>
+                            <div *ngIf="selected.__user.group" class="field">
+                                <div class="field-name">Group:</div>
+                                <div class="field-value">{{selected.__user.group}}</div>
+                            </div>
+                            <div *ngIf="selected.__user.role" class="field">
+                                <div class="field-name">Role:</div>
+                                <div class="field-value">{{selected.__user.role}}</div>
+                            </div>
+                        </ng-container>
 
+                        <div class="field-delimiter" data-label="Hedera Information"></div>
                         <div class="field">
                             <div class="field-name">Topic Id:</div>
                             <div class="field-value">
@@ -473,17 +485,28 @@
 
                         <div class="field-delimiter" data-label="Document"></div>
 
-                        <div class="field">
-                            <div class="field-name">Issuer:</div>
-                            <div class="field-value">{{selected.__issuer}}</div>
-                        </div>
-
                         <div class="field" *ngIf="selected.document">
                             <div class="field-name">Document Artifact:</div>
                             <div class="field-value">
                                 <span class="field-link" (click)="onOpenDocument(selected)">Open</span>
                             </div>
                         </div>
+
+                        <ng-container *ngIf="selected.__user">
+                            <div class="field-delimiter" data-label="Issuer"></div>
+                            <div *ngIf="selected.__user.did" class="field">
+                                <div class="field-name">DID:</div>
+                                <div class="field-value">{{selected.__user.did}}</div>
+                            </div>
+                            <div *ngIf="selected.__user.group" class="field">
+                                <div class="field-name">Group:</div>
+                                <div class="field-value">{{selected.__user.group}}</div>
+                            </div>
+                            <div *ngIf="selected.__user.role" class="field">
+                                <div class="field-name">Role:</div>
+                                <div class="field-value">{{selected.__user.role}}</div>
+                            </div>
+                        </ng-container>
 
                         <div class="field-delimiter" data-label="Hedera Information"></div>
 
@@ -530,11 +553,6 @@
 
                         <div class="field-delimiter" data-label="Document"></div>
 
-                        <div class="field">
-                            <div class="field-name">Issuer:</div>
-                            <div class="field-value">{{selected.__issuer}}</div>
-                        </div>
-
                         <div class="field" *ngIf="selected.__documents">
                             <div class="field-name">Documents:</div>
                             <div class="field-value">
@@ -545,25 +563,37 @@
 
                         <ng-container *ngIf="selected.__token">
                             <div class="field-delimiter" data-label="Token"></div>
-
                             <div class="field">
                                 <div class="field-name">Token Name:</div>
                                 <div class="field-value">{{selected.__token.name}}</div>
                             </div>
-
                             <div class="field">
                                 <div class="field-name">Token Id:</div>
                                 <div class="field-value">{{selected.__token.tokenId}}</div>
                             </div>
-
                             <div class="field">
                                 <div class="field-name">Amount:</div>
                                 <div class="field-value">{{selected.__amount}}</div>
                             </div>
                         </ng-container>
 
-                        <div class="field-delimiter" data-label="Hedera Information"></div>
+                        <ng-container *ngIf="selected.__user">
+                            <div class="field-delimiter" data-label="Issuer"></div>
+                            <div *ngIf="selected.__user.did" class="field">
+                                <div class="field-name">DID:</div>
+                                <div class="field-value">{{selected.__user.did}}</div>
+                            </div>
+                            <div *ngIf="selected.__user.group" class="field">
+                                <div class="field-name">Group:</div>
+                                <div class="field-value">{{selected.__user.group}}</div>
+                            </div>
+                            <div *ngIf="selected.__user.role" class="field">
+                                <div class="field-name">Role:</div>
+                                <div class="field-value">{{selected.__user.role}}</div>
+                            </div>
+                        </ng-container>
 
+                        <div class="field-delimiter" data-label="Hedera Information"></div>
                         <div class="field">
                             <div class="field-name">Topic Id:</div>
                             <div class="field-value">

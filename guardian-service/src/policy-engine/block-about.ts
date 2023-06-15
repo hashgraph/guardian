@@ -394,9 +394,9 @@ export const BlockAbout = {
         'output': null,
         'defaultEvent': false
     },
-    'autoReportBlock': {
-        'label': 'Auto Report',
-        'title': 'Add \'Auto Report\' Block',
+    'messagesReportBlock': {
+        'label': 'Messages Report',
+        'title': 'Add \'Messages Report\' Block',
         'post': true,
         'get': true,
         'children': 'None',

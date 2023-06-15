@@ -45,5 +45,5 @@ export enum BlockType {
     Module = 'module',
     TagsManager = 'tagsManager',
     ExternalTopic = 'externalTopicBlock',
-    AutoReportBlock = 'autoReportBlock',
+    MessagesReportBlock = 'messagesReportBlock',
 }

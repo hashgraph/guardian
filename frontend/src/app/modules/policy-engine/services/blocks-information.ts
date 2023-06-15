@@ -43,7 +43,7 @@ import { HttpRequestConfigComponent } from '../policy-configuration/blocks/main/
 import { ExternalTopicBlockComponent } from '../policy-viewer/blocks/external-topic-block/external-topic-block.component';
 import { UploadDocumentBlockComponent } from '../policy-viewer/blocks/upload-document-block/upload-document-block.component';
 import { TagsManagerBlockComponent } from '../policy-viewer/blocks/tags-manager-block/tags-manager-block.component';
-import { AutoReportBlockComponent } from '../policy-viewer/blocks/auto-report-block/auto-report-block.component';
+import { MessagesReportBlockComponent } from '../policy-viewer/blocks/messages-report-block/messages-report-block.component';
 import {
     BlockGroup,
     BlockHeaders,
@@ -92,7 +92,7 @@ const Container: IBlockSetting = {
         { type: BlockType.CreateToken },
         { type: BlockType.SplitBlock },
         { type: BlockType.ExternalTopic },
-        { type: BlockType.AutoReportBlock }
+        { type: BlockType.MessagesReportBlock }
     ]
 }
 
@@ -136,7 +136,7 @@ const Step: IBlockSetting = {
         { type: BlockType.CreateToken },
         { type: BlockType.SplitBlock },
         { type: BlockType.ExternalTopic },
-        { type: BlockType.AutoReportBlock }
+        { type: BlockType.MessagesReportBlock }
     ]
 }
 
@@ -589,11 +589,11 @@ const CalculateMathVariables: IBlockSetting = {
 }
 
 const AutoReport: IBlockSetting = {
-    type: BlockType.AutoReportBlock,
+    type: BlockType.MessagesReportBlock,
     icon: 'addchart',
     group: BlockGroup.Report,
     header: BlockHeaders.UIComponents,
-    factory: AutoReportBlockComponent,
+    factory: MessagesReportBlockComponent,
     property: null
 }
 

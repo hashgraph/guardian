@@ -1,19 +1,27 @@
-import { Report } from '@policy-engine/helpers/decorators';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { AnyBlockType, IPolicyReportBlock } from '@policy-engine/policy-engine.interface';
-import { BlockActionError } from '@policy-engine/errors';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { PolicyInputEventType } from '@policy-engine/interfaces';
-import { IPolicyUser } from '@policy-engine/policy-user';
-import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
-import { DIDDocument, DIDMessage, Message, MessageAction, MessageServer, MessageType, SchemaMessage, TopicMessage, UrlType, VCMessage, VPMessage, Workers } from '@guardian/common';
+import {
+    DIDDocument,
+    DIDMessage,
+    Message,
+    MessageAction,
+    MessageServer,
+    MessageType,
+    SchemaMessage,
+    TopicMessage,
+    UrlType,
+    VCMessage,
+    Workers
+} from '@guardian/common';
 import { TopicType, WorkerTaskType } from '@guardian/interfaces';
 
-interface IReport {
-
+export interface IReport {
+    roles: any[],
+    topics: any[],
+    schemas: any[],
+    users: any[],
+    tokens: any[],
 }
 
-class MessagesReport {
+export class MessagesReport {
     private topics: Map<string, any>;
     private messages: Map<string, any>;
     private schemas: Map<string, any>;
@@ -73,8 +81,7 @@ class MessagesReport {
             if (document &&
                 document.credentialSubject &&
                 document.credentialSubject[0] &&
-                document.credentialSubject[0].type === 'MintToken'
-            ) {
+                document.credentialSubject[0].type === 'MintToken') {
                 const tokenId = document.credentialSubject[0].tokenId;
                 if (tokenId && !this.tokens.has(tokenId)) {
                     this.tokens.set(tokenId, null);
@@ -120,8 +127,7 @@ class MessagesReport {
     private async checkSchemas(message: TopicMessage) {
         if (message.messageType === TopicType.PolicyTopic) {
             const messages: any[] = await MessageServer.getMessages(message.getTopicId());
-            const schemas: SchemaMessage[] = messages.filter((m: SchemaMessage) =>
-                m.action === MessageAction.PublishSchema ||
+            const schemas: SchemaMessage[] = messages.filter((m: SchemaMessage) => m.action === MessageAction.PublishSchema ||
                 m.action === MessageAction.PublishSystemSchema);
             for (const schema of schemas) {
                 const id = schema.getContextUrl(UrlType.url);
@@ -146,8 +152,7 @@ class MessagesReport {
         for (const topicId of topics) {
             try {
                 const messages: any[] = await MessageServer.getMessages(topicId);
-                const documents: DIDMessage[] = messages.filter((m: DIDMessage) =>
-                    m.action === MessageAction.CreateDID);
+                const documents: DIDMessage[] = messages.filter((m: DIDMessage) => m.action === MessageAction.CreateDID);
                 for (const document of documents) {
                     if (this.users.has(document.did) && !this.users.get(document.did)) {
                         await MessageServer.loadDocument(document);
@@ -178,7 +183,7 @@ class MessagesReport {
         }
     }
 
-    public toJson(): any {
+    public toJson(): IReport {
         const topicsMap = new Map<string, any>();
         for (const [topicId, message] of this.topics.entries()) {
             const parent = message?.parentId;
@@ -234,7 +239,7 @@ class MessagesReport {
             tokens.push(token);
         }
 
-        const result: any = {
+        const result: IReport = {
             roles,
             topics,
             schemas,
@@ -242,108 +247,5 @@ class MessagesReport {
             tokens
         };
         return result;
-    }
-}
-
-/**
- * Report block
- */
-@Report({
-    blockType: 'autoReportBlock',
-    commonBlock: false,
-    about: {
-        label: 'Report',
-        title: `Add 'Report' Block`,
-        post: true,
-        get: true,
-        children: ChildrenType.None,
-        control: ControlType.UI,
-        input: [
-            PolicyInputEventType.RunEvent,
-            PolicyInputEventType.RefreshEvent,
-        ],
-        output: null,
-        defaultEvent: false
-    },
-    variables: []
-})
-export class AutoReportBlock {
-    private readonly USER_FILTER_VALUE = 'USER_FILTER_VALUE';
-    private readonly USER_REPORT = 'USER_REPORT';
-    private readonly USER_REPORT_STATUS = 'USER_REPORT_STATUS';
-
-    /**
-     * Update user state
-     * @private
-     */
-    private updateStatus(ref: AnyBlockType, status: string, user: IPolicyUser) {
-        ref.updateBlock({ status: status }, user);
-    }
-
-    private async createReport(user: IPolicyUser, messageId: string): Promise<void> {
-        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportBlock>(this);
-        try {
-            const report = new MessagesReport();
-            await report.start(messageId);
-            await ref.setCache<IReport>(this.USER_REPORT, report.toJson(), user);
-            await ref.setCache<string>(this.USER_REPORT_STATUS, 'FINISHED', user);
-            this.updateStatus(ref, 'FINISHED', user);
-        } catch (error) {
-            await ref.setCache<string>(this.USER_REPORT_STATUS, 'FAILED', user);
-            this.updateStatus(ref, 'FAILED', user);
-        }
-    }
-
-    /**
-     * Get block data
-     * @param user
-     * @param uuid
-     */
-    async getData(user: IPolicyUser, uuid: string): Promise<any> {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
-        try {
-            const target = await ref.getCache<IReport>(this.USER_FILTER_VALUE, user);
-            const report = await ref.getCache<IReport>(this.USER_REPORT, user);
-            const status = await ref.getCache<IReport>(this.USER_REPORT_STATUS, user);
-            return {
-                target,
-                report,
-                status
-            };
-        } catch (error) {
-            throw new BlockActionError(error, ref.blockType, ref.uuid);
-        }
-    }
-
-    /**
-     * Set block data
-     * @param user
-     * @param data
-     */
-    async setData(user: IPolicyUser, data: any) {
-        console.log('!--- setData', data);
-        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportBlock>(this);
-        try {
-            const value: string = data.filterValue;
-
-            if (value) {
-                await ref.setCache<string>(this.USER_FILTER_VALUE, value, user);
-                await ref.setCache<string>(this.USER_REPORT, null, user);
-                await ref.setCache<string>(this.USER_REPORT_STATUS, 'STARTED', user);
-
-                this.createReport(user, value).then();
-
-                PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
-                    value
-                }));
-            } else {
-                await ref.setCache<string>(this.USER_FILTER_VALUE, value, user);
-                await ref.setCache<string>(this.USER_REPORT, null, user);
-                await ref.setCache<string>(this.USER_REPORT_STATUS, null, user);
-            }
-        } catch (error) {
-            console.log('!--- setData', error);
-            throw new BlockActionError(error, ref.blockType, ref.uuid);
-        }
     }
 }

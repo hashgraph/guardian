@@ -68,7 +68,7 @@ import { TokenConfirmationBlockComponent } from './policy-viewer/blocks/token-co
 import { MultiSignBlockComponent } from './policy-viewer/blocks/multi-sign-block/multi-sign-block.component';
 import { CreateTokenBlockComponent } from './policy-viewer/blocks/create-token-block/create-token-block.component';
 import { TagsManagerBlockComponent } from './policy-viewer/blocks/tags-manager-block/tags-manager-block.component';
-import { AutoReportBlockComponent } from './policy-viewer/blocks/auto-report-block/auto-report-block.component';
+import { MessagesReportBlockComponent } from './policy-viewer/blocks/messages-report-block/messages-report-block.component';
 //Helpers
 import { HelpIcon } from './helpers/help-icon/help-icon.component';
 import { SavePolicyDialog } from './helpers/save-policy-dialog/save-policy-dialog.component';
@@ -182,7 +182,7 @@ import { UploadDocumentBlockComponent } from './policy-viewer/blocks/upload-docu
         NewThemeDialog,
         ExternalTopicBlockComponent,
         PolicyWizardDialogComponent,
-        AutoReportBlockComponent
+        MessagesReportBlockComponent
     ],
     imports: [
         CommonModule,

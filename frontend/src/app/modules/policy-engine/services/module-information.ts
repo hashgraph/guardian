@@ -52,7 +52,7 @@ const Module: IBlockSetting = {
         { type: BlockType.MultiSignBlock },
         { type: BlockType.CreateToken },
         { type: BlockType.SplitBlock },
-        { type: BlockType.AutoReportBlock }
+        { type: BlockType.MessagesReportBlock }
     ],
     about: {
         post: false,
