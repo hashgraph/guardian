@@ -1577,7 +1577,7 @@ export class Guardians extends NatsService {
     public async policySuggestion(
         suggestionInput: any,
         user: any
-    ): Promise<[ nextType: string, nestedBlockType: string ]> {
+    ): Promise<{ next: string, nested: string }> {
         return await this.sendMessage(MessageAPI.SUGGESTION, {
             user,
             suggestionInput,

@@ -15,7 +15,7 @@ export class SuggestionService {
 
     public suggestion(
         data: any
-    ): Observable<[nextBlock: string, nestedBlock: string]> {
+    ): Observable<{ next: string, nested: string }> {
         return this.http.post<any>(`${this.url}/`, data);
     }
 

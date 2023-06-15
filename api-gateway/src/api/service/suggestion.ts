@@ -37,7 +37,7 @@ export class SuggestionApi {
         const guardians = new Guardians();
         const user = req.user;
         try {
-            return res.json(
+            return res.status(201).json(
                 await guardians.setPolicySuggestionConfig(req.body, user)
             );
         } catch (error) {

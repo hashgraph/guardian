@@ -604,9 +604,9 @@ export class PolicyConfigurationComponent implements OnInit {
                     if (this.currentBlock !== currentBlock) {
                         return;
                     }
-                    const nextBlockType = result[0]
+                    const { next, nested } = result;
                     if (
-                        nextBlockType &&
+                        next &&
                         this.currentBlock?.parent?.children &&
                         !this.currentBlock.parent.children[
                             this.currentBlock.parent.children.indexOf(
@@ -615,32 +615,31 @@ export class PolicyConfigurationComponent implements OnInit {
                         ]
                     ) {
                         this.nextBlock = {
-                            icon: this.registeredService.getIcon(nextBlockType),
-                            type: nextBlockType,
+                            icon: this.registeredService.getIcon(next),
+                            type: next,
                             node: {
-                                blockType: nextBlockType,
+                                blockType: next,
                                 permissionsNumber:
                                     this.currentBlock?.permissionsNumber,
                             },
-                            name: this.registeredService.getName(nextBlockType),
+                            name: this.registeredService.getName(next),
                         };
                     }
 
-                    const nestedBlockType = result[1];
                     if (
-                        nestedBlockType &&
+                        nested &&
                         (!this.currentBlock?.children ||
                             !this.currentBlock.children.length)
                     ) {
                         this.nestedBlock = {
-                            icon: this.registeredService.getIcon(nestedBlockType),
-                            type: nestedBlockType,
+                            icon: this.registeredService.getIcon(nested),
+                            type: nested,
                             node: {
-                                blockType: nestedBlockType,
+                                blockType: nested,
                                 permissionsNumber:
                                     this.currentBlock?.permissionsNumber,
                             },
-                            name: this.registeredService.getName(nestedBlockType),
+                            name: this.registeredService.getName(nested),
                         };
                     }
                 });
