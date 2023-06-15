@@ -21,9 +21,7 @@ export class SuggestionsApi {
         const user = req.user;
         const guardians = new Guardians();
         try {
-            return res.json(
-                await guardians.policySuggestions(req.body, user)
-            );
+            return res.json(await guardians.policySuggestions(req.body, user));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error;
@@ -31,13 +29,16 @@ export class SuggestionsApi {
     }
 
     @Post('/config')
-    @HttpCode(HttpStatus.OK)
-    async setPolicySuggestionsConfig(@Req() req, @Response() res): Promise<any> {
+    @HttpCode(HttpStatus.CREATED)
+    async setPolicySuggestionsConfig(
+        @Req() req,
+        @Response() res
+    ): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardians = new Guardians();
         const user = req.user;
         try {
-            return res.status(201).json(
+            return res.json(
                 await guardians.setPolicySuggestionsConfig(req.body, user)
             );
         } catch (error) {
@@ -48,14 +49,15 @@ export class SuggestionsApi {
 
     @Get('/config')
     @HttpCode(HttpStatus.OK)
-    async getPolicySuggestionsConfig(@Req() req, @Response() res): Promise<any> {
+    async getPolicySuggestionsConfig(
+        @Req() req,
+        @Response() res
+    ): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const user = req.user;
         const guardians = new Guardians();
         try {
-            return res.json(
-                await guardians.getPolicySuggestionsConfig(user)
-            );
+            return res.json(await guardians.getPolicySuggestionsConfig(user));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error;
