@@ -1,9 +1,9 @@
 import { ConfigType } from '../type';
 
 /**
- * Suggestion order priority
+ * Suggestions order priority
  */
-export interface SuggestionOrderPriority {
+export interface SuggestionsOrderPriority {
     /**
      * Identifier
      */

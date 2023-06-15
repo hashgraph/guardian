@@ -27,4 +27,4 @@ export * from './vp-document';
 export * from './theme';
 export * from './external-document';
 export * from './branding';
-export * from './suggestion-config';
+export * from './suggestions-config';

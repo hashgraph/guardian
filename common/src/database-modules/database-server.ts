@@ -24,7 +24,7 @@ import {
     TagCache,
     Contract as ContractCollection,
     ExternalDocument,
-    SuggestionConfig
+    SuggestionsConfig
 } from '../entity';
 import { Binary } from 'bson';
 import {
@@ -2430,33 +2430,33 @@ export class DatabaseServer {
     }
 
     /**
-     * Save suggestion config
+     * Save suggestions config
      * @param config
      * @returns config
      */
-    public static async setSuggestionConfig(
-        config: SuggestionConfig
-    ): Promise<SuggestionConfig> {
-        const existingConfig = await DatabaseServer.getSuggestionConfig(
+    public static async setSuggestionsConfig(
+        config: SuggestionsConfig
+    ): Promise<SuggestionsConfig> {
+        const existingConfig = await DatabaseServer.getSuggestionsConfig(
             config.user
         );
         if (existingConfig) {
             existingConfig.items = config.items;
         }
-        return await new DataBaseHelper(SuggestionConfig).save(
+        return await new DataBaseHelper(SuggestionsConfig).save(
             existingConfig || config
         );
     }
 
     /**
-     * Get suggestion config
+     * Get suggestions config
      * @param did
      * @returns config
      */
-    public static async getSuggestionConfig(
+    public static async getSuggestionsConfig(
         did: string
-    ): Promise<SuggestionConfig> {
-        return await new DataBaseHelper(SuggestionConfig).findOne({
+    ): Promise<SuggestionsConfig> {
+        return await new DataBaseHelper(SuggestionsConfig).findOne({
             user: did,
         });
     }

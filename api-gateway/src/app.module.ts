@@ -77,7 +77,7 @@ const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
         TrustChainsOldApi,
         WizardApi,
         BrandingApi,
-        SuggestionApi,
+        SuggestionsApi,
     ],
     providers: [
         LoggerService,
@@ -104,7 +104,7 @@ export class AppModule {
         consumer.apply(authorizationHelper).forRoutes(TrustChainsApi);
         consumer.apply(authorizationHelper).forRoutes(WizardApi);
         consumer.apply(authorizationHelper).forRoutes(BrandingApi);
-        consumer.apply(authorizationHelper).forRoutes(SuggestionApi);
+        consumer.apply(authorizationHelper).forRoutes(SuggestionsApi);
 
         consumer.apply(express.json({
             limit: JSON_REQUEST_LIMIT

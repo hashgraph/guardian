@@ -219,7 +219,7 @@ export class HeaderComponent implements OnInit {
                     this.activeLinkRoot === '/schemas' ||
                     this.activeLinkRoot === '/artifacts' ||
                     this.activeLinkRoot === '/modules' ||
-                    this.activeLinkRoot === '/suggestion' ||
+                    this.activeLinkRoot === '/suggestions' ||
                     this.activeLinkRoot === '/policy-viewer' ||
                     this.activeLinkRoot === '/policy-configuration' ||
                     this.activeLinkRoot === '/compare' ||
@@ -244,8 +244,8 @@ export class HeaderComponent implements OnInit {
                 return this.activeLinkRoot === '/artifacts';
             case 'SR_MODULES':
                 return this.activeLinkRoot === '/modules';
-            case 'SR_SUGGESTION':
-                return this.activeLinkRoot === '/suggestion';
+            case 'SR_SUGGESTIONS':
+                return this.activeLinkRoot === '/suggestions';
             case 'SR_POLICIES_LIST':
                 return this.activeLinkRoot === '/policy-viewer';
             case 'SR_VIEWER':
@@ -318,8 +318,8 @@ export class HeaderComponent implements OnInit {
             case 'SR_POLICIES_LIST':
                 this.router.navigate(['/policy-viewer']);
                 return true;
-            case 'SR_SUGGESTION':
-                this.router.navigate(['/suggestion']);
+            case 'SR_SUGGESTIONS':
+                this.router.navigate(['/suggestions']);
                 return true;
             case 'SR_VIEWER':
                 return false;

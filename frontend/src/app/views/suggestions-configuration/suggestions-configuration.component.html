@@ -32,10 +32,10 @@
         </div>
 
         <div class="container">
-            <h2>Suggestion priority order</h2>
-            <div cdkDropList #result="cdkDropList" [cdkDropListData]="suggestionOrderPriority"
+            <h2>Suggestions priority order</h2>
+            <div cdkDropList #result="cdkDropList" [cdkDropListData]="suggestionsOrderPriority"
                 [cdkDropListConnectedTo]="[available]" class="item-list" (cdkDropListDropped)="drop($event)">
-                <div class="item-list-box" [attr.type]="item.type" *ngFor="let item of suggestionOrderPriority" cdkDrag>
+                <div class="item-list-box" [attr.type]="item.type" *ngFor="let item of suggestionsOrderPriority" cdkDrag>
                     <span cdkDragHandle class="re-order-handler"><mat-icon>drag_handle</mat-icon></span>
                     <span>{{item.name}}</span>
                     <span class="delete-btn" (click)="remove(item)"><mat-icon>delete</mat-icon></span>

@@ -8,14 +8,14 @@ import {
 import {
     ConfigType,
     MessageAPI,
-    SuggestionOrderPriority,
+    SuggestionsOrderPriority,
     sortObjectsArray,
 } from '@guardian/interfaces';
 
 /**
- * Connect to the message broker methods of working with suggestion.
+ * Connect to the message broker methods of working with suggestions.
  */
-export async function suggestionAPI(): Promise<void> {
+export async function suggestionsAPI(): Promise<void> {
     /**
      * Check config in template
      * @param srcNode Source config node
@@ -166,27 +166,27 @@ export async function suggestionAPI(): Promise<void> {
     /**
      * Get next and nested block
      *
-     * @param {any} msg User and suggestion input
+     * @param {any} msg User and suggestions input
      * @returns Suggusted next and nested blocks
      */
-    ApiResponse(MessageAPI.SUGGESTION, async (msg: any) => {
+    ApiResponse(MessageAPI.SUGGESTIONS, async (msg: any) => {
         try {
             const {
-                suggestionInput,
+                suggestionsInput,
                 user,
-            }: { suggestionInput: any; user: IAuthUser } = msg;
+            }: { suggestionsInput: any; user: IAuthUser } = msg;
             if (!user?.did) {
                 throw new Error('Invalid user did');
             }
-            const suggestionConfig = await DatabaseServer.getSuggestionConfig(
+            const suggestionsConfig = await DatabaseServer.getSuggestionsConfig(
                 user.did
             );
-            const suggestionConfigItems = sortObjectsArray(
-                suggestionConfig?.items || [],
+            const suggestionsConfigItems = sortObjectsArray(
+                suggestionsConfig?.items || [],
                 'index'
             );
             const configs: any[] = [];
-            for (const item of suggestionConfigItems) {
+            for (const item of suggestionsConfigItems) {
                 const config =
                     item.type === ConfigType.POLICY
                         ? await DatabaseServer.getPolicyById(item.id)
@@ -195,9 +195,9 @@ export async function suggestionAPI(): Promise<void> {
             }
             const [next, nested] = checkConfigsInTemplates(
                 configs,
-                Array.isArray(suggestionInput)
-                    ? suggestionInput
-                    : [suggestionInput]
+                Array.isArray(suggestionsInput)
+                    ? suggestionsInput
+                    : [suggestionsInput]
             );
             return new MessageResponse({ next, nested });
         } catch (error) {
@@ -206,24 +206,24 @@ export async function suggestionAPI(): Promise<void> {
     });
 
     /**
-     * Set suggestion config
+     * Set suggestions config
      *
      * @param {any} msg User and items
-     * @returns Applyied suggestion config items
+     * @returns Applyied suggestions config items
      */
-    ApiResponse(MessageAPI.SET_SUGGESTION_CONFIG, async (msg: any) => {
+    ApiResponse(MessageAPI.SET_SUGGESTIONS_CONFIG, async (msg: any) => {
         try {
             const {
                 items,
                 user,
-            }: { items: SuggestionOrderPriority; user: IAuthUser } = msg;
+            }: { items: SuggestionsOrderPriority; user: IAuthUser } = msg;
             if (!user?.did) {
                 throw new Error('Invalid user did');
             }
             if (!Array.isArray(items)) {
-                throw new Error('Invalid items for suggestion config');
+                throw new Error('Invalid items for suggestions config');
             }
-            const config = await DatabaseServer.setSuggestionConfig({
+            const config = await DatabaseServer.setSuggestionsConfig({
                 user: user.did,
                 items,
             } as any);
@@ -234,18 +234,18 @@ export async function suggestionAPI(): Promise<void> {
     });
 
     /**
-     * Get suggestion config
+     * Get suggestions config
      *
      * @param {any} msg User
-     * @returns Suggestion config items
+     * @returns Suggestions config items
      */
-    ApiResponse(MessageAPI.GET_SUGGESTION_CONFIG, async (msg: any) => {
+    ApiResponse(MessageAPI.GET_SUGGESTIONS_CONFIG, async (msg: any) => {
         try {
             const { user }: { user: IAuthUser } = msg;
             if (!user?.did) {
                 throw new Error('Invalid user did');
             }
-            const config = await DatabaseServer.getSuggestionConfig(user.did);
+            const config = await DatabaseServer.getSuggestionsConfig(user.did);
             return new MessageResponse(config?.items || []);
         } catch (error) {
             return new MessageError(error);

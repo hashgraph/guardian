@@ -24,7 +24,7 @@ import { Options } from '../../structures/storage/config-options';
 import { PolicyTreeComponent } from '../policy-tree/policy-tree.component';
 import { ThemeService } from '../../../../services/theme.service';
 import { WizardMode, WizardService } from 'src/app/modules/policy-engine/services/wizard.service';
-import { SuggestionService } from 'src/app/services/suggestion.service';
+import { SuggestionsService } from 'src/app/services/suggestions.service';
 
 enum OperationMode {
     none,
@@ -67,7 +67,7 @@ export class PolicyConfigurationComponent implements OnInit {
     public eventVisible: string = 'All';
     public templateModules: any[] = [];
     public code!: string;
-    public isSuggestionEnabled = false;
+    public isSuggestionsEnabled = false;
     public nextBlock!: any;
     public nestedBlock!: any;
 
@@ -186,7 +186,7 @@ export class PolicyConfigurationComponent implements OnInit {
         private modulesService: ModulesService,
         private themeService: ThemeService,
         private wizardService: WizardService,
-        private suggestionService: SuggestionService,
+        private suggestionsService: SuggestionsService,
     ) {
         this.options = new Options();
         this.policyModel = new PolicyModel();
@@ -560,7 +560,7 @@ export class PolicyConfigurationComponent implements OnInit {
         document.getElementsByTagName('head')[0].appendChild(style);
     }
 
-    private generateSuggestionInput(
+    private generateSuggestionsInput(
         parent: PolicyBlockModel | null,
         selected: PolicyBlockModel
     ): any {
@@ -570,7 +570,7 @@ export class PolicyConfigurationComponent implements OnInit {
             };
             return [res, res];
         }
-        const [result, conf] = this.generateSuggestionInput(
+        const [result, conf] = this.generateSuggestionsInput(
             parent.parent,
             parent
         );
@@ -592,10 +592,10 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     private findSuggestedBlocks(currentBlock: any) {
-        if (this.isSuggestionEnabled && currentBlock) {
-            this.suggestionService
-                .suggestion(
-                    this.generateSuggestionInput(
+        if (this.isSuggestionsEnabled && currentBlock) {
+            this.suggestionsService
+                .suggestions(
+                    this.generateSuggestionsInput(
                         currentBlock.parent,
                         currentBlock
                     )[0]
@@ -1371,7 +1371,7 @@ export class PolicyConfigurationComponent implements OnInit {
         }, () => undefined, () => this.loading = false);
     }
 
-    public addSuggestionBlock(type: any, nested: boolean = false) {
+    public addSuggestionsBlock(type: any, nested: boolean = false) {
         this.currentBlock = this.createNewBlock(
             nested ? this.currentBlock : this.currentBlock?.parent,
             type
@@ -1379,9 +1379,9 @@ export class PolicyConfigurationComponent implements OnInit {
         this.onSelect(this.currentBlock);
     }
 
-    public onSuggestionClick() {
-        this.isSuggestionEnabled = !this.isSuggestionEnabled;
-        if (this.isSuggestionEnabled && this.currentBlock) {
+    public onSuggestionsClick() {
+        this.isSuggestionsEnabled = !this.isSuggestionsEnabled;
+        if (this.isSuggestionsEnabled && this.currentBlock) {
             this.onSelect(this.currentBlock);
         }
     }

@@ -64,7 +64,7 @@ import process from 'process';
 import { AppModule } from './app.module';
 import { analyticsAPI } from '@api/analytics.service';
 import { GridFSBucket } from 'mongodb';
-import { suggestionAPI } from '@api/suggestion.service';
+import { suggestionsAPI } from '@api/suggestions.service';
 
 export const obj = {};
 
@@ -161,7 +161,7 @@ Promise.all([
         await themeAPI();
         await wizardAPI();
         await brandingAPI(brandingRepository);
-        await suggestionAPI()
+        await suggestionsAPI()
     } catch (error) {
         console.error(error.message);
         process.exit(0);

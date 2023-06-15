@@ -22,6 +22,7 @@ import { WebSocketService } from './services/web-socket.service';
 import { ContractConfigComponent } from './views/contract-config/contract-config.component';
 import { ContractRequestConfigComponent } from './views/contract-request-config/contract-request-config.component';
 import { BrandingComponent } from './views/branding/branding.component';
+import { SuggestionsConfigurationComponent } from './views/suggestions-configuration/suggestions-configuration.component';
 //Modules
 import { PoliciesComponent } from './modules/policy-engine/policies/policies.component';
 import { PolicyConfigurationComponent } from './modules/policy-engine/policy-configuration/policy-configuration/policy-configuration.component';
@@ -29,7 +30,6 @@ import { PolicyViewerComponent } from './modules/policy-engine/policy-viewer/pol
 import { ArtifactConfigComponent } from './modules/artifact-engine/artifact-config/artifact-config.component';
 import { CompareComponent } from './modules/analytics/compare/compare.component';
 import { ModulesListComponent } from './modules/policy-engine/modules-list/modules-list.component';
-import { SuggestionConfigurationComponent } from './views/suggestion-configuration/suggestion-configuration.component';
 
 const USER_IS_NOT_RA = "Page is avaliable for admin only";
 
@@ -176,7 +176,7 @@ const routes: Routes = [
     { path: 'policy-viewer/:id', component: PolicyViewerComponent, canActivate: [ServicesStatusGuard] },
     { path: 'policy-configuration', component: PolicyConfigurationComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
     { path: 'modules', component: ModulesListComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
-    { path: 'suggestion', component: SuggestionConfigurationComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
+    { path: 'suggestions', component: SuggestionsConfigurationComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
 
     { path: 'compare', component: CompareComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
 

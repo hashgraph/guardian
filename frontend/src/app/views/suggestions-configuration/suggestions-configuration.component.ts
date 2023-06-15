@@ -8,29 +8,29 @@ import { forkJoin } from 'rxjs';
 import { ModulesService } from 'src/app/services/modules.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ConfigType, sortObjectsArray } from '@guardian/interfaces';
-import { SuggestionService } from 'src/app/services/suggestion.service';
+import { SuggestionsService } from 'src/app/services/suggestions.service';
 
-interface SuggestionOrderPriorityItem {
+interface SuggestionsOrderPriorityItem {
     id: string;
     name: string;
     type: ConfigType;
 }
 
 @Component({
-    selector: 'app-suggestion-configuration',
-    templateUrl: './suggestion-configuration.component.html',
-    styleUrls: ['./suggestion-configuration.component.scss'],
+    selector: 'app-suggestions-configuration',
+    templateUrl: './suggestions-configuration.component.html',
+    styleUrls: ['./suggestions-configuration.component.scss'],
 })
-export class SuggestionConfigurationComponent {
+export class SuggestionsConfigurationComponent {
     loading: boolean = false;
     policies: any[] = [];
     modules: any[] = [];
-    policiesAndModules: SuggestionOrderPriorityItem[] = [];
-    suggestionOrderPriority: SuggestionOrderPriorityItem[] = [];
+    policiesAndModules: SuggestionsOrderPriorityItem[] = [];
+    suggestionsOrderPriority: SuggestionsOrderPriorityItem[] = [];
 
     constructor(
         private engineService: PolicyEngineService,
-        private suggestionService: SuggestionService,
+        private suggestionsService: SuggestionsService,
         private moduleService: ModulesService
     ) {}
 
@@ -38,7 +38,7 @@ export class SuggestionConfigurationComponent {
         this.loading = true;
         forkJoin([
             this.engineService.all(),
-            this.suggestionService.getSuggestionConfig(),
+            this.suggestionsService.getSuggestionsConfig(),
             this.moduleService.menuList(),
         ]).subscribe((result) => {
             this.loading = false;
@@ -56,34 +56,34 @@ export class SuggestionConfigurationComponent {
                     : item.name,
                 type: ConfigType.MODULE,
             }));
-            const suggestionOrderPriorities = sortObjectsArray(
+            const suggestionsOrderPriorities = sortObjectsArray(
                 result[1],
                 'index'
             );
-            this.suggestionOrderPriority = suggestionOrderPriorities.map(
-                (suggestionOrderPriority) =>
-                    suggestionOrderPriority.type === ConfigType.POLICY
+            this.suggestionsOrderPriority = suggestionsOrderPriorities.map(
+                (suggestionsOrderPriority) =>
+                    suggestionsOrderPriority.type === ConfigType.POLICY
                         ? this.policies.find(
-                              (item) => item.id === suggestionOrderPriority.id
+                              (item) => item.id === suggestionsOrderPriority.id
                           )
                         : this.modules.find(
-                              (item) => item.id === suggestionOrderPriority.id
+                              (item) => item.id === suggestionsOrderPriority.id
                           )
             );
-            const suggestionOrderPriorityIds = suggestionOrderPriorities.map(
+            const suggestionsOrderPriorityIds = suggestionsOrderPriorities.map(
                 (item) => item.id
             );
             this.policiesAndModules = this.policies
-                .filter((item) => !suggestionOrderPriorityIds.includes(item.id))
+                .filter((item) => !suggestionsOrderPriorityIds.includes(item.id))
                 .concat(
                     this.modules.filter(
-                        (item) => !suggestionOrderPriorityIds.includes(item.id)
+                        (item) => !suggestionsOrderPriorityIds.includes(item.id)
                     )
                 );
         });
     }
 
-    drop(event: CdkDragDrop<SuggestionOrderPriorityItem[]>) {
+    drop(event: CdkDragDrop<SuggestionsOrderPriorityItem[]>) {
         if (event.previousContainer === event.container) {
             moveItemInArray(
                 event.container.data,
@@ -102,9 +102,9 @@ export class SuggestionConfigurationComponent {
 
     apply() {
         this.loading = true;
-        this.suggestionService
-            .setSuggestionConfig(
-                this.suggestionOrderPriority.map((item, index) => ({
+        this.suggestionsService
+            .setSuggestionsConfig(
+                this.suggestionsOrderPriority.map((item, index) => ({
                     id: item.id,
                     type: item.type as any,
                     index,
@@ -119,13 +119,13 @@ export class SuggestionConfigurationComponent {
 
     clear() {
         this.policiesAndModules = [...this.policies, ...this.modules];
-        this.suggestionOrderPriority = [];
+        this.suggestionsOrderPriority = [];
     }
 
     move(item: any) {
         transferArrayItem(
             this.policiesAndModules,
-            this.suggestionOrderPriority,
+            this.suggestionsOrderPriority,
             this.policiesAndModules.indexOf(item),
             0
         );
@@ -133,9 +133,9 @@ export class SuggestionConfigurationComponent {
 
     remove(item: any) {
         transferArrayItem(
-            this.suggestionOrderPriority,
+            this.suggestionsOrderPriority,
             this.policiesAndModules,
-            this.suggestionOrderPriority.indexOf(item),
+            this.suggestionsOrderPriority.indexOf(item),
             0
         );
     }

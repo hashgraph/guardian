@@ -1,12 +1,12 @@
 import { Entity, Property } from '@mikro-orm/core';
 import { BaseEntity } from '../models';
-import { SuggestionOrderPriority } from '@guardian/interfaces';
+import { SuggestionsOrderPriority } from '@guardian/interfaces';
 
 /**
- * Suggestion config
+ * Suggestions config
  */
 @Entity()
-export class SuggestionConfig extends BaseEntity {
+export class SuggestionsConfig extends BaseEntity {
     /**
      * User DID
      */
@@ -17,5 +17,5 @@ export class SuggestionConfig extends BaseEntity {
      * Policies
      */
     @Property({ nullable: true, type: 'unknown' })
-    items?: SuggestionOrderPriority[];
+    items?: SuggestionsOrderPriority[];
 }

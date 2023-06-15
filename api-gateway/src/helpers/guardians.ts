@@ -12,7 +12,7 @@ import {
     IVCDocument,
     IVPDocument,
     MessageAPI,
-    SuggestionOrderPriority
+    SuggestionsOrderPriority
 } from '@guardian/interfaces';
 import { NatsService } from '@guardian/common';
 
@@ -1571,42 +1571,42 @@ export class Guardians extends NatsService {
     }
 
     /**
-     * Policy suggestion
-     * @param suggestionInput
+     * Policy suggestions
+     * @param suggestionsInput
      */
-    public async policySuggestion(
-        suggestionInput: any,
+    public async policySuggestions(
+        suggestionsInput: any,
         user: any
     ): Promise<{ next: string, nested: string }> {
-        return await this.sendMessage(MessageAPI.SUGGESTION, {
+        return await this.sendMessage(MessageAPI.SUGGESTIONS, {
             user,
-            suggestionInput,
+            suggestionsInput,
         });
     }
 
     /**
-     * Set policy suggestion
-     * @param suggestionInput
+     * Set policy suggestions
+     * @param suggestionsInput
      */
-    public async setPolicySuggestionConfig(
-        items: SuggestionOrderPriority[],
+    public async setPolicySuggestionsConfig(
+        items: SuggestionsOrderPriority[],
         user: any
     ) {
         return await this.sendMessage(
-            MessageAPI.SET_SUGGESTION_CONFIG,
+            MessageAPI.SET_SUGGESTIONS_CONFIG,
             { items, user }
         );
     }
 
     /**
-     * Policy suggestion
-     * @param suggestionInput
+     * Policy suggestions
+     * @param suggestionsInput
      */
-    public async getPolicySuggestionConfig(
+    public async getPolicySuggestionsConfig(
         user: any
-    ): Promise<SuggestionOrderPriority[]> {
+    ): Promise<SuggestionsOrderPriority[]> {
         return await this.sendMessage(
-            MessageAPI.GET_SUGGESTION_CONFIG,
+            MessageAPI.GET_SUGGESTIONS_CONFIG,
             { user }
         );
     }

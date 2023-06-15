@@ -12,17 +12,17 @@ import {
 import { checkPermission } from '@auth/authorization-helper';
 import { Guardians } from '@helpers/guardians';
 
-@Controller('suggestion')
-export class SuggestionApi {
+@Controller('suggestions')
+export class SuggestionsApi {
     @Post('/')
     @HttpCode(HttpStatus.OK)
-    async policySuggestion(@Req() req, @Response() res): Promise<any> {
+    async policySuggestions(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const user = req.user;
         const guardians = new Guardians();
         try {
             return res.json(
-                await guardians.policySuggestion(req.body, user)
+                await guardians.policySuggestions(req.body, user)
             );
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
@@ -32,13 +32,13 @@ export class SuggestionApi {
 
     @Post('/config')
     @HttpCode(HttpStatus.OK)
-    async setPolicySuggestionConfig(@Req() req, @Response() res): Promise<any> {
+    async setPolicySuggestionsConfig(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardians = new Guardians();
         const user = req.user;
         try {
             return res.status(201).json(
-                await guardians.setPolicySuggestionConfig(req.body, user)
+                await guardians.setPolicySuggestionsConfig(req.body, user)
             );
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
@@ -48,13 +48,13 @@ export class SuggestionApi {
 
     @Get('/config')
     @HttpCode(HttpStatus.OK)
-    async getPolicySuggestionConfig(@Req() req, @Response() res): Promise<any> {
+    async getPolicySuggestionsConfig(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const user = req.user;
         const guardians = new Guardians();
         try {
             return res.json(
-                await guardians.getPolicySuggestionConfig(user)
+                await guardians.getPolicySuggestionsConfig(user)
             );
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);

@@ -125,10 +125,10 @@
                         <mat-icon>redo</mat-icon>
                         <span>Redo</span>
                     </div>
-                    <div class="top-toolbar-btn" (click)="onSuggestionClick()"
-                        title="Suggestion" [ngClass]="{'btn-mode-active': isSuggestionEnabled}">
+                    <div class="top-toolbar-btn" (click)="onSuggestionsClick()"
+                        title="Suggestions" [ngClass]="{'btn-mode-active': isSuggestionsEnabled}">
                         <mat-icon>assistant</mat-icon>
-                        <span>Suggestion</span>
+                        <span>Suggestions</span>
                     </div>
                     <div class="top-toolbar-btn" (click)="copyBlocksMode=!copyBlocksMode"
                         title="Copy Mode" [ngClass]="{'btn-mode-active': copyBlocksMode}">
@@ -559,9 +559,9 @@
                             </ngx-codemirror>
                         </div>
                         <policy-tree *ngIf="isTree" [module]="openModule" [blocks]="openModule.dataSource" [errors]="errorsMap"
-                            [readonly]="readonly" [active]="eventVisible" [connector]="dropListConnector" [suggestion]="isSuggestionEnabled"
+                            [readonly]="readonly" [active]="eventVisible" [connector]="dropListConnector" [suggestions]="isSuggestionsEnabled"
                             [nextBlock]="nextBlock" [nestedBlock]="nestedBlock" [(currentBlock)]="currentBlock"
-                            (nested)="addSuggestionBlock($event, true)" (next)="addSuggestionBlock($event)"
+                            (nested)="addSuggestionsBlock($event, true)" (next)="addSuggestionsBlock($event)"
                             (open)="onOpenModule($event)" (delete)="onDelete($event)" (select)="onSelect($event)"
                             (reorder)="onReorder($event)" (init)="onInitViewer($event)">
                         </policy-tree>

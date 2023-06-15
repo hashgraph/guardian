@@ -2,31 +2,31 @@ import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
-import { SuggestionOrderPriority } from '@guardian/interfaces';
+import { SuggestionsOrderPriority } from '@guardian/interfaces';
 /**
  * Services for working from user profile.
  */
 @Injectable()
-export class SuggestionService {
-    private readonly url: string = `${API_BASE_URL}/suggestion`;
+export class SuggestionsService {
+    private readonly url: string = `${API_BASE_URL}/suggestions`;
     constructor(
         private http: HttpClient
     ) { }
 
-    public suggestion(
+    public suggestions(
         data: any
     ): Observable<{ next: string, nested: string }> {
         return this.http.post<any>(`${this.url}/`, data);
     }
 
-    public setSuggestionConfig(
-        items: SuggestionOrderPriority[]
-    ): Observable<SuggestionOrderPriority[]> {
+    public setSuggestionsConfig(
+        items: SuggestionsOrderPriority[]
+    ): Observable<SuggestionsOrderPriority[]> {
         return this.http.post<any>(`${this.url}/config`, items);
     }
 
-    public getSuggestionConfig(): Observable<SuggestionOrderPriority[]> {
-        return this.http.get<SuggestionOrderPriority[]>(
+    public getSuggestionsConfig(): Observable<SuggestionsOrderPriority[]> {
+        return this.http.get<SuggestionsOrderPriority[]>(
             `${this.url}/config`
         );
     }

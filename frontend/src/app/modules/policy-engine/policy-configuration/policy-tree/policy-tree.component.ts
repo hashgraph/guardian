@@ -21,7 +21,7 @@ export class PolicyTreeComponent implements OnInit {
     @Input('readonly') readonly!: boolean;
     @Input('active') active!: string;
     @Input('connector') dropListConnector!: any;
-    @Input('suggestion') isSuggenstionEnabled: boolean = false;
+    @Input('suggestions') isSuggenstionEnabled: boolean = false;
     @Input('nextBlock') nextBlock?: any;
     @Input('nestedBlock') nestedBlock?: any;
     @Input('currentBlock') currentBlock?: any;
