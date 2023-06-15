@@ -35,7 +35,7 @@ export class JsonPropertiesComponent implements OnInit {
 
     codeMirrorOptions: any = {
         theme: 'default',
-        mode: 'application/ld+json',
+        mode: 'policy-json-lang',
         styleActiveLine: true,
         lineNumbers: true,
         lineWrapping: true,
@@ -59,7 +59,7 @@ export class JsonPropertiesComponent implements OnInit {
     constructor(
         private componentFactoryResolver: ComponentFactoryResolver
     ) {
-        this.codeMirrorOptions.mode = 'application/ld+json';
+        this.codeMirrorOptions.mode = 'policy-json-lang';
     }
 
     ngOnInit(): void {
