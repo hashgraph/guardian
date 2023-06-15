@@ -18,9 +18,8 @@ import {
 export async function suggestionsAPI(): Promise<void> {
     /**
      * Check config in template
-     * @param srcNode Source config node
-     * @param destNode Destination config node
-     * @param parent Parent node
+     * @param srcNodes Source nodes
+     * @param destNodes Destination nodes
      * @returns Next and nested nodes for destination config node
      */
     function checkConfigInTemplate(srcNodes: any[], destNodes: any[]): any {
@@ -64,7 +63,7 @@ export async function suggestionsAPI(): Promise<void> {
                 }
                 continue;
             }
-            if (!destNodes[destNodes.length - 1].children) {
+            if (!destNodes[destNodes.length - 1].children?.length) {
                 return [
                     (srcNodes && srcNodes[i + destNodes.length]?.blockType) ||
                         null,
@@ -84,12 +83,11 @@ export async function suggestionsAPI(): Promise<void> {
 
     /**
      * Check configs in templates
-     * @param srcNode Source node
-     * @param destNode Destination node
-     * @param parent Parent
+     * @param srcNodes Source nodes
+     * @param destNodes Destination nodes
      * @returns Next and nested nodes for destination config node
      */
-    function checkConfigsInTemplate(srcNodes: any, destNodes: any) {
+    function checkConfigsInTemplate(srcNodes: any[], destNodes: any[]) {
         const stack: any = [
             {
                 srcNodes,
@@ -121,9 +119,9 @@ export async function suggestionsAPI(): Promise<void> {
     }
 
     /**
-     * check configs in templates
+     * Check configs in templates
      * @param srcNodes Source nodes
-     * @param destNode Destination node
+     * @param destNodes Destination nodes
      * @returns Next and nested nodes for destination config node
      */
     function checkConfigsInTemplates(srcNodes: any[], destNodes: any[]) {
