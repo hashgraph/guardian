@@ -738,7 +738,6 @@ export class MessagesReportBlockComponent implements OnInit {
     }
 
     public onSearch() {
-        //'1686745867.364178003'
         this.loading = true;
         let filterValue = this.searchForm.value.value || '';
         filterValue = filterValue.trim();
