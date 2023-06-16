@@ -276,6 +276,7 @@ export class MessagesReportBlockComponent implements OnInit {
         if (!this.static) {
             this.socket = this.wsService.blockSubscribe(this.onUpdate.bind(this));
         }
+        this.onResize();
         this.loadData();
     }
 
@@ -885,7 +886,7 @@ export class MessagesReportBlockComponent implements OnInit {
 
     @HostListener('window:resize', ['$event'])
     onResize() {
-        const container = this.element.nativeElement.children[0];
+        const container = this.element?.nativeElement?.children[0];
         if (container) {
             const box = container.getBoundingClientRect();
             const height = window.innerHeight - box.top - 5;
