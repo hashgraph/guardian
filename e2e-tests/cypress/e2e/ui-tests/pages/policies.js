@@ -24,7 +24,21 @@ const PoliciesPageLocators = {
     inputName: "*[formcontrolname^='name']",
     draftBtn: 'ng-reflect-menu="[object Object]"',
     approveBtn: 'div.btn-approve',
-    taskReq: '/api/v1/tasks/**'
+    taskReq: '/api/v1/tasks/**',
+    modalWindow: 'app-confirmation-dialog',
+    componentsBlock: '[class^="components-group-item"] span',
+    policyBlock: '[class^="block-item-name"]',
+    matTypography: '.mat-typography',
+    blockItem: '.block-item',
+    deleteBlockBtn: 'button[class*="delete-action"]',
+    expandBlockBtn: (value) => `[block-instance="${value}"] .block-expand`,
+    dialogContainer: '.mat-dialog-container',
+    deleteTagBtn: '.delete-tag',
+    closeModalBtn: '.g-dialog-cancel-btn',
+    uploadFileInput: 'input[type="file"]',
+    importFileBtn: '.g-dialog-actions-btn',
+    okModalBtn: '#ok-btn',
+    inputText: 'input[type="text"]',
 };
 
 export class PoliciesPage {
@@ -65,17 +79,21 @@ export class PoliciesPage {
         cy.wait("@waitForPoliciesList", { timeout: 300000 })
     }
 
+    waitForEditPage() {
+        cy.get(PoliciesPageLocators.matTypography, { timeout: 60000 }).should('be.visible');
+    }
+
     fillNewPolicyForm(name) {
         const inputName = cy.get(PoliciesPageLocators.inputName);
         inputName.type(name);
         cy.get(PoliciesPageLocators.createBtn).click();
-        PoliciesPage.waitForPolicyList()
+        PoliciesPage.waitForPolicyList();
     }
 
-    checkDraftStatus(name) {
+    checkStatus(name, status) {
         cy.contains("td", name)
             .siblings()
-            .contains("div", "Draft")
+            .contains("div", status)
             .should("be.visible");
     }
 
@@ -87,6 +105,7 @@ export class PoliciesPage {
             .then(() => {
                 cy.get('.cdk-overlay-pane').contains("div","Dry Run").click({ force: true });
             });
+            PoliciesPage.waitForPolicyList();
     }
 
     stopDryRun(name) {
@@ -167,4 +186,176 @@ export class PoliciesPage {
         cy.get(PoliciesPageLocators.addBtn).click();
         cy.wait(12000);
     }
+
+    clickEditPolicy(name) {
+        cy.contains("td", name)
+            .siblings()
+            .contains("div", "edit")
+            .click();
+        cy.wait(1000);
+    }
+
+    fillFieldInEditPolicyPage(fieldName, text) {
+        cy.contains("td", new RegExp("^" + fieldName + "$", "g"))
+            .siblings("td").as("fieldName");
+            if(fieldName == "Description"){
+                cy.get("@fieldName").children("textarea").as("fieldNameChild");
+            } else {
+                cy.get("@fieldName").children("input").as("fieldNameChild");
+            }
+            cy.get("@fieldNameChild").clear().type(text);
+    }
+
+    clickSaveButton() {
+        cy.contains("Save").click();
+    }
+
+    checkPolicyTableContains(text) {
+        cy.contains("td", text).should("be.visible");
+    }
+
+    checkFieldInEditPolicyIsNotEditable(fieldName) {
+        cy.contains("td", new RegExp("^" + fieldName + "$", "g"))
+            .siblings("td").as("fieldName");
+            if(fieldName == "Description"){
+                cy.get("@fieldName").children("textarea").as("fieldNameChild");
+            } else {
+                cy.get("@fieldName").children("input").as("fieldNameChild");
+            }
+            cy.get("@fieldNameChild").should('have.attr', 'readonly', 'readonly');
+    }
+
+    publishDraftPolicy(name) {
+        cy.contains("td", name)
+            .siblings()
+            .contains("div", "Draft")
+            .click();
+        cy.contains(new RegExp("^Publish$", "g")).click({ force: true });
+        cy.get(PoliciesPageLocators.versionInput).type("0.0.1")
+        cy.contains(PoliciesPageLocators.publishPolicyBtn, "Publish").click()
+        PoliciesPage.waitForPolicyList();
+    }
+
+    checkModalWindowIsVisible(name) {
+        cy.get(PoliciesPageLocators.modalWindow).should("be.visible");
+        cy.contains(PoliciesPageLocators.modalWindow, name).should("be.visible");
+    }
+
+    checkPolicyTableFieldIsEmpty(fieldName) {
+        cy.contains("td", new RegExp("^" + fieldName + "$", "g")).siblings("td").as("fieldName");
+            if(fieldName == "Description"){
+                cy.get("@fieldName").children("textarea").as("fieldNameChild");
+            } else {
+                cy.get("@fieldName").children("input").as("fieldNameChild");
+            }
+            cy.get("@fieldNameChild").should("be.empty");
+    }
+
+    addNewBlockByName(name) {
+        cy.get(PoliciesPageLocators.componentsBlock).contains(name).click({ force: true });
+    }
+
+    checkBlockIsPresent(name) {
+        cy.get(PoliciesPageLocators.policyBlock).contains(name).should("be.visible");
+    }
+
+    clickOnAddedBlock(name) {
+        cy.get(PoliciesPageLocators.blockItem).contains(name).click({ force: true });
+    }
+
+    clickOnDeleteBlockButton() {
+        cy.get(PoliciesPageLocators.deleteBlockBtn).first().click({ force: true });
+    }
+
+    expandBlock(name) {
+        cy.get(PoliciesPageLocators.expandBlockBtn(name)).click({ force: true });
+    }
+
+    clickOnButtonOnPolicy(name, text) {
+        cy.contains("td", name)
+            .siblings()
+            .contains("div", text)
+            .click({ force: true });
+    }
+
+    fillNewPTagForm(name) {
+        const inputName = cy.get(PoliciesPageLocators.inputName);
+        inputName.type(name);
+        cy.get(PoliciesPageLocators.createBtn).click();
+    }
+
+    clickOnButtonByText(text) {
+        cy.contains(new RegExp("^" + text + "$", "g")).click({ force: true });
+    }
+
+    clickOnButtonByTextInModal(text) {
+        cy.get(PoliciesPageLocators.dialogContainer).contains(new RegExp("^" + text + "$", "g")).click({ force: true });
+    }
+
+    clickOnDeleteTag() {   
+        cy.get(PoliciesPageLocators.deleteTagBtn).click({ force: true });
+    }
+
+    checkPolicyTableNotContains(text) {
+        cy.contains("td", new RegExp("^" + text + "$", "g")).should("not.exist");
+    }
+
+    clickOnCloseModal() {
+        cy.get(PoliciesPageLocators.closeModalBtn).click({ force: true });
+    }
+
+    uploadFile(fileName) {
+        cy.fixture(fileName, { encoding: null }).as("myFixture");
+        cy.get(PoliciesPageLocators.uploadFileInput).selectFile("@myFixture", { force: true });
+        cy.get(PoliciesPageLocators.importFileBtn).click({ force: true });
+    }
+
+    fillImportIPFSForm(text) {
+        cy.get(PoliciesPageLocators.inputText).type(text);
+        cy.get(PoliciesPageLocators.okModalBtn).click({ force: true });
+        cy.get(PoliciesPageLocators.importFileBtn).click({ force: true });
+    }
+
+    deletePolicy(name) {
+        cy.contains("td", name)
+            .siblings()
+            .contains("div", "delete")
+            .click({ force: true });
+            cy.get(PoliciesPageLocators.dialogContainer).contains(new RegExp("^OK$", "g")).click({ force: true });
+    }
+
+    checkButtonIsNotActive(name, text) {
+        cy.contains("td", name)
+            .siblings()
+            .contains("div", text)
+            .should('have.css', 'cursor', 'not-allowed');
+    }
+
+    clickOnExportButton(name) {
+        cy.contains("td", name)
+            .siblings()
+            .contains("div", "import_export")
+            .click({ force: true });
+    }
+
+    fillImportIPFSFromClipboard() {
+        cy.get(PoliciesPageLocators.inputText).then($input => {
+            cy.window().then(win => {
+              win.navigator.clipboard.readText().then(text => {
+                $input.val(text);
+              });
+            });
+          });
+    }
+
+    checkButtonInModalIsNotActive(text) {
+        cy.get(PoliciesPageLocators.dialogContainer).contains(new RegExp("^" + text + "$", "g"))
+        .should('have.css', 'cursor', 'default');
+    }
+
+    checkButtonInModalIsActive(text) {
+        cy.get(PoliciesPageLocators.dialogContainer).contains(new RegExp("^" + text + "$", "g"))
+        .should('have.css', 'cursor', 'pointer');
+    }
+
 }
