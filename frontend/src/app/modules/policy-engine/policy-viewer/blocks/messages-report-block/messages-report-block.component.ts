@@ -198,8 +198,8 @@ export class MessagesReportBlockComponent implements OnInit {
     public report!: any;
     public target!: any;
 
-    public dashboardType = DashboardType.Advanced;
-    public status!: string;
+    public dashboardType = DashboardType.Simplified;
+    public status!: any;
     public schemas!: any[];
     public tokens!: any[];
     public roles!: any[];
@@ -316,7 +316,9 @@ export class MessagesReportBlockComponent implements OnInit {
     }
 
     private setData(data: any) {
+        this.status = null;
         this.report = null;
+        this.target = null;
 
         this._topics1 = [];
         this._topics2 = [];
@@ -726,15 +728,16 @@ export class MessagesReportBlockComponent implements OnInit {
     }
 
     public onClear() {
-        this.loading = true;
-        this.policyEngineService.setBlockData(this.id, this.policyId, {
-            filterValue: null
-        }).subscribe(() => {
-            this.loadData();
-        }, (e) => {
-            console.error(e.error);
-            this.loading = false;
-        });
+        this.setData(null);
+        // this.loading = true;
+        // this.policyEngineService.setBlockData(this.id, this.policyId, {
+        //     filterValue: null
+        // }).subscribe(() => {
+        //     this.loadData();
+        // }, (e) => {
+        //     console.error(e.error);
+        //     this.loading = false;
+        // });
     }
 
     public onSearch() {
