@@ -114,11 +114,6 @@ export class MessagesReportBlock {
                 return false;
             }
 
-            const old = await ref.getCache<string>(this.USER_FILTER_VALUE, user);
-            if (value === old) {
-                return true;
-            }
-
             let messageId: string;
             const vp = await ref.databaseServer.getVpDocument({ hash: value, policyId: ref.policyId });
             if (vp) {
@@ -135,6 +130,10 @@ export class MessagesReportBlock {
                 const status = await ref.getCache<string>(this.USER_REPORT_STATUS, user);
                 if (status === 'STARTED') {
                     throw Error('The report is already being calculated');
+                }
+                const old = await ref.getCache<string>(this.USER_FILTER_VALUE, user);
+                if (messageId === old) {
+                    return true;
                 }
                 await ref.setShortCache<string>(this.USER_FILTER_VALUE, messageId, user);
                 await ref.setLongCache<IReport>(this.USER_REPORT, null, user);
