@@ -95,6 +95,7 @@ export class BlockCache extends BaseEntity {
             DataBaseHelper.gridFS
                 .delete(this.fileId)
                 .catch(console.error);
+            this.fileId = null;
         }
         if (this.isLongValue && this.value) {
             await this.createRow();
@@ -126,6 +127,7 @@ export class BlockCache extends BaseEntity {
             DataBaseHelper.gridFS
                 .delete(this.fileId)
                 .catch(console.error);
+            this.fileId = null;
         }
     }
 }
