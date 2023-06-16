@@ -1,6 +1,13 @@
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { PolicyBlockModel } from '..';
 import { ThemeRule } from './theme-rule';
+import { DEFAULT_SYNTAX_GROUPS } from '../../themes/default-syntax-groups';
+
+export interface SyntaxGroup {
+    id: string;
+    name: string;
+    color: string;
+}
 
 export class Theme {
     public id: string;
@@ -10,6 +17,7 @@ export class Theme {
     private _name: string;
     private _rules: ThemeRule[];
     private _defaultRole: ThemeRule;
+    private _syntaxGroups: SyntaxGroup[];
 
     private _colorMap: Map<number, any>;
 
@@ -23,6 +31,7 @@ export class Theme {
         this._defaultRole.default = true;
         this._defaultRole.description = 'Default';
         this._colorMap = new Map();
+        this._syntaxGroups = DEFAULT_SYNTAX_GROUPS;
     }
 
     public get name(): string {
@@ -39,6 +48,14 @@ export class Theme {
 
     public get default(): ThemeRule {
         return this._defaultRole;
+    }
+
+    public get syntaxGroups(): SyntaxGroup[] {
+        return this._syntaxGroups;
+    }
+
+    public set syntaxGroups(value: any) {
+        this._syntaxGroups = value;
     }
 
     public update(): void {
@@ -151,7 +168,8 @@ export class Theme {
             uuid: this.uuid,
             readonly: this.readonly,
             name: this._name,
-            rules
+            rules,
+            syntaxGroups : this.syntaxGroups
         }
     }
 
@@ -170,6 +188,7 @@ export class Theme {
                 theme.addRule(ThemeRule.from(theme, rule))
             }
         }
+        theme.syntaxGroups = json.syntaxGroups || [];
         return theme;
     }
 

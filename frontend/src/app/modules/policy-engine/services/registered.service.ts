@@ -190,4 +190,8 @@ export class RegisteredService {
     public getDeprecated(blockType: string): boolean {
         return this.blockDeprecation[blockType];
     }
+
+    public getName(blockType: string): string {
+        return this.blockName[blockType];
+    }
  }

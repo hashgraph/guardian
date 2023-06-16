@@ -1,9 +1,10 @@
-import { Component, ComponentFactoryResolver, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core';
+import { Component, ComponentFactoryResolver, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, SimpleChanges, ViewChild, Inject } from '@angular/core';
 import { FlatBlockNode } from '../../structures/tree-model/block-node';
 import { CdkDropList } from '@angular/cdk/drag-drop';
 import { PolicyBlockModel, BlocLine, BlockRect, EventCanvas, PolicyModel, PolicyModuleModel } from '../../structures';
 import { RegisteredService } from '../../services/registered.service';
 import { ThemeService } from '../../../../services/theme.service';
+import { BLOCK_TYPE_TIPS } from 'src/app/injectors/block-type-tips.injector';
 
 /**
  * Settings for all blocks.
@@ -20,12 +21,19 @@ export class PolicyTreeComponent implements OnInit {
     @Input('readonly') readonly!: boolean;
     @Input('active') active!: string;
     @Input('connector') dropListConnector!: any;
+    @Input('suggestions') isSuggenstionEnabled: boolean = false;
+    @Input('nextBlock') nextBlock?: any;
+    @Input('nestedBlock') nestedBlock?: any;
+    @Input('currentBlock') currentBlock?: any;
 
     @Output('delete') delete = new EventEmitter();
     @Output('select') select = new EventEmitter();
     @Output('reorder') reorder = new EventEmitter();
     @Output('open') open = new EventEmitter();
     @Output('init') init = new EventEmitter();
+    @Output('next') next = new EventEmitter();
+    @Output('nested') nested = new EventEmitter();
+    @Output('currentBlockChange') currentBlockChange = new EventEmitter();
 
     @ViewChild('parent') parentRef!: ElementRef<HTMLCanvasElement>;
     @ViewChild('canvas') canvasRef!: ElementRef<HTMLCanvasElement>;
@@ -53,9 +61,9 @@ export class PolicyTreeComponent implements OnInit {
     }
 
     public data!: FlatBlockNode[];
+    public selectedNode?: FlatBlockNode;
     private errorsTree!: any;
     private root!: PolicyBlockModel;
-    private currentBlock!: PolicyBlockModel;
     private collapsedMap: Map<string, boolean> = new Map<string, boolean>();
     private eventsDisabled = false;
     private paddingLeft = 40;
@@ -73,7 +81,8 @@ export class PolicyTreeComponent implements OnInit {
         private registeredService: RegisteredService,
         private element: ElementRef,
         private componentFactoryResolver: ComponentFactoryResolver,
-        private themeService: ThemeService
+        private themeService: ThemeService,
+        @Inject(BLOCK_TYPE_TIPS) public blockTypeTips: any
     ) {
         this.actorMap = {};
         this.actorMap[''] = 'Event Initiator';
@@ -143,6 +152,11 @@ export class PolicyTreeComponent implements OnInit {
         this.rebuildTree(this.blocks);
         this.scroll();
         this.errorsTree = {};
+        if (changes.currentBlock) {
+            this.selectedNode = this.data.find(
+                (item) => item.node === changes.currentBlock.currentValue
+            );
+        }
     }
 
     private scroll() {
@@ -167,6 +181,11 @@ export class PolicyTreeComponent implements OnInit {
     private rebuildTree(data: PolicyBlockModel[]) {
         this.root = data[0];
         this.data = this.convertToArray([], data, 0, null);
+        if (this.currentBlock) {
+            this.selectedNode = this.data.find(
+                (item) => item.node === this.currentBlock
+            );
+        }
         this.render(true);
     }
 
@@ -212,8 +231,8 @@ export class PolicyTreeComponent implements OnInit {
         }
         for (let i = 0; i < blocks.length; i++) {
             const block = blocks[i];
-            const next = blocks[i - 1];
-            const prev = blocks[i + 1];
+            const next = blocks[i + 1];
+            const prev = blocks[i - 1];
             const node = new FlatBlockNode(block);
             node.prev = prev;
             node.next = next;
@@ -249,7 +268,7 @@ export class PolicyTreeComponent implements OnInit {
     }
 
     public isSelect(node: FlatBlockNode) {
-        return this.currentBlock == node.node;
+        return this.currentBlock === node?.node;
     }
 
     public isFinal(node: FlatBlockNode) {
@@ -264,9 +283,11 @@ export class PolicyTreeComponent implements OnInit {
     }
 
     public onSelect(event: MouseEvent, node: FlatBlockNode) {
+        this.selectedNode = node;
         this.currentBlock = node.node;
         this.render();
         this.select.emit(this.currentBlock);
+        this.currentBlockChange.emit(this.currentBlock);
         return false;
     }
 
@@ -621,5 +642,24 @@ export class PolicyTreeComponent implements OnInit {
             this._resizeTimer = null;
             this.render();
         }, 200);
+    }
+
+    public isLatestBlockInSelect(block: any) {
+        if (!this.currentBlock || !this.selectedNode) {
+            return false;
+        }
+        let current: any = this.selectedNode
+        for (let i = this.data.indexOf(this.selectedNode); i < this.data.length; i++) {
+            const next = this.data[i + 1];
+            if (!next || next.level < this.selectedNode!.level) {
+                break;
+            }
+            current = next;
+        }
+        return current === block;
+    }
+
+    public getNestedOffset(nodeLevel: number) {
+        return `${this.paddingLeft * nodeLevel}px`;
     }
 }
