@@ -430,6 +430,7 @@ export class SendToGuardianBlock {
             if (!topicOwner) {
                 throw new Error(`Topic owner not found`);
             }
+
             const topic = await PolicyUtils.getOrCreateTopic(ref, ref.options.topic, root, topicOwner, document);
 
             const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, ref.dryRun);
@@ -441,7 +442,7 @@ export class SendToGuardianBlock {
             document.hederaStatus = DocumentStatus.ISSUE;
             document.messageId = vcMessageResult.getId();
             document.topicId = vcMessageResult.getTopicId();
-            
+
             return document;
         } catch (error) {
             throw new BlockActionError(PolicyUtils.getErrorMessage(error), ref.blockType, ref.uuid)

@@ -916,8 +916,6 @@ export class HederaSDKHelper {
         return (seconds + '.' + ('000000000' + nanos).slice(-9));
     }
 
-
-
     /**
      * Returns token info
      * @param tokenId token id

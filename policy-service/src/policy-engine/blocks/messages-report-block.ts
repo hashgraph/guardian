@@ -53,7 +53,7 @@ export class MessagesReportBlock {
      * @private
      */
     private updateStatus(ref: AnyBlockType, status: string, user: IPolicyUser) {
-        ref.updateBlock({ status: status }, user);
+        ref.updateBlock({ status }, user);
     }
 
     /**
@@ -126,12 +126,16 @@ export class MessagesReportBlock {
             } else {
                 const vc = await ref.databaseServer.getVcDocument({ hash: value, policyId: ref.policyId })
                 if (vc) {
-                    messageId = vp.messageId;
+                    messageId = vc.messageId;
                 } else {
                     messageId = value;
                 }
             }
             if (messageId) {
+                const status = await ref.getCache<string>(this.USER_REPORT_STATUS, user);
+                if (status === 'STARTED') {
+                    throw Error('The report is already being calculated');
+                }
                 await ref.setShortCache<string>(this.USER_FILTER_VALUE, messageId, user);
                 await ref.setLongCache<IReport>(this.USER_REPORT, null, user);
                 await ref.setShortCache<string>(this.USER_REPORT_STATUS, 'STARTED', user);

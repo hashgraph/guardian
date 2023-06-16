@@ -13,20 +13,56 @@ import {
 } from '@guardian/common';
 import { TopicType, WorkerTaskType } from '@guardian/interfaces';
 
+/**
+ * Trust Chain interface
+ */
 export interface IReport {
+    /**
+     * List of roles
+     */
     roles: any[],
+    /**
+     * List of topics
+     */
     topics: any[],
+    /**
+     * List of schemas
+     */
     schemas: any[],
+    /**
+     * List of users
+     */
     users: any[],
-    tokens: any[],
+    /**
+     * List of tokens
+     */
+    tokens: any[]
 }
 
+/**
+ * Trust Chain report
+ */
 export class MessagesReport {
-    private topics: Map<string, any>;
-    private messages: Map<string, any>;
-    private schemas: Map<string, any>;
-    private tokens: Map<string, any>;
-    private users: Map<string, any>;
+    /**
+     * List of topics
+     */
+    private readonly topics: Map<string, any>;
+    /**
+     * List of messages
+     */
+    private readonly messages: Map<string, any>;
+    /**
+     * List of schemas
+     */
+    private readonly schemas: Map<string, any>;
+    /**
+     * List of tokens
+     */
+    private readonly tokens: Map<string, any>;
+    /**
+     * List of users
+     */
+    private readonly users: Map<string, any>;
 
     constructor() {
         this.topics = new Map<string, any>();
@@ -36,11 +72,19 @@ export class MessagesReport {
         this.users = new Map<string, any>();
     }
 
+    /**
+     * Build report
+     * @param messageId
+     */
     public async start(messageId: string) {
         await this.checkMessage(messageId);
         await this.checkUsers();
     }
 
+    /**
+     * Need load file
+     * @param message
+     */
     private needDocument(message: Message): boolean {
         return (
             message.type === MessageType.VCDocument ||
@@ -49,6 +93,10 @@ export class MessagesReport {
         );
     }
 
+    /**
+     * Search messages
+     * @param timestamp
+     */
     private async checkMessage(timestamp: string) {
         if (this.messages.has(timestamp)) {
             return;
@@ -75,6 +123,10 @@ export class MessagesReport {
         }
     }
 
+    /**
+     * Search tokens
+     * @param message
+     */
     private async checkToken(message: Message) {
         if (message.type === MessageType.VCDocument) {
             const document = (message as VCMessage).document;
@@ -101,6 +153,10 @@ export class MessagesReport {
         }
     }
 
+    /**
+     * Search topics
+     * @param topicId
+     */
     private async checkTopic(topicId: string) {
         if (this.topics.has(topicId)) {
             return;
@@ -124,6 +180,10 @@ export class MessagesReport {
         await this.checkSchemas(message);
     }
 
+    /**
+     * Search schemas
+     * @param message
+     */
     private async checkSchemas(message: TopicMessage) {
         if (message.messageType === TopicType.PolicyTopic) {
             const messages: any[] = await MessageServer.getMessages(message.getTopicId());
@@ -139,6 +199,10 @@ export class MessagesReport {
         }
     }
 
+    /**
+     * Search users
+     * @param message
+     */
     private async checkUsers() {
         const topics: Set<string> = new Set<string>();
         for (const did of this.users.keys()) {
@@ -167,7 +231,7 @@ export class MessagesReport {
     }
 
     /**
-     * Get token
+     * Get token information
      * @param tokenId
      */
     public async getToken(tokenId: string): Promise<any> {
@@ -183,6 +247,9 @@ export class MessagesReport {
         }
     }
 
+    /**
+     * Get report
+     */
     public toJson(): IReport {
         const topicsMap = new Map<string, any>();
         for (const [topicId, message] of this.topics.entries()) {

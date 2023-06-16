@@ -100,68 +100,80 @@ class Line {
         this._container = null;
     }
 
-    public render(container: LineContainer) {
-        this._container = container;
-        const options1 = {
-            x: 180,
-            y: this.offset,
-            width: 3,
-            height: 1,
-            color: 'transparent'
-        };
-        const options2 = {
-            x: 4,
-            y: this.offset,
-            width: 3,
-            height: 1,
-            color: 'transparent'
-        };
-        this.anchor1 = LeaderLine.areaAnchor(document.getElementById(this.elementId1), options1);
-        this.anchor2 = LeaderLine.areaAnchor(document.getElementById(this.elementId2), options2);
-        this.line = new LeaderLine(
-            this.anchor1,
-            this.anchor2,
-            {
-                color: this.color1,
-                startPlug: 'disc',
-                endPlug: 'arrow1'
+    public render(container: LineContainer): Line {
+        try {
+            this._container = container;
+            const options1 = {
+                x: 180,
+                y: this.offset,
+                width: 3,
+                height: 1,
+                color: 'transparent'
+            };
+            const options2 = {
+                x: 4,
+                y: this.offset,
+                width: 3,
+                height: 1,
+                color: 'transparent'
+            };
+            this.anchor1 = LeaderLine.areaAnchor(document.getElementById(this.elementId1), options1);
+            this.anchor2 = LeaderLine.areaAnchor(document.getElementById(this.elementId2), options2);
+            this.line = new LeaderLine(
+                this.anchor1,
+                this.anchor2,
+                {
+                    color: this.color1,
+                    startPlug: 'disc',
+                    endPlug: 'arrow1'
+                }
+            );
+            const line = document.querySelectorAll('.leader-line');
+            const anchors = document.querySelectorAll('.leader-line-areaAnchor');
+            this.leaderLine = line[line.length - 1];
+            this.leaderAnchor1 = anchors[anchors.length - 2];
+            this.leaderAnchor2 = anchors[anchors.length - 1];
+            if (this.leaderLine) {
+                this._parent = this.leaderLine.parentElement;
+                container.append(this.leaderLine);
+                container.append(this.leaderAnchor1);
+                container.append(this.leaderAnchor2);
             }
-        );
-        const line = document.querySelectorAll('.leader-line');
-        const anchors = document.querySelectorAll('.leader-line-areaAnchor');
-        this.leaderLine = line[line.length - 1];
-        this.leaderAnchor1 = anchors[anchors.length - 2];
-        this.leaderAnchor2 = anchors[anchors.length - 1];
-        if (this.leaderLine) {
-            this._parent = this.leaderLine.parentElement;
-            container.append(this.leaderLine);
-            container.append(this.leaderAnchor1);
-            container.append(this.leaderAnchor2);
+        } catch (error) {
+            console.error(error);
         }
         return this;
     }
 
-    public remove() {
-        if (this._parent && this.leaderLine && this.leaderAnchor1 && this.leaderAnchor2) {
-            this._parent.appendChild(this.leaderLine);
-            this._parent.appendChild(this.leaderAnchor1);
-            this._parent.appendChild(this.leaderAnchor2);
-            this.anchor1.remove();
-            this.anchor2.remove()
-            this.line.remove();
+    public remove(): void {
+        try {
+            if (this._parent && this.leaderLine && this.leaderAnchor1 && this.leaderAnchor2) {
+                this._parent.appendChild(this.leaderLine);
+                this._parent.appendChild(this.leaderAnchor1);
+                this._parent.appendChild(this.leaderAnchor2);
+                this.anchor1.remove();
+                this.anchor2.remove()
+                this.line.remove();
+            }
+        } catch (error) {
+            console.error(error);
         }
     }
 
-    public select(flag: boolean) {
-        if (this._container && this.leaderLine) {
-            if (flag) {
-                this.line.color = this.color2;
-                this._container.up(this.leaderLine);
-            } else {
-                this.line.color = this.color1;
-                this._container.down(this.leaderLine);
+    public select(flag: boolean): void {
+        try {
+            if (this._container && this.leaderLine) {
+                if (flag) {
+                    this.line.color = this.color2;
+                    this._container.up(this.leaderLine);
+                } else {
+                    this.line.color = this.color1;
+                    this._container.down(this.leaderLine);
+                }
+                this.line.position();
             }
-            this.line.position();
+        } catch (error) {
+            console.error(error);
         }
     }
 }
@@ -241,7 +253,7 @@ export class MessagesReportBlockComponent implements OnInit {
     private lineContainer = new LineContainer(
         'leader-line-container-1', 'leader-line-container-2'
     );
-    private lines!: Line[];
+    private lines!: Line[] | null;
 
     constructor(
         private element: ElementRef,
@@ -271,6 +283,7 @@ export class MessagesReportBlockComponent implements OnInit {
         if (this.socket) {
             this.socket.unsubscribe();
         }
+        this.removeLines();
     }
 
     public onUpdate(blocks: string[]): void {
@@ -581,13 +594,13 @@ export class MessagesReportBlockComponent implements OnInit {
 
     private getStatusLabel(message: any) {
         switch (message.documentStatus) {
-            case 'NEW': return 'Create Document';
-            case 'ISSUE': return 'Create Document';
-            case 'REVOKE': return 'Revoke Document';
-            case 'SUSPEND': return 'Suspend Document';
-            case 'RESUME': return 'Resume Document';
+            case 'NEW': return 'Create document';
+            case 'ISSUE': return 'Create document';
+            case 'REVOKE': return 'Revoke document';
+            case 'SUSPEND': return 'Suspend document';
+            case 'RESUME': return 'Resume document';
             case 'FAILED': return 'Failed';
-            default: return message.documentStatus || 'Create Document';
+            default: return message.documentStatus || 'Create document';
         }
     }
 
@@ -686,13 +699,13 @@ export class MessagesReportBlockComponent implements OnInit {
         this.update();
     }
 
-    public getTopicHeader(topic: any): string {
-        if (topic.message) {
-            switch (topic.message.messageType) {
+    public getTopicHeader(message: any): string {
+        if (message) {
+            switch (message.messageType) {
                 case 'USER_TOPIC': return 'Standard Registry';
                 case 'POLICY_TOPIC': return 'Policy';
                 case 'INSTANCE_POLICY_TOPIC':
-                    return this.dashboardType === DashboardType.Advanced ? 'Policy instance' : topic.message.name;
+                    return this.dashboardType === DashboardType.Advanced ? 'Policy instance' : message.name;
                 case 'DYNAMIC_TOPIC': return 'User defined';
             }
         }
@@ -823,6 +836,7 @@ export class MessagesReportBlockComponent implements OnInit {
             for (const item of this.lines) {
                 item.remove();
             }
+            this.lines = null;
         }
     }
 

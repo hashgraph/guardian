@@ -697,10 +697,10 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * Get Cache
              * @param {string} name - variable name
              * @param {IPolicyUser | string} [user] - user DID
-             * @returns {T} - variable value
+             * @returns {V} - variable value
              * @protected
              */
-            protected async getCache<T>(name: string, user?: IPolicyUser | string): Promise<T> {
+            protected async getCache<V>(name: string, user?: IPolicyUser | string): Promise<V> {
                 const did = user ? (typeof user === 'object' ? user.did : user) : 'all';
                 const record = await this.databaseServer.getBlockCache(this.policyId, this.uuid, did, name);
                 return record ? record.value : null;
@@ -710,14 +710,14 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * Set Cache
              * @param {BlockCacheType} type - variable size
              * @param {string} name - variable name
-             * @param {T} value - variable value
+             * @param {V} value - variable value
              * @param {IPolicyUser | string} [user] - user DID
              * @protected
              */
-            protected async setCache<T>(
+            protected async setCache<V>(
                 type: BlockCacheType,
                 name: string,
-                value: T,
+                value: V,
                 user?: IPolicyUser | string
             ): Promise<void> {
                 const did = user ? (typeof user === 'object' ? user.did : user) : 'all';
@@ -729,13 +729,13 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             /**
              * Set Cache
              * @param {string} name - variable name
-             * @param {T} value - variable value
+             * @param {V} value - variable value
              * @param {IPolicyUser | string} [user] - user DID
              * @protected
              */
-            protected async setShortCache<T>(
+            protected async setShortCache<V>(
                 name: string,
-                value: T,
+                value: V,
                 user?: IPolicyUser | string
             ): Promise<void> {
                 const did = user ? (typeof user === 'object' ? user.did : user) : 'all';
@@ -747,13 +747,13 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             /**
              * Set Cache (Big value)
              * @param {string} name - variable name
-             * @param {T} value - variable value
+             * @param {V} value - variable value
              * @param {IPolicyUser | string} [user] - user DID
              * @protected
              */
-            protected async setLongCache<T>(
+            protected async setLongCache<V>(
                 name: string,
-                value: T,
+                value: V,
                 user?: IPolicyUser | string
             ): Promise<void> {
                 const did = user ? (typeof user === 'object' ? user.did : user) : 'all';

@@ -4,7 +4,13 @@
     </div>
 
     <div *ngIf="status === 'STARTED'" class="sub-loading">
-        <div class="loading-text">Loading Report ...</div>
+        <div class="loading-text">
+            <div>
+                <mat-spinner></mat-spinner>
+            </div>
+            <div>Please wait while your report is calculated</div>
+            <div>This may take a few minutes ...</div>
+        </div>
     </div>
 
     <div *ngIf="status === 'FAILED'" class="sub-loading">
@@ -33,7 +39,7 @@
     <div *ngIf="status === 'FINISHED'" class="dashboard">
         <div class="toolbar">
             <div class="target">
-                <div class="target-label">Selected Document:</div>
+                <div class="target-label">Selected document:</div>
                 <div class="target-value">{{target}}</div>
                 <div class="target-btn" (click)="onClear()">
                     Clear
@@ -54,10 +60,11 @@
                         <div class="dashboard-header" [style.gridRow]="topic.__order"
                             [style.paddingLeft.px]="topic.__offset">
                             <div class="topic-info" (click)="onSelect(topic.message)"
-                                [attr.selected]="topic.message && topic.message === selected">
+                                [attr.selected]="topic.message && topic.message === selected"
+                                [attr.readonly]="!topic.message">
                                 <div class="topic-header">
                                     <mat-icon>cloud</mat-icon>
-                                    {{getTopicHeader(topic)}}
+                                    {{getTopicHeader(topic.message)}}
                                 </div>
                                 <div class="topic-data">
                                     <div *ngIf="topic.message">
@@ -76,8 +83,7 @@
                 <div class="dashboard-top">
                     Policy Events
                 </div>
-                <div class="dashboard-rows dashboard-scroll"
-                    [style.gridTemplateRows]="gridTemplateRows">
+                <div class="dashboard-rows dashboard-scroll" [style.gridTemplateRows]="gridTemplateRows">
                     <div id="leader-line-container-1"></div>
                     <div id="leader-line-container-2"></div>
                     <div class="dashboard-row" *ngFor="let topic of topics" [style.gridRow]="topic.__order"
@@ -90,7 +96,7 @@
                                 <ng-container *ngIf="message.__ifPolicyMessage">
                                     <div class="message-header">
                                         <mat-icon>policy</mat-icon>
-                                        Create Policy
+                                        Create policy
                                     </div>
                                     <div class="message-data">
                                         <div class="message-name">{{message.name}}</div>
@@ -100,7 +106,7 @@
                                 <ng-container *ngIf="message.__ifInstanceMessage">
                                     <div class="message-header">
                                         <mat-icon>policy</mat-icon>
-                                        Publish Policy
+                                        Publish policy
                                     </div>
                                     <div class="message-data">
                                         <div class="message-name">{{message.name}}</div>
@@ -137,7 +143,7 @@
                                 <ng-container *ngIf="message.__ifMintMessage">
                                     <div class="message-header">
                                         <mat-icon class="svg-icon" svgIcon="token"></mat-icon>
-                                        Mint Token
+                                        Mint token
                                     </div>
                                     <div class="message-data">
                                         <div *ngIf="message.__tokenName" class="message-name">{{message.__tokenName}}
@@ -149,10 +155,12 @@
                                 <ng-container *ngIf="message.__ifVPMessage">
                                     <div class="message-header">
                                         <mat-icon>receipt</mat-icon>
-                                        {{message.__status}}
+                                        Mint confirmation
                                     </div>
                                     <div class="message-data">
-                                        <!-- <div>{{message.name}}</div> -->
+                                        <div *ngIf="message.__amount" class="message-name">
+                                            Amount: <span>{{message.__amount}} {{message.__token.symbol}}</span>
+                                        </div>
                                         <div class="message-owner">{{message.__userName}}</div>
                                     </div>
                                 </ng-container>
@@ -205,29 +213,29 @@
                         <div class="field-delimiter" data-label="Policy"></div>
 
                         <div class="field">
-                            <div class="field-name">Policy Name:</div>
+                            <div class="field-name">Policy name:</div>
                             <div class="field-value">{{selected.name}}</div>
                         </div>
                         <div class="field">
-                            <div class="field-name">Policy Description:</div>
+                            <div class="field-name">Policy description:</div>
                             <div class="field-value">{{selected.description}}</div>
                         </div>
                         <div class="field">
-                            <div class="field-name">Policy Creator:</div>
+                            <div class="field-name">Policy creator:</div>
                             <div class="field-value">{{selected.owner}}</div>
                         </div>
 
                         <div class="field-delimiter" data-label="Hedera Information"></div>
 
                         <div class="field">
-                            <div class="field-name">Topic Id:</div>
+                            <div class="field-name">Topic ID:</div>
                             <div class="field-value">
                                 <hedera-explorer type="topics"
                                     [params]="selected.topicId">{{selected.topicId}}</hedera-explorer>
                             </div>
                         </div>
                         <div class="field">
-                            <div class="field-name">Message Id:</div>
+                            <div class="field-name">Message ID:</div>
                             <div class="field-value">
                                 <hedera-explorer type="topics" [params]="selected.topicId" subType="messages"
                                     [subParams]="selected.index">{{selected.id}}</hedera-explorer>
@@ -245,39 +253,39 @@
                     <ng-container *ngIf="selected.__ifInstanceMessage">
                         <div class="document-header">
                             <mat-icon>policy</mat-icon>
-                            Instance Policy
+                            Instance policy
                         </div>
 
                         <div class="field-delimiter" data-label="Policy"></div>
 
                         <div class="field">
-                            <div class="field-name">Policy Name:</div>
+                            <div class="field-name">Policy name:</div>
                             <div class="field-value">{{selected.name}}</div>
                         </div>
                         <div class="field">
-                            <div class="field-name">Policy Description:</div>
+                            <div class="field-name">Policy description:</div>
                             <div class="field-value">{{selected.description}}</div>
                         </div>
                         <div class="field">
-                            <div class="field-name">Policy Creator:</div>
+                            <div class="field-name">Policy creator:</div>
                             <div class="field-value">{{selected.owner}}</div>
                         </div>
                         <div class="field">
-                            <div class="field-name">Policy Version:</div>
+                            <div class="field-name">Policy version:</div>
                             <div class="field-value">{{selected.version}}</div>
                         </div>
 
                         <div class="field-delimiter" data-label="Hedera Information"></div>
 
                         <div class="field">
-                            <div class="field-name">Topic Id:</div>
+                            <div class="field-name">Topic ID:</div>
                             <div class="field-value">
                                 <hedera-explorer type="topics"
                                     [params]="selected.topicId">{{selected.topicId}}</hedera-explorer>
                             </div>
                         </div>
                         <div class="field">
-                            <div class="field-name">Message Id:</div>
+                            <div class="field-name">Message ID:</div>
                             <div class="field-value">
                                 <hedera-explorer type="topics" [params]="selected.topicId" subType="messages"
                                     [subParams]="selected.index">{{selected.id}}</hedera-explorer>
@@ -295,7 +303,7 @@
                     <ng-container *ngIf="selected.__ifDIDMessage">
                         <div class="document-header">
                             <mat-icon>key</mat-icon>
-                            User Registration
+                            User registration
                         </div>
 
                         <div class="field-delimiter" data-label="Document"></div>
@@ -305,23 +313,23 @@
                             <div class="field-value">{{selected.did}}</div>
                         </div>
                         <div class="field" *ngIf="selected.document">
-                            <div class="field-name">DID Document:</div>
+                            <div class="field-name">DID document:</div>
                             <div class="field-value">
-                                <span class="field-link" (click)="onOpenDocument(selected)">Open</span>
+                                <span class="field-link" (click)="onOpenDocument(selected)">Open document</span>
                             </div>
                         </div>
 
                         <div class="field-delimiter" data-label="Hedera Information"></div>
 
                         <div class="field">
-                            <div class="field-name">Topic Id:</div>
+                            <div class="field-name">Topic ID:</div>
                             <div class="field-value">
                                 <hedera-explorer type="topics"
                                     [params]="selected.topicId">{{selected.topicId}}</hedera-explorer>
                             </div>
                         </div>
                         <div class="field">
-                            <div class="field-name">Message Id:</div>
+                            <div class="field-name">Message ID:</div>
                             <div class="field-value">
                                 <hedera-explorer type="topics" [params]="selected.topicId" subType="messages"
                                     [subParams]="selected.index">{{selected.id}}</hedera-explorer>
@@ -355,23 +363,23 @@
                         </div>
 
                         <div class="field" *ngIf="selected.document">
-                            <div class="field-name">Document Artifact:</div>
+                            <div class="field-name">Document artifact:</div>
                             <div class="field-value">
-                                <span class="field-link" (click)="onOpenDocument(selected)">Open</span>
+                                <span class="field-link" (click)="onOpenDocument(selected)">Open document</span>
                             </div>
                         </div>
 
                         <div class="field-delimiter" data-label="Hedera Information"></div>
 
                         <div class="field">
-                            <div class="field-name">Topic Id:</div>
+                            <div class="field-name">Topic ID:</div>
                             <div class="field-value">
                                 <hedera-explorer type="topics"
                                     [params]="selected.topicId">{{selected.topicId}}</hedera-explorer>
                             </div>
                         </div>
                         <div class="field">
-                            <div class="field-name">Message Id:</div>
+                            <div class="field-name">Message ID:</div>
                             <div class="field-value">
                                 <hedera-explorer type="topics" [params]="selected.topicId" subType="messages"
                                     [subParams]="selected.index">{{selected.id}}</hedera-explorer>
@@ -399,13 +407,13 @@
                             <div class="field-value">{{selected.__schemaLabel}}</div>
                         </div>
                         <div class="field" *ngIf="selected.__status">
-                            <div class="field-name">Document Status:</div>
+                            <div class="field-name">Document status:</div>
                             <div class="field-value">{{selected.__status}}</div>
                         </div>
                         <div class="field" *ngIf="selected.document">
-                            <div class="field-name">Document Artifact:</div>
+                            <div class="field-name">Document artifact:</div>
                             <div class="field-value">
-                                <span class="field-link" (click)="onOpenDocument(selected)">Open</span>
+                                <span class="field-link" (click)="onOpenDocument(selected)">Open document</span>
                             </div>
                         </div>
 
@@ -427,14 +435,14 @@
 
                         <div class="field-delimiter" data-label="Hedera Information"></div>
                         <div class="field">
-                            <div class="field-name">Topic Id:</div>
+                            <div class="field-name">Topic ID:</div>
                             <div class="field-value">
                                 <hedera-explorer type="topics"
                                     [params]="selected.topicId">{{selected.topicId}}</hedera-explorer>
                             </div>
                         </div>
                         <div class="field">
-                            <div class="field-name">Message Id:</div>
+                            <div class="field-name">Message ID:</div>
                             <div class="field-value">
                                 <hedera-explorer type="topics" [params]="selected.topicId" subType="messages"
                                     [subParams]="selected.index">{{selected.id}}</hedera-explorer>
@@ -464,19 +472,19 @@
                     <ng-container *ngIf="selected.__ifMintMessage">
                         <div class="document-header">
                             <mat-icon class="svg-icon" svgIcon="token"></mat-icon>
-                            Mint
+                            Mint token
                         </div>
 
                         <ng-container *ngIf="selected.__token">
                             <div class="field-delimiter" data-label="Token"></div>
 
                             <div class="field">
-                                <div class="field-name">Token Name:</div>
+                                <div class="field-name">Token name:</div>
                                 <div class="field-value">{{selected.__token.name}}</div>
                             </div>
 
                             <div class="field">
-                                <div class="field-name">Token Id:</div>
+                                <div class="field-name">Token ID:</div>
                                 <div class="field-value">{{selected.__token.tokenId}}</div>
                             </div>
 
@@ -489,9 +497,9 @@
                         <div class="field-delimiter" data-label="Document"></div>
 
                         <div class="field" *ngIf="selected.document">
-                            <div class="field-name">Document Artifact:</div>
+                            <div class="field-name">Document artifact:</div>
                             <div class="field-value">
-                                <span class="field-link" (click)="onOpenDocument(selected)">Open</span>
+                                <span class="field-link" (click)="onOpenDocument(selected)">Open document</span>
                             </div>
                         </div>
 
@@ -514,14 +522,14 @@
                         <div class="field-delimiter" data-label="Hedera Information"></div>
 
                         <div class="field">
-                            <div class="field-name">Topic Id:</div>
+                            <div class="field-name">Topic ID:</div>
                             <div class="field-value">
                                 <hedera-explorer type="topics"
                                     [params]="selected.topicId">{{selected.topicId}}</hedera-explorer>
                             </div>
                         </div>
                         <div class="field">
-                            <div class="field-name">Message Id:</div>
+                            <div class="field-name">Message ID:</div>
                             <div class="field-value">
                                 <hedera-explorer type="topics" [params]="selected.topicId" subType="messages"
                                     [subParams]="selected.index">{{selected.id}}</hedera-explorer>
@@ -551,7 +559,7 @@
                     <ng-container *ngIf="selected.__ifVPMessage">
                         <div class="document-header">
                             <mat-icon>receipt</mat-icon>
-                            Document
+                            Mint confirmation
                         </div>
 
                         <div class="field-delimiter" data-label="Document"></div>
@@ -567,11 +575,11 @@
                         <ng-container *ngIf="selected.__token">
                             <div class="field-delimiter" data-label="Token"></div>
                             <div class="field">
-                                <div class="field-name">Token Name:</div>
+                                <div class="field-name">Token name:</div>
                                 <div class="field-value">{{selected.__token.name}}</div>
                             </div>
                             <div class="field">
-                                <div class="field-name">Token Id:</div>
+                                <div class="field-name">Token ID:</div>
                                 <div class="field-value">{{selected.__token.tokenId}}</div>
                             </div>
                             <div class="field">
@@ -598,14 +606,14 @@
 
                         <div class="field-delimiter" data-label="Hedera Information"></div>
                         <div class="field">
-                            <div class="field-name">Topic Id:</div>
+                            <div class="field-name">Topic ID:</div>
                             <div class="field-value">
                                 <hedera-explorer type="topics"
                                     [params]="selected.topicId">{{selected.topicId}}</hedera-explorer>
                             </div>
                         </div>
                         <div class="field">
-                            <div class="field-name">Message Id:</div>
+                            <div class="field-name">Message ID:</div>
                             <div class="field-value">
                                 <hedera-explorer type="topics" [params]="selected.topicId" subType="messages"
                                     [subParams]="selected.index">{{selected.id}}</hedera-explorer>
@@ -635,25 +643,27 @@
                     <ng-container *ngIf="selected.__ifTopicMessage">
                         <div class="document-header">
                             <mat-icon>cloud</mat-icon>
-                            Topic
+                            Catalog
                         </div>
 
                         <div class="field-delimiter" data-label="Topic Information"></div>
 
                         <div class="field">
-                            <div class="field-name">Topic Name:</div>
+                            <div class="field-name">Topic name:</div>
                             <div class="field-value">{{selected.name}}</div>
                         </div>
                         <div class="field">
-                            <div class="field-name">Topic Description:</div>
+                            <div class="field-name">Topic description:</div>
                             <div class="field-value">{{selected.description}}</div>
                         </div>
                         <div class="field">
-                            <div class="field-name">Topic Type:</div>
-                            <div class="field-value">{{selected.messageType}}</div>
+                            <div class="field-name">Topic type:</div>
+                            <div class="field-value">
+                                {{getTopicHeader(selected)}} catalog
+                            </div>
                         </div>
                         <div class="field" *ngIf="selected.owner">
-                            <div class="field-name">Topic Creator:</div>
+                            <div class="field-name">Topic creator:</div>
                             <div class="field-value">{{selected.owner}}</div>
                         </div>
 
@@ -661,11 +671,11 @@
                             <div class="field-delimiter" data-label="Policy"></div>
 
                             <div class="field">
-                                <div class="field-name">Policy Name:</div>
+                                <div class="field-name">Policy name:</div>
                                 <div class="field-value">{{selected.__rationale.name}}</div>
                             </div>
                             <div class="field">
-                                <div class="field-name">Policy Description:</div>
+                                <div class="field-name">Policy description:</div>
                                 <div class="field-value">{{selected.__rationale.description}}</div>
                             </div>
                         </ng-container>
@@ -674,15 +684,15 @@
                             <div class="field-delimiter" data-label="Policy"></div>
 
                             <div class="field">
-                                <div class="field-name">Policy Name:</div>
+                                <div class="field-name">Policy name:</div>
                                 <div class="field-value">{{selected.__rationale.name}}</div>
                             </div>
                             <div class="field">
-                                <div class="field-name">Policy Description:</div>
+                                <div class="field-name">Policy description:</div>
                                 <div class="field-value">{{selected.__rationale.description}}</div>
                             </div>
                             <div class="field">
-                                <div class="field-name">Policy Version:</div>
+                                <div class="field-name">Policy version:</div>
                                 <div class="field-value">{{selected.__rationale.version}}</div>
                             </div>
                         </ng-container>
@@ -690,14 +700,14 @@
                         <div class="field-delimiter" data-label="Hedera Information"></div>
 
                         <div class="field">
-                            <div class="field-name">Topic Id:</div>
+                            <div class="field-name">Topic ID:</div>
                             <div class="field-value">
                                 <hedera-explorer type="topics"
                                     [params]="selected.topicId">{{selected.topicId}}</hedera-explorer>
                             </div>
                         </div>
                         <div class="field">
-                            <div class="field-name">Message Id:</div>
+                            <div class="field-name">Message ID:</div>
                             <div class="field-value">
                                 <hedera-explorer type="topics" [params]="selected.topicId" subType="messages"
                                     [subParams]="selected.index">{{selected.id}}</hedera-explorer>
