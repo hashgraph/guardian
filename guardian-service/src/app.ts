@@ -8,6 +8,7 @@ import { trustChainAPI } from '@api/trust-chain.service';
 import { PolicyEngineService } from '@policy-engine/policy-engine.service';
 import {
     ApplicationState,
+    Branding,
     COMMON_CONNECTION_CONFIG,
     Contract,
     DataBaseHelper,
@@ -35,7 +36,6 @@ import {
     Users,
     ValidateConfiguration,
     VcDocument,
-    Branding,
     VpDocument,
     Workers
 } from '@guardian/common';
@@ -51,7 +51,6 @@ import { PolicyEngine } from '@policy-engine/policy-engine';
 import { modulesAPI } from '@api/module.service';
 import { GuardiansService } from '@helpers/guardians';
 import { mapAPI } from '@api/map.service';
-import { GridFSBucket } from 'mongodb';
 import { tagsAPI } from '@api/tag.service';
 import { setDefaultSchema } from '@api/helpers/schema-helper';
 import { demoAPI } from '@api/demo.service';
@@ -64,6 +63,7 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import process from 'process';
 import { AppModule } from './app.module';
 import { analyticsAPI } from '@api/analytics.service';
+import { GridFSBucket } from 'mongodb';
 
 export const obj = {};
 
@@ -103,9 +103,7 @@ Promise.all([
     app.listen();
 
     DataBaseHelper.orm = db;
-    DataBaseHelper.gridFS = new GridFSBucket(
-        db.em.getDriver().getConnection().getDb()
-    );
+    DataBaseHelper.gridFS = new GridFSBucket(db.em.getDriver().getConnection().getDb());
     new PolicyServiceChannelsContainer().setConnection(cn);
     new TransactionLogger().initialization(
         cn,
@@ -170,7 +168,6 @@ Promise.all([
     Environment.setLocalNodeProtocol(process.env.LOCALNODE_PROTOCOL);
     Environment.setLocalNodeAddress(process.env.LOCALNODE_ADDRESS);
     Environment.setNetwork(process.env.HEDERA_NET);
-    console.log(Environment);
     if (process.env.HEDERA_CUSTOM_NODES) {
         try {
             const nodes = JSON.parse(process.env.HEDERA_CUSTOM_NODES);
