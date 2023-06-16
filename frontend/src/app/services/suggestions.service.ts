@@ -18,7 +18,7 @@ export class SuggestionsService {
     }
 
     public setSuggestionsConfig(items: SuggestionsOrderPriority[]): Observable<{
-        items?: SuggestionsOrderPriority[];
+        items: SuggestionsOrderPriority[];
     }> {
         return this.http.post<any>(`${this.url}/config`, {
             items,

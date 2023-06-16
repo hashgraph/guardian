@@ -9,9 +9,7 @@ export class SuggestionsInputDTO {
     @IsNotEmpty()
     blockType: string;
 
-    @ApiProperty({ type: 'object', isArray: true })
-    @IsArray()
-    @Type(() => SuggestionsInputDTO)
+    @ApiProperty({ type: 'object', isArray: true, nullable: true })
     children?: SuggestionsInputDTO[];
 }
 
@@ -45,5 +43,5 @@ export class SuggestionsConfigDTO {
     @ApiProperty({ type: () => SuggestionsConfigItemDTO })
     @IsArray()
     @Type(() => SuggestionsConfigItemDTO)
-    items?: SuggestionsConfigItemDTO[];
+    items: SuggestionsConfigItemDTO[];
 }

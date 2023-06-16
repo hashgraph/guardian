@@ -117,7 +117,9 @@ export class SuggestionsApi {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardians = new Guardians();
         const user = req.user;
-        return await guardians.setPolicySuggestionsConfig(body?.items, user);
+        return {
+            items: await guardians.setPolicySuggestionsConfig(body.items, user),
+        };
     }
 
     @ApiOperation({

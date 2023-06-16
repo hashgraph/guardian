@@ -1591,7 +1591,7 @@ export class Guardians extends NatsService {
     public async setPolicySuggestionsConfig(
         items: SuggestionsOrderPriority[],
         user: any
-    ) {
+    ): Promise<SuggestionsOrderPriority[]> {
         return await this.sendMessage(
             MessageAPI.SET_SUGGESTIONS_CONFIG,
             { items, user }

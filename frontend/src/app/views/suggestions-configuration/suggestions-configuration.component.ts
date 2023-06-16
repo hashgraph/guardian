@@ -64,9 +64,8 @@ export class SuggestionsConfigurationComponent {
                         : item.name,
                     type: ConfigType.MODULE,
                 }));
-                const { items } = result[1];
                 const suggestionsOrderPriorities = sortObjectsArray(
-                    items || [],
+                    result[1].items,
                     'index'
                 );
                 this.suggestionsOrderPriority = suggestionsOrderPriorities.map(
