@@ -28,7 +28,7 @@ import hpp from 'hpp';
 import { ThemesApi } from '@api/service/themes';
 import { TrustChainsOldApi } from '@api/service/trustchains';
 import { BrandingApi } from '@api/service/branding';
-import { SuggestionApi } from '@api/service/suggestion';
+import { SuggestionsApi } from '@api/service/suggestions';
 import { JwtModule } from '@nestjs/jwt';
 
 const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';

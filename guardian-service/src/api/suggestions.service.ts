@@ -244,7 +244,7 @@ export async function suggestionsAPI(): Promise<void> {
                 throw new Error('Invalid user did');
             }
             const config = await DatabaseServer.getSuggestionsConfig(user.did);
-            return new MessageResponse(config?.items || []);
+            return new MessageResponse(config?.items);
         } catch (error) {
             return new MessageError(error);
         }

@@ -7,8 +7,9 @@ import { Component } from '@angular/core';
 import { forkJoin } from 'rxjs';
 import { ModulesService } from 'src/app/services/modules.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { ConfigType, sortObjectsArray } from '@guardian/interfaces';
+import { ConfigType, IUser, sortObjectsArray } from '@guardian/interfaces';
 import { SuggestionsService } from 'src/app/services/suggestions.service';
+import { ProfileService } from 'src/app/services/profile.service';
 
 interface SuggestionsOrderPriorityItem {
     id: string;
@@ -22,6 +23,7 @@ interface SuggestionsOrderPriorityItem {
     styleUrls: ['./suggestions-configuration.component.scss'],
 })
 export class SuggestionsConfigurationComponent {
+    isConfirmed: boolean = false;
     loading: boolean = false;
     policies: any[] = [];
     modules: any[] = [];
@@ -31,56 +33,87 @@ export class SuggestionsConfigurationComponent {
     constructor(
         private engineService: PolicyEngineService,
         private suggestionsService: SuggestionsService,
-        private moduleService: ModulesService
+        private moduleService: ModulesService,
+        private profileService: ProfileService
     ) {}
 
     ngOnInit() {
+        this.loadProfile();
+    }
+
+    loadPoliciesAndModules() {
         this.loading = true;
         forkJoin([
             this.engineService.all(),
             this.suggestionsService.getSuggestionsConfig(),
             this.moduleService.menuList(),
-        ]).subscribe((result) => {
-            this.loading = false;
-            this.policies = result[0].map((item) => ({
-                id: item.id,
-                name: item.version
-                    ? `${item.name} (${item.version})`
-                    : item.name,
-                type: ConfigType.POLICY,
-            }));
-            this.modules = result[2].map((item) => ({
-                id: item.id,
-                name: item.version
-                    ? `${item.name} (${item.version})`
-                    : item.name,
-                type: ConfigType.MODULE,
-            }));
-            const suggestionsOrderPriorities = sortObjectsArray(
-                result[1],
-                'index'
-            );
-            this.suggestionsOrderPriority = suggestionsOrderPriorities.map(
-                (suggestionsOrderPriority) =>
-                    suggestionsOrderPriority.type === ConfigType.POLICY
-                        ? this.policies.find(
-                              (item) => item.id === suggestionsOrderPriority.id
-                          )
-                        : this.modules.find(
-                              (item) => item.id === suggestionsOrderPriority.id
-                          )
-            );
-            const suggestionsOrderPriorityIds = suggestionsOrderPriorities.map(
-                (item) => item.id
-            );
-            this.policiesAndModules = this.policies
-                .filter((item) => !suggestionsOrderPriorityIds.includes(item.id))
-                .concat(
-                    this.modules.filter(
+        ]).subscribe(
+            (result) => {
+                this.loading = false;
+                this.policies = result[0].map((item) => ({
+                    id: item.id,
+                    name: item.version
+                        ? `${item.name} (${item.version})`
+                        : item.name,
+                    type: ConfigType.POLICY,
+                }));
+                this.modules = result[2].map((item) => ({
+                    id: item.id,
+                    name: item.version
+                        ? `${item.name} (${item.version})`
+                        : item.name,
+                    type: ConfigType.MODULE,
+                }));
+                const { items } = result[1];
+                const suggestionsOrderPriorities = sortObjectsArray(
+                    items || [],
+                    'index'
+                );
+                this.suggestionsOrderPriority = suggestionsOrderPriorities.map(
+                    (suggestionsOrderPriority) =>
+                        suggestionsOrderPriority.type === ConfigType.POLICY
+                            ? this.policies.find(
+                                  (item) =>
+                                      item.id === suggestionsOrderPriority.id
+                              )
+                            : this.modules.find(
+                                  (item) =>
+                                      item.id === suggestionsOrderPriority.id
+                              )
+                );
+                const suggestionsOrderPriorityIds =
+                    suggestionsOrderPriorities.map((item) => item.id);
+                this.policiesAndModules = this.policies
+                    .filter(
                         (item) => !suggestionsOrderPriorityIds.includes(item.id)
                     )
-                );
-        });
+                    .concat(
+                        this.modules.filter(
+                            (item) =>
+                                !suggestionsOrderPriorityIds.includes(item.id)
+                        )
+                    );
+            },
+            () => (this.loading = false)
+        );
+    }
+
+    loadProfile() {
+        this.loading = true;
+        forkJoin([this.profileService.getProfile()]).subscribe(
+            (value) => {
+                this.loading = false;
+                const profile: IUser | null = value[0];
+                this.isConfirmed = !!(profile && profile.confirmed);
+                if (this.isConfirmed) {
+                    this.loadPoliciesAndModules();
+                }
+            },
+            (error) => {
+                this.loading = false;
+                console.error(error);
+            }
+        );
     }
 
     drop(event: CdkDragDrop<SuggestionsOrderPriorityItem[]>) {
@@ -110,11 +143,9 @@ export class SuggestionsConfigurationComponent {
                     index,
                 }))
             )
-            .subscribe(
-                () => {},
-                () => {},
-                () => (this.loading = false)
-            );
+            .subscribe({
+                complete: () => (this.loading = false),
+            });
     }
 
     clear() {

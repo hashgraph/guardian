@@ -1,4 +1,4 @@
-<div *ngIf="!loading" class="content">
+<div *ngIf="!loading && isConfirmed" class="content">
     <div class="info-container">
         <div class="info-item-container">
             <div class="info-item-box" type="Policy"></div>
@@ -43,6 +43,9 @@
             </div>
         </div>
     </div>
+</div>
+<div *ngIf="!isConfirmed" class="not-exist">
+    Before starting work you need to get DID <a [routerLink]="['/profile']">here</a>
 </div>
 <div *ngIf="loading" class="loading">
     <mat-spinner></mat-spinner>

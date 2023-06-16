@@ -9,25 +9,27 @@ import { SuggestionsOrderPriority } from '@guardian/interfaces';
 @Injectable()
 export class SuggestionsService {
     private readonly url: string = `${API_BASE_URL}/suggestions`;
-    constructor(
-        private http: HttpClient
-    ) { }
+    constructor(private http: HttpClient) {}
 
     public suggestions(
         data: any
-    ): Observable<{ next: string, nested: string }> {
+    ): Observable<{ next: string; nested: string }> {
         return this.http.post<any>(`${this.url}/`, data);
     }
 
-    public setSuggestionsConfig(
-        items: SuggestionsOrderPriority[]
-    ): Observable<SuggestionsOrderPriority[]> {
-        return this.http.post<any>(`${this.url}/config`, items);
+    public setSuggestionsConfig(items: SuggestionsOrderPriority[]): Observable<{
+        items?: SuggestionsOrderPriority[];
+    }> {
+        return this.http.post<any>(`${this.url}/config`, {
+            items,
+        });
     }
 
-    public getSuggestionsConfig(): Observable<SuggestionsOrderPriority[]> {
-        return this.http.get<SuggestionsOrderPriority[]>(
-            `${this.url}/config`
-        );
+    public getSuggestionsConfig(): Observable<{
+        items: SuggestionsOrderPriority[];
+    }> {
+        return this.http.get<{
+            items: SuggestionsOrderPriority[];
+        }>(`${this.url}/config`);
     }
 }
