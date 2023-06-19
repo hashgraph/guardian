@@ -253,4 +253,30 @@ export class MeecoApi {
 
     return submissions;
   }
+
+  async verifyVP(id_token: string, request_uri: string, vp_token: string): Promise<boolean> {
+    const access_token = await this.getTokenOauth2();
+
+    const request = {
+      presentation_request_response: {
+        id_token,
+        request_uri,
+        vp_token,
+      }
+    }
+
+    const url = `${this.config.baseUrl}/oidc/presentations/response/verify`;
+    var headers = {
+      headers: {
+        'Authorization': access_token,
+        'Meeco-Organisation-Id': this.config.meecoOrganizationId,
+        'Content-Type': 'application/json'
+      },
+    };
+    const data = JSON.stringify(request)
+
+    const result = await axios.post(url, data, headers);
+
+    return true ? result.status === 204 : false;
+  }
 }
