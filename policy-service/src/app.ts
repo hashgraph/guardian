@@ -23,7 +23,10 @@ Promise.all([
 
     state.updateState(ApplicationStates.INITIALIZING);
 
-    await new PolicyContainer().setConnection(cn).init();
+    // await new PolicyContainer().setConnection(cn).init();
+
+    const c = new PolicyContainer();
+    await c.setConnection(cn).init();
 
     const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
     if (Number.isInteger(maxPayload)) {

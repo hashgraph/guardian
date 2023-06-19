@@ -742,6 +742,63 @@ export class DIDDocument {
     }
 
     /**
+     * Pars DID
+     * @param did
+     */
+    public static parse(did: string): {
+        /**
+         * Get private key
+         */
+        prefix: string,
+        /**
+         * Get private key
+         */
+        method: string,
+        /**
+         * Get private key
+         */
+        network: string,
+        /**
+         * Get private key
+         */
+        key: string,
+        /**
+         * Get private key
+         */
+        topicId: string
+    } {
+        if (!did) {
+            throw new Error('DID string cannot be null');
+        }
+        const mainParts = did.split(DIDDocument.DID_TOPIC_SEPARATOR);
+        if (mainParts.length !== 2) {
+            throw new Error('DID string is invalid: invalid did format.');
+        }
+        const didParts = mainParts[0].split(DIDDocument.DID_METHOD_SEPARATOR);
+        if (didParts.length !== 4) {
+            throw new Error('DID string is invalid: invalid did format.');
+        }
+        const prefix = didParts[0];
+        const method = didParts[1];
+        const network = didParts[2];
+        const key = didParts[3];
+        const topicId = mainParts[1];
+        if (prefix !== DIDDocument.DID_PREFIX) {
+            throw new Error('DID string is invalid: invalid prefix.');
+        }
+        if (method !== DIDDocument.HEDERA_HCS) {
+            throw new Error('DID string is invalid: invalid method name: ' + method);
+        }
+        return {
+            prefix,
+            method,
+            network,
+            key,
+            topicId
+        }
+    }
+
+    /**
      * From
      * @param did
      * @param didRootKey

@@ -175,4 +175,26 @@ export class TopicMessage extends Message {
     public getUrls(): IURL[] {
         return [];
     }
+
+    /**
+     * To JSON
+     */
+    public override toJson(): any {
+        const result = super.toJson();
+        result.name = this.name;
+        result.description = this.description;
+        result.owner = this.owner;
+        result.messageType = this.messageType;
+        result.childId = this.childId;
+        result.parentId = this.parentId;
+        result.rationale = this.rationale;
+        return result;
+    }
+
+    /**
+     * Get User DID
+     */
+    public override getOwner(): string {
+        return this.owner;
+    }
 }

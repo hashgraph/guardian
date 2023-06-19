@@ -15,6 +15,8 @@ export class HederaExplorer {
 
     @Input('type') type!: string;
     @Input('params') params!: string | null;
+    @Input('subType') subType!: string;
+    @Input('subParams') subParams!: string | null;
 
     constructor(private settingsService: SettingsService) {
         this.url = '';
@@ -24,10 +26,17 @@ export class HederaExplorer {
         const networkMap: any = environment.explorerSettings.networkMap;
         const typeMap: any = environment.explorerSettings.typeMap;
         this.settingsService.getHederaNet().subscribe((res: string) => {
+            const network = networkMap[res] ? ('/' + networkMap[res]) : '';
+            const type = typeMap[this.type] ? ('/' + typeMap[this.type]) : '';
+            const params = this.params ? ('/' + this.params) : '';
+            const subType = typeMap[this.subType] ? ('/' + typeMap[this.subType]) : '';
+            const subParams = this.subParams ? ('/' + this.subParams) : '';
             this.url = environment.explorerSettings.url
-                .replace('${network}', networkMap[res] || '')
-                .replace('${type}', typeMap[this.type] || '')
-                .replace('${value}', this.params || '');
+                .replace('/${network}', network)
+                .replace('/${type}', type)
+                .replace('/${value}', params)
+                .replace('/${subType}', subType)
+                .replace('/${subValue}', subParams);
         });
     }
 }

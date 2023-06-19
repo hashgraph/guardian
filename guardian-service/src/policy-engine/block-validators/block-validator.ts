@@ -45,6 +45,7 @@ import { ModuleValidator } from './module-validator';
 import { ModuleBlock } from './blocks/module';
 import { TagsManagerBlock } from './blocks/tag-manager';
 import { ExternalTopicBlock } from './blocks/external-topic-block';
+import { MessagesReportBlock } from './blocks/messages-report-block';
 
 export const validators = [
     InterfaceDocumentActionBlock,
@@ -88,7 +89,8 @@ export const validators = [
     TokenConfirmationBlock,
     ModuleBlock,
     TagsManagerBlock,
-    ExternalTopicBlock
+    ExternalTopicBlock,
+    MessagesReportBlock
 ];
 
 /**

@@ -123,6 +123,8 @@ export class DIDMessage extends Message {
         message = Message._fromMessageObject(message, json);
         message._id = json.id;
         message._status = json.status;
+
+        message.did = json.did;
         message.relationships = json.relationships;
         const urls = [{
             cid: json.cid,
@@ -160,5 +162,30 @@ export class DIDMessage extends Message {
         const json: string = JSON.stringify(map);
         const hash: Uint8Array = Hashing.sha256.digest(json);
         return Hashing.base58.encode(hash);
+    }
+
+    /**
+     * Relationship message
+     */
+    public getRelationships(): string[] {
+        return this.relationships || [];
+    }
+
+    /**
+     * To JSON
+     */
+    public override toJson(): any {
+        const result = super.toJson();
+        result.did = this.did;
+        result.relationships = this.relationships;
+        result.document = this.document;
+        return result;
+    }
+
+    /**
+     * Get User DID
+     */
+    public override getOwner(): string {
+        return this.did;
     }
 }
