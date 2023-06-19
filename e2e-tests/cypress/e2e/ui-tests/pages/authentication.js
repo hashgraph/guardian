@@ -1,6 +1,4 @@
 import URL from "../../../support/GuardianUrls";
-import API from "../../../support/ApiUrls";
-import {METHOD} from "../../../support/api/api-const";
 
 const AuthPageLocators = {
     usernameInput: '[formcontrolname="login"]',
