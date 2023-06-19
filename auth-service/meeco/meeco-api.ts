@@ -2,6 +2,7 @@ import axios from 'axios';
 import querystring from 'querystring';
 import { IMe } from './models/me';
 import { IDEK, IKEK, IKeypair, IPassphraseArtefact } from './models/keys';
+import { IPresentationRequest } from './models/presentation_request';
 
 export interface IMeecoOauthConfig {
   url: string;
@@ -156,5 +157,43 @@ export class MeecoApi {
     const { data: passphrase_derivation_artefact } = result.data;
 
     return passphrase_derivation_artefact;
+  }
+
+  /**
+   * Create a new Verifiable Pesentation Request that expires in a short time
+   * @returns {IPresentationRequest} presentation request
+   */
+  async createPresentationRequest(requestName: string, client_did: string, clientName: string, presentation_definition_id: string): Promise<IPresentationRequest> {
+    const access_token = await this.getTokenOauth2();
+
+    const expires_at = new Date();
+    expires_at.setDate(expires_at.getMinutes() + 5);
+
+    const request = {
+      presentation_request: {
+        name: requestName,
+        client_id: client_did,
+        client_name: clientName,
+        expires_at:  expires_at.toISOString(),
+        redirect_base_uri: `${this.config.baseUrl}`,
+        presentation_definition_id: presentation_definition_id,
+        method: "qrcode"
+      }
+    }
+
+    const url = `${this.config.baseUrl}/oidc/presentations/requests`;
+    var headers = {
+      headers: {
+        'Authorization': access_token,
+        'Meeco-Organisation-Id': this.config.meecoOrganizationId,
+        'Content-Type': 'application/json'
+      },
+    };
+    const data = JSON.stringify(request)
+
+    const result = await axios.post(url, data, headers);
+    const { data: presentationRequest } = result;
+
+    return presentationRequest;
   }
 }
