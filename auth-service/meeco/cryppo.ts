@@ -12,6 +12,11 @@ export interface IMasterEncryptionKey {
   verificationArtifacts: string,
 }
 
+export interface IKey {
+  key: EncryptionKey,
+  serializedKey: string,
+}
+
 export class Cryppo {
   private passphrase: string;
 
@@ -58,6 +63,21 @@ export class Cryppo {
       key: key2,
       derivationArtifacts: key2.options.serialize(),
       verificationArtifacts: verificationArtifacts,
+    };
+  }
+
+  /**
+   * Decrypt a key with the MEK.
+   * @param key encryption key
+   * @param data encrypted key
+   * @returns {IKey} decrypted key and serialized key
+   */
+  async decryptKey(key: EncryptionKey, data: string): Promise<IKey> {
+    const bytes = await this.decryptBinary(key, data);
+
+    return {
+      key: EncryptionKey.fromBytes(<Uint8Array>bytes),
+      serializedKey: data,
     };
   }
 
