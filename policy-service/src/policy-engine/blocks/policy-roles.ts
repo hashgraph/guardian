@@ -342,9 +342,6 @@ export class PolicyRolesBlock {
             .setTopicObject(rootTopic)
             .sendMessage(vcMessage);
 
-        console.log('RoleMessage: ', vcMessage.toMessageObject());
-        console.log('group: ', group);
-
         const vcDocument = PolicyUtils.createVC(ref, user, mintVC);
         vcDocument.type = DataTypes.USER_ROLE;
         vcDocument.schema = `#${mintVC.getSubjectType()}`;

@@ -132,7 +132,7 @@ export class MessagesReportBlock {
                     throw Error('The report is already being calculated');
                 }
                 const old = await ref.getCache<string>(this.USER_FILTER_VALUE, user);
-                if (messageId === old) {
+                if (messageId === old && status !== 'FAILED') {
                     return true;
                 }
                 await ref.setShortCache<string>(this.USER_FILTER_VALUE, messageId, user);

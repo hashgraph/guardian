@@ -890,7 +890,7 @@ export class PolicyUtils {
             const did = userId;
             return (new PolicyUser(did, !!ref.dryRun));
         } else {
-            const [did, uuid] = userId.split(/:(.*)/s, 2);
+            const [uuid, did] = userId.split(/:(.*)/s, 2);
             return (new PolicyUser(did, !!ref.dryRun)).setGroup({ role: null, uuid });
         }
     }
