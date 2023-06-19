@@ -1486,7 +1486,7 @@ __metadata:
     mocha-junit-reporter: ^2.0.2
     moment: ^2.29.2
     mongodb: ^5.6.0
-    nats: ^2.6.1
+    nats: ^2.15.0
     node-vault: ^0.9.22
     reflect-metadata: ^0.1.13
     tslint: ^6.1.3
@@ -8962,12 +8962,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nats@npm:^2.6.1":
-  version: 2.14.0
-  resolution: "nats@npm:2.14.0"
+"nats@npm:^2.15.0":
+  version: 2.15.0
+  resolution: "nats@npm:2.15.0"
   dependencies:
     nkeys.js: 1.0.5
-  checksum: c350f52917c3f6397ea99d84f216cde6d50ee5b01f22eefe8e709253241ecec1e990a680834c7dbe73c7883793505db514eb788483d3e20c1dfd6c2788fdf7e5
+  checksum: 3dc79343f63ff1795571ee17f3f4e4d6fe8f0065dd72fec11744519157aa540b9321d9f0d675ff094564ad429d1cabf3514b142a97a7764c2b56de443536d08f
   languageName: node
   linkType: hard
 
