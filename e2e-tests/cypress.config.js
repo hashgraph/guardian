@@ -8,17 +8,6 @@ module.exports = defineConfig({
   video: false,
   watchForFileChanges: false,
   defaultCommandTimeout: 10000,
-  pageLoadTimeout : 18000,
-  reporter: "cypress-mochawesome-reporter",
-  reporterOptions: {
-    reportDir: "cypress/reports",
-    charts: true,
-    reportPageTitle: "My Test Suite",
-    embeddedScreenshots: true,
-    inlineAssets: true,
-    html:true,
-    json:false
-  },
 
   video: false,
   e2e: {
