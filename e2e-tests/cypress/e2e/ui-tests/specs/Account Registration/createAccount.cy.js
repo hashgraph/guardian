@@ -11,10 +11,10 @@ describe("Create User Accounts",  { tags: '@ui' }, () => {
    
     const admin =  "ADMIN"+ Math.floor(Math.random() * 999);
     const auditor =  "AUDITOR"+ Math.floor(Math.random() * 999);
-    const HederaIDSD = "0.0.3471154";
-    const HederaKeySD = "302e020100300506032b657004220420cc8114f501e8a7c88ed911496a0c56a23e5e79fd4e553168ccb3c060366b86b3";
-    const HederaIDUser = "0.0.14528652";
-    const HederaKeyUser = "302e020100300506032b6570042204205a733b700280201593458481031a63789954f693482003adcc0a63058e8a25e5";
+    const HederaIDSD = "0.0.3979374";
+    const HederaKeySD = "302e020100300506032b657004220420d13eb8a1b4135a971863f6dc6eccaa53d47e829740776e9d354aa7252dec6b7d";
+    const HederaIDUser = "0.0.3979436";
+    const HederaKeyUser = "302e020100300506032b657004220420f88a133b2ab50f885f0913a0c37daf05af216f557a32fdb8354370e81967733d";
   
     beforeEach(() => {
         cy.viewport(1920, 1080);
