@@ -3,12 +3,9 @@ const { verifyDownloadTasks } = require('cy-verify-downloads');
 
 
 module.exports = defineConfig({
-  
   video: false,
   watchForFileChanges: false,
   defaultCommandTimeout: 10000,
-
-  video: false,
   e2e: {
     
     // We've imported your old cypress plugins here.
@@ -16,18 +13,9 @@ module.exports = defineConfig({
     setupNodeEvents(on, config) {
       require('cypress-grep/src/plugin')(config);
       return config;
-    
     },
-    experimentalRunAllSpecs : true,
-    hideXHRInCommandLog: true,
-    speed: 4,
-
     
   },
-
-
-
-  
 })
 
 module.exports = defineConfig({
@@ -37,8 +25,3 @@ module.exports = defineConfig({
     },
   },
 });
-
-
-  
-
-
