@@ -221,6 +221,13 @@
     font-weight: 500;
 }
 
+.topic-text {
+    width: 140px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
 .message-info {
     padding: 10px 10px;
     position: relative;
