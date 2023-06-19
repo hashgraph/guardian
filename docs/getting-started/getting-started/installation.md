@@ -7,15 +7,21 @@
     ```
     git clone https://github.com/hashgraph/guardian.git
     ```
-2. Update the following files with your Hedera Testnet account info (see prerequisites) as indicated. Please check complete steps to generate Operation ID and Operator Key by looking at link : [how-to-create-operator-id-and-operator-key.md](how-to-create-operator-id-and-operator-key.md "mention"). There will be other steps in the Demo Usage Guide that will require the generation of Operator IDs and Operator Keys. It is important to mention that the Operator IDs and Operator Keys in the .env will be used to generate demo accounts.
+2. Update the following files with your Hedera Testnet account info (see prerequisites) as indicated. Please check complete steps to generate Operation ID and Operator Key by looking at link: [how-to-create-operator-id-and-operator-key.md](how-to-create-operator-id-and-operator-key.md "mention"). There will be other steps in the Demo Usage Guide that will require the generation of Operator IDs and Operator Keys. It is important to mention that the Operator IDs and Operator Keys in the ./guardian/configs/.env.\<GUARDIAN\_ENV>.guardian.system will be used to generate demo accounts.
 
 For example:
 
-in `/configs/.env..guardian.system`
+in ./guardian/.env you may choose name of the Guardian platform. Leave the field empty or unspecified if you update a production environment to keep previous data (for more details read at [Ecosystem Environments](../../guardian/readme/environments/ecosystem-environments.md))
 
 ```
- OPERATOR_ID=""
- OPERATOR_KEY=""
+GUARDIAN_ENV="develop"
+```
+
+in `./guardian/configs/.env.develop.guardian.system`
+
+```
+OPERATOR_ID="..."
+OPERATOR_KEY="..."
 ```
 
 {% hint style="info" %}
@@ -32,7 +38,7 @@ in `/configs/.env..guardian.system`
 
 For example: [https://github.com/yeasy/docker-ipfs](https://github.com/yeasy/docker-ipfs)
 
-3.1.2 For setup IPFS local node you need to set variables in `worker-service/.env` folder
+3.1.2 For setup IPFS local node you need to set variables in `./guardian/configs/.env.develop.guardian.system`&#x20;
 
 ```
 IPFS_NODE_ADDRESS="..." # Default IPFS_NODE_ADDRESS="http://localhost:5002"
@@ -49,7 +55,7 @@ Note:
 
 #### 3.2 Setting up IPFS Web3Storage node:
 
-3.2.1 For setup IPFS web3storage node you need to set variables in `/configs/.env..guardian.system`:
+3.2.1 For setup IPFS web3storage node you need to set variables in `./guardian/configs/.env.develop.guardian.system`:
 
 ```
 IPFS_STORAGE_API_KEY="..."
@@ -63,6 +69,12 @@ To generate Web3.Storage API KEY. Please follow the steps from [https://web3.sto
 ```
 docker-compose up -d --build
 ```
+
+{% hint style="info" %}
+**Note:**
+
+About docker-compose: from the end of June 2023 Compose V1 won’t be supported anymore and will be removed from all Docker Desktop versions. Make sure you use Docker Compose V2 (comes with Docker Desktop > 3.6.0) as at https://docs.docker.com/compose/install/
+{% endhint %}
 
 5\. Browse to [http://localhost:3000](http://localhost:3000) and complete the setup.
 
@@ -190,6 +202,31 @@ If you want to manually build every component with debug information, then build
 #### Build and start each component
 
 Install, configure and start all the prerequisites, then build and start each component.
+
+Configure .env file in each service
+
+in `guardian-service/.env:`
+
+```
+GUARDIAN_ENV="develop"
+```
+
+If need to configure OVERRIDE variables add it in .env file.
+
+```
+OVERRIDE="false" 
+```
+
+in `guardian-service/configs/.env.guardian.develop:`
+
+```
+OPERATOR_ID="..."
+OPERATOR_KEY="..."
+```
+
+{% hint style="info" %}
+**Note**: Once you start the service, please wait for the Initialization Process to be completed.
+{% endhint %}
 
 1. Clone the repo
 
@@ -319,10 +356,6 @@ To start the service (found on [http://localhost:4200](http://localhost:4200))
 ```
 npm start
 ```
-
-{% hint style="info" %}
-**Note**: Once you start the service, please wait for the Initialization Process to be completed.
-{% endhint %}
 
 ### How to Configure Hedera Local Node:
 

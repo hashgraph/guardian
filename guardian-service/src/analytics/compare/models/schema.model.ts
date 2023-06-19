@@ -104,7 +104,7 @@ export class SchemaModel {
             this.uuid = schema.uuid
             this.description = schema.description;
             this.topicId = schema.topicId;
-            this.version = schema.version;
+            this.version = schema.version || schema.sourceVersion;
             this.iri = schema.iri;
             if (schema.document) {
                 const document = (typeof schema.document === 'string') ?

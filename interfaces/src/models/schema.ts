@@ -63,6 +63,10 @@ export class Schema implements ISchema {
      */
     public version?: string;
     /**
+     * Source version
+     */
+    public sourceVersion?: string;
+    /**
      * Creator
      */
     public creator?: string;
@@ -143,6 +147,7 @@ export class Schema implements ISchema {
             this.system = schema.system || false;
             this.active = schema.active || false;
             this.version = schema.version || '';
+            this.sourceVersion = schema.sourceVersion || '';
             this.creator = schema.creator || '';
             this.owner = schema.owner || '';
             this.topicId = schema.topicId || '';
@@ -194,6 +199,7 @@ export class Schema implements ISchema {
             this.document = null;
             this.context = null;
             this.version = '';
+            this.sourceVersion = '';
             this.creator = '';
             this.owner = '';
             this.topicId = '';

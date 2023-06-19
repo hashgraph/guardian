@@ -5,6 +5,7 @@ export class SchemaVariables {
     public name?: string;
     public value?: string;
     public version?: string;
+    public sourceVersion?: string;
     public status?: string;
     public data?: Schema;
 
@@ -18,6 +19,7 @@ export class SchemaVariables {
         } else if (schema) {
             this.name = schema.name;
             this.version = schema.version;
+            this.sourceVersion = schema.sourceVersion;
             this.status = schema.status;
             this.value = schema.iri;
             this.data = schema;
