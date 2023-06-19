@@ -30,3 +30,18 @@ export interface IPresentationRequest {
     }
   }
 }
+
+export interface IPresentationSubmission {
+  id: string,
+  presentation_request_id: string,
+  vp_token: string,
+  id_token: string,
+  state: string,
+  status: string,
+  created_at: string,
+  updated_at: string,
+}
+
+export interface IPresentationSubmissions {
+  submissions: IPresentationSubmission[],
+}

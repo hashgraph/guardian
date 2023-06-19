@@ -2,7 +2,7 @@ import axios from 'axios';
 import querystring from 'querystring';
 import { IMe } from './models/me';
 import { IDEK, IKEK, IKeypair, IPassphraseArtefact } from './models/keys';
-import { IPresentationRequest } from './models/presentation_request';
+import { IPresentationRequest, IPresentationSubmissions } from './models/presentation_request';
 
 export interface IMeecoOauthConfig {
   url: string;
@@ -230,5 +230,27 @@ export class MeecoApi {
     const { data: presentationRequest } = result;
 
     return presentationRequest;
+  }
+
+  /**
+   * Get user's Submissions to the Verifiable Presentation Request
+   * @param request_id
+   */
+  async getVPSubmissions(requestId: string): Promise<IPresentationSubmissions> {
+    const access_token = await this.getTokenOauth2();
+
+    const url = `${this.config.baseUrl}/oidc/presentations/requests/${requestId}/submissions`;
+    var headers = {
+      headers: {
+        'Authorization': access_token,
+        'Meeco-Organisation-Id': this.config.meecoOrganizationId,
+        'Content-Type': 'application/json'
+      }
+    };
+
+    const result = await axios.get(url, headers);
+    const { data: submissions } = result;
+
+    return submissions;
   }
 }
