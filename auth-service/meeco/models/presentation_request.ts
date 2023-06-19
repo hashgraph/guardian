@@ -31,7 +31,7 @@ export interface IPresentationRequest {
   }
 }
 
-export interface IPresentationSubmission {
+export interface ISubmission {
   id: string,
   presentation_request_id: string,
   vp_token: string,
@@ -43,5 +43,9 @@ export interface IPresentationSubmission {
 }
 
 export interface IPresentationSubmissions {
-  submissions: IPresentationSubmission[],
+  submissions: ISubmission[],
+}
+
+export interface IPresentationSubmission {
+  submission: ISubmission,
 }
