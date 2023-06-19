@@ -2,7 +2,7 @@ import axios from 'axios';
 import querystring from 'querystring';
 import { IMe } from './models/me';
 import { IDEK, IKEK, IKeypair, IPassphraseArtefact } from './models/keys';
-import { IPresentationRequest, IPresentationSubmissions } from './models/presentation_request';
+import { IPresentationRequest, IPresentationSubmission, IPresentationSubmissions } from './models/presentation_request';
 
 export interface IMeecoOauthConfig {
   url: string;
@@ -186,7 +186,7 @@ export class MeecoApi {
     }
 
     const url = `${this.config.baseUrl}/oidc/presentations/requests`;
-    var headers = {
+    const headers = {
       headers: {
         'Authorization': access_token,
         'Meeco-Organisation-Id': this.config.meecoOrganizationId,
@@ -217,7 +217,7 @@ export class MeecoApi {
     }
 
     const url = `${this.config.baseUrl}/oidc/presentations/requests/${request_id}`;
-    var headers = {
+    const headers = {
       headers: {
         'Authorization': access_token,
         'Meeco-Organisation-Id': this.config.meecoOrganizationId,
@@ -240,7 +240,7 @@ export class MeecoApi {
     const access_token = await this.getTokenOauth2();
 
     const url = `${this.config.baseUrl}/oidc/presentations/requests/${requestId}/submissions`;
-    var headers = {
+    const headers = {
       headers: {
         'Authorization': access_token,
         'Meeco-Organisation-Id': this.config.meecoOrganizationId,
@@ -266,7 +266,7 @@ export class MeecoApi {
     }
 
     const url = `${this.config.baseUrl}/oidc/presentations/response/verify`;
-    var headers = {
+    const headers = {
       headers: {
         'Authorization': access_token,
         'Meeco-Organisation-Id': this.config.meecoOrganizationId,
@@ -278,5 +278,30 @@ export class MeecoApi {
     const result = await axios.post(url, data, headers);
 
     return true ? result.status === 204 : false;
+  }
+
+  async approveVPSubmission(requestId: string, submissionId: string, verified: boolean): Promise<IPresentationSubmission> {
+    const access_token = await this.getTokenOauth2();
+
+    const request = {
+      submission: {
+        status: verified ? 'verified' : 'rejected'
+      }
+    }
+
+    const url = `${this.config.baseUrl}/oidc/presentations/requests/${requestId}/submissions/${submissionId}`;
+    const headers = {
+      headers: {
+        'Authorization': access_token,
+        'Meeco-Organisation-Id': this.config.meecoOrganizationId,
+        'Content-Type': 'application/json'
+      },
+    };
+    const data = JSON.stringify(request)
+
+    const result = await axios.patch(url, data, headers);
+    const { data: presentationRequest } = result;
+
+    return presentationRequest;
   }
 }
