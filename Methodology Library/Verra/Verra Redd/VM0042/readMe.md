@@ -1,4 +1,4 @@
-## Verra VM0017 REDD+ Methodology
+## Verra VM0042 REDD+ Methodology
 
 **Policy Description**: 
 
