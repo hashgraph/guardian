@@ -13,6 +13,7 @@
     "@nestjs/common": "^9.4.1",
     "@nestjs/core": "^9.4.1",
     "@nestjs/microservices": "^9.4.1",
+    "axios": "^1.4.0",
     "dotenv": "^16.0.0",
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",
@@ -20,6 +21,7 @@
     "node-vault": "^0.9.22",
     "prom-client": "^14.1.1",
     "prometheus-api-metrics": "3.2.2",
+    "querystring": "^0.2.1",
     "reflect-metadata": "^0.1.13"
   },
   "description": "",
