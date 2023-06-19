@@ -769,6 +769,7 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     public onSaveModule() {
+        this.changeView('blocks');
         const item = this.policyModel.getModule(this.currentBlock);
         if (item) {
             const json = item.getJSON();
@@ -1236,6 +1237,7 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     public updateModule() {
+        this.changeView('blocks');
         const module = this.templateModel.getJSON();
         this.loading = true;
         this.modulesService.update(this.moduleId, module).subscribe((result) => {
