@@ -56,7 +56,7 @@
     border: 1px solid #d0d0d0;
     overflow-y: auto;
     display: grid;
-    grid-template-columns: min-content auto auto;
+    grid-template-columns: min-content auto min-content;
     z-index: 0;
 }
 

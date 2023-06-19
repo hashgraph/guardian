@@ -352,6 +352,11 @@
 
                         <div class="field-delimiter" data-label="Document"></div>
 
+                        <div *ngIf="selected.__user.did" class="field">
+                            <div class="field-name">DID:</div>
+                            <div class="field-value">{{selected.__user.did}}</div>
+                        </div>
+
                         <div class="field" *ngIf="selected.role">
                             <div class="field-name">Role:</div>
                             <div class="field-value">{{selected.role}}</div>
