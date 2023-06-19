@@ -3,6 +3,7 @@ const { verifyDownloadTasks } = require('cy-verify-downloads');
 
 
 module.exports = defineConfig({
+
   video: false,
   watchForFileChanges: false,
   defaultCommandTimeout: 10000,
