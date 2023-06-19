@@ -1,6 +1,7 @@
 import axios from 'axios';
 import querystring from 'querystring';
 import { IMe } from './models/me';
+import { IDEK, IKEK, IKeypair } from './models/keys';
 
 export interface IMeecoOauthConfig {
   url: string;
@@ -71,5 +72,47 @@ export class MeecoApi {
     const { data: me } = result;
 
     return me;
+  }
+
+  /**
+   * Get the Meeco user's key encryption key.
+   * @returns {IKEK} key encryption key
+   */
+  async getKeyEncryptionKey(): Promise<IKEK> {
+    const access_token = await this.getTokenOauth2();
+
+    const url = `${this.config.baseUrl}/key_encryption_key`;
+    const headers = {
+      headers: { 
+        'Authorization': access_token, 
+        'Meeco-Organisation-Id': this.config.meecoOrganizationId,
+      }
+    }
+
+    const result = await axios.get(url, headers);
+    const { data: kek } = result;
+
+    return kek;
+  }
+
+  /**
+   * Get the Meeco user's data encryption key.
+   * @returns {IDEK} Data Encryption Key
+   */
+  async getDataEncryptionKey(private_dek_external_id: string): Promise<IDEK> {
+    const access_token = await this.getTokenOauth2();
+
+    const url = `${this.config.baseUrl}/data_encryption_keys/${private_dek_external_id}`;
+    const headers = {
+      headers: {
+        'Authorization': access_token,
+        'Meeco-Organisation-Id': this.config.meecoOrganizationId,
+      }
+    }
+
+    const result = await axios.get(url, headers);
+    const { data: dek } = result;
+
+    return dek;
   }
 }
