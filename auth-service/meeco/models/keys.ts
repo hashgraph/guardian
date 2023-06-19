@@ -18,10 +18,18 @@ export interface IKeypair {
     public_key: string,
     encrypted_serialized_key: string,
     metadata: {
-        did: string,
-        public_key_encoding: string,
-        private_key_info: string,
+      did: string,
+      public_key_encoding: string,
+      private_key_info: string,
     },
     external_identifiers: string[],
+  }
+}
+
+export interface IPassphraseArtefact {
+  passphrase_derivation_artefact: {
+    id: string,
+    derivation_artefacts: string,
+    verification_artefacts: string,
   }
 }

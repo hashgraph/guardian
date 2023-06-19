@@ -136,4 +136,25 @@ export class MeecoApi {
 
     return keypair;
   }
+
+  /**
+   * Get the Meeco user's passphrase artefact.
+   * @returns {IPassphraseArtefact} passphrase artefact
+   */
+  async getPassphraseArtefact(): Promise<IPassphraseArtefact> {
+    const access_token = await this.getTokenOauth2();
+
+    const url = `${this.config.baseUrl}/passphrase_derivation_artefact`;
+    const headers = {
+      headers: {
+        'Authorization': access_token,
+        'Meeco-Organisation-Id': this.config.meecoOrganizationId,
+      }
+    }
+
+    const result = await axios.get(url, headers);    
+    const { data: passphrase_derivation_artefact } = result.data;
+
+    return passphrase_derivation_artefact;
+  }
 }
