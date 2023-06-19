@@ -1,7 +1,7 @@
 import axios from 'axios';
 import querystring from 'querystring';
 import { IMe } from './models/me';
-import { IDEK, IKEK, IKeypair } from './models/keys';
+import { IDEK, IKEK, IKeypair, IPassphraseArtefact } from './models/keys';
 
 export interface IMeecoOauthConfig {
   url: string;
@@ -114,5 +114,26 @@ export class MeecoApi {
     const { data: dek } = result;
 
     return dek;
+  }
+
+  /**
+   * Get the Meeco user's keypair.
+   * @returns {IKeypair} keypair
+   */
+  async getKeyPairs(externalId: string): Promise<IKeypair> {
+    const access_token = await this.getTokenOauth2();
+
+    const url = `${this.config.baseUrl}/keypairs/external_id/${externalId}`;
+    const headers = {
+      headers: {
+        'Authorization': access_token,
+        'Meeco-Organisation-Id': this.config.meecoOrganizationId,
+      }
+    }
+
+    const result = await axios.get(url, headers);
+    const { data: keypair } = result;
+
+    return keypair;
   }
 }
