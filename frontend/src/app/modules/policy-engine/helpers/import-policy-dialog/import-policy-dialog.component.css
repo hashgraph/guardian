@@ -27,6 +27,7 @@ form {
     flex-grow: 1;
     text-align: center;
     padding-left: 24px;
+    cursor: text;
 }
 
 .action-name {
@@ -128,6 +129,12 @@ form {
 .loading-progress {
     width: 80%;
     height: 80%;
+}
+
+.close-button {
+    position: absolute;
+    top: -12px;
+    right: -4px;
 }
 
 @media (max-width: 810px) {

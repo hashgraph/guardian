@@ -94,4 +94,8 @@ export class TokenDialog {
             this.dialogRef.close(data);
         }
     }
+
+    get shouldDisableActionButtons(): boolean {
+        return !(this.dataForm.valid && this.started);
+    }
 }

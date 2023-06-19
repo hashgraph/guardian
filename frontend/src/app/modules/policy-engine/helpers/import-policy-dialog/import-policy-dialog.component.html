@@ -2,7 +2,7 @@
     <ng-container *ngIf="isImportTypeSelected" [ngSwitch]="this.importType">
         <ng-template [ngSwitchCase]="0">
             <div class="login-header">
-                <mat-icon (click)="onNoClick()">close</mat-icon>
+                <mat-icon class="close-button" (click)="onNoClick()">close</mat-icon>
             </div>
             <app-file-drag-n-drop *ngIf="type==='policy'" fileExtension="policy" (onFileLoaded)="importFromFile($event)"
                 dropZoneLabel="Import Policy .policy file"></app-file-drag-n-drop>
