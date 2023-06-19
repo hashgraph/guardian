@@ -4,11 +4,25 @@ import { Logger } from '@guardian/common';
 import { prepareValidationResponse } from '@middlewares/validation';
 import { Controller, Get, HttpCode, HttpStatus, Post, Req, Response } from '@nestjs/common';
 import { checkPermission } from '@auth/authorization-helper';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, getSchemaPath } from '@nestjs/swagger';
+import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
 
 @Controller('settings')
 @ApiTags('settings')
 export class SettingsApi {
+    @ApiOperation({
+        summary: 'Set settings.',
+        description: 'Set settings. For users with the Standard Registry role only.',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @Post('/')
     @HttpCode(HttpStatus.CREATED)
     async updateSettings(@Req() req, @Response() res): Promise<any> {
@@ -29,6 +43,19 @@ export class SettingsApi {
         }
     }
 
+    @ApiOperation({
+        summary: 'Returns current settings.',
+        description: 'Returns current settings. For users with the Standard Registry role only.',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @Get('/')
     @HttpCode(HttpStatus.OK)
     async getSettings(@Req() req, @Response() res): Promise<any> {

@@ -4,7 +4,7 @@ import { Logger, RunFunctionAsync } from '@guardian/common';
 import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
 import { Controller, Get, HttpCode, HttpStatus, Req, Response } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 @Controller('demo')
 @ApiTags('demo')
@@ -13,6 +13,9 @@ export class DemoApi {
     /**
      * @deprecated 2023-03-01
      */
+    @ApiOperation({
+        deprecated: true
+    })
     @Get('/registeredUsers')
     @HttpCode(HttpStatus.OK)
     async registeredUsers(@Req() req, @Response() res): Promise<any> {
@@ -39,6 +42,9 @@ export class DemoApi {
     /**
      * @deprecated 2023-03-01
      */
+    @ApiOperation({
+        deprecated: true
+    })
     @Get('/randomKey')
     @HttpCode(HttpStatus.OK)
     async randomKey(@Req() req, @Response() res): Promise<any> {
@@ -67,11 +73,14 @@ export class DemoApi {
     /**
      * @deprecated 2023-03-01
      */
+    @ApiOperation({
+        deprecated: true
+    })
     @Get('/push/randomKey')
     @HttpCode(HttpStatus.CREATED)
     async pushRandomKey(@Req() req, @Response() res): Promise<any> {
         const taskManager = new TaskManager();
-        const { taskId, expectation } = taskManager.start('Create random key');
+        const {taskId, expectation} = taskManager.start('Create random key');
 
         const authHeader = req?.headers?.authorization;
         RunFunctionAsync<ServiceError>(async () => {

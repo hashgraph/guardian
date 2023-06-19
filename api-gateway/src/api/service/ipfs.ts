@@ -1,11 +1,16 @@
 import { Logger } from '@guardian/common';
 import { Guardians } from '@helpers/guardians';
 import { Controller, Get, HttpCode, HttpException, HttpStatus, Post, Req, Response } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiSecurity, ApiTags } from '@nestjs/swagger';
 
 @Controller('ipfs')
 @ApiTags('ipfs')
 export class IpfsApi {
+    @ApiOperation({
+        summary: 'Add file from ipfs.',
+        description: 'Add file from ipfs.',
+    })
+    @ApiSecurity('bearerAuth')
     @Post('/file')
     @HttpCode(HttpStatus.CREATED)
     async postFile(@Req() req, @Response() res): Promise<any> {
@@ -15,7 +20,7 @@ export class IpfsApi {
             }
 
             const guardians = new Guardians();
-            const { cid } = await guardians.addFileIpfs(req.body);
+            const {cid} = await guardians.addFileIpfs(req.body);
             if (!cid) {
                 throw new HttpException('File is not uploaded', HttpStatus.BAD_REQUEST)
                 // return next(createError(400, 'File is not uploaded'));
@@ -28,6 +33,11 @@ export class IpfsApi {
         }
     }
 
+    @ApiOperation({
+        summary: 'Get file from ipfs.',
+        description: 'Get file from ipfs.',
+    })
+    @ApiSecurity('bearerAuth')
     @Get('/file/:cid')
     @HttpCode(HttpStatus.OK)
     async getFile(@Req() req, @Response() res): Promise<any> {

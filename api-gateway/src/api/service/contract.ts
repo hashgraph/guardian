@@ -3,7 +3,8 @@ import { UserRole } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
 import { Controller, Delete, Get, HttpCode, HttpStatus, Post, Req, Response } from '@nestjs/common';
 import { checkPermission } from '@auth/authorization-helper';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, getSchemaPath } from '@nestjs/swagger';
+import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
 
 /**
  * Contracts api
@@ -17,6 +18,43 @@ export class ContractsApi {
      * @param req
      * @param res
      */
+    @ApiOperation({
+        summary: 'Returns all contracts.',
+        description: 'Returns all contracts.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object',
+            'properties': {
+                'id': {
+                    'type': 'string'
+                },
+                'contractId': {
+                    'type': 'string'
+                },
+                'description': {
+                    'type': 'string'
+                },
+                'owner': {
+                    'type': 'string'
+                },
+                'isOwnerCreator': {
+                    'type': 'string'
+                },
+                'status': {
+                    'type': 'string'
+                }
+            }
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @Get()
     @HttpCode(HttpStatus.OK)
     async getContracts(@Req() req, @Response() res): Promise<any> {
@@ -40,6 +78,28 @@ export class ContractsApi {
      * @param req
      * @param res
      */
+    @ApiOperation({
+        summary: 'Creates new contract.',
+        description: 'Creates new contract. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object',
+            'properties': {
+                'description': {
+                    'type': 'string'
+                }
+            }
+        }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @Post('/')
     @HttpCode(HttpStatus.OK)
     async setContracts(@Req() req, @Response() res): Promise<any> {
@@ -57,6 +117,30 @@ export class ContractsApi {
         }
     }
 
+    @ApiOperation({
+        summary: 'Import new contract.',
+        description: 'Creates new contract. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object',
+            'properties': {
+                'contractId': {
+                    'type': 'string'
+                },
+                'description': {
+                    'type': 'string'
+                }
+            }
+        }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @Post('/import')
     @HttpCode(HttpStatus.OK)
     async importContracts(@Req() req, @Response() res): Promise<any> {
@@ -78,6 +162,27 @@ export class ContractsApi {
         }
     }
 
+    @ApiOperation({
+        summary: 'Add new contract user.',
+        description: 'Add new contract user. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object',
+            'properties': {
+                'userId': {
+                    'type': 'string'
+                }
+            }
+        }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @Post('/:contractId/user')
     @HttpCode(HttpStatus.OK)
     async userContract(@Req() req, @Response() res): Promise<any> {
@@ -95,6 +200,22 @@ export class ContractsApi {
         }
     }
 
+    @ApiOperation({
+        summary: 'Update contract status.',
+        description: 'Update contract status. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            type: 'boolean'
+        }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @Post(':contractId/status')
     @HttpCode(HttpStatus.OK)
     async contractStatus(@Req() req, @Response() res): Promise<any> {
@@ -111,6 +232,36 @@ export class ContractsApi {
         }
     }
 
+    @ApiOperation({
+        summary: 'Creates new contract pair.',
+        description: 'Creates new contract pair. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object',
+            'properties': {
+                'baseTokenId': {
+                    'type': 'string'
+                },
+                'oppositeTokenId': {
+                    'type': 'string'
+                },
+                'baseTokenCount': {
+                    'type': 'integer'
+                },
+                'oppositeTokenCount': {
+                    'type': 'integer'
+                }
+            }
+        }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @Get('/pair')
     @HttpCode(HttpStatus.OK)
     async contractPair(@Req() req, @Response() res): Promise<any> {
@@ -131,6 +282,36 @@ export class ContractsApi {
         }
     }
 
+    @ApiOperation({
+        summary: 'Creates new contract pair.',
+        description: 'Creates new contract pair. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object',
+            'properties': {
+                'baseTokenId': {
+                    'type': 'string'
+                },
+                'oppositeTokenId': {
+                    'type': 'string'
+                },
+                'baseTokenCount': {
+                    'type': 'integer'
+                },
+                'oppositeTokenCount': {
+                    'type': 'integer'
+                }
+            }
+        }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @Post('/:contractId/pair')
     @HttpCode(HttpStatus.OK)
     async setPair(@Req() req, @Response() res): Promise<any> {
@@ -160,6 +341,22 @@ export class ContractsApi {
         }
     }
 
+    @ApiOperation({
+        summary: 'Returns all contract requests.',
+        description: 'Returns all contract requests.',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            type: 'integer'
+        }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @Get('/retire/request')
     @HttpCode(HttpStatus.OK)
     async retireRequest(@Req() req, @Response() res): Promise<any> {
@@ -180,6 +377,45 @@ export class ContractsApi {
         }
     }
 
+    @ApiOperation({
+        summary: 'Creates new contract retire request.',
+        description: 'Creates new contract retire request.',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object',
+            'properties': {
+                'id': {
+                    'type': 'string'
+                },
+                'contractId': {
+                    'type': 'string'
+                },
+                'baseTokenId': {
+                    'type': 'string'
+                },
+                'owner': {
+                    'type': 'string'
+                },
+                'oppositeTokenId': {
+                    'type': 'string'
+                },
+                'baseTokenCount': {
+                    'type': 'number'
+                },
+                'oppositeTokenCount': {
+                    'type': 'number'
+                }
+            }
+        }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @Post('/:contractId/retire/request')
     @HttpCode(HttpStatus.OK)
     async postRetireRequest(@Req() req, @Response() res): Promise<any> {
@@ -212,6 +448,22 @@ export class ContractsApi {
         }
     }
 
+    @ApiOperation({
+        summary: 'Cancel contract requests.',
+        description: 'Cancel contract requests.',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            type: 'boolean'
+        }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @Delete('/retire/request')
     @HttpCode(HttpStatus.OK)
     async deleteRetireRequest(@Req() req, @Response() res): Promise<any> {
@@ -230,13 +482,29 @@ export class ContractsApi {
         }
     }
 
+    @ApiOperation({
+        summary: 'Retire tokens.',
+        description: 'Retire tokens. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            type: 'boolean'
+        }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @Post('/retire')
     @HttpCode(HttpStatus.OK)
     async retire(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
-            const { requestId } = req.body;
+            const {requestId} = req.body;
             const guardians = new Guardians();
             return res.json(await guardians.retire(user.did, requestId));
         } catch (error) {

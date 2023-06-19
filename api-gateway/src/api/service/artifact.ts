@@ -4,7 +4,7 @@ import { Guardians } from '@helpers/guardians';
 import { PolicyEngine } from '@helpers/policy-engine';
 import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Req, Response } from '@nestjs/common';
 import { checkPermission } from '@auth/authorization-helper';
-import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, getSchemaPath } from '@nestjs/swagger';
+import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, getSchemaPath } from '@nestjs/swagger';
 import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
 import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator';
 import { ArtifactDTOItem } from '@middlewares/validation/schemas/atrifacts';
@@ -22,6 +22,7 @@ export class ArtifactApi {
         summary: 'Returns all artifacts.',
         description: 'Returns all artifacts.',
     })
+    @ApiSecurity('bearerAuth')
     @ApiExtraModels(ArtifactDTOItem, InternalServerErrorDTO)
     @ApiImplicitQuery({
         name: 'policyId',
@@ -82,6 +83,33 @@ export class ArtifactApi {
      * @param req
      * @param res
      */
+    @ApiOperation({
+        summary: 'Upload artifact.',
+        description: 'Upload artifact. For users with the Standard Registry role only.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiExtraModels(ArtifactDTOItem, InternalServerErrorDTO)
+    @ApiImplicitQuery({
+        name: 'policyId',
+        type: String,
+        description: 'Policy identifier',
+        required: false
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            type: 'array',
+            items: {
+                $ref: getSchemaPath(ArtifactDTOItem),
+            }
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @Post('/:policyId')
     @HttpCode(HttpStatus.CREATED)
     async uploadArtifacts(@Req() req, @Response() res): Promise<any> {
@@ -118,6 +146,32 @@ export class ArtifactApi {
         }
     }
 
+    @ApiOperation({
+        summary: 'Delete artifact.',
+        description: 'Delete artifact.',
+    })
+    @ApiExtraModels(ArtifactDTOItem, InternalServerErrorDTO)
+    @ApiImplicitQuery({
+        name: 'policyId',
+        type: String,
+        description: 'Policy identifier',
+        required: false
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            type: 'array',
+            items: {
+                $ref: getSchemaPath(ArtifactDTOItem),
+            }
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @Delete('/:artifactId')
     @HttpCode(HttpStatus.NO_CONTENT)
     async deleteArtifact(@Req() req, @Response() res): Promise<any> {

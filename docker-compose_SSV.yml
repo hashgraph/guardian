@@ -31,13 +31,6 @@ services:
       - ./runtime-data/ipfs/staging:/export:rw
       - ./runtime-data/ipfs/data:/data/ipfs:rw
 
-  api-docs:
-    build:
-      context: .
-      dockerfile: ./api-docs/Dockerfile
-    expose:
-      - 3001
-
   message-broker:
     image: nats:2.9.8
     expose:
@@ -94,7 +87,7 @@ services:
     environment:
       - GUARDIAN_ENV=${GUARDIAN_ENV}
       - SERVICE_CHANNEL=${AUTH_SERVICE_CHANNEL}
-      - DB_DATABASE=${AUTH_DB_DATABASE} 
+      - DB_DATABASE=${AUTH_DB_DATABASE}
 
   worker-service-1:
     env_file:
@@ -107,7 +100,7 @@ services:
       - auth-service
     environment:
       - GUARDIAN_ENV=${GUARDIAN_ENV}
-      - SERVICE_CHANNEL=${WORKER_1_SERVICE_CHANNEL}      
+      - SERVICE_CHANNEL=${WORKER_1_SERVICE_CHANNEL}
 
   worker-service-2:
     env_file:
@@ -120,7 +113,7 @@ services:
       - auth-service
     environment:
       - GUARDIAN_ENV=${GUARDIAN_ENV}
-      - SERVICE_CHANNEL=${WORKER_2_SERVICE_CHANNEL}          
+      - SERVICE_CHANNEL=${WORKER_2_SERVICE_CHANNEL}
 
   api-gateway:
     env_file:
@@ -139,7 +132,7 @@ services:
     environment:
       - GUARDIAN_ENV=${GUARDIAN_ENV}
       - SERVICE_CHANNEL=${API_SERVICE_CHANNEL}
-      
+
 
   policy-service:
     env_file:
@@ -179,7 +172,7 @@ services:
       - SERVICE_CHANNEL=${GUARDIAN_SERVICE_CHANNEL}
       - DB_DATABASE=${GUARDIAN_DB_DATABASE}
       - LOG_LEVEL=${GUARDIAN_LOG_LEVEL}
-      - MULTI_POLICY_SCHEDULER=${GUARDIAN_MULTI_POLICY_SCHEDULER}     
+      - MULTI_POLICY_SCHEDULER=${GUARDIAN_MULTI_POLICY_SCHEDULER}
 
   mrv-sender:
     build:
@@ -205,7 +198,6 @@ services:
       - guardian-service
       - auth-service
       - api-gateway
-      - api-docs
       - mrv-sender
       - mongo-express
 volumes:

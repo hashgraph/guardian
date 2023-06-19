@@ -2,18 +2,12 @@ import { NextFunction, Request, Response } from 'express';
 import { Users } from '@helpers/users';
 import { AuthenticatedRequest, IAuthUser, Logger } from '@guardian/common';
 import { CanActivate, ExecutionContext, HttpException, HttpStatus, Injectable, NestMiddleware } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 
 /**
  * Auth middleware
  */
 @Injectable()
 export class AuthGuard implements CanActivate {
-
-    constructor(
-        private jwtService: JwtService
-    ) {
-    }
 
     /**
      * Use
