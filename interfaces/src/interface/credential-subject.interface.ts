@@ -13,6 +13,22 @@ export interface ICredentialSubject {
      */
     type?: string;
     /**
+     * Geography
+     */
+    geography?: string;
+    /**
+     * Law
+     */
+    law?: string;
+    /**
+     * Tags
+     */
+    tags?: string;
+    /**
+     * ISIC
+     */
+    ISIC?: string;
+    /**
      * Subject context
      */
     '@context': string | string[];

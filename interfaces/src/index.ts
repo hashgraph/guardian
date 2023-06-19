@@ -41,6 +41,8 @@ export { FieldTypesDictionary } from './helpers/field-types-dictionary';
 export * from './interface/messages';
 export { StatusType, IStatus } from './interface/async.interface';
 export { IArtifact } from './interface/artifact.interface';
+export { IStandardRegistryResponse } from './interface/standard-registry-response.interface';
+export { IPolicy } from './interface/policy.interface';
 export { default as GeoJsonSchema } from './helpers/geojson-schema/geo-json';
 export { default as GeoJsonContext } from './helpers/geojson-schema/geo-json-context';
 export * from './interface/wizard-config.interface';

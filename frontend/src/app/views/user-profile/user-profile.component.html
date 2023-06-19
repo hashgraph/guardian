@@ -9,50 +9,52 @@
     </div>
 
     <ng-container *ngIf="isConfirmed; else elseTemplate">
-        <div *ngIf="profile" class="user-profile">
+        <div *ngIf="profile" class="profile">
             <mat-tab-group (selectedIndexChange)="onChange($event)" [selectedIndex]="selectedIndex">
-                <mat-tab label="ACCOUNT">
-                    <div class="profile-item">
-                        <div class="profile-item-name">HEDERA ID:</div>
-                        <div class="profile-item-value">
-                            <hedera-explorer type="accounts"
-                                [params]="profile.hederaAccountId || ''">{{profile.hederaAccountId}}
-                            </hedera-explorer>
+                <mat-tab label="Account">
+                    <div class="account">
+                        <div class="account-item">
+                            <div class="account-item-name">HEDERA ID</div>
+                            <div class="account-item-value">
+                                <hedera-explorer type="accounts"
+                                    [params]="profile.hederaAccountId || ''">{{profile.hederaAccountId}}
+                                </hedera-explorer>
+                            </div>
                         </div>
-                    </div>
-                    <div class="profile-item">
-                        <div class="profile-item-name"> BALANCE:</div>
-                        <div class="profile-item-value"> {{balance}}</div>
-                    </div>
-                    <div *ngIf="profile.topicId" class="profile-item">
-                        <div class="profile-item-name"> USER TOPIC:</div>
-                        <div class="profile-item-value">
-                            <hedera-explorer type="topics" [params]="profile.topicId">{{profile.topicId}}
-                            </hedera-explorer>
+                        <div class="account-item">
+                            <div class="account-item-name"> BALANCE</div>
+                            <div class="account-item-value"> {{balance}}</div>
                         </div>
-                    </div>
-                    <div class="profile-item">
-                        <div class="profile-item-name"> Standard Registry:</div>
-                        <div class="profile-item-value"> {{profile.parent}} </div>
-                    </div>
-                    <div class="profile-item">
-                        <div class="profile-item-name"> DID:</div>
-                        <div class="profile-item-value"> {{profile.did}} </div>
-                    </div>
-                    <div class="profile-item">
-                        <div class="profile-item-name"> DID Document:</div>
-                        <div class="profile-item-value">
-                            <a (click)="openDIDDocument(didDocument, 'DID')">View Document</a>
+                        <div *ngIf="profile.topicId" class="account-item">
+                            <div class="account-item-name"> USER TOPIC</div>
+                            <div class="account-item-value">
+                                <hedera-explorer type="topics" [params]="profile.topicId">{{profile.topicId}}
+                                </hedera-explorer>
+                            </div>
                         </div>
-                    </div>
-                    <div *ngIf="vcDocument" class="profile-item">
-                        <div class="profile-item-name"> VC Document:</div>
-                        <div class="profile-item-value">
-                            <a (click)="openVCDocument(vcDocument, 'VC')">View Document</a>
+                        <div class="account-item">
+                            <div class="account-item-name"> Standard Registry</div>
+                            <div class="account-item-value"> {{profile.parent}} </div>
+                        </div>
+                        <div class="account-item">
+                            <div class="account-item-name"> DID</div>
+                            <div class="account-item-value"> {{profile.did}} </div>
+                        </div>
+                        <div class="account-item">
+                            <div class="account-item-name"> DID Document</div>
+                            <div class="account-item-value">
+                                <a (click)="openDIDDocument(didDocument, 'DID')">View Document</a>
+                            </div>
+                        </div>
+                        <div *ngIf="vcDocument" class="account-item">
+                            <div class="account-item-name"> VC Document</div>
+                            <div class="account-item-value">
+                                <a (click)="openVCDocument(vcDocument, 'VC')">View Document</a>
+                            </div>
                         </div>
                     </div>
                 </mat-tab>
-                <mat-tab label="TOKENS">
+                <mat-tab label="Tokens">
                     <ng-container *ngIf="tokens; else elseTemplate">
                         <table mat-table [dataSource]="tokens" class="token-table">
                             <ng-container matColumnDef="name">
@@ -118,7 +120,7 @@
                         </table>
                     </ng-container>
                 </mat-tab>
-                <mat-tab label="RETIRE">
+                <mat-tab label="Retire">
                     <ng-container *ngIf="contractRequests; else elseTemplate">
                         <table mat-table [dataSource]="contractRequests" class="retire-table">
                             <ng-container matColumnDef="contractId">
@@ -184,48 +186,119 @@
         </div>
     </ng-container>
     <ng-template #elseTemplate>
-        <div *ngIf="isNewAccount && !isFailed" class="list">
-            <form [formGroup]="hederaForm" (ngSubmit)="onHederaSubmit()">
-                <div class="list-item"
-                    style="border-bottom: 1px solid #c8c8c8;padding-bottom: 32px;margin-bottom: 46px;">
-                    <mat-form-field appearance="outline" floatLabel="always">
-                        <mat-label>Standard Registry:</mat-label>
-                        <mat-select formControlName="standardRegistry" placeholder="Choose Standard Registry">
-                            <mat-option *ngFor="let user of standardRegistries" [value]="user.did">
-                                <span>{{user.username}}</span>
-                            </mat-option>
-                        </mat-select>
-                    </mat-form-field>
+        <mat-stepper *ngIf="isNewAccount && !isFailed" class="user-onboarding-wizard" [linear]="false" #stepper>
+            <mat-step label="Standard Registries">
+                <div class="user-onboarding-wizard__header">
+                    <h1 class="user-onboarding-wizard__title">Standard Registries</h1>
+
+                    <form
+                        *ngIf="hasRegistries"
+                        class="user-onboarding-wizard__filters"
+                        [formGroup]="filtersForm"
+                    >
+                        <div>
+                            <span>Filter by</span>
+                            
+                            <mat-form-field class="user-onboarding-wizard__control" appearance="outline">
+                                <input matInput placeholder="Policy name" formControlName="policyName">
+                            </mat-form-field>
+    
+                            <mat-form-field class="user-onboarding-wizard__control" appearance="outline">
+                                <input matInput placeholder="Username" formControlName="username">
+                            </mat-form-field>
+                        </div>
+
+                        <div class="user-onboarding-wizard__filter-btns">
+                            <button
+                                mat-raised-button
+                                color="primary"
+                                [disabled]="isFilterButtonDisabled"
+                                (click)="applyFilters()"
+                            >Apply</button>
+
+                            <button
+                                mat-stroked-button
+                                [disabled]="!filtersForm.dirty"
+                                (click)="clearFilters()"
+                            >Clear filters</button>
+                        </div>
+                    </form>
                 </div>
 
-                <div *ngIf="schema" class="list-item">
-                    <app-schema-form [formGroup]="vcForm" [schema]="schema" [private-fields]="hideVC"
-                        (change)="onChangeForm()" [showButtons]="false">
-                    </app-schema-form>
+                <div class="user-onboarding-wizard__content">
+                    <ng-container *ngIf="!noFilterResults; else noResults">
+                        <p *ngIf="!hasRegistries" class="no-results">
+                            Standard registries have not been created yet.
+                        </p>
+
+                        <ul class="standard-registry">
+                            <app-standard-registry-card
+                                *ngFor="let registry of standardRegistriesList; trackBy:trackByDid"
+                                [registry]="registry"
+                                (registrySelected)="selectStandardRegistry($event)"
+                                [isRegistrySelected]="isRegistrySelected(registry.did)"
+                            ></app-standard-registry-card>
+                        </ul>
+                    </ng-container>
+
+                    <ng-template #noResults>
+                        <p *ngIf="noFilterResults" class="no-results">No results found.</p>
+                    </ng-template>
                 </div>
 
-                <div class="list-item">
-                    <mat-form-field class="example-full-width" appearance="outline">
-                        <mat-label>OPERATOR ID:</mat-label>
-                        <input matInput placeholder="0.0.1548173" formControlName="id">
-                    </mat-form-field>
-
-                    <mat-form-field class="example-full-width" appearance="outline">
-                        <mat-label>OPERATOR KEY:</mat-label>
-                        <input matInput placeholder="302e020100300506.........7e74946abca993f543cf9509c8edc"
-                            formControlName="key">
-                    </mat-form-field>
+                <div class="user-onboarding-wizard__footer">
+                    <button
+                        mat-raised-button
+                        color="primary"
+                        matStepperNext
+                        [disabled]="!isStandardRegistrySelected"
+                    >Next</button>
                 </div>
+            </mat-step>
+            <mat-step label="Hedera Credentials">
+                <h1 class="user-onboarding-wizard__title centered-text">Hedera Credentials</h1>
 
-                <button *ngIf="innerWidth > 810" mat-raised-button type="button" color="primary" class="generate-btn"
-                    (click)="randomKey()">Generate</button>
-                <button *ngIf="innerWidth > 810" mat-raised-button type="submit" [disabled]="!hederaForm.valid">Submit</button>
+                <div class="user-onboarding-wizard__content">
+                    <div class="list">
+                        <form [formGroup]="hederaForm">
+                            <div *ngIf="schema" class="list-item">
+                                <app-schema-form [formGroup]="vcForm" [schema]="schema" [private-fields]="hideVC"
+                                    (change)="onChangeForm()" [showButtons]="false">
+                                </app-schema-form>
+                            </div>
+            
+                            <div class="list-item">
+                                <mat-form-field class="example-full-width" appearance="outline">
+                                    <mat-label>* OPERATOR ID:</mat-label>
+                                    <input matInput placeholder="0.0.1548173" formControlName="id">
+                                </mat-form-field>
+                            </div>
+            
+                            <div class="list-item">
+                                <mat-form-field class="example-full-width" appearance="outline">
+                                    <mat-label>* OPERATOR KEY:</mat-label>
+                                    <input matInput placeholder="302e020100300506.........7e74946abca993f543cf9509c8edc"
+                                        formControlName="key">
+                                </mat-form-field>
+                            </div>
+            
+                            <button mat-raised-button class="generate-btn" (click)="randomKey()">Generate</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="user-onboarding-wizard__footer">
+                    <button mat-stroked-button matStepperPrevious>Back</button>
+                    <button
+                        mat-raised-button
+                        color="primary"
+                        matStepperNext
+                        [disabled]="hederaForm.invalid"
+                        (click)="onHederaSubmit()"
+                    >Submit</button>
+                </div>
+            </mat-step>
+        </mat-stepper>
 
-                <button *ngIf="innerWidth <= 810" mat-raised-button type="button" class="generate-btn"
-                    (click)="randomKey()">Generate</button>
-                <button *ngIf="innerWidth <= 810" mat-raised-button type="submit" color="primary" [disabled]="!hederaForm.valid">Submit</button>
-            </form>
-        </div>
         <div *ngIf="!isNewAccount && !isFailed" class="clock-list">
             <div class="clock-loader"></div>
             <p>Creating DID ... </p>

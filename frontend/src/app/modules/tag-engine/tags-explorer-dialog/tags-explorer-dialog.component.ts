@@ -31,6 +31,7 @@ export class TagsExplorerDialog {
     public tab: number = 1;
     public tagsService: TagsService;
     public schemas: any[] = [];
+    public hasChanges: boolean = false;
 
     constructor(
         public dialogRef: MatDialogRef<TagsExplorerDialog>,
@@ -52,7 +53,7 @@ export class TagsExplorerDialog {
     }
 
     onNoClick(): void {
-        this.dialogRef.close(null);
+        this.dialogRef.close(this.hasChanges);
     }
 
     public onSelect(item: TagMapItem) {
@@ -95,10 +96,12 @@ export class TagsExplorerDialog {
             }
             setTimeout(() => {
                 this.loading = false;
+                this.hasChanges = true;
             }, 500);
         }, (e) => {
             console.error(e.error);
             this.loading = false;
+            this.hasChanges = false;
         });
     }
 
@@ -113,10 +116,12 @@ export class TagsExplorerDialog {
             }
             setTimeout(() => {
                 this.loading = false;
+                this.hasChanges = true;
             }, 500);
         }, (e) => {
             console.error(e.error);
             this.loading = false;
+            this.hasChanges = false;
         });
     }
 
