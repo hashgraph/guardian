@@ -69,3 +69,5 @@ before(() => {
         }
     });
 });
+
+require('cy-verify-downloads').addCustomCommand();

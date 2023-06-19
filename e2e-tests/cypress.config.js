@@ -1,4 +1,5 @@
 const { defineConfig } = require('cypress')
+const { verifyDownloadTasks } = require('cy-verify-downloads');
 
 
 module.exports = defineConfig({
@@ -20,7 +21,7 @@ module.exports = defineConfig({
       checkFile(partialName) {
         const fs = require('fs');
         const path = require('path');
-        
+
         const files = fs.readdirSync(config.env.downloadFolder);
         const matchingFiles = files.filter(file => file.includes(partialName));
         return matchingFiles.length > 0;
@@ -29,3 +30,16 @@ module.exports = defineConfig({
    },
   },
 })
+
+module.exports = defineConfig({
+  e2e: {
+    setupNodeEvents(on, config) {
+      on('task', verifyDownloadTasks);
+    },
+  },
+});
+
+
+
+
+
