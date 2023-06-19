@@ -1,5 +1,6 @@
 import axios from 'axios';
 import querystring from 'querystring';
+import { IMe } from './models/me';
 
 export interface IMeecoOauthConfig {
   url: string;
@@ -48,5 +49,27 @@ export class MeecoApi {
     const result = await axios.post(url, data, headers);
     const { token_type, access_token } = result.data;
     return `${token_type} ${access_token}`;
+  }
+
+
+  /**
+   * Get the Meeco user profile.
+   */
+  async getMe(): Promise<IMe> {
+    const access_token = await this.getTokenOauth2();
+
+    const url = `${this.config.baseUrl}/me`;
+    const headers = {
+      headers: { 
+        'Authorization': access_token, 
+        'Meeco-Organisation-Id': this.config.meecoOrganizationId, 
+      }
+    }
+
+    const result = await axios.get(url, headers);
+    
+    const { data: me } = result;
+
+    return me;
   }
 }
