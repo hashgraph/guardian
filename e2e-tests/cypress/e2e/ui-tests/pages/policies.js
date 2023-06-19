@@ -39,6 +39,20 @@ const PoliciesPageLocators = {
     importFileBtn: '.g-dialog-actions-btn',
     okModalBtn: '#ok-btn',
     inputText: 'input[type="text"]',
+    taskReq: '/api/v1/tasks/**',
+    tagCreationModal: 'tags-create-dialog',
+    createTagButton: ' Create Tag ',
+    closeWindowButton: 'div.g-dialog-cancel-btn',
+    tagsListRequest: "/api/v1/tags/",
+    tagsDeleteRequest: "/api/v1/tags/*",
+    tagDeleteButton: "div.delete-tag",
+    tagNameInput: '[ng-reflect-name="name"]',
+    tagDescInput: '[ng-reflect-name="description"]',
+    createFinalBtn: "div.g-dialog-actions-btn",
+    usersIconButton: 'div[mattooltip="Users"]',
+    registrantLabel: 'Registrant ',
+    tokenBalance: 'td.mat-column-tokenBalance',
+    policyDeleteButton: "div.btn-icon-delete",
 };
 
 export class PoliciesPage {
@@ -259,6 +273,58 @@ export class PoliciesPage {
         cy.get(PoliciesPageLocators.policyBlock).contains(name).should("be.visible");
     }
 
+    addTag(tagName) {
+        cy.intercept(PoliciesPageLocators.tagsListRequest).as(
+            "waitForTags"
+        );
+        cy.contains(PoliciesPageLocators.createTagButton).click();
+        cy.get(PoliciesPageLocators.tagNameInput).type(tagName);
+        cy.get(PoliciesPageLocators.tagDescInput).type(tagName);
+        cy.get(PoliciesPageLocators.createFinalBtn).click();
+        cy.wait("@waitForTags", { timeout: 30000 })
+        cy.contains(tagName).should("exist");
+    }
+
+    deleteTag(tagName) {
+        cy.intercept(PoliciesPageLocators.tagsDeleteRequest).as(
+            "waitForTags"
+        );
+        cy.contains(tagName).click();
+        cy.get(PoliciesPageLocators.tagDeleteButton).click();
+        cy.wait("@waitForTags", { timeout: 30000 })
+        cy.get(PoliciesPageLocators.closeWindowButton).click();
+        cy.contains(tagName).should("not.exist");
+    }
+
+    checkTrustChain() {
+        let tokenId;
+        cy.readFile('cypress/fixtures/tokenId.txt').then(file => {
+            tokenId = file;
+        }).then(() => {
+            cy.contains("Go").first().click();
+            cy.contains("Token History").click({ force: true });
+            cy.contains("View TrustChain").last().click({ force: true });
+            cy.contains(tokenId.trim()).should("exist");
+            cy.contains("123").should("exist");
+        })
+    }
+
+    checkTokenHistory() {
+        let tokenId;
+        cy.readFile('cypress/fixtures/tokenId.txt').then(file => {
+            tokenId = file;
+        }).then(() => {
+            cy.contains(tokenId.trim()).parent().parent().parent().find(PoliciesPageLocators.usersIconButton).click();
+            cy.contains(PoliciesPageLocators.registrantLabel).parent().find(PoliciesPageLocators.tokenBalance).should('have.text', " 123 ");
+        })
+    }
+
+    deletePolicy(policyName) {
+        cy.contains(policyName).parent().find(PoliciesPageLocators.policyDeleteButton).click();
+        cy.contains("OK").click();
+        cy.contains(policyName).should("not.exist")
+    }
+
     clickOnAddedBlock(name) {
         cy.get(PoliciesPageLocators.blockItem).contains(name).click({ force: true });
     }
@@ -292,7 +358,7 @@ export class PoliciesPage {
         cy.get(PoliciesPageLocators.dialogContainer).contains(new RegExp("^" + text + "$", "g")).click({ force: true });
     }
 
-    clickOnDeleteTag() {   
+    clickOnDeleteTag() {
         cy.get(PoliciesPageLocators.deleteTagBtn).click({ force: true });
     }
 
