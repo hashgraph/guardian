@@ -161,6 +161,10 @@ export class MeecoApi {
 
   /**
    * Create a new Verifiable Pesentation Request that expires in a short time
+   * @param requestName
+   * @param client_did
+   * @param clientName
+   * @param presentation_definition_id
    * @returns {IPresentationRequest} presentation request
    */
   async createPresentationRequest(requestName: string, client_did: string, clientName: string, presentation_definition_id: string): Promise<IPresentationRequest> {
@@ -192,6 +196,37 @@ export class MeecoApi {
     const data = JSON.stringify(request)
 
     const result = await axios.post(url, data, headers);
+    const { data: presentationRequest } = result;
+
+    return presentationRequest;
+  }
+
+  /**
+   * Submit signature of token signed by private key to the VP Request 
+   * @param request_id 
+   * @param signed_request 
+   * @returns 
+   */
+  async submitPresentationRequestSignature(request_id: string, signed_request: string): Promise<IPresentationRequest> {
+    const access_token = await this.getTokenOauth2();
+    
+    const request = {
+      presentation_request: {
+        signed_request_jwt: signed_request
+      }
+    }
+
+    const url = `${this.config.baseUrl}/oidc/presentations/requests/${request_id}`;
+    var headers = {
+      headers: {
+        'Authorization': access_token,
+        'Meeco-Organisation-Id': this.config.meecoOrganizationId,
+        'Content-Type': 'application/json'
+      },
+    };
+    const data = JSON.stringify(request)
+
+    const result = await axios.patch(url, data, headers);
     const { data: presentationRequest } = result;
 
     return presentationRequest;
