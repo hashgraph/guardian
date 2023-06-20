@@ -6,11 +6,42 @@ import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
 import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, RawBodyRequest, Req, Response } from '@nestjs/common';
 import { checkPermission } from '@auth/authorization-helper';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, getSchemaPath } from '@nestjs/swagger';
+import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
+import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator';
 
 @Controller('policies')
 @ApiTags('policies')
 export class PolicyApi {
+    @ApiOperation({
+        summary: 'Return a list of all policies.',
+        description: 'Returns all policies. Only users with the Standard Registry and Installer role are allowed to make the request.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiImplicitQuery({
+        name: 'pageIndex',
+        type: Number,
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false
+    })
+    @ApiImplicitQuery({
+        name: 'pageSize',
+        type: Number,
+        description: 'The numbers of items to return',
+        required: false
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @Get('/')
     @HttpCode(HttpStatus.OK)
     async getPolicies(@Req() req, @Response() res): Promise<any> {
@@ -61,7 +92,7 @@ export class PolicyApi {
                     pageSize
                 });
             }
-            const { policies, count } = result;
+            const {policies, count} = result;
             return res.setHeader('X-Total-Count', count).json(policies);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
@@ -69,6 +100,23 @@ export class PolicyApi {
         }
     }
 
+    @ApiOperation({
+        summary: 'Creates a new policy.',
+        description: 'Creates a new policy. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @Post('/')
     @HttpCode(HttpStatus.CREATED)
     async createPolicy(@Req() req, @Response() res): Promise<any> {
@@ -83,12 +131,29 @@ export class PolicyApi {
         }
     }
 
+    @ApiOperation({
+        summary: 'Creates a new policy.',
+        description: 'Creates a new policy. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @Post('/push')
     @HttpCode(HttpStatus.ACCEPTED)
     async createPolicyAsync(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const taskManager = new TaskManager();
-        const { taskId, expectation } = taskManager.start('Create policy');
+        const {taskId, expectation} = taskManager.start('Create policy');
         const model = req.body;
         const user = req.user;
         RunFunctionAsync<ServiceError>(async () => {
@@ -96,17 +161,31 @@ export class PolicyApi {
             await engineService.createPolicyAsync(model, user, taskId);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: 500, message: error.message });
+            taskManager.addError(taskId, {code: 500, message: error.message});
         });
-        return res.status(202).send({ taskId, expectation });
+        return res.status(202).send({taskId, expectation});
     }
 
+    @ApiOperation({})
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @Post('/push/:policyId')
     @HttpCode(HttpStatus.ACCEPTED)
     async updatePolicyAsync(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const taskManager = new TaskManager();
-        const { taskId, expectation } = taskManager.start('Clone policy');
+        const {taskId, expectation} = taskManager.start('Clone policy');
         const policyId = req.params.policyId;
         const model = req.body;
         const user = req.user;
@@ -135,11 +214,28 @@ export class PolicyApi {
             await engineService.deletePolicyAsync(policyId, user, taskId);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: 500, message: error.message });
+            taskManager.addError(taskId, {code: 500, message: error.message});
         });
-        return res.status(202).send({ taskId, expectation });
+        return res.status(202).send({taskId, expectation});
     }
 
+    @ApiOperation({
+        summary: 'Retrieves policy configuration.',
+        description: 'Retrieves policy configuration for the specified policy ID. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @Get('/:policyId')
     @HttpCode(HttpStatus.OK)
     async getPolicy(@Req() req, @Response() res): Promise<any> {
@@ -158,12 +254,30 @@ export class PolicyApi {
         }
     }
 
+    @ApiOperation({
+        summary: 'Updates policy configuration.',
+        description: 'Updates policy configuration for the specified policy ID. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @Get('/:policyId')
     @Put('/:policyId')
     @HttpCode(HttpStatus.OK)
     async updatePolicy(@Req() req, @Response() res): Promise<any> {
         const engineService = new PolicyEngine();
         try {
-            const model = await engineService.getPolicy({ filters: req.params.policyId }) as any;
+            const model = await engineService.getPolicy({filters: req.params.policyId}) as any;
             const policy = req.body;
 
             model.config = policy.config;
