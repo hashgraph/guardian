@@ -3,6 +3,8 @@ import { IMeecoConfig, MeecoApi } from "./meeco-api";
 import { IPassphraseArtefact } from "./models/keys";
 import { IMe } from "./models/me";
 import { IPresentationRequest } from "./models/presentation_request";
+import base64url from 'base64url';
+const nacl = require('tweetnacl');
 
 /**
  * MeecoProvider is a wrapper around the Meeco API and Cryppo.
@@ -105,6 +107,25 @@ export class MeecoProvider {
    */
   async createPresentationRequest(requestName: string, clien_did: string, clientName: string, presentation_definition_id: string): Promise<IPresentationRequest> {
     const presentationRequest = await this.meecoApi.createPresentationRequest(requestName, clien_did, clientName, presentation_definition_id);
+    return presentationRequest;
+  }
+
+  /**
+   * signPresentationRequestToken signs the unsigned JWT from the Presentation Request and submits the signed JWT.
+   * @param request_id 
+   * @param unsigned_request_jwt 
+   * @returns {IPresentationRequest} Presentation Request with a signed JWT
+   */
+  async signPresentationRequestToken(request_id: string, unsigned_request_jwt: string): Promise<IPresentationRequest> {
+    const kp = await this.getKeyPair();
+    const keyPair = nacl.sign.keyPair.fromSeed(kp.key.bytes);
+
+    const signature = nacl.sign.detached(Buffer.from(unsigned_request_jwt), keyPair.secretKey)
+    const signatureBase64 = base64url.encode(signature);
+
+    const signed_request = `${unsigned_request_jwt}.${signatureBase64}`;
+
+    const presentationRequest = await this.meecoApi.submitPresentationRequestSignature(request_id, signed_request);
     return presentationRequest;
   }
 }
