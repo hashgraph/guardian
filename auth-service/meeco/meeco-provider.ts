@@ -2,7 +2,7 @@ import { Cryppo, IKey, IMasterEncryptionKey } from "./cryppo";
 import { IMeecoConfig, MeecoApi } from "./meeco-api";
 import { IPassphraseArtefact } from "./models/keys";
 import { IMe } from "./models/me";
-import { IPresentationRequest, IPresentationSubmissions } from "./models/presentation_request";
+import { IPresentationRequest, IPresentationSubmission, IPresentationSubmissions } from "./models/presentation_request";
 import base64url from 'base64url';
 const nacl = require('tweetnacl');
 
@@ -149,5 +149,17 @@ export class MeecoProvider {
   async verifyVP(id_token: string, request_uri: string, vp_token: string): Promise<boolean> {
     const verified = await this.meecoApi.verifyVP(id_token, request_uri, vp_token);
     return verified;
+  }
+
+  /**
+   * approveVPSubmission approves the Verifiable Presentation Submission.
+   * @param requestId 
+   * @param submissionId 
+   * @param verified 
+   * @returns {IPresentationSubmission} Verifiable Presentation Submission
+   */
+  async approveVPSubmission(requestId: string, submissionId: string, verified: boolean): Promise<IPresentationSubmission> {
+    const verifiedSubmission = await this.meecoApi.approveVPSubmission(requestId, submissionId, verified);
+    return verifiedSubmission;
   }
 }
