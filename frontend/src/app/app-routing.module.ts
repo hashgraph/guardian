@@ -1,7 +1,7 @@
 import { Injectable, NgModule } from '@angular/core';
 import { CanActivate, Router, RouterModule, Routes } from '@angular/router';
 import { IUser, UserRole } from '@guardian/interfaces';
-import { of } from 'rxjs';
+import { Observable, of, forkJoin } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { AuditComponent } from './views/audit/audit.component';
 import { HomeComponent } from './views/home/home.component';
@@ -29,6 +29,7 @@ import { PolicyViewerComponent } from './modules/policy-engine/policy-viewer/pol
 import { ArtifactConfigComponent } from './modules/artifact-engine/artifact-config/artifact-config.component';
 import { CompareComponent } from './modules/analytics/compare/compare.component';
 import { ModulesListComponent } from './modules/policy-engine/modules-list/modules-list.component';
+import { environment } from 'src/environments/environment';
 
 const USER_IS_NOT_RA = "Page is avaliable for admin only";
 
@@ -141,14 +142,56 @@ export class ServicesStatusGuard implements CanActivate {
     }
 
     canActivate() {
-        return true;
-        // return this.status.IsServicesReady();
+        return this.status.IsServicesReady();
+    }
+}
+
+@Injectable({
+    providedIn: 'root'
+})
+export class ProductionGuard implements CanActivate {
+    constructor(
+        private router: Router,
+        private auth: AuthService
+    ) {}
+
+    canActivate(): Observable<boolean> {
+        const isStandardRegistry = this.auth.sessions().pipe(
+            map((res: IUser | null) => res?.role === UserRole.STANDARD_REGISTRY),
+            catchError(() => of(false))
+        );
+
+        const isProduction = of(environment.production);
+
+        return forkJoin([isStandardRegistry, isProduction]).pipe(
+            map(([standardRegistry, production]) => {
+                if (standardRegistry && production) {
+                    // User role is Standard Registry and environment is production
+                    return true;
+                } else if (standardRegistry && !production) {
+                    // User role is Standard Registry and environment is not production
+                    return true;
+                } else if (!standardRegistry && production) {
+                    // User role is not Standard Registry and environment is production
+                    this.router.navigate(['/info'], {
+                        skipLocationChange: true,
+                        queryParams: {
+                            message: 'Access is restricted.'
+                        }
+                    });
+                    return false;
+                } else {
+                    // User role is not Standard Registry and environment is not production
+                    return true;
+                }
+            })
+        );
     }
 }
 
 const routes: Routes = [
     { path: 'login', component: LoginComponent },
-    { path: 'register', component: RegisterComponent },
+    { path: 'register', component: RegisterComponent, canActivate: [ProductionGuard] },
 
     { path: 'user-profile', component: UserProfileComponent, canActivate: [UserGuard, ServicesStatusGuard] },
 

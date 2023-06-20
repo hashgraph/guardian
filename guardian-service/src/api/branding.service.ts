@@ -24,7 +24,8 @@ export async function brandingAPI(
         const brandingJSON: Branding[] = await brandingRepository.findAll();
         let newBrandingJSON: Branding[];
         if (!brandingJSON.length) {
-            const initialBranding = JSON.stringify({'headerColor':'#000','primaryColor':'#2C78F6','companyName':'Guardian','companyLogoUrl':'','loginBannerUrl':'bg.jpg','faviconUrl':'favicon.ico'});
+            const initialHeaderColor = process.env.NODE_ENV === 'demo' ? '#555555' : '#000';
+            const initialBranding = JSON.stringify({'headerColor':`${initialHeaderColor}`,'primaryColor':'#2C78F6','companyName':'Guardian','companyLogoUrl':'','loginBannerUrl':'bg.jpg','faviconUrl':'favicon.ico'});
             await brandingRepository.save({config: initialBranding});
             newBrandingJSON = await brandingRepository.findAll();
         }

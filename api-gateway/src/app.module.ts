@@ -1,4 +1,5 @@
 import { MiddlewareConsumer, Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { AccountApi } from '@api/service/account';
 import { AnalyticsApi } from '@api/service/analytics';
 import { ArtifactApi } from '@api/service/artifact';
@@ -44,13 +45,15 @@ const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
                 ]
             }
         }]),
+        ConfigModule.forRoot(),
     ],
     controllers: [
         AccountApi,
         AnalyticsApi,
         ArtifactApi,
         ContractsApi,
-        DemoApi,
+        // Conditionally include DemoApi based on NODE_ENV
+        ...(process.env.NODE_ENV === 'demo' ? [DemoApi] : []),
         ExternalApi,
         IpfsApi,
         LoggerApi,

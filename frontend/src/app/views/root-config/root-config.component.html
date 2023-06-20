@@ -109,7 +109,7 @@
                     </div>
                 </div>
             </div>
-            <div *ngIf="!generated" class="list-button">
+            <div *ngIf="!generated && !production" class="list-button">
                 <button mat-raised-button type="button" id="generate-btn-mobile" (click)="randomKey()">Generate</button>
             </div>
             <div class="list-item" *ngIf="showForm && generated">

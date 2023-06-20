@@ -6,6 +6,7 @@ import { UserRole } from '@guardian/interfaces';
 import { AuthStateService } from 'src/app/services/auth-state.service';
 import { Subscription } from 'rxjs';
 import { noWhitespaceValidator } from 'src/app/validators/no-spaces.validator';
+import { environment } from 'src/environments/environment';
 
 /**
  * Login page.
@@ -19,6 +20,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     loading: boolean = false;
     errorMessage: string = "";
     passFieldType: 'password' | 'text' = 'password';
+    production: boolean = environment.production;
 
     loginForm = new FormGroup({
         login: new FormControl('', [Validators.required, noWhitespaceValidator()]),

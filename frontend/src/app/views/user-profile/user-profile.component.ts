@@ -20,6 +20,7 @@ import { ContractService } from '../../services/contract.service';
 import { VCViewerDialog } from '../../modules/schema-engine/vc-dialog/vc-dialog.component';
 import { RetireTokenDialogComponent } from 'src/app/components/retire-token-dialog/retire-token-dialog.component';
 import { noWhitespaceValidator } from 'src/app/validators/no-whitespace-validator';
+import { environment } from 'src/environments/environment';
 
 enum OperationMode {
     None, Generate, SetProfile, Associate
@@ -50,6 +51,7 @@ export class UserProfileComponent implements OnInit {
     selectedIndex: number = 0;
     tagEntity = TagType.Token;
     owner: any;
+    production: boolean = environment.production;
 
     public innerWidth: any;
     public innerHeight: any;

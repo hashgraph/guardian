@@ -4,6 +4,33 @@ const BASE_URL = 'http://localhost:3002'
 let tokens = [
 ];
 
+async function createAccount(username, password, role) {
+    let account = await axios.post(
+        GetURL('accounts', 'register'),
+        {
+            username,
+            password,
+            password_confirmation: password,
+            role
+        },
+        {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }
+    );
+    delete account.data.did;
+    delete account.data.iat;
+    delete account.data._id;
+    delete account.data.hederaAccountId;
+    delete account.data.id;
+    delete account.data.password;
+    delete account.data.walletToken;
+    delete account.data.createDate;
+    delete account.data.updateDate;
+    delete account.data.parent;
+}
+
 async function GenerateTokens() {
     tokens = [];
     let result;
@@ -95,5 +122,6 @@ module.exports = {
     SaveToken,
     GetToken,
     GenerateTokens,
-    GenerateUUIDv4
+    GenerateUUIDv4,
+    createAccount
 }

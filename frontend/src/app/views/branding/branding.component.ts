@@ -6,6 +6,7 @@ import { InformService } from 'src/app/services/inform.service';
 import { BrandingPayload, BrandingService } from 'src/app/services/branding.service';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { BrandingDialogComponent } from 'src/app/components/branding-dialog/branding-dialog.component';
+import { environment } from 'src/environments/environment';
 
 @Component({
     selector: 'app-branding',
@@ -18,6 +19,7 @@ export class BrandingComponent implements OnInit {
     loading: boolean = false;
     public isChangesMade: boolean = false;
     public innerWidth: any;
+    production: boolean = environment.production;
 
     initialHeaderColor: string = window.getComputedStyle(document.documentElement).getPropertyValue('--header-background-color');
     initialPrimaryColor: string = window.getComputedStyle(document.documentElement).getPropertyValue('--primary-color');
@@ -324,14 +326,26 @@ export class BrandingComponent implements OnInit {
         dialogRef.afterClosed().subscribe(result => {
             if (result === 'proceed') {
                 // create JSON payload with variables
-                const payload = {
-                    headerColor: '#000',
-                    primaryColor: '#2C78F6',
-                    companyName: 'Guardian',
-                    companyLogoUrl: '',
-                    loginBannerUrl: 'bg.jpg',
-                    faviconUrl: 'favicon.ico'
-                };
+                let payload;
+                if (this.production) {
+                    payload = {
+                        headerColor: '#000',
+                        primaryColor: '#2C78F6',
+                        companyName: 'Guardian',
+                        companyLogoUrl: '',
+                        loginBannerUrl: 'bg.jpg',
+                        faviconUrl: 'favicon.ico'
+                    };
+                } else {
+                    payload = {
+                        headerColor: '#555555',
+                        primaryColor: '#2C78F6',
+                        companyName: 'Guardian',
+                        companyLogoUrl: '',
+                        loginBannerUrl: 'bg.jpg',
+                        faviconUrl: 'favicon.ico'
+                    };
+                }
 
                 this.brandingService.saveBrandingData(payload);
                 this.loading = true;

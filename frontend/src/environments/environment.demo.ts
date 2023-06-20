@@ -1,5 +1,5 @@
 export const environment = {
-  production: true,
+  production: false,
   displayDemoAccounts: true,
   explorerSettings: {
     url: 'https://explore.lworks.io/${network}/${type}/${value}',

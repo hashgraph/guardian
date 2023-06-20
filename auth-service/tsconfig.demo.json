@@ -1,0 +1,41 @@
+{
+    "compileOnSave": true,
+    "compilerOptions": {
+      "skipLibCheck": true,
+      "baseUrl": "./src",
+      "declaration": true,
+      "emitDecoratorMetadata": true,
+      "esModuleInterop": true,
+      "experimentalDecorators": true,
+      "inlineSourceMap": false,
+      "lib": [
+        "dom",
+        "es5",
+        "es6"
+      ],
+      "module": "commonjs",
+      "moduleResolution": "node",
+      "outDir": "dist/",
+      "paths": {
+        "@api/*": [
+          "api/*"
+        ],
+        "@entity/*": [
+          "entity/*"
+        ],
+        "@helpers/*": [
+          "helpers/*"
+        ]
+      },
+      "target": "es6"
+    },
+    "exclude": [
+      "node_modules",
+      "public",
+      "dist"
+    ],
+    "include": [
+      "src/**/*"
+    ]
+  }
+  

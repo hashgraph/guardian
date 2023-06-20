@@ -11,6 +11,7 @@
     "@guardian/common": "^2.13.1",
     "@guardian/interfaces": "^2.13.1",
     "@nestjs/common": "^9.4.1",
+    "@nestjs/config": "^3.0.0",
     "@nestjs/core": "^9.4.1",
     "@nestjs/microservices": "^9.4.1",
     "@nestjs/platform-express": "^9.4.2",
@@ -55,7 +56,8 @@
   "name": "api-gateway",
   "scripts": {
     "build": "tsc",
-    "build:prod": "tsc --project tsconfig.production.json",
+    "build:prod": "NODE_ENV=production tsc --project tsconfig.production.json ",
+    "build:demo": "NODE_ENV=demo tsc --project tsconfig.production.json ",
     "debug": "nodemon dist/index.js",
     "dev:docker": "npm run build && nodemon .",
     "dev": "tsc -w",

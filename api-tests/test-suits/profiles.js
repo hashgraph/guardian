@@ -56,6 +56,7 @@ function Profiles() {
     it('/demo', async function () {
         this.timeout(240000);
 
+        /*
         let result;
         result = await axios.get(
             GetURL('demo', 'push', 'randomKey'),
@@ -66,6 +67,46 @@ function Profiles() {
                 }
             }
         );
+        */
+
+        if (!(process.env.DEMO && process.env.DEMO == 'true')) {
+            try {
+                let result;
+                result = await axios.get(
+                    GetURL('demo', 'push', 'randomKey'),
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
+                        }
+                    }
+                );
+    
+                // If the request succeeds, you can fail the test
+                assert.fail('Expected 404 error, but request succeeded');
+            } catch (error) {
+                // Check if the error status is 404
+                if (error.response && error.response.status === 404) {
+                    // The expected 404 error occurred, so the test passes
+                    return;
+                }
+    
+                // An unexpected error occurred, so fail the test with the error message
+                assert.fail(error.message);
+            }
+        } else {
+            // Skip the test if process.env.DEMO is true
+            let result;
+            result = await axios.get(
+                GetURL('demo', 'push', 'randomKey'),
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
+                    }
+                }
+            );
+        }
 
         // result = await axios.get(
         //     GetURL('demo', 'randomKey'),

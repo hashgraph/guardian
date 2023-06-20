@@ -282,7 +282,7 @@
                                 </mat-form-field>
                             </div>
             
-                            <button mat-raised-button class="generate-btn" (click)="randomKey()">Generate</button>
+                            <button *ngIf="!production" mat-raised-button class="generate-btn" (click)="randomKey()">Generate</button>
                         </form>
                     </div>
                 </div>

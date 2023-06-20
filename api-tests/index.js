@@ -1,11 +1,18 @@
 const dotenv = require('dotenv');
-dotenv.config();
+
+// Load the root .env file
+const rootEnvFile = '../.env';
+dotenv.config({ path: rootEnvFile });
+
+// Load the configs .env file
+const configsEnvFile = `../configs/.env.${process.env.GUARDIAN_ENV}.guardian.system`;
+dotenv.config({ path: configsEnvFile });
 
 const { spawn } = require('child_process');
 const kill = require('tree-kill');
 const path = require('path');
 
-const { sleep, GenerateTokens } = require("./helpers");
+const { sleep, GenerateTokens, createAccount } = require("./helpers");
 
 const { Accounts } = require("./test-suits/accounts");
 const { Profiles } = require("./test-suits/profiles");
@@ -37,6 +44,19 @@ describe('Tests', async function () {
             await sleep(15000);
         }
         await sleep(10000);
+
+        console.log(process.env.DEMO)
+        if (!(process.env.DEMO && process.env.DEMO == 'true')) {
+            console.log('nice começou')
+            // Create the required user accounts for testing
+            await createAccount('StandardRegistry', 'test', 'STANDARD_REGISTRY');
+            await createAccount('Installer', 'test', 'USER');
+            await createAccount('Installer2', 'test', 'USER');
+            await createAccount('Auditor', 'test', 'AUDITOR');
+            await createAccount('Registrant', 'test', 'USER');
+            await createAccount('VVB', 'test', 'USER');
+            await createAccount('ProjectProponent', 'test', 'USER');
+        }
     })
 
     beforeEach(GenerateTokens);

@@ -44,7 +44,10 @@ export class AccountApi {
      */
     @Post('/register')
     @HttpCode(HttpStatus.CREATED)
-    async register(@Body() body: RegisterUserDTO): Promise<any> {
+    async register(@Body() body: RegisterUserDTO, @Req() req: any): Promise<any> {
+        if (process.env.NODE_ENV !== 'demo'){
+            await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        }
         const users = new Users();
         try {
             const {username, password} = body;

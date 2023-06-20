@@ -44,7 +44,19 @@ Promise.all([
     await state.setServiceName('AUTH_SERVICE').setConnection(cn).init();
     state.updateState(ApplicationStates.INITIALIZING);
     try {
-        await fixtures();
+        // Include accounts for production builds only
+        if (process.env.NODE_ENV === 'production') {
+            import('./helpers/fixtures').then( async (module) => {
+                await module.fixtures();
+            });
+        }
+
+        // Include accounts for demo builds only
+        if (process.env.NODE_ENV === 'demo') {
+            import('./helpers/fixtures.demo').then( async (module) => {
+                await module.fixtures();
+            });
+        }
 
         console.log(app);
 

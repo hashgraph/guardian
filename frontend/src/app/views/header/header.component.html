@@ -4,6 +4,9 @@
             <div class="btn-home-name">
                 Guardian
             </div>
+            <div *ngIf="displayDemoAccounts" class="btn-home-name-demo">
+                Demo
+            </div>
         </span>
 
         <div *ngIf="innerWidth > 810" class="desktop-header">
@@ -125,7 +128,7 @@
 
 
         <!-- MOBILE -->
-        <div *ngIf="innerWidth <= 810" class="mobile-header">
+        <div *ngIf="innerWidth <= 810" class="mobile-header" [style.margin-top]="isLogin ? '0' : '15px'">
             <a *ngIf="isLogin" class="mobile-menu-button" (click)="openNav()">
                 <span class="bar"></span>
                 <span class="bar"></span>
@@ -142,6 +145,9 @@
                 }">
                 <div class="btn-home-name">
                     Guardian
+                </div>
+                <div *ngIf="displayDemoAccounts" class="btn-home-name-demo">
+                    Demo
                 </div>
             </span>
 
@@ -310,7 +316,7 @@
                     </div>
                 </ng-container>
                 <ng-template #notLogged>
-                    <div class="example-icon admin-panel">
+                    <div *ngIf="displayDemoAccounts" class="example-icon admin-panel">
                         <span>Demo Admin Panel</span>
                     </div>
                 </ng-template>
@@ -324,7 +330,7 @@
             <button *ngIf="isLogin && role === 'STANDARD_REGISTRY'" mat-menu-item (click)="doBranding()">Branding</button>
             <button *ngIf="isLogin" mat-menu-item (click)="logOut()">Log out</button>
 
-            <div *ngIf="!isLogin" mat-menu-item style="
+            <div *ngIf="!isLogin && displayDemoAccounts" mat-menu-item style="
                 background: white;
                 max-height: 345px;
                 height: auto;

@@ -34,7 +34,7 @@
             Log In
         </button>
 
-        <a [routerLink]="['/register']" class="create-link">Create new <mat-icon>chevron_right</mat-icon></a>
+        <a *ngIf="!production" [routerLink]="['/register']" class="create-link">Create new <mat-icon>chevron_right</mat-icon></a>
     </form>
 
     <div *ngIf="loading" class="loading">

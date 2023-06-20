@@ -2,6 +2,7 @@ const axios = require('axios');
 const assert = require('assert')
 const {GetURL, sleep, SaveToken, GetToken} = require('../helpers');
 
+
 function Accounts() {
     it('/accounts/login', async function() {
         let result;
@@ -77,6 +78,7 @@ function Accounts() {
         assert.deepEqual(
             result.data.map(v => {
                 delete v.did;
+                delete v.parent;
                 return v;
             }),
             [
@@ -122,6 +124,7 @@ function Accounts() {
         delete result.data.walletToken;
         delete result.data.createDate;
         delete result.data.updateDate;
+        delete result.data.parent;
         assert.deepEqual(result.data, {
             role: 'STANDARD_REGISTRY',
             username: 'StandardRegistry',
@@ -145,6 +148,7 @@ function Accounts() {
         delete result.data.walletToken;
         delete result.data.createDate;
         delete result.data.updateDate;
+        delete result.data.parent;
         assert.deepEqual(result.data, { username: 'Installer', role: 'USER' });
     });
 

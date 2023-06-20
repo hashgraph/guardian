@@ -332,6 +332,20 @@ a[hidden="true"] {
     display: none;
 }
 
+.btn-home-name {
+    float: left;
+}
+
+.btn-home-name-demo {
+    float: left;
+    font-size: 0.5em;
+    font-weight: 400;
+    color: #BABABA;
+    position: relative;
+    left: -13px;
+    top: -1.3em;
+}
+
 @media (max-width: 810px) {
 
     /*
@@ -355,8 +369,8 @@ a[hidden="true"] {
 
     .user-content-info {
         display: flex;
-        margin-left: 22px;
-        margin-right: 22px;
+        margin-left: 10px;
+        margin-right: 15px;
         flex: auto;
         gap: 22px;
     }
@@ -371,6 +385,7 @@ a[hidden="true"] {
         display: flex;
         align-items: center;
         justify-content: center;
+        padding: 0 4px;
     }
 
 

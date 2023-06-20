@@ -114,7 +114,7 @@ services:
       - ./configs/.env.${GUARDIAN_ENV}.guardian.system
     build:
       context: .
-      dockerfile: ./auth-service/Dockerfile
+      dockerfile: ./auth-service/Dockerfile${DEMO:+.demo}
     ports:
       - '5005:5005'
     depends_on:
@@ -133,7 +133,7 @@ services:
       - ./configs/.env.${GUARDIAN_ENV}.guardian.system
     build:
       context: .
-      dockerfile: ./api-gateway/Dockerfile
+      dockerfile: ./api-gateway/Dockerfile${DEMO:+.demo}
     expose:
       - 3002
       - 6555
@@ -171,7 +171,7 @@ services:
       - ./configs/.env.${GUARDIAN_ENV}.guardian.system
     build:
       context: .
-      dockerfile: ./guardian-service/Dockerfile
+      dockerfile: ./guardian-service/Dockerfile${DEMO:+.demo}
     ports:
       - "5007:5007"
     depends_on:
@@ -225,9 +225,11 @@ services:
       - "5009:5009"
 
   web-proxy:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
     build:
       context: .
-      dockerfile: ./web-proxy/Dockerfile
+      dockerfile: ./web-proxy/Dockerfile${DEMO:+.demo}
     ports:
       - "3000:80"
     depends_on:

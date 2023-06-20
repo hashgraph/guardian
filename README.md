@@ -65,15 +65,45 @@ If you build with docker [MongoDB V6](https://www.mongodb.com), [NodeJS V16](htt
 
    **Note**. You can use the Schema Topic ID (`INITIALIZATION_TOPIC_ID`) already present in the configuration files, or you can specify your own.
    
-3. Now, we have two options to setup IPFS node :  1. Local node 2. IPFS Web3Storage node.
+3. Having the environment defined, it is time to choose if you want to build Guardian in "demo" mode or "production" mode. By default Guardian will be deployed in "demo" mode, but you can change this by going into ./guardian/.env and **DELETING** the `DEMO` variable all together, so that you'll have:
+```
+## DEMO ENVIRONMENT
+# in case it is desired to build Guardian in "demo" mode, you will need to define DEMO=true
+# if "production" mode is intended, delete this variable altogether
 
-   **3.1 Setting up IPFS Local node:**
+```
+and re-deploy Guardian once again. If you wish to change back to "demo" mode, just define `DEMO=true` in ./guardian/.env, so that you have:
+```
+## DEMO ENVIRONMENT
+# in case it is desired to build Guardian in "demo" mode, you will need to define DEMO=true
+# if "production" mode is intended, delete this variable altogether
+DEMO=true
+```
 
-   - 3.1.1 We need to install and configure any IPFS node. 
+It is worth noting that deploying into "demo" mode allows the user to configure the multiple hosts and ports. The configurations must be defined in ./guardian/configs/.env.${GUARDIAN_ENV}.guardian.system. By default, the configurations used are:
+```
+# DEMO CONFIGS - WEB PROXY
+# --------------
+GATEWAY_HOST="api-gateway"
+GATEWAY_PORT="3002"
+GATEWAY_CLIENT_MAX_BODY_SIZE="1024m"
+MRV_SENDER_HOST="mrv-sender"
+MRV_SENDER_PORT="3005"
+TOPIC_VIEWER_HOST="topic-viewer"
+TOPIC_VIEWER_PORT="3006"
+API_DOCS_HOST="api-docs"
+API_DOCS_PORT="3001"
+```
+
+4. Now, we have two options to setup IPFS node :  1. Local node 2. IPFS Web3Storage node.
+
+   **4.1 Setting up IPFS Local node:**
+
+   - 4.1.1 We need to install and configure any IPFS node. 
 
    For example: https://github.com/yeasy/docker-ipfs
 
-   - 3.1.2 For setup IPFS local node you need to set variables in the same file ./guardian/configs/.env.develop.guardian.system
+   - 4.1.2 For setup IPFS local node you need to set variables in the same file ./guardian/configs/.env.develop.guardian.system
 
    ```
    IPFS_NODE_ADDRESS="..." # Default IPFS_NODE_ADDRESS="http://localhost:5002"
@@ -84,9 +114,9 @@ If you build with docker [MongoDB V6](https://www.mongodb.com), [NodeJS V16](htt
    1. Default IPFS_NODE_ADDRESS="http://localhost:5002"
    2. Default IPFS_PUBLIC_GATEWAY='https://localhost:8080/ipfs/${cid}' 
    
-   **3.2 Setting up IPFS Web3Storage node:**
+   **4.2 Setting up IPFS Web3Storage node:**
    
-   3.2.1 For setup IPFS web3storage node you need to set variables in the same file ./guardian/configs/.env.develop.guardian.system
+   4.2.1 For setup IPFS web3storage node you need to set variables in the same file ./guardian/configs/.env.develop.guardian.system
    
    ```
    IPFS_STORAGE_API_KEY="..."
@@ -95,7 +125,7 @@ If you build with docker [MongoDB V6](https://www.mongodb.com), [NodeJS V16](htt
  
    To generate Web3.Storage API KEY. Please follow the steps from <https://web3.storage/docs/#quickstart> to obtain it.To know complete information on    generating API Key please check [How to Create Web3.Storage API Key](https://docs.hedera.com/guardian/guardian/readme/getting-started/how-to-generate-web3.storage-api-key).
   
-4. Build and launch with Docker. Please note that this build is meant to be used in production and will not contain any debug information. From the project's root folder:
+5. Build and launch with Docker. Please note that this build is meant to be used in production and will not contain any debug information. From the project's root folder:
 
    ```shell
    docker compose up -d --build
@@ -103,7 +133,7 @@ If you build with docker [MongoDB V6](https://www.mongodb.com), [NodeJS V16](htt
 **Note**. about docker-compose: from the end of June 2023 Compose V1 won’t be supported anymore and will be removed from all Docker Desktop versions. Make sure you use Docker Compose V2 (comes with Docker Desktop > 3.6.0) as at https://docs.docker.com/compose/install/
 
 
-5. Browse to <http://localhost:3000> and complete the setup.
+6. Browse to <http://localhost:3000> and complete the setup.
 
 ## Manual installation
 

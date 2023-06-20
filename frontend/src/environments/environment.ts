@@ -3,8 +3,8 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false,
-  displayDemoAccounts: true,
+  production: true,
+  displayDemoAccounts: false,
   explorerSettings: {
     url: 'https://explore.lworks.io/${network}/${type}/${value}/${subType}/${subValue}',
     networkMap: {

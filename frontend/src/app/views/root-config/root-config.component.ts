@@ -11,6 +11,7 @@ import { VCViewerDialog } from '../../modules/schema-engine/vc-dialog/vc-dialog.
 import { HeaderPropsService } from '../../services/header-props.service';
 import { InformService } from '../../services/inform.service';
 import { TasksService } from '../../services/tasks.service';
+import { environment } from 'src/environments/environment';
 
 enum OperationMode {
     None,
@@ -35,6 +36,7 @@ enum StartActions {
 })
 export class RootConfigComponent implements OnInit {
     @ViewChild('actionMenu') actionMenu: any;
+    production: boolean = environment.production;
 
     get currentKeyAction() {
         return this.startActions[this.currentKeyActionIndex];
