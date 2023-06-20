@@ -89,6 +89,7 @@ export class MessageMemo extends MemoMap {
         messageMemo[`${MessageType.Topic}.${MessageAction.CreateTopic}.${TopicType.DynamicTopic}`] = '${name} operation topic creation message';
         messageMemo[`${MessageType.Token}.${MessageAction.UseToken}`] = 'Policy token issue message';
         messageMemo[`${MessageType.Token}.${MessageAction.CreateToken}`] = 'Token creation message';
+        messageMemo[`${MessageType.RoleDocument}.${MessageAction.CreateVC}`] = 'VC creation message';
         messageMemo[MessageAction.ChangeMessageStatus] = 'Status change message';
         messageMemo[MessageAction.RevokeDocument] = 'Revoke document message';
         messageMemo[MessageAction.DeleteDocument] = 'Delete document message';

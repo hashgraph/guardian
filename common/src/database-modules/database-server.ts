@@ -1,4 +1,5 @@
 import {
+    BlockCache,
     BlockState,
     VcDocument as VcDocumentCollection,
     VpDocument as VpDocumentCollection,
@@ -61,6 +62,7 @@ export class DatabaseServer {
     constructor(dryRun: string = null) {
         this.dryRun = dryRun || null;
 
+        this.classMap.set(BlockCache, 'BlockCache');
         this.classMap.set(BlockState, 'BlockState');
         this.classMap.set(VcDocumentCollection, 'VcDocumentCollection');
         this.classMap.set(VpDocumentCollection, 'VpDocumentCollection');
@@ -548,6 +550,69 @@ export class DatabaseServer {
         return await this.findOne(BlockState, {
             policyId,
             blockId: uuid
+        });
+    }
+
+    /**
+     * Save Block State
+     * @param {string} policyId - policy ID
+     * @param {string} blockId - block UUID
+     * @param {string} did - user DID
+     * @param {string} name - variable name
+     * @param {any} value - variable value
+     * @param {boolean} isLongValue - if long value
+     * @virtual
+     */
+    public async saveBlockCache(
+        policyId: string,
+        blockId: string,
+        did: string,
+        name: string,
+        value: any,
+        isLongValue: boolean
+    ): Promise<void> {
+        let stateEntity = await this.findOne(BlockCache, {
+            policyId,
+            blockId,
+            did,
+            name
+        });
+        if (stateEntity) {
+            stateEntity.value = value;
+            stateEntity.isLongValue = isLongValue;
+        } else {
+            stateEntity = this.create(BlockCache, {
+                policyId,
+                blockId,
+                did,
+                name,
+                value,
+                isLongValue
+            })
+        }
+        await this.save(BlockCache, stateEntity);
+    }
+
+    /**
+     * Get Block State
+     * @param {string} policyId - policy ID
+     * @param {string} blockId - block UUID
+     * @param {string} did - user DID
+     * @param {string} name - variable name
+     * @returns {any} - variable value
+     * @virtual
+     */
+    public async getBlockCache(
+        policyId: string,
+        blockId: string,
+        did: string,
+        name: string
+    ): Promise<any> {
+        return await this.findOne(BlockCache, {
+            policyId,
+            blockId,
+            did,
+            name
         });
     }
 

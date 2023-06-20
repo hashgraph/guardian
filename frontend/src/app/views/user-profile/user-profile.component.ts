@@ -200,10 +200,10 @@ export class UserProfileComponent implements OnInit {
                     this.loading = false;
                     this.headerProps.setLoading(false);
             }, 200)
-        }, (error) => {
-                this.loading = false;
-                this.headerProps.setLoading(false);
-                console.error(error);
+        }, ({ message }) => {
+            this.loading = false;
+            this.headerProps.setLoading(false);
+            console.error(message);
         });
     }
 
@@ -215,10 +215,10 @@ export class UserProfileComponent implements OnInit {
                     this.loading = false;
                     this.headerProps.setLoading(false);
             }, 200)
-        }, (error) => {
-                this.loading = false;
-                this.headerProps.setLoading(false);
-                console.error(error);
+        }, ({ message }) => {
+            this.loading = false;
+            this.headerProps.setLoading(false);
+            console.error(message);
         });
     }
 
@@ -255,22 +255,22 @@ export class UserProfileComponent implements OnInit {
                     this.schema = null;
                 }
 
-                if (this.selectedIndex === 0) {
-                    this.loadAccountData();
-                } else if (this.selectedIndex === 1) {
-                    this.loadTokenData();
-                } else if (this.selectedIndex === 2) {
-                    this.loadRetireData();
-                } else {
-                    setTimeout(() => {
-                        this.loading = false;
-                        this.headerProps.setLoading(false);
-                    }, 200);
-                }
-        }, (error) => {
-                this.loading = false;
-                this.headerProps.setLoading(false);
-                console.error(error);
+            if (this.selectedIndex === 0) {
+                this.loadAccountData();
+            } else if (this.selectedIndex === 1) {
+                this.loadTokenData();
+            } else if (this.selectedIndex === 2) {
+                this.loadRetireData();
+            } else {
+                setTimeout(() => {
+                    this.loading = false;
+                    this.headerProps.setLoading(false);
+                }, 200);
+            }
+        }, ({ message }) => {
+            this.loading = false;
+            this.headerProps.setLoading(false);
+            console.error(message);
         });
     }
 
@@ -295,14 +295,14 @@ export class UserProfileComponent implements OnInit {
         }
 
         this.profileService.pushSetProfile(profile).subscribe((result) => {
-                const { taskId, expectation } = result;
-                this.taskId = taskId;
-                this.expectedTaskMessages = expectation;
-                this.operationMode = OperationMode.SetProfile;
-        }, (error) => {
-                this.loading = false;
-                this.headerProps.setLoading(false);
-                console.error(error);
+            const { taskId, expectation } = result;
+            this.taskId = taskId;
+            this.expectedTaskMessages = expectation;
+            this.operationMode = OperationMode.SetProfile;
+        }, ({ message }) => {
+            this.loading = false;
+            this.headerProps.setLoading(false);
+            console.error(message);
         });
     }
 
@@ -414,8 +414,8 @@ export class UserProfileComponent implements OnInit {
         this.loading = true;
         this.tokenService
             .getTokens()
-            .subscribe(this.openRetireDialog.bind(this), (error) => {
-                console.error(error);
+            .subscribe(this.openRetireDialog.bind(this), ({ message }) => {
+                console.error(message);
                 this.loading = false;
             });
     }

@@ -14,5 +14,6 @@ export enum MessageType {
     Token = 'Token',
     Synchronization = 'Synchronization Event',
     Module = 'Module',
-    Tag = 'Tag'
+    Tag = 'Tag',
+    RoleDocument = 'Role-Document'
 }

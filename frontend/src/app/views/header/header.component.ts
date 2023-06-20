@@ -382,8 +382,8 @@ export class HeaderComponent implements OnInit {
               this.profileData = profile;
               this.hederaAccountID = this.profileData.hederaAccountId;
             },
-            (error) => {
-              console.error('Failed to get profile data:', error);
+            ({ message }) => {
+              console.error('Failed to get profile data:', message);
             }
         );
     }

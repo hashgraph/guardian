@@ -30,7 +30,8 @@ export const defaultTheme = {
                 'interfaceStepBlock',
                 'tagsManager',
                 'tokenConfirmationBlock',
-                'externalTopicBlock'
+                'externalTopicBlock',
+                'messagesReportBlock'
             ]
         },
         {

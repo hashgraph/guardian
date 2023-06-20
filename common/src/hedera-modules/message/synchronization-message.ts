@@ -173,4 +173,28 @@ export class SynchronizationMessage extends Message {
     public getUrls(): IURL[] {
         return [];
     }
+
+    /**
+     * To JSON
+     */
+    public override toJson(): any {
+        const result = super.toJson();
+        result.user = this.user;
+        result.policy = this.policy;
+        result.policyType = this.policyType;
+        result.messageId = this.messageId;
+        result.tokenId = this.tokenId;
+        result.amount = this.amount;
+        result.memo = this.memo;
+        result.target = this.target;
+        result.policyOwner = this.policyOwner;
+        return result;
+    }
+
+    /**
+     * Get User DID
+     */
+    public override getOwner(): string {
+        return this.policyOwner;
+    }
 }

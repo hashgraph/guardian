@@ -24,7 +24,6 @@ import { Options } from '../../structures/storage/config-options';
 import { PolicyTreeComponent } from '../policy-tree/policy-tree.component';
 import { ThemeService } from '../../../../services/theme.service';
 import { WizardMode, WizardService } from 'src/app/modules/policy-engine/services/wizard.service';
-import { SuggestionsService } from 'src/app/services/suggestions.service';
 
 enum OperationMode {
     none,
@@ -67,9 +66,6 @@ export class PolicyConfigurationComponent implements OnInit {
     public eventVisible: string = 'All';
     public templateModules: any[] = [];
     public code!: string;
-    public isSuggestionsEnabled = false;
-    public nextBlock!: any;
-    public nestedBlock!: any;
 
     public openType: 'Root' | 'Sub' = 'Root';
     public rootType: 'Policy' | 'Module' = 'Policy';
@@ -80,7 +76,7 @@ export class PolicyConfigurationComponent implements OnInit {
 
     readonly codeMirrorOptions = {
         theme: 'default',
-        mode: 'policy-json-lang',
+        mode: 'application/ld+json',
         styleActiveLine: true,
         lineNumbers: true,
         lineWrapping: true,
@@ -109,7 +105,6 @@ export class PolicyConfigurationComponent implements OnInit {
         customModules: [],
     };
     private _searchTimeout!: any;
-    private currentCMStyles?: any;
 
     public dropListConnector: any = {
         menu: null,
@@ -186,7 +181,6 @@ export class PolicyConfigurationComponent implements OnInit {
         private modulesService: ModulesService,
         private themeService: ThemeService,
         private wizardService: WizardService,
-        private suggestionsService: SuggestionsService,
     ) {
         this.options = new Options();
         this.policyModel = new PolicyModel();
@@ -213,9 +207,8 @@ export class PolicyConfigurationComponent implements OnInit {
             this.themeService.setThemes(themes);
             this.themes = this.themeService.getThemes();
             this.theme = this.themeService.getCurrent();
-            this.updateCodeMirrorStyles();
-        }, (error) => {
-            console.error(error);
+        }, ({ message }) => {
+            console.error(message);
         });
     }
 
@@ -279,13 +272,13 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.registeredService.registerConfig(blockInformation);
                 this.templateModules = modules;
                 this.finishedLoad(this.templateModel);
-            }, (error) => {
+            }, ({ message }) => {
                 this.loading = false;
-                console.error(error);
+                console.error(message);
             });
-        }, (error) => {
+        }, ({ message }) => {
             this.loading = false;
-            console.error(error);
+            console.error(message);
         });
     }
 
@@ -326,13 +319,13 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.policyModel.setSchemas(this.schemas);
 
                 this.finishedLoad(this.policyModel);
-            }, (error) => {
+            }, ({ message }) => {
                 this.loading = false;
-                console.error(error);
+                console.error(message);
             });
-        }, (error) => {
+        }, ({ message }) => {
             this.loading = false;
-            console.error(error);
+            console.error(message);
         });
     }
 
@@ -425,7 +418,7 @@ export class PolicyConfigurationComponent implements OnInit {
         }
         if (this.currentView !== root.view) {
             this.currentView = root.view;
-            this.changeView(root.view);
+            this.chanceView(root.view);
         }
         if (root.view === 'yaml' || root.view === 'json') {
             this.code = root.value;
@@ -534,118 +527,6 @@ export class PolicyConfigurationComponent implements OnInit {
         }
     }
 
-    private createNewBlock(parent: any, type: string) {
-        if (!parent) {
-            return;
-        }
-        const newBlock = this.registeredService.getBlockConfig(type);
-        return parent.createChild(newBlock);
-    }
-
-    private updateCodeMirrorStyles() {
-        if (this.currentCMStyles) {
-            this.currentCMStyles.remove();
-            this.currentCMStyles = null;
-        }
-        const style = document.createElement('style');
-        style.type = 'text/css';
-        style.innerHTML = `${this.theme.syntaxGroups
-            .map(
-                (item) => `.cm-${item.id} {
-            color: ${item.color}
-        }`
-            )
-            .join('')}`;
-        this.currentCMStyles = style;
-        document.getElementsByTagName('head')[0].appendChild(style);
-    }
-
-    private generateSuggestionsInput(
-        parent: PolicyBlockModel | null,
-        selected: PolicyBlockModel
-    ): any {
-        if (!parent) {
-            const res = {
-                blockType: selected.blockType,
-            };
-            return [res, res];
-        }
-        const [result, conf] = this.generateSuggestionsInput(
-            parent.parent,
-            parent
-        );
-        conf.blockType = parent.blockType;
-        conf.children = [];
-        const childConfig: any = {};
-        for (const child of parent.children) {
-            if (child === selected) {
-                childConfig.blockType = child.blockType;
-                conf.children.push(childConfig);
-                break;
-            } else {
-                conf.children.push({
-                    blockType: child.blockType,
-                });
-            }
-        }
-        return [result, childConfig];
-    }
-
-    private findSuggestedBlocks(currentBlock: any) {
-        if (this.isSuggestionsEnabled && currentBlock) {
-            this.suggestionsService
-                .suggestions(
-                    this.generateSuggestionsInput(
-                        currentBlock.parent,
-                        currentBlock
-                    )[0]
-                )
-                .subscribe((result) => {
-                    if (this.currentBlock !== currentBlock) {
-                        return;
-                    }
-                    const { next, nested } = result;
-                    if (
-                        next &&
-                        this.currentBlock?.parent?.children &&
-                        !this.currentBlock.parent.children[
-                            this.currentBlock.parent.children.indexOf(
-                                this.currentBlock
-                            ) + 1
-                        ]
-                    ) {
-                        this.nextBlock = {
-                            icon: this.registeredService.getIcon(next),
-                            type: next,
-                            node: {
-                                blockType: next,
-                                permissionsNumber:
-                                    this.currentBlock?.permissionsNumber,
-                            },
-                            name: this.registeredService.getName(next),
-                        };
-                    }
-
-                    if (
-                        nested &&
-                        (!this.currentBlock?.children ||
-                            !this.currentBlock.children.length)
-                    ) {
-                        this.nestedBlock = {
-                            icon: this.registeredService.getIcon(nested),
-                            type: nested,
-                            node: {
-                                blockType: nested,
-                                permissionsNumber:
-                                    this.currentBlock?.permissionsNumber,
-                            },
-                            name: this.registeredService.getName(nested),
-                        };
-                    }
-                });
-        }
-    }
-
     public setFavorite(event: any, item: any) {
         event.preventDefault();
         event.stopPropagation();
@@ -679,7 +560,7 @@ export class PolicyConfigurationComponent implements OnInit {
     public onView(type: string) {
         this.loading = true;
         setTimeout(() => {
-            this.changeView(type);
+            this.chanceView(type);
             this.loading = false;
         }, 0);
     }
@@ -689,21 +570,18 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     public onSelect(block: any) {
-        this.nextBlock = null;
-        this.nestedBlock = null;
         this.currentBlock = this.openModule.getBlock(block);
         this.selectType = this.currentBlock?.isModule ? 'Module' : 'Block';
         this.openModule.checkChange();
         this.changeDetector.detectChanges();
-        this.findSuggestedBlocks(this.currentBlock);
         return false;
     }
 
     public onAdd(btn: any) {
         this.currentBlock = this.openModule.getBlock(this.currentBlock);
         if (this.currentBlock) {
-            this.createNewBlock(this.currentBlock, btn.type);
-            this.onSelect(this.currentBlock);
+            const newBlock = this.registeredService.getBlockConfig(btn.type);
+            this.currentBlock.createChild(newBlock);
         }
     }
 
@@ -758,12 +636,6 @@ export class PolicyConfigurationComponent implements OnInit {
         if (item) {
             this.openType = 'Sub';
             this.openModule = item;
-            if (this.currentView === 'json') {
-                this.code = this.objectToJson(this.openModule.getJSON());
-            }
-            if (this.currentView === 'yaml') {
-                this.code = this.objectToYaml(this.openModule.getJSON());
-            }
             this.changeDetector.detectChanges();
         }
     }
@@ -823,12 +695,6 @@ export class PolicyConfigurationComponent implements OnInit {
         this.rootModule = root;
         this.openModule = root?.getRootModule();
         this.openType = 'Root';
-        if (this.currentView === 'json') {
-            this.code = this.objectToJson(this.openModule.getJSON());
-        }
-        if (this.currentView === 'yaml') {
-            this.code = this.objectToYaml(this.openModule.getJSON());
-        }
         this.changeDetector.detectChanges();
     }
 
@@ -868,7 +734,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.errorMessage(commonErrors);
     }
 
-    private changeView(type: string) {
+    private chanceView(type: string) {
         if (type == this.currentView) {
             return;
         }
@@ -883,26 +749,26 @@ export class PolicyConfigurationComponent implements OnInit {
                 } else if (this.currentView == 'yaml') {
                     root = this.yamlToObject(this.code);
                 }
-                this.openModule.rebuild(root);
+                this.policyModel.rebuild(root);
             } else if (type == 'json') {
                 let code = "";
                 if (this.currentView == 'blocks') {
-                    code = this.objectToJson(this.openModule.getJSON());
+                    code = this.objectToJson(this.policyModel.getJSON());
                 } else if (this.currentView == 'yaml') {
                     code = this.yamlToJson(this.code);
                 }
                 this.code = code;
-                this.codeMirrorOptions.mode = 'policy-json-lang';
+                this.codeMirrorOptions.mode = 'application/ld+json';
             } else if (type == 'yaml') {
                 let code = "";
                 if (this.currentView == 'blocks') {
-                    code = this.objectToYaml(this.openModule.getJSON());
+                    code = this.objectToYaml(this.policyModel.getJSON());
                 }
                 if (this.currentView == 'json') {
                     code = this.jsonToYaml(this.code);
                 }
                 this.code = code;
-                this.codeMirrorOptions.mode = 'policy-yaml-lang';
+                this.codeMirrorOptions.mode = 'text/x-yaml';
             }
             this.currentView = type;
         } catch (error: any) {
@@ -1048,7 +914,7 @@ export class PolicyConfigurationComponent implements OnInit {
 
     private asyncUpdatePolicy(): Observable<void> {
         return new Observable<void>(subscriber => {
-            this.changeView('blocks');
+            this.chanceView('blocks');
             const root = this.policyModel.getJSON();
             if (root) {
                 this.loading = true;
@@ -1296,14 +1162,12 @@ export class PolicyConfigurationComponent implements OnInit {
         this.openSettings = false;
         this.themes = this.themeService.getThemes();
         this.theme = this.themeService.getCurrent();
-        this.updateCodeMirrorStyles();
     }
 
     public setTheme(theme: Theme) {
         this.themeService.setCurrent(theme);
         this.themeService.saveTheme();
         this.theme = this.themeService.getCurrent();
-        this.updateCodeMirrorStyles();
     }
 
     public blockStyle(rule: ThemeRule) {
@@ -1369,20 +1233,5 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.policyModel
             );
         }, () => undefined, () => this.loading = false);
-    }
-
-    public addSuggestionsBlock(type: any, nested: boolean = false) {
-        this.currentBlock = this.createNewBlock(
-            nested ? this.currentBlock : this.currentBlock?.parent,
-            type
-        );
-        this.onSelect(this.currentBlock);
-    }
-
-    public onSuggestionsClick() {
-        this.isSuggestionsEnabled = !this.isSuggestionsEnabled;
-        if (this.isSuggestionsEnabled && this.currentBlock) {
-            this.onSelect(this.currentBlock);
-        }
     }
 }

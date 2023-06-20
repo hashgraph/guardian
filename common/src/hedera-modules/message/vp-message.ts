@@ -31,6 +31,10 @@ export class VPMessage extends Message {
      * Relationships
      */
     public relationships: string[];
+    /**
+     * User Role
+     */
+    public userMessageId: string;
 
     constructor(action: MessageAction) {
         super(action, MessageType.VPDocument);
@@ -53,6 +57,32 @@ export class VPMessage extends Message {
      */
     public setRelationships(ids: string[]): void {
         this.relationships = ids;
+        if (this.userMessageId) {
+            if (this.relationships) {
+                if (this.relationships.indexOf(this.userMessageId) === -1) {
+                    this.relationships.push(this.userMessageId);
+                }
+            } else {
+                this.relationships = [this.userMessageId];
+            }
+        }
+    }
+
+    /**
+     * Set relationships
+     * @param messageId
+     */
+    public setUser(messageId: string): void {
+        this.userMessageId = messageId;
+        if (this.userMessageId) {
+            if (this.relationships) {
+                if (this.relationships.indexOf(this.userMessageId) === -1) {
+                    this.relationships.push(this.userMessageId);
+                }
+            } else {
+                this.relationships = [this.userMessageId];
+            }
+        }
     }
 
     /**
@@ -159,7 +189,7 @@ export class VPMessage extends Message {
      * To hash
      */
     public override toHash(): string {
-        const map:any = {
+        const map: any = {
             status: this._status,
             type: this.type,
             action: this.action,
@@ -171,5 +201,31 @@ export class VPMessage extends Message {
         const json: string = JSON.stringify(map);
         const hash: Uint8Array = Hashing.sha256.digest(json);
         return Hashing.base58.encode(hash);
+    }
+
+    /**
+     * Relationship message
+     */
+    public getRelationships(): string[] {
+        return this.relationships || [];
+    }
+
+    /**
+     * To JSON
+     */
+    public override toJson(): any {
+        const result = super.toJson();
+        result.issuer = this.issuer;
+        result.hash = this.hash;
+        result.relationships = this.relationships;
+        result.document = this.document;
+        return result;
+    }
+
+    /**
+     * Get User DID
+     */
+    public override getOwner(): string {
+        return this.issuer;
     }
 }
