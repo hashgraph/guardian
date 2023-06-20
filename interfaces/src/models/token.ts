@@ -81,6 +81,12 @@ export class Token {
      * Is token draft
      */
     public draftToken: boolean;
+
+    /**
+     * Can delete
+     */
+    public canDelete: boolean
+
     /**
      * Token constructor
      * @param data
@@ -103,6 +109,7 @@ export class Token {
         this.tokenBalance = (data as ITokenInfo).balance || 'n/a';
         this.hBarBalance = (data as ITokenInfo).hBarBalance || 'n/a';
         this.draftToken = data.draftToken;
+        this.canDelete = data.canDelete;
         if ((data as ITokenInfo).associated) {
             this.frozen = (data as ITokenInfo).frozen ? 'Yes' : 'No';
             this.kyc = (data as ITokenInfo).kyc ? 'Yes' : 'No';
