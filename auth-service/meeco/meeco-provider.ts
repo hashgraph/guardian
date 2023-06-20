@@ -2,6 +2,7 @@ import { Cryppo, IKey, IMasterEncryptionKey } from "./cryppo";
 import { IMeecoConfig, MeecoApi } from "./meeco-api";
 import { IPassphraseArtefact } from "./models/keys";
 import { IMe } from "./models/me";
+import { IPresentationRequest } from "./models/presentation_request";
 
 /**
  * MeecoProvider is a wrapper around the Meeco API and Cryppo.
@@ -92,5 +93,18 @@ export class MeecoProvider {
     const kp = await this.cryppo.decryptKey(kek.key, serialized_keyair.keypair.encrypted_serialized_key);
     
     return kp;
+  }
+
+  /**
+   * createPresentationRequest creates a Presentation Request on the Meeco API.
+   * @param requestName 
+   * @param clien_did 
+   * @param clientName 
+   * @param presentation_definition_id 
+   * @returns {IPresentationRequest} Presentation Request with an unsigned JWT
+   */
+  async createPresentationRequest(requestName: string, clien_did: string, clientName: string, presentation_definition_id: string): Promise<IPresentationRequest> {
+    const presentationRequest = await this.meecoApi.createPresentationRequest(requestName, clien_did, clientName, presentation_definition_id);
+    return presentationRequest;
   }
 }
