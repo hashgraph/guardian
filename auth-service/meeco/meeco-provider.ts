@@ -2,7 +2,7 @@ import { Cryppo, IKey, IMasterEncryptionKey } from "./cryppo";
 import { IMeecoConfig, MeecoApi } from "./meeco-api";
 import { IPassphraseArtefact } from "./models/keys";
 import { IMe } from "./models/me";
-import { IPresentationRequest } from "./models/presentation_request";
+import { IPresentationRequest, IPresentationSubmissions } from "./models/presentation_request";
 import base64url from 'base64url';
 const nacl = require('tweetnacl');
 
@@ -127,5 +127,15 @@ export class MeecoProvider {
 
     const presentationRequest = await this.meecoApi.submitPresentationRequestSignature(request_id, signed_request);
     return presentationRequest;
+  }
+
+  /**
+   * getVPSubmissions fetches the Verifiable Presentation Submissions from the Meeco API.
+   * @param requestId 
+   * @returns {IPresentationSubmissions} Verifiable Presentation Submissions
+   */
+  async getVPSubmissions(requestId: string): Promise<IPresentationSubmissions> {
+    const submissions = await this.meecoApi.getVPSubmissions(requestId);
+    return submissions;
   }
 }
