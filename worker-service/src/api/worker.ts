@@ -634,6 +634,14 @@ export class Worker extends NatsService {
                     break;
                 }
 
+                case WorkerTaskType.GET_TOKEN_INFO: {
+                    const { tokenId } = task.data;
+                    result.data = await HederaSDKHelper
+                        .setNetwork(networkOptions)
+                        .getTokenInfo(tokenId);
+                    break;
+                }
+
                 case WorkerTaskType.GET_TOPIC_MESSAGE: {
                     const { timeStamp } = task.data;
                     result.data = await HederaSDKHelper
@@ -643,10 +651,10 @@ export class Worker extends NatsService {
                 }
 
                 case WorkerTaskType.GET_TOPIC_MESSAGES: {
-                    const { topic, timestamp } = task.data;
+                    const { topic, timeStamp } = task.data;
                     result.data = await HederaSDKHelper
                         .setNetwork(networkOptions)
-                        .getTopicMessages(topic, timestamp);
+                        .getTopicMessages(topic, timeStamp);
                     break;
                 }
 

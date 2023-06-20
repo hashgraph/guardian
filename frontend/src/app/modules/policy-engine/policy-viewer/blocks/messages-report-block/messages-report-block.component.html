@@ -1,0 +1,733 @@
+<div class="content">
+    <div *ngIf="loading" class="loading">
+        <mat-spinner></mat-spinner>
+    </div>
+
+    <div *ngIf="status === 'STARTED'" class="sub-loading">
+        <div class="loading-text">
+            <div>
+                <mat-spinner></mat-spinner>
+            </div>
+            <div>Please wait while your report is calculated</div>
+            <div>This may take a few minutes ...</div>
+        </div>
+    </div>
+
+    <div *ngIf="status === 'FAILED'" class="sub-loading">
+        <div class="error-text">
+            An unexpected error occurred.
+        </div>
+        <div>
+            <button mat-raised-button color="primary" (click)="onClear()">
+                Clear
+            </button>
+        </div>
+    </div>
+
+    <div *ngIf="!status" class="dashboard">
+        <form class="filters" [formGroup]="searchForm" (ngSubmit)="onSearch()">
+            <mat-form-field class="search-input" appearance="outline">
+                <mat-label>HASH/Message ID:</mat-label>
+                <input matInput type="text" placeholder="HASH/ID" formControlName="value">
+                <button mat-icon-button matSuffix type="submit" [disabled]="!searchForm.valid">
+                    <mat-icon>search</mat-icon>
+                </button>
+            </mat-form-field>
+        </form>
+    </div>
+
+    <div *ngIf="status === 'FINISHED'" class="dashboard">
+        <div class="toolbar">
+            <div class="target">
+                <div class="target-label">Selected document:</div>
+                <div class="target-value">{{target}}</div>
+                <div class="target-btn" (click)="onClear()">
+                    Clear
+                </div>
+            </div>
+            <div class="switch-btn">
+                <switch-button [on-label]="'Advanced'" [off-label]="'Simplified'" [value]="dashboardType==='Advanced'"
+                    (valueChange)="onDashboardType($event)"></switch-button>
+            </div>
+        </div>
+        <div class="dashboard-grid">
+            <div class="dashboard-left">
+                <div class="dashboard-top">
+                    Policy Message Catalog
+                </div>
+                <div class="dashboard-rows" [style.gridTemplateRows]="gridTemplateRows">
+                    <ng-container *ngFor="let topic of topics">
+                        <div class="dashboard-header" [style.gridRow]="topic.__order"
+                            [style.paddingLeft.px]="topic.__offset">
+                            <div class="topic-info" (click)="onSelect(topic.message)"
+                                [attr.selected]="topic.message && topic.message === selected"
+                                [attr.readonly]="!topic.message">
+                                <div class="topic-header">
+                                    <mat-icon>cloud</mat-icon>
+                                    {{getTopicHeader(topic.message)}}
+                                </div>
+                                <div class="topic-data">
+                                    <div *ngIf="topic.message" class="topic-text">
+                                        {{getTopicName(topic)}}
+                                    </div>
+                                    <div class="topic-id">{{topic.topicId}}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div *ngIf="topic.__parent" class="topic-line" [style.top.px]="topic.__start"
+                            [style.height.px]="topic.__height" [style.left.px]="topic.__offset"></div>
+                    </ng-container>
+                </div>
+            </div>
+            <div class="dashboard-center">
+                <div class="dashboard-top">
+                    Policy Events
+                </div>
+                <div class="dashboard-rows dashboard-scroll" [style.gridTemplateRows]="gridTemplateRows">
+                    <div id="leader-line-container-1"></div>
+                    <div id="leader-line-container-2"></div>
+                    <div class="dashboard-row" *ngFor="let topic of topics" [style.gridRow]="topic.__order"
+                        [style.gridTemplateColumns]="gridTemplateColumns">
+                        <div class="dashboard-col" *ngFor="let message of topic.messages"
+                            [style.gridColumn]="message.__order">
+                            <div class="message-info" [id]="message.id" (click)="onSelect(message)"
+                                [attr.selected]="message === selected">
+
+                                <ng-container *ngIf="message.__ifPolicyMessage">
+                                    <div class="message-header">
+                                        <mat-icon>policy</mat-icon>
+                                        Create policy
+                                    </div>
+                                    <div class="message-data">
+                                        <div class="message-name">{{message.name}}</div>
+                                        <div class="message-owner">{{message.owner}}</div>
+                                    </div>
+                                </ng-container>
+                                <ng-container *ngIf="message.__ifInstanceMessage">
+                                    <div class="message-header">
+                                        <mat-icon>policy</mat-icon>
+                                        Publish policy
+                                    </div>
+                                    <div class="message-data">
+                                        <div class="message-name">{{message.name}}</div>
+                                        <div class="message-name">Version: {{message.version}}</div>
+                                    </div>
+                                </ng-container>
+
+                                <ng-container *ngIf="message.__ifDIDMessage">
+                                    <div class="message-header">
+                                        <mat-icon>key</mat-icon>
+                                        Registration
+                                    </div>
+                                    <div class="message-data">
+                                        <div class="message-name">
+                                            {{message.__role}}
+                                        </div>
+                                        <div class="message-owner">{{message.did}}</div>
+                                    </div>
+                                </ng-container>
+
+                                <ng-container *ngIf="message.__ifVCMessage">
+                                    <div class="message-header">
+                                        <mat-icon>description</mat-icon>
+                                        {{message.__status}}
+                                    </div>
+                                    <div class="message-data">
+                                        <div *ngIf="message.__schemaLabel" class="message-name">
+                                            {{message.__schemaLabel}}
+                                        </div>
+                                        <div class="message-owner">{{message.__userName}}</div>
+                                    </div>
+                                </ng-container>
+
+                                <ng-container *ngIf="message.__ifMintMessage">
+                                    <div class="message-header">
+                                        <mat-icon class="svg-icon" svgIcon="token"></mat-icon>
+                                        Mint token
+                                    </div>
+                                    <div class="message-data">
+                                        <div *ngIf="message.__tokenName" class="message-name">{{message.__tokenName}}
+                                        </div>
+                                        <div class="message-owner">{{message.__userName}}</div>
+                                    </div>
+                                </ng-container>
+
+                                <ng-container *ngIf="message.__ifVPMessage">
+                                    <div class="message-header">
+                                        <mat-icon>receipt</mat-icon>
+                                        Mint confirmation
+                                    </div>
+                                    <div class="message-data">
+                                        <div *ngIf="message.__amount" class="message-name">
+                                            Amount: <span>{{message.__amount}} {{message.__token.symbol}}</span>
+                                        </div>
+                                        <div class="message-owner">{{message.__userName}}</div>
+                                    </div>
+                                </ng-container>
+
+                                <ng-container *ngIf="message.__ifRoleMessage">
+                                    <div class="message-header">
+                                        <mat-icon>person</mat-icon>
+                                        Roles & Groups
+                                    </div>
+                                    <div class="message-data">
+                                        <div *ngIf="message.role" class="message-name">
+                                            Role: {{message.role}}
+                                        </div>
+                                        <div *ngIf="!message.role && message.group" class="message-name">
+                                            Group: {{message.group}}
+                                        </div>
+                                        <div class="message-owner">{{message.__issuer}}</div>
+                                    </div>
+                                </ng-container>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dashboard-timeline" [style.gridRow]="topics.length+1"
+                        [style.gridTemplateColumns]="gridTemplateColumns">
+                        <div class="message-timestamp" *ngFor="let message of messages"
+                            [style.gridColumn]="message.__order">
+                            {{message.__timestamp}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="dashboard-right" *ngIf="selected">
+                <div class="dashboard-right-header">
+                    <span>{{selected.topicId}}</span>
+                    <span>
+                        <mat-icon>chevron_right</mat-icon>
+                    </span>
+                    <span>{{selected.id}}</span>
+                    <div (click)="onSelect(null)" class="dashboard-right-close">
+                        <mat-icon>close</mat-icon>
+                    </div>
+                </div>
+                <div class="dashboard-right-body">
+                    <ng-container *ngIf="selected.__ifPolicyMessage">
+                        <div class="document-header">
+                            <mat-icon>policy</mat-icon>
+                            Policy
+                        </div>
+
+                        <div class="field-delimiter" data-label="Policy"></div>
+
+                        <div class="field">
+                            <div class="field-name">Policy name:</div>
+                            <div class="field-value">{{selected.name}}</div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Policy description:</div>
+                            <div class="field-value">{{selected.description}}</div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Policy creator:</div>
+                            <div class="field-value">{{selected.owner}}</div>
+                        </div>
+
+                        <div class="field-delimiter" data-label="Hedera Information"></div>
+
+                        <div class="field">
+                            <div class="field-name">Topic ID:</div>
+                            <div class="field-value">
+                                <hedera-explorer type="topics"
+                                    [params]="selected.topicId">{{selected.topicId}}</hedera-explorer>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Message ID:</div>
+                            <div class="field-value">
+                                <hedera-explorer type="topics" [params]="selected.topicId" subType="messages"
+                                    [subParams]="selected.index">{{selected.id}}</hedera-explorer>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Sender:</div>
+                            <div class="field-value">
+                                <hedera-explorer type="accounts"
+                                    [params]="selected.payer">{{selected.payer}}</hedera-explorer>
+                            </div>
+                        </div>
+                    </ng-container>
+
+                    <ng-container *ngIf="selected.__ifInstanceMessage">
+                        <div class="document-header">
+                            <mat-icon>policy</mat-icon>
+                            Instance policy
+                        </div>
+
+                        <div class="field-delimiter" data-label="Policy"></div>
+
+                        <div class="field">
+                            <div class="field-name">Policy name:</div>
+                            <div class="field-value">{{selected.name}}</div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Policy description:</div>
+                            <div class="field-value">{{selected.description}}</div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Policy creator:</div>
+                            <div class="field-value">{{selected.owner}}</div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Policy version:</div>
+                            <div class="field-value">{{selected.version}}</div>
+                        </div>
+
+                        <div class="field-delimiter" data-label="Hedera Information"></div>
+
+                        <div class="field">
+                            <div class="field-name">Topic ID:</div>
+                            <div class="field-value">
+                                <hedera-explorer type="topics"
+                                    [params]="selected.topicId">{{selected.topicId}}</hedera-explorer>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Message ID:</div>
+                            <div class="field-value">
+                                <hedera-explorer type="topics" [params]="selected.topicId" subType="messages"
+                                    [subParams]="selected.index">{{selected.id}}</hedera-explorer>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Sender:</div>
+                            <div class="field-value">
+                                <hedera-explorer type="accounts"
+                                    [params]="selected.payer">{{selected.payer}}</hedera-explorer>
+                            </div>
+                        </div>
+                    </ng-container>
+
+                    <ng-container *ngIf="selected.__ifDIDMessage">
+                        <div class="document-header">
+                            <mat-icon>key</mat-icon>
+                            User registration
+                        </div>
+
+                        <div class="field-delimiter" data-label="Document"></div>
+
+                        <div class="field">
+                            <div class="field-name">DID:</div>
+                            <div class="field-value">{{selected.did}}</div>
+                        </div>
+                        <div class="field" *ngIf="selected.document">
+                            <div class="field-name">DID document:</div>
+                            <div class="field-value">
+                                <span class="field-link" (click)="onOpenDocument(selected)">Open document</span>
+                            </div>
+                        </div>
+
+                        <div class="field-delimiter" data-label="Hedera Information"></div>
+
+                        <div class="field">
+                            <div class="field-name">Topic ID:</div>
+                            <div class="field-value">
+                                <hedera-explorer type="topics"
+                                    [params]="selected.topicId">{{selected.topicId}}</hedera-explorer>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Message ID:</div>
+                            <div class="field-value">
+                                <hedera-explorer type="topics" [params]="selected.topicId" subType="messages"
+                                    [subParams]="selected.index">{{selected.id}}</hedera-explorer>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Sender:</div>
+                            <div class="field-value">
+                                <hedera-explorer type="accounts"
+                                    [params]="selected.payer">{{selected.payer}}</hedera-explorer>
+                            </div>
+                        </div>
+                    </ng-container>
+
+                    <ng-container *ngIf="selected.__ifRoleMessage">
+                        <div class="document-header">
+                            <mat-icon>person</mat-icon>
+                            Roles & Groups
+                        </div>
+
+                        <div class="field-delimiter" data-label="Document"></div>
+
+                        <div *ngIf="selected.__user.did" class="field">
+                            <div class="field-name">DID:</div>
+                            <div class="field-value">{{selected.__user.did}}</div>
+                        </div>
+
+                        <div class="field" *ngIf="selected.role">
+                            <div class="field-name">Role:</div>
+                            <div class="field-value">{{selected.role}}</div>
+                        </div>
+
+                        <div class="field" *ngIf="selected.group">
+                            <div class="field-name">Groups:</div>
+                            <div class="field-value">{{selected.group}}</div>
+                        </div>
+
+                        <div class="field" *ngIf="selected.document">
+                            <div class="field-name">Document artifact:</div>
+                            <div class="field-value">
+                                <span class="field-link" (click)="onOpenDocument(selected)">Open document</span>
+                            </div>
+                        </div>
+
+                        <div class="field-delimiter" data-label="Hedera Information"></div>
+
+                        <div class="field">
+                            <div class="field-name">Topic ID:</div>
+                            <div class="field-value">
+                                <hedera-explorer type="topics"
+                                    [params]="selected.topicId">{{selected.topicId}}</hedera-explorer>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Message ID:</div>
+                            <div class="field-value">
+                                <hedera-explorer type="topics" [params]="selected.topicId" subType="messages"
+                                    [subParams]="selected.index">{{selected.id}}</hedera-explorer>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Sender:</div>
+                            <div class="field-value">
+                                <hedera-explorer type="accounts"
+                                    [params]="selected.payer">{{selected.payer}}</hedera-explorer>
+                            </div>
+                        </div>
+                    </ng-container>
+
+                    <ng-container *ngIf="selected.__ifVCMessage">
+                        <div class="document-header">
+                            <mat-icon>description</mat-icon>
+                            Document
+                        </div>
+
+                        <div class="field-delimiter" data-label="Document"></div>
+
+                        <div class="field" *ngIf="selected.__schemaLabel">
+                            <div class="field-name">Schema:</div>
+                            <div class="field-value">{{selected.__schemaLabel}}</div>
+                        </div>
+                        <div class="field" *ngIf="selected.__status">
+                            <div class="field-name">Document status:</div>
+                            <div class="field-value">{{selected.__status}}</div>
+                        </div>
+                        <div class="field" *ngIf="selected.document">
+                            <div class="field-name">Document artifact:</div>
+                            <div class="field-value">
+                                <span class="field-link" (click)="onOpenDocument(selected)">Open document</span>
+                            </div>
+                        </div>
+
+                        <ng-container *ngIf="selected.__user">
+                            <div class="field-delimiter" data-label="Issuer"></div>
+                            <div *ngIf="selected.__user.did" class="field">
+                                <div class="field-name">DID:</div>
+                                <div class="field-value">{{selected.__user.did}}</div>
+                            </div>
+                            <div *ngIf="selected.__user.group" class="field">
+                                <div class="field-name">Group:</div>
+                                <div class="field-value">{{selected.__user.group}}</div>
+                            </div>
+                            <div *ngIf="selected.__user.role" class="field">
+                                <div class="field-name">Role:</div>
+                                <div class="field-value">{{selected.__user.role}}</div>
+                            </div>
+                        </ng-container>
+
+                        <div class="field-delimiter" data-label="Hedera Information"></div>
+                        <div class="field">
+                            <div class="field-name">Topic ID:</div>
+                            <div class="field-value">
+                                <hedera-explorer type="topics"
+                                    [params]="selected.topicId">{{selected.topicId}}</hedera-explorer>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Message ID:</div>
+                            <div class="field-value">
+                                <hedera-explorer type="topics" [params]="selected.topicId" subType="messages"
+                                    [subParams]="selected.index">{{selected.id}}</hedera-explorer>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Sender:</div>
+                            <div class="field-value">
+                                <hedera-explorer type="accounts"
+                                    [params]="selected.payer">{{selected.payer}}</hedera-explorer>
+                            </div>
+                        </div>
+
+                        <ng-container *ngIf="selected.__relationships && selected.__relationships.length">
+                            <div class="field-delimiter" data-label="Relationships"></div>
+                            <div class="array-field">
+                                <div *ngFor="let relationship of selected.__relationships" class="array-value">
+                                    <div class="relationship-document" (click)="onSelectById(relationship)">
+                                        <mat-icon>description</mat-icon>
+                                        {{relationship.name}}
+                                    </div>
+                                </div>
+                            </div>
+                        </ng-container>
+                    </ng-container>
+
+                    <ng-container *ngIf="selected.__ifMintMessage">
+                        <div class="document-header">
+                            <mat-icon class="svg-icon" svgIcon="token"></mat-icon>
+                            Mint token
+                        </div>
+
+                        <ng-container *ngIf="selected.__token">
+                            <div class="field-delimiter" data-label="Token"></div>
+
+                            <div class="field">
+                                <div class="field-name">Token name:</div>
+                                <div class="field-value">{{selected.__token.name}}</div>
+                            </div>
+
+                            <div class="field">
+                                <div class="field-name">Token ID:</div>
+                                <div class="field-value">{{selected.__token.tokenId}}</div>
+                            </div>
+
+                            <div class="field">
+                                <div class="field-name">Amount:</div>
+                                <div class="field-value">{{selected.__amount}}</div>
+                            </div>
+                        </ng-container>
+
+                        <div class="field-delimiter" data-label="Document"></div>
+
+                        <div class="field" *ngIf="selected.document">
+                            <div class="field-name">Document artifact:</div>
+                            <div class="field-value">
+                                <span class="field-link" (click)="onOpenDocument(selected)">Open document</span>
+                            </div>
+                        </div>
+
+                        <ng-container *ngIf="selected.__user">
+                            <div class="field-delimiter" data-label="Issuer"></div>
+                            <div *ngIf="selected.__user.did" class="field">
+                                <div class="field-name">DID:</div>
+                                <div class="field-value">{{selected.__user.did}}</div>
+                            </div>
+                            <div *ngIf="selected.__user.group" class="field">
+                                <div class="field-name">Group:</div>
+                                <div class="field-value">{{selected.__user.group}}</div>
+                            </div>
+                            <div *ngIf="selected.__user.role" class="field">
+                                <div class="field-name">Role:</div>
+                                <div class="field-value">{{selected.__user.role}}</div>
+                            </div>
+                        </ng-container>
+
+                        <div class="field-delimiter" data-label="Hedera Information"></div>
+
+                        <div class="field">
+                            <div class="field-name">Topic ID:</div>
+                            <div class="field-value">
+                                <hedera-explorer type="topics"
+                                    [params]="selected.topicId">{{selected.topicId}}</hedera-explorer>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Message ID:</div>
+                            <div class="field-value">
+                                <hedera-explorer type="topics" [params]="selected.topicId" subType="messages"
+                                    [subParams]="selected.index">{{selected.id}}</hedera-explorer>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Sender:</div>
+                            <div class="field-value">
+                                <hedera-explorer type="accounts"
+                                    [params]="selected.payer">{{selected.payer}}</hedera-explorer>
+                            </div>
+                        </div>
+
+                        <ng-container *ngIf="selected.__relationships && selected.__relationships.length">
+                            <div class="field-delimiter" data-label="Relationships"></div>
+                            <div class="array-field">
+                                <div *ngFor="let relationship of selected.__relationships" class="array-value">
+                                    <div class="relationship-document" (click)="onSelectById(relationship)">
+                                        <mat-icon>description</mat-icon>
+                                        {{relationship.name}}
+                                    </div>
+                                </div>
+                            </div>
+                        </ng-container>
+                    </ng-container>
+
+                    <ng-container *ngIf="selected.__ifVPMessage">
+                        <div class="document-header">
+                            <mat-icon>receipt</mat-icon>
+                            Mint confirmation
+                        </div>
+
+                        <div class="field-delimiter" data-label="Document"></div>
+
+                        <div class="field" *ngIf="selected.__documents">
+                            <div class="field-name">Documents:</div>
+                            <div class="field-value">
+                                <div class="field-link-array" *ngFor="let item of selected.__documents"
+                                    (click)="onOpenDocument(item)">{{item.__name}}</div>
+                            </div>
+                        </div>
+
+                        <ng-container *ngIf="selected.__token">
+                            <div class="field-delimiter" data-label="Token"></div>
+                            <div class="field">
+                                <div class="field-name">Token name:</div>
+                                <div class="field-value">{{selected.__token.name}}</div>
+                            </div>
+                            <div class="field">
+                                <div class="field-name">Token ID:</div>
+                                <div class="field-value">{{selected.__token.tokenId}}</div>
+                            </div>
+                            <div class="field">
+                                <div class="field-name">Amount:</div>
+                                <div class="field-value">{{selected.__amount}}</div>
+                            </div>
+                        </ng-container>
+
+                        <ng-container *ngIf="selected.__user">
+                            <div class="field-delimiter" data-label="Issuer"></div>
+                            <div *ngIf="selected.__user.did" class="field">
+                                <div class="field-name">DID:</div>
+                                <div class="field-value">{{selected.__user.did}}</div>
+                            </div>
+                            <div *ngIf="selected.__user.group" class="field">
+                                <div class="field-name">Group:</div>
+                                <div class="field-value">{{selected.__user.group}}</div>
+                            </div>
+                            <div *ngIf="selected.__user.role" class="field">
+                                <div class="field-name">Role:</div>
+                                <div class="field-value">{{selected.__user.role}}</div>
+                            </div>
+                        </ng-container>
+
+                        <div class="field-delimiter" data-label="Hedera Information"></div>
+                        <div class="field">
+                            <div class="field-name">Topic ID:</div>
+                            <div class="field-value">
+                                <hedera-explorer type="topics"
+                                    [params]="selected.topicId">{{selected.topicId}}</hedera-explorer>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Message ID:</div>
+                            <div class="field-value">
+                                <hedera-explorer type="topics" [params]="selected.topicId" subType="messages"
+                                    [subParams]="selected.index">{{selected.id}}</hedera-explorer>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Sender:</div>
+                            <div class="field-value">
+                                <hedera-explorer type="accounts"
+                                    [params]="selected.payer">{{selected.payer}}</hedera-explorer>
+                            </div>
+                        </div>
+
+                        <ng-container *ngIf="selected.__relationships && selected.__relationships.length">
+                            <div class="field-delimiter" data-label="Relationships"></div>
+                            <div class="array-field">
+                                <div *ngFor="let relationship of selected.__relationships" class="array-value">
+                                    <div class="relationship-document" (click)="onSelectById(relationship)">
+                                        <mat-icon>description</mat-icon>
+                                        {{relationship.name}}
+                                    </div>
+                                </div>
+                            </div>
+                        </ng-container>
+                    </ng-container>
+
+                    <ng-container *ngIf="selected.__ifTopicMessage">
+                        <div class="document-header">
+                            <mat-icon>cloud</mat-icon>
+                            Catalog
+                        </div>
+
+                        <div class="field-delimiter" data-label="Topic Information"></div>
+
+                        <div class="field">
+                            <div class="field-name">Topic name:</div>
+                            <div class="field-value">{{selected.name}}</div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Topic description:</div>
+                            <div class="field-value">{{selected.description}}</div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Topic type:</div>
+                            <div class="field-value">
+                                {{getTopicHeader(selected)}} catalog
+                            </div>
+                        </div>
+                        <div class="field" *ngIf="selected.owner">
+                            <div class="field-name">Topic creator:</div>
+                            <div class="field-value">{{selected.owner}}</div>
+                        </div>
+
+                        <ng-container *ngIf="selected.__rationale && selected.__rationale.__ifPolicyMessage">
+                            <div class="field-delimiter" data-label="Policy"></div>
+
+                            <div class="field">
+                                <div class="field-name">Policy name:</div>
+                                <div class="field-value">{{selected.__rationale.name}}</div>
+                            </div>
+                            <div class="field">
+                                <div class="field-name">Policy description:</div>
+                                <div class="field-value">{{selected.__rationale.description}}</div>
+                            </div>
+                        </ng-container>
+
+                        <ng-container *ngIf="selected.__rationale && selected.__rationale.__ifInstanceMessage">
+                            <div class="field-delimiter" data-label="Policy"></div>
+
+                            <div class="field">
+                                <div class="field-name">Policy name:</div>
+                                <div class="field-value">{{selected.__rationale.name}}</div>
+                            </div>
+                            <div class="field">
+                                <div class="field-name">Policy description:</div>
+                                <div class="field-value">{{selected.__rationale.description}}</div>
+                            </div>
+                            <div class="field">
+                                <div class="field-name">Policy version:</div>
+                                <div class="field-value">{{selected.__rationale.version}}</div>
+                            </div>
+                        </ng-container>
+
+                        <div class="field-delimiter" data-label="Hedera Information"></div>
+
+                        <div class="field">
+                            <div class="field-name">Topic ID:</div>
+                            <div class="field-value">
+                                <hedera-explorer type="topics"
+                                    [params]="selected.topicId">{{selected.topicId}}</hedera-explorer>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Message ID:</div>
+                            <div class="field-value">
+                                <hedera-explorer type="topics" [params]="selected.topicId" subType="messages"
+                                    [subParams]="selected.index">{{selected.id}}</hedera-explorer>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Sender:</div>
+                            <div class="field-value">
+                                <hedera-explorer type="accounts"
+                                    [params]="selected.payer">{{selected.payer}}</hedera-explorer>
+                            </div>
+                        </div>
+                    </ng-container>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

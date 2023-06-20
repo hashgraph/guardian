@@ -18,6 +18,11 @@ body {
     font-weight: 300;
 }
 
+body > .leader-line,
+body > .leader-line-areaAnchor {
+    display: none !important;
+}
+
 .mat-subheading-1,
 .mat-typography h4 {
     font-size: 20px;

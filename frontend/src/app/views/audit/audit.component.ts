@@ -122,9 +122,9 @@ export class AuditComponent implements OnInit {
             setTimeout(() => {
                 this.loading = false;
             }, 500);
-        }, (error) => {
+        }, ({ message }) => {
             this.loading = false;
-            console.error(error);
+            console.error(message);
         });
     }
 

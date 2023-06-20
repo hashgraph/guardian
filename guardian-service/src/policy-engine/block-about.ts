@@ -394,6 +394,20 @@ export const BlockAbout = {
         'output': null,
         'defaultEvent': false
     },
+    'messagesReportBlock': {
+        'label': 'Messages Report',
+        'title': 'Add \'Messages Report\' Block',
+        'post': true,
+        'get': true,
+        'children': 'None',
+        'control': 'UI',
+        'input': [
+            'RunEvent',
+            'RefreshEvent'
+        ],
+        'output': null,
+        'defaultEvent': false
+    },
     'reportItemBlock': {
         'label': 'Report Item',
         'title': 'Add \'Report Item\' Block',

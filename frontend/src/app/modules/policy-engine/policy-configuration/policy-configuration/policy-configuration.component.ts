@@ -207,8 +207,8 @@ export class PolicyConfigurationComponent implements OnInit {
             this.themeService.setThemes(themes);
             this.themes = this.themeService.getThemes();
             this.theme = this.themeService.getCurrent();
-        }, (error) => {
-            console.error(error);
+        }, ({ message }) => {
+            console.error(message);
         });
     }
 
@@ -272,13 +272,13 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.registeredService.registerConfig(blockInformation);
                 this.templateModules = modules;
                 this.finishedLoad(this.templateModel);
-            }, (error) => {
+            }, ({ message }) => {
                 this.loading = false;
-                console.error(error);
+                console.error(message);
             });
-        }, (error) => {
+        }, ({ message }) => {
             this.loading = false;
-            console.error(error);
+            console.error(message);
         });
     }
 
@@ -319,13 +319,13 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.policyModel.setSchemas(this.schemas);
 
                 this.finishedLoad(this.policyModel);
-            }, (error) => {
+            }, ({ message }) => {
                 this.loading = false;
-                console.error(error);
+                console.error(message);
             });
-        }, (error) => {
+        }, ({ message }) => {
             this.loading = false;
-            console.error(error);
+            console.error(message);
         });
     }
 

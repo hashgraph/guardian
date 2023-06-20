@@ -169,9 +169,9 @@ export class TokenConfigComponent implements OnInit {
             } else {
                 this.loading = false;
             }
-        }, (error) => {
+        }, ({ message }) => {
             this.loading = false;
-            console.error(error);
+            console.error(message);
         });
     }
 

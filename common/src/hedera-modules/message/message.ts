@@ -380,4 +380,38 @@ export abstract class Message {
     public isDocuments(index: number = 0): boolean {
         return !!(this.urls && this.urls[index]);
     }
+
+    /**
+     * Relationship message
+     */
+    public getRelationships(): string[] {
+        return [];
+    }
+
+    /**
+     * To JSON
+     */
+    public toJson(): any {
+        return {
+            id: this.id,
+            messageId: this._id,
+            topicId: this.topicId ? this.topicId.toString() : null,
+            lang: this.lang,
+            type: this.type,
+            payer: this.payer,
+            index: this.index,
+            status: this._status,
+            parentIds: this._parentIds,
+            statusMessage: this._statusMessage,
+            statusReason: this._statusReason,
+            action: this._action,
+        }
+    }
+
+    /**
+     * Get User DID
+     */
+    public getOwner(): string {
+        return null;
+    }
 }

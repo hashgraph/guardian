@@ -212,9 +212,11 @@
     top: 0px;
 }
 
-.btn-icon-delete-des {
+.btn-icon-delete-des,
+.btn-icon-desibled {
     color: #b5b5b5;
     cursor: not-allowed;
+    pointer-events: none;
 }
 
 .btn-icon-edit mat-icon {

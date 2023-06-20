@@ -203,9 +203,9 @@ export class SchemaConfigComponent implements OnInit {
             this.pageIndex = 0;
             this.pageSize = 25;
             this.loadSchemas();
-        }, (error) => {
+        }, ({ message }) => {
             this.loading = false;
-            console.error(error);
+            console.error(message);
         });
     }
 
