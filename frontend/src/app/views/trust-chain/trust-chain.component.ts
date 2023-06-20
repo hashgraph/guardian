@@ -129,9 +129,9 @@ export class TrustChainComponent implements OnInit {
                 }
 
                 this.loading = false;
-            }, (error) => {
+            }, ({ message }) => {
                 this.loading = false;
-                console.error(error);
+                console.error(message);
             });
         } else {
             this.loading = false;

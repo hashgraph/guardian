@@ -42,20 +42,55 @@ form,
     align-items: center;
 }
 
+.select-role-title {
+    text-align: center;
+}
 
+.select-role-title,
 .login-header {
     font-size: 20px;
     color: #838383;
     padding-bottom: 20px;
-    display: flex;
-    cursor: pointer;
 }
 
-.login-header mat-icon {
-    font-size: 30px;
-    position: relative;
-    top: -4px;
-    left: -10px;
+.login-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    width: 100%;
+
+    mat-icon {
+        font-size: 30px;
+        margin-right: 4px;
+    }
+
+    &__title {
+        flex-grow: 1;
+        text-align: center;
+        padding-right: 10%;
+    }
+
+    &__back-button {
+        display: flex;
+        align-items: flex-end;
+        font-size: 16px;
+        color: var(--button-primary-color);
+        cursor: pointer;
+        border: none;
+        background-color: transparent;
+        max-width: fit-content;
+    }
+}
+
+.login-content {
+    display: flex;
+    flex-direction: column;
+    padding: 0 40px;
+}
+
+.password-control {
+    display: flex;
+    align-items: center;
 }
 
 .overlay {
@@ -126,10 +161,18 @@ mat-form-field {
 .field-error {
     position: absolute;
     color: #f00;
-    bottom: -28px;
+    bottom: -20px;
     left: 0;
+
+    & + .field-error {
+        bottom: -40px;
+    }
 }
 
+.eye-icon {
+    margin: 0 0 10px 15px;
+    cursor: pointer;
+}
 
 @media (max-width: 810px) {
 
@@ -192,12 +235,16 @@ mat-form-field {
     }
 
     .credential-creation .example-full-width {
-        width: 81vw;
+        width: 70vw;
         margin: 18px 0 0;
     }
 
-    .credential-creation button {
+    .credential-creation button:not(.login-header__back-button) {
         margin-top: 36px;
         width: 81vw;
+    }
+
+    .eye-icon {
+        margin: 24px 0 10px 15px;
     }
 }

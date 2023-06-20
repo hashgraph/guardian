@@ -115,7 +115,7 @@ export class HandleErrorsService implements HttpInterceptor {
                         });
                     }
                 })
-                return throwError(error.message);
+                return throwError(error);
             })
         );
     }

@@ -74,9 +74,9 @@ export class PolicySettingsComponent implements OnInit {
             this.themes = this.themeService.getThemes();
             this.theme = this.themeService.getCurrent();
             this.loading = false;
-        }, (error) => {
+        }, ({ message }) => {
             this.loading = false;
-            console.error(error);
+            console.error(message);
         });
     }
 
@@ -94,13 +94,13 @@ export class PolicySettingsComponent implements OnInit {
                     this.theme = this.themeService.getCurrent();
                     this.update.emit(true);
                     this.loading = false;
-                }, (error) => {
+                }, ({ message }) => {
                     this.loading = false;
-                    console.error(error);
+                    console.error(message);
                 });
-            }, (error) => {
+            }, ({ message }) => {
                 this.loading = false;
-                console.error(error);
+                console.error(message);
             });
         }
     }
@@ -113,9 +113,9 @@ export class PolicySettingsComponent implements OnInit {
             this.theme = this.themeService.getCurrent();
             this.update.emit(false);
             this.loading = false;
-        }, (error) => {
+        }, ({ message }) => {
             this.loading = false;
-            console.error(error);
+            console.error(message);
         });
     }
 
@@ -172,9 +172,9 @@ export class PolicySettingsComponent implements OnInit {
                     this.themes = this.themeService.getThemes();
                     this.theme = this.themeService.getCurrent();
                     this.loading = false;
-                }, (error) => {
+                }, ({ message }) => {
                     this.loading = false;
-                    console.error(error);
+                    console.error(message);
                 });
             }
         });
@@ -197,9 +197,9 @@ export class PolicySettingsComponent implements OnInit {
                     this.themes = this.themeService.getThemes();
                     this.theme = this.themeService.getCurrent();
                     this.loading = false;
-                }, (error) => {
+                }, ({ message }) => {
                     this.loading = false;
-                    console.error(error);
+                    console.error(message);
                 });
             }
         });
@@ -273,9 +273,9 @@ export class PolicySettingsComponent implements OnInit {
                     this.themes = this.themeService.getThemes();
                     this.theme = this.themeService.getCurrent();
                     this.loading = false;
-                }, (error) => {
+                }, ({ message }) => {
                     this.loading = false;
-                    console.error(error);
+                    console.error(message);
                 });
             }
         });
