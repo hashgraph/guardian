@@ -138,4 +138,16 @@ export class MeecoProvider {
     const submissions = await this.meecoApi.getVPSubmissions(requestId);
     return submissions;
   }
+
+  /**
+   * verifyVP verifies the Verifiable Presentation.
+   * @param id_token 
+   * @param request_uri 
+   * @param vp_token 
+   * @returns {boolean} true if verified
+   */
+  async verifyVP(id_token: string, request_uri: string, vp_token: string): Promise<boolean> {
+    const verified = await this.meecoApi.verifyVP(id_token, request_uri, vp_token);
+    return verified;
+  }
 }
