@@ -256,6 +256,10 @@
     background: none !important;
     color: var(--button-primary-color);
     box-shadow: none;
+
+    &:hover {
+        background: #f8f9fd !important;
+    }
 }
 
 @media (max-width: 810px) {
