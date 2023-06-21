@@ -357,71 +357,6 @@ To start the service (found on [http://localhost:4200](http://localhost:4200))
 npm start
 ```
 
-### How to Configure Hedera Local Node:
-
-1. Install a Hedera Local Network following the [official documentation](https://github.com/hashgraph/hedera-local-node#docker)
-2. Configure Guardian's configuration files `.env/.env.docker` accordingly:
-
-```
-OPERATOR_ID=""
-OPERATOR_KEY=""
-LOCALNODE_ADDRESS="11.11.11.11"
-LOCALNODE_PROTOCOL="http"
-HEDERA_NET="localnode"
-```
-
-{% hint style="info" %}
-Note:
-
-1. Set **LOCALNODE\_ADDRESS** to the IP address of your local node instance. The value above is given as example.
-2. Set **HEDERA\_NET** to **localnode**. If not specified, the default value is **testnet.**
-3. Configure **OPERATOR\_ID** _and_ **OPERATOR\_KEY** accordingly with your local node configuration.
-4. Remove **INITIALISATION\_TOPIC\_ID** as the topic will be created automatically.
-5. Set **LOCALNODE\_PROTOCOL** to **http** or **https** accordingly with your local node configuration (It uses HTTP by default).
-{% endhint %}
-
-1. OPERATOR\_ID: The ID of the operation
-2. OPERATOR\_Key: Private key of the operator\_
-3. LOCALNODE\_ADDRESS : The address of the localnode server. This can be its IP address or a domain name
-4. LOCALNODE\_PROTOCOL : Communication protocol for interactions with the local node, can be http or https.
-5. HEDERA\_NET : Type of the Hedera node to transact.
-
-### How to Configure HashiCorp Vault
-
-1. Configure .env/.env.docker files in **auth-service** folder
-
-<pre><code><strong>VAULT_PROVIDER = "hashicorp"
-</strong></code></pre>
-
-{% hint style="info" %}
-**Note**: VAULT\_PROVIDER can be set to "database" or "hashicorp" to select Database instance or a hashicorp vault instance correspondingly.
-{% endhint %}
-
-If the VAULT\_PROVIDER value is set to "hashicorp" the following 3 parameters should be configured in **auth-service** folder.
-
-1. HASHICORP\_ADDRESS : http://localhost:8200 for using local vault. For remote vault, we need to use the value from the configuration settings of Hashicorp vault service.
-2. HASHICORP\_TOKEN : the token from the Hashicorp vault.
-3. HASHICORP\_WORKSPACE : this is only needed when we are using cloud vault for Hashicorp. Default value is "admin".
-
-2\. Hashicorp should be configured with the created Key-Value storage, named "secret" by default, with the settingKey=\<value> records for the following keys:
-
-1. OPERATOR\_ID
-2. OPERATOR\_KEY
-3. IPFS\_STORAGE\_API\_KEY
-
-{% hint style="info" %}
-**Note:** These records in vault will be created automatically if there are environment variables with the matching names.
-{% endhint %}
-
-#### How to import existing user keys from DB into the vault:
-
-During Guardian services initialization, we need to set the following configuration settings in **auth-service** folder:
-
-```
-IMPORT_KEYS_FROM_DB = 1
-VAULT_PROVIDER = "hashicorp"
-```
-
 ### Local development using Docker
 
 1. create .env file at the root level and update all variable requires for docker.
@@ -608,52 +543,11 @@ Values from .env file need to be set up only on first start (when db or vault ar
 | DIRECT\_MESSAGE\_PROTOCOL | Protocol https or http (http by default, https need additional server like nginx)                                                   | http                      |
 | MQ\_MAX\_PAYLOAD          | Max message size for send via message-broker (otherwise create direct message) if not set always send messages using message broker | 35                        |
 
-### Restoring account from Database/Hashicorp vault during Setup.
-
-For backup all data, we need to create dump of all used mongodb databases and hashicorp vault (if it use)
-
-#### Mongo DB:
-
-Mongo DB databases set in .env (.env.docker) files or via environment variables named DB\_DATABASE Default names:
-
-* auth-service - auth\_db
-* guardian-service - guardian\_db
-* logger-service (not nesessary) - logger\_db
-
-Example using mongo utils:
-
-Creating dump:
-
-```
-mongodump --db auth_db --out ./dump
-mongodump --db guardian_db --out ./dump
-mongodump --db logger_db --out ./dump
-```
-
-Restoring dump:
-
-```
-mongorestore --db auth_db ./dump/auth_db
-mongorestore --db guardian_db ./dump/guardian_db
-mongorestore --db logger_db ./dump/logger_db
-```
-
-#### Hashicorp Vault:
-
-For Hashicorp vault backup and restore use this instructions: [https://developer.hashicorp.com/vault/tutorials/standard-procedures/sop-backup](https://developer.hashicorp.com/vault/tutorials/standard-procedures/sop-backup)
-
 ### Summary of URLs and Ports
 
 #### Using Docker:
 
-| Folder            | URL                                                                        | Target Deployment |
-| ----------------- | -------------------------------------------------------------------------- | ----------------- |
-| WEB\_INTERFACE    | [http://localhost:3000](http://localhost:3000)                             | Production        |
-| API\_GATEWAY      | [http://localhost:3000/api/v1/](http://localhost:3000/api/v1/)             | Production        |
-| MRV\_SENDER       | [http://localhost:3000/mrv-sender/](http://localhost:3000/mrv-sender/)     | Demo              |
-| TOPIC\_VIEWER     | [http://localhost:3000/topic-viewer/](http://localhost:3000/topic-viewer/) | Demo              |
-| API\_DOCS         | [http://localhost:3000/api-docs/v1/](http://localhost:3000/api-docs/v1/)   | Demo              |
-| MONGO-ADMIN-PANEL | [http://localhost:3000/mongo-admin](http://localhost:3000/mongo-admin)     | Demo              |
+<table><thead><tr><th width="216.33333333333326">Folder</th><th>URL</th><th>Target Deployment</th></tr></thead><tbody><tr><td>WEB_INTERFACE</td><td><a href="http://localhost:3000">http://localhost:3000</a></td><td>Production</td></tr><tr><td>API_GATEWAY</td><td><a href="http://localhost:3000/api/v1/">http://localhost:3000/api/v1/</a></td><td>Production</td></tr><tr><td>MRV_SENDER</td><td><a href="http://localhost:3000/mrv-sender/">http://localhost:3000/mrv-sender/</a></td><td>Demo</td></tr><tr><td>TOPIC_VIEWER</td><td><a href="http://localhost:3000/topic-viewer/">http://localhost:3000/topic-viewer/</a></td><td>Demo</td></tr><tr><td>API_DOCS</td><td><a href="http://localhost:3000/api-docs/v1/">http://localhost:3000/api-docs/v1/</a></td><td>Demo</td></tr><tr><td>MONGO-ADMIN-PANEL</td><td><a href="http://localhost:3000/mongo-admin">http://localhost:3000/mongo-admin</a></td><td>Demo</td></tr></tbody></table>
 
 #### Not in Docker:
 
