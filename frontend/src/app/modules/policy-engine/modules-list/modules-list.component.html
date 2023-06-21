@@ -84,8 +84,7 @@
                                  matTooltipClass="guardian-tooltip" matTooltipPosition="above">
                                 <mat-icon>import_export</mat-icon>
                             </div>
-                            <div [ngClass]="{'btn-icon-desibled': element.status !== 'DRAFT'}"
-                                 [queryParams]="{ moduleId: element.uuid }"
+                            <div [queryParams]="{ moduleId: element.uuid }"
                                  [routerLink]="['/policy-configuration']"
                                  class="btn-icon-edit" matTooltip="Edit" matTooltipClass="guardian-tooltip"
                                  matTooltipPosition="above">
