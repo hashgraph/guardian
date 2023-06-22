@@ -1,6 +1,6 @@
-import { GenerateUUIDv4, PolicyType } from '@guardian/interfaces';
+import { GenerateUUIDv4, ModuleStatus, PolicyType } from '@guardian/interfaces';
 import { PolicyBlockModel } from './block.model';
-import { PolicyModuleModel } from "./module.model";
+import { PolicyModuleModel } from './module.model';
 import { IBlockConfig } from './interfaces/block-config.interface';
 import { IModuleVariables } from './variables/module-variables.interface';
 import { PolicyEventModel } from './block-event.model';
@@ -49,8 +49,8 @@ export class TemplateModel {
         this._config.description = template.description;
         this._config.localTag = this._config.localTag || 'Module';
 
-        this.isDraft = this.status === PolicyType.DRAFT;
-        this.isPublished = this.status === PolicyType.PUBLISH;
+        this.isDraft = (this.status === PolicyType.DRAFT) || (this.status === ModuleStatus.DRAFT);
+        this.isPublished = (this.status === PolicyType.PUBLISH) || (this.status === ModuleStatus.PUBLISHED);
         this.readonly = this.isPublished;
     }
 
