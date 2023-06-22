@@ -1,6 +1,6 @@
 import * as yup from 'yup';
 import fieldsValidation from '../fields-validation'
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString, ValidateIf } from 'class-validator';
 import { UserRole } from '@guardian/interfaces';
 import { Expose } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
@@ -65,6 +65,7 @@ export class RegisterUserDTO {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
+  @ValidateIf((user: RegisterUserDTO, value: string) => user.password === value)
       // tslint:disable-next-line:variable-name
   password_confirmation: string;
 

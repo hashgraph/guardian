@@ -85,6 +85,9 @@ export class ProfileApi {
   @Put('/:username')
   @HttpCode(HttpStatus.NO_CONTENT)
   async setUserProfile(@Req() req, @Response() res): Promise<any> {
+    if (!req.headers.authorization || !req.user || !req.user.did) {
+      throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
+    }
     try {
       const guardians = new Guardians();
 
@@ -164,6 +167,9 @@ export class ProfileApi {
   @Get('/:username/balance')
   @HttpCode(HttpStatus.OK)
   async getUserBalance(@Req() req, @Response() res): Promise<any> {
+    if (!req.headers.authorization || !req.user || !req.user.did) {
+      throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
+    }
     try {
       const guardians = new Guardians();
       const balance = await guardians.getUserBalance(req.params.username);
