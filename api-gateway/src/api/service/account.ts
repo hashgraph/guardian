@@ -7,7 +7,7 @@ import { PolicyListResponse } from '@entities/policy';
 import { StandardRegistryAccountResponse } from '@entities/account';
 import { ClientProxy } from '@nestjs/microservices';
 import { Body, Controller, Get, Headers, HttpCode, HttpException, HttpStatus, Inject, Post, Req, UseGuards } from '@nestjs/common';
-import { AuthGuard, checkPermission } from '@auth/authorization-helper';
+import { AuthGuard } from '@auth/authorization-helper';
 import { AccountsResponseDTO, AccountsSessionResponseDTO, AggregatedDTOItem, BalanceResponseDTO, LoginUserDTO, RegisterUserDTO } from '@middlewares/validation/schemas/accounts';
 import { ApiBearerAuth, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath } from '@nestjs/swagger';
 import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
@@ -169,7 +169,7 @@ export class AccountApi {
     @Get()
     @HttpCode(HttpStatus.OK)
     async getAllAccounts(@Req() req): Promise<AccountsResponseDTO[]> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        // await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const users = new Users();
             return await users.getAllUserAccounts() as any;
