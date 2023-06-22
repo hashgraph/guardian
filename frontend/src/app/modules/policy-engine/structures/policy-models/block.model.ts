@@ -10,26 +10,30 @@ import { PolicyModuleModel } from './module.model';
 import { TemplateModel } from './template.model';
 
 export class PolicyBlockModel {
-    public readonly id: string;
-    public readonly blockType: string;
-    public readonly properties: { [name: string]: any; };
+    public id!: string;
+    public blockType!: string;
+    public properties!: { [name: string]: any; };
 
     protected _module: PolicyModel | PolicyModuleModel | TemplateModel | undefined;
-    protected _parent: PolicyBlockModel | null;
-    protected _children: PolicyBlockModel[];
-    protected _events: PolicyEventModel[];
+    protected _parent!: PolicyBlockModel | null;
+    protected _children!: PolicyBlockModel[];
+    protected _events!: PolicyEventModel[];
     protected _artifacts!: IArtifact[];
-    protected _root: boolean;
-    protected _changed: boolean;
+    protected _root!: boolean;
+    protected _changed!: boolean;
     protected _defaultEvent: PolicyEventModel | null | undefined;
-    protected _tag: string;
-    protected _localTag: string;
-    protected _lastPrefix: string;
-    protected _permissionsNumber: string[];
-    protected _post: boolean;
-    protected _get: boolean;
+    protected _tag!: string;
+    protected _localTag!: string;
+    protected _lastPrefix!: string;
+    protected _permissionsNumber!: string[];
+    protected _post!: boolean;
+    protected _get!: boolean;
 
     constructor(config: IBlockConfig, parent: PolicyBlockModel | null) {
+        this.init(config, parent);
+    }
+
+    public init(config: IBlockConfig, parent: PolicyBlockModel | null) {
         this._changed = false;
         this._root = false;
 
@@ -223,12 +227,13 @@ export class PolicyBlockModel {
         this.refresh();
     }
 
-    public createChild(block: IBlockConfig, index?: number) {
+    public createChild(block: IBlockConfig, index?: number): any {
         if (this._module) {
             block.tag = this._module.getNewTag('Block');
         }
-        this._createChild(block, this._module, index);
+        const newBlock = this._createChild(block, this._module, index);
         this.refresh();
+        return newBlock
     }
 
     public pasteChild(block: IBlockConfig) {
@@ -268,6 +273,7 @@ export class PolicyBlockModel {
             child.permissions = this.permissions.slice();
         }
         this._addChild(child, index);
+        return child;
     }
 
     protected _pasteChild(block: IBlockConfig, module: any) {

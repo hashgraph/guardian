@@ -4,8 +4,10 @@ import { checkPermission } from '@auth/authorization-helper';
 import { Users } from '@helpers/users';
 import { IAuthUser, Logger } from '@guardian/common';
 import { Controller, Get, HttpCode, HttpStatus, Req, Response } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('trustchains')
+@ApiTags('trust-chains')
 export class TrustChainsOldApi {
     @Get('/')
     @HttpCode(HttpStatus.OK)

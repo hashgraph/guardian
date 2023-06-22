@@ -1,8 +1,10 @@
 import { Guardians } from '@helpers/guardians';
 import { Logger } from '@guardian/common';
 import { Body, Controller, HttpCode, HttpStatus, Post, Req } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('analytics')
+@ApiTags('analytics')
 export class AnalyticsApi {
     @Post('/compare/policies')
     @HttpCode(HttpStatus.OK)

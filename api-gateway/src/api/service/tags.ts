@@ -4,19 +4,24 @@ import { SchemaCategory, SchemaHelper, UserRole } from '@guardian/interfaces';
 import { SchemaUtils } from '@helpers/schema-utils';
 import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response } from '@nestjs/common';
 import { checkPermission } from '@auth/authorization-helper';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('tags')
+@ApiTags('tags')
 export class TagsApi {
     @Post('/')
     @HttpCode(HttpStatus.CREATED)
     async setTags(@Req() req, @Response() res): Promise<any> {
         try {
+            if (!req.user) {
+                throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
+            }
             const guardian = new Guardians();
             const item = await guardian.createTag(req.body, req.user.did);
             return res.status(201).json(item);
         } catch (error) {
             await (new Logger()).error(error, ['API_GATEWAY']);
-            throw error
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -25,7 +30,10 @@ export class TagsApi {
     async searchTags(@Req() req, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();
-            const { entity, target, targets } = req.body;
+            if (!req.user) {
+                throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
+            }
+            const {entity, target, targets} = req.body;
             let _targets: string[];
             if (!entity) {
                 throw new HttpException('Invalid entity', HttpStatus.UNPROCESSABLE_ENTITY)
@@ -77,6 +85,9 @@ export class TagsApi {
     @Delete('/:uuid')
     @HttpCode(HttpStatus.OK)
     async deleteTag(@Req() req, @Response() res): Promise<any> {
+        if (!req.user) {
+            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
+        }
         try {
             const guardian = new Guardians();
             if (!req.params.uuid) {
@@ -94,9 +105,12 @@ export class TagsApi {
     @Post('/synchronization')
     @HttpCode(HttpStatus.OK)
     async synchronizationTags(@Req() req, @Response() res): Promise<any> {
+        if (!req.user) {
+            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
+        }
         try {
             const guardians = new Guardians();
-            const { entity, target } = req.body;
+            const {entity, target} = req.body;
 
             if (!entity) {
                 throw new HttpException('Invalid entity', HttpStatus.UNPROCESSABLE_ENTITY)
@@ -189,7 +203,7 @@ export class TagsApi {
             const schema = await guardians.getSchemaById(schemaId);
             const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.TAG);
             if (error) {
-                throw new HttpException('error', HttpStatus.FORBIDDEN)
+                throw new HttpException(error, HttpStatus.FORBIDDEN)
             }
             await guardians.deleteSchema(schemaId);
             return res.json(true);
@@ -211,7 +225,7 @@ export class TagsApi {
             const schema = await guardians.getSchemaById(newSchema.id);
             const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.TAG);
             if (error) {
-                throw new HttpException('error', HttpStatus.FORBIDDEN)
+                throw new HttpException(error, HttpStatus.FORBIDDEN)
             }
             SchemaUtils.fromOld(newSchema);
             SchemaHelper.checkSchemaKey(newSchema);

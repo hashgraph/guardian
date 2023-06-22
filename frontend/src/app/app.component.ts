@@ -4,6 +4,8 @@ import { AuthStateService } from './services/auth-state.service';
 import { MapService } from './services/map.service';
 import { WebSocketService } from './services/web-socket.service';
 import { BrandingService } from './services/branding.service';
+import './modules/policy-engine/policy-lang-modes/policy-json-lang.mode';
+import './modules/policy-engine/policy-lang-modes/policy-yaml-lang.mode';
 
 @Component({
     selector: 'app-root',

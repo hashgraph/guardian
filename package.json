@@ -5,7 +5,6 @@
   "workspaces": [
     "interfaces",
     "common",
-    "api-docs",
     "api-gateway",
     "auth-service",
     "guardian-service",

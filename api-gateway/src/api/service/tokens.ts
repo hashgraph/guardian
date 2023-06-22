@@ -7,6 +7,7 @@ import { ServiceError } from '@helpers/service-requests-base';
 import { prepareValidationResponse } from '@middlewares/validation';
 import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response } from '@nestjs/common';
 import { checkPermission } from '@auth/authorization-helper';
+import { ApiTags } from '@nestjs/swagger';
 
 /**
  * Token route
@@ -71,6 +72,7 @@ async function setDynamicTokenPolicy(tokens: any[], engineService?: PolicyEngine
 }
 
 @Controller('tokens')
+@ApiTags('tokens')
 export class TokensApi {
     @Get('/')
     @HttpCode(HttpStatus.OK)
