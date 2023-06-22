@@ -251,6 +251,17 @@
     align-items: center;
 }
 
+.generate-btn {
+    border: 1px solid var(--button-primary-color);
+    background: none !important;
+    color: var(--button-primary-color);
+    box-shadow: none;
+
+    &:hover {
+        background: #f8f9fd !important;
+    }
+}
+
 @media (max-width: 810px) {
 
     .list {
@@ -270,12 +281,6 @@
         width: 100% !important;
         position: static;
         margin: 0 !important;
-    }
-
-    #generate-btn-mobile {
-        border: 1px solid var(--button-primary-color);
-        background: none !important;
-        color: var(--button-primary-color);
     }
 
     .white-space {
