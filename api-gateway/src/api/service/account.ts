@@ -228,7 +228,7 @@ export class AccountApi {
         if (!user) {
             throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
         }
-        await checkPermission(UserRole.STANDARD_REGISTRY)(user);
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(user);
         try {
             return await users.getAllStandardRegistryAccounts() as any;
         } catch (error) {
@@ -281,7 +281,7 @@ export class AccountApi {
             throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
         }
         try {
-            await checkPermission(UserRole.STANDARD_REGISTRY)(user);
+            await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(user);
         } catch (e) {
             throw new HttpException(e.message, HttpStatus.FORBIDDEN);
         }
