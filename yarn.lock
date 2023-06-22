@@ -1472,7 +1472,7 @@ __metadata:
     "@transmute/security-context": ^0.7.0-unstable.80
     "@transmute/vc.js": ^0.7.0-unstable.80
     "@types/express": ^4.17.13
-    "@types/node": ^18.16.0
+    "@types/node": ^20.3.1
     "@types/winston": ^2.4.4
     ajv: ^8.10.0
     ajv-formats: ^2.1.1
@@ -1501,7 +1501,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@guardian/interfaces@workspace:interfaces"
   dependencies:
-    "@types/node": ^18.16.0
+    "@types/node": ^20.3.1
     mocha-junit-reporter: ^2.0.2
     reflect-metadata: ^0.1.13
     tslint: ^6.1.3
@@ -2849,13 +2849,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/js-yaml@npm:^4.0.5":
-  version: 4.0.5
-  resolution: "@types/js-yaml@npm:4.0.5"
-  checksum: 7dcac8c50fec31643cc9d6444b5503239a861414cdfaa7ae9a38bc22597c4d850c4b8cec3d82d73b3fbca408348ce223b0408d598b32e094470dfffc6d486b4d
-  languageName: node
-  linkType: hard
-
 "@types/jsonwebtoken@npm:9.0.1":
   version: 9.0.1
   resolution: "@types/jsonwebtoken@npm:9.0.1"
@@ -2990,10 +2983,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^18.16.0":
-  version: 18.16.16
-  resolution: "@types/node@npm:18.16.16"
-  checksum: 0efad726dd1e0bef71c392c708fc5d78c5b39c46b0ac5186fee74de4ccb1b2e847b3fa468da67d62812f56569da721b15bf31bdc795e6c69b56c73a45079ed2d
+"@types/node@npm:^20.3.1":
+  version: 20.3.1
+  resolution: "@types/node@npm:20.3.1"
+  checksum: 63a393ab6d947be17320817b35d7277ef03728e231558166ed07ee30b09fd7c08861be4d746f10fdc63ca7912e8cd023939d4eab887ff6580ff704ff24ed810c
   languageName: node
   linkType: hard
 
@@ -3042,16 +3035,6 @@ __metadata:
     "@types/mime": "*"
     "@types/node": "*"
   checksum: 2e078bdc1e458c7dfe69e9faa83cc69194b8896cce57cb745016580543c7ab5af07fdaa8ac1765eb79524208c81017546f66056f44d1204f812d72810613de36
-  languageName: node
-  linkType: hard
-
-"@types/swagger-ui-express@npm:^4.1.3":
-  version: 4.1.3
-  resolution: "@types/swagger-ui-express@npm:4.1.3"
-  dependencies:
-    "@types/express": "*"
-    "@types/serve-static": "*"
-  checksum: 1c990fa8c158f699c5443245383daef2c4b47efce715c105e67f9b88447cf23663774393fdeea7d5a6e97a83d6959b09129f19c4abca64abdb7db74517162295
   languageName: node
   linkType: hard
 
@@ -3435,23 +3418,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"api-docs@workspace:api-docs":
-  version: 0.0.0-use.local
-  resolution: "api-docs@workspace:api-docs"
-  dependencies:
-    "@types/express": ^4.17.13
-    "@types/js-yaml": ^4.0.5
-    "@types/node": ^18.16.0
-    "@types/swagger-ui-express": ^4.1.3
-    dotenv: ^16.0.0
-    express: ^4.17.3
-    js-yaml: ^4.1.0
-    swagger-ui-express: ^4.3.0
-    tslint: ^6.1.3
-    typescript: ^4.6.3
-  languageName: unknown
-  linkType: soft
-
 "api-gateway@workspace:api-gateway":
   version: 0.0.0-use.local
   resolution: "api-gateway@workspace:api-gateway"
@@ -3460,13 +3426,14 @@ __metadata:
     "@guardian/interfaces": ^2.13.1
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
+    "@nestjs/jwt": ^10.0.3
     "@nestjs/microservices": ^9.4.1
     "@nestjs/platform-express": ^9.4.2
     "@nestjs/swagger": ^6.3.0
     "@types/express": ^4.17.13
     "@types/express-fileupload": ^1.4.1
     "@types/jszip": ^3.4.1
-    "@types/node": ^18.16.0
+    "@types/node": ^20.3.1
     "@types/ws": ^8.2.2
     chai: ^4.3.4
     class-transformer: ^0.5.1
@@ -3693,7 +3660,7 @@ __metadata:
     "@nestjs/core": ^9.4.1
     "@nestjs/microservices": ^9.4.1
     "@types/jsonwebtoken": ^8.5.4
-    "@types/node": ^18.16.0
+    "@types/node": ^20.3.1
     "@types/node-vault": ^0
     chai: ^4.3.4
     cross-env: ^7.0.3
@@ -6259,7 +6226,7 @@ __metadata:
     "@types/express": ^4.17.13
     "@types/fs-extra": ^9.0.12
     "@types/jszip": ^3.4.1
-    "@types/node": ^18.16.0
+    "@types/node": ^20.3.1
     ajv: ^8.10.0
     ajv-formats: ^2.1.1
     axios: ^1.3.6
@@ -6294,9 +6261,6 @@ __metadata:
 "guardian@workspace:.":
   version: 0.0.0-use.local
   resolution: "guardian@workspace:."
-  dependencies:
-    "@nestjs/jwt": ^10.0.3
-    "@nestjs/swagger": ^6.3.0
   languageName: unknown
   linkType: soft
 
@@ -7727,7 +7691,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-yaml@npm:4.1.0, js-yaml@npm:^4.1.0":
+"js-yaml@npm:4.1.0":
   version: 4.1.0
   resolution: "js-yaml@npm:4.1.0"
   dependencies:
@@ -8267,7 +8231,7 @@ __metadata:
     "@nestjs/core": ^9.4.1
     "@nestjs/microservices": ^9.4.1
     "@types/fs-extra": ^9.0.12
-    "@types/node": ^18.16.0
+    "@types/node": ^20.3.1
     "@web-std/fetch": 3.0.0
     chai: 4.3.6
     cors: ^2.8.5
@@ -9946,7 +9910,7 @@ __metadata:
     "@types/express": ^4.17.13
     "@types/fs-extra": ^9.0.12
     "@types/jszip": ^3.4.1
-    "@types/node": ^18.16.0
+    "@types/node": ^20.3.1
     ajv: ^8.10.0
     ajv-formats: ^2.1.1
     axios: ^1.3.6
@@ -11439,24 +11403,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"swagger-ui-dist@npm:>=4.11.0":
-  version: 4.19.0
-  resolution: "swagger-ui-dist@npm:4.19.0"
-  checksum: a813128a7a10534e57b2d56913b7c3c216445254c1eda7ac8198331fb63e50754232b4f53178814abab51ba17b8e8fdc6e6e8c438f5070f83dc2f33cfe840916
-  languageName: node
-  linkType: hard
-
-"swagger-ui-express@npm:^4.3.0":
-  version: 4.6.3
-  resolution: "swagger-ui-express@npm:4.6.3"
-  dependencies:
-    swagger-ui-dist: ">=4.11.0"
-  peerDependencies:
-    express: ">=4.0.0 || >=5.0.0-beta"
-  checksum: bd0e02d2572685fcd82701b29f27ba6a27bc72de2b1553e84f884d008a0bf85a3711c9e236bb658130d702892866744d1a8a30b52b887e4f8224635c57afc63d
-  languageName: node
-  linkType: hard
-
 "table-layout@npm:^1.0.2":
   version: 1.0.2
   resolution: "table-layout@npm:1.0.2"
@@ -12467,7 +12413,7 @@ __metadata:
     "@transmute/jsonld-schema": ^0.7.0-unstable.80
     "@transmute/security-context": ^0.7.0-unstable.80
     "@transmute/vc.js": ^0.7.0-unstable.80
-    "@types/node": ^18.16.0
+    "@types/node": ^20.3.1
     axios: ^1.3.6
     axios-retry: ^3.2.4
     chai: 4.3.4
