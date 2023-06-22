@@ -1,7 +1,8 @@
-import { Component, EventEmitter, Input, OnInit, Output, ViewEncapsulation } from '@angular/core';
+import { Component, EventEmitter, Inject, Input, OnInit, Output, ViewEncapsulation } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { CodeEditorDialogComponent } from '../../../../helpers/code-editor-dialog/code-editor-dialog.component';
 import { IModuleVariables, PolicyBlockModel, SchemaVariables } from '../../../../structures';
+import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
 
 @Component({
     selector: 'app-custom-logic-config',
@@ -16,7 +17,7 @@ export class CustomLogicConfigComponent implements OnInit {
 
     private moduleVariables!: IModuleVariables | null;
     private item!: PolicyBlockModel;
-    
+
     properties!: any;
     propHidden: any = {
         outputSchemaGroup: false
@@ -24,7 +25,13 @@ export class CustomLogicConfigComponent implements OnInit {
     schemas!: SchemaVariables[];
 
     constructor(
-        private dialog: MatDialog
+        private dialog: MatDialog,
+        @Inject(GET_SCHEMA_NAME)
+        public getSchemaName: (
+            name?: string,
+            version?: string,
+            status?: string
+        ) => string,
     ) { }
 
     ngOnInit(): void {
@@ -61,7 +68,7 @@ export class CustomLogicConfigComponent implements OnInit {
             }
         })
     }
-    
+
     onSave() {
         this.item.changed = true;
     }

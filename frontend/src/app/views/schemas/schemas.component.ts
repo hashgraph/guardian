@@ -183,9 +183,17 @@ export class SchemaConfigComponent implements OnInit {
             for (const schema of schemas) {
                 schema.policy = this.policyNameByTopic[schema.topicId];
                 if (schema.policy) {
-                    schema.fullName = `${schema.name} (${schema.policy})`;
+                    schema.fullName = `${SchemaHelper.getSchemaName(
+                        schema.name,
+                        schema.version || schema.sourceVersion,
+                        schema.status
+                    )} (${schema.policy})`;
                 } else {
-                    schema.fullName = schema.name;
+                    schema.fullName = SchemaHelper.getSchemaName(
+                        schema.name,
+                        schema.version || schema.sourceVersion,
+                        schema.status
+                    );
                 }
             }
 
@@ -195,9 +203,9 @@ export class SchemaConfigComponent implements OnInit {
             this.pageIndex = 0;
             this.pageSize = 25;
             this.loadSchemas();
-        }, (error) => {
+        }, ({ message }) => {
             this.loading = false;
-            console.error(error);
+            console.error(message);
         });
     }
 

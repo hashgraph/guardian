@@ -165,12 +165,8 @@ export class ExternalDataBlock {
                 const group = await ref.databaseServer.getUserInGroup(ref.policyId, data.owner, data.group);
                 user.setGroup(group);
             } else {
-                const groups = await ref.databaseServer.getGroupsByUser(ref.policyId, data.owner);
-                for (const group of groups) {
-                    if (group.active !== false) {
-                        user.setGroup(group);
-                    }
-                }
+                const group = await ref.databaseServer.getActiveGroupByUser(ref.policyId, data.owner);
+                user.setGroup(group);
             }
         }
 

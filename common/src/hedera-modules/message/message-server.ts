@@ -18,7 +18,7 @@ import { Environment } from '../environment';
 import { MessageMemo } from '../memo-mappings/message-memo';
 import { RegistrationMessage } from './registration-message';
 import { TopicMessage } from './topic-message';
-import { TopicConfig } from '../../hedera-modules';
+import { RoleMessage, TopicConfig } from '../../hedera-modules';
 import { TokenMessage } from './token-message';
 import { ModuleMessage } from './module-message';
 import { DatabaseServer } from '../../database-modules';
@@ -299,6 +299,9 @@ export class MessageServer {
             case MessageType.Tag:
                 message = TagMessage.fromMessageObject(json);
                 break;
+            case MessageType.RoleDocument:
+                message = RoleMessage.fromMessageObject(json);
+                break;
             // Default schemas
             case 'schema-document':
                 message = SchemaMessage.fromMessageObject(json);
@@ -348,14 +351,14 @@ export class MessageServer {
      * @param topicId
      * @param type
      * @param action
-     * @param timestamp
+     * @param timeStamp
      * @private
      */
     private async getTopicMessages(
         topicId: string | TopicId,
         type?: MessageType,
         action?: MessageAction,
-        timestamp?: string
+        timeStamp?: string
     ): Promise<Message[]> {
         const { operatorId, operatorKey, dryRun } = this.clientOptions;
 
@@ -372,7 +375,7 @@ export class MessageServer {
                 operatorKey,
                 dryRun,
                 topic,
-                timestamp
+                timeStamp
             }
         }, 10);
 
@@ -559,15 +562,40 @@ export class MessageServer {
 
     /**
      * Get messages
+     * @param timeStamp
+     */
+    public static async getMessage<T extends Message>(timeStamp: string): Promise<T> {
+        const workers = new Workers();
+        const message = await workers.addRetryableTask({
+            type: WorkerTaskType.GET_TOPIC_MESSAGE,
+            data: {
+                timeStamp
+            }
+        }, 10);
+        try {
+            const item = MessageServer.fromMessage(message.message);
+            item.setAccount(message.payer_account_id);
+            item.setIndex(message.sequence_number);
+            item.setId(message.id);
+            item.setTopicId(message.topicId);
+            return item as T;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    /**
+     * Get messages
      * @param topicId
      * @param type
      * @param action
+     * @param timeStamp
      */
     public static async getMessages<T extends Message>(
         topicId: string | TopicId,
         type?: MessageType,
         action?: MessageAction,
-        timestamp?: string
+        timeStamp?: string
     ): Promise<T[]> {
         if (!topicId) {
             throw new Error(`Invalid Topic Id`);
@@ -578,7 +606,7 @@ export class MessageServer {
             type: WorkerTaskType.GET_TOPIC_MESSAGES,
             data: {
                 topic,
-                timestamp
+                timeStamp
             }
         }, 10);
         new Logger().info(`getTopicMessages, ${topic}`, ['GUARDIAN_SERVICE']);

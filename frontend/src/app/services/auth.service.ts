@@ -1,6 +1,6 @@
 import { HttpClient, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { ISession, IUser } from '@guardian/interfaces';
+import { ISession, IUser, IStandardRegistryResponse } from '@guardian/interfaces';
 import { Observable, of, Subject, Subscription } from 'rxjs';
 import { API_BASE_URL } from './api';
 
@@ -75,6 +75,10 @@ export class AuthService {
 
     public getStandardRegistries(): Observable<IUser[]> {
         return this.http.get<any>(`${this.url}/standard-registries`);
+    }
+
+    public getAggregatedStandardRegistries(): Observable<IStandardRegistryResponse[]> {
+        return this.http.get<any>(`${this.url}/standard-registries/aggregated`);
     }
 
     public balance(): Observable<any> {

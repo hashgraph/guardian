@@ -18,7 +18,7 @@ Once we have created the Draft of the policy – notice the status field showing
 
 The edit screen will open and you will notice two boxes on the right side of the screen. The top Policy box is static and offers the ability to add high-level “Policy properties.” You can edit the name, Policy Tag, etc. Note that you can also create custom roles that are specific to your policy.
 
-![](<../.gitbook/assets/image 5.png>)
+![](../.gitbook/assets/PW\_image\_4.png)
 
 The second Interface ContainerBlock is specific to the first workflow block. We will begin editing this block to build our policy!
 
@@ -33,7 +33,7 @@ But in the Permissions we can choose only: policy roles, any role, no role, owne
 
 Then we select the “type” of UI we want to utilize. In our example, we choose the “Blank” template.
 
-![](../.gitbook/assets/PW\_image\_4.png)
+![](<../.gitbook/assets/image 5.png>)
 
 **Programmatically you begin like this:**
 

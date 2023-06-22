@@ -151,6 +151,7 @@ export async function importSchemaByFiles(
         if (file.context) {
             file.context = replaceValueRecursive(file.context, uuidMap);
         }
+        file.sourceVersion = file.version;
         SchemaHelper.setVersion(file, '', '');
     }
 

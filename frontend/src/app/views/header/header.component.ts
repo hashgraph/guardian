@@ -358,6 +358,10 @@ export class HeaderComponent implements OnInit {
         return false;
     }
 
+    doBranding() {
+        this.router.navigate(['/branding']);
+    }
+
     openNav() {
         document.getElementById("menu-backdrop")!.style.display = "flex";
         document.getElementById("menu-backdrop")!.style.zIndex = "1000";
@@ -372,8 +376,8 @@ export class HeaderComponent implements OnInit {
               this.profileData = profile;
               this.hederaAccountID = this.profileData.hederaAccountId;
             },
-            (error) => {
-              console.error('Failed to get profile data:', error);
+            ({ message }) => {
+              console.error('Failed to get profile data:', message);
             }
         );
     }

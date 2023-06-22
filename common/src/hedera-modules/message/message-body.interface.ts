@@ -240,6 +240,10 @@ export interface VcMessageBody extends MessageBody {
      * Document status
      */
     documentStatus: string;
+    /**
+     * Encoded Data
+     */
+    encodedData: boolean;
 }
 
 /**
@@ -433,4 +437,18 @@ export interface TagMessageBody extends MessageBody {
      * Date
      */
     date: string;
+}
+
+/**
+ * Role message body
+ */
+export interface RoleMessageBody extends VcMessageBody {
+    /**
+     * Role
+     */
+    role?: string;
+    /**
+     * Group
+     */
+    group?: string;
 }

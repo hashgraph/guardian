@@ -1,6 +1,5 @@
 import { Component, Input, SimpleChanges } from '@angular/core';
 import { SettingsService } from 'src/app/services/settings.service';
-import { environment } from 'src/environments/environment';
 
 /**
  * Hedera explorer.

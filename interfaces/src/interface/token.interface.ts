@@ -69,6 +69,11 @@ export interface IToken {
      * Is token draft
      */
     draftToken?: boolean;
+
+    /**
+     * Can delete
+     */
+    canDelete?: boolean;
 }
 
 /**

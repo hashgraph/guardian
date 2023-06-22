@@ -78,9 +78,9 @@ export class ArtifactConfigComponent implements OnInit {
             this.pageIndex = 0;
             this.pageSize = 100;
             this.loadArtifacts();
-        }, (error) => {
+        }, ({ message }) => {
             this.loading = false;
-            console.error(error);
+            console.error(message);
         });
     }
 

@@ -1,16 +1,10 @@
-import {
-    GenerateUUIDv4,
-    GroupRelationshipType,
-    PolicyType,
-    Schema,
-    Token,
-} from '@guardian/interfaces';
+import { GenerateUUIDv4, GroupRelationshipType, PolicyType, Schema, Token, } from '@guardian/interfaces';
 import { PolicyRoleModel } from './policy-role.model';
 import { PolicyGroupModel } from './policy-group.model';
 import { PolicyTokenModel } from './policy-token.model';
 import { PolicyEventModel } from './block-event.model';
 import { PolicyBlockModel } from './block.model';
-import { PolicyModuleModel } from "./module.model";
+import { PolicyModuleModel } from './module.model';
 import { IBlockConfig } from './interfaces/block-config.interface';
 import { PolicyTopicModel } from './policy-topic.model';
 import { IModuleVariables } from './variables/module-variables.interface';
