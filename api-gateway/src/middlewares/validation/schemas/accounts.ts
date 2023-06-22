@@ -63,7 +63,9 @@ export class RegisterUserDTO {
   @IsNotEmpty()
   password: string;
 
-  @Match('password')
+  @Match('password', {
+    message: 'Passwords must match'
+  })
   @ApiProperty()
   @IsString()
   @IsNotEmpty()

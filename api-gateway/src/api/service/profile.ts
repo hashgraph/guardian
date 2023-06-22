@@ -168,7 +168,7 @@ export class ProfileApi {
       const guardians = new Guardians();
       const balance = await guardians.getUserBalance(req.params.username);
       if (balance.toLowerCase().includes('invalid account')) {
-        throw new HttpException('Account not found', HttpStatus.NOT_FOUND)
+        throw new HttpException('Account not found', HttpStatus.UNAUTHORIZED)
       }
       return res.json(balance);
     } catch (error) {
