@@ -145,6 +145,12 @@ export class PolicyTreeComponent implements OnInit {
     }
 
     ngOnChanges(changes: SimpleChanges) {
+        if (changes.currentBlock && Object.keys(changes).length === 1) {
+            this.selectedNode = this.data.find(
+                (item) => item.node === changes.currentBlock.currentValue
+            );
+            return;
+        }
         this.errorsTree = {};
         if (changes.errors && this.errors) {
             this.searchErrors(this.blocks);
@@ -645,11 +651,15 @@ export class PolicyTreeComponent implements OnInit {
     }
 
     public isLatestBlockInSelect(block: any) {
-        if (!this.currentBlock || !this.selectedNode) {
+        if (!this.selectedNode) {
             return false;
         }
-        let current: any = this.selectedNode
-        for (let i = this.data.indexOf(this.selectedNode); i < this.data.length; i++) {
+        let current: any = this.selectedNode;
+        for (
+            let i = this.data.indexOf(current);
+            i < this.data.length;
+            i++
+        ) {
             const next = this.data[i + 1];
             if (!next || next.level < this.selectedNode!.level) {
                 break;
