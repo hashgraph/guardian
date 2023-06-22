@@ -271,7 +271,6 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    @Get('/:policyId')
     @Put('/:policyId')
     @HttpCode(HttpStatus.OK)
     async updatePolicy(@Req() req, @Response() res): Promise<any> {

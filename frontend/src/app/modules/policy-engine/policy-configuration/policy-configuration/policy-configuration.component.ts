@@ -79,7 +79,7 @@ export class PolicyConfigurationComponent implements OnInit {
 
     readonly codeMirrorOptions = {
         theme: 'default',
-        mode: 'application/ld+json',
+        mode: 'policy-json-lang',
         styleActiveLine: true,
         lineNumbers: true,
         lineWrapping: true,
@@ -108,6 +108,7 @@ export class PolicyConfigurationComponent implements OnInit {
         customModules: [],
     };
     private _searchTimeout!: any;
+    private currentCMStyles?: any;
 
     public dropListConnector: any = {
         menu: null,
@@ -211,6 +212,7 @@ export class PolicyConfigurationComponent implements OnInit {
             this.themeService.setThemes(themes);
             this.themes = this.themeService.getThemes();
             this.theme = this.themeService.getCurrent();
+            this.updateCodeMirrorStyles();
         }, ({ message }) => {
             console.error(message);
         });
@@ -402,43 +404,26 @@ export class PolicyConfigurationComponent implements OnInit {
         return true;
     }
 
-    private loadState(root: any) {
-        if (!this.rootModule || !root) {
-            return;
-        }
-        if (this.currentView !== root.view) {
-            this.currentView = root.view;
-            this.chanceView(root.view);
-        }
-        if (root.view === 'yaml' || root.view === 'json') {
-            this.code = root.value;
-        }
-        if (root.view === 'blocks') {
-            const policy = this.jsonToObject(root.value);
-            this.rootModule.rebuild(policy);
-            this.errors = [];
-            this.errorsCount = -1;
-            this.errorsMap = {};
-            this.openModule =
-                this.rootModule.getModule(this.openModule) ||
-                this.rootModule.getRootModule();
-            this.currentBlock = this.openModule.root;
-        }
-        return true;
-    }
-
     public saveState() {
         if (!this.rootModule || this.readonly) {
             return;
         }
-        if (this.currentView == 'blocks') {
+        if (this.currentView === 'blocks') {
             const json = this.objectToJson(this.rootModule.getJSON());
             this.storage.push(this.currentView, json);
-        } else if (this.currentView == 'yaml') {
+        } else if (this.currentView === 'yaml') {
             this.storage.push(this.currentView, this.code);
-        } else if (this.currentView == 'json') {
+        } else if (this.currentView === 'json') {
             this.storage.push(this.currentView, this.code);
         }
+    }
+
+    public onView(type: string) {
+        this.loading = true;
+        setTimeout(() => {
+            this.changeView(type);
+            this.loading = false;
+        }, 0);
     }
 
     public onInitViewer(event: PolicyTreeComponent) {
@@ -562,12 +547,19 @@ export class PolicyConfigurationComponent implements OnInit {
         }, 200);
     }
 
-    public onView(type: string) {
-        this.loading = true;
-        setTimeout(() => {
-            this.chanceView(type);
-            this.loading = false;
-        }, 0);
+    public onOpenModule(module: any) {
+        const item = this.policyModel.getModule(module);
+        if (item) {
+            this.openType = 'Sub';
+            this.openModule = item;
+            if (this.currentView === 'json') {
+                this.code = this.objectToJson(this.openModule.getJSON());
+            }
+            if (this.currentView === 'yaml') {
+                this.code = this.objectToYaml(this.openModule.getJSON());
+            }
+            this.changeDetector.detectChanges();
+        }
     }
 
     public onShowEvent(type: string) {
@@ -646,16 +638,8 @@ export class PolicyConfigurationComponent implements OnInit {
         }
     }
 
-    public onOpenModule(module: any) {
-        const item = this.policyModel.getModule(module);
-        if (item) {
-            this.openType = 'Sub';
-            this.openModule = item;
-            this.changeDetector.detectChanges();
-        }
-    }
-
     public onSaveModule() {
+        this.changeView('blocks');
         const item = this.policyModel.getModule(this.currentBlock);
         if (item) {
             const json = item.getJSON();
@@ -691,6 +675,19 @@ export class PolicyConfigurationComponent implements OnInit {
         }
     }
 
+    public onOpenRoot(root: PolicyModel | TemplateModel) {
+        this.rootModule = root;
+        this.openModule = root?.getRootModule();
+        this.openType = 'Root';
+        if (this.currentView === 'json') {
+            this.code = this.objectToJson(this.openModule.getJSON());
+        }
+        if (this.currentView === 'yaml') {
+            this.code = this.objectToYaml(this.openModule.getJSON());
+        }
+        this.changeDetector.detectChanges();
+    }
+
     // public onDeleteModule(item: any) {
     //     this.templateModules = this.templateModules.filter(e => e.uuid !== item.uuid);
     //     localStorage.setItem('template-modules', JSON.stringify(this.templateModules));
@@ -706,11 +703,17 @@ export class PolicyConfigurationComponent implements OnInit {
         }
     }
 
-    public onOpenRoot(root: PolicyModel | TemplateModel) {
-        this.rootModule = root;
-        this.openModule = root?.getRootModule();
-        this.openType = 'Root';
-        this.changeDetector.detectChanges();
+    public updateModule() {
+        this.changeView('blocks');
+        const module = this.templateModel.getJSON();
+        this.loading = true;
+        this.modulesService.update(this.moduleId, module).subscribe((result) => {
+            this.clearState();
+            this.loadData();
+        }, (e) => {
+            console.error(e.error);
+            this.loading = false;
+        });
     }
 
     public noReturnPredicate() {
@@ -946,26 +949,11 @@ export class PolicyConfigurationComponent implements OnInit {
         });
     }
 
-    private asyncUpdatePolicy(): Observable<void> {
-        return new Observable<void>(subscriber => {
-            this.chanceView('blocks');
-            const root = this.policyModel.getJSON();
-            if (root) {
-                this.loading = true;
-                this.policyEngineService.update(this.policyId, root).subscribe((policy: any) => {
-                    if (policy) {
-                        this.updatePolicyModel(policy);
-                    } else {
-                        this.policyModel = new PolicyModel();
-                    }
-                    setTimeout(() => { this.loading = false; }, 500);
-                    subscriber.next();
-                }, (e) => {
-                    console.error(e.error);
-                    this.loading = false;
-                });
-            }
-        });
+    public onChangeSettings(event: boolean) {
+        this.openSettings = false;
+        this.themes = this.themeService.getThemes();
+        this.theme = this.themeService.getCurrent();
+        this.updateCodeMirrorStyles();
     }
 
     public validationPolicy() {
@@ -1135,16 +1123,11 @@ export class PolicyConfigurationComponent implements OnInit {
         });
     }
 
-    public updateModule() {
-        const module = this.templateModel.getJSON();
-        this.loading = true;
-        this.modulesService.update(this.moduleId, module).subscribe((result) => {
-            this.clearState();
-            this.loadData();
-        }, (e) => {
-            console.error(e.error);
-            this.loading = false;
-        });
+    public setTheme(theme: Theme) {
+        this.themeService.setCurrent(theme);
+        this.themeService.saveTheme();
+        this.theme = this.themeService.getCurrent();
+        this.updateCodeMirrorStyles();
     }
 
     public saveAsModule() {
@@ -1192,16 +1175,51 @@ export class PolicyConfigurationComponent implements OnInit {
         this.openSettings = true;
     }
 
-    public onChangeSettings(event: boolean) {
-        this.openSettings = false;
-        this.themes = this.themeService.getThemes();
-        this.theme = this.themeService.getCurrent();
+    private loadState(root: any) {
+        if (!this.rootModule || !root) {
+            return;
+        }
+        if (this.currentView !== root.view) {
+            this.currentView = root.view;
+            this.changeView(root.view);
+        }
+        if (root.view === 'yaml' || root.view === 'json') {
+            this.code = root.value;
+        }
+        if (root.view === 'blocks') {
+            const policy = this.jsonToObject(root.value);
+            this.rootModule.rebuild(policy);
+            this.errors = [];
+            this.errorsCount = -1;
+            this.errorsMap = {};
+            this.openModule =
+                this.rootModule.getModule(this.openModule) ||
+                this.rootModule.getRootModule();
+            this.currentBlock = this.openModule.root;
+        }
+        return true;
     }
 
-    public setTheme(theme: Theme) {
-        this.themeService.setCurrent(theme);
-        this.themeService.saveTheme();
-        this.theme = this.themeService.getCurrent();
+    private asyncUpdatePolicy(): Observable<void> {
+        return new Observable<void>(subscriber => {
+            this.changeView('blocks');
+            const root = this.policyModel.getJSON();
+            if (root) {
+                this.loading = true;
+                this.policyEngineService.update(this.policyId, root).subscribe((policy: any) => {
+                    if (policy) {
+                        this.updatePolicyModel(policy);
+                    } else {
+                        this.policyModel = new PolicyModel();
+                    }
+                    setTimeout(() => { this.loading = false; }, 500);
+                    subscriber.next();
+                }, (e) => {
+                    console.error(e.error);
+                    this.loading = false;
+                });
+            }
+        });
     }
 
     public blockStyle(rule: ThemeRule) {
@@ -1269,6 +1287,24 @@ export class PolicyConfigurationComponent implements OnInit {
         }, () => undefined, () => this.loading = false);
     }
 
+    private updateCodeMirrorStyles() {
+        if (this.currentCMStyles) {
+            this.currentCMStyles.remove();
+            this.currentCMStyles = null;
+        }
+        const style = document.createElement('style');
+        style.type = 'text/css';
+        style.innerHTML = `${this.theme.syntaxGroups
+            .map(
+                (item) => `.cm-${item.id} {
+            color: ${item.color}
+        }`
+            )
+            .join('')}`;
+        this.currentCMStyles = style;
+        document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
     private generateSuggestionsInput(
         parent: PolicyBlockModel | null,
         selected: PolicyBlockModel
@@ -1300,7 +1336,7 @@ export class PolicyConfigurationComponent implements OnInit {
         return [result, childConfig];
     }
 
-    private chanceView(type: string) {
+    private changeView(type: string) {
         if (type == this.currentView) {
             return;
         }
@@ -1315,26 +1351,26 @@ export class PolicyConfigurationComponent implements OnInit {
                 } else if (this.currentView == 'yaml') {
                     root = this.yamlToObject(this.code);
                 }
-                this.policyModel.rebuild(root);
+                this.openModule.rebuild(root);
             } else if (type == 'json') {
                 let code = '';
                 if (this.currentView == 'blocks') {
-                    code = this.objectToJson(this.policyModel.getJSON());
+                    code = this.objectToJson(this.openModule.getJSON());
                 } else if (this.currentView == 'yaml') {
                     code = this.yamlToJson(this.code);
                 }
                 this.code = code;
-                this.codeMirrorOptions.mode = 'application/ld+json';
+                this.codeMirrorOptions.mode = 'policy-json-lang';
             } else if (type == 'yaml') {
                 let code = '';
                 if (this.currentView == 'blocks') {
-                    code = this.objectToYaml(this.policyModel.getJSON());
+                    code = this.objectToYaml(this.openModule.getJSON());
                 }
                 if (this.currentView == 'json') {
                     code = this.jsonToYaml(this.code);
                 }
                 this.code = code;
-                this.codeMirrorOptions.mode = 'text/x-yaml';
+                this.codeMirrorOptions.mode = 'policy-yaml-lang';
             }
             this.currentView = type;
         } catch (error: any) {
