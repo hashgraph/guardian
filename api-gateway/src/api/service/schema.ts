@@ -9,6 +9,7 @@ import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put
 import { checkPermission } from '@auth/authorization-helper';
 import { Client, ClientProxy, Transport } from '@nestjs/microservices';
 import process from 'process';
+import { ApiTags } from '@nestjs/swagger';
 
 /**
  * Prepare new schema object
@@ -102,6 +103,7 @@ export async function updateSchema(newSchema: ISchema, owner: string): Promise<I
 }
 
 @Controller('schema')
+@ApiTags('schemas')
 export class SingleSchemaApi {
     @Get('/:schemaId')
     @HttpCode(HttpStatus.OK)
@@ -136,6 +138,7 @@ export class SingleSchemaApi {
 }
 
 @Controller('schemas')
+@ApiTags('schemas')
 export class SchemaApi {
 
     @Client({

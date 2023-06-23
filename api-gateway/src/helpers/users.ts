@@ -1,4 +1,4 @@
-import {Singleton} from '@helpers/decorators/singleton';
+import { Singleton } from '@helpers/decorators/singleton';
 import { ApplicationStates, AuthEvents, GenerateUUIDv4, MessageAPI, UserRole } from '@guardian/interfaces';
 import { AuthenticatedRequest, IAuthUser, NatsService } from '@guardian/common';
 
@@ -151,7 +151,7 @@ export class Users extends NatsService {
     /**
      * Get all user accounts
      */
-    public async getAllUserAccounts() {
+    public async getAllUserAccounts(): Promise<any> {
         return await this.sendMessage(AuthEvents.GET_ALL_USER_ACCOUNTS);
     }
 

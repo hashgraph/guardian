@@ -1,8 +1,10 @@
 import { Logger } from '@guardian/common';
 import { Guardians } from '@helpers/guardians';
 import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('themes')
+@ApiTags('themes')
 export class ThemesApi {
     @Post('/')
     @HttpCode(HttpStatus.CREATED)

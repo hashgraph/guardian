@@ -68,6 +68,10 @@
                         (click)="routActive('SR_POLICIES_LIST')">
                         Policies
                     </div>
+                    <div class="nav-list-item" [attr.active]="isActiveLink('SR_SUGGESTIONS')"
+                        (click)="routActive('SR_SUGGESTIONS')">
+                        Suggestions
+                    </div>
                     <div class="nav-list-item only-active" [attr.active]="isActiveLink('SR_EDITOR')"
                         (click)="routActive('SR_EDITOR')">
                         Policy Editor
@@ -195,6 +199,10 @@
                         <div class="nav-list-item" [attr.active]="isActiveLink('SR_POLICIES_LIST')"
                             (click)="routActive('SR_POLICIES_LIST')">
                             Policies
+                        </div>
+                        <div class="nav-list-item" [attr.active]="isActiveLink('SR_SUGGESTIONS')"
+                            (click)="routActive('SR_SUGGESTIONS')">
+                            Suggestions
                         </div>
                         <div class="nav-list-item only-active" [attr.active]="isActiveLink('SR_EDITOR')"
                             (click)="routActive('SR_EDITOR')">

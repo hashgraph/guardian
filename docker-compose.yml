@@ -33,13 +33,6 @@ services:
       - ./runtime-data/ipfs/staging:/export:rw
       - ./runtime-data/ipfs/data:/data/ipfs:rw
 
-  api-docs:
-    build:
-      context: .
-      dockerfile: ./api-docs/Dockerfile
-    expose:
-      - 3001
-
   message-broker:
     image: nats:2.9.8
     expose:
@@ -203,7 +196,7 @@ services:
       - auth-service
       - logger-service
 
-      
+
   mrv-sender:
     build:
       context: .
@@ -236,7 +229,6 @@ services:
       - guardian-service
       - auth-service
       - api-gateway
-      - api-docs
       - mrv-sender
       - mongo-express
 
@@ -257,7 +249,7 @@ services:
       - "9090:9090"
     networks:
       - monitoring
-    
+
   grafana:
     image: grafana/grafana
     container_name: grafana
@@ -275,7 +267,7 @@ services:
       - "9080:9080"
     networks:
       - monitoring
-      
+
 volumes:
   mongo:
   prometheus_data: {}

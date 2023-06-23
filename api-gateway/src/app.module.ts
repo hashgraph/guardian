@@ -13,7 +13,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { MetricsApi } from '@api/service/metrics';
 import { ModulesApi } from '@api/service/module';
 import { ProfileApi } from '@api/service/profile';
-import { authorizationHelper } from '@auth/authorization-helper';
+import { AuthGuard, authorizationHelper } from '@auth/authorization-helper';
 import { PolicyApi } from '@api/service/policy';
 import { SchemaApi, SingleSchemaApi } from '@api/service/schema';
 import { SettingsApi } from '@api/service/settings';
@@ -29,6 +29,9 @@ import hpp from 'hpp';
 import { ThemesApi } from '@api/service/themes';
 import { TrustChainsOldApi } from '@api/service/trustchains';
 import { BrandingApi } from '@api/service/branding';
+import { SuggestionsApi } from '@api/service/suggestions';
+import { JwtModule } from '@nestjs/jwt';
+import { MatchConstraint } from '@helpers/decorators/match.validator';
 
 const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
 const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
@@ -45,7 +48,11 @@ const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
                 ]
             }
         }]),
-        ConfigModule.forRoot(),
+        JwtModule.register({
+            global: true,
+            secret: '123123123123123123',
+            signOptions: {expiresIn: '60s'},
+        }),
     ],
     controllers: [
         AccountApi,
@@ -72,15 +79,18 @@ const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
         TrustChainsApi,
         TrustChainsOldApi,
         WizardApi,
-        BrandingApi
+        BrandingApi,
+        SuggestionsApi,
     ],
     providers: [
-        LoggerService
+        LoggerService,
+        AuthGuard,
+        MatchConstraint
     ]
 })
 export class AppModule {
     configure(consumer: MiddlewareConsumer) {
-        consumer.apply(authorizationHelper).forRoutes(AccountApi);
+        // consumer.apply(authorizationHelper).forRoutes(AccountApi);
         consumer.apply(authorizationHelper).forRoutes(ProfileApi);
         consumer.apply(authorizationHelper).forRoutes(PolicyApi);
         consumer.apply(authorizationHelper).forRoutes(SettingsApi);
@@ -98,6 +108,7 @@ export class AppModule {
         consumer.apply(authorizationHelper).forRoutes(TrustChainsApi);
         consumer.apply(authorizationHelper).forRoutes(WizardApi);
         consumer.apply(authorizationHelper).forRoutes(BrandingApi);
+        consumer.apply(authorizationHelper).forRoutes(SuggestionsApi);
 
         consumer.apply(express.json({
             limit: JSON_REQUEST_LIMIT

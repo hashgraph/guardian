@@ -4,11 +4,13 @@ import { Response } from 'express';
 import { Guardians } from '@helpers/guardians';
 import { checkPermission } from '@auth/authorization-helper';
 import { UserRole } from '@guardian/interfaces';
+import { ApiTags } from '@nestjs/swagger';
 
 /**
  * Branding route
  */
 @Controller('branding')
+@ApiTags('branding')
 export class BrandingApi {
 
   @Post('/')

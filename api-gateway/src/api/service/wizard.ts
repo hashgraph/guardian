@@ -5,8 +5,10 @@ import { ServiceError } from '@helpers/service-requests-base';
 import { Controller, HttpCode, HttpStatus, Post, Req, Response } from '@nestjs/common';
 import { checkPermission } from '@auth/authorization-helper';
 import { UserRole } from '@guardian/interfaces';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('wizard')
+@ApiTags('wizard')
 export class WizardApi {
     @Post('/policy')
     @HttpCode(HttpStatus.CREATED)
