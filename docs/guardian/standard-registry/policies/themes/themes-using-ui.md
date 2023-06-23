@@ -112,6 +112,20 @@ Description – is a textual description of the rule. It is displayed next to th
 
 ![](<../../../../.gitbook/assets/15 (4) (1).png>)
 
+**1.3 Syntax**
+
+New color-stylization of policy syntax groups is now possible as shown below:
+
+<figure><img src="../../../../.gitbook/assets/image (33).png" alt=""><figcaption></figcaption></figure>
+
+**1.3.1 Displaying the syntax in Legend**
+
+The syntax highlighting is used in the JSON or YAML view in the policy configurator. Colors correspond to different ‘types’ of keywords in the code, the current colors-to-types mapping is displayed in the legend in the top right corner.
+
+<figure><img src="../../../../.gitbook/assets/image (37).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../../.gitbook/assets/image (36).png" alt=""><figcaption></figcaption></figure>
+
 ### **2. Using themes**
 
 #### **2.1 Selecting themes**
