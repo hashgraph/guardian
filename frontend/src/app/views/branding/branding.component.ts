@@ -7,6 +7,7 @@ import { BrandingPayload, BrandingService } from 'src/app/services/branding.serv
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { BrandingDialogComponent } from 'src/app/components/branding-dialog/branding-dialog.component';
 import { environment } from 'src/environments/environment';
+import { initialBackground } from 'src/assets/background-image';
 
 @Component({
     selector: 'app-branding',
@@ -305,6 +306,7 @@ export class BrandingComponent implements OnInit {
 
         dialogRef.afterClosed().subscribe(result => {
             if (result === 'proceed') {
+                const initialBackgroundImage = initialBackground;
                 // create JSON payload with variables
                 let payload;
                 if (this.production) {
@@ -313,7 +315,7 @@ export class BrandingComponent implements OnInit {
                         primaryColor: '#2C78F6',
                         companyName: 'Guardian',
                         companyLogoUrl: '',
-                        loginBannerUrl: 'bg.jpg',
+                        loginBannerUrl: initialBackgroundImage,
                         faviconUrl: 'favicon.ico'
                     };
                 } else {
@@ -322,7 +324,7 @@ export class BrandingComponent implements OnInit {
                         primaryColor: '#2C78F6',
                         companyName: 'Guardian',
                         companyLogoUrl: '',
-                        loginBannerUrl: 'bg.jpg',
+                        loginBannerUrl: initialBackgroundImage,
                         faviconUrl: 'favicon.ico'
                     };
                 }

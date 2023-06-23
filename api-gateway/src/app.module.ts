@@ -53,6 +53,7 @@ const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
             secret: '123123123123123123',
             signOptions: {expiresIn: '60s'},
         }),
+        ConfigModule.forRoot(),
     ],
     controllers: [
         AccountApi,

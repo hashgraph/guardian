@@ -1,4 +1,3 @@
-import { fixtures } from '@helpers/fixtures';
 import { AccountService } from '@api/account-service';
 import { WalletService } from '@api/wallet-service';
 import { ApplicationState, COMMON_CONNECTION_CONFIG, DataBaseHelper, LargePayloadContainer, Logger, MessageBrokerChannel, Migration, OldSecretManager, SecretManager } from '@guardian/common';
