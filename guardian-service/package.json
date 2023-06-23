@@ -76,7 +76,7 @@
   "scripts": {
     "build": "tsc",
     "build:prod": "NODE_ENV=production tsc --project tsconfig.production.json ",
-    "build:demo": "NODE_ENV=demo tsc --project tsconfig.production.json ",
+    "build:demo": "NODE_ENV=demo tsc --project tsconfig.demo.json ",
     "debug": "nodemon dist/index.js",
     "dev:docker": "nodemon .",
     "dev": "tsc -w",

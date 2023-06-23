@@ -7,6 +7,7 @@ import {
     DataBaseHelper,
     Branding
 } from '@guardian/common';
+import { initialBackground } from '@api/helpers/background-image';
 /**
  * Connect to the message broker methods of working with VC, VP and DID Documents
  *
@@ -25,7 +26,8 @@ export async function brandingAPI(
         let newBrandingJSON: Branding[];
         if (!brandingJSON.length) {
             const initialHeaderColor = process.env.NODE_ENV === 'demo' ? '#555555' : '#000';
-            const initialBranding = JSON.stringify({'headerColor':`${initialHeaderColor}`,'primaryColor':'#2C78F6','companyName':'Guardian','companyLogoUrl':'','loginBannerUrl':'bg.jpg','faviconUrl':'favicon.ico'});
+            const initialBackgroundImage = initialBackground;
+            const initialBranding = JSON.stringify({'headerColor':`${initialHeaderColor}`,'primaryColor':'#2C78F6','companyName':'Guardian','companyLogoUrl':'','loginBannerUrl':`${initialBackgroundImage}`,'faviconUrl':'favicon.ico'});
             await brandingRepository.save({config: initialBranding});
             newBrandingJSON = await brandingRepository.findAll();
         }
