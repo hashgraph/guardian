@@ -24,6 +24,17 @@
     }
 }
 
+.company-branding {
+    justify-content: center;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.company-logo {
+    display: none;
+}
+
 .user-content-info,
 .user-content-button {
     align-items: center;
@@ -401,7 +412,7 @@ a[hidden="true"] {
         transition: 0.05s;
         text-align: left;
     }
-      
+
     .nav-items .nav-list-item:hover {
         color: #818181;
     }
@@ -410,7 +421,7 @@ a[hidden="true"] {
         color: var(--primary-color) !important;
         transition: 0.05s;
     }
-      
+
     .nav-items .material-icons {
         margin: 23px auto 23px 32px;
         font-size: 36px;
@@ -458,7 +469,7 @@ a[hidden="true"] {
         left: 0;
         bottom: 0;
         width: 90%;
-        
+
         color: #fff;
         z-index: 5000;
         transition: 0.8s;
@@ -523,5 +534,5 @@ a[hidden="true"] {
     .profile-item .profile-item-value {
         display: inline;
     }
-    
+
 }

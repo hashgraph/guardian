@@ -67,9 +67,10 @@
                     <ng-container matColumnDef="delete">
                         <th mat-header-cell *matHeaderCellDef> </th>
                         <td mat-cell *matCellDef="let element">
-                            <div [ngClass]="{'btn-settings-des': !element.enableAdmin}" class="btn-settings btn-delete"
-                                (click)="deleteToken(element)" matTooltip="Delete" matTooltipPosition="above"
-                                matTooltipClass="guardian-tooltip">
+                            <div (click)="deleteToken(element)"
+                                 [ngClass]="{'btn-settings-des': !element.enableAdmin || !element.canDelete}"
+                                 class="btn-settings btn-delete" matTooltip="Delete" matTooltipClass="guardian-tooltip"
+                                 matTooltipPosition="above">
                                 <mat-icon>delete</mat-icon>
                             </div>
                         </td>

@@ -11,7 +11,8 @@ import {
     IUser,
     IVCDocument,
     IVPDocument,
-    MessageAPI
+    MessageAPI,
+    SuggestionsOrderPriority
 } from '@guardian/interfaces';
 import { NatsService } from '@guardian/common';
 
@@ -1567,5 +1568,46 @@ export class Guardians extends NatsService {
     // tslint:disable-next-line:completed-docs
     public async getBranding(): Promise<{config: string} | null> {
         return await this.sendMessage(MessageAPI.GET_BRANDING);
+    }
+
+    /**
+     * Policy suggestions
+     * @param suggestionsInput
+     */
+    public async policySuggestions(
+        suggestionsInput: any,
+        user: any
+    ): Promise<{ next: string, nested: string }> {
+        return await this.sendMessage(MessageAPI.SUGGESTIONS, {
+            user,
+            suggestionsInput,
+        });
+    }
+
+    /**
+     * Set policy suggestions
+     * @param suggestionsInput
+     */
+    public async setPolicySuggestionsConfig(
+        items: SuggestionsOrderPriority[],
+        user: any
+    ): Promise<SuggestionsOrderPriority[]> {
+        return await this.sendMessage(
+            MessageAPI.SET_SUGGESTIONS_CONFIG,
+            { items, user }
+        );
+    }
+
+    /**
+     * Policy suggestions
+     * @param suggestionsInput
+     */
+    public async getPolicySuggestionsConfig(
+        user: any
+    ): Promise<SuggestionsOrderPriority[]> {
+        return await this.sendMessage(
+            MessageAPI.GET_SUGGESTIONS_CONFIG,
+            { user }
+        );
     }
 }

@@ -125,9 +125,13 @@
                         <mat-icon>redo</mat-icon>
                         <span>Redo</span>
                     </div>
-
-                    <div class="top-toolbar-btn all-status copy-blocks-mode" (click)="copyBlocksMode=!copyBlocksMode"
-                        title="Copy Mode" [ngClass]="{'copy-blocks-mode-active': copyBlocksMode}" style="width: 68px">
+                    <div class="top-toolbar-btn" (click)="onSuggestionsClick()"
+                        title="Suggestions" [ngClass]="{'btn-mode-active': isSuggestionsEnabled}">
+                        <mat-icon>assistant</mat-icon>
+                        <span>Suggestions</span>
+                    </div>
+                    <div class="top-toolbar-btn" (click)="copyBlocksMode=!copyBlocksMode"
+                        title="Copy Mode" [ngClass]="{'btn-mode-active': copyBlocksMode}">
                         <mat-icon>content_copy</mat-icon>
                         <span>Copy Mode</span>
                     </div>
@@ -492,17 +496,13 @@
             </div>
             <div class="center-container">
 
-                <div *ngIf="!isTree" class="textarea-code">
-                    <ngx-codemirror [(ngModel)]="code" [options]="codeMirrorOptions" (ngModelChange)="saveState()">
-                    </ngx-codemirror>
-                </div>
                 <div *ngIf="!isTree && errors?.length" class="json-errors">
                     <div *ngFor="let item of errors" class="errors-property">
                         <span>{{item}}</span>
                     </div>
                 </div>
 
-                <div *ngIf="isTree" class="pc-tabs minimized-tabs">
+                <div class="pc-tabs minimized-tabs">
                     <div class="pc-tabs-headers right-menu">
                         <div *ngIf="rootType ==='Policy'" class="tab-header tab-header-icon"
                             [attr.selected]="openModule===policyModel" (click)="onOpenRoot(policyModel)"
@@ -526,7 +526,7 @@
                             <div class="theme-legends-icon" (click)="change('legendActive')">
                                 <mat-icon>palette</mat-icon>
                             </div>
-                            <div class="theme-legends-container">
+                            <div *ngIf="isTree" class="theme-legends-container">
                                 <div *ngFor="let rule of theme.rules" class="theme-rule">
                                     <div class="theme-rule-prev" [style]="blockStyle(rule)" theme-block theme-all></div>
                                     <div class="theme-rule-description">
@@ -539,11 +539,29 @@
                                     <div class="theme-rule-description">{{theme.default.description || '-'}}</div>
                                 </div>
                             </div>
+                            <div *ngIf="!isTree" class="theme-legends-container">
+                                <div *ngFor="let syntaxGroup of theme.syntaxGroups" class="theme-rule">
+                                    <div class="theme-rule-syntax-prev" style="padding: 5px 10px;">
+                                        <div style="width: 100%; height: 100%;" [ngStyle]="{ 'background-color': syntaxGroup.color}"></div>
+                                    </div>
+                                    <div class="theme-rule-description">
+                                        {{syntaxGroup.name}}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="pc-tabs-content tree-container">
-                        <policy-tree [module]="openModule" [blocks]="openModule.dataSource" [errors]="errorsMap"
-                            [readonly]="readonly" [active]="eventVisible" [connector]="dropListConnector"
+                    <div class="pc-tabs-content" [ngClass]="{
+                        'tree-container': isTree
+                    }">
+                        <div *ngIf="!isTree" class="textarea-code">
+                            <ngx-codemirror [(ngModel)]="code" [options]="codeMirrorOptions" (ngModelChange)="saveState()">
+                            </ngx-codemirror>
+                        </div>
+                        <policy-tree *ngIf="isTree" [module]="openModule" [blocks]="openModule.dataSource" [errors]="errorsMap"
+                            [readonly]="readonly" [active]="eventVisible" [connector]="dropListConnector" [suggestions]="isSuggestionsEnabled"
+                            [nextBlock]="nextBlock" [nestedBlock]="nestedBlock" [(currentBlock)]="currentBlock"
+                            (nested)="addSuggestionsBlock($event, true)" (next)="addSuggestionsBlock($event)"
                             (open)="onOpenModule($event)" (delete)="onDelete($event)" (select)="onSelect($event)"
                             (reorder)="onReorder($event)" (init)="onInitViewer($event)">
                         </policy-tree>

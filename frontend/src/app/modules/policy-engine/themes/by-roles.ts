@@ -1,3 +1,5 @@
+import { DEFAULT_SYNTAX_GROUPS } from "./default-syntax-groups";
+
 export const byRolesTheme = {
     'id': 3,
     'uuid': '00000000-0000-0000-0000-000000000003',
@@ -161,5 +163,6 @@ export const byRolesTheme = {
             ],
             'default': false
         }
-    ]
+    ],
+    'syntaxGroups': DEFAULT_SYNTAX_GROUPS,
 }

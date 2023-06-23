@@ -243,7 +243,8 @@ export class PolicyEngineService {
                         tokenIds,
                         name: policyObject.name,
                         version: policyObject.version,
-                        id: policyObject.id
+                        id: policyObject.id,
+                        status: policyObject.status
                     });
                 }
                 return new MessageResponse(map);

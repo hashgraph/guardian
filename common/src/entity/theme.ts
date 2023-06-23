@@ -38,6 +38,12 @@ export class Theme extends BaseEntity {
     rules?: any;
 
     /**
+     * Syntax groups
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    syntaxGroups?: any[];
+
+    /**
      * Set policy defaults
      */
     @BeforeCreate()

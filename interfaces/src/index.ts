@@ -46,3 +46,5 @@ export { IPolicy } from './interface/policy.interface';
 export { default as GeoJsonSchema } from './helpers/geojson-schema/geo-json';
 export { default as GeoJsonContext } from './helpers/geojson-schema/geo-json-context';
 export * from './interface/wizard-config.interface';
+export * from './interface/suggestions-order-priority';
+export * from './helpers/sort-objects-array';

@@ -96,6 +96,7 @@ export async function themeAPI(): Promise<void> {
             item.name = theme.name;
             item.description = theme.description;
             item.rules = theme.rules;
+            item.syntaxGroups = theme.syntaxGroups;
 
             const result = await DatabaseServer.updateTheme(item);
             return new MessageResponse(result);

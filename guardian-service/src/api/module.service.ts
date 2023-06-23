@@ -219,6 +219,7 @@ export async function modulesAPI(): Promise<void> {
             module.creator = owner;
             module.owner = owner;
             module.type = 'CUSTOM';
+            module.status = ModuleStatus.DRAFT;
             const item = await DatabaseServer.createModules(module);
             return new MessageResponse(item);
         } catch (error) {

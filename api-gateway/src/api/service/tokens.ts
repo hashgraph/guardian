@@ -7,6 +7,7 @@ import { ServiceError } from '@helpers/service-requests-base';
 import { prepareValidationResponse } from '@middlewares/validation';
 import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response } from '@nestjs/common';
 import { checkPermission } from '@auth/authorization-helper';
+import { ApiTags } from '@nestjs/swagger';
 
 /**
  * Token route
@@ -27,10 +28,12 @@ function setTokensPolicies<T>(tokens: any[], map: any[], policyId?: any, notEmpt
     for (const token of tokens) {
         token.policies = token.policies || [];
         token.policyIds = token.policyIds || [];
+        token.canDelete = true;
         for (const policyObject of map) {
             if (policyObject.tokenIds.includes(token.tokenId)) {
                 token.policies.push(`${policyObject.name} (${policyObject.version || 'DRAFT'})`);
                 token.policyIds.push(policyObject.id.toString());
+                token.canDelete = token.canDelete && policyObject.status === 'DRAFT';
             }
         }
     }
@@ -69,6 +72,7 @@ async function setDynamicTokenPolicy(tokens: any[], engineService?: PolicyEngine
 }
 
 @Controller('tokens')
+@ApiTags('tokens')
 export class TokensApi {
     @Get('/')
     @HttpCode(HttpStatus.OK)
@@ -222,14 +226,21 @@ export class TokensApi {
                 throw new HttpException('Invalid creator.', HttpStatus.FORBIDDEN);
             }
 
+            const engineService = new PolicyEngine();
+            const map = await engineService.getTokensMap(user.did);
+            setTokensPolicies([tokenObject], map, undefined, false);
+
+            if (!tokenObject.canDelete) {
+                throw new HttpException('Token cannot be deleted', HttpStatus.FORBIDDEN);
+            }
             RunFunctionAsync<ServiceError>(async () => {
                 await guardians.deleteTokenAsync(tokenId, taskId);
             }, async (error) => {
                 new Logger().error(error, ['API_GATEWAY']);
-                taskManager.addError(taskId, { code: error.code || 500, message: error.message });
+                taskManager.addError(taskId, {code: error.code || 500, message: error.message});
             });
 
-            return res.status(202).send({ taskId, expectation });
+            return res.status(202).send({taskId, expectation});
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error;

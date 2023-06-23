@@ -20,6 +20,7 @@ import { ConfirmDialog } from 'src/app/modules/common/confirm-dialog/confirm-dia
 export class PolicySettingsComponent implements OnInit {
     @Output('update') update = new EventEmitter();
 
+    public isSyntax: boolean = false;
     public settingsTab: number = 0;
     public themes!: Theme[];
     public theme!: Theme;

@@ -73,8 +73,8 @@ export class BrandingService {
     private applyBranding(brandingData: any, width: number) {
         const favicon = document.querySelectorAll<HTMLLinkElement>('link[rel="shortcut icon"],link[rel="icon"]');
         const loginBanner = document.querySelector<HTMLElement>('.background')!;
-        const homeButton = document.querySelectorAll<HTMLLinkElement>('.btn-home')!;
-        const brandingCompanyLogo = document.querySelector<HTMLElement>('.btn-home > img')!;
+        const companyLogo = document.querySelector<HTMLImageElement>('.company-logo')!;
+        const companyName = document.querySelector<HTMLElement>('.company-name')!;
 
         if (brandingData.headerColor) {
             document.documentElement.style.setProperty('--header-background-color', brandingData.headerColor);
@@ -84,26 +84,13 @@ export class BrandingService {
             document.documentElement.style.setProperty('--button-primary-color', brandingData.primaryColor);
         }
         if (brandingData.companyName) {
-            for (const button of homeButton) {
-                const appName = button.querySelector('.btn-home-name')!;
-                appName.innerHTML = brandingData.companyName;
-            }
+            companyName.innerHTML = brandingData.companyName;
             document.title = brandingData.companyName;
         }
-        if (brandingData.companyLogoUrl && width > 810 && !brandingCompanyLogo) {
-            for (const button of homeButton) {
-                button.className = 'branding-company-logo';
-                button.style.display = 'flex';
-                button.style.alignItems = 'center';
-                button.style.margin = '0 0 0 22px';
-
-                const imgElement = document.createElement('img');
-                imgElement.src = brandingData.companyLogoUrl;
-                imgElement.style.width = '45px';
-                imgElement.style.height = '45px';
-                imgElement.style.margin = 'auto 10px auto 0';
-                button.insertBefore(imgElement, button.firstChild);
-            }
+        companyLogo.style.display = 'none';
+        if (brandingData.companyLogoUrl && width > 810) {
+            companyLogo.style.display = 'block';
+            companyLogo.src = brandingData.companyLogoUrl;
         }
         if (this.brandingData?.loginBannerUrl) {
             loginBanner.style.background = `center/cover no-repeat url(${this.brandingData.loginBannerUrl})`;

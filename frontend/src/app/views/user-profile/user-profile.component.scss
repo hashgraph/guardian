@@ -276,6 +276,14 @@ a[disabled="true"] {
 .generate-btn {
     margin-bottom: 20px;
     width: 100% !important;
+    border: 1px solid var(--button-primary-color);
+    background: none !important;
+    color: var(--button-primary-color);
+    box-shadow: none;
+
+    &:hover {
+        background: #f8f9fd !important;
+    }
 }
 
 .list-item {
@@ -522,12 +530,6 @@ a[disabled="true"] {
         &__title {
             margin-bottom: 15px;
         }
-    }
-
-    .generate-btn {
-        border: 1px solid #2C78F6;
-        background: none !important;
-        color: #2C78F6;
     }
 
     .user-onboarding-wizard {

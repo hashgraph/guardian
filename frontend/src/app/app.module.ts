@@ -66,6 +66,7 @@ import { RetireTokenDialogComponent } from './components/retire-token-dialog/ret
 import { DataInputDialogComponent } from './components/data-input-dialog/data-input-dialog.component';
 import { BrandingComponent } from './views/branding/branding.component';
 import { StandardRegistryCardComponent } from './components/standard-registry-card/standard-registry-card.component';
+import { SuggestionsConfigurationComponent } from './views/suggestions-configuration/suggestions-configuration.component';
 //Modules
 import { MaterialModule } from './modules/common/material.module';
 import { PolicyEngineModule } from './modules/policy-engine/policy-engine.module';
@@ -76,6 +77,11 @@ import { SchemaEngineModule } from './modules/schema-engine/schema-engine.module
 import { ThemeService } from './services/theme.service';
 // Injectors
 import { GET_SCHEMA_NAME } from './injectors/get-schema-name.injector';
+import {
+    BLOCK_TYPE_TIPS,
+    BLOCK_TYPE_TIPS_VALUE,
+} from './injectors/block-type-tips.injector';
+import { SuggestionsService } from './services/suggestions.service';
 
 @NgModule({
     declarations: [
@@ -103,6 +109,7 @@ import { GET_SCHEMA_NAME } from './injectors/get-schema-name.injector';
         SchemaConfigComponent,
         BrandingComponent,
         BrandingDialogComponent,
+        SuggestionsConfigurationComponent,
         StandardRegistryCardComponent,
     ],
     imports: [
@@ -148,9 +155,14 @@ import { GET_SCHEMA_NAME } from './injectors/get-schema-name.injector';
         TagsService,
         ThemeService,
         WizardService,
+        SuggestionsService,
         {
             provide: GET_SCHEMA_NAME,
             useValue: SchemaHelper.getSchemaName
+        },
+        {
+            provide: BLOCK_TYPE_TIPS,
+            useValue: BLOCK_TYPE_TIPS_VALUE
         },
         {
             provide: HTTP_INTERCEPTORS,

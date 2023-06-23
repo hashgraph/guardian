@@ -6,8 +6,10 @@ import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
 import { Controller, Get, HttpCode, HttpException, HttpStatus, Put, Req, Response } from '@nestjs/common';
 import { checkPermission } from '@auth/authorization-helper';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('profiles')
+@ApiTags('profiles')
 export class ProfileApi {
   @Get('/:username/')
   @HttpCode(HttpStatus.OK)
@@ -166,7 +168,7 @@ export class ProfileApi {
       const guardians = new Guardians();
       const balance = await guardians.getUserBalance(req.params.username);
       if (balance.toLowerCase().includes('invalid account')) {
-        throw new HttpException('Account not found', HttpStatus.NOT_FOUND)
+        throw new HttpException('Account not found', HttpStatus.UNAUTHORIZED)
       }
       return res.json(balance);
     } catch (error) {
