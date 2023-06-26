@@ -2234,12 +2234,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sinonjs/fake-timers@npm:^10.0.2, @sinonjs/fake-timers@npm:^10.2.0":
+"@sinonjs/fake-timers@npm:^10.0.2":
   version: 10.2.0
   resolution: "@sinonjs/fake-timers@npm:10.2.0"
   dependencies:
     "@sinonjs/commons": ^3.0.0
   checksum: 586c76e1dd90d03b0c4e754f2011325b38ac6055878c81c52434c900f36d9d245438c96ef69e08e28d9fbecf2335fb347b67850962d8b6e539dd7359d8c62802
+  languageName: node
+  linkType: hard
+
+"@sinonjs/fake-timers@npm:^10.3.0":
+  version: 10.3.0
+  resolution: "@sinonjs/fake-timers@npm:10.3.0"
+  dependencies:
+    "@sinonjs/commons": ^3.0.0
+  checksum: 614d30cb4d5201550c940945d44c9e0b6d64a888ff2cd5b357f95ad6721070d6b8839cd10e15b76bf5e14af0bcc1d8f9ec00d49a46318f1f669a4bec1d7f3148
   languageName: node
   linkType: hard
 
@@ -2849,13 +2858,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/js-yaml@npm:^4.0.5":
-  version: 4.0.5
-  resolution: "@types/js-yaml@npm:4.0.5"
-  checksum: 7dcac8c50fec31643cc9d6444b5503239a861414cdfaa7ae9a38bc22597c4d850c4b8cec3d82d73b3fbca408348ce223b0408d598b32e094470dfffc6d486b4d
-  languageName: node
-  linkType: hard
-
 "@types/jsonwebtoken@npm:9.0.1":
   version: 9.0.1
   resolution: "@types/jsonwebtoken@npm:9.0.1"
@@ -3042,16 +3044,6 @@ __metadata:
     "@types/mime": "*"
     "@types/node": "*"
   checksum: 2e078bdc1e458c7dfe69e9faa83cc69194b8896cce57cb745016580543c7ab5af07fdaa8ac1765eb79524208c81017546f66056f44d1204f812d72810613de36
-  languageName: node
-  linkType: hard
-
-"@types/swagger-ui-express@npm:^4.1.3":
-  version: 4.1.3
-  resolution: "@types/swagger-ui-express@npm:4.1.3"
-  dependencies:
-    "@types/express": "*"
-    "@types/serve-static": "*"
-  checksum: 1c990fa8c158f699c5443245383daef2c4b47efce715c105e67f9b88447cf23663774393fdeea7d5a6e97a83d6959b09129f19c4abca64abdb7db74517162295
   languageName: node
   linkType: hard
 
@@ -3435,23 +3427,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"api-docs@workspace:api-docs":
-  version: 0.0.0-use.local
-  resolution: "api-docs@workspace:api-docs"
-  dependencies:
-    "@types/express": ^4.17.13
-    "@types/js-yaml": ^4.0.5
-    "@types/node": ^18.16.0
-    "@types/swagger-ui-express": ^4.1.3
-    dotenv: ^16.0.0
-    express: ^4.17.3
-    js-yaml: ^4.1.0
-    swagger-ui-express: ^4.3.0
-    tslint: ^6.1.3
-    typescript: ^4.6.3
-  languageName: unknown
-  linkType: soft
-
 "api-gateway@workspace:api-gateway":
   version: 0.0.0-use.local
   resolution: "api-gateway@workspace:api-gateway"
@@ -3460,6 +3435,7 @@ __metadata:
     "@guardian/interfaces": ^2.13.1
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
+    "@nestjs/jwt": ^10.0.3
     "@nestjs/microservices": ^9.4.1
     "@nestjs/platform-express": ^9.4.2
     "@nestjs/swagger": ^6.3.0
@@ -3486,7 +3462,7 @@ __metadata:
     prometheus-api-metrics: 3.2.2
     reflect-metadata: ^0.1.13
     rewire: ^6.0.0
-    sinon: ^15.0.4
+    sinon: ^15.2.0
     tslint: ^6.1.3
     typescript: ^4.5.5
     ws: ^8.2.1
@@ -6294,9 +6270,6 @@ __metadata:
 "guardian@workspace:.":
   version: 0.0.0-use.local
   resolution: "guardian@workspace:."
-  dependencies:
-    "@nestjs/jwt": ^10.0.3
-    "@nestjs/swagger": ^6.3.0
   languageName: unknown
   linkType: soft
 
@@ -7727,7 +7700,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-yaml@npm:4.1.0, js-yaml@npm:^4.1.0":
+"js-yaml@npm:4.1.0":
   version: 4.1.0
   resolution: "js-yaml@npm:4.1.0"
   dependencies:
@@ -11010,17 +10983,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sinon@npm:^15.0.4":
-  version: 15.1.0
-  resolution: "sinon@npm:15.1.0"
+"sinon@npm:^15.2.0":
+  version: 15.2.0
+  resolution: "sinon@npm:15.2.0"
   dependencies:
     "@sinonjs/commons": ^3.0.0
-    "@sinonjs/fake-timers": ^10.2.0
+    "@sinonjs/fake-timers": ^10.3.0
     "@sinonjs/samsam": ^8.0.0
     diff: ^5.1.0
     nise: ^5.1.4
     supports-color: ^7.2.0
-  checksum: 3f0eab3e293c6206cca4a31f3c2836be86889f16bf6f54e2429550c1d07d0e7e9327cdbe6b7b69662c152a63e9f2661334c266932ba8f3206190009d58cb4f06
+  checksum: 1641b9af8a73ba57c73c9b6fd955a2d062a5d78cce719887869eca45faf33b0fd20cabfeffdfd856bb35bfbd3d49debb2d954ff6ae5e9825a3da5ff4f604ab6c
   languageName: node
   linkType: hard
 
@@ -11436,24 +11409,6 @@ __metadata:
   version: 4.18.2
   resolution: "swagger-ui-dist@npm:4.18.2"
   checksum: 3d3e801104af53a58662303aa82df81510cece64a28422e6de02b5d22eb5f6a354f3c3ab80d12f72442e0ec8cbae9122767d7f8476c4d4a21d5353163bc659a7
-  languageName: node
-  linkType: hard
-
-"swagger-ui-dist@npm:>=4.11.0":
-  version: 4.19.0
-  resolution: "swagger-ui-dist@npm:4.19.0"
-  checksum: a813128a7a10534e57b2d56913b7c3c216445254c1eda7ac8198331fb63e50754232b4f53178814abab51ba17b8e8fdc6e6e8c438f5070f83dc2f33cfe840916
-  languageName: node
-  linkType: hard
-
-"swagger-ui-express@npm:^4.3.0":
-  version: 4.6.3
-  resolution: "swagger-ui-express@npm:4.6.3"
-  dependencies:
-    swagger-ui-dist: ">=4.11.0"
-  peerDependencies:
-    express: ">=4.0.0 || >=5.0.0-beta"
-  checksum: bd0e02d2572685fcd82701b29f27ba6a27bc72de2b1553e84f884d008a0bf85a3711c9e236bb658130d702892866744d1a8a30b52b887e4f8224635c57afc63d
   languageName: node
   linkType: hard
 
