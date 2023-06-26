@@ -6,8 +6,8 @@ import { PolicyEngine } from '@helpers/policy-engine';
 import { PolicyListResponse } from '@entities/policy';
 import { StandardRegistryAccountResponse } from '@entities/account';
 import { ClientProxy } from '@nestjs/microservices';
-import { Body, Controller, Get, Headers, HttpCode, HttpException, HttpStatus, Inject, Post, Req, UseGuards } from '@nestjs/common';
-import { AuthGuard, checkPermission } from '@auth/authorization-helper';
+import { Body, Controller, Get, Headers, HttpCode, HttpException, HttpStatus, Inject, Post, Req } from '@nestjs/common';
+import { checkPermission } from '@auth/authorization-helper';
 import { AccountsResponseDTO, AccountsSessionResponseDTO, AggregatedDTOItem, BalanceResponseDTO, LoginUserDTO, RegisterUserDTO } from '@middlewares/validation/schemas/accounts';
 import { ApiBearerAuth, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath } from '@nestjs/swagger';
 import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
@@ -47,18 +47,18 @@ export class AccountApi {
         }
     })
     @ApiBearerAuth()
-    @UseGuards(AuthGuard)
+    // @UseGuards(AuthGuard)
     @HttpCode(HttpStatus.OK)
     @Get('/session')
     async getSession(@Headers() headers): Promise<AccountsSessionResponseDTO> {
         const users = new Users();
         try {
             const authHeader = headers.authorization;
-            const token = authHeader.split(' ')[1];
+            const token = authHeader?.split(' ')[1];
             return await users.getUserByToken(token) as any;
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.UNAUTHORIZED);
         }
 
     }
@@ -166,15 +166,20 @@ export class AccountApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    @UseGuards(AuthGuard)
+    // @UseGuards(AuthGuard)
     @HttpCode(HttpStatus.OK)
     @Get()
     async getAllAccounts(@Req() req): Promise<AccountsResponseDTO[]> {
         // await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const authHeader = req.headers.authorization;
-        const token = authHeader.split(' ')[1];
+        const token = authHeader?.split(' ')[1];
         const users = new Users();
-        const user = await users.getUserByToken(token) as IAuthUser;
+        let user;
+        try {
+            user = await users.getUserByToken(token) as IAuthUser;
+        } catch (e) {
+            user = null;
+        }
 
         if (!user) {
             throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
@@ -268,12 +273,11 @@ export class AccountApi {
     @HttpCode(HttpStatus.OK)
     async getStandatdRegistries(@Req() req): Promise<any> {
         const authHeader = req.headers.authorization;
-        const token = authHeader.split(' ')[1];
+        const token = authHeader?.split(' ')[1];
         const users = new Users();
         let user;
         try {
             user = await users.getUserByToken(token) as IAuthUser;
-
         } catch (e) {
             throw new HttpException(e.message, HttpStatus.UNAUTHORIZED);
         }
@@ -281,7 +285,7 @@ export class AccountApi {
             throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
         }
         try {
-            await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(user);
+            await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER, UserRole.AUDITOR)(user);
         } catch (e) {
             throw new HttpException(e.message, HttpStatus.FORBIDDEN);
         }

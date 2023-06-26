@@ -13,7 +13,7 @@ export class TagsApi {
     @HttpCode(HttpStatus.CREATED)
     async setTags(@Req() req, @Response() res): Promise<any> {
         try {
-            if (!req.user) {
+            if (!req.headers.authorization || !req.user || !req.user.did) {
                 throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
             }
             const guardian = new Guardians();
@@ -30,7 +30,7 @@ export class TagsApi {
     async searchTags(@Req() req, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();
-            if (!req.user) {
+            if (!req.headers.authorization || !req.user || !req.user.did) {
                 throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
             }
             const {entity, target, targets} = req.body;
@@ -105,7 +105,7 @@ export class TagsApi {
     @Post('/synchronization')
     @HttpCode(HttpStatus.OK)
     async synchronizationTags(@Req() req, @Response() res): Promise<any> {
-        if (!req.user) {
+        if (!req.headers.authorization || !req.user || !req.user.did) {
             throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
         }
         try {
