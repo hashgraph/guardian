@@ -1110,12 +1110,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:^7.15.4, @babel/runtime@npm:^7.18.6":
+"@babel/runtime@npm:^7.15.4":
   version: 7.22.3
   resolution: "@babel/runtime@npm:7.22.3"
   dependencies:
     regenerator-runtime: ^0.13.11
   checksum: 8fc50785ca4cba749fed90bffca7e6fd52d4709755654e95b8d2a945fc034b56fb8c2e8a0183fea7c4abb86bf5fa77678c0ea35163b6920649833d180c34c234
+  languageName: node
+  linkType: hard
+
+"@babel/runtime@npm:^7.22.5":
+  version: 7.22.5
+  resolution: "@babel/runtime@npm:7.22.5"
+  dependencies:
+    regenerator-runtime: ^0.13.11
+  checksum: 12a50b7de2531beef38840d17af50c55a094253697600cee255311222390c68eed704829308d4fd305e1b3dfbce113272e428e9d9d45b1730e0fede997eaceb1
   languageName: node
   linkType: hard
 
@@ -2849,13 +2858,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/js-yaml@npm:^4.0.5":
-  version: 4.0.5
-  resolution: "@types/js-yaml@npm:4.0.5"
-  checksum: 7dcac8c50fec31643cc9d6444b5503239a861414cdfaa7ae9a38bc22597c4d850c4b8cec3d82d73b3fbca408348ce223b0408d598b32e094470dfffc6d486b4d
-  languageName: node
-  linkType: hard
-
 "@types/jsonwebtoken@npm:9.0.1":
   version: 9.0.1
   resolution: "@types/jsonwebtoken@npm:9.0.1"
@@ -3042,16 +3044,6 @@ __metadata:
     "@types/mime": "*"
     "@types/node": "*"
   checksum: 2e078bdc1e458c7dfe69e9faa83cc69194b8896cce57cb745016580543c7ab5af07fdaa8ac1765eb79524208c81017546f66056f44d1204f812d72810613de36
-  languageName: node
-  linkType: hard
-
-"@types/swagger-ui-express@npm:^4.1.3":
-  version: 4.1.3
-  resolution: "@types/swagger-ui-express@npm:4.1.3"
-  dependencies:
-    "@types/express": "*"
-    "@types/serve-static": "*"
-  checksum: 1c990fa8c158f699c5443245383daef2c4b47efce715c105e67f9b88447cf23663774393fdeea7d5a6e97a83d6959b09129f19c4abca64abdb7db74517162295
   languageName: node
   linkType: hard
 
@@ -3435,23 +3427,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"api-docs@workspace:api-docs":
-  version: 0.0.0-use.local
-  resolution: "api-docs@workspace:api-docs"
-  dependencies:
-    "@types/express": ^4.17.13
-    "@types/js-yaml": ^4.0.5
-    "@types/node": ^18.16.0
-    "@types/swagger-ui-express": ^4.1.3
-    dotenv: ^16.0.0
-    express: ^4.17.3
-    js-yaml: ^4.1.0
-    swagger-ui-express: ^4.3.0
-    tslint: ^6.1.3
-    typescript: ^4.6.3
-  languageName: unknown
-  linkType: soft
-
 "api-gateway@workspace:api-gateway":
   version: 0.0.0-use.local
   resolution: "api-gateway@workspace:api-gateway"
@@ -3460,6 +3435,7 @@ __metadata:
     "@guardian/interfaces": ^2.13.1
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
+    "@nestjs/jwt": ^10.0.3
     "@nestjs/microservices": ^9.4.1
     "@nestjs/platform-express": ^9.4.2
     "@nestjs/swagger": ^6.3.0
@@ -4856,7 +4832,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"decimal.js@npm:^10.3.1":
+"decimal.js@npm:^10.4.3":
   version: 10.4.3
   resolution: "decimal.js@npm:10.4.3"
   checksum: 796404dcfa9d1dbfdc48870229d57f788b48c21c603c3f6554a1c17c10195fc1024de338b0cf9e1efe0c7c167eeb18f04548979bcc5fdfabebb7cc0ae3287bae
@@ -6275,7 +6251,7 @@ __metadata:
     imurmurhash: ^0.1.4
     jszip: ^3.7.1
     lodash.get: ^4.4.2
-    mathjs: ^10.1.0
+    mathjs: ^11.8.2
     mocha: ^9.2.0
     mocha-junit-reporter: ^2.0.2
     module-alias: ^2.2.2
@@ -6294,9 +6270,6 @@ __metadata:
 "guardian@workspace:.":
   version: 0.0.0-use.local
   resolution: "guardian@workspace:."
-  dependencies:
-    "@nestjs/jwt": ^10.0.3
-    "@nestjs/swagger": ^6.3.0
   languageName: unknown
   linkType: soft
 
@@ -7727,7 +7700,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-yaml@npm:4.1.0, js-yaml@npm:^4.1.0":
+"js-yaml@npm:4.1.0":
   version: 4.1.0
   resolution: "js-yaml@npm:4.1.0"
   dependencies:
@@ -8435,22 +8408,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mathjs@npm:^10.1.0":
-  version: 10.6.4
-  resolution: "mathjs@npm:10.6.4"
+"mathjs@npm:^11.8.2":
+  version: 11.8.2
+  resolution: "mathjs@npm:11.8.2"
   dependencies:
-    "@babel/runtime": ^7.18.6
+    "@babel/runtime": ^7.22.5
     complex.js: ^2.1.1
-    decimal.js: ^10.3.1
+    decimal.js: ^10.4.3
     escape-latex: ^1.2.0
     fraction.js: ^4.2.0
     javascript-natural-sort: ^0.7.1
     seedrandom: ^3.0.5
     tiny-emitter: ^2.1.0
-    typed-function: ^2.1.0
+    typed-function: ^4.1.0
   bin:
     mathjs: bin/cli.js
-  checksum: 64c785d6f3cd0500888be31793d677d50f7da51b04fe009ba2d5be5f29948b3ef70fd26f8fa80064f4c18716a9ab59dd600236ffcca7e9ea6265a91c5b1540a9
+  checksum: efdee023626bb7216bea7e54d7af05c560738132a5901bec3293fab54c35785a87d5db599fecbe178be0e0a03837387a78118e357b7c9de4ff517a6593abb18f
   languageName: node
   linkType: hard
 
@@ -9963,7 +9936,7 @@ __metadata:
     jszip: ^3.7.1
     lodash.get: ^4.4.2
     lodash.set: ^4.3.2
-    mathjs: ^10.1.0
+    mathjs: ^11.8.2
     mocha: ^9.2.0
     mocha-junit-reporter: ^2.0.2
     module-alias: ^2.2.2
@@ -11439,24 +11412,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"swagger-ui-dist@npm:>=4.11.0":
-  version: 4.19.0
-  resolution: "swagger-ui-dist@npm:4.19.0"
-  checksum: a813128a7a10534e57b2d56913b7c3c216445254c1eda7ac8198331fb63e50754232b4f53178814abab51ba17b8e8fdc6e6e8c438f5070f83dc2f33cfe840916
-  languageName: node
-  linkType: hard
-
-"swagger-ui-express@npm:^4.3.0":
-  version: 4.6.3
-  resolution: "swagger-ui-express@npm:4.6.3"
-  dependencies:
-    swagger-ui-dist: ">=4.11.0"
-  peerDependencies:
-    express: ">=4.0.0 || >=5.0.0-beta"
-  checksum: bd0e02d2572685fcd82701b29f27ba6a27bc72de2b1553e84f884d008a0bf85a3711c9e236bb658130d702892866744d1a8a30b52b887e4f8224635c57afc63d
-  languageName: node
-  linkType: hard
-
 "table-layout@npm:^1.0.2":
   version: 1.0.2
   resolution: "table-layout@npm:1.0.2"
@@ -11926,10 +11881,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typed-function@npm:^2.1.0":
-  version: 2.1.0
-  resolution: "typed-function@npm:2.1.0"
-  checksum: 168c2c8f765fbecc842521a5fb62a5800958f9fcb0ce78d69c38a5e96c81fe133f853256ec8ee245ee2fc42b4c9342b5ba754c732189550c64c12e758892dc43
+"typed-function@npm:^4.1.0":
+  version: 4.1.0
+  resolution: "typed-function@npm:4.1.0"
+  checksum: 5d512a13501028abbf8676299b4f92209cb4a90fb9b002330494bfd2451b1f9ecde866dbd51b2e599f9ff3521349489b173df050528521d28a38cc071b8d5b8f
   languageName: node
   linkType: hard
 
