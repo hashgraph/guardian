@@ -116,7 +116,7 @@ Description – is a textual description of the rule. It is displayed next to th
 
 New color-stylization of policy syntax groups is now possible as shown below:
 
-<figure><img src="../../../../.gitbook/assets/image (33).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (33) (3).png" alt=""><figcaption></figcaption></figure>
 
 **1.3.1 Displaying the syntax in Legend**
 

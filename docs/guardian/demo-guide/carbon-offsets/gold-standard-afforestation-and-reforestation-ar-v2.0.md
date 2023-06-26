@@ -54,11 +54,11 @@ Go to the Standard Registry profile and approve the VVB in the “Approve VVB”
 
 Click on the Project Proponent profile and select “New Project”.
 
-<figure><img src="../../../.gitbook/assets/image (4) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (4) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Now, we can input all the project details and data associated with the project in the “New Project” form. In the schema Excel file, if the final CRU calculations do not result in a positive integer, selecting "Ok" after completing the form will trigger errors. In this demo guide, we have provided a link to an Excel file containing demo values that can be utilized to test the policy.
 
-<figure><img src="../../../.gitbook/assets/image (8).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (8) (5).png" alt=""><figcaption></figcaption></figure>
 
 To proceed with the flow, the next step is to access the Standard Registry profile and include the project in the project pipeline. This can be achieved by navigating to the "Project Pipeline" tab and selecting the "Add" option.
 
@@ -82,7 +82,7 @@ If you access the Technical Advisory Committee profile, you will find a "Comment
 
 Similarly, you can also leave comments for the NGO Supporters by accessing their profile and selecting the "Comment" button.
 
-<figure><img src="../../../.gitbook/assets/image (7).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (7) (1).png" alt=""><figcaption></figcaption></figure>
 
 Navigate back to the Project Proponent profile to complete the monitoring report. In the Projects tab select “Add Report”.
 
@@ -118,4 +118,4 @@ The Trust Chain view presents critical elements that are publicly available for 
 
 <figure><img src="../../../.gitbook/assets/image (13) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (11) (1) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (11) (1) (2) (1).png" alt=""><figcaption></figcaption></figure>
