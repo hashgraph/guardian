@@ -13,6 +13,10 @@ const URL = {
     Profile: "/user-profile",
     UserTokens: "/user-profile?tab=tokens",
     Schemas: "/schemas",
+    Artifacts: "/artifacts",
+    Status: "/admin/status",
+    Settings: "/admin/settings",
+    Logs: "/admin/logs",
   };
   
   export default URL;
