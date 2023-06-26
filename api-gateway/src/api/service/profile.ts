@@ -1,7 +1,7 @@
 import { Guardians } from '@helpers/guardians';
 import { Users } from '@helpers/users';
 import { DidDocumentStatus, IUser, SchemaEntity, TopicType, UserRole } from '@guardian/interfaces';
-import { Logger, RunFunctionAsync } from '@guardian/common';
+import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
 import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
 import { Controller, Get, HttpCode, HttpException, HttpStatus, Put, Req, Response } from '@nestjs/common';
@@ -14,15 +14,25 @@ export class ProfileApi {
   @Get('/:username/')
   @HttpCode(HttpStatus.OK)
   async getProfile(@Req() req, @Response() res): Promise<any> {
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.split(' ')[1];
+    const users = new Users();
+    const guardians = new Guardians();
+    let user;
     try {
-      const guardians = new Guardians();
-      const users = new Users();
+      user = await users.getUserByToken(token) as IAuthUser;
+    } catch (e) {
+      user = null;
+    }
 
-      const user = await users.getUser(req.user.username);
+    if (!user) {
+      throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+    }
 
+    try {
       let didDocument: any = null;
       if (user.did) {
-        const didDocuments = await guardians.getDidDocuments({ did: user.did });
+        const didDocuments = await guardians.getDidDocuments({did: user.did});
         if (didDocuments) {
           didDocument = didDocuments[didDocuments.length - 1];
         }
@@ -85,21 +95,31 @@ export class ProfileApi {
   @Put('/:username')
   @HttpCode(HttpStatus.NO_CONTENT)
   async setUserProfile(@Req() req, @Response() res): Promise<any> {
-    if (!req.headers.authorization || !req.user || !req.user.did) {
-      throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.split(' ')[1];
+    const users = new Users();
+    const guardians = new Guardians();
+    let user;
+    try {
+      user = await users.getUserByToken(token) as IAuthUser;
+    } catch (e) {
+      user = null;
+    }
+
+    if (!user) {
+      throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
     }
     try {
-      const guardians = new Guardians();
 
       const profile: any = req.body;
-      const username: string = req.user.username;
+      const username: string = user.username;
 
       await guardians.createUserProfileCommon(username, profile);
 
       return res.status(204).send();
     } catch (error) {
       new Logger().error(error, ['API_GATEWAY']);
-      throw error;
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -167,14 +187,17 @@ export class ProfileApi {
   @Get('/:username/balance')
   @HttpCode(HttpStatus.OK)
   async getUserBalance(@Req() req, @Response() res): Promise<any> {
-    if (!req.headers.authorization || !req.user || !req.user.did) {
+    if (!req.headers.authorization || !req.user) {
       throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
+    }
+    if (!req.user.did) {
+      return res.json(null);
     }
     try {
       const guardians = new Guardians();
       const balance = await guardians.getUserBalance(req.params.username);
       if (balance.toLowerCase().includes('invalid account')) {
-        throw new HttpException('Account not found', HttpStatus.UNAUTHORIZED)
+        throw new HttpException('Account not found', HttpStatus.NOT_FOUND)
       }
       return res.json(balance);
     } catch (error) {
