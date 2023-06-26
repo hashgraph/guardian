@@ -38,10 +38,11 @@ jobs:
       - name: Run service
         run: |
           pushd api-gateway
-          npm start
+          npm start &
           popd
       - name: Download file
         run: |
+          sleep 30
           curl -o swagger.yaml http://localhost:3002/api-docs-yaml
           cat swagger.yaml
           pwd
