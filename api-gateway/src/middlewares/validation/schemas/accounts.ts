@@ -1,9 +1,10 @@
 import * as yup from 'yup';
 import fieldsValidation from '../fields-validation'
-import { IsNotEmpty, IsString, ValidateIf } from 'class-validator';
+import { IsIn, IsNotEmpty, IsString } from 'class-validator';
 import { UserRole } from '@guardian/interfaces';
 import { Expose } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
+import { Match } from '@helpers/decorators/match.validator';
 
 export class AccountsResponseDTO {
   @ApiProperty()
@@ -62,16 +63,19 @@ export class RegisterUserDTO {
   @IsNotEmpty()
   password: string;
 
+  @Match('password', {
+    message: 'Passwords must match'
+  })
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  @ValidateIf((user: RegisterUserDTO, value: string) => user.password === value)
       // tslint:disable-next-line:variable-name
   password_confirmation: string;
 
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
+  @IsIn(Object.values(UserRole))
   role: UserRole | string
 }
 

@@ -79,11 +79,11 @@
             <h3>Finish Setup</h3>
             <div *ngIf="!generated" class="list-item">
                 <mat-form-field class="example-full-width" appearance="outline">
-                    <mat-label>OPERATOR ID (Hedera Account):</mat-label>
+                    <mat-label>* OPERATOR ID (Hedera Account):</mat-label>
                     <input matInput placeholder="0.0.1548173" formControlName="hederaAccountId">
                 </mat-form-field>
                 <mat-form-field class="example-full-width" appearance="outline">
-                    <mat-label>OPERATOR KEY (Hedera Account Private Key):</mat-label>
+                    <mat-label>* OPERATOR KEY (Hedera Account Private Key):</mat-label>
                     <input matInput placeholder="302e020100300506032b657004220420e..."
                         formControlName="hederaAccountKey">
                 </mat-form-field>
@@ -110,7 +110,7 @@
                 </div>
             </div>
             <div *ngIf="!generated" class="list-button">
-                <button mat-raised-button type="button" id="generate-btn-mobile" (click)="randomKey()">Generate</button>
+                <button mat-raised-button type="button" class="generate-btn" (click)="randomKey()">Generate</button>
             </div>
             <div class="list-item" *ngIf="showForm && generated">
                 <app-schema-form [formGroup]="vcForm" [schema]="schema" [private-fields]="hideVC"
@@ -176,7 +176,7 @@
     <div *ngIf="!isConfirmed && isFailed" class="error-list">
         <p>An error occurred while creating the document.</p>
         <p>Please try again later.</p>
-        <button mat-raised-button type="button" color="primary" class="generate-btn" (click)="retry()">Retry</button>
+        <button mat-raised-button type="button" color="primary" (click)="retry()">Retry</button>
     </div>
 
     <div *ngIf="errorLoadSchema" class="error-schema">

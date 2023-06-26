@@ -91,10 +91,13 @@ a.go-back-link mat-icon {
 }
 
 .policy-header span {
-    margin-right: 30px;
     height: 30px;
     padding: 5px 0px;
     box-sizing: border-box;
+}
+
+.policy-header span:not(.current-user-group__label) {
+    margin-right: 30px;
 }
 
 .current-user-role {
@@ -358,16 +361,16 @@ a.go-back-link mat-icon {
     position: relative;
     cursor: pointer;
     user-select: none;
+    display: flex;
+    align-items: center;
+
+    &__label {
+        margin-right: 10px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 }
-
-.current-user-group .expand-group {
-    position: absolute;
-    right: -30px;
-    top: 3px;
-}
-
-
-
 
 .user-group {
     padding: 10px;
@@ -431,7 +434,6 @@ a.go-back-link mat-icon {
     color: #464646;
 }
 
-
 @media (max-width: 810px) {
     .policy-header {
         position: sticky;
@@ -446,5 +448,10 @@ a.go-back-link mat-icon {
 
     .dry-run-content {
         top: var(--header-height);
+    }
+
+    .current-user-group__label {
+        max-width: 170px;
+        margin-right: 0;
     }
 }

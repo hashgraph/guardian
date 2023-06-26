@@ -16,6 +16,8 @@
 
 .g-dialog-actions-btn {
     min-width: 210px !important;
+    padding: 0;
+    border: none;
 }
 
 @media (max-width: 810px) {

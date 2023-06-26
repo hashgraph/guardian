@@ -363,6 +363,7 @@ export class SchemaConfigComponent implements OnInit {
     openDocument(element: Schema) {
         const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
+            disableClose: true,
             data: {
                 document: element.document,
                 title: 'Schema',
@@ -516,6 +517,7 @@ export class SchemaConfigComponent implements OnInit {
                 dialogTitle: 'Delete schema',
                 dialogText: 'Are you sure to delete schema?'
             },
+            disableClose: true,
             autoFocus: false
         });
         dialogRef.afterClosed().subscribe((result) => {
@@ -536,6 +538,7 @@ export class SchemaConfigComponent implements OnInit {
         const dialogRef = this.dialog.open(ImportSchemaDialog, {
             width: '500px',
             autoFocus: false,
+            disableClose: true,
             data: { timeStamp: messageId }
         });
         dialogRef.afterClosed().subscribe(async (result) => {
@@ -550,6 +553,7 @@ export class SchemaConfigComponent implements OnInit {
         const dialogRef = this.dialog.open(SchemaViewDialog, {
             width: '950px',
             panelClass: 'g-dialog',
+            disableClose: true,
             data: {
                 schemas: schemas,
                 topicId: this.currentTopicPolicy,
@@ -586,6 +590,7 @@ export class SchemaConfigComponent implements OnInit {
             .subscribe(schema => this.dialog.open(ExportSchemaDialog, {
                 width: '700px',
                 panelClass: 'g-dialog',
+                disableClose: true,
                 data: {
                     schema: schema
                 },

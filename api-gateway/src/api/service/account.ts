@@ -1,5 +1,5 @@
 import { Users } from '@helpers/users';
-import { Logger } from '@guardian/common';
+import { IAuthUser, Logger } from '@guardian/common';
 import { Guardians } from '@helpers/guardians';
 import { SchemaEntity, UserRole } from '@guardian/interfaces';
 import { PolicyEngine } from '@helpers/policy-engine';
@@ -7,7 +7,7 @@ import { PolicyListResponse } from '@entities/policy';
 import { StandardRegistryAccountResponse } from '@entities/account';
 import { ClientProxy } from '@nestjs/microservices';
 import { Body, Controller, Get, Headers, HttpCode, HttpException, HttpStatus, Inject, Post, Req, UseGuards } from '@nestjs/common';
-import { AuthGuard } from '@auth/authorization-helper';
+import { AuthGuard, checkPermission } from '@auth/authorization-helper';
 import { AccountsResponseDTO, AccountsSessionResponseDTO, AggregatedDTOItem, BalanceResponseDTO, LoginUserDTO, RegisterUserDTO } from '@middlewares/validation/schemas/accounts';
 import { ApiBearerAuth, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath } from '@nestjs/swagger';
 import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
@@ -166,13 +166,22 @@ export class AccountApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    @Get()
+    @UseGuards(AuthGuard)
     @HttpCode(HttpStatus.OK)
+    @Get()
     async getAllAccounts(@Req() req): Promise<AccountsResponseDTO[]> {
         // await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const authHeader = req.headers.authorization;
+        const token = authHeader.split(' ')[1];
+        const users = new Users();
+        const user = await users.getUserByToken(token) as IAuthUser;
+
+        if (!user) {
+            throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
+        }
         try {
-            const users = new Users();
-            return await users.getAllUserAccounts() as any;
+            await checkPermission(UserRole.STANDARD_REGISTRY)(user);
+            return await users.getAllUserAccounts() as any[];
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error;
@@ -210,9 +219,17 @@ export class AccountApi {
     })
     @Get('/root-authorities')
     @HttpCode(HttpStatus.OK)
-    async getRootAuthorities(): Promise<AccountsResponseDTO> {
+    async getRootAuthorities(@Req() req): Promise<AccountsResponseDTO> {
+        const authHeader = req.headers.authorization;
+        const token = authHeader.split(' ')[1];
+        const users = new Users();
+        const user = await users.getUserByToken(token) as IAuthUser;
+
+        if (!user) {
+            throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
+        }
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(user);
         try {
-            const users = new Users();
             return await users.getAllStandardRegistryAccounts() as any;
         } catch (error) {
             new Logger().error(error.message, ['API_GATEWAY']);
@@ -249,9 +266,26 @@ export class AccountApi {
     })
     @Get('/standard-registries')
     @HttpCode(HttpStatus.OK)
-    async getStandatdRegistries(): Promise<any> {
+    async getStandatdRegistries(@Req() req): Promise<any> {
+        const authHeader = req.headers.authorization;
+        const token = authHeader.split(' ')[1];
+        const users = new Users();
+        let user;
         try {
-            const users = new Users();
+            user = await users.getUserByToken(token) as IAuthUser;
+
+        } catch (e) {
+            throw new HttpException(e.message, HttpStatus.UNAUTHORIZED);
+        }
+        if (!user) {
+            throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
+        }
+        try {
+            await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(user);
+        } catch (e) {
+            throw new HttpException(e.message, HttpStatus.FORBIDDEN);
+        }
+        try {
             return await users.getAllStandardRegistryAccounts();
         } catch (error) {
             new Logger().error(error.message, ['API_GATEWAY']);
@@ -366,13 +400,13 @@ export class AccountApi {
                         // const balance = await this.client.send(MessageAPI.GET_BALANCE, { username: user.username }).toPromise()
                         // return balance;
                     }
-                    return {};
+                    throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
 
                 } catch (error) {
-                    return {};
+                    throw new HttpException(error.message, HttpStatus.UNAUTHORIZED)
                 }
             }
-            return {};
+            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error;

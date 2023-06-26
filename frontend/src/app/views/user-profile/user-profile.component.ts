@@ -62,7 +62,7 @@ export class UserProfileComponent implements OnInit {
 
     filtersForm = new FormGroup({
         policyName: new FormControl(''),
-        username: new FormControl(''),
+        geography: new FormControl(''),
     });
 
     displayedColumns: string[] = [
@@ -355,6 +355,7 @@ export class UserProfileComponent implements OnInit {
     openVCDocument(document: any, title: string) {
         const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
+            disableClose: true,
             data: {
                 document: document.document,
                 title: title,
@@ -369,6 +370,7 @@ export class UserProfileComponent implements OnInit {
     openDIDDocument(document: any, title: string) {
         const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
+            disableClose: true,
             data: {
                 document: document.document,
                 title: title,
@@ -436,6 +438,7 @@ export class UserProfileComponent implements OnInit {
                 hasBackdrop: true, // Shadows beyond the dialog
                 closeOnNavigation: true,
                 autoFocus: false,
+                disableClose: true,
                 data: {
                     tokens,
                 },
@@ -478,6 +481,7 @@ export class UserProfileComponent implements OnInit {
     viewRetireRequest(document: any) {
         this.dialog.open(VCViewerDialog, {
             width: '600px',
+            disableClose: true,
             data: {
                 document: document.document,
                 title: 'View Retire Request Result',
@@ -549,20 +553,20 @@ export class UserProfileComponent implements OnInit {
     }
 
     applyFilters(): void {
-        if (this.filters.policyName && this.filters.username) {
-            this.filterByPolicyNameAndUsername();
+        if (this.filters.policyName && this.filters.geography) {
+            this.filterByPolicyNameAndGeography();
             this.handleFiltering();
             return;
         }
 
         this.filters.policyName
             ? this.filterByPolicyName()
-            : this.filterByUsername();
+            : this.filterByGeography();
         this.handleFiltering();
     }
 
     clearFilters(): void {
-        this.filtersForm.reset({ policyName: '', username: '' });
+        this.filtersForm.reset({ policyName: '', geography: '' });
         this.filteredRegistries = [];
         this.noFilterResults = false;
         this.selectStandardRegistry('');
@@ -583,17 +587,17 @@ export class UserProfileComponent implements OnInit {
         );
     }
 
-    private filterByUsername(): void {
+    private filterByGeography(): void {
         this.filteredRegistries = this.standardRegistries.filter(
             (registry: IStandardRegistryResponse) =>
-                this.isRegistryNameEqualToFilter(registry)
+                this.isGeographyEqualToFilter(registry)
         );
     }
 
-    private filterByPolicyNameAndUsername(): void {
+    private filterByPolicyNameAndGeography(): void {
         this.filteredRegistries = this.standardRegistries.filter(
             (registry: IStandardRegistryResponse) =>
-                this.isRegistryNameEqualToFilter(registry) &&
+                this.isGeographyEqualToFilter(registry) &&
                 this.isRegistryContainPolicy(registry)
         );
     }
@@ -610,12 +614,12 @@ export class UserProfileComponent implements OnInit {
         );
     }
 
-    private isRegistryNameEqualToFilter(
+    private isGeographyEqualToFilter(
         registry: IStandardRegistryResponse
-    ): boolean {
-        return registry.username
-            .toLowerCase()
-            .includes(this.filters.username.toLowerCase());
+    ): boolean | undefined {
+        return registry.vcDocument.document?.credentialSubject[0]?.geography
+            ?.toLowerCase()
+            .includes(this.filters.geography.toLowerCase());
     }
 
     private handleFiltering(): void {
@@ -623,10 +627,10 @@ export class UserProfileComponent implements OnInit {
         this.selectStandardRegistry('');
     }
 
-    private get filters(): { policyName: string; username: string } {
+    private get filters(): { policyName: string; geography: string } {
         return {
             policyName: this.filtersForm.value?.policyName?.trim(),
-            username: this.filtersForm.value?.username?.trim(),
+            geography: this.filtersForm.value?.geography?.trim(),
         };
     }
 
@@ -651,7 +655,7 @@ export class UserProfileComponent implements OnInit {
     get isFilterButtonDisabled(): boolean {
         return (
             this.filters.policyName.length === 0 &&
-            this.filters.username.length === 0
+            this.filters.geography.length === 0
         );
     }
 }

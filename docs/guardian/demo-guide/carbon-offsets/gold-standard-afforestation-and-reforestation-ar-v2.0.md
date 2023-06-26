@@ -104,7 +104,7 @@ After reviewing the monitoring report, the Technical Advisory Committee can prov
 
 Similarly, you can leave comments for the NGO supporter profile. Navigate to their profile and go to the monitoring reports tab. Here, select the "Comment" button to provide your feedback.
 
-<figure><img src="../../../.gitbook/assets/image (39).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (39) (3).png" alt=""><figcaption></figcaption></figure>
 
 This is the final step in the workflow. Access the Standard Registry profile and navigate to the "Monitoring Reports" tab. Here, you will find a "Mint" button - select that to mint the tokens for this monitoring period.
 

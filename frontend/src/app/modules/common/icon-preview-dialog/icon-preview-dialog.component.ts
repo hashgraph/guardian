@@ -16,7 +16,6 @@ export class IconPreviewDialog {
     icon!: string;
     loading: boolean = false;
 
-
     constructor(
         public dialogRef: MatDialogRef<IconPreviewDialog>,
         private ipfs: IPFSService,
@@ -35,6 +34,7 @@ export class IconPreviewDialog {
             }
     }
 
-    ngOnInit() {
+    onClose(): void {
+        this.dialogRef.close(null);
     }
 }

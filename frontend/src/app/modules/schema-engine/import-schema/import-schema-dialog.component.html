@@ -1,6 +1,10 @@
 <div class="content">
     <ng-container *ngIf="isImportTypeSelected" [ngSwitch]="this.importType">
         <ng-template [ngSwitchCase]="0">
+            <div class="login-header">
+                <mat-icon class="close-button" (click)="onNoClick()">close</mat-icon>
+            </div>
+            
             <app-file-drag-n-drop fileExtension="schema" (onFileLoaded)="importFromFile($event)"
                 dropZoneLabel="Import Schema .schema file"></app-file-drag-n-drop>
         </ng-template>
@@ -30,7 +34,8 @@
     <ng-container *ngIf="!isImportTypeSelected">
         <div class="action-select-step">
             <div class="login-header">
-                Select action
+                <span class="login-header-title">Select action</span>
+                <mat-icon (click)="onNoClick()">close</mat-icon>
             </div>
             <button mat-button (click)="setImportType(0)">
                 <span class="action-name">Import from file</span>

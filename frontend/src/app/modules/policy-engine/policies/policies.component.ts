@@ -309,6 +309,7 @@ export class PoliciesComponent implements OnInit {
     setVersion(element: any) {
         const dialogRef = this.dialog.open(SetVersionDialog, {
             width: '350px',
+            disableClose: true,
             data: {}
         });
         dialogRef.afterClosed().subscribe((version) => {
@@ -338,6 +339,7 @@ export class PoliciesComponent implements OnInit {
                     ? 'Are you sure to delete policy with related schemas?'
                     : 'Are you sure to delete policy?'
             },
+            disableClose: true,
             autoFocus: false
         });
         dialogRef.afterClosed().subscribe((result) => {
@@ -364,7 +366,8 @@ export class PoliciesComponent implements OnInit {
                     panelClass: 'g-dialog',
                     data: {
                     policy: exportedPolicy
-                    },
+                },
+                disableClose: true,
                 autoFocus: false
             }));
     }
@@ -373,6 +376,7 @@ export class PoliciesComponent implements OnInit {
         const dialogRef = this.dialog.open(ImportPolicyDialog, {
             width: '500px',
             autoFocus: false,
+            disableClose: true,
             data: {
                 timeStamp: messageId
             }
@@ -402,6 +406,7 @@ export class PoliciesComponent implements OnInit {
                 hasBackdrop: true, // Shadows beyond the dialog
                 closeOnNavigation: true,
                 autoFocus: false,
+                disableClose: true,
                 data: {
                     policy: policy,
                     policies: distinctPolicies
@@ -411,6 +416,7 @@ export class PoliciesComponent implements OnInit {
             dialogRef = this.dialog.open(PreviewPolicyDialog, {
                 width: '950px',
                 panelClass: 'g-dialog',
+                disableClose: true,
                 data: {
                     policy: policy,
                     policies: distinctPolicies
@@ -556,6 +562,7 @@ export class PoliciesComponent implements OnInit {
                 hasBackdrop: true, // Shadows beyond the dialog
                 closeOnNavigation: true,
                 autoFocus: false,
+                disableClose: true,
                 data: {
                     policyId: element.id
                 }

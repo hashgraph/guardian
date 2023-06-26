@@ -264,7 +264,6 @@ form {
 }
 
 @media (max-width: 810px) {
-
     .invalid-field-label {
         position: relative;
         left: 30px;

@@ -30,6 +30,7 @@ import { TrustChainsOldApi } from '@api/service/trustchains';
 import { BrandingApi } from '@api/service/branding';
 import { SuggestionsApi } from '@api/service/suggestions';
 import { JwtModule } from '@nestjs/jwt';
+import { MatchConstraint } from '@helpers/decorators/match.validator';
 
 const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
 const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
@@ -81,7 +82,8 @@ const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
     ],
     providers: [
         LoggerService,
-        AuthGuard
+        AuthGuard,
+        MatchConstraint
     ]
 })
 export class AppModule {

@@ -18,9 +18,6 @@
                     (cancelBtnEvent)="onCancelPage($event)" (submitBtnEvent)="onSubmit()">
                 </app-schema-form>
             </div>
-            <div class="page-btns">
-                <button mat-raised-button color="primary" type="submit" [disabled]="!dataForm.valid">Create</button>
-            </div>
         </form>
     </ng-container>
     <ng-container *ngIf="type=='dialog'">

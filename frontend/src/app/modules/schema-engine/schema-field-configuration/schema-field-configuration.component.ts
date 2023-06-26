@@ -161,7 +161,8 @@ export class SchemaFieldConfigurationComponent implements OnInit {
             data: {
                 enumValue: this.field.controlEnum.value,
                 errorHandler: this.errorHandler.bind(this)
-            }
+            },
+            disableClose: true,
         });
         dialogRef.afterClosed().subscribe((res: { enumValue: string, loadToIpfs: boolean }) => {
             if (!res) {

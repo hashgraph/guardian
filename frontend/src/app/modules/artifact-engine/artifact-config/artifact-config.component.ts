@@ -133,6 +133,7 @@ export class ArtifactConfigComponent implements OnInit {
                 dialogTitle: 'Delete artifact',
                 dialogText: 'Are you sure to delete artifact?'
             },
+            disableClose: true,
             autoFocus: false
         });
         dialogRef.afterClosed().subscribe((result) => {
@@ -157,7 +158,8 @@ export class ArtifactConfigComponent implements OnInit {
             data: {
                 policyId: this.currentPolicyId,
                 policies: this.policies
-            }
+            },
+            disableClose: true,
         });
 
         dialogRef.afterClosed().subscribe((result) => {
