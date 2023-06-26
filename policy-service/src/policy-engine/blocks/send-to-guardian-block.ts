@@ -463,7 +463,6 @@ export class SendToGuardianBlock {
         //
         let message: Message;
         let docObject: DIDDocument | VcDocument | VpDocument;
-        const owner = await PolicyUtils.getUserByIssuer(ref, document);
         if (type === DocumentType.DID) {
             const did = DIDDocument.fromJsonTree(document.document);
             const didMessage = new DIDMessage(MessageAction.CreateDID);
@@ -472,6 +471,7 @@ export class SendToGuardianBlock {
             message = didMessage;
             docObject = did;
         } else if (type === DocumentType.VerifiableCredential) {
+            const owner = await PolicyUtils.getUserByIssuer(ref, document);
             const vc = VcDocument.fromJsonTree(document.document);
             const vcMessage = new VCMessage(MessageAction.CreateVC);
             vcMessage.setDocument(vc);
@@ -481,6 +481,7 @@ export class SendToGuardianBlock {
             message = vcMessage;
             docObject = vc;
         } else if (type === DocumentType.VerifiablePresentation) {
+            const owner = await PolicyUtils.getUserByIssuer(ref, document);
             const vp = VpDocument.fromJsonTree(document.document);
             const vpMessage = new VPMessage(MessageAction.CreateVP);
             vpMessage.setDocument(vp);
