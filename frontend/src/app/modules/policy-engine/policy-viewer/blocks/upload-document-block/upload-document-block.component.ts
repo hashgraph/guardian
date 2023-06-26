@@ -150,6 +150,7 @@ export class UploadDocumentBlockComponent implements OnInit {
                 hasBackdrop: true, // Shadows beyond the dialog
                 closeOnNavigation: true,
                 autoFocus: false,
+                disableClose: true,
                 data: this
             });
         } else {

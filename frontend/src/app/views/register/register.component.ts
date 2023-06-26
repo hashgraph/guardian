@@ -5,7 +5,7 @@ import { AuthService } from '../../services/auth.service';
 import { AuthStateService } from 'src/app/services/auth-state.service';
 import { UserRole } from '@guardian/interfaces';
 import { Observable, ReplaySubject } from 'rxjs';
-import { noWhitespaceValidator } from 'src/app/validators/no-spaces.validator';
+import { noWhitespaceValidator } from 'src/app/validators/no-whitespace-validator';
 
 const checkPasswords: ValidatorFn = (group: AbstractControl): ValidationErrors | null => {
     const pass = group.get('password');

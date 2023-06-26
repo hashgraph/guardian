@@ -1,4 +1,3 @@
-// import client from 'prom-client';
 import { Guardians } from '@helpers/guardians';
 import { IPFS } from '@helpers/ipfs';
 import { PolicyEngine } from '@helpers/policy-engine';
@@ -13,11 +12,10 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import process from 'process';
 import { HttpStatus, ValidationPipe } from '@nestjs/common';
 import { json } from 'express';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { SwaggerModule } from '@nestjs/swagger';
+import { SwaggerConfig } from '@helpers/swagger-config';
 
 const PORT = process.env.PORT || 3002;
-// const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
-// const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
 
 // const restResponseTimeHistogram = new client.Histogram({
 //     name: 'api_gateway_rest_response_time_duration_seconds',
@@ -62,38 +60,10 @@ Promise.all([
 
         new TaskManager().setDependecies(wsService, cn);
 
-        const swaggerConfig = new DocumentBuilder()
-            .setTitle('Guardian')
-            .setDescription(
-                'The Guardian is a modular open-source solution that includes best-in-class identity ' +
-                'management and decentralized ledger technology (DLT) libraries. At the heart of the ' +
-                'Guardian solution is a sophisticated Policy Workflow Engine (PWE) that enables applications ' +
-                'to offer a requirements-based tokenization implementation.'
-            )
-            .setVersion(process.env.npm_package_version)
-            .setContact(
-                'API developer',
-                'https://envisionblockchain.com',
-                'info@envisionblockchain.com'
-            )
-            .setLicense(
-                'Apache 2.0',
-                'http://www.apache.org/licenses/LICENSE-2.0.html'
-            )
-            .addServer(
-                '/api/v1',
-                'version 1.0'
-            )
-            .addSecurity(
-                'bearerAuth',
-                {
-                    type: 'http',
-                    scheme: 'bearer',
-                    bearerFormat: 'JWT'
-                }
-            )
-            .build();
-        const document = SwaggerModule.createDocument(app, swaggerConfig);
+        const document = SwaggerModule.createDocument(app, SwaggerConfig);
+        if (process.env.GENERATE_DOCS) {
+
+        }
         SwaggerModule.setup('api-docs', app, document);
 
         const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);

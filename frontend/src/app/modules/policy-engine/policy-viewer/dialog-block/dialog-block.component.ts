@@ -27,7 +27,7 @@ export class DialogBlock {
         this.policyId = this.data.policyId;
     }
 
-    onClick(): void {
+    onClose(): void {
         this.dialogRef.close(null);
     }
 }

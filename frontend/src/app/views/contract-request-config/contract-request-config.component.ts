@@ -149,7 +149,8 @@ export class ContractRequestConfigComponent implements OnInit, OnDestroy {
                 title: 'View Retire Request Result',
                 type: 'VC',
                 viewDocument: true
-            }
+            },
+            disableClose: true,
         });
     }
 }

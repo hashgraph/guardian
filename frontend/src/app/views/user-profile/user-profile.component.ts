@@ -357,6 +357,7 @@ export class UserProfileComponent implements OnInit {
     openVCDocument(document: any, title: string) {
         const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
+            disableClose: true,
             data: {
                 document: document.document,
                 title: title,
@@ -371,6 +372,7 @@ export class UserProfileComponent implements OnInit {
     openDIDDocument(document: any, title: string) {
         const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
+            disableClose: true,
             data: {
                 document: document.document,
                 title: title,
@@ -438,6 +440,7 @@ export class UserProfileComponent implements OnInit {
                 hasBackdrop: true, // Shadows beyond the dialog
                 closeOnNavigation: true,
                 autoFocus: false,
+                disableClose: true,
                 data: {
                     tokens,
                 },
@@ -480,6 +483,7 @@ export class UserProfileComponent implements OnInit {
     viewRetireRequest(document: any) {
         this.dialog.open(VCViewerDialog, {
             width: '600px',
+            disableClose: true,
             data: {
                 document: document.document,
                 title: 'View Retire Request Result',

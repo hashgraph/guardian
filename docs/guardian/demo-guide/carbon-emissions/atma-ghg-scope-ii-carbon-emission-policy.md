@@ -55,13 +55,13 @@ The atma GHG policy issues an NFT token (AtmaProductToken) for every product tha
 
 Once the product has been defined, you'll need to define the life cycle stage. Click on the "life cycle stage" button and fill out the life cycle stage form.
 
-<figure><img src="../../../.gitbook/assets/image (45) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (45) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Once the life cycle for the product has been defined, you now need to record production data. Click on the "production data button" and fill out the production data form.
 
-<figure><img src="../../../.gitbook/assets/image (33).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (33) (3).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/image (5) (1).png" alt=""><figcaption></figcaption></figure>
 

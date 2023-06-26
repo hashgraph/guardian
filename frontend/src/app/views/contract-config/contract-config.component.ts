@@ -141,6 +141,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
         const dialogRef = this.dialog.open(DataInputDialogComponent, {
             width: '500px',
             autoFocus: false,
+            disableClose: true,
             data: {
                 fieldsConfig: [
                     {
@@ -182,6 +183,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
         const dialogRef = this.dialog.open(DataInputDialogComponent, {
             width: '500px',
             autoFocus: false,
+            disableClose: true,
             data: {
                 fieldsConfig: [
                     {
@@ -213,6 +215,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
         const dialogRef = this.dialog.open(DataInputDialogComponent, {
             width: '500px',
             autoFocus: false,
+            disableClose: true,
             data: {
                 fieldsConfig: [
                     {

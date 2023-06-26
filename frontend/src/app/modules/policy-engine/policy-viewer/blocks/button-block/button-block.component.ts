@@ -200,7 +200,8 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
             data: {
                 title: button.title,
                 description: button.description
-            }
+            },
+            disableClose: true,
         });
 
         dialogRef.afterClosed().subscribe(result => {

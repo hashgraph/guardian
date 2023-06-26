@@ -218,6 +218,7 @@ export class RootConfigComponent implements OnInit {
     openVCDocument(document: any, title: string) {
         const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
+            disableClose: true,
             data: {
                 document: document.document,
                 title: title,
@@ -232,6 +233,7 @@ export class RootConfigComponent implements OnInit {
     openDIDDocument(document: any, title: string) {
         const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
+            disableClose: true,
             data: {
                 document: document.document,
                 title: title,

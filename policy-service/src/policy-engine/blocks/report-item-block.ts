@@ -109,6 +109,7 @@ export class ReportItemBlock {
             }
         }
         filtersToVc.policyId = { $eq: ref.policyId };
+        filtersToVc.schema = { $ne: '#UserRole' };
 
         const item: any = {
             type: 'VC',
@@ -127,17 +128,7 @@ export class ReportItemBlock {
             ? await ref.databaseServer.getVcDocuments(filtersToVc)
             : [await ref.databaseServer.getVcDocument(filtersToVc)];
 
-        const vcDocuments: any[] = [];
-        for (const doc of _documents) {
-            if (doc) {
-                if (doc.schema === '#UserRole') {
-                    item.role = doc;
-                } else {
-                    vcDocuments.push(doc);
-                }
-            }
-        }
-
+        const vcDocuments: any[] = _documents.filter((vc) => vc);
         const notFoundDocuments = vcDocuments.length < 1;
         item.notFoundDocuments = notFoundDocuments;
 

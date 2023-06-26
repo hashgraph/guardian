@@ -5,7 +5,7 @@ import { AuthService } from '../../services/auth.service';
 import { UserRole } from '@guardian/interfaces';
 import { AuthStateService } from 'src/app/services/auth-state.service';
 import { Subscription } from 'rxjs';
-import { noWhitespaceValidator } from 'src/app/validators/no-spaces.validator';
+import { noWhitespaceValidator } from 'src/app/validators/no-whitespace-validator';
 import { environment } from 'src/environments/environment';
 
 /**
