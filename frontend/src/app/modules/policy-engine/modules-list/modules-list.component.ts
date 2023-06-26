@@ -146,6 +146,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
         const dialogRef = this.dialog.open(PreviewPolicyDialog, {
             width: '950px',
             panelClass: 'g-dialog',
+            disableClose: true,
             data: {
                 module: module,
             }
@@ -177,6 +178,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
         const dialogRef = this.dialog.open(ImportPolicyDialog, {
             width: '500px',
             autoFocus: false,
+            disableClose: true,
             data: {
                 type: 'module',
                 timeStamp: messageId
@@ -200,6 +202,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
                     data: {
                         module: module
                     },
+                    disableClose: true,
                     autoFocus: false
                 })
             });
@@ -239,6 +242,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
                 dialogTitle: 'Delete module',
                 dialogText: 'Are you sure to delete module?'
             },
+            disableClose: true,
             autoFocus: false
         });
         dialogRef.afterClosed().subscribe((result) => {

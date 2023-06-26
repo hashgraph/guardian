@@ -1,4 +1,8 @@
-<h1 mat-dialog-title>{{title}}</h1>
+<div mat-dialog-title class="header">
+    <span class="header-title">{{ title }}</span>
+    <mat-icon class="close-icon" (click)="onClose()">close</mat-icon>
+</div>
+
 <div mat-dialog-content>
     <div class="content">
         <render-block [block]="block" [static]="static" [policyId]="policyId"></render-block>

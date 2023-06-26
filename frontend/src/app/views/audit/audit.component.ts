@@ -145,7 +145,8 @@ export class AuditComponent implements OnInit {
                 title: 'VP',
                 type: 'VP',
                 viewDocument: true
-            }
+            },
+            disableClose: true,
         });
         dialogRef.afterClosed().subscribe(async (result) => { });
     }

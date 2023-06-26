@@ -703,22 +703,21 @@ export class SchemaFormComponent implements OnInit {
             this.currentIndex = nextRefIndex;
         }
         const contentElement = document.querySelector('#main-content');
-        const formElement = document.querySelector('.form-dialog');
+        const formElement = document.querySelector('.schema-form');
         setTimeout(() => {
-            contentElement!.scrollTo({
-                top: -1,
-                behavior: 'smooth'
-            });
-            if (formElement) {
-                formElement.scrollTo({
+            if (window.innerWidth <= 810) {
+                contentElement!.scrollTo({
                     top: -1,
                     behavior: 'smooth'
                 });
+            } else {
+                if (formElement) {
+                    formElement.scrollTo({
+                        top: -1,
+                        behavior: 'smooth'
+                    });
+                }
             }
-            window.scrollTo({
-                top: -1,
-                behavior: 'smooth'
-            });
         }, 100)
 
         return this.isShown;
@@ -759,22 +758,21 @@ export class SchemaFormComponent implements OnInit {
             }
         }
         const contentElement = document.querySelector('#main-content');
-        const formElement = document.querySelector('.form-dialog');
+        const formElement = document.querySelector('.schema-form');
         setTimeout(() => {
-            contentElement!.scrollTo({
-                top: -1,
-                behavior: 'smooth'
-            });
-            if (formElement) {
-                formElement.scrollTo({
+            if (window.innerWidth <= 810) {
+                contentElement!.scrollTo({
                     top: -1,
                     behavior: 'smooth'
                 });
+            } else {
+                if (formElement) {
+                    formElement.scrollTo({
+                        top: -1,
+                        behavior: 'smooth'
+                    });
+                }
             }
-            window.scrollTo({
-                top: -1,
-                behavior: 'smooth'
-            });
         }, 100)
 
 

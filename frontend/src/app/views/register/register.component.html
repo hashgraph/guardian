@@ -1,5 +1,5 @@
 <div class="content login">
-    <div class="overlay" (click)="goBack()"></div>
+    <div class="overlay"></div>
     <form class="credential-creation" [formGroup]="loginForm" (ngSubmit)="signup()" *ngIf="isRoleSelected$ | async; else selectRoleTemplate">
         <div class="login-header">
             <button class="login-header__back-button" (click)="setRole('')">
