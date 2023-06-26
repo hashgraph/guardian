@@ -35,3 +35,4 @@ if (!process.env.OVERRIDE || process.env.OVERRIDE === 'false'){
         }
     }
 }
+console.log('Charged Environment',process.env,'\r\n___ . ___');

@@ -58,6 +58,7 @@ export class HcpVaultSecretManager implements SecretManagerBase {
     await this.loginByApprole()
     try {
       const result = await this.vault.read(this.getSecretId(path))
+      console.log('>>> HCP-vault.getSecrets result: ',result);
       return result.data.data
     } catch(ex) {
       if(ex.response.statusCode === 404) {
@@ -80,7 +81,8 @@ export class HcpVaultSecretManager implements SecretManagerBase {
     await this.loginByApprole()
     try {
       await this.vault.write(this.getSecretId(path), { data })
-    } catch(ex) {
+      console.log('>>> HCP-vault.setSecrets done');
+     } catch(ex) {
       throw new Error('Write Secrets Failed: ' + ex)
     }
   }
@@ -92,6 +94,8 @@ export class HcpVaultSecretManager implements SecretManagerBase {
    * @private
    */
   private getSecretId(path: string): string {
-    return `secret/data/${path}`;
+    return (process.env.GUARDIAN_ENV)?
+            `secret/data/${process.env.GUARDIAN_ENV}/${process.env.HEDERA_NET}/${path}`:
+            `secret/data/${process.env.HEDERA_NET}/${path}`
   }
 }
