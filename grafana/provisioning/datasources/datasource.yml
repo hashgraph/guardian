@@ -1,0 +1,7 @@
+apiVersion: 1
+
+datasources:
+  - name: Guardian metrics
+    type: prometheus
+    access: proxy
+    url: http://host.docker.internal:9090

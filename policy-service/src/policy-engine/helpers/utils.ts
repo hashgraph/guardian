@@ -853,6 +853,21 @@ export class PolicyUtils {
     }
 
     /**
+     * Create Policy User
+     * @param ref
+     * @param did
+     */
+    public static async createPolicyUser(ref: AnyBlockType, did: string): Promise<IPolicyUser> {
+        const user = new PolicyUser(did);
+        if (ref.dryRun) {
+            const virtualUser = await ref.databaseServer.getVirtualUser(did);
+            user.setVirtualUser(virtualUser);
+        }
+        const group = await ref.databaseServer.getActiveGroupByUser(ref.policyId, did);
+        return user.setGroup(group);
+    }
+
+    /**
      * Get Policy User
      * @param ref
      * @param did
@@ -1092,11 +1107,13 @@ export class PolicyUtils {
      * @param document
      */
     public static createPolicyDocument(ref: AnyBlockType, owner: IPolicyUser, document: any): IPolicyDocument {
-        document.policyId = ref.policyId;
-        document.tag = ref.tag;
-        document.owner = owner.did;
-        document.group = owner.group;
-        return document;
+        return {
+            policyId: ref.policyId,
+            tag: ref.tag,
+            document,
+            owner: owner.did,
+            group: owner.group
+        };
     }
 
     /**

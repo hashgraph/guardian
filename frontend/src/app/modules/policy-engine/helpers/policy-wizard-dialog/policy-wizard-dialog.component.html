@@ -1,0 +1,249 @@
+<div class="g-dialog-content">
+    <div class="g-dialog-header">
+        <div class="g-dialog-cancel">
+            <div class="g-dialog-cancel-btn" (click)="onNoClick()">
+                <mat-icon>close</mat-icon>
+            </div>
+        </div>
+        <div class="g-dialog-title">
+            Policy Wizard
+        </div>
+        <div class="g-dialog-actions">
+            <div class="g-dialog-actions-btn" (click)="onCreate()" [attr.disabled]="!this.dataForm.valid">
+                Create
+            </div>
+        </div>
+    </div>
+    <div class="g-dialog-body">
+        <app-separate-stepper [(currentNode)]="currentNode" [treeData]="treeData"></app-separate-stepper>
+    </div>
+</div>
+
+<ng-template #policyDescriptionForm let-control="control">
+    <form [formGroup]="control">
+        <mat-form-field class="full-width" appearance="outline">
+            <mat-label>* NAME:</mat-label>
+            <input matInput type="text" placeholder="Policy name" formControlName="name">
+        </mat-form-field>
+        <mat-form-field class="full-width" appearance="outline">
+            <mat-label>* TAG:</mat-label>
+            <input matInput type="text" placeholder="policyTag" formControlName="policyTag">
+        </mat-form-field>
+        <mat-form-field class="full-width" appearance="outline">
+            <mat-label>TOPIC DESCRIPTION:</mat-label>
+            <input matInput type="text" placeholder="Topic description" formControlName="topicDescription"
+                maxlength="50">
+        </mat-form-field>
+        <mat-form-field class="full-width" appearance="outline">
+            <mat-label>DESCRIPTION:</mat-label>
+            <textarea matInput type="text" placeholder="Description" formControlName="description"></textarea>
+        </mat-form-field>
+    </form>
+</ng-template>
+
+<ng-template #policyRoles let-control="control">
+    <div *ngIf="control.value.length" class="policy-roles-container">
+        <div *ngFor="let role of control.value" class="policy-role-card-container" [attr.disabled]="role === 'OWNER'"
+            (click)="onRemoveRole(control, role)">
+            <div class="policy-role-card">
+                <mat-icon>person</mat-icon>
+                <span>{{role}}</span>
+            </div>
+            <mat-icon class="delete-icon delete-policy-role-icon">delete</mat-icon>
+        </div>
+    </div>
+    <div class="policy-roles-add-container">
+        <mat-form-field class="full-width" appearance="outline">
+            <mat-label>* NAME:</mat-label>
+            <input #nameInput matInput type="text" placeholder="Policy name">
+        </mat-form-field>
+        <button style="transform: translateY(-8px);" mat-icon-button color="primary"
+            (click)="onAddRole(control, nameInput.value)">
+            <mat-icon>add</mat-icon>
+        </button>
+    </div>
+</ng-template>
+
+
+<ng-template #policySchemas>
+    <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Which schemas will be used in policy?</mat-label>
+        <mat-select [value]="selectedSchemas" (selectionChange)="onSelectedSchemasChange($event.value)" multiple>
+            <mat-optgroup *ngFor="let group of groupedSchemas" [label]="group.name">
+                <mat-option *ngFor="let schema of group.schemas" [value]="schema">{{schema.name}}{{schema.topicId ? ' ('
+                    + schema.topicId + ')' : ''}}</mat-option>
+            </mat-optgroup>
+        </mat-select>
+    </mat-form-field>
+</ng-template>
+
+<ng-template #schemaConfig let-control="control" let-schema="schema" let-options="options" let-mintFields="mintFields">
+    <form [formGroup]="control">
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Which users are able to view?</mat-label>
+            <mat-select [value]="options.displayedInRoles"
+                (selectionChange)="onSchemaRolesConfigChange(control, $event.value, schema.fields, options)" multiple>
+                <mat-option *ngFor="let role of policyRolesForm.value" [value]="role">{{role}}</mat-option>
+            </mat-select>
+        </mat-form-field>
+        <div class="form-field-info">
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Produced schema:</mat-label>
+                <mat-select formControlName="dependencySchemaIri">
+                    <mat-option></mat-option>
+                    <mat-option *ngFor="let schema of selectedSchemas" [value]="schema.iri">{{schema.name}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+            <button mat-mini-fab color="primary" [matMenuTriggerFor]="producedSchemaHelp" class="info-btn">
+                i
+            </button>
+            <mat-menu #producedSchemaHelp="matMenu" yPosition="below">
+                <img [src]="'/assets/produced-schema.gif'" class="help-img">
+            </mat-menu>
+        </div>
+        <mat-form-field appearance="outline">
+            <mat-label>Relationship schema:</mat-label>
+            <mat-select formControlName="relationshipsSchemaIri">
+                <mat-option></mat-option>
+                <mat-option *ngFor="let schema of selectedSchemas" [value]="schema.iri">{{schema.name}}</mat-option>
+            </mat-select>
+        </mat-form-field>
+        <div class="form-field-info">
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Initial for roles:</mat-label>
+                <mat-select formControlName="initialRolesFor" multiple>
+                    <mat-option *ngFor="let role of policyRolesForm.value" [value]="role">{{role}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+            <button mat-mini-fab color="primary" [matMenuTriggerFor]="initialStepHelp" class="info-btn">
+                i
+            </button>
+            <mat-menu #initialStepHelp="matMenu" yPosition="below">
+                <img [src]="'/assets/initial-step.gif'" class="help-img">
+            </mat-menu>
+        </div>
+        <ng-container *ngTemplateOutlet="infoBtn; context: {
+                formControl : control.get('isApproveEnable'),
+                helpSrc: '/assets/approve.gif',
+                title: 'Approve and reject functionality',
+                visible: true}">
+        </ng-container>
+        <mat-slide-toggle class="slide-toggle" [formControl]="control.get('isMintSchema')" labelPosition="after"
+            color="primary">
+            Minting tokens
+        </mat-slide-toggle>
+    </form>
+    <form [formGroup]="control.get('mintOptions')" *ngIf="control.get('isMintSchema')?.value">
+        <mat-form-field appearance="outline">
+            <mat-label>Token:</mat-label>
+            <mat-select formControlName="tokenId">
+                <mat-option></mat-option>
+                <mat-option *ngFor="let token of tokens" [value]="token.tokenId">{{token.tokenName}}</mat-option>
+            </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="contract-form-base-token">
+            <mat-label>Field:</mat-label>
+            <mat-select formControlName="rule">
+                <mat-option *ngFor="let schemaField of mintFields"
+                    [value]="schemaField.name">{{schemaField.description}}</mat-option>
+            </mat-select>
+        </mat-form-field>
+    </form>
+</ng-template>
+
+<ng-template #schemaRoleConfig let-control="control" let-fields="fields" let-initialSchemaFor="initialSchemaFor"
+    let-approveEnable="approveEnable" let-dependencySchema="dependencySchema">
+    <form [formGroup]="control">
+        <ng-container *ngTemplateOutlet="infoBtn; context: {
+            formControl : control.get('isApprover'),
+            helpSrc: '/assets/approve.gif',
+            title: 'Is approver?',
+            visible: approveEnable}">
+        </ng-container>
+        <ng-container *ngTemplateOutlet="infoBtn; context: {
+            formControl : control.get('isCreator'),
+            helpSrc: '/assets/create.gif',
+            title: 'Is creator?',
+            visible: true}">
+        </ng-container>
+        <ng-container
+            *ngTemplateOutlet="roleGridColumns; context: {gridColumns: control.get('gridColumns')?.value , fields, approveEnable, dependencySchema }"></ng-container>
+        <ng-template #roleGridColumns let-gridColumns="gridColumns" let-fields="fields">
+            <h2 class="grid-columns-title">Grid Columns</h2>
+            <div class="grid-columns-container">
+                <div cdkDropList cdkDropListOrientation="horizontal" class="grid-columns-list"
+                    (cdkDropListDropped)="drop($event, gridColumns)">
+                    <div class="grid-column" *ngFor="let column of gridColumns" cdkDrag>
+                        <div class="grid-column-container">
+                            <div>{{column.title}}</div>
+                            <mat-icon class="delete-icon"
+                                (click)="onRemoveColumn(column.title, gridColumns)">delete</mat-icon>
+                        </div>
+
+                    </div>
+                    <div class="grid-column grid-column-disabled">Document</div>
+                    <div class="grid-column grid-column-disabled" *ngIf="approveEnable">Operation</div>
+                    <div class="grid-column grid-column-disabled" *ngIf="dependencySchema">Create {{dependencySchema}}
+                    </div>
+                </div>
+            </div>
+            <div class="grid-column-add-container">
+                <mat-form-field class="full-width" appearance="outline">
+                    <mat-label>* Column name:</mat-label>
+                    <input #titleInput matInput type="text" placeholder="Title">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="contract-form-base-token">
+                    <mat-label>* Field:</mat-label>
+                    <mat-select #fieldSelect="matSelect">
+                        <mat-option *ngFor="let schemaField of fields"
+                            [value]="schemaField.name">{{schemaField.description}}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <button style="transform: translateY(-8px);" mat-icon-button color="primary"
+                    (click)="onAddColumn(titleInput.value, fieldSelect.value, gridColumns)">
+                    <mat-icon>add</mat-icon>
+                </button>
+            </div>
+        </ng-template>
+    </form>
+</ng-template>
+
+
+<ng-template #trustChainConfig>
+    <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Which users are able to view?</mat-label>
+        <mat-select [value]="selectedTrustChainRoles" (selectionChange)="onSelectedTrustChainRolesChange($event.value)"
+            multiple>
+            <mat-option *ngFor="let role of policyRolesForm.value" [value]="role">{{role}}</mat-option>
+        </mat-select>
+    </mat-form-field>
+</ng-template>
+
+<ng-template #trustChainRoleConfig let-control="control">
+    <form [formGroup]="control">
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Minting Schema:</mat-label>
+            <mat-select formControlName="mintSchemaIri">
+                <mat-option *ngFor="let schema of mintedSchemas" [value]="schema.iri">{{schema.name}}</mat-option>
+            </mat-select>
+        </mat-form-field>
+        <mat-slide-toggle class="slide-toggle" [formControl]="control.get('viewOnlyOwnDocuments')" labelPosition="after"
+            color="primary">
+            View only own VPs?
+        </mat-slide-toggle>
+    </form>
+</ng-template>
+
+<ng-template #infoBtn let-formControl="formControl" let-helpSrc="helpSrc" let-title="title" let-visible='visible'>
+    <div class="info-btn-container" *ngIf="visible">
+        <mat-slide-toggle class="slide-toggle" [formControl]="formControl" labelPosition="after" color="primary">
+            {{title}}
+        </mat-slide-toggle>
+        <button [disabled]="!helpSrc" mat-mini-fab color="primary" [matMenuTriggerFor]="menu" class="info-btn">
+            i
+        </button>
+        <mat-menu #menu="matMenu" yPosition="below">
+            <img [src]="helpSrc" class="help-img">
+        </mat-menu>
+    </div>
+</ng-template>

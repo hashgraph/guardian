@@ -187,7 +187,6 @@ export class HeaderComponent implements OnInit {
     }
 
     rout(link: any) {
-        console.log(link, this);
         this.router.navigate([link.link]);
     }
 

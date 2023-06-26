@@ -31,6 +31,7 @@ import { ReportItemBlock } from './blocks/report-item-block';
 import { RequestVcDocumentBlock } from './blocks/request-vc-document-block';
 import { RetirementBlock } from './blocks/retirement-block';
 import { RevokeBlock } from './blocks/revoke-block';
+import { RevocationBlock } from './blocks/revocation-block';
 import { SelectiveAttributes } from './blocks/selective-attributes-addon';
 import { SendToGuardianBlock } from './blocks/send-to-guardian-block';
 import { SetRelationshipsBlock } from './blocks/set-relationships-block';
@@ -43,6 +44,7 @@ import { TokenConfirmationBlock } from './blocks/token-confirmation-block';
 import { ModuleValidator } from './module-validator';
 import { ModuleBlock } from './blocks/module';
 import { TagsManagerBlock } from './blocks/tag-manager';
+import { ExternalTopicBlock } from './blocks/external-topic-block';
 
 export const validators = [
     InterfaceDocumentActionBlock,
@@ -74,6 +76,7 @@ export const validators = [
     RequestVcDocumentBlock,
     RetirementBlock,
     RevokeBlock,
+    RevocationBlock,
     SelectiveAttributes,
     SendToGuardianBlock,
     SetRelationshipsBlock,
@@ -84,7 +87,8 @@ export const validators = [
     TokenActionBlock,
     TokenConfirmationBlock,
     ModuleBlock,
-    TagsManagerBlock
+    TagsManagerBlock,
+    ExternalTopicBlock
 ];
 
 /**

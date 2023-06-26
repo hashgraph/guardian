@@ -13,7 +13,7 @@ Topic ID
 Object that contains a valid schema.
 {% endswagger-parameter %}
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% swagger-response status="202: Accepted" description="Accepted" %}
 ```javascript
 {
     content:

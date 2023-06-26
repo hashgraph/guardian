@@ -1,43 +1,32 @@
+import { GenerateUUIDv4, IRootConfig, ModelHelper, PolicyEvents, PolicyType, Schema, SchemaEntity, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
 import {
-    SchemaEntity,
-    SchemaStatus,
-    TopicType,
-    ModelHelper,
-    SchemaHelper,
-    Schema,
-    PolicyType,
-    IRootConfig,
-    GenerateUUIDv4,
-    PolicyEvents
-} from '@guardian/interfaces';
-import {
-    DataBaseHelper,
-    IAuthUser,
-    Logger,
-    NatsService,
-    Singleton,
-    Token,
-    MultiPolicy,
     Artifact,
-    Topic,
-    Policy,
-    MessageAction,
-    MessageServer,
-    MessageType,
-    PolicyMessage,
-    SynchronizationMessage,
-    TokenMessage,
-    TopicConfig,
-    TopicHelper,
-    VcHelper,
-    Users,
+    DataBaseHelper,
     DatabaseServer,
     findAllEntities,
     getArtifactType,
+    IAuthUser,
+    Logger,
+    MessageAction,
+    MessageServer,
+    MessageType,
+    MultiPolicy,
+    NatsService,
+    Policy,
+    PolicyMessage,
     replaceAllEntities,
     replaceAllVariables,
     replaceArtifactProperties,
     SchemaFields,
+    Singleton,
+    SynchronizationMessage,
+    Token,
+    TokenMessage,
+    Topic,
+    TopicConfig,
+    TopicHelper,
+    Users,
+    VcHelper,
 } from '@guardian/common';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 import { PolicyConverterUtils } from './policy-converter-utils';
@@ -50,7 +39,7 @@ import { createHederaToken } from '@api/token.service';
 import { GuardiansService } from '@helpers/guardians';
 import { Inject } from '@helpers/decorators/inject';
 import { findAndDryRunSchema, findAndPublishSchema, publishSystemSchemas } from '@api/helpers/schema-publish-helper';
-import { deleteSchema, incrementSchemaVersion } from '@api/helpers/schema-helper';
+import { deleteSchema, incrementSchemaVersion, sendSchemaMessage } from '@api/helpers/schema-helper';
 
 /**
  * Result of publishing
@@ -148,12 +137,67 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
+     * Setup policy schemas
+     * @param schemaIris Schema iris
+     * @param policyTopicId Policy topic identifier
+     */
+    public async setupPolicySchemas(
+        schemaIris: string[],
+        policyTopicId: string,
+        owner: string
+    ) {
+        if (!Array.isArray(schemaIris)) {
+            return;
+        }
+        const schemas = await DatabaseServer.getSchemas({
+            iri: { $in: schemaIris },
+            topicId: { $eq: 'draft' },
+            owner
+        });
+        const users = new Users();
+        for (const schema of schemas) {
+            schema.topicId = policyTopicId;
+            const topic = await TopicConfig.fromObject(
+                await DatabaseServer.getTopicById(policyTopicId),
+                true
+            );
+            const root = await users.getHederaAccount(schema.owner);
+            const dependencySchemas = await DatabaseServer.getSchemas({
+                $and: [
+                    { iri: { $in: schema.defs } },
+                    { iri: { $nin: schemaIris } },
+                    { topicId: 'draft' },
+                    { owner },
+                ],
+            });
+            for (const dependencySchema of dependencySchemas) {
+                dependencySchema.topicId = policyTopicId;
+                await sendSchemaMessage(
+                    root,
+                    topic,
+                    MessageAction.CreateSchema,
+                    dependencySchema
+                );
+            }
+            await DatabaseServer.updateSchemas(dependencySchemas);
+            await sendSchemaMessage(
+                root,
+                topic,
+                MessageAction.CreateSchema,
+                schema
+            );
+        }
+        await DatabaseServer.updateSchemas(schemas);
+    }
+
+    /**
      * Create policy
      * @param data
      * @param owner
      * @param notifier
      */
-    public async createPolicy(data: Policy, owner: string, notifier: INotifier): Promise<Policy> {
+    // tslint:disable-next-line:completed-docs
+    public async createPolicy(data: Policy & { policySchemas?: string[] }, owner: string, notifier: INotifier): Promise<Policy> {
         const logger = new Logger();
         logger.info('Create Policy', ['GUARDIAN_SERVICE']);
         notifier.start('Save in DB');

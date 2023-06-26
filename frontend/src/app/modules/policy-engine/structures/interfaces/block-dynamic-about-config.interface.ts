@@ -14,4 +14,5 @@ export interface IBlockDynamicAboutConfig {
     children?: ConfigFunction<ChildrenType>;
     control?: ConfigFunction<ControlType>;
     defaultEvent?: ConfigFunction<boolean>;
+    deprecated?: ConfigFunction<boolean>;
 }

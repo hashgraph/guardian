@@ -4,21 +4,12 @@ import {
     SchemaStatus,
     SchemaHelper,
     Schema,
-    TopicType
+    TopicType,
+    IRootConfig
 } from '@guardian/interfaces';
 import path from 'path';
 import { readJSON } from 'fs-extra';
-import {
-    MessageAction,
-    MessageServer,
-    SchemaMessage,
-    TopicConfig,
-    TopicHelper,
-    Schema as SchemaCollection,
-    DatabaseServer,
-    Users,
-    SchemaConverterUtils,
-} from '@guardian/common';
+import { DatabaseServer, MessageAction, MessageServer, Schema as SchemaCollection, SchemaConverterUtils, SchemaMessage, TopicConfig, TopicHelper, Users, } from '@guardian/common';
 import { INotifier } from '@helpers/notifier';
 
 /**
@@ -293,6 +284,27 @@ export function fixSchemaDefsOnImport(iri: string, schemas: Schema[], map: any):
 }
 
 /**
+ * Send schema message
+ * @param root User
+ * @param topic Topic
+ * @param schema Schema
+ */
+export async function sendSchemaMessage(
+    root: IRootConfig,
+    topic: TopicConfig,
+    action: MessageAction,
+    schema: SchemaCollection
+) {
+    const messageServer = new MessageServer(
+        root.hederaAccountId,
+        root.hederaAccountKey
+    );
+    const message = new SchemaMessage(action);
+    message.setDocument(schema);
+    await messageServer.setTopicObject(topic).sendMessage(message);
+}
+
+/**
  * Create schema
  * @param newSchema
  * @param owner
@@ -321,7 +333,7 @@ export async function createSchema(
         topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(newSchema.topicId), true);
     }
 
-    if (!topic) {
+    if (!topic && newSchema.topicId !== 'draft') {
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
         topic = await topicHelper.create({
             type: TopicType.SchemaTopic,
@@ -338,7 +350,7 @@ export async function createSchema(
 
     SchemaHelper.updateIRI(schemaObject);
     schemaObject.status = SchemaStatus.DRAFT;
-    schemaObject.topicId = topic.topicId;
+    schemaObject.topicId = topic?.topicId || 'draft';
     schemaObject.iri = schemaObject.iri || `${schemaObject.uuid}`;
     schemaObject.codeVersion = SchemaConverterUtils.VERSION;
     const errorsCount = await DatabaseServer.getSchemasCount({
@@ -365,10 +377,14 @@ export async function createSchema(
     }
 
     notifier.completedAndStart('Save to IPFS & Hedera');
-    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
-    const message = new SchemaMessage(MessageAction.CreateSchema);
-    message.setDocument(schemaObject);
-    await messageServer.setTopicObject(topic).sendMessage(message);
+    if (topic) {
+        await sendSchemaMessage(
+            root,
+            topic,
+            MessageAction.CreateSchema,
+            schemaObject
+        );
+    }
 
     notifier.completedAndStart('Update schema in DB');
     const savedSchema = await DatabaseServer.saveSchema(schemaObject);
@@ -400,11 +416,12 @@ export async function deleteSchema(schemaId: any, notifier: INotifier) {
         if (topic) {
             const users = new Users();
             const root = await users.getHederaAccount(item.owner);
-            const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
-            const message = new SchemaMessage(MessageAction.DeleteSchema);
-            message.setDocument(item);
-            await messageServer.setTopicObject(topic)
-                .sendMessage(message);
+            await sendSchemaMessage(
+                root,
+                topic,
+                MessageAction.DeleteSchema,
+                item
+            );
         }
     }
     await DatabaseServer.deleteSchemas(item.id);

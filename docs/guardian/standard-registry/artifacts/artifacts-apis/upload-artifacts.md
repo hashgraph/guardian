@@ -1,6 +1,6 @@
 # Upload Artifacts
 
-{% swagger method="post" path="" baseUrl="/artifact/{policyId}" summary="Upload Artifact" %}
+{% swagger method="post" path="" baseUrl="/artifacts/{policyId}" summary="Upload Artifact" expanded="false" %}
 {% swagger-description %}
 Upload artifact. For users with the Standard Registry role only.
 {% endswagger-description %}
@@ -21,7 +21,7 @@ Upload artifact. For users with the Standard Registry role only.
 Policy Identifier
 {% endswagger-parameter %}
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% swagger-response status="201: Created" description="Created" %}
 ```javascript
 {
     content:
@@ -47,6 +47,18 @@ Policy Identifier
 {
     // Response
 }
+```
+{% endswagger-response %}
+
+{% swagger-response status="422: Unprocessable Entity" description="Unprocessable Entity" %}
+
+
+```
+There are no files to upload
+```
+
+```
+There is no appropriate policy or policy is not in DRAFT status
 ```
 {% endswagger-response %}
 

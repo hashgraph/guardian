@@ -1,23 +1,5 @@
 import { ApiResponse } from '@api/helpers/api-response';
-import {
-    MessageResponse,
-    MessageError,
-    Logger,
-    DatabaseServer,
-    Tag,
-    Schema as SchemaCollection,
-    Policy as PolicyCollection,
-    Token as TokenCollection,
-    PolicyModule as ModuleCollection,
-    Users,
-    VcHelper,
-    MessageAction,
-    MessageServer,
-    MessageType,
-    TagMessage,
-    TopicConfig,
-    UrlType,
-} from '@guardian/common';
+import { DatabaseServer, Logger, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, Policy as PolicyCollection, PolicyModule as ModuleCollection, Schema as SchemaCollection, Tag, TagMessage, Token as TokenCollection, TopicConfig, UrlType, Users, VcHelper, } from '@guardian/common';
 import { GenerateUUIDv4, IRootConfig, MessageAPI, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TagType } from '@guardian/interfaces';
 
 /**
@@ -220,7 +202,7 @@ export async function importTag(
         } else {
             tags = tags.filter(tag => newIds.has(tag.localTarget));
             for (const tag of tags) {
-                tag.localTarget = newIds.get(tag.target);
+                tag.localTarget = newIds.get(tag.localTarget);
             }
         }
     }

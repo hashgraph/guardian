@@ -76,8 +76,8 @@ export class DocumentsSourceBlockComponent implements OnInit {
         }
     }
 
-    onUpdate(id: string): void {
-        if (this.id == id) {
+    onUpdate(blocks: string[]): void {
+        if (Array.isArray(blocks) && blocks.includes(this.id)) {
             this.loadData();
         }
     }
@@ -330,6 +330,14 @@ export class DocumentsSourceBlockComponent implements OnInit {
         }
         if (field.action == 'link') {
             this.onRedirect(row, field);
+        }
+        if (field.action === 'download') {
+            const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(row.document));
+            const href = document.createElement('a');
+            href.setAttribute('href', dataStr);
+            href.setAttribute('download', `${row.document.id}.json`);
+            href.click();
+            console.log('download', row, field);
         }
     }
 

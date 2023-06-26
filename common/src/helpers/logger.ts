@@ -43,9 +43,8 @@ export class LoggerServiceTransport extends Transport {
      * @param callback
      */
     log(info, callback): void {
-        this.request(MessageAPI.WRITE_LOG, info).then(() => {
-            callback();
-        });
+        this.channel.publish(MessageAPI.WRITE_LOG, info);
+        callback();
     }
 
     /**

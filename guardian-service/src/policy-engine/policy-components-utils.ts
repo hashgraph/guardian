@@ -1,5 +1,5 @@
 import { PolicyType } from '@guardian/interfaces';
-import { Policy, DatabaseServer } from '@guardian/common';
+import { DatabaseServer, Policy } from '@guardian/common';
 import { IPolicyUser } from './policy-user';
 import { ExternalEvent } from './interfaces/external-event';
 
@@ -10,7 +10,7 @@ export class PolicyComponentsUtils {
     /**
      * Block update function
      */
-    public static BlockUpdateFn: (uuid: string, state: any, user: IPolicyUser, tag?: string) => Promise<void>;
+    public static BlockUpdateFn: (uuid: string, user: IPolicyUser) => Promise<void>;
     /**
      * Block error function
      */

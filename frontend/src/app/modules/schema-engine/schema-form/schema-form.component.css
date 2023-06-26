@@ -237,7 +237,7 @@ form {
     top: 0;
 }
 
-.loading-enum-values{
+.loading-enum-values {
     margin: 0 auto;
 }
 
@@ -247,8 +247,24 @@ form {
     word-break: break-all;
 }
 
+.page-number {
+    display: none;
+}
+
+.next-page-number {
+    display: none;
+}
+
+.delimiter-to-next-page {
+    display: none;
+}
+
+.page-btns {
+    display: none;
+}
+
 @media (max-width: 810px) {
-    
+
     .invalid-field-label {
         position: relative;
         left: 30px;
@@ -271,21 +287,12 @@ form {
         display: none;
     }
 
-    .form-field-array-item > .form-field-group {
-        padding-left: 0;
-        margin-bottom: 0;
-    }
-
-    .form-dialog .form-field-group {
-        margin-bottom: 0;
-    }
-
     .label-field .page-number {
+        display: block;
         font-size: 18px;
         padding: 4px 10px;
         margin-right: 8px;
         display: inline-block;
-
         background: #2C78F6;
         color: white;
         border-radius: 100px;
@@ -299,8 +306,8 @@ form {
     }
 
     .label-field .delimiter-to-next-page {
+        display: block;
         height: 0px;
-
         border: 1px solid #BABABA;
         flex-grow: 1;
         display: inline-block;
@@ -308,36 +315,35 @@ form {
     }
 
     .label-field .next-page-number {
+        display: block;
         font-size: 18px;
         padding: 4px 10px;
         display: inline-block;
-
         background: #2C78F6;
         opacity: 0.3;
         color: white;
         border-radius: 100px;
     }
 
-    .form-field-group {
-        margin-bottom: 100px;
-    }
-
     .page-btns {
-        width: 90%;
+        display: block;
+        width: calc(100% - 36px);
         display: grid;
         grid-template-columns: 1fr 1fr;
         column-gap: 10px;
         margin-top: 20px;
-        
+
         background-color: white;
         padding: 20px 0;
         position: fixed;
         bottom: 0;
         left: 50%;
         transform: translateX(-50%);
+        z-index: 200;
     }
 
-    #cancel-btn, #previous-btn {
+    #cancel-btn,
+    #previous-btn {
         border: 1px solid #2C78F6;
         background: none !important;
         color: #2C78F6;
@@ -356,5 +362,36 @@ form {
 
     .page-btns-last-page #previous-btn {
         width: calc(100% - 5px);
+    }
+
+    *[showMobileField="true"] {
+        display: flex !important;
+    }
+
+    *[showMobileField="false"] {
+        display: none !important;
+    }
+
+    .form-field-group {
+        padding-left: 0 !important;
+    }
+
+    .schema-form-field-array-group>.form-field-array-item,
+    .form-field-array-item>.schema-form-field-group {
+        padding-left: 10px !important;
+    }
+
+    form[childSchema="false"][showButtons="true"] {
+        padding-bottom: 100px;
+    }
+
+    .short-delimiter-container .delimiter {
+        display: block;
+        padding: 20px 10px 20px 10px;
+        height: 45px;
+    }
+
+    .short-delimiter-container .delimiter::after {
+        top: 20px;
     }
 }

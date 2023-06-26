@@ -1,17 +1,6 @@
 import { User } from '@entity/user';
-import {
-    MessageResponse,
-    MessageError,
-    Logger,
-    DataBaseHelper, NatsService, Singleton,
-} from '@guardian/common';
-import {
-    WalletEvents,
-    IGetKeyMessage,
-    ISetKeyMessage,
-    IGetKeyResponse,
-    IGetGlobalApplicationKey, ISetGlobalApplicationKey, GenerateUUIDv4
-} from '@guardian/interfaces';
+import { DataBaseHelper, Logger, MessageError, MessageResponse, NatsService, Singleton, } from '@guardian/common';
+import { GenerateUUIDv4, IGetGlobalApplicationKey, IGetKeyMessage, IGetKeyResponse, ISetGlobalApplicationKey, ISetKeyMessage, WalletEvents } from '@guardian/interfaces';
 import { IVault } from '../vaults';
 
 /**

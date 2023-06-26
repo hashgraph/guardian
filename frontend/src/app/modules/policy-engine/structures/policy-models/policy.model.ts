@@ -428,6 +428,19 @@ export class PolicyModel {
         return type;
     }
 
+    public setPolicyInfo(policyData: {
+        name: string,
+        description: string,
+        topicDescription: string
+    }) {
+        if (!policyData) {
+            return;
+        }
+        this.name = policyData.name;
+        this.description = policyData.description;
+        this.topicDescription = policyData.topicDescription;
+    }
+
     public getJSON(): any {
         const json = {
             id: this.id,

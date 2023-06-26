@@ -1,0 +1,229 @@
+<div *ngIf="loading" class="loading">
+    <mat-spinner></mat-spinner>
+</div>
+
+<div class="page-content" *ngIf="status === 'NEED_TOPIC' || status === 'NEED_SCHEMA'">
+    <mat-stepper linear="false" #stepper [selectedIndex]="stepIndex">
+        <ng-template matStepperIcon="description">
+            <mat-icon>description</mat-icon>
+        </ng-template>
+
+        <mat-step [stepControl]="topicForm" label="Source topic selection" [completed]="completed[0]"
+            [editable]="editable[0]">
+            <form [formGroup]="topicForm" (submit)="setTopic()">
+                <div class="form-content">
+                    <div class="text">
+                        Enter Hedera topic ID which contains messages about ingress VC documents.
+                    </div>
+                    <mat-form-field appearance="outline">
+                        <mat-label>* Topic Id</mat-label>
+                        <input matInput placeholder="_._._" formControlName="topicId" mask="0*.0*.0*">
+                    </mat-form-field>
+                </div>
+                <div class="form-buttons">
+                    <button mat-raised-button color="primary" type="submit" [disabled]="!topicForm.valid">
+                        Next
+                    </button>
+                </div>
+            </form>
+        </mat-step>
+
+        <mat-step label="Policy Information" state="description" [completed]="completed[1]" [editable]="editable[1]">
+            <div class="form-content">
+                <div class="text">
+                    Selected topic belongs to the following policy:
+                </div>
+                <div *ngIf="policyTopicId" class="field">
+                    <div class="field-name">Policy Topic Id</div>
+                    <div class="field-value">{{policyTopicId}}</div>
+                </div>
+                <div *ngIf="policyInstanceMessage" class="field">
+                    <div class="field-name">Policy Name</div>
+                    <div class="field-value">{{policyInstanceMessage.name}}</div>
+                </div>
+                <div *ngIf="policyInstanceMessage" class="field">
+                    <div class="field-name">Policy Version</div>
+                    <div class="field-value">{{policyInstanceMessage.version}}</div>
+                </div>
+                <div *ngIf="instanceTopicId" class="field">
+                    <div class="field-name">Instance Topic Id</div>
+                    <div class="field-value">{{instanceTopicId}}</div>
+                </div>
+                <div *ngIf="documentMessage" class="field">
+                    <div class="field-name">Document Topic</div>
+                    <div class="field-value">{{documentMessage.name}}</div>
+                </div>
+                <div *ngIf="documentTopicId" class="field">
+                    <div class="field-name">Document Topic Id</div>
+                    <div class="field-value">{{documentTopicId}}</div>
+                </div>
+            </div>
+            <div class="form-buttons">
+                <button mat-button (click)="restart()">Back</button>
+                <button mat-raised-button color="primary" matStepperNext>
+                    Next
+                </button>
+            </div>
+        </mat-step>
+
+        <mat-step [stepControl]="schemaForm" label="Document schema selection" [completed]="completed[2]"
+            [editable]="editable[2]">
+            <form [formGroup]="schemaForm" (submit)="setSchema()">
+                <div class="form-content">
+                    <div class="text">
+                        Select the ingress documents schema. Note: selected schema must be compatible with the current
+                        policy.
+                    </div>
+                    <div class="text">
+                        Only documents conforming to the schema would be accepted into the system.
+                    </div>
+                    <mat-radio-group formControlName="schemaId">
+                        <div *ngFor="let s of schemas" class="schema-row">
+                            <div>
+                                <mat-radio-button [value]="s.id" color="primary"
+                                    [disabled]="s.status === 'INCOMPATIBLE'"></mat-radio-button>
+                            </div>
+                            <div>{{s.name}}</div>
+                            <div *ngIf="s.status === 'NOT_VERIFIED'" class="schema-status-NOT_VERIFIED">Need
+                                verification</div>
+                            <div *ngIf="s.status === 'INCOMPATIBLE'" class="schema-status-INCOMPATIBLE">Incompatible
+                            </div>
+                            <div *ngIf="s.status === 'COMPATIBLE'" class="schema-status-COMPATIBLE">Verified</div>
+                        </div>
+                    </mat-radio-group>
+                    <div class="form-buttons">
+                        <div class="form-link" (click)="verificationAll()">Verify All</div>
+                    </div>
+                </div>
+                <div class="form-buttons">
+                    <button mat-button type="button" matStepperPrevious>Back</button>
+                    <button mat-raised-button color="primary" type="submit" [disabled]="!schemaForm.valid">
+                        Verify & Finish
+                    </button>
+                </div>
+            </form>
+        </mat-step>
+
+        <mat-step label="Finish" [completed]="completed[3]" [editable]="editable[3]">
+            <div class="form-content">
+                <div *ngIf="policyTopicId" class="field">
+                    <div class="field-name">Policy Topic Id</div>
+                    <div class="field-value">{{policyTopicId}}</div>
+                </div>
+                <div *ngIf="policyInstanceMessage" class="field">
+                    <div class="field-name">Policy Name</div>
+                    <div class="field-value">{{policyInstanceMessage.name}}</div>
+                </div>
+                <div *ngIf="policyInstanceMessage" class="field">
+                    <div class="field-name">Policy Version</div>
+                    <div class="field-value">{{policyInstanceMessage.version}}</div>
+                </div>
+                <div *ngIf="instanceTopicId" class="field">
+                    <div class="field-name">Instance Topic Id</div>
+                    <div class="field-value">{{instanceTopicId}}</div>
+                </div>
+                <div *ngIf="documentMessage" class="field">
+                    <div class="field-name">Document Topic</div>
+                    <div class="field-value">{{documentMessage.name}}</div>
+                </div>
+                <div *ngIf="documentTopicId" class="field">
+                    <div class="field-name">Document Topic Id</div>
+                    <div class="field-value">{{documentTopicId}}</div>
+                </div>
+                <div *ngIf="schema" class="field">
+                    <div class="field-name">Schema</div>
+                    <div class="field-value">{{schema.name}}</div>
+                </div>
+            </div>
+            <div class="form-buttons">
+                <button mat-button matStepperPrevious>Back</button>
+                <button mat-button matStepperNext>Finish</button>
+            </div>
+        </mat-step>
+    </mat-stepper>
+</div>
+
+<div class="page-content" *ngIf="status === 'PROCESSING'">
+    <div class="sub-loading">
+        <div class="loading-text">Processing...</div>
+    </div>
+</div>
+
+<div class="page-content" *ngIf="status === 'SEARCH' ">
+    <div class="sub-loading">
+        <div class="loading-text">Search...</div>
+    </div>
+</div>
+
+<div class="page-content" *ngIf="status === 'VERIFICATION'">
+    <div class="sub-loading">
+        <div class="loading-text">Verification...</div>
+    </div>
+</div>
+
+<div class="page-content" *ngIf="status === 'ERROR'">
+    <div class="sub-loading">
+        <div class="error-text">
+            An unexpected error occurred.
+        </div>
+        <div>
+            <button mat-raised-button color="primary" (click)="restart()">
+                Retry
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="page-content" *ngIf="status === 'FREE'">
+    <div class="form-content">
+        <div class="text">
+            Successfully registered source topic. Target documents will be loaded accordingly to the schedule.
+        </div>
+        <div class="text note">
+            Note: manual refreshes can be trigged as required.
+        </div>
+        <div *ngIf="policyTopicId" class="field">
+            <div class="field-name">Policy Topic Id</div>
+            <div class="field-value">{{policyTopicId}}</div>
+        </div>
+        <div *ngIf="policyInstanceMessage" class="field">
+            <div class="field-name">Policy Name</div>
+            <div class="field-value">{{policyInstanceMessage.name}}</div>
+        </div>
+        <div *ngIf="policyInstanceMessage" class="field">
+            <div class="field-name">Policy Version</div>
+            <div class="field-value">{{policyInstanceMessage.version}}</div>
+        </div>
+        <div *ngIf="instanceTopicId" class="field">
+            <div class="field-name">Instance Topic Id</div>
+            <div class="field-value">{{instanceTopicId}}</div>
+        </div>
+        <div *ngIf="documentMessage" class="field">
+            <div class="field-name">Document Topic</div>
+            <div class="field-value">{{documentMessage.name}}</div>
+        </div>
+        <div *ngIf="documentTopicId" class="field">
+            <div class="field-name">Document Topic Id</div>
+            <div class="field-value">{{documentTopicId}}</div>
+        </div>
+        <div *ngIf="schema" class="field">
+            <div class="field-name">Schema</div>
+            <div class="field-value">{{schema.name}}</div>
+        </div>
+        <div class="field">
+            <div class="field-name">Last Update</div>
+            <div class="field-value">
+                <div class="synchronization">
+                    <div *ngIf="lastUpdate" class="synchronization-time">{{lastUpdate}}</div>
+                    <div *ngIf="!lastUpdate" class="synchronization-time">
+                        -
+                    </div>
+                    <div class="synchronization-update" (click)="onRefresh()">
+                        <mat-icon>sync</mat-icon>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

@@ -63,6 +63,13 @@
                             <span class="readonly-prop">{{about.children}}</span>
                         </td>
                     </tr>
+                    <tr class="propRow" [attr.collapse]="propHidden.about">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName">Deprecated</td>
+                        <td class="propRowCell">
+                            <span class="readonly-prop">{{about.deprecated?'Yes':'No'}}</span>
+                        </td>
+                    </tr>
                 </ng-container>
 
                 <tr class="propHeader">
@@ -169,11 +176,11 @@
                         <td class="propHeaderCell"></td>
                     </tr>
                     <div *ngFor="let property of customProperties" common-property class="custom-properties"
-                        [block]="currentBlock" 
-                        [data]="block.properties" 
-                        [property]="property" 
+                        [block]="currentBlock"
+                        [data]="block.properties"
+                        [property]="property"
                         [readonly]="readonly"
-                        [collapse]="propHidden.customProperties" 
+                        [collapse]="propHidden.customProperties"
                         (update)="onSave()">
                     </div>
                 </ng-container>

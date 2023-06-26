@@ -44,6 +44,14 @@ Object that contains valid Schema
 ```
 {% endswagger-response %}
 
+{% swagger-response status="422: Unprocessable Entity" description="Unprocessable Entity" %}
+
+
+```
+Schema is active.
+```
+{% endswagger-response %}
+
 {% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
 ```javascript
 {
