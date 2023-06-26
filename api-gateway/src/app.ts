@@ -61,9 +61,6 @@ Promise.all([
         new TaskManager().setDependecies(wsService, cn);
 
         const document = SwaggerModule.createDocument(app, SwaggerConfig);
-        if (process.env.GENERATE_DOCS) {
-
-        }
         SwaggerModule.setup('api-docs', app, document);
 
         const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
