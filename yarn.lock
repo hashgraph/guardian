@@ -972,9 +972,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@azure/identity@npm:^3.2.2":
-  version: 3.2.2
-  resolution: "@azure/identity@npm:3.2.2"
+"@azure/identity@npm:^3.2.3":
+  version: 3.2.3
+  resolution: "@azure/identity@npm:3.2.3"
   dependencies:
     "@azure/abort-controller": ^1.0.0
     "@azure/core-auth": ^1.3.0
@@ -983,16 +983,16 @@ __metadata:
     "@azure/core-tracing": ^1.0.0
     "@azure/core-util": ^1.0.0
     "@azure/logger": ^1.0.0
-    "@azure/msal-browser": ^2.32.2
-    "@azure/msal-common": ^9.0.2
-    "@azure/msal-node": ^1.14.6
+    "@azure/msal-browser": ^2.37.1
+    "@azure/msal-common": ^13.1.0
+    "@azure/msal-node": ^1.17.3
     events: ^3.0.0
     jws: ^4.0.0
     open: ^8.0.0
     stoppable: ^1.1.0
     tslib: ^2.2.0
     uuid: ^8.3.0
-  checksum: cbedd293ed6360d98c87148686a1be3a38aad3eaeadcaa7d73e79469904aac2f949a1be67e868d3fd295e749a24ad91bc389ddb82d8574dd173c0583767ec6bf
+  checksum: 8f74831a358f41490056fb1978d9214542f5e7a788cc607ded3c475e1e61784da2cb6409434cb736c66291c24b755dbab42ec7b93b218ca535dce3363183c64b
   languageName: node
   linkType: hard
 
@@ -1024,37 +1024,30 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@azure/msal-browser@npm:^2.32.2":
-  version: 2.37.0
-  resolution: "@azure/msal-browser@npm:2.37.0"
+"@azure/msal-browser@npm:^2.37.1":
+  version: 2.37.1
+  resolution: "@azure/msal-browser@npm:2.37.1"
   dependencies:
-    "@azure/msal-common": 13.0.0
-  checksum: e57d04517d51db4b608da6ca127c89e5c134b42743b00e95d8f1aae011d1cc6d5c02fb4f72cd0f96636e500a3eeee7c4884cd537ac8796bbd50f0ff9ac983b4e
+    "@azure/msal-common": 13.1.0
+  checksum: 920b892bcdbc10f5e736e87363cb5964e48e8dcaf20f777f634308a5bc25550a7b02f62e826c1e3b50212e47e14435f9c3a4f72befc955392f0c4327e62518d0
   languageName: node
   linkType: hard
 
-"@azure/msal-common@npm:13.0.0":
-  version: 13.0.0
-  resolution: "@azure/msal-common@npm:13.0.0"
-  checksum: 89f56f9fbf0edffa6023d46c6970dd37a9ad571b7d2952fdef41950ec2f3b4b3fd22d9841e2caaf52619ad97ab415ed22c30797cdb896f459eb665d3d97f778a
+"@azure/msal-common@npm:13.1.0, @azure/msal-common@npm:^13.1.0":
+  version: 13.1.0
+  resolution: "@azure/msal-common@npm:13.1.0"
+  checksum: db21145f824f02f63a10fa7e1a356445e0c9e945bb1685a964416f1788a89fca165302d990cdfffb7e794b92dac1c90e4934ed018e92056682f863b0eec82587
   languageName: node
   linkType: hard
 
-"@azure/msal-common@npm:^9.0.2":
-  version: 9.1.1
-  resolution: "@azure/msal-common@npm:9.1.1"
-  checksum: d51d645ee485b699a0fbeab6d9bb01c91f4124704f756266e109c2d1d8ea0ca8d66a9ab81f62f9f76e7358906badcf7d2dd9911c18e20f57770ec9beb4fc4fcd
-  languageName: node
-  linkType: hard
-
-"@azure/msal-node@npm:^1.14.6":
-  version: 1.17.2
-  resolution: "@azure/msal-node@npm:1.17.2"
+"@azure/msal-node@npm:^1.17.3":
+  version: 1.17.3
+  resolution: "@azure/msal-node@npm:1.17.3"
   dependencies:
-    "@azure/msal-common": 13.0.0
+    "@azure/msal-common": 13.1.0
     jsonwebtoken: ^9.0.0
     uuid: ^8.3.0
-  checksum: 5ac809dae6b02ab7de2aafb85733501ba6c3268f1d9371bc857215dad9d47e4f6e10b3e58ebda49504b375c96934761e9734acc241d3bc34d3b4cdeaabdf102e
+  checksum: 6afc815116196e481dd7f2c142b9935dce1fa2b225c87c5e3615d83ecc00e4ff65295f512a9b03349a71c8cf19d6c25e0551dd33a55a4550f77dfa98ccbbc0fd
   languageName: node
   linkType: hard
 
@@ -1452,7 +1445,7 @@ __metadata:
   resolution: "@guardian/common@workspace:common"
   dependencies:
     "@aws-sdk/client-secrets-manager": ^3.319.0
-    "@azure/identity": ^3.2.2
+    "@azure/identity": ^3.2.3
     "@azure/keyvault-secrets": ^4.7.0
     "@guardian/interfaces": ^2.13.1
     "@hashgraph/sdk": ^2.24.2
@@ -2849,13 +2842,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/js-yaml@npm:^4.0.5":
-  version: 4.0.5
-  resolution: "@types/js-yaml@npm:4.0.5"
-  checksum: 7dcac8c50fec31643cc9d6444b5503239a861414cdfaa7ae9a38bc22597c4d850c4b8cec3d82d73b3fbca408348ce223b0408d598b32e094470dfffc6d486b4d
-  languageName: node
-  linkType: hard
-
 "@types/jsonwebtoken@npm:9.0.1":
   version: 9.0.1
   resolution: "@types/jsonwebtoken@npm:9.0.1"
@@ -3042,16 +3028,6 @@ __metadata:
     "@types/mime": "*"
     "@types/node": "*"
   checksum: 2e078bdc1e458c7dfe69e9faa83cc69194b8896cce57cb745016580543c7ab5af07fdaa8ac1765eb79524208c81017546f66056f44d1204f812d72810613de36
-  languageName: node
-  linkType: hard
-
-"@types/swagger-ui-express@npm:^4.1.3":
-  version: 4.1.3
-  resolution: "@types/swagger-ui-express@npm:4.1.3"
-  dependencies:
-    "@types/express": "*"
-    "@types/serve-static": "*"
-  checksum: 1c990fa8c158f699c5443245383daef2c4b47efce715c105e67f9b88447cf23663774393fdeea7d5a6e97a83d6959b09129f19c4abca64abdb7db74517162295
   languageName: node
   linkType: hard
 
@@ -3435,23 +3411,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"api-docs@workspace:api-docs":
-  version: 0.0.0-use.local
-  resolution: "api-docs@workspace:api-docs"
-  dependencies:
-    "@types/express": ^4.17.13
-    "@types/js-yaml": ^4.0.5
-    "@types/node": ^18.16.0
-    "@types/swagger-ui-express": ^4.1.3
-    dotenv: ^16.0.0
-    express: ^4.17.3
-    js-yaml: ^4.1.0
-    swagger-ui-express: ^4.3.0
-    tslint: ^6.1.3
-    typescript: ^4.6.3
-  languageName: unknown
-  linkType: soft
-
 "api-gateway@workspace:api-gateway":
   version: 0.0.0-use.local
   resolution: "api-gateway@workspace:api-gateway"
@@ -3460,6 +3419,7 @@ __metadata:
     "@guardian/interfaces": ^2.13.1
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
+    "@nestjs/jwt": ^10.0.3
     "@nestjs/microservices": ^9.4.1
     "@nestjs/platform-express": ^9.4.2
     "@nestjs/swagger": ^6.3.0
@@ -6294,9 +6254,6 @@ __metadata:
 "guardian@workspace:.":
   version: 0.0.0-use.local
   resolution: "guardian@workspace:."
-  dependencies:
-    "@nestjs/jwt": ^10.0.3
-    "@nestjs/swagger": ^6.3.0
   languageName: unknown
   linkType: soft
 
@@ -7727,7 +7684,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-yaml@npm:4.1.0, js-yaml@npm:^4.1.0":
+"js-yaml@npm:4.1.0":
   version: 4.1.0
   resolution: "js-yaml@npm:4.1.0"
   dependencies:
@@ -11436,24 +11393,6 @@ __metadata:
   version: 4.18.2
   resolution: "swagger-ui-dist@npm:4.18.2"
   checksum: 3d3e801104af53a58662303aa82df81510cece64a28422e6de02b5d22eb5f6a354f3c3ab80d12f72442e0ec8cbae9122767d7f8476c4d4a21d5353163bc659a7
-  languageName: node
-  linkType: hard
-
-"swagger-ui-dist@npm:>=4.11.0":
-  version: 4.19.0
-  resolution: "swagger-ui-dist@npm:4.19.0"
-  checksum: a813128a7a10534e57b2d56913b7c3c216445254c1eda7ac8198331fb63e50754232b4f53178814abab51ba17b8e8fdc6e6e8c438f5070f83dc2f33cfe840916
-  languageName: node
-  linkType: hard
-
-"swagger-ui-express@npm:^4.3.0":
-  version: 4.6.3
-  resolution: "swagger-ui-express@npm:4.6.3"
-  dependencies:
-    swagger-ui-dist: ">=4.11.0"
-  peerDependencies:
-    express: ">=4.0.0 || >=5.0.0-beta"
-  checksum: bd0e02d2572685fcd82701b29f27ba6a27bc72de2b1553e84f884d008a0bf85a3711c9e236bb658130d702892866744d1a8a30b52b887e4f8224635c57afc63d
   languageName: node
   linkType: hard
 
