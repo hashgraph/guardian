@@ -124,10 +124,11 @@ export class ReportItemBlock {
         }
         resultFields.push(item);
 
-        const vcDocuments: any[] = multiple
+        const _documents: any[] = multiple
             ? await ref.databaseServer.getVcDocuments(filtersToVc)
             : [await ref.databaseServer.getVcDocument(filtersToVc)];
 
+        const vcDocuments: any[] = _documents.filter((vc) => vc);
         const notFoundDocuments = vcDocuments.length < 1;
         item.notFoundDocuments = notFoundDocuments;
 
