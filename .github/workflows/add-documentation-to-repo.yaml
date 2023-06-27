@@ -51,6 +51,3 @@ jobs:
           git add swagger.yaml
           git commit -m "Add swagger.yaml"
           git push
-          pwd
-          ls
-          curl 
