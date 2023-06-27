@@ -266,15 +266,15 @@ export class ModulesApi {
     @HttpCode(HttpStatus.CREATED)
     async putModule(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        if (!req.params.uuid) {
+            throw new HttpException('Invalid uuid', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+        const guardian = new Guardians();
+        const module = req.body;
+        if (!module.config || module.config.blockType !== 'module') {
+            throw new HttpException('Invalid module config', HttpStatus.UNPROCESSABLE_ENTITY)
+        }
         try {
-            const guardian = new Guardians();
-            if (!req.params.uuid) {
-                throw new HttpException('Invalid uuid', HttpStatus.UNPROCESSABLE_ENTITY);
-            }
-            const module = req.body;
-            if (!module.config || module.config.blockType !== 'module') {
-                throw new HttpException('Invalid module config', HttpStatus.UNPROCESSABLE_ENTITY)
-            }
             const result = await guardian.updateModule(req.params.uuid, module, req.user.did);
             return res.status(201).json(result);
         } catch (error) {

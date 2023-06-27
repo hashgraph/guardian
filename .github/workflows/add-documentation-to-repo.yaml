@@ -43,5 +43,10 @@ jobs:
       - name: Download file
         run: |
           sleep 30
+          curl -o swagger.yaml http://localhost:3002/api-docs-yaml
+          git add swagger.yaml
+          git commit -m "Add swagger.yaml"
+          git push
           pwd
           ls
+          curl 
