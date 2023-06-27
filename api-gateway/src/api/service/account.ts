@@ -87,10 +87,27 @@ export class AccountApi {
     @Post('/register')
     @HttpCode(HttpStatus.CREATED)
     async register(@Body() body: RegisterUserDTO, @Req() req: any): Promise<AccountsResponseDTO> {
-        if (process.env.NODE_ENV !== 'demo'){
-            await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        }
         const users = new Users();
+        if (process.env.NODE_ENV !== 'demo'){
+            const authHeader = req.headers.authorization;
+            const token = authHeader?.split(' ')[1];
+            let user;
+            try {
+                user = await users.getUserByToken(token) as IAuthUser;
+            } catch (e) {
+                user = null;
+            }
+    
+            if (!user) {
+                throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
+            }
+            try {
+                await checkPermission(UserRole.STANDARD_REGISTRY)(user);
+            } catch (error) {
+                new Logger().error(error, ['API_GATEWAY']);
+                throw error;
+            }
+        }
         try {
             const {username, password} = body;
             let {role} = body;
