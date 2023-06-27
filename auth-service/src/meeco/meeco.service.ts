@@ -11,10 +11,12 @@ const nacl = require('tweetnacl');
 
 @Injectable()
 export class MeecoService {
+  private readonly config: IMeecoConfig;
   private readonly meecoApi: MeecoApi;
   private readonly cryppo: Cryppo;
 
   constructor(config: IMeecoConfig, passphraseBase32: string) {
+    this.config = Object.freeze(config);
     this.meecoApi = new MeecoApi(config);
     this.cryppo = new Cryppo(passphraseBase32);
   }
@@ -163,6 +165,16 @@ export class MeecoService {
   async approveVPSubmission(requestId: string, submissionId: string, verified: boolean): Promise<IPresentationSubmission> {
     const verifiedSubmission = await this.meecoApi.approveVPSubmission(requestId, submissionId, verified);
     return verifiedSubmission;
+  }
+
+  /**
+   * getVPSubmissionRedirectUri returns the redirect URI for the Verifiable Presentation Submission.
+   * @param requestId
+   * @returns {string} redirect URI
+   */
+  async getVPSubmissionRedirectUri(requestId: string): Promise<string> {
+    const redirectUri = `openid-vc://?request_uri=${this.config.baseUrl}/oidc/presentations/requests/${requestId}/jwt`;
+    return redirectUri;
   }
 
   decodeVPToken(vpToken: string): any {
