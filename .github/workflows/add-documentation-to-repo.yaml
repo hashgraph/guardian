@@ -19,6 +19,12 @@ jobs:
         uses: onichandame/nats-action@master
         with:
           port: "4222"
+      - name: Config Repo
+        run: |
+          git config --global user.name "envision-ci-agent"
+          git config --global user.email "envision-ci-agent@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.DOC_UPDATE_API_KEY }}@github.com/$GITHUB_REPOSITORY
+          git checkout "${GITHUB_REF:11}"
       - name: Build
         run: |
           pushd interfaces
@@ -39,16 +45,13 @@ jobs:
         run: |
           pushd api-gateway
           npm start &
+          sleep 30
           popd
       - name: Download file
         run: |
-          sleep 30
-          git config --global user.name "envision-ci-agent"
-          git config --global user.email "envision-ci-agent@users.noreply.github.com"
-          git remote set-url origin https://x-access-token:${{ secrets.DOC_UPDATE_API_KEY }}@github.com/$GITHUB_REPOSITORY
-          git checkout "${GITHUB_REF:11}"
           rm -v swagger.yaml
           curl -o swagger.yaml http://localhost:3002/api-docs-yaml
+          ls -1
           git add swagger.yaml
           git status
           git commit -m "Add swagger.yaml"
