@@ -65,8 +65,8 @@ export async function authorizationHelper(req: AuthenticatedRequest, res: Respon
         return;
     }
     const users = new Users();
+    const token = authHeader.split(' ')[1];
     if (authHeader) {
-        const token = authHeader.split(' ')[1];
         try {
             req.user = await users.getUserByToken(token) as IAuthUser;
             next();

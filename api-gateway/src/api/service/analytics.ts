@@ -1,6 +1,6 @@
 import { Guardians } from '@helpers/guardians';
 import { Logger } from '@guardian/common';
-import { Body, Controller, HttpCode, HttpStatus, Post, Req } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpException, HttpStatus, Post, Req } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
 @Controller('analytics')
@@ -17,6 +17,9 @@ export class AnalyticsApi {
         const childrenLvl = body ? body.childrenLvl : null;
         const idLvl = body ? body.idLvl : null;
         const user = req.user;
+        if (!user) {
+            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+        }
         try {
             const result = await guardians.comparePolicies(
                 user,
@@ -46,6 +49,9 @@ export class AnalyticsApi {
         const schemaId2 = body ? body.schemaId2 : null;
         const idLvl = body ? body.idLvl : null;
         const user = req.user;
+        if (!user) {
+            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+        }
         try {
             return await guardians.compareSchemas(user, null, schemaId1, schemaId2, idLvl);
         } catch (error) {
@@ -71,6 +77,9 @@ export class AnalyticsApi {
         const childrenLvl = body ? body.childrenLvl : null;
         const idLvl = body ? body.idLvl : null;
         const user = req.user;
+        if (!user) {
+            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+        }
         try {
             const result = await guardians.comparePolicies(
                 user,
@@ -103,6 +112,9 @@ export class AnalyticsApi {
         const schemaId2 = body ? body.schemaId2 : null;
         const idLvl = body ? body.idLvl : null;
         const user = req.user;
+        if (!user) {
+            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+        }
         try {
             return await guardians.compareSchemas(user, type, schemaId1, schemaId2, idLvl);
         } catch (error) {
