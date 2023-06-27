@@ -61,6 +61,7 @@ export class MeecoAuthService extends NatsService {
       const presentationDefinitionId = '832e996c-fdba-447f-8989-9d170fa381a8';
 
       try {
+        // create a new VP presentation request from Meeco
         const vpRequest = await this.meecoService.createPresentationRequest(
           requestName,
           clientDID,
@@ -68,16 +69,85 @@ export class MeecoAuthService extends NatsService {
           presentationDefinitionId,
         );
 
+        // sign the VP request token
         const signVPRequest = await this.meecoService.signPresentationRequestToken(vpRequest.presentation_request.id, vpRequest.presentation_request.tokens.unsigned_request_jwt);
         const redirectUri = this.meecoService.getVPSubmissionRedirectUri(signVPRequest.presentation_request.id);
 
+        // start polling for VP submission
+        await this.getVPSubmissions(signVPRequest.presentation_request.id, msg.cid);
+
+        // return the redirect URI to client
         return new MessageResponse({redirectUri, cid: msg.cid});
       } catch(ex) {
+        // return the error to client
         this.logger.error(ex.message, ex.stack);
         return new MessageResponse({error: ex.message, cid: msg.cid});
       }
     });
 
+  }
+
+  /**
+   * getVPSubmission Queries the Meeco API for the Verifiable Presentation Submission if submitted by user.
+   * @param requestId presentation request id
+   * @param cid client connection id
+   */
+  private async getVPSubmissions(requestId: string, cid: string): Promise<void> {
+    // poll for VP submission for 60 seconds every 3 seconds
+    let maxIterations = 20;
+    const interval = setInterval(async () => {
+      try {
+        const submissions = await this.meecoService.getVPSubmissions(requestId);
+        if (submissions.submissions.length > 0) {
+          const { id: submissionId, id_token, vp_token, presentation_request_id } = submissions.submissions[0];
+          const verified = await this.meecoService.verifyVP(id_token, requestId, vp_token);
+          if (verified) {
+            const verifiableCredential = this.meecoService.decodeVPToken(vp_token);
+            this.sendMessage(
+              AuthEvents.MEECO_VERIFY_VP,
+              {
+                vc: verifiableCredential.vc.credentialSubject,
+                presentation_request_id,
+                submission_id: submissionId,
+                cid,
+              }
+            );
+          } else {
+            this.logger.error('VP verification failed');
+            clearInterval(interval);
+            this.sendMessage(
+              AuthEvents.MEECO_VERIFY_VP_FAILED,
+              {
+                error: 'VP verification failed',
+                cid,
+              }
+            );
+          }
+        }
+      } catch (ex) {
+        this.logger.error(ex);
+        clearInterval(interval);
+        this.sendMessage(
+          AuthEvents.MEECO_VERIFY_VP_FAILED,
+          {
+            error: ex.message,
+            cid,
+          }
+        );
+      }
+
+      maxIterations--;
+      if (maxIterations === 0) {
+        clearInterval(interval);
+        this.sendMessage(
+          AuthEvents.MEECO_VERIFY_VP_FAILED,
+          {
+            error: 'VP submission timeout',
+            cid,
+          }
+        );
+      }
+    }, 3000)
   }
 
 }
