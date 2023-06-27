@@ -85,6 +85,27 @@ export class MeecoAuthService extends NatsService {
       }
     });
 
+    /**
+     * Subscribe to MEECO_APPROVE_SUBMISSION event from user
+     * Approves the VP presented by user
+     * @param msg
+     */
+    this.getMessages<any, IUser[]>(AuthEvents.MEECO_APPROVE_SUBMISSION, async (msg: any) => {
+      // ToDo: approve submissions that are not timed out or rejected
+      const vpRequest = await this.meecoService.approveVPSubmission(msg.presentation_request_id, msg.submission_id, true);
+      return new MessageResponse({vpRequest, cid: msg.cid});
+    });
+
+    /**
+     * Subscribe to MEECO_APPROVE_SUBMISSION event from user
+     * Verify the VP presented by user
+     * @param msg
+     */
+    this.getMessages<any, IUser[]>(AuthEvents.MEECO_REJECT_SUBMISSION, async (msg: any) => {
+      // ToDo: reject submissions that are not timed out or approved or rejected before
+      const vpRequest = await this.meecoService.approveVPSubmission(msg.presentation_request_id, msg.submission_id, false);
+      return new MessageResponse({vpRequest, cid: msg.cid});
+    });
   }
 
   /**
