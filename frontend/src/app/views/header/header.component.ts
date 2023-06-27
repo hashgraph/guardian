@@ -37,6 +37,7 @@ export class HeaderComponent implements OnInit {
     displayDemoAccounts: boolean = environment.displayDemoAccounts;
     hederaAccountID: string | undefined;
     profileData: IUser | null = null;
+    mobileSubMenuOpen: boolean = false;
 
     public innerWidth: any;
     public innerHeight: any;
@@ -148,6 +149,9 @@ export class HeaderComponent implements OnInit {
         }
         this.activeLink = this.router.url;
         this.activeLinkRoot = this.router.url.split('?')[0];
+        if (this.mobileSubMenuOpen) {
+            this.mobileActiveSubmenu(this.activeLink);
+        }
         this.auth.sessions().subscribe((user: IUser | null) => {
             const isLogin = !!user;
             const role = user ? user.role : null;
@@ -361,6 +365,24 @@ export class HeaderComponent implements OnInit {
         return false;
     }
 
+    public mobileActiveSubmenu(activeLink: string) {
+        if (this.innerWidth <= 810) {
+            if (
+                activeLink.includes('/policy-configuration') ||
+                activeLink.includes('/policy-viewer') ||
+                activeLink.includes('/compare')
+            ) {
+                this.openSubMenu('2');
+            }
+
+            if (activeLink.includes('/contracts/pairs')) {
+                this.openSubMenu('1');
+            }
+
+            this.closeNav();
+        }
+    }
+
     doBranding() {
         this.router.navigate(['/branding']);
     }
@@ -417,6 +439,7 @@ export class HeaderComponent implements OnInit {
                 userInfo.style.display = "block";
                 userInfo.style.maxHeight = '';
             }
+            this.mobileSubMenuOpen = false;
         } else {
             // Submenu is closed
             content.style.maxHeight = content.scrollHeight + "px";
@@ -426,6 +449,7 @@ export class HeaderComponent implements OnInit {
                 userInfo.style.display = "none";
                 userInfo.style.maxHeight = content.scrollHeight + "px";
             }
+            this.mobileSubMenuOpen = true;
         }
     }
 }
