@@ -167,38 +167,38 @@ export class UserProfileComponent implements OnInit {
             this.tokenService.getTokens(),
             this.tagsService.getPublishedSchemas()
         ]).subscribe((value) => {
-                const tokens: any[] = value[0];
-                const tagSchemas: any[] = value[1] || [];
+            const tokens: any[] = value[0];
+            const tagSchemas: any[] = value[1] || [];
 
-                this.tokens = tokens.map((e: any) => {
-                    return {
-                        ...new Token(e),
-                        policies: e.policies,
-                        serials: e.serials,
+            this.tokens = tokens.map((e: any) => {
+                return {
+                    ...new Token(e),
+                    policies: e.policies,
+                    serials: e.serials,
                     decimals: e.decimals
                 }
-                });
-                this.tagSchemas = SchemaHelper.map(tagSchemas);
+            });
+            this.tagSchemas = SchemaHelper.map(tagSchemas);
 
             const ids = this.tokens.map(e => e.id);
             this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
-                        if (this.tokens) {
-                            for (const token of this.tokens) {
-                                (token as any)._tags = data[token.id];
-                            }
-                        }
-                        setTimeout(() => {
-                            this.loading = false;
-                        }, 500);
+                if (this.tokens) {
+                    for (const token of this.tokens) {
+                        (token as any)._tags = data[token.id];
+                    }
+                }
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
             }, (e) => {
-                        console.error(e.error);
-                        this.loading = false;
+                console.error(e.error);
+                this.loading = false;
             });
 
 
-                setTimeout(() => {
-                    this.loading = false;
-                    this.headerProps.setLoading(false);
+            setTimeout(() => {
+                this.loading = false;
+                this.headerProps.setLoading(false);
             }, 200)
         }, ({ message }) => {
             this.loading = false;
@@ -210,10 +210,10 @@ export class UserProfileComponent implements OnInit {
     private loadRetireData() {
         this.loading = true;
         this.contractService.getRetireRequestsAll().subscribe((contracts) => {
-                this.contractRequests = contracts;
-                setTimeout(() => {
-                    this.loading = false;
-                    this.headerProps.setLoading(false);
+            this.contractRequests = contracts;
+            setTimeout(() => {
+                this.loading = false;
+                this.headerProps.setLoading(false);
             }, 200)
         }, ({ message }) => {
             this.loading = false;
@@ -233,27 +233,27 @@ export class UserProfileComponent implements OnInit {
             this.auth.getAggregatedStandardRegistries(),
             this.schemaService.getSystemSchemasByEntity(SchemaEntity.USER),
         ]).subscribe((value) => {
-                this.profile = value[0] as IUser;
-                this.balance = value[1] as string;
-                this.standardRegistries = value[2] || [];
-                const schema = value[3];
+            this.profile = value[0] as IUser;
+            this.balance = value[1] as string;
+            this.standardRegistries = value[2] || [];
+            const schema = value[3];
 
-                this.isConfirmed = !!this.profile.confirmed;
-                this.isFailed = !!this.profile.failed;
-                this.isNewAccount = !this.profile.didDocument;
-                if (this.isConfirmed) {
-                    this.didDocument = this.profile?.didDocument;
-                    this.vcDocument = this.profile?.vcDocument;
-                }
-                this.owner = this.profile?.did;
+            this.isConfirmed = !!this.profile.confirmed;
+            this.isFailed = !!this.profile.failed;
+            this.isNewAccount = !this.profile.didDocument;
+            if (this.isConfirmed) {
+                this.didDocument = this.profile?.didDocument;
+                this.vcDocument = this.profile?.vcDocument;
+            }
+            this.owner = this.profile?.did;
 
             this.standardRegistries = this.standardRegistries.filter(sr => !!sr.did);
-                if (schema) {
-                    this.schema = new Schema(schema);
-                    this.hederaForm.addControl('vc', this.vcForm);
-                } else {
-                    this.schema = null;
-                }
+            if (schema) {
+                this.schema = new Schema(schema);
+                this.hederaForm.addControl('vc', this.vcForm);
+            } else {
+                this.schema = null;
+            }
 
             if (this.selectedIndex === 0) {
                 this.loadAccountData();
@@ -286,8 +286,8 @@ export class UserProfileComponent implements OnInit {
         const data = this.hederaForm.value;
         const vcDocument = data.vc;
         const profile: any = {
-            hederaAccountId: data.id,
-            hederaAccountKey: data.key,
+            hederaAccountId: data.id?.trim(),
+            hederaAccountKey: data.key?.trim(),
             parent: data.standardRegistry,
         }
         if (vcDocument) {
@@ -316,16 +316,16 @@ export class UserProfileComponent implements OnInit {
         }
 
         this.otherService.pushGetRandomKey().subscribe((result) => {
-                const { taskId, expectation } = result;
-                this.taskId = taskId;
-                this.expectedTaskMessages = expectation;
-                this.operationMode = OperationMode.Generate;
-                this.value = value;
+            const { taskId, expectation } = result;
+            this.taskId = taskId;
+            this.expectedTaskMessages = expectation;
+            this.operationMode = OperationMode.Generate;
+            this.value = value;
         }, (e) => {
-                this.loading = false;
-                value.id = '';
-                value.key = '';
-                this.hederaForm.setValue(value);
+            this.loading = false;
+            value.id = '';
+            value.key = '';
+            this.hederaForm.setValue(value);
         });
     }
 
