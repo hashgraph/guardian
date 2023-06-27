@@ -1,8 +1,8 @@
 import axios from 'axios';
 import querystring from 'querystring';
-import { IMe } from './models/me';
-import { IDEK, IKEK, IKeypair, IPassphraseArtefact } from './models/keys';
-import { IPresentationRequest, IPresentationSubmission, IPresentationSubmissions } from './models/presentation_request';
+import { IMe } from '../meeco/models/me';
+import { IDEK, IKEK, IKeypair, IPassphraseArtefact } from '../meeco/models/keys';
+import { IPresentationRequest, IPresentationSubmission, IPresentationSubmissions } from './models/presentation-request';
 
 export interface IMeecoOauthConfig {
   url: string;
@@ -14,7 +14,7 @@ export interface IMeecoOauthConfig {
 
 export interface IMeecoConfig {
   baseUrl: string;
-  oauth: IMeecoOauthConfig;  
+  oauth: IMeecoOauthConfig;
   meecoOrganizationId: string;
 }
 
@@ -22,7 +22,7 @@ export interface IMeecoConfig {
  * MeecoApi is a wrapper around the Meeco API.
  */
 export class MeecoApi {
-  private config: IMeecoConfig;
+  private readonly config: IMeecoConfig;
 
   constructor(config: IMeecoConfig) {
     this.config = Object.freeze(config);
@@ -42,34 +42,33 @@ export class MeecoApi {
 
     const url = this.config.oauth.url;
     const data = querystring.stringify(oauthData);
-    const headers = { 
+    const headers = {
       headers: {
-        'content-type': 'application/x-www-form-urlencoded' 
-      }     
+        'content-type': 'application/x-www-form-urlencoded',
+      },
     };
 
     const result = await axios.post(url, data, headers);
-    const { token_type, access_token } = result.data;
-    return `${token_type} ${access_token}`;
+    const { token_type, accessToken } = result.data;
+    return `${token_type} ${accessToken}`;
   }
-
 
   /**
    * Get the Meeco user profile.
    */
   async getMe(): Promise<IMe> {
-    const access_token = await this.getTokenOauth2();
+    const accessToken = await this.getTokenOauth2();
 
     const url = `${this.config.baseUrl}/me`;
     const headers = {
-      headers: { 
-        'Authorization': access_token, 
-        'Meeco-Organisation-Id': this.config.meecoOrganizationId, 
-      }
-    }
+      headers: {
+        'Authorization': accessToken,
+        'Meeco-Organisation-Id': this.config.meecoOrganizationId,
+      },
+    };
 
     const result = await axios.get(url, headers);
-    
+
     const { data: me } = result;
 
     return me;
@@ -80,15 +79,15 @@ export class MeecoApi {
    * @returns {IKEK} key encryption key
    */
   async getKeyEncryptionKey(): Promise<IKEK> {
-    const access_token = await this.getTokenOauth2();
+    const accessToken = await this.getTokenOauth2();
 
     const url = `${this.config.baseUrl}/key_encryption_key`;
     const headers = {
-      headers: { 
-        'Authorization': access_token, 
+      headers: {
+        'Authorization': accessToken,
         'Meeco-Organisation-Id': this.config.meecoOrganizationId,
-      }
-    }
+      },
+    };
 
     const result = await axios.get(url, headers);
     const { data: kek } = result;
@@ -100,13 +99,13 @@ export class MeecoApi {
    * Get the Meeco user's data encryption key.
    * @returns {IDEK} Data Encryption Key
    */
-  async getDataEncryptionKey(private_dek_external_id: string): Promise<IDEK> {
-    const access_token = await this.getTokenOauth2();
+  async getDataEncryptionKey(privateDekExternalId: string): Promise<IDEK> {
+    const accessToken = await this.getTokenOauth2();
 
-    const url = `${this.config.baseUrl}/data_encryption_keys/${private_dek_external_id}`;
+    const url = `${this.config.baseUrl}/data_encryption_keys/${privateDekExternalId}`;
     const headers = {
       headers: {
-        'Authorization': access_token,
+        'Authorization': accessToken,
         'Meeco-Organisation-Id': this.config.meecoOrganizationId,
       }
     }
@@ -122,12 +121,12 @@ export class MeecoApi {
    * @returns {IKeypair} keypair
    */
   async getKeyPairs(externalId: string): Promise<IKeypair> {
-    const access_token = await this.getTokenOauth2();
+    const accessToken = await this.getTokenOauth2();
 
     const url = `${this.config.baseUrl}/keypairs/external_id/${externalId}`;
     const headers = {
       headers: {
-        'Authorization': access_token,
+        'Authorization': accessToken,
         'Meeco-Organisation-Id': this.config.meecoOrganizationId,
       }
     }
@@ -143,20 +142,21 @@ export class MeecoApi {
    * @returns {IPassphraseArtefact} passphrase artefact
    */
   async getPassphraseArtefact(): Promise<IPassphraseArtefact> {
-    const access_token = await this.getTokenOauth2();
+    const accessToken = await this.getTokenOauth2();
 
     const url = `${this.config.baseUrl}/passphrase_derivation_artefact`;
     const headers = {
       headers: {
-        'Authorization': access_token,
+        'Authorization': accessToken,
         'Meeco-Organisation-Id': this.config.meecoOrganizationId,
       }
     }
 
-    const result = await axios.get(url, headers);    
-    const { data: passphrase_derivation_artefact } = result.data;
+    const result = await axios.get(url, headers);
 
-    return passphrase_derivation_artefact;
+    const { data: passphraseDerivationArtefact } = result;
+
+    return passphraseDerivationArtefact;
   }
 
   /**
@@ -164,31 +164,31 @@ export class MeecoApi {
    * @param requestName
    * @param client_did
    * @param clientName
-   * @param presentation_definition_id
+   * @param presentationDefinitionId
    * @returns {IPresentationRequest} presentation request
    */
-  async createPresentationRequest(requestName: string, client_did: string, clientName: string, presentation_definition_id: string): Promise<IPresentationRequest> {
-    const access_token = await this.getTokenOauth2();
+  async createPresentationRequest(requestName: string, clientDID: string, clientName: string, presentationDefinitionId: string): Promise<IPresentationRequest> {
+    const accessToken = await this.getTokenOauth2();
 
-    const expires_at = new Date();
-    expires_at.setDate(expires_at.getMinutes() + 5);
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getMinutes() + 5);
 
     const request = {
       presentation_request: {
         name: requestName,
-        client_id: client_did,
+        client_id: clientDID,
         client_name: clientName,
-        expires_at:  expires_at.toISOString(),
+        expires_at:  expiresAt.toISOString(),
         redirect_base_uri: `${this.config.baseUrl}`,
-        presentation_definition_id: presentation_definition_id,
-        method: "qrcode"
+        presentation_definition_id: presentationDefinitionId,
+        method: 'qrcode',
       }
     }
 
     const url = `${this.config.baseUrl}/oidc/presentations/requests`;
     const headers = {
       headers: {
-        'Authorization': access_token,
+        'Authorization': accessToken,
         'Meeco-Organisation-Id': this.config.meecoOrganizationId,
         'Content-Type': 'application/json'
       },
@@ -202,24 +202,24 @@ export class MeecoApi {
   }
 
   /**
-   * Submit signature of token signed by private key to the VP Request 
-   * @param request_id 
-   * @param signed_request 
-   * @returns 
+   * Submit signature of token signed by private key to the VP Request
+   * @param requestId
+   * @param signed_request
+   * @returns
    */
-  async submitPresentationRequestSignature(request_id: string, signed_request: string): Promise<IPresentationRequest> {
-    const access_token = await this.getTokenOauth2();
-    
+  async submitPresentationRequestSignature(requestId: string, signedRequest: string): Promise<IPresentationRequest> {
+    const accessToken = await this.getTokenOauth2();
+
     const request = {
       presentation_request: {
-        signed_request_jwt: signed_request
+        signed_request_jwt: signedRequest
       }
     }
 
-    const url = `${this.config.baseUrl}/oidc/presentations/requests/${request_id}`;
+    const url = `${this.config.baseUrl}/oidc/presentations/requests/${requestId}`;
     const headers = {
       headers: {
-        'Authorization': access_token,
+        'Authorization': accessToken,
         'Meeco-Organisation-Id': this.config.meecoOrganizationId,
         'Content-Type': 'application/json'
       },
@@ -237,12 +237,12 @@ export class MeecoApi {
    * @param request_id
    */
   async getVPSubmissions(requestId: string): Promise<IPresentationSubmissions> {
-    const access_token = await this.getTokenOauth2();
+    const accessToken = await this.getTokenOauth2();
 
     const url = `${this.config.baseUrl}/oidc/presentations/requests/${requestId}/submissions`;
     const headers = {
       headers: {
-        'Authorization': access_token,
+        'Authorization': accessToken,
         'Meeco-Organisation-Id': this.config.meecoOrganizationId,
         'Content-Type': 'application/json'
       }
@@ -254,21 +254,23 @@ export class MeecoApi {
     return submissions;
   }
 
-  async verifyVP(id_token: string, request_uri: string, vp_token: string): Promise<boolean> {
-    const access_token = await this.getTokenOauth2();
+  async verifyVP(idToken: string, requestId: string, vpToken: string): Promise<boolean> {
+    const accessToken = await this.getTokenOauth2();
+
+    const requestUri = `${this.config.baseUrl}/oidc/presentations/requests/${requestId}/jwt`
 
     const request = {
       presentation_request_response: {
-        id_token,
-        request_uri,
-        vp_token,
+        idToken,
+        requestUri,
+        vpToken,
       }
     }
 
     const url = `${this.config.baseUrl}/oidc/presentations/response/verify`;
     const headers = {
       headers: {
-        'Authorization': access_token,
+        'Authorization': accessToken,
         'Meeco-Organisation-Id': this.config.meecoOrganizationId,
         'Content-Type': 'application/json'
       },
@@ -281,7 +283,7 @@ export class MeecoApi {
   }
 
   async approveVPSubmission(requestId: string, submissionId: string, verified: boolean): Promise<IPresentationSubmission> {
-    const access_token = await this.getTokenOauth2();
+    const accessToken = await this.getTokenOauth2();
 
     const request = {
       submission: {
@@ -292,7 +294,7 @@ export class MeecoApi {
     const url = `${this.config.baseUrl}/oidc/presentations/requests/${requestId}/submissions/${submissionId}`;
     const headers = {
       headers: {
-        'Authorization': access_token,
+        'Authorization': accessToken,
         'Meeco-Organisation-Id': this.config.meecoOrganizationId,
         'Content-Type': 'application/json'
       },

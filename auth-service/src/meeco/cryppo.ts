@@ -1,5 +1,5 @@
 import { DerivedKeyOptions, EncryptionKey, IDerivedKey, KeyDerivationStrategy, bytesToBinaryString, decodeDerivationArtifacts, decryptWithKey, generateDerivedKey } from '@meeco/cryppo'
-import * as baseX from 'base-x';
+const baseX = require('base-x');
 
 const base32Alphabet = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
 
@@ -18,7 +18,7 @@ export interface IKey {
 }
 
 export class Cryppo {
-  private passphrase: string;
+  private readonly passphrase: string;
 
   constructor(passphraseBase32: string) {
     this.passphrase = this.decodeBase32(passphraseBase32);
@@ -30,7 +30,7 @@ export class Cryppo {
    * @param verificationArtifacts IDerivedKey
    * @returns {IMasterEncryptionKey} MEK and artefacts
    */
-  async deriveMEK(derivationArtifacts: string, verificationArtifacts: string): Promise<IMasterEncryptionKey> {   
+  async deriveMEK(derivationArtifacts: string, verificationArtifacts: string): Promise<IMasterEncryptionKey> {
     if (
       (derivationArtifacts && !verificationArtifacts) ||
       (verificationArtifacts && !derivationArtifacts)
@@ -39,30 +39,28 @@ export class Cryppo {
     }
 
     const derivedKeyOpts = DerivedKeyOptions.fromSerialized(derivationArtifacts)
-  
+
     const key2 = await generateDerivedKey({
       passphrase: this.passphrase,
       ...this.iDerivedKeyToParams(derivedKeyOpts),
     });
-  
+
     const { token: token2, encrypted } = decodeDerivationArtifacts(verificationArtifacts);
-    
-    const verificationArtifactsDecryptedBytes = <Uint8Array>(
-      await this.decryptBinary(key2.key, encrypted)
-    );
+
+    const verificationArtifactsDecryptedBytes = await this.decryptBinary(key2.key, encrypted) as Uint8Array;
     const verificationArtifactsDecrypted = bytesToBinaryString(
       verificationArtifactsDecryptedBytes
     );
     const decodedToken = verificationArtifactsDecrypted.split('.')[0];
-  
+
     if (token2 !== decodedToken) {
       throw new Error('MEK verification failed');
     }
-  
+
     return {
       key: key2,
       derivationArtifacts: key2.options.serialize(),
-      verificationArtifacts: verificationArtifacts,
+      verificationArtifacts,
     };
   }
 
@@ -76,7 +74,7 @@ export class Cryppo {
     const bytes = await this.decryptBinary(key, data);
 
     return {
-      key: EncryptionKey.fromBytes(<Uint8Array>bytes),
+      key: EncryptionKey.fromBytes(bytes as Uint8Array),
       serializedKey: data,
     };
   }
