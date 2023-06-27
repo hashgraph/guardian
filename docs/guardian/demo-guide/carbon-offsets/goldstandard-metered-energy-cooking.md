@@ -95,7 +95,7 @@ Registry is allowed to publish and edit policy config, schemas, tokens and all t
 
 2. Feel free to play around with policy config by clicking on edit icon and understanding the different schemas used by policy
 
-<figure><img src="../../../.gitbook/assets/image (36) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/image (51).png" alt=""><figcaption></figcaption></figure>
 
@@ -107,7 +107,7 @@ Registry is allowed to publish and edit policy config, schemas, tokens and all t
 
 4. Registry can review project inception documents allowing the listing of projects on standard website and trigger project execution on ground.
 
-<figure><img src="../../../.gitbook/assets/image (9).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (9) (3).png" alt=""><figcaption></figcaption></figure>
 
 5. Once PDD and MR are approved by VVB, project proponents can submit credit issue requests(VER) which registries have to take decisions on.
 
@@ -149,7 +149,7 @@ Registry is allowed to publish and edit policy config, schemas, tokens and all t
 
 6. Once registry reviews and approves the credit request, they'll be credited into the hedera account provided by project proponent. This is represented by successful minted status.
 
-<figure><img src="../../../.gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (4) (1).png" alt=""><figcaption></figcaption></figure>
 
 **VVB Flow**
 
@@ -171,7 +171,7 @@ VVB is the external independent third party responsible for reviewing Project De
 
 This workflow includes a bonus flow which is a major distinction from other existing policies. Building monitoring reports for cookstove projects is a very manual and error-prone process due to distributed nature of project. Often, a sample group of households are selected to be monitored and results are extrapolated for all the households(in thousands) leading to overcrediting. Since this methodology focuses on having direct measurement devices associated with a stove, an automated way of monitoring is possible.
 
-<figure><img src="../../../.gitbook/assets/image (37) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
 
 1. Project proponent can register a measuring device associated a given cookstove
 
@@ -183,7 +183,7 @@ This workflow includes a bonus flow which is a major distinction from other exis
 
 3. Once approved, project developer can raise on-demand credit issuance associated with approved devices. These requests would contain stove fuel usage and temperature data collected automatically by the device
 
-<figure><img src="../../../.gitbook/assets/image (6).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (6) (5).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/image (5) (1) (4).png" alt=""><figcaption></figcaption></figure>
 

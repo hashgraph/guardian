@@ -13,7 +13,7 @@ jobs:
       hashicorpvault:
         image: vault
         env:
-          VAULT_SERVER: "http://0.0.0.0:8200"
+          VAULT_SERVER: "https://0.0.0.0:8200"
           VAULT_DEV_ROOT_TOKEN_ID: "1234"
         ports:
           - 8200/tcp

@@ -98,7 +98,7 @@ Once the PDD has been verified, the Project Developer can "Request registration.
 
 <figure><img src="../../../.gitbook/assets/image (15) (4).png" alt=""><figcaption></figcaption></figure>
 
-The Standard Registry can log into their Policy screen, view the incoming Project Registration, and approve it.&#x20;
+The Standard Registry can log into their Policy screen, view the incoming Project Registration, and approve it.
 
 <figure><img src="../../../.gitbook/assets/image (10) (4).png" alt=""><figcaption></figcaption></figure>
 
@@ -106,7 +106,7 @@ Once the Standard Registry approved the Project Developer's Project Registration
 
 <figure><img src="../../../.gitbook/assets/image (3) (2).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (1) (1) (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1) (5) (1).png" alt=""><figcaption></figcaption></figure>
 
 Once the Monitoring Report has been submitted to the Verifier, the Verifier can log into their Policy screen, review it, and fill out the review form.
 

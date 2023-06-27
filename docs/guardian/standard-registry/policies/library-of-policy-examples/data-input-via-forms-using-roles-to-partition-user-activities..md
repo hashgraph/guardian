@@ -19,7 +19,7 @@ Assign these containers to appropriate Permissions: ‘no\_role’, ‘User’, 
 
 See detailed information about the Roles in [Example 1](creating-and-using-roles.md).
 
-![Creating Roles and adding RoleSelectionBlock](<../../../../.gitbook/assets/0 (2) (1).png>)
+![Creating Roles and adding RoleSelectionBlock](<../../../../.gitbook/assets/0 (2) (1) (1).png>)
 
 ## **Main section**
 

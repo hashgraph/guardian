@@ -38,7 +38,7 @@ export class ModulesApi {
             return res.status(201).json(item);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            throw error
         }
     }
 
@@ -561,6 +561,7 @@ export class ModulesApi {
     @Post('/validate')
     @HttpCode(HttpStatus.OK)
     async validateModule(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardian = new Guardians();
         try {
             return res.send(await guardian.validateModule(req.user.did, req.body));

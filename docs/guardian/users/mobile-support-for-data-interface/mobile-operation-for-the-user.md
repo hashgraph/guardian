@@ -15,14 +15,14 @@ Here the images below show the selection of account type and selection of userna
 
 The header was also adapted for mobile for all types of users. The balance was maintained as one of the elements always present. The new header for mobile, these elements are always present.
 
-![](../../../.gitbook/assets/3.png)\
+![](<../../../.gitbook/assets/3 (1).png>)\
 
 
 The various menus and submenus (in case there are any) have been moved upon clicking on the hamburger menu, presenting the user with the following.
 
 Also some information about the user is also presented, such as the name of the user (in this case "user1234") and his respective Hedera ID and HBar balance.
 
-<img src="../../../.gitbook/assets/5.png" alt="" data-size="original">![](<../../../.gitbook/assets/4 (1) (1) (2).png>)\
+<img src="../../../.gitbook/assets/5 (3).png" alt="" data-size="original">![](<../../../.gitbook/assets/4 (1) (1) (2).png>)\
 
 
 ### **User first registration into Guardian**
@@ -36,7 +36,7 @@ As this is an integral part of using Guardian, the association with the users He
 
 The user registration form into a policy has also been redesigned. This makes the long form divisible in a more digestible manner, compartmentalizing each category of input into a page of its own. The mobile adaptation to the registration into a policy.
 
-![](../../../.gitbook/assets/7.png)
+![](<../../../.gitbook/assets/7 (2).png>)
 
 
 

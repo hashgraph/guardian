@@ -74,7 +74,7 @@ export class HcpVaultSecretManagerConfigs implements SecretManagerConfigsBase {
    * @static
    */
   static getConfigs(): IHcpVaultSecretManagerConfigs {
-    return {
+    const conf = {
       apiVersion: process.env.VAULT_API_VERSION,
       endpoint: process.env.VAULT_ADDRESS,
       tlsOptions: {
@@ -90,5 +90,6 @@ export class HcpVaultSecretManagerConfigs implements SecretManagerConfigsBase {
         secretId: process.env.VAULT_APPROLE_SECRET_ID,
       }
     } as IHcpVaultSecretManagerConfigs;
+    return conf;
   }
 }

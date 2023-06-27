@@ -24,7 +24,7 @@ To enable document submission we will use document input block (**requestVcDocum
 
 Switch to the ‘**Tokens**’ tab and create a new token
 
-![Creating a New Token](<../../../../.gitbook/assets/1 (2).png>)
+![Creating a New Token](<../../../../.gitbook/assets/1 (2) (2).png>)
 
 2. Please note we created a token with ‘_KYC’_ flag as ‘on’. This imposes the requirement to perform a KYC action on users before they can receive the token:
 
