@@ -2525,4 +2525,33 @@ export class DatabaseServer {
             user: did,
         });
     }
+
+    /**
+     * Update VP DOcuments
+     * @param value
+     * @param filters
+     * @param dryRun
+     */
+    public static async updateVpDocuments(value: any, filters: any, dryRun?: string): Promise<void> {
+        if (dryRun) {
+            if (filters.where) {
+                filters.where.dryRunId = dryRun;
+                filters.where.dryRunClass = 'VpDocumentCollection';
+            } else {
+                filters.dryRunId = dryRun;
+                filters.dryRunClass = 'VpDocumentCollection';
+            }
+            const items = await new DataBaseHelper(DryRun).find(filters);
+            for (const item of items) {
+                Object.assign(item, value);
+            }
+            await new DataBaseHelper(DryRun).update(items);
+        } else {
+            const items = await new DataBaseHelper(VpDocumentCollection).find(filters);
+            for (const item of items) {
+                Object.assign(item, value);
+            }
+            await new DataBaseHelper(VpDocumentCollection).update(items);
+        }
+    }
 }

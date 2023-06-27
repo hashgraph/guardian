@@ -606,6 +606,18 @@ export class DryRun extends BaseEntity {
     lastUpdate?: any;
 
     /**
+     * Token amount
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    amount?: any;
+
+    /**
+     * Token serials
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    serials?: any;
+
+    /**
      * Default document values
      */
     @BeforeCreate()
