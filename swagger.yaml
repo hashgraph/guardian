@@ -418,6 +418,12 @@ paths:
         Creates new contract. Only users with the Standard Registry role are
         allowed to make the request.
       parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImportContractDTO'
       responses:
         '200':
           description: Successful operation.
@@ -1904,6 +1910,12 @@ paths:
       summary: Set settings.
       description: Set settings. For users with the Standard Registry role only.
       parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SettingsDTO'
       responses:
         '200':
           description: Successful operation.
@@ -2703,6 +2715,13 @@ components:
         - uuid
         - extention
         - type
+    ImportContractDTO:
+      type: object
+      properties:
+        contractId:
+          type: string
+      required:
+        - contractId
     SystemSchemaDTO:
       type: object
       properties:
@@ -2713,6 +2732,19 @@ components:
       required:
         - name
         - entity
+    SettingsDTO:
+      type: object
+      properties:
+        ipfsStorageApiKey:
+          type: string
+        operatorId:
+          type: string
+        operatorKey:
+          type: string
+      required:
+        - ipfsStorageApiKey
+        - operatorId
+        - operatorKey
     SuggestionsInputDTO:
       type: object
       properties:
