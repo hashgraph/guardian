@@ -54,5 +54,4 @@ jobs:
           ls -1
           git add swagger.yaml
           git status
-          git commit -m "Add swagger.yaml"
-          git push
+          git commit -m "Add swagger.yaml" && git push || exit 0
