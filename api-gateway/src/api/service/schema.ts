@@ -757,7 +757,7 @@ export class SchemaApi {
     @Get('/system/entity/:schemaEntity')
     @HttpCode(HttpStatus.OK)
     async getSchemaEntity(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user)
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER, UserRole.AUDITOR)(req.user)
         try {
             const guardians = new Guardians();
             const schema = await guardians.getSchemaByEntity(req.params.schemaEntity);

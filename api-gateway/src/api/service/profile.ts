@@ -190,12 +190,12 @@ export class ProfileApi {
     if (!req.headers.authorization || !req.user) {
       throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
     }
-    // if (!req.user.did) {
-    //   return res.json(null);
-    // }
     try {
       const guardians = new Guardians();
       const balance = await guardians.getUserBalance(req.params.username);
+      if (!req.user.did) {
+        return res.json(null);
+      }
       if (isNaN(parseFloat(balance))) {
         throw new HttpException(balance, HttpStatus.UNPROCESSABLE_ENTITY)
       }

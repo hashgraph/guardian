@@ -1,11 +1,11 @@
 import { Guardians } from '@helpers/guardians';
 import { CommonSettings, UserRole } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
-import { prepareValidationResponse } from '@middlewares/validation';
-import { Controller, Get, HttpCode, HttpStatus, Post, Req, Response } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Post, Req, Response } from '@nestjs/common';
 import { checkPermission } from '@auth/authorization-helper';
 import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, getSchemaPath } from '@nestjs/swagger';
 import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
+import { SettingsDTO } from '@middlewares/validation/schemas/settings';
 
 @Controller('settings')
 @ApiTags('settings')
@@ -25,13 +25,10 @@ export class SettingsApi {
     })
     @Post('/')
     @HttpCode(HttpStatus.CREATED)
-    async updateSettings(@Req() req, @Response() res): Promise<any> {
+    async updateSettings(@Body() body: SettingsDTO, @Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
-            const settings = req.body as CommonSettings;
-            if (!settings || Object.keys(settings).length === 0) {
-                return res.status(422).json(prepareValidationResponse('Invalid settings'));
-            }
+            const settings = body as CommonSettings;
             const guardians = new Guardians();
             await Promise.all([
                 guardians.updateSettings(settings)
@@ -39,7 +36,7 @@ export class SettingsApi {
             return res.status(201).json(null);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -77,6 +74,7 @@ export class SettingsApi {
     @Get('/environment')
     @HttpCode(HttpStatus.OK)
     async getEnvironment(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER, UserRole.AUDITOR)(req.user);
         try {
             const guardians = new Guardians();
             const environment = await guardians.getEnvironment();
