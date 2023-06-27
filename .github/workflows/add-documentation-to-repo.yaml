@@ -52,4 +52,4 @@ jobs:
           rm -fv swagger.yaml
           curl -o swagger.yaml http://localhost:3002/api-docs-yaml
           git add swagger.yaml
-          git commit -m "Add swagger.yaml" && git push || exit 0
+          git commit -m "[skip ci] Add swagger.yaml" && git push || exit 0
