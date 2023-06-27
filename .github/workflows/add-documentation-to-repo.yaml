@@ -44,6 +44,8 @@ jobs:
         run: |
           sleep 30
           curl -o swagger.yaml http://localhost:3002/api-docs-yaml
+          git config --global user.name "envision-ci-agent"
+          git config --global user.email "envision-ci-agent@users.noreply.github.com"
           git add swagger.yaml
           git commit -m "Add swagger.yaml"
           git push
