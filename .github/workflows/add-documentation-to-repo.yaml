@@ -47,7 +47,9 @@ jobs:
           git config --global user.email "envision-ci-agent@users.noreply.github.com"
           git remote set-url origin https://x-access-token:${{ secrets.DOC_UPDATE_API_KEY }}@github.com/$GITHUB_REPOSITORY
           git checkout "${GITHUB_REF:11}"
+          rm -v swagger.yaml
           curl -o swagger.yaml http://localhost:3002/api-docs-yaml
           git add swagger.yaml
+          git status
           git commit -m "Add swagger.yaml"
           git push
