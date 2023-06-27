@@ -1270,7 +1270,7 @@ export class PolicyUtils {
      * @param document
      */
     public static getDocumentIssuer(document: any): string {
-        if (document) {
+        if (document && document.issuer) {
             if (typeof document.issuer === 'string') {
                 return document.issuer;
             } else {

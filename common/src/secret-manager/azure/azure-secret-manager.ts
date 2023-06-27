@@ -37,12 +37,16 @@ export class AzureSecretManager implements SecretManagerBase {
    * @public
    */
   private getSecretId(path: string): string {
-    const secretPath = this.baseSecretPath + path;
+    // let secretPath = this.baseSecretPath + path;
+    // MultiEnv
+    const secretPath = (process.env.GUARDIAN_ENV)?
+              this.baseSecretPath + `${process.env.GUARDIAN_ENV}/${process.env.HEDERA_NET}/` + path:
+              this.baseSecretPath + `${process.env.HEDERA_NET}/` + path;
 
     // convert path string to PascalCase format (Azure Secret Manager does not allow hyphens in secret names)
     const parts = secretPath.split('/');
     const secretId = parts.map((part, _) => part.charAt(0).toUpperCase() + part.slice(1));
-
+    console.log('*** > azure secretId',secretId.join(''));
     return secretId.join('');
   }
 
@@ -57,6 +61,7 @@ export class AzureSecretManager implements SecretManagerBase {
   public async existsSecrets(path: string): Promise<boolean> {
     try {
       await this.client.getSecret(this.getSecretId(path));
+      console.log('*** > azure existsSecrets TRUE');
       return true;
     } catch (ex) {
       if (ex.details.error.code === 'SecretNotFound') {
@@ -79,6 +84,7 @@ export class AzureSecretManager implements SecretManagerBase {
   public async getSecrets(path: string): Promise<any> {
     try {
       const { value } = await this.client.getSecret(this.getSecretId(path));
+      console.log('*** > azure getSecrets value', JSON.parse(value));
       return JSON.parse(value);
     } catch (ex) {
       if (ex.details && ex.details.error.code === 'SecretNotFound') {
@@ -101,6 +107,7 @@ export class AzureSecretManager implements SecretManagerBase {
   public async setSecrets(path: string, data: any): Promise<void> {
     try {
       await this.client.setSecret(this.getSecretId(path), JSON.stringify(data));
+      console.log('*** > azure setSecrets');
     } catch (ex) {
       throw ex;
     }

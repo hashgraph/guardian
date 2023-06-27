@@ -14,6 +14,9 @@ export class IpfsApi {
     @Post('/file')
     @HttpCode(HttpStatus.CREATED)
     async postFile(@Req() req, @Response() res): Promise<any> {
+        if (!req.user) {
+            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+        }
         try {
             if (!Object.values(req.body).length) {
                 throw new HttpException('Body content in request is empty', HttpStatus.UNPROCESSABLE_ENTITY)
@@ -41,13 +44,16 @@ export class IpfsApi {
     @Get('/file/:cid')
     @HttpCode(HttpStatus.OK)
     async getFile(@Req() req, @Response() res): Promise<any> {
+        if (!req.user) {
+            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+        }
         try {
             const guardians = new Guardians();
             const result = await guardians.getFileIpfs(req.params.cid, 'raw');
-            const resultBuffer = Buffer.from(result);
-            if (!result) {
-                throw new HttpException('File is not uploaded', HttpStatus.NOT_FOUND)
+            if (result.type !== 'Buffer') {
+                throw new HttpException('File is not found', HttpStatus.NOT_FOUND)
             }
+            const resultBuffer = Buffer.from(result);
             res.writeHead(200, {
                 'Content-Type': 'binary/octet-stream',
                 'Content-Length': resultBuffer.length,

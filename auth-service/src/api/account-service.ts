@@ -49,6 +49,7 @@ export class AccountService extends NatsService{
         this.getMessages<IGetUserByTokenMessage, User>(AuthEvents.GET_USER_BY_TOKEN, async (msg) => {
             const { token } = msg;
             const secretManager = SecretManager.New();
+
             const {ACCESS_TOKEN_SECRET} = await secretManager.getSecrets('secretkey/auth')
 
             try {
@@ -94,6 +95,7 @@ export class AccountService extends NatsService{
                 const passwordDigest = crypto.createHash('sha256').update(password).digest('hex');
 
                 const secretManager = SecretManager.New();
+
                 const {ACCESS_TOKEN_SECRET} = await secretManager.getSecrets('secretkey/auth')
 
                 const user = await new DataBaseHelper(User).findOne({ username });

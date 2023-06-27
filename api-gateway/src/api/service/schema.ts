@@ -5,11 +5,12 @@ import { PolicyEngine } from '@helpers/policy-engine';
 import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
 import { SchemaUtils } from '@helpers/schema-utils';
-import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response } from '@nestjs/common';
 import { checkPermission } from '@auth/authorization-helper';
 import { Client, ClientProxy, Transport } from '@nestjs/microservices';
 import process from 'process';
 import { ApiTags } from '@nestjs/swagger';
+import { SystemSchemaDTO } from '@middlewares/validation/schemas/schemas';
 
 /**
  * Prepare new schema object
@@ -108,6 +109,7 @@ export class SingleSchemaApi {
     @Get('/:schemaId')
     @HttpCode(HttpStatus.OK)
     async getSchema(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)(req.user);
         try {
             const user = req.user;
             const schemaId = req.params.schemaId;
@@ -202,6 +204,7 @@ export class SchemaApi {
     @Get('/')
     @HttpCode(HttpStatus.OK)
     async getSchemas(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)(req.user);
         try {
             const user = req.user;
             const { guardians, pageIndex, pageSize, owner } = prepareSchemaPagination(req, user);
@@ -400,21 +403,21 @@ export class SchemaApi {
     async importFromMessagePreviewAsync(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const taskManager = new TaskManager();
-        const { taskId, expectation } = taskManager.start('Preview schema message');
+        const {taskId, expectation} = taskManager.start('Preview schema message');
 
         const messageId = req.body.messageId;
+        if (!messageId) {
+            throw new HttpException('Schema ID in body is empty', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
         RunFunctionAsync<ServiceError>(async () => {
-            if (!messageId) {
-                throw new Error('Schema ID in body is empty');
-            }
             const guardians = new Guardians();
             await guardians.previewSchemasByMessagesAsync([messageId], taskId);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: 500, message: error.message });
+            taskManager.addError(taskId, {code: 500, message: error.message});
         });
 
-        return res.status(202).send({ taskId, expectation });
+        return res.status(202).send({taskId, expectation});
     }
 
     @Post('/import/file/preview')
@@ -445,8 +448,11 @@ export class SchemaApi {
             const topicId = req.params.topicId;
             const guardians = new Guardians();
             const messageId = req.body.messageId;
+            if (!messageId) {
+                throw new HttpException('message ID in body is required', HttpStatus.UNPROCESSABLE_ENTITY)
+            }
             await guardians.importSchemasByMessages([messageId], req.user.did, topicId);
-            const { items, count } = await guardians.getSchemasByOwner(user.did);
+            const {items, count} = await guardians.getSchemasByOwner(user.did);
             SchemaHelper.updatePermission(items, user.did);
             return res.status(201).setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
         } catch (error) {
@@ -460,20 +466,23 @@ export class SchemaApi {
     async importFromMessageAsync(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const taskManager = new TaskManager();
-        const { taskId, expectation } = taskManager.start('Import schema message');
+        const {taskId, expectation} = taskManager.start('Import schema message');
 
         const user = req.user;
         const topicId = req.params.topicId;
         const messageId = req.body.messageId;
+        if (!messageId) {
+            throw new HttpException('Schema ID in body is empty', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
             await guardians.importSchemasByMessagesAsync([messageId], user.did, topicId, taskId);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: 500, message: error.message });
+            taskManager.addError(taskId, {code: 500, message: error.message});
         });
 
-        return res.status(202).send({ taskId, expectation });
+        return res.status(202).send({taskId, expectation});
     }
 
     @Post('/:topicId/import/file')
@@ -495,7 +504,7 @@ export class SchemaApi {
             return res.status(201).setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -611,11 +620,11 @@ export class SchemaApi {
 
     @Post('/system/:username')
     @HttpCode(HttpStatus.CREATED)
-    async postSystemSchema(@Req() req, @Response() res): Promise<any> {
+    async postSystemSchema(@Body() body: SystemSchemaDTO, @Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
-            const newSchema = req.body;
+            const newSchema = body as any;
 
             if (newSchema.entity !== SchemaEntity.STANDARD_REGISTRY
                 && newSchema.entity !== SchemaEntity.USER) {
@@ -748,6 +757,7 @@ export class SchemaApi {
     @Get('/system/entity/:schemaEntity')
     @HttpCode(HttpStatus.OK)
     async getSchemaEntity(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user)
         try {
             const guardians = new Guardians();
             const schema = await guardians.getSchemaByEntity(req.params.schemaEntity);
