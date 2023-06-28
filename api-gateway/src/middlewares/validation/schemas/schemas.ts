@@ -1,7 +1,8 @@
 import * as yup from 'yup';
 import fieldsValidation from '../fields-validation'
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsIn, IsNotEmpty, IsString } from 'class-validator';
+import { UserRole } from '@guardian/interfaces';
 
 export const schemaSchema = () => {
   const {messageId} = fieldsValidation
@@ -30,6 +31,7 @@ export class SystemSchemaDTO {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
+  @IsIn([UserRole.STANDARD_REGISTRY, UserRole.USER])
   entity: string;
 
   [key: string]: any

@@ -411,9 +411,10 @@ export class PolicyConfigurationComponent implements OnInit {
         if (this.currentView === 'blocks') {
             const json = this.objectToJson(this.rootModule.getJSON());
             this.storage.push(this.currentView, json);
-        } else if (this.currentView === 'yaml') {
-            this.storage.push(this.currentView, this.code);
-        } else if (this.currentView === 'json') {
+        } else if (
+            ['yaml', 'json'].includes(this.currentView) &&
+            this.openType === 'Root'
+        ) {
             this.storage.push(this.currentView, this.code);
         }
     }
@@ -548,6 +549,9 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     public onOpenModule(module: any) {
+        if (module === this.openModule || !this.saveCodeConfig()) {
+            return;
+        }
         const item = this.policyModel.getModule(module);
         if (item) {
             this.openType = 'Sub';
@@ -676,6 +680,9 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     public onOpenRoot(root: PolicyModel | TemplateModel) {
+        if (root === this.openModule || !this.saveCodeConfig()) {
+            return;
+        }
         this.rootModule = root;
         this.openModule = root?.getRootModule();
         this.openType = 'Root';
@@ -1336,6 +1343,25 @@ export class PolicyConfigurationComponent implements OnInit {
             }
         }
         return [result, childConfig];
+    }
+
+    private saveCodeConfig() {
+        if (!['json', 'yaml'].includes(this.currentView)) {
+            return true;
+        }
+        this.errors = [];
+        try {
+            let root = null;
+            if (this.currentView === 'json') {
+                root = this.jsonToObject(this.code);
+            } else if (this.currentView == 'yaml') {
+                root = this.yamlToObject(this.code);
+            }
+            this.openModule.rebuild(root);
+        } catch (error: any) {
+            this.errors = [error.message];
+        }
+        return this.errors.length === 0;
     }
 
     private changeView(type: string) {

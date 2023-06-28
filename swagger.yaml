@@ -1,0 +1,2793 @@
+openapi: 3.0.0
+paths:
+  /accounts/session:
+    get:
+      operationId: AccountApi_getSession
+      summary: Returns current session of the user.
+      description: Returns current user session.
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountsSessionResponseDTO'
+        '401':
+          description: Unauthorized.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: &ref_0
+        - accounts
+      security:
+        - bearer: []
+  /accounts/register:
+    post:
+      operationId: AccountApi_register
+      summary: Registers a new user account.
+      description: Object that contain username, password and role (optional) fields.
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterUserDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountsResponseDTO'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
+  /accounts/login:
+    post:
+      operationId: AccountApi_login
+      summary: Logs user into the system.
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginUserDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountsSessionResponseDTO'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
+  /accounts:
+    get:
+      operationId: AccountApi_getAllAccounts
+      summary: Returns a list of users, excluding Standard Registry and Auditors.
+      description: >-
+        Returns all users except those with roles Standard Registry and Auditor.
+        Only users with the Standard Registry role are allowed to make the
+        request.
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountsResponseDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
+      security:
+        - bearerAuth: []
+  /accounts/root-authorities:
+    get:
+      operationId: AccountApi_getRootAuthorities
+      summary: Returns all Standard Registries.
+      description: Returns all Standard Registries.
+      deprecated: true
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountsResponseDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
+      security:
+        - bearerAuth: []
+  /accounts/standard-registries:
+    get:
+      operationId: AccountApi_getStandatdRegistries
+      summary: Returns all Standard Registries.
+      description: Returns all Standard Registries.
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountsResponseDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
+      security:
+        - bearerAuth: []
+  /accounts/standard-registries/aggregated:
+    get:
+      operationId: AccountApi_getAggregatedStandardRegistries
+      summary: Returns all Standard Registries aggregated with polices and vcDocuments.
+      description: Returns all Standard Registries aggregated with polices and vcDocuments
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AggregatedDTOItem'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
+      security:
+        - bearerAuth: []
+  /accounts/balance:
+    get:
+      operationId: AccountApi_getBalance
+      summary: Returns user's Hedera account balance.
+      description: Requests current Hedera account balance.
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalanceResponseDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
+      security:
+        - bearerAuth: []
+  /analytics/compare/policies:
+    post:
+      operationId: AnalyticsApi_comparePolicies
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: &ref_1
+        - analytics
+  /analytics/compare/schemas:
+    post:
+      operationId: AnalyticsApi_compareSchemas
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_1
+  /analytics/compare/policies/export:
+    post:
+      operationId: AnalyticsApi_comparePoliciesExport
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_1
+  /analytics/compare/schemas/export:
+    post:
+      operationId: AnalyticsApi_compareSchemasExport
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_1
+  /artifacts:
+    get:
+      operationId: ArtifactApi_getArtifacts
+      summary: Returns all artifacts.
+      description: Returns all artifacts.
+      parameters:
+        - name: pageSize
+          required: false
+          in: query
+          description: The numbers of items to return
+          schema:
+            type: number
+        - name: pageIndex
+          required: false
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          schema:
+            type: number
+        - name: policyId
+          required: false
+          in: query
+          description: Policy identifier
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ArtifactDTOItem'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: &ref_2
+        - artifacts
+      security:
+        - bearerAuth: []
+  /artifacts/{policyId}:
+    post:
+      operationId: ArtifactApi_uploadArtifacts
+      summary: Upload artifact.
+      description: Upload artifact. For users with the Standard Registry role only.
+      parameters:
+        - name: policyId
+          required: false
+          in: query
+          description: Policy identifier
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ArtifactDTOItem'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearerAuth: []
+  /artifacts/{artifactId}:
+    delete:
+      operationId: ArtifactApi_deleteArtifact
+      summary: Delete artifact.
+      description: Delete artifact.
+      parameters:
+        - name: policyId
+          required: false
+          in: query
+          description: Policy identifier
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ArtifactDTOItem'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+  /contracts:
+    get:
+      operationId: ContractsApi_getContracts
+      summary: Returns all contracts.
+      description: Returns all contracts.
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  contractId:
+                    type: string
+                  description:
+                    type: string
+                  owner:
+                    type: string
+                  isOwnerCreator:
+                    type: string
+                  status:
+                    type: string
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: &ref_3
+        - contracts
+      security:
+        - bearerAuth: []
+    post:
+      operationId: ContractsApi_setContracts
+      summary: Creates new contract.
+      description: >-
+        Creates new contract. Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  description:
+                    type: string
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_3
+      security:
+        - bearerAuth: []
+  /contracts/import:
+    post:
+      operationId: ContractsApi_importContracts
+      summary: Import new contract.
+      description: >-
+        Creates new contract. Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImportContractDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  contractId:
+                    type: string
+                  description:
+                    type: string
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_3
+  /contracts/{contractId}/user:
+    post:
+      operationId: ContractsApi_userContract
+      summary: Add new contract user.
+      description: >-
+        Add new contract user. Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userId:
+                    type: string
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_3
+  /contracts/{contractId}/status:
+    post:
+      operationId: ContractsApi_contractStatus
+      summary: Update contract status.
+      description: >-
+        Update contract status. Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_3
+  /contracts/pair:
+    get:
+      operationId: ContractsApi_contractPair
+      summary: Creates new contract pair.
+      description: >-
+        Creates new contract pair. Only users with the Standard Registry role
+        are allowed to make the request.
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  baseTokenId:
+                    type: string
+                  oppositeTokenId:
+                    type: string
+                  baseTokenCount:
+                    type: integer
+                  oppositeTokenCount:
+                    type: integer
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_3
+  /contracts/{contractId}/pair:
+    post:
+      operationId: ContractsApi_setPair
+      summary: Creates new contract pair.
+      description: >-
+        Creates new contract pair. Only users with the Standard Registry role
+        are allowed to make the request.
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  baseTokenId:
+                    type: string
+                  oppositeTokenId:
+                    type: string
+                  baseTokenCount:
+                    type: integer
+                  oppositeTokenCount:
+                    type: integer
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_3
+  /contracts/retire/request:
+    get:
+      operationId: ContractsApi_retireRequest
+      summary: Returns all contract requests.
+      description: Returns all contract requests.
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: integer
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_3
+    delete:
+      operationId: ContractsApi_deleteRetireRequest
+      summary: Cancel contract requests.
+      description: Cancel contract requests.
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_3
+  /contracts/{contractId}/retire/request:
+    post:
+      operationId: ContractsApi_postRetireRequest
+      summary: Creates new contract retire request.
+      description: Creates new contract retire request.
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  contractId:
+                    type: string
+                  baseTokenId:
+                    type: string
+                  owner:
+                    type: string
+                  oppositeTokenId:
+                    type: string
+                  baseTokenCount:
+                    type: number
+                  oppositeTokenCount:
+                    type: number
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_3
+  /contracts/retire:
+    post:
+      operationId: ContractsApi_retire
+      summary: Retire tokens.
+      description: >-
+        Retire tokens. Only users with the Standard Registry role are allowed to
+        make the request.
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_3
+  /demo/registeredUsers:
+    get:
+      operationId: DemoApi_registeredUsers
+      summary: ''
+      deprecated: true
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: &ref_4
+        - demo
+  /demo/randomKey:
+    get:
+      operationId: DemoApi_randomKey
+      summary: ''
+      deprecated: true
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_4
+  /demo/push/randomKey:
+    get:
+      operationId: DemoApi_pushRandomKey
+      summary: ''
+      deprecated: true
+      parameters: []
+      responses:
+        '201':
+          description: ''
+      tags: *ref_4
+  /demo/registered-users:
+    get:
+      operationId: DemoApi_registeredUsers2
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_4
+  /demo/random-key:
+    get:
+      operationId: DemoApi_randomKey2
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_4
+  /demo/push/random-key:
+    get:
+      operationId: DemoApi_pushRandomKey2
+      parameters: []
+      responses:
+        '202':
+          description: ''
+      tags: *ref_4
+  /external:
+    post:
+      operationId: ExternalApi_receiveExternalData
+      summary: Sends data from an external source.
+      description: Sends data from an external source.
+      parameters: []
+      requestBody:
+        required: true
+        description: Object that contains a VC Document.
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - owner
+                - policyTag
+                - document
+              properties:
+                owner:
+                  type: string
+                policyTag:
+                  type: string
+                document:
+                  type: object
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags:
+        - external
+  /ipfs/file:
+    post:
+      operationId: IpfsApi_postFile
+      summary: Add file from ipfs.
+      description: Add file from ipfs.
+      parameters: []
+      responses:
+        '201':
+          description: ''
+      tags: &ref_5
+        - ipfs
+      security:
+        - bearerAuth: []
+  /ipfs/file/{cid}:
+    get:
+      operationId: IpfsApi_getFile
+      summary: Get file from ipfs.
+      description: Get file from ipfs.
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_5
+      security:
+        - bearerAuth: []
+  /logs:
+    post:
+      operationId: LoggerApi_getLogs
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: &ref_6
+        - logs
+  /logs/attributes:
+    get:
+      operationId: LoggerApi_getAttributes
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_6
+  /map/key:
+    get:
+      operationId: MapApi_getKey
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags:
+        - map
+  /metrics:
+    get:
+      operationId: MetricsApi_getMetrics
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags:
+        - metrics
+  /modules:
+    post:
+      operationId: ModulesApi_postModules
+      summary: Creates a new module.
+      description: >-
+        Creates a new module. Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: &ref_7
+        - modules
+      security:
+        - bearerAuth: []
+    get:
+      operationId: ModulesApi_getModules
+      summary: Return a list of all modules.
+      description: >-
+        Returns all modules. Only users with the Standard Registry and Installer
+        role are allowed to make the request.
+      parameters:
+        - name: pageSize
+          required: false
+          in: query
+          description: The numbers of items to return
+          schema:
+            type: number
+        - name: pageIndex
+          required: false
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          schema:
+            type: number
+        - name: policyId
+          required: false
+          in: query
+          description: Policy identifier
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  uuid:
+                    type: string
+                  name:
+                    type: string
+                  description:
+                    type: string
+                  config:
+                    type: object
+                  status:
+                    type: string
+                  creator:
+                    type: string
+                  owner:
+                    type: string
+                  topicId:
+                    type: string
+                  messageId:
+                    type: string
+                  codeVersion:
+                    type: string
+                  createDate:
+                    type: string
+                  type:
+                    type: string
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_7
+      security:
+        - bearerAuth: []
+  /modules/{uuid}:
+    delete:
+      operationId: ModulesApi_deleteModule
+      summary: >-
+        Deletes the module with the provided module ID. Only users with the
+        Standard Registry role are allowed to make the request.
+      description: Deletes the module.
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_7
+      security:
+        - bearerAuth: []
+    get:
+      operationId: ModulesApi_getModule
+      summary: Retrieves module configuration.
+      description: >-
+        Retrieves module configuration for the specified module ID. Only users
+        with the Standard Registry role are allowed to make the request.
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_7
+      security:
+        - bearerAuth: []
+    put:
+      operationId: ModulesApi_putModule
+      summary: Updates module configuration.
+      description: >-
+        Updates module configuration for the specified module ID. Only users
+        with the Standard Registry role are allowed to make the request.
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_7
+      security:
+        - bearerAuth: []
+  /modules/menu:
+    get:
+      operationId: ModulesApi_getMenu
+      summary: Return a list of modules.
+      description: >-
+        Returns modules menu. Only users with the Standard Registry and
+        Installer role are allowed to make the request.
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_7
+      security:
+        - bearerAuth: []
+  /modules/{uuid}/export/file:
+    get:
+      operationId: ModulesApi_moduleExportFile
+      summary: >-
+        Return module and its artifacts in a zip file format for the specified
+        module.
+      description: >-
+        Returns a zip file containing the published module and all associated
+        artifacts, i.e. schemas and VCs. Only users with the Standard Registry
+        role are allowed to make the request.
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_7
+      security:
+        - bearerAuth: []
+  /modules/{uuid}/export/message:
+    get:
+      operationId: ModulesApi_moduleExportMessage
+      summary: Return Heder message ID for the specified published module.
+      description: >-
+        Returns the Hedera message ID for the specified module published onto
+        IPFS. Only users with the Standard Registry role are allowed to make the
+        request.
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_7
+      security:
+        - bearerAuth: []
+  /modules/import/message:
+    post:
+      operationId: ModulesApi_moduleImportMessage
+      summary: Imports new module from IPFS.
+      description: >-
+        Imports new module and all associated artifacts from IPFS into the local
+        DB. Only users with the Standard Registry role are allowed to make the
+        request.
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_7
+      security:
+        - bearerAuth: []
+  /modules/import/file:
+    post:
+      operationId: ModulesApi_moduleImportFile
+      summary: Imports new module from a zip file.
+      description: >-
+        Imports new module and all associated artifacts, such as schemas and
+        VCs, from the provided zip file into the local DB. Only users with the
+        Standard Registry role are allowed to make the request.
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_7
+      security:
+        - bearerAuth: []
+  /modules/import/message/preview:
+    post:
+      operationId: ModulesApi_moduleImportMessagePreview
+      summary: Imports new module from IPFS.
+      description: >-
+        Imports new module and all associated artifacts from IPFS into the local
+        DB. Only users with the Standard Registry role are allowed to make the
+        request.
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_7
+      security:
+        - bearerAuth: []
+  /modules/import/file/preview:
+    post:
+      operationId: ModulesApi_moduleImportFilePreview
+      summary: Imports new module from a zip file.
+      description: >-
+        Imports new module and all associated artifacts, such as schemas and
+        VCs, from the provided zip file into the local DB. Only users with the
+        Standard Registry role are allowed to make the request.
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_7
+      security:
+        - bearerAuth: []
+  /modules/{uuid}/publish:
+    put:
+      operationId: ModulesApi_publishModule
+      summary: Publishes the module onto IPFS.
+      description: >-
+        Publishes the module with the specified (internal) module ID onto IPFS,
+        sends a message featuring its IPFS CID into the corresponding Hedera
+        topic. Only users with the Standard Registry role are allowed to make
+        the request.
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_7
+      security:
+        - bearerAuth: []
+  /modules/validate:
+    post:
+      operationId: ModulesApi_validateModule
+      summary: Validates selected module.
+      description: >-
+        Validates selected module. Only users with the Standard Registry role
+        are allowed to make the request.
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_7
+      security:
+        - bearerAuth: []
+  /profiles/{username}:
+    get:
+      operationId: ProfileApi_getProfile
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: &ref_8
+        - profiles
+    put:
+      operationId: ProfileApi_setUserProfile
+      parameters: []
+      responses:
+        '204':
+          description: ''
+      tags: *ref_8
+  /profiles/push/{username}:
+    put:
+      operationId: ProfileApi_setUserProfileAsync
+      parameters: []
+      responses:
+        '202':
+          description: ''
+      tags: *ref_8
+  /profiles/restore/{username}:
+    put:
+      operationId: ProfileApi_resoreUserProfile
+      parameters: []
+      responses:
+        '202':
+          description: ''
+      tags: *ref_8
+  /profiles/restore/topics/{username}:
+    put:
+      operationId: ProfileApi_restoreTopic
+      parameters: []
+      responses:
+        '202':
+          description: ''
+      tags: *ref_8
+  /profiles/{username}/balance:
+    get:
+      operationId: ProfileApi_getUserBalance
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_8
+  /policies:
+    get:
+      operationId: PolicyApi_getPolicies
+      summary: Return a list of all policies.
+      description: >-
+        Returns all policies. Only users with the Standard Registry and
+        Installer role are allowed to make the request.
+      parameters:
+        - name: pageSize
+          required: false
+          in: query
+          description: The numbers of items to return
+          schema:
+            type: number
+        - name: pageIndex
+          required: false
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          schema:
+            type: number
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: &ref_9
+        - policies
+      security:
+        - bearerAuth: []
+    post:
+      operationId: PolicyApi_createPolicy
+      summary: Creates a new policy.
+      description: >-
+        Creates a new policy. Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_9
+      security:
+        - bearerAuth: []
+  /policies/push:
+    post:
+      operationId: PolicyApi_createPolicyAsync
+      summary: Creates a new policy.
+      description: >-
+        Creates a new policy. Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_9
+      security:
+        - bearerAuth: []
+  /policies/push/{policyId}:
+    post:
+      operationId: PolicyApi_updatePolicyAsync
+      summary: ''
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_9
+      security:
+        - bearerAuth: []
+    delete:
+      operationId: PolicyApi_deletePOlicyAsync
+      parameters: []
+      responses:
+        '202':
+          description: ''
+      tags: *ref_9
+  /policies/{policyId}:
+    get:
+      operationId: PolicyApi_getPolicy
+      summary: Retrieves policy configuration.
+      description: >-
+        Retrieves policy configuration for the specified policy ID. Only users
+        with the Standard Registry role are allowed to make the request.
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_9
+      security:
+        - bearerAuth: []
+    put:
+      operationId: PolicyApi_updatePolicy
+      summary: Updates policy configuration.
+      description: >-
+        Updates policy configuration for the specified policy ID. Only users
+        with the Standard Registry role are allowed to make the request.
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_9
+      security:
+        - bearerAuth: []
+  /policies/{policyId}/publish:
+    put:
+      operationId: PolicyApi_publishPolicy
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_9
+  /policies/push/{policyId}/publish:
+    put:
+      operationId: PolicyApi_publishPolicyAsync
+      parameters: []
+      responses:
+        '202':
+          description: ''
+      tags: *ref_9
+  /policies/{policyId}/dry-run:
+    put:
+      operationId: PolicyApi_dryRunPolicy
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_9
+  /policies/{policyId}/draft:
+    put:
+      operationId: PolicyApi_draftPolicy
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_9
+  /policies/validate:
+    post:
+      operationId: PolicyApi_validatePolicy
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_9
+  /policies/{policyId}/groups:
+    get:
+      operationId: PolicyApi_getPolicyGroups
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_9
+    post:
+      operationId: PolicyApi_setPolicyGroups
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_9
+  /policies/{policyId}/blocks:
+    get:
+      operationId: PolicyApi_getPolicyBlocks
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_9
+  /policies/{policyId}/blocks/{uuid}:
+    get:
+      operationId: PolicyApi_getBlockData
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_9
+    post:
+      operationId: PolicyApi_setBlockData
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_9
+  /policies/{policyId}/tag/{tagName}/blocks:
+    post:
+      operationId: PolicyApi_setBlocksByTagName
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_9
+    get:
+      operationId: PolicyApi_getBlocksByTagName
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_9
+  /policies/{policyId}/tag/{tagName}:
+    get:
+      operationId: PolicyApi_getBlockByTagName
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_9
+  /policies/{policyId}/blocks/{uuid}/parents:
+    get:
+      operationId: PolicyApi_getBlockParents
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_9
+  /policies/{policyId}/export/file:
+    get:
+      operationId: PolicyApi_getPolicyExportFile
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_9
+  /policies/{policyId}/export/message:
+    get:
+      operationId: PolicyApi_getPolicyExportMessage
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_9
+  /policies/import/message:
+    post:
+      operationId: PolicyApi_importPolicyFromMessage
+      parameters: []
+      responses:
+        '201':
+          description: ''
+      tags: *ref_9
+  /policies/push/import/message:
+    post:
+      operationId: PolicyApi_importPolicyFromMessageAsync
+      parameters: []
+      responses:
+        '202':
+          description: ''
+      tags: *ref_9
+  /policies/import/file:
+    post:
+      operationId: PolicyApi_importPolicyFromFile
+      parameters: []
+      responses:
+        '201':
+          description: ''
+      tags: *ref_9
+  /policies/push/import/file:
+    post:
+      operationId: PolicyApi_importPolicyFromFileAsync
+      parameters: []
+      responses:
+        '202':
+          description: ''
+      tags: *ref_9
+  /policies/import/message/preview:
+    post:
+      operationId: PolicyApi_importMessage
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_9
+  /policies/push/import/message/preview:
+    post:
+      operationId: PolicyApi_importFromMessagePreview
+      parameters: []
+      responses:
+        '202':
+          description: ''
+      tags: *ref_9
+  /policies/import/file/preview:
+    post:
+      operationId: PolicyApi_importPolicyFromFilePreview
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_9
+  /policies/blocks/about:
+    get:
+      operationId: PolicyApi_getBlockAbout
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_9
+  /policies/{policyId}/dry-run/users:
+    get:
+      operationId: PolicyApi_getDryRunUsers
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_9
+  /policies/{policyId}/dry-run/user:
+    post:
+      operationId: PolicyApi_setDryRunUser
+      parameters: []
+      responses:
+        '201':
+          description: ''
+      tags: *ref_9
+  /policies/{policyId}/dry-run/login:
+    post:
+      operationId: PolicyApi_loginDryRunUser
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_9
+  /policies/{policyId}/dry-run/restart:
+    post:
+      operationId: PolicyApi_restartDryRun
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_9
+  /policies/{policyId}/dry-run/transactions:
+    get:
+      operationId: PolicyApi_getDryRunTransactions
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_9
+  /policies/{policyId}/dry-run/artifacts:
+    get:
+      operationId: PolicyApi_getDryRunArtifacts
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_9
+  /policies/{policyId}/dry-run/ipfs:
+    get:
+      operationId: PolicyApi_getDryRunIpfs
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_9
+  /policies/{policyId}/multiple:
+    get:
+      operationId: PolicyApi_getMultiplePolicies
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_9
+    post:
+      operationId: PolicyApi_setMultiplePolicies
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_9
+  /schema/{schemaId}:
+    get:
+      operationId: SingleSchemaApi_getSchema
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags:
+        - schemas
+  /schemas/{topicId}:
+    post:
+      operationId: SchemaApi_setTopicId
+      parameters: []
+      responses:
+        '201':
+          description: ''
+      tags: &ref_10
+        - schemas
+    get:
+      operationId: SchemaApi_getByTopicId
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_10
+  /schemas/push/{topicId}:
+    post:
+      operationId: SchemaApi_setTopicIdAsync
+      parameters: []
+      responses:
+        '202':
+          description: ''
+      tags: *ref_10
+  /schemas:
+    get:
+      operationId: SchemaApi_getSchemas
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_10
+    put:
+      operationId: SchemaApi_setSchema
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_10
+  /schemas/{schemaId}:
+    delete:
+      operationId: SchemaApi_deleteSchema
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_10
+  /schemas/{schemaId}/publish:
+    put:
+      operationId: SchemaApi_publishSchema
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_10
+  /schemas/push/{schemaId}/publish:
+    put:
+      operationId: SchemaApi_publishSchemaAsync
+      parameters: []
+      responses:
+        '202':
+          description: ''
+      tags: *ref_10
+  /schemas/import/message/preview:
+    post:
+      operationId: SchemaApi_importFromMessagePreview
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_10
+  /schemas/push/import/message/preview:
+    post:
+      operationId: SchemaApi_importFromMessagePreviewAsync
+      parameters: []
+      responses:
+        '202':
+          description: ''
+      tags: *ref_10
+  /schemas/import/file/preview:
+    post:
+      operationId: SchemaApi_importFromFilePreview
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_10
+  /schemas/{topicId}/import/message:
+    post:
+      operationId: SchemaApi_importFromMessage
+      parameters: []
+      responses:
+        '201':
+          description: ''
+      tags: *ref_10
+  /schemas/push/{topicId}/import/message:
+    post:
+      operationId: SchemaApi_importFromMessageAsync
+      parameters: []
+      responses:
+        '202':
+          description: ''
+      tags: *ref_10
+  /schemas/{topicId}/import/file:
+    post:
+      operationId: SchemaApi_importToTopicFromFile
+      parameters: []
+      responses:
+        '201':
+          description: ''
+      tags: *ref_10
+  /schemas/push/{topicId}/import/file:
+    post:
+      operationId: SchemaApi_importToTopicFromFileAsync
+      parameters: []
+      responses:
+        '202':
+          description: ''
+      tags: *ref_10
+  /schemas/{schemaId}/export/message:
+    get:
+      operationId: SchemaApi_exportMessage
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_10
+  /schemas/{schemaId}/export/file:
+    get:
+      operationId: SchemaApi_exportToFile
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_10
+  /schemas/type/{schemaType}:
+    get:
+      operationId: SchemaApi_getSchemaType
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_10
+  /schemas/system/{username}:
+    post:
+      operationId: SchemaApi_postSystemSchema
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SystemSchemaDTO'
+      responses:
+        '201':
+          description: ''
+      tags: *ref_10
+    get:
+      operationId: SchemaApi_getSystemSchema
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_10
+  /schemas/system/{schemaId}:
+    delete:
+      operationId: SchemaApi_deleteSystemSchema
+      parameters: []
+      responses:
+        '204':
+          description: ''
+      tags: *ref_10
+    put:
+      operationId: SchemaApi_setSystemSchema
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_10
+  /schemas/system/{schemaId}/active:
+    put:
+      operationId: SchemaApi_activeSystemSchema
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_10
+  /schemas/system/entity/{schemaEntity}:
+    get:
+      operationId: SchemaApi_getSchemaEntity
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_10
+  /schemas/list/all:
+    get:
+      operationId: SchemaApi_getAll
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_10
+  /settings:
+    post:
+      operationId: SettingsApi_updateSettings
+      summary: Set settings.
+      description: Set settings. For users with the Standard Registry role only.
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SettingsDTO'
+      responses:
+        '200':
+          description: Successful operation.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: &ref_11
+        - settings
+    get:
+      operationId: SettingsApi_getSettings
+      summary: Returns current settings.
+      description: >-
+        Returns current settings. For users with the Standard Registry role
+        only.
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_11
+  /settings/environment:
+    get:
+      operationId: SettingsApi_getEnvironment
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_11
+  /tags:
+    post:
+      operationId: TagsApi_setTags
+      parameters: []
+      responses:
+        '201':
+          description: ''
+      tags: &ref_12
+        - tags
+  /tags/search:
+    post:
+      operationId: TagsApi_searchTags
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_12
+  /tags/{uuid}:
+    delete:
+      operationId: TagsApi_deleteTag
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_12
+  /tags/synchronization:
+    post:
+      operationId: TagsApi_synchronizationTags
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_12
+  /tags/schemas:
+    get:
+      operationId: TagsApi_getSchemas
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_12
+    post:
+      operationId: TagsApi_postSchemas
+      parameters: []
+      responses:
+        '201':
+          description: ''
+      tags: *ref_12
+  /tags/schemas/{schemaId}:
+    delete:
+      operationId: TagsApi_deleteSchema
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_12
+    put:
+      operationId: TagsApi_setTag
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_12
+  /tags/schemas/{schemaId}/publish:
+    put:
+      operationId: TagsApi_publishTag
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_12
+  /tags/schemas/published:
+    get:
+      operationId: TagsApi_getPublished
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_12
+  /tasks/{taskId}:
+    get:
+      operationId: TaskApi_getTask
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags:
+        - tasks
+  /tokens:
+    get:
+      operationId: TokensApi_getTokens
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: &ref_13
+        - tokens
+    post:
+      operationId: TokensApi_newToken
+      parameters: []
+      responses:
+        '201':
+          description: ''
+      tags: *ref_13
+  /tokens/push:
+    post:
+      operationId: TokensApi_pushTokenAsync
+      parameters: []
+      responses:
+        '202':
+          description: ''
+      tags: *ref_13
+    put:
+      operationId: TokensApi_updateTokenAsync
+      parameters: []
+      responses:
+        '202':
+          description: ''
+      tags: *ref_13
+  /tokens/push/{tokenId}:
+    delete:
+      operationId: TokensApi_deleteTokenAsync
+      parameters: []
+      responses:
+        '202':
+          description: ''
+      tags: *ref_13
+  /tokens/{tokenId}/associate:
+    put:
+      operationId: TokensApi_associateToken
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_13
+  /tokens/push/{tokenId}/associate:
+    put:
+      operationId: TokensApi_associateTokenAsync
+      parameters: []
+      responses:
+        '202':
+          description: ''
+      tags: *ref_13
+  /tokens/{tokenId}/dissociate:
+    put:
+      operationId: TokensApi_dissociateToken
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_13
+  /tokens/push/{tokenId}/dissociate:
+    put:
+      operationId: TokensApi_dissociateTokenAsync
+      parameters: []
+      responses:
+        '202':
+          description: ''
+      tags: *ref_13
+  /tokens/{tokenId}/{username}/grantKyc:
+    put:
+      operationId: TokensApi_grantKycOld2
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_13
+  /tokens/{tokenId}/{username}/grant-kyc:
+    put:
+      operationId: TokensApi_grantKyc
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_13
+  /tokens/push/{tokenId}/{username}/grantKyc:
+    put:
+      operationId: TokensApi_grantKycAsyncOld
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_13
+  /tokens/push/{tokenId}/{username}/grant-kyc:
+    put:
+      operationId: TokensApi_grantKycAsync
+      parameters: []
+      responses:
+        '202':
+          description: ''
+      tags: *ref_13
+  /tokens/{tokenId}/{username}/revokeKyc:
+    put:
+      operationId: TokensApi_revokeKycOld
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_13
+  /tokens/{tokenId}/{username}/revoke-kyc:
+    put:
+      operationId: TokensApi_revokeKyc
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_13
+  /tokens/push/{tokenId}/{username}/revokeKyc:
+    put:
+      operationId: TokensApi_revokeKycAsyncOld
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_13
+  /tokens/push/{tokenId}/{username}/revoke-kyc:
+    put:
+      operationId: TokensApi_revokeKycAsync
+      parameters: []
+      responses:
+        '202':
+          description: ''
+      tags: *ref_13
+  /tokens/{tokenId}/{username}/freeze:
+    put:
+      operationId: TokensApi_freezeToken
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_13
+  /tokens/{tokenId}/{username}/unfreeze:
+    put:
+      operationId: TokensApi_unfreezeToken
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_13
+  /tokens/push/{tokenId}/{username}/freeze:
+    put:
+      operationId: TokensApi_freezeTokenAsync
+      parameters: []
+      responses:
+        '202':
+          description: ''
+      tags: *ref_13
+  /tokens/push/{tokenId}/{username}/unfreeze:
+    put:
+      operationId: TokensApi_unfreezeTokenAsync
+      parameters: []
+      responses:
+        '202':
+          description: ''
+      tags: *ref_13
+  /tokens/{tokenId}/{username}/info:
+    get:
+      operationId: TokensApi_getTokenInfo
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_13
+  /themes:
+    post:
+      operationId: ThemesApi_setThemes
+      parameters: []
+      responses:
+        '201':
+          description: ''
+      tags: &ref_14
+        - themes
+    get:
+      operationId: ThemesApi_getThemes
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_14
+  /themes/{themeId}:
+    put:
+      operationId: ThemesApi_updateTheme
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_14
+    delete:
+      operationId: ThemesApi_deleteTheme
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_14
+  /themes/import/file:
+    post:
+      operationId: ThemesApi_importTheme
+      parameters: []
+      responses:
+        '201':
+          description: ''
+      tags: *ref_14
+  /themes/{themeId}/export/file:
+    get:
+      operationId: ThemesApi_exportTheme
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_14
+  /trust-chains:
+    get:
+      operationId: TrustChainsApi_getTrustChains
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: &ref_15
+        - trust-chains
+  /trust-chains/{hash}:
+    get:
+      operationId: TrustChainsApi_getTrustChainByHash
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_15
+  /trustchains:
+    get:
+      operationId: TrustChainsOldApi_getTrustChains
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: &ref_16
+        - trust-chains
+  /trustchains/{hash}:
+    get:
+      operationId: TrustChainsOldApi_getTrustChainByHash
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_16
+  /wizard/policy:
+    post:
+      operationId: WizardApi_setPolicy
+      parameters: []
+      responses:
+        '201':
+          description: ''
+      tags: &ref_17
+        - wizard
+  /wizard/policy/push:
+    post:
+      operationId: WizardApi_setPolicyAsync
+      parameters: []
+      responses:
+        '202':
+          description: ''
+      tags: *ref_17
+  /wizard/{policyId}/config:
+    post:
+      operationId: WizardApi_setPolicyConfig
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_17
+  /branding:
+    post:
+      operationId: BrandingApi_setBranding
+      parameters: []
+      responses:
+        '204':
+          description: ''
+      tags: &ref_18
+        - branding
+    get:
+      operationId: BrandingApi_getBranding
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_18
+  /suggestions:
+    post:
+      operationId: SuggestionsApi_policySuggestions
+      summary: Get next and nested suggested block types
+      description: >-
+        Get next and nested suggested block types. Only users with the Standard
+        Registry role are allowed to make the request.
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SuggestionsInputDTO'
+      responses:
+        '200':
+          description: >-
+            Successful operation. Suggested next and nested block types
+            respectively.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuggestionsOutputDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: &ref_19
+        - suggestions
+      security:
+        - bearer: []
+        - bearerAuth: []
+  /suggestions/config:
+    post:
+      operationId: SuggestionsApi_setPolicySuggestionsConfig
+      summary: Set suggestions config
+      description: >-
+        Set suggestions config. Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SuggestionsConfigDTO'
+      responses:
+        '201':
+          description: Successful operation. Response setted suggestions config.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuggestionsConfigDTO'
+        '401':
+          description: Unauthorized.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_19
+      security:
+        - bearer: []
+        - bearerAuth: []
+    get:
+      operationId: SuggestionsApi_getPolicySuggestionsConfig
+      summary: Get suggestions config
+      description: >-
+        Get suggestions config. Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation. Response suggestions config.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuggestionsConfigDTO'
+        '401':
+          description: Unauthorized.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_19
+      security:
+        - bearer: []
+        - bearerAuth: []
+info:
+  title: Guardian
+  description: >-
+    The Guardian is a modular open-source solution that includes best-in-class
+    identity management and decentralized ledger technology (DLT) libraries. At
+    the heart of the Guardian solution is a sophisticated Policy Workflow Engine
+    (PWE) that enables applications to offer a requirements-based tokenization
+    implementation.
+  version: 2.13.1
+  contact:
+    name: API developer
+    url: https://envisionblockchain.com
+    email: info@envisionblockchain.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+tags: []
+servers:
+  - url: /api/v1
+    description: version 1.0
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    AccountsSessionResponseDTO:
+      type: object
+      properties:
+        username:
+          type: string
+        role:
+          type: string
+        accessToken:
+          type: string
+      required:
+        - username
+        - role
+        - accessToken
+    InternalServerErrorDTO:
+      type: object
+      properties:
+        code:
+          type: number
+        message:
+          type: string
+      required:
+        - code
+        - message
+    AccountsResponseDTO:
+      type: object
+      properties:
+        username:
+          type: string
+        role:
+          type: string
+        did:
+          type: string
+      required:
+        - username
+        - role
+        - did
+    RegisterUserDTO:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        password_confirmation:
+          type: string
+        role:
+          type: string
+      required:
+        - username
+        - password
+        - password_confirmation
+        - role
+    LoginUserDTO:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required:
+        - username
+        - password
+    CredentialSubjectDTO:
+      type: object
+      properties:
+        geography:
+          type: string
+        law:
+          type: string
+        tags:
+          type: string
+        ISIC:
+          type: string
+        '@context':
+          type: array
+          items:
+            type: string
+        id:
+          type: string
+        type:
+          type: string
+      required:
+        - geography
+        - law
+        - tags
+        - ISIC
+        - '@context'
+        - id
+        - type
+    ProofDTO:
+      type: object
+      properties:
+        type:
+          type: string
+        created:
+          format: date-time
+          type: string
+        verificationMethod:
+          type: string
+        proofPurpose:
+          type: string
+        jws:
+          type: string
+      required:
+        - type
+        - created
+        - verificationMethod
+        - proofPurpose
+        - jws
+    VcDocumentDTO:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: array
+          items:
+            type: string
+        issuer:
+          type: string
+        issuanceDate:
+          format: date-time
+          type: string
+        '@context':
+          type: array
+          items:
+            type: string
+        credentialSubject:
+          $ref: '#/components/schemas/CredentialSubjectDTO'
+        proof:
+          $ref: '#/components/schemas/ProofDTO'
+      required:
+        - id
+        - type
+        - issuer
+        - issuanceDate
+        - '@context'
+        - credentialSubject
+        - proof
+    PolicyDTO:
+      type: object
+      properties:
+        _id:
+          type: string
+        createDate:
+          format: date-time
+          type: string
+        uuid:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+        creator:
+          type: string
+        owner:
+          type: string
+        topicId:
+          type: string
+        policyTag:
+          type: string
+        codeVersion:
+          type: string
+        userRoles:
+          type: array
+          items:
+            type: string
+        userGroups:
+          type: array
+          items:
+            type: string
+        userRole:
+          type: string
+        userGroup:
+          type: string
+        id:
+          type: string
+      required:
+        - _id
+        - createDate
+        - uuid
+        - name
+        - description
+        - status
+        - creator
+        - owner
+        - topicId
+        - policyTag
+        - codeVersion
+        - userRoles
+        - userGroups
+        - userRole
+        - userGroup
+        - id
+    AggregatedDTOItem:
+      type: object
+      properties:
+        did:
+          type: string
+        hederaAccountId:
+          type: string
+        vcDocument:
+          $ref: '#/components/schemas/VcDocumentDTO'
+        policies:
+          $ref: '#/components/schemas/PolicyDTO'
+      required:
+        - did
+        - hederaAccountId
+        - vcDocument
+        - policies
+    UserDTO:
+      type: object
+      properties:
+        username:
+          type: string
+        did:
+          type: string
+      required:
+        - username
+        - did
+    BalanceResponseDTO:
+      type: object
+      properties:
+        balance:
+          type: number
+        unit:
+          type: string
+        user:
+          $ref: '#/components/schemas/UserDTO'
+      required:
+        - balance
+        - unit
+        - user
+    ArtifactDTOItem:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        uuid:
+          type: string
+        extention:
+          type: string
+        type:
+          type: string
+      required:
+        - id
+        - name
+        - uuid
+        - extention
+        - type
+    ImportContractDTO:
+      type: object
+      properties:
+        contractId:
+          type: string
+      required:
+        - contractId
+    SystemSchemaDTO:
+      type: object
+      properties:
+        name:
+          type: string
+        entity:
+          type: string
+      required:
+        - name
+        - entity
+    SettingsDTO:
+      type: object
+      properties:
+        ipfsStorageApiKey:
+          type: string
+        operatorId:
+          type: string
+        operatorKey:
+          type: string
+      required:
+        - ipfsStorageApiKey
+        - operatorId
+        - operatorKey
+    SuggestionsInputDTO:
+      type: object
+      properties:
+        blockType:
+          type: string
+        children:
+          nullable: true
+          type: array
+          items:
+            type: object
+      required:
+        - blockType
+        - children
+    SuggestionsOutputDTO:
+      type: object
+      properties:
+        next:
+          type: string
+        nested:
+          type: string
+      required:
+        - next
+        - nested
+    SuggestionsConfigItemDTO:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum:
+            - Policy
+            - Module
+        index:
+          type: number
+      required:
+        - id
+        - type
+        - index
+    SuggestionsConfigDTO:
+      type: object
+      properties:
+        items:
+          $ref: '#/components/schemas/SuggestionsConfigItemDTO'
+      required:
+        - items

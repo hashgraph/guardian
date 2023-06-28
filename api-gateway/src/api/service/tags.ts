@@ -12,6 +12,7 @@ export class TagsApi {
     @Post('/')
     @HttpCode(HttpStatus.CREATED)
     async setTags(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             if (!req.headers.authorization || !req.user || !req.user.did) {
                 throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
@@ -97,7 +98,7 @@ export class TagsApi {
             return res.json(result);
         } catch (error) {
             await (new Logger()).error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
             // return next(error);
         }
     }
@@ -105,6 +106,7 @@ export class TagsApi {
     @Post('/synchronization')
     @HttpCode(HttpStatus.OK)
     async synchronizationTags(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         if (!req.headers.authorization || !req.user || !req.user.did) {
             throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
         }
@@ -131,7 +133,7 @@ export class TagsApi {
             return res.json(result);
         } catch (error) {
             await (new Logger()).error(error, ['API_GATEWAY']);
-            throw error
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -243,34 +245,41 @@ export class TagsApi {
     @HttpCode(HttpStatus.OK)
     async publishTag(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const user = req.user;
+        const guardians = new Guardians();
+        const schemaId = req.params.schemaId;
+        let schema;
         try {
-            const user = req.user;
-            const guardians = new Guardians();
-            const schemaId = req.params.schemaId;
-            const schema = await guardians.getSchemaById(schemaId);
-            const version = '1.0.0';
-            const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.TAG);
-            if (error) {
-                throw new HttpException('error', HttpStatus.FORBIDDEN)
-            }
+            schema = await guardians.getSchemaById(schemaId);
+        } catch (error) {
+            await (new Logger()).error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        const version = '1.0.0';
+        const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.TAG);
+        if (error) {
+            throw new HttpException(error, HttpStatus.FORBIDDEN)
+        }
+        try {
             const result = await guardians.publishTagSchema(schemaId, version, user.did);
             return res.json(result);
         } catch (error) {
             await (new Logger()).error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Get('/schemas/published')
     @HttpCode(HttpStatus.OK)
     async getPublished(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         try {
             const guardians = new Guardians();
             const schemas = await guardians.getPublishedTagSchemas();
             return res.send(schemas);
         } catch (error) {
             await (new Logger()).error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }
