@@ -238,6 +238,7 @@ export class SchemaApi {
     @Get('/:topicId')
     @HttpCode(HttpStatus.OK)
     async getByTopicId(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER, UserRole.AUDITOR)
         try {
             const user = req.user;
             const { topicId } = req.params;
@@ -247,7 +248,7 @@ export class SchemaApi {
             return res.setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -283,27 +284,33 @@ export class SchemaApi {
     @HttpCode(HttpStatus.OK)
     async deleteSchema(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const user = req.user;
+        const guardians = new Guardians();
+        const schemaId = req.params.schemaId;
+        let schema;
         try {
-            const user = req.user;
-            const guardians = new Guardians();
-            const schemaId = req.params.schemaId;
-            const schema = await guardians.getSchemaById(schemaId);
-            if (!schema) {
-                throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND)
-            }
-            const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.POLICY);
-            if (error) {
-                throw new HttpException(error, HttpStatus.FORBIDDEN)
-            }
-            if (schema.status === SchemaStatus.PUBLISHED) {
-                throw new HttpException('Schema is published.', HttpStatus.UNPROCESSABLE_ENTITY)
-            }
+            schema = await guardians.getSchemaById(schemaId);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (!schema) {
+            throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND)
+        }
+        const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.POLICY);
+        if (error) {
+            throw new HttpException(error, HttpStatus.FORBIDDEN)
+        }
+        if (schema.status === SchemaStatus.PUBLISHED) {
+            throw new HttpException('Schema is published.', HttpStatus.UNPROCESSABLE_ENTITY)
+        }
+        try {
             const schemas = (await guardians.deleteSchema(schemaId, true) as ISchema[]);
             SchemaHelper.updatePermission(schemas, user.did);
             return res.json(SchemaUtils.toOld(schemas));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -311,35 +318,41 @@ export class SchemaApi {
     @HttpCode(HttpStatus.OK)
     async publishSchema(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const user = req.user;
+        const guardians = new Guardians();
+        const schemaId = req.params.schemaId;
+        const {version} = req.body;
+        let schema;
+        let allVersion;
         try {
-            const user = req.user;
-            const guardians = new Guardians();
-            const schemaId = req.params.schemaId;
-            const schema = await guardians.getSchemaById(schemaId);
-            if (!schema) {
-                throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND)
-            }
-            const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.POLICY);
-            if (error) {
-                throw new HttpException(error, HttpStatus.FORBIDDEN)
-            }
-            if (schema.status === SchemaStatus.PUBLISHED) {
-                throw new HttpException('Schema is published.', HttpStatus.UNPROCESSABLE_ENTITY)
-            }
-            const allVersion = await guardians.getSchemasByUUID(schema.uuid);
-            const { version } = req.body;
-            if (allVersion.findIndex(s => s.version === version) !== -1) {
-                throw new HttpException('Version already exists.', HttpStatus.UNPROCESSABLE_ENTITY)
-            }
-
+            schema = await guardians.getSchemaById(schemaId);
+            allVersion = await guardians.getSchemasByUUID(schema.uuid);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (!schema) {
+            throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND)
+        }
+        const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.POLICY);
+        if (error) {
+            throw new HttpException(error, HttpStatus.FORBIDDEN)
+        }
+        if (schema.status === SchemaStatus.PUBLISHED) {
+            throw new HttpException('Schema is published.', HttpStatus.UNPROCESSABLE_ENTITY)
+        }
+        if (allVersion.findIndex(s => s.version === version) !== -1) {
+            throw new HttpException('Version already exists.', HttpStatus.UNPROCESSABLE_ENTITY)
+        }
+        try {
             await guardians.publishSchema(schemaId, version, user.did);
 
-            const { items, count } = await guardians.getSchemasByOwner(user.did);
+            const {items, count} = await guardians.getSchemasByOwner(user.did);
             SchemaHelper.updatePermission(items, user.did);
             return res.setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -596,6 +609,7 @@ export class SchemaApi {
     @Get('/type/:schemaType')
     @HttpCode(HttpStatus.OK)
     async getSchemaType(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER, UserRole.AUDITOR)(req.user)
         let schema;
         try {
             const guardians = new Guardians();
