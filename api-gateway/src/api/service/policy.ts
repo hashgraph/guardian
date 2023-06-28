@@ -870,7 +870,7 @@ export class PolicyApi {
     @Post('/:policyId/multiple/')
     @HttpCode(HttpStatus.OK)
     async setMultiplePolicies(@Req() req, @Response() res) {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         const engineService = new PolicyEngine();
         try {
             return res.send(await engineService.setMultiPolicy(req.user, req.params.policyId, req.body));
