@@ -121,6 +121,24 @@
     cursor: pointer;
 }
 
+.serials {
+    max-width: 12vw;
+    padding-right: 25px;
+    position: relative;
+}
+
+.serials mat-icon {
+    position: absolute;
+    right: 0;
+    top: 0;
+    cursor: pointer;
+}
+
+.serials hedera-explorer {
+    display: inline-block;
+    padding-right: 8px;
+}
+
 tr.detailed-row {
     height: 0;
 }
