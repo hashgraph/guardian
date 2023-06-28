@@ -1,13 +1,15 @@
 import * as yup from 'yup';
 import fieldsValidation from '../fields-validation'
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export const retireSchema = () => {
-  const { requestId } = fieldsValidation
-  return yup.object({
-    body: yup.object({
-      requestId
-    }),
-  });
+    const {requestId} = fieldsValidation
+    return yup.object({
+        body: yup.object({
+            requestId
+        }),
+    });
 }
 
 export const importSchema = () => {
@@ -30,12 +32,21 @@ export const retireRequestSchema = () => {
   } = fieldsValidation
   return yup.object({
     body: yup.object({
-      baseTokenId,
-      oppositeTokenId,
-      baseTokenCount,
-      oppositeTokenCount,
-      baseTokenSerials,
-      oppositeTokenSerials
+        baseTokenId,
+        oppositeTokenId,
+        baseTokenCount,
+        oppositeTokenCount,
+        baseTokenSerials,
+        oppositeTokenSerials
     }),
   });
+}
+
+export class ImportContractDTO {
+    @ApiProperty()
+    @IsString()
+    @IsNotEmpty()
+    contractId: string;
+
+    [key: string]: any;
 }

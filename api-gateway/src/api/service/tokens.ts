@@ -129,7 +129,7 @@ export class TokensApi {
             return res.status(201).json(tokens);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -268,7 +268,7 @@ export class TokensApi {
             if (error?.message?.toLowerCase().includes('token not found')) {
                 throw new HttpException('Token does not exist.', HttpStatus.NOT_FOUND)
             }
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -317,7 +317,7 @@ export class TokensApi {
             if (error?.message?.toLowerCase().includes('token not found')) {
                 throw new HttpException('Token does not exist.', HttpStatus.NOT_FOUND)
             }
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -595,7 +595,7 @@ export class TokensApi {
             if (error?.message?.toLowerCase().includes('token not found')) {
                 throw new HttpException('Token not registered', HttpStatus.NOT_FOUND);
             }
-            throw error
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -621,7 +621,7 @@ export class TokensApi {
             if (error?.message?.toLowerCase().includes('token not found')) {
                 throw new HttpException('Token not registered', HttpStatus.NOT_FOUND);
             }
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -653,6 +653,7 @@ export class TokensApi {
     @Put('/push/:tokenId/:username/unfreeze')
     @HttpCode(HttpStatus.ACCEPTED)
     async unfreezeTokenAsync(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const taskManager = new TaskManager();
         const { taskId, expectation } = taskManager.start('Unfreeze Token');
 

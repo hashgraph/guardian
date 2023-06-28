@@ -182,7 +182,7 @@ export class ArtifactApi {
             return res.status(204).send();
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }
