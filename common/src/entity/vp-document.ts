@@ -136,6 +136,12 @@ export class VpDocument extends BaseEntity implements IVPDocument {
     serials?: any;
 
     /**
+     * Token Id
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    tokenId?: any;
+
+    /**
      * Document defaults
      */
     @BeforeCreate()

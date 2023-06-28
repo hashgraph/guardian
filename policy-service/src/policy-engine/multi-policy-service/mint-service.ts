@@ -355,12 +355,12 @@ export class MintService {
                 const serials = await MintService.mintNonFungibleTokens(
                     tokenConfig, tokenValue, root, targetAccount, messageId, transactionMemo, ref
                 );
-                await MintService.updateDocuments(token.tokenType, messageId, serials, ref);
+                await MintService.updateDocuments(messageId, { tokenId: token.tokenId, serials }, ref);
             } else {
-                const count = await MintService.mintFungibleTokens(
+                const amount = await MintService.mintFungibleTokens(
                     tokenConfig, tokenValue, root, targetAccount, messageId, transactionMemo, ref
                 );
-                await MintService.updateDocuments(token.tokenType, messageId, count, ref);
+                await MintService.updateDocuments(messageId, { tokenId: token.tokenId, amount }, ref);
             }
         }
 
@@ -418,12 +418,12 @@ export class MintService {
             const serials = await MintService.mintNonFungibleTokens(
                 tokenConfig, tokenValue, root, targetAccount, messageIds, memo, null
             );
-            await MintService.updateDocuments(token.tokenType, ids, serials, null);
+            await MintService.updateDocuments(ids, { tokenId: token.tokenId, serials }, null);
         } else {
-            const count = await MintService.mintFungibleTokens(
+            const amount = await MintService.mintFungibleTokens(
                 tokenConfig, tokenValue, root, targetAccount, messageIds, memo, null
             );
-            await MintService.updateDocuments(token.tokenType, ids, count, null);
+            await MintService.updateDocuments(ids, { tokenId: token.tokenId, amount }, null);
         }
 
         new ExternalEventChannel().publishMessage(
@@ -475,29 +475,18 @@ export class MintService {
 
     /**
      * Update VP Documents
-     * @param tokenType
      * @param ids
      * @param value
      * @param ref
      */
-    private static async updateDocuments(
-        tokenType: string,
-        ids: string | string[],
-        value: any,
-        ref: AnyBlockType
-    ) {
+    private static async updateDocuments(ids: string | string[], value: any, ref: AnyBlockType) {
         const dryRunId = ref ? ref.dryRun : null;
-        const item = tokenType === 'non-fungible' ? {
-            serials: value
-        } : {
-            amount: value
-        };
         const filter = Array.isArray(ids) ? {
             where: { messageId: { $in: ids } }
         } : {
             where: { messageId: { $eq: ids } }
         }
-        await DatabaseServer.updateVpDocuments(item, filter, dryRunId);
+        await DatabaseServer.updateVpDocuments(value, filter, dryRunId);
     }
 
     /**
