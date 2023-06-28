@@ -238,7 +238,7 @@ export class SchemaApi {
     @Get('/:topicId')
     @HttpCode(HttpStatus.OK)
     async getByTopicId(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER, UserRole.AUDITOR)
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER, UserRole.AUDITOR)(req.user);
         try {
             const user = req.user;
             const { topicId } = req.params;
