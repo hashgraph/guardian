@@ -1,4 +1,4 @@
-import { GenerateUUIDv4, Schema } from '@guardian/interfaces';
+import { GenerateUUIDv4, Schema, removeObjectProperties } from '@guardian/interfaces';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { BlockActionError } from '@policy-engine/errors';
 import { ActionCallback, StateField } from '@policy-engine/helpers/decorators';
@@ -327,17 +327,49 @@ export class RequestVcDocumentBlock {
      * @param document Current document
      * @param documentRef Preset document
      */
-    private async checkPreset(ref: AnyBlockType, document: any, documentRef: VcDocumentCollection) {
-        if (ref.options.presetFields && ref.options.presetFields.length && ref.options.presetSchema) {
-            const readonly = ref.options.presetFields.filter((item: any) => item.readonly && item.value);
+    private async checkPreset(
+        ref: AnyBlockType,
+        document: any,
+        documentRef: VcDocumentCollection
+    ) {
+        if (
+            ref.options.presetFields &&
+            ref.options.presetFields.length &&
+            ref.options.presetSchema
+        ) {
+            const readonly = ref.options.presetFields.filter(
+                (item: any) => item.readonly && item.value
+            );
             if (readonly.length && document && documentRef) {
-                const presetDocument = PolicyUtils.getCredentialSubject(documentRef);
+                const presetDocument =
+                    PolicyUtils.getCredentialSubject(documentRef);
                 if (!presetDocument) {
-                    throw new BlockActionError(`Readonly preset fields can not be verified.`, ref.blockType, ref.uuid);
+                    throw new BlockActionError(
+                        `Readonly preset fields can not be verified.`,
+                        ref.blockType,
+                        ref.uuid
+                    );
                 }
+                const presetDocumentCopy = removeObjectProperties(
+                    ['@context'],
+                    JSON.parse(JSON.stringify(presetDocument))
+                );
+                const documentCopy = removeObjectProperties(
+                    ['@context'],
+                    JSON.parse(JSON.stringify(document))
+                );
                 for (const field of readonly) {
-                    if (!deepEqual(presetDocument[field.value], document[field.name])) {
-                        throw new BlockActionError(`Readonly preset field (${field.name}) can not be modified.`, ref.blockType, ref.uuid);
+                    if (
+                        !deepEqual(
+                            presetDocumentCopy[field.value],
+                            documentCopy[field.name]
+                        )
+                    ) {
+                        throw new BlockActionError(
+                            `Readonly preset field (${field.name}) can not be modified.`,
+                            ref.blockType,
+                            ref.uuid
+                        );
                     }
                 }
             }
