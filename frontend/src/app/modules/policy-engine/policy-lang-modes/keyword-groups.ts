@@ -8,12 +8,20 @@ export const idGroupKeywords = [
     'accountId',
     'tokenId',
     'idType',
+    'inputSchema',
+    'presetSchema',
+    'outputSchema',
+    'schema',
 ];
 export const nameGroupKeywords = [
     'name',
     'description',
     'topicDescription',
     'title',
+    'label',
+    'optionName',
+    'dialogContent',
+    'content',
 ];
 export const typeGroupKeywords = [
     'status',
@@ -33,6 +41,11 @@ export const typeGroupKeywords = [
     'dialogType',
     'accountType',
     'typeValue',
+    'executionFlow',
+    'orderDirection',
+    'impactType',
+    'period',
+    'extention',
 ];
 export const versionGroupKeywords = ['version', 'codeVersion'];
 export const userGroupKeywords = [
@@ -41,45 +54,50 @@ export const userGroupKeywords = [
     'topicOwner',
     'documentSigner',
     'actor',
+    'issuer',
 ];
-export const tagGroupKeywords = ['policyTag', 'tag'];
-export const complexObjGroupKeywords = [
-    'config',
-    'uiMetaData',
-    'children',
-    'events',
-    'artifacts',
-    'options',
+export const tagGroupKeywords = [
+    'policyTag',
+    'tag',
+    'target',
+    'source',
+    'bindGroup',
+    'bindBlock',
 ];
+export const complexObjGroupKeywords = ['config', 'uiMetaData'];
 export const simplePropertiesGroupKeywords = [
     'memoObj',
     'width',
-    'schema',
     'topic',
     'expression',
-    'outputSchema',
     'value',
-    'extention',
-    'target',
-    'source',
     'tooltip',
     'action',
     'url',
-    'dialogContent',
     'dialogClass',
-    'bindBlock',
     'uiClass',
-    'content',
-    'bindGroup',
     'field',
-    'presetSchema',
-    'period',
     'periodMask',
     'periodInterval',
     'uiSortFieldPath',
     'nextItemField',
     'uiSortByFieldPath',
     'icon',
+    'buttonClass',
+    'optionValue',
+    'prevDocStatus',
+    'rule',
+    'fieldPath',
+    'condition',
+    'variable',
+    'role',
+    'threshold',
+    'sourceField',
+    'formula',
+    'amount',
+    'unit',
+    'dialogResultFieldPath',
+    'orderField',
 ];
 export const dateGroupKeywords = ['createDate', 'startDate', 'endDate'];
 export const arrayGroupKeywords = [
@@ -99,6 +117,18 @@ export const arrayGroupKeywords = [
     'expressions',
     'variables',
     'dynamicFilters',
+    'inputEvents',
+    'outputEvents',
+    'innerEvents',
+    'children',
+    'events',
+    'artifacts',
+    'options',
+    'groupByFields',
+    'conditions',
+    'privateFields',
+    'outputFields',
+    'equations',
 ];
 export const flagsGroupKeywords = [
     'static',
@@ -117,5 +147,9 @@ export const flagsGroupKeywords = [
     'canInvite',
     'canDelete',
     'multiple',
+    'updatePrevDoc',
+    'canBeEmpty',
+    'onlyAssignDocuments',
+    'onlyAssignByGroupDocuments',
 ];
 export const errorGroupKeywords = ['errorFallbackTag', 'onErrorAction'];

@@ -2,7 +2,7 @@
 
 ## **Themes**
 
-Themes are used to change visual display of Policy blocks in the Policy Configurator.&#x20;
+Themes are used to change visual display of Policy blocks in the Policy Configurator.
 
 Block’s display style is determined by their matching of the criteria defined in the theme.
 
@@ -33,7 +33,7 @@ _**Note**: users must click ‘**Save**’ button to preserve the changes to the
 
 #### **1.2 Rules**
 
-Each themes contains a set of **rules** which feature matching conditions and linked styles.&#x20;
+Each themes contains a set of **rules** which feature matching conditions and linked styles.
 
 The matching and styling algorithm is as follows:
 
@@ -122,7 +122,7 @@ New color-stylization of policy syntax groups is now possible as shown below:
 
 The syntax highlighting is used in the JSON or YAML view in the policy configurator. Colors correspond to different ‘types’ of keywords in the code, the current colors-to-types mapping is displayed in the legend in the top right corner.
 
-<figure><img src="../../../../.gitbook/assets/image (37).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="broken-reference" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../../.gitbook/assets/image (36).png" alt=""><figcaption></figcaption></figure>
 

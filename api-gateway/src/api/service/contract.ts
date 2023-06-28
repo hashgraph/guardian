@@ -1,10 +1,11 @@
 import { Guardians } from '@helpers/guardians';
 import { UserRole } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
-import { Controller, Delete, Get, HttpCode, HttpStatus, Post, Req, Response } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Req, Response } from '@nestjs/common';
 import { checkPermission } from '@auth/authorization-helper';
 import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, getSchemaPath } from '@nestjs/swagger';
 import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
+import { ImportContractDTO } from '@middlewares/validation/schemas/contracts';
 
 /**
  * Contracts api
@@ -58,6 +59,7 @@ export class ContractsApi {
     @Get()
     @HttpCode(HttpStatus.OK)
     async getContracts(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
@@ -69,7 +71,7 @@ export class ContractsApi {
             return res.setHeader('X-Total-Count', count).json(contracts);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -101,7 +103,7 @@ export class ContractsApi {
         }
     })
     @Post('/')
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(HttpStatus.CREATED)
     async setContracts(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
@@ -113,7 +115,7 @@ export class ContractsApi {
             );
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -143,11 +145,11 @@ export class ContractsApi {
     })
     @Post('/import')
     @HttpCode(HttpStatus.OK)
-    async importContracts(@Req() req, @Response() res): Promise<any> {
+    async importContracts(@Body() body: ImportContractDTO, @Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
-            const {contractId, description} = req.body;
+            const {contractId, description} = body;
             const guardians = new Guardians();
             return res.json(
                 await guardians.importContract(
@@ -158,7 +160,7 @@ export class ContractsApi {
             );
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -196,7 +198,7 @@ export class ContractsApi {
             );
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -228,7 +230,7 @@ export class ContractsApi {
             );
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -265,6 +267,7 @@ export class ContractsApi {
     @Get('/pair')
     @HttpCode(HttpStatus.OK)
     async contractPair(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
@@ -278,7 +281,7 @@ export class ContractsApi {
             );
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -337,7 +340,7 @@ export class ContractsApi {
             );
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -360,6 +363,7 @@ export class ContractsApi {
     @Get('/retire/request')
     @HttpCode(HttpStatus.OK)
     async retireRequest(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
@@ -373,7 +377,7 @@ export class ContractsApi {
             return res.setHeader('X-Total-Count', count).json(requests);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -419,6 +423,7 @@ export class ContractsApi {
     @Post('/:contractId/retire/request')
     @HttpCode(HttpStatus.OK)
     async postRetireRequest(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         try {
             const user = req.user;
             const {
@@ -444,7 +449,7 @@ export class ContractsApi {
             );
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -467,6 +472,7 @@ export class ContractsApi {
     @Delete('/retire/request')
     @HttpCode(HttpStatus.OK)
     async deleteRetireRequest(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
@@ -478,7 +484,7 @@ export class ContractsApi {
             );
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -509,7 +515,7 @@ export class ContractsApi {
             return res.json(await guardians.retire(user.did, requestId));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

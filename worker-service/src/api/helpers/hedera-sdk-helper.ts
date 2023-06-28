@@ -143,6 +143,12 @@ export class HederaSDKHelper {
      */
     private readonly dryRun: string = null;
 
+    /**
+     * Network Name
+     * @private
+     */
+    private readonly network: string;
+
     constructor(
         operatorId: string | AccountId | null,
         operatorKey: string | PrivateKey | null,
@@ -156,6 +162,7 @@ export class HederaSDKHelper {
         Environment.setMirrorNodes(networkOptions.mirrorNodes);
         this.dryRun = dryRun || null;
         this.client = Environment.createClient();
+        this.network = this.client?.ledgerId?.toString();
         if (operatorId && operatorKey) {
             this.client.setOperator(operatorId, operatorKey);
         }
@@ -185,7 +192,7 @@ export class HederaSDKHelper {
         if (HederaSDKHelper.sendTransactionLogMessage) {
             await HederaSDKHelper.sendTransactionLogMessage({
                 type: 'start-log',
-                data: TransactionLogger.getTransactionData(id, this.client, transactionName),
+                data: TransactionLogger.getTransactionData(id, this.client, this.network, transactionName),
             });
         }
     }
@@ -202,7 +209,7 @@ export class HederaSDKHelper {
         if (HederaSDKHelper.sendTransactionLogMessage) {
             await HederaSDKHelper.sendTransactionLogMessage({
                 type: 'end-log',
-                data: TransactionLogger.getTransactionData(id, this.client, transactionName),
+                data: TransactionLogger.getTransactionData(id, this.client, this.network, transactionName),
                 metadata: TransactionLogger.getTransactionMetadata(transactionName, transaction, metadata),
             });
         }
@@ -220,7 +227,7 @@ export class HederaSDKHelper {
         if (HederaSDKHelper.sendTransactionLogMessage) {
             await HederaSDKHelper.sendTransactionLogMessage({
                 type: 'error-log',
-                data: TransactionLogger.getTransactionData(id, this.client, transactionName),
+                data: TransactionLogger.getTransactionData(id, this.client, this.network, transactionName),
                 metadata: TransactionLogger.getTransactionMetadata(transactionName, transaction),
                 error: typeof error === 'string' ? error : error.message
             });
@@ -237,7 +244,7 @@ export class HederaSDKHelper {
         if (HederaSDKHelper.sendTransactionLogMessage) {
             await HederaSDKHelper.sendTransactionLogMessage({
                 type: 'virtual-function-log',
-                data: TransactionLogger.getTransactionData(id, this.client, transactionName),
+                data: TransactionLogger.getTransactionData(id, this.client, this.network, transactionName),
             });
         }
     }

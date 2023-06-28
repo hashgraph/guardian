@@ -236,7 +236,7 @@ export class ModulesApi {
             return res.json(item);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -266,20 +266,20 @@ export class ModulesApi {
     @HttpCode(HttpStatus.CREATED)
     async putModule(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        if (!req.params.uuid) {
+            throw new HttpException('Invalid uuid', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+        const guardian = new Guardians();
+        const module = req.body;
+        if (!module.config || module.config.blockType !== 'module') {
+            throw new HttpException('Invalid module config', HttpStatus.UNPROCESSABLE_ENTITY)
+        }
         try {
-            const guardian = new Guardians();
-            if (!req.params.uuid) {
-                throw new HttpException('Invalid uuid', HttpStatus.UNPROCESSABLE_ENTITY);
-            }
-            const module = req.body;
-            if (!module.config || module.config.blockType !== 'module') {
-                throw new HttpException('Invalid module config', HttpStatus.UNPROCESSABLE_ENTITY)
-            }
             const result = await guardian.updateModule(req.params.uuid, module, req.user.did);
             return res.status(201).json(result);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -317,7 +317,7 @@ export class ModulesApi {
             return res.send(file);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -352,7 +352,7 @@ export class ModulesApi {
             return res.send(await guardian.exportModuleMessage(req.params.uuid, req.user.did));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -388,7 +388,7 @@ export class ModulesApi {
             return res.status(201).send(module);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -424,7 +424,7 @@ export class ModulesApi {
             return res.status(201).send(module);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -460,7 +460,7 @@ export class ModulesApi {
             return res.send(module);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -496,7 +496,7 @@ export class ModulesApi {
             return res.send(module);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -532,7 +532,7 @@ export class ModulesApi {
             return res.json(module);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

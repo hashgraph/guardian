@@ -12,7 +12,8 @@
     cursor: pointer;
 
     &--selected {
-        border: 2px solid #2C78F6;
+        border: 1px solid #2C78F6;
+        box-shadow: inset 0px 0px 0px 1px #2C78F6;
     }
 
     label {

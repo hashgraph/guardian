@@ -45,6 +45,7 @@ export class PolicyApi {
     @Get('/')
     @HttpCode(HttpStatus.OK)
     async getPolicies(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         const users = new Users();
         const engineService = new PolicyEngine();
         try {
@@ -96,7 +97,7 @@ export class PolicyApi {
             return res.setHeader('X-Total-Count', count).json(policies);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -127,7 +128,7 @@ export class PolicyApi {
             return res.status(201).json(policies);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -250,7 +251,7 @@ export class PolicyApi {
             return res.send(model);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -274,6 +275,7 @@ export class PolicyApi {
     @Put('/:policyId')
     @HttpCode(HttpStatus.OK)
     async updatePolicy(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
             const model = await engineService.getPolicy({filters: req.params.policyId}) as any;
@@ -292,7 +294,7 @@ export class PolicyApi {
             return res.json(result);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -305,7 +307,7 @@ export class PolicyApi {
             return res.json(await engineService.publishPolicy(req.body, req.user, req.params.policyId));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -339,7 +341,7 @@ export class PolicyApi {
             return res.json(await engineService.dryRunPolicy(req.user, req.params.policyId));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -352,73 +354,79 @@ export class PolicyApi {
             return res.json(await engineService.draft(req.user, req.params.policyId));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Post('/validate')
     @HttpCode(HttpStatus.OK)
     async validatePolicy(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
             return res.send(await engineService.validatePolicy(req.body, req.user));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Get('/:policyId/groups')
     @HttpCode(HttpStatus.OK)
     async getPolicyGroups(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         const engineService = new PolicyEngine();
         try {
             return res.send(await engineService.getGroups(req.user, req.params.policyId));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Post('/:policyId/groups')
     @HttpCode(HttpStatus.OK)
     async setPolicyGroups(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         const engineService = new PolicyEngine();
         try {
             return res.send(await engineService.selectGroup(req.user, req.params.policyId, req.body.uuid));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Get('/:policyId/blocks')
     @HttpCode(HttpStatus.OK)
     async getPolicyBlocks(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         const engineService = new PolicyEngine();
         try {
             return res.send(await engineService.getPolicyBlocks(req.user, req.params.policyId));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Get('/:policyId/blocks/:uuid')
     @HttpCode(HttpStatus.OK)
     async getBlockData(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         const engineService = new PolicyEngine();
         try {
             return res.send(await engineService.getBlockData(req.user, req.params.policyId, req.params.uuid));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Post('/:policyId/blocks/:uuid')
     @HttpCode(HttpStatus.OK)
     async setBlockData(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         const engineService = new PolicyEngine();
         try {
             return res.send(
@@ -426,55 +434,59 @@ export class PolicyApi {
             );
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Post('/:policyId/tag/:tagName/blocks')
     @HttpCode(HttpStatus.OK)
     async setBlocksByTagName(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         const engineService = new PolicyEngine();
         try {
             return res.send(await engineService.setBlockDataByTag(req.user, req.params.policyId, req.params.tagName, req.body));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Get('/:policyId/tag/:tagName')
     @HttpCode(HttpStatus.OK)
     async getBlockByTagName(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         const engineService = new PolicyEngine();
         try {
             return res.send(await engineService.getBlockByTagName(req.user, req.params.policyId, req.params.tagName));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Get('/:policyId/tag/:tagName/blocks')
     @HttpCode(HttpStatus.OK)
     async getBlocksByTagName(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         const engineService = new PolicyEngine();
         try {
             return res.send(await engineService.getBlockDataByTag(req.user, req.params.policyId, req.params.tagName));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Get('/:policyId/blocks/:uuid/parents')
     @HttpCode(HttpStatus.OK)
     async getBlockParents(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         const engineService = new PolicyEngine();
         try {
             return res.send(await engineService.getBlockParents(req.user, req.params.policyId, req.params.uuid));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -519,7 +531,7 @@ export class PolicyApi {
             return res.status(201).send(policies);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -554,7 +566,7 @@ export class PolicyApi {
             return res.status(201).send(policies);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -587,7 +599,7 @@ export class PolicyApi {
             return res.send(await engineService.importMessagePreview(req.user, req.body.messageId));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -620,19 +632,20 @@ export class PolicyApi {
             return res.send(await engineService.importFilePreview(req.user, req.body));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Get('/blocks/about')
     @HttpCode(HttpStatus.OK)
     async getBlockAbout(@Req() req, @Response() res) {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
             return res.send(await engineService.blockAbout());
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -653,7 +666,7 @@ export class PolicyApi {
             return res.send(await engineService.getVirtualUsers(req.params.policyId));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -674,7 +687,7 @@ export class PolicyApi {
             return res.status(201).send(await engineService.createVirtualUser(req.params.policyId, req.user.did));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -695,7 +708,7 @@ export class PolicyApi {
             return res.send(await engineService.loginVirtualUser(req.params.policyId, req.body.did));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -716,7 +729,7 @@ export class PolicyApi {
             return res.json(await engineService.restartDryRun(req.body, req.user, req.params.policyId));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -744,7 +757,7 @@ export class PolicyApi {
             return res.setHeader('X-Total-Count', count).json(data);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -772,7 +785,7 @@ export class PolicyApi {
             return res.setHeader('X-Total-Count', count).json(data);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -800,31 +813,33 @@ export class PolicyApi {
             return res.setHeader('X-Total-Count', count).json(data);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Get('/:policyId/multiple')
     @HttpCode(HttpStatus.OK)
     async getMultiplePolicies(@Req() req, @Response() res) {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
             return res.send(await engineService.getMultiPolicy(req.user, req.params.policyId));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Post('/:policyId/multiple/')
     @HttpCode(HttpStatus.OK)
     async setMultiplePolicies(@Req() req, @Response() res) {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
             return res.send(await engineService.setMultiPolicy(req.user, req.params.policyId, req.body));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }
