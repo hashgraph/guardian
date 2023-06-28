@@ -394,7 +394,7 @@ export class SchemaApi {
             return res.json(schemaToPreview);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -424,18 +424,18 @@ export class SchemaApi {
     @HttpCode(HttpStatus.OK)
     async importFromFilePreview(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const zip = req.body;
+        if (!zip) {
+            throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
+        }
         try {
-            const zip = req.body;
-            if (!zip) {
-                throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
-            }
             const guardians = new Guardians();
-            const { schemas } = await SchemaUtils.parseZipFile(zip);
+            const {schemas} = await SchemaUtils.parseZipFile(zip);
             const schemaToPreview = await guardians.previewSchemasByFile(schemas);
             return res.json(schemaToPreview);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -443,21 +443,21 @@ export class SchemaApi {
     @HttpCode(HttpStatus.CREATED)
     async importFromMessage(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const user = req.user;
+        const topicId = req.params.topicId;
+        const guardians = new Guardians();
+        const messageId = req.body.messageId;
+        if (!messageId) {
+            throw new HttpException('message ID in body is required', HttpStatus.UNPROCESSABLE_ENTITY)
+        }
         try {
-            const user = req.user;
-            const topicId = req.params.topicId;
-            const guardians = new Guardians();
-            const messageId = req.body.messageId;
-            if (!messageId) {
-                throw new HttpException('message ID in body is required', HttpStatus.UNPROCESSABLE_ENTITY)
-            }
             await guardians.importSchemasByMessages([messageId], req.user.did, topicId);
             const {items, count} = await guardians.getSchemasByOwner(user.did);
             SchemaHelper.updatePermission(items, user.did);
             return res.status(201).setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -489,17 +489,17 @@ export class SchemaApi {
     @HttpCode(HttpStatus.CREATED)
     async importToTopicFromFile(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const user = req.user;
+        const guardians = new Guardians();
+        const zip = req.body;
+        const topicId = req.params.topicId;
+        if (!zip) {
+            throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
+        }
         try {
-            const user = req.user;
-            const guardians = new Guardians();
-            const zip = req.body;
-            const topicId = req.params.topicId;
-            if (!zip) {
-                throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
-            }
             const files = await SchemaUtils.parseZipFile(zip);
             await guardians.importSchemasByFile(files, req.user.did, topicId);
-            const { items, count } = await guardians.getSchemasByOwner(user.did);
+            const {items, count} = await guardians.getSchemasByOwner(user.did);
             SchemaHelper.updatePermission(items, user.did);
             return res.status(201).setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
         } catch (error) {
