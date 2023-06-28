@@ -766,7 +766,7 @@ export class SchemaApi {
                 throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND);
             }
             if (!schema.system) {
-                throw new HttpException('Schema not found.', HttpStatus.FORBIDDEN);
+                throw new HttpException('Schema is not system.', HttpStatus.FORBIDDEN);
             }
             if (schema.active) {
                 throw new HttpException('Schema is active.', HttpStatus.UNPROCESSABLE_ENTITY);
