@@ -58,9 +58,11 @@
 .status-NEW {
     color: #0000ee;
 }
+
 .status-APPROVED {
     color: #4caf50;
 }
+
 .status-REJECTED {
     color: #f44336;
 }
@@ -75,6 +77,7 @@
     position: relative;
     font-weight: 500;
 }
+
 .btn-field span {
     pointer-events: none;
 }
@@ -105,6 +108,19 @@
     text-overflow: ellipsis;
 }
 
+.array.text {
+    max-width: 12vw;
+    padding-right: 35px;
+    position: relative;
+}
+
+.array.text mat-icon {
+    position: absolute;
+    right: 0;
+    top: 0;
+    cursor: pointer;
+}
+
 tr.detailed-row {
     height: 0;
 }
@@ -122,16 +138,18 @@ tr.detailed-row {
     width: 90%;
     margin: 0 auto;
 }
-  
+
 .timeline-item {
     padding: 3em 2em 2em;
     position: relative;
     color: rgba(0, 0, 0, 0.7);
     border-left: 2px solid rgba(0, 0, 0, 0.3);
 }
+
 .timeline-item p {
     font-size: 1rem;
 }
+
 .timeline-item::before {
     content: attr(date-is);
     position: absolute;

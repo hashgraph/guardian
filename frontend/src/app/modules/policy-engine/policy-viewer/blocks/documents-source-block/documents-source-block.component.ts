@@ -323,6 +323,22 @@ export class DocumentsSourceBlockComponent implements OnInit {
         }
     }
 
+    onArray(event: MouseEvent, row: any, field: any) {
+        event.preventDefault();
+        event.stopPropagation();
+        const text = this.getText(row, field);
+        const dialogRef = this.dialog.open(VCViewerDialog, {
+            width: '850px',
+            data: {
+                document: text,
+                title: field.title,
+                type: 'TEXT',
+                viewDocument: false
+            }
+        });
+        dialogRef.afterClosed().subscribe(async (result) => { });
+    }
+
     onButton(event: MouseEvent, row: any, field: any) {
         event.preventDefault();
         event.stopPropagation();
@@ -381,7 +397,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
         }).subscribe();
     }
 
-    parseArrayValue(value: string | string[]) : string {
+    parseArrayValue(value: string | string[]): string {
         return Array.isArray(value) ? value.join(', ') : value;
     }
 }

@@ -51,10 +51,12 @@
                             </span>
                             <span *ngIf="option.type=='array'" class="text array" [title]="getText(element, option)">
                                 {{getText(element, option)}}
+                                <mat-icon (click)="onArray($event, element, option)">keyboard_arrow_down</mat-icon>
                             </span>
                             <span *ngIf="option.type=='button'" class="col-btn" (click)="$event.stopImmediatePropagation();">
                                 <div class="btn-field {{option.uiClass}}" (click)="onButton($event, element, option)">
-                                    {{getText(element, option)}}</div>
+                                    {{getText(element, option)}}
+                                </div>
                             </span>
                             <div *ngIf="option.type=='block'" class="col-btn" (click)="$event.stopImmediatePropagation();">
                                 <render-block [block]="option._block"
