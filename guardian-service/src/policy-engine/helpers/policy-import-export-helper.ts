@@ -375,7 +375,7 @@ export class PolicyImportExportHelper {
                         index: 0,
                     },
                 ],
-            } as any);
+            });
         }
 
         notifier.completed();

@@ -224,7 +224,7 @@ export async function suggestionsAPI(): Promise<void> {
             const config = await DatabaseServer.setSuggestionsConfig({
                 user: user.did,
                 items,
-            } as any);
+            });
             return new MessageResponse(config.items);
         } catch (error) {
             return new MessageError(error);
