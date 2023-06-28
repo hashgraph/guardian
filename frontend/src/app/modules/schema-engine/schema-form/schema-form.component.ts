@@ -687,6 +687,10 @@ export class SchemaFormComponent implements OnInit {
                     initialDivision = 1;
                     this.currentIndex = i;
                     this.isShown = new Array(fields.length).fill(false);
+                    if (fields[this.currentIndex].isRef && fields[this.currentIndex - 1].isRef) {
+                        this.isShown[this.currentIndex] = true;
+                        break;
+                    }
                     continue;
                 }
                 break;
