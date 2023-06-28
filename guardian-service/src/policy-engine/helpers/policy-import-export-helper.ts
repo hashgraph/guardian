@@ -1,5 +1,11 @@
 import JSZip from 'jszip';
-import { GenerateUUIDv4, SchemaEntity, TagType, TopicType } from '@guardian/interfaces';
+import {
+    ConfigType,
+    GenerateUUIDv4,
+    SchemaEntity,
+    TagType,
+    TopicType,
+} from '@guardian/interfaces';
 import { publishSystemSchemas } from '@api/helpers/schema-publish-helper';
 import { importSchemaByFiles } from '@api/helpers/schema-import-export-helper';
 import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
@@ -354,6 +360,22 @@ export class PolicyImportExportHelper {
         for (const addedArtifact of addedArtifacts) {
             addedArtifact.policyId = result.id;
             await DatabaseServer.saveArtifact(addedArtifact);
+        }
+
+        const suggestionsConfig = await DatabaseServer.getSuggestionsConfig(
+            policyOwner
+        );
+        if (!suggestionsConfig) {
+            await DatabaseServer.setSuggestionsConfig({
+                user: policyOwner,
+                items: [
+                    {
+                        id: result.id,
+                        type: ConfigType.POLICY,
+                        index: 0,
+                    },
+                ],
+            });
         }
 
         notifier.completed();
