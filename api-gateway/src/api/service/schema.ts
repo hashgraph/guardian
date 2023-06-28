@@ -326,13 +326,18 @@ export class SchemaApi {
         let allVersion;
         try {
             schema = await guardians.getSchemaById(schemaId);
-            allVersion = await guardians.getSchemasByUUID(schema.uuid);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         if (!schema) {
             throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND)
+        }
+        try {
+            allVersion = await guardians.getSchemasByUUID(schema.uuid);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.POLICY);
         if (error) {
