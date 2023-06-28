@@ -240,6 +240,7 @@ export class PolicyApi {
     @Get('/:policyId')
     @HttpCode(HttpStatus.OK)
     async getPolicy(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER, UserRole.AUDITOR)(req.user);
         const users = new Users();
         const engineService = new PolicyEngine();
         try {
@@ -654,15 +655,20 @@ export class PolicyApi {
     async getDryRunUsers(@Req() req, @Response() res) {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
+        let policy;
         try {
-            const policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
-            if (!policy) {
-                throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
-            }
-            if (policy.owner !== req.user.did) {
-                throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
-            }
-
+            policy = await engineService.getPolicy({filters: req.params.policyId}) as any;
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (!policy) {
+            throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
+        }
+        if (policy.owner !== req.user.did) {
+            throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
+        }
+        try {
             return res.send(await engineService.getVirtualUsers(req.params.policyId));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
@@ -675,15 +681,20 @@ export class PolicyApi {
     async setDryRunUser(@Req() req, @Response() res) {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
+        let policy;
         try {
-            const policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
-            if (!policy) {
-                throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
-            }
-            if (policy.owner !== req.user.did) {
-                throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
-            }
-
+            policy = await engineService.getPolicy({filters: req.params.policyId}) as any;
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (!policy) {
+            throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
+        }
+        if (policy.owner !== req.user.did) {
+            throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
+        }
+        try {
             return res.status(201).send(await engineService.createVirtualUser(req.params.policyId, req.user.did));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
@@ -696,15 +707,20 @@ export class PolicyApi {
     async loginDryRunUser(@Req() req, @Response() res) {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
+        let policy;
         try {
-            const policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
-            if (!policy) {
-                throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
-            }
-            if (policy.owner !== req.user.did) {
-                throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
-            }
-
+            policy = await engineService.getPolicy({filters: req.params.policyId}) as any;
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (!policy) {
+            throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
+        }
+        if (policy.owner !== req.user.did) {
+            throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
+        }
+        try {
             return res.send(await engineService.loginVirtualUser(req.params.policyId, req.body.did));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
@@ -717,15 +733,20 @@ export class PolicyApi {
     async restartDryRun(@Req() req, @Response() res) {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
+        let policy;
         try {
-            const policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
-            if (!policy) {
-                throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
-            }
-            if (policy.owner !== req.user.did) {
-                throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
-            }
-
+            policy = await engineService.getPolicy({filters: req.params.policyId}) as any;
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (!policy) {
+            throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
+        }
+        if (policy.owner !== req.user.did) {
+            throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
+        }
+        try {
             return res.json(await engineService.restartDryRun(req.body, req.user, req.params.policyId));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
@@ -738,15 +759,20 @@ export class PolicyApi {
     async getDryRunTransactions(@Req() req, @Response() res) {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
+        let policy;
         try {
-            const policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
-            if (!policy) {
-                throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
-            }
-            if (policy.owner !== req.user.did) {
-                throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
-            }
-
+            policy = await engineService.getPolicy({filters: req.params.policyId}) as any;
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (!policy) {
+            throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
+        }
+        if (policy.owner !== req.user.did) {
+            throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
+        }
+        try {
             let pageIndex: any;
             let pageSize: any;
             if (req.query && req.query.pageIndex && req.query.pageSize) {
@@ -766,15 +792,21 @@ export class PolicyApi {
     async getDryRunArtifacts(@Req() req, @Response() res) {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
+        let policy;
         try {
-            const policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
-            if (!policy) {
-                throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
-            }
-            if (policy.owner !== req.user.did) {
-                throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
-            }
+            policy = await engineService.getPolicy({filters: req.params.policyId}) as any;
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (!policy) {
+            throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
+        }
+        if (policy.owner !== req.user.did) {
+            throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
+        }
 
+        try {
             let pageIndex: any;
             let pageSize: any;
             if (req.query && req.query.pageIndex && req.query.pageSize) {
@@ -794,15 +826,20 @@ export class PolicyApi {
     async getDryRunIpfs(@Req() req, @Response() res) {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
+        let policy;
         try {
-            const policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
-            if (!policy) {
-                throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
-            }
-            if (policy.owner !== req.user.did) {
-                throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
-            }
-
+            policy = await engineService.getPolicy({filters: req.params.policyId}) as any;
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (!policy) {
+            throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
+        }
+        if (policy.owner !== req.user.did) {
+            throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
+        }
+        try {
             let pageIndex: any;
             let pageSize: any;
             if (req.query && req.query.pageIndex && req.query.pageSize) {
@@ -820,7 +857,7 @@ export class PolicyApi {
     @Get('/:policyId/multiple')
     @HttpCode(HttpStatus.OK)
     async getMultiplePolicies(@Req() req, @Response() res) {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         const engineService = new PolicyEngine();
         try {
             return res.send(await engineService.getMultiPolicy(req.user, req.params.policyId));
