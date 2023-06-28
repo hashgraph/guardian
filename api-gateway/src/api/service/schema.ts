@@ -596,12 +596,18 @@ export class SchemaApi {
     @Get('/type/:schemaType')
     @HttpCode(HttpStatus.OK)
     async getSchemaType(@Req() req, @Response() res): Promise<any> {
+        let schema;
         try {
             const guardians = new Guardians();
-            const schema = await guardians.getSchemaByType(req.params.schemaType);
-            if (!schema) {
-                throw new HttpException( `Schema not found: ${req.params.schemaType}`, HttpStatus.NOT_FOUND);
-            }
+            schema = await guardians.getSchemaByType(req.params.schemaType);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (!schema) {
+            throw new HttpException(`Schema not found: ${req.params.schemaType}`, HttpStatus.NOT_FOUND);
+        }
+        try {
             return res.send({
                 uuid: schema.uuid,
                 iri: schema.iri,
@@ -614,7 +620,7 @@ export class SchemaApi {
             });
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            return error
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
