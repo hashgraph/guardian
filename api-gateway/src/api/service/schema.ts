@@ -231,13 +231,14 @@ export class SchemaApi {
             return res.setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Get('/:topicId')
     @HttpCode(HttpStatus.OK)
     async getByTopicId(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER, UserRole.AUDITOR)(req.user);
         try {
             const user = req.user;
             const { topicId } = req.params;
@@ -247,7 +248,7 @@ export class SchemaApi {
             return res.setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -283,27 +284,33 @@ export class SchemaApi {
     @HttpCode(HttpStatus.OK)
     async deleteSchema(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const user = req.user;
+        const guardians = new Guardians();
+        const schemaId = req.params.schemaId;
+        let schema;
         try {
-            const user = req.user;
-            const guardians = new Guardians();
-            const schemaId = req.params.schemaId;
-            const schema = await guardians.getSchemaById(schemaId);
-            if (!schema) {
-                throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND)
-            }
-            const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.POLICY);
-            if (error) {
-                throw new HttpException(error, HttpStatus.FORBIDDEN)
-            }
-            if (schema.status === SchemaStatus.PUBLISHED) {
-                throw new HttpException('Schema is published.', HttpStatus.UNPROCESSABLE_ENTITY)
-            }
+            schema = await guardians.getSchemaById(schemaId);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (!schema) {
+            throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND)
+        }
+        const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.POLICY);
+        if (error) {
+            throw new HttpException(error, HttpStatus.FORBIDDEN)
+        }
+        if (schema.status === SchemaStatus.PUBLISHED) {
+            throw new HttpException('Schema is published.', HttpStatus.UNPROCESSABLE_ENTITY)
+        }
+        try {
             const schemas = (await guardians.deleteSchema(schemaId, true) as ISchema[]);
             SchemaHelper.updatePermission(schemas, user.did);
             return res.json(SchemaUtils.toOld(schemas));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -311,35 +318,46 @@ export class SchemaApi {
     @HttpCode(HttpStatus.OK)
     async publishSchema(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const user = req.user;
+        const guardians = new Guardians();
+        const schemaId = req.params.schemaId;
+        const {version} = req.body;
+        let schema;
+        let allVersion;
         try {
-            const user = req.user;
-            const guardians = new Guardians();
-            const schemaId = req.params.schemaId;
-            const schema = await guardians.getSchemaById(schemaId);
-            if (!schema) {
-                throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND)
-            }
-            const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.POLICY);
-            if (error) {
-                throw new HttpException(error, HttpStatus.FORBIDDEN)
-            }
-            if (schema.status === SchemaStatus.PUBLISHED) {
-                throw new HttpException('Schema is published.', HttpStatus.UNPROCESSABLE_ENTITY)
-            }
-            const allVersion = await guardians.getSchemasByUUID(schema.uuid);
-            const { version } = req.body;
-            if (allVersion.findIndex(s => s.version === version) !== -1) {
-                throw new HttpException('Version already exists.', HttpStatus.UNPROCESSABLE_ENTITY)
-            }
-
+            schema = await guardians.getSchemaById(schemaId);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (!schema) {
+            throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND)
+        }
+        try {
+            allVersion = await guardians.getSchemasByUUID(schema.uuid);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.POLICY);
+        if (error) {
+            throw new HttpException(error, HttpStatus.FORBIDDEN)
+        }
+        if (schema.status === SchemaStatus.PUBLISHED) {
+            throw new HttpException('Schema is published.', HttpStatus.UNPROCESSABLE_ENTITY)
+        }
+        if (allVersion.findIndex(s => s.version === version) !== -1) {
+            throw new HttpException('Version already exists.', HttpStatus.UNPROCESSABLE_ENTITY)
+        }
+        try {
             await guardians.publishSchema(schemaId, version, user.did);
 
-            const { items, count } = await guardians.getSchemasByOwner(user.did);
+            const {items, count} = await guardians.getSchemasByOwner(user.did);
             SchemaHelper.updatePermission(items, user.did);
             return res.setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -394,7 +412,7 @@ export class SchemaApi {
             return res.json(schemaToPreview);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -424,18 +442,18 @@ export class SchemaApi {
     @HttpCode(HttpStatus.OK)
     async importFromFilePreview(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const zip = req.body;
+        if (!zip) {
+            throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
+        }
         try {
-            const zip = req.body;
-            if (!zip) {
-                throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
-            }
             const guardians = new Guardians();
-            const { schemas } = await SchemaUtils.parseZipFile(zip);
+            const {schemas} = await SchemaUtils.parseZipFile(zip);
             const schemaToPreview = await guardians.previewSchemasByFile(schemas);
             return res.json(schemaToPreview);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -443,21 +461,21 @@ export class SchemaApi {
     @HttpCode(HttpStatus.CREATED)
     async importFromMessage(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const user = req.user;
+        const topicId = req.params.topicId;
+        const guardians = new Guardians();
+        const messageId = req.body.messageId;
+        if (!messageId) {
+            throw new HttpException('message ID in body is required', HttpStatus.UNPROCESSABLE_ENTITY)
+        }
         try {
-            const user = req.user;
-            const topicId = req.params.topicId;
-            const guardians = new Guardians();
-            const messageId = req.body.messageId;
-            if (!messageId) {
-                throw new HttpException('message ID in body is required', HttpStatus.UNPROCESSABLE_ENTITY)
-            }
             await guardians.importSchemasByMessages([messageId], req.user.did, topicId);
             const {items, count} = await guardians.getSchemasByOwner(user.did);
             SchemaHelper.updatePermission(items, user.did);
             return res.status(201).setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -489,17 +507,17 @@ export class SchemaApi {
     @HttpCode(HttpStatus.CREATED)
     async importToTopicFromFile(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const user = req.user;
+        const guardians = new Guardians();
+        const zip = req.body;
+        const topicId = req.params.topicId;
+        if (!zip) {
+            throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
+        }
         try {
-            const user = req.user;
-            const guardians = new Guardians();
-            const zip = req.body;
-            const topicId = req.params.topicId;
-            if (!zip) {
-                throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
-            }
             const files = await SchemaUtils.parseZipFile(zip);
             await guardians.importSchemasByFile(files, req.user.did, topicId);
-            const { items, count } = await guardians.getSchemasByOwner(user.did);
+            const {items, count} = await guardians.getSchemasByOwner(user.did);
             SchemaHelper.updatePermission(items, user.did);
             return res.status(201).setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
         } catch (error) {
@@ -596,12 +614,19 @@ export class SchemaApi {
     @Get('/type/:schemaType')
     @HttpCode(HttpStatus.OK)
     async getSchemaType(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER, UserRole.AUDITOR)(req.user)
+        let schema;
         try {
             const guardians = new Guardians();
-            const schema = await guardians.getSchemaByType(req.params.schemaType);
-            if (!schema) {
-                throw new HttpException( `Schema not found: ${req.params.schemaType}`, HttpStatus.NOT_FOUND);
-            }
+            schema = await guardians.getSchemaByType(req.params.schemaType);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (!schema) {
+            throw new HttpException(`Schema not found: ${req.params.schemaType}`, HttpStatus.NOT_FOUND);
+        }
+        try {
             return res.send({
                 uuid: schema.uuid,
                 iri: schema.iri,
@@ -614,7 +639,7 @@ export class SchemaApi {
             });
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            return error
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -741,7 +766,7 @@ export class SchemaApi {
                 throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND);
             }
             if (!schema.system) {
-                throw new HttpException('Schema not found.', HttpStatus.FORBIDDEN);
+                throw new HttpException('Schema is not system.', HttpStatus.FORBIDDEN);
             }
             if (schema.active) {
                 throw new HttpException('Schema is active.', HttpStatus.UNPROCESSABLE_ENTITY);

@@ -85,7 +85,8 @@ Promise.all([
         'v2-7-0',
         'v2-9-0',
         'v2-11-0',
-        'v2-12-0'
+        'v2-12-0',
+        'v2-13-0',
     ]),
     MessageBrokerChannel.connect('GUARDIANS_SERVICE'),
     NestFactory.createMicroservice<MicroserviceOptions>(AppModule,{

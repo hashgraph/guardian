@@ -48,3 +48,4 @@ export { default as GeoJsonContext } from './helpers/geojson-schema/geo-json-con
 export * from './interface/wizard-config.interface';
 export * from './interface/suggestions-order-priority';
 export * from './helpers/sort-objects-array';
+export * from './helpers/remove-object-properties';
