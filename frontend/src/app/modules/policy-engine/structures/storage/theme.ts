@@ -2,12 +2,7 @@ import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { PolicyBlockModel } from '..';
 import { ThemeRule } from './theme-rule';
 import { DEFAULT_SYNTAX_GROUPS } from '../../themes/default-syntax-groups';
-
-export interface SyntaxGroup {
-    id: string;
-    name: string;
-    color: string;
-}
+import { ThemeSyntaxGroup } from './theme-syntax-groups';
 
 export class Theme {
     public id: string;
@@ -17,7 +12,7 @@ export class Theme {
     private _name: string;
     private _rules: ThemeRule[];
     private _defaultRole: ThemeRule;
-    private _syntaxGroups: SyntaxGroup[];
+    private _syntaxGroups: ThemeSyntaxGroup[];
 
     private _colorMap: Map<number, any>;
 
@@ -31,7 +26,9 @@ export class Theme {
         this._defaultRole.default = true;
         this._defaultRole.description = 'Default';
         this._colorMap = new Map();
-        this._syntaxGroups = DEFAULT_SYNTAX_GROUPS;
+        this._syntaxGroups = DEFAULT_SYNTAX_GROUPS.map((item) =>
+            ThemeSyntaxGroup.from(item)
+        );
     }
 
     public get name(): string {
@@ -50,7 +47,7 @@ export class Theme {
         return this._defaultRole;
     }
 
-    public get syntaxGroups(): SyntaxGroup[] {
+    public get syntaxGroups(): ThemeSyntaxGroup[] {
         return this._syntaxGroups;
     }
 
@@ -169,8 +166,8 @@ export class Theme {
             readonly: this.readonly,
             name: this._name,
             rules,
-            syntaxGroups : this.syntaxGroups
-        }
+            syntaxGroups: this.syntaxGroups.map((item) => item.toJson()),
+        };
     }
 
     public toString(): string {
@@ -188,7 +185,11 @@ export class Theme {
                 theme.addRule(ThemeRule.from(theme, rule))
             }
         }
-        theme.syntaxGroups = json.syntaxGroups || [];
+        if (Array.isArray(json.syntaxGroups)) {
+            theme.syntaxGroups = json.syntaxGroups.map((item: any) =>
+                ThemeSyntaxGroup.from(item)
+            );
+        }
         return theme;
     }
 

@@ -16,7 +16,7 @@ There are two ways to open Policy Wizard:
 
 This step allows users to setup policy information such as name, description, policy tag and topic description.
 
-<figure><img src="../../../../.gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (5) (2).png" alt=""><figcaption></figcaption></figure>
 
 ### Policy Roles:
 
@@ -52,7 +52,7 @@ Note: We can select multiple schemas by entering the schemas names separated by 
 
 #### 3.1.1 {role} configuration
 
-<figure><img src="../../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (3) (5).png" alt=""><figcaption></figcaption></figure>
 
 This step allows:
 
@@ -62,13 +62,13 @@ This step allows:
 
 ### 4. TrustChain
 
-<figure><img src="../../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 This step allows to set up users which are able to view grids with VPs and the grid with the trust chain.
 
 #### 4.1. {role} configuration
 
-<figure><img src="../../../../.gitbook/assets/image (11).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (11) (1).png" alt=""><figcaption></figcaption></figure>
 
 In this step, Users can choose a minting schema which will be displayed on the trust chain. Additionally, visibility for VPs can be configured to ‘only own ‘ (recommended for the roles other than OWNER) or to ‘all’.
 

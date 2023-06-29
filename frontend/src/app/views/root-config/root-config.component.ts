@@ -52,11 +52,15 @@ export class RootConfigComponent implements OnInit {
             label: 'Restore data',
             type: StartActions.RESTORE_DATA,
             action: () => {
-                const { hederaAccountId, hederaAccountKey } = this.hederaForm.value;
+                const value = this.hederaForm.value;
                 const topicId = this.selectedTokenId.value;
                 this.loading = true;
                 this.headerProps.setLoading(true);
-                this.profileService.restoreProfile({ hederaAccountId, hederaAccountKey, topicId }).subscribe((result) => {
+                this.profileService.restoreProfile({
+                    hederaAccountId: value.hederaAccountId?.trim(),
+                    hederaAccountKey: value.hederaAccountKey?.trim(),
+                    topicId
+                }).subscribe((result) => {
                     const { taskId, expectation } = result;
                     this.taskId = taskId;
                     this.expectedTaskMessages = expectation;
@@ -153,7 +157,7 @@ export class RootConfigComponent implements OnInit {
             this.profileService.getBalance(),
             this.schemaService.getSystemSchemasByEntity(SchemaEntity.STANDARD_REGISTRY)
         ]).subscribe((value) => {
-            if(!value[2]) {
+            if (!value[2]) {
                 this.errorLoadSchema = true;
                 this.loading = false;
                 this.headerProps.setLoading(false);
@@ -173,7 +177,7 @@ export class RootConfigComponent implements OnInit {
                 this.profile = profile;
             }
 
-            if(schema) {
+            if (schema) {
                 this.schema = new Schema(schema);
             }
 
@@ -194,8 +198,8 @@ export class RootConfigComponent implements OnInit {
             const vcDocument = value.vc;
             this.prepareDataFrom(vcDocument);
             const data: any = {
-                hederaAccountId: value.hederaAccountId,
-                hederaAccountKey: value.hederaAccountKey,
+                hederaAccountId: value.hederaAccountId?.trim(),
+                hederaAccountKey: value.hederaAccountKey?.trim(),
                 vcDocument: vcDocument
             }
             this.loading = true;
@@ -296,8 +300,8 @@ export class RootConfigComponent implements OnInit {
 
         const value = this.hederaForm.value;
         const profile = {
-            hederaAccountId: value.hederaAccountId,
-            hederaAccountKey: value.hederaAccountKey
+            hederaAccountId: value.hederaAccountId?.trim(),
+            hederaAccountKey: value.hederaAccountKey?.trim()
         }
         this.loading = true;
         this.profileService.getAllUserTopics(profile).subscribe((result) => {
@@ -319,29 +323,28 @@ export class RootConfigComponent implements OnInit {
     }
 
     prepareDataFrom(data: any) {
-        if(Array.isArray(data)) {
+        if (Array.isArray(data)) {
             for (let j = 0; j < data.length; j++) {
                 let dataArrayElem = data[j];
-                if(dataArrayElem === "" || dataArrayElem === null) {
+                if (dataArrayElem === "" || dataArrayElem === null) {
                     data.splice(j, 1);
                     j--;
                 }
-                if(Object.getPrototypeOf(dataArrayElem) === Object.prototype
+                if (Object.getPrototypeOf(dataArrayElem) === Object.prototype
                     || Array.isArray(dataArrayElem)) {
                     this.prepareDataFrom(dataArrayElem);
                 }
             }
         }
 
-        if (Object.getPrototypeOf(data) === Object.prototype)
-        {
+        if (Object.getPrototypeOf(data) === Object.prototype) {
             let dataKeys = Object.keys(data);
-            for (let i = 0;i< dataKeys.length; i++) {
+            for (let i = 0; i < dataKeys.length; i++) {
                 const dataElem = data[dataKeys[i]];
-                if(dataElem === "" || dataElem === null) {
+                if (dataElem === "" || dataElem === null) {
                     delete data[dataKeys[i]];
                 }
-                if(Object.getPrototypeOf(dataElem) === Object.prototype
+                if (Object.getPrototypeOf(dataElem) === Object.prototype
                     || Array.isArray(dataElem)) {
                     this.prepareDataFrom(dataElem);
                 }
@@ -364,13 +367,13 @@ export class RootConfigComponent implements OnInit {
             this.taskService.get(taskId).subscribe((task) => {
                 switch (operationMode) {
                     case OperationMode.Generate: {
-                        const { id, key} = task.result;
+                        const { id, key } = task.result;
                         const value = this.hederaForm.value;
                         this.hederaForm.setValue({
-                                hederaAccountId: id,
-                                hederaAccountKey: key,
-                                vc: value.vc
-                            });
+                            hederaAccountId: id,
+                            hederaAccountKey: key,
+                            vc: value.vc
+                        });
                         this.loading = false;
                         break;
                     }
@@ -388,11 +391,11 @@ export class RootConfigComponent implements OnInit {
                                 return b.timestamp - a.timestamp;
                             })
                             .map((i: any) => {
-                            return {
-                                topicId: i.topicId,
-                                date: new Date(i.timestamp).toLocaleString()
-                            }
-                        });
+                                return {
+                                    topicId: i.topicId,
+                                    date: new Date(i.timestamp).toLocaleString()
+                                }
+                            });
                         this.loadProfile();
                         this.selectedTokenId.setValue((this.userTopics && this.userTopics.length) ? this.userTopics[0].topicId : undefined)
                         break;

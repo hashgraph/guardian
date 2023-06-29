@@ -2500,7 +2500,7 @@ export class DatabaseServer {
      * @returns config
      */
     public static async setSuggestionsConfig(
-        config: SuggestionsConfig
+        config: Partial<SuggestionsConfig>
     ): Promise<SuggestionsConfig> {
         const existingConfig = await DatabaseServer.getSuggestionsConfig(
             config.user

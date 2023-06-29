@@ -69,13 +69,13 @@ Once you have clicked on **“Ok”** you can then preview the GHG policy and th
 
 Here we can see the policy being imported.
 
-<figure><img src="../../../.gitbook/assets/image (189) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (6).png" alt=""><figcaption></figcaption></figure>
 
 **Step 6**
 
 You will then see the GHG Policy with the Status of Draft.&#x20;
 
-<figure><img src="../../../.gitbook/assets/image (190) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (7).png" alt=""><figcaption></figcaption></figure>
 
 We will just add this policy as the 1st version and then click on **“Publish”**.
 

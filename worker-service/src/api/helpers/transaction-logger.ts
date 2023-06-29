@@ -26,16 +26,19 @@ export class TransactionLogger {
      * Get transaction data
      * @param id
      * @param client
+     * @param network
      * @param transactionName
      */
     public static getTransactionData(
         id: string,
         client: Client,
+        network: string,
         transactionName: string
     ): any {
         return {
             id,
-            operatorAccountId: client.operatorAccountId?.toString(),
+            network,
+            operatorAccountId: client?.operatorAccountId?.toString(),
             transactionName
         }
     }

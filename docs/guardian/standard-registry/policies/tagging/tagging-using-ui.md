@@ -63,7 +63,7 @@ An additional document can be added/linked with the tag using _**Add Document** 
 
 Users (DIDs) who created a tag are able to remove it later.
 
-![Removing Tags](<../../../../.gitbook/assets/3 (1).png>)
+![Removing Tags](<../../../../.gitbook/assets/3 (1) (2).png>)
 
 #### **2.3 View**
 
@@ -77,13 +77,13 @@ Users can click on the tag icon to show the detailed information about all tag a
 
 Tags are grounded by labels. When a label is selected then a detailed information about all tags with this label is displayed below.
 
-![detailed information about the tags](<../../../../.gitbook/assets/6 (1).png>)
+![detailed information about the tags](<../../../../.gitbook/assets/6 (1) (1).png>)
 
 #### **2.4 History**
 
 Tags which have been imported with the Policy or Schema are marked as _**History.**_ These tags are not directly relevant to the new objects and are displayed for the convenience of the user (policy author). These historic tags are neither synchronized nor published when the new objects are published.
 
-![History tags](<../../../../.gitbook/assets/7 (2).png>)
+![History tags](<../../../../.gitbook/assets/7 (2) (2).png>)
 
 #### **2.5 Tag updates (synchronization)**
 
