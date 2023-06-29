@@ -326,8 +326,7 @@ export class MintBlock {
 
         const transactionMemo = `${vpMessageId} ${MessageMemo.parseMemo(true, ref.options.memo, savedVp)}`.trimEnd();
         await MintService.mint(
-            ref, token, tokenValue, user, root, accountId,
-            vpMessageId, transactionMemo, documents
+            ref, token, tokenValue, user, root, accountId, vpMessageId, transactionMemo, documents
         );
         return [savedVp, tokenValue];
     }

@@ -99,6 +99,7 @@ import { ImportFileDialog } from './helpers/import-file-dialog/import-file-dialo
 import { NewThemeDialog } from './helpers/new-theme-dialog/new-theme-dialog.component';
 import { ExternalTopicBlockComponent } from './policy-viewer/blocks/external-topic-block/external-topic-block.component';
 import { UploadDocumentBlockComponent } from './policy-viewer/blocks/upload-document-block/upload-document-block.component';
+import { ViewerDialog } from './helpers/vc-dialog/viewer-dialog.component';
 import { CompareModulesDialogComponent } from './helpers/compare-modules-dialog/compare-modules-dialog.component';
 
 @NgModule({
@@ -183,7 +184,8 @@ import { CompareModulesDialogComponent } from './helpers/compare-modules-dialog/
         NewThemeDialog,
         ExternalTopicBlockComponent,
         PolicyWizardDialogComponent,
-        MessagesReportBlockComponent
+        MessagesReportBlockComponent,
+        ViewerDialog
     ],
     imports: [
         CommonModule,

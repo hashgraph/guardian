@@ -83,8 +83,8 @@ export class MintService {
         uuid: string,
         transactionMemo: string,
         ref?: AnyBlockType
-    ) {
-        const mintNFT = (metaData) =>
+    ): Promise<any[]> {
+        const mintNFT = (metaData: string[]): Promise<number[]> =>
             workers.addRetryableTask(
                 {
                     type: WorkerTaskType.MINT_NFT,
@@ -100,37 +100,37 @@ export class MintService {
                 },
                 1, 10
             );
-        const transferNFT = (serials) =>
-            {
-                MintService.logger.debug(
-                    `Transfer ${token?.tokenId} serials: ${JSON.stringify(serials)}`,
-                    ['POLICY_SERVICE', mintId.toString()]
-                );
-                return workers.addRetryableTask(
-                    {
-                        type: WorkerTaskType.TRANSFER_NFT,
-                        data: {
-                            hederaAccountId:
-                                root.hederaAccountId,
-                            hederaAccountKey:
-                                root.hederaAccountKey,
-                            dryRun: ref && ref.dryRun,
-                            tokenId: token.tokenId,
-                            targetAccount,
-                            treasuryId: token.treasuryId,
-                            treasuryKey: token.treasuryKey,
-                            element: serials,
-                            transactionMemo,
-                        },
+        const transferNFT = (serials: number[]): Promise<number[] | null> => {
+            MintService.logger.debug(
+                `Transfer ${token?.tokenId} serials: ${JSON.stringify(serials)}`,
+                ['POLICY_SERVICE', mintId.toString()]
+            );
+            return workers.addRetryableTask(
+                {
+                    type: WorkerTaskType.TRANSFER_NFT,
+                    data: {
+                        hederaAccountId:
+                            root.hederaAccountId,
+                        hederaAccountKey:
+                            root.hederaAccountKey,
+                        dryRun: ref && ref.dryRun,
+                        tokenId: token.tokenId,
+                        targetAccount,
+                        treasuryId: token.treasuryId,
+                        treasuryKey: token.treasuryKey,
+                        element: serials,
+                        transactionMemo,
                     },
-                    1, 10
-                );
-            };
-        const mintAndTransferNFT = (metaData) =>
+                },
+                1, 10
+            );
+        };
+        const mintAndTransferNFT = (metaData: string[]) =>
             mintNFT(metaData).then(transferNFT);
         const mintId = Date.now();
         MintService.log(`Mint(${mintId}): Start (Count: ${tokenValue})`, ref);
 
+        const result: number[] = [];
         const workers = new Workers();
         const data = new Array<string>(Math.floor(tokenValue));
         data.fill(uuid);
@@ -142,13 +142,19 @@ export class MintService {
         for (let i = 0; i < tasks.length; i++) {
             const dataChunk = tasks[i];
             MintService.log(
-                `Mint(${mintId}): Minting and transferring (Chunk: ${
-                    i * MintService.BATCH_NFT_MINT_SIZE + 1
+                `Mint(${mintId}): Minting and transferring (Chunk: ${i * MintService.BATCH_NFT_MINT_SIZE + 1
                 }/${tasks.length * MintService.BATCH_NFT_MINT_SIZE})`,
                 ref
             );
             try {
-                await Promise.all(dataChunk.map(mintAndTransferNFT));
+                const results = await Promise.all(dataChunk.map(mintAndTransferNFT));
+                for (const serials of results) {
+                    if (serials) {
+                        for (const n of serials) {
+                            result.push(n);
+                        }
+                    }
+                }
             } catch (error) {
                 MintService.error(
                     `Mint(${mintId}): Error (${PolicyUtils.getErrorMessage(
@@ -169,6 +175,8 @@ export class MintService {
             ref
         );
         MintService.log(`Mint(${mintId}): End`, ref);
+
+        return result;
     }
 
     /**
@@ -189,10 +197,11 @@ export class MintService {
         uuid: string,
         transactionMemo: string,
         ref?: AnyBlockType,
-    ) {
+    ): Promise<number | null> {
         const mintId = Date.now();
         MintService.log(`Mint(${mintId}): Start (Count: ${tokenValue})`, ref);
 
+        let result: number | null = null;
         try {
             const workers = new Workers();
             await workers.addRetryableTask({
@@ -221,11 +230,15 @@ export class MintService {
                     transactionMemo
                 }
             }, 10);
+            result = tokenValue;
         } catch (error) {
+            result = null;
             MintService.error(`Mint FT(${mintId}): Mint/Transfer Error (${PolicyUtils.getErrorMessage(error)})`, ref);
         }
 
         MintService.log(`Mint(${mintId}): End`, ref);
+
+        return result;
     }
 
     /**
@@ -302,7 +315,7 @@ export class MintService {
         documentOwner: IPolicyUser,
         root: IRootConfig,
         targetAccount: string,
-        uuid: string,
+        messageId: string,
         transactionMemo: string,
         documents: VcDocument[]
     ): Promise<void> {
@@ -316,7 +329,7 @@ export class MintService {
             });
             await MintService.sendMessage(ref, multipleConfig, root, {
                 hash,
-                messageId: uuid,
+                messageId,
                 tokenId: token.tokenId,
                 amount: tokenValue,
                 memo: transactionMemo,
@@ -339,13 +352,15 @@ export class MintService {
         } else {
             const tokenConfig = await MintService.getTokenConfig(ref, token);
             if (token.tokenType === 'non-fungible') {
-                await MintService.mintNonFungibleTokens(
-                    tokenConfig, tokenValue, root, targetAccount, uuid, transactionMemo, ref
+                const serials = await MintService.mintNonFungibleTokens(
+                    tokenConfig, tokenValue, root, targetAccount, messageId, transactionMemo, ref
                 );
+                await MintService.updateDocuments(messageId, { tokenId: token.tokenId, serials }, ref);
             } else {
-                await MintService.mintFungibleTokens(
-                    tokenConfig, tokenValue, root, targetAccount, uuid, transactionMemo, ref
+                const amount = await MintService.mintFungibleTokens(
+                    tokenConfig, tokenValue, root, targetAccount, messageId, transactionMemo, ref
                 );
+                await MintService.updateDocuments(messageId, { tokenId: token.tokenId, amount }, ref);
             }
         }
 
@@ -376,7 +391,8 @@ export class MintService {
         targetAccount: string,
         ids: string[]
     ): Promise<void> {
-        const memo = ids.join(',');
+        const messageIds = ids.join(',');
+        const memo = messageIds;
         const tokenConfig: TokenConfig = {
             treasuryId: token.adminId,
             tokenId: token.tokenId,
@@ -399,13 +415,15 @@ export class MintService {
         tokenConfig.treasuryKey = treasuryKey;
 
         if (token.tokenType === 'non-fungible') {
-            await MintService.mintNonFungibleTokens(
-                tokenConfig, tokenValue, root, targetAccount, memo, memo
+            const serials = await MintService.mintNonFungibleTokens(
+                tokenConfig, tokenValue, root, targetAccount, messageIds, memo, null
             );
+            await MintService.updateDocuments(ids, { tokenId: token.tokenId, serials }, null);
         } else {
-            await MintService.mintFungibleTokens(
-                tokenConfig, tokenValue, root, targetAccount, memo, memo
+            const amount = await MintService.mintFungibleTokens(
+                tokenConfig, tokenValue, root, targetAccount, messageIds, memo, null
             );
+            await MintService.updateDocuments(ids, { tokenId: token.tokenId, amount }, null);
         }
 
         new ExternalEventChannel().publishMessage(
@@ -453,6 +471,22 @@ export class MintService {
                 uuid
             }
         }, 10);
+    }
+
+    /**
+     * Update VP Documents
+     * @param ids
+     * @param value
+     * @param ref
+     */
+    private static async updateDocuments(ids: string | string[], value: any, ref: AnyBlockType) {
+        const dryRunId = ref ? ref.dryRun : null;
+        const filter = Array.isArray(ids) ? {
+            where: { messageId: { $in: ids } }
+        } : {
+            where: { messageId: { $eq: ids } }
+        }
+        await DatabaseServer.updateVpDocuments(value, filter, dryRunId);
     }
 
     /**
