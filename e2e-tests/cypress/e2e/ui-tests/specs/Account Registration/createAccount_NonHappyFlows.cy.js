@@ -1,13 +1,13 @@
 import { AuthenticationPage } from "../../pages/authentication";
 import { HomePage } from "../../pages/homepage";
-import { slowCypressDown } from 'cypress-slow-down'
+
 
 const home = new AuthenticationPage();
 const homepage = new HomePage();
 
 
 describe("Create User Accounts_Non Happy Scenarios", { tags: '@ui' }, () => {
-    slowCypressDown(320) ;
+   
     beforeEach(() => {
         cy.viewport(1920, 1080);
         home.visit();

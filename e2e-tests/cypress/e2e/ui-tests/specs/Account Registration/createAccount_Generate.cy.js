@@ -1,16 +1,16 @@
 import { AuthenticationPage } from "../../pages/authentication";
 import { HomePage } from "../../pages/homepage";
 import { ConfigPage } from "../../pages/configpage";
-import { slowCypressDown } from 'cypress-slow-down'
+
 
 const home = new AuthenticationPage();
 const homepage = new HomePage();
 const configpage = new ConfigPage();
 
 describe("Create User Accounts",  { tags: '@ui' }, () => {
-    slowCypressDown(320) ;
-    const admin =  "ADMIN"+ Math.floor(Math.random() * 999);
-    const auditor =  "AUDITOR"+ Math.floor(Math.random() * 999);
+
+    const admin =  "ADMIN"+ Math.floor(Math.random() * 9999);
+    const auditor =  "AUDITOR"+ Math.floor(Math.random() * 9999);
     
     beforeEach(() => {
         cy.viewport(1920, 1080);
@@ -37,7 +37,7 @@ describe("Create User Accounts",  { tags: '@ui' }, () => {
         cy.wait(3000);
         var option = "GENERATE";
         configpage.finishsetupUser(admin,username,option);
-            configpage.verifyHeaderLabelsOnLoginPageForUser();
+        configpage.verifyHeaderLabelsOnLoginPageForUser();
         home.logOut(username);
 
     });
