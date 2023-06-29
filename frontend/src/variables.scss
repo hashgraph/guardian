@@ -14,3 +14,9 @@
     
     --vh: 1vh;
 }
+
+@media (max-width: 810px) {
+    :root {
+        --header-height: 75px;
+    }
+}

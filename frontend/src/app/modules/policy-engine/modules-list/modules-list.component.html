@@ -24,6 +24,10 @@
                 <mat-icon>file_open</mat-icon>
                 <span>Import</span>
             </button>
+            <button (click)="compareModules()" class="toolbar-btn" color="primary" mat-raised-button>
+                <mat-icon>compare</mat-icon>
+                <span>Compare</span>
+            </button>
         </div>
         <div class="table-container">
             <table mat-table [dataSource]="modules" class="table">

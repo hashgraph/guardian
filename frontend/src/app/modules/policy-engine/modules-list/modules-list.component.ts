@@ -1,21 +1,18 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { IUser, SchemaHelper, TagType } from '@guardian/interfaces';
 import { ProfileService } from 'src/app/services/profile.service';
-import { TokenService } from 'src/app/services/token.service';
 import { ExportPolicyDialog } from '../helpers/export-policy-dialog/export-policy-dialog.component';
 import { ImportPolicyDialog } from '../helpers/import-policy-dialog/import-policy-dialog.component';
 import { PreviewPolicyDialog } from '../helpers/preview-policy-dialog/preview-policy-dialog.component';
-import { WebSocketService } from 'src/app/services/web-socket.service';
-import { TasksService } from 'src/app/services/tasks.service';
 import { InformService } from 'src/app/services/inform.service';
 import { ConfirmationDialogComponent } from 'src/app/modules/common/confirmation-dialog/confirmation-dialog.component';
-import { ToastrService } from 'ngx-toastr';
 import { ModulesService } from 'src/app/services/modules.service';
 import { NewModuleDialog } from '../helpers/new-module-dialog/new-module-dialog.component';
 import { TagsService } from 'src/app/services/tag.service';
 import { forkJoin } from 'rxjs';
+import { CompareModulesDialogComponent } from '../helpers/compare-modules-dialog/compare-modules-dialog.component';
 
 enum OperationMode {
     None,
@@ -62,6 +59,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
         private modulesService: ModulesService,
         private dialog: MatDialog,
         private informService: InformService,
+        private router: Router,
     ) {
         this.modules = null;
         this.pageIndex = 0;
@@ -191,6 +189,29 @@ export class ModulesListComponent implements OnInit, OnDestroy {
         });
     }
 
+    compareModules(element?: any) {
+        const dialogRef = this.dialog.open(CompareModulesDialogComponent, {
+            width: '650px',
+            panelClass: 'g-dialog',
+            disableClose: true,
+            autoFocus: false,
+            data: {
+                modules: this.modules,
+            }
+        });
+        dialogRef.afterClosed().subscribe(async (result) => {
+            if (result) {
+                this.router.navigate(['/compare'], {
+                    queryParams: {
+                        type: 'module',
+                        moduleId1: result.moduleId1,
+                        moduleId2: result.moduleId2
+                    }
+                });
+            }
+        });
+    }
+
     public exportModules(element: any) {
         this.loading = true;
         this.modulesService.exportInMessage(element.uuid)
@@ -200,7 +221,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
                     width: '700px',
                     panelClass: 'g-dialog',
                     data: {
-                        module: module
+                        module
                     },
                     disableClose: true,
                     autoFocus: false

@@ -472,7 +472,7 @@ export class ContractsApi {
     @Delete('/retire/request')
     @HttpCode(HttpStatus.OK)
     async deleteRetireRequest(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
