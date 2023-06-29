@@ -45,7 +45,7 @@ export class PolicyApi {
     @Get('/')
     @HttpCode(HttpStatus.OK)
     async getPolicies(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER, UserRole.AUDITOR)(req.user);
         const users = new Users();
         const engineService = new PolicyEngine();
         try {
