@@ -1,10 +1,17 @@
-import { PolicyModule } from '@guardian/common';
+import { Policy, PolicyModule } from '@guardian/common';
 import { BlockModel } from './block.model';
 import { ICompareOptions } from '../interfaces/compare-options.interface';
 import { IArtifacts } from '../interfaces/artifacts.interface';
+import { SchemaModel } from './schema.model';
 import { IKeyMap } from '../interfaces/key-map.interface';
 import { PropertyModel } from './property.model';
 import { PropertyType } from '../types/property.type';
+import { TokenModel } from './token.model';
+import { GroupModel } from './group.model';
+import { TopicModel } from './topic.model';
+import { TemplateTokenModel } from './template-token.model';
+import { RoleModel } from './role.model';
+import { VariableModel } from './variable.model';
 
 /**
  * Policy Model
@@ -29,6 +36,24 @@ export class ModuleModel {
     public readonly name: string;
 
     /**
+     * Input Events
+     * @public
+     */
+    public readonly inputEvents: VariableModel[];
+
+    /**
+     * Output Events
+     * @public
+     */
+    public readonly outputEvents: VariableModel[];
+
+    /**
+     * Variables
+     * @public
+     */
+    public readonly variables: VariableModel[];
+
+    /**
      * Blocks
      * @public
      */
@@ -46,93 +71,23 @@ export class ModuleModel {
      */
     private readonly _list: BlockModel[];
 
-    /**
-     * All artifacts
-     * @private
-     */
-    private _artifacts: IArtifacts[];
-
-    constructor(module: PolicyModule, options: ICompareOptions) {
+    constructor(policyModule: PolicyModule, options: ICompareOptions) {
         this.options = options;
 
-        this.id = module.id;
-        this.name = module.name;
-        this.description = module.description;
+        this.id = policyModule.id;
+        this.name = policyModule.name;
+        this.description = policyModule.description;
 
-        if (!module.config) {
-            throw new Error('Empty module model');
+        if (!policyModule.config) {
+            throw new Error('Empty policy model');
         }
 
-        this.tree = this.createBlock(module.config, 0);
+        this.tree = this.createBlock(policyModule.config, 0);
         this._list = this.getAllBlocks(this.tree, []);
-    }
 
-    /**
-     * Set artifact models
-     * @param artifacts
-     * @public
-     */
-    public setArtifacts(artifacts: IArtifacts[]): ModuleModel {
-        this._artifacts = artifacts;
-        return this;
-    }
-
-    /**
-     * Update all weight
-     * @public
-     */
-    public update(): ModuleModel {
-        const blockMap: IKeyMap<BlockModel> = {};
-        for (const block of this._list) {
-            blockMap[block.tag] = block;
-        }
-        // const schemaMap: IKeyMap<SchemaModel> = {};
-        // for (const schema of this._schemas) {
-        //     schemaMap[schema.iri] = schema;
-        // }
-        // const tokenMap: IKeyMap<TokenModel> = {};
-        // for (const token of this._tokens) {
-        //     tokenMap[token.tokenId] = token;
-        // }
-
-        for (const block of this._list) {
-            block.updateArtifacts(this._artifacts, this.options);
-            // block.updateSchemas(schemaMap, this.options);
-            // block.updateTokens(tokenMap, this.options);;
-        }
-
-        this.updateAllBlocks(this.tree, this.options);
-
-        for (const block of this._list) {
-            block.updateEvents(blockMap, this.options);
-        }
-
-        return this;
-    }
-
-    /**
-     * Convert class to object
-     * @public
-     */
-    public info(): any {
-        return {
-            id: this.id,
-            name: this.name,
-            description: this.description,
-        };
-    }
-
-    /**
-     * Get all properties (all blocks)
-     * @param type - filter by property type
-     * @public
-     */
-    public getAllProp<T>(type: PropertyType): PropertyModel<T>[] {
-        let prop = [];
-        for (const block of this._list) {
-            prop = [...prop, ...block.getPropList(type)];
-        }
-        return prop;
+        this.inputEvents = this.createInputEvents(policyModule.config.inputEvents, this.options);
+        this.outputEvents = this.createOutputEvents(policyModule.config.outputEvents, this.options);
+        this.variables = this.createVariables(policyModule.config.variables, this.options);
     }
 
     /**
@@ -177,5 +132,105 @@ export class ModuleModel {
             this.updateAllBlocks(child, options);
         }
         root.update(options);
+    }
+
+    /**
+     * Create Input Events by JSON
+     * @param variables
+     * @param options - comparison options
+     * @private
+     */
+    private createInputEvents(variables: any[], options: ICompareOptions): VariableModel[] {
+        const result: VariableModel[] = [];
+        if (Array.isArray(variables)) {
+            for (const json of variables) {
+                json.type = 'InputEvents';
+                const model = new VariableModel(json);
+                model.update(options);
+                result.push(model);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Create Output Events by JSON
+     * @param variables
+     * @param options - comparison options
+     * @private
+     */
+    private createOutputEvents(variables: any[], options: ICompareOptions): VariableModel[] {
+        const result: VariableModel[] = [];
+        if (Array.isArray(variables)) {
+            for (const json of variables) {
+                json.type = 'OutputEvents';
+                const model = new VariableModel(json);
+                model.update(options);
+                result.push(model);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Create Variables by JSON
+     * @param variables
+     * @param options - comparison options
+     * @private
+     */
+    private createVariables(variables: any[], options: ICompareOptions): VariableModel[] {
+        const result: VariableModel[] = [];
+        if (Array.isArray(variables)) {
+            for (const json of variables) {
+                const model = new VariableModel(json);
+                model.update(options);
+                result.push(model);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Update all weight
+     * @public
+     */
+    public update(): ModuleModel {
+        const blockMap: IKeyMap<BlockModel> = {};
+        for (const block of this._list) {
+            blockMap[block.tag] = block;
+        }
+
+        this.updateAllBlocks(this.tree, this.options);
+
+        for (const block of this._list) {
+            block.updateEvents(blockMap, this.options);
+        }
+
+        return this;
+    }
+
+    /**
+     * Convert class to object
+     * @public
+     */
+    public info(): any {
+        return {
+            id: this.id,
+            name: this.name,
+            description: this.description
+        };
+    }
+
+    /**
+     * Get all properties (all blocks)
+     * @param type - filter by property type
+     * @public
+     */
+    public getAllProp<T>(type: PropertyType): PropertyModel<T>[] {
+        let prop = [];
+        for (const block of this._list) {
+            prop = [...prop, ...block.getPropList(type)];
+        }
+        return prop;
     }
 }
