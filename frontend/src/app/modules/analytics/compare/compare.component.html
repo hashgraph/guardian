@@ -82,4 +82,9 @@
         <app-compare-schema [type]="visibleType" [value]="result" [idLvl]="idLvl"
             (change)="onChange($event)"></app-compare-schema>
     </div>
+
+    <div *ngIf="type === 'module'" class="content-result">
+        <app-compare-module [type]="visibleType" [value]="result" [eventsLvl]="eventsLvl" [propLvl]="propLvl"
+            [childrenLvl]="childrenLvl" [idLvl]="idLvl" (change)="onChange($event)"></app-compare-module>
+    </div>
 </div>

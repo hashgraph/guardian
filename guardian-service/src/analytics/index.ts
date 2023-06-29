@@ -51,3 +51,5 @@ export { CSV } from './table/csv';
 export { IColumn } from './table/report-column';
 export { ReportRow } from './table/report-row';
 export { ReportTable } from './table/report-table';
+export { ModuleModel } from './compare/models/module.model';
+export { ModuleComparator } from './compare/comparators/module-comparator';
