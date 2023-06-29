@@ -221,6 +221,14 @@ paths:
           description: ''
       tags: &ref_1
         - analytics
+  /analytics/compare/modules:
+    post:
+      operationId: AnalyticsApi_compareModules
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_1
   /analytics/compare/schemas:
     post:
       operationId: AnalyticsApi_compareSchemas
