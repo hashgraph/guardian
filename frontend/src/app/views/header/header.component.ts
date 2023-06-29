@@ -260,6 +260,8 @@ export class HeaderComponent implements OnInit {
                 return this.activeLinkRoot === '/admin/logs';
             case 'SR_STATUS':
                 return this.activeLinkRoot === '/admin/status';
+            case 'SR_REGISTER':
+                return this.activeLinkRoot === '/register';
 
             case 'USER_TOKENS':
                 return this.activeLink === '/user-profile?tab=tokens';
@@ -332,6 +334,9 @@ export class HeaderComponent implements OnInit {
                 return true;
             case 'SR_STATUS':
                 this.router.navigate(['/admin/status']);
+                return true;
+            case 'SR_REGISTER':
+                this.router.navigate(['/register']);
                 return true;
 
             case 'USER_TOKENS':

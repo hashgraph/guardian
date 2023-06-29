@@ -6,6 +6,7 @@ import { AuthStateService } from 'src/app/services/auth-state.service';
 import { UserRole } from '@guardian/interfaces';
 import { Observable, ReplaySubject } from 'rxjs';
 import { noWhitespaceValidator } from 'src/app/validators/no-whitespace-validator';
+import { environment } from 'src/environments/environment';
 
 const checkPasswords: ValidatorFn = (group: AbstractControl): ValidationErrors | null => {
     const pass = group.get('password');
@@ -27,6 +28,7 @@ const checkPasswords: ValidatorFn = (group: AbstractControl): ValidationErrors |
 export class RegisterComponent implements OnInit {
     loading: boolean = false;
     error?: string;
+    production: boolean = environment.production;
 
     loginForm = new FormGroup({
         login: new FormControl(Math.random().toString(36).substring(2,10), [Validators.required, noWhitespaceValidator()]),
@@ -59,6 +61,12 @@ export class RegisterComponent implements OnInit {
                     this.error = result.error;
                     this.loading = false;
                     return;
+                }
+                if (this.production) {
+                    this.auth.removeAccessToken();
+                    this.auth.removeUsername();
+                    this.authState.updateState(false);
+                    this.router.navigate(['/'])
                 }
                 this.auth.login(d.login, d.password).subscribe((result) => {
                     this.auth.setAccessToken(result.accessToken);
