@@ -9,12 +9,23 @@ const AuthPageLocators = {
     createNewBtn: "*[class^='create-link']",
     roleName: "*[class^='role-name']",
     role: '[role="combobox"]',
+    title :  'h1.user-onboarding-wizard__title',
+    card : '.standard-registry__card',
+    taskReq: '/api/v1/tasks/**',
 };
 
 export class AuthenticationPage {
     visit() {
         cy.visit(URL.Root);
     }
+
+    static waitForTask(){
+        cy.intercept(AuthPageLocators.taskReq).as(
+          "waitForTastToComplete"
+      );
+      cy.wait("@waitForTastToComplete", { timeout: 100000 })
+      }
+      
 
     login(username) {
         const inputName = cy.get(AuthPageLocators.usernameInput);
@@ -32,22 +43,25 @@ export class AuthenticationPage {
 
     checkSetup(role) {
         cy.wait(2000);
+       
+
         cy.get("body").then((body) => {
-            if (body.find(AuthPageLocators.role).length) {
+            if (body.find(AuthPageLocators.card).length) {
                 cy.log("Requires registration")
-                cy.get(AuthPageLocators.role)
-                    .click()
-                    .then(() => {
-                        cy.get('[role="option"]').contains('StandardRegistry').click();
-                        cy.contains(AuthPageLocators.generateBtn).click();
-                        cy.wait(5000);
-                    });
+           
+                cy.contains('StandardRegistry').click();
+                cy.contains('Next').click();
+                cy.contains(AuthPageLocators.generateBtn).click();
+                AuthenticationPage.waitForTask();
                 cy.contains("Submit").click();
                 cy.intercept("/api/v1/profiles/" + role).as("waitForRegister" + role);
                 cy.wait("@waitForRegister" + role, { timeout: 180000 }).then(() => {
                     cy.contains("Policies").click({ force: true });
                 });
             }
+         else {
+                     cy.log("Role already set")
+                }
         });
     }
 

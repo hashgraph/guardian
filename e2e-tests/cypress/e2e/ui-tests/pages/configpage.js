@@ -16,6 +16,7 @@ const ConfigPageLocators = {
   isicInput: '[ng-reflect-name="ISIC"]',
   connectBtn: "Connect",
   standardregistryList: 'api/v1/schemas/system/entity/STANDARD_REGISTRY',
+  taskReq: '/api/v1/tasks/**',
   userProfileApi: '/api/v1/profiles/',
   did: 'did:hedera:testnet',
   selectadminLst: '[role="combobox"]',
@@ -28,12 +29,19 @@ const ConfigPageLocators = {
 }
 export class ConfigPage {
 
-
+static waitForTask(){
+  cy.intercept(ConfigPageLocators.taskReq).as(
+    "waitForTastToComplete"
+);
+cy.wait("@waitForTastToComplete", { timeout: 100000 })
+}
 
 
   finishsetupSD(Option,ID,KEY) {
     if (Option =='GENERATE'){
     cy.contains(ConfigPageLocators.generateBtn).click();
+    ConfigPage.waitForTask();
+    cy.wait(4000);
     cy.get(ConfigPageLocators.hederaIDInput).should('not.be.null')
     cy.get(ConfigPageLocators.hederaKeyInput).should('not.be.null')
     cy
@@ -55,6 +63,7 @@ export class ConfigPage {
     }
     if (Option =='NOGENERATE')
     {
+      cy.wait(2000);
       cy.get(ConfigPageLocators.hederaIDInput).type(ID);
       cy.get(ConfigPageLocators.hederaKeyInput).type(KEY);
       cy.contains(ConfigPageLocators.nextBtn).should('be.enabled');
@@ -82,13 +91,15 @@ export class ConfigPage {
 
   
        
-        cy.get(ConfigPageLocators.usernameInput).type(admin);
-        cy.contains('Apply').click();
+   
+    
         cy.get('.standard-registry').find('span').contains(admin).click();
-        cy.contains('Next').click();
 
+        cy.contains('Next').click();
+        cy.wait(2000);
         if (Option =='GENERATE'){
-          cy.contains(ConfigPageLocators.generateBtn).click()
+          cy.contains(ConfigPageLocators.generateBtn).click();
+          ConfigPage.waitForTask();
         }
         if (Option =='NOGENERATE')
         {
@@ -96,9 +107,10 @@ export class ConfigPage {
           cy.get(ConfigPageLocators.hederaKeyUserInput).type(KEY);
           cy.contains(ConfigPageLocators.submitBtn).should('be.enabled');
         }
+        cy.wait(3000);
         cy.contains(ConfigPageLocators.submitBtn).click()
         cy.intercept(ConfigPageLocators.userProfileApi + username).as('waitForuser')
-        cy.wait('@waitForuser', { timeout: 8000 })
+        cy.wait('@waitForuser', { timeout: 200000 })
       
     
 
@@ -106,7 +118,7 @@ export class ConfigPage {
   }
 
   verifyHeaderLabelsOnLoginPageForAdmin() {
-  
+  cy.wait(2000);
     cy.get(ConfigPageLocators.adminHeader).should(($header) => {
         expect($header.get(0).innerText).to.eq('DID Document')
         expect($header.get(1).innerText).to.eq('VC Document')
@@ -117,10 +129,11 @@ export class ConfigPage {
         expect($header.get(6).innerText).to.eq('Initialization topic')
 
     })
+    cy.wait(3000);
 }
 
 verifyHeaderLabelsOnLoginPageForUser() {
-  
+  cy.wait(2000);
   cy.get(ConfigPageLocators.userHeader).should(($header) => {
       expect($header.get(0).innerText).to.eq('HEDERA ID')
       expect($header.get(1).innerText).to.eq('BALANCE')
@@ -131,6 +144,7 @@ verifyHeaderLabelsOnLoginPageForUser() {
    
 
   })
+  cy.wait(3000);
 }
 
 
