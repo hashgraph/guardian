@@ -97,7 +97,7 @@ export class SchemaFormComponent implements OnInit {
     public options: FormGroup | undefined;
     public fields: any[] | undefined = [];
     public conditionFields: SchemaField[] = [];
-    public isShown: boolean[] = [true, true];
+    public isShown: boolean[] = [true];
     public currentIndex: number = 0;
 
     private _patternByNumberType: any = {
