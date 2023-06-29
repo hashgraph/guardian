@@ -38,6 +38,38 @@ export class AnalyticsApi {
         }
     }
 
+    @Post('/compare/modules')
+    @HttpCode(HttpStatus.OK)
+    async compareModules(@Body() body, @Req() req): Promise<any> {
+        const guardians = new Guardians();
+        const moduleId1 = body ? body.moduleId1 : null;
+        const moduleId2 = body ? body.moduleId2 : null;
+        const eventsLvl = body ? body.eventsLvl : null;
+        const propLvl = body ? body.propLvl : null;
+        const childrenLvl = body ? body.childrenLvl : null;
+        const idLvl = body ? body.idLvl : null;
+        const user = req.user;
+        if (!user) {
+            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+        }
+        try {
+            const result = await guardians.compareModules(
+                user,
+                null,
+                moduleId1,
+                moduleId2,
+                eventsLvl,
+                propLvl,
+                childrenLvl,
+                idLvl
+            );
+            return result;
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     /**
      * Compare schemas
      */

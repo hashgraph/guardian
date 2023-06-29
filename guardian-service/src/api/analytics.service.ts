@@ -3,11 +3,11 @@ import { MessageAPI } from '@guardian/interfaces';
 import * as crypto from 'crypto';
 import { PolicyComparator, PolicyModel, PropertyType, SchemaComparator, SchemaModel, TokenModel } from '@analytics';
 import { Controller, Module } from '@nestjs/common';
-import { ClientsModule,
-    // Ctx, MessagePattern, NatsContext, Payload,
-    Transport } from '@nestjs/microservices';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 import process from 'process';
 import { ApiResponse } from '@api/helpers/api-response';
+import * as console from 'console';
+import { ModuleModel } from '../analytics/compare/models/module.model';
 
 @Controller()
 export class AnalyticsController {
@@ -294,6 +294,54 @@ export async function analyticsAPI(): Promise<void> {
             } else {
                 return new MessageResponse(result);
             }
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    ApiResponse(MessageAPI.COMPARE_MODULES, async (msg) => {
+        try {
+            const {
+                type,
+                moduleId1,
+                moduleId2,
+                idLvl
+            } = msg;
+
+            const module1 = await DatabaseServer.getModuleById(moduleId1);
+            const module2 = await DatabaseServer.getModuleById(moduleId2);
+            const options = {
+                propLvl: 2,
+                childLvl: 0,
+                eventLvl: 0,
+                idLvl: parseInt(idLvl, 10)
+            }
+
+            if (!module1 || !module2) {
+                throw new Error('Unknown modules');
+            }
+
+            const model1 = new ModuleModel(module1, options);
+            const model2 = new ModuleModel(module2, options);
+
+            console.log(module1, module2);
+
+            // const model1 = new SchemaModel(schema1, options);
+            // const model2 = new SchemaModel(schema2, options);
+            // model1.setPolicy(policy1);
+            // model2.setPolicy(policy2);
+            // model1.update(options);
+            // model2.update(options);
+            // const comparator = new SchemaComparator(options);
+            // const result = comparator.compare(model1, model2);
+            // if(type === 'csv') {
+            //     const csv = comparator.csv(result);
+            //     return new MessageResponse(csv);
+            // } else {
+            //     return new MessageResponse(result);
+            // }
+            return new MessageResponse({});
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
