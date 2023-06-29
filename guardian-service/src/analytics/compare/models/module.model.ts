@@ -1,16 +1,9 @@
-import { Policy, PolicyModule } from '@guardian/common';
+import { PolicyModule } from '@guardian/common';
 import { BlockModel } from './block.model';
 import { ICompareOptions } from '../interfaces/compare-options.interface';
-import { IArtifacts } from '../interfaces/artifacts.interface';
-import { SchemaModel } from './schema.model';
 import { IKeyMap } from '../interfaces/key-map.interface';
 import { PropertyModel } from './property.model';
 import { PropertyType } from '../types/property.type';
-import { TokenModel } from './token.model';
-import { GroupModel } from './group.model';
-import { TopicModel } from './topic.model';
-import { TemplateTokenModel } from './template-token.model';
-import { RoleModel } from './role.model';
 import { VariableModel } from './variable.model';
 
 /**

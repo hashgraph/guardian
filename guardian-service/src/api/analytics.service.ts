@@ -6,7 +6,6 @@ import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import process from 'process';
 import { ApiResponse } from '@api/helpers/api-response';
-import * as console from 'console';
 
 @Controller()
 export class AnalyticsController {
