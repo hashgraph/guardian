@@ -130,7 +130,7 @@ export class MintService {
         const mintId = Date.now();
         MintService.log(`Mint(${mintId}): Start (Count: ${tokenValue})`, ref);
 
-        let result: number[] = [];
+        const result: number[] = [];
         const workers = new Workers();
         const data = new Array<string>(Math.floor(tokenValue));
         data.fill(uuid);
