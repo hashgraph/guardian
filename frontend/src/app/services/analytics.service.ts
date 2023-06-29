@@ -40,4 +40,10 @@ export class AnalyticsService {
             responseType: 'text'
         });
     }
+
+    public compareModuleFile(options: any, type: string): Observable<any> {
+        return this.http.post(`${this.url}/compare/modules/export?type=${type}`, options, {
+            responseType: 'text'
+        });
+    }
 }

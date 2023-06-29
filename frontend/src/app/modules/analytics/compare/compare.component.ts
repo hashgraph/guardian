@@ -173,6 +173,8 @@ export class CompareComponent implements OnInit {
             this.downloadPolicy();
         } else if (this.type === 'schema') {
             this.downloadSchema();
+        } else if (this.type === 'module') {
+            this.downloadModule();
         }
     }
 
@@ -190,7 +192,27 @@ export class CompareComponent implements OnInit {
                 this.downloadObjectAsJson(data, 'report');
             }
             this.loading = false;
-        }, ({ message }) => {
+        }, ({message}) => {
+            this.loading = false;
+            console.error(message);
+        });
+    }
+
+    downloadModule() {
+        const options = {
+            moduleId1: this.moduleId1,
+            moduleId2: this.moduleId2,
+            eventsLvl: this.eventsLvl,
+            propLvl: this.propLvl,
+            childrenLvl: this.childrenLvl,
+            idLvl: this.idLvl
+        }
+        this.analyticsService.compareModuleFile(options, 'csv').subscribe((data) => {
+            if (data) {
+                this.downloadObjectAsJson(data, 'report');
+            }
+            this.loading = false;
+        }, ({message}) => {
             this.loading = false;
             console.error(message);
         });
