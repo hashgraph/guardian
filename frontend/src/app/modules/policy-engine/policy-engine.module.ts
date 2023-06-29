@@ -5,7 +5,6 @@ import { FormsModule } from '@angular/forms';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 //Modules
-
 import { SchemaEngineModule } from '../schema-engine/schema-engine.module';
 import { CommonComponentsModule } from '../common/common-components.module';
 import { TagEngineModule } from '../tag-engine/tag-engine.module';
@@ -100,6 +99,7 @@ import { ImportFileDialog } from './helpers/import-file-dialog/import-file-dialo
 import { NewThemeDialog } from './helpers/new-theme-dialog/new-theme-dialog.component';
 import { ExternalTopicBlockComponent } from './policy-viewer/blocks/external-topic-block/external-topic-block.component';
 import { UploadDocumentBlockComponent } from './policy-viewer/blocks/upload-document-block/upload-document-block.component';
+import { CompareModulesDialogComponent } from './helpers/compare-modules-dialog/compare-modules-dialog.component';
 
 @NgModule({
     declarations: [
@@ -170,6 +170,7 @@ import { UploadDocumentBlockComponent } from './policy-viewer/blocks/upload-docu
         CreateTokenBlockComponent,
         MultiPolicyDialogComponent,
         ComparePolicyDialog,
+        CompareModulesDialogComponent,
         PolicyTreeComponent,
         ModulePropertiesComponent,
         ModuleComponent,

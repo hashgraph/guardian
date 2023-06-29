@@ -1,11 +1,9 @@
 import { DatabaseServer, InboundMessageIdentityDeserializer, Logger, MessageError, MessageResponse, OutboundResponseIdentitySerializer } from '@guardian/common';
 import { MessageAPI } from '@guardian/interfaces';
 import * as crypto from 'crypto';
-import { PolicyComparator, PolicyModel, PropertyType, SchemaComparator, SchemaModel, TokenModel } from '@analytics';
+import { ModuleComparator, ModuleModel, PolicyComparator, PolicyModel, PropertyType, SchemaComparator, SchemaModel, TokenModel } from '@analytics';
 import { Controller, Module } from '@nestjs/common';
-import { ClientsModule,
-    // Ctx, MessagePattern, NatsContext, Payload,
-    Transport } from '@nestjs/microservices';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 import process from 'process';
 import { ApiResponse } from '@api/helpers/api-response';
 
@@ -288,6 +286,53 @@ export async function analyticsAPI(): Promise<void> {
 
             const comparator = new PolicyComparator(options);
             const result = comparator.compare(policyModel1, policyModel2);
+            if(type === 'csv') {
+                const csv = comparator.csv(result);
+                return new MessageResponse(csv);
+            } else {
+                return new MessageResponse(result);
+            }
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    ApiResponse(MessageAPI.COMPARE_MODULES, async (msg) => {
+        try {
+            const {
+                type,
+                moduleId1,
+                moduleId2,
+                eventsLvl,
+                propLvl,
+                childrenLvl,
+                idLvl
+            } = msg;
+            const options = {
+                propLvl: parseInt(propLvl, 10),
+                childLvl: parseInt(childrenLvl, 10),
+                eventLvl: parseInt(eventsLvl, 10),
+                idLvl: parseInt(idLvl, 10),
+            };
+
+            //Policy
+            const module1 = await DatabaseServer.getModuleById(moduleId1);
+            const module2 = await DatabaseServer.getModuleById(moduleId2);
+
+            if (!module1 || !module2) {
+                throw new Error('Unknown modules');
+            }
+
+            const model1 = new ModuleModel(module1, options);
+            const model2 = new ModuleModel(module2, options);
+
+            //Compare
+            model1.update();
+            model2.update();
+
+            const comparator = new ModuleComparator(options);
+            const result = comparator.compare(model1, model2);
             if(type === 'csv') {
                 const csv = comparator.csv(result);
                 return new MessageResponse(csv);
