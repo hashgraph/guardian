@@ -14,6 +14,7 @@ import { HttpStatus, ValidationPipe } from '@nestjs/common';
 import { json } from 'express';
 import { SwaggerModule } from '@nestjs/swagger';
 import { SwaggerConfig } from '@helpers/swagger-config';
+import { SwaggerModels, SwaggerPaths } from './old-descriptions';
 
 const PORT = process.env.PORT || 3002;
 
@@ -61,6 +62,8 @@ Promise.all([
         new TaskManager().setDependecies(wsService, cn);
 
         const document = SwaggerModule.createDocument(app, SwaggerConfig);
+        Object.assign(document.paths, SwaggerPaths)
+        Object.assign(document.components.schemas, SwaggerModels.schemas);
         SwaggerModule.setup('api-docs', app, document);
 
         const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
