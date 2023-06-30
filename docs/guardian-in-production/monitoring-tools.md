@@ -31,6 +31,6 @@ These services are being scraped by Prometheus, which was defined to running her
 
 A complete dashboard was created by default using the Grafana application to present interesting metrics. This dashboard can be accessed here once you have the Guardian application running -> [**http://localhost:9080**](http://localhost:9080/).
 
-<figure><img src=".gitbook/assets/220951740-45a57b4f-71f3-4c3f-ada9-1496c3e23535.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/220951740-45a57b4f-71f3-4c3f-ada9-1496c3e23535.png" alt=""><figcaption></figcaption></figure>
 
 \
