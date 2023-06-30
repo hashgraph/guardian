@@ -186,7 +186,16 @@ export class RequestDocumentBlockComponent implements OnInit {
         }
     }
 
-    onSubmit() {
+    onSubmit(type?: string) {
+        if (this.disabled) {
+            return;
+        }
+        if (type === 'page' && this.loading) {
+            return;
+        }
+        if (type === 'dialog' && this.dialogLoading) {
+            return;
+        }
         if (this.dataForm.valid) {
             const data = this.dataForm.getRawValue();
             this.prepareDataFrom(data);
