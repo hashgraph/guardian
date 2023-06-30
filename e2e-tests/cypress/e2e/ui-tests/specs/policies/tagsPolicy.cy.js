@@ -20,22 +20,22 @@ describe("Tags Policy", {tags: '@ui'}, () => {
     it("Verify if it possible to add tags", () => {
         policies.checkStatus(name, "Draft");
         policies.clickOnButtonOnPolicy(name, " Create Tag ");
-        policies.fillNewPTagForm(name + "tag");
+        policies.fillNewTagForm(name + "tag");
         policies.checkPolicyTableContains(name + "tag");
         policies.clickOnButtonOnPolicy(name, name + "tag");
         policies.clickOnButtonByTextInModal(" Create Tag ");
-        policies.fillNewPTagForm(name + "tag2");
+        policies.fillNewTagForm(name + "tag2");
         policies.checkPolicyTableContains(name + "tag2");
     });
 
     it("Verify if it possible to delete tags", () => {
         policies.checkStatus(name, "Draft");
         policies.clickOnButtonOnPolicy(name, " Create Tag ");
-        policies.fillNewPTagForm(name + "tag");
+        policies.fillNewTagForm(name + "tag");
         policies.checkPolicyTableContains(name + "tag");
         policies.clickOnButtonOnPolicy(name, name + "tag");
         policies.clickOnButtonByTextInModal(" Create Tag ");
-        policies.fillNewPTagForm(name + "tag2");
+        policies.fillNewTagForm(name + "tag2");
         policies.checkPolicyTableContains(name + "tag2");
         policies.clickOnButtonByTextInModal(name + "tag");
         policies.clickOnDeleteTag();
