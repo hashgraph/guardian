@@ -16,7 +16,8 @@ export const environment = {
         'tokens': 'tokens',
         'topics': 'topics',
         'accounts': 'accounts',
-        'messages': 'messages'
+        'messages': 'messages',
+        'serials': 'nfts'
     }
   }
 };

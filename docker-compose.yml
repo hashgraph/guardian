@@ -6,7 +6,7 @@ services:
     restart: always
     expose:
       - 27017
-      
+
   mongo-express:
     image: mongo-express:1.0.0-alpha.4
     expose:
@@ -183,7 +183,7 @@ services:
       - "5007:5007"
     volumes:
       - ./guardian-service/tls:/usr/local/guardian-service/tls:ro
-      - ./guardian-service/configs:/usr/local/guardian-service/configs:ro    
+      - ./guardian-service/configs:/usr/local/guardian-service/configs:ro
     depends_on:
       - mongo
       - message-broker
@@ -250,7 +250,7 @@ services:
       - mongo-express
 
   prometheus:
-    image: prom/prometheus:latest
+    image: prom/prometheus:v2.44.0
     container_name: prometheus
     restart: unless-stopped
     volumes:
@@ -268,7 +268,7 @@ services:
       - monitoring
 
   grafana:
-    image: grafana/grafana
+    image: grafana/grafana:10.0.0
     container_name: grafana
     volumes:
       - grafana_data:/var/lib/grafana

@@ -13,7 +13,7 @@ COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.
 RUN npm install guardian-interfaces-*.tgz
 RUN npm run build:demo
 
-FROM nginx:latest
+FROM nginx:1.25.1
 ENV PLATFORM="docker"
 COPY ./web-proxy/configs/demo.conf /etc/nginx/templates/default.conf.template
 COPY --from=frontendBuilder /usr/local/frontend/dist/guardian /usr/share/nginx/html

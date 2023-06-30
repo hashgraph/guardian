@@ -1,9 +1,8 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
-import { IUser, UserRole } from '@guardian/interfaces';
-import { Observable, Subscription } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { NavigationEnd, Router } from '@angular/router';
+import { IUser } from '@guardian/interfaces';
+import { Observable } from 'rxjs';
 import { AuthStateService } from 'src/app/services/auth-state.service';
 import { DemoService } from 'src/app/services/demo.service';
 import { HeaderPropsService } from 'src/app/services/header-props.service';
@@ -37,9 +36,9 @@ export class HeaderComponent implements OnInit {
     displayDemoAccounts: boolean = environment.displayDemoAccounts;
     hederaAccountID: string | undefined;
     profileData: IUser | null = null;
-
-    public innerWidth: any;
-    public innerHeight: any;
+    mobileMenuOpen: boolean = false;
+    subMenuOpen: any = {};
+    userInfoVisible: boolean = false;
 
     constructor(
         public authState: AuthStateService,
@@ -63,11 +62,8 @@ export class HeaderComponent implements OnInit {
     }
 
     ngOnInit() {
-        this.innerWidth = window.innerWidth;
-        this.innerHeight = window.innerHeight;
-        if (this.innerWidth <= 810) {
-            document.documentElement.style.setProperty('--header-height', '75px');
-        }
+        // this.innerWidth = window.innerWidth;
+        // this.innerHeight = window.innerHeight;
         this.activeLink = '';
         this.update();
         this.ws = this.webSocketService.profileSubscribe((event) => {
@@ -111,18 +107,18 @@ export class HeaderComponent implements OnInit {
     }
 
     getBallance() {
-        if(!this.isLogin) {
+        if (!this.isLogin) {
             return;
         }
         this.balanceInit = true;
         this.auth.balance().subscribe((balance: any) => {
             if (balance && balance.balance) {
                 const b = parseFloat(balance.balance);
-                if(b > 999) {
+                if (b > 999) {
                     this.balance = `${b.toFixed(0)} ${balance.unit}`;
-                } else if(b > 99) {
+                } else if (b > 99) {
                     this.balance = `${b.toFixed(2)} ${balance.unit}`;
-                } else if(b > 9) {
+                } else if (b > 9) {
                     this.balance = `${b.toFixed(3)} ${balance.unit}`;
                 }
                 if (b > 100) {
@@ -154,7 +150,7 @@ export class HeaderComponent implements OnInit {
             const username = user ? user.username : null;
             this.setStatus(isLogin, role, username);
             this.authState.updateState(isLogin);
-            if(!this.balanceInit) {
+            if (!this.balanceInit) {
                 this.getBallance();
             }
         }, () => {
@@ -283,10 +279,13 @@ export class HeaderComponent implements OnInit {
         return false;
     }
 
+
+    public mobileRoutActive(type: string): boolean {
+        this.closeNav();
+        return this.routActive(type);
+    }
+
     public routActive(type: string): boolean {
-        if (this.innerWidth <= 810) {
-            this.closeNav()
-        }
         switch (type) {
             case 'SR_UP':
                 this.router.navigate(['/config']);
@@ -371,65 +370,31 @@ export class HeaderComponent implements OnInit {
     }
 
     openNav() {
-        document.getElementById("menu-backdrop")!.style.display = "flex";
-        document.getElementById("menu-backdrop")!.style.zIndex = "1000";
-        document.getElementById("nav-items")!.style.width = "250px";
-        document.getElementById("nav-items")!.style.zIndex = "1001";
-        document.getElementById("footer")!.style.display = "block";
-        document.getElementById("footer")!.style.width = "210px";
-        document.getElementById("footer")!.style.zIndex = "1001";
-
+        this.mobileMenuOpen = true;
         this.profileService.getProfile().subscribe(
             (profile: IUser) => {
-              this.profileData = profile;
-              this.hederaAccountID = this.profileData.hederaAccountId;
+                this.profileData = profile;
+                this.hederaAccountID = this.profileData.hederaAccountId;
             },
             ({ message }) => {
-              console.error('Failed to get profile data:', message);
+                console.error('Failed to get profile data:', message);
             }
         );
     }
 
     closeNav() {
-        document.getElementById("menu-backdrop")!.style.display = "none";
-        document.getElementById("nav-items")!.style.width = "0";
-        document.getElementById("footer")!.style.display = "none";
+        this.mobileMenuOpen = false;
     }
 
     openSubMenu(subMenuID: string) {
-        let content = document.getElementById('subMenu' + subMenuID)!;
-        let userInfo = document.getElementById("user-info");
-        for (let i = 1; i < 4; i++) {
-            if (i == parseInt(subMenuID)) {
-                continue
-            } else {
-                let dialog = document.getElementById('subMenu' + i)!;
-                dialog.style.maxHeight = '';
-                setTimeout(function () {
-                    dialog.style.margin = "0";
-                }, 200);
-                dialog.style.overflow = "hidden";
+        this.userInfoVisible = true;
+        this.subMenuOpen[subMenuID] = !this.subMenuOpen[subMenuID];
+        for (const index of Object.keys(this.subMenuOpen)) {
+            if (index !== subMenuID) {
+                this.subMenuOpen[index] = false;
             }
-        }
-        if (content.style.maxHeight) {
-            // Submenu is open
-            content.style.maxHeight = '';
-            setTimeout(function () {
-                content.style.margin = "0";
-            }, 200);
-            content.style.overflow = "hidden";
-            if (userInfo) {
-                userInfo.style.display = "block";
-                userInfo.style.maxHeight = '';
-            }
-        } else {
-            // Submenu is closed
-            content.style.maxHeight = content.scrollHeight + "px";
-            content.style.margin = "0 auto 20px 35px";
-            content.style.overflow = "visible";
-            if (userInfo) {
-                userInfo.style.display = "none";
-                userInfo.style.maxHeight = content.scrollHeight + "px";
+            if (this.subMenuOpen[index]) {
+                this.userInfoVisible = false;
             }
         }
     }

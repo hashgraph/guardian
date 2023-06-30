@@ -23,7 +23,8 @@
         </td>
     </tr>
     <tr class="propHeader">
-        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'fieldsGroup')" [attr.collapse]="propHidden.fieldsGroup">
+        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'fieldsGroup')"
+            [attr.collapse]="propHidden.fieldsGroup">
             <mat-icon>arrow_drop_down</mat-icon>
         </td>
         <td class="propHeaderCell cellName">Fields</td>
@@ -36,7 +37,8 @@
     </tr>
     <ng-container *ngFor="let field of properties.uiMetaData.fields; let i=index">
         <tr class="propRow" [attr.collapse]="propHidden.fieldsGroup">
-            <td class="propRowCol cellCollapse" (click)="onHide(propHidden.fields, i)" [attr.collapse]="propHidden.fields[i]">
+            <td class="propRowCol cellCollapse" (click)="onHide(propHidden.fields, i)"
+                [attr.collapse]="propHidden.fields[i]">
                 <mat-icon>arrow_drop_down</mat-icon>
             </td>
             <td class="propRowCell cellName">{{getFieldName(field, i)}}</td>
@@ -56,10 +58,12 @@
             <td class="propRowCell cellName">Type</td>
             <td class="propRowCell">
                 <mat-select [(value)]="field.type" (selectionChange)="onSelectFieldType(field)" [disabled]="readonly">
-                    <mat-option value="text">TEXT</mat-option>
+                    <mat-option value="text">Text</mat-option>
                     <mat-option value="issuer">Issuer</mat-option>
-                    <mat-option value="button">BUTTON</mat-option>
-                    <mat-option value="block">BLOCK</mat-option>
+                    <mat-option value="button">Button</mat-option>
+                    <mat-option value="block">Block</mat-option>
+                    <mat-option value="array">Array</mat-option>
+                    <mat-option value="serials">Serials</mat-option>
                 </mat-select>
             </td>
         </tr>
@@ -104,12 +108,8 @@
                 <mat-icon class="icon-link">add_link</mat-icon> Bind Group
             </td>
             <td class="propRowCell">
-                <select-block
-                    [root]="module"
-                    [(value)]="field.bindGroup"
-                    [readonly]="readonly"
-                    [blocks]="allBlocks"
-                ></select-block>
+                <select-block [root]="module" [(value)]="field.bindGroup" [readonly]="readonly"
+                    [blocks]="allBlocks"></select-block>
             </td>
         </tr>
         <ng-container *ngIf="field.type=='button'">
@@ -139,12 +139,8 @@
                         Bind Block
                     </td>
                     <td class="propRowCell">
-                        <select-block
-                            [root]="module"
-                            [(value)]="field.bindBlock"
-                            [readonly]="readonly"
-                            [blocks]="allBlocks"
-                        ></select-block>
+                        <select-block [root]="module" [(value)]="field.bindBlock" [readonly]="readonly"
+                            [blocks]="allBlocks"></select-block>
                     </td>
                 </tr>
             </ng-container>
@@ -182,12 +178,8 @@
                         Bind Block
                     </td>
                     <td class="propRowCell">
-                        <select-block
-                            [root]="module"
-                            [(value)]="field.bindBlock"
-                            [readonly]="readonly"
-                            [blocks]="allBlocks"
-                        ></select-block>
+                        <select-block [root]="module" [(value)]="field.bindBlock" [readonly]="readonly"
+                            [blocks]="allBlocks"></select-block>
                     </td>
                 </tr>
             </ng-container>
@@ -202,12 +194,8 @@
                     Bind Block
                 </td>
                 <td class="propRowCell">
-                    <select-block
-                        [root]="module"
-                        [(value)]="field.bindBlock"
-                        [readonly]="readonly"
-                        [blocks]="allBlocks"
-                    ></select-block>
+                    <select-block [root]="module" [(value)]="field.bindBlock" [readonly]="readonly"
+                        [blocks]="allBlocks"></select-block>
                 </td>
             </tr>
         </ng-container>

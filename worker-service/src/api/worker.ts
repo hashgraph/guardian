@@ -551,7 +551,8 @@ export class Worker extends NatsService {
                         transactionMemo
                     } = task.data;
                     const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun, networkOptions);
-                    result.data = await client.transferNFT(tokenId, targetAccount, treasuryId, treasuryKey, element, transactionMemo);
+                    const status = await client.transferNFT(tokenId, targetAccount, treasuryId, treasuryKey, element, transactionMemo);
+                    result.data = status ? element : null
                     client.destroy();
 
                     break;

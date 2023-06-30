@@ -13,6 +13,7 @@ import { Schema } from '@guardian/interfaces';
 export class VCViewerDialog {
     title: string = "";
     json: string = "";
+    text: string = "";
     viewDocument!: boolean;
     isVcDocument!: boolean;
     document: any;
@@ -28,7 +29,7 @@ export class VCViewerDialog {
             document: any,
             title: string,
             viewDocument?: boolean,
-            type?: 'VC' | 'VP' | 'JSON',
+            type?: 'VC' | 'VP' | 'JSON' | 'TEXT',
             toggle?: boolean,
             schema?: any
         }) {
@@ -45,10 +46,11 @@ export class VCViewerDialog {
         } = this.data;
         this.title = title;
         this.json = document ? JSON.stringify((document), null, 4) : '';
+        this.text = document || '';
         this.document = document;
         this.type = type || 'JSON';
         this.toggle = toggle !== false;
-        if(!this.document) {
+        if (!this.document) {
             this.type = 'JSON';
             this.toggle = false;
         }

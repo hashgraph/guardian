@@ -1,19 +1,5 @@
 import { Singleton } from '@helpers/decorators/singleton';
-import {
-    ApplicationStates,
-    CommonSettings, GenerateUUIDv4,
-    IArtifact,
-    IChainItem,
-    IDidObject,
-    ISchema,
-    IToken,
-    ITokenInfo,
-    IUser,
-    IVCDocument,
-    IVPDocument,
-    MessageAPI,
-    SuggestionsOrderPriority
-} from '@guardian/interfaces';
+import { ApplicationStates, CommonSettings, GenerateUUIDv4, IArtifact, IChainItem, IDidObject, ISchema, IToken, ITokenInfo, IUser, IVCDocument, IVPDocument, MessageAPI, SuggestionsOrderPriority } from '@guardian/interfaces';
 import { NatsService } from '@guardian/common';
 
 /**
@@ -925,6 +911,39 @@ export class Guardians extends NatsService {
             user,
             policyId1,
             policyId2,
+            eventsLvl,
+            propLvl,
+            childrenLvl,
+            idLvl
+        });
+    }
+
+    /**
+     * Compare two modules
+     * @param user
+     * @param type
+     * @param moduleId1
+     * @param moduleId2
+     * @param eventsLvl
+     * @param propLvl
+     * @param childrenLvl
+     * @param idLvl
+     */
+    public async compareModules(
+        user: any,
+        type: any,
+        moduleId1: any,
+        moduleId2: any,
+        eventsLvl: any,
+        propLvl: any,
+        childrenLvl: any,
+        idLvl: any,
+    ) {
+        return await this.sendMessage(MessageAPI.COMPARE_MODULES, {
+            type,
+            user,
+            moduleId1,
+            moduleId2,
             eventsLvl,
             propLvl,
             childrenLvl,
