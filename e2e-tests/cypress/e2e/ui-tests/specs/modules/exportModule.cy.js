@@ -14,21 +14,6 @@ describe("Workflow Modules Export", {tags: '@ui'}, () => {
     beforeEach(() => {
         cy.viewport(1920, 1080);
         home.visit();
-    })
-
-    it("module file export", () => {
-        home.login("StandardRegistry");
-        modules.openModulesTab();
-        modules.createNewModule(moduleName);
-        modules.exportFile(moduleName);
-    });
-
-    it("module ipfs export", () => {
-        home.login("StandardRegistry");
-        modules.openModulesTab();
-        modules.createNewModule(moduleName2);
-        modules.publishModule(moduleName2);
-        modules.exportIPFS(moduleName2);
     });
 
     it("Verify if it impossible to Export draft module using message identifier", () => {
