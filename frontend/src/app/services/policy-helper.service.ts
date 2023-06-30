@@ -61,7 +61,8 @@ export class PolicyHelper {
                     queryParams: {
                         policyParams: json,
                     },
-                    queryParamsHandling: 'merge'
+                    queryParamsHandling: 'merge',
+                    replaceUrl: true
                 });
         } catch (error) {
             console.error(error);
