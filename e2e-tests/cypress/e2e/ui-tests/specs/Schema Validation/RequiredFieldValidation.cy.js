@@ -1,13 +1,6 @@
 import { AuthenticationPage } from "../../pages/authentication";
 import { PoliciesPage } from "../../pages/policies";
 import { SchemaValidationPage } from "../../pages/schemavalidationpage";
-import { HomePage } from "../../pages/homepage";
-import { ConfigPage } from "../../pages/configpage";
-import { slowCypressDown } from 'cypress-slow-down';
-
-
-const homepage = new HomePage();
-const configpage = new ConfigPage();
 
 
 const home = new AuthenticationPage();
@@ -27,33 +20,21 @@ describe("Required Field Validation", () => {
     const errorURL = "Please make sure the field contain a valid URL value";
     const errorURI = "Please make sure the field contain a valid URI value";
     const errorEmail = "Please make sure the field contain a valid email address";
-    const username = "USER" + Math.floor(Math.random() * 9999);
-    //slowCypressDown(200);
+  
     before(() => {
-
         cy.viewport(1920, 1080);
         home.visit();
-        // home.login("StandardRegistry");
-        // policies.openPoliciesTab();
-        // policies.importPolicyButton();
-        // policies.importPolicyMessage("1687859145.558463154");  //required field validation  dummy policy
-        // policies.publishPolicy();
-        //  home.logOut("StandardRegistry")
-
-        homepage.createUserAccount(username);
-        cy.wait(3000);
-        var option = "GENERATE";
-        configpage.finishsetupUser("StandardRegistry", username, option);
-        configpage.verifyHeaderLabelsOnLoginPageForUser();
-        home.logOut(username);
-
+        home.login("StandardRegistry");
+        policies.openPoliciesTab();
+        policies.importPolicyButton();
+        policies.importPolicyMessage("1687859145.558463154");  //required field validation  dummy policy
+        policies.publishPolicy();
+         home.logOut("StandardRegistry")
     });
 
     it("Required Field Validation", { tags: '@ui' }, () => {
-
-
-        home.login1(username, "test123");
-        home.checkSetup(username);
+        home.login("Registrant")
+        home.checkSetup("Registrant");
         registrant.createGroup();
         registrant.checkTitleError('Applicant Details', errorTitle);
         registrant.checkrequiredcondition('Schematype_Number', errorNumber, 56);
@@ -74,7 +55,7 @@ describe("Required Field Validation", () => {
         registrant.checkrequiredcondition('Schematype_Account', errorCommmon, "0.0.67677");
         registrant.checkTitleErrorRemoved('Applicant Details', errorTitle);
         registrant.submitApplication();
-        home.logOut(username);
+        home.logOut("Registrant");
     });
 });
 

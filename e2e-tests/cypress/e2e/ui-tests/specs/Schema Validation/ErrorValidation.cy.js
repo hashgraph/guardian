@@ -1,14 +1,6 @@
 import { AuthenticationPage } from "../../pages/authentication";
 import { PoliciesPage } from "../../pages/policies";
 import { SchemaValidationPage } from "../../pages/schemavalidationpage";
-import { HomePage } from "../../pages/homepage";
-import { ConfigPage } from "../../pages/configpage";
-
-
-
-const homepage = new HomePage();
-const configpage = new ConfigPage();
-
 
 const home = new AuthenticationPage();
 const policies = new PoliciesPage();
@@ -17,7 +9,6 @@ const registrant = new SchemaValidationPage();
 
 describe("Required Field Validation", () => {
 
-    const errorTitle = "Please make sure all fields in schema contain a valid value";
     const errorNumber = 'Please make sure the field contain a valid number value'; // prefix , postfix
     const errorInteger = 'Please make sure the field contain a valid integer value';
     const errorCommmon = "Please make sure the field contain a valid value"; //String , Boolean , Time , Image , Account
@@ -40,7 +31,6 @@ describe("Required Field Validation", () => {
 
   
     before(() => {
-
         cy.viewport(1920, 1080);
         home.visit();
         home.login("StandardRegistry");
@@ -49,22 +39,11 @@ describe("Required Field Validation", () => {
         policies.importPolicyMessage("1688062484.609595734");  //required field validation  dummy policy
         policies.publishPolicy();
         home.logOut("StandardRegistry")
-
-        homepage.createUserAccount(username);
-        cy.wait(3000);
-        var option = "GENERATE";
-        configpage.finishsetupUser("StandardRegistry", username, option);
-        configpage.verifyHeaderLabelsOnLoginPageForUser();
-        home.logOut(username);
-
-
     });
 
-    it("Required Field Validation", { tags: '@ui' }, () => {
-
-
-        home.login1(username, "test123");
-        home.checkSetup(username);
+    it("Error Validation", { tags: '@ui' }, () => {
+        home.login("Registrant");
+        home.checkSetup("Registrant");
         registrant.createGroup();
         registrant.checkAddEntity();
         registrant.checkErrorcondition('Schematype_Number', errorNumber, incorrectValueNumber, 56);
@@ -84,7 +63,7 @@ describe("Required Field Validation", () => {
         registrant.checkErrorcondition('Schematype_Postfix', errorNumber, incorrectValueNumber, 50);
         registrant.checkErrorcondition('Schematype_Account', errorCommmon, incorrectValueNumber, "0.0.67677");
         registrant.submitApplication();
-        home.logOut(username);
+        home.logOut("Registrant");
     });
 });
 
