@@ -97,7 +97,7 @@ export class SchemaFormComponent implements OnInit {
     public options: FormGroup | undefined;
     public fields: any[] | undefined = [];
     public conditionFields: SchemaField[] = [];
-    public isShown: boolean[] = [true, true];
+    public isShown: boolean[] = [true];
     public currentIndex: number = 0;
 
     private _patternByNumberType: any = {
@@ -687,6 +687,10 @@ export class SchemaFormComponent implements OnInit {
                     initialDivision = 1;
                     this.currentIndex = i;
                     this.isShown = new Array(fields.length).fill(false);
+                    if (fields[this.currentIndex].isRef && fields[this.currentIndex - 1].isRef) {
+                        this.isShown[this.currentIndex] = true;
+                        break;
+                    }
                     continue;
                 }
                 break;
