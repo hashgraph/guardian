@@ -36,7 +36,8 @@ COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.
 COPY --from=commonModuleBuilder /usr/local/common/guardian-common-*.tgz /tmp/common.tgz
 COPY --from=authServiceBuilder  /usr/local/auth-service/yarn.lock ./
 COPY ./auth-service/package.json ./
-# COPY ./auth-service/.env.docker ./.env
+RUN mkdir -p ./configs
+COPY ./auth-service/configs/* ./configs
 RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@guardian/interfaces']='file:/tmp/interfaces.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
 RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@guardian/common']='file:/tmp/common.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
 RUN yarn install --frozen-lockfile

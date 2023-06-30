@@ -1,3 +1,4 @@
+.env
 node_modules/
 dist/
 .vscode/
@@ -16,8 +17,12 @@ tsconfig.tsbuildinfo
 .pnp.*
 node_modules
 runtime-data/
+<<<<<<< HEAD
 downloads
 test.env.json
+=======
+000_*
+>>>>>>> origin/automation-api-tests
 
 # OSX related metadata removal and IDE nonsense
 .DS_store

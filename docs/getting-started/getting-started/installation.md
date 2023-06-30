@@ -11,14 +11,7 @@
 
 For example:
 
-in `guardian-service/.env`:
-
-```
- OPERATOR_ID=""
- OPERATOR_KEY=""
-```
-
-in `guardian-service/.env.docker`:
+in `/configs/.env..guardian.system`
 
 ```
  OPERATOR_ID=""
@@ -26,7 +19,7 @@ in `guardian-service/.env.docker`:
 ```
 
 {% hint style="info" %}
-**Note:**&#x20;
+**Note:**
 
 1. You can use the Schema Topic ID (`INITIALIZATION_TOPIC_ID`) already present in the configuration files, or you can specify your own.
 {% endhint %}
@@ -43,7 +36,7 @@ For example: [https://github.com/yeasy/docker-ipfs](https://github.com/yeasy/doc
 
 ```
 IPFS_NODE_ADDRESS="..." # Default IPFS_NODE_ADDRESS="http://localhost:5002"
-IPFS_PUBLIC_GATEWAY="..." # Default IPFS_PUBLIC_GATEWAY="https://localhost:8080/ipfs/${cid}"
+IPFS_PUBLIC_GATEWAY='...' # Default IPFS_PUBLIC_GATEWAY='https://localhost:8080/ipfs/${cid}'
 IPFS_PROVIDER="local"
 ```
 
@@ -56,7 +49,7 @@ Note:
 
 #### 3.2 Setting up IPFS Web3Storage node:
 
-3.2.1 For setup IPFS web3storage node you need to set variables in `worker-service/.env`:
+3.2.1 For setup IPFS web3storage node you need to set variables in `/configs/.env..guardian.system`:
 
 ```
 IPFS_STORAGE_API_KEY="..."

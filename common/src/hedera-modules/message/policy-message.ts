@@ -174,9 +174,10 @@ export class PolicyMessage extends Message {
         message.topicDescription = json.topicDescription;
         message.version = json.version;
         message.policyTag = json.policyTag;
-        message.policyTag = json.owner;
+        message.owner = json.owner;
         message.policyTopicId = json.topicId;
         message.instanceTopicId = json.instanceTopicId;
+        message.synchronizationTopicId = json.synchronizationTopicId;
 
         if (json.cid) {
             const urls = [{

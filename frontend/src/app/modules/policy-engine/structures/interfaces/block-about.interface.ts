@@ -11,4 +11,5 @@ export interface IBlockAbout {
     defaultEvent: boolean;
     prev?: IBlockAbout;
     next?: boolean;
+    deprecated?: boolean;
 }

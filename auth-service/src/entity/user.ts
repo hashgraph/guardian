@@ -1,4 +1,4 @@
-import { Entity, Property, Enum, BeforeCreate, Unique } from '@mikro-orm/core';
+import { BeforeCreate, Entity, Enum, Property, Unique } from '@mikro-orm/core';
 import { IUser, UserRole } from '@guardian/interfaces';
 import { BaseEntity } from '@guardian/common';
 

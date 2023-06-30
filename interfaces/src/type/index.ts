@@ -3,6 +3,7 @@ export * from './approve-status.type';
 export * from './artifact.type';
 export * from './auth-events';
 export * from './block-error-actions';
+export * from './block.type';
 export * from './contract-status.type';
 export * from './did-status.type';
 export * from './document-signature.type';

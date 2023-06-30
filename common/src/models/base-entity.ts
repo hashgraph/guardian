@@ -21,7 +21,9 @@ export abstract class BaseEntity {
      * Created at
      */
     @Property({
-        index: true
+        index: true,
+        nullable: true,
+        type: 'unknown'
     })
     createDate: Date = new Date();
 

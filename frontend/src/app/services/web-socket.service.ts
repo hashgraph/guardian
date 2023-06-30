@@ -181,6 +181,7 @@ export class WebSocketService {
                 case MessageAPI.UPDATE_STATUS:
                     this.updateStatus(event.data);
                     const allStatesReady = !this.serviesStates.find((item: any) => !item.states.includes(ApplicationStates.READY));
+                    // const allStatesReady = true;
                     if (!allStatesReady) {
                         if (!['/status', '/admin/settings', '/admin/logs'].includes(location.pathname)) {
                             const last = location.pathname === '/status' ? null : btoa(location.href);

@@ -8,5 +8,6 @@ export * from './interfaces';
 export * from './entity';
 export * from './document-loader';
 export * from './hedera-modules';
-export * from './database-modules'
+export * from './database-modules';
+export * from './secret-manager';
 export const entities = Object.values(ent);

@@ -1,36 +1,28 @@
 import {
     DataBaseHelper,
-    Singleton,
-    Schema as SchemaCollection,
     DidDocument as DidDocumentCollection,
-    VcDocument as VcDocumentCollection,
-    VpDocument as VpDocumentCollection,
-    Policy as PolicyCollection,
-    Topic,
-    Token,
-    Workers,
     DIDDocument,
     DIDMessage,
+    KeyType,
     MessageServer,
     MessageType,
+    Policy as PolicyCollection,
+    Schema as SchemaCollection,
+    Singleton,
+    Token,
+    Topic,
     TopicMessage,
+    Users,
+    VcDocument as VcDocumentCollection,
     VcDocumentDefinition as VcDocument,
     VCMessage,
+    VpDocument as VpDocumentCollection,
     VpDocumentDefinition as VpDocument,
     VPMessage,
-    KeyType, Wallet,
-    Users
+    Wallet,
+    Workers
 } from '@guardian/common';
-import {
-    DidDocumentStatus,
-    ISchema,
-    PolicyType,
-    SchemaCategory,
-    SchemaStatus,
-    TopicType,
-    UserRole,
-    WorkerTaskType,
-} from '@guardian/interfaces';
+import { DidDocumentStatus, ISchema, PolicyType, SchemaCategory, SchemaStatus, TopicType, UserRole, WorkerTaskType, } from '@guardian/interfaces';
 import { PolicyImportExportHelper } from '@policy-engine/helpers/policy-import-export-helper';
 import { PolicyEngine } from '@policy-engine/policy-engine';
 

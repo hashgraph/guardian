@@ -9,7 +9,7 @@ Previews the schema from IPFS without loading it into the local DB. Only users w
 Object that contains the identifier of the Hedera message which contains the IPFS CID of the schema.
 {% endswagger-parameter %}
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% swagger-response status="202: Accepted" description="Accepted" %}
 ```javascript
 {
    content:

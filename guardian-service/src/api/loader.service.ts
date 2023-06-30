@@ -1,13 +1,5 @@
 import { ApiResponse } from '@api/helpers/api-response';
-import {
-    MessageResponse,
-    MessageError,
-    Logger,
-    DataBaseHelper,
-    Schema,
-    DidDocument,
-    DidRootKey,
-} from '@guardian/common';
+import { DataBaseHelper, DidDocument, DidRootKey, Logger, MessageError, MessageResponse, Schema, } from '@guardian/common';
 import { MessageAPI } from '@guardian/interfaces';
 
 /**

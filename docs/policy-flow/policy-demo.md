@@ -21,7 +21,7 @@ We have two options to create Policy :
 
 1.3 Once the details are filled and clicked on OK. Initially, Policy is created in Draft status.
 
-![](<../.gitbook/assets/image (1) (1) (2).png>)
+![](<../.gitbook/assets/image (1) (1) (2) (1).png>)
 
 1.4 You can even edit the Policy by clicking Edit button.
 
@@ -43,7 +43,7 @@ Instead of creating Policy from scratch, there is an option of importing the Pol
 **Note:** Files with **.policy** extension are only accepted. These files are in zip format, i.e. they are zip archives of the text file.
 {% endhint %}
 
-![](<../.gitbook/assets/image (11) (1) (2).png>)
+![](<../.gitbook/assets/image (11) (1) (1) (1).png>)
 
 2.1 Once the .zip file is selected, we get the Policy Import Review screen. Once everything looks good, click on Import Button.
 

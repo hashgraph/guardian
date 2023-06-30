@@ -1,35 +1,6 @@
 import { ApiResponse } from '@api/helpers/api-response';
-import {
-    MessageResponse,
-    MessageError,
-    Logger,
-    DataBaseHelper,
-    Contract,
-    RetireRequest,
-    Schema as SchemaCollection,
-    Topic,
-    VcDocument as VcDocumentCollection,
-    Workers,
-    Users,
-    KeyType,
-    Wallet,
-    MessageAction,
-    MessageServer,
-    TopicConfig,
-    TopicHelper,
-    VCMessage,
-    DatabaseServer,
-    VcHelper
-} from '@guardian/common';
-import {
-    ContractStatus,
-    MessageAPI,
-    Schema,
-    SchemaEntity,
-    SchemaHelper,
-    TopicType,
-    WorkerTaskType,
-} from '@guardian/interfaces';
+import { Contract, DataBaseHelper, DatabaseServer, KeyType, Logger, MessageAction, MessageError, MessageResponse, MessageServer, RetireRequest, Schema as SchemaCollection, Topic, TopicConfig, TopicHelper, Users, VcDocument as VcDocumentCollection, VcHelper, VCMessage, Wallet, Workers } from '@guardian/common';
+import { ContractStatus, MessageAPI, Schema, SchemaEntity, SchemaHelper, TopicType, WorkerTaskType, } from '@guardian/interfaces';
 import { publishSystemSchema } from './helpers/schema-publish-helper';
 
 /**
@@ -55,6 +26,7 @@ export async function contractAPI(
                 otherOptions.limit = Math.min(100, _pageSize);
                 otherOptions.offset = _pageIndex * _pageSize;
             } else {
+                otherOptions.orderBy = { createDate: 'DESC' };
                 otherOptions.limit = 100;
             }
 
@@ -109,6 +81,7 @@ export async function contractAPI(
                 otherOptions.limit = Math.min(100, _pageSize);
                 otherOptions.offset = _pageIndex * _pageSize;
             } else {
+                otherOptions.orderBy = { createDate: 'DESC' };
                 otherOptions.limit = 100;
             }
 
@@ -119,11 +92,11 @@ export async function contractAPI(
                 );
 
             for (const retireRequest of retireRequestsAndCount[0] as any[]) {
-                if (retireRequest.vcDocumentHash) {
+                if (retireRequest.documentId) {
                     retireRequest.vcDocument = await new DataBaseHelper(
                         VcDocumentCollection
                     ).findOne({
-                        hash: retireRequest.vcDocumentHash,
+                        _id: retireRequest.documentId,
                     });
                 }
             }
@@ -583,7 +556,7 @@ export async function contractAPI(
                         },
                     ],
                     owner: did,
-                    vcDocumentHash: null,
+                    documentId: null,
                 }
             );
 
@@ -807,7 +780,7 @@ export async function contractAPI(
 
             await retireRequestRepository.update(
                 {
-                    vcDocumentHash: vcDoc.hash,
+                    documentId: vcDoc._id,
                 },
                 {
                     id: retireRequest.id,

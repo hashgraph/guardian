@@ -15,7 +15,7 @@ The number of pages to skip before starting to collect the result set
 The numbers of items to return
 {% endswagger-parameter %}
 
-{% swagger-response status="201: Created" description="Successful Operation" %}
+{% swagger-response status="200: OK" description="Successful Operation" %}
 ```javascript
 {
     headers:
