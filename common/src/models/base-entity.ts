@@ -1,4 +1,4 @@
-import { PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/core';
+import { BeforeCreate, BeforeUpdate, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/core';
 import { ObjectId } from '@mikro-orm/mongodb';
 
 /**
@@ -30,14 +30,31 @@ export abstract class BaseEntity {
     /**
      * Updated at
      */
-    @Property({ onUpdate: () => new Date() })
+    @Property({ nullable: true, type: 'unknown' })
     updateDate: Date = new Date();
 
     /**
      * Returns object in JSON string
      * @returns {string} String object
      */
-     toJSON(): { [p: string]: any } {
+    toJSON(): { [p: string]: any } {
         return Object.assign({}, { ...this, id: this.id });
+    }
+
+    /**
+     * Set base date
+     */
+    @BeforeCreate()
+    __onBaseCreate() {
+        this.createDate = new Date();
+        this.updateDate = this.createDate;
+    }
+
+    /**
+     * Set base date
+     */
+    @BeforeUpdate()
+    __onBaseUpdate() {
+        this.updateDate = new Date();
     }
 }

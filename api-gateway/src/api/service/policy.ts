@@ -42,6 +42,7 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
+    @ApiSecurity('bearerAuth')
     @Get('/')
     @HttpCode(HttpStatus.OK)
     async getPolicies(@Req() req, @Response() res): Promise<any> {
@@ -118,6 +119,7 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
+    @ApiSecurity('bearerAuth')
     @Post('/')
     @HttpCode(HttpStatus.CREATED)
     async createPolicy(@Req() req, @Response() res): Promise<any> {
@@ -149,6 +151,7 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
+    @ApiSecurity('bearerAuth')
     @Post('/push')
     @HttpCode(HttpStatus.ACCEPTED)
     async createPolicyAsync(@Req() req, @Response() res): Promise<any> {
@@ -181,6 +184,7 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
+    @ApiSecurity('bearerAuth')
     @Post('/push/:policyId')
     @HttpCode(HttpStatus.ACCEPTED)
     async updatePolicyAsync(@Req() req, @Response() res): Promise<any> {
@@ -201,6 +205,7 @@ export class PolicyApi {
         return res.status(202).send({ taskId, expectation });
     }
 
+    @ApiSecurity('bearerAuth')
     @Delete('/push/:policyId')
     @HttpCode(HttpStatus.ACCEPTED)
     async deletePOlicyAsync(@Req() req, @Response() res): Promise<any> {
@@ -237,6 +242,7 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
+    @ApiSecurity('bearerAuth')
     @Get('/:policyId')
     @HttpCode(HttpStatus.OK)
     async getPolicy(@Req() req, @Response() res): Promise<any> {
@@ -273,6 +279,7 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
+    @ApiSecurity('bearerAuth')
     @Put('/:policyId')
     @HttpCode(HttpStatus.OK)
     async updatePolicy(@Req() req, @Response() res): Promise<any> {
@@ -299,6 +306,24 @@ export class PolicyApi {
         }
     }
 
+    @ApiOperation({
+        summary: 'Publishes the policy onto IPFS.',
+        description: 'Publishes the policy with the specified (internal) policy ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
     @Put('/:policyId/publish')
     @HttpCode(HttpStatus.OK)
     async publishPolicy(@Req() req, @Response() res): Promise<any> {
@@ -312,12 +337,30 @@ export class PolicyApi {
         }
     }
 
+    @ApiOperation({
+        summary: 'Publishes the policy onto IPFS.',
+        description: 'Publishes the policy with the specified (internal) policy ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
     @Put('/push/:policyId/publish')
     @HttpCode(HttpStatus.ACCEPTED)
     async publishPolicyAsync(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const taskManager = new TaskManager();
-        const { taskId, expectation } = taskManager.start('Publish policy');
+        const {taskId, expectation} = taskManager.start('Publish policy');
 
         const model = req.body;
         const user = req.user;
@@ -327,12 +370,30 @@ export class PolicyApi {
             await engineService.publishPolicyAsync(model, user, policyId, taskId);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: 500, message: error.message || error });
+            taskManager.addError(taskId, {code: 500, message: error.message || error});
         });
 
-        return res.status(202).send({ taskId, expectation });
+        return res.status(202).send({taskId, expectation});
     }
 
+    @ApiOperation({
+        summary: 'Dry Run policy.',
+        description: 'Run policy without making any persistent changes or executing transaction. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
     @Put('/:policyId/dry-run')
     @HttpCode(HttpStatus.OK)
     async dryRunPolicy(@Req() req, @Response() res): Promise<any> {
@@ -346,6 +407,24 @@ export class PolicyApi {
         }
     }
 
+    @ApiOperation({
+        summary: 'Dry Run policy.',
+        description: 'Run policy without making any persistent changes or executing transaction. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
     @Put('/:policyId/draft')
     @HttpCode(HttpStatus.OK)
     async draftPolicy(@Req() req, @Response() res): Promise<any> {
@@ -359,6 +438,24 @@ export class PolicyApi {
         }
     }
 
+    @ApiOperation({
+        summary: 'Validates policy.',
+        description: 'Validates selected policy. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
     @Post('/validate')
     @HttpCode(HttpStatus.OK)
     async validatePolicy(@Req() req, @Response() res): Promise<any> {
@@ -372,6 +469,24 @@ export class PolicyApi {
         }
     }
 
+    @ApiOperation({
+        summary: 'Returns a list of groups the user is a member of.',
+        description: 'Returns a list of groups the user is a member of.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
     @Get('/:policyId/groups')
     @HttpCode(HttpStatus.OK)
     async getPolicyGroups(@Req() req, @Response() res): Promise<any> {
@@ -385,6 +500,24 @@ export class PolicyApi {
         }
     }
 
+    @ApiOperation({
+        summary: 'Makes the selected group active.',
+        description: 'Makes the selected group active. if UUID is not set then returns the user to the default state.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
     @Post('/:policyId/groups')
     @HttpCode(HttpStatus.OK)
     async setPolicyGroups(@Req() req, @Response() res): Promise<any> {
@@ -398,6 +531,24 @@ export class PolicyApi {
         }
     }
 
+    @ApiOperation({
+        summary: 'Retrieves data for the policy root block.',
+        description: 'Returns data from the root policy block. Only users with the Standard Registry and Installer role are allowed to make the request.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
     @Get('/:policyId/blocks')
     @HttpCode(HttpStatus.OK)
     async getPolicyBlocks(@Req() req, @Response() res): Promise<any> {
@@ -411,6 +562,24 @@ export class PolicyApi {
         }
     }
 
+    @ApiOperation({
+        summary: 'Requests block data.',
+        description: 'Requests block data. Only users with a role that described in block are allowed to make the request.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
     @Get('/:policyId/blocks/:uuid')
     @HttpCode(HttpStatus.OK)
     async getBlockData(@Req() req, @Response() res): Promise<any> {
@@ -424,6 +593,24 @@ export class PolicyApi {
         }
     }
 
+    @ApiOperation({
+        summary: 'Sends data to the specified block.',
+        description: 'Sends data to the specified block.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
     @Post('/:policyId/blocks/:uuid')
     @HttpCode(HttpStatus.OK)
     async setBlockData(@Req() req, @Response() res): Promise<any> {
@@ -439,6 +626,24 @@ export class PolicyApi {
         }
     }
 
+    @ApiOperation({
+        summary: 'Sends data to the specified block.',
+        description: 'Sends data to the specified block.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
     @Post('/:policyId/tag/:tagName/blocks')
     @HttpCode(HttpStatus.OK)
     async setBlocksByTagName(@Req() req, @Response() res): Promise<any> {
@@ -452,6 +657,24 @@ export class PolicyApi {
         }
     }
 
+    @ApiOperation({
+        summary: 'Requests block data.',
+        description: 'Requests block data by tag. Only users with a role that described in block are allowed to make the request.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
     @Get('/:policyId/tag/:tagName')
     @HttpCode(HttpStatus.OK)
     async getBlockByTagName(@Req() req, @Response() res): Promise<any> {
@@ -465,6 +688,24 @@ export class PolicyApi {
         }
     }
 
+    @ApiOperation({
+        summary: 'Requests block data.',
+        description: 'Requests block data by tag. Only users with a role that described in block are allowed to make the request.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
     @Get('/:policyId/tag/:tagName/blocks')
     @HttpCode(HttpStatus.OK)
     async getBlocksByTagName(@Req() req, @Response() res): Promise<any> {
@@ -491,6 +732,24 @@ export class PolicyApi {
         }
     }
 
+    @ApiOperation({
+        summary: 'Return policy and its artifacts in a zip file format for the specified policy.',
+        description: 'Returns a zip file containing the published policy and all associated artifacts, i.e. schemas and VCs. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
     @Get('/:policyId/export/file')
     @HttpCode(HttpStatus.OK)
     async getPolicyExportFile(@Req() req, @Response() res): Promise<any> {
@@ -498,7 +757,7 @@ export class PolicyApi {
         const engineService = new PolicyEngine();
         try {
             const policyFile: any = await engineService.exportFile(req.user, req.params.policyId);
-            const policy: any = await engineService.getPolicy({ filters: req.params.policyId });
+            const policy: any = await engineService.getPolicy({filters: req.params.policyId});
             res.setHeader('Content-disposition', `attachment; filename=${policy.name}`);
             res.setHeader('Content-type', 'application/zip');
             return res.send(policyFile);
@@ -508,6 +767,24 @@ export class PolicyApi {
         }
     }
 
+    @ApiOperation({
+        summary: 'Return Heder message ID for the specified published policy.',
+        description: 'Returns the Hedera message ID for the specified policy published onto IPFS. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
     @Get('/:policyId/export/message')
     @HttpCode(HttpStatus.OK)
     async getPolicyExportMessage(@Req() req, @Response() res): Promise<any> {
@@ -521,6 +798,24 @@ export class PolicyApi {
         }
     }
 
+    @ApiOperation({
+        summary: 'Imports new policy from IPFS.',
+        description: 'Imports new policy and all associated artifacts from IPFS into the local DB. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
     @Post('/import/message')
     @HttpCode(HttpStatus.CREATED)
     async importPolicyFromMessage(@Req() req, @Response() res): Promise<any> {
@@ -536,12 +831,30 @@ export class PolicyApi {
         }
     }
 
+    @ApiOperation({
+        summary: 'Imports new policy from IPFS.',
+        description: 'Imports new policy and all associated artifacts from IPFS into the local DB. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
     @Post('/push/import/message')
     @HttpCode(HttpStatus.ACCEPTED)
     async importPolicyFromMessageAsync(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const taskManager = new TaskManager();
-        const { taskId, expectation } = taskManager.start('Import policy message');
+        const {taskId, expectation} = taskManager.start('Import policy message');
 
         const user = req.user;
         const messageId = req.body.messageId;
@@ -551,11 +864,29 @@ export class PolicyApi {
             await engineService.importMessageAsync(user, messageId, versionOfTopicId, taskId);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: 500, message: 'Unknown error: ' + error.message });
+            taskManager.addError(taskId, {code: 500, message: 'Unknown error: ' + error.message});
         });
-        return res.status(202).send({ taskId, expectation });
+        return res.status(202).send({taskId, expectation});
     }
 
+    @ApiOperation({
+        summary: 'Imports new policy from a zip file.',
+        description: 'Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
     @Post('/import/file')
     @HttpCode(HttpStatus.CREATED)
     async importPolicyFromFile(@Req() req, @Response() res): Promise<any> {
@@ -571,12 +902,30 @@ export class PolicyApi {
         }
     }
 
+    @ApiOperation({
+        summary: 'Imports new policy from a zip file.',
+        description: 'Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
     @Post('/push/import/file')
     @HttpCode(HttpStatus.ACCEPTED)
     async importPolicyFromFileAsync(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const taskManager = new TaskManager();
-        const { taskId, expectation } = taskManager.start('Import policy file');
+        const {taskId, expectation} = taskManager.start('Import policy file');
 
         const user = req.user;
         const zip = req.body;
@@ -586,11 +935,29 @@ export class PolicyApi {
             await engineService.importFileAsync(user, zip, versionOfTopicId, taskId);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: 500, message: 'Unknown error: ' + error.message });
+            taskManager.addError(taskId, {code: 500, message: 'Unknown error: ' + error.message});
         });
-        return res.status(202).send({ taskId, expectation });
+        return res.status(202).send({taskId, expectation});
     }
 
+    @ApiOperation({
+        summary: 'Policy preview from IPFS.',
+        description: 'Previews the policy from IPFS without loading it into the local DB. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
     @Post('/import/message/preview')
     @HttpCode(HttpStatus.OK)
     async importMessage(@Req() req, @Response() res): Promise<any> {
@@ -604,12 +971,30 @@ export class PolicyApi {
         }
     }
 
+    @ApiOperation({
+        summary: 'Policy preview from IPFS.',
+        description: 'Previews the policy from IPFS without loading it into the local DB. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
     @Post('/push/import/message/preview')
     @HttpCode(HttpStatus.ACCEPTED)
     async importFromMessagePreview(@Req() req, @Response() res) {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const taskManager = new TaskManager();
-        const { taskId, expectation } = taskManager.start('Preview policy message');
+        const {taskId, expectation} = taskManager.start('Preview policy message');
 
         const user = req.user;
         const messageId = req.body.messageId;
@@ -618,12 +1003,30 @@ export class PolicyApi {
             await engineService.importMessagePreviewAsync(user, messageId, taskId);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: 500, message: 'Unknown error: ' + error.message });
+            taskManager.addError(taskId, {code: 500, message: 'Unknown error: ' + error.message});
         });
 
-        return res.status(202).send({ taskId, expectation });
+        return res.status(202).send({taskId, expectation});
     }
 
+    @ApiOperation({
+        summary: 'Policy preview from a zip file.',
+        description: 'Previews the policy from a zip file without loading it into the local DB. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
     @Post('/import/file/preview')
     @HttpCode(HttpStatus.OK)
     async importPolicyFromFilePreview(@Req() req: RawBodyRequest<AuthenticatedRequest>, @Response() res) {

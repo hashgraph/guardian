@@ -55,7 +55,7 @@ form {
     border-top: 1px solid #c8c8c8;
 }
 
-.field-value {  
+.field-value {
     color: #000;
     font-size: 20px;
     margin-bottom: 20px;
@@ -66,7 +66,7 @@ form {
     margin-left: 8px;
 }
 
-.field-long-value {  
+.field-long-value {
     color: #000;
     font-size: 20px;
     margin-bottom: 20px;
@@ -75,7 +75,7 @@ form {
     margin-left: 8px;
 }
 
-.field-name {  
+.field-name {
     margin-bottom: 12px;
 }
 
@@ -90,41 +90,11 @@ form {
 
 .version-container {
     display: flex;
-    gap: 50px;
+    gap: 15px;
 }
 
-.info-label {
-    vertical-align: middle;
-    margin-right: 5px;
-}
-
-.info-container {
-    color:#2F96B4;
-    margin-bottom: 10px;
-}
-
-.new-versions-container {
-    width: 100%;
-    margin-bottom: 10px;
-    overflow: hidden;
-}
-
-.field-version-value {
-    font-size: 20px;
-    color: #0C77FF;
-    font-weight: bold;
-    line-height: 25px;
-    cursor: pointer;
-}
-
-.new-versions-links {
-    overflow-x: scroll;
-    display: flex;
-    gap: 30px;
-}
-
-.version-container .field-version {
-    margin-bottom: 0px;
+.version-container__new-versions {
+    margin-top: 3px;
 }
 
 @media (max-width: 810px) {
@@ -163,7 +133,7 @@ form {
         padding: 0;
         position: relative;
     }
-    
+
     .context {
         padding: 0;
     }
@@ -205,14 +175,14 @@ form {
         bottom: 0;
         left: 50%;
         transform: translateX(-50%);
-        
+
         background-color: white;
     }
-    
+
     #create-btn {
         width: 90%;
         left: 50%;
         transform: translateX(-50%);
     }
-    
+
 }

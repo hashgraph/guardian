@@ -22,9 +22,9 @@
             <div *ngFor="let schema of schemas">
                 <div class="schema">
                     <div class="schema-header">{{schema.name}}</div>
-    
+
                     <div class="delimiter"></div>
-    
+
                     <div class="version-container">
                         <div class="field">
                             <div class="field-name">Policy</div>
@@ -32,20 +32,24 @@
                                 <mat-form-field appearance="outline" class="{{ topicId ? '' : 'mat-form-field-invalid'}}" style="min-width: 383px">
                                     <mat-label>* Policy</mat-label>
                                     <mat-select [(value)]="topicId" class="{{ topicId ? '' : 'mat-select-invalid'}}" >
-                                        <mat-option *ngFor="let policy of policies" [value]="policy.topicId">{{policy.name}}</mat-option>          
+                                        <mat-option *ngFor="let policy of policies" [value]="policy.topicId">{{policy.name}}</mat-option>
                                     </mat-select>
                                 </mat-form-field>
                             </div>
                         </div>
-                        <div *ngIf="schema.version" class="field">
-                            <div class="field-name">Version</div>
-                            <div class="field-value">{{schema.version}}</div>
-                        </div>
-                        <div class="new-versions-container" *ngIf="schema.newVersions && schema.newVersions.length > 0">
-                            <div class="info-container field-name"><mat-icon class="info-label">info</mat-icon> <b>New versions of schema exist</b></div>
-                            <div class="new-versions-links">
-                                <a class="field-version-value" *ngFor="let newVersion of schema.newVersions" [title]="newVersion.messageId" (click)="onNewVersionClick(newVersion.messageId)">{{newVersion.version}}</a>
+                        <div class="version-container">
+                            <div *ngIf="schema.version" class="field">
+                                <div class="field-name">Version</div>
+                                <div class="field-value">
+                                    {{ schema.version }}
+                                </div>
                             </div>
+                            <app-new-versions
+                                class="version-container__new-versions"
+                                type="schema"
+                                (onClick)="onNewVersionClick($event)"
+                                [newVersions]="schema.newVersions"
+                            ></app-new-versions>
                         </div>
                     </div>
 

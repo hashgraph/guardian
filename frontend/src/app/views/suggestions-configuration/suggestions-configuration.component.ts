@@ -68,8 +68,8 @@ export class SuggestionsConfigurationComponent {
                     result[1].items,
                     'index'
                 );
-                this.suggestionsOrderPriority = suggestionsOrderPriorities.map(
-                    (suggestionsOrderPriority) =>
+                this.suggestionsOrderPriority = suggestionsOrderPriorities
+                    .map((suggestionsOrderPriority) =>
                         suggestionsOrderPriority.type === ConfigType.POLICY
                             ? this.policies.find(
                                   (item) =>
@@ -79,7 +79,8 @@ export class SuggestionsConfigurationComponent {
                                   (item) =>
                                       item.id === suggestionsOrderPriority.id
                               )
-                );
+                    )
+                    .filter((item) => !!item);
                 const suggestionsOrderPriorityIds =
                     suggestionsOrderPriorities.map((item) => item.id);
                 this.policiesAndModules = this.policies

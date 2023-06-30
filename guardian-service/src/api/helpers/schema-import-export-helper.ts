@@ -15,7 +15,7 @@ export async function loadSchema(messageId: string, owner: string) {
     const log = new Logger();
     try {
         if (schemaCache[messageId]) {
-            return schemaCache[messageId];
+            return JSON.parse(JSON.stringify(schemaCache[messageId]));
         }
         const messageServer = new MessageServer(null, null);
         log.info(`loadSchema: ${messageId}`, ['GUARDIAN_SERVICE']);
@@ -44,8 +44,7 @@ export async function loadSchema(messageId: string, owner: string) {
             codeVersion: message.codeVersion
         }
         SchemaHelper.updateIRI(schemaToImport);
-        log.info(`loadSchema end: ${messageId}`, ['GUARDIAN_SERVICE']);
-        schemaCache[messageId] = { ...schemaToImport };
+        schemaCache[messageId] = JSON.parse(JSON.stringify(schemaToImport));
         return schemaToImport;
     } catch (error) {
         log.error(error, ['GUARDIAN_SERVICE']);
