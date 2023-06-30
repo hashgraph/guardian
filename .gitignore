@@ -16,6 +16,8 @@ tsconfig.tsbuildinfo
 .pnp.*
 node_modules
 runtime-data/
+downloads
+test.env.json
 
 # OSX related metadata removal and IDE nonsense
 .DS_store
