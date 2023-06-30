@@ -189,7 +189,9 @@ export async function suggestionsAPI(): Promise<void> {
                     item.type === ConfigType.POLICY
                         ? await DatabaseServer.getPolicyById(item.id)
                         : await DatabaseServer.getModuleById(item.id);
-                configs.push(config?.config);
+                if (config) {
+                    configs.push(config.config);
+                }
             }
             const [next, nested] = checkConfigsInTemplates(
                 configs,
