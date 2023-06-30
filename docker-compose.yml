@@ -248,7 +248,7 @@ services:
       - mongo-express
 
   prometheus:
-    image: prom/prometheus:2.44.0
+    image: prom/prometheus:v2.44.0
     container_name: prometheus
     restart: unless-stopped
     volumes:
