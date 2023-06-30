@@ -1260,7 +1260,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@guardian/common@^2.14.0, @guardian/common@workspace:common":
+"@guardian/common@^2.13.1, @guardian/common@^2.14.0, @guardian/common@workspace:common":
   version: 0.0.0-use.local
   resolution: "@guardian/common@workspace:common"
   dependencies:
@@ -1310,7 +1310,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@guardian/interfaces@^2.14.0, @guardian/interfaces@workspace:interfaces":
+"@guardian/interfaces@^2.13.1, @guardian/interfaces@^2.14.0, @guardian/interfaces@workspace:interfaces":
   version: 0.0.0-use.local
   resolution: "@guardian/interfaces@workspace:interfaces"
   dependencies:
@@ -12002,8 +12002,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "worker-service@workspace:worker-service"
   dependencies:
-    "@guardian/common": ^2.14.0
-    "@guardian/interfaces": ^2.14.0
+    "@guardian/common": ^2.13.1
+    "@guardian/interfaces": ^2.13.1
     "@hashgraph/sdk": 2.24.2
     "@transmute/credentials-context": ^0.7.0-unstable.80
     "@transmute/did-context": ^0.7.0-unstable.80
