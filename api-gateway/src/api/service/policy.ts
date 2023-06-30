@@ -94,7 +94,7 @@ export class PolicyApi {
                     pageSize
                 });
             }
-            const {policies, count} = result;
+            const { policies, count } = result;
             return res.setHeader('X-Total-Count', count).json(policies);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
@@ -157,7 +157,7 @@ export class PolicyApi {
     async createPolicyAsync(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const taskManager = new TaskManager();
-        const {taskId, expectation} = taskManager.start('Create policy');
+        const { taskId, expectation } = taskManager.start('Create policy');
         const model = req.body;
         const user = req.user;
         RunFunctionAsync<ServiceError>(async () => {
@@ -165,9 +165,9 @@ export class PolicyApi {
             await engineService.createPolicyAsync(model, user, taskId);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, {code: 500, message: error.message});
+            taskManager.addError(taskId, { code: 500, message: error.message });
         });
-        return res.status(202).send({taskId, expectation});
+        return res.status(202).send({ taskId, expectation });
     }
 
     @ApiOperation({})
@@ -190,7 +190,7 @@ export class PolicyApi {
     async updatePolicyAsync(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const taskManager = new TaskManager();
-        const {taskId, expectation} = taskManager.start('Clone policy');
+        const { taskId, expectation } = taskManager.start('Clone policy');
         const policyId = req.params.policyId;
         const model = req.body;
         const user = req.user;
@@ -220,9 +220,9 @@ export class PolicyApi {
             await engineService.deletePolicyAsync(policyId, user, taskId);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, {code: 500, message: error.message});
+            taskManager.addError(taskId, { code: 500, message: error.message });
         });
-        return res.status(202).send({taskId, expectation});
+        return res.status(202).send({ taskId, expectation });
     }
 
     @ApiOperation({
@@ -285,10 +285,18 @@ export class PolicyApi {
     async updatePolicy(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
+        let model: any;
         try {
-            const model = await engineService.getPolicy({filters: req.params.policyId}) as any;
+            model = await engineService.getPolicy({ filters: req.params.policyId }) as any;
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (!model) {
+            throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
+        }
+        try {
             const policy = req.body;
-
             model.config = policy.config;
             model.name = policy.name;
             model.version = policy.version;
@@ -360,7 +368,7 @@ export class PolicyApi {
     async publishPolicyAsync(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const taskManager = new TaskManager();
-        const {taskId, expectation} = taskManager.start('Publish policy');
+        const { taskId, expectation } = taskManager.start('Publish policy');
 
         const model = req.body;
         const user = req.user;
@@ -370,10 +378,10 @@ export class PolicyApi {
             await engineService.publishPolicyAsync(model, user, policyId, taskId);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, {code: 500, message: error.message || error});
+            taskManager.addError(taskId, { code: 500, message: error.message || error });
         });
 
-        return res.status(202).send({taskId, expectation});
+        return res.status(202).send({ taskId, expectation });
     }
 
     @ApiOperation({
@@ -757,7 +765,7 @@ export class PolicyApi {
         const engineService = new PolicyEngine();
         try {
             const policyFile: any = await engineService.exportFile(req.user, req.params.policyId);
-            const policy: any = await engineService.getPolicy({filters: req.params.policyId});
+            const policy: any = await engineService.getPolicy({ filters: req.params.policyId });
             res.setHeader('Content-disposition', `attachment; filename=${policy.name}`);
             res.setHeader('Content-type', 'application/zip');
             return res.send(policyFile);
@@ -854,7 +862,7 @@ export class PolicyApi {
     async importPolicyFromMessageAsync(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const taskManager = new TaskManager();
-        const {taskId, expectation} = taskManager.start('Import policy message');
+        const { taskId, expectation } = taskManager.start('Import policy message');
 
         const user = req.user;
         const messageId = req.body.messageId;
@@ -864,9 +872,9 @@ export class PolicyApi {
             await engineService.importMessageAsync(user, messageId, versionOfTopicId, taskId);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, {code: 500, message: 'Unknown error: ' + error.message});
+            taskManager.addError(taskId, { code: 500, message: 'Unknown error: ' + error.message });
         });
-        return res.status(202).send({taskId, expectation});
+        return res.status(202).send({ taskId, expectation });
     }
 
     @ApiOperation({
@@ -925,7 +933,7 @@ export class PolicyApi {
     async importPolicyFromFileAsync(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const taskManager = new TaskManager();
-        const {taskId, expectation} = taskManager.start('Import policy file');
+        const { taskId, expectation } = taskManager.start('Import policy file');
 
         const user = req.user;
         const zip = req.body;
@@ -935,9 +943,9 @@ export class PolicyApi {
             await engineService.importFileAsync(user, zip, versionOfTopicId, taskId);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, {code: 500, message: 'Unknown error: ' + error.message});
+            taskManager.addError(taskId, { code: 500, message: 'Unknown error: ' + error.message });
         });
-        return res.status(202).send({taskId, expectation});
+        return res.status(202).send({ taskId, expectation });
     }
 
     @ApiOperation({
@@ -994,7 +1002,7 @@ export class PolicyApi {
     async importFromMessagePreview(@Req() req, @Response() res) {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const taskManager = new TaskManager();
-        const {taskId, expectation} = taskManager.start('Preview policy message');
+        const { taskId, expectation } = taskManager.start('Preview policy message');
 
         const user = req.user;
         const messageId = req.body.messageId;
@@ -1003,10 +1011,10 @@ export class PolicyApi {
             await engineService.importMessagePreviewAsync(user, messageId, taskId);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, {code: 500, message: 'Unknown error: ' + error.message});
+            taskManager.addError(taskId, { code: 500, message: 'Unknown error: ' + error.message });
         });
 
-        return res.status(202).send({taskId, expectation});
+        return res.status(202).send({ taskId, expectation });
     }
 
     @ApiOperation({
@@ -1060,7 +1068,7 @@ export class PolicyApi {
         const engineService = new PolicyEngine();
         let policy;
         try {
-            policy = await engineService.getPolicy({filters: req.params.policyId}) as any;
+            policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1086,7 +1094,7 @@ export class PolicyApi {
         const engineService = new PolicyEngine();
         let policy;
         try {
-            policy = await engineService.getPolicy({filters: req.params.policyId}) as any;
+            policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1112,7 +1120,7 @@ export class PolicyApi {
         const engineService = new PolicyEngine();
         let policy;
         try {
-            policy = await engineService.getPolicy({filters: req.params.policyId}) as any;
+            policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1138,7 +1146,7 @@ export class PolicyApi {
         const engineService = new PolicyEngine();
         let policy;
         try {
-            policy = await engineService.getPolicy({filters: req.params.policyId}) as any;
+            policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1164,7 +1172,7 @@ export class PolicyApi {
         const engineService = new PolicyEngine();
         let policy;
         try {
-            policy = await engineService.getPolicy({filters: req.params.policyId}) as any;
+            policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1197,7 +1205,7 @@ export class PolicyApi {
         const engineService = new PolicyEngine();
         let policy;
         try {
-            policy = await engineService.getPolicy({filters: req.params.policyId}) as any;
+            policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1231,7 +1239,7 @@ export class PolicyApi {
         const engineService = new PolicyEngine();
         let policy;
         try {
-            policy = await engineService.getPolicy({filters: req.params.policyId}) as any;
+            policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
