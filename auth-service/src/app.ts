@@ -62,10 +62,9 @@ Promise.all([
         }
 
         await new OldSecretManager().setConnection(cn).init();
-
         const secretManager = SecretManager.New();
         let {ACCESS_TOKEN_SECRET } = await secretManager.getSecrets('secretkey/auth');
-        if (!ACCESS_TOKEN_SECRET) {
+	    if (!ACCESS_TOKEN_SECRET) {
             ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET
             await secretManager.setSecrets('secretkey/auth', { ACCESS_TOKEN_SECRET  });
         }

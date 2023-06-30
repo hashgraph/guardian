@@ -73,8 +73,11 @@
                     Role: {{policyInfo.userRoles.join(', ')}}
                 </span>
                 <span *ngIf="isMultipleGroups" class="current-user-group" [matMenuTriggerFor]="group">
-                    Group: {{userGroup}} / Role: {{userRole}}
-                    <div class="expand-group">
+                    <span
+                        class="current-user-group__label"
+                        title="Group: {{userGroup}} / Role: {{userRole}}"
+                    >Group: {{userGroup}} / Role: {{userRole}}</span>
+                    <div>
                         <mat-icon>arrow_drop_down</mat-icon>
                     </div>
                 </span>

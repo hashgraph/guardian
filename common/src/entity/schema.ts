@@ -91,6 +91,12 @@ export class Schema extends BaseEntity implements ISchema {
     version?: string;
 
     /**
+     * Source schema version
+     */
+    @Property({ nullable: true })
+    sourceVersion?: string;
+
+    /**
      * Creator
      */
     @Property({ nullable: true })

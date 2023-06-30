@@ -213,4 +213,30 @@ export class PolicyMessage extends Message {
     public getDocumentUrl(type: UrlType): string | null {
         return this.getUrlValue(0, type);
     }
+
+    /**
+     * To JSON
+     */
+    public override toJson(): any {
+        const result = super.toJson();
+        result.uuid = this.uuid;
+        result.name = this.name;
+        result.description = this.description;
+        result.owner = this.owner;
+        result.topicDescription = this.topicDescription;
+        result.version = this.version;
+        result.policyTag = this.policyTag;
+        result.policyTopicId = this.policyTopicId;
+        result.instanceTopicId = this.instanceTopicId;
+        result.synchronizationTopicId = this.synchronizationTopicId;
+        result.document = this.document;
+        return result;
+    }
+
+    /**
+     * Get User DID
+     */
+    public override getOwner(): string {
+        return this.owner;
+    }
 }

@@ -42,14 +42,14 @@ import { CreateTokenBlockComponent } from '../policy-viewer/blocks/create-token-
 import { HttpRequestConfigComponent } from '../policy-configuration/blocks/main/http-request-config/http-request-config.component';
 import { ExternalTopicBlockComponent } from '../policy-viewer/blocks/external-topic-block/external-topic-block.component';
 import { UploadDocumentBlockComponent } from '../policy-viewer/blocks/upload-document-block/upload-document-block.component';
-
+import { TagsManagerBlockComponent } from '../policy-viewer/blocks/tags-manager-block/tags-manager-block.component';
+import { MessagesReportBlockComponent } from '../policy-viewer/blocks/messages-report-block/messages-report-block.component';
 import {
     BlockGroup,
     BlockHeaders,
     PolicyBlockModel,
     IBlockSetting
 } from "../structures";
-import { TagsManagerBlockComponent } from '../policy-viewer/blocks/tags-manager-block/tags-manager-block.component';
 import { BlockType } from '@guardian/interfaces';
 
 const Container: IBlockSetting = {
@@ -91,7 +91,8 @@ const Container: IBlockSetting = {
         { type: BlockType.MultiSignBlock },
         { type: BlockType.CreateToken },
         { type: BlockType.SplitBlock },
-        { type: BlockType.ExternalTopic }
+        { type: BlockType.ExternalTopic },
+        { type: BlockType.MessagesReportBlock }
     ]
 }
 
@@ -134,7 +135,8 @@ const Step: IBlockSetting = {
         { type: BlockType.MultiSignBlock },
         { type: BlockType.CreateToken },
         { type: BlockType.SplitBlock },
-        { type: BlockType.ExternalTopic }
+        { type: BlockType.ExternalTopic },
+        { type: BlockType.MessagesReportBlock }
     ]
 }
 
@@ -586,6 +588,15 @@ const CalculateMathVariables: IBlockSetting = {
     property: null,
 }
 
+const AutoReport: IBlockSetting = {
+    type: BlockType.MessagesReportBlock,
+    icon: 'addchart',
+    group: BlockGroup.Report,
+    header: BlockHeaders.UIComponents,
+    factory: MessagesReportBlockComponent,
+    property: null
+}
+
 const Report: IBlockSetting = {
     type: BlockType.Report,
     icon: 'addchart',
@@ -659,5 +670,6 @@ export default [
     HistoryAddon,
     SelectiveAttributes,
     TagManager,
-    ExternalTopic
+    ExternalTopic,
+    AutoReport
 ];

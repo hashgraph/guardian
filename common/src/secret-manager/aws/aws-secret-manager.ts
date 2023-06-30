@@ -33,7 +33,10 @@ export class AwsSecretManager implements SecretManagerBase {
    * @public
    */
   private getSecretId(path: string): string {
-    return this.baseSecretPath + path;
+    const ret=(process.env.GUARDIAN_ENV)?
+            `${process.env.GUARDIAN_ENV}/${process.env.HEDERA_NET}/` + this.baseSecretPath + path:
+            `${process.env.HEDERA_NET}/` + this.baseSecretPath + path
+    return ret;
   }
 
   /**
@@ -79,6 +82,7 @@ export class AwsSecretManager implements SecretManagerBase {
           VersionStage: 'AWSCURRENT',
         })
       );
+      console.log('>>> GetSecretValueCommand', response);
       return JSON.parse(response.SecretString);
     } catch (ex) {
       if (ex.name === 'ResourceNotFoundException') {

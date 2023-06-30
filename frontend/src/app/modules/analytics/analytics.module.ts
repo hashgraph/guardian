@@ -6,12 +6,14 @@ import { FormsModule } from '@angular/forms';
 import { CompareComponent } from './compare/compare.component';
 import { ComparePolicyComponent } from './compare-policy/compare-policy.component';
 import { CompareSchemaComponent } from './compare-schema/compare-schema.component';
+import { CompareModuleComponent } from './compare-module/compare-module.component';
 
 @NgModule({
     declarations: [
         CompareComponent,
         CompareSchemaComponent,
-        ComparePolicyComponent
+        ComparePolicyComponent,
+        CompareModuleComponent
     ],
     imports: [
         CommonModule,
@@ -22,7 +24,8 @@ import { CompareSchemaComponent } from './compare-schema/compare-schema.componen
     exports: [
         CompareComponent,
         CompareSchemaComponent,
-        ComparePolicyComponent
+        ComparePolicyComponent,
+        CompareModuleComponent
     ]
 })
 export class CompareModule { }

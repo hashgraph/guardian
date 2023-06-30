@@ -169,9 +169,9 @@ export class TokenConfigComponent implements OnInit {
             } else {
                 this.loading = false;
             }
-        }, (error) => {
+        }, ({ message }) => {
             this.loading = false;
-            console.error(error);
+            console.error(message);
         });
     }
 
@@ -192,6 +192,7 @@ export class TokenConfigComponent implements OnInit {
                 hasBackdrop: true, // Shadows beyond the dialog
                 closeOnNavigation: true,
                 autoFocus: false,
+                disableClose: true,
                 data: this
             });
         } else {
@@ -351,6 +352,7 @@ export class TokenConfigComponent implements OnInit {
                 dialogTitle: 'Delete token',
                 dialogText: 'Are you sure to delete token?'
             },
+            disableClose: true,
             autoFocus: false
         });
         dialogRef.afterClosed().subscribe((result) => {
@@ -386,6 +388,7 @@ export class TokenConfigComponent implements OnInit {
                 hasBackdrop: true, // Shadows beyond the dialog
                 closeOnNavigation: true,
                 autoFocus: false,
+                disableClose: true,
                 data: {
                     token: element
                 }

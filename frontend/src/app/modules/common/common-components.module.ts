@@ -21,6 +21,7 @@ import { SelectorDialogComponent } from './selector-dialog/selector-dialog.compo
 import { StepTreeComponent } from './step-tree/step-tree.component';
 import { SeparateStepperComponent } from './separate-stepper/separate-stepper.component';
 import { NgxMaskModule } from 'ngx-mask';
+import { NewVersionsComponent } from './new-versions/new-versions.component';
 
 @NgModule({
     declarations: [
@@ -38,7 +39,8 @@ import { NgxMaskModule } from 'ngx-mask';
         ConfirmDialog,
         SelectorDialogComponent,
         StepTreeComponent,
-        SeparateStepperComponent
+        SeparateStepperComponent,
+        NewVersionsComponent,
     ],
     imports: [
         CommonModule,
@@ -65,7 +67,8 @@ import { NgxMaskModule } from 'ngx-mask';
         NgxColorsModule,
         SelectorDialogComponent,
         SeparateStepperComponent,
-        NgxMaskModule
+        NgxMaskModule,
+        NewVersionsComponent,
     ]
 })
 export class CommonComponentsModule { }

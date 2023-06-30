@@ -5,7 +5,6 @@
   "workspaces": [
     "interfaces",
     "common",
-    "api-docs",
     "api-gateway",
     "auth-service",
     "guardian-service",
@@ -17,5 +16,5 @@
     "policy-service",
     "api-tests"
   ],
-  "version": "2.13.1"
+  "version": "2.14.0"
 }

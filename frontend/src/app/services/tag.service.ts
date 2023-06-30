@@ -1,7 +1,7 @@
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ISchema } from '@guardian/interfaces';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { API_BASE_URL } from './api';
 
 /**
@@ -10,10 +10,11 @@ import { API_BASE_URL } from './api';
 @Injectable()
 export class TagsService {
     private readonly url: string = `${API_BASE_URL}/tags`;
+    tagsUpdated$: Subject<void> = new Subject<void>();
 
     constructor(
         private http: HttpClient
-    ) { }
+    ) {}
 
     public create(tag: any): Observable<any> {
         return this.http.post<any>(`${this.url}/`, tag);

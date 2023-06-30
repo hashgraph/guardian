@@ -2,7 +2,7 @@
 description: Policy developed by Envision Blockchain
 ---
 
-# 🧑🌾 Verra VM0017 REDD+ Methodology
+# 🧑🌾 🧑🌾 Verra VM0017 REDD+ Methodology
 
 * [Policy Description](verra-vm0017-redd+-methodology.md#policy-description)
 * [Workflow Description](verra-vm0017-redd+-methodology.md#workflow-description)
@@ -54,7 +54,7 @@ Once the users have been created go to each one and assign the appropriate role 
 
 Go to the Standard Registry profile and approve the VVB in the “Approve VVB” tab.
 
-<figure><img src="../../../.gitbook/assets/image (71).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (71) (1).png" alt=""><figcaption></figcaption></figure>
 
 Click on the Project Proponent profile and select “New Project”.
 
@@ -62,7 +62,7 @@ Click on the Project Proponent profile and select “New Project”.
 
 Now, we can input all the project details and data associated with the project in the “New Project” form. In the schema Excel file, if the final CRU calculations do not result in a positive integer, selecting "Ok" after completing the form will trigger errors.
 
-<figure><img src="../../../.gitbook/assets/image (69).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (69) (1).png" alt=""><figcaption></figcaption></figure>
 
 To proceed with the flow, the next step is to access the Standard Registry profile and include the project in the project pipeline. This can be achieved by navigating to the "Project Pipeline" tab and selecting the "Add" option.
 
@@ -74,7 +74,7 @@ Next, proceed to the Project Proponent profile and locate the "Projects" section
 
 After successfully assigning the VVB to the project, the next step is to access the VVB profile and click on the "validate" option located in the Projects tab.
 
-<figure><img src="../../../.gitbook/assets/image (70).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (70) (1).png" alt=""><figcaption></figcaption></figure>
 
 Navigate back to the Project Proponent profile to complete the monitoring report. In the Projects tab select “Add Report”.
 

@@ -122,9 +122,9 @@ export class AuditComponent implements OnInit {
             setTimeout(() => {
                 this.loading = false;
             }, 500);
-        }, (error) => {
+        }, ({ message }) => {
             this.loading = false;
-            console.error(error);
+            console.error(message);
         });
     }
 
@@ -145,7 +145,8 @@ export class AuditComponent implements OnInit {
                 title: 'VP',
                 type: 'VP',
                 viewDocument: true
-            }
+            },
+            disableClose: true,
         });
         dialogRef.afterClosed().subscribe(async (result) => { });
     }

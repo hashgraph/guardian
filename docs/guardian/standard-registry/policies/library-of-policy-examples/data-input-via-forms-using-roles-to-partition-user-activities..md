@@ -19,7 +19,7 @@ Assign these containers to appropriate Permissions: ‘no\_role’, ‘User’, 
 
 See detailed information about the Roles in [Example 1](creating-and-using-roles.md).
 
-![Creating Roles and adding RoleSelectionBlock](<../../../../.gitbook/assets/0 (2) (1).png>)
+![Creating Roles and adding RoleSelectionBlock](<../../../../.gitbook/assets/0 (2) (1) (1).png>)
 
 ## **Main section**
 
@@ -104,7 +104,7 @@ Add ‘Status’ attribute and set the initial ‘New’ value for new documents
 
 1.3.3 Select the schema upon which the selected documents should be based on
 
-![Selecting Schema](<../../../../.gitbook/assets/15 (4).png>)
+![Selecting Schema](<../../../../.gitbook/assets/15 (5).png>)
 
 1.3.4 Select _‘_**Owned by User**_’_ checkbox which would filter in only the documents that are created by this user (this will disable the ability to view other documents)
 

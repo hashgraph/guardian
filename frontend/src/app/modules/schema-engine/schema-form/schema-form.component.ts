@@ -97,7 +97,7 @@ export class SchemaFormComponent implements OnInit {
     public options: FormGroup | undefined;
     public fields: any[] | undefined = [];
     public conditionFields: SchemaField[] = [];
-    public isShown: boolean[] = [true, true];
+    public isShown: boolean[] = [true];
     public currentIndex: number = 0;
 
     private _patternByNumberType: any = {
@@ -687,6 +687,10 @@ export class SchemaFormComponent implements OnInit {
                     initialDivision = 1;
                     this.currentIndex = i;
                     this.isShown = new Array(fields.length).fill(false);
+                    if (fields[this.currentIndex].isRef && fields[this.currentIndex - 1].isRef) {
+                        this.isShown[this.currentIndex] = true;
+                        break;
+                    }
                     continue;
                 }
                 break;
@@ -703,22 +707,21 @@ export class SchemaFormComponent implements OnInit {
             this.currentIndex = nextRefIndex;
         }
         const contentElement = document.querySelector('#main-content');
-        const formElement = document.querySelector('.form-dialog');
+        const formElement = document.querySelector('.schema-form');
         setTimeout(() => {
-            contentElement!.scrollTo({
-                top: -1,
-                behavior: 'smooth'
-            });
-            if (formElement) {
-                formElement.scrollTo({
+            if (window.innerWidth <= 810) {
+                contentElement!.scrollTo({
                     top: -1,
                     behavior: 'smooth'
                 });
+            } else {
+                if (formElement) {
+                    formElement.scrollTo({
+                        top: -1,
+                        behavior: 'smooth'
+                    });
+                }
             }
-            window.scrollTo({
-                top: -1,
-                behavior: 'smooth'
-            });
         }, 100)
 
         return this.isShown;
@@ -759,22 +762,21 @@ export class SchemaFormComponent implements OnInit {
             }
         }
         const contentElement = document.querySelector('#main-content');
-        const formElement = document.querySelector('.form-dialog');
+        const formElement = document.querySelector('.schema-form');
         setTimeout(() => {
-            contentElement!.scrollTo({
-                top: -1,
-                behavior: 'smooth'
-            });
-            if (formElement) {
-                formElement.scrollTo({
+            if (window.innerWidth <= 810) {
+                contentElement!.scrollTo({
                     top: -1,
                     behavior: 'smooth'
                 });
+            } else {
+                if (formElement) {
+                    formElement.scrollTo({
+                        top: -1,
+                        behavior: 'smooth'
+                    });
+                }
             }
-            window.scrollTo({
-                top: -1,
-                behavior: 'smooth'
-            });
         }, 100)
 
 

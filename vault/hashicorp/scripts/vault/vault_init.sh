@@ -146,9 +146,20 @@ get_approle_credentials() {
     SECRET_ID=$(write "{\"num_uses\":$VAULT_SECRET_ID_TTL, \"ttl\": \"$VAULT_SECRET_NUM_USES\"}" v1/auth/approle/role/$ROLE_NAME/secret-id $VAULT_TOKEN | jq -r ".data.secret_id")
 
     ENV_PATHS=$(echo $ROLE | jq -r '.env_path[]')
+    ENV_NAMES=$(echo $ROLE | jq -r '.env_name[]')
+
+    COUNTER=0
     for ENV_PATH in ${ENV_PATHS[@]}; do
 
-      ENV_FILE=$PWD/$ENV_PATH
+    if [ -z "$GUARDIAN_ENV" ]
+        then
+              ENV_FILE=$PWD/$ENV_PATH/configs/.env.${ENV_NAMES[COUNTER]}
+        else
+              ENV_FILE=$PWD/$ENV_PATH/configs/.env.${ENV_NAMES[COUNTER]}.${GUARDIAN_ENV}
+        fi
+      
+      echo "file to write: $ENV_FILE"
+
       if grep -q "^VAULT_APPROLE_ROLE_ID=" "$ENV_FILE"; then
         # replace the value of the key if it exists
         sed -i "s/^VAULT_APPROLE_ROLE_ID=.*/VAULT_APPROLE_ROLE_ID=$ROLE_ID/" $ENV_FILE
@@ -164,6 +175,7 @@ get_approle_credentials() {
         # add the key and its value if it doesn't exist
         echo "VAULT_APPROLE_SECRET_ID=$SECRET_ID" >> "$ENV_FILE"
       fi
+      let COUNTER++
     done
 
     
@@ -175,6 +187,13 @@ push_secrets() {
   SECRETS=$(cat "$SECRETS_DIR" | jq -c -r '.[]')
   for SECRET in ${SECRETS[@]}; do
     SECRET_PATH=$(echo $SECRET | jq -r .path )
+    if [ -z "$GUARDIAN_ENV" ]
+        then
+              SECRET_PATH="$HEDERA_NET"/"$SECRET_PATH"
+        else
+              SECRET_PATH="$GUARDIAN_ENV"/"$HEDERA_NET"/"$SECRET_PATH"
+        fi
+        echo $SECRET_PATH
     SECRET_DATA=$(echo $SECRET | jq -r .data )
     write "{\"data\": $SECRET_DATA}" v1/secret/data/$SECRET_PATH $VAULT_TOKEN
   done

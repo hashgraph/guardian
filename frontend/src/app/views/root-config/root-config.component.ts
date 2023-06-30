@@ -20,13 +20,18 @@ enum OperationMode {
     GetAllUserTopics
 }
 
+enum StartActions {
+    NEXT = 'next-action',
+    RESTORE_DATA = 'restore-data',
+}
+
 /**
  * Standard Registry profile settings page.
  */
 @Component({
     selector: 'app-root-config',
     templateUrl: './root-config.component.html',
-    styleUrls: ['./root-config.component.css']
+    styleUrls: ['./root-config.component.scss']
 })
 export class RootConfigComponent implements OnInit {
     @ViewChild('actionMenu') actionMenu: any;
@@ -38,20 +43,24 @@ export class RootConfigComponent implements OnInit {
     startActions = [
         {
             label: 'Next',
-            type: 'next-action',
+            type: StartActions.NEXT,
             action: () => {
                 this.generated = true;
             }
         },
         {
             label: 'Restore data',
-            type: 'restore-data',
+            type: StartActions.RESTORE_DATA,
             action: () => {
-                const { hederaAccountId, hederaAccountKey } = this.hederaForm.value;
+                const value = this.hederaForm.value;
                 const topicId = this.selectedTokenId.value;
                 this.loading = true;
                 this.headerProps.setLoading(true);
-                this.profileService.restoreProfile({ hederaAccountId, hederaAccountKey, topicId }).subscribe((result) => {
+                this.profileService.restoreProfile({
+                    hederaAccountId: value.hederaAccountId?.trim(),
+                    hederaAccountKey: value.hederaAccountKey?.trim(),
+                    topicId
+                }).subscribe((result) => {
                     const { taskId, expectation } = result;
                     this.taskId = taskId;
                     this.expectedTaskMessages = expectation;
@@ -64,7 +73,11 @@ export class RootConfigComponent implements OnInit {
         }
     ]
     get showForm(): boolean {
-        return this.currentKeyAction.type === 'next-action'
+        return this.currentKeyAction.type === StartActions.NEXT
+    }
+
+    get shouldDisableActionBtns(): boolean {
+        return !this.hederaForm.valid || (!this.selectedTokenId.valid && !this.showForm && !this.generated);
     }
 
     isConfirmed: boolean = false;
@@ -144,7 +157,7 @@ export class RootConfigComponent implements OnInit {
             this.profileService.getBalance(),
             this.schemaService.getSystemSchemasByEntity(SchemaEntity.STANDARD_REGISTRY)
         ]).subscribe((value) => {
-            if(!value[2]) {
+            if (!value[2]) {
                 this.errorLoadSchema = true;
                 this.loading = false;
                 this.headerProps.setLoading(false);
@@ -164,7 +177,7 @@ export class RootConfigComponent implements OnInit {
                 this.profile = profile;
             }
 
-            if(schema) {
+            if (schema) {
                 this.schema = new Schema(schema);
             }
 
@@ -172,10 +185,10 @@ export class RootConfigComponent implements OnInit {
                 this.loading = false;
                 this.headerProps.setLoading(false);
             }, 500)
-        }, (error) => {
+        }, ({ message }) => {
             this.loading = false;
             this.headerProps.setLoading(false);
-            console.error(error);
+            console.error(message);
         });
     }
 
@@ -185,8 +198,8 @@ export class RootConfigComponent implements OnInit {
             const vcDocument = value.vc;
             this.prepareDataFrom(vcDocument);
             const data: any = {
-                hederaAccountId: value.hederaAccountId,
-                hederaAccountKey: value.hederaAccountKey,
+                hederaAccountId: value.hederaAccountId?.trim(),
+                hederaAccountKey: value.hederaAccountKey?.trim(),
                 vcDocument: vcDocument
             }
             this.loading = true;
@@ -196,10 +209,10 @@ export class RootConfigComponent implements OnInit {
                 this.taskId = taskId;
                 this.expectedTaskMessages = expectation;
                 this.operationMode = OperationMode.SetProfile;
-            }, (error) => {
+            }, ({ message }) => {
                 this.loading = false;
                 this.headerProps.setLoading(false);
-                console.error(error);
+                console.error(message);
             });
         }
     }
@@ -207,6 +220,7 @@ export class RootConfigComponent implements OnInit {
     openVCDocument(document: any, title: string) {
         const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
+            disableClose: true,
             data: {
                 document: document.document,
                 title: title,
@@ -221,6 +235,7 @@ export class RootConfigComponent implements OnInit {
     openDIDDocument(document: any, title: string) {
         const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
+            disableClose: true,
             data: {
                 document: document.document,
                 title: title,
@@ -251,13 +266,12 @@ export class RootConfigComponent implements OnInit {
         event.stopPropagation();
     }
 
-    onActionClick(event: MouseEvent): void {
-        event.preventDefault();
+    onNextClick(): void {
         this.currentKeyAction.action();
     }
 
-    onActionChange(actionType: string): void {
-        this.currentKeyActionIndex = this.startActions.findIndex(a => a.type === actionType);
+    onRestoreDataClick(): void {
+        this.currentKeyActionIndex = this.startActions.findIndex(a => a.type === StartActions.RESTORE_DATA);
     }
 
     randomKey() {
@@ -286,8 +300,8 @@ export class RootConfigComponent implements OnInit {
 
         const value = this.hederaForm.value;
         const profile = {
-            hederaAccountId: value.hederaAccountId,
-            hederaAccountKey: value.hederaAccountKey
+            hederaAccountId: value.hederaAccountId?.trim(),
+            hederaAccountKey: value.hederaAccountKey?.trim()
         }
         this.loading = true;
         this.profileService.getAllUserTopics(profile).subscribe((result) => {
@@ -309,29 +323,28 @@ export class RootConfigComponent implements OnInit {
     }
 
     prepareDataFrom(data: any) {
-        if(Array.isArray(data)) {
+        if (Array.isArray(data)) {
             for (let j = 0; j < data.length; j++) {
                 let dataArrayElem = data[j];
-                if(dataArrayElem === "" || dataArrayElem === null) {
+                if (dataArrayElem === "" || dataArrayElem === null) {
                     data.splice(j, 1);
                     j--;
                 }
-                if(Object.getPrototypeOf(dataArrayElem) === Object.prototype
+                if (Object.getPrototypeOf(dataArrayElem) === Object.prototype
                     || Array.isArray(dataArrayElem)) {
                     this.prepareDataFrom(dataArrayElem);
                 }
             }
         }
 
-        if (Object.getPrototypeOf(data) === Object.prototype)
-        {
+        if (Object.getPrototypeOf(data) === Object.prototype) {
             let dataKeys = Object.keys(data);
-            for (let i = 0;i< dataKeys.length; i++) {
+            for (let i = 0; i < dataKeys.length; i++) {
                 const dataElem = data[dataKeys[i]];
-                if(dataElem === "" || dataElem === null) {
+                if (dataElem === "" || dataElem === null) {
                     delete data[dataKeys[i]];
                 }
-                if(Object.getPrototypeOf(dataElem) === Object.prototype
+                if (Object.getPrototypeOf(dataElem) === Object.prototype
                     || Array.isArray(dataElem)) {
                     this.prepareDataFrom(dataElem);
                 }
@@ -354,13 +367,13 @@ export class RootConfigComponent implements OnInit {
             this.taskService.get(taskId).subscribe((task) => {
                 switch (operationMode) {
                     case OperationMode.Generate: {
-                        const { id, key} = task.result;
+                        const { id, key } = task.result;
                         const value = this.hederaForm.value;
                         this.hederaForm.setValue({
-                                hederaAccountId: id,
-                                hederaAccountKey: key,
-                                vc: value.vc
-                            });
+                            hederaAccountId: id,
+                            hederaAccountKey: key,
+                            vc: value.vc
+                        });
                         this.loading = false;
                         break;
                     }
@@ -378,11 +391,11 @@ export class RootConfigComponent implements OnInit {
                                 return b.timestamp - a.timestamp;
                             })
                             .map((i: any) => {
-                            return {
-                                topicId: i.topicId,
-                                date: new Date(i.timestamp).toLocaleString()
-                            }
-                        });
+                                return {
+                                    topicId: i.topicId,
+                                    date: new Date(i.timestamp).toLocaleString()
+                                }
+                            });
                         this.loadProfile();
                         this.selectedTokenId.setValue((this.userTopics && this.userTopics.length) ? this.userTopics[0].topicId : undefined)
                         break;

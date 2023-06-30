@@ -28,13 +28,6 @@ services:
       - "8080:8080"
       - "8081:8081"
 
-  api-docs:
-    build:
-      context: .
-      dockerfile: ./api-docs/Dockerfile
-    expose:
-      - 3001
-
   message-broker:
     image: nats:2.9.8
     expose:
@@ -171,7 +164,6 @@ services:
       - guardian-service
       - auth-service
       - api-gateway
-      - api-docs
       - mrv-sender
       - mongo-express
 volumes:

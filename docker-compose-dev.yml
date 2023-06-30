@@ -38,17 +38,6 @@ services:
         restart: "no"
         command: 'node dev.js'
 
-    api-docs:
-        image: guardian-development
-        volumes:
-            - ./:/app
-        expose:
-            - 3001
-        ports:
-            - 3001:3001
-        depends_on:
-            - dev-tools
-        command: npm run dev:docker --prefix /app/api-docs
     logger-service:
         image: guardian-development
         depends_on:
@@ -169,7 +158,6 @@ services:
             - guardian-service
             - auth-service
             - api-gateway
-            - api-docs
             - mrv-sender
             - front-end
         volumes:

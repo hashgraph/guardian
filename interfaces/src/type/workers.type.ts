@@ -36,6 +36,7 @@ export enum WorkerTaskType {
     CANCEL_RETIRE_REQUEST = 'cancel-retire-request',
     GET_USER_NFTS_SERIALS = 'get-user-nfts-serials',
     HTTP_REQUEST = 'http-request',
+    GET_TOKEN_INFO = 'get-token-info'
 }
 
 /**

@@ -9,7 +9,7 @@ Here the images below to show the selection of account type and selection of use
 \
 
 
-<figure><img src="../../../.gitbook/assets/2 (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/2.png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/1 (1) (4).png" alt=""><figcaption></figcaption></figure>
 
@@ -19,13 +19,13 @@ Here the images below to show the selection of account type and selection of use
 
 The header was also adapted for mobile for all types of users. The balance was maintained as one of the elements always present. The new header for mobile, these elements are always present.
 
-<figure><img src="../../../.gitbook/assets/3.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/3 (1).png" alt=""><figcaption></figcaption></figure>
 
 The various menus and submenus (in case there are any) have been moved upon clicking on the hamburger menu, presenting the user with the following.
 
 Also some information about the user is also presented, such as the name of the user (in this case "user1234") and his respective Hedera ID and HBar balance.
 
-<figure><img src="../../../.gitbook/assets/5.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/5 (3).png" alt=""><figcaption></figcaption></figure>
 
 
 
@@ -59,7 +59,7 @@ The importing of policies was also adapted from the click on the "Import" button
 
 Below you can see the preview of the imported policy&#x20;
 
-<figure><img src="../../../.gitbook/assets/20 (1) (3) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/20 (1) (3) (1).png" alt=""><figcaption></figcaption></figure>
 
 
 
@@ -67,4 +67,11 @@ Below you can see the preview of the imported policy&#x20;
 
 Finally, the publishing of a draft policy, defining its version, was also adapted.
 
-<figure><img src="../../../.gitbook/assets/21.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/21.png" alt="" width="284"><figcaption></figcaption></figure>
+
+
+
+
+
+
+

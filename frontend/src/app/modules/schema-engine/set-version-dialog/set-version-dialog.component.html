@@ -7,7 +7,14 @@
         </mat-form-field>
     </div>
     <div mat-dialog-actions>
-        <button mat-raised-button id="publish-btn" color="primary" [disabled]="!versionControl.valid" (click)="onSubmit()">Publish</button>
+        <button
+            mat-raised-button
+            id="publish-btn"
+            color="primary"
+            [disabled]="isPublishDisabled"
+            (click)="onSubmit()"
+        >Publish</button>
+
         <button mat-button id="cancel-btn" type="button" (click)="onNoClick()">Cancel</button>
     </div>
 </div>

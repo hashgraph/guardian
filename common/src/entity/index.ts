@@ -26,3 +26,6 @@ export * from './vc-document';
 export * from './vp-document';
 export * from './theme';
 export * from './external-document';
+export * from './block-cache';
+export * from './branding';
+export * from './suggestions-config';

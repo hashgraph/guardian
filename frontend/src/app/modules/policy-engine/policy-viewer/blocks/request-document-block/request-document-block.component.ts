@@ -15,7 +15,7 @@ import { Router } from '@angular/router';
 @Component({
     selector: 'request-document-block',
     templateUrl: './request-document-block.component.html',
-    styleUrls: ['./request-document-block.component.css']
+    styleUrls: ['./request-document-block.component.scss']
 })
 export class RequestDocumentBlockComponent implements OnInit {
     @Input('id') id!: string;
@@ -186,7 +186,16 @@ export class RequestDocumentBlockComponent implements OnInit {
         }
     }
 
-    onSubmit() {
+    onSubmit(type?: string) {
+        if (this.disabled) {
+            return;
+        }
+        if (type === 'page' && this.loading) {
+            return;
+        }
+        if (type === 'dialog' && this.dialogLoading) {
+            return;
+        }
         if (this.dataForm.valid) {
             const data = this.dataForm.getRawValue();
             this.prepareDataFrom(data);
@@ -274,6 +283,7 @@ export class RequestDocumentBlockComponent implements OnInit {
                 panelClass: 'g-dialog',
                 hasBackdrop: true, // Shadows beyond the dialog
                 closeOnNavigation: true,
+                disableClose: true,
                 autoFocus: false,
                 data: this
             });

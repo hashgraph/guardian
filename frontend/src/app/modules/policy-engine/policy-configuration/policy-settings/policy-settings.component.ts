@@ -20,6 +20,7 @@ import { ConfirmDialog } from 'src/app/modules/common/confirm-dialog/confirm-dia
 export class PolicySettingsComponent implements OnInit {
     @Output('update') update = new EventEmitter();
 
+    public isSyntax: boolean = false;
     public settingsTab: number = 0;
     public themes!: Theme[];
     public theme!: Theme;
@@ -74,9 +75,9 @@ export class PolicySettingsComponent implements OnInit {
             this.themes = this.themeService.getThemes();
             this.theme = this.themeService.getCurrent();
             this.loading = false;
-        }, (error) => {
+        }, ({ message }) => {
             this.loading = false;
-            console.error(error);
+            console.error(message);
         });
     }
 
@@ -94,13 +95,13 @@ export class PolicySettingsComponent implements OnInit {
                     this.theme = this.themeService.getCurrent();
                     this.update.emit(true);
                     this.loading = false;
-                }, (error) => {
+                }, ({ message }) => {
                     this.loading = false;
-                    console.error(error);
+                    console.error(message);
                 });
-            }, (error) => {
+            }, ({ message }) => {
                 this.loading = false;
-                console.error(error);
+                console.error(message);
             });
         }
     }
@@ -113,9 +114,9 @@ export class PolicySettingsComponent implements OnInit {
             this.theme = this.themeService.getCurrent();
             this.update.emit(false);
             this.loading = false;
-        }, (error) => {
+        }, ({ message }) => {
             this.loading = false;
-            console.error(error);
+            console.error(message);
         });
     }
 
@@ -159,7 +160,8 @@ export class PolicySettingsComponent implements OnInit {
             data: {
                 type,
                 theme: newTheme
-            }
+            },
+            disableClose: true,
         });
         dialogRef.afterClosed().subscribe(async (r) => {
             if (r) {
@@ -172,9 +174,9 @@ export class PolicySettingsComponent implements OnInit {
                     this.themes = this.themeService.getThemes();
                     this.theme = this.themeService.getCurrent();
                     this.loading = false;
-                }, (error) => {
+                }, ({ message }) => {
                     this.loading = false;
-                    console.error(error);
+                    console.error(message);
                 });
             }
         });
@@ -186,7 +188,8 @@ export class PolicySettingsComponent implements OnInit {
             data: {
                 title: 'Delete theme',
                 description: 'Are you sure you want to delete this theme?'
-            }
+            },
+            disableClose: true,
         });
         dialogRef.afterClosed().subscribe(result => {
             if (result) {
@@ -197,9 +200,9 @@ export class PolicySettingsComponent implements OnInit {
                     this.themes = this.themeService.getThemes();
                     this.theme = this.themeService.getCurrent();
                     this.loading = false;
-                }, (error) => {
+                }, ({ message }) => {
                     this.loading = false;
-                    console.error(error);
+                    console.error(message);
                 });
             }
         });
@@ -209,6 +212,7 @@ export class PolicySettingsComponent implements OnInit {
         const dialogRef = this.dialog.open(ImportFileDialog, {
             width: '500px',
             autoFocus: false,
+            disableClose: true,
             data: {}
         });
         dialogRef.afterClosed().subscribe(async (arrayBuffer) => {
@@ -264,7 +268,8 @@ export class PolicySettingsComponent implements OnInit {
             data: {
                 type: 'edit',
                 theme: theme
-            }
+            },
+            disableClose: true,
         });
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
@@ -273,9 +278,9 @@ export class PolicySettingsComponent implements OnInit {
                     this.themes = this.themeService.getThemes();
                     this.theme = this.themeService.getCurrent();
                     this.loading = false;
-                }, (error) => {
+                }, ({ message }) => {
                     this.loading = false;
-                    console.error(error);
+                    console.error(message);
                 });
             }
         });

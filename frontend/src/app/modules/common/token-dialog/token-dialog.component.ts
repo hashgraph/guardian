@@ -1,6 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { FormBuilder, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { noWhitespaceValidator } from 'src/app/validators/no-whitespace-validator';
 
 /**
  * Dialog for creating tokens.
@@ -12,23 +13,22 @@ import { FormBuilder, Validators } from '@angular/forms';
 })
 export class TokenDialog {
     started = false;
-    dataForm = this.fb.group({
-        draftToken: [true, Validators.required],
-        tokenName: ['Token Name', Validators.required],
-        tokenSymbol: ['F', Validators.required],
-        tokenType: ['fungible', Validators.required],
-        decimals: ['2'],
-        initialSupply: ['0'],
-        enableAdmin: [true, Validators.required],
-        changeSupply: [true, Validators.required],
-        enableFreeze: [false, Validators.required],
-        enableKYC: [false, Validators.required],
-        enableWipe: [true, Validators.required]
+    dataForm = new FormGroup({
+        draftToken: new FormControl(true, [Validators.required]),
+        tokenName: new FormControl('Token Name', [Validators.required, noWhitespaceValidator()]),
+        tokenSymbol: new FormControl('F', [Validators.required, noWhitespaceValidator()]),
+        tokenType: new FormControl('fungible', [Validators.required]),
+        decimals: new FormControl('2'),
+        initialSupply: new FormControl('0'),
+        enableAdmin: new FormControl(true, [Validators.required]),
+        changeSupply: new FormControl(true, [Validators.required]),
+        enableFreeze: new FormControl(false, [Validators.required]),
+        enableKYC: new FormControl(false, [Validators.required]),
+        enableWipe: new FormControl(true, [Validators.required])
     });
     title: string = "New Token";
     description: string = "";
     token: any = null;
-    valid: boolean = true;
     readonly: boolean = false;
 
     public innerWidth: any;
@@ -94,5 +94,9 @@ export class TokenDialog {
             const data = this.dataForm.value;
             this.dialogRef.close(data);
         }
+    }
+
+    get shouldDisableActionButtons(): boolean | null {
+        return !(this.dataForm.valid && this.started) || null;
     }
 }

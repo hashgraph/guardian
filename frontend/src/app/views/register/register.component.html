@@ -1,34 +1,81 @@
 <div class="content login">
-    <div class="overlay" (click)="goBack()"></div>
+    <div class="overlay"></div>
     <form class="credential-creation" [formGroup]="loginForm" (ngSubmit)="signup()" *ngIf="isRoleSelected$ | async; else selectRoleTemplate">
-        <div class="login-header" (click)="setRole('')">
-            <mat-icon>chevron_left</mat-icon> Create Account
+        <div class="login-header">
+            <button class="login-header__back-button" (click)="setRole('')">
+                <mat-icon>chevron_left</mat-icon>
+                <span>Back</span>
+            </button>
+            <span class="login-header__title">Create Account</span>
         </div>
 
-        <mat-form-field class="example-full-width" appearance="outline">
-            <mat-label>Username:</mat-label>
-            <input matInput formControlName="login" (input)="onInput()">
-            <div *ngIf="error" class="field-error">{{error}}</div>
-        </mat-form-field>
+        <div class="login-content">
+            <mat-form-field class="example-full-width" appearance="outline">
+                <mat-label>Username:</mat-label>
+                <input matInput formControlName="login" (input)="onInput()">
+    
+                <span *ngIf="error" class="field-error">{{error}}</span>
+                <span *ngIf="shouldShowRequiredError('login')" class="field-error">
+                    Value is required
+                </span>
+            </mat-form-field>
 
-        <mat-form-field class="example-full-width" appearance="outline">
-            <mat-label>Password:</mat-label>
-            <input matInput formControlName="password">
-        </mat-form-field>
+            <div class="password-control">
+                <mat-form-field class="example-full-width" appearance="outline">
+                    <mat-label>Password:</mat-label>
+                    <input matInput formControlName="password" [type]="passFieldType">
+        
+                    <span *ngIf="shouldShowRequiredError('password')" class="field-error">
+                        Value is required
+                    </span>
+                </mat-form-field>
+    
+                <mat-icon
+                    *ngIf="showPasswordValue; else hidePassBtn"
+                    class="eye-icon"
+                    (click)="togglePasswordShow()"
+                >
+                    visibility_on
+                </mat-icon>
+                
+                <ng-template #hidePassBtn>
+                    <mat-icon class="eye-icon" (click)="togglePasswordShow()">visibility_off</mat-icon>
+                </ng-template>
+            </div>
+    
+            <div class="password-control">
+                <mat-form-field class="example-full-width" appearance="outline">
+                    <mat-label>Confirm Password:</mat-label>
+                    <input matInput formControlName="confirmPassword" [type]="confirmPassFieldType">
+        
+                    <span *ngIf="shouldShowRequiredError('confirmPassword')" class="field-error">
+                        Value is required
+                    </span>
+                    <span *ngIf="showPassMismatchError" class="field-error">
+                        The entered passwords do not match
+                    </span>
+                </mat-form-field>
+    
+                <mat-icon
+                    *ngIf="showConfirmPasswordValue; else hideConfirmPassBtn"
+                    class="eye-icon"
+                    (click)="toggleConfirmPasswordShow()"
+                >
+                    visibility_on
+                </mat-icon>
 
-        <mat-form-field class="example-full-width" appearance="outline">
-            <mat-label>Confirm Password:</mat-label>
-            <input matInput formControlName="confirmPassword">
-        </mat-form-field>
+                <ng-template #hideConfirmPassBtn>
+                    <mat-icon class="eye-icon" (click)="toggleConfirmPasswordShow()">visibility_off</mat-icon>
+                </ng-template>
+            </div>
+        </div>
 
         <button mat-raised-button type="submit" color="primary" [disabled]="!loginForm.valid">Create</button>
     </form>
 
     <ng-template #selectRoleTemplate>
         <div class="role-select-step">
-            <div class="login-header">
-                Select Account Type
-            </div>
+            <span class="select-role-title">Select Account Type</span>
             <button mat-button (click)="setRole('STANDARD_REGISTRY')">
                 <span class="role-name">Standard Registry</span>
                 <span class="role-description">Creating/importing policies, managing users, managing tokens.</span>

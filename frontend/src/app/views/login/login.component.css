@@ -15,12 +15,13 @@ form {
     background-color: rgba(255, 255, 255, 0.55);
     /*backdrop-filter: blur(2px);*/
     align-items: center;
-    padding: 69px;
+    padding: 65px;
     box-sizing: border-box;
 }
 
 form ::ng-deep .mat-form-field {
     width: 260px;
+    margin-bottom: 8px;
 }
 
 form ::ng-deep .mat-form-field .mat-form-field-outline-start,
@@ -102,9 +103,25 @@ form ::ng-deep .mat-raised-button.mat-button-disabled.mat-button-disabled {
     font-weight: bold;
 }
 
+.field-error {
+    position: absolute;
+    color: #f00;
+    bottom: -20px;
+    left: 0;
+}
+
+.eye-icon {
+    margin: 15px 0 10px 15px;
+    position: absolute;
+    cursor: pointer;
+}
+
 @media (max-width: 810px) {
-    
     .content {
         height: calc(var(--vh, 1vh) * 100 - var(--header-height));
+    }
+
+    form ::ng-deep .mat-form-field {
+        margin-bottom: 20px;
     }
 }

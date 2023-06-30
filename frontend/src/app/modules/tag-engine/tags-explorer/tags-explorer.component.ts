@@ -57,9 +57,11 @@ export class TagsExplorer {
                 schemas: this.schemas
             }
         });
-        dialogRef.afterClosed().subscribe(async (result) => {
-            return;
-        });
+        dialogRef
+            .afterClosed()
+            .subscribe(async (result) =>
+                result ? this.tagsService.tagsUpdated$.next() : null
+            );
     }
 
     public onAdd() {
@@ -83,6 +85,7 @@ export class TagsExplorer {
         this.loading = true;
         this.tagsService.create(tag).subscribe((data) => {
             this.history.add(data);
+            this.tagsService.tagsUpdated$.next();
             setTimeout(() => {
                 this.loading = false;
             }, 500);

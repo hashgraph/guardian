@@ -18,7 +18,7 @@ import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialo
 @Component({
     selector: 'app-policy-viewer',
     templateUrl: './policy-viewer.component.html',
-    styleUrls: ['./policy-viewer.component.css']
+    styleUrls: ['./policy-viewer.component.scss']
 })
 export class PolicyViewerComponent implements OnInit, OnDestroy {
     policyId!: string;
@@ -262,6 +262,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 panelClass: 'g-dialog',
                 hasBackdrop: true, // Shadows beyond the dialog
                 closeOnNavigation: true,
+                disableClose: true,
                 autoFocus: false,
                 data: this
             });
@@ -272,7 +273,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                     document: element,
                     title: 'Document',
                     type: 'JSON',
-                }
+                },
+                disableClose: true,
             });
         }
         dialogRef.afterClosed().subscribe(async (result) => { });

@@ -13,6 +13,12 @@ import { Singleton } from '../decorators/singleton';
 export class LargePayloadContainer {
 
     /**
+     * Is port random generated
+     * @private
+     */
+    private readonly _portGenerated: boolean = false;
+
+    /**
      * Server was started
      * @private
      */
@@ -47,7 +53,7 @@ export class LargePayloadContainer {
      * Server port
      * @private
      */
-    private readonly PORT: number;
+    private PORT: number;
 
     /**
      * Domain
@@ -55,7 +61,13 @@ export class LargePayloadContainer {
     private readonly DOMAIN: string;
 
     constructor() {
-        this.PORT = (process.env.DIRECT_MESSAGE_PORT) ? parseInt(process.env.DIRECT_MESSAGE_PORT, 10) : this.generateRandom(50000, 59999);
+        if (process.env.DIRECT_MESSAGE_PORT) {
+            this.PORT = parseInt(process.env.DIRECT_MESSAGE_PORT, 10);
+            this._portGenerated = false;
+        } else {
+            this._portGenerated = true;
+            this.PORT = this.generateRandom(50000, 59999);
+        }
         this.DOMAIN = (process.env.DIRECT_MESSAGE_HOST) ? process.env.DIRECT_MESSAGE_HOST : hostname();
         this.PROTOCOL = (process.env.DIRECT_MESSAGE_PROTOCOL) ? process.env.DIRECT_MESSAGE_PROTOCOL as any : 'http';
 
@@ -83,10 +95,19 @@ export class LargePayloadContainer {
             res.send(buf);
         })
 
-        app.listen(this.PORT, () => {
+        const server = app.listen(this.PORT, () => {
+            this._started = true;
             this.logger.info(`Large objects server starts on ${this.PORT} port`, [process.env.SERVICE_CHANNEL?.toUpperCase()]);
         });
-        this._started = true;
+        server.on('error', (error) => {
+            if (!this._portGenerated) {
+                throw error;
+            } else {
+                console.error(`Port ${this.PORT} already in use, regenerating...`);
+                this.PORT = this.generateRandom(50000, 59999);
+                this.runServer();
+            }
+        });
     }
 
     /**

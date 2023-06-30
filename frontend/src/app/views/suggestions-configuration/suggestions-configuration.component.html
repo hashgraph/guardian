@@ -1,0 +1,52 @@
+<div *ngIf="!loading && isConfirmed" class="content">
+    <div class="info-container">
+        <div class="info-item-container">
+            <div class="info-item-box" type="Policy"></div>
+            <span>-</span>
+            <span>Policies</span>
+        </div>
+        <div class="info-item-container">
+            <div class="info-item-box" type="Module"></div>
+            <span>-</span>
+            <span>Modules</span>
+        </div>
+    </div>
+    <div class="content-container">
+        <div class="container">
+            <h2>All policies and modules</h2>
+            <div cdkDropList #available="cdkDropList" [cdkDropListData]="policiesAndModules"
+                [cdkDropListConnectedTo]="[result]" class="item-list" (cdkDropListDropped)="drop($event)">
+                <div class="item-list-box" [attr.type]="item.type" *ngFor="let item of policiesAndModules" cdkDrag>
+                    <span cdkDragHandle class="re-order-handler"><mat-icon>drag_handle</mat-icon></span>
+                    <span>{{item.name}}</span>
+                    <span class="move-right-btn" (click)="move(item)"><mat-icon>arrow_right_alt</mat-icon></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="center-container">
+            <div class="action-btn"><button mat-flat-button color="primary" (click)="apply()">Apply settings</button>
+            </div>
+            <div><mat-icon class="arrow-icon">arrow_right_alt</mat-icon></div>
+            <div class="action-btn"><button mat-flat-button color="warn" (click)="clear()">Clear</button></div>
+        </div>
+
+        <div class="container">
+            <h2>Suggestions priority order</h2>
+            <div cdkDropList #result="cdkDropList" [cdkDropListData]="suggestionsOrderPriority"
+                [cdkDropListConnectedTo]="[available]" class="item-list" (cdkDropListDropped)="drop($event)">
+                <div class="item-list-box" [attr.type]="item.type" *ngFor="let item of suggestionsOrderPriority" cdkDrag>
+                    <span cdkDragHandle class="re-order-handler"><mat-icon>drag_handle</mat-icon></span>
+                    <span>{{item.name}}</span>
+                    <span class="delete-btn" (click)="remove(item)"><mat-icon>delete</mat-icon></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div *ngIf="!isConfirmed" class="not-exist">
+    Before starting work you need to get DID <a [routerLink]="['/profile']">here</a>
+</div>
+<div *ngIf="loading" class="loading">
+    <mat-spinner></mat-spinner>
+</div>

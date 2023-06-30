@@ -1,18 +1,5 @@
 import { Singleton } from '@helpers/decorators/singleton';
-import {
-    ApplicationStates,
-    CommonSettings, GenerateUUIDv4,
-    IArtifact,
-    IChainItem,
-    IDidObject,
-    ISchema,
-    IToken,
-    ITokenInfo,
-    IUser,
-    IVCDocument,
-    IVPDocument,
-    MessageAPI
-} from '@guardian/interfaces';
+import { ApplicationStates, CommonSettings, GenerateUUIDv4, IArtifact, IChainItem, IDidObject, ISchema, IToken, ITokenInfo, IUser, IVCDocument, IVPDocument, MessageAPI, SuggestionsOrderPriority } from '@guardian/interfaces';
 import { NatsService } from '@guardian/common';
 
 /**
@@ -932,6 +919,39 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Compare two modules
+     * @param user
+     * @param type
+     * @param moduleId1
+     * @param moduleId2
+     * @param eventsLvl
+     * @param propLvl
+     * @param childrenLvl
+     * @param idLvl
+     */
+    public async compareModules(
+        user: any,
+        type: any,
+        moduleId1: any,
+        moduleId2: any,
+        eventsLvl: any,
+        propLvl: any,
+        childrenLvl: any,
+        idLvl: any,
+    ) {
+        return await this.sendMessage(MessageAPI.COMPARE_MODULES, {
+            type,
+            user,
+            moduleId1,
+            moduleId2,
+            eventsLvl,
+            propLvl,
+            childrenLvl,
+            idLvl
+        });
+    }
+
+    /**
      * Compare two schemas
      * @param user
      * @param type
@@ -1548,5 +1568,65 @@ export class Guardians extends NatsService {
             config,
             owner,
         });
+    }
+
+    /**
+     * Async create new branding json file
+     * @param config Branding JSON string
+     * @returns Branding JSON string
+     */
+    public async setBranding(config: string): Promise<any> {
+        return await this.sendMessage(MessageAPI.STORE_BRANDING, { config });
+    }
+
+    /**
+     * Gets the branding JSON.
+     * @returns A Promise that resolves to an object containing the branding configuration,
+     *          or null if the branding is not available.
+     */
+    // tslint:disable-next-line:completed-docs
+    public async getBranding(): Promise<{config: string} | null> {
+        return await this.sendMessage(MessageAPI.GET_BRANDING);
+    }
+
+    /**
+     * Policy suggestions
+     * @param suggestionsInput
+     */
+    public async policySuggestions(
+        suggestionsInput: any,
+        user: any
+    ): Promise<{ next: string, nested: string }> {
+        return await this.sendMessage(MessageAPI.SUGGESTIONS, {
+            user,
+            suggestionsInput,
+        });
+    }
+
+    /**
+     * Set policy suggestions
+     * @param suggestionsInput
+     */
+    public async setPolicySuggestionsConfig(
+        items: SuggestionsOrderPriority[],
+        user: any
+    ): Promise<SuggestionsOrderPriority[]> {
+        return await this.sendMessage(
+            MessageAPI.SET_SUGGESTIONS_CONFIG,
+            { items, user }
+        );
+    }
+
+    /**
+     * Policy suggestions
+     * @param suggestionsInput
+     */
+    public async getPolicySuggestionsConfig(
+        user: any
+    ): Promise<SuggestionsOrderPriority[]> {
+        return await this.sendMessage(
+            MessageAPI.GET_SUGGESTIONS_CONFIG,
+            { user }
+        );
     }
 }

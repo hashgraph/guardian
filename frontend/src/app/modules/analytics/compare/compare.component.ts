@@ -14,6 +14,8 @@ export class CompareComponent implements OnInit {
     policyId2: any;
     schemaId1: any;
     schemaId2: any;
+    moduleId1: any;
+    moduleId2: any;
     result: any;
 
     eventsLvl = '1';
@@ -45,11 +47,15 @@ export class CompareComponent implements OnInit {
         this.policyId2 = this.route.snapshot.queryParams['policyId2'] || '';
         this.schemaId1 = this.route.snapshot.queryParams['schemaId1'] || '';
         this.schemaId2 = this.route.snapshot.queryParams['schemaId2'] || '';
+        this.moduleId1 = this.route.snapshot.queryParams['moduleId1'] || '';
+        this.moduleId2 = this.route.snapshot.queryParams['moduleId2'] || '';
         this.result = null;
         if (this.type === 'policy') {
             this.loadPolicy();
         } else if (this.type === 'schema') {
             this.loadSchema();
+        } else if (this.type === 'module') {
+            this.loadModule();
         } else {
             this.loading = false;
         }
@@ -70,9 +76,9 @@ export class CompareComponent implements OnInit {
             setTimeout(() => {
                 this.loading = false;
             }, 500);
-        }, (error) => {
+        }, ({ message }) => {
             this.loading = false;
-            console.error(error);
+            console.error(message);
         });
     }
 
@@ -91,9 +97,30 @@ export class CompareComponent implements OnInit {
             setTimeout(() => {
                 this.loading = false;
             }, 500);
-        }, (error) => {
+        }, ({message}) => {
             this.loading = false;
-            console.error(error);
+            console.error(message);
+        });
+    }
+
+    loadModule() {
+        const options = {
+            moduleId1: this.moduleId1,
+            moduleId2: this.moduleId2,
+            eventsLvl: this.eventsLvl,
+            propLvl: this.propLvl,
+            childrenLvl: this.childrenLvl,
+            idLvl: this.idLvl
+        }
+        this.analyticsService.compareModule(options).subscribe((value) => {
+            this.result = value;
+            this.total = this.result?.total;
+            setTimeout(() => {
+                this.loading = false;
+            }, 500);
+        }, ({message}) => {
+            this.loading = false;
+            console.error(message);
         });
     }
 
@@ -146,6 +173,8 @@ export class CompareComponent implements OnInit {
             this.downloadPolicy();
         } else if (this.type === 'schema') {
             this.downloadSchema();
+        } else if (this.type === 'module') {
+            this.downloadModule();
         }
     }
 
@@ -163,9 +192,29 @@ export class CompareComponent implements OnInit {
                 this.downloadObjectAsJson(data, 'report');
             }
             this.loading = false;
-        }, (error) => {
+        }, ({message}) => {
             this.loading = false;
-            console.error(error);
+            console.error(message);
+        });
+    }
+
+    downloadModule() {
+        const options = {
+            moduleId1: this.moduleId1,
+            moduleId2: this.moduleId2,
+            eventsLvl: this.eventsLvl,
+            propLvl: this.propLvl,
+            childrenLvl: this.childrenLvl,
+            idLvl: this.idLvl
+        }
+        this.analyticsService.compareModuleFile(options, 'csv').subscribe((data) => {
+            if (data) {
+                this.downloadObjectAsJson(data, 'report');
+            }
+            this.loading = false;
+        }, ({message}) => {
+            this.loading = false;
+            console.error(message);
         });
     }
 
@@ -183,9 +232,9 @@ export class CompareComponent implements OnInit {
                 this.downloadObjectAsJson(data, 'report');
             }
             this.loading = false;
-        }, (error) => {
+        }, ({ message }) => {
             this.loading = false;
-            console.error(error);
+            console.error(message);
         });
     }
 

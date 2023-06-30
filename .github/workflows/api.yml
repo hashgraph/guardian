@@ -9,18 +9,18 @@ on:
 jobs:
   buildAndTest:
     runs-on: ubuntu-latest
-    services:
-      hashicorpvault:
-        image: vault
-        env:
-          VAULT_SERVER: "http://0.0.0.0:8200"
-          VAULT_DEV_ROOT_TOKEN_ID: "1234"
-        ports:
-          - 8200/tcp
+    #    services:
+    #      hashicorpvault:
+    #        image: vault
+    #        env:
+    #          VAULT_SERVER: "https://0.0.0.0:8200"
+    #          VAULT_DEV_ROOT_TOKEN_ID: "1234"
+    #        ports:
+    #          - 8200/tcp
     strategy:
       matrix:
-        node-version: [16.x]
-        mongodb-version: [4.4]
+        node-version: [ 16.x ]
+        mongodb-version: [ 4.4 ]
     steps:
       - uses: actions/checkout@v1
       - name: Use Node.js ${{ matrix.node-version }}

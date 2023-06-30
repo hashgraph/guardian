@@ -1,6 +1,8 @@
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { PolicyBlockModel } from '..';
 import { ThemeRule } from './theme-rule';
+import { DEFAULT_SYNTAX_GROUPS } from '../../themes/default-syntax-groups';
+import { ThemeSyntaxGroup } from './theme-syntax-groups';
 
 export class Theme {
     public id: string;
@@ -10,6 +12,7 @@ export class Theme {
     private _name: string;
     private _rules: ThemeRule[];
     private _defaultRole: ThemeRule;
+    private _syntaxGroups: ThemeSyntaxGroup[];
 
     private _colorMap: Map<number, any>;
 
@@ -23,6 +26,9 @@ export class Theme {
         this._defaultRole.default = true;
         this._defaultRole.description = 'Default';
         this._colorMap = new Map();
+        this._syntaxGroups = DEFAULT_SYNTAX_GROUPS.map((item) =>
+            ThemeSyntaxGroup.from(item)
+        );
     }
 
     public get name(): string {
@@ -39,6 +45,14 @@ export class Theme {
 
     public get default(): ThemeRule {
         return this._defaultRole;
+    }
+
+    public get syntaxGroups(): ThemeSyntaxGroup[] {
+        return this._syntaxGroups;
+    }
+
+    public set syntaxGroups(value: any) {
+        this._syntaxGroups = value;
     }
 
     public update(): void {
@@ -151,8 +165,9 @@ export class Theme {
             uuid: this.uuid,
             readonly: this.readonly,
             name: this._name,
-            rules
-        }
+            rules,
+            syntaxGroups: this.syntaxGroups.map((item) => item.toJson()),
+        };
     }
 
     public toString(): string {
@@ -169,6 +184,11 @@ export class Theme {
             for (const rule of json.rules) {
                 theme.addRule(ThemeRule.from(theme, rule))
             }
+        }
+        if (Array.isArray(json.syntaxGroups)) {
+            theme.syntaxGroups = json.syntaxGroups.map((item: any) =>
+                ThemeSyntaxGroup.from(item)
+            );
         }
         return theme;
     }

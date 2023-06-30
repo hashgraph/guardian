@@ -1,10 +1,5 @@
 version: "3.7"
 
-x-container-common: &container-common
-  restart: "on-failure"
-  networks:
-    - vault
-
 services:
   consul:
     image: consul:1.12.4
@@ -21,6 +16,8 @@ services:
       - |
         chown consul:consul /consul/tls
         consul agent -config-file=/consul/config/consul.json
+    networks:
+      - hsc_vault_network
 
   vault:
     image: vault:1.12.2
@@ -55,3 +52,10 @@ services:
       start_period: 5s
     depends_on:
       - consul
+    networks:
+      - hsc_vault_network
+
+networks:
+  hsc_vault_network:
+    name: guardian_default
+    external: true

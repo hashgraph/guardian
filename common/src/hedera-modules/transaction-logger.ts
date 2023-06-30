@@ -138,6 +138,7 @@ export class TransactionLogger extends NatsService {
      * Transaction log
      * @param id
      * @param operatorAccountId
+     * @param network
      * @param transactionName
      * @param completed
      * @param metadata
@@ -145,6 +146,7 @@ export class TransactionLogger extends NatsService {
     public async transactionLog(
         id: string,
         operatorAccountId: string,
+        network: string,
         transactionName: string,
         completed: boolean = false,
         metadata: string = ''
@@ -158,7 +160,7 @@ export class TransactionLogger extends NatsService {
             this.map[id] = time;
 
             const account = operatorAccountId.toString();
-            const attr = [id, account, metadata];
+            const attr = [id, account, network, metadata];
 
             if (this.logLvl === TransactionLogLvl.DEBUG) {
                 try {
@@ -193,6 +195,7 @@ export class TransactionLogger extends NatsService {
      * Transaction error log
      * @param id
      * @param operatorAccountId
+     * @param network
      * @param transactionName
      * @param transaction
      * @param message
@@ -200,12 +203,13 @@ export class TransactionLogger extends NatsService {
     public async transactionErrorLog(
         id: string,
         operatorAccountId: string,
+        network: string,
         transactionName: string,
         message: string
     ): Promise<void> {
         try {
             const account = operatorAccountId.toString();
-            const attr = [id, account, message];
+            const attr = [id, account, network, message];
             this.log(['TRANSACTION', 'ERROR'], null, transactionName, attr);
         } catch (error) {
             this.log(['TRANSACTION', 'ERROR'], null, transactionName, [error.message]);
@@ -246,23 +250,26 @@ export class TransactionLogger extends NatsService {
             RunFunctionAsync(async () => {
                 switch (data.type) {
                     case 'start-log': {
-                        const { id, operatorAccountId, transactionName } = data.data;
-                        await this.transactionLog(id, operatorAccountId, transactionName);
+                        const { id, operatorAccountId, transactionName, network } = data.data;
+                        await this.transactionLog(id, operatorAccountId, network, transactionName);
                         break;
                     }
 
                     case 'end-log': {
-                        const { id, operatorAccountId, transactionName } = data.data;
+                        const { id, operatorAccountId, transactionName, network } = data.data;
                         const metadata = data.metadata;
-                        await this.transactionLog(id, operatorAccountId, transactionName, true, metadata);
+                        await this.transactionLog(id, operatorAccountId, network, transactionName, true, metadata);
                         break;
                     }
 
                     case 'error-log': {
-                        const { id, operatorAccountId, transactionName } = data.data;
+                        const { id, operatorAccountId, transactionName, network } = data.data;
                         const error = data.error;
 
-                        await this.transactionErrorLog(id, operatorAccountId, transactionName, error);
+                        console.log('----');
+                        console.log({ id, operatorAccountId, transactionName, network })
+
+                        await this.transactionErrorLog(id, operatorAccountId, network, transactionName, error);
                         break;
                     }
 

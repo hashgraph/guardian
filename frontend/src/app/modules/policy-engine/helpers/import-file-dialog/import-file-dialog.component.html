@@ -1,4 +1,8 @@
 <div class="content">
+    <div class="content-header">
+        <mat-icon (click)="onNoClick()">close</mat-icon>
+    </div>
+
     <app-file-drag-n-drop fileExtension="theme" (onFileLoaded)="importFromFile($event)"
         dropZoneLabel="Import Theme .theme file"></app-file-drag-n-drop>
 

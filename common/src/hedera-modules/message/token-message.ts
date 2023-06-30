@@ -175,4 +175,25 @@ export class TokenMessage extends Message {
     public getUrls(): IURL[] {
         return [];
     }
+
+    /**
+     * To JSON
+     */
+    public override toJson(): any {
+        const result = super.toJson();
+        result.tokenId = this.tokenId;
+        result.tokenName = this.tokenName;
+        result.tokenSymbol = this.tokenSymbol;
+        result.tokenType = this.tokenType;
+        result.decimals = this.decimals;
+        result.owner = this.owner;
+        return result;
+    }
+
+    /**
+     * Get User DID
+     */
+    public override getOwner(): string {
+        return this.owner;
+    }
 }

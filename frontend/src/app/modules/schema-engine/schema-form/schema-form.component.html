@@ -299,7 +299,7 @@
             (click)="onCancelBtnClick()">{{cancelText}}</button>
         <button *ngIf="currentIndex !== 0" mat-raised-button color="primary" id="previous-btn"
             (click)="getPrevShownFields(fields)">Previous</button>
-        <button *ngIf="!isShown[fields.length - 1]" mat-raised-button color="primary" id="next-btn"
+        <button *ngIf="!isShown[fields.length - 1]" mat-raised-button color="primary"
             (click)="getNextShownFields(fields)">Next</button>
         <button *ngIf="isShown[fields.length - 1] && !submitHidden" mat-raised-button [disabled]="!group.valid"
             color="primary" id="submit-btn" (click)="onSubmitBtnClick(fields)">{{submitText}}</button>

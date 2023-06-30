@@ -1,4 +1,5 @@
 import {
+    BlockCache,
     BlockState,
     VcDocument as VcDocumentCollection,
     VpDocument as VpDocumentCollection,
@@ -23,7 +24,8 @@ import {
     Tag,
     TagCache,
     Contract as ContractCollection,
-    ExternalDocument
+    ExternalDocument,
+    SuggestionsConfig
 } from '../entity';
 import { Binary } from 'bson';
 import {
@@ -60,6 +62,7 @@ export class DatabaseServer {
     constructor(dryRun: string = null) {
         this.dryRun = dryRun || null;
 
+        this.classMap.set(BlockCache, 'BlockCache');
         this.classMap.set(BlockState, 'BlockState');
         this.classMap.set(VcDocumentCollection, 'VcDocumentCollection');
         this.classMap.set(VpDocumentCollection, 'VpDocumentCollection');
@@ -547,6 +550,69 @@ export class DatabaseServer {
         return await this.findOne(BlockState, {
             policyId,
             blockId: uuid
+        });
+    }
+
+    /**
+     * Save Block State
+     * @param {string} policyId - policy ID
+     * @param {string} blockId - block UUID
+     * @param {string} did - user DID
+     * @param {string} name - variable name
+     * @param {any} value - variable value
+     * @param {boolean} isLongValue - if long value
+     * @virtual
+     */
+    public async saveBlockCache(
+        policyId: string,
+        blockId: string,
+        did: string,
+        name: string,
+        value: any,
+        isLongValue: boolean
+    ): Promise<void> {
+        let stateEntity = await this.findOne(BlockCache, {
+            policyId,
+            blockId,
+            did,
+            name
+        });
+        if (stateEntity) {
+            stateEntity.value = value;
+            stateEntity.isLongValue = isLongValue;
+        } else {
+            stateEntity = this.create(BlockCache, {
+                policyId,
+                blockId,
+                did,
+                name,
+                value,
+                isLongValue
+            })
+        }
+        await this.save(BlockCache, stateEntity);
+    }
+
+    /**
+     * Get Block State
+     * @param {string} policyId - policy ID
+     * @param {string} blockId - block UUID
+     * @param {string} did - user DID
+     * @param {string} name - variable name
+     * @returns {any} - variable value
+     * @virtual
+     */
+    public async getBlockCache(
+        policyId: string,
+        blockId: string,
+        did: string,
+        name: string
+    ): Promise<any> {
+        return await this.findOne(BlockCache, {
+            policyId,
+            blockId,
+            did,
+            name
         });
     }
 
@@ -2426,5 +2492,66 @@ export class DatabaseServer {
      */
     public static async updateTheme(row: Theme): Promise<Theme> {
         return await new DataBaseHelper(Theme).update(row);
+    }
+
+    /**
+     * Save suggestions config
+     * @param config
+     * @returns config
+     */
+    public static async setSuggestionsConfig(
+        config: Partial<SuggestionsConfig>
+    ): Promise<SuggestionsConfig> {
+        const existingConfig = await DatabaseServer.getSuggestionsConfig(
+            config.user
+        );
+        if (existingConfig) {
+            existingConfig.items = config.items;
+        }
+        return await new DataBaseHelper(SuggestionsConfig).save(
+            existingConfig || config
+        );
+    }
+
+    /**
+     * Get suggestions config
+     * @param did
+     * @returns config
+     */
+    public static async getSuggestionsConfig(
+        did: string
+    ): Promise<SuggestionsConfig> {
+        return await new DataBaseHelper(SuggestionsConfig).findOne({
+            user: did,
+        });
+    }
+
+    /**
+     * Update VP DOcuments
+     * @param value
+     * @param filters
+     * @param dryRun
+     */
+    public static async updateVpDocuments(value: any, filters: any, dryRun?: string): Promise<void> {
+        if (dryRun) {
+            if (filters.where) {
+                filters.where.dryRunId = dryRun;
+                filters.where.dryRunClass = 'VpDocumentCollection';
+            } else {
+                filters.dryRunId = dryRun;
+                filters.dryRunClass = 'VpDocumentCollection';
+            }
+            const items = await new DataBaseHelper(DryRun).find(filters);
+            for (const item of items) {
+                Object.assign(item, value);
+            }
+            await new DataBaseHelper(DryRun).update(items);
+        } else {
+            const items = await new DataBaseHelper(VpDocumentCollection).find(filters);
+            for (const item of items) {
+                Object.assign(item, value);
+            }
+            await new DataBaseHelper(VpDocumentCollection).update(items);
+        }
     }
 }

@@ -1,4 +1,5 @@
 import {
+    ApproveStatus,
     DocumentSignature,
     DocumentStatus,
     GenerateUUIDv4,
@@ -198,6 +199,7 @@ export class VcDocument extends BaseEntity implements IVCDocument {
         this.hederaStatus = this.hederaStatus || DocumentStatus.NEW;
         this.signature = this.signature || DocumentSignature.NEW;
         this.option = this.option || {};
+        this.option.status = this.option.status || ApproveStatus.NEW;
     }
 
     /**

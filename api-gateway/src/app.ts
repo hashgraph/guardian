@@ -1,4 +1,3 @@
-// import client from 'prom-client';
 import { Guardians } from '@helpers/guardians';
 import { IPFS } from '@helpers/ipfs';
 import { PolicyEngine } from '@helpers/policy-engine';
@@ -12,10 +11,12 @@ import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import process from 'process';
 import { HttpStatus, ValidationPipe } from '@nestjs/common';
+import { json } from 'express';
+import { SwaggerModule } from '@nestjs/swagger';
+import { SwaggerConfig } from '@helpers/swagger-config';
+import { SwaggerModels, SwaggerPaths } from './old-descriptions';
 
 const PORT = process.env.PORT || 3002;
-// const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
-// const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
 
 // const restResponseTimeHistogram = new client.Histogram({
 //     name: 'api_gateway_rest_response_time_duration_seconds',
@@ -45,6 +46,8 @@ Promise.all([
             errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY
         }));
 
+        app.use(json({ limit: '2mb' }));
+
         new Logger().setConnection(cn);
         await new Guardians().setConnection(cn).init();
         await new IPFS().setConnection(cn).init();
@@ -57,6 +60,11 @@ Promise.all([
         wsService.init();
 
         new TaskManager().setDependecies(wsService, cn);
+
+        const document = SwaggerModule.createDocument(app, SwaggerConfig);
+        Object.assign(document.paths, SwaggerPaths)
+        Object.assign(document.components.schemas, SwaggerModels.schemas);
+        SwaggerModule.setup('api-docs', app, document);
 
         const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
         if (Number.isInteger(maxPayload)) {

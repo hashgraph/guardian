@@ -2,12 +2,18 @@
 <mat-slide-toggle *ngIf="(isVcDocument || isVpDocument) && toggle" class="view-toggle" labelPosition='before'
     [(ngModel)]="viewDocument" color="primary">View as form</mat-slide-toggle>
 <div mat-dialog-content class="dialog-content">
-    <div class="content" [ngSwitch]="viewDocument">
-        <app-document-view [document]="document" [type]="type" *ngSwitchCase="true">
-        </app-document-view>
-        <div class="json" *ngSwitchCase="false">
-            {{json}}
-        </div>
+    <div class="content">
+        <ng-container *ngIf="viewDocument">
+            <app-document-view [document]="document" [type]="type" [schema]="schema"></app-document-view>
+        </ng-container>
+        <ng-container *ngIf="!viewDocument">
+            <div class="json" *ngIf="type !== 'TEXT'">
+                {{json}}
+            </div>
+            <div class="text" *ngIf="type === 'TEXT'">
+                {{text}}
+            </div>
+        </ng-container>
     </div>
 </div>
 <div mat-dialog-actions class="dialog-actions">

@@ -1,19 +1,5 @@
 import '../config'
-import {
-    COMMON_CONNECTION_CONFIG,
-    DataBaseHelper,
-    ExternalEventChannel,
-    Logger,
-    MessageBrokerChannel,
-    entities,
-    Environment,
-    MessageServer,
-    Users,
-    Workers,
-    IPFS,
-    DatabaseServer, LargePayloadContainer,
-    OldSecretManager
-} from '@guardian/common';
+import { COMMON_CONNECTION_CONFIG, DataBaseHelper, DatabaseServer, entities, Environment, ExternalEventChannel, IPFS, LargePayloadContainer, Logger, MessageBrokerChannel, MessageServer, OldSecretManager, Users, Workers } from '@guardian/common';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
@@ -46,9 +32,8 @@ Promise.all([
 ]).then(async values => {
     const [db, cn] = values;
     DataBaseHelper.orm = db;
-    DataBaseHelper.gridFS = new GridFSBucket(
-        db.em.getDriver().getConnection().getDb()
-    );
+    // @ts-ignore
+    DataBaseHelper.gridFS = new GridFSBucket(db.em.getDriver().getConnection().getDb());
     Environment.setLocalNodeProtocol(process.env.LOCALNODE_PROTOCOL);
     Environment.setLocalNodeAddress(process.env.LOCALNODE_ADDRESS);
     Environment.setNetwork(process.env.HEDERA_NET);

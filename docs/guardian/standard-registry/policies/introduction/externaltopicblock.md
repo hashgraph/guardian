@@ -2,7 +2,7 @@
 
 This block allows to configure the link to Hedera topics established by other policy instances for monitoring of ‘document published’ messages and ingestion of the targeted VC documents.
 
-<figure><img src="../../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (11).png" alt=""><figcaption></figcaption></figure>
 
 ## 1.1 Properties
 

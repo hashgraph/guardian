@@ -75,6 +75,7 @@ export class MessageMemo extends MemoMap {
         messageMemo[`${MessageType.StandardRegistry}.${MessageAction.Init}`] = 'Standard Registry initialization message';
         messageMemo[`${MessageType.DIDDocument}.${MessageAction.CreateDID}`] = 'DID creation message';
         messageMemo[`${MessageType.VCDocument}.${MessageAction.CreateVC}`] = 'VC creation message';
+        messageMemo[`${MessageType.EVCDocument}.${MessageAction.CreateVC}`] = 'EVC creation message';
         messageMemo[`${MessageType.VPDocument}.${MessageAction.CreateVP}`] = 'VP creation message';
         messageMemo[`${MessageType.Policy}.${MessageAction.CreatePolicy}`] = 'Policy creation message';
         messageMemo[`${MessageType.InstancePolicy}.${MessageAction.PublishPolicy}`] = 'Policy publishing message';
@@ -84,9 +85,11 @@ export class MessageMemo extends MemoMap {
         messageMemo[`${MessageType.Topic}.${MessageAction.CreateTopic}.${TopicType.PolicyTopic}`] = 'Policy Topic creation message';
         messageMemo[`${MessageType.Topic}.${MessageAction.CreateTopic}.${TopicType.InstancePolicyTopic}`] = 'Policy Instance topic creation message';
         messageMemo[`${MessageType.Topic}.${MessageAction.CreateTopic}.${TopicType.UserTopic}`] = 'Standard Registry topic creation message';
+        messageMemo[`${MessageType.Topic}.${MessageAction.CreateTopic}.${TopicType.RetireTopic}`] = 'Retire topic creation message';
         messageMemo[`${MessageType.Topic}.${MessageAction.CreateTopic}.${TopicType.DynamicTopic}`] = '${name} operation topic creation message';
         messageMemo[`${MessageType.Token}.${MessageAction.UseToken}`] = 'Policy token issue message';
         messageMemo[`${MessageType.Token}.${MessageAction.CreateToken}`] = 'Token creation message';
+        messageMemo[`${MessageType.RoleDocument}.${MessageAction.CreateVC}`] = 'VC creation message';
         messageMemo[MessageAction.ChangeMessageStatus] = 'Status change message';
         messageMemo[MessageAction.RevokeDocument] = 'Revoke document message';
         messageMemo[MessageAction.DeleteDocument] = 'Delete document message';

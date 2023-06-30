@@ -1,0 +1,399 @@
+.content-page {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    display: block;
+    background: #fff;
+    margin: 10px 5px 5px 5px;
+    box-shadow: 0px 2px 4px -1px rgb(0 0 0 / 20%), 0px 4px 5px 0px rgb(0 0 0 / 14%), 0px 1px 10px 0px rgb(0 0 0 / 12%);
+}
+
+.content-dialog {
+    display: block;
+    background: transparent;
+    margin: 10px 5px 5px 5px;
+}
+
+.loading {
+    background: #fff;
+    position: fixed;
+    z-index: 99;
+    top: var(--header-height-policy);
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
+}
+
+.loading-dialog {
+    background: #fff;
+    position: absolute;
+    z-index: 99;
+    top: 0;
+    left: 0;
+    bottom: 62px;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
+}
+
+.form-page {
+    width: 650px;
+    margin: 40px auto;
+    padding: 10px;
+    border: 1px solid #c3c3c3;
+    border-radius: 4px;
+}
+
+.form-dialog {
+    padding: 10px 40px 20px 40px;
+    max-height: 65vh;
+    overflow: auto;
+    box-sizing: border-box;
+}
+
+.body-dialog-template {
+    margin: 0;
+    padding: 0;
+    padding-bottom: 20px;
+    max-height: calc(65vh + 40px) !important;
+    position: relative;
+    overflow: visible;
+}
+
+.description {
+    margin-bottom: 10px;
+}
+
+.schema-form {
+    max-height: calc(100vh - 580px);
+    overflow: auto;
+    margin-bottom: 24px;
+    padding: 40px 40px 0px 40px;
+}
+
+.form-page h1 {
+    padding: 40px 40px 0px 40px;
+}
+
+.form-page .description {
+    padding: 0 40px;
+}
+
+.form-page .page-btns {
+    padding: 0px 40px 40px 40px;
+}
+
+.content-dialog button {
+    height: 40px;
+    margin-bottom: 6px;
+}
+
+.btn-block-link {
+    width: auto !important;
+    font-size: 20px !important;
+    color: #0B73F8 !important;
+    text-decoration: none !important;
+    border-bottom: 3px solid #0C77FF;
+    padding: 0 0 3px 0 !important;
+    margin: 0 !important;
+    font-weight: normal !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    height: 33px !important;
+    box-sizing: border-box !important;
+    position: relative !important;
+    top: -9px !important;
+}
+
+.restore-data {
+    margin-top: 10px;
+    margin-left: 40px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--primary-color);
+}
+
+.restore-data button.mat-raised-button {
+    padding: 0 12px;
+    height: 36px;
+}
+
+.restore-data button mat-icon {
+    margin-left: 3px;
+}
+
+.registrant-application-create-btn {
+    display: none;
+}
+
+.form-page {
+    width: 50%;
+    border: none;
+    margin: 20px auto;
+    padding: 0;
+
+    &::ng-deep {
+        h1 {
+            padding: 0 !important;
+        }
+        
+        .schema-form {
+            max-height: calc(100vh - 430px);
+            padding: 20px 20px 0px 0;
+            margin-bottom: 0;
+        }    
+    
+        .delimiter {
+            display: none;
+        }
+    
+        .label-field .page-number {
+            display: block;
+            font-size: 18px;
+            padding: 4px 10px;
+            margin-right: 8px;
+            display: inline-block;
+            background: #2C78F6;
+            color: white;
+            border-radius: 100px;
+        }
+    
+        #detail-section {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            margin: 20px 0 40px 0;
+        }
+    
+        .label-field .delimiter-to-next-page {
+            display: block;
+            height: 0px;
+            border: 1px solid #BABABA;
+            flex-grow: 1;
+            display: inline-block;
+            margin: 0 8px;
+        }
+    
+        .label-field .next-page-number {
+            display: block;
+            font-size: 18px;
+            padding: 4px 10px;
+            display: inline-block;
+            background: #2C78F6;
+            opacity: 0.3;
+            color: white;
+            border-radius: 100px;
+        }
+    
+        .page-btns {
+            display: block;
+            width: 50%;
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            background-color: white;
+            padding: 20px 0;
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 200;
+        }
+    
+        .page-btns button {
+            width: 180px;
+        }
+    
+        #cancel-btn,
+        #previous-btn {
+            border: 1px solid #2C78F6;
+            background: none !important;
+            color: #2C78F6;
+        }
+    
+        .page-btns-last-page {
+            width: 50%;
+            display: inline-block;
+            margin-top: 20px;
+        }
+    
+        .page-btns-last-page #previous-btn {
+            width: calc(100% - 5px);
+        }
+    
+        .form-field-group {
+            padding-left: 0 !important;
+        }
+        
+        .schema-form-field-array-group>.form-field-array-item,
+        .form-field-array-item>.schema-form-field-group {
+            padding-left: 10px !important;
+        }
+        
+        .short-delimiter-container .delimiter {
+            display: block;
+            padding: 20px 10px 20px 10px;
+            height: 45px;
+        }
+        
+        .short-delimiter-container .delimiter::after {
+            top: 20px;
+        }
+    
+        *[showMobileField="true"] {
+            display: flex !important;
+        }
+        
+        *[showMobileField="false"] {
+            display: none !important;
+        }
+    }
+}
+
+@media (max-width: 810px) {
+    .loading {
+        top: 75px;
+        z-index: 999;
+    }
+
+    .loading-dialog {
+        position: fixed;
+        top: 75px;
+        z-index: 999;
+        bottom: 0;
+    }
+
+    .dialog-actions-container {
+        display: none !important;
+    }
+
+    h1 {
+        height: 40px;
+        padding: 0 !important;
+        margin: 0 auto;
+        margin-top: 16px;
+
+        font-family: 'Roboto';
+        font-style: normal;
+        font-weight: 600;
+        font-size: 24px;
+        line-height: 28px;
+
+        color: #222222;
+    }
+
+    .form-page {
+        width: 90%;
+        margin: 0 auto;
+        padding: 0;
+        border: none;
+
+        &::ng-deep {
+            .page-btns {
+                width: 100%;
+                gap: 10px;
+            }
+        
+            .page-btns button {
+                width: 50%;
+                margin-right: 15px;
+            }
+        
+            #cancel-btn,
+            #previous-btn {
+                margin: 0 0 0 15px;
+            }
+        }
+    }
+
+    .form-dialog {
+        width: 90%;
+        margin: 0 auto;
+        padding: 0px 0px 0px 0px;
+        border: none;
+        max-height: none;
+        max-width: 90vw;
+    }
+
+    .schema-form {
+        max-height: none !important;
+        width: 100%;
+        margin: 0 auto;
+        padding: 0;
+        overflow: auto;
+        margin-bottom: 24px;
+    }
+
+    .mobile-button-div {
+        background-color: #333;
+        color: #fff;
+        padding: 30px 0;
+        position: fixed;
+        width: 100%;
+        bottom: 0;
+    }
+
+    .registrant-application-create-btn {
+        display: block !important;
+        position: fixed;
+        width: calc(45% - 5px);
+        right: 5%;
+        left: auto;
+        bottom: 20px;
+        z-index: 305;
+    }
+
+    /* Create New Device */
+
+    .title {
+        width: 90%;
+    }
+
+    :host ::ng-deep .form-dialog .form-field-group {
+        margin-bottom: 0;
+    }
+
+    .mat-dialog-actions {
+        width: 90%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        column-gap: 10px;
+
+        background-color: white;
+        margin-bottom: 0;
+        padding: 20px 0;
+        position: fixed;
+        bottom: 0;
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+        z-index: 305;
+    }
+
+    #cancel-btn {
+        border: 1px solid #2C78F6;
+        background: none !important;
+        color: #2C78F6;
+        grid-column: 1;
+        grid-row: 1;
+        z-index: 305;
+    }
+
+    #ok-btn {
+        grid-column: 2;
+        grid-row: 1;
+        z-index: 305;
+    }
+}
