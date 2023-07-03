@@ -3505,13 +3505,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios-retry@npm:^3.2.4":
-  version: 3.5.0
-  resolution: "axios-retry@npm:3.5.0"
+"axios-retry@npm:^3.5.1":
+  version: 3.5.1
+  resolution: "axios-retry@npm:3.5.1"
   dependencies:
     "@babel/runtime": ^7.15.4
     is-retry-allowed: ^2.2.0
-  checksum: db8391bcda7aef5d7255da2471565aaf46007ecdde45cc7027218e9fb2ada8546cecc172767d0c44ef4acaacf87e0f319dbd7084b3938f2880c3993834342d15
+  checksum: ff1690a635c74b45a0ff60b2608d36bae82ea23660a2571dea918c79242fd88cc0332ba9757810bfac398c947a950299078cef2bc2b08807c27c6ffe069aad4a
   languageName: node
   linkType: hard
 
@@ -12014,7 +12014,7 @@ __metadata:
     "@transmute/vc.js": ^0.7.0-unstable.80
     "@types/node": ^18.16.0
     axios: ^1.3.6
-    axios-retry: ^3.2.4
+    axios-retry: ^3.5.1
     chai: 4.3.4
     cross-blob: ^2.0.1
     dotenv: ^16.0.0
