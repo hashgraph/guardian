@@ -1275,7 +1275,7 @@ __metadata:
     "@mikro-orm/migrations-mongodb": ~5.7.12
     "@mikro-orm/mongodb": ~5.7.12
     "@nestjs/common": ^9.4.1
-    "@nestjs/core": ^9.4.1
+    "@nestjs/core": ^10.0.5
     "@nestjs/microservices": ^9.4.1
     "@transmute/credentials-context": ^0.7.0-unstable.80
     "@transmute/did-context": ^0.7.0-unstable.80
@@ -1691,21 +1691,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nestjs/core@npm:^9.4.1":
-  version: 9.4.2
-  resolution: "@nestjs/core@npm:9.4.2"
+"@nestjs/core@npm:^10.0.5":
+  version: 10.0.5
+  resolution: "@nestjs/core@npm:10.0.5"
   dependencies:
     "@nuxtjs/opencollective": 0.3.2
     fast-safe-stringify: 2.1.1
     iterare: 1.2.1
     path-to-regexp: 3.2.0
-    tslib: 2.5.2
+    tslib: 2.6.0
     uid: 2.0.2
   peerDependencies:
-    "@nestjs/common": ^9.0.0
-    "@nestjs/microservices": ^9.0.0
-    "@nestjs/platform-express": ^9.0.0
-    "@nestjs/websockets": ^9.0.0
+    "@nestjs/common": ^10.0.0
+    "@nestjs/microservices": ^10.0.0
+    "@nestjs/platform-express": ^10.0.0
+    "@nestjs/websockets": ^10.0.0
     reflect-metadata: ^0.1.12
     rxjs: ^7.1.0
   peerDependenciesMeta:
@@ -1715,7 +1715,7 @@ __metadata:
       optional: true
     "@nestjs/websockets":
       optional: true
-  checksum: 2e8e62828c7dc8bd32574e59f2174458b534c4a9228d8a760ab629dd7f27cd0c8edd0fe21922aa63f07266b40ea49a090e59590a47f114213ed753066c0eb5b3
+  checksum: f87566dfee1a7dfe239e3036a95cdfc47932028f280a7bacdd370d68d132f54a926369642b822da57c2ac96c06d168f5804d6f301f3b3fac00fee7e67edb9c8a
   languageName: node
   linkType: hard
 
@@ -3235,7 +3235,7 @@ __metadata:
     "@guardian/common": ^2.14.0
     "@guardian/interfaces": ^2.14.0
     "@nestjs/common": ^9.4.1
-    "@nestjs/core": ^9.4.1
+    "@nestjs/core": ^10.0.5
     "@nestjs/jwt": ^10.0.3
     "@nestjs/microservices": ^9.4.1
     "@nestjs/platform-express": ^9.4.2
@@ -3461,7 +3461,7 @@ __metadata:
     "@mikro-orm/core": ~5.7.12
     "@mikro-orm/mongodb": ~5.7.12
     "@nestjs/common": ^9.4.1
-    "@nestjs/core": ^9.4.1
+    "@nestjs/core": ^10.0.5
     "@nestjs/microservices": ^9.4.1
     "@types/jsonwebtoken": ^8.5.4
     "@types/node": ^18.16.0
@@ -5980,7 +5980,7 @@ __metadata:
     "@mikro-orm/core": ~5.7.12
     "@mikro-orm/mongodb": ~5.7.12
     "@nestjs/common": ^9.4.1
-    "@nestjs/core": ^9.4.1
+    "@nestjs/core": ^10.0.5
     "@nestjs/microservices": ^9.4.1
     "@transmute/credentials-context": ^0.7.0-unstable.80
     "@transmute/did-context": ^0.7.0-unstable.80
@@ -7978,7 +7978,7 @@ __metadata:
     "@mikro-orm/core": ~5.7.12
     "@mikro-orm/mongodb": ~5.7.12
     "@nestjs/common": ^9.4.1
-    "@nestjs/core": ^9.4.1
+    "@nestjs/core": ^10.0.5
     "@nestjs/microservices": ^9.4.1
     "@types/fs-extra": ^9.0.12
     "@types/node": ^18.16.0
@@ -11293,6 +11293,13 @@ __metadata:
   version: 2.5.2
   resolution: "tslib@npm:2.5.2"
   checksum: 4d3c1e238b94127ed0e88aa0380db3c2ddae581dc0f4bae5a982345e9f50ee5eda90835b8bfba99b02df10a5734470be197158c36f9129ac49fdc14a6a9da222
+  languageName: node
+  linkType: hard
+
+"tslib@npm:2.6.0":
+  version: 2.6.0
+  resolution: "tslib@npm:2.6.0"
+  checksum: c01066038f950016a18106ddeca4649b4d76caa76ec5a31e2a26e10586a59fceb4ee45e96719bf6c715648e7c14085a81fee5c62f7e9ebee68e77a5396e5538f
   languageName: node
   linkType: hard
 
