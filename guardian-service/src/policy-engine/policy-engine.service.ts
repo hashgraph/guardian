@@ -356,7 +356,18 @@ export class PolicyEngineService {
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.SAVE_POLICIES, async (msg) => {
             try {
-                const result = await DatabaseServer.updatePolicyConfig(msg.policyId, msg.model);
+                const { policyId, model, user } = msg;
+                const policy = await DatabaseServer.getPolicyById(policyId);
+                if (!policy) {
+                    throw new Error('Policy does not exist.');
+                }
+                if (policy.owner !== user.did) {
+                    throw new Error('Insufficient permissions to update the policy.');
+                }
+                if (policy.status !== PolicyType.DRAFT) {
+                    throw new Error('Policy is not in draft status.');
+                }
+                const result = await DatabaseServer.updatePolicyConfig(policyId, model);
                 return new MessageResponse(result);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
