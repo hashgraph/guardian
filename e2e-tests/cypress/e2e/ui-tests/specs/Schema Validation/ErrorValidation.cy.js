@@ -41,7 +41,7 @@ describe("Required Field Validation", () => {
         home.logOut("StandardRegistry")
     });
 
-    it("Error Validation", { tags: '@ui' }, () => {
+    it("Error Validation on schema fields", { tags: '@ui' }, () => {
         home.login("Registrant");
         home.checkSetup("Registrant");
         registrant.createGroup();
