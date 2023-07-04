@@ -287,7 +287,7 @@ export class PolicyApi {
         const engineService = new PolicyEngine();
         let model: any;
         try {
-            model = await engineService.getPolicy({ filters: req.params.policyId }) as any;
+            model = await engineService.getPolicy({filters: req.params.policyId}) as any;
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
