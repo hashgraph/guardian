@@ -38,7 +38,7 @@ In order to mint tokens into another account (not into the account of the mintin
 
 4. Add simplified grids for displaying Projects, Reports and Tokens
 
-![Adding grids](<../../../../.gitbook/assets/3 (1) (1).png>)
+![Adding grids](<../../../../.gitbook/assets/3 (1) (1) (2).png>)
 
 5. Create the token
 

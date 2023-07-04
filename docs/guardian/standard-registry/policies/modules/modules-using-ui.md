@@ -10,7 +10,7 @@ Policy Modules are large-scale components of the policy containing multiple bloc
 
 Modules are managed via the corresponding page in the Policies section.
 
-![image1.png](<../../../../.gitbook/assets/0 (1).png>)
+![image1.png](<../../../../.gitbook/assets/0 (1) (2).png>)
 
 #### **1.1 Creating Modules**
 
