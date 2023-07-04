@@ -1,4 +1,4 @@
-<div class="content">
+<div class="content" [attr.role]="role">
     <div *ngIf="loading && !taskId" class="loading">
         <mat-spinner></mat-spinner>
     </div>
