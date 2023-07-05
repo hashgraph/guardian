@@ -5,6 +5,7 @@ import { ApplicationStates, GenerateUUIDv4, IStatus, MessageAPI } from '@guardia
 import { Logger, MessageResponse, NatsService, Singleton } from '@guardian/common';
 import { NatsConnection } from 'nats';
 import { Injectable } from '@nestjs/common';
+import { MeecoAuth } from '@helpers/meeco';
 
 /**
  * WebSocketsServiceChannel
@@ -217,6 +218,13 @@ export class WebSocketsService {
         try {
             const { type, data } = this.parseMessage(message);
             switch (type) {
+                case 'MEECO_AUTH_REQUEST':
+                    const meecoAuthRequestResp = await new MeecoAuth().createMeecoAuthRequest(ws);
+                    ws.send(JSON.stringify({
+                        type: 'MEECO_AUTH_PRESENT_VP', 
+                        data: meecoAuthRequestResp
+                    }));
+                    break;
                 case 'SET_ACCESS_TOKEN':
                 case 'UPDATE_PROFILE':
                     const token = data;
