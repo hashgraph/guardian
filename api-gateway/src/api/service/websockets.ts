@@ -225,6 +225,20 @@ export class WebSocketsService {
                         data: meecoAuthRequestResp
                     }));
                     break;
+                case 'MEECO_APPROVE_SUBMISSION':
+                    const meecoSubmissionApproveResp = await new MeecoAuth().approveSubmission(ws, data.presentation_request_id, data.submission_id);
+                    ws.send(JSON.stringify({
+                        type: 'MEECO_APPROVE_SUBMISSION_RESPONSE', 
+                        data: meecoSubmissionApproveResp
+                    }));
+                    break;
+                case 'MEECO_REJECT_SUBMISSION':
+                    const meecoSubmissionRejectResp = await new MeecoAuth().rejectSubmission(ws, data.presentation_request_id, data.submission_id);
+                    ws.send(JSON.stringify({
+                        type: 'MEECO_REJECT_SUBMISSION_RESPONSE', 
+                        data: meecoSubmissionRejectResp
+                    }));
+                    break;
                 case 'SET_ACCESS_TOKEN':
                 case 'UPDATE_PROFILE':
                     const token = data;

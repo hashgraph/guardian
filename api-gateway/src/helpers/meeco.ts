@@ -33,4 +33,26 @@ export class MeecoAuth extends NatsService {
     };
   }
 
+  public async approveSubmission(ws, presentation_request_id: string, submission_id: string): Promise<string> {
+    this.clients[ws.id] = ws;
+
+    const vpRequest = await this.sendMessage<any>(AuthEvents.MEECO_APPROVE_SUBMISSION, {
+      presentation_request_id,
+      submission_id,
+      cid: ws.id,
+    });
+    return vpRequest;
+  }
+
+  public async rejectSubmission(ws, presentation_request_id: string, submission_id: string): Promise<string> {
+    this.clients[ws.id] = ws;
+
+    const vpRequest = await this.sendMessage<any>(AuthEvents.MEECO_REJECT_SUBMISSION, {
+      presentation_request_id,
+      submission_id,
+      cid: ws.id,
+    });
+    return vpRequest;
+  }
+
 }
