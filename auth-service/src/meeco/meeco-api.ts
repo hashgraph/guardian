@@ -96,6 +96,40 @@ export class MeecoApi {
   }
 
   /**
+   * Create a new Schema
+   * @param name
+   * @param schema
+   * @returns {any} new schema
+   */
+  async createSchema(name: string, schema: string): Promise<any> {
+    const accessToken = await this.getTokenOauth2();
+
+    const url = `${this.config.baseUrl}/schemas`;
+
+    const meecoSchema = {
+      schema: {
+        name,
+        schema_json: schema,
+        organization_ids: [this.config.meecoOrganizationId],
+      }
+    }
+    const data = JSON.stringify(meecoSchema);
+
+    const headers = {
+      headers: {
+        'Authorization': accessToken,
+        'Meeco-Organisation-Id': this.config.meecoOrganizationId,
+      },
+    };
+
+    const result = await axios.post(url, data, headers);
+
+    const { data: newSchema } = result;
+
+    return newSchema;
+  }
+
+  /**
    * Get the Meeco user's data encryption key.
    * @returns {IDEK} Data Encryption Key
    */
