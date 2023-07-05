@@ -7,7 +7,7 @@ const policies = new PoliciesPage();
 const registrant = new SchemaValidationPage();
 
 
-describe("Required Field Validation", () => {
+describe("Error Validation on schema fields", () => {
 
     const errorNumber = 'Please make sure the field contain a valid number value'; // prefix , postfix
     const errorInteger = 'Please make sure the field contain a valid integer value';
