@@ -4,7 +4,7 @@ import {PoliciesPage} from "../../../pages/policies";
 const home = new AuthenticationPage();
 const policies = new PoliciesPage();
 
-describe("Edit Policy. Undo/Redo flow", {tags: '@ui'}, () => {
+describe("Edit Policy. Udo/Redo flow", {tags: '@ui'}, () => {
 
     const name = Math.floor(Math.random() * 999) + "testName";
 
