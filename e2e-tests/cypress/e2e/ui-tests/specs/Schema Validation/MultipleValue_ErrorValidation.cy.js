@@ -8,7 +8,7 @@ const policies = new PoliciesPage();
 const registrant = new SchemaValidationPage();
 
 
-describe("Required Field Validation", () => {
+describe("Multiple Value Error Validation", () => {
 
     const errorTitle = "Please make sure all fields in schema contain a valid value";
     const errorNumber = 'Please make sure all fields contain a valid number value'; // prefix , postfix
