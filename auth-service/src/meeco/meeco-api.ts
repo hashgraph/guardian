@@ -3,6 +3,7 @@ import querystring from 'querystring';
 import { IMe } from '../meeco/models/me';
 import { IDEK, IKEK, IKeypair, IPassphraseArtefact } from '../meeco/models/keys';
 import { IPresentationRequest, IPresentationSubmission, IPresentationSubmissions } from './models/presentation-request';
+import { IMeecoSchemaData } from './models/schema';
 
 export interface IMeecoOauthConfig {
   url: string;
@@ -148,7 +149,7 @@ export class MeecoApi {
    * @param schema
    * @returns {any} new schema
    */
-  async createSchema(name: string, schema: string): Promise<any> {
+  async createSchema(name: string, schema: IMeecoSchemaData): Promise<any> {
     const accessToken = await this.getTokenOauth2();
 
     const url = `${this.config.baseUrl}/schemas`;
