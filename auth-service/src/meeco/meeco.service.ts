@@ -102,6 +102,17 @@ export class MeecoService {
   }
 
   /**
+   * createSchema creates a Schema on the Meeco API.
+   * @param name
+   * @param attributes
+   * @returns {any} Schema
+   */
+  async createSchema(name: string, attributes: any): Promise<any> {
+    const schema = await this.meecoApi.createSchema(name, attributes);
+    return schema;
+  }
+
+  /**
    * createPresentationRequest creates a Presentation Request on the Meeco API.
    * @param requestName
    * @param clien_did
