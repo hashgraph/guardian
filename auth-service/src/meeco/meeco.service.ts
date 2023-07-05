@@ -126,8 +126,9 @@ export class MeecoService {
    * @param attributes
    * @returns {any} Schema
    */
-  async createSchema(name: string, attributes: any): Promise<any> {
-    const schema = await this.meecoApi.createSchema(name, attributes);
+  async createSchema(name: string, schemaStr: string): Promise<any> {
+    const schemaData = JSON.parse(schemaStr);
+    const schema = await this.meecoApi.createSchema(name, schemaData);
     return schema;
   }
 
