@@ -28,6 +28,14 @@ export class MeecoAuth extends NatsService {
         data: msg,
       }));
     });
+
+    this.getMessages<any, any>(AuthEvents.MEECO_VERIFY_VP_FAILED, async (msg) => {
+      const ws = this.clients[msg.cid];
+      ws.send(JSON.stringify({
+        event: "MEECO_VERIFY_VP_FAILED",
+        data: msg,
+      }));
+    });
   }
 
   public async createMeecoAuthRequest(ws): Promise<any> {
