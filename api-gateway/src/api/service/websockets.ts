@@ -48,6 +48,8 @@ export class WebSocketsService {
      */
     private readonly wss: WebSocket.Server;
 
+    private clients: any[] = [];
+
     /**
      * Known services
      * @private
@@ -186,6 +188,9 @@ export class WebSocketsService {
      */
     private registerConnection(): void {
         this.wss.on('connection', async (ws: any, req: IncomingMessage) => {
+            this.clients.push(ws);
+            ws.id = this.clients.length - 1;
+
             ws.on('message', async (data: Buffer) => {
                 const message = data.toString();
                 if (message === 'ping') {
@@ -195,7 +200,10 @@ export class WebSocketsService {
                     this.wsResponse(ws, message);
                 }
             });
-            ws.user = await this.getUserByUrl(req.url);
+            ws.on('close', () => {
+                this.clients.splice(ws.id, 1);
+            });
+            ws["user"] = await this.getUserByUrl(req.url);
         });
     }
 
@@ -348,8 +356,8 @@ export class WebSocketsService {
                 }
             } else {
                 return {
-                    type: null,
-                    data: message
+                    type: message.type,
+                    data: message.data
                 }
             }
         } catch (error) {
