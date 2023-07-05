@@ -163,8 +163,6 @@ export class ModulesPage {
         cy.contains(ModulesPageLocators.exportIPFSLabel).click();
     }
 
-
-
     addTag(tagName) {
         cy.intercept(ModulesPageLocators.tagsListRequest).as(
             "waitForTags"
@@ -192,5 +190,9 @@ export class ModulesPage {
         cy.contains(moduleName).parent().find(ModulesPageLocators.moduleDeleteButton).click();
         cy.contains("OK").click();
         cy.contains(moduleName).should("not.exist")
+    }
+
+    checkTheTextIsPresentInModule(text) {
+        cy.contains(text).should("exist");
     }
 }

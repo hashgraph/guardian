@@ -23,3 +23,10 @@
 //
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
+
+Cypress.Commands.add('checkIfFileExistByPartialName', (partialName) => {
+    cy.task('checkFile', partialName).then(fileExists => {
+      expect(fileExists).to.be.true;
+    });
+});
+  
