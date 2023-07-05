@@ -97,6 +97,30 @@ export class MeecoApi {
 
   /**
    * Get the Meeco user's keypair.
+   * @param schemaId 
+   * @returns {Schema} schema
+   */
+  async getSchema(schemaId: string): Promise<any> {
+    const accessToken = await this.getTokenOauth2();
+
+    const url = `${this.config.baseUrl}/schemas/${schemaId}`;
+
+    const headers = {
+      headers: {
+        'Authorization': accessToken,
+        'Meeco-Organisation-Id': this.config.meecoOrganizationId,
+      },
+    };
+
+    const result = await axios.get(url, headers);
+
+    const { data: schema } = result;
+
+    return schema;
+  }
+
+  /**
+   * Get the Meeco user's keypair.
    * @returns {Schemas}
    */
   async getSchemas(): Promise<any> {
