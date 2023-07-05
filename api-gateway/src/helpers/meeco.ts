@@ -20,6 +20,15 @@ export class MeecoAuth extends NatsService {
 
   private clients: any = {};
 
+  registerListeners(): void {
+    this.getMessages<any, any>(AuthEvents.MEECO_VERIFY_VP, async (msg) => {
+      const ws = this.clients[msg.cid];
+      ws.send(JSON.stringify({
+        event: 'MEECO_VERIFY_VP',
+        data: msg,
+      }));
+    });
+  }
 
   public async createMeecoAuthRequest(ws): Promise<any> {
     this.clients[ws.id] = ws;
