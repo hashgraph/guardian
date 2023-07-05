@@ -934,7 +934,6 @@ export class PolicyEngine extends NatsService {
 
             try {
                 const r = await this.sendMessageWithTimeout<any>(PolicyEvents.GENERATE_POLICY, 1000, {
-                    policy,
                     policyId,
                     skipRegistration: false
                 });

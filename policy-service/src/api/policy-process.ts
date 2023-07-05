@@ -11,7 +11,6 @@ import { GridFSBucket } from 'mongodb';
 import { SynchronizationService } from '@policy-engine/multi-policy-service';
 
 const {
-    policy,
     policyId,
     policyServiceName,
     skipRegistration
@@ -37,6 +36,9 @@ Promise.all([
     Environment.setLocalNodeProtocol(process.env.LOCALNODE_PROTOCOL);
     Environment.setLocalNodeAddress(process.env.LOCALNODE_ADDRESS);
     Environment.setNetwork(process.env.HEDERA_NET);
+
+    const policyConfig = await DatabaseServer.getPolicyById(policyId);
+
     if (process.env.HEDERA_CUSTOM_NODES) {
         try {
             const nodes = JSON.parse(process.env.HEDERA_CUSTOM_NODES);
@@ -44,7 +46,7 @@ Promise.all([
         } catch (error) {
             await new Logger().warn(
                 'HEDERA_CUSTOM_NODES field in settings: ' + error.message,
-                ['POLICY', policy.name, policyId.toString()]
+                ['POLICY', policyConfig.name, policyId.toString()]
             );
             console.warn(error);
         }
@@ -59,7 +61,7 @@ Promise.all([
             await new Logger().warn(
                 'HEDERA_CUSTOM_MIRROR_NODES field in settings: ' +
                 error.message,
-                ['POLICY', policy.name, policyId.toString()]
+                ['POLICY', policyConfig.name, policyId.toString()]
             );
             console.warn(error);
         }
@@ -81,7 +83,6 @@ Promise.all([
 
     new Logger().info(`Process for with id ${policyId} was started started PID: ${process.pid}`, ['POLICY', policyId]);
 
-    const policyConfig = await DatabaseServer.getPolicyById(policyId);
     const generator = new BlockTreeGenerator();
     const policyValidator = new PolicyValidator(policyConfig);
 
@@ -105,5 +106,5 @@ Promise.all([
         new LargePayloadContainer().runServer();
     }
 
-    new Logger().info('Start policy', ['POLICY', policy.name, policyId.toString()]);
+    new Logger().info('Start policy', ['POLICY', policyConfig.name, policyId.toString()]);
 });
