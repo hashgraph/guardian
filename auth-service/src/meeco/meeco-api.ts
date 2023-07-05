@@ -49,7 +49,7 @@ export class MeecoApi {
     };
 
     const result = await axios.post(url, data, headers);
-    const { token_type, accessToken } = result.data;
+    const { token_type, access_token: accessToken } = result.data;
     return `${token_type} ${accessToken}`;
   }
 
