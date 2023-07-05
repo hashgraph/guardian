@@ -49,7 +49,7 @@ export class WebSocketsService {
      */
     private readonly wss: WebSocket.Server;
 
-    private clients: any[] = [];
+    private clients = new Map();
 
     /**
      * Known services
@@ -189,8 +189,9 @@ export class WebSocketsService {
      */
     private registerConnection(): void {
         this.wss.on('connection', async (ws: any, req: IncomingMessage) => {
-            this.clients.push(ws);
-            ws.id = this.clients.length - 1;
+            const clientId = GenerateUUIDv4();
+            ws.id = clientId;
+            this.clients[clientId] = ws;
 
             ws.on('message', async (data: Buffer) => {
                 const message = data.toString();
@@ -202,7 +203,7 @@ export class WebSocketsService {
                 }
             });
             ws.on('close', () => {
-                this.clients.splice(ws.id, 1);
+                this.clients.delete(clientId);
             });
             ws["user"] = await this.getUserByUrl(req.url);
         });
