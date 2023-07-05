@@ -1,5 +1,5 @@
 import { MessageResponse, NatsService, Singleton } from '@guardian/common';
-import { AuthEvents, GenerateUUIDv4, IUser } from '@guardian/interfaces';
+import { AuthEvents, GenerateUUIDv4 } from '@guardian/interfaces';
 import { MeecoService } from '../meeco/meeco.service';
 import { Logger } from '@nestjs/common';
 
@@ -49,7 +49,7 @@ export class MeecoAuthService extends NatsService {
      * Subscribe to MEECO_AUTH_START event
      * Request a new VP presentation request from Meeco and return the redirect URI
      */
-    this.getMessages<any, IUser[]>(AuthEvents.MEECO_AUTH_START, async (msg) => {
+    this.getMessages<any, any>(AuthEvents.MEECO_AUTH_START, async (msg) => {
       // generate a random UUID as the request name
       const requestName = GenerateUUIDv4();
 
@@ -71,7 +71,7 @@ export class MeecoAuthService extends NatsService {
 
         // sign the VP request token
         const signVPRequest = await this.meecoService.signPresentationRequestToken(vpRequest.presentation_request.id, vpRequest.presentation_request.tokens.unsigned_request_jwt);
-        const redirectUri = this.meecoService.getVPSubmissionRedirectUri(signVPRequest.presentation_request.id);
+        const redirectUri = await this.meecoService.getVPSubmissionRedirectUri(signVPRequest.presentation_request.id);
 
         // start polling for VP submission
         await this.getVPSubmissions(signVPRequest.presentation_request.id, msg.cid);
@@ -90,7 +90,7 @@ export class MeecoAuthService extends NatsService {
      * Approves the VP presented by user
      * @param msg
      */
-    this.getMessages<any, IUser[]>(AuthEvents.MEECO_APPROVE_SUBMISSION, async (msg: any) => {
+    this.getMessages<any, any>(AuthEvents.MEECO_APPROVE_SUBMISSION, async (msg: any) => {
       // ToDo: approve submissions that are not timed out or rejected
       const vpRequest = await this.meecoService.approveVPSubmission(msg.presentation_request_id, msg.submission_id, true);
       return new MessageResponse({vpRequest, cid: msg.cid});
@@ -101,7 +101,7 @@ export class MeecoAuthService extends NatsService {
      * Verify the VP presented by user
      * @param msg
      */
-    this.getMessages<any, IUser[]>(AuthEvents.MEECO_REJECT_SUBMISSION, async (msg: any) => {
+    this.getMessages<any, any>(AuthEvents.MEECO_REJECT_SUBMISSION, async (msg: any) => {
       // ToDo: reject submissions that are not timed out or approved or rejected before
       const vpRequest = await this.meecoService.approveVPSubmission(msg.presentation_request_id, msg.submission_id, false);
       return new MessageResponse({vpRequest, cid: msg.cid});
