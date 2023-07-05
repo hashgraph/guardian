@@ -102,6 +102,15 @@ export class MeecoService {
   }
 
   /**
+   * getSchemas fetches the Schemas from the Meeco API.
+   * @returns {any} Schemas
+   */
+  async getSchemas(): Promise<any> {
+    const schemas = await this.meecoApi.getSchemas();
+    return schemas;
+  }
+
+  /**
    * createSchema creates a Schema on the Meeco API.
    * @param name
    * @param attributes
