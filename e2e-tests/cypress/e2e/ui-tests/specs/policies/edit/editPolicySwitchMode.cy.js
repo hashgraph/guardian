@@ -8,7 +8,7 @@ describe("Edit Policy. Switch mode flow", {tags: '@ui'}, () => {
 
     const name = Math.floor(Math.random() * 999) + "testName";
 
-    before(() => {
+    beforeEach(() => {
         cy.viewport(1920, 1080);
         home.visit();
         home.login("StandardRegistry");
@@ -20,7 +20,7 @@ describe("Edit Policy. Switch mode flow", {tags: '@ui'}, () => {
         policies.waitForEditPage();
     });
 
-    after(() => {
+    afterEach(() => {
         policies.openPoliciesTab();
         policies.deletePolicy(name);
         policies.checkPolicyTableNotContains(name);
@@ -33,8 +33,6 @@ describe("Edit Policy. Switch mode flow", {tags: '@ui'}, () => {
     });
 
     it("Verify if it possible to swith to tree mode", () => {
-        policies.clickOnButtonByText("JSON");
-        policies.clickOnButtonByText("Tree");
         policies.verifyIfTreeContainerIsDisplayed();
     });
 });
