@@ -5,7 +5,7 @@ description: >-
   Verra policy.
 ---
 
-# Verra Redd\_3 User Journey Demo UI Guide
+# 💻 Verra Redd\_3 User Journey Demo UI Guide
 
 **Here are the users that will be involved within this Verra policy demo UI:**&#x20;
 
@@ -43,7 +43,7 @@ Once you have added the correct details to configure your account, you will need
 
 You will need to follow the step below to Configure your account. Here you will need to configure your account. You will need to enter the details shown in the image below.
 
-<figure><img src="../../../.gitbook/assets/image (201).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (201) (1).png" alt=""><figcaption></figcaption></figure>
 
 **Step 3**
 
@@ -88,7 +88,7 @@ Under the “Policies” menu, click on **“Go”** for the desired policy name
 
 In this case we will approve the submission&#x20;
 
-<figure><img src="../../../.gitbook/assets/image (203).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (203) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/image (210).png" alt=""><figcaption></figcaption></figure>
 
@@ -239,7 +239,7 @@ The first step is that you will need to either login in to your account that you
 
 _**Note: You can access the ‘Demo Admin Panel’ where you can just select the ‘Project Proponent’ for demo purposes.**_
 
-<figure><img src="../../../.gitbook/assets/image (161).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (161) (1).png" alt=""><figcaption></figcaption></figure>
 
 **Step 2**
 

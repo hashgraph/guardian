@@ -36,7 +36,7 @@ Among the adaptations for the Standard Registry, the creation / edition of a new
 
 Below are the images show the creation of a "New Token" form for the Standard Registry.
 
-![](<../../../.gitbook/assets/14 (1).png>) ![](../../../.gitbook/assets/15.png)
+![](<../../../.gitbook/assets/14 (1).png>) ![](<../../../.gitbook/assets/15 (4).png>)
 
 Here below are the images to show the creation of a "Edit Token" form for the Standard Registry. On the left for a non published and on the right for a published token.
 

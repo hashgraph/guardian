@@ -60,7 +60,7 @@ Rules can be removed by clicking on remove icon as shown below:
 
 This rule is applied if and only if no other rules’ conditions matches the Block.
 
-![](<../../../../.gitbook/assets/7 (5).png>)
+![](<../../../../.gitbook/assets/7 (5) (1).png>)
 
 **1.2.4 Conditions**
 
