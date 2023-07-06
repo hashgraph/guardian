@@ -253,7 +253,7 @@ export class MeecoApi {
     const accessToken = await this.getTokenOauth2();
 
     const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getMinutes() + 5);
+    expiresAt.setMinutes(expiresAt.getMinutes() + 5);
 
     const request = {
       presentation_request: {
@@ -343,9 +343,9 @@ export class MeecoApi {
 
     const request = {
       presentation_request_response: {
-        idToken,
-        requestUri,
-        vpToken,
+        id_token: idToken,
+        vp_token: vpToken,
+        request_uri: requestUri,
       }
     }
 
@@ -359,9 +359,12 @@ export class MeecoApi {
     };
     const data = JSON.stringify(request)
 
-    const result = await axios.post(url, data, headers);
-
-    return true ? result.status === 204 : false;
+    try {
+      const result = await axios.post(url, data, headers);
+      return true ? result.status === 204 : false;
+    } catch(ex) {
+      throw new Error(ex.response.data.errors[0].extra_info.reason);
+    }
   }
 
   async approveVPSubmission(requestId: string, submissionId: string, verified: boolean): Promise<IPresentationSubmission> {
