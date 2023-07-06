@@ -27,7 +27,7 @@ describe("Required Field Validation", () => {
         home.login("StandardRegistry");
         policies.openPoliciesTab();
         policies.importPolicyButton();
-        policies.importPolicyMessage("1687859145.558463154");  //required field validation  dummy policy
+        policies.importPolicyMessage("1688641418.524718524");  //required field validation  dummy policy
         policies.publishPolicy();
          home.logOut("StandardRegistry")
     });
