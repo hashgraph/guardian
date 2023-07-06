@@ -1,7 +1,8 @@
-import { MessageResponse, NatsService, Singleton } from '@guardian/common';
+import { DataBaseHelper, MessageResponse, NatsService, Singleton } from '@guardian/common';
 import { AuthEvents, GenerateUUIDv4 } from '@guardian/interfaces';
 import { MeecoService } from '../meeco/meeco.service';
 import { Logger } from '@nestjs/common';
+import { MeecoIssuerWhitelist } from '@entity/meeco-issuer-whitelist';
 
 const MeecoConfig = {
   baseUrl: process.env.MEECO_BASE_URL,
@@ -119,31 +120,27 @@ export class MeecoAuthService extends NatsService {
     const interval = setInterval(async () => {
       try {
         const submissions = await this.meecoService.getVPSubmissions(requestId);
+
         if (submissions.submissions.length > 0) {
           const { id: submissionId, id_token, vp_token, presentation_request_id } = submissions.submissions[0];
+          
+          await this.verifyVP(vp_token);
+
           const verified = await this.meecoService.verifyVP(id_token, requestId, vp_token);
-          if (verified) {
-            const verifiableCredential = this.meecoService.decodeVPToken(vp_token);
-            this.sendMessage(
-              AuthEvents.MEECO_VERIFY_VP,
-              {
-                vc: verifiableCredential.vc.credentialSubject,
-                presentation_request_id,
-                submission_id: submissionId,
-                cid,
-              }
-            );
-          } else {
-            this.logger.error('VP verification failed');
-            clearInterval(interval);
-            this.sendMessage(
-              AuthEvents.MEECO_VERIFY_VP_FAILED,
-              {
-                error: 'VP verification failed',
-                cid,
-              }
-            );
+          if (!verified) {
+            throw new Error('VP verification failed ny Meeco');
           }
+          
+          const verifiableCredential = this.meecoService.decodeVPToken(vp_token);
+          this.sendMessage(
+            AuthEvents.MEECO_VERIFY_VP,
+            {
+              vc: verifiableCredential.vc.credentialSubject,
+              presentation_request_id,
+              submission_id: submissionId,
+              cid,
+            }
+          );
         }
       } catch (ex) {
         this.logger.error(ex);
@@ -169,6 +166,21 @@ export class MeecoAuthService extends NatsService {
         );
       }
     }, 3000)
+  }
+
+  async verifyVP(vpToken: string) {
+    const verifiableCredential = this.meecoService.decodeVPToken(vpToken);
+
+    if (verifiableCredential.exp < Date.now()) {
+      throw new Error("VP expired");
+    }
+
+    const {id: issuerId, name: issuerName } = verifiableCredential.vc.issuer;
+    const issuerWhitelistRepository = new DataBaseHelper(MeecoIssuerWhitelist);
+    const issuerWhitelist = await issuerWhitelistRepository.findOne({ issuerId, name: issuerName });
+    if (!issuerWhitelist) {
+      throw new Error(`Issuer ${issuerName} is not whitelisted`);
+    }
   }
 
 }
