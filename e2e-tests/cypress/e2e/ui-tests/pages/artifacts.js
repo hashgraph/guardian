@@ -44,4 +44,8 @@ export class ArtifactsPage {
             cy.get(ArtifactsPageLocators.dialogContainer).contains(new RegExp("^OK$", "g")).click({ force: true });
     }
 
+    selectFirstElementFromDropdown() {
+        cy.get("mat-option").first().click({ force: true });
+    }
+
 }

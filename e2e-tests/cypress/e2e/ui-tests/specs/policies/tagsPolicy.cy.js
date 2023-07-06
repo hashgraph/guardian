@@ -25,7 +25,7 @@ describe("Tags Policy", {tags: '@ui'}, () => {
         policies.clickOnButtonOnPolicy(name, name + "tag");
         policies.clickOnButtonByTextInModal(" Create Tag ");
         policies.fillNewTagForm(name + "tag2");
-        policies.checkPolicyTableContains(name + "tag2");
+        policies.checkPolicyTagModalContains(name + "tag2");
     });
 
     it("Verify if it possible to delete tags", () => {
@@ -36,7 +36,7 @@ describe("Tags Policy", {tags: '@ui'}, () => {
         policies.clickOnButtonOnPolicy(name, name + "tag");
         policies.clickOnButtonByTextInModal(" Create Tag ");
         policies.fillNewTagForm(name + "tag2");
-        policies.checkPolicyTableContains(name + "tag2");
+        policies.checkPolicyTagModalContains(name + "tag2");
         policies.clickOnButtonByTextInModal(name + "tag");
         policies.clickOnDeleteTag();
         policies.clickOnCloseModal();

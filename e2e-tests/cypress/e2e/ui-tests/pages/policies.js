@@ -340,7 +340,7 @@ export class PoliciesPage {
     }
 
     clickOnButtonByTextInModal(text) {
-        cy.get(PoliciesPageLocators.dialogContainer).contains(new RegExp("^" + text + "$", "g")).click({ force: true });
+        cy.get(PoliciesPageLocators.dialogContainer).contains(text).click({ force: true });
     }
 
     clickOnDeleteTag() {
@@ -474,4 +474,11 @@ export class PoliciesPage {
         cy.contains(text).should('exist');
     }
 
+    waitForEditPage() {
+        cy.get(PoliciesPageLocators.matTypography, { timeout: 60000 }).should('be.visible');
+    }
+
+    checkPolicyTagModalContains(text) {
+        cy.get(PoliciesPageLocators.dialogContainer).contains(text).should('exist');
+    }
 }
