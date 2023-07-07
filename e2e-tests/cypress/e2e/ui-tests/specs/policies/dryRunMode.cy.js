@@ -4,7 +4,7 @@ import {PoliciesPage} from "../../pages/policies";
 const home = new AuthenticationPage();
 const policies = new PoliciesPage();
 
-describe("Dry run  Policy", {tags: '@ui'}, () => {
+describe("Dry run Policy", {tags: '@ui'}, () => {
 
     const name = Math.floor(Math.random() * 999) + "testName";
 
@@ -18,7 +18,7 @@ describe("Dry run  Policy", {tags: '@ui'}, () => {
         policies.openPoliciesTab();
         policies.createPolicyButton();
         policies.fillNewPolicyForm(name);
-        policies.checkDraftStatus(name);
+        policies.checkStatus(name, "Draft");
         policies.startDryRun(name);
         policies.stopDryRun(name);
     });
