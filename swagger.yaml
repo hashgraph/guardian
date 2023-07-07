@@ -6760,7 +6760,7 @@ info:
     the heart of the Guardian solution is a sophisticated Policy Workflow Engine
     (PWE) that enables applications to offer a requirements-based tokenization
     implementation.
-  version: 2.14.1
+  version: 2.14.2
   contact:
     name: API developer
     url: https://envisionblockchain.com
