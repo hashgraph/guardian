@@ -13,16 +13,23 @@ describe("Workflow Policy Deletion", {tags: '@ui'}, () => {
         home.visit();
     })
 
-    it("create policy", () => {
+    it("Verify if it possible to delete draft policy", () => {
         home.login("StandardRegistry");
         policies.openPoliciesTab();
         policies.createPolicyButton();
         policies.fillNewPolicyForm(name);
+        policies.checkStatus(name, "Draft");
+        policies.deletePolicy(name);
+        policies.checkPolicyTableNotContains(name);
     });
 
-    it("create policy", () => {
+    it("Verify if it impossible to delete dry run policy", () => {
         home.login("StandardRegistry");
         policies.openPoliciesTab();
-        policies.deletePolicy(name);
+        policies.createPolicyButton();
+        policies.fillNewPolicyForm(name);
+        policies.checkStatus(name, "Draft");
+        policies.startDryRun(name);
+        policies.checkButtonIsNotActive(name, "delete");
     });
 });
