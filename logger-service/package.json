@@ -1,8 +1,8 @@
 {
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
-    "@guardian/common": "^2.14.1",
-    "@guardian/interfaces": "^2.14.1",
+    "@guardian/common": "^2.14.2",
+    "@guardian/interfaces": "^2.14.2",
     "@mikro-orm/core": "~5.7.12",
     "@mikro-orm/mongodb": "~5.7.12",
     "@nestjs/common": "^9.4.1",
@@ -40,5 +40,5 @@
     "start": "node dist/index.js",
     "watch": "nodemon src/index.ts"
   },
-  "version": "2.14.1"
+  "version": "2.14.2"
 }
