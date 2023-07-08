@@ -1260,14 +1260,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@guardian/common@^2.14.1, @guardian/common@workspace:common":
+"@guardian/common@^2.14.2, @guardian/common@workspace:common":
   version: 0.0.0-use.local
   resolution: "@guardian/common@workspace:common"
   dependencies:
     "@aws-sdk/client-secrets-manager": ^3.319.0
     "@azure/identity": ^3.2.2
     "@azure/keyvault-secrets": ^4.7.0
-    "@guardian/interfaces": ^2.14.1
+    "@guardian/interfaces": ^2.14.2
     "@hashgraph/sdk": 2.24.2
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
@@ -1298,7 +1298,7 @@ __metadata:
     lodash.set: ^4.3.2
     mocha-junit-reporter: ^2.0.2
     moment: ^2.29.2
-    mongodb: ^5.6.0
+    mongodb: 5.6.0
     nats: ^2.6.1
     node-vault: ^0.9.22
     reflect-metadata: ^0.1.13
@@ -1310,7 +1310,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@guardian/interfaces@^2.14.1, @guardian/interfaces@workspace:interfaces":
+"@guardian/interfaces@^2.14.2, @guardian/interfaces@workspace:interfaces":
   version: 0.0.0-use.local
   resolution: "@guardian/interfaces@workspace:interfaces"
   dependencies:
@@ -3232,8 +3232,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "api-gateway@workspace:api-gateway"
   dependencies:
-    "@guardian/common": ^2.14.1
-    "@guardian/interfaces": ^2.14.1
+    "@guardian/common": ^2.14.2
+    "@guardian/interfaces": ^2.14.2
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
     "@nestjs/jwt": ^10.0.3
@@ -3456,8 +3456,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "auth-service@workspace:auth-service"
   dependencies:
-    "@guardian/common": ^2.14.1
-    "@guardian/interfaces": ^2.14.1
+    "@guardian/common": ^2.14.2
+    "@guardian/interfaces": ^2.14.2
     "@mikro-orm/core": ~5.7.12
     "@mikro-orm/mongodb": ~5.7.12
     "@nestjs/common": ^9.4.1
@@ -5972,8 +5972,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "guardian-service@workspace:guardian-service"
   dependencies:
-    "@guardian/common": ^2.14.1
-    "@guardian/interfaces": ^2.14.1
+    "@guardian/common": ^2.14.2
+    "@guardian/interfaces": ^2.14.2
     "@hashgraph/sdk": 2.24.2
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
@@ -6014,7 +6014,7 @@ __metadata:
     mocha-junit-reporter: ^2.0.2
     module-alias: ^2.2.2
     moment: ^2.29.2
-    mongodb: ^5.6.0
+    mongodb: 5.6.0
     nodemon: ^2.0.12
     prom-client: ^14.1.1
     prometheus-api-metrics: 3.2.2
@@ -7973,8 +7973,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "logger-service@workspace:logger-service"
   dependencies:
-    "@guardian/common": ^2.14.1
-    "@guardian/interfaces": ^2.14.1
+    "@guardian/common": ^2.14.2
+    "@guardian/interfaces": ^2.14.2
     "@mikro-orm/core": ~5.7.12
     "@mikro-orm/mongodb": ~5.7.12
     "@nestjs/common": ^9.4.1
@@ -8555,7 +8555,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mongodb@npm:5.6.0, mongodb@npm:^5.6.0":
+"mongodb@npm:5.6.0":
   version: 5.6.0
   resolution: "mongodb@npm:5.6.0"
   dependencies:
@@ -8601,7 +8601,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "mrv-sender@workspace:mrv-sender"
   dependencies:
-    "@guardian/common": ^2.14.1
+    "@guardian/common": ^2.14.2
     "@transmute/credentials-context": 0.7.0-unstable.80
     "@transmute/did-context": 0.7.0-unstable.80
     "@transmute/ed25519-signature-2018": 0.7.0-unstable.80
@@ -9573,8 +9573,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "policy-service@workspace:policy-service"
   dependencies:
-    "@guardian/common": ^2.14.1
-    "@guardian/interfaces": ^2.14.1
+    "@guardian/common": ^2.14.2
+    "@guardian/interfaces": ^2.14.2
     "@hashgraph/sdk": 2.24.2
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
@@ -9613,7 +9613,7 @@ __metadata:
     mocha-junit-reporter: ^2.0.2
     module-alias: ^2.2.2
     moment: ^2.29.2
-    mongodb: ^5.6.0
+    mongodb: 5.6.0
     nodemon: ^2.0.12
     prom-client: ^14.1.1
     prometheus-api-metrics: 3.2.2
@@ -12002,8 +12002,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "worker-service@workspace:worker-service"
   dependencies:
-    "@guardian/common": ^2.14.1
-    "@guardian/interfaces": ^2.14.1
+    "@guardian/common": ^2.14.2
+    "@guardian/interfaces": ^2.14.2
     "@hashgraph/sdk": 2.24.2
     "@transmute/credentials-context": ^0.7.0-unstable.80
     "@transmute/did-context": ^0.7.0-unstable.80

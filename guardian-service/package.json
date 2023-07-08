@@ -12,8 +12,8 @@
   },
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
-    "@guardian/common": "^2.14.1",
-    "@guardian/interfaces": "^2.14.1",
+    "@guardian/common": "^2.14.2",
+    "@guardian/interfaces": "^2.14.2",
     "@hashgraph/sdk": "2.24.2",
     "@mattrglobal/jsonld-signatures-bbs": "^1.1.2",
     "@meeco/cryppo": "^2.0.2",
@@ -46,7 +46,7 @@
     "mathjs": "^10.1.0",
     "module-alias": "^2.2.2",
     "moment": "^2.29.2",
-    "mongodb": "^5.6.0",
+    "mongodb": "5.6.0",
     "prom-client": "^14.1.1",
     "prometheus-api-metrics": "3.2.2",
     "reflect-metadata": "^0.1.13"
@@ -85,5 +85,5 @@
     "test:local": "mocha tests/**/*.test.js --exit",
     "test:stability": "mocha tests/stability.test.js"
   },
-  "version": "2.14.1"
+  "version": "2.14.2"
 }
