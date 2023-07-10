@@ -51,7 +51,7 @@ If you build with docker [MongoDB V6](https://www.mongodb.com), [NodeJS V16](htt
 
    For example:
 
-   in ```/.env```you may choose name of the Guardian platform. Leave the field empty or unspecified if you update a production environment to keep previous data (for more details read at https://docs.hedera.com/guardian/guardian/readme/environments/ecosystem-environments)
+   in **.env.template** you may choose name of the Guardian platform. Leave the field empty or unspecified if you update a production environment to keep previous data (for more details read at https://docs.hedera.com/guardian/guardian/readme/environments/ecosystem-environments)
    
    ```shell
       GUARDIAN_ENV="develop"
@@ -117,21 +117,21 @@ If you want to manually build every component with debug information, then build
 ### Build and start each component
 
 Install, configure and start all the prerequisites, then build and start each component.
-Configure .env file in each service
+Configure **.env.template** file in each service
 
    For example:
 
-   in `guardian-service/.env`:
+   in `/guardian-service/.env`:
    ```plaintext
        GUARDIAN_ENV="develop"
    ```
 
-   If need to configure OVERRIDE variables add it in .env file :
+   If need to configure OVERRIDE variables add it in **.env.template** file :
    ```plaintext
        OVERRIDE="false" 
    ```
 
-   in `guardian-service/configs/.env.guardian.develop`:
+   in `/guardian-service/configs/.env.guardian.develop`:
    ```plaintext
    OPERATOR_ID="..."
    OPERATOR_KEY="..."
@@ -202,7 +202,7 @@ Configure .env file in each service
    ```
 8. Build and start **worker-service** service
    
-   Update **IPFS_STORAGE_API_KEY** value in ```worker-service/configs/.env.worker``` file.
+   Update **IPFS_STORAGE_API_KEY** value in ```/worker-service/configs/.env.worker``` file.
 
    To build the service:
    ```
@@ -215,7 +215,7 @@ Configure .env file in each service
 
 9. Build and start **guardian-service** service
 
-   Update **OPERATOR_ID** and **OPERATOR_KEY** values in ```guardian-service/configs/.env.worker``` file.
+   Update **OPERATOR_ID** and **OPERATOR_KEY** values in ```/guardian-service/configs/.env.worker``` file.
 
    To build the service:
 
@@ -277,7 +277,7 @@ Configure .env file in each service
 
 1. Install a Hedera Local Network following the [official documentation](https://github.com/hashgraph/hedera-local-node#docker)
 
-2. Configure Guardian's configuration files `.env/.env.docker` accordingly:
+2. Configure Guardian's configuration files `/.env/.env.docker` accordingly:
 
    ```shell
    OPERATOR_ID=""
