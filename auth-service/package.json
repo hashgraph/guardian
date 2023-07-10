@@ -15,7 +15,7 @@
     "@nestjs/microservices": "^9.4.1",
     "dotenv": "^16.0.0",
     "express": "^4.17.1",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.1",
     "module-alias": "^2.2.2",
     "node-vault": "^0.9.22",
     "prom-client": "^14.1.1",
@@ -24,7 +24,7 @@
   },
   "description": "",
   "devDependencies": {
-    "@types/jsonwebtoken": "^8.5.4",
+    "@types/jsonwebtoken": "^9.0.2",
     "@types/node": "^18.16.0",
     "@types/node-vault": "^0",
     "chai": "^4.3.4",
