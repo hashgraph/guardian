@@ -1,4 +1,4 @@
-<div class="content">
+<div class="content" [attr.role]="role">
     <div *ngIf="loading && !taskId" class="loading">
         <mat-spinner></mat-spinner>
     </div>
@@ -98,7 +98,13 @@
                     </ng-container>
                     <ng-container matColumnDef="name">
                         <th mat-header-cell *matHeaderCellDef> Policy Name </th>
-                        <td mat-cell *matCellDef="let element">
+                        <td mat-cell *matCellDef="let element" 
+                            [matTooltip]="element.name" 
+                            matTooltipPosition="above" 
+                            matTooltipClass="guardian-tooltip"
+                            matTooltipShowDelay="500"
+                            matTooltipHideDelay="100"
+                        >
                             {{ element.name }}
                         </td>
                     </ng-container>
@@ -123,7 +129,13 @@
                     </ng-container>
                     <ng-container matColumnDef="description">
                         <th mat-header-cell *matHeaderCellDef> Description </th>
-                        <td mat-cell *matCellDef="let element">
+                        <td mat-cell *matCellDef="let element"
+                            [matTooltip]="element.description" 
+                            matTooltipPosition="above" 
+                            matTooltipClass="guardian-tooltip"
+                            matTooltipShowDelay="500"
+                            matTooltipHideDelay="100"
+                        >
                             {{ element.description }}
                         </td>
                     </ng-container>
@@ -170,7 +182,10 @@
                                         [attr.status]="element.multiPolicyStatus" (click)="createMultiPolicy(element)"
                                         [title]="element.multiPolicyStatus ? 'Show Multi Policy' : 'Create Multi Policy'"
                                         [matTooltip]="element.multiPolicyStatus ? 'Show Multi Policy' : 'Create Multi Policy'"
-                                        matTooltipPosition="above" matTooltipClass="guardian-tooltip">
+                                        matTooltipPosition="above" 
+                                        matTooltipClass="guardian-tooltip"
+                                        matTooltipShowDelay="500"
+                                        matTooltipHideDelay="100">
                                         <mat-icon>share</mat-icon>
                                     </div>
                                     <div *ngIf="element.status =='DRY-RUN'" class="btn-icon-delete-des">
@@ -185,18 +200,30 @@
                         <th mat-header-cell *matHeaderCellDef>Operations</th>
                         <td mat-cell *matCellDef="let element">
                             <div class="commands-line">
-                                <div class="btn-icon-import" (click)="exportPolicy(element)" title="Export Policy"
-                                    matTooltip="Export" matTooltipPosition="above" matTooltipClass="guardian-tooltip">
+                                <div class="btn-icon-import" (click)="exportPolicy(element)"
+                                    matTooltip="Export policy" 
+                                    matTooltipPosition="above" 
+                                    matTooltipClass="guardian-tooltip"
+                                    matTooltipShowDelay="500"
+                                    matTooltipHideDelay="100">
                                     <mat-icon>import_export</mat-icon>
                                 </div>
                                 <div class="btn-icon-edit" [routerLink]="['/policy-configuration']"
-                                    [queryParams]="{ policyId: element.id }" title="Policies configuration"
-                                    matTooltip="Edit" matTooltipPosition="above" matTooltipClass="guardian-tooltip">
+                                    [queryParams]="{ policyId: element.id }"
+                                    matTooltip="Policy configuration" 
+                                    matTooltipPosition="above" 
+                                    matTooltipClass="guardian-tooltip"
+                                    matTooltipShowDelay="500"
+                                    matTooltipHideDelay="100">
                                     <mat-icon>edit</mat-icon>
                                 </div>
                                 <div *ngIf="element.status =='DRAFT'" class="btn-icon-delete"
-                                    (click)="deletePolicy(element)" matTooltip="Delete" matTooltipPosition="above"
-                                    matTooltipClass="guardian-tooltip">
+                                    (click)="deletePolicy(element)" 
+                                    matTooltip="Delete policy" 
+                                    matTooltipPosition="above"
+                                    matTooltipClass="guardian-tooltip"
+                                    matTooltipShowDelay="500"
+                                    matTooltipHideDelay="100">
                                     <mat-icon>delete</mat-icon>
                                 </div>
                                 <div *ngIf="element.status !='DRAFT'" class="btn-icon-delete-des">

@@ -30,7 +30,7 @@ _(Please see_ [_examples 2_](data-input-via-forms-using-roles-to-partition-user-
 
 1.2 Pass the document to the ‘_**aggregateDocumentBlock**_' after it is saved.
 
-![Passing the saved document to the aggregateDocumentBlock](<../../../../.gitbook/assets/3 (5).png>)
+![Passing the saved document to the aggregateDocumentBlock](<../../../../.gitbook/assets/3 (5) (1).png>)
 
 2. Timer is a separate block called '_**timerBlock**_'
 

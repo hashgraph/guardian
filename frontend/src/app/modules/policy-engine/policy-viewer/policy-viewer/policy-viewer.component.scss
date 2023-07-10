@@ -35,6 +35,9 @@ a.go-back-link {
     text-decoration: none;
     color: #707070;
     padding: 5px 30px 5px 26px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 a.go-back-link mat-icon {
@@ -102,6 +105,7 @@ a.go-back-link mat-icon {
 
 .current-user-role {
     float: right;
+    white-space: nowrap;
 }
 
 .debug-user {

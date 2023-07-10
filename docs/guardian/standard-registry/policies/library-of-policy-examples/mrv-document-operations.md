@@ -38,7 +38,7 @@ In order to mint tokens into another account (not into the account of the mintin
 
 4. Add simplified grids for displaying Projects, Reports and Tokens
 
-![Adding grids](<../../../../.gitbook/assets/3 (1) (1).png>)
+![Adding grids](<../../../../.gitbook/assets/3 (1) (1) (2).png>)
 
 5. Create the token
 
@@ -84,7 +84,7 @@ In order to mint tokens into another account (not into the account of the mintin
 
 Record value from **assignedTo** _into_ **Field** (This field will be changing our block)
 
-![Using system Field assignedTo](<../../../../.gitbook/assets/12 (3).png>)
+![Using system Field assignedTo](<../../../../.gitbook/assets/12 (3) (1).png>)
 
 1.4.4 Configure values from which fields from the document would be labels, and which ones would be values
 

@@ -4,7 +4,7 @@ There are two ways to open Policy Wizard:
 
 1. Click on Policy Wizard button from Policies Tab as shown below:
 
-<figure><img src="../../../../.gitbook/assets/image (13).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (13) (6).png" alt=""><figcaption></figcaption></figure>
 
 2. Open from the Policy Configurator page:
 
@@ -20,7 +20,7 @@ This step allows users to setup policy information such as name, description, po
 
 ### Policy Roles:
 
-This step provides facilities to manage policy roles. Created Roles can be deleted by clicking on them.&#x20;
+This step provides facilities to manage policy roles. Created Roles can be deleted by clicking on them.
 
 {% hint style="info" %}
 **Note:** Owner is the default policy role (Policy Owner) and cannot be deleted.
@@ -34,7 +34,7 @@ This step allows facilities to manage schemas in the policy by selecting schemas
 
 #### 3.1 {schema} configuration
 
-<figure><img src="../../../../.gitbook/assets/image (14).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (14) (6).png" alt=""><figcaption></figcaption></figure>
 
 At this stage users set roles which are able to view the document grid. Additionally they can set the _produced schema_ to configure _produced schema_ creation based on the current schema.
 
@@ -48,7 +48,7 @@ If **Approve and Reject** and **Minting tokens** are set to _enable_ the corresp
 Note: We can select multiple schemas by entering the schemas names separated by a delimiter: ",".
 {% endhint %}
 
-<figure><img src="../../../../.gitbook/assets/image (17).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (17) (1).png" alt=""><figcaption></figcaption></figure>
 
 #### 3.1.1 {role} configuration
 
@@ -56,8 +56,8 @@ Note: We can select multiple schemas by entering the schemas names separated by 
 
 This step allows:
 
-1. To set _approver_ (only if _Approve and Reject functionality_ is enabled)&#x20;
-2. _creator_ flags for the selected role.&#x20;
+1. To set _approver_ (only if _Approve and Reject functionality_ is enabled)
+2. _creator_ flags for the selected role.
 3. Also allows to select _grid columns_ (ordering is supported).
 
 ### 4. TrustChain
@@ -87,5 +87,4 @@ After the policy in the wizard is configured, users can click on ‘Create’ an
 
 Next time, when the wizard is opened a dialog with the selector of wizard states would be displayed, where we can select respective policy and restore progress.
 
-<figure><img src="../../../../.gitbook/assets/image (25).png" alt=""><figcaption></figcaption></figure>
-
+<figure><img src="../../../../.gitbook/assets/image (25) (4).png" alt=""><figcaption></figcaption></figure>
