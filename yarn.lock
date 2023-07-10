@@ -1298,7 +1298,7 @@ __metadata:
     lodash.set: ^4.3.2
     mocha-junit-reporter: ^2.0.2
     moment: ^2.29.2
-    mongodb: 5.6.0
+    mongodb: 5.7.0
     nats: ^2.6.1
     node-vault: ^0.9.22
     reflect-metadata: ^0.1.13
@@ -3794,6 +3794,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"bson@npm:^5.4.0":
+  version: 5.4.0
+  resolution: "bson@npm:5.4.0"
+  checksum: 1c07e3d09f139d414bd226bf7f4e9aaa7a726e0c9718c55b53bb23ffa2805cac8b66e4fa46b424c73a35c6e292ed5f7432df5c76ea5d08052642b2ac9e0399e3
+  languageName: node
+  linkType: hard
+
 "buffer-equal-constant-time@npm:1.0.1":
   version: 1.0.1
   resolution: "buffer-equal-constant-time@npm:1.0.1"
@@ -6014,7 +6021,7 @@ __metadata:
     mocha-junit-reporter: ^2.0.2
     module-alias: ^2.2.2
     moment: ^2.29.2
-    mongodb: 5.6.0
+    mongodb: 5.7.0
     nodemon: ^2.0.12
     prom-client: ^14.1.1
     prometheus-api-metrics: 3.2.2
@@ -8581,6 +8588,38 @@ __metadata:
   languageName: node
   linkType: hard
 
+"mongodb@npm:5.7.0":
+  version: 5.7.0
+  resolution: "mongodb@npm:5.7.0"
+  dependencies:
+    bson: ^5.4.0
+    mongodb-connection-string-url: ^2.6.0
+    saslprep: ^1.0.3
+    socks: ^2.7.1
+  peerDependencies:
+    "@aws-sdk/credential-providers": ^3.201.0
+    "@mongodb-js/zstd": ^1.1.0
+    kerberos: ^2.0.1
+    mongodb-client-encryption: ">=2.3.0 <3"
+    snappy: ^7.2.2
+  dependenciesMeta:
+    saslprep:
+      optional: true
+  peerDependenciesMeta:
+    "@aws-sdk/credential-providers":
+      optional: true
+    "@mongodb-js/zstd":
+      optional: true
+    kerberos:
+      optional: true
+    mongodb-client-encryption:
+      optional: true
+    snappy:
+      optional: true
+  checksum: 16357b6229abac165aecea15a6efa873ec8662a00411ecb9e49853f05a590be31aab63d404486125778eedaafe76d70e84eea682fa89b138decc247f4870d2ec
+  languageName: node
+  linkType: hard
+
 "move-file@npm:^2.1.0":
   version: 2.1.0
   resolution: "move-file@npm:2.1.0"
@@ -9613,7 +9652,7 @@ __metadata:
     mocha-junit-reporter: ^2.0.2
     module-alias: ^2.2.2
     moment: ^2.29.2
-    mongodb: 5.6.0
+    mongodb: 5.7.0
     nodemon: ^2.0.12
     prom-client: ^14.1.1
     prometheus-api-metrics: 3.2.2
