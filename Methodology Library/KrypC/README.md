@@ -13,21 +13,34 @@ The power generated from the Renewable sources can be either directly sold to th
 ### The different actors within KrypC policies
 
 Below Four different types of users involved in Carbon Core platform.
+
 •	Admin - Onboard system users and project owner
+
 •	CC Consultant - Manages Project Documentation outside of the Guardian and transcribes into the Guardian.
+
 •	Auditor - Reviews monitoring reports and approve/reject.
+
 •	Project Owner – A person who is considered as the owner of the offsets and has complete access to it.
+
 
 ### Emission Calculation using Guardian Middleware API 
 
 The policy is based on following baseline and monitoring methodologies of CDM/GCC;
+
 •	ACM0002: Grid connected electricity generation from renewable sources; and
+
 •	AMS-I-D: Grid connected renewable electricity generation.
+
 •	AMS I F: Renewable energy generation for Captive use and Mini grid
+
 The policy also refers to the latest approved versions of the following tools and guidelines of CDM/GCC;
+
 •	Tool to calculate the emission factor for an electricity system.
+
 •	Tool to calculate baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation.
+
 •	Tool for Demonstration and Assessment of Additionality.
+
 
 **Baseline emissions**
 
@@ -148,12 +161,19 @@ KrypC's policies will continue to evolve based on our ongoing requirements, we w
 
 KrypC Carbon Core platform provides solutions for all parties simplifying the entire process making Carbon trading market safe, reliable, efficient, convenient, open and inclusive. It acts as ledger for creating the trust chain for the verified carbon units and verified emission reductions created. The platform also helps in verifying and minting carbon offset tokens and will lend its credibility towards 'high-quality' credits, attracting higher prices and allowing more funding to projects.
 KrypC Carbon Core Platform tokenizes the carbon credits via Hedera Hash graph technology. This will be following steps;
+
 • Create specific architecture and libraries for the Project listing process and documentation for various registries.
+
 • Create MRVs, Architecture, and Libraries for carbon project listing processes and documentation on Hedera.
+
 • Tokenize and mint tons of carbon offsets (tC02e).
+
 • Complete the build with KrypC’s carbon solution platform as a ledger for creating the trust chain for the VCUs/VERs created by any stakeholder/partner.
+
 • Recognizes different VERs/VCUs of by virtue of running a ‘pricing matrix’ of different ‘series of tokenized VERs/VCUs with the aim of having strong liquidity.
+
 • Link to KrypC's Carbon solution for a full end-to-end platform for tokenized VCUs/VERs.
+
 
 **High level process flow of KrypC’s Carbon Core Platform**
 
