@@ -5,6 +5,13 @@ import {
     IRootConfig,
     WorkerTaskType
 } from '@guardian/interfaces';
+
+type PromiseResult = {
+    status: 'fulfilled' | 'rejected';
+    reason?: any;
+    value?: any;
+};
+
 import {
     ExternalEventChannel,
     Logger,
@@ -76,104 +83,75 @@ export class MintService {
      * @param ref
      */
     private static async mintNonFungibleTokens(
-        token: TokenConfig,
-        tokenValue: number,
-        root: IRootConfig,
-        targetAccount: string,
-        uuid: string,
-        transactionMemo: string,
-        ref?: AnyBlockType
-    ): Promise<any[]> {
+       token,
+       tokenValue,
+       root,
+       targetAccount,
+       uuid,
+       transactionMemo,
+       ref
+   ): Promise<number[]> {
         const mintNFT = (metaData: string[]): Promise<number[]> =>
-            workers.addRetryableTask(
-                {
-                    type: WorkerTaskType.MINT_NFT,
-                    data: {
-                        hederaAccountId: root.hederaAccountId,
-                        hederaAccountKey: root.hederaAccountKey,
-                        dryRun: ref && ref.dryRun,
-                        tokenId: token.tokenId,
-                        supplyKey: token.supplyKey,
-                        metaData,
-                        transactionMemo,
-                    },
-                },
-                1, 10
-            );
-        const transferNFT = (serials: number[]): Promise<number[] | null> => {
-            MintService.logger.debug(
-                `Transfer ${token?.tokenId} serials: ${JSON.stringify(serials)}`,
-                ['POLICY_SERVICE', mintId.toString()]
-            );
-            return workers.addRetryableTask(
-                {
-                    type: WorkerTaskType.TRANSFER_NFT,
-                    data: {
-                        hederaAccountId:
-                            root.hederaAccountId,
-                        hederaAccountKey:
-                            root.hederaAccountKey,
-                        dryRun: ref && ref.dryRun,
-                        tokenId: token.tokenId,
-                        targetAccount,
-                        treasuryId: token.treasuryId,
-                        treasuryKey: token.treasuryKey,
-                        element: serials,
-                        transactionMemo,
-                    },
-                },
-                1, 10
-            );
-        };
+          workers.addRetryableTask({
+              type: WorkerTaskType.MINT_NFT,
+              data: {
+                  hederaAccountId: root.hederaAccountId,
+                  hederaAccountKey: root.hederaAccountKey,
+                  dryRun: ref && ref.dryRun,
+                  tokenId: token.tokenId,
+                  supplyKey: token.supplyKey,
+                  metaData,
+                  transactionMemo,
+              },
+          }, 1, 10);
+
+        const transferNFT = (serials: number[]): Promise<number[] | null> =>
+          workers.addRetryableTask({
+              type: WorkerTaskType.TRANSFER_NFT,
+              data: {
+                  hederaAccountId: root.hederaAccountId,
+                  hederaAccountKey: root.hederaAccountKey,
+                  dryRun: ref && ref.dryRun,
+                  tokenId: token.tokenId,
+                  targetAccount,
+                  treasuryId: token.treasuryId,
+                  treasuryKey: token.treasuryKey,
+                  element: serials,
+                  transactionMemo,
+              },
+          }, 1, 10);
+
         const mintAndTransferNFT = (metaData: string[]) =>
-            mintNFT(metaData).then(transferNFT);
+          mintNFT(metaData).then(transferNFT);
+
         const mintId = Date.now();
         MintService.log(`Mint(${mintId}): Start (Count: ${tokenValue})`, ref);
 
-        const result: number[] = [];
         const workers = new Workers();
-        const data = new Array<string>(Math.floor(tokenValue));
-        data.fill(uuid);
-        const dataChunks = PolicyUtils.splitChunk(data, 10);
-        const tasks = PolicyUtils.splitChunk(
-            dataChunks,
-            MintService.BATCH_NFT_MINT_SIZE
+        const dataChunks = PolicyUtils.splitChunk(Array(tokenValue).fill(uuid), 10);
+        const tasks = PolicyUtils.splitChunk(dataChunks, MintService.BATCH_NFT_MINT_SIZE);
+
+        const results = await Promise.allSettled(
+          tasks.flatMap(dataChunk =>
+            dataChunk.map(mintAndTransferNFT)
+          )
         );
-        for (let i = 0; i < tasks.length; i++) {
-            const dataChunk = tasks[i];
-            MintService.log(
-                `Mint(${mintId}): Minting and transferring (Chunk: ${i * MintService.BATCH_NFT_MINT_SIZE + 1
-                }/${tasks.length * MintService.BATCH_NFT_MINT_SIZE})`,
-                ref
-            );
-            try {
-                const results = await Promise.all(dataChunk.map(mintAndTransferNFT));
-                for (const serials of results) {
-                    if (serials) {
-                        for (const n of serials) {
-                            result.push(n);
-                        }
-                    }
-                }
-            } catch (error) {
-                MintService.error(
-                    `Mint(${mintId}): Error (${PolicyUtils.getErrorMessage(
-                        error
-                    )})`,
-                    ref
-                );
-                throw error;
-            }
+
+        const failedTokens = results.filter(({ status }) => status === 'rejected');
+
+        if (failedTokens.length > 0) {
+            const errorMessages = failedTokens.map(({ reason }: PromiseResult) => PolicyUtils.getErrorMessage(reason));
+            const errorMessage = `Mint(${mintId}): Error: ${errorMessages.join('; ')}`;
+            MintService.error(errorMessage, ref);
+            throw new Error(errorMessage);
         }
 
-        MintService.log(
-            `Mint(${mintId}): Minted (Count: ${Math.floor(tokenValue)})`,
-            ref
-        );
-        MintService.log(
-            `Mint(${mintId}): Transferred ${token.treasuryId} -> ${targetAccount} `,
-            ref
-        );
+        const result: number[] = results
+          .filter(({ status }: PromiseResult) => status === 'fulfilled')
+          .flatMap(({ value }: PromiseResult) => value);
+
+        MintService.log(`Mint(${mintId}): Minted (Count: ${Math.floor(tokenValue)})`, ref);
+        MintService.log(`Mint(${mintId}): Transferred ${token.treasuryId} -> ${targetAccount}`, ref);
         MintService.log(`Mint(${mintId}): End`, ref);
 
         return result;
