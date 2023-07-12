@@ -101,3 +101,7 @@ To run a UI test for specific policy you can open Cypress dashboard by running t
 `npx cypress open`
 
 and then select test under ui-tests/specs/policies 
+
+## Report 
+
+After launching the tests a folder `cypress/reports` will be generated in which you can find the `index.html` file, after opening it in the browser, you can see the details of the launch of the tests.
