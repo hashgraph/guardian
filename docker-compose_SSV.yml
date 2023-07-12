@@ -96,8 +96,10 @@ services:
       context: .
       dockerfile: ./worker-service/Dockerfile
     depends_on:
-      - ipfs-node
-      - auth-service
+      ipfs-node:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
     environment:
       - GUARDIAN_ENV=${GUARDIAN_ENV}
       - SERVICE_CHANNEL=${WORKER_1_SERVICE_CHANNEL}
@@ -109,8 +111,10 @@ services:
       context: .
       dockerfile: ./worker-service/Dockerfile
     depends_on:
-      - ipfs-node
-      - auth-service
+      ipfs-node:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
     environment:
       - GUARDIAN_ENV=${GUARDIAN_ENV}
       - SERVICE_CHANNEL=${WORKER_2_SERVICE_CHANNEL}
