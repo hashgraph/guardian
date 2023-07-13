@@ -10,7 +10,7 @@ form {
     /* box-shadow: 0px 2px 4px -1px rgb(0 0 0 / 20%), 0px 4px 5px 0px rgb(0 0 0 / 14%), 0px 1px 10px 0px rgb(0 0 0 / 12%); */
 
     width: 646px;
-    height: 367px;
+    height: 400px;
     border-radius: 30px;
     background-color: rgba(255, 255, 255, 0.55);
     /*backdrop-filter: blur(2px);*/
@@ -96,7 +96,7 @@ form ::ng-deep .mat-raised-button.mat-button-disabled.mat-button-disabled {
     display: flex;
     align-items: center;
     position: relative;
-    top: 33px;
+    top: 20px;
 }
 
 .create-link mat-icon {
@@ -114,6 +114,19 @@ form ::ng-deep .mat-raised-button.mat-button-disabled.mat-button-disabled {
     margin: 15px 0 10px 15px;
     position: absolute;
     cursor: pointer;
+}
+
+.meeco-button {
+    background-color: #fafafa85;
+    border: 1px solid rgba(0, 0, 0, 0.7);
+    box-shadow: none;
+    color: rgba(0, 0, 0, 0.7);
+    margin-top: 10px;
+}
+
+.login__footer {
+    display: flex;
+    flex-direction: column;
 }
 
 @media (max-width: 810px) {

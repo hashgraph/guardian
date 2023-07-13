@@ -1,0 +1,4 @@
+<div class="qr-code-dialog">
+  <mat-icon class="qr-code-dialog__close" (click)="onCloseClick()">close</mat-icon>
+  <qrcode [qrdata]="qrCodeData" [width]="qrCodeSize" [errorCorrectionLevel]="'L'"></qrcode>
+</div>

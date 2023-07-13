@@ -28,6 +28,11 @@ export class WebSocketService {
     private createProgress: Subject<any>;
     private updateProgress: Subject<any>;
     private deleteProgress: Subject<any>;
+    private meecoPresentVPSubject: Subject<any> = new Subject();
+    private meecoVerifyVPSubject: Subject<any> = new Subject();
+    private meecoVerifyVPFailedSubject: Subject<any> = new Subject();
+    private meecoApproveVCSubject: Subject<any> = new Subject();
+    private meecoRejectVCSubject: Subject<any> = new Subject();
     private serviesStates: any = [];
     private sendingEvent: boolean;
 
@@ -236,6 +241,26 @@ export class WebSocketService {
                 case NotifyAPI.DELETE_PROGRESS_WS:
                     this.deleteProgress.next(event.data);
                     break;
+                case 'MEECO_AUTH_PRESENT_VP': {
+                    this.meecoPresentVPSubject.next(event.data);
+                    break;
+                }
+                case 'MEECO_VERIFY_VP': {
+                    this.meecoVerifyVPSubject.next(event.data);
+                    break;
+                }
+                case 'MEECO_VERIFY_VP_FAILED': {
+                    this.meecoVerifyVPFailedSubject.next(event.data);
+                    break;
+                }
+                case 'MEECO_APPROVE_SUBMISSION_RESPONSE': {
+                    this.meecoApproveVCSubject.next(event.data);
+                    break;
+                }
+                case 'MEECO_REJECT_SUBMISSION_RESPONSE': {
+                    this.meecoRejectVCSubject.next(event.data);
+                    break;
+                }
                 default:
                     break;
             }
@@ -350,6 +375,44 @@ export class WebSocketService {
         complete?: () => void
     ) {
         return this.deleteProgress.subscribe(next, error, complete);
+    public meecoPresentVPSubscribe(
+        next?: ((event: { type: string, data: any }) => void),
+        error?: ((error: any) => void),
+        complete?: (() => void)
+    ): Subscription {
+        return this.meecoPresentVPSubject.subscribe(next, error, complete);
+    }
+
+    public meecoVerifyVPSubscribe(
+        next?: ((event: { type: string, data: any }) => void),
+        error?: ((error: any) => void),
+        complete?: (() => void)
+    ): Subscription {
+        return this.meecoVerifyVPSubject.subscribe(next, error, complete);
+    }
+
+    public meecoVerifyVPFailedSubscribe(
+        next?: ((event: { type: string, data: any }) => void),
+        error?: ((error: any) => void),
+        complete?: (() => void)
+    ): Subscription {
+        return this.meecoVerifyVPFailedSubject.subscribe(next, error, complete);
+    }
+
+    public meecoApproveVCSubscribe(
+        next?: ((event: { type: string, data: any }) => void),
+        error?: ((error: any) => void),
+        complete?: (() => void)
+    ): Subscription {
+        return this.meecoApproveVCSubject.subscribe(next, error, complete);
+    }
+
+    public meecoRejectVCSubscribe(
+        next?: ((event: { type: string, data: any }) => void),
+        error?: ((error: any) => void),
+        complete?: (() => void)
+    ): Subscription {
+        return this.meecoRejectVCSubject.subscribe(next, error, complete);
     }
 
     public login() {
@@ -364,8 +427,8 @@ export class WebSocketService {
         this.send('UPDATE_PROFILE', this.auth.getAccessToken());
     }
 
-    public sendMessage(type: string, data: any = null) {
-        this.send(type, data);
+    public meecoLogin(): void {
+        this.send('MEECO_AUTH_REQUEST', null);
     }
 
     private updateStatus(serviceStatus: any) {
