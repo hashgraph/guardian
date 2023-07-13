@@ -82,6 +82,8 @@ import {
     BLOCK_TYPE_TIPS_VALUE,
 } from './injectors/block-type-tips.injector';
 import { SuggestionsService } from './services/suggestions.service';
+import { QrCodeDialogComponent } from './components/qr-code-dialog/qr-code-dialog.component';
+import { QRCodeModule } from 'angularx-qrcode';
 
 @NgModule({
     declarations: [
@@ -111,6 +113,7 @@ import { SuggestionsService } from './services/suggestions.service';
         BrandingDialogComponent,
         SuggestionsConfigurationComponent,
         StandardRegistryCardComponent,
+        QrCodeDialogComponent,
     ],
     imports: [
         BrowserModule,
@@ -127,6 +130,7 @@ import { SuggestionsService } from './services/suggestions.service';
         CompareModule,
         ToastrModule.forRoot(),
         HttpClientJsonpModule,
+        QRCodeModule,
     ],
     exports: [],
     providers: [

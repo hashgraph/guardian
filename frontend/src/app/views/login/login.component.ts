@@ -6,6 +6,9 @@ import { UserRole } from '@guardian/interfaces';
 import { AuthStateService } from 'src/app/services/auth-state.service';
 import { Subscription } from 'rxjs';
 import { noWhitespaceValidator } from 'src/app/validators/no-whitespace-validator';
+import { WebSocketService } from 'src/app/services/web-socket.service';
+import { MatDialog } from '@angular/material/dialog';
+import { QrCodeDialogComponent } from 'src/app/components/qr-code-dialog/qr-code-dialog.component';
 
 /**
  * Login page.
@@ -19,7 +22,6 @@ export class LoginComponent implements OnInit, OnDestroy {
     loading: boolean = false;
     errorMessage: string = "";
     passFieldType: 'password' | 'text' = 'password';
-
     loginForm = new FormGroup({
         login: new FormControl('', [Validators.required, noWhitespaceValidator()]),
         password: new FormControl('', [Validators.required, noWhitespaceValidator()]),
@@ -30,7 +32,9 @@ export class LoginComponent implements OnInit, OnDestroy {
     constructor(
         private authState: AuthStateService,
         private auth: AuthService,
-        private router: Router) {}
+        private router: Router,
+        private wsService: WebSocketService,
+        private dialog: MatDialog) {}
 
     ngOnInit() {
         this.loading = false;
@@ -40,6 +44,16 @@ export class LoginComponent implements OnInit, OnDestroy {
             this.authState.login
                 .subscribe((credentials) => this.login(credentials.login, credentials.password))
         );
+
+        this.wsService.meecoPresentVPSubscribe((event) => {
+            this.dialog.open(QrCodeDialogComponent, {
+                panelClass: 'g-dialog',
+                disableClose: true,
+                data: {
+                    qrCodeData: event.data.redirectUri,
+                }
+            });
+        });
     }
 
     ngOnDestroy(): void {
@@ -52,6 +66,10 @@ export class LoginComponent implements OnInit, OnDestroy {
             const d = this.loginForm.value;
             this.login(d.login, d.password);
         }
+    }
+
+    onMeecoLogin(): void {
+        this.wsService.meecoLogin();
     }
 
     login(login: string, password: string) {
