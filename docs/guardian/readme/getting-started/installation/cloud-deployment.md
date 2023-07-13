@@ -47,6 +47,38 @@ Once you have your cluster up and running, you can start deploying the different
 
 For this guide we've divided the different manifests into several folders, which name is prefixed by a number, this is to indicate the order in which they should be deployed. The reason for this is that some of the components depend on others, so we need to deploy them in the right order to avoid errors and to ease service discovery.
 
+### Deploying the manifests
+
+To deploy the manifests, you can use the Rancher web interface, or you can use the `kubectl` command line tool. For this guide we're going to use the command line tool. The reason to use the command line tool is because it allows to deploy an entire folder with a single command, but you can use the web interface if you prefer. Simply click on the `import yaml` button on the right of header bar on rancher ui for each file.
+
+To deploy the manifests, you need first to download the kubeconfig credentials file (find the :page_facing_up: icon on rancher header), modify the file according to your needs (or delete the ones you don't plan to use), and then run these commands:
+
+```bash
+kubectl --kubeconfig ./kubeconfig.yaml apply -f ./k8s-manifests/1-config/
+kubectl --kubeconfig ./kubeconfig.yaml apply -f ./k8s-manifests/2-service/
+kubectl --kubeconfig ./kubeconfig.yaml apply -f ./k8s-manifests/3-controller/
+```
+
+> **_NOTE:_** if you plan to use a namespace different than default one, you need to add the `--namespace <namespace>` flag to the commands above. And create the namespace before running the commands.
+
+### Manifests folder structure
+
+#### 1-config
+
+This folder contains configuration manifests that are required for the rest of the components to work. You can find more details about the configuration in the relevant section fo the documentation, but for the demonstration of this document, the only important file is `0-general-config.yaml`, which contains the configuration for the different services. You can edit this file to change the configuration of the services. The rest of the files are related to the specific settings each individual service can override, based on the multi-environment feature.
+
+#### 2-service
+
+This folder contains the manifests for the different services that needs to be created in the cluster. Not all of them are exposed to the outside world, and some of them are only used internally by other services. The most relevant one here I would say is the `web-proxy-tcp-service.yaml`, which additional spawns a load balancer outside of the cluster.
+
+#### 3-controller
+
+This folder contains the manifests for the different controllers that needs to be created in the cluster. These controllers are used to manage the lifecycle of the different services, and to ensure they are always running and healthy.
+
+> **_NOTE:_** this is the folder you need to pay attention if you want to deploy service versions different than the latest one.
+
+## Types of services (comming soon)
+
 ### External (third-party services)
 
 These are third party services that are not part of the Guardian platform, but are required for some of the Guardian components to work. You can choose to deploy them inside the cluster or use managed services outside of the cluster. For heavy workloads, the recommendation would be to use external dedicated services. We'll cover their basic setup, but to see all the details about installation and configuration, please refer to the official documentation of each service.
