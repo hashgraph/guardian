@@ -1,0 +1,24 @@
+apiVersion: v1
+data:
+  .env.gateway: |
+    # Gateway Service Specialized Variables
+    SERVICE_CHANNEL="api-gateway"
+    DIRECT_MESSAGE_PORT="6555"
+
+    # Ecosystem Defined Variables
+    HEDERA_NET="testnet"
+    PREUSED_HEDERA_NET="testnet"
+    ACCESS_TOKEN_SECRET="youraccesstokensecret"
+    MQ_ADDRESS="localhost"
+    MRV_ADDRESS="http://localhost:3003/mrv"
+    MQ_MAX_PAYLOAD="1048576"
+    #LOG_LEVEL="2"
+    #MQ_MESSAGE_CHUNK=5000000
+    #RAW_REQUEST_LIMIT="1gb"
+    #JSON_REQUEST_LIMIT="1mb"
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: api-gateway
+  name: api-gateway

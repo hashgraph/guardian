@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: application-events
+  name: application-events
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      io.kompose.service: application-events
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.version: 1.28.0 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/guardian-default: "true"
+        io.kompose.service: application-events
+    spec:
+      containers:
+        - image: gcr.io/hedera-registry/application-events
+          name: application-events
+          ports:
+            - containerPort: 3012
+          resources: {}
+      restartPolicy: Always
+status: {}

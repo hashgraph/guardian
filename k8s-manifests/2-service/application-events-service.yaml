@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: application-events
+  name: application-events
+spec:
+  ports:
+    - name: "3012"
+      port: 3012
+      targetPort: 3012
+  selector:
+    io.kompose.service: application-events
+status:
+  loadBalancer: {}

@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: mongo-express
+  name: mongo-express
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      io.kompose.service: mongo-express
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        
+        kompose.version: 1.28.0 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/guardian-default: "true"
+        io.kompose.service: mongo-express
+    spec:
+      containers:
+        - env:
+            - name: ME_CONFIG_MONGODB_PORT
+              value: "27017"
+            - name: ME_CONFIG_MONGODB_SERVER
+              value: mongo
+            - name: ME_CONFIG_SITE_BASEURL
+              value: /mongo-admin
+          image: mongo-express:1.0.0-alpha.4
+          name: mongo-express
+          ports:
+            - containerPort: 8081
+          resources: {}
+      restartPolicy: Always
+status: {}

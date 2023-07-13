@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: mrv-sender
+  name: mrv-sender
+spec:
+  ports:
+    - name: "3003"
+      port: 3003
+      targetPort: 3003
+    - name: "5008"
+      port: 5008
+      targetPort: 5008
+  selector:
+    io.kompose.service: mrv-sender
+status:
+  loadBalancer: {}

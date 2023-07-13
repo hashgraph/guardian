@@ -1,0 +1,257 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: api-gateway
+  name: api-gateway
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      io.kompose.service: api-gateway
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        
+        kompose.version: 1.28.0 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/guardian-default: "true"
+        io.kompose.service: api-gateway
+    spec:
+      containers:
+        - env:
+            - name: ACCESS_TOKEN_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  key: ACCESS_TOKEN_SECRET
+                  name: general-configs
+            - name: AWS_REGION
+              valueFrom:
+                configMapKeyRef:
+                  key: AWS_REGION
+                  name: general-configs
+            - name: AZURE_VAULT_NAME
+              valueFrom:
+                configMapKeyRef:
+                  key: AZURE_VAULT_NAME
+                  name: general-configs
+            - name: OVERRIDE
+              valueFrom:
+                configMapKeyRef:
+                  key: OVERRIDE
+                  name: general-configs
+            - name: CONTRACT_FILE_ID
+              valueFrom:
+                configMapKeyRef:
+                  key: CONTRACT_FILE_ID
+                  name: general-configs
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_HOST
+                  name: general-configs
+            - name: GUARDIAN_ENV
+              valueFrom:
+                configMapKeyRef:
+                  key: GUARDIAN_ENV
+                  name: general-configs
+            - name: HASHICORP_ADDRESS
+              valueFrom:
+                configMapKeyRef:
+                  key: HASHICORP_ADDRESS
+                  name: general-configs
+            - name: HASHICORP_ENCRIPTION_ALG
+              valueFrom:
+                configMapKeyRef:
+                  key: HASHICORP_ENCRIPTION_ALG
+                  name: general-configs
+            - name: HASHICORP_NAMESPACE
+              valueFrom:
+                configMapKeyRef:
+                  key: HASHICORP_NAMESPACE
+                  name: general-configs
+            - name: HASHICORP_TOKEN
+              valueFrom:
+                configMapKeyRef:
+                  key: HASHICORP_TOKEN
+                  name: general-configs
+            - name: HEDERA_NET
+              valueFrom:
+                configMapKeyRef:
+                  key: HEDERA_NET
+                  name: general-configs
+            - name: INITIALIZATION_TOPIC_ID
+              valueFrom:
+                configMapKeyRef:
+                  key: INITIALIZATION_TOPIC_ID
+                  name: general-configs
+            - name: INITIAL_BALANCE
+              valueFrom:
+                configMapKeyRef:
+                  key: INITIAL_BALANCE
+                  name: general-configs
+            - name: INITIAL_STANDARD_REGISTRY_BALANCE
+              valueFrom:
+                configMapKeyRef:
+                  key: INITIAL_STANDARD_REGISTRY_BALANCE
+                  name: general-configs
+            - name: IPFS_NODE_ADDRESS
+              valueFrom:
+                configMapKeyRef:
+                  key: IPFS_NODE_ADDRESS
+                  name: general-configs
+            - name: IPFS_PROVIDER
+              valueFrom:
+                configMapKeyRef:
+                  key: IPFS_PROVIDER
+                  name: general-configs
+            - name: IPFS_PUBLIC_GATEWAY
+              valueFrom:
+                configMapKeyRef:
+                  key: IPFS_PUBLIC_GATEWAY
+                  name: general-configs
+            - name: IPFS_STORAGE_API_KEY
+              valueFrom:
+                configMapKeyRef:
+                  key: IPFS_STORAGE_API_KEY
+                  name: general-configs
+            - name: IPFS_TIMEOUT
+              valueFrom:
+                configMapKeyRef:
+                  key: IPFS_TIMEOUT
+                  name: general-configs
+            - name: MAX_HEDERA_TIMEOUT
+              valueFrom:
+                configMapKeyRef:
+                  key: MAX_HEDERA_TIMEOUT
+                  name: general-configs
+            - name: MAX_PRIORITY
+              valueFrom:
+                configMapKeyRef:
+                  key: MAX_PRIORITY
+                  name: general-configs
+            - name: MESSAGE_LANG
+              valueFrom:
+                configMapKeyRef:
+                  key: MESSAGE_LANG
+                  name: general-configs
+            - name: MIN_PRIORITY
+              valueFrom:
+                configMapKeyRef:
+                  key: MIN_PRIORITY
+                  name: general-configs
+            - name: MQ_ADDRESS
+              valueFrom:
+                configMapKeyRef:
+                  key: MQ_ADDRESS
+                  name: general-configs
+            - name: MQ_MAX_PAYLOAD
+              valueFrom:
+                configMapKeyRef:
+                  key: MQ_MAX_PAYLOAD
+                  name: general-configs
+            - name: MRV_ADDRESS
+              valueFrom:
+                configMapKeyRef:
+                  key: MRV_ADDRESS
+                  name: general-configs
+            - name: MULTI_POLICY_SCHEDULER
+              valueFrom:
+                configMapKeyRef:
+                  key: MULTI_POLICY_SCHEDULER
+                  name: general-configs
+            - name: OPERATOR_ID
+              valueFrom:
+                configMapKeyRef:
+                  key: OPERATOR_ID
+                  name: general-configs
+            - name: OPERATOR_KEY
+              valueFrom:
+                configMapKeyRef:
+                  key: OPERATOR_KEY
+                  name: general-configs
+            - name: PREUSED_HEDERA_NET
+              valueFrom:
+                configMapKeyRef:
+                  key: PREUSED_HEDERA_NET
+                  name: general-configs
+            - name: REFRESH_INTERVAL
+              valueFrom:
+                configMapKeyRef:
+                  key: REFRESH_INTERVAL
+                  name: general-configs
+            - name: SECRET_MANAGER
+              valueFrom:
+                configMapKeyRef:
+                  key: SECRET_MANAGER
+                  name: general-configs
+            - name: SEND_KEYS_TO_VAULT
+              valueFrom:
+                configMapKeyRef:
+                  key: SEND_KEYS_TO_VAULT
+                  name: general-configs
+            - name: TASK_TIMEOUT
+              valueFrom:
+                configMapKeyRef:
+                  key: TASK_TIMEOUT
+                  name: general-configs
+            - name: TRANSACTION_LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  key: TRANSACTION_LOG_LEVEL
+                  name: general-configs
+            - name: VAULT_ADDRESS
+              valueFrom:
+                configMapKeyRef:
+                  key: VAULT_ADDRESS
+                  name: general-configs
+            - name: VAULT_API_VERSION
+              valueFrom:
+                configMapKeyRef:
+                  key: VAULT_API_VERSION
+                  name: general-configs
+            - name: VAULT_CA_CERT
+              valueFrom:
+                configMapKeyRef:
+                  key: VAULT_CA_CERT
+                  name: general-configs
+            - name: VAULT_CLIENT_CERT
+              valueFrom:
+                configMapKeyRef:
+                  key: VAULT_CLIENT_CERT
+                  name: general-configs
+            - name: VAULT_CLIENT_KEY
+              valueFrom:
+                configMapKeyRef:
+                  key: VAULT_CLIENT_KEY
+                  name: general-configs
+            - name: VAULT_PROVIDER
+              valueFrom:
+                configMapKeyRef:
+                  key: VAULT_PROVIDER
+                  name: general-configs
+          image: gcr.io/hedera-registry/api-gateway
+          name: api-gateway
+          ports:
+            - containerPort: 3002
+            - containerPort: 6555
+          resources: {}
+          volumeMounts:
+            - mountPath: /usr/local/api-gateway/configs/.env.gateway
+              name: api-gateway
+              subPath: .env
+      restartPolicy: Always
+      volumes:
+        - configMap:
+            items:
+              - key: .env.gateway
+                path: .env
+            name: api-gateway
+          name: api-gateway
+status: {}

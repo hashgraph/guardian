@@ -1,0 +1,21 @@
+apiVersion: v1
+data:
+  .env.logger: |
+    # Logger Service Specialized Variables
+    SERVICE_CHANNEL="logger-service"
+    DB_DATABASE="logger_db"
+
+    # Ecosystem Defined Variables
+    HEDERA_NET="testnet"
+    PREUSED_HEDERA_NET="testnet"
+    ACCESS_TOKEN_SECRET="youraccesstokensecret"
+    MQ_ADDRESS="localhost"
+    DB_HOST="localhost"
+    MQ_MAX_PAYLOAD="1048576"
+    #MQ_MESSAGE_CHUNK=5000000
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: logger-service
+  name: logger-service

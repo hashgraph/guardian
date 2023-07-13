@@ -1,0 +1,9 @@
+apiVersion: v1
+data:
+  .env.guardian: "# Guardian Service Specialized Variables\nSERVICE_CHANNEL=\"guardian.1\"\nDB_DATABASE=\"guardian_db\"\nDIRECT_MESSAGE_PORT=\"6556\"\n# Vault \nVAULT_APPROLE_ROLE_ID=\nVAULT_APPROLE_SECRET_ID=\n\n# Ecosystem Defined Variables\nHEDERA_NET=\"testnet\"\nPREUSED_HEDERA_NET=\"testnet\"\nACCESS_TOKEN_SECRET=\"youraccesstokensecret\"\nMQ_ADDRESS=\"localhost\"\nDB_HOST=\"localhost\"\nINITIAL_BALANCE=\"100\"\nINITIAL_STANDARD_REGISTRY_BALANCE=\"100\"\n\n# TESTNET\nOPERATOR_ID=\"...\"\nOPERATOR_KEY=\"...\"\nINITIALIZATION_TOPIC_ID=\"0.0.2030\"\n\nMESSAGE_LANG=\"en-US\"\nTRANSACTION_LOG_LEVEL=\"1\"\nSEND_KEYS_TO_VAULT=\"TRUE\"\nMULTI_POLICY_SCHEDULER=\"0 0 * * *\"\nCONTRACT_FILE_ID=\"0.0.6276\"\nBBS_SIGNATURES_MODE=\"WASM\"\nMQ_MAX_PAYLOAD=\"1048576\"\n#LOG_LEVEL=\"2\"\n#MQ_MESSAGE_CHUNK=5000000\n#HEDERA_CUSTOM_NODES={\"0.testnet.hedera.com:50211\":\"0.0.3\"}\n#HEDERA_CUSTOM_MIRROR_NODES=[\"testnet.mirrornode.hedera.com:443\"]\n\n#MAP_API_KEY=\"...\"\n#DOCUMENT_CACHE_FIELD_LIMIT=100\n#BATCH_NFT_MINT_SIZE=10\n\n# Secret Manager Configs\nSECRET_MANAGER=\"\"\n# Vault\nVAULT_API_VERSION=v1\nVAULT_ADDRESS=https://localhost:8200\nVAULT_CA_CERT=tls/vault/client/ca.crt\nVAULT_CLIENT_CERT=tls/vault/client/tls.crt\nVAULT_CLIENT_KEY=tls/vault/client/tls.key\n\n # AWS Secret Manager Configs\nAWS_REGION=eu-central-1\n\n# Azure Key Vault Configs\nAZURE_VAULT_NAME=guardianVaul\nVAULT_PROVIDER=\"database\"\n# IMPORT_KEYS_FROM_DB=1\n# HASHICORP_UNSEAL_KEY=\"\"\nHASHICORP_TOKEN=\"1234\"\nHASHICORP_ADDRESS=\"http://localhost:8200\"\nHASHICORP_NAMESPACE=\"admin\"\nHASHICORP_ENCRIPTION_ALG=\"sha512\"\n"
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: guardian-service
+  name: guardian-service

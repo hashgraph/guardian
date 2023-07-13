@@ -1,0 +1,57 @@
+apiVersion: v1
+data:
+  .env.policy: |
+    # Guardian Service Specialized Variables
+    SERVICE_CHANNEL="policy-service"
+    DB_DATABASE="guardian_db"
+    DIRECT_MESSAGE_PORT="" # leave it empty for random port
+    # vault
+    VAULT_APPROLE_ROLE_ID=
+    VAULT_APPROLE_SECRET_ID=
+
+    # Ecosystem Defined Variables
+    HEDERA_NET="testnet"
+    PREUSED_HEDERA_NET="testnet"
+    ACCESS_TOKEN_SECRET="youraccesstokensecret"
+    MQ_ADDRESS="localhost"
+    DB_HOST="localhost"
+    MESSAGE_LANG="en-US"
+    BBS_SIGNATURES_MODE="WASM"
+    MQ_MAX_PAYLOAD="1048576"
+    MULTI_POLICY_SCHEDULER="0 0 * * *"
+    EXTERNAL_DOCUMENTS_SCHEDULER="0 0 * * *"
+    #LOG_LEVEL="2"
+    #HEDERA_CUSTOM_NODES={"0.testnet.hedera.com:50211":"0.0.3"}
+    #HEDERA_CUSTOM_MIRROR_NODES=["testnet.mirrornode.hedera.com:443"]
+    #MQ_MESSAGE_CHUNK=5000000
+    #DOCUMENT_CACHE_FIELD_LIMIT=100
+    #BATCH_NFT_MINT_SIZE=10
+
+    # Secret Manager Configs
+    SECRET_MANAGER=""
+    # Vault
+    VAULT_API_VERSION=v1
+    VAULT_ADDRESS=https://localhost:8200
+    VAULT_CA_CERT=tls/vault/client/ca.crt
+    VAULT_CLIENT_CERT=tls/vault/client/tls.crt
+    VAULT_CLIENT_KEY=tls/vault/client/tls.key
+
+     # AWS Secret Manager Configs
+    AWS_REGION=eu-central-1
+
+    # Azure Key Vault Configs
+    AZURE_VAULT_NAME=guardianVault
+
+    VAULT_PROVIDER="database"
+    # IMPORT_KEYS_FROM_DB=1
+    # HASHICORP_UNSEAL_KEY=""
+    HASHICORP_TOKEN="1234"
+    HASHICORP_ADDRESS="http://localhost:8200"
+    HASHICORP_NAMESPACE="admin"
+    HASHICORP_ENCRIPTION_ALG="sha512"
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: policy-service
+  name: policy-service

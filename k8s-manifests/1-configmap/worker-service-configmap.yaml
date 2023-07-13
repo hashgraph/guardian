@@ -1,0 +1,59 @@
+apiVersion: v1
+data:
+  .env.worker: |
+    # Guardian Service Specialized Variables
+    #DIRECT_MESSAGE_PORT="6557"
+    # Vault
+    VAULT_APPROLE_ROLE_ID=
+    VAULT_APPROLE_SECRET_ID=
+
+    # Ecosystem Defined Variables
+    SERVICE_CHANNEL="worker.1" # assigned at orkestrator level
+    HEDERA_NET="testnet"
+    PREUSED_HEDERA_NET="testnet"
+    ACCESS_TOKEN_SECRET="youraccesstokensecret"
+    MQ_ADDRESS="localhost"
+    MIN_PRIORITY="0"
+    MAX_PRIORITY="20"
+    TASK_TIMEOUT="300"
+    REFRESH_INTERVAL="60"
+    IPFS_TIMEOUT="720"
+    IPFS_PROVIDER="web3storage" # 'web3storage' or 'local'
+    IPFS_PUBLIC_GATEWAY='https://ipfs.io/ipfs/${cid}'
+    IPFS_STORAGE_API_KEY="..."
+    IPFS_NODE_ADDRESS="http://localhost:5002"
+    MAX_HEDERA_TIMEOUT="600"
+    MQ_MAX_PAYLOAD="1048576"
+    #LOG_LEVEL="2"
+    #MAX_TRANSACTION_FEE="10"
+    #HEDERA_MAX_CHUNKS="20"
+    #MQ_MESSAGE_CHUNK=5000000
+
+    # Secret Manager Configs
+    SECRET_MANAGER=""
+    # Vault
+    VAULT_API_VERSION=v1
+    VAULT_ADDRESS=https://localhost:8200
+    VAULT_CA_CERT=tls/vault/client/ca.crt
+    VAULT_CLIENT_CERT=tls/vault/client/tls.crt
+    VAULT_CLIENT_KEY=tls/vault/client/tls.key
+
+    # AWS Secret Manager Configs
+    AWS_REGION=eu-central-1
+
+    # Azure Key Vault Configs
+    AZURE_VAULT_NAME=guardianVault
+
+    VAULT_PROVIDER="database"
+    # IMPORT_KEYS_FROM_DB=1
+    # HASHICORP_UNSEAL_KEY=""
+    HASHICORP_TOKEN="1234"
+    HASHICORP_ADDRESS="http://localhost:8200"
+    HASHICORP_NAMESPACE="admin"
+    HASHICORP_ENCRIPTION_ALG="sha512"
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: worker-service-1
+  name: worker-service

@@ -1,0 +1,9 @@
+apiVersion: v1
+data:
+  .env.auth: "# Auth Service Specialized Variables\nSERVICE_CHANNEL=\"auth-service\"\nDB_DATABASE=\"auth_db\"\nDIRECT_MESSAGE_PORT=\"6553\"\n# Vault \nVAULT_APPROLE_ROLE_ID=\nVAULT_APPROLE_SECRET_ID=\n\n# Ecosystem Defined Variables\nHEDERA_NET=\"testnet\"\nPREUSED_HEDERA_NET=\"testnet\"\nACCESS_TOKEN_SECRET=\"youraccesstokensecret\"\nMQ_ADDRESS=\"localhost\"\nDB_HOST=\"localhost\"\n\nMQ_MAX_PAYLOAD=\"1048576\"\n#LOG_LEVEL=\"2\"\n#MQ_MESSAGE_CHUNK=5000000\n\n# Secret Manager Configs\nSECRET_MANAGER=\"\"\n# Vault\nVAULT_API_VERSION=v1\nVAULT_ADDRESS=https://localhost:8200\nVAULT_CA_CERT=tls/vault/client/ca.crt\nVAULT_CLIENT_CERT=tls/vault/client/tls.crt\nVAULT_CLIENT_KEY=tls/vault/client/tls.key\n\n# AWS Secret Manager Configs\nAWS_REGION=eu-central-1\n\n# Azure Key Vault Configs\nAZURE_VAULT_NAME=guardianVault\n\nVAULT_PROVIDER=\"database\"\n# IMPORT_KEYS_FROM_DB=1\n# HASHICORP_UNSEAL_KEY=\"\"\nHASHICORP_TOKEN=\"1234\"\nHASHICORP_ADDRESS=\"http://localhost:8200\"\nHASHICORP_NAMESPACE=\"admin\"\nHASHICORP_ENCRIPTION_ALG=\"sha512\"\n"
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: auth-service
+  name: auth-service

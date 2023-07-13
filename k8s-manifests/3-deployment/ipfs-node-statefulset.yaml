@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  annotations:
+    kompose.controller.type: statefulset
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: ipfs-node
+  name: ipfs-node
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      io.kompose.service: ipfs-node
+  serviceName: ipfs-node
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.network/guardian-default: "true"
+        io.kompose.service: ipfs-node
+    spec:
+      containers:
+        - image: ipfs/kubo:v0.18.1
+          name: ipfs-node
+          ports:
+            - containerPort: 5001
+            - containerPort: 5002
+            - containerPort: 4001
+            - containerPort: 4002
+            - containerPort: 8080
+            - containerPort: 8081
+          resources: {}
+      restartPolicy: Always
+  updateStrategy: {}
+status:
+  replicas: 0

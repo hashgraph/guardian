@@ -1,0 +1,52 @@
+apiVersion: v1
+data:
+  GUARDIAN_ENV: ""
+  OVERRIDE: "false"
+
+  ACCESS_TOKEN_SECRET: youraccesstokensecret
+  AWS_REGION: eu-central-1
+  AZURE_VAULT_NAME: guardianVault
+  BBS_SIGNATURES_MODE: WASM
+  CONTRACT_FILE_ID: 0.0.6276
+  DB_HOST: mongo
+  HASHICORP_ADDRESS: http://vault:8200
+  HASHICORP_ENCRIPTION_ALG: sha512
+  HASHICORP_NAMESPACE: admin
+  HASHICORP_TOKEN: "1234"
+  HEDERA_NET: testnet
+  INITIAL_BALANCE: "100"
+  INITIAL_STANDARD_REGISTRY_BALANCE: "100"
+  INITIALIZATION_TOPIC_ID: 0.0.2030
+  IPFS_NODE_ADDRESS: http://ipfs-node:5001
+  IPFS_PROVIDER: local
+  IPFS_PUBLIC_GATEWAY: https://ipfs.io/ipfs/${cid}
+  IPFS_STORAGE_API_KEY: '...'
+  IPFS_TIMEOUT: "720"
+  MAX_HEDERA_TIMEOUT: "600"
+  MAX_PRIORITY: "20"
+  MESSAGE_LANG: en-US
+  MIN_PRIORITY: "0"
+  MQ_ADDRESS: message-broker
+  MQ_MAX_PAYLOAD: "1048576"
+  MRV_ADDRESS: http://message-broker:8222/mrv
+  MULTI_POLICY_SCHEDULER: 0 0 * * *
+  OPERATOR_ID: 0.0.3422506
+  OPERATOR_KEY: 302e020100300506032b657004220420dc482a6be929f97dc7811a64506e6b51cba1b83750fb05d05f5208a2161e4bb5
+  PREUSED_HEDERA_NET: testnet
+  REFRESH_INTERVAL: "60"
+  SECRET_MANAGER: ""
+  SEND_KEYS_TO_VAULT: "TRUE"
+  TASK_TIMEOUT: "300"
+  TRANSACTION_LOG_LEVEL: "1"
+  VAULT_ADDRESS: https://vault:8200
+  VAULT_API_VERSION: v1
+  VAULT_CA_CERT: tls/vault/client/ca.crt
+  VAULT_CLIENT_CERT: tls/vault/client/tls.crt
+  VAULT_CLIENT_KEY: tls/vault/client/tls.key
+  VAULT_PROVIDER: database
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: general-configs
+  name: general-configs

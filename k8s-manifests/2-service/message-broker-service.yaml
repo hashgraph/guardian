@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: message-broker
+  name: message-broker
+spec:
+  ports:
+    - name: "8222"
+      port: 8222
+      targetPort: 8222
+    - name: "4222"
+      port: 4222
+      targetPort: 4222
+  selector:
+    io.kompose.service: message-broker
+status:
+  loadBalancer: {}

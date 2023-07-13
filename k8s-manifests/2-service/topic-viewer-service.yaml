@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: topic-viewer
+  name: topic-viewer
+spec:
+  ports:
+    - name: "3006"
+      port: 3006
+      targetPort: 3006
+    - name: "5009"
+      port: 5009
+      targetPort: 5009
+  selector:
+    io.kompose.service: topic-viewer
+status:
+  loadBalancer: {}

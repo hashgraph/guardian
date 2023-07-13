@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.service.expose: "true"
+    kompose.service.type: loadbalancer
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: web-proxy
+  name: web-proxy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      io.kompose.service: web-proxy
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.service.expose: "true"
+        kompose.service.type: loadbalancer
+        kompose.version: 1.28.0 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/guardian-default: "true"
+        io.kompose.service: web-proxy
+    spec:
+      containers:
+        - image: public.ecr.aws/m9c9x5t0/frontend:latest
+          name: web-proxy
+          ports:
+            - containerPort: 80
+          resources: {}
+      restartPolicy: Always
+status: {}

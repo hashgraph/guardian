@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: auth-service
+  name: auth-service
+spec:
+  ports:
+    - name: "5005"
+      port: 5005
+      targetPort: 5005
+    - name: "6555"
+      port: 6555
+      targetPort: 6555
+  selector:
+    io.kompose.service: auth-service
+status:
+  loadBalancer: {}
