@@ -49,7 +49,7 @@ About the steps provided at docs/secrets manager/guardian-vault.md
 The execution of the steps described allow the easy execution of every single services in the same node by his own by the means of PM2. 
 In this case the only environment files used are the ones present in each of the guardian services at \<service\>/configs/.env.\<GUARDIAN_ENV\>.\<service_name\>  (this execution need to mind the common environment variables configuring them manually for each of the service).
 
-When executing by the means of an orchestrator (as docker compose) the environment files used are the Ecosystem environment starting by the ones at path guardian/configs/.env.\<GUARDIAN_ENV\>.guardian.system (containing the common variables) with the integration of single service level variables as usual. 
+When executing by the means of an orchestrator (as docker compose) the environment files used are the Ecosystem environment starting by the ones at path guardian/configs/.env.\<GUARDIAN_ENV\>.guardian.system (containing the common variables) continuing with the integration of single service level variables as usual. 
 
 In this latter case the steps described for [hashicorp](https://github.com/hashgraph/guardian/blob/main/docs/secrets%20manager/guardian-vault.md#hashicorp-vault) are changed as follows:
 
@@ -79,6 +79,8 @@ In this latter case the steps described for [hashicorp](https://github.com/hashg
 
     if not present the variables are inserted only in the 4 services: auth-service, guardian-ervice, policy-service, and worker-service. Their value are populated in the guardian/\<service\>/configs/.env.\<GUARDIAN_ENV\>.\<SERVICE NAME\> files by the script basing on the previously defined GUARDIAN_ENV variable.
 
+    The same script create a set of files in folder guardian/vault/hashicorp/configs/vault/secrets/tokens/<service_name>/.env.secrets this files are kept to allow configuration of other environment
+
 - **Step 8** start Guardian as usual
 
 For Hashicorpp Vault the secret multienvironment naming convetion defined in the Vault by the execution of the script is going to be:
@@ -89,6 +91,16 @@ The script executed at stop 7 produce two kind of policies to manage the case wh
 
 	Policy1: <HEDERA_NET> / <PATH_TO_SECRET>                                       
 	Policy2: <GUARDIAN_ENV> / <HEDERA_NET> / <PATH_TO_SECRET>
+
+- **Adding other new environment :**
+After the first execution of the 8 steps every of the services is configured as Application with the Role needed to access the secrets following the policies configured. 
+To add other environment you need to create new secrets in the Vault per every of the environemt and configure the two variables in every of the right environmet in the guardian/<service_name>/configs/.env.<service_name>.<GUARDIAN_ENV>.
+
+        VAULT_APPROLE_ROLE_ID= 
+        VAULT_APPROLE_SECRET_ID=
+
+    To execute this actions automatically configure the GUARDIAN_ENV variable at folder guardian/vault/hashicorp/.env with the new environment name and run the provided script: guardian/vault/hashicorp/scripts/vault/vault_new_env.sh. The script configure the environemnt file of every of the four service and push the new secrets to the vault server.
+    Now you can stop and start the guardian application: configure the new ecosystem environment per all its files and restart the application.
 
 ## AWS Secret Manager
 
