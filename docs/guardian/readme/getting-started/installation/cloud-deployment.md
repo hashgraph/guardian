@@ -49,9 +49,11 @@ For this guide we've divided the different manifests into several folders, which
 
 ### Deploying the manifests
 
-To deploy the manifests, you can use the Rancher web interface, or you can use the `kubectl` command line tool. For this guide we're going to use the command line tool. The reason to use the command line tool is because it allows to deploy an entire folder with a single command, but you can use the web interface if you prefer. Simply click on the `import yaml` button on the right of header bar on rancher ui for each file.
+To deploy the manifests, you can use the Rancher web interface, or you can use the `kubectl` command line tool. For this guide we're going to use the command line tool. The reason to use the command line tool is because it allows to deploy an entire folder with a single command, but you can use the web interface if you prefer. Simply click on the :outbox_tray:[import yaml] button on the right of header bar on rancher ui for each file.
 
-To deploy the manifests, you need first to download the kubeconfig credentials file (find the :page_facing_up: icon on rancher header), modify the file according to your needs (or delete the ones you don't plan to use), and then run these commands:
+To deploy the manifests, you need first to download the kubeconfig credentials file (find the :page_facing_up:[downlaod kubeconfig] icon on rancher header), modify the file according to your needs (or delete the ones you don't plan to use), and then run these commands:
+
+> **_NOTE:_** before executing these commands is recommended to read below the *manifests folder structure* section for better understanding of what each folder contains.
 
 ```bash
 kubectl --kubeconfig ./kubeconfig.yaml apply -f ./k8s-manifests/1-config/
@@ -71,7 +73,7 @@ This folder contains configuration manifests that are required for the rest of t
 
 The key settings to turn on the multi-environment feature are GUARDIAN_ENV and OVERRIDE. The first one is used to indicate the environment name, and the second one is used to indicate if the service should override the default configuration or not. If the service is not overriding the default configuration, it will use the default one. If the service is overriding the default configuration, it will use the configuration defined in the service manifest.
 
-> **_NOTE:_** when using the multi-environment feature, each service will try to read its config file from a file named `.env.gateway.${GUARDIAN_ENV}`, that file is not included in the manifests, so you'll need to update the corresponding controller manifests and re-deploy it, and deploy before the new configSet. See below a simplified example:
+> **_NOTE:_** when using the multi-environment feature, each service will try to read its config file from a file named `.env.gateway.${GUARDIAN_ENV}`, that file is not mounted in the manifests, so you'll need to update the corresponding controller manifests and re-deploy them, and deploy before the new configSet. See below a simplified example:
 
 ```yaml
 apiVersion: apps/v1
@@ -103,13 +105,15 @@ spec:
 
 #### 2-service
 
-This folder contains the manifests for the different services that needs to be created in the cluster. Not all of them are exposed to the outside world, and some of them are only used internally by other services. The most relevant one here I would say is the `web-proxy-tcp-service.yaml`, which additional spawns a load balancer outside of the cluster.
+This folder contains the manifests for the different services that needs to be created in the cluster. Not all of them are exposed to the outside world, and some of them are only used internally by other services.
+
+> **_NOTE:_** the manifest `web-proxy-ingress.yaml` creates the external routes for the exposed services. Some of them are potentially dangerous if exposed to the internet, for example, `/mongo-admin`, so please make sure you understand the implications of exposing them before doing so and disable the ones you don't need or protect them.
 
 #### 3-controller
 
-This folder contains the manifests for the different controllers that needs to be created in the cluster. These controllers are used to manage the lifecycle of the different services, and to ensure they are always running and healthy.
+This folder contains the manifests for the different controllers that needs to be created in the cluster. These controllers are used to manage the lifecycle of the different services, and to ensure they are always running and healthy. This is the folder you need to pay attention if you want to deploy service versions different than the latest one.
 
-> **_NOTE:_** this is the folder you need to pay attention if you want to deploy service versions different than the latest one.
+> **_NOTE:_** all the manifest modifications described in the whole document can be done also easily in the Rancher UI, navigating to the relevant section and editing the default deployed objects.
 
 ## Types of services (comming soon)
 
