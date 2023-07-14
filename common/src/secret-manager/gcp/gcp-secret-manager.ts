@@ -1,4 +1,4 @@
-import { SecretManagerServiceClient } from '@google-cloud/secret-manager'
+import { SecretManagerServiceClient } from '@google-cloud/secret-manager';
 import { SecretManagerBase } from '../secret-manager-base';
 import { IGcpSecretManagerConfigs } from './gcp-secret-manager-configs';
 
@@ -13,7 +13,7 @@ export class GcpSecretManager implements SecretManagerBase {
    */
   private readonly client: SecretManagerServiceClient;
 
-  private config: IGcpSecretManagerConfigs;
+  private readonly config: IGcpSecretManagerConfigs;
 
   /**
    * The base path for all secrets
@@ -54,12 +54,7 @@ export class GcpSecretManager implements SecretManagerBase {
   public async existsSecrets(path: string): Promise<boolean> {
     try {
       const name = `projects/${this.config.projectId}/secrets/${this.getSecretId(path)}/versions/latest`;
-    
-      const [version] = await this.client.accessSecretVersion({
-        name: name,
-      });  
-      const payload = version.payload.data.toString();
-          
+      await this.client.accessSecretVersion({name});
       return true;
     } catch (ex) {
       if (ex.details.includes('not found')) {
@@ -81,13 +76,11 @@ export class GcpSecretManager implements SecretManagerBase {
   public async getSecrets(path: string): Promise<any> {
     try {
       const name = `projects/${this.config.projectId}/secrets/${this.getSecretId(path)}/versions/latest`;
-    
-      const [version] = await this.client.accessSecretVersion({
-        name: name,
-      });  
+
+      const [version] = await this.client.accessSecretVersion({name});
       const payload = version.payload.data.toString();
-          
-      return payload;
+
+      return JSON.parse(payload);
     } catch (ex) {
       if (ex.details.includes('not found')) {
         return null;
