@@ -105,3 +105,4 @@ Here is the steps to create secrets manager in google cloud platform. It is assu
 
 4. Configure Secret manager by adding Name, Replication policy, Rotation, Expiration, etc according to security policies and click on Create Secret button
 
+__*NOTE*__ According to the tests of read/write operations of secrets to the GCP Secrets manager, each secret R/W operation take around 1 second which is too slow to be used constantly in the Guardian Application. The reason is, Guardian generates lots of wallets and requires tp retrieve them from the Vault in order to sign transactions. The late response from GCP leads to make Guardian functioning too slowly. Consequently, it is not recommended to use GCP for constant R/W of secrets.
