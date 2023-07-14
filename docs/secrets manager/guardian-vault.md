@@ -88,3 +88,20 @@ Guardian is supporting Azure Vault Secrets Manager to handle securely the secret
 3. Configure Networking, Add Tags and create the Vault.
 
 4. Now in the directory of auth-service, guardian-service, policy-service and worker-service set __AZURE_VAULT_NAME__ environment variable by the name chosen as Vault previously.
+
+## GCP Secrets Manager
+
+Google Cloud Platform (GCP) Secrets Manager is a managed service that helps you securely store and manage secrets, such as API keys, database credentials, and other sensitive information. It provides a central repository for storing secrets, with built-in security features and integration with other GCP services. It enables secure storage of secrets, secrets versioning and rotation, integration with other Google Cloud services like Cloud Run, VMs, App Engine, etc, supports Access Control, so on.
+
+Guardian is now suport GCP Secrets Manager to store its secrets. In order to access Gcp Secrets Manager it is required to set the identifier of the project created in google cloud platfer that the GCP Secrets Mnager is supposed to be resided, as  __GCP_PROJECT_ID__ in the .env file in the configs of auth service.
+
+Here is the steps to create secrets manager in google cloud platform. It is assumed that the project has been created in prior.
+
+1. From Google Cloud Platform, navigate to underlying project
+
+2. From the Navigation Menu, select Security and then click on Secret Manager
+
+3. In the Secret Manager page, click on Create Secret
+
+4. Configure Secret manager by adding Name, Replication policy, Rotation, Expiration, etc according to security policies and click on Create Secret button
+
