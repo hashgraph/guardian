@@ -1,10 +1,6 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    
-    kompose.version: 1.28.0 (HEAD)
-  creationTimestamp: null
   labels:
     io.kompose.service: mongo-express
   name: mongo-express
@@ -16,10 +12,6 @@ spec:
   strategy: {}
   template:
     metadata:
-      annotations:
-        
-        kompose.version: 1.28.0 (HEAD)
-      creationTimestamp: null
       labels:
         io.kompose.network/guardian-default: "true"
         io.kompose.service: mongo-express

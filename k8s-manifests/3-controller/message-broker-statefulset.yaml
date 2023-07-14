@@ -3,20 +3,17 @@ kind: StatefulSet
 metadata:
   annotations:
     kompose.controller.type: statefulset
-    kompose.version: 1.28.0 (HEAD)
-  creationTimestamp: null
   labels:
     io.kompose.service: message-broker
   name: message-broker
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       io.kompose.service: message-broker
   serviceName: message-broker
   template:
     metadata:
-      creationTimestamp: null
       labels:
         io.kompose.network/guardian-default: "true"
         io.kompose.service: message-broker

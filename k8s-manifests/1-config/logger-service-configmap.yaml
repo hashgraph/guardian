@@ -15,7 +15,6 @@ data:
     #MQ_MESSAGE_CHUNK=5000000
 kind: ConfigMap
 metadata:
-  creationTimestamp: null
   labels:
     io.kompose.service: logger-service
   name: logger-service

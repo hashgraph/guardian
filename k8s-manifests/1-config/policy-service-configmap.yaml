@@ -51,7 +51,6 @@ data:
     HASHICORP_ENCRIPTION_ALG="sha512"
 kind: ConfigMap
 metadata:
-  creationTimestamp: null
   labels:
     io.kompose.service: policy-service
   name: policy-service

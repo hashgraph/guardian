@@ -18,7 +18,6 @@ data:
     #JSON_REQUEST_LIMIT="1mb"
 kind: ConfigMap
 metadata:
-  creationTimestamp: null
   labels:
     io.kompose.service: api-gateway
   name: api-gateway

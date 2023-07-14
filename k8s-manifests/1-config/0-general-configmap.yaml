@@ -46,7 +46,6 @@ data:
   VAULT_PROVIDER: database
 kind: ConfigMap
 metadata:
-  creationTimestamp: null
   labels:
     io.kompose.service: general-configs
   name: general-configs

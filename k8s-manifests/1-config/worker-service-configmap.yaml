@@ -53,7 +53,6 @@ data:
     HASHICORP_ENCRIPTION_ALG="sha512"
 kind: ConfigMap
 metadata:
-  creationTimestamp: null
   labels:
     io.kompose.service: worker-service-1
   name: worker-service
