@@ -67,6 +67,40 @@ kubectl --kubeconfig ./kubeconfig.yaml apply -f ./k8s-manifests/3-controller/
 
 This folder contains configuration manifests that are required for the rest of the components to work. You can find more details about the configuration in the relevant section fo the documentation, but for the demonstration of this document, the only important file is `0-general-config.yaml`, which contains the configuration for the different services. You can edit this file to change the configuration of the services. The rest of the files are related to the specific settings each individual service can override, based on the multi-environment feature.
 
+##### Multi-environment feature settings
+
+The key settings to turn on the multi-environment feature are GUARDIAN_ENV and OVERRIDE. The first one is used to indicate the environment name, and the second one is used to indicate if the service should override the default configuration or not. If the service is not overriding the default configuration, it will use the default one. If the service is overriding the default configuration, it will use the configuration defined in the service manifest.
+
+> **_NOTE:_** when using the multi-environment feature, each service will try to read its config file from a file named `.env.gateway.${GUARDIAN_ENV}`, that file is not included in the manifests, so you'll need to update the corresponding controller manifests and re-deploy it, and deploy before the new configSet. See below a simplified example:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: foo-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      service: foo-service
+  template:
+    spec:
+      containers:
+          image: gcr.io/hedera-registry/foo-service
+          name: foo-service
+          volumeMounts:
+            - mountPath: /usr/local/foo-service/configs/.env.foo.${GUARDIAN_ENV}
+              name: foo-service
+              subPath: .env
+      volumes:
+        - configMap:
+            items:
+              - key: .env.foo.${GUARDIAN_ENV}
+                path: .env
+            name: foo-service
+          name: foo-service
+```
+
 #### 2-service
 
 This folder contains the manifests for the different services that needs to be created in the cluster. Not all of them are exposed to the outside world, and some of them are only used internally by other services. The most relevant one here I would say is the `web-proxy-tcp-service.yaml`, which additional spawns a load balancer outside of the cluster.
