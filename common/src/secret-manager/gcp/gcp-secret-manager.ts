@@ -13,7 +13,7 @@ export class GcpSecretManager implements SecretManagerBase {
    */
   private readonly client: SecretManagerServiceClient;
 
-  private config: IGcpSecretManagerConfigs;
+  private readonly config: IGcpSecretManagerConfigs;
 
   /**
    * The base path for all secrets
