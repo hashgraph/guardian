@@ -5,11 +5,150 @@
     <meta charset="UTF-8">
     <title>Analytics</title>
     <script type="application/javascript" src="script.js"></script>
-    <style type="text/css" src="style.css"></style>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
+    <div id="container" class="container">
 
+    </div>
+
+    <div>
+        <button id="create-btn">Create</button>
+        <button id="update-btn">Update</button>
+    </div>
+
+    <div id="load" class="loading">
+        <div>Loading...</div>
+        <div id="progress"></div>
+    </div>
+
+    <div id="error" class="error">
+        Error
+    </div>
+
+    <div id="report" class="report">
+        <div class="report-row">
+            <div class="report-card">
+                <div class="report-card-header">Total Topics:</div>
+                <div class="report-card-value" id="topics-count"></div>
+            </div>
+            <div class="report-card">
+                <div class="report-card-header">Total Messages:</div>
+                <div class="report-card-value" id="messages-count"></div>
+            </div>
+        </div>
+        <div class="report-row">
+            <div class="report-card">
+                <div class="report-card-header">Standard Registries:</div>
+                <div class="report-card-value" id="standard-registries-count"></div>
+            </div>
+            <div class="report-card">
+                <div class="report-card-header">Users:</div>
+                <div class="report-card-value" id="users-count"></div>
+            </div>
+            <div class="report-card">
+                <div class="report-card-header">Policies:</div>
+                <div class="report-card-value" id="policies-count"></div>
+            </div>
+            <div class="report-card">
+                <div class="report-card-header">Modules:</div>
+                <div class="report-card-value" id="modules-count"></div>
+            </div>
+        </div>
+        <div class="report-row">
+            <div class="report-card">
+                <div class="report-card-header">Instances (Versions):</div>
+                <div class="report-card-value" id="instances-count"></div>
+            </div>
+            <div class="report-card">
+                <div class="report-card-header">User Topics:</div>
+                <div class="report-card-value" id="user-topic-count"></div>
+            </div>
+            <div class="report-card">
+                <div class="report-card-header">Documents (VP/VC/DID):</div>
+                <div class="report-card-value" id="documents-count"></div>
+            </div>
+            <div class="report-card">
+                <div class="report-card-header">VP Documents:</div>
+                <div class="report-card-value" id="vp-documents-count"></div>
+            </div>
+        </div>
+        <div class="report-row">
+            <div class="report-card">
+                <div class="report-card-header">Fungible Tokens:</div>
+                <div class="report-card-value" id="f-tokens-count"></div>
+            </div>
+            <div class="report-card">
+                <div class="report-card-header">Total Balances (FT):</div>
+                <div class="report-card-value" id="ft-balances"></div>
+            </div>
+            <div class="report-card">
+                <div class="report-card-header">Non-Fungible Tokens:</div>
+                <div class="report-card-value" id="nf-tokens-count"></div>
+            </div>
+            <div class="report-card">
+                <div class="report-card-header">Total Balances (NFT):</div>
+                <div class="report-card-value" id="nft-balances"></div>
+            </div>
+        </div>
+        <div class="report-row">
+            <div class="report-rate">
+                <div class="report-rate-header">Policies (By Name):</div>
+                <div class="report-rate-container">
+                    <div class="report-rate-value" id="policies-rate"></div>
+                </div>
+            </div>
+            <div class="report-rate">
+                <div class="report-rate-header">Instances (By Name):</div>
+                <div class="report-rate-container">
+                    <div class="report-rate-value" id="version-rate"></div>
+                </div>
+            </div>
+            <div class="report-rate">
+                <div class="report-rate-header">Standard Registries (By Policies):</div>
+                <div class="report-rate-container">
+                    <div class="report-rate-value" id="policies-rate-by-owner"></div>
+                </div>
+            </div>
+            <div class="report-rate">
+                <div class="report-rate-header">Standard Registries (By Users):</div>
+                <div class="report-rate-container">
+                    <div class="report-rate-value" id="user-rate-by-owner"></div>
+                </div>
+            </div>
+            <div class="report-rate">
+                <div class="report-rate-header">Policies (By Documents):</div>
+                <div class="report-rate-container">
+                    <div class="report-rate-value" id="policies-rate-by-documents"></div>
+                </div>
+            </div>
+            <div class="report-rate">
+                <div class="report-rate-header">Policies (By VP):</div>
+                <div class="report-rate-container">
+                    <div class="report-rate-value" id="policies-rate-by-vp"></div>
+                </div>
+            </div>
+            <div class="report-rate">
+                <div class="report-rate-header">Tokens (By Name):</div>
+                <div class="report-rate-container">
+                    <div class="report-rate-value" id="tokens-rate"></div>
+                </div>
+            </div>
+            <div class="report-rate">
+                <div class="report-rate-header">FTokens (By Balances):</div>
+                <div class="report-rate-container">
+                    <div class="report-rate-value" id="f-tokens-rate-by-balances"></div>
+                </div>
+            </div>
+            <div class="report-rate">
+                <div class="report-rate-header">NFTokens (By Balances):</div>
+                <div class="report-rate-container">
+                    <div class="report-rate-value" id="nf-tokens-rate-by-balances"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>

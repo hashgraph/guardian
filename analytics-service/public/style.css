@@ -1,0 +1,122 @@
+.field {
+    display: flex;
+}
+
+.field-name {
+    padding-right: 10px;
+    margin-bottom: 5px;
+}
+
+.report-card {
+    width: 200px;
+    height: 80px;
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    box-shadow: 1px 1px 3px 0 #eee;
+    margin: 8px;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+.report-card-value {
+    width: 170px;
+    height: 38px;
+    font-size: 22px;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.report-card-header {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.report-row {
+    display: flex;
+    margin: 5px 5px 20px 5px;
+    flex-wrap: wrap;
+}
+
+.report-rate {
+    min-width: 200px;
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    box-shadow: 1px 1px 3px 0 #eee;
+    margin: 8px;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+.report-rate-header {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.report-rate-value {
+    display: table;
+    width: 100%;
+}
+
+.report-rate-row {
+    display: table-row;
+    width: 100%;
+}
+
+.report-rate-row-name {
+    display: table-cell;
+    padding: 5px 10px 5px 5px;
+    width: 100%;
+    max-width: 200px;
+    /* word-wrap: break-word; */
+    font-size: 14px;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.report-rate-row-value {
+    display: table-cell;
+    padding: 5px 5px 5px 5px;
+}
+
+.hide {
+    display: none;
+}
+
+.report-rate-container {
+    max-height: 280px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 1px 8px 1px 1px;
+    box-sizing: border-box;
+}
+
+*::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+    /*margin: 54px 0 53px;*/
+}
+
+*::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    box-shadow: rgba(255, 255, 255, 0.3) 0 0 0 1px;
+}
+
+*:hover::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.45);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.55);
+}
