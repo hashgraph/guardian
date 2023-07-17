@@ -1260,7 +1260,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@guardian/common@^2.14.2, @guardian/common@workspace:common":
+"@guardian/common@2.14.2, @guardian/common@^2.14.2, @guardian/common@workspace:common":
   version: 0.0.0-use.local
   resolution: "@guardian/common@workspace:common"
   dependencies:
@@ -1271,9 +1271,9 @@ __metadata:
     "@hashgraph/sdk": 2.24.2
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
-    "@mikro-orm/core": ~5.7.12
-    "@mikro-orm/migrations-mongodb": ~5.7.12
-    "@mikro-orm/mongodb": ~5.7.12
+    "@mikro-orm/core": 5.7.12
+    "@mikro-orm/migrations-mongodb": 5.7.12
+    "@mikro-orm/mongodb": 5.7.13
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
     "@nestjs/microservices": ^9.4.1
@@ -1310,7 +1310,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@guardian/interfaces@^2.14.2, @guardian/interfaces@workspace:interfaces":
+"@guardian/interfaces@2.14.2, @guardian/interfaces@^2.14.2, @guardian/interfaces@workspace:interfaces":
   version: 0.0.0-use.local
   resolution: "@guardian/interfaces@workspace:interfaces"
   dependencies:
@@ -1559,7 +1559,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@meeco/cryppo@npm:^2.0.2":
+"@meeco/cryppo@npm:2.0.2, @meeco/cryppo@npm:^2.0.2":
   version: 2.0.2
   resolution: "@meeco/cryppo@npm:2.0.2"
   dependencies:
@@ -1571,7 +1571,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mikro-orm/core@npm:~5.7.12":
+"@mikro-orm/core@npm:5.7.12":
   version: 5.7.12
   resolution: "@mikro-orm/core@npm:5.7.12"
   dependencies:
@@ -1618,7 +1618,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mikro-orm/migrations-mongodb@npm:~5.7.12":
+"@mikro-orm/migrations-mongodb@npm:5.7.12":
   version: 5.7.12
   resolution: "@mikro-orm/migrations-mongodb@npm:5.7.12"
   dependencies:
@@ -1629,6 +1629,31 @@ __metadata:
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
   checksum: be1a5c822ee1bc37ba5ce8926884071a4c63bcd55dcdb285fc1ad2775dfd77e8ce3064ea53a4cc511fcbafcc00ad0d0962f41ff1c2aa6b6fbdd8828fc53ee8fa
+  languageName: node
+  linkType: hard
+
+"@mikro-orm/mongodb@npm:5.7.13":
+  version: 5.7.13
+  resolution: "@mikro-orm/mongodb@npm:5.7.13"
+  dependencies:
+    bson: ^5.4.0
+    mongodb: 5.7.0
+  peerDependencies:
+    "@mikro-orm/core": ^5.0.0
+    "@mikro-orm/entity-generator": ^5.0.0
+    "@mikro-orm/migrations": ^5.0.0
+    "@mikro-orm/migrations-mongodb": ^5.0.0
+    "@mikro-orm/seeder": ^5.0.0
+  peerDependenciesMeta:
+    "@mikro-orm/entity-generator":
+      optional: true
+    "@mikro-orm/migrations":
+      optional: true
+    "@mikro-orm/migrations-mongodb":
+      optional: true
+    "@mikro-orm/seeder":
+      optional: true
+  checksum: 2939c684e2a94e3fbe50970a285dbd7f2f2d1285f1deda0da7d55de66e40056b32909b8aec7cabed931f7d9d3af7ba10434439a492a474ec3d6fff96b21595b9
   languageName: node
   linkType: hard
 
@@ -3458,8 +3483,8 @@ __metadata:
   dependencies:
     "@guardian/common": ^2.14.2
     "@guardian/interfaces": ^2.14.2
-    "@mikro-orm/core": ~5.7.12
-    "@mikro-orm/mongodb": ~5.7.12
+    "@mikro-orm/core": 5.7.12
+    "@mikro-orm/mongodb": 5.7.13
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
     "@nestjs/microservices": ^9.4.1
@@ -3791,6 +3816,13 @@ __metadata:
   version: 5.3.0
   resolution: "bson@npm:5.3.0"
   checksum: c1e57630fea6b82ad8bc0fb83fd8f16a2620a836ab69f6b9433250cd19704c0c8995681a3bfab9f967eae30512f0c8ee921d42ace4c1781726600c4a367593cf
+  languageName: node
+  linkType: hard
+
+"bson@npm:^5.4.0":
+  version: 5.4.0
+  resolution: "bson@npm:5.4.0"
+  checksum: 1c07e3d09f139d414bd226bf7f4e9aaa7a726e0c9718c55b53bb23ffa2805cac8b66e4fa46b424c73a35c6e292ed5f7432df5c76ea5d08052642b2ac9e0399e3
   languageName: node
   linkType: hard
 
@@ -5977,8 +6009,8 @@ __metadata:
     "@hashgraph/sdk": 2.24.2
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
-    "@mikro-orm/core": ~5.7.12
-    "@mikro-orm/mongodb": ~5.7.12
+    "@mikro-orm/core": 5.7.12
+    "@mikro-orm/mongodb": 5.7.13
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
     "@nestjs/microservices": ^9.4.1
@@ -7975,8 +8007,8 @@ __metadata:
   dependencies:
     "@guardian/common": ^2.14.2
     "@guardian/interfaces": ^2.14.2
-    "@mikro-orm/core": ~5.7.12
-    "@mikro-orm/mongodb": ~5.7.12
+    "@mikro-orm/core": 5.7.12
+    "@mikro-orm/mongodb": 5.7.13
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
     "@nestjs/microservices": ^9.4.1
@@ -8578,6 +8610,38 @@ __metadata:
     snappy:
       optional: true
   checksum: 5b1594b24795b2a7824095a917ede2fc37aaef31e60320c833ee9b11cc2f3de9dd87d5afacea2e41eb5eb579ac9780f5bc4b0bb11d3b1be78e8bf0014528192a
+  languageName: node
+  linkType: hard
+
+"mongodb@npm:5.7.0":
+  version: 5.7.0
+  resolution: "mongodb@npm:5.7.0"
+  dependencies:
+    bson: ^5.4.0
+    mongodb-connection-string-url: ^2.6.0
+    saslprep: ^1.0.3
+    socks: ^2.7.1
+  peerDependencies:
+    "@aws-sdk/credential-providers": ^3.201.0
+    "@mongodb-js/zstd": ^1.1.0
+    kerberos: ^2.0.1
+    mongodb-client-encryption: ">=2.3.0 <3"
+    snappy: ^7.2.2
+  dependenciesMeta:
+    saslprep:
+      optional: true
+  peerDependenciesMeta:
+    "@aws-sdk/credential-providers":
+      optional: true
+    "@mongodb-js/zstd":
+      optional: true
+    kerberos:
+      optional: true
+    mongodb-client-encryption:
+      optional: true
+    snappy:
+      optional: true
+  checksum: 16357b6229abac165aecea15a6efa873ec8662a00411ecb9e49853f05a590be31aab63d404486125778eedaafe76d70e84eea682fa89b138decc247f4870d2ec
   languageName: node
   linkType: hard
 
@@ -9573,13 +9637,13 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "policy-service@workspace:policy-service"
   dependencies:
-    "@guardian/common": ^2.14.2
-    "@guardian/interfaces": ^2.14.2
+    "@guardian/common": 2.14.2
+    "@guardian/interfaces": 2.14.2
     "@hashgraph/sdk": 2.24.2
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
-    "@meeco/cryppo": ^2.0.2
-    "@mikro-orm/core": ~5.7.12
-    "@mikro-orm/mongodb": ~5.7.12
+    "@meeco/cryppo": 2.0.2
+    "@mikro-orm/core": 5.7.12
+    "@mikro-orm/mongodb": 5.7.13
     "@transmute/credentials-context": 0.7.0-unstable.80
     "@transmute/did-context": 0.7.0-unstable.80
     "@transmute/ed25519-signature-2018": 0.7.0-unstable.80
