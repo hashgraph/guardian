@@ -20,7 +20,7 @@
     "@mikro-orm/core": "~5.7.12",
     "@mikro-orm/mongodb": "~5.7.12",
     "@nestjs/common": "^9.4.1",
-    "@nestjs/core": "^9.4.1",
+    "@nestjs/core": "^10.1.0",
     "@nestjs/microservices": "^9.4.1",
     "@transmute/credentials-context": "^0.7.0-unstable.80",
     "@transmute/did-context": "^0.7.0-unstable.80",
