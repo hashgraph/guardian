@@ -68,22 +68,6 @@ write() {
   fi
 }
 
-# Initialize Vault to retreive root token and unseal keys and store them .root file
-init_vault() {
-  init_response=$(write '{"secret_shares": '$VAULT_UNSEAL_SECRET_SHARES', "secret_threshold": '$VAULT_UNSEAL_SECRET_THRESHOLD'}' v1/sys/init)
-
-  VAULT_TOKEN=$(echo $init_response | jq -r .root_token)
-  UNSEAL_KEYS=$(echo $init_response | jq -r .keys)
-
-  ERRORS=$(echo $init_response | jq .errors | jq '.[0]')
-  if [ "$UNSEAL_KEYS" = "null" ]; then
-    echo "cannot retrieve unseal key: $ERRORS"
-    exit 1
-  fi
-
-  echo $init_response | jq '{root_token, keys}' > $VAULT_ROOT_TOKEN_PATH
-}
-
 # Using Unseal Keys to unseal Vault
 unseal_vault() {
   UNSEAL_KEY_1=$(cat $VAULT_ROOT_TOKEN_PATH | jq .keys | jq '.[1]')
@@ -95,66 +79,32 @@ unseal_vault() {
   write '{"key": '${UNSEAL_KEY_2}'}' v1/sys/unseal
 
   write '{"key": '${UNSEAL_KEY_3}'}' v1/sys/unseal
-}
 
-# Enable KV V2 engine
-enable_kv2_key_engine() {
-  write '{"type": "kv-v2", "config": {"force_no_cache": true} }' v1/sys/mounts/secret $VAULT_TOKEN
-}
-
-# Enable AppRole Auth Method
-enable_approle() {
-  write '{"type": "approle"}' v1/sys/auth/approle $VAULT_TOKEN
-}
-
-# Create Policies for All provided services
-create_policies() {
-  POLICIES=$(cat $POLICY_CONFIG_DIR | jq -c -r '.[]')
-
-  for POLICY in ${POLICIES[@]}; do
-    POLICY_NAME=$(echo $POLICY | jq -r .policy_name)
-    POLICY_DATA_FILES=$(echo $POLICY | jq -r .policies[])
-
-    for POLICY_DATA_FILE in ${POLICY_DATA_FILES[@]}; do
-      POLICY_DATA='{"policy": '$(cat $PWD/$POLICY_DATA_FILE)'}'
-      write "$POLICY_DATA" v1/sys/policies/acl/$POLICY_NAME $VAULT_TOKEN
-    done
-  done
-}
-
-# Create roles associated with policies for all services
-create_roles() {
-  ROLES=$(cat "$APPROLE_CONFIG_DIR" | jq -c -r '.[]')
-  
-  for ROLE in ${ROLES[@]}; do
-    ROLE_NAME=$(echo $ROLE | jq -r '.role_name')
-    POLICIES=$(echo $ROLE | jq -r '.policies')
-
-    ROLE_DATA=$(echo '{}' | jq '.')
-    ROLE_DATA=$(echo $ROLE_DATA | jq '.token_policies = '"$POLICIES"'')
-
-    write "$ROLE_DATA" v1/auth/approle/role/$ROLE_NAME $VAULT_TOKEN
-  done
+  # get Vault from root
+  VAULT_TOKEN=$(cat $VAULT_ROOT_TOKEN_PATH | jq -r .root_token )
 }
 
 # Get AppRole Credentials for all services
 get_approle_credentials() {
   ROLES=$(cat "$APPROLE_CONFIG_DIR" | jq -c -r '.[]')
+
   for ROLE in ${ROLES[@]}; do
     ROLE_NAME=$(echo $ROLE | jq -r '.role_name')
 
     ROLE_ID=$(read v1/auth/approle/role/$ROLE_NAME/role-id $VAULT_TOKEN | jq -r ".data.role_id")
-
-    SECRET_ID=$(write "{\"num_uses\":$VAULT_SECRET_ID_TTL, \"ttl\": \"$VAULT_SECRET_NUM_USES\"}" v1/auth/approle/role/$ROLE_NAME/secret-id $VAULT_TOKEN | jq -r ".data.secret_id")
-
+    
+   
     ENV_PATHS=$(echo $ROLE | jq -r '.env_path[]')
     ENV_NAMES=$(echo $ROLE | jq -r '.env_name[]')
 
-    # destination for tokens in vault tree for reading back
     TOKEN_FILE_DIR=$TOKENS_DIR/$ENV_NAMES/
     TOKEN_FILE_NAME=.env.secrets
 
+    source $TOKEN_FILE_DIR/$TOKEN_FILE_NAME
+    SECRET_ID=$VAULT_APPROLE_SECRET_ID
+
     COUNTER=0
+
     for ENV_PATH in ${ENV_PATHS[@]}; do
 
     if [ -z "$GUARDIAN_ENV" ]
@@ -165,7 +115,6 @@ get_approle_credentials() {
         fi
       
       echo "file to write: $ENV_FILE"
-
       if grep -q "^VAULT_APPROLE_ROLE_ID=" "$ENV_FILE"; then
         # replace the value of the key if it exists
         sed -i "s/^VAULT_APPROLE_ROLE_ID=.*/VAULT_APPROLE_ROLE_ID=$ROLE_ID/" $ENV_FILE
@@ -174,10 +123,6 @@ get_approle_credentials() {
         echo -e "\nVAULT_APPROLE_ROLE_ID=$ROLE_ID" >> "$ENV_FILE"
       fi
 
-      # create and update file for multi-env subsequent configuration
-      mkdir -p $TOKEN_FILE_DIR && touch $TOKEN_FILE_NAME
-      echo -e "\nVAULT_APPROLE_ROLE_ID=$ROLE_ID" >> "$TOKEN_FILE_DIR/$TOKEN_FILE_NAME"
-
       if grep -q "^VAULT_APPROLE_SECRET_ID=" "$ENV_FILE"; then
         # replace the value of the key if it exists
         sed -i "s/^VAULT_APPROLE_SECRET_ID=.*/VAULT_APPROLE_SECRET_ID=$SECRET_ID/" $ENV_FILE
@@ -185,17 +130,16 @@ get_approle_credentials() {
         # add the key and its value if it doesn't exist
         echo "VAULT_APPROLE_SECRET_ID=$SECRET_ID" >> "$ENV_FILE"
       fi
-      #  update file for multi-env subsequent configuration
-      echo "VAULT_APPROLE_SECRET_ID=$SECRET_ID" >> "$TOKEN_FILE_DIR/$TOKEN_FILE_NAME"
-
       let COUNTER++
     done
+
     
   done
 }
 
 # Push secrets for all services to Vault
 push_secrets() {
+  echo $VAULT_TOKEN
   SECRETS=$(cat "$SECRETS_DIR" | jq -c -r '.[]')
   for SECRET in ${SECRETS[@]}; do
     SECRET_PATH=$(echo $SECRET | jq -r .path )
@@ -211,25 +155,10 @@ push_secrets() {
   done
 }
 
-echo "Initialize Vault"
-init_vault
-
 echo "Unseal Vault"
 unseal_vault
 
-echo "Enable KV V2 Secret Engine"
-enable_kv2_key_engine
-
-echo "Enable AppRole Auth Method"
-enable_approle
-
-echo "Create Policies for All guardian Service"
-create_policies
-
-echo "Create roles associated with policies for all services"
-create_roles
-
-echo "Get AppRole Credentials for all services"
+# To be Done Write Get App Role Credential or create if not exist
 get_approle_credentials
 
 echo "Push secrets for all services to Vault"
