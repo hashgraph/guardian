@@ -35,7 +35,14 @@
                 Log In
             </button>
     
-            <button mat-button class="meeco-button" (click)="onMeecoLogin()">Meeco Login</button>
+            <button
+                mat-button
+                type="button"
+                class="meeco-button"
+                (click)="onMeecoLogin()"
+            >
+                {{ meecoBtnTitle }}
+            </button>
         </div>
 
         <a [routerLink]="['/register']" class="create-link">Create new <mat-icon>chevron_right</mat-icon></a>

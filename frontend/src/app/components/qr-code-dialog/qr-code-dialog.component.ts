@@ -1,5 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { WebSocketService } from 'src/app/services/web-socket.service';
 
 @Component({
     selector: 'app-qr-code-dialog',
@@ -12,12 +13,18 @@ export class QrCodeDialogComponent {
 
     constructor(
         @Inject(MAT_DIALOG_DATA) private data: any,
-        private dialogRef: MatDialogRef<QrCodeDialogComponent>
+        private dialogRef: MatDialogRef<QrCodeDialogComponent>,
+        private wsService: WebSocketService,
     ) {
         this.qrCodeData = this.data.qrCodeData;
+        this.handleMeecoVerificationFail();
     }
 
-    onCloseClick(): void {
+    handleMeecoVerificationFail(): void {
+        this.wsService.meecoVerifyVPFailedSubscribe(() => this.closeDialog());
+    }
+
+    closeDialog(): void {
         this.dialogRef.close(null);
     }
 

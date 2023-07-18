@@ -1,0 +1,14 @@
+<h1 mat-dialog-title class="dialog-title">VC Subject Submission</h1>
+
+<div mat-dialog-content class="dialog-content">
+  <div class="content">
+    <div class="json">
+      {{ vcSubject }}
+    </div>
+  </div>
+</div>
+
+<div mat-dialog-actions class="dialog-actions">
+  <button mat-button (click)="onReject()">Reject</button>
+  <button mat-raised-button color="primary" (click)="onApprove()">Approve</button>
+</div>

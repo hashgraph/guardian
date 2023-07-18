@@ -1,10 +1,18 @@
 .qr-code-dialog {
   position: relative;
+  
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: absolute;
+    font-size: 16px;
+    left: 45px;
+    right: 15px;
+    top: 11px;
+  }
 
   &__close {
     cursor: pointer;
-    position: absolute;
-    right: 20px;
-    top: 20px;
   }
 }
