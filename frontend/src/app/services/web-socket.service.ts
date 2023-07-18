@@ -6,6 +6,13 @@ import { ToastrService } from 'ngx-toastr';
 import { ApplicationStates, MessageAPI } from '@guardian/interfaces';
 import { Router } from '@angular/router';
 
+interface MeecoVerifyVPResponse {
+    vc: any;
+    presentation_request_id: string;
+    submission_id: string;
+    cid: string;
+}
+
 /**
  *  WebSocket service.
  */
@@ -178,7 +185,7 @@ export class WebSocketService {
         }
         try {
             const event = JSON.parse(message);
-            switch (event.type) {
+            switch (event.type || event.event) {
                 case 'PROFILE_BALANCE':
                     this.profileSubject.next(event);
                     break;
@@ -225,7 +232,13 @@ export class WebSocketService {
                     break;
                 }
                 case 'MEECO_VERIFY_VP_FAILED': {
-                    this.meecoVerifyVPFailedSubject.next(event.data);
+                    this.meecoVerifyVPFailedSubject.next();
+                    this.toastr.error(`${event.data.error}.`, 'Submission for VP presentation request failed.', {
+                        timeOut: 10000,
+                        closeButton: true,
+                        positionClass: 'toast-bottom-right',
+                        enableHtml: true
+                    });
                     break;
                 }
                 case 'MEECO_APPROVE_SUBMISSION_RESPONSE': {
@@ -303,7 +316,7 @@ export class WebSocketService {
     }
 
     public meecoPresentVPSubscribe(
-        next?: ((event: { type: string, data: any }) => void),
+        next?: ((event: { redirectUri: string }) => void),
         error?: ((error: any) => void),
         complete?: (() => void)
     ): Subscription {
@@ -311,7 +324,7 @@ export class WebSocketService {
     }
 
     public meecoVerifyVPSubscribe(
-        next?: ((event: { type: string, data: any }) => void),
+        next?: ((event: MeecoVerifyVPResponse) => void),
         error?: ((error: any) => void),
         complete?: (() => void)
     ): Subscription {
@@ -319,7 +332,7 @@ export class WebSocketService {
     }
 
     public meecoVerifyVPFailedSubscribe(
-        next?: ((event: { type: string, data: any }) => void),
+        next?: (() => void),
         error?: ((error: any) => void),
         complete?: (() => void)
     ): Subscription {

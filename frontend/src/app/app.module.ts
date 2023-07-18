@@ -84,6 +84,7 @@ import {
 import { SuggestionsService } from './services/suggestions.service';
 import { QrCodeDialogComponent } from './components/qr-code-dialog/qr-code-dialog.component';
 import { QRCodeModule } from 'angularx-qrcode';
+import { MeecoVCSubmitDialogComponent } from './components/meeco-vc-submit-dialog/meeco-vc-submit-dialog.component';
 
 @NgModule({
     declarations: [
@@ -114,6 +115,7 @@ import { QRCodeModule } from 'angularx-qrcode';
         SuggestionsConfigurationComponent,
         StandardRegistryCardComponent,
         QrCodeDialogComponent,
+        MeecoVCSubmitDialogComponent,
     ],
     imports: [
         BrowserModule,
