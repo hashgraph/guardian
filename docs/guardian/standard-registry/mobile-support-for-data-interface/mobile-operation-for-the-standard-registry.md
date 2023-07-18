@@ -10,7 +10,7 @@ Here the images below to show the selection of account type and selection of use
 
 <figure><img src="../../../.gitbook/assets/2 (5).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/1 (1) (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/1 (1) (4) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### New header for mobile
 
