@@ -1,4 +1,11 @@
-import { IStatus, MessageAPI, StatusType } from '@guardian/interfaces';
+import { NotifierHelper } from '@guardian/common';
+import {
+    IStatus,
+    MessageAPI,
+    NotificationAction,
+    StatusType,
+    TaskAction,
+} from '@guardian/interfaces';
 import { GuardiansService } from '@helpers/guardians';
 
 /**
@@ -36,12 +43,12 @@ export interface INotifier {
 
 const empty: INotifier = {
     /* tslint:disable:no-empty */
-    start: (step: string) => { },
-    completed: () => { },
-    completedAndStart: (nextStep: string) => { },
-    info: (message: string) => { },
-    error: (error: string | Error, code?: string) => { },
-    result: (result: any) => { }
+    start: (step: string) => {},
+    completed: () => {},
+    completedAndStart: (nextStep: string) => {},
+    info: (message: string) => {},
+    error: (error: string | Error, code?: string) => {},
+    result: (result: any) => {},
     /* tslint:enable:no-empty */
 };
 
@@ -54,6 +61,27 @@ export function emptyNotifier(): INotifier {
 }
 
 const chanelEvent = MessageAPI.UPDATE_TASK_STATUS;
+const resultNotificationMapping = new Map<
+    TaskAction | string,
+    NotificationAction
+>([
+    [
+        TaskAction.ASSOCIATE_DISSOCIATE_TOKEN,
+        NotificationAction.TOKEN_ASSOCIATED_DIASSOCIATED,
+    ],
+    [TaskAction.CLONE_POLICY, NotificationAction.POLICY_CLONED],
+    [TaskAction.CREATE_POLICY, NotificationAction.POLICY_CREATED],
+    [TaskAction.CREATE_SCHEMA, NotificationAction.SCHEMA_CREATED],
+    [TaskAction.CREATE_TOKEN, NotificationAction.TOKEN_CREATED],
+    [TaskAction.DELETE_POLICY, NotificationAction.POLICY_DELETED],
+    [TaskAction.GRANT_REVOKE_KYC, NotificationAction.KYC_GRANTED_REVOKED],
+    [TaskAction.IMPORT_POLICY_FILE, NotificationAction.POLICY_IMPORTED],
+    [TaskAction.IMPORT_POLICY_MESSAGE, NotificationAction.POLICY_IMPORTED],
+    [TaskAction.IMPORT_SCHEMA_FILE, NotificationAction.SCHEMA_IMPORTED],
+    [TaskAction.IMPORT_SCHEMA_MESSAGE, NotificationAction.SCHEMA_IMPORTED],
+    [TaskAction.PUBLISH_POLICY, NotificationAction.POLICY_PUBLISHED],
+    [TaskAction.PUBLISH_SCHEMA, NotificationAction.SCHEMA_PUBLISHED],
+]);
 
 /**
  * Init task notifier
@@ -61,29 +89,66 @@ const chanelEvent = MessageAPI.UPDATE_TASK_STATUS;
  * @param taskId
  * @returns {INotifier} - notifier for task or empty notifier
  */
-export function initNotifier(taskId: string): INotifier {
+export async function initNotifier({
+    taskId,
+    userId,
+    action,
+    expectation,
+}: {
+    taskId: string;
+    userId: string;
+    action: NotificationAction | string;
+    expectation: number;
+}): Promise<INotifier> {
     if (taskId) {
         let currentStep: string;
+        let currentStepIndex = 1;
+        const notify = await NotifierHelper.initNotifier(
+            [userId],
+            action,
+            'Operation started',
+            taskId
+        );
         const sendStatuses = async (...statuses: IStatus[]) => {
-            await new GuardiansService().publish(chanelEvent, { taskId, statuses });
+            if (statuses.length) {
+                await notify.step(
+                    statuses[statuses.length - 1].message,
+                    Math.floor((currentStepIndex / expectation) * 100)
+                );
+            }
+            await new GuardiansService().sendMessage(chanelEvent, {
+                taskId,
+                statuses,
+            });
         };
         const notifier = {
             start: async (step: string) => {
                 currentStep = step;
-                await sendStatuses({ message: step, type: StatusType.PROCESSING });
+                await sendStatuses({
+                    message: step,
+                    type: StatusType.PROCESSING,
+                });
             },
             completed: async () => {
                 const oldStep = currentStep;
                 currentStep = undefined;
-                await sendStatuses({ message: oldStep, type: StatusType.COMPLETED });
+                currentStepIndex++;
+                await sendStatuses({
+                    message: oldStep,
+                    type: StatusType.COMPLETED,
+                });
             },
             completedAndStart: async (nextStep: string) => {
                 const oldStep = currentStep;
+                currentStepIndex++;
                 if (oldStep) {
                     currentStep = nextStep;
-                    await sendStatuses({ message: oldStep, type: StatusType.COMPLETED }, { message: currentStep, type: StatusType.PROCESSING });
+                    await sendStatuses(
+                        { message: oldStep, type: StatusType.COMPLETED },
+                        { message: currentStep, type: StatusType.PROCESSING }
+                    );
                 } else {
-                    notifier.start(nextStep);
+                    await await notifier.start(nextStep);
                 }
             },
             info: async (message: string) => {
@@ -92,8 +157,8 @@ export function initNotifier(taskId: string): INotifier {
             error: async (error: string | Error, code?: string) => {
                 const result = {
                     code: code || 500,
-                    message: null
-                }
+                    message: null,
+                };
                 if (typeof error === 'string') {
                     result.message = error;
                 } else {
@@ -105,12 +170,26 @@ export function initNotifier(taskId: string): INotifier {
                         result.message = 'Unknown error';
                     }
                 }
-                await new GuardiansService().publish(chanelEvent, { taskId, error: result });
+                await notify.error(
+                    error instanceof Error ? error.message : error
+                );
+                await new GuardiansService().sendMessage(chanelEvent, {
+                    taskId,
+                    error: result,
+                });
             },
             result: async (result: any) => {
-                await new GuardiansService().publish(chanelEvent, { taskId, result });
-            }
-        }
+                await notify.finish(
+                    resultNotificationMapping.get(action),
+                    'Operation completed',
+                    result
+                );
+                await new GuardiansService().sendMessage(chanelEvent, {
+                    taskId,
+                    result,
+                });
+            },
+        };
         return notifier;
     } else {
         return empty;

@@ -4,7 +4,7 @@ import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
 import { Controller, HttpCode, HttpStatus, Post, Req, Response } from '@nestjs/common';
 import { checkPermission } from '@auth/authorization-helper';
-import { UserRole } from '@guardian/interfaces';
+import { TaskAction, UserRole } from '@guardian/interfaces';
 import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, getSchemaPath } from '@nestjs/swagger';
 import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
 
@@ -318,28 +318,28 @@ export class WizardApi {
     @HttpCode(HttpStatus.ACCEPTED)
     async setPolicyAsync(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const taskManager = new TaskManager();
-        const {taskId, expectation} = taskManager.start('Create policy');
         const wizardConfig = req.body;
         const user = req.user;
+        const taskManager = new TaskManager();
+        const task = taskManager.start(TaskAction.CLONE_POLICY, user.id);
         RunFunctionAsync<ServiceError>(
             async () => {
                 const guardians = new Guardians();
                 await guardians.wizardPolicyCreateAsync(
                     wizardConfig,
                     user.did,
-                    taskId
+                    task
                 );
             },
             async (error) => {
                 new Logger().error(error, ['API_GATEWAY']);
-                taskManager.addError(taskId, {
+                taskManager.addError(task.taskId, {
                     code: 500,
                     message: error.message,
                 });
             }
         );
-        return res.status(202).send({taskId, expectation});
+        return res.status(202).send(task);
     }
 
     @ApiOperation({

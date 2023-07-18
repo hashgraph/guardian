@@ -4,7 +4,8 @@
 export enum StatusType {
     PROCESSING = 'Processing',
     COMPLETED = 'Completed',
-    INFO = 'Info'
+    INFO = 'Info',
+    ERROR = 'Error'
 };
 
 /**

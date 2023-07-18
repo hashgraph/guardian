@@ -82,6 +82,8 @@ import {
     BLOCK_TYPE_TIPS_VALUE,
 } from './injectors/block-type-tips.injector';
 import { SuggestionsService } from './services/suggestions.service';
+import { NotificationComponent } from './components/notification/notification.component';
+import { NotifyService } from './services/notify.service';
 
 @NgModule({
     declarations: [
@@ -111,6 +113,7 @@ import { SuggestionsService } from './services/suggestions.service';
         BrandingDialogComponent,
         SuggestionsConfigurationComponent,
         StandardRegistryCardComponent,
+        NotificationComponent
     ],
     imports: [
         BrowserModule,
@@ -156,6 +159,7 @@ import { SuggestionsService } from './services/suggestions.service';
         ThemeService,
         WizardService,
         SuggestionsService,
+        NotifyService,
         {
             provide: GET_SCHEMA_NAME,
             useValue: SchemaHelper.getSchemaName

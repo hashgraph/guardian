@@ -623,6 +623,7 @@ export class PoliciesComponent implements OnInit {
                 this.loading = true;
                 this.policyEngineService.pushCreate(result).subscribe((result) => {
                         const { taskId, expectation } = result;
+                        this.router.navigate(['/task', taskId]);
                         this.taskId = taskId;
                         this.expectedTaskMessages = expectation;
                         this.mode = OperationMode.Create;
@@ -675,7 +676,7 @@ export class PoliciesComponent implements OnInit {
             this.noFilterResults = this.filteredPolicies.length === 0;
             return;
         }
-        
+
         this.filters.policyName
             ? this.filterByPolicyName()
             : this.filterByTag();

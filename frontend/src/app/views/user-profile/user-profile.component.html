@@ -3,10 +3,10 @@
     <div *ngIf="loading && !taskId" class="loading">
         <mat-spinner></mat-spinner>
     </div>
-    <div *ngIf="loading && taskId" class="loading">
+    <!-- <div *ngIf="loading && taskId" class="loading">
         <async-progress class="loading-progress" [taskId]="taskId" [expected]="expectedTaskMessages"
             (error)="onAsyncError($event)" (completed)="onAsyncCompleted()"></async-progress>
-    </div>
+    </div> -->
 
     <ng-container *ngIf="isConfirmed; else elseTemplate">
         <div *ngIf="profile" class="profile">
@@ -198,11 +198,11 @@
                     >
                         <div>
                             <span>Filter by</span>
-                            
+
                             <mat-form-field class="user-onboarding-wizard__control" appearance="outline">
                                 <input matInput placeholder="Policy name" formControlName="policyName">
                             </mat-form-field>
-    
+
                             <mat-form-field class="user-onboarding-wizard__control" appearance="outline">
                                 <input matInput placeholder="Geography" formControlName="geography">
                             </mat-form-field>
@@ -266,14 +266,14 @@
                                     (change)="onChangeForm()" [showButtons]="false">
                                 </app-schema-form>
                             </div>
-            
+
                             <div class="list-item">
                                 <mat-form-field class="example-full-width" appearance="outline">
                                     <mat-label>* OPERATOR ID:</mat-label>
                                     <input matInput placeholder="0.0.1548173" formControlName="id">
                                 </mat-form-field>
                             </div>
-            
+
                             <div class="list-item">
                                 <mat-form-field class="example-full-width" appearance="outline">
                                     <mat-label>* OPERATOR KEY:</mat-label>
@@ -281,7 +281,7 @@
                                         formControlName="key">
                                 </mat-form-field>
                             </div>
-            
+
                             <button mat-raised-button class="generate-btn" (click)="randomKey()">Generate</button>
                         </form>
                     </div>

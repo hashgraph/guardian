@@ -147,8 +147,8 @@ export class Guardians extends NatsService {
      * @param item
      * @param taskId
      */
-    public async setTokenAsync(token: IToken | any, owner: any, taskId: string): Promise<any> {
-        return await this.sendMessage(MessageAPI.SET_TOKEN_ASYNC, { token, owner, taskId });
+    public async setTokenAsync(token: IToken | any, owner: any, task: any): Promise<any> {
+        return await this.sendMessage(MessageAPI.SET_TOKEN_ASYNC, { token, owner, task });
     }
 
     /**
@@ -156,8 +156,8 @@ export class Guardians extends NatsService {
      * @param token
      * @param taskId
      */
-    public async updateTokenAsync(token: IToken | any, taskId: string): Promise<any> {
-        return await this.sendMessage(MessageAPI.UPDATE_TOKEN_ASYNC, { token, taskId });
+    public async updateTokenAsync(token: IToken | any, task: any): Promise<any> {
+        return await this.sendMessage(MessageAPI.UPDATE_TOKEN_ASYNC, { token, task });
     }
 
     /**
@@ -165,8 +165,8 @@ export class Guardians extends NatsService {
      * @param item
      * @param taskId
      */
-    public async deleteTokenAsync(tokenId: string, taskId: string): Promise<any> {
-        return await this.sendMessage(MessageAPI.DELETE_TOKEN_ASYNC, { tokenId, taskId });
+    public async deleteTokenAsync(tokenId: string, task: any): Promise<any> {
+        return await this.sendMessage(MessageAPI.DELETE_TOKEN_ASYNC, { tokenId, task });
     }
 
     /**
@@ -192,13 +192,13 @@ export class Guardians extends NatsService {
      * @param owner
      * @param taskId
      */
-    public async freezeTokenAsync(tokenId: string, username: string, owner: string, taskId: string): Promise<any> {
+    public async freezeTokenAsync(tokenId: string, username: string, owner: string, task: any): Promise<any> {
         return await this.sendMessage(MessageAPI.FREEZE_TOKEN_ASYNC, {
             tokenId,
             username,
             owner,
             freeze: true,
-            taskId,
+            task,
         });
     }
 
@@ -224,13 +224,13 @@ export class Guardians extends NatsService {
      * @param owner
      * @param taskId
      */
-    public async unfreezeTokenAsync(tokenId: string, username: string, owner: string, taskId: string): Promise<any> {
+    public async unfreezeTokenAsync(tokenId: string, username: string, owner: string, task: any): Promise<any> {
         return await this.sendMessage(MessageAPI.FREEZE_TOKEN_ASYNC, {
             tokenId,
             username,
             owner,
             freeze: false,
-            taskId,
+            task,
         });
     }
 
@@ -240,7 +240,7 @@ export class Guardians extends NatsService {
      * @param username
      * @param owner
      */
-    public async grantKycToken(tokenId: string, username: string, owner: string): Promise<ITokenInfo> {
+    public async grantKycToken(tokenId: string, username: string, owner: string, userId: string): Promise<ITokenInfo> {
         return await this.sendMessage(MessageAPI.KYC_TOKEN, {
             tokenId,
             username,
@@ -256,13 +256,13 @@ export class Guardians extends NatsService {
      * @param owner
      * @param taskId
      */
-    public async grantKycTokenAsync(tokenId: string, username: string, owner: string, taskId: string): Promise<any> {
+    public async grantKycTokenAsync(tokenId: string, username: string, owner: string, task: any): Promise<any> {
         return await this.sendMessage(MessageAPI.KYC_TOKEN_ASYNC, {
             tokenId,
             username,
             owner,
             grant: true,
-            taskId,
+            task,
         });
     }
 
@@ -288,13 +288,13 @@ export class Guardians extends NatsService {
      * @param owner
      * @param taskId
      */
-    public async revokeKycTokenAsync(tokenId: string, username: string, owner: string, taskId: string): Promise<any> {
+    public async revokeKycTokenAsync(tokenId: string, username: string, owner: string, task: any): Promise<any> {
         return await this.sendMessage(MessageAPI.KYC_TOKEN_ASYNC, {
             tokenId,
             username,
             owner,
             grant: false,
-            taskId,
+            task,
         });
     }
 
@@ -317,12 +317,12 @@ export class Guardians extends NatsService {
      * @param did
      * @param taskId
      */
-    public async associateTokenAsync(tokenId: string, did: string, taskId: string): Promise<any> {
+    public async associateTokenAsync(tokenId: string, did: string, task: any): Promise<any> {
         return await this.sendMessage(MessageAPI.ASSOCIATE_TOKEN_ASYNC, {
             tokenId,
             did,
             associate: true,
-            taskId
+            task,
         });
     }
 
@@ -345,12 +345,12 @@ export class Guardians extends NatsService {
      * @param did
      * @param taskId
      */
-    public async dissociateTokenAsync(tokenId: string, did: string, taskId: string): Promise<any> {
+    public async dissociateTokenAsync(tokenId: string, did: string, task: any): Promise<any> {
         return await this.sendMessage(MessageAPI.ASSOCIATE_TOKEN_ASYNC, {
             tokenId,
             did,
             associate: false,
-            taskId
+            task,
         });
     }
 
@@ -407,8 +407,8 @@ export class Guardians extends NatsService {
      * @param profile
      * @param taskId
      */
-    public async createUserProfileCommonAsync(username: string, profile: IUser, taskId: string): Promise<any> {
-        return await this.sendMessage(MessageAPI.CREATE_USER_PROFILE_COMMON_ASYNC, { username, profile, taskId });
+    public async createUserProfileCommonAsync(username: string, profile: IUser, task: any): Promise<any> {
+        return await this.sendMessage(MessageAPI.CREATE_USER_PROFILE_COMMON_ASYNC, { username, profile, task });
     }
 
     /**
@@ -417,8 +417,8 @@ export class Guardians extends NatsService {
      * @param profile
      * @param taskId
      */
-    public async restoreUserProfileCommonAsync(username: string, profile: IUser, taskId: string): Promise<any> {
-        return await this.sendMessage(MessageAPI.RESTORE_USER_PROFILE_COMMON_ASYNC, { username, profile, taskId });
+    public async restoreUserProfileCommonAsync(username: string, profile: IUser, task: any): Promise<any> {
+        return await this.sendMessage(MessageAPI.RESTORE_USER_PROFILE_COMMON_ASYNC, { username, profile, task });
     }
 
     /**
@@ -427,8 +427,8 @@ export class Guardians extends NatsService {
      * @param profile
      * @param taskId
      */
-    public async getAllUserTopicsAsync(username: string, profile: IUser, taskId: string): Promise<any> {
-        return await this.sendMessage(MessageAPI.GET_ALL_USER_TOPICS_ASYNC, { username, profile, taskId });
+    public async getAllUserTopicsAsync(username: string, profile: IUser, task: any): Promise<any> {
+        return await this.sendMessage(MessageAPI.GET_ALL_USER_TOPICS_ASYNC, { username, profile, task });
     }
 
     /**
@@ -462,8 +462,8 @@ export class Guardians extends NatsService {
      * @param role
      * @param taskId
      */
-    public async generateDemoKeyAsync(role: string, taskId: string): Promise<any> {
-        return await this.sendMessage(MessageAPI.GENERATE_DEMO_KEY_ASYNC, { role, taskId });
+    public async generateDemoKeyAsync(role: string, task: any): Promise<any> {
+        return await this.sendMessage(MessageAPI.GENERATE_DEMO_KEY_ASYNC, { role, task, });
     }
 
     /**
@@ -546,8 +546,8 @@ export class Guardians extends NatsService {
      * @param {string} topicId
      * @param {string} taskId
      */
-    public async importSchemasByMessagesAsync(messageIds: string[], owner: string, topicId: string, taskId: string): Promise<any> {
-        return await this.sendMessage(MessageAPI.IMPORT_SCHEMAS_BY_MESSAGES_ASYNC, { messageIds, owner, topicId, taskId });
+    public async importSchemasByMessagesAsync(messageIds: string[], owner: string, topicId: string, task: any): Promise<any> {
+        return await this.sendMessage(MessageAPI.IMPORT_SCHEMAS_BY_MESSAGES_ASYNC, { messageIds, owner, topicId, task, });
     }
 
     /**
@@ -587,9 +587,9 @@ export class Guardians extends NatsService {
         files: any,
         owner: string,
         topicId: string,
-        taskId: string
+        task: any,
     ): Promise<any> {
-        return await this.sendMessage(MessageAPI.IMPORT_SCHEMAS_BY_FILE_ASYNC, { files, owner, topicId, taskId });
+        return await this.sendMessage(MessageAPI.IMPORT_SCHEMAS_BY_FILE_ASYNC, { files, owner, topicId, task, });
     }
 
     /**
@@ -609,8 +609,8 @@ export class Guardians extends NatsService {
      * @param {string} messageIds Message identifier
      * @param {string} taskId Task id
      */
-    public async previewSchemasByMessagesAsync(messageIds: string[], taskId: string): Promise<any> {
-        return await this.sendMessage(MessageAPI.PREVIEW_SCHEMA_ASYNC, { messageIds, taskId });
+    public async previewSchemasByMessagesAsync(messageIds: string[], task: any): Promise<any> {
+        return await this.sendMessage(MessageAPI.PREVIEW_SCHEMA_ASYNC, { messageIds, task, });
     }
 
     /**
@@ -640,8 +640,8 @@ export class Guardians extends NatsService {
      * @param {ISchema} item - schema
      * @param {string} taskId - task id
      */
-    public async createSchemaAsync(item: ISchema | any, taskId: string): Promise<any> {
-        return await this.sendMessage(MessageAPI.CREATE_SCHEMA_ASYNC, { item, taskId });
+    public async createSchemaAsync(item: ISchema | any, task: any): Promise<any> {
+        return await this.sendMessage(MessageAPI.CREATE_SCHEMA_ASYNC, { item, task,});
     }
 
     /**
@@ -689,8 +689,8 @@ export class Guardians extends NatsService {
      *
      * @returns {ISchema} - message
      */
-    public async publishSchemaAsync(id: string, version: string, owner: string, taskId: string): Promise<any> {
-        return await this.sendMessage(MessageAPI.PUBLISH_SCHEMA_ASYNC, { id, version, owner, taskId });
+    public async publishSchemaAsync(id: string, version: string, owner: string, task: any): Promise<any> {
+        return await this.sendMessage(MessageAPI.PUBLISH_SCHEMA_ASYNC, { id, version, owner, task, });
     }
 
     /**
@@ -1547,11 +1547,11 @@ export class Guardians extends NatsService {
      * @param config Config
      * @returns Config
      */
-    public async wizardPolicyCreateAsync(config: any, owner: string, taskId: string) {
+    public async wizardPolicyCreateAsync(config: any, owner: string, task: any) {
         return await this.sendMessage(MessageAPI.WIZARD_POLICY_CREATE_ASYNC, {
             owner,
             config,
-            taskId
+            task,
         });
     }
 

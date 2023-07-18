@@ -8,3 +8,35 @@
 .info {
     padding-left: 30px;
 }
+
+.content {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loading-progress {
+    width: 80%;
+    height: 80%;
+}
+
+.task-not-found {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.task-not-found__icon {
+    font-size: 100px;
+    width: 100px;
+    height: 100px;
+}
+
+.task-not-found__label {
+    font-size: 60px;
+}

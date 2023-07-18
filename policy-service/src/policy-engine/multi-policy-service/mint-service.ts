@@ -19,6 +19,7 @@ import {
     TopicConfig,
     VcDocumentDefinition as VcDocument,
     Workers,
+    NotifierHelper,
 } from '@guardian/common';
 import { PrivateKey } from '@hashgraph/sdk';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
@@ -84,6 +85,7 @@ export class MintService {
         transactionMemo: string,
         ref?: AnyBlockType
     ): Promise<any[]> {
+        const notifier = await NotifierHelper.initNotifier([root.id], 'Minting tokens', 'Minting started');
         const mintNFT = (metaData: string[]): Promise<number[]> =>
             workers.addRetryableTask(
                 {
@@ -146,6 +148,14 @@ export class MintService {
                 }/${tasks.length * MintService.BATCH_NFT_MINT_SIZE})`,
                 ref
             );
+            await notifier.step(
+                `Mint(${mintId}): Minting and transferring (Chunk: ${
+                    i * MintService.BATCH_NFT_MINT_SIZE + 1
+                }/${tasks.length * MintService.BATCH_NFT_MINT_SIZE})`,
+                (i * MintService.BATCH_NFT_MINT_SIZE +
+                    (1 / tasks.length) * MintService.BATCH_NFT_MINT_SIZE) *
+                    100
+            );
             try {
                 const results = await Promise.all(dataChunk.map(mintAndTransferNFT));
                 for (const serials of results) {
@@ -165,7 +175,7 @@ export class MintService {
                 throw error;
             }
         }
-
+        await notifier.finish();
         MintService.log(
             `Mint(${mintId}): Minted (Count: ${Math.floor(tokenValue)})`,
             ref

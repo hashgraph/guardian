@@ -349,7 +349,8 @@ export class SchemaConfigComponent implements OnInit {
                     this.schemaService.pushCreate(schema, schema.topicId).subscribe((result) => {
                         const { taskId, expectation } = result;
                         this.taskId = taskId;
-                        this.expectedTaskMessages = expectation;
+                        this.router.navigate(['/task', taskId]);
+                        // this.expectedTaskMessages = expectation;
                     }, (e) => {
                         this.loading = false;
                         this.taskId = undefined;

@@ -78,8 +78,8 @@ async function createExistingPolicySchemas(
 export async function wizardAPI(): Promise<void> {
     ApiResponse(MessageAPI.WIZARD_POLICY_CREATE_ASYNC, async (msg) => {
         // tslint:disable-next-line:prefer-const
-        let { config, owner, taskId } = msg;
-        const notifier = initNotifier(taskId);
+        let { config, owner, task } = msg;
+        const notifier = await initNotifier(task);
         RunFunctionAsync(
             async () => {
                 const policyEngine = new PolicyEngine();
@@ -103,16 +103,16 @@ export async function wizardAPI(): Promise<void> {
                     policy.topicId,
                     owner
                 );
-                notifier.result({
+                await notifier.result({
                     policyId: policy.id,
                     wizardConfig: config,
                 });
             },
             async (error) => {
-                notifier.error(error);
+                await notifier.error(error);
             }
         );
-        return new MessageResponse({ taskId });
+        return new MessageResponse(true);
     });
 
     ApiResponse(MessageAPI.WIZARD_POLICY_CREATE, async (msg) => {

@@ -320,14 +320,14 @@ export async function createSchema(
     delete newSchema.id;
     delete newSchema._id;
     const users = new Users();
-    notifier.start('Resolve Hedera account');
+    await notifier.start('Resolve Hedera account');
     const root = await users.getHederaAccount(owner);
-    notifier.completedAndStart('Save in DB');
+    await notifier.completedAndStart('Save in DB');
     if (newSchema) {
         delete newSchema.status;
     }
     const schemaObject = DatabaseServer.createSchema(newSchema);
-    notifier.completedAndStart('Resolve Topic');
+    await notifier.completedAndStart('Resolve Topic');
     let topic: TopicConfig;
     if (newSchema.topicId) {
         topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(newSchema.topicId), true);
@@ -376,7 +376,7 @@ export async function createSchema(
         throw new Error('Schema identifier already exist');
     }
 
-    notifier.completedAndStart('Save to IPFS & Hedera');
+    await notifier.completedAndStart('Save to IPFS & Hedera');
     if (topic) {
         await sendSchemaMessage(
             root,
@@ -386,9 +386,9 @@ export async function createSchema(
         );
     }
 
-    notifier.completedAndStart('Update schema in DB');
+    await notifier.completedAndStart('Update schema in DB');
     const savedSchema = await DatabaseServer.saveSchema(schemaObject);
-    notifier.completed();
+    await notifier.completed();
     return savedSchema;
 }
 
@@ -410,7 +410,7 @@ export async function deleteSchema(schemaId: any, notifier: INotifier) {
         throw new Error('Schema is not in draft status');
     }
 
-    notifier.info(`Delete schema ${item.name}`);
+    await notifier.info(`Delete schema ${item.name}`);
     if (item.topicId) {
         const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true);
         if (topic) {

@@ -1,8 +1,8 @@
 import WebSocket from 'ws';
 import { IncomingMessage, Server } from 'http';
 import { Users } from '@helpers/users';
-import { ApplicationStates, GenerateUUIDv4, IStatus, MessageAPI } from '@guardian/interfaces';
-import { Logger, MessageResponse, NatsService, Singleton } from '@guardian/common';
+import { ApplicationStates, GenerateUUIDv4, IStatus, MessageAPI, NotifyAPI } from '@guardian/interfaces';
+import { Logger, MessageResponse, NatsService, NotifierHelper, Singleton } from '@guardian/common';
 import { NatsConnection } from 'nats';
 import { Injectable } from '@nestjs/common';
 
@@ -73,6 +73,34 @@ export class WebSocketsService {
         await this.channel.init();
     }
 
+    public updateNotification(notification: any, type: NotifyAPI): void {
+        this.wss.clients.forEach((client: any) => {
+            if (client.user?.id === notification.userId) {
+                this.send(client, {
+                    type,
+                    data: notification
+                });
+            }
+        });
+    }
+
+    public deleteNotification({
+        userId,
+        notificationId,
+    }: {
+        userId: string;
+        notificationId: string;
+    }, type: NotifyAPI) {
+        this.wss.clients.forEach((client: any) => {
+            if (client.user?.id === userId) {
+                this.send(client, {
+                    type,
+                    data: notificationId,
+                });
+            }
+        });
+    }
+
     /**
      * Notify about task changes
      * @param taskId
@@ -80,12 +108,14 @@ export class WebSocketsService {
      * @param completed
      * @param error
      */
-    public notifyTaskProgress(taskId: string, statuses?: IStatus[], completed?: boolean, error?: any): void {
+    public notifyTaskProgress(task): void {
         this.wss.clients.forEach((client: any) => {
-            this.send(client, {
-                type: MessageAPI.UPDATE_TASK_STATUS,
-                data: { taskId, statuses, completed, error }
-            });
+            if (client.user?.id === task.userId) {
+                this.send(client, {
+                    type: MessageAPI.UPDATE_TASK_STATUS,
+                    data: task
+                });
+            }
         });
     }
 
@@ -178,6 +208,27 @@ export class WebSocketsService {
             });
             return new MessageResponse({})
         });
+
+        this.channel.getMessages(NotifyAPI.UPDATE_WS, async (msg) => {
+            console.log(NotifyAPI.UPDATE_WS);
+            this.updateNotification(msg.data, NotifyAPI.UPDATE_WS);
+            return new MessageResponse(true);
+        });
+        this.channel.getMessages(NotifyAPI.DELETE_WS, async (msg) => {
+            console.log(NotifyAPI.DELETE_WS);
+            this.deleteNotification(msg.data, NotifyAPI.DELETE_WS);
+            return new MessageResponse(true);
+        });
+        this.channel.getMessages(NotifyAPI.UPDATE_PROGRESS_WS, async (msg) => {
+            console.log(NotifyAPI.UPDATE_PROGRESS_WS);
+            this.updateNotification(msg.data, NotifyAPI.UPDATE_PROGRESS_WS);
+            return new MessageResponse(true);
+        });
+        this.channel.getMessages(NotifyAPI.DELETE_PROGRESS_WS, async (msg) => {
+            console.log(NotifyAPI.DELETE_PROGRESS_WS);
+            this.deleteNotification(msg.data, NotifyAPI.DELETE_PROGRESS_WS);
+            return new MessageResponse(true);
+        });
     }
 
     /**
@@ -209,6 +260,9 @@ export class WebSocketsService {
         try {
             const { type, data } = this.parseMessage(message);
             switch (type) {
+                case NotifyAPI.READ:
+                    await NotifierHelper.read(data);
+                    break;
                 case 'SET_ACCESS_TOKEN':
                 case 'UPDATE_PROFILE':
                     const token = data;

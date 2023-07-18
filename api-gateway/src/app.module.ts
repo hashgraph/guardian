@@ -31,6 +31,8 @@ import { BrandingApi } from '@api/service/branding';
 import { SuggestionsApi } from '@api/service/suggestions';
 import { JwtModule } from '@nestjs/jwt';
 import { MatchConstraint } from '@helpers/decorators/match.validator';
+import { NotifierService } from '@guardian/common';
+import { NotifyApi } from '@api/service/notification';
 
 const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
 const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
@@ -79,11 +81,13 @@ const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
         WizardApi,
         BrandingApi,
         SuggestionsApi,
+        NotifyApi,
     ],
     providers: [
         LoggerService,
         AuthGuard,
-        MatchConstraint
+        MatchConstraint,
+        NotifierService,
     ]
 })
 export class AppModule {
@@ -107,6 +111,7 @@ export class AppModule {
         consumer.apply(authorizationHelper).forRoutes(WizardApi);
         consumer.apply(authorizationHelper).forRoutes(BrandingApi);
         consumer.apply(authorizationHelper).forRoutes(SuggestionsApi);
+        consumer.apply(authorizationHelper).forRoutes(NotifyApi);
 
         consumer.apply(express.json({
             limit: JSON_REQUEST_LIMIT

@@ -30,6 +30,7 @@ import { PolicyViewerComponent } from './modules/policy-engine/policy-viewer/pol
 import { ArtifactConfigComponent } from './modules/artifact-engine/artifact-config/artifact-config.component';
 import { CompareComponent } from './modules/analytics/compare/compare.component';
 import { ModulesListComponent } from './modules/policy-engine/modules-list/modules-list.component';
+import { AsyncProgressComponent } from './modules/common/async-progress/async-progress.component';
 
 const USER_IS_NOT_RA = "Page is avaliable for admin only";
 
@@ -168,6 +169,7 @@ const routes: Routes = [
         ]
     },
     { path: 'status', component: ServiceStatusComponent },
+    { path: 'task/:id', component: AsyncProgressComponent },
     { path: 'settings', component: SettingsViewComponent },
     { path: 'audit', component: AuditComponent, canActivate: [AuditorGuard, ServicesStatusGuard] },
     { path: 'trust-chain', component: TrustChainComponent, canActivate: [AuditorGuard, ServicesStatusGuard] },

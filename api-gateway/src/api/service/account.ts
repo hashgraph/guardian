@@ -1,5 +1,5 @@
 import { Users } from '@helpers/users';
-import { IAuthUser, Logger } from '@guardian/common';
+import { IAuthUser, Logger, NotifierHelper } from '@guardian/common';
 import { Guardians } from '@helpers/guardians';
 import { SchemaEntity, UserRole } from '@guardian/interfaces';
 import { PolicyEngine } from '@helpers/policy-engine';
@@ -95,7 +95,17 @@ export class AccountApi {
             if (role === 'ROOT_AUTHORITY') {
                 role = UserRole.STANDARD_REGISTRY;
             }
-            return await users.registerNewUser(username, password, role) as any;
+            const user = (await users.registerNewUser(
+                username,
+                password,
+                role
+            )) as any;
+            await NotifierHelper.info(
+                'Welcome to guardian',
+                user.id,
+                'Register your account in hedera'
+            );
+            return user;
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             if (error.message.includes('already exists')) {
