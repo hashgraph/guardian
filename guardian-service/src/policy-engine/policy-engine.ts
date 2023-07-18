@@ -20,6 +20,7 @@ import {
     SchemaFields,
     Singleton,
     SynchronizationMessage,
+    TagMessage,
     Token,
     TokenMessage,
     Topic,
@@ -855,8 +856,11 @@ export class PolicyEngine extends NatsService {
                         version: element.version
                     });
                 }
-            };
+            }
+            ;
         }
+
+        // const tagMessages = await messageServer.getMessages<TagMessage>(message.policyTopicId, MessageType.Tag, MessageAction.PublishTag);
 
         notifier.completedAndStart('Parse policy files');
         const policyToImport = await PolicyImportExportHelper.parseZipFile(message.document);
@@ -902,8 +906,30 @@ export class PolicyEngine extends NatsService {
             throw new Error('File in body is empty');
         }
 
+        const tagMessages = await messageServer.getMessages<TagMessage>(message.policyTopicId, MessageType.Tag, MessageAction.PublishTag);
+
         notifier.completedAndStart('File parsing');
         const policyToImport = await PolicyImportExportHelper.parseZipFile(message.document, true);
+        if (!Array.isArray(policyToImport.tags)) {
+            policyToImport.tags = [];
+        }
+        for (const tag of tagMessages) {
+            policyToImport.tags.push({
+                uuid: tag.uuid,
+                name: tag.name,
+                description: tag.description,
+                owner: tag.owner,
+                entity: tag.entity,
+                target: tag.target,
+                status: 'History',
+                topicId: tag.topicId,
+                messageId: tag.id,
+                document: null,
+                uri: null,
+                date: tag.date,
+                id: null
+            });
+        }
         notifier.completed();
         return await PolicyImportExportHelper.importPolicy(policyToImport, owner, versionOfTopicId, notifier);
     }
