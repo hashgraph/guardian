@@ -40,6 +40,26 @@ export class MeecoAuthService extends NatsService {
   constructor() {
     super();
     this.meecoService = new MeecoService(MeecoConfig, MeecoPassphrase);
+    this.migrateMeecoIssuerWhitelist();
+  }
+
+  async migrateMeecoIssuerWhitelist(): Promise<void> {
+    if (!process.env.MEECO_ISSUER_ORGANIZATION_ID || !process.env.MEECO_ISSUER_ORGANIZATION_NAME) {
+      console.log('MEECO_ISSUER_ORGANIZATION_ID and/or MEECO_ISSUER_ORGANIZATION_NAME are not set');
+      return;
+    }
+
+    const issuerWhitelistRepository = new DataBaseHelper(MeecoIssuerWhitelist);
+    const issuerWhitelist = await issuerWhitelistRepository.findOne({
+      issuerId: process.env.MEECO_ISSUER_ORGANIZATION_ID, name: process.env.MEECO_ISSUER_ORGANIZATION_NAME });
+
+    if (!issuerWhitelist) {
+      const issuerWhitelist = new MeecoIssuerWhitelist();
+      issuerWhitelist.issuerId = process.env.MEECO_ISSUER_ORGANIZATION_ID;
+      issuerWhitelist.name = process.env.MEECO_ISSUER_ORGANIZATION_NAME;
+      issuerWhitelistRepository.save(issuerWhitelist);
+      console.log('Migrated MeecoIssuerWhitelist');
+    }
   }
 
   /**
@@ -128,7 +148,7 @@ export class MeecoAuthService extends NatsService {
 
           const verified = await this.meecoService.verifyVP(id_token, requestId, vp_token);
           if (!verified) {
-            throw new Error('VP verification failed ny Meeco');
+            throw new Error('VP verification failed by Meeco');
           }
           
           const verifiableCredential = this.meecoService.decodeVPToken(vp_token);
@@ -170,12 +190,11 @@ export class MeecoAuthService extends NatsService {
 
   async verifyVP(vpToken: string) {
     const verifiableCredential = this.meecoService.decodeVPToken(vpToken);
-
-    if (verifiableCredential.exp < Date.now()) {
+    if (new Date(verifiableCredential.vc.expirationDate).getTime() < Date.now()) {
       throw new Error("VP expired");
     }
 
-    const {id: issuerId, name: issuerName } = verifiableCredential.vc.issuer;
+    const { id: issuerId, name: issuerName } = verifiableCredential.vc.issuer;
     const issuerWhitelistRepository = new DataBaseHelper(MeecoIssuerWhitelist);
     const issuerWhitelist = await issuerWhitelistRepository.findOne({ issuerId, name: issuerName });
     if (!issuerWhitelist) {
