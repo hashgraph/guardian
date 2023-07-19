@@ -6,6 +6,7 @@ import { IMe } from '../meeco/models/me';
 import { IPresentationRequest, IPresentationSubmission, IPresentationSubmissions } from './models/presentation-request';
 import base64url from 'base64url';
 import * as jwt from 'jsonwebtoken';
+import { VerifiableCredential } from "./models/schema";
 
 const nacl = require('tweetnacl');
 
@@ -26,8 +27,7 @@ export class MeecoService {
    * @returns {IMe} Meeco user profile
    */
   async getMe(): Promise<IMe> {
-    const me = await this.meecoApi.getMe();
-    return me;
+    return await this.meecoApi.getMe();
   }
 
   /**
@@ -35,8 +35,7 @@ export class MeecoService {
    * @returns {IPassphraseArtefact} passphrase artefacts
    */
   async getPassphraseArtefact(): Promise<IPassphraseArtefact> {
-    const passphraseDerivationArtefact = await this.meecoApi.getPassphraseArtefact();
-    return passphraseDerivationArtefact;
+    return await this.meecoApi.getPassphraseArtefact();
   }
 
   /**
@@ -48,9 +47,7 @@ export class MeecoService {
 
     const { passphrase_derivation_artefact: passphraseArtefacts } = r
 
-    const mek = await this.cryppo.deriveMEK(passphraseArtefacts.derivation_artefacts, passphraseArtefacts.verification_artefacts);
-
-    return mek;
+    return await this.cryppo.deriveMEK(passphraseArtefacts.derivation_artefacts, passphraseArtefacts.verification_artefacts);
   }
 
   /**
@@ -62,9 +59,7 @@ export class MeecoService {
 
     const serializedKEK = await this.meecoApi.getKeyEncryptionKey();
 
-    const kek = await this.cryppo.decryptKey(mek.key.key, serializedKEK.key_encryption_key.serialized_key_encryption_key)
-
-    return kek;
+    return await this.cryppo.decryptKey(mek.key.key, serializedKEK.key_encryption_key.serialized_key_encryption_key)
   }
 
   /**
@@ -79,9 +74,7 @@ export class MeecoService {
 
     const serializedDEK = await this.meecoApi.getDataEncryptionKey(private_dek_external_id);
 
-    const dek = await this.cryppo.decryptKey(kek.key, serializedDEK.data_encryption_key.serialized_data_encryption_key);
-
-    return dek;
+    return await this.cryppo.decryptKey(kek.key, serializedDEK.data_encryption_key.serialized_data_encryption_key);
   }
 
   /**
@@ -96,9 +89,7 @@ export class MeecoService {
 
     const serializedKeyair = await this.meecoApi.getKeyPairs(externalId);
 
-    const kp = await this.cryppo.decryptKey(kek.key, serializedKeyair.keypair.encrypted_serialized_key);
-
-    return kp;
+    return await this.cryppo.decryptKey(kek.key, serializedKeyair.keypair.encrypted_serialized_key);
   }
 
   /**
@@ -107,8 +98,7 @@ export class MeecoService {
    * @returns {any} Schema  
    */
   async getSchema(schemaId: string): Promise<any> {
-    const schema = await this.meecoApi.getSchema(schemaId);
-    return schema;
+    return await this.meecoApi.getSchema(schemaId);
   }
 
   /**
@@ -116,8 +106,7 @@ export class MeecoService {
    * @returns {any} Schemas
    */
   async getSchemas(): Promise<any> {
-    const schemas = await this.meecoApi.getSchemas();
-    return schemas;
+    return await this.meecoApi.getSchemas();
   }
 
   /**
@@ -128,8 +117,7 @@ export class MeecoService {
    */
   async createSchema(name: string, schemaStr: string): Promise<any> {
     const schemaData = JSON.parse(schemaStr);
-    const schema = await this.meecoApi.createSchema(name, schemaData);
-    return schema;
+    return await this.meecoApi.createSchema(name, schemaData);
   }
 
   /**
@@ -141,8 +129,7 @@ export class MeecoService {
    * @returns {IPresentationRequest} Presentation Request with an unsigned JWT
    */
   async createPresentationRequest(requestName: string, clientDID: string, clientName: string, presentationDefinitionId: string): Promise<IPresentationRequest> {
-    const presentationRequest = await this.meecoApi.createPresentationRequest(requestName, clientDID, clientName, presentationDefinitionId);
-    return presentationRequest;
+    return await this.meecoApi.createPresentationRequest(requestName, clientDID, clientName, presentationDefinitionId);
   }
 
   /**
@@ -160,8 +147,7 @@ export class MeecoService {
 
     const signedRequest = `${unsignedRequestJwt}.${signatureBase64}`;
 
-    const presentationRequest = await this.meecoApi.submitPresentationRequestSignature(requestId, signedRequest);
-    return presentationRequest;
+    return await this.meecoApi.submitPresentationRequestSignature(requestId, signedRequest);
   }
 
   /**
@@ -170,8 +156,7 @@ export class MeecoService {
    * @returns {IPresentationSubmissions} Verifiable Presentation Submissions
    */
   async getVPSubmissions(requestId: string): Promise<IPresentationSubmissions> {
-    const submissions = await this.meecoApi.getVPSubmissions(requestId);
-    return submissions;
+    return await this.meecoApi.getVPSubmissions(requestId);
   }
 
   /**
@@ -182,8 +167,7 @@ export class MeecoService {
    * @returns {boolean} true if verified
    */
   async verifyVP(idToken: string, requestId: string, vpToken: string): Promise<boolean> {
-    const verified = await this.meecoApi.verifyVP(idToken, requestId, vpToken);
-    return verified;
+    return await this.meecoApi.verifyVP(idToken, requestId, vpToken);
   }
 
   /**
@@ -194,8 +178,7 @@ export class MeecoService {
    * @returns {IPresentationSubmission} Verifiable Presentation Submission
    */
   async approveVPSubmission(requestId: string, submissionId: string, verified: boolean): Promise<IPresentationSubmission> {
-    const verifiedSubmission = await this.meecoApi.approveVPSubmission(requestId, submissionId, verified);
-    return verifiedSubmission;
+    return await this.meecoApi.approveVPSubmission(requestId, submissionId, verified);
   }
 
   /**
@@ -204,14 +187,12 @@ export class MeecoService {
    * @returns {string} redirect URI
    */
   async getVPSubmissionRedirectUri(requestId: string): Promise<string> {
-    const redirectUri = `openid-vc://?request_uri=${this.config.baseUrl}/oidc/presentations/requests/${requestId}/jwt`;
-    return redirectUri;
+    return `openid-vc://?request_uri=${this.config.baseUrl}/oidc/presentations/requests/${requestId}/jwt`;
   }
 
-  decodeVPToken(vpToken: string): any {
+  decodeVPToken(vpToken: string): VerifiableCredential {
     const decodedVPToken: any = jwt.decode(vpToken);
     const verifiableCredentialJWT = decodedVPToken.vp.verifiableCredential[0];
-    const verifiableCredential: any = jwt.decode(verifiableCredentialJWT);
-    return verifiableCredential;
+    return jwt.decode(verifiableCredentialJWT) as VerifiableCredential;
   }
 }
