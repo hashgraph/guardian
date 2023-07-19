@@ -144,6 +144,10 @@ export class AnalyticsUtils {
         skip: boolean = false,
         callback: (message: any) => Promise<void>
     ): Promise<Status> {
+        if (!topicId) {
+            return report;
+        }
+
         const topicCache = await AnalyticsUtils.getTopicCache(report.uuid, topicId, skip);
         if (!topicCache) {
             return report;

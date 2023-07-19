@@ -2,10 +2,10 @@ import { BeforeCreate, Entity, Index, Property } from '@mikro-orm/core';
 import { BaseEntity } from '@guardian/common';
 
 /**
- * Policy collection
+ * Schema collection
  */
 @Entity()
-export class AnalyticsPolicy extends BaseEntity {
+export class AnalyticsTag extends BaseEntity {
     /**
      * Report UUID
      */
@@ -32,31 +32,31 @@ export class AnalyticsPolicy extends BaseEntity {
     account?: string;
 
     /**
-     * Policy uuid
+     * Tag Id
      */
     @Property({ nullable: true })
-    policyUUID?: string;
+    tagUUID?: string;
 
     /**
-     * Policy Topic ID
-     */
-    @Property({ nullable: true })
-    topicId?: string;
-
-    /**
-     * Policy Name
+     * Name
      */
     @Property({ nullable: true })
     name?: string;
 
     /**
-     * Policy description
+     * Description
      */
     @Property({ nullable: true })
     description?: string;
 
     /**
-     * Policy Owner
+     * Target
+     */
+    @Property({ nullable: true })
+    target?: string;
+
+    /**
+     * Schema Owner
      */
     @Property({ nullable: true })
     owner?: string;
@@ -66,6 +66,24 @@ export class AnalyticsPolicy extends BaseEntity {
      */
     @Property({ nullable: true })
     action?: string;
+
+    /**
+     * Date
+     */
+    @Property({ nullable: true })
+    date?: string;
+
+    /**
+     * Operation
+     */
+    @Property({ nullable: true })
+    operation?: string;
+
+    /**
+     * Entity
+     */
+    @Property({ nullable: true })
+    entity?: string;
 
     /**
      * Set defaults

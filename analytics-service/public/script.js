@@ -22,6 +22,32 @@ async function onInit() {
         await load();
     });
 
+    const exportBtn = document.getElementById('export-btn');
+    exportBtn.addEventListener('click', async (event) => {
+        event.preventDefault();
+        renderStatus('load');
+        const report = await loadReport();
+        const fileBuffer = await exportInFile(report.uuid);
+        
+        // let downloadLink = document.createElement('a');
+        // downloadLink.href = window.URL.createObjectURL(new Blob([new Uint8Array(fileBuffer)], {
+        //     type: 'application/guardian-schema'
+        // }));
+        // downloadLink.setAttribute('download', `report_${Date.now()}.zip`);
+        // document.body.appendChild(downloadLink);
+        // downloadLink.click();
+        // downloadLink.remove();
+
+        const url = window.URL.createObjectURL(fileBuffer);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `${Date.now()}.xlsx`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        await load();
+    });
+
     await load();
 }
 
@@ -132,6 +158,22 @@ async function loadReportData(uuid) {
     }
 }
 
+async function exportInFile(uuid) {
+    try {
+        const result = await fetch(`${BASE_URL}/report/${uuid}/export/xlsx`, {
+            responseType: 'blob'
+        });
+        if (result.status === 200) {
+            const blob = await result.blob()
+            return blob;
+        } else {
+            return null;
+        }
+    } catch (error) {
+        console.log(error);
+    }
+}
+
 function numberFormat(value) {
     if (!value) {
         return 0;
@@ -186,6 +228,9 @@ function renderReport(report) {
     document.getElementById('ft-balances').innerHTML = numberFormat(report.fTotalBalances);
     document.getElementById('nft-balances').innerHTML = numberFormat(report.nfTotalBalances);
     document.getElementById('user-topic-count').innerHTML = numberFormat(report.userTopic);
+    document.getElementById('schemas-count').innerHTML = numberFormat(report.schemas);
+    document.getElementById('tags-count').innerHTML = numberFormat(report.tags);
+    document.getElementById('revoke-count').innerHTML = numberFormat(report.revokeDocuments);
 
     renderRate(report.topPolicies, 'policies-rate');
     renderRate(report.topVersion, 'version-rate');

@@ -14,7 +14,7 @@ export class AnalyticsToken extends BaseEntity {
     uuid?: string;
 
     /**
-     * Topic ID
+     * Root Topic ID
      */
     @Property({ nullable: true })
     root?: string;
@@ -32,7 +32,7 @@ export class AnalyticsToken extends BaseEntity {
     account?: string;
 
     /**
-     * Topic ID
+     * Policy Topic ID
      */
     @Property({ nullable: true })
     policyTopicId?: string;
@@ -66,6 +66,18 @@ export class AnalyticsToken extends BaseEntity {
      */
     @Property({ nullable: true })
     owner?: string;
+
+    /**
+     * Action
+     */
+    @Property({ nullable: true })
+    action?: string;
+
+    /**
+     * Topic Id
+     */
+    @Property({ nullable: true })
+    topicId?: string;
 
     /**
      * Set defaults
