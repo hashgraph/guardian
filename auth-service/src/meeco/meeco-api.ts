@@ -361,7 +361,7 @@ export class MeecoApi {
 
     try {
       const result = await axios.post(url, data, headers);
-      return true ? result.status === 204 : false;
+      return `${result.status}`.startsWith('20');
     } catch(ex) {
       throw new Error(ex.response.data.errors[0].extra_info.reason);
     }
