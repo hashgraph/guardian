@@ -50,6 +50,12 @@ export class AnalyticsModule extends BaseEntity {
     owner?: string;
 
     /**
+     * Action
+     */
+    @Property({ nullable: true })
+    action?: string;
+
+    /**
      * Set defaults
      */
     @BeforeCreate()

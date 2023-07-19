@@ -53,7 +53,19 @@ export class AnalyticsTopic extends BaseEntity {
      * Topic ID
      */
     @Property({ nullable: true })
+    policyTopicId?: string;
+
+    /**
+     * Topic ID
+     */
+    @Property({ nullable: true })
     instanceTopicId?: string;
+
+    /**
+     * Action
+     */
+    @Property({ nullable: true })
+    action?: string;
 
     /**
      * Set defaults

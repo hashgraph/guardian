@@ -40,6 +40,12 @@ export class AnalyticsTokenCache extends BaseEntity {
     balance?: number;
 
     /**
+     * Topic Id
+     */
+    @Property({ nullable: true })
+    topicId?: string;
+
+    /**
      * Set defaults
      */
     @BeforeCreate()

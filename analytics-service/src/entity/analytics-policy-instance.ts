@@ -74,6 +74,12 @@ export class AnalyticsPolicyInstance extends BaseEntity {
     version?: string;
 
     /**
+     * Action
+     */
+    @Property({ nullable: true })
+    action?: string;
+
+    /**
      * Set defaults
      */
     @BeforeCreate()

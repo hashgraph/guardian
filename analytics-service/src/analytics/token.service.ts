@@ -7,6 +7,7 @@ import {
     PolicyMessage,
     RegistrationMessage,
     RoleMessage,
+    TagMessage,
     TokenMessage,
     TopicMessage,
     VCMessage,
@@ -23,11 +24,38 @@ import { AnalyticsTokenCache as TokenCache } from '../entity/analytics-token-cac
 import { ReportSteep } from '../interfaces/report-steep.type';
 import { ReportStatus } from '../interfaces/report-status.type';
 import { UserType } from '../interfaces/user.type';
-import { AnalyticsUtils } from './utils';
+import { AnalyticsUtils } from '../utils/utils';
 import { DocumentType } from '../interfaces/document.type';
-import { Tasks } from './tasks';
+import { Tasks } from '../utils/tasks';
+import { AnalyticsTag as Tag } from '../entity/analytics-tag';
 
-export class AnalyticsToken {
+export class AnalyticsTokenService {
+    private static readonly CHUNKS_COUNT = 10;
+
+    private static parsTagMessage(message: any): Message {
+        try {
+            if (typeof message.message !== 'string' || !message.message.startsWith('{')) {
+                return;
+            }
+            const json = JSON.parse(message.message);
+            let item: Message;
+            if (json.type === MessageType.Tag) {
+                item = TagMessage.fromMessageObject(json);
+            }
+            if (item && item.validate()) {
+                item.setAccount(message.payer_account_id);
+                item.setIndex(message.sequence_number);
+                item.setId(message.id);
+                item.setTopicId(message.topicId);
+                return item;
+            }
+            return null;
+        } catch (error) {
+            console.log(error);
+            return null;
+        }
+    }
+
     public static async getTokenCache(uuid: string, tokenId: string, skip: boolean = false): Promise<TokenCache | null> {
         const tokenCache = await new DataBaseHelper(TokenCache).findOne({ uuid, tokenId });
         if (tokenCache) {
@@ -48,22 +76,24 @@ export class AnalyticsToken {
         return await new DataBaseHelper(TokenCache).save(tokenCache);
     }
 
-    public static async searchByToken(
+    public static async searchBalanceByToken(
         report: Status,
         token: Token,
         skip: boolean = false
     ): Promise<Status> {
         try {
-            const tokenCache = await AnalyticsToken.getTokenCache(report.uuid, token.tokenId, skip);
+            const tokenCache = await AnalyticsTokenService.getTokenCache(report.uuid, token.tokenId, skip);
             if (!tokenCache) {
                 return report;
             }
             let error: any;
-            let balance:number = tokenCache.balance;
+            let balance: number = tokenCache.balance;
+            let topicId: string = tokenCache.topicId;
             try {
                 const data = await AnalyticsUtils.getTokenInfo(token.tokenId);
                 if (data) {
                     balance = parseFloat(data.total_supply);
+                    topicId = String(data.memo);
                 } else {
                     error = new Error('Invalid token info');
                 }
@@ -72,7 +102,9 @@ export class AnalyticsToken {
                 error = e;
             }
             tokenCache.balance = balance;
-            await AnalyticsToken.updateTokenCache(tokenCache);
+            tokenCache.topicId = topicId;
+
+            await AnalyticsTokenService.updateTokenCache(tokenCache);
 
             if (error) {
                 report.error = String(error);
@@ -87,8 +119,48 @@ export class AnalyticsToken {
         }
     }
 
+    public static async searchTagByToken(
+        report: Status,
+        token: TokenCache,
+        skip: boolean = false
+    ): Promise<Status> {
+        try {
+            return await AnalyticsUtils.searchMessages(report, token.topicId, skip, async (message) => {
+                const data: any = AnalyticsTokenService.parsTagMessage(message);
+                if (data) {
+                    if (data.type === MessageType.Tag) {
+                        console.log('--- Tag 3 ---');
+                        console.log(data);
+                        const row = new DataBaseHelper(Tag).create({
+                            uuid: report.uuid,
+                            root: report.root,
+                            account: data.payer,
+                            timeStamp: data.id,
+                            tagUUID: data.uuid,
+                            name: data.name,
+                            description: data.description,
+                            owner: data.owner,
+                            target: data.target,
+                            operation: data.operation,
+                            entity: data.entity,
+                            date: data.date,
+                            action: data.action
+                        });
+                        await new DataBaseHelper(Tag).save(row);
+                    }
+                }
+            });
+        } catch (error) {
+            report.error = String(error);
+            return report;
+        }
+    }
+
     public static async search(report: Status, skip: boolean = false): Promise<Status> {
         await AnalyticsUtils.updateStatus(report, ReportSteep.TOKENS, ReportStatus.PROGRESS);
+
+        //Balance
+        console.log('--- Balance ---')
 
         const row = await new DataBaseHelper(Token).find({
             uuid: report.uuid
@@ -97,11 +169,26 @@ export class AnalyticsToken {
         AnalyticsUtils.updateProgress(report, tokens.length);
 
         const task = async (token: Token): Promise<void> => {
-            await AnalyticsToken.searchByToken(report, token, skip);
+            await AnalyticsTokenService.searchBalanceByToken(report, token, skip);
             AnalyticsUtils.updateProgress(report);
         }
         const tasks = new Tasks(tokens, task);
-        await tasks.run(10);
+        await tasks.run(AnalyticsTokenService.CHUNKS_COUNT);
+
+        //Tags
+        console.log('--- Tags ---')
+        const row2 = await new DataBaseHelper(TokenCache).find({
+            uuid: report.uuid
+        });
+
+        AnalyticsUtils.updateProgress(report, row2.length);
+
+        const task2 = async (token: Token): Promise<void> => {
+            await AnalyticsTokenService.searchTagByToken(report, token, skip);
+            AnalyticsUtils.updateProgress(report);
+        }
+        const tasks2 = new Tasks(row2, task2);
+        await tasks2.run(AnalyticsTokenService.CHUNKS_COUNT);
 
         return report;
     }

@@ -7,7 +7,7 @@ import express from 'express';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { AppModule } from './app.module';
-import { ReportService } from './analytics/report.service';
+import { ReportServiceService } from './analytics/report.service';
 
 const PORT = process.env.PORT || 3020;
 Promise.all([
@@ -54,7 +54,7 @@ Promise.all([
             new LargePayloadContainer().runServer();
         }
 
-        await ReportService.reset();
+        await ReportServiceService.reset();
 
         app.listen(PORT, async () => {
             const url = await app.getUrl();

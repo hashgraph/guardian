@@ -1,4 +1,4 @@
-import { BeforeCreate, Entity, Enum, Property, Unique } from '@mikro-orm/core';
+import { BeforeCreate, Entity, Index, Property, Unique } from '@mikro-orm/core';
 import { BaseEntity } from '@guardian/common';
 import { DocumentType } from '../interfaces/document.type';
 
@@ -7,6 +7,10 @@ import { DocumentType } from '../interfaces/document.type';
  */
 @Entity()
 @Unique({ properties: ['uuid'], options: { partialFilterExpression: { did: { $type: 'string' } } } })
+@Index({ name: 'document_type_idx', properties: ['uuid', 'type'] })
+@Index({ name: 'policy_instance_idx', properties: ['uuid', 'instanceTopicId'] })
+@Index({ name: 'policy_idx', properties: ['uuid', 'policyTopicId'] })
+@Index({ name: 'policy_idx_2', properties: ['uuid', 'policyUUID'] })
 export class AnalyticsDocument extends BaseEntity {
     /**
      * Report UUID
@@ -39,7 +43,7 @@ export class AnalyticsDocument extends BaseEntity {
     type?: string;
 
     /**
-     * Document type
+     * Document owner
      */
     @Property({ nullable: true })
     owner?: string;
@@ -55,6 +59,12 @@ export class AnalyticsDocument extends BaseEntity {
      */
     @Property({ nullable: true })
     policyUUID?: string;
+
+    /**
+     * Topic ID
+     */
+    @Property({ nullable: true })
+    policyTopicId?: string;
 
     /**
      * Instance Topic ID
@@ -73,6 +83,12 @@ export class AnalyticsDocument extends BaseEntity {
      */
     @Property({ nullable: true })
     group?: string;
+
+    /**
+     * Action
+     */
+    @Property({ nullable: true })
+    action?: string;
 
     /**
      * Set defaults

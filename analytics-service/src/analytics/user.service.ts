@@ -4,9 +4,9 @@ import { AnalyticsStatus as Status } from '../entity/analytics-status';
 import { ReportSteep } from '../interfaces/report-steep.type';
 import { ReportStatus } from '../interfaces/report-status.type';
 import { UserType } from '../interfaces/user.type';
-import { AnalyticsUtils } from './utils';
+import { AnalyticsUtils } from '../utils/utils';
 
-export class AnalyticsStandardRegistry {
+export class AnalyticsUserService {
     private static parsStandardRegistry(message: any): RegistrationMessage {
         try {
             if (typeof message.message !== 'string' || !message.message.startsWith('{')) {
@@ -35,7 +35,7 @@ export class AnalyticsStandardRegistry {
         try {
             AnalyticsUtils.updateProgress(report, 1);
             report = await AnalyticsUtils.searchMessages(report, report.root, skip, async (message) => {
-                const user = AnalyticsStandardRegistry.parsStandardRegistry(message);
+                const user = AnalyticsUserService.parsStandardRegistry(message);
                 if (user) {
                     const row = new DataBaseHelper(User).create({
                         uuid: report.uuid,
@@ -44,7 +44,8 @@ export class AnalyticsStandardRegistry {
                         did: user.did,
                         account: user.payer,
                         timeStamp: user.id,
-                        type: UserType.STANDARD_REGISTRY
+                        type: UserType.STANDARD_REGISTRY,
+                        action: user.action
                     });
                     await new DataBaseHelper(User).save(row);
                 }
