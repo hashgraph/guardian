@@ -254,6 +254,7 @@ export class WebSocketService {
                 }
                 case 'MEECO_VERIFY_VP': {
                     this.meecoVerifyVPSubject.next(event.data);
+                    this.meecoVerifyVPSubject.complete();
                     break;
                 }
                 case 'MEECO_VERIFY_VP_FAILED': {
@@ -426,6 +427,20 @@ export class WebSocketService {
         complete?: (() => void)
     ): Subscription {
         return this.meecoRejectVCSubject.subscribe(next, error, complete);
+    }
+
+    public approveVCSubject(presentation_request_id: string, submission_id: string): void {
+        this.send('MEECO_APPROVE_SUBMISSION', {
+            presentation_request_id,
+            submission_id,
+        });
+    }
+
+    public rejectVCSubject(presentation_request_id: string, submission_id: string): void {
+        this.send('MEECO_REJECT_SUBMISSION', {
+            presentation_request_id,
+            submission_id,
+        });
     }
 
     public login() {
