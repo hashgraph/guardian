@@ -59,6 +59,8 @@ export class LoginComponent implements OnInit, OnDestroy {
 
         this.handleMeecoPresentVPMessage();
         this.handleMeecoVPVerification();
+        this.handleMeecoVCApproval();
+        this.handleMeecoVCRejection();
     }
 
     ngOnDestroy(): void {
@@ -76,66 +78,6 @@ export class LoginComponent implements OnInit, OnDestroy {
     onMeecoLogin(): void {
         this.meecoBtnTitle = 'Generating QR code...';
         this.wsService.meecoLogin();
-        // this.dialog.open(VCViewerDialog, {
-        //     width: '800px',
-        //     disableClose: true,
-        //     autoFocus: false,
-        //     data: {
-        //         viewDocument: true,
-        //         type: 'VC',
-        //         title: 'VC Subject Submission',
-        //         document: {
-        //             // exp: 1703977200,
-        //             // iat: 1689763146,
-        //             // iss: "did:web:did-web.securevalue.exchange:343b08f3-dc4d-4cd3-b276-3f2d8a146a0d",
-        //             // nbf: 1689763146,
-        //             // sub: "did:key:z6Mks8LiXzcq9rpfMMY5SHCtT6mXaBpyimEL4i32whrfJKHx",
-        //                 '@context': ['https://www.w3.org/2018/credentials/v1'],
-        //                 credentialSchema: {
-        //                     id: 'https://api-sandbox.svx.exchange/schemas/5a9ea82e-e80b-4cb1-8e6f-0b10727b762b/1.0.0/schema.json',
-        //                     type: 'JsonSchemaValidator2018'
-        //                 },
-        //                 credentialSubject: {
-        //                     id: 'did:key:z6Mks8LiXzcq9rpfMMY5SHCtT6mXaBpyimEL4i32whrfJKHx',
-        //                     familyName: 'Iryna',
-        //                     firstName: 'Telesheva',
-        //                     dateOfBirth: '2000-07-03',
-        //                     personalIdentifier: 'iryna.telesheva@intellecteu.com',
-        //                     gender: "Female",
-        //                     currentAddress: "",
-        //                     nameAndFamilyNameAtBirth: "",
-        //                     placeOfBirth: "",
-        //                 },
-        //                 expirationDate: "2023-12-30T23:00:00Z",
-        //                 id: "urn:uuid:e7bddaf6-b4a2-4d48-b277-64d87b2f1dc8",
-        //                 issuanceDate: "2023-07-19T10:39:06Z",
-        //                 issuer: {
-        //                     id: 'did:web:did-web.securevalue.exchange:343b08f3-dc4d-4cd3-b276-3f2d8a146a0d',
-        //                     name: 'ieu'
-        //                 },
-        //                 type: ['VerifiableCredential'],
-        //         },
-        //     },
-        // });
-        // this.dialog.open(MeecoVCSubmitDialogComponent, {
-        //     width: '800px',
-        //     disableClose: true,
-        //     autoFocus: false,
-        //     data: {
-        //         document: [
-        //             {
-        //                 geography: 'Ukraine',
-        //                 law: 'test',
-        //                 tags: 'test',
-        //                 '@context': [
-        //                     'ipfs://bafkreiam7a2vox6q7yweh4xsebpp4vnonasxlzcdsaxt2cicviax4f7ruq'
-        //                 ],
-        //                 id: 'did:hedera:testnet:DBWr1G27LMy2RbhEBmY4GD235kiaaTpKGqaYBWQbAYe5_0.0.15432355',
-        //                 type: 'StandardRegistry'
-        //             }
-        //         ],
-        //     },
-        // });
     }
 
     login(login: string, password: string) {
@@ -188,15 +130,30 @@ export class LoginComponent implements OnInit, OnDestroy {
 
     private handleMeecoVPVerification(): void {
         this.wsService.meecoVerifyVPSubscribe((event) => {
-            // ToDo: remove
-            console.log(event);
             this.qrCodeDialogRef.close();
+
             this.dialog.open(MeecoVCSubmitDialogComponent, {
                 width: '800px',
                 disableClose: true,
                 autoFocus: false,
-                data: { document: event.vc },
+                data: {
+                    document: event.vc,
+                    presentationRequestId: event.presentation_request_id,
+                    submissionId: event.submission_id,
+                },
             });
+        });
+    }
+
+    private handleMeecoVCApproval(): void {
+        this.wsService.meecoApproveVCSubscribe((event) => {
+            console.log('handleMeecoVCApproval: ', event);
+        });
+    }
+
+    private handleMeecoVCRejection(): void {
+        this.wsService.meecoRejectVCSubscribe((event) => {
+            console.log('handleMeecoVCRejection: ', event);
         });
     }
 
