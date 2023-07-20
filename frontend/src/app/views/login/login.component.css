@@ -122,6 +122,15 @@ form ::ng-deep .mat-raised-button.mat-button-disabled.mat-button-disabled {
     box-shadow: none;
     color: rgba(0, 0, 0, 0.7);
     margin-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.meeco-button__logo {
+    width: 24px;
+    height: 24px;
+    margin-right: 6px;
 }
 
 .login__footer {

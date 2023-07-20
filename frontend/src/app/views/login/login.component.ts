@@ -1,6 +1,12 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { AbstractControl, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
+import {
+    AbstractControl,
+    FormControl,
+    FormGroup,
+    ValidationErrors,
+    Validators,
+} from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { UserRole } from '@guardian/interfaces';
 import { AuthStateService } from 'src/app/services/auth-state.service';
@@ -10,7 +16,6 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { QrCodeDialogComponent } from 'src/app/components/qr-code-dialog/qr-code-dialog.component';
 import { MeecoVCSubmitDialogComponent } from 'src/app/components/meeco-vc-submit-dialog/meeco-vc-submit-dialog.component';
-import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 
 /**
  * Login page.
@@ -34,7 +39,8 @@ export class LoginComponent implements OnInit, OnDestroy {
             noWhitespaceValidator(),
         ]),
     });
-    meecoBtnTitle: string = 'Meeco Login';
+    initialMeecoBtnTitle: string = 'Meeco Login';
+    meecoBtnTitle: string = this.initialMeecoBtnTitle;
     qrCodeDialogRef: MatDialogRef<QrCodeDialogComponent>;
     private _subscriptions: Subscription[] = [];
 
@@ -43,7 +49,7 @@ export class LoginComponent implements OnInit, OnDestroy {
         private auth: AuthService,
         private router: Router,
         private wsService: WebSocketService,
-        private dialog: MatDialog,
+        private dialog: MatDialog
     ) {}
 
     ngOnInit() {
@@ -60,7 +66,6 @@ export class LoginComponent implements OnInit, OnDestroy {
         this.handleMeecoPresentVPMessage();
         this.handleMeecoVPVerification();
         this.handleMeecoVCApproval();
-        this.handleMeecoVCRejection();
     }
 
     ngOnDestroy(): void {
@@ -124,7 +129,7 @@ export class LoginComponent implements OnInit, OnDestroy {
             });
             this.qrCodeDialogRef
                 .afterClosed()
-                .subscribe(() => (this.meecoBtnTitle = 'Meeco Login'));
+                .subscribe(() => (this.meecoBtnTitle = this.initialMeecoBtnTitle));
         });
     }
 
@@ -133,7 +138,7 @@ export class LoginComponent implements OnInit, OnDestroy {
             this.qrCodeDialogRef.close();
 
             this.dialog.open(MeecoVCSubmitDialogComponent, {
-                width: '800px',
+                width: '750px',
                 disableClose: true,
                 autoFocus: false,
                 data: {
@@ -147,13 +152,15 @@ export class LoginComponent implements OnInit, OnDestroy {
 
     private handleMeecoVCApproval(): void {
         this.wsService.meecoApproveVCSubscribe((event) => {
-            console.log('handleMeecoVCApproval: ', event);
-        });
-    }
-
-    private handleMeecoVCRejection(): void {
-        this.wsService.meecoRejectVCSubscribe((event) => {
-            console.log('handleMeecoVCRejection: ', event);
+            // TODO: Add login logic
+            // this.auth.setAccessToken(event.jwt);
+            // this.auth.setUsername(login);
+            // this.authState.updateState(true);
+            // if (role == UserRole.STANDARD_REGISTRY) {
+            //     this.router.navigate(['/config']);
+            // } else {
+            //     this.router.navigate(['/']);
+            // }
         });
     }
 
@@ -189,5 +196,9 @@ export class LoginComponent implements OnInit, OnDestroy {
 
     get showPasswordValue(): boolean {
         return this.passFieldType === 'text';
+    }
+
+    get shouldDisableMeecoBtn(): boolean {
+        return this.meecoBtnTitle !== this.initialMeecoBtnTitle;
     }
 }

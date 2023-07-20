@@ -3,7 +3,7 @@ import { Subject, Subscription } from 'rxjs';
 import { webSocket, WebSocketSubject, WebSocketSubjectConfig } from 'rxjs/webSocket';
 import { AuthService } from './auth.service';
 import { ToastrService } from 'ngx-toastr';
-import { ApplicationStates, MessageAPI, NotifyAPI } from '@guardian/interfaces';
+import { ApplicationStates, MessageAPI, NotifyAPI, UserRole } from '@guardian/interfaces';
 import { Router } from '@angular/router';
 
 interface MeecoVerifyVPResponse {
@@ -39,7 +39,6 @@ export class WebSocketService {
     private meecoVerifyVPSubject: Subject<any> = new Subject();
     private meecoVerifyVPFailedSubject: Subject<any> = new Subject();
     private meecoApproveVCSubject: Subject<any> = new Subject();
-    private meecoRejectVCSubject: Subject<any> = new Subject();
     private serviesStates: any = [];
     private sendingEvent: boolean;
 
@@ -254,25 +253,14 @@ export class WebSocketService {
                 }
                 case 'MEECO_VERIFY_VP': {
                     this.meecoVerifyVPSubject.next(event.data);
-                    this.meecoVerifyVPSubject.complete();
                     break;
                 }
                 case 'MEECO_VERIFY_VP_FAILED': {
-                    this.meecoVerifyVPFailedSubject.next();
-                    this.toastr.error(`${event.data.error}.`, 'Submission for VP presentation request failed.', {
-                        timeOut: 10000,
-                        closeButton: true,
-                        positionClass: 'toast-bottom-right',
-                        enableHtml: true
-                    });
+                    this.meecoVerifyVPFailedSubject.next(event.data);
                     break;
                 }
                 case 'MEECO_APPROVE_SUBMISSION_RESPONSE': {
                     this.meecoApproveVCSubject.next(event.data);
-                    break;
-                }
-                case 'MEECO_REJECT_SUBMISSION_RESPONSE': {
-                    this.meecoRejectVCSubject.next(event.data);
                     break;
                 }
                 default:
@@ -406,7 +394,7 @@ export class WebSocketService {
     }
 
     public meecoVerifyVPFailedSubscribe(
-        next?: (() => void),
+        next?: ((event: { error: string }) => void),
         error?: ((error: any) => void),
         complete?: (() => void)
     ): Subscription {
@@ -414,25 +402,30 @@ export class WebSocketService {
     }
 
     public meecoApproveVCSubscribe(
-        next?: ((event: { type: string, data: any }) => void),
+        next?: ((event: { cid: string, jwt: string }) => void),
         error?: ((error: any) => void),
         complete?: (() => void)
     ): Subscription {
         return this.meecoApproveVCSubject.subscribe(next, error, complete);
     }
 
-    public meecoRejectVCSubscribe(
-        next?: ((event: { type: string, data: any }) => void),
-        error?: ((error: any) => void),
-        complete?: (() => void)
-    ): Subscription {
-        return this.meecoRejectVCSubject.subscribe(next, error, complete);
+    public closeVerifyVPSubscription(): void {
+        this.meecoVerifyVPSubject.complete();
     }
 
-    public approveVCSubject(presentation_request_id: string, submission_id: string): void {
+    public closeVerifyVPFailedSubscription(): void {
+        this.meecoVerifyVPFailedSubject.complete();
+    }
+
+    public approveVCSubject(
+        presentation_request_id: string,
+        submission_id: string,
+        role: UserRole
+    ): void {
         this.send('MEECO_APPROVE_SUBMISSION', {
             presentation_request_id,
             submission_id,
+            role,
         });
     }
 
