@@ -45,6 +45,10 @@ jobs:
           npm install
           npm run build
           popd
+          pushd notification-service
+          npm install
+          npm run build
+          popd
           pushd logger-service
           npm install
           npm run build

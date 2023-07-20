@@ -23,6 +23,8 @@ import { ContractConfigComponent } from './views/contract-config/contract-config
 import { ContractRequestConfigComponent } from './views/contract-request-config/contract-request-config.component';
 import { BrandingComponent } from './views/branding/branding.component';
 import { SuggestionsConfigurationComponent } from './views/suggestions-configuration/suggestions-configuration.component';
+import { AsyncProgressComponent } from './modules/common/async-progress/async-progress.component';
+import { NotificationsComponent } from './views/notifications/notifications.component';
 //Modules
 import { PoliciesComponent } from './modules/policy-engine/policies/policies.component';
 import { PolicyConfigurationComponent } from './modules/policy-engine/policy-configuration/policy-configuration/policy-configuration.component';
@@ -150,6 +152,8 @@ export class ServicesStatusGuard implements CanActivate {
 const routes: Routes = [
     { path: 'login', component: LoginComponent },
     { path: 'register', component: RegisterComponent },
+    { path: 'task/:id', component: AsyncProgressComponent },
+    { path: 'notifications', component: NotificationsComponent },
 
     { path: 'user-profile', component: UserProfileComponent, canActivate: [UserGuard, ServicesStatusGuard] },
 

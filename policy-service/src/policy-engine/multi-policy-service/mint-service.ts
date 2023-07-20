@@ -19,6 +19,8 @@ import {
     TopicConfig,
     VcDocumentDefinition as VcDocument,
     Workers,
+    NotificationHelper,
+    IAuthUser,
 } from '@guardian/common';
 import { PrivateKey } from '@hashgraph/sdk';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
@@ -82,8 +84,14 @@ export class MintService {
         targetAccount: string,
         uuid: string,
         transactionMemo: string,
-        ref?: AnyBlockType
+        ref?: AnyBlockType,
+        policyOwner?: any
     ): Promise<any[]> {
+        const notifier = await NotificationHelper.initProgress(
+            [root.id || policyOwner.id],
+            'Minting tokens',
+            'Minting started'
+        );
         const mintNFT = (metaData: string[]): Promise<number[]> =>
             workers.addRetryableTask(
                 {
@@ -146,6 +154,14 @@ export class MintService {
                 }/${tasks.length * MintService.BATCH_NFT_MINT_SIZE})`,
                 ref
             );
+            await notifier.step(
+                `Mint(${mintId}): Minting and transferring (Chunk: ${
+                    i * MintService.BATCH_NFT_MINT_SIZE + 1
+                }/${tasks.length * MintService.BATCH_NFT_MINT_SIZE})`,
+                (i * MintService.BATCH_NFT_MINT_SIZE +
+                    1) / (tasks.length * MintService.BATCH_NFT_MINT_SIZE) *
+                    100
+            );
             try {
                 const results = await Promise.all(dataChunk.map(mintAndTransferNFT));
                 for (const serials of results) {
@@ -165,7 +181,10 @@ export class MintService {
                 throw error;
             }
         }
-
+        await notifier.finish({
+            title: 'Mint completed',
+            message: 'All tokens already minted and trasferred'
+        });
         MintService.log(
             `Mint(${mintId}): Minted (Count: ${Math.floor(tokenValue)})`,
             ref
@@ -317,7 +336,8 @@ export class MintService {
         targetAccount: string,
         messageId: string,
         transactionMemo: string,
-        documents: VcDocument[]
+        documents: VcDocument[],
+        policyOwner: IAuthUser,
     ): Promise<void> {
         const multipleConfig = await MintService.getMultipleConfig(ref, documentOwner);
         if (multipleConfig) {
@@ -353,7 +373,7 @@ export class MintService {
             const tokenConfig = await MintService.getTokenConfig(ref, token);
             if (token.tokenType === 'non-fungible') {
                 const serials = await MintService.mintNonFungibleTokens(
-                    tokenConfig, tokenValue, root, targetAccount, messageId, transactionMemo, ref
+                    tokenConfig, tokenValue, root, targetAccount, messageId, transactionMemo, ref, policyOwner
                 );
                 await MintService.updateDocuments(messageId, { tokenId: token.tokenId, serials }, ref);
             } else {
