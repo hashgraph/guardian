@@ -9,7 +9,10 @@ import {
 import { IWizardConfig, MessageAPI } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier } from '@helpers/notifier';
 import { PolicyEngine } from '@policy-engine/policy-engine';
-import { exportSchemas, importSchemaByFiles, } from './helpers/schema-import-export-helper';
+import {
+    exportSchemas,
+    importSchemaByFiles,
+} from './helpers/schema-import-export-helper';
 import { PolicyWizardHelper } from './helpers/policy-wizard-helper';
 
 /**
@@ -27,8 +30,8 @@ async function createExistingPolicySchemas(
     const schemasToCreate = schemas.filter(
         (schema) =>
             schemaIris.includes(schema.iri) &&
-            (schema.topicId !== 'draft' &&
-            schema.topicId !== policyTopicId)
+            schema.topicId !== 'draft' &&
+            schema.topicId !== policyTopicId
     );
     const schemaToCreateIris = schemasToCreate.map((schema) => schema.iri);
     const relationships = await exportSchemas(
@@ -78,8 +81,8 @@ async function createExistingPolicySchemas(
 export async function wizardAPI(): Promise<void> {
     ApiResponse(MessageAPI.WIZARD_POLICY_CREATE_ASYNC, async (msg) => {
         // tslint:disable-next-line:prefer-const
-        let { config, owner, taskId } = msg;
-        const notifier = initNotifier(taskId);
+        let { config, owner, task, saveState } = msg;
+        const notifier = await initNotifier(task);
         RunFunctionAsync(
             async () => {
                 const policyEngine = new PolicyEngine();
@@ -97,22 +100,21 @@ export async function wizardAPI(): Promise<void> {
                     notifier
                 );
                 await policyEngine.setupPolicySchemas(
-                    config.schemas.map(
-                        (schema: any) => schema.iri
-                    ),
+                    config.schemas.map((schema: any) => schema.iri),
                     policy.topicId,
                     owner
                 );
-                notifier.result({
+                await notifier.result({
                     policyId: policy.id,
                     wizardConfig: config,
+                    saveState,
                 });
             },
             async (error) => {
-                notifier.error(error);
+                await notifier.error(error);
             }
         );
-        return new MessageResponse({ taskId });
+        return new MessageResponse(task);
     });
 
     ApiResponse(MessageAPI.WIZARD_POLICY_CREATE, async (msg) => {
@@ -134,9 +136,7 @@ export async function wizardAPI(): Promise<void> {
                 emptyNotifier()
             );
             await policyEngine.setupPolicySchemas(
-                config.schemas.map(
-                    (schema: any) => schema.iri
-                ),
+                config.schemas.map((schema: any) => schema.iri),
                 policy.topicId,
                 owner
             );
@@ -169,9 +169,7 @@ export async function wizardAPI(): Promise<void> {
             );
             const policyConfig = wizardHelper.createPolicyConfig(config);
             await policyEngine.setupPolicySchemas(
-                config.schemas.map(
-                    (schema: any) => schema.iri
-                ),
+                config.schemas.map((schema: any) => schema.iri),
                 policy.topicId,
                 owner
             );

@@ -11,12 +11,11 @@ import { VCViewerDialog } from '../../modules/schema-engine/vc-dialog/vc-dialog.
 import { HeaderPropsService } from '../../services/header-props.service';
 import { InformService } from '../../services/inform.service';
 import { TasksService } from '../../services/tasks.service';
+import { Router } from '@angular/router';
 
 enum OperationMode {
     None,
     Generate,
-    SetProfile,
-    RestoreProfile,
     GetAllUserTopics
 }
 
@@ -62,9 +61,7 @@ export class RootConfigComponent implements OnInit {
                     topicId
                 }).subscribe((result) => {
                     const { taskId, expectation } = result;
-                    this.taskId = taskId;
-                    this.expectedTaskMessages = expectation;
-                    this.operationMode = OperationMode.RestoreProfile;
+                    this.router.navigate(['task', taskId]);
                 }, (e) => {
                     this.loading = false;
                     this.taskId = undefined;
@@ -110,6 +107,7 @@ export class RootConfigComponent implements OnInit {
     userTopics: any[] = [];
 
     constructor(
+        private router: Router,
         private auth: AuthService,
         private profileService: ProfileService,
         private schemaService: SchemaService,
@@ -206,9 +204,7 @@ export class RootConfigComponent implements OnInit {
             this.headerProps.setLoading(true);
             this.profileService.pushSetProfile(data).subscribe((result) => {
                 const { taskId, expectation } = result;
-                this.taskId = taskId;
-                this.expectedTaskMessages = expectation;
-                this.operationMode = OperationMode.SetProfile;
+                this.router.navigate(['task', taskId]);
             }, ({ message }) => {
                 this.loading = false;
                 this.headerProps.setLoading(false);
@@ -375,14 +371,6 @@ export class RootConfigComponent implements OnInit {
                             vc: value.vc
                         });
                         this.loading = false;
-                        break;
-                    }
-                    case OperationMode.SetProfile: {
-                        this.loadProfile();
-                        break;
-                    }
-                    case OperationMode.RestoreProfile: {
-                        this.loadProfile();
                         break;
                     }
                     case OperationMode.GetAllUserTopics: {

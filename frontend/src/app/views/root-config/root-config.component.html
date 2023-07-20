@@ -4,17 +4,8 @@
         <mat-spinner></mat-spinner>
     </div>
 
-    <div *ngIf="loading && progress" class="loading">
-        <div class="progress">
-            <span>Finishing Setup</span>
-            <mat-progress-bar mode="determinate" [value]="progress"></mat-progress-bar>
-        </div>
-    </div>
-
-    <div *ngIf="loading && taskId" class="loading">
-        <async-progress class="loading-progress" [taskId]="taskId" [expected]="expectedTaskMessages"
+    <async-progress *ngIf="loading && taskId" [taskId]="taskId"
             (error)="onAsyncError($event)" (completed)="onAsyncCompleted()"></async-progress>
-    </div>
 
     <div class="root-config" *ngIf="isConfirmed && profile">
         <div class="config-display">
@@ -130,13 +121,13 @@
                     <mat-icon class="refresh-btn">refresh</mat-icon>
                     <span>Restore data</span>
                 </button>
-                
+
                 <div class="action-btns__separator" [attr.aria-disabled]="shouldDisableActionBtns">
                     <div class="separator-line"></div>
                     <span>OR</span>
                     <div class="separator-line"></div>
                 </div>
-                
+
                 <button
                     mat-raised-button
                     class="action-btns__item"
@@ -147,9 +138,10 @@
                     Next
                 </button>
             </ng-container>
-             
+
             <ng-template #proceedButton>
                 <button
+                    type="button"
                     mat-raised-button
                     class="action-btns__item"
                     [disabled]="shouldDisableActionBtns"

@@ -15,7 +15,8 @@
     "analytics-service",
     "worker-service",
     "policy-service",
-    "api-tests"
+    "api-tests",
+    "notification-service"
   ],
   "version": "2.14.2"
 }

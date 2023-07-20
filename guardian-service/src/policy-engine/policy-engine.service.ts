@@ -313,45 +313,45 @@ export class PolicyEngineService {
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.CREATE_POLICIES_ASYNC, async (msg) => {
-            const { model, user, taskId } = msg;
-            const notifier = initNotifier(taskId);
+            const { model, user, task } = msg;
+            const notifier = await initNotifier(task);
             RunFunctionAsync(async () => {
                 const did = await this.getUserDid(user.username);
                 const policy = await this.policyEngine.createPolicy(model, did, notifier);
-                notifier.result(policy.id);
+                await notifier.result(policy.id);
             }, async (error) => {
-                notifier.error(error);
+                await notifier.error(error);
             });
-            return new MessageResponse({ taskId });
+            return new MessageResponse(task);
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.CLONE_POLICY_ASYNC, async (msg) => {
-            const { policyId, model, user, taskId } = msg;
-            const notifier = initNotifier(taskId);
+            const { policyId, model, user, task } = msg;
+            const notifier = await initNotifier(task);
             RunFunctionAsync(async () => {
                 const result = await this.policyEngine.clonePolicy(policyId, model, user.did, notifier);
                 if (result?.errors?.length) {
                     const message = `Failed to clone schemas: ${JSON.stringify(result.errors.map(e => e.name))}`;
-                    notifier.error(message);
+                    await notifier.error(message);
                     new Logger().warn(message, ['GUARDIAN_SERVICE']);
                     return;
                 }
-                notifier.result(result.policy.id);
+                await notifier.result(result.policy.id);
             }, async (error) => {
-                notifier.error(error);
+                await notifier.error(error);
             });
-            return new MessageResponse({ taskId });
+            return new MessageResponse(task);
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.DELETE_POLICY_ASYNC, async (msg) => {
-            const { policyId, user, taskId } = msg;
-            const notifier = initNotifier(taskId);
+            const { policyId, user, task } = msg;
+            const notifier = await initNotifier(task);
             RunFunctionAsync(async () => {
-                notifier.result(await this.policyEngine.deletePolicy(policyId, user, notifier));
+                await notifier.result(await this.policyEngine.deletePolicy(policyId, user, notifier));
             }, async (error) => {
-                notifier.error(error);
+                await notifier.error(error);
             });
-            return new MessageResponse({ taskId });
+            return new MessageResponse(task);
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.SAVE_POLICIES, async (msg) => {
@@ -399,25 +399,25 @@ export class PolicyEngineService {
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.PUBLISH_POLICIES_ASYNC, async (msg) => {
-            const { model, policyId, user, taskId } = msg;
-            const notifier = initNotifier(taskId);
+            const { model, policyId, user, task } = msg;
+            const notifier = await initNotifier(task);
 
             RunFunctionAsync(async () => {
                 if (!model || !model.policyVersion) {
                     throw new Error('Policy version in body is empty');
                 }
 
-                notifier.start('Resolve Hedera account');
+                await notifier.start('Resolve Hedera account');
                 const owner = await this.getUserDid(user.username);
-                notifier.completed();
+                await notifier.completed();
                 const result = await this.policyEngine.validateAndPublishPolicy(model, policyId, owner, notifier);
-                notifier.result(result);
+                await notifier.result(result);
             }, async (error) => {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
-                notifier.error(error);
+                await notifier.error(error);
             });
 
-            return new MessageResponse({ taskId });
+            return new MessageResponse(task);
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.DRY_RUN_POLICIES, async (msg) => {
@@ -747,8 +747,8 @@ export class PolicyEngineService {
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_FILE_ASYNC, async (msg) => {
-            const { zip, user, versionOfTopicId, taskId } = msg;
-            const notifier = initNotifier(taskId);
+            const { zip, user, versionOfTopicId, task } = msg;
+            const notifier = await initNotifier(task);
 
             RunFunctionAsync(async () => {
                 if (!zip) {
@@ -756,26 +756,26 @@ export class PolicyEngineService {
                 }
                 new Logger().info(`Import policy by file`, ['GUARDIAN_SERVICE']);
                 const did = await this.getUserDid(user.username);
-                notifier.start('File parsing');
+                await notifier.start('File parsing');
                 const policyToImport = await PolicyImportExportHelper.parseZipFile(Buffer.from(zip.data), true);
-                notifier.completed();
+                await notifier.completed();
                 const result = await PolicyImportExportHelper.importPolicy(policyToImport, did, versionOfTopicId, notifier);
                 if (result?.errors?.length) {
                     const message = `Failed to import schemas: ${JSON.stringify(result.errors.map(e => e.name))}`
-                    notifier.error(message);
+                    await notifier.error(message);
                     new Logger().warn(message, ['GUARDIAN_SERVICE']);
                     return;
                 }
-                notifier.result({
+                await notifier.result({
                     policyId: result.policy.id,
                     errors: result.errors
                 });
             }, async (error) => {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
-                notifier.error(error);
+                await notifier.error(error);
             });
 
-            return new MessageResponse({ taskId });
+            return new MessageResponse(task);
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW, async (msg) => {
@@ -790,18 +790,18 @@ export class PolicyEngineService {
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW_ASYNC, async (msg) => {
-            const { messageId, user, taskId } = msg;
-            const notifier = initNotifier(taskId);
+            const { messageId, user, task } = msg;
+            const notifier = await initNotifier(task);
 
             RunFunctionAsync(async () => {
                 const policyToImport = await this.policyEngine.preparePolicyPreviewMessage(messageId, user, notifier);
-                notifier.result(policyToImport);
+                await notifier.result(policyToImport);
             }, async (error) => {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
-                notifier.error(error);
+                await notifier.error(error);
             });
 
-            return new MessageResponse({ taskId });
+            return new MessageResponse(task);
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE, async (msg) => {
@@ -830,36 +830,36 @@ export class PolicyEngineService {
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_ASYNC, async (msg) => {
-            const { messageId, user, versionOfTopicId, taskId } = msg;
-            const notifier = initNotifier(taskId);
+            const { messageId, user, versionOfTopicId, task } = msg;
+            const notifier = await initNotifier(task);
 
             RunFunctionAsync(async () => {
                 try {
                     if (!messageId) {
                         throw new Error('Policy ID in body is empty');
                     }
-                    notifier.start('Resolve Hedera account');
+                    await notifier.start('Resolve Hedera account');
                     const did = await this.getUserDid(user.username);
                     const root = await this.users.getHederaAccount(did);
-                    notifier.completed();
+                    await notifier.completed();
                     const result = await this.policyEngine.importPolicyMessage(messageId, did, root, versionOfTopicId, notifier);
                     if (result?.errors?.length) {
                         const message = `Failed to import schemas: ${JSON.stringify(result.errors.map(e => e.name))}`
-                        notifier.error(message);
+                        await notifier.error(message);
                         new Logger().warn(message, ['GUARDIAN_SERVICE']);
                         return;
                     }
-                    notifier.result({
+                    await notifier.result({
                         policyId: result.policy.id,
                         errors: result.errors
                     });
                 } catch (error) {
                     new Logger().error(error, ['GUARDIAN_SERVICE']);
-                    notifier.error(error);
+                    await notifier.error(error);
                 }
             });
 
-            return new MessageResponse({ taskId });
+            return new MessageResponse(task);
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA, async (msg) => {

@@ -1,8 +1,8 @@
 import WebSocket from 'ws';
 import { IncomingMessage, Server } from 'http';
 import { Users } from '@helpers/users';
-import { ApplicationStates, GenerateUUIDv4, IStatus, MessageAPI } from '@guardian/interfaces';
-import { Logger, MessageResponse, NatsService, Singleton } from '@guardian/common';
+import { ApplicationStates, GenerateUUIDv4, MessageAPI, NotifyAPI } from '@guardian/interfaces';
+import { Logger, MessageResponse, NatsService, NotificationHelper, Singleton } from '@guardian/common';
 import { NatsConnection } from 'nats';
 import { Injectable } from '@nestjs/common';
 
@@ -54,6 +54,11 @@ export class WebSocketsService {
      */
     private readonly knownServices: {[key: string]: ApplicationStates};
 
+    /**
+     * Notification reading set
+     */
+    private readonly notificationReadingMap: Set<string> = new Set();
+
     constructor(
         private readonly server: Server,
         cn: NatsConnection
@@ -74,18 +79,64 @@ export class WebSocketsService {
     }
 
     /**
+     * Update notification message
+     * @param notification Notification
+     * @param type Message Type
+     */
+    public updateNotification(
+        notification: any,
+        type: NotifyAPI.UPDATE_PROGRESS_WS | NotifyAPI.UPDATE_WS
+    ): void {
+        this.wss.clients.forEach((client: any) => {
+            if (client.user?.id === notification.userId) {
+                this.send(client, {
+                    type,
+                    data: notification,
+                });
+            }
+        });
+    }
+
+    /**
+     * Delete notification message
+     * @param param0 Notification identifier and user identifier
+     * @param type Message type
+     */
+    public deleteNotification(
+        {
+            userId,
+            notificationId,
+        }: {
+            userId: string;
+            notificationId: string;
+        },
+        type: NotifyAPI.DELETE_PROGRESS_WS | NotifyAPI.DELETE_WS
+    ) {
+        this.wss.clients.forEach((client: any) => {
+            if (client.user?.id === userId) {
+                this.send(client, {
+                    type,
+                    data: notificationId,
+                });
+            }
+        });
+    }
+
+    /**
      * Notify about task changes
      * @param taskId
      * @param statuses
      * @param completed
      * @param error
      */
-    public notifyTaskProgress(taskId: string, statuses?: IStatus[], completed?: boolean, error?: any): void {
+    public notifyTaskProgress(task): void {
         this.wss.clients.forEach((client: any) => {
-            this.send(client, {
-                type: MessageAPI.UPDATE_TASK_STATUS,
-                data: { taskId, statuses, completed, error }
-            });
+            if (client.user?.id === task.userId) {
+                this.send(client, {
+                    type: MessageAPI.UPDATE_TASK_STATUS,
+                    data: task
+                });
+            }
         });
     }
 
@@ -178,6 +229,23 @@ export class WebSocketsService {
             });
             return new MessageResponse({})
         });
+
+        this.channel.getMessages(NotifyAPI.UPDATE_WS, async (msg) => {
+            this.updateNotification(msg.data, NotifyAPI.UPDATE_WS);
+            return new MessageResponse(true);
+        });
+        this.channel.getMessages(NotifyAPI.DELETE_WS, async (msg) => {
+            this.deleteNotification(msg.data, NotifyAPI.DELETE_WS);
+            return new MessageResponse(true);
+        });
+        this.channel.getMessages(NotifyAPI.UPDATE_PROGRESS_WS, async (msg) => {
+            this.updateNotification(msg.data, NotifyAPI.UPDATE_PROGRESS_WS);
+            return new MessageResponse(true);
+        });
+        this.channel.getMessages(NotifyAPI.DELETE_PROGRESS_WS, async (msg) => {
+            this.deleteNotification(msg.data, NotifyAPI.DELETE_PROGRESS_WS);
+            return new MessageResponse(true);
+        });
     }
 
     /**
@@ -209,6 +277,17 @@ export class WebSocketsService {
         try {
             const { type, data } = this.parseMessage(message);
             switch (type) {
+                case NotifyAPI.READ:
+                    if (this.notificationReadingMap.has(data)) {
+                        break;
+                    }
+                    this.notificationReadingMap.add(data);
+                    await NotificationHelper.read(data);
+                    setTimeout(
+                        () => this.notificationReadingMap.delete(data),
+                        1000
+                    );
+                    break;
                 case 'SET_ACCESS_TOKEN':
                 case 'UPDATE_PROFILE':
                     const token = data;
@@ -226,7 +305,8 @@ export class WebSocketsService {
                         GUARDIAN_SERVICE: [],
                         AUTH_SERVICE: [],
                         WORKER: [],
-                        POLICY_SERVICE: []
+                        POLICY_SERVICE: [],
+                        NOTIFICATION_SERVICE: []
                     };
 
                     const getStatuses = (): Promise<void> => {

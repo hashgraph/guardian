@@ -24,7 +24,7 @@ interface DemoKey {
  * @param notifier
  */
 async function generateDemoKey(role: any, settingsRepository: DataBaseHelper<Settings>, notifier: INotifier): Promise<DemoKey> {
-    notifier.start('Resolve settings');
+    await notifier.start('Resolve settings');
 
     const secretManager = SecretManager.New();
     const { OPERATOR_ID, OPERATOR_KEY } = await secretManager.getSecrets('keys/operator');
@@ -38,7 +38,7 @@ async function generateDemoKey(role: any, settingsRepository: DataBaseHelper<Set
     } catch (error) {
         initialBalance = null;
     }
-    notifier.completedAndStart('Creating account in Hedera');
+    await notifier.completedAndStart('Creating account in Hedera');
 
     const workers = new Workers();
     const result = await workers.addNonRetryableTask({
@@ -50,7 +50,7 @@ async function generateDemoKey(role: any, settingsRepository: DataBaseHelper<Set
         }
     }, 20);
 
-    notifier.completed();
+    await notifier.completed();
     return result;
 }
 
@@ -74,18 +74,18 @@ export async function demoAPI(
     });
 
     ApiResponse(MessageAPI.GENERATE_DEMO_KEY_ASYNC, async (msg) => {
-        const { role, taskId } = msg;
-        const notifier = initNotifier(taskId);
+        const { role, task } = msg;
+        const notifier = await initNotifier(task);
 
         RunFunctionAsync(async () => {
-            const result = await generateDemoKey(role, settingsRepository, emptyNotifier());
-            notifier.result(result);
+            const result = await generateDemoKey(role, settingsRepository, notifier);
+            await notifier.result(result);
         }, async (error) => {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
-            notifier.error(error);
+            await notifier.error(error);
         });
 
-        return new MessageResponse({ taskId });
+        return new MessageResponse(task);
     });
 
     ApiResponse(MessageAPI.GET_USER_ROLES, async (msg) => {
