@@ -76,7 +76,7 @@ export class WebSocketService {
 
         this.auth.subscribe(() => {
             this.reconnectAttempts = 10;
-            this.send('SET_ACCESS_TOKEN', this.auth.getAccessToken());
+            this.send(MessageAPI.SET_ACCESS_TOKEN, this.auth.getAccessToken());
         })
         this.connect();
 
@@ -136,7 +136,7 @@ export class WebSocketService {
                     this.reconnect();
                 }
             });
-        this.send('SET_ACCESS_TOKEN', this.auth.getAccessToken());
+        this.send(MessageAPI.SET_ACCESS_TOKEN, this.auth.getAccessToken());
         this.heartbeat();
     }
 
@@ -194,13 +194,15 @@ export class WebSocketService {
         }
         try {
             const event = JSON.parse(message);
-            switch (event.type || event.event) {
-                case 'PROFILE_BALANCE':
+            const { type, data } = event;
+            
+            switch (type || event.event) {
+                case MessageAPI.PROFILE_BALANCE:
                     this.profileSubject.next(event);
                     break;
                 case MessageAPI.GET_STATUS:
                 case MessageAPI.UPDATE_STATUS:
-                    this.updateStatus(event.data);
+                    this.updateStatus(data);
                     const allStatesReady = !this.serviesStates.find((item: any) => !item.states.includes(ApplicationStates.READY));
                     // const allStatesReady = true;
                     if (!allStatesReady) {
@@ -211,12 +213,12 @@ export class WebSocketService {
                     }
                     this.servicesReady.next(allStatesReady);
                     break;
-                case 'update-event': {
-                    this.blockUpdateSubject.next(event.data);
+                case MessageAPI.UPDATE_EVENT: {
+                    this.blockUpdateSubject.next(data);
                     break;
                 }
-                case 'error-event': {
-                    this.toastr.error(event.data.message, event.data.blockType, {
+                case MessageAPI.ERROR_EVENT: {
+                    this.toastr.error(data.message, data.blockType, {
                         timeOut: 10000,
                         closeButton: true,
                         positionClass: 'toast-bottom-right',
@@ -224,12 +226,12 @@ export class WebSocketService {
                     });
                     break;
                 }
-                case 'update-user-info-event': {
-                    this.userInfoUpdateSubject.next(event.data);
+                case MessageAPI.UPDATE_USER_INFO_EVENT: {
+                    this.userInfoUpdateSubject.next(data);
                     break;
                 }
                 case MessageAPI.UPDATE_TASK_STATUS: {
-                    this.taskStatusSubject.next(event.data);
+                    this.taskStatusSubject.next(data);
                     break;
                 }
                 case NotifyAPI.UPDATE_WS:
@@ -247,20 +249,20 @@ export class WebSocketService {
                 case NotifyAPI.DELETE_PROGRESS_WS:
                     this.deleteProgress.next(event.data);
                     break;
-                case 'MEECO_AUTH_PRESENT_VP': {
-                    this.meecoPresentVPSubject.next(event.data);
+                case MessageAPI.MEECO_AUTH_PRESENT_VP: {
+                    this.meecoPresentVPSubject.next(data);
                     break;
                 }
-                case 'MEECO_VERIFY_VP': {
-                    this.meecoVerifyVPSubject.next(event.data);
+                case MessageAPI.MEECO_VERIFY_VP: {
+                    this.meecoVerifyVPSubject.next(data);
                     break;
                 }
-                case 'MEECO_VERIFY_VP_FAILED': {
-                    this.meecoVerifyVPFailedSubject.next(event.data);
+                case MessageAPI.MEECO_VERIFY_VP_FAILED: {
+                    this.meecoVerifyVPFailedSubject.next(data);
                     break;
                 }
-                case 'MEECO_APPROVE_SUBMISSION_RESPONSE': {
-                    this.meecoApproveVCSubject.next(event.data);
+                case MessageAPI.MEECO_APPROVE_SUBMISSION_RESPONSE: {
+                    this.meecoApproveVCSubject.next(data);
                     break;
                 }
                 default:
@@ -422,7 +424,7 @@ export class WebSocketService {
         submission_id: string,
         role: UserRole
     ): void {
-        this.send('MEECO_APPROVE_SUBMISSION', {
+        this.send(MessageAPI.MEECO_APPROVE_SUBMISSION, {
             presentation_request_id,
             submission_id,
             role,
@@ -430,26 +432,26 @@ export class WebSocketService {
     }
 
     public rejectVCSubject(presentation_request_id: string, submission_id: string): void {
-        this.send('MEECO_REJECT_SUBMISSION', {
+        this.send(MessageAPI.MEECO_REJECT_SUBMISSION, {
             presentation_request_id,
             submission_id,
         });
     }
 
     public login() {
-        this.send('SET_ACCESS_TOKEN', this.auth.getAccessToken());
+        this.send(MessageAPI.SET_ACCESS_TOKEN, this.auth.getAccessToken());
     }
 
     public logaut() {
-        this.send('SET_ACCESS_TOKEN', null);
+        this.send(MessageAPI.SET_ACCESS_TOKEN, null);
     }
 
     public updateProfile() {
-        this.send('UPDATE_PROFILE', this.auth.getAccessToken());
+        this.send(MessageAPI.UPDATE_PROFILE, this.auth.getAccessToken());
     }
 
     public meecoLogin(): void {
-        this.send('MEECO_AUTH_REQUEST', null);
+        this.send(MessageAPI.MEECO_AUTH_REQUEST, null);
     }
 
     private updateStatus(serviceStatus: any) {
