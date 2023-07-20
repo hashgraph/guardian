@@ -40,7 +40,9 @@
                 type="button"
                 class="meeco-button"
                 (click)="onMeecoLogin()"
+                [disabled]="shouldDisableMeecoBtn"
             >
+                <img src="/assets/meeco.svg" class="meeco-button__logo" />
                 {{ meecoBtnTitle }}
             </button>
         </div>
