@@ -306,6 +306,7 @@
         </div>
 
         <div class="user-content-info" *ngIf="isLogin || displayDemoAccounts">
+            <app-notification *ngIf="username"></app-notification>
             <div *ngIf="username" class="user-balance desktop-user-balance" [attr.balance-type]="balanceType">
                 {{balance}}
             </div>

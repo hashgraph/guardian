@@ -225,9 +225,9 @@ export class PolicyImportExportHelper {
         policy.description = additionalPolicyConfig?.description || policy.description;
 
         const users = new Users();
-        notifier.start('Resolve Hedera account');
+        await notifier.start('Resolve Hedera account');
         const root = await users.getHederaAccount(policyOwner);
-        notifier.completedAndStart('Resolve topic');
+        await notifier.completedAndStart('Resolve topic');
         const parent = await TopicConfig.fromObject(
             await DatabaseServer.getTopicByType(policyOwner, TopicType.UserTopic), true
         );
@@ -249,30 +249,30 @@ export class PolicyImportExportHelper {
             await DatabaseServer.saveTopic(topicRow.toObject());
         }
 
-        notifier.completed();
+        await notifier.completed();
         policy.topicId = topicRow.topicId;
-        notifier.start('Publish Policy in Hedera');
+        await notifier.start('Publish Policy in Hedera');
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
         const message = new PolicyMessage(MessageType.Policy, MessageAction.CreatePolicy);
         message.setDocument(policy);
         const messageStatus = await messageServer
             .setTopicObject(parent)
             .sendMessage(message);
-        notifier.completedAndStart('Link topic and policy');
+        await notifier.completedAndStart('Link topic and policy');
         await topicHelper.twoWayLink(topicRow, parent, messageStatus.getId());
-        notifier.completedAndStart('Publishing schemas');
+        await notifier.completedAndStart('Publishing schemas');
         const systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
-        notifier.info(`Found ${systemSchemas.length} schemas`);
+        await notifier.info(`Found ${systemSchemas.length} schemas`);
         messageServer.setTopicObject(topicRow);
 
         await publishSystemSchemas(systemSchemas, messageServer, policyOwner, notifier);
 
-        notifier.completed();
+        await notifier.completed();
 
         // Import Tokens
         const tokenMap = new Map<string, string>();
         if (tokens) {
-            notifier.start('Import tokens');
+            await notifier.start('Import tokens');
             const tokenRepository = new DataBaseHelper(Token);
             for (const token of tokens) {
                 const tokenObject = tokenRepository.create({
@@ -298,14 +298,14 @@ export class PolicyImportExportHelper {
 
                 tokenMap.set(token.id, tokenObject.id.toString());
             }
-            notifier.completed();
+            await notifier.completed();
         }
 
         // Import Schemas
         const { schemasMap, errors } = await importSchemaByFiles(policyOwner, schemas, topicRow.topicId, notifier);
 
         // Upload Artifacts
-        notifier.start('Upload Artifacts');
+        await notifier.start('Upload Artifacts');
         const artifactsMap = new Map<string, string>();
         const addedArtifacts = [];
         for (const artifact of artifacts) {
@@ -320,7 +320,7 @@ export class PolicyImportExportHelper {
             await DatabaseServer.saveArtifactFile(newArtifactUUID, artifact.data);
         }
 
-        notifier.completedAndStart('Saving in DB');
+        await notifier.completedAndStart('Saving in DB');
         // Replace id
         await PolicyImportExportHelper.replaceConfig(policy, schemasMap, artifactsMap);
 
@@ -329,7 +329,7 @@ export class PolicyImportExportHelper {
         const result = await new DataBaseHelper(Policy).save(model);
 
         if (tags) {
-            notifier.start('Import tags');
+            await notifier.start('Import tags');
             const policyTags = tags.filter((t: any) => t.entity === TagType.Policy);
             const tokenTags = tags.filter((t: any) => t.entity === TagType.Token);
             const schemaTags = tags.filter((t: any) => t.entity === TagType.Schema);
@@ -343,7 +343,7 @@ export class PolicyImportExportHelper {
                 map3.set(item.oldID, item.newID);
             }
             await importTag(schemaTags, map3);
-            notifier.completed();
+            await notifier.completed();
         }
 
         const _topicRow = await new DataBaseHelper(Topic).findOne({ topicId: topicRow.topicId })
@@ -372,7 +372,7 @@ export class PolicyImportExportHelper {
             });
         }
 
-        notifier.completed();
+        await notifier.completed();
         return { policy: result, errors };
     }
 

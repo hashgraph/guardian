@@ -65,9 +65,9 @@ async function setupUserProfile(username: string, profile: any, notifier: INotif
     const users = new Users();
     const wallet = new Wallet();
 
-    notifier.start('Get user');
+    await notifier.start('Get user');
     const user = await users.getUser(username);
-    notifier.completed();
+    await notifier.completed();
     let did: string;
     if (user.role === UserRole.STANDARD_REGISTRY) {
         profile.entity = SchemaEntity.STANDARD_REGISTRY;
@@ -79,15 +79,15 @@ async function setupUserProfile(username: string, profile: any, notifier: INotif
         throw new Error('Unknow user role');
     }
 
-    notifier.start('Update user');
+    await notifier.start('Update user');
     await users.updateCurrentUser(username, {
         did,
         parent: profile.parent,
         hederaAccountId: profile.hederaAccountId
     });
-    notifier.completedAndStart('Set up wallet');
+    await notifier.completedAndStart('Set up wallet');
     await wallet.setKey(user.walletToken, KeyType.KEY, did, profile.hederaAccountKey);
-    notifier.completed();
+    await notifier.completed();
 
     return did;
 }
@@ -111,7 +111,7 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
     let topicConfig: TopicConfig = null;
     let newTopic: Topic = null;
 
-    notifier.start('Resolve topic');
+    await notifier.start('Resolve topic');
     const globalTopic = await getGlobalTopic();
 
     const messageServer = new MessageServer(hederaAccountId, hederaAccountKey);
@@ -125,7 +125,7 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
     }
 
     if (!topicConfig) {
-        notifier.info('Create user topic');
+        await notifier.info('Create user topic');
         logger.info('Create User Topic', ['GUARDIAN_SERVICE']);
         const topicHelper = new TopicHelper(hederaAccountId, hederaAccountKey);
         topicConfig = await topicHelper.create({
@@ -145,7 +145,7 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
     // ------------------------
     // <-- Publish DID Document
     // ------------------------
-    notifier.completedAndStart('Publish DID Document');
+    await notifier.completedAndStart('Publish DID Document');
     logger.info('Create DID Document', ['GUARDIAN_SERVICE']);
     const didObject = await DIDDocument.create(hederaAccountKey, topicConfig.topicId);
     const userDID = didObject.getDid();
@@ -175,7 +175,7 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
     // ------------------
     // <-- Publish Schema
     // ------------------
-    notifier.completedAndStart('Publish Schema');
+    await notifier.completedAndStart('Publish Schema');
     let schemaObject: Schema;
     try {
         let schema: SchemaCollection = null;
@@ -192,7 +192,7 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
                 active: true
             });
             if (schema) {
-                notifier.info('Publish System Schema (STANDARD_REGISTRY)');
+                await notifier.info('Publish System Schema (STANDARD_REGISTRY)');
                 logger.info('Publish System Schema (STANDARD_REGISTRY)', ['GUARDIAN_SERVICE']);
                 schema.creator = didMessage.did;
                 schema.owner = didMessage.did;
@@ -213,7 +213,7 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
                 active: true
             });
             if (schema) {
-                notifier.info('Publish System Schema (USER)');
+                await notifier.info('Publish System Schema (USER)');
                 logger.info('Publish System Schema (USER)', ['GUARDIAN_SERVICE']);
                 schema.creator = didMessage.did;
                 schema.owner = didMessage.did;
@@ -242,7 +242,7 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
     // -----------------------
     // <-- Publish VC Document
     // -----------------------
-    notifier.completedAndStart('Publish VC Document');
+    await notifier.completedAndStart('Publish VC Document');
     if (vcDocument) {
         logger.info('Create VC Document', ['GUARDIAN_SERVICE']);
 
@@ -282,7 +282,7 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
     // Publish VC Document -->
     // -----------------------
 
-    notifier.completedAndStart('Save changes');
+    await notifier.completedAndStart('Save changes');
     if (newTopic) {
         newTopic.owner = didMessage.did;
         newTopic.parent = globalTopic?.topicId;
@@ -303,7 +303,7 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
             .sendMessage(regMessage)
     }
 
-    notifier.completed();
+    await notifier.completed();
     return userDID;
 }
 
@@ -472,79 +472,79 @@ export function profileAPI() {
     });
 
     ApiResponse(MessageAPI.CREATE_USER_PROFILE_COMMON_ASYNC, async (msg) => {
-        const { username, profile, taskId } = msg;
-        const notifier = initNotifier(taskId);
+        const { username, profile, task } = msg;
+        const notifier = await initNotifier(task);
 
         RunFunctionAsync(async () => {
             if (!profile.hederaAccountId) {
-                notifier.error('Invalid Hedera Account Id');
+                await notifier.error('Invalid Hedera Account Id');
                 return;
             }
             if (!profile.hederaAccountKey) {
-                notifier.error('Invalid Hedera Account Key');
+                await notifier.error('Invalid Hedera Account Key');
                 return;
             }
 
             const did = await setupUserProfile(username, profile, notifier);
-            notifier.result(did);
+            await notifier.result(did);
         }, async (error) => {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
-            notifier.error(error);
+            await notifier.error(error);
         });
 
-        return new MessageResponse({ taskId });
+        return new MessageResponse(task);
     });
 
     ApiResponse(MessageAPI.RESTORE_USER_PROFILE_COMMON_ASYNC, async (msg) => {
-        const { username, profile, taskId } = msg;
-        const notifier = initNotifier(taskId);
+        const { username, profile, task } = msg;
+        const notifier = await initNotifier(task);
 
         RunFunctionAsync(async () => {
             if (!profile.hederaAccountId) {
-                notifier.error('Invalid Hedera Account Id');
+                await notifier.error('Invalid Hedera Account Id');
                 return;
             }
             if (!profile.hederaAccountKey) {
-                notifier.error('Invalid Hedera Account Key');
+                await notifier.error('Invalid Hedera Account Key');
                 return;
             }
 
             const restore = new RestoreDataFromHedera();
             await restore.restoreRootAuthority(username, profile.hederaAccountId, profile.hederaAccountKey, profile.topicId)
 
-            notifier.result('did');
+            await notifier.result('did');
         }, async (error) => {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
-            notifier.error(error);
+            await notifier.error(error);
         });
 
-        return new MessageResponse({ taskId });
+        return new MessageResponse(task);
     });
 
     ApiResponse(MessageAPI.GET_ALL_USER_TOPICS_ASYNC, async (msg) => {
-        const { username, profile, taskId } = msg;
-        const notifier = initNotifier(taskId);
+        const { username, profile, task } = msg;
+        const notifier = await initNotifier(task);
 
         RunFunctionAsync(async () => {
             if (!profile.hederaAccountId) {
-                notifier.error('Invalid Hedera Account Id');
+                await notifier.error('Invalid Hedera Account Id');
                 return;
             }
             if (!profile.hederaAccountKey) {
-                notifier.error('Invalid Hedera Account Key');
+                await notifier.error('Invalid Hedera Account Key');
                 return;
             }
 
             const restore = new RestoreDataFromHedera();
             const result = await restore.findAllUserTopics(username, profile.hederaAccountId, profile.hederaAccountKey)
 
-            notifier.result(result);
+            await notifier.result(result);
         }, async (error) => {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
-            notifier.error(error);
+            await notifier.error(error);
         });
 
-        return new MessageResponse({ taskId });
+        return new MessageResponse(task);
     });
 }
 

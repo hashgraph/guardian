@@ -101,7 +101,7 @@ export async function findAndPublishSchema(
     root: IRootConfig,
     notifier: INotifier
 ): Promise<SchemaCollection> {
-    notifier.start('Load schema');
+    await notifier.start('Load schema');
 
     let item = await DatabaseServer.getSchema(id);
     if (!item) {
@@ -117,27 +117,27 @@ export async function findAndPublishSchema(
         throw new Error('Invalid status');
     }
 
-    notifier.completedAndStart('Publishing related schemas');
+    await notifier.completedAndStart('Publishing related schemas');
     const oldSchemaIri = item.iri;
     await publishDefsSchemas(item.document?.$defs, owner, root);
     item = await DatabaseServer.getSchema(id);
 
-    notifier.completedAndStart('Resolve topic');
+    await notifier.completedAndStart('Resolve topic');
     const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true);
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
         .setTopicObject(topic);
-    notifier.completedAndStart('Publish schema');
+    await notifier.completedAndStart('Publish schema');
 
     SchemaHelper.updateVersion(item, version);
     item = await publishSchema(item, messageServer, MessageAction.PublishSchema);
 
-    notifier.completedAndStart('Publish tags');
+    await notifier.completedAndStart('Publish tags');
     await publishSchemaTags(item, root);
 
-    notifier.completedAndStart('Update in DB');
+    await notifier.completedAndStart('Update in DB');
     await updateSchemaDocument(item);
     await updateSchemaDefs(item.iri, oldSchemaIri);
-    notifier.completed();
+    await notifier.completed();
     return item;
 }
 
@@ -164,7 +164,7 @@ export async function publishSystemSchema(
     SchemaHelper.setVersion(item, undefined, undefined);
     const result = await publishSchema(item, messageServer, type);
     if (notifier) {
-        notifier.info(`Schema ${result.name || '-'} published`);
+        await notifier.info(`Schema ${result.name || '-'} published`);
     }
     return result;
 }
