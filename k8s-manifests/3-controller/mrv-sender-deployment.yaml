@@ -1,3 +1,4 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -17,7 +18,7 @@ spec:
         io.kompose.service: mrv-sender
     spec:
       containers:
-        - image: gcr.io/hedera-registry/mrv-sender
+        - image: gcr.io/hedera-registry/mrv-sender:latest
           name: mrv-sender
           ports:
             - containerPort: 3003

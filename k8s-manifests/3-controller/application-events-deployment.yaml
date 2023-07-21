@@ -1,3 +1,4 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -17,7 +18,7 @@ spec:
         io.kompose.service: application-events
     spec:
       containers:
-        - image: gcr.io/hedera-registry/application-events
+        - image: gcr.io/hedera-registry/application-events:latest
           name: application-events
           ports:
             - containerPort: 3012

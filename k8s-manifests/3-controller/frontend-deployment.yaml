@@ -1,3 +1,4 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -23,6 +24,7 @@ spec:
         io.kompose.service: frontend
     spec:
       containers:
+        # - image: gcr.io/hedera-registry/frontend:latest
         - image: public.ecr.aws/m9c9x5t0/frontend:latest
           name: frontend
           ports:

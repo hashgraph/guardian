@@ -1,3 +1,4 @@
+---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -29,10 +30,10 @@ spec:
           ports:
             - containerPort: 8200
           resources: {}
-          securityContext:
-            capabilities:
-              add:
-                - IPC_LOCK
+          # securityContext:
+          #   capabilities:
+          #     add:
+          #       - IPC_LOCK
       restartPolicy: Always
   updateStrategy: {}
 status:

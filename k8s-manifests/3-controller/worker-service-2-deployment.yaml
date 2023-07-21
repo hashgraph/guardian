@@ -1,3 +1,4 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -230,7 +231,7 @@ spec:
                 configMapKeyRef:
                   key: VAULT_PROVIDER
                   name: general-configs
-          image: gcr.io/hedera-registry/worker-service
+          image: gcr.io/hedera-registry/worker-service:latest
           name: worker-service-2
           ports:
             - containerPort: 6555

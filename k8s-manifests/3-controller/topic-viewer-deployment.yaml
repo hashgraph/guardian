@@ -1,3 +1,4 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -17,7 +18,7 @@ spec:
         io.kompose.service: topic-viewer
     spec:
       containers:
-        - image: gcr.io/hedera-registry/topic-viewer
+        - image: gcr.io/hedera-registry/topic-viewer:latest
           name: topic-viewer
           ports:
             - containerPort: 3006

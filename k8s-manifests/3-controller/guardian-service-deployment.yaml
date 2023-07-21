@@ -1,3 +1,4 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -228,7 +229,7 @@ spec:
                 configMapKeyRef:
                   key: VAULT_PROVIDER
                   name: general-configs
-          image: gcr.io/hedera-registry/guardian-service
+          image: gcr.io/hedera-registry/guardian-service:latest
           name: guardian-service
           ports:
             - containerPort: 5007
