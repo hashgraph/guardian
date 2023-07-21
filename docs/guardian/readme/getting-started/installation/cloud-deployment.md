@@ -1,11 +1,16 @@
 # Cloud deployment
 
-This document describes how to deploy the platform on a cloud provider. Will cover detailed instructions for AWS and GCP, Azure.
-We going to use Rancher as the cluster management tool, so virtually any cloud provider supported by Rancher could be used following this guide, even on-premises deployments or hybrid cloud deployments.
+This document provides a comprehensive guide for deploying the platform on various cloud providers, including AWS,
+GCP, and Azure. The guide focuses on using Rancher as the cluster management tool, making it applicable to a wide
+range of cloud providers supported by Rancher, as well as on-premises and hybrid cloud deployments.
 
 ## Rancher deployment
 
-First step is to setup a Rancher server, and for that we're going to assume this Rancher server is going to be created in the same cloud provider where the Guardian instance is going to be deployed, but this is not necessarily true, you could simply use a rancher container distribution and run it locally and from there deploy the Guardian instance to any cloud provider. But will be beneficial for us to have it running also in the cloud for future management and monitoring of the cluster.
+To begin the Rancher deployment process, the first step is setting up a Rancher server. Initially, we assume the Rancher
+server will be created in the same cloud provider as the Guardian instance, but it's important to note that this is not
+mandatory. Alternatively, you can use a Rancher container distribution and run it locally, enabling you to deploy the
+Guardian instance to any cloud provider. However, having the Rancher server running in the cloud will be beneficial for
+future cluster management and monitoring.
 
 ### Rancher deployment on AWS
 
@@ -27,7 +32,10 @@ You should be able to log in with the credentials you created during the install
 
 ## Cluster deployment
 
-Once you have your Rancher server up and running, next step is to deploy a kubernetes cluster on the cloud provider of your choice. For this guide we're going to use the managed k8s solutions provided by the cloud providers, but you could also use Rancher to deploy a cluster using VMs, a different distribution like k3s, or even skip this step and use the sandbox cluster provided by Rancher if you don't plan to use the instance for production Workloads.
+After setting up your Rancher server successfully, the next step is to deploy a Kubernetes cluster on your preferred cloud
+provider. In this guide, we will utilize the managed Kubernetes solutions offered by cloud providers. However, you also
+have the option to deploy a cluster using VMs, a different distribution like k3s, or even use the Rancher-provided
+sandbox cluster if you do not intend to use it for production workloads.
 
 ### Cluster deployment on AWS EKS
 
@@ -47,23 +55,60 @@ Once you have your cluster up and running, you can start deploying the different
 
 For this guide we've divided the different manifests into several folders, which name is prefixed by a number, this is to indicate the order in which they should be deployed. The reason for this is that some of the components depend on others, so we need to deploy them in the right order to avoid errors and to ease service discovery.
 
-### Deploying the manifests
+### How to deploy Kubernetes manifests on Rancher
 
 To deploy the manifests, you can use the Rancher web interface, or you can use the `kubectl` command line tool. For this guide we're going to use the command line tool. The reason to use the command line tool is because it allows to deploy an entire folder with a single command, but you can use the web interface if you prefer. Simply click on the :outbox_tray:[import yaml] button on the right of header bar on rancher ui for each file.
 
-To deploy the manifests, you need first to download the kubeconfig credentials file (find the :page_facing_up:[downlaod kubeconfig] icon on rancher header), modify the file according to your needs (or delete the ones you don't plan to use), and then run these commands:
+To use kubectl tool, you need first to install the tool and download the kubeconfig credentials file by clicking on the :page_facing_up:[downlaod kubeconfig] icon on rancher header. You can also navigate to a kubectl console directly from the Rancher UI by clicking on the :terminal:[kubectl shell] icon on rancher header.
 
-> **_NOTE:_** before executing these commands is recommended to read below the *manifests folder structure* section for better understanding of what each folder contains.
+### Nginx ingress controller
+
+The first component we need to deploy is the Nginx ingress controller. This component is used to expose the different services to the outside world. You can find more details about this component in the official documentation, but for this guide we're going to use the default configuration.
+
+Complete information about this topic can be found in [this link](https://kubernetes.github.io/ingress-nginx/deploy), but here is a summary for the installation steps for the cloud providers referred on this document. 
+
+#### AWS
 
 ```bash
-kubectl --kubeconfig ./kubeconfig.yaml apply -f ./k8s-manifests/1-config/
-kubectl --kubeconfig ./kubeconfig.yaml apply -f ./k8s-manifests/2-service/
-kubectl --kubeconfig ./kubeconfig.yaml apply -f ./k8s-manifests/3-controller/
+kubectl --kubeconfig KUBECONFIG-FILE apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.1/deploy/static/provider/aws/deploy.yaml
 ```
 
-> **_NOTE:_** if you plan to use a namespace different than default one, you need to add the `--namespace <namespace>` flag to the commands above. And create the namespace before running the commands.
+#### GCP
 
-### Manifests folder structure
+```bash
+kubectl --kubeconfig KUBECONFIG-FILE apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.1/deploy/static/provider/cloud/deploy.yaml
+```
+
+#### Azure
+
+```bash
+kubectl --kubeconfig KUBECONFIG-FILE apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.1/deploy/static/provider/cloud/deploy.yaml
+```
+
+After this step is completed you should see a Load Balancer service created in your cluster with a external IP address where you'll have access to Guardian once it is deployed. You can check the status of the service by running the following command:
+
+```bash
+kubectl --kubeconfig KUBECONFIG-FILE -n ingress-nginx get svc -o wide
+
+```
+
+You can also find the load balancer using your cloud privider console. The domain name configuration and, DNS records and TLS certificates with SSL termination on the load balancer are out of the scope of this document.
+
+### Guardian manifests
+
+Simply run the following commands to deploy the manifests. You can find more details about the different components below, in the [manifests folder structure](#manifests-folder-structure) section.
+
+To use a namespace different than default one, you need to add the `--namespace <namespace>` flag to the commands above. And create the namespace before running the commands.
+
+```bash
+kubectl --kubeconfig KUBECONFIG-FILE apply -f ./k8s-manifests/1-config/
+kubectl --kubeconfig KUBECONFIG-FILE apply -f ./k8s-manifests/2-service/
+kubectl --kubeconfig KUBECONFIG-FILE apply -f ./k8s-manifests/3-controller/
+```
+
+> **_PRO-TIP:_** if you plan to use the web ui, this command executed locally may help to deploy all manifests on a single shot by coping in your clipboard a huge text with all the manifests content together: `find k8s-manifests -type f | sort | xargs cat | pbcopy` for macos, or `find k8s-manifests -type f | sort | xargs cat | xsel -b` for linux users.
+
+### Manifests folder structure {#manifests-folder-structure}
 
 #### 1-config
 
