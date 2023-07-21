@@ -14,8 +14,8 @@ export class NotificationHelper {
         new CommonVariables().getVariable('notifier');
 
     private constructor(
-        private _notificationIds: string[],
-        private _users: string[]
+        private readonly _notificationIds: string[],
+        private readonly _users: string[]
     ) {}
 
     /**
