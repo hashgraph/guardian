@@ -25,6 +25,25 @@
     border-bottom: 1px solid #ddd;
 }
 
+.toolbar__save-btn[readonly="true"],
+.toolbar__close-btn[readonly="true"] {
+    pointer-events: none;
+    filter: grayscale(1);
+    opacity: 0.6;
+}
+
+.toolbar__save-btn {
+    color: #3f51b5
+}
+
+.toolbar-btn.toolbar__close-btn {
+    width: 80px;
+}
+
+.toolbar__close-btn {
+    color: #c90000;
+}
+
 .toolbar-btn {
     cursor: pointer;
     margin: 2px 6px 2px 3px;
