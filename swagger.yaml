@@ -2063,7 +2063,7 @@ paths:
         - bearerAuth: []
         - bearerAuth: []
     delete:
-      operationId: PolicyApi_deletePOlicyAsync
+      operationId: PolicyApi_deletePolicyAsync
       parameters: []
       responses:
         '202':
@@ -6226,6 +6226,115 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /wizard/push/policy:
+    post:
+      operationId: WizardApi_setPolicyAsyncNew
+      summary: Creates a new policy.
+      description: >-
+        Creates a new policy by wizard. Only users with the Standard Registry
+        role are allowed to make the request.
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - policy
+                - roles
+                - schemas
+                - trustChain
+              properties:
+                roles:
+                  type: array
+                  items:
+                    type: string
+                policy:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    description:
+                      type: string
+                    topicDescription:
+                      type: string
+                    policyTag:
+                      type: string
+                schemas:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      iri:
+                        type: string
+                      isApproveEnable:
+                        type: boolean
+                      isMintSchema:
+                        type: boolean
+                      mintOptions:
+                        type: object
+                        properties:
+                          tokenId:
+                            type: string
+                          rule:
+                            type: string
+                      dependencySchemaIri:
+                        type: string
+                      relationshipsSchemaIri:
+                        type: string
+                      initialRolesFor:
+                        type: array
+                        items:
+                          type: string
+                      rolesConfig:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            role:
+                              type: string
+                            isApprover:
+                              type: boolean
+                            isCreator:
+                              type: boolean
+                            gridColumns:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  field:
+                                    type: string
+                                  title:
+                                    type: string
+                trustChain:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      role:
+                        type: string
+                      mintSchemaIri:
+                        type: string
+                      viewOnlyOwnDocuments:
+                        type: boolean
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags:
+        - wizard
   /wizard/{policyId}/config:
     post:
       tags:
@@ -6385,6 +6494,47 @@ paths:
       security:
         - bearer: []
         - bearerAuth: []
+  /notifications:
+    get:
+      operationId: NotificationsApi_getAllNotifications
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: &ref_6
+        - notifications
+  /notifications/new:
+    get:
+      operationId: NotificationsApi_getNewNotifications
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_6
+  /notifications/progresses:
+    get:
+      operationId: NotificationsApi_getProgresses
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_6
+  /notifications/read/all:
+    post:
+      operationId: NotificationsApi_readAll
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_6
+  /notifications/delete/{id}:
+    delete:
+      operationId: NotificationsApi_delete
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_6
   /schemas/type/{type}:
     get:
       tags:
