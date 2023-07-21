@@ -705,7 +705,7 @@
                                     [block]="currentBlock"></artifact-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.json">
-                                <json-properties class="readonly-status" *ngIf="options.json" [block]="currentBlock"
+                                <json-properties *ngIf="options.json" [block]="currentBlock"
                                     [readonly]="readonly"></json-properties>
                             </div>
                         </div>
