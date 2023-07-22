@@ -1,5 +1,5 @@
 import { DataBaseHelper, MessageResponse, NatsService, Singleton } from '@guardian/common';
-import { AuthEvents, GenerateUUIDv4 } from '@guardian/interfaces';
+import { AuthEvents, GenerateUUIDv4, ExternalProviders } from '@guardian/interfaces';
 import { MeecoService } from '../meeco/meeco.service';
 import { Logger } from '@nestjs/common';
 import { MeecoIssuerWhitelist } from '@entity/meeco-issuer-whitelist';
@@ -58,7 +58,6 @@ export class MeecoAuthService extends NatsService {
       issuerWhitelist.issuerId = process.env.MEECO_ISSUER_ORGANIZATION_ID;
       issuerWhitelist.name = process.env.MEECO_ISSUER_ORGANIZATION_NAME;
       issuerWhitelistRepository.save(issuerWhitelist);
-      console.log('Migrated MeecoIssuerWhitelist');
     }
   }
 
@@ -114,7 +113,7 @@ export class MeecoAuthService extends NatsService {
     this.getMessages<any, any>(AuthEvents.MEECO_APPROVE_SUBMISSION, async (msg: any) => {
       // ToDo: approve submissions that are not timed out or rejected
       const vpRequest = await this.meecoService.approveVPSubmission(msg.presentation_request_id, msg.submission_id, true);
-      return new MessageResponse({vpRequest, cid: msg.cid});
+      return new MessageResponse({vpRequest, cid: msg.cid, role: msg.role});
     });
 
     /**
@@ -136,6 +135,7 @@ export class MeecoAuthService extends NatsService {
    */
   private async getVPSubmissions(requestId: string, cid: string): Promise<void> {
     // poll for VP submission for 60 seconds every 3 seconds
+    let userProviderFound;
     let maxIterations = 20;
     const interval = setInterval(async () => {
       try {
@@ -152,6 +152,17 @@ export class MeecoAuthService extends NatsService {
           }
           
           const verifiableCredential = this.meecoService.decodeVPToken(vp_token);
+
+          if (!userProviderFound) {
+            userProviderFound = await this.sendMessage(
+              AuthEvents.GET_USER_BY_PROVIDER_USER_DATA,
+              {
+                providerId: verifiableCredential.vc.credentialSubject.id,
+                provider: ExternalProviders.MEECO,
+              }
+            );
+          }
+
           this.sendMessage(
             AuthEvents.MEECO_VERIFY_VP,
             {
@@ -159,6 +170,7 @@ export class MeecoAuthService extends NatsService {
               presentation_request_id,
               submission_id: submissionId,
               cid,
+              role: userProviderFound?.role || null,
             }
           );
         }

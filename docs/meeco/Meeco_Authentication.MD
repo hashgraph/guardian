@@ -11,9 +11,9 @@ Users have an option to login by Meeco using VC4OIDC as follows:
 
 2. Guardian Client Sends **MEECO_AUTH_REQUEST** Message over Websocket connetion
 
-3. Guardian API gateway recieves the message and send a **MEECO_AUTH_START** command to Auth service over the NATS service
+3. Guardian API gateway receives the message and send a **MEECO_AUTH_START** command to Auth service over the NATS service
 
-4. Auth service recieves the command from API Gateway
+4. Auth service receives the command from API Gateway
 
 5. Auth Service Creates a new Presentation Request to SVX platform
     - Auth Service logs in to SVX by OAUTH2.0 to get access token
@@ -29,9 +29,9 @@ Users have an option to login by Meeco using VC4OIDC as follows:
 
 6. Auth Service sends back the redirect_uri to API Gateway through MEECO_AUTH_REQUEST message over NATS
 
-7. API Gateway recieves the MEECO_AUTH_REQUEST message from Auth Service and sends the redirect_uri to Guardian client within MEECO_AUTH_PRESENT_VP message over Websocket connection
+7. API Gateway receives the MEECO_AUTH_REQUEST message from Auth Service and sends the redirect_uri to Guardian client within MEECO_AUTH_PRESENT_VP message over Websocket connection
 
-8. Guardian client recieves the redirect_uri from MEECO_AUTH_REQUEST message and shows the uri in QR code format
+8. Guardian client receives the redirect_uri from MEECO_AUTH_REQUEST message and shows the uri in QR code format
 
 9. In parallel Auth Service starts polling SVX platform to get VP submissions by user
 
@@ -49,23 +49,47 @@ Users have an option to login by Meeco using VC4OIDC as follows:
 
 16. API Gateway sends credential subjects through MEECO_VERIFY_VP over websocket connection
 
-17. Guardian client recieves the credential subjects through MEECO_VERIFY_VP
+17. Guardian client receives the credential subjects through MEECO_VERIFY_VP
 
 18. Guardian client shows the credential subject and asks user to approve/reject the info
 
 19. User clicks approv/reject button to approve/reject data
 
-20. Guardian client sends MEECO_APPROVE_SUBMISSION_RESPONSE/MEECO_REJECT_SUBMISSION_RESPONSE message over websocket
+20. The client sends via websocket the payload:
+```json
+{
+    "type": "MEECO_APPROVE_SUBMISSION",
+    "data": {
+      "presentation_request_id": "27e2211d-****-****-****-64e11e49f49c",
+        "submission_id": "a2f23940-****-****-9e39-2241e8e25fd4",
+      "role": "STANDARD_REGISTRY"
+    }
+}
+```
 
-21. API Gateway recieves MEECO_APPROVE_SUBMISSION_RESPONSE/MEECO_REJECT_SUBMISSION_RESPONSE message from Guardian client and hand it over to Auth service over NATS service
+21. The websocket get the payload and call the Meeco URl once approved, and get the user data with all verifiable credentials.
+During the process, the user is created in the Guardian application, the username is defined but also managed to avoid colisions.
+    - Auth Service submits verified submission to SVX platform
+    - persists data to database
+    - generates JWT token
+    - sends JWT token through NATS to API Gateway
 
-22. Auth Service recieves MEECO_APPROVE_SUBMISSION_RESPONSE/MEECO_REJECT_SUBMISSION_RESPONSE message
-    - if MEECO_APPROVE_SUBMISSION_RESPONSE message recieved
-        - Auth Service submits verified submission to SVX platform
-        - persists data to database
-        - generates JWT token
-        - sends JWT token through NATS to API Gateway
-    - if MEECO_REJECT_SUBMISSION_RESPONSE message recieved
-        - Auth Service submits verified submission to SVX platform
+22. The client receives the payload which contains all data necessary to manage the user through the application.
 
-23. API Gateway recieves JWT token from Auth Service and hand it over to Guardian client
+```json
+{
+  "type": "MEECO_APPROVE_SUBMISSION_RESPONSE",
+  "data": {
+    "username": "meecouser474377063",
+    "did": null,
+    "role": "STANDARD_REGISTRY",
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.**************.PVSYlGBmmfGC_1b4PBhro3QqnOU-lK4McJCfeAC1QNI"
+  }
+}
+```
+
+23. API Gateway receives JWT token from Auth Service and hand it over to Guardian client
+
+_The whole process can be checked in the image below_
+
+![](mermaid-diagram-2023-07-10-153433.png)
