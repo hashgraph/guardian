@@ -1,8 +1,12 @@
 import WebSocket from 'ws';
 import { IncomingMessage, Server } from 'http';
 import { Users } from '@helpers/users';
-import { ApplicationStates, GenerateUUIDv4, IStatus, MessageAPI } from '@guardian/interfaces';
-import { Logger, MessageResponse, NatsService, Singleton } from '@guardian/common';
+import { ApplicationStates, GenerateUUIDv4, ExternalProviders,
+    IStatus, MessageAPI, UserRole } from '@guardian/interfaces';
+import {
+    Logger, MessageResponse, NatsService, Singleton,
+    MeecoApprovedSubmission, generateNumberFromString
+} from '@guardian/common';
 import { NatsConnection } from 'nats';
 import { Injectable } from '@nestjs/common';
 import { MeecoAuth } from '@helpers/meeco';
@@ -227,10 +231,27 @@ export class WebSocketsService {
                     }));
                     break;
                 case 'MEECO_APPROVE_SUBMISSION':
-                    const meecoSubmissionApproveResp = await new MeecoAuth().approveSubmission(ws, data.presentation_request_id, data.submission_id);
+                    const meecoSubmissionApproveResp = await new MeecoAuth().approveSubmission(
+                        ws,
+                        data.presentation_request_id, data.submission_id) as MeecoApprovedSubmission;
+
+                    const meecoUser = MeecoAuth.extractUserFromApprovedMeecoToken(meecoSubmissionApproveResp)
+                    // The username structure is necessary to avoid collisions - meeco doest not provide unique username
+                    const userProvider = {
+                        role:  data.role || UserRole.STANDARD_REGISTRY as UserRole,
+                        username: `${meecoUser.firstName}${meecoUser.familyName}${
+                            generateNumberFromString(meecoUser.id)
+                        }`.toLowerCase(),
+                        providerId: meecoUser.id,
+                        provider: ExternalProviders.MEECO,
+                    };
+                    const guardianData = await new Users().generateNewUserTokenBasedOnExternalUserProvider(
+                      userProvider
+                    );
+
                     ws.send(JSON.stringify({
                         type: 'MEECO_APPROVE_SUBMISSION_RESPONSE', 
-                        data: meecoSubmissionApproveResp
+                        data: guardianData
                     }));
                     break;
                 case 'MEECO_REJECT_SUBMISSION':

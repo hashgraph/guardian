@@ -6,7 +6,7 @@ import { IMe } from '../meeco/models/me';
 import { IPresentationRequest, IPresentationSubmission, IPresentationSubmissions } from './models/presentation-request';
 import base64url from 'base64url';
 import * as jwt from 'jsonwebtoken';
-import { VerifiableCredential } from "./models/schema";
+import { VerifiableCredential } from '@guardian/common';
 
 const nacl = require('tweetnacl');
 

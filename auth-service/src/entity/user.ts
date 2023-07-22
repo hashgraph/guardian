@@ -58,6 +58,18 @@ export class User extends BaseEntity implements IUser {
     policyRoles?: any;
 
     /**
+     * Provider
+     */
+    @Property({ nullable: true })
+    provider?: string;
+
+    /**
+     * Provider Id
+     */
+    @Property({ nullable: true })
+    providerId?: string;
+
+    /**
      * Set defaults
      */
     @BeforeCreate()
