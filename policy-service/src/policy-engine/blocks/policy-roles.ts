@@ -399,7 +399,6 @@ export class PolicyRolesBlock {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const did = user?.did;
         const curUser = await PolicyUtils.getUser(ref, did);
-        const username = curUser?.username;
 
         if (!did) {
             throw new BlockActionError('Invalid user', ref.blockType, ref.uuid);
