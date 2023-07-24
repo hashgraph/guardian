@@ -24,7 +24,7 @@
       "@transmute/security-context": "0.7.0-unstable.80",
       "@transmute/vc.js": "0.7.0-unstable.80",
       "bs58": "^4.0.1",
-      "js-base64": "^3.6.1",
+      "js-base64": "^3.7.5",
       "ajv": "^8.10.0",
     "ajv-formats": "^2.1.1"
   }
