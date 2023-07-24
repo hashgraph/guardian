@@ -1,5 +1,5 @@
 import { ApiResponse } from '@api/helpers/api-response';
-import { DataBaseHelper, DatabaseServer, KeyType, Logger, MessageError, MessageResponse, RunFunctionAsync, Token, TopicHelper, Users, Wallet, Workers, } from '@guardian/common';
+import { DataBaseHelper, DatabaseServer, KeyType, Logger, MessageError, MessageResponse, NotificationHelper, RunFunctionAsync, Token, TopicHelper, Users, Wallet, Workers, } from '@guardian/common';
 import { GenerateUUIDv4, IRootConfig, IToken, MessageAPI, TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
 import { publishTokenTags } from './tag.service';
@@ -542,6 +542,11 @@ async function freezeToken(
         }
     }, 20);
 
+    await NotificationHelper.info(
+        `${freeze ? 'Freeze' : 'Unfreeze'} token ${token.tokenName}`,
+        `Token ${token.tokenName} was ${freeze ? 'unfrozed' : 'frozed'}`,
+        user.id
+    );
     const result = getTokenInfo(info, token);
     await notifier.completed();
     return result;
