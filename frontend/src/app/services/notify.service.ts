@@ -60,7 +60,6 @@ export class NotificationService {
                 });
                 break;
             case NotificationAction.POLICY_VIEW:
-                console.log(notification.result);
                 this.router.navigate(['policy-viewer', notification.result]);
                 break;
         }
