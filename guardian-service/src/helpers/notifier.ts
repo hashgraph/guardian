@@ -92,6 +92,15 @@ const taskResultTitleMap = new Map<TaskAction, string>([
     [TaskAction.DELETE_TOKEN, 'Token deleted'],
     [TaskAction.DELETE_POLICY, 'Policy deleted'],
     [TaskAction.CLONE_POLICY, 'Policy cloned'],
+    [TaskAction.CONNECT_USER, 'User connected'],
+    [TaskAction.CREATE_RANDOM_KEY, 'Random key created'],
+    [TaskAction.FREEZE_TOKEN, 'Token frozed'],
+    [TaskAction.UNFREEZE_TOKEN, 'Token unfrozed'],
+    [TaskAction.GRANT_KYC, 'KYC granted'],
+    [TaskAction.REVOKE_KYC, 'KYC revoked'],
+    [TaskAction.ASSOCIATE_TOKEN, 'Token associated'],
+    [TaskAction.DISSOCIATE_TOKEN, 'Token dissociated'],
+    [TaskAction.RESTORE_USER_PROFILE, 'Profile restored'],
 ]);
 
 function getNotificationResultMessage(action: TaskAction, result: any) {
@@ -105,6 +114,22 @@ function getNotificationResultMessage(action: TaskAction, result: any) {
             return `Policy ${result.policyId} imported`;
         case TaskAction.CREATE_SCHEMA:
             return `Schema ${result} created`;
+        case TaskAction.ASSOCIATE_TOKEN:
+            return `${result} associated`;
+        case TaskAction.DISSOCIATE_TOKEN:
+            return `${result} dissociated`;
+        case TaskAction.FREEZE_TOKEN:
+            return `${result.tokenName} was frozed`;
+        case TaskAction.UNFREEZE_TOKEN:
+            return `${result.tokenName} was unfrozed`;
+        case TaskAction.GRANT_KYC:
+            return `KYC granted for ${result.tokenName}`;
+        case TaskAction.REVOKE_KYC:
+            return `KYC revoked for ${result.tokenName}`;
+        case TaskAction.CONNECT_USER:
+            return `You are connected`;
+        case TaskAction.RESTORE_USER_PROFILE:
+            return `Your profile restored`;
         default:
             return 'Operation completed';
     }
