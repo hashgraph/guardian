@@ -24,41 +24,41 @@ export class NotificationComponent implements OnInit {
     readFirstNotificationsTimeout: any = null;
     subscription = new Subscription();
 
+    viewDetails = (notification: any) =>
+        this.notificationService.viewDetails(notification);
+
     constructor(
         private ws: WebSocketService,
-        private notifier: NotificationService,
+        private notificationService: NotificationService,
         private toastr: ToastrService,
         private router: Router
     ) {}
 
     ngOnInit() {
-        forkJoin([this.notifier.new(), this.notifier.progresses()]).subscribe(
-            (value) => {
-                this.notifications = value[0];
-                this.progressNotifications = value[1];
-                this.countUnreadNotification();
-                this.subscription.add(
-                    this.ws.updateNotificationSubscribe(
-                        this.updateNotification.bind(this)
-                    )
-                );
-                this.subscription.add(
-                    this.ws.deleteNotificationSubscribe(
-                        this.deleteNotification.bind(this)
-                    )
-                );
-                this.subscription.add(
-                    this.ws.updateProgressSubscribe(
-                        this.updateProgress.bind(this)
-                    )
-                );
-                this.subscription.add(
-                    this.ws.deleteProgressSubscribe(
-                        this.deleteProgress.bind(this)
-                    )
-                );
-            }
-        );
+        forkJoin([
+            this.notificationService.new(),
+            this.notificationService.progresses(),
+        ]).subscribe((value) => {
+            this.notifications = value[0];
+            this.progressNotifications = value[1];
+            this.countUnreadNotification();
+            this.subscription.add(
+                this.ws.updateNotificationSubscribe(
+                    this.updateNotification.bind(this)
+                )
+            );
+            this.subscription.add(
+                this.ws.deleteNotificationSubscribe(
+                    this.deleteNotification.bind(this)
+                )
+            );
+            this.subscription.add(
+                this.ws.updateProgressSubscribe(this.updateProgress.bind(this))
+            );
+            this.subscription.add(
+                this.ws.deleteProgressSubscribe(this.deleteProgress.bind(this))
+            );
+        });
     }
 
     toastNotification(notification: any) {
@@ -175,34 +175,6 @@ export class NotificationComponent implements OnInit {
         this.router.navigate(['task', taskId]);
     }
 
-    viewDetails(notification: any) {
-        switch (notification.action) {
-            case NotificationAction.POLICIES_PAGE:
-                this.router.navigate(['policies']);
-                break;
-            case NotificationAction.SCHEMAS_PAGE:
-                this.router.navigate(['schemas']);
-                break;
-            case NotificationAction.TOKENS_PAGE:
-                this.router.navigate(['tokens']);
-                break;
-            case NotificationAction.POLICY_CONFIGURATION:
-                this.router.navigate(['policy-configuration'], {
-                    queryParams: {
-                        policyId: notification.result,
-                    },
-                });
-                break;
-            case NotificationAction.POLICY_VIEW:
-                this.router.navigate(['policy-view'], {
-                    queryParams: {
-                        policyId: notification.result,
-                    },
-                });
-                break;
-        }
-    }
-
     onScrollNotifications(event: any) {
         for (const child of event.target.children) {
             if (
@@ -224,7 +196,7 @@ export class NotificationComponent implements OnInit {
     }
 
     readAll() {
-        this.notifier.readAll().subscribe((result) => {
+        this.notificationService.readAll().subscribe((result) => {
             this.unreadNotifications = 0;
             this.notifications = result;
         });

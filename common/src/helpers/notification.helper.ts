@@ -36,12 +36,20 @@ export class NotificationHelper {
      * @param userId
      * @returns Notification
      */
-    public static async info(title: string, message: string, userId: string) {
+    public static async info(
+        title: string,
+        message: string,
+        userId: string,
+        action?: NotificationAction,
+        result?: any
+    ) {
         return await NotificationHelper.create(
             userId,
             NotificationType.INFO,
             title,
-            message
+            message,
+            action,
+            result
         );
     }
 
@@ -52,12 +60,20 @@ export class NotificationHelper {
      * @param userId
      * @returns Notification
      */
-    public static async error(title: string, message: string, userId: string) {
+    public static async error(
+        title: string,
+        message: string,
+        userId: string,
+        action?: NotificationAction,
+        result?: any
+    ) {
         return await NotificationHelper.create(
             userId,
             NotificationType.ERROR,
             title,
-            message
+            message,
+            action,
+            result
         );
     }
 
@@ -68,12 +84,20 @@ export class NotificationHelper {
      * @param userId
      * @returns Notification
      */
-    public static async warn(title: string, message: string, userId: string) {
+    public static async warn(
+        title: string,
+        message: string,
+        userId: string,
+        action?: NotificationAction,
+        result?: any
+    ) {
         return await NotificationHelper.create(
             userId,
             NotificationType.WARN,
             title,
-            message
+            message,
+            action,
+            result
         );
     }
 

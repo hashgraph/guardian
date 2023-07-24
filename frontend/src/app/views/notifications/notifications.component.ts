@@ -26,6 +26,9 @@ export class NotificationsComponent implements OnInit {
     pageIndex: number;
     pageSize: number;
 
+    viewDetails = (notification: any) =>
+        this.notificationService.viewDetails(notification);
+
     constructor(
         private notificationService: NotificationService,
         public dialog: MatDialog,
@@ -41,7 +44,10 @@ export class NotificationsComponent implements OnInit {
 
     loadNotifications() {
         this.loading = true;
-        const request = this.notificationService.all(this.pageIndex, this.pageSize);
+        const request = this.notificationService.all(
+            this.pageIndex,
+            this.pageSize
+        );
         request.subscribe(
             (notificationsResponse: HttpResponse<any[]>) => {
                 this.notifications = notificationsResponse.body || [];
@@ -78,33 +84,5 @@ export class NotificationsComponent implements OnInit {
             },
             () => (this.loading = false)
         );
-    }
-
-    viewDetails(notification: any) {
-        switch (notification.action) {
-            case NotificationAction.POLICIES_PAGE:
-                this.router.navigate(['policies']);
-                break;
-            case NotificationAction.SCHEMAS_PAGE:
-                this.router.navigate(['schemas']);
-                break;
-            case NotificationAction.TOKENS_PAGE:
-                this.router.navigate(['tokens']);
-                break;
-            case NotificationAction.POLICY_CONFIGURATION:
-                this.router.navigate(['policy-configuration'], {
-                    queryParams: {
-                        policyId: notification.result,
-                    },
-                });
-                break;
-            case NotificationAction.POLICY_VIEW:
-                this.router.navigate(['policy-view'], {
-                    queryParams: {
-                        policyId: notification.result,
-                    },
-                });
-                break;
-        }
     }
 }

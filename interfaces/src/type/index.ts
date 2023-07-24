@@ -31,5 +31,6 @@ export * from './token.type';
 export * from './topic.type';
 export * from './unit-system.type';
 export * from './user-group.type';
+export * from './user-option.type';
 export * from './user-role.type';
 export * from './user.type';

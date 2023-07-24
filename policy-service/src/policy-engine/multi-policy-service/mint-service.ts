@@ -3,6 +3,7 @@ import {
     ExternalMessageEvents,
     GenerateUUIDv4,
     IRootConfig,
+    NotificationAction,
     WorkerTaskType
 } from '@guardian/interfaces';
 import {
@@ -21,6 +22,7 @@ import {
     Workers,
     NotificationHelper,
     IAuthUser,
+    Users,
 } from '@guardian/common';
 import { PrivateKey } from '@hashgraph/sdk';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
@@ -85,10 +87,11 @@ export class MintService {
         uuid: string,
         transactionMemo: string,
         ref?: AnyBlockType,
-        policyOwner?: any
+        policyOwner?: IAuthUser,
+        documentOwnerUser?: IAuthUser,
     ): Promise<any[]> {
         const notifier = await NotificationHelper.initProgress(
-            [root.id || policyOwner.id],
+            [documentOwnerUser.id, policyOwner.id],
             'Minting tokens',
             'Minting started'
         );
@@ -181,10 +184,7 @@ export class MintService {
                 throw error;
             }
         }
-        await notifier.finish({
-            title: 'Mint completed',
-            message: 'All tokens already minted and trasferred'
-        });
+        await notifier.finish();
         MintService.log(
             `Mint(${mintId}): Minted (Count: ${Math.floor(tokenValue)})`,
             ref
@@ -337,7 +337,6 @@ export class MintService {
         messageId: string,
         transactionMemo: string,
         documents: VcDocument[],
-        policyOwner: IAuthUser,
     ): Promise<void> {
         const multipleConfig = await MintService.getMultipleConfig(ref, documentOwner);
         if (multipleConfig) {
@@ -371,9 +370,11 @@ export class MintService {
             }
         } else {
             const tokenConfig = await MintService.getTokenConfig(ref, token);
+            const policyOwner = await new Users().getUserById(ref.policyOwner);
+            const documentOwnerUser = await PolicyUtils.getUser(ref, documentOwner.did)
             if (token.tokenType === 'non-fungible') {
                 const serials = await MintService.mintNonFungibleTokens(
-                    tokenConfig, tokenValue, root, targetAccount, messageId, transactionMemo, ref, policyOwner
+                    tokenConfig, tokenValue, root, targetAccount, messageId, transactionMemo, ref, policyOwner, documentOwnerUser
                 );
                 await MintService.updateDocuments(messageId, { tokenId: token.tokenId, serials }, ref);
             } else {
@@ -382,6 +383,19 @@ export class MintService {
                 );
                 await MintService.updateDocuments(messageId, { tokenId: token.tokenId, amount }, ref);
             }
+
+            await Promise.all(
+                [policyOwner.id, documentOwnerUser.id].map(
+                    async (userId) =>
+                        await NotificationHelper.success(
+                            'Mint completed',
+                            'All tokens have been minted and transferred',
+                            userId,
+                            NotificationAction.POLICY_VIEW,
+                            ref.policyId
+                        )
+                )
+            );
         }
 
         new ExternalEventChannel().publishMessage(

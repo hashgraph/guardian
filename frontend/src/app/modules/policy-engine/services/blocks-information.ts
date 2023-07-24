@@ -92,7 +92,8 @@ const Container: IBlockSetting = {
         { type: BlockType.CreateToken },
         { type: BlockType.SplitBlock },
         { type: BlockType.ExternalTopic },
-        { type: BlockType.MessagesReportBlock }
+        { type: BlockType.MessagesReportBlock },
+        { type: BlockType.NotificationBlock },
     ]
 }
 
@@ -136,7 +137,8 @@ const Step: IBlockSetting = {
         { type: BlockType.CreateToken },
         { type: BlockType.SplitBlock },
         { type: BlockType.ExternalTopic },
-        { type: BlockType.MessagesReportBlock }
+        { type: BlockType.MessagesReportBlock },
+        { type: BlockType.NotificationBlock },
     ]
 }
 
@@ -628,6 +630,15 @@ const TagManager: IBlockSetting = {
     property: null
 }
 
+const NotificationBlock: IBlockSetting = {
+    type: BlockType.NotificationBlock,
+    icon: 'notifications',
+    group: BlockGroup.Main,
+    header: BlockHeaders.ServerBlocks,
+    factory: null,
+    property: null,
+}
+
 export default [
     Container,
     Step,
@@ -671,5 +682,6 @@ export default [
     SelectiveAttributes,
     TagManager,
     ExternalTopic,
-    AutoReport
+    AutoReport,
+    NotificationBlock
 ];

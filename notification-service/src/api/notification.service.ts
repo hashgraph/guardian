@@ -30,26 +30,33 @@ export class NotificationService {
         if (NotificationService.deleteNotificationsInterval) {
             return;
         }
-        setInterval(() => {
-            const dbHelper = new DataBaseHelper(Notification);
-            const now = new Date();
-            dbHelper.update(
-                {
-                    old: true,
-                },
-                {
-                    updateDate: { $lt: new Date(now.getTime() + 1 * 60000) },
-                    read: true,
-                }
-            ).then((updatedNotifications) => {
+        setInterval(async () => {
+            try {
+                const dbHelper = new DataBaseHelper(Notification);
+                const now = new Date();
+                const updatedNotifications = await dbHelper.update(
+                    {
+                        old: true,
+                    },
+                    {
+                        updateDate: {
+                            $lt: new Date(now.getTime() + 1 * 60000),
+                        },
+                        read: true,
+                    }
+                );
                 if (!updatedNotifications) {
                     return;
                 }
                 const notifications = Array.isArray(updatedNotifications)
                     ? updatedNotifications
                     : [updatedNotifications];
-                notifications.forEach(this.deleteNotificationWS.bind(this));
-            }).catch();
+                for (const notification of notifications) {
+                    await this.deleteNotificationWS(notification);
+                }
+            } catch (error) {
+                console.error(error);
+            }
         }, 1000 * 60 * 1);
     }
 
@@ -61,10 +68,24 @@ export class NotificationService {
     })
     client: ClientProxy;
 
+    /**
+     * Update notification WS
+     * @param notification notification
+     */
     private async updateNotificationWS(notification: Notification) {
-        await this.client.send(NotifyAPI.UPDATE_WS, notification).toPromise();
+        try {
+            await this.client
+                .send(NotifyAPI.UPDATE_WS, notification)
+                .toPromise();
+        } catch (error) {
+            console.error(error);
+        }
     }
 
+    /**
+     * Delete notification WS
+     * @param param0 options
+     */
     private async deleteNotificationWS({
         id,
         userId,
@@ -72,20 +93,36 @@ export class NotificationService {
         id: string;
         userId: string;
     }) {
-        this.client
-            .send(NotifyAPI.DELETE_WS, {
-                userId,
-                notificationId: id,
-            })
-            .subscribe();
+        try {
+            await this.client
+                .send(NotifyAPI.DELETE_WS, {
+                    userId,
+                    notificationId: id,
+                })
+                .toPromise();
+        } catch (error) {
+            console.error(error);
+        }
     }
 
-    private async updateProgressWS(notification: Progress) {
-        await this.client
-            .send(NotifyAPI.UPDATE_PROGRESS_WS, notification)
-            .toPromise();
+    /**
+     * Update progress WS
+     * @param progress Progress
+     */
+    private async updateProgressWS(progress: Progress) {
+        try {
+            await this.client
+                .send(NotifyAPI.UPDATE_PROGRESS_WS, progress)
+                .toPromise();
+        } catch (error) {
+            console.error(error);
+        }
     }
 
+    /**
+     * Delete progress WS
+     * @param param0 options
+     */
     private async deleteProgressWS({
         id,
         userId,
@@ -93,26 +130,30 @@ export class NotificationService {
         id: string;
         userId: string;
     }) {
-        await this.client
-            .send(NotifyAPI.DELETE_PROGRESS_WS, {
-                notificationId: id,
-                userId,
-            })
-            .toPromise();
+        try {
+            await this.client
+                .send(NotifyAPI.DELETE_PROGRESS_WS, {
+                    notificationId: id,
+                    userId,
+                })
+                .toPromise();
+        } catch (error) {
+            console.error(error);
+        }
     }
 
     /**
-     * Get notifications
-     *
-     * @param msg Notification
+     * Get new notifications
+     * @param userId User id
+     * @returns Notifications
      */
     @MessagePattern(NotifyAPI.GET_NEW)
     async getNotifications(
         @Payload()
         userId: string
     ) {
-        const notificationRepo = new DataBaseHelper(Notification);
         try {
+            const notificationRepo = new DataBaseHelper(Notification);
             return new MessageResponse(
                 await notificationRepo.find(
                     {
@@ -132,9 +173,9 @@ export class NotificationService {
     }
 
     /**
-     * Get notifications
-     *
-     * @param msg Notification
+     * Get all notifications
+     * @param msg options
+     * @returns Notifications and count
      */
     @MessagePattern(NotifyAPI.GET_ALL)
     async getAll(
@@ -145,23 +186,23 @@ export class NotificationService {
             pageSize: number;
         }
     ) {
-        const notificationRepo = new DataBaseHelper(Notification);
-        const { userId, pageIndex, pageSize } = msg;
-        const options =
-            typeof pageIndex === 'number' && typeof pageSize === 'number'
-                ? {
-                      orderBy: {
-                          createDate: OrderDirection.DESC,
-                      },
-                      limit: pageSize,
-                      offset: pageIndex * pageSize,
-                  }
-                : {
-                      orderBy: {
-                          createDate: OrderDirection.DESC,
-                      },
-                  };
         try {
+            const notificationRepo = new DataBaseHelper(Notification);
+            const { userId, pageIndex, pageSize } = msg;
+            const options =
+                typeof pageIndex === 'number' && typeof pageSize === 'number'
+                    ? {
+                          orderBy: {
+                              createDate: OrderDirection.DESC,
+                          },
+                          limit: pageSize,
+                          offset: pageIndex * pageSize,
+                      }
+                    : {
+                          orderBy: {
+                              createDate: OrderDirection.DESC,
+                          },
+                      };
             return new MessageResponse(
                 await notificationRepo.findAndCount(
                     {
@@ -175,6 +216,11 @@ export class NotificationService {
         }
     }
 
+    /**
+     * Delete notifications up to this point
+     * @param msg options
+     * @returns Deleted notifications count
+     */
     @MessagePattern(NotifyAPI.DELETE_UP_TO)
     async deleteUpToThis(
         @Payload()
@@ -183,23 +229,23 @@ export class NotificationService {
             userId: string;
         }
     ) {
-        const notificationRepo = new DataBaseHelper(Notification);
-        const notification = await notificationRepo.findOne(msg);
-        const notificationsToDelete = await notificationRepo.find({
-            $or: [
-                {
-                    createDate: { $lt: notification.createDate },
-                },
-                {
-                    id: notification.id,
-                },
-            ],
-        });
-        await notificationRepo.remove(notificationsToDelete);
-        for (const notificationToDelete of notificationsToDelete) {
-            await this.deleteNotificationWS(notificationToDelete);
-        }
         try {
+            const notificationRepo = new DataBaseHelper(Notification);
+            const notification = await notificationRepo.findOne(msg);
+            const notificationsToDelete = await notificationRepo.find({
+                $or: [
+                    {
+                        createDate: { $lt: notification.createDate },
+                    },
+                    {
+                        id: notification.id,
+                    },
+                ],
+            });
+            await notificationRepo.remove(notificationsToDelete);
+            for (const notificationToDelete of notificationsToDelete) {
+                await this.deleteNotificationWS(notificationToDelete);
+            }
             return new MessageResponse(notificationsToDelete.length);
         } catch (error) {
             return new MessageError(error);
@@ -207,17 +253,17 @@ export class NotificationService {
     }
 
     /**
-     * Get notifications
-     *
-     * @param msg Notification
+     * Read notification
+     * @param notificationId Notification id
+     * @returns Notification
      */
     @MessagePattern(NotifyAPI.READ)
     async read(
         @Payload()
         notificationId: string
     ) {
-        const notificationRepo = new DataBaseHelper(Notification);
         try {
+            const notificationRepo = new DataBaseHelper(Notification);
             const notification = await notificationRepo.update(
                 {
                     read: true,
@@ -236,17 +282,17 @@ export class NotificationService {
     }
 
     /**
-     * Get notifications
-     *
-     * @param msg Notification
+     * Read all notifications
+     * @param userId User id
+     * @returns Notifications
      */
     @MessagePattern(NotifyAPI.READ_ALL)
     async readAll(
         @Payload()
         userId: string
     ) {
-        const notificationRepo = new DataBaseHelper(Notification);
         try {
+            const notificationRepo = new DataBaseHelper(Notification);
             await notificationRepo.update(
                 {
                     read: true,
@@ -262,17 +308,17 @@ export class NotificationService {
     }
 
     /**
-     * Get notifications
-     *
-     * @param msg Notification
+     * Get progresses
+     * @param userId User id
+     * @returns Progresses
      */
     @MessagePattern(NotifyAPI.GET_PROGRESSES)
     async getProgresses(
         @Payload()
         userId: string
     ) {
-        const notificationRepo = new DataBaseHelper(Progress);
         try {
+            const notificationRepo = new DataBaseHelper(Progress);
             return new MessageResponse(
                 await notificationRepo.find(
                     {
@@ -292,17 +338,16 @@ export class NotificationService {
 
     /**
      * Create notification
-     *
      * @param msg Notification
+     * @returns Notification
      */
     @MessagePattern(NotifyAPI.CREATE)
     async create(
         @Payload()
         msg: Partial<Notification>
     ) {
-        const notificationRepo = new DataBaseHelper(Notification);
         try {
-            console.log(msg);
+            const notificationRepo = new DataBaseHelper(Notification);
             if (!msg) {
                 throw new Error('Invalid notification create message');
             }
@@ -315,17 +360,17 @@ export class NotificationService {
     }
 
     /**
-     * Create notification
-     *
+     * Uodate notification
      * @param msg Notification
+     * @returns Notification
      */
     @MessagePattern(NotifyAPI.UPDATE)
     async update(
         @Payload()
         msg: Partial<Notification>
     ) {
-        const notificationRepo = new DataBaseHelper(Notification);
         try {
+            const notificationRepo = new DataBaseHelper(Notification);
             if (!msg) {
                 throw new Error('Invalid notification update message');
             }
@@ -339,16 +384,16 @@ export class NotificationService {
 
     /**
      * Create progress notification
-     *
-     * @param msg
+     * @param msg Progress
+     * @returns Progress
      */
     @MessagePattern(NotifyAPI.CREATE_PROGRESS)
     async createProgress(
         @Payload()
         msg: Partial<Progress>
     ) {
-        const notificationRepo = new DataBaseHelper(Progress);
         try {
+            const notificationRepo = new DataBaseHelper(Progress);
             if (!msg) {
                 throw new Error('Invalid progress create message');
             }
@@ -361,18 +406,17 @@ export class NotificationService {
     }
 
     /**
-     * Create progress notification
-     *
-     * @param msg
+     * Update progress
+     * @param msg Progress
+     * @returns Progress
      */
     @MessagePattern(NotifyAPI.UPDATE_PROGRESS)
     async updateProgress(
         @Payload()
         msg: Partial<Progress>
     ) {
-        console.log(msg);
-        const notificationRepo = new DataBaseHelper(Progress);
         try {
+            const notificationRepo = new DataBaseHelper(Progress);
             if (!msg) {
                 throw new Error('Invalid progress update message');
             }
@@ -385,17 +429,17 @@ export class NotificationService {
     }
 
     /**
-     * Delete progress notification
-     *
-     * @param msg
+     * Delete progress
+     * @param id id
+     * @returns Deleted status
      */
     @MessagePattern(NotifyAPI.DELETE_PROGRESS)
     async deleteProgress(
         @Payload()
         id: string
     ) {
-        const notificationRepo = new DataBaseHelper(Progress);
         try {
+            const notificationRepo = new DataBaseHelper(Progress);
             if (!id) {
                 throw new Error('Invalid notification id');
             }
@@ -412,7 +456,7 @@ export class NotificationService {
 }
 
 /**
- * Logger module
+ * Notification module
  */
 @Module({
     imports: [
