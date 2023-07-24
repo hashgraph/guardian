@@ -1,10 +1,17 @@
 import WebSocket from 'ws';
 import { IncomingMessage, Server } from 'http';
 import { Users } from '@helpers/users';
-import { ApplicationStates, GenerateUUIDv4, MessageAPI, NotifyAPI } from '@guardian/interfaces';
-import { Logger, MessageResponse, NatsService, NotificationHelper, Singleton } from '@guardian/common';
+import { GenerateUUIDv4, MessageAPI, NotifyAPI } from '@guardian/interfaces';
+import {
+    Logger,
+    MessageResponse,
+    NatsService,
+    NotificationHelper,
+    Singleton,
+} from '@guardian/common';
 import { NatsConnection } from 'nats';
 import { Injectable } from '@nestjs/common';
+import { Mutex } from 'async-mutex';
 
 /**
  * WebSocketsServiceChannel
@@ -49,24 +56,19 @@ export class WebSocketsService {
     private readonly wss: WebSocket.Server;
 
     /**
-     * Known services
-     * @private
+     * Get statuses mutex
      */
-    private readonly knownServices: {[key: string]: ApplicationStates};
+    private readonly getStatusesMutex = new Mutex();
 
     /**
      * Notification reading set
      */
     private readonly notificationReadingMap: Set<string> = new Set();
 
-    constructor(
-        private readonly server: Server,
-        cn: NatsConnection
-    ) {
+    constructor(private readonly server: Server, cn: NatsConnection) {
         this.wss = new WebSocket.Server({ server: this.server });
-        this.knownServices = {}
         this.channel = new WebSocketsServiceChannel();
-        this.channel.setConnection(cn)
+        this.channel.setConnection(cn);
     }
 
     /**
@@ -134,10 +136,64 @@ export class WebSocketsService {
             if (client.user?.id === task.userId) {
                 this.send(client, {
                     type: MessageAPI.UPDATE_TASK_STATUS,
-                    data: task
+                    data: task,
                 });
             }
         });
+    }
+
+    /**
+     * Get statuses handler
+     * @param clients Clients
+     * @returns Response
+     */
+    private async getStatusesHandler(
+        clients: WebSocket[],
+        type: MessageAPI.UPDATE_STATUS | MessageAPI.GET_STATUS
+    ) {
+        const channel = new WebSocketsServiceChannel();
+
+        const statuses = {
+            LOGGER_SERVICE: [],
+            GUARDIAN_SERVICE: [],
+            AUTH_SERVICE: [],
+            WORKER: [],
+            POLICY_SERVICE: [],
+            NOTIFICATION_SERVICE: [],
+        };
+
+        const getStatuses = (): Promise<void> => {
+            channel.publish(MessageAPI.GET_STATUS);
+            return new Promise((resolve) => {
+                const sub = channel.subscribe(
+                    MessageAPI.SEND_STATUS,
+                    // tslint:disable-next-line:no-shadowed-variable
+                    (msg) => {
+                        const { name, state } = msg;
+
+                        if (!statuses[name]) {
+                            statuses[name] = [];
+                        }
+                        statuses[name].push(state);
+                    }
+                );
+
+                setTimeout(() => {
+                    sub.unsubscribe();
+                    resolve();
+                }, 300);
+            });
+        };
+
+        await getStatuses();
+
+        clients.forEach((client: any) => {
+            this.send(client, {
+                type,
+                data: statuses,
+            });
+        });
+        return new MessageResponse({});
     }
 
     /**
@@ -155,7 +211,7 @@ export class WebSocketsService {
                     if (this.checkUserByDid(client, msg)) {
                         this.send(client, {
                             type: 'update-event',
-                            data: msg.blocks
+                            data: msg.blocks,
                         });
                     }
                 });
@@ -165,7 +221,7 @@ export class WebSocketsService {
         this.channel.subscribe('update-block', async (msg) => {
             updateArray.push(msg);
 
-            return new MessageResponse({})
+            return new MessageResponse({});
         });
 
         this.channel.subscribe('block-error', async (msg) => {
@@ -175,12 +231,12 @@ export class WebSocketsService {
                         type: 'error-event',
                         data: {
                             blockType: msg.blockType,
-                            message: msg.message
-                        }
+                            message: msg.message,
+                        },
                     });
                 }
             });
-            return new MessageResponse({})
+            return new MessageResponse({});
         });
 
         this.channel.subscribe('update-user-info', async (msg) => {
@@ -188,46 +244,44 @@ export class WebSocketsService {
                 if (this.checkUserByDid(client, msg)) {
                     this.send(client, {
                         type: 'update-user-info-event',
-                        data: msg
+                        data: msg,
                     });
                 }
             });
             return new MessageResponse({});
         });
 
-        this.channel.subscribe('update-user-balance',  async (msg) => {
-            this.wss.clients.forEach(client => {
-                new Users().getUserByAccount(msg.operatorAccountId).then(user => {{
-                    Object.assign(msg, {
-                        user: user ? {
-                            username: user.username,
-                            did: user.did
-                        } : null
+        this.channel.subscribe('update-user-balance', async (msg) => {
+            this.wss.clients.forEach((client) => {
+                new Users()
+                    .getUserByAccount(msg.operatorAccountId)
+                    .then((user) => {
+                        {
+                            Object.assign(msg, {
+                                user: user
+                                    ? {
+                                          username: user.username,
+                                          did: user.did,
+                                      }
+                                    : null,
+                            });
+                            if (this.checkUserByName(client, msg)) {
+                                this.send(client, {
+                                    type: 'PROFILE_BALANCE',
+                                    data: msg,
+                                });
+                            }
+                        }
                     });
-                    if (this.checkUserByName(client, msg)) {
-                        this.send(client, {
-                            type: 'PROFILE_BALANCE',
-                            data: msg
-                        });
-                    }
-                }});
             });
 
             return new MessageResponse({});
         });
 
         this.channel.subscribe(MessageAPI.UPDATE_STATUS, async (msg) => {
-            this.wss.clients.forEach((client: any) => {
-                for (const [key, value] of Object.entries(msg)) {
-                    this.knownServices[key] = value as any;
-                }
-
-                this.send(client, {
-                    type: MessageAPI.UPDATE_STATUS,
-                    data: msg
-                });
-            });
-            return new MessageResponse({})
+            return await this.getStatusesMutex.runExclusive(
+                this.getStatusesHandler.bind(this, this.wss.clients, MessageAPI.UPDATE_STATUS)
+            );
         });
 
         this.channel.getMessages(NotifyAPI.UPDATE_WS, async (msg) => {
@@ -298,50 +352,14 @@ export class WebSocketsService {
                     }
                     break;
                 case MessageAPI.GET_STATUS:
-                    const channel = new WebSocketsServiceChannel();
-
-                    const statuses = {
-                        LOGGER_SERVICE: [],
-                        GUARDIAN_SERVICE: [],
-                        AUTH_SERVICE: [],
-                        WORKER: [],
-                        POLICY_SERVICE: [],
-                        NOTIFICATION_SERVICE: []
-                    };
-
-                    const getStatuses = (): Promise<void> => {
-                        channel.publish(MessageAPI.GET_STATUS);
-                        return new Promise(resolve => {
-                            const sub = channel.subscribe(MessageAPI.SEND_STATUS, (msg) => {
-                                const { name, state } = msg;
-
-                                if (!statuses[name]) {
-                                    statuses[name] = [];
-                                }
-                                statuses[name].push(state);
-                            })
-
-                            setTimeout(() => {
-                                sub.unsubscribe();
-                                resolve();
-                            }, 300);
-                        })
-                    }
-
-                    await getStatuses();
-
-                    ws.send(JSON.stringify(
-                        {
-                            type: MessageAPI.GET_STATUS,
-                            data: statuses
-                        }
-                    ));
+                    await this.getStatusesMutex.runExclusive(
+                        this.getStatusesHandler.bind(this, [ws], MessageAPI.GET_STATUS)
+                    );
                     break;
                 default:
                     break;
             }
-        }
-        catch (error) {
+        } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
         }
     }
@@ -386,9 +404,9 @@ export class WebSocketsService {
      * @private
      */
     private checkUserByDid(client: any, msg: any): boolean {
-        if(client && client.user) {
-            if(msg && msg.user) {
-                return (client.user.did === msg.user.did || msg.user.virtual);
+        if (client && client.user) {
+            if (msg && msg.user) {
+                return client.user.did === msg.user.did || msg.user.virtual;
             }
             return true;
         }
@@ -402,7 +420,13 @@ export class WebSocketsService {
      * @private
      */
     private checkUserByName(client: any, msg: any): boolean {
-        return client && client.user && msg && msg.user && (client.user.username === msg.user.username);
+        return (
+            client &&
+            client.user &&
+            msg &&
+            msg.user &&
+            client.user.username === msg.user.username
+        );
     }
 
     /**
@@ -413,30 +437,30 @@ export class WebSocketsService {
         /**
          * Message type
          */
-        type: string,
+        type: string;
         /**
          * Message data
          */
-        data: any
+        data: any;
     } {
         try {
             if (typeof message === 'string') {
                 const event = JSON.parse(message);
                 return {
                     type: event.type,
-                    data: event.data
-                }
+                    data: event.data,
+                };
             } else {
                 return {
                     type: null,
-                    data: message
-                }
+                    data: message,
+                };
             }
         } catch (error) {
             return {
                 type: message,
-                data: null
-            }
+                data: null,
+            };
         }
     }
 }
