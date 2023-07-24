@@ -145,6 +145,7 @@ export class LoginComponent implements OnInit, OnDestroy {
                     document: event.vc,
                     presentationRequestId: event.presentation_request_id,
                     submissionId: event.submission_id,
+                    userRole: event.role,
                 },
             });
         });
@@ -152,15 +153,14 @@ export class LoginComponent implements OnInit, OnDestroy {
 
     private handleMeecoVCApproval(): void {
         this.wsService.meecoApproveVCSubscribe((event) => {
-            // TODO: Add login logic
-            // this.auth.setAccessToken(event.jwt);
-            // this.auth.setUsername(login);
-            // this.authState.updateState(true);
-            // if (role == UserRole.STANDARD_REGISTRY) {
-            //     this.router.navigate(['/config']);
-            // } else {
-            //     this.router.navigate(['/']);
-            // }
+            this.auth.setAccessToken(event.accessToken);
+            this.auth.setUsername(event.username);
+            this.authState.updateState(true);
+            if (event.role == UserRole.STANDARD_REGISTRY) {
+                this.router.navigate(['/config']);
+            } else {
+                this.router.navigate(['/']);
+            }
         });
     }
 

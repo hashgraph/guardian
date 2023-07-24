@@ -7,6 +7,7 @@ interface VCSubmitDialogData {
     document: any;
     presentationRequestId: string;
     submissionId: string;
+    userRole: string;
 }
 
 interface RolesData {
@@ -23,6 +24,7 @@ export class MeecoVCSubmitDialogComponent {
     vcSubject: any;
     presentationRequestId: string;
     submissionId: string;
+    userRole: string;
     roles: RolesData[] = [
         {
             displayName: 'Standard Registry',
@@ -47,6 +49,7 @@ export class MeecoVCSubmitDialogComponent {
         this.vcSubject = Object.entries(this.data.document);
         this.presentationRequestId = this.data.presentationRequestId;
         this.submissionId = this.data.submissionId;
+        this.userRole = this.data.userRole;
 
         this.handleMeecoVerificationFail();
     }
@@ -73,5 +76,10 @@ export class MeecoVCSubmitDialogComponent {
             this.submissionId,
             this.selectedRole
         );
+        this.closeDialog();
+    }
+
+    get isApproveBtnDisabled(): boolean {
+        return !this.selectedRole && !this.userRole;
     }
 }

@@ -11,6 +11,14 @@ interface MeecoVerifyVPResponse {
     presentation_request_id: string;
     submission_id: string;
     cid: string;
+    role: UserRole | null;
+}
+
+interface MeecoApproveSubmissionResponse {
+    username: string;
+    did: string;
+    role: UserRole;
+    accessToken: string;
 }
 
 /**
@@ -404,7 +412,7 @@ export class WebSocketService {
     }
 
     public meecoApproveVCSubscribe(
-        next?: ((event: { cid: string, jwt: string }) => void),
+        next?: ((event: MeecoApproveSubmissionResponse) => void),
         error?: ((error: any) => void),
         complete?: (() => void)
     ): Subscription {

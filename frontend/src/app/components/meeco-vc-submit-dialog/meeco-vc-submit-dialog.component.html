@@ -13,7 +13,7 @@
       </li>
     </ul>
 
-    <mat-form-field class="content__role-select">
+    <mat-form-field *ngIf="!userRole" class="content__role-select">
       <mat-label>Role</mat-label>
       <mat-select [(value)]="selectedRole" [required]="true">
         <mat-option *ngFor="let role of roles" [value]="role.value">
@@ -30,7 +30,7 @@
     mat-raised-button
     color="primary"
     (click)="onApprove()"
-    [disabled]="!selectedRole"
+    [disabled]="isApproveBtnDisabled"
     >
   Approve
   </button>
