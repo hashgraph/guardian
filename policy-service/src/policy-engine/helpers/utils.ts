@@ -25,6 +25,7 @@ import {
     KeyType, Wallet,
     Users,
     Workers,
+    NotificationHelper,
 } from '@guardian/common';
 import { TokenId, TopicId } from '@hashgraph/sdk';
 import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
@@ -494,7 +495,7 @@ export class PolicyUtils {
             return await ref.databaseServer.virtualAssociate(user.hederaAccountId, token);
         } else {
             const workers = new Workers();
-            return await workers.addNonRetryableTask({
+            const result = await workers.addNonRetryableTask({
                 type: WorkerTaskType.ASSOCIATE_TOKEN,
                 data: {
                     tokenId: token.tokenId,
@@ -504,6 +505,15 @@ export class PolicyUtils {
                     dryRun: ref.dryRun
                 }
             }, 20);
+            const userProfile = await new Users().getUserByAccount(
+                user.hederaAccountId
+            );
+            await NotificationHelper.info(
+                `Associate token`,
+                `${token.tokenName} associated`,
+                userProfile?.id
+            );
+            return result;
         }
     }
 
@@ -517,7 +527,7 @@ export class PolicyUtils {
             return await ref.databaseServer.virtualDissociate(user.hederaAccountId, token.tokenId);
         } else {
             const workers = new Workers();
-            return await workers.addNonRetryableTask({
+            const result = await workers.addNonRetryableTask({
                 type: WorkerTaskType.ASSOCIATE_TOKEN,
                 data: {
                     tokenId: token.tokenId,
@@ -527,6 +537,15 @@ export class PolicyUtils {
                     dryRun: ref.dryRun
                 }
             }, 20);
+            const userProfile = await new Users().getUserByAccount(
+                user.hederaAccountId
+            );
+            await NotificationHelper.info(
+                `Dissociate token`,
+                `${token.tokenName} dissociated`,
+                userProfile?.id
+            );
+            return result
         }
     }
 
@@ -553,7 +572,7 @@ export class PolicyUtils {
                     hederaAccountId: root.hederaAccountId,
                     hederaAccountKey: root.hederaAccountKey,
                     freezeKey,
-                    tokenId: token.tokenId,
+                    token,
                     freeze: true,
                     dryRun: ref.dryRun
                 }
@@ -584,7 +603,7 @@ export class PolicyUtils {
                     hederaAccountId: root.hederaAccountId,
                     hederaAccountKey: root.hederaAccountKey,
                     freezeKey,
-                    tokenId: token.tokenId,
+                    token,
                     freeze: false,
                     dryRun: ref.dryRun
                 }
@@ -615,7 +634,7 @@ export class PolicyUtils {
                     hederaAccountId: root.hederaAccountId,
                     hederaAccountKey: root.hederaAccountKey,
                     userHederaAccountId: user.hederaAccountId,
-                    tokenId: token.tokenId,
+                    token,
                     kycKey,
                     grant: true,
                     dryRun: ref.dryRun
@@ -647,7 +666,7 @@ export class PolicyUtils {
                     hederaAccountId: root.hederaAccountId,
                     hederaAccountKey: root.hederaAccountKey,
                     userHederaAccountId: user.hederaAccountId,
-                    tokenId: token.tokenId,
+                    token,
                     kycKey,
                     grant: false,
                     dryRun: ref.dryRun
