@@ -509,9 +509,10 @@ export function profileAPI() {
                 return;
             }
 
+            await notifier.start('Restore user profile');
             const restore = new RestoreDataFromHedera();
             await restore.restoreRootAuthority(username, profile.hederaAccountId, profile.hederaAccountKey, profile.topicId)
-
+            await notifier.completed();
             await notifier.result('did');
         }, async (error) => {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -535,9 +536,10 @@ export function profileAPI() {
                 return;
             }
 
+            await notifier.start('Finding all user topics');
             const restore = new RestoreDataFromHedera();
             const result = await restore.findAllUserTopics(username, profile.hederaAccountId, profile.hederaAccountKey)
-
+            await notifier.completed();
             await notifier.result(result);
         }, async (error) => {
             new Logger().error(error, ['GUARDIAN_SERVICE']);

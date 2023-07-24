@@ -24,7 +24,7 @@
                         <div (click)="deleteUpToThis(element.id)" class="operations__delete"
                             matTooltip="Delete up to this point" matTooltipClass="guardian-tooltip"
                             matTooltipPosition="above"><mat-icon>vertical_align_top</mat-icon></div>
-                        <div (click)="viewDetails(element)" *ngIf="element.action && element.result" class="operations__view" matTooltip="Open"
+                        <div (click)="viewDetails(element)" *ngIf="element.action" class="operations__view" matTooltip="Open"
                             matTooltipClass="guardian-tooltip" matTooltipPosition="above">
                             <mat-icon>open_in_new</mat-icon>
                         </div>
