@@ -267,7 +267,6 @@ export class MintBlock {
         }
         const [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
 
-        const policyOwner = await new Users().getUserById(ref.policyOwner);
         const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
         const mintVC = await this.createMintVC(root, token, tokenAmount, ref);
         const reportVC = await this.createReportVC(ref, root, user, documents, messages, additionalMessages);
@@ -328,7 +327,7 @@ export class MintBlock {
 
         const transactionMemo = `${vpMessageId} ${MessageMemo.parseMemo(true, ref.options.memo, savedVp)}`.trimEnd();
         await MintService.mint(
-            ref, token, tokenValue, user, root, accountId, vpMessageId, transactionMemo, documents, policyOwner
+            ref, token, tokenValue, user, root, accountId, vpMessageId, transactionMemo, documents
         );
         return [savedVp, tokenValue];
     }

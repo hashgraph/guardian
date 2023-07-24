@@ -70,6 +70,7 @@ export class CompareModuleComponent implements OnInit {
         "reportItemBlock": "list_alt",
         "messagesReportBlock": "addchart",
         "externalTopicBlock": "cloud",
+        "notificationBlock": "notifications",
     }
 
     type1 = true;

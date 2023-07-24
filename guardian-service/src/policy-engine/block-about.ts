@@ -1042,6 +1042,121 @@ export const BlockAbout = {
                 'type': 'Schemas'
             },
         ]
+    },
+    'notificationBlock': {
+        'label': 'Notification',
+        'title': 'Add \'Notification\' Block',
+        'post': false,
+        'get': false,
+        'children': 'None',
+        'control': 'Server',
+        'input': [
+            'RunEvent'
+        ],
+        'output': [
+            'RunEvent'
+        ],
+        'defaultEvent': true,
+        'properties': [
+            {
+                'name': 'title',
+                'label': 'Title',
+                'title': 'Title',
+                'type': 'Input',
+                'required': true
+            },
+            {
+                'name': 'message',
+                'label': 'Message',
+                'title': 'Message',
+                'type': 'Input',
+                'required': true
+            },
+            {
+                'name': 'type',
+                'label': 'Type',
+                'title': 'Type',
+                'type': 'Select',
+                'items': [
+                    {
+                        'label': 'Info',
+                        'value': 'INFO'
+                    },
+                    {
+                        'label': 'Success',
+                        'value': 'SUCCESS'
+                    },
+                    {
+                        'label': 'Warn',
+                        'value': 'WARN'
+                    },
+                    {
+                        'label': 'Error',
+                        'value': 'ERROR'
+                    }
+                ],
+                'default': 'info'
+            },
+            {
+                'name': 'link',
+                'label': 'Link notification to policy',
+                'title': 'Link notification to policy',
+                'type': 'Checkbox',
+            },
+            {
+                'name': 'user',
+                'label': 'User',
+                'title': 'User',
+                'type': 'Select',
+                'items': [
+                    {
+                        'label': 'All',
+                        'value': 'ALL'
+                    },
+                    {
+                        'label': 'Current user',
+                        'value': 'CURRENT'
+                    },
+                    {
+                        'label': 'Policy owner',
+                        'value': 'OWNER'
+                    },
+                    {
+                        'label': 'Document owner',
+                        'value': 'DOCUMENT_OWNER'
+                    },
+                    {
+                        'label': 'Document issuer',
+                        'value': 'DOCUMENT_ISSUER'
+                    },
+                    {
+                        'label': 'Group owner',
+                        'value': 'GROUP_OWNER'
+                    },
+                    {
+                        'label': 'Role',
+                        'value': 'ROLE'
+                    }
+                ],
+                'default': 'current'
+            },
+            {
+                'name': 'role',
+                'label': 'Role',
+                'title': 'Role',
+                'type': 'Select',
+                'items': 'Roles',
+                'visible': 'user === "ROLE"',
+                'required': true
+            },
+            {
+                'name': 'grouped',
+                'label': 'Only for current user group',
+                'title': 'Only for current user group',
+                'type': 'Checkbox',
+                'visible': 'user === "ROLE"'
+            }
+        ]
     }
 }
 
