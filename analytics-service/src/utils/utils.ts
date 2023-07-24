@@ -192,7 +192,11 @@ export class AnalyticsUtils {
         return info;
     }
 
-    public static topRate(array: any[], field: string, count: number): any[] {
+    public static topRateByCount(
+        array: any[],
+        field: string,
+        size: number
+    ): any[] {
         const map = new Map();
         for (const p of array) {
             const key = (p[field] || '');
@@ -204,10 +208,19 @@ export class AnalyticsUtils {
         }
         const result: any[] = [];
         for (const [name, count] of map.entries()) {
-            result.push({ name, count });
+            result.push({ name, value: count });
         }
-        result.sort((a, b) => a.count > b.count ? -1 : 1);
-        return result.splice(0, count);
+        result.sort((a, b) => a.value > b.value ? -1 : 1);
+        return result.splice(0, size);
+    }
+
+    public static topRateByValue(
+        array: any[],
+        size: number
+    ): any[] {
+        return array
+            .sort((a: any, b: any) => a.value > b.value ? -1 : 1)
+            .slice(0, size);
     }
 
     /**
