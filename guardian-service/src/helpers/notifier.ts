@@ -181,7 +181,7 @@ export async function initNotifier({
 }): Promise<INotifier> {
     if (taskId) {
         let currentStep: string;
-        let currentStepIndex = 1;
+        let currentStepIndex = 0;
         const notify = await NotificationHelper.initProgress(
             [userId],
             action,

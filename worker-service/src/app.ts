@@ -3,19 +3,39 @@ import {
     Logger,
     MessageBrokerChannel,
     ValidateConfiguration,
-    SecretManager, OldSecretManager
+    SecretManager, OldSecretManager, NotificationService
 } from '@guardian/common';
 import { Worker } from './api/worker';
 import { HederaSDKHelper } from './api/helpers/hedera-sdk-helper';
 import { ApplicationStates } from '@guardian/interfaces';
 import { decode } from 'jsonwebtoken';
 import * as process from 'process';
+import { Module } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+
+@Module({
+    providers: [
+        NotificationService,
+    ]
+})
+class AppModule {}
 
 Promise.all([
-    MessageBrokerChannel.connect('WORKERS_SERVICE')
+    MessageBrokerChannel.connect('WORKERS_SERVICE'),
+    NestFactory.createMicroservice<MicroserviceOptions>(AppModule,{
+        transport: Transport.NATS,
+        options: {
+            name: `${process.env.SERVICE_CHANNEL}`,
+            servers: [
+                `nats://${process.env.MQ_ADDRESS}:4222`
+            ]
+        },
+    }),
 ]).then(async values => {
     const channelName = (process.env.SERVICE_CHANNEL || `worker.${Date.now()}`).toUpperCase()
-    const [cn] = values;
+    const [cn, app] = values;
+    app.listen();
     const channel = new MessageBrokerChannel(cn, 'worker');
     const logger = new Logger();
     logger.setConnection(cn);
