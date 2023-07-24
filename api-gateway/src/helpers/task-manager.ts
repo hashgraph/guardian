@@ -90,7 +90,6 @@ export class TaskManager {
         this.channel = new TaskManagerChannel();
         this.channel.setConnection(cn);
         this.channel.getMessages(MessageAPI.UPDATE_TASK_STATUS, async (msg) => {
-            console.log(msg);
             const { taskId, statuses, result, error } = msg;
             if (taskId) {
                 if (statuses) {
