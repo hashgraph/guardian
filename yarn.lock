@@ -1260,7 +1260,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@guardian/common@^2.14.2, @guardian/common@workspace:common":
+"@guardian/common@2.14.2, @guardian/common@^2.14.2, @guardian/common@workspace:common":
   version: 0.0.0-use.local
   resolution: "@guardian/common@workspace:common"
   dependencies:
@@ -1271,19 +1271,19 @@ __metadata:
     "@hashgraph/sdk": 2.24.2
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
-    "@mikro-orm/core": ~5.7.12
-    "@mikro-orm/migrations-mongodb": ~5.7.12
-    "@mikro-orm/mongodb": ~5.7.12
+    "@mikro-orm/core": 5.7.12
+    "@mikro-orm/migrations-mongodb": 5.7.12
+    "@mikro-orm/mongodb": 5.7.12
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
     "@nestjs/microservices": ^9.4.1
-    "@transmute/credentials-context": ^0.7.0-unstable.80
-    "@transmute/did-context": ^0.7.0-unstable.80
-    "@transmute/ed25519-signature-2018": ^0.7.0-unstable.80
-    "@transmute/json-web-signature": ^0.7.0-unstable.80
-    "@transmute/jsonld-schema": ^0.7.0-unstable.80
-    "@transmute/security-context": ^0.7.0-unstable.80
-    "@transmute/vc.js": ^0.7.0-unstable.80
+    "@transmute/credentials-context": 0.7.0-unstable.80
+    "@transmute/did-context": 0.7.0-unstable.80
+    "@transmute/ed25519-signature-2018": 0.7.0-unstable.80
+    "@transmute/json-web-signature": 0.7.0-unstable.80
+    "@transmute/jsonld-schema": 0.7.0-unstable.80
+    "@transmute/security-context": 0.7.0-unstable.80
+    "@transmute/vc.js": 0.7.0-unstable.80
     "@types/express": ^4.17.13
     "@types/node": ^18.16.0
     "@types/winston": ^2.4.4
@@ -1310,7 +1310,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@guardian/interfaces@^2.14.2, @guardian/interfaces@workspace:interfaces":
+"@guardian/interfaces@2.14.2, @guardian/interfaces@^2.14.2, @guardian/interfaces@workspace:interfaces":
   version: 0.0.0-use.local
   resolution: "@guardian/interfaces@workspace:interfaces"
   dependencies:
@@ -1559,7 +1559,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@meeco/cryppo@npm:^2.0.2":
+"@meeco/cryppo@npm:2.0.2, @meeco/cryppo@npm:^2.0.2":
   version: 2.0.2
   resolution: "@meeco/cryppo@npm:2.0.2"
   dependencies:
@@ -1571,7 +1571,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mikro-orm/core@npm:~5.7.12":
+"@mikro-orm/core@npm:5.7.12":
   version: 5.7.12
   resolution: "@mikro-orm/core@npm:5.7.12"
   dependencies:
@@ -1618,7 +1618,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mikro-orm/migrations-mongodb@npm:~5.7.12":
+"@mikro-orm/migrations-mongodb@npm:5.7.12":
   version: 5.7.12
   resolution: "@mikro-orm/migrations-mongodb@npm:5.7.12"
   dependencies:
@@ -1632,7 +1632,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mikro-orm/mongodb@npm:~5.7.12":
+"@mikro-orm/mongodb@npm:5.7.12, @mikro-orm/mongodb@npm:~5.7.12":
   version: 5.7.12
   resolution: "@mikro-orm/mongodb@npm:5.7.12"
   dependencies:
@@ -2306,7 +2306,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@transmute/did-context@npm:0.7.0-unstable.80, @transmute/did-context@npm:^0.7.0-unstable.80":
+"@transmute/did-context@npm:0.7.0-unstable.80":
   version: 0.7.0-unstable.80
   resolution: "@transmute/did-context@npm:0.7.0-unstable.80"
   checksum: 6a1b2e17a76581c1e8f941105cbfbd42af6471d940409d18745ec991c473bdd198c5f779e0cacd13c1f1cfe878d1d076fc48f1e545e281fbcd061ae7485c53e7
@@ -2376,7 +2376,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@transmute/ed25519-signature-2018@npm:0.7.0-unstable.80, @transmute/ed25519-signature-2018@npm:^0.7.0-unstable.80":
+"@transmute/ed25519-signature-2018@npm:0.7.0-unstable.80":
   version: 0.7.0-unstable.80
   resolution: "@transmute/ed25519-signature-2018@npm:0.7.0-unstable.80"
   dependencies:
@@ -2487,7 +2487,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@transmute/vc.js@npm:0.7.0-unstable.80, @transmute/vc.js@npm:^0.7.0-unstable.80":
+"@transmute/vc.js@npm:0.7.0-unstable.80":
   version: 0.7.0-unstable.80
   resolution: "@transmute/vc.js@npm:0.7.0-unstable.80"
   dependencies:
@@ -2926,18 +2926,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@web-std/fetch@npm:^3.0.3":
-  version: 3.0.3
-  resolution: "@web-std/fetch@npm:3.0.3"
-  dependencies:
-    "@web-std/blob": ^3.0.3
-    "@web-std/form-data": ^3.0.2
-    "@web3-storage/multipart-parser": ^1.0.0
-    data-uri-to-buffer: ^3.0.1
-  checksum: 74ab2f7b307e5600567515287bf225c3f37262aa6b7999861003b4b624e468b768b06a7d87eb3fac33188d63e1cc5b37d73bb3b4abf32cea36307d4a93eb1406
-  languageName: node
-  linkType: hard
-
 "@web-std/fetch@npm:^4.1.0":
   version: 4.1.0
   resolution: "@web-std/fetch@npm:4.1.0"
@@ -2949,6 +2937,20 @@ __metadata:
     data-uri-to-buffer: ^3.0.1
     mrmime: ^1.0.0
   checksum: 1890f798ac208dcafc8e77d7ee7e13ae0e359de3d9b41e8a56fbe644956b012cb75e017302a6d18671f6b43a7541dc7756c2d685707d898b1ce1e5e73721dce4
+  languageName: node
+  linkType: hard
+
+"@web-std/fetch@npm:^4.1.2":
+  version: 4.1.2
+  resolution: "@web-std/fetch@npm:4.1.2"
+  dependencies:
+    "@web-std/blob": ^3.0.3
+    "@web-std/form-data": ^3.0.2
+    "@web-std/stream": ^1.0.1
+    "@web3-storage/multipart-parser": ^1.0.0
+    data-uri-to-buffer: ^3.0.1
+    mrmime: ^1.0.0
+  checksum: e76d07c12dc4e0a448e7a1b65c63e933b8c1630812ee27818e24494f55b470a83789527bd094207117b5e53a4593a2a4f21d63cbb30282f4c50eca052100ab20
   languageName: node
   linkType: hard
 
@@ -3458,8 +3460,8 @@ __metadata:
   dependencies:
     "@guardian/common": ^2.14.2
     "@guardian/interfaces": ^2.14.2
-    "@mikro-orm/core": ~5.7.12
-    "@mikro-orm/mongodb": ~5.7.12
+    "@mikro-orm/core": 5.7.12
+    "@mikro-orm/mongodb": 5.7.12
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
     "@nestjs/microservices": ^9.4.1
@@ -5977,18 +5979,18 @@ __metadata:
     "@hashgraph/sdk": 2.24.2
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
-    "@mikro-orm/core": ~5.7.12
-    "@mikro-orm/mongodb": ~5.7.12
+    "@mikro-orm/core": 5.7.12
+    "@mikro-orm/mongodb": 5.7.12
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
     "@nestjs/microservices": ^9.4.1
-    "@transmute/credentials-context": ^0.7.0-unstable.80
-    "@transmute/did-context": ^0.7.0-unstable.80
-    "@transmute/ed25519-signature-2018": ^0.7.0-unstable.80
-    "@transmute/json-web-signature": ^0.7.0-unstable.80
-    "@transmute/jsonld-schema": ^0.7.0-unstable.80
-    "@transmute/security-context": ^0.7.0-unstable.80
-    "@transmute/vc.js": ^0.7.0-unstable.80
+    "@transmute/credentials-context": 0.7.0-unstable.80
+    "@transmute/did-context": 0.7.0-unstable.80
+    "@transmute/ed25519-signature-2018": 0.7.0-unstable.80
+    "@transmute/json-web-signature": 0.7.0-unstable.80
+    "@transmute/jsonld-schema": 0.7.0-unstable.80
+    "@transmute/security-context": 0.7.0-unstable.80
+    "@transmute/vc.js": 0.7.0-unstable.80
     "@types/deep-equal": ^1.0.1
     "@types/express": ^4.17.13
     "@types/fs-extra": ^9.0.12
@@ -7975,8 +7977,8 @@ __metadata:
   dependencies:
     "@guardian/common": ^2.14.2
     "@guardian/interfaces": ^2.14.2
-    "@mikro-orm/core": ~5.7.12
-    "@mikro-orm/mongodb": ~5.7.12
+    "@mikro-orm/core": 5.7.12
+    "@mikro-orm/mongodb": 5.7.12
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
     "@nestjs/microservices": ^9.4.1
@@ -9573,13 +9575,13 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "policy-service@workspace:policy-service"
   dependencies:
-    "@guardian/common": ^2.14.2
-    "@guardian/interfaces": ^2.14.2
+    "@guardian/common": 2.14.2
+    "@guardian/interfaces": 2.14.2
     "@hashgraph/sdk": 2.24.2
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
-    "@meeco/cryppo": ^2.0.2
-    "@mikro-orm/core": ~5.7.12
-    "@mikro-orm/mongodb": ~5.7.12
+    "@meeco/cryppo": 2.0.2
+    "@mikro-orm/core": 5.7.12
+    "@mikro-orm/mongodb": 5.7.12
     "@transmute/credentials-context": 0.7.0-unstable.80
     "@transmute/did-context": 0.7.0-unstable.80
     "@transmute/ed25519-signature-2018": 0.7.0-unstable.80
@@ -11805,13 +11807,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"web3.storage@npm:^4.3.0":
-  version: 4.5.4
-  resolution: "web3.storage@npm:4.5.4"
+"web3.storage@npm:4.5.5":
+  version: 4.5.5
+  resolution: "web3.storage@npm:4.5.5"
   dependencies:
     "@ipld/car": ^3.1.4
     "@web-std/blob": ^3.0.4
-    "@web-std/fetch": ^3.0.3
+    "@web-std/fetch": ^4.1.2
     "@web-std/file": ^3.0.2
     "@web3-storage/parse-link-header": ^3.1.0
     browser-readablestream-to-it: ^1.0.3
@@ -11825,7 +11827,7 @@ __metadata:
     throttled-queue: ^2.1.2
     uint8arrays: ^3.0.0
     w3name: ^1.0.6
-  checksum: 2cb4827271c542592e1a86f2e3482a706e70ceb8c9e9a2e70da0b89abd1e9806f195ab177de830bc4c0baaf64c15b993b07cfb92a08f7e8d99f69b57a5fcec1a
+  checksum: 2478c0fa61a8613d5face3ae7ecb12ed6f46b7e2e767ab4eb92b1dfe06a7c195fb6aa627d63b0c12346a92808434134925023efc95f6692d8b98584fa54aaef6
   languageName: node
   linkType: hard
 
@@ -12005,13 +12007,13 @@ __metadata:
     "@guardian/common": ^2.14.2
     "@guardian/interfaces": ^2.14.2
     "@hashgraph/sdk": 2.24.2
-    "@transmute/credentials-context": ^0.7.0-unstable.80
-    "@transmute/did-context": ^0.7.0-unstable.80
-    "@transmute/ed25519-signature-2018": ^0.7.0-unstable.80
-    "@transmute/json-web-signature": ^0.7.0-unstable.80
-    "@transmute/jsonld-schema": ^0.7.0-unstable.80
-    "@transmute/security-context": ^0.7.0-unstable.80
-    "@transmute/vc.js": ^0.7.0-unstable.80
+    "@transmute/credentials-context": 0.7.0-unstable.80
+    "@transmute/did-context": 0.7.0-unstable.80
+    "@transmute/ed25519-signature-2018": 0.7.0-unstable.80
+    "@transmute/json-web-signature": 0.7.0-unstable.80
+    "@transmute/jsonld-schema": 0.7.0-unstable.80
+    "@transmute/security-context": 0.7.0-unstable.80
+    "@transmute/vc.js": 0.7.0-unstable.80
     "@types/node": ^18.16.0
     axios: ^1.3.6
     axios-retry: ^3.2.4
@@ -12028,7 +12030,7 @@ __metadata:
     rewire: ^6.0.0
     tslint: ^6.1.3
     typescript: ^4.5.5
-    web3.storage: ^4.3.0
+    web3.storage: 4.5.5
   languageName: unknown
   linkType: soft
 
