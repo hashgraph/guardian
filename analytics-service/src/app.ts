@@ -25,8 +25,6 @@ Promise.all([
     MessageBrokerChannel.connect('ANALYTICS_SERVICE'),
 ]).then(async ([db, app, cn]) => {
     try {
-        console.log('--- 1 ---');
-
         DataBaseHelper.orm = db;
         app.connectMicroservice<MicroserviceOptions>({
             transport: Transport.NATS,
@@ -54,7 +52,16 @@ Promise.all([
             new LargePayloadContainer().runServer();
         }
 
-        await ReportServiceService.reset();
+
+        await ReportServiceService.init(process.env.INITIALIZATION_TOPIC_ID);
+        await ReportServiceService.restart(process.env.INITIALIZATION_TOPIC_ID);
+        // setTimeout(() => {
+        //     ReportServiceService.update(process.env.INITIALIZATION_TOPIC_ID).then(() => {
+        //         new Logger().info(`Update completed`, ['ANALYTICS_SERVICE']);
+        //     }, (error) => {
+        //         new Logger().error(`Update error: ${error?.message}`, ['ANALYTICS_SERVICE']);
+        //     });
+        // }, 1000000000000);
 
         app.listen(PORT, async () => {
             const url = await app.getUrl();

@@ -10,22 +10,17 @@ export class Tasks<T> {
     }
 
     public async start(index?: number): Promise<void> {
-        // console.log('start', index);
         for (let item = this.next(); item; item = this.next()) {
-            // console.log('next', index);
             await this.callback(item);
         }
-        // console.log('end', index);
     }
 
     public async run(count: number): Promise<void> {
         const tasks = new Array(count);
         for (let index = 0; index < count; index++) {
-            tasks[index] = this.start(index); 
+            tasks[index] = this.start(index);
         }
-        // console.log('--- run ---');
         await Promise.all(tasks);
-        // console.log(' -- run --');
     }
 
     private next(): T {

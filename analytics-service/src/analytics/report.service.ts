@@ -1,4 +1,4 @@
-import { DataBaseHelper, MessageAction } from '@guardian/common';
+import { DataBaseHelper, Logger, MessageAction } from '@guardian/common';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import JSZip from 'jszip';
 import xl from 'excel4node';
@@ -15,6 +15,7 @@ import { AnalyticsTokenCache as TokenCache } from '../entity/analytics-token-cac
 import { AnalyticsTopic as Topic } from '../entity/analytics-topic';
 import { AnalyticsSchema as Schema } from '../entity/analytics-schema';
 import { AnalyticsTag as Tag } from '../entity/analytics-tag';
+import { AnalyticsDashboard as Dashboard } from '../entity/analytics-dashboard';
 
 import { ReportSteep } from '../interfaces/report-steep.type';
 import { ReportStatus } from '../interfaces/report-status.type';
@@ -31,58 +32,34 @@ import { AnalyticsUtils } from '../utils/utils';
 import { Table } from '../utils/table';
 
 export class ReportServiceService {
-    public static async reset(): Promise<void> {
-        const reports = await new DataBaseHelper(Status).find();
-        for (const report of reports) {
-            if (
-                report.status !== ReportStatus.FINISHED &&
-                report.status !== ReportStatus.ERROR
-            ) {
-                report.error = 'Restart services';
-                report.status = ReportStatus.ERROR;
-            }
-            await new DataBaseHelper(Status).update(report);
-        }
-    }
-
-    public static async getStatus(root: string): Promise<Status> {
+    public static async init(root: string): Promise<void> {
         const report = await new DataBaseHelper(Status).findOne({ root });
-        if (report) {
-            return report;
-        } else {
+        if (!report) {
             const row = new DataBaseHelper(Status).create({
                 uuid: GenerateUUIDv4(),
                 root,
-                status: '',
+                status: ReportStatus.NONE,
+                type: ReportType.ALL,
                 steep: '',
             });
-            return await new DataBaseHelper(Status).save(row);
+            await new DataBaseHelper(Status).save(row);
+        }
+    }
+    
+    public static async restart(root: string): Promise<void> {
+        const report = await new DataBaseHelper(Status).findOne({ root });
+        if (report && report.status !== ReportStatus.FINISHED) {
+            ReportServiceService.update(process.env.INITIALIZATION_TOPIC_ID).then(() => {
+                new Logger().info(`Update completed`, ['ANALYTICS_SERVICE']);
+            }, (error) => {
+                new Logger().error(`Update error: ${error?.message}`, ['ANALYTICS_SERVICE']);
+            });
         }
     }
 
-    public static async get(root: string): Promise<Status> {
-        return await new DataBaseHelper(Status).findOne({ root });
-    }
-
-    public static async create(root: string, type: ReportType): Promise<Status> {
-        console.log('ReportService.create')
-        const row = new DataBaseHelper(Status).create({
-            uuid: GenerateUUIDv4(),
-            root,
-            status: '',
-            steep: '',
-            type
-        });
-        return await new DataBaseHelper(Status).save(row);
-    }
-
-    public static async update(
-        uuid: string,
-        type: ReportType = ReportType.ALL,
-        skip: boolean = true
-    ): Promise<Status> {
+    public static async update(root: string, skip: boolean = false): Promise<Status> {
         console.log('ReportService.update')
-        let report = await new DataBaseHelper(Status).findOne({ uuid });
+        let report = await new DataBaseHelper(Status).findOne({ root });
 
         if (!report) {
             throw new Error('Report does not exist');
@@ -92,7 +69,7 @@ export class ReportServiceService {
             throw new Error('Report already started');
         }
 
-        report.type = type;
+        report.type = ReportType.ALL;
         report.error = null;
 
         report = await AnalyticsUserService.search(report, skip);
@@ -152,30 +129,17 @@ export class ReportServiceService {
 
     private static async loadData(uuid: string): Promise<any> {
         //Total
-        console.time('csv: loading');
-        console.log('csv: find topics');
         const topics = await new DataBaseHelper(TopicCache).find({ uuid });
-        console.log('csv: find tokens');
         const rowTokens = await new DataBaseHelper(Token).find({ uuid }) as any[];
-        console.log('csv: find balances');
         const balances = await new DataBaseHelper(TokenCache).find({ uuid });
-        console.log('csv: find policies');
         const policies = await new DataBaseHelper(Policy).find({ uuid }) as any[];
-        console.log('csv: find instances');
         const instances = await new DataBaseHelper(PolicyInstance).find({ uuid }) as any[];
-        console.log('csv: find modules');
         const modules = await new DataBaseHelper(Module).find({ uuid });
-        console.log('csv: find users');
         const users = await new DataBaseHelper(User).find({ uuid });
-        console.log('csv: count userTopic');
+        const tags = await new DataBaseHelper(Tag).find({ uuid, action: MessageAction.PublishTag });
         const userTopicCount = await new DataBaseHelper(Topic).count({ uuid });
-        console.log('csv: count Tag');
-        const tagCount = await new DataBaseHelper(Tag).count({ uuid });
-        console.log('csv: count Schema');
         const schemaCount = await new DataBaseHelper(Schema).count({ uuid, action: MessageAction.PublishSchema });
-        console.log('csv: count System Schema');
         const systemSchemaCount = await new DataBaseHelper(Schema).count({ uuid, action: MessageAction.PublishSystemSchema });
-        console.log('csv: aggregate documents by policy');
         const docByPolicy = await new DataBaseHelper(Document).aggregate([
             { $match: { uuid, } },
             {
@@ -188,7 +152,6 @@ export class ReportServiceService {
                 }
             }
         ]);
-        console.log('csv: aggregate documents by instance');
         const docByInstance = await new DataBaseHelper(Document).aggregate([
             { $match: { uuid } },
             {
@@ -201,14 +164,10 @@ export class ReportServiceService {
                 }
             }
         ]);
-        console.log('csv: aggregate documents by type');
         const docsGroups = await new DataBaseHelper(Document).aggregate([
             { $match: { uuid } },
             { $group: { _id: { type: "$type", action: "$action" }, count: { $sum: 1 } } }
         ]);
-        console.timeEnd('csv: loading');
-
-        console.time('csv: mapping');
         const didCount = docsGroups
             .filter(g => g._id.type === DocumentType.DID && g._id.action !== MessageAction.RevokeDocument)
             .reduce((sum, g) => sum + g.count, 0);
@@ -324,8 +283,6 @@ export class ReportServiceService {
             p._versions = instanceMap.get(p.topicId) || 0;
         }
 
-        console.timeEnd('csv: mapping');
-
         return {
             topics,
             messages,
@@ -342,7 +299,7 @@ export class ReportServiceService {
             vpCount,
             didCount,
             revokeCount,
-            tagCount,
+            tags,
             schemaCount,
             systemSchemaCount,
             ftCount,
@@ -352,21 +309,7 @@ export class ReportServiceService {
         }
     }
 
-    public static async report(uuid: string): Promise<any> {
-        console.log('ReportService.report')
-        console.time('ReportService.report')
-        const item = await new DataBaseHelper(Status).findOne({ uuid });
-
-        if (!item) {
-            throw new Error('Report does not exist');
-        }
-
-        if (item.status !== ReportStatus.FINISHED) {
-            return {
-                status: item.status
-            };
-        }
-
+    private static async createSnapshot(report: Status, size: number = 10): Promise<any> {
         const {
             topics,
             messages,
@@ -383,64 +326,114 @@ export class ReportServiceService {
             vpCount,
             didCount,
             revokeCount,
-            tagCount,
+            tags,
             schemaCount,
             systemSchemaCount,
             ftCount,
             nftCount,
             ftBalance,
             nftBalance
-        } = await ReportServiceService.loadData(item.uuid);
-
-        const size = 25;
+        } = await ReportServiceService.loadData(report.uuid);
         const _users = users.filter(u => u.type === UserType.USER);
-        const topFTokensByBalances = tokens
-            .filter((d: any) => d.tokenType !== 'non-fungible')
-            .map((t: any) => {
-                return {
-                    name: t.tokenName,
-                    count: t.balance
+        const topSRByUsers = AnalyticsUtils.topRateByCount(_users, 'owner', size);
+        const topSRByPolicies = AnalyticsUtils.topRateByCount(policies, 'owner', size);
+        const topTagsByLabel = AnalyticsUtils.topRateByCount(tags, 'name', size);
+        const topModulesByName = AnalyticsUtils.topRateByCount(modules, 'name', size);
+        const topPoliciesByName = AnalyticsUtils.topRateByCount(policies, 'name', size);
+        const topVersionsByName = AnalyticsUtils.topRateByCount(instances, 'name', size);
+        const topPoliciesByDocuments = AnalyticsUtils.topRateByValue(instances.map((i: any) => {
+            return {
+                name: i.name,
+                instanceTopicId: i.instanceTopicId,
+                value: i._documents.all
+            }
+        }), size);
+        const topPoliciesByDID = AnalyticsUtils.topRateByValue(instances.map((i: any) => {
+            return {
+                name: i.name,
+                instanceTopicId: i.instanceTopicId,
+                value: i._documents.did
+            }
+        }), size);
+        const topPoliciesByVC = AnalyticsUtils.topRateByValue(instances.map((i: any) => {
+            return {
+                name: i.name,
+                instanceTopicId: i.instanceTopicId,
+                value: i._documents.vc
+            }
+        }), size);
+        const topPoliciesByVP = AnalyticsUtils.topRateByValue(instances.map((i: any) => {
+            return {
+                name: i.name,
+                instanceTopicId: i.instanceTopicId,
+                value: i._documents.vp
+            }
+        }), size);
+        const topPoliciesByRevoked = AnalyticsUtils.topRateByValue(instances.map((i: any) => {
+            return {
+                name: i.name,
+                instanceTopicId: i.instanceTopicId,
+                value: i._documents.revoke
+            }
+        }), size);
+        const _fTokens = tokens.filter((d: any) => d.tokenType !== 'non-fungible');
+        const _nfTokens = tokens.filter((d: any) => d.tokenType === 'non-fungible');
+        const topTokensByName = AnalyticsUtils.topRateByCount(tokens, 'tokenName', size);
+        const topFTokensByName = AnalyticsUtils.topRateByCount(_fTokens, 'tokenName', size);
+        const topNFTokensByName = AnalyticsUtils.topRateByCount(_nfTokens, 'tokenName', size);
+        const topFTokensByBalance = AnalyticsUtils.topRateByValue(_fTokens.map((item: any) => {
+            return {
+                name: item.tokenName,
+                tokenId: item.tokenId,
+                value: item.balance
+            }
+        }), size);
+        const topNFTokensByBalance = AnalyticsUtils.topRateByValue(_nfTokens.map((item: any) => {
+            return {
+                name: item.tokenName,
+                tokenId: item.tokenId,
+                value: item.balance
+            }
+        }), size);
+        const schemasByName = await new DataBaseHelper(Schema).aggregate([
+            { $match: { uuid: report.uuid } },
+            {
+                $group: {
+                    _id: {
+                        name: "$name",
+                        action: "$action",
+                    }, count: { $sum: 1 }
                 }
-            })
-            .sort((a: any, b: any) => a.count > b.count ? -1 : 1)
-            .slice(0, size);
-        const topNFTokensByBalances = tokens
-            .filter((d: any) => d.tokenType === 'non-fungible')
-            .map((t: any) => {
-                return {
-                    name: t.tokenName,
-                    count: t.balance
-                }
-            })
-            .sort((a: any, b: any) => a.count > b.count ? -1 : 1)
-            .slice(0, size);
-        const topPoliciesByDocuments = instances
-            .map((i: any) => {
-                return {
-                    name: `${i.name} (${i.instanceTopicId})`,
-                    count: i._documents.vc
-                }
-            })
-            .sort((a: any, b: any) => a.count > b.count ? -1 : 1)
-            .slice(0, size);
-        const topPoliciesByVP = instances
-            .map((i: any) => {
-                return {
-                    name: `${i.name} (${i.instanceTopicId})`,
-                    count: i._documents.vp
-                }
-            })
-            .sort((a: any, b: any) => a.count > b.count ? -1 : 1)
-            .slice(0, size);
-        const topPolicies = AnalyticsUtils.topRate(policies, 'name', size);
-        const topVersion = AnalyticsUtils.topRate(instances, 'name', size);
-        const topSrByUser = AnalyticsUtils.topRate(_users, 'owner', size);
-        const topSrByPolicies = AnalyticsUtils.topRate(policies, 'owner', size);
-        const topTokens = AnalyticsUtils.topRate(tokens, 'tokenName', size);
-
-        console.timeEnd('ReportService.report')
-        const report: any = {
-            status: item.status,
+            },
+            { $sort: { count: -1 } }
+        ]);
+        const topAllSchemasByName = [];
+        const topSystemSchemasByName = [];
+        const topSchemasByName = [];
+        for (const row of schemasByName) {
+            if (
+                topSystemSchemasByName.length >= size &&
+                topSchemasByName.length >= size
+            ) {
+                break;
+            }
+            if (topAllSchemasByName.length < size) {
+                topAllSchemasByName.push({ name: row._id.name, value: row.count });
+            }
+            if (
+                topSystemSchemasByName.length < size &&
+                row._id.action === MessageAction.PublishSystemSchema
+            ) {
+                topSystemSchemasByName.push({ name: row._id.name, value: row.count });
+            }
+            if (
+                topSchemasByName.length < size &&
+                row._id.action === MessageAction.PublishSchema
+            ) {
+                topSchemasByName.push({ name: row._id.name, value: row.count });
+            }
+        }
+        return {
             messages,
             topics: topics.length,
             standardRegistries: srCount,
@@ -451,32 +444,88 @@ export class ReportServiceService {
             documents: allCount,
             vcDocuments: vcCount,
             vpDocuments: vpCount,
+            didDocuments: didCount,
             userTopic: userTopicCount,
             tokens: tokens.length,
             fTokens: ftCount,
             nfTokens: nftCount,
-            tags: tagCount,
+            tags: tags.length,
             schemas: schemaCount,
             systemSchemas: systemSchemaCount,
             revokeDocuments: revokeCount,
             fTotalBalances: ftBalance,
             nfTotalBalances: nftBalance,
-            topPolicies,
-            topVersion,
-            topSrByUser,
-            topSrByPolicies,
+            topSize: size,
+            topSRByUsers,
+            topSRByPolicies,
+            topTagsByLabel,
+            topAllSchemasByName,
+            topSystemSchemasByName,
+            topSchemasByName,
+            topModulesByName,
+            topPoliciesByName,
+            topVersionsByName,
             topPoliciesByDocuments,
+            topPoliciesByDID,
+            topPoliciesByVC,
             topPoliciesByVP,
-            topTokens,
-            topFTokensByBalances,
-            topNFTokensByBalances
+            topPoliciesByRevoked,
+            topTokensByName,
+            topFTokensByName,
+            topNFTokensByName,
+            topFTokensByBalance,
+            topNFTokensByBalance,
         };
-        return report;
+    }
+
+    public static async createDashboard(report: Status): Promise<any> {
+        if (report.status !== ReportStatus.FINISHED) {
+            throw new Error('Report not finished');
+        }
+
+        const data = await ReportServiceService.createSnapshot(report, 10);
+        const row = new DataBaseHelper(Dashboard).create({
+            uuid: report.uuid,
+            root: report.root,
+            report: data,
+            date: Date.now()
+        });
+        return await new DataBaseHelper(Dashboard).save(row);
+    }
+
+    public static async getDashboard(id: string): Promise<Dashboard> {
+        return await new DataBaseHelper(Dashboard).findOne(id);
+    }
+
+    public static async getDashboards(): Promise<Dashboard[]> {
+        return await new DataBaseHelper(Dashboard).find(null, {
+            fields: [
+                'uuid',
+                'root',
+                'date'
+            ]
+        });
+    }
+
+    public static async getReports(): Promise<Status[]> {
+        return await new DataBaseHelper(Status).find();
+    }
+
+    public static async getReport(uuid: string, size: number = 10): Promise<any> {
+        const item = await new DataBaseHelper(Status).findOne({ uuid });
+        if (!item) {
+            throw new Error('Report does not exist');
+        }
+        if (item.status !== ReportStatus.FINISHED) {
+            return {
+                status: item.status
+            };
+        }
+        const result = await ReportServiceService.createSnapshot(item, size);
+        return { ...result, status: item.status };
     }
 
     public static async csv(uuid: string): Promise<any> {
-        console.log('ReportService.csv')
-        console.time('ReportService.csv')
         const item = await new DataBaseHelper(Status).findOne({ uuid });
 
         if (!item) {
@@ -505,7 +554,7 @@ export class ReportServiceService {
             vpCount,
             didCount,
             revokeCount,
-            tagCount,
+            tags,
             schemaCount,
             systemSchemaCount,
             ftCount,
@@ -514,8 +563,6 @@ export class ReportServiceService {
             nftBalance
         } = await ReportServiceService.loadData(item.uuid);
 
-        console.time('csv: generate');
-        console.log('csv: generate total csv');
         const totalCSV = new Table('total');
         totalCSV
             .addHeader('Total Topics', { width: 12, type: 'number' })
@@ -529,7 +576,7 @@ export class ReportServiceService {
             .addHeader('DID Documents', { width: 16, type: 'number' })
             .addHeader('VC Documents', { width: 16, type: 'number' })
             .addHeader('VP Documents', { width: 16, type: 'number' })
-            .addHeader('Revoke Documents', { width: 16, type: 'number' })
+            .addHeader('Revoked Documents', { width: 16, type: 'number' })
             .addHeader('User Topics', { width: 16, type: 'number' })
             .addHeader('Fungible Tokens', { width: 20, type: 'number' })
             .addHeader('Total Balances (FT)', { width: 20, type: 'number' })
@@ -556,13 +603,12 @@ export class ReportServiceService {
             .add(ftBalance)
             .add(nftCount)
             .add(nftBalance)
-            .add(tagCount)
+            .add(tags.length)
             .add(schemaCount)
             .add(systemSchemaCount)
             .addLine();
 
         //Users
-        console.log('csv: generate users csv');
         const usersCSV = new Table('users');
         usersCSV
             .addHeader('DID', { width: 80 })
@@ -581,7 +627,6 @@ export class ReportServiceService {
         }
 
         //Policies
-        console.log('csv: generate policies csv');
         const policiesCSV = new Table('policies');
         policiesCSV
             .addHeader('UUID', { width: 40 })
@@ -593,7 +638,7 @@ export class ReportServiceService {
             .addHeader('Versions', { width: 30 })
             .addHeader('VP Documents', { width: 18, type: 'number' })
             .addHeader('VC Documents', { width: 18, type: 'number' })
-            .addHeader('Revoke Documents', { width: 18, type: 'number' });
+            .addHeader('Revoked Documents', { width: 18, type: 'number' });
         let tokenCount = 0;
         for (const p of policies) {
             const tokenNames = p._tokens.map((t: any) => String(t.tokenId));
@@ -626,7 +671,6 @@ export class ReportServiceService {
         }
 
         //Tokens
-        console.log('csv: generate tokens csv');
         const tokensCSV = new Table('tokens');
         tokensCSV
             .addHeader('Creator (Account)', { width: 18 })
@@ -644,12 +688,11 @@ export class ReportServiceService {
                 .add(item.tokenName)
                 .add(item.tokenSymbol)
                 .add(item.tokenType)
-                .add(item.balance)
+                .add(String(item.balance))
                 .addLine()
         }
 
         //Instances
-        console.log('csv: generate instances csv');
         const instancesCSV = new Table('instances');
         instancesCSV
             .addHeader('UUID', { width: 40 })
@@ -662,7 +705,7 @@ export class ReportServiceService {
             .addHeader('Policy Version', { width: 18 })
             .addHeader('VP Documents', { width: 18, type: 'number' })
             .addHeader('VC Documents', { width: 18, type: 'number' })
-            .addHeader('Revoke Documents', { width: 18, type: 'number' });
+            .addHeader('Revoked Documents', { width: 18, type: 'number' });
         for (const i of instances) {
             instancesCSV
                 .add(i.policyUUID)
@@ -680,31 +723,47 @@ export class ReportServiceService {
         }
 
         //Modules
-        console.log('csv: generate modules csv');
         const modulesCSV = new Table('modules');
         modulesCSV
             .addHeader('Creator (Account)', { width: 18 })
             .addHeader('Creator', { width: 80 })
             .addHeader('Module Name', { width: 30 })
             .addHeader('Module Description', { width: 30 });
-        for (const item of modules) {
+        for (const m of modules) {
             modulesCSV
-                .add(item.account)
-                .add(item.owner)
-                .add(item.name)
-                .add(item.description)
+                .add(m.account)
+                .add(m.owner)
+                .add(m.name)
+                .add(m.description)
                 .addLine()
         }
-        console.timeEnd('csv: generate');
 
-        console.timeEnd('ReportService.csv');
+        //Tags
+        const tagsCSV = new Table('tags');
+        tagsCSV
+            .addHeader('Creator (Account)', { width: 18 })
+            .addHeader('Creator', { width: 80 })
+            .addHeader('Label', { width: 30 })
+            .addHeader('Description', { width: 30 })
+            .addHeader('Target', { width: 30 });
+        for (const t of tags) {
+            tagsCSV
+                .add(t.account)
+                .add(t.owner)
+                .add(t.name)
+                .add(t.description)
+                .add(t.target)
+                .addLine()
+        }
+
         return [
             totalCSV,
             usersCSV,
             policiesCSV,
             tokensCSV,
             instancesCSV,
-            modulesCSV
+            modulesCSV,
+            tagsCSV
         ]
     }
 

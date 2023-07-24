@@ -1,0 +1,124 @@
+@import "./components/card/card.css";
+@import "./components/loader/loader.css";
+@import "./components/grid/grid.css";
+@import "./components/dropdown/dropdown.css";
+
+body {
+    background: #f9f9f9;
+    font-family: "Styrene A Web", "Helvetica Neue", Sans-Serif;
+    margin: 0px;
+}
+
+div#container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: auto;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    width: 100%;
+    border-bottom: 1px solid #aaa;
+    margin-bottom: 18px;
+    height: 84px;
+    padding: 10px 5px 10px 5px;
+    box-sizing: border-box;
+}
+
+.cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    width: 100%;
+    border-bottom: 1px solid #aaa;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+}
+
+.rate-container {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    width: 100%;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    padding-top: 10px;
+    padding-left: 5px;
+    padding-right: 5px;
+    box-sizing: border-box;
+}
+
+.rate-card {
+    background: #ffffff;
+    overflow: hidden;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    box-shadow: 1px 2px 6px 0px rgb(0 0 0 / 15%);
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    box-sizing: border-box;
+    border-top-color: rgb(46 134 235 / 30%);
+    border-left-color: rgb(46 134 235 / 30%);
+    border-bottom-color: rgb(99 70 235 / 30%);
+    border-right-color: rgb(99 70 235 / 30%);
+}
+
+.rate-toolbar {
+    height: 72px;
+    width: 100%;
+    padding: 18px 32px 4px 32px;
+    box-sizing: border-box;
+}
+
+.rate-body {
+    width: 100%;
+    padding: 18px 32px 32px 32px;
+    box-sizing: border-box;
+}
+
+*::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+    /*margin: 54px 0 53px;*/
+}
+
+*::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    box-shadow: rgba(255, 255, 255, 0.3) 0 0 0 1px;
+}
+
+*:hover::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.45);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.55);
+}
+
+
+.export-btn {
+    height: 44px;
+    width: 90px;
+    margin: 3px 0 3px 24px;
+    cursor: pointer;
+    background: #6346eb;
+    color: #fff;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 4px;
+    border: 1px solid #6346eb;
+}
+
+.export-btn:hover {
+    background: #583dd5;
+}

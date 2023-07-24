@@ -1,31 +1,15 @@
 import {
-    DIDMessage,
     DataBaseHelper,
     Message,
     MessageType,
-    ModuleMessage,
-    PolicyMessage,
-    RegistrationMessage,
-    RoleMessage,
     TagMessage,
-    TokenMessage,
-    TopicMessage,
-    VCMessage,
-    VPMessage
 } from '@guardian/common';
-import { AnalyticsUser as User } from '../entity/analytics-user';
 import { AnalyticsStatus as Status } from '../entity/analytics-status';
-import { AnalyticsPolicy as Policy } from '../entity/analytics-policy';
-import { AnalyticsPolicyInstance as PolicyInstance } from '../entity/analytics-policy-instance';
-import { AnalyticsDocument as Document } from '../entity/analytics-document';
-import { AnalyticsModule as Module } from '../entity/analytics-module';
 import { AnalyticsToken as Token } from '../entity/analytics-token';
 import { AnalyticsTokenCache as TokenCache } from '../entity/analytics-token-cache';
 import { ReportSteep } from '../interfaces/report-steep.type';
 import { ReportStatus } from '../interfaces/report-status.type';
-import { UserType } from '../interfaces/user.type';
 import { AnalyticsUtils } from '../utils/utils';
-import { DocumentType } from '../interfaces/document.type';
 import { Tasks } from '../utils/tasks';
 import { AnalyticsTag as Tag } from '../entity/analytics-tag';
 
@@ -160,8 +144,6 @@ export class AnalyticsTokenService {
         await AnalyticsUtils.updateStatus(report, ReportSteep.TOKENS, ReportStatus.PROGRESS);
 
         //Balance
-        console.log('--- Balance ---')
-
         const row = await new DataBaseHelper(Token).find({
             uuid: report.uuid
         });
@@ -176,7 +158,6 @@ export class AnalyticsTokenService {
         await tasks.run(AnalyticsTokenService.CHUNKS_COUNT);
 
         //Tags
-        console.log('--- Tags ---')
         const row2 = await new DataBaseHelper(TokenCache).find({
             uuid: report.uuid
         });

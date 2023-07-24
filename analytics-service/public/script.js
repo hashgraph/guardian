@@ -1,3 +1,7 @@
+
+
+
+
 const BASE_URL = location.href + 'analytics';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -239,9 +243,10 @@ function renderReport(report) {
     renderRate(report.topPoliciesByDocuments, 'policies-rate-by-documents');
     renderRate(report.topPoliciesByVP, 'policies-rate-by-vp');
     renderRate(report.topTokens, 'tokens-rate');
-
     renderRate(report.topFTokensByBalances, 'f-tokens-rate-by-balances');
     renderRate(report.topNFTokensByBalances, 'nf-tokens-rate-by-balances');
+    renderRate(report.topTags, 'tags-rate-by-name');
+    
 }
 
 function renderRate(data, id) {

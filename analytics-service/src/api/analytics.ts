@@ -6,65 +6,35 @@ import { ReportType } from '../interfaces/report.type';
 @Controller('analytics')
 @ApiTags('analytics')
 export class AnalyticsApi {
-    @Post('/report')
+    @Get('/reports')
     @HttpCode(HttpStatus.OK)
-    async createReport(@Body() body: any, @Req() req: any, @Response() res: any): Promise<any> {
+    async getReports(@Req() req: any, @Response() res: any): Promise<any> {
         try {
-            const type = body?.type;
-            // const type = ReportType.TOKENS;
-            let report = await ReportServiceService.create(process.env.INITIALIZATION_TOPIC_ID, type);
-            report = await ReportServiceService.update(report.uuid, report.type);
+            const report = await ReportServiceService.getReports();
             return res.json(report);
         } catch (error) {
             throw error;
         }
     }
 
-    @Get('/report')
+    @Get('/reports/:uuid')
     @HttpCode(HttpStatus.OK)
-    async getReport(@Body() body: any, @Req() req: any, @Response() res: any): Promise<any> {
-        try {
-            let report = await ReportServiceService.get(process.env.INITIALIZATION_TOPIC_ID);
-            return res.json(report);
-        } catch (error) {
-            throw error;
-        }
-    }
-
-    @Post('/report/:uuid')
-    @HttpCode(HttpStatus.OK)
-    async updateReport(@Body() body: any, @Req() req: any, @Response() res: any): Promise<any> {
+    async getReport(@Req() req: any, @Response() res: any): Promise<any> {
         try {
             if (!req.params.uuid) {
                 throw new HttpException('Invalid uuid', HttpStatus.UNPROCESSABLE_ENTITY);
             }
-            const type = body?.type;
-            const report = await ReportServiceService.update(req.params.uuid, type);
+            const report = await ReportServiceService.getReport(req.params.uuid);
             return res.json(report);
         } catch (error) {
             throw error;
         }
     }
 
-    @Get('/report/:uuid')
-    @HttpCode(HttpStatus.OK)
-    async getReportData(@Req() req: any, @Response() res: any): Promise<any> {
-        try {
-            if (!req.params.uuid) {
-                throw new HttpException('Invalid uuid', HttpStatus.UNPROCESSABLE_ENTITY);
-            }
-            const report = await ReportServiceService.report(req.params.uuid);
-            return res.json(report);
-        } catch (error) {
-            throw error;
-        }
-    }
-
-    @Get('/report/:uuid/export/csv')
+    @Get('/reports/:uuid/export/csv')
     @HttpCode(HttpStatus.OK)
     async exportToCsv(@Req() req, @Response() res): Promise<any> {
         try {
-
             if (!req.params.uuid) {
                 throw new HttpException('Invalid uuid', HttpStatus.UNPROCESSABLE_ENTITY);
             }
@@ -87,7 +57,7 @@ export class AnalyticsApi {
         }
     }
 
-    @Get('/report/:uuid/export/xlsx')
+    @Get('/reports/:uuid/export/xlsx')
     @HttpCode(HttpStatus.OK)
     async exportToXlsx(@Req() req, @Response() res): Promise<any> {
         try {
@@ -99,6 +69,31 @@ export class AnalyticsApi {
             const xlsx = await ReportServiceService.generateExcel(reports);
             xlsx.write(`${name}.xlsx`, res);
             return res;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    @Get('/dashboards')
+    @HttpCode(HttpStatus.OK)
+    async getDashboards(@Req() req: any, @Response() res: any): Promise<any> {
+        try {
+            const dashboards = await ReportServiceService.getDashboards();
+            return res.json(dashboards);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    @Get('/dashboards/:id')
+    @HttpCode(HttpStatus.OK)
+    async getDashboardById(@Req() req: any, @Response() res: any): Promise<any> {
+        try {
+            if (!req.params.id) {
+                throw new HttpException('Invalid id', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const dashboard = await ReportServiceService.getDashboard(req.params.id);
+            return res.json(dashboard);
         } catch (error) {
             throw error;
         }
