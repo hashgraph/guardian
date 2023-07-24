@@ -12,7 +12,6 @@ import {
     VPMessage,
     MessageMemo,
     VcHelper,
-    Users,
 } from '@guardian/common';
 import { DataTypes, IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
 import { AnyBlockType, IPolicyDocument, IPolicyMintEventState, IPolicyTokenBlock } from '@policy-engine/policy-engine.interface';

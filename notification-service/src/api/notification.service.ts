@@ -30,34 +30,53 @@ export class NotificationService {
         if (NotificationService.deleteNotificationsInterval) {
             return;
         }
-        setInterval(async () => {
-            try {
-                const dbHelper = new DataBaseHelper(Notification);
-                const now = new Date();
-                const updatedNotifications = await dbHelper.update(
-                    {
-                        old: true,
-                    },
-                    {
-                        updateDate: {
-                            $lt: new Date(now.getTime() + 1 * 60000),
-                        },
-                        read: true,
+        NotificationService.deleteNotificationsInterval = setInterval(
+            async () => {
+                try {
+                    const dbHelperNotifications = new DataBaseHelper(
+                        Notification
+                    );
+                    const now = new Date();
+                    const updatedNotifications =
+                        await dbHelperNotifications.update(
+                            {
+                                old: true,
+                            },
+                            {
+                                updateDate: {
+                                    $lt: new Date(
+                                        now.getTime() + 60 * 60 * 1000
+                                    ),
+                                },
+                                read: true,
+                            }
+                        );
+                    if (!updatedNotifications) {
+                        return;
                     }
-                );
-                if (!updatedNotifications) {
-                    return;
+                    const notifications = Array.isArray(updatedNotifications)
+                        ? updatedNotifications
+                        : [updatedNotifications];
+                    for (const notification of notifications) {
+                        await this.deleteNotificationWS(notification);
+                    }
+
+                    const dbHelperProgresses = new DataBaseHelper(Progress);
+                    const progressesToDelete = await dbHelperProgresses.find({
+                        updateDate: {
+                            $lt: new Date(now.getTime() + 60 * 60 * 1000),
+                        },
+                    });
+                    await dbHelperProgresses.remove(progressesToDelete);
+                    for (const progress of progressesToDelete) {
+                        await this.deleteProgressWS(progress);
+                    }
+                } catch (error) {
+                    console.error(error);
                 }
-                const notifications = Array.isArray(updatedNotifications)
-                    ? updatedNotifications
-                    : [updatedNotifications];
-                for (const notification of notifications) {
-                    await this.deleteNotificationWS(notification);
-                }
-            } catch (error) {
-                console.error(error);
-            }
-        }, 1000 * 60 * 1);
+            },
+            10 * 60 * 1000
+        );
     }
 
     @Client({
