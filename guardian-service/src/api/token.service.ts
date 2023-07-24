@@ -372,7 +372,7 @@ async function deleteToken(token: Token, tokenRepository: DataBaseHelper<Token>,
  * @param tokenRepository
  * @param notifier
  */
-async function associateToken(tokenId: any, did: any, associate: any, tokenRepository: DataBaseHelper<Token>, notifier: INotifier): Promise<boolean> {
+async function associateToken(tokenId: any, did: any, associate: any, tokenRepository: DataBaseHelper<Token>, notifier: INotifier): Promise<[string, boolean]> {
     await notifier.start('Find token data');
     const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
     if (!token) {
@@ -408,7 +408,7 @@ async function associateToken(tokenId: any, did: any, associate: any, tokenRepos
     }, 20);
 
     await notifier.completed();
-    return status;
+    return [token.tokenName, status];
 }
 
 /**
@@ -476,6 +476,11 @@ async function grantKycToken(
 
     const result = getTokenInfo(info, token);
     await notifier.completed();
+    await NotificationHelper.info(
+        `${grant ? 'Grant' : 'Revok'} KYC`,
+        `KYC ${grant ? 'granted for' : 'revoked for'} ${token.tokenName}`,
+        user.id
+    );
     return result;
 }
 
@@ -542,13 +547,13 @@ async function freezeToken(
         }
     }, 20);
 
-    await NotificationHelper.info(
-        `${freeze ? 'Freeze' : 'Unfreeze'} token ${token.tokenName}`,
-        `Token ${token.tokenName} was ${freeze ? 'unfrozed' : 'frozed'}`,
-        user.id
-    );
     const result = getTokenInfo(info, token);
     await notifier.completed();
+    await NotificationHelper.info(
+        `${freeze ? 'Freeze' : 'Unfreeze'} token`,
+        `${token.tokenName} ${freeze ? 'frozed' : 'unfrozed'}`,
+        user.id
+    );
     return result;
 }
 
@@ -697,7 +702,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
     ApiResponse(MessageAPI.ASSOCIATE_TOKEN, async (msg) => {
         try {
             const { tokenId, did, associate } = msg;
-            const status = await associateToken(tokenId, did, associate, tokenRepository, emptyNotifier());
+            const [_, status] = await associateToken(tokenId, did, associate, tokenRepository, emptyNotifier());
             return new MessageResponse(status);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -710,8 +715,8 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
         const notifier = await initNotifier(task);
 
         RunFunctionAsync(async () => {
-            const status = await associateToken(tokenId, did, associate, tokenRepository, notifier);
-            await notifier.result(status);
+            const [tokenName, _] = await associateToken(tokenId, did, associate, tokenRepository, notifier);
+            await notifier.result(tokenName);
         }, async (error) => {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             await notifier.error(error);

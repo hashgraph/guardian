@@ -1,4 +1,4 @@
-import { GenerateUUIDv4, IRootConfig, ModelHelper, PolicyEvents, PolicyType, Schema, SchemaEntity, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
+import { GenerateUUIDv4, IRootConfig, ModelHelper, NotificationAction, PolicyEvents, PolicyType, Schema, SchemaEntity, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
 import {
     Artifact,
     DataBaseHelper,
@@ -12,6 +12,7 @@ import {
     MessageType,
     MultiPolicy,
     NatsService,
+    NotificationHelper,
     Policy,
     PolicyMessage,
     replaceAllEntities,
@@ -802,6 +803,21 @@ export class PolicyEngine extends NatsService {
             }
             const newPolicy = await this.publishPolicy(policy, owner, version, notifier);
             await this.generateModel(newPolicy.id.toString());
+            const users = await new Users().getUsersBySrId(owner);
+
+            await Promise.all(
+                users.map(
+                    async (user) =>
+                        await NotificationHelper.info(
+                            'Policy published',
+                            'New policy published',
+                            user.id,
+                            NotificationAction.POLICY_VIEW,
+                            newPolicy.id.toString()
+                        )
+                )
+            );
+
             return {
                 policyId: newPolicy.id.toString(),
                 isValid,
