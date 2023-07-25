@@ -9,6 +9,20 @@ import { ReportService } from '../analytics/report.service';
 @ApiTags('analytics')
 export class AnalyticsApi {
     /**
+     * Get current report
+     */
+    @Get('/report')
+    @HttpCode(HttpStatus.OK)
+    async getCurrentReport(@Req() req: any, @Response() res: any): Promise<any> {
+        try {
+            const report = await ReportService.getCurrentReport();
+            return res.json(report);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    /**
      * Get all reports
      */
     @Get('/reports')
