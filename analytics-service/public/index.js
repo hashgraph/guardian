@@ -420,7 +420,7 @@ class App {
             event.preventDefault();
             await this.loadStatus();
         });
-        toolbar.append(this.reportStatus);
+        this.container.append(this.reportStatus);
 
         await this.load();
         await this.loadStatus();
@@ -430,6 +430,7 @@ class App {
         try {
             this.loader.show();
             this.dashboards = await ReportService.loadDashboards();
+            this.container.classList.toggle('no-data', !this.dashboards.length);
             this.renderDashboards(this.dashboards);
             this.loader.hide();
             this.selectDashboard(this.dashboards[this.dashboards.length - 1]);
