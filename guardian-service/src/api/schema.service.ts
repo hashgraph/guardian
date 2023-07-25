@@ -38,10 +38,10 @@ export class SchemaService {
     //         schemaObject.system = false;
     //         SchemaHelper.setVersion(schemaObject, null, schemaObject.version);
     //         const schema = await createSchema(schemaObject, schemaObject.owner, notifier);
-    //         await notifier.result(schema.id);
+    //         notifier.result(schema.id);
     //     }, async (error) => {
     //         new Logger().error(error, ['GUARDIAN_SERVICE']);
-    //         await notifier.error(error);
+    //         notifier.error(error);
     //     });
     //     return new MessageResponse({ taskId });
     // }
@@ -190,17 +190,17 @@ export class SchemaService {
     //     const notifier = initNotifier(taskId);
     //     RunFunctionAsync(async () => {
     //         if (!msg) {
-    //             await notifier.error('Invalid id');
+    //             notifier.error('Invalid id');
     //         }
     //
-    //         await notifier.completedAndStart('Resolve Hedera account');
+    //         notifier.completedAndStart('Resolve Hedera account');
     //         const users = new Users();
     //         const root = await users.getHederaAccount(owner);
     //         const item = await findAndPublishSchema(id, version, owner, root, notifier);
-    //         await notifier.result(item.id);
+    //         notifier.result(item.id);
     //     }, async (error) => {
     //         new Logger().error(error, ['GUARDIAN_SERVICE']);
-    //         await notifier.error(error);
+    //         notifier.error(error);
     //     });
     //     return new MessageResponse({ taskId });
     // }
@@ -251,17 +251,17 @@ export class SchemaService {
     //     const notifier = initNotifier(taskId);
     //     RunFunctionAsync(async () => {
     //         if (!msg) {
-    //             await notifier.error('Invalid import schema parameter');
+    //             notifier.error('Invalid import schema parameter');
     //         }
     //         if (!owner || !messageIds) {
-    //             await notifier.error('Invalid import schema parameter');
+    //             notifier.error('Invalid import schema parameter');
     //         }
     //
     //         const schemasMap = await importSchemasByMessages(owner, messageIds, topicId, notifier);
-    //         await notifier.result(schemasMap);
+    //         notifier.result(schemasMap);
     //     }, async (error) => {
     //         new Logger().error(error, ['GUARDIAN_SERVICE']);
-    //         await notifier.error(error);
+    //         notifier.error(error);
     //     });
     //     return new MessageResponse({ taskId });
     // }
@@ -305,10 +305,10 @@ export async function schemaAPI(): Promise<void> {
             schemaObject.system = false;
             SchemaHelper.setVersion(schemaObject, null, schemaObject.version);
             const schema = await createSchema(schemaObject, schemaObject.owner, notifier);
-            await notifier.result(schema.id);
+            notifier.result(schema.id);
         }, async (error) => {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
-            await notifier.error(error);
+            notifier.error(error);
         });
         return new MessageResponse(task);
     });
@@ -462,17 +462,17 @@ export async function schemaAPI(): Promise<void> {
         const notifier = await initNotifier(task);
         RunFunctionAsync(async () => {
             if (!msg) {
-                await notifier.error('Invalid id');
+                notifier.error('Invalid id');
             }
 
-            await notifier.completedAndStart('Resolve Hedera account');
+            notifier.completedAndStart('Resolve Hedera account');
             const users = new Users();
             const root = await users.getHederaAccount(owner);
             const item = await findAndPublishSchema(id, version, owner, root, notifier);
-            await notifier.result(item.id);
+            notifier.result(item.id);
         }, async (error) => {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
-            await notifier.error(error);
+            notifier.error(error);
         });
         return new MessageResponse(task);
     });
@@ -535,17 +535,17 @@ export async function schemaAPI(): Promise<void> {
         const notifier = await initNotifier(task);
         RunFunctionAsync(async () => {
             if (!msg) {
-                await notifier.error('Invalid import schema parameter');
+                notifier.error('Invalid import schema parameter');
             }
             if (!owner || !messageIds) {
-                await notifier.error('Invalid import schema parameter');
+                notifier.error('Invalid import schema parameter');
             }
 
             const schemasMap = await importSchemasByMessages(owner, messageIds, topicId, notifier);
-            await notifier.result(schemasMap);
+            notifier.result(schemasMap);
         }, async (error) => {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
-            await notifier.error(error);
+            notifier.error(error);
         });
         return new MessageResponse(task);
     });
@@ -587,19 +587,19 @@ export async function schemaAPI(): Promise<void> {
         const notifier = await initNotifier(task);
         RunFunctionAsync(async () => {
             if (!msg) {
-                await notifier.error('Invalid import schema parameter');
+                notifier.error('Invalid import schema parameter');
             }
             if (!owner || !files) {
-                await notifier.error('Invalid import schema parameter');
+                notifier.error('Invalid import schema parameter');
             }
 
             let result = await importSchemaByFiles(owner, schemas, topicId, notifier);
             result = await importTagsByFiles(result, tags, notifier);
 
-            await notifier.result(result);
+            notifier.result(result);
         }, async (error) => {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
-            await notifier.error(error);
+            notifier.error(error);
         });
         return new MessageResponse(task);
     });
@@ -647,19 +647,19 @@ export async function schemaAPI(): Promise<void> {
         const notifier = await initNotifier(task);
         RunFunctionAsync(async () => {
             if (!msg) {
-                await notifier.error('Invalid preview schema parameters');
+                notifier.error('Invalid preview schema parameters');
                 return;
             }
             if (!messageIds) {
-                await notifier.error('Invalid preview schema parameters');
+                notifier.error('Invalid preview schema parameters');
                 return;
             }
 
             const result = await prepareSchemaPreview(messageIds, notifier);
-            await notifier.result(result);
+            notifier.result(result);
         }, async (error) => {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
-            await notifier.error(error);
+            notifier.error(error);
         });
 
         return new MessageResponse(task);

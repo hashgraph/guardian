@@ -53,6 +53,9 @@ export class NotificationComponent implements OnInit {
                 )
             );
             this.subscription.add(
+                this.ws.createProgressSubscribe(this.createProgress.bind(this))
+            )
+            this.subscription.add(
                 this.ws.updateProgressSubscribe(this.updateProgress.bind(this))
             );
             this.subscription.add(
@@ -131,16 +134,18 @@ export class NotificationComponent implements OnInit {
         this.countUnreadNotification();
     }
 
+    createProgress(notification: any) {
+        this.progressNotifications.unshift(notification);
+        this.toastProgress(notification);
+        this.countUnreadNotification();
+    }
+
     updateProgress(notification: any) {
         const existingNotification = this.progressNotifications.find(
             (item) => item.id === notification.id
         );
         if (existingNotification) {
             Object.assign(existingNotification, notification);
-        } else {
-            this.progressNotifications.unshift(notification);
-            this.toastProgress(notification);
-            this.countUnreadNotification();
         }
     }
 

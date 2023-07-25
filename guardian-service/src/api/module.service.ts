@@ -68,7 +68,7 @@ export async function parseZipFile(zipFile: any): Promise<any> {
  * @param notifier
  */
 export async function preparePreviewMessage(messageId: string, owner: string, notifier: INotifier): Promise<any> {
-    await notifier.start('Resolve Hedera account');
+    notifier.start('Resolve Hedera account');
     if (!messageId) {
         throw new Error('Message ID in body is empty');
     }
@@ -85,10 +85,10 @@ export async function preparePreviewMessage(messageId: string, owner: string, no
         throw new Error('file in body is empty');
     }
 
-    await notifier.completedAndStart('Parse module files');
+    notifier.completedAndStart('Parse module files');
     const result = await parseZipFile(message.document);
 
-    await notifier.completed();
+    notifier.completed();
     return result;
 }
 
@@ -100,7 +100,7 @@ export async function preparePreviewMessage(messageId: string, owner: string, no
  * @param notifier
  */
 export async function validateAndPublish(uuid: string, owner: string, notifier: INotifier) {
-    await notifier.start('Find and validate module');
+    notifier.start('Find and validate module');
     const item = await DatabaseServer.getModuleByUUID(uuid);
     if (!item) {
         throw new Error('Unknown module');
@@ -114,7 +114,7 @@ export async function validateAndPublish(uuid: string, owner: string, notifier: 
 
     const errors = await validateModel(item);
     const isValid = !errors.blocks.some(block => !block.isValid);
-    await notifier.completed();
+    notifier.completed();
     if (isValid) {
         const newModule = await publishModule(item, owner, notifier);
         return { item: newModule, isValid, errors };
@@ -144,16 +144,16 @@ export async function publishModule(model: PolicyModule, owner: string, notifier
     const logger = new Logger();
 
     logger.info('Publish module', ['GUARDIAN_SERVICE']);
-    await notifier.start('Resolve Hedera account');
+    notifier.start('Resolve Hedera account');
     const users = new Users();
     const root = await users.getHederaAccount(owner);
-    await notifier.completedAndStart('Find topic');
+    notifier.completedAndStart('Find topic');
 
     const userTopic = await TopicConfig.fromObject(await DatabaseServer.getTopicByType(owner, TopicType.UserTopic), true);
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
         .setTopicObject(userTopic);
 
-    await notifier.completedAndStart('Create module topic');
+    notifier.completedAndStart('Create module topic');
     const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
     const rootTopic = await topicHelper.create({
         type: TopicType.ModuleTopic,
@@ -169,7 +169,7 @@ export async function publishModule(model: PolicyModule, owner: string, notifier
     model.topicId = rootTopic.topicId;
     model.status = ModuleStatus.PUBLISHED;
 
-    await notifier.completedAndStart('Generate file');
+    notifier.completedAndStart('Generate file');
 
     const zip = await generateZipFile(model);
     const buffer = await zip.generateAsync({
@@ -180,21 +180,21 @@ export async function publishModule(model: PolicyModule, owner: string, notifier
         }
     });
 
-    await notifier.completedAndStart('Publish module');
+    notifier.completedAndStart('Publish module');
     const message = new ModuleMessage(MessageType.Module, MessageAction.PublishModule);
     message.setDocument(model, buffer);
     const result = await messageServer
         .sendMessage(message);
     model.messageId = result.getId();
 
-    await notifier.completedAndStart('Link topic and module');
+    notifier.completedAndStart('Link topic and module');
     await topicHelper.twoWayLink(rootTopic, userTopic, result.getId());
 
     logger.info('Published module', ['GUARDIAN_SERVICE']);
 
-    await notifier.completedAndStart('Saving in DB');
+    notifier.completedAndStart('Saving in DB');
     const retVal = await DatabaseServer.updateModule(model);
-    await notifier.completed();
+    notifier.completed();
     return retVal
 }
 

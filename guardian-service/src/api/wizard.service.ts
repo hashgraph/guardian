@@ -104,14 +104,14 @@ export async function wizardAPI(): Promise<void> {
                     policy.topicId,
                     owner
                 );
-                await notifier.result({
+                notifier.result({
                     policyId: policy.id,
                     wizardConfig: config,
                     saveState,
                 });
             },
             async (error) => {
-                await notifier.error(error);
+                notifier.error(error);
             }
         );
         return new MessageResponse(task);

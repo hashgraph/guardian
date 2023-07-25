@@ -21,19 +21,20 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 })
 class AppModule {}
 
+const channelName = (process.env.SERVICE_CHANNEL || `worker.${Date.now()}`).toUpperCase();
+
 Promise.all([
     MessageBrokerChannel.connect('WORKERS_SERVICE'),
     NestFactory.createMicroservice<MicroserviceOptions>(AppModule,{
         transport: Transport.NATS,
         options: {
-            name: `${process.env.SERVICE_CHANNEL}`,
+            name: channelName,
             servers: [
                 `nats://${process.env.MQ_ADDRESS}:4222`
             ]
         },
     }),
 ]).then(async values => {
-    const channelName = (process.env.SERVICE_CHANNEL || `worker.${Date.now()}`).toUpperCase()
     const [cn, app] = values;
     app.listen();
     const channel = new MessageBrokerChannel(cn, 'worker');

@@ -61,6 +61,11 @@ export class WebSocketsService {
     private readonly getStatusesMutex = new Mutex();
 
     /**
+     * Get statuses clients
+     */
+    private readonly getStatusesClients: Set<WebSocket> = new Set();
+
+    /**
      * Notification reading set
      */
     private readonly notificationReadingMap: Set<string> = new Set();
@@ -87,7 +92,10 @@ export class WebSocketsService {
      */
     public updateNotification(
         notification: any,
-        type: NotifyAPI.UPDATE_PROGRESS_WS | NotifyAPI.UPDATE_WS
+        type:
+            | NotifyAPI.UPDATE_PROGRESS_WS
+            | NotifyAPI.UPDATE_WS
+            | NotifyAPI.CREATE_PROGRESS_WS
     ): void {
         this.wss.clients.forEach((client: any) => {
             if (client.user?.id === notification.userId) {
@@ -148,7 +156,6 @@ export class WebSocketsService {
      * @returns Response
      */
     private async getStatusesHandler(
-        clients: WebSocket[],
         type: MessageAPI.UPDATE_STATUS | MessageAPI.GET_STATUS
     ) {
         const channel = new WebSocketsServiceChannel();
@@ -187,13 +194,13 @@ export class WebSocketsService {
 
         await getStatuses();
 
-        clients.forEach((client: any) => {
+        this.getStatusesClients.forEach((client: any) => {
             this.send(client, {
                 type,
                 data: statuses,
             });
         });
-        return new MessageResponse({});
+        this.getStatusesClients.clear();
     }
 
     /**
@@ -279,9 +286,16 @@ export class WebSocketsService {
         });
 
         this.channel.subscribe(MessageAPI.UPDATE_STATUS, async (msg) => {
-            return await this.getStatusesMutex.runExclusive(
-                this.getStatusesHandler.bind(this, this.wss.clients, MessageAPI.UPDATE_STATUS)
+            this.wss.clients.forEach(
+                this.getStatusesClients.add,
+                this.getStatusesClients
             );
+            if (!this.getStatusesMutex.isLocked()) {
+                this.getStatusesMutex.runExclusive(
+                    this.getStatusesHandler.bind(this, MessageAPI.UPDATE_STATUS)
+                );
+            }
+            return new MessageResponse({});
         });
 
         this.channel.getMessages(NotifyAPI.UPDATE_WS, async (msg) => {
@@ -290,6 +304,10 @@ export class WebSocketsService {
         });
         this.channel.getMessages(NotifyAPI.DELETE_WS, async (msg) => {
             this.deleteNotification(msg.data, NotifyAPI.DELETE_WS);
+            return new MessageResponse(true);
+        });
+        this.channel.getMessages(NotifyAPI.CREATE_PROGRESS_WS, async (msg) => {
+            this.updateNotification(msg.data, NotifyAPI.CREATE_PROGRESS_WS);
             return new MessageResponse(true);
         });
         this.channel.getMessages(NotifyAPI.UPDATE_PROGRESS_WS, async (msg) => {
@@ -352,9 +370,15 @@ export class WebSocketsService {
                     }
                     break;
                 case MessageAPI.GET_STATUS:
-                    await this.getStatusesMutex.runExclusive(
-                        this.getStatusesHandler.bind(this, [ws], MessageAPI.GET_STATUS)
-                    );
+                    this.getStatusesClients.add(ws);
+                    if (!this.getStatusesMutex.isLocked()) {
+                        this.getStatusesMutex.runExclusive(
+                            this.getStatusesHandler.bind(
+                                this,
+                                MessageAPI.GET_STATUS
+                            )
+                        );
+                    }
                     break;
                 default:
                     break;

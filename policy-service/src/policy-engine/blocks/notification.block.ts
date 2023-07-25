@@ -158,12 +158,16 @@ export class NotificationBlock {
         switch (ref.options.type) {
             case NotificationType.INFO:
                 fn = NotificationHelper.info;
+                break;
             case NotificationType.SUCCESS:
                 fn = NotificationHelper.success;
+                break;
             case NotificationType.WARN:
                 fn = NotificationHelper.warn;
+                break;
             case NotificationType.ERROR:
                 fn = NotificationHelper.error;
+                break;
             default:
                 fn = NotificationHelper.info;
         }
@@ -284,7 +288,6 @@ export class NotificationBlock {
                 break;
             }
             default:
-                break;
         }
 
         ref.triggerEvents(

@@ -162,11 +162,11 @@ async function createToken(
         throw new Error('Invalid Token Symbol');
     }
 
-    await notifier.start('Resolve Hedera account');
+    notifier.start('Resolve Hedera account');
     const users = new Users();
     const root = await users.getHederaAccount(owner);
 
-    await notifier.completedAndStart('Create token');
+    notifier.completedAndStart('Create token');
 
     let rawTokenObject: any = {
         ...token,
@@ -180,11 +180,11 @@ async function createToken(
         rawTokenObject = await createHederaToken(rawTokenObject, root);
     }
 
-    await notifier.completedAndStart('Create and save token in DB');
+    notifier.completedAndStart('Create and save token in DB');
     const tokenObject = tokenRepository.create(rawTokenObject);
     const result = await tokenRepository.save(tokenObject);
 
-    await notifier.completed();
+    notifier.completed();
     return result;
 }
 
@@ -202,25 +202,25 @@ async function updateToken(
     notifier: INotifier
 ): Promise<Token> {
     if (oldToken.draftToken && newToken.draftToken) {
-        await notifier.start('Update token');
+        notifier.start('Update token');
         const tokenObject = Object.assign(oldToken, newToken);
         const result = await tokenRepository.update(tokenObject, oldToken?.id);
-        await notifier.completed();
+        notifier.completed();
 
         return result;
     } else if (oldToken.draftToken && !newToken.draftToken) {
-        await notifier.start('Resolve Hedera account');
+        notifier.start('Resolve Hedera account');
         const users = new Users();
         const root = await users.getHederaAccount(oldToken.owner);
 
-        await notifier.completedAndStart('Create and save token in DB');
+        notifier.completedAndStart('Create and save token in DB');
 
         const newTokenObject = await createHederaToken(newToken, root);
         const tokenObject = Object.assign(oldToken, newTokenObject);
 
         const result = await tokenRepository.update(tokenObject, oldToken?.id);
 
-        await notifier.completedAndStart('Publish tags');
+        notifier.completedAndStart('Publish tags');
         try {
             await publishTokenTags(result, root);
         } catch (error) {
@@ -228,7 +228,7 @@ async function updateToken(
             log.error(error, ['GUARDIAN_SERVICE, TAGS']);
         }
 
-        await notifier.completed();
+        notifier.completed();
         return result;
 
     } else {
@@ -253,7 +253,7 @@ async function updateToken(
             changes.tokenSymbol = newToken.tokenSymbol;
         }
 
-        await notifier.start('Resolve Hedera account');
+        notifier.start('Resolve Hedera account');
         const users = new Users();
         const wallet = new Wallet();
         const workers = new Workers();
@@ -266,7 +266,7 @@ async function updateToken(
             oldToken.tokenId
         );
 
-        await notifier.completedAndStart('Update token');
+        notifier.completedAndStart('Update token');
 
         const tokenData = await workers.addNonRetryableTask({
             type: WorkerTaskType.UPDATE_TOKEN,
@@ -279,7 +279,7 @@ async function updateToken(
             }
         }, 20);
 
-        await notifier.completedAndStart('Save token in DB');
+        notifier.completedAndStart('Save token in DB');
 
         oldToken.tokenName = newToken.tokenName;
         oldToken.tokenSymbol = newToken.tokenSymbol;
@@ -313,7 +313,7 @@ async function updateToken(
         }
         await Promise.all(saveKeys);
 
-        await notifier.completed();
+        notifier.completed();
         return result;
     }
 }
@@ -326,7 +326,7 @@ async function updateToken(
  */
 async function deleteToken(token: Token, tokenRepository: DataBaseHelper<Token>, notifier: INotifier): Promise<boolean> {
     if (!token.draftToken) {
-        await notifier.start('Resolve Hedera account');
+        notifier.start('Resolve Hedera account');
         const users = new Users();
         const wallet = new Wallet();
         const workers = new Workers();
@@ -338,7 +338,7 @@ async function deleteToken(token: Token, tokenRepository: DataBaseHelper<Token>,
             token.tokenId
         );
 
-        await notifier.completedAndStart('Delete token');
+        notifier.completedAndStart('Delete token');
 
         const tokenData = await workers.addNonRetryableTask({
             type: WorkerTaskType.DELETE_TOKEN,
@@ -349,17 +349,17 @@ async function deleteToken(token: Token, tokenRepository: DataBaseHelper<Token>,
                 adminKey
             }
         }, 20);
-        await notifier.completedAndStart('Save token in DB');
+        notifier.completedAndStart('Save token in DB');
 
         if (tokenData) {
             await tokenRepository.delete(token);
         }
     } else {
-        await notifier.start('Delete token from db');
+        notifier.start('Delete token from db');
         await tokenRepository.delete(token);
     }
 
-    await notifier.completed();
+    notifier.completed();
 
     return true;
 }
@@ -373,7 +373,7 @@ async function deleteToken(token: Token, tokenRepository: DataBaseHelper<Token>,
  * @param notifier
  */
 async function associateToken(tokenId: any, did: any, associate: any, tokenRepository: DataBaseHelper<Token>, notifier: INotifier): Promise<[string, boolean]> {
-    await notifier.start('Find token data');
+    notifier.start('Find token data');
     const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
     if (!token) {
         throw new Error('Token not found');
@@ -381,7 +381,7 @@ async function associateToken(tokenId: any, did: any, associate: any, tokenRepos
 
     const wallet = new Wallet();
     const users = new Users();
-    await notifier.completedAndStart('Resolve Hedera account');
+    notifier.completedAndStart('Resolve Hedera account');
     const user = await users.getUserById(did);
     const userID = user.hederaAccountId;
     const userDID = user.did;
@@ -394,7 +394,7 @@ async function associateToken(tokenId: any, did: any, associate: any, tokenRepos
         throw new Error('User is not linked to an Hedera Account');
     }
 
-    await notifier.completedAndStart(associate ? 'Associate' : 'Dissociate');
+    notifier.completedAndStart(associate ? 'Associate' : 'Dissociate');
 
     const workers = new Workers();
     const status = await workers.addNonRetryableTask({
@@ -407,7 +407,7 @@ async function associateToken(tokenId: any, did: any, associate: any, tokenRepos
         }
     }, 20);
 
-    await notifier.completed();
+    notifier.completed();
     return [token.tokenName, status];
 }
 
@@ -428,13 +428,13 @@ async function grantKycToken(
     tokenRepository: DataBaseHelper<Token>,
     notifier: INotifier
 ): Promise<any> {
-    await notifier.start('Find token data');
+    notifier.start('Find token data');
     const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
     if (!token) {
         throw new Error('Token not found');
     }
 
-    await notifier.completedAndStart('Resolve Hedera account');
+    notifier.completedAndStart('Resolve Hedera account');
     const users = new Users();
     const user = await users.getUser(username);
     if (!user) {
@@ -446,7 +446,7 @@ async function grantKycToken(
 
     const root = await users.getHederaAccount(owner);
 
-    await notifier.completedAndStart(grant ? 'Grant KYC' : 'Revoke KYC');
+    notifier.completedAndStart(grant ? 'Grant KYC' : 'Revoke KYC');
     const workers = new Workers();
     const kycKey = await new Wallet().getUserKey(
         token.owner,
@@ -475,7 +475,7 @@ async function grantKycToken(
     }, 20);
 
     const result = getTokenInfo(info, token);
-    await notifier.completed();
+    notifier.completed();
     return result;
 }
 
@@ -496,13 +496,13 @@ async function freezeToken(
     tokenRepository: DataBaseHelper<Token>,
     notifier: INotifier
 ): Promise<any> {
-    await notifier.start('Find token data');
+    notifier.start('Find token data');
     const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
     if (!token) {
         throw new Error('Token not found');
     }
 
-    await notifier.completedAndStart('Resolve Hedera account');
+    notifier.completedAndStart('Resolve Hedera account');
     const users = new Users();
     const user = await users.getUser(username);
     if (!user) {
@@ -514,7 +514,7 @@ async function freezeToken(
 
     const root = await users.getHederaAccount(owner);
 
-    await notifier.completedAndStart(freeze ? 'Freeze Token' : 'Unfreeze Token');
+    notifier.completedAndStart(freeze ? 'Freeze Token' : 'Unfreeze Token');
     const workers = new Workers();
     const freezeKey = await new Wallet().getUserKey(
         token.owner,
@@ -543,7 +543,7 @@ async function freezeToken(
     }, 20);
 
     const result = getTokenInfo(info, token);
-    await notifier.completed();
+    notifier.completed();
     return result;
 }
 
@@ -587,10 +587,10 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
                 throw new Error('Invalid Params');
             }
             const result = await createToken(token, owner, tokenRepository, notifier);
-            await notifier.result(result);
+            notifier.result(result);
         }, async (error) => {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
-            await notifier.error(error);
+            notifier.error(error);
         });
 
         return new MessageResponse(task);
@@ -608,10 +608,10 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
                 throw new Error('Token not found');
             }
             const result = await updateToken(item, token, tokenRepository, notifier);
-            await notifier.result(result);
+            notifier.result(result);
         }, async (error) => {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
-            await notifier.error(error);
+            notifier.error(error);
         });
 
         return new MessageResponse(task);
@@ -629,10 +629,10 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
                 throw new Error('Token not found');
             }
             const result = await deleteToken(item, tokenRepository, notifier);
-            await notifier.result(result);
+            notifier.result(result);
         }, async (error) => {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
-            await notifier.error(error);
+            notifier.error(error);
         });
         return new MessageResponse(task);
     });
@@ -654,10 +654,10 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
 
         RunFunctionAsync(async () => {
             const result = await freezeToken(tokenId, username, owner, freeze, tokenRepository, notifier);
-            await notifier.result(result);
+            notifier.result(result);
         }, async (error) => {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
-            await notifier.error(error);
+            notifier.error(error);
         });
 
         return new MessageResponse(task);
@@ -680,10 +680,10 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
 
         RunFunctionAsync(async () => {
             const result = await grantKycToken(tokenId, username, owner, grant, tokenRepository, notifier);
-            await notifier.result(result);
+            notifier.result(result);
         }, async (error) => {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
-            await notifier.error(error);
+            notifier.error(error);
         });
 
         return new MessageResponse(task);
@@ -706,10 +706,10 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
 
         RunFunctionAsync(async () => {
             const [tokenName, _] = await associateToken(tokenId, did, associate, tokenRepository, notifier);
-            await notifier.result(tokenName);
+            notifier.result(tokenName);
         }, async (error) => {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
-            await notifier.error(error);
+            notifier.error(error);
         });
 
         return new MessageResponse(task);

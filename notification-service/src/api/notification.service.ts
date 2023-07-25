@@ -138,6 +138,16 @@ export class NotificationService {
         }
     }
 
+    private async createProgressWS(progress: Progress) {
+        try {
+            await this.client
+                .send(NotifyAPI.CREATE_PROGRESS_WS, progress)
+                .toPromise();
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
     /**
      * Delete progress WS
      * @param param0 options
@@ -292,7 +302,7 @@ export class NotificationService {
                 }
             );
             if (notification) {
-                this.updateNotificationWS(notification);
+                await this.updateNotificationWS(notification);
             }
             return new MessageResponse(notification);
         } catch (error) {
@@ -417,7 +427,7 @@ export class NotificationService {
                 throw new Error('Invalid progress create message');
             }
             const notification = await notificationRepo.save(msg);
-            await this.updateProgressWS(notification);
+            await this.createProgressWS(notification);
             return new MessageResponse(notification);
         } catch (error) {
             return new MessageError(error);
@@ -439,8 +449,22 @@ export class NotificationService {
             if (!msg) {
                 throw new Error('Invalid progress update message');
             }
-            const notification = await notificationRepo.update(msg);
-            await this.updateProgressWS(notification);
+            const progress = Math.floor(msg.progress);
+            const notification = await notificationRepo.update(msg, {
+                $or: [
+                    {
+                        id: msg.id,
+                        progress: { $lt: progress },
+                    },
+                    {
+                        id: msg.id,
+                        progress,
+                    },
+                ],
+            });
+            if (notification) {
+                await this.updateProgressWS(notification);
+            }
             return new MessageResponse(notification);
         } catch (error) {
             return new MessageError(error);
@@ -465,8 +489,12 @@ export class NotificationService {
             const notification = await notificationRepo.findOne({
                 id,
             });
-            await notificationRepo.remove(notification);
-            await this.deleteProgressWS(notification);
+
+            if (notification) {
+                await notificationRepo.remove(notification);
+                await this.deleteProgressWS(notification);
+            }
+
             return new MessageResponse(!!notification);
         } catch (error) {
             return new MessageError(error);
