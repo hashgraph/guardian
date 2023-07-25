@@ -5,6 +5,7 @@
 export const environment = {
   production: false,
   displayDemoAccounts: true,
+  isMeecoConfigured: true,
   explorerSettings: {
     url: 'https://explore.lworks.io/${network}/${type}/${value}/${subType}/${subValue}',
     networkMap: {

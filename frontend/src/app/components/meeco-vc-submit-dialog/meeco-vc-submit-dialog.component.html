@@ -2,7 +2,7 @@
 
 <div mat-dialog-content class="dialog-content">
   <span class="dialog-content__note">
-    Please approve or reject your VC data and select Guardian role
+    Please approve or reject your VC data <span *ngIf="!userRole">and select Guardian role</span>
   </span>
   
   <div class="content">
