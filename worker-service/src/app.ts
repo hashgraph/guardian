@@ -3,7 +3,7 @@ import {
     Logger,
     MessageBrokerChannel,
     ValidateConfiguration,
-    SecretManager, OldSecretManager, NotificationService
+    SecretManager, OldSecretManager, NotificationService, Users
 } from '@guardian/common';
 import { Worker } from './api/worker';
 import { HederaSDKHelper } from './api/helpers/hedera-sdk-helper';
@@ -40,6 +40,7 @@ Promise.all([
     const channel = new MessageBrokerChannel(cn, 'worker');
     const logger = new Logger();
     logger.setConnection(cn);
+    await new Users().setConnection(cn).init();
     const state = new ApplicationState();
     await state.setServiceName('WORKER').setConnection(cn).init();
     await state.updateState(ApplicationStates.STARTED);
