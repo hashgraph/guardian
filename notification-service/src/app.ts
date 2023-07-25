@@ -32,6 +32,7 @@ Promise.all([
     NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
         transport: Transport.NATS,
         options: {
+            queue: 'notification-service',
             name: `${process.env.SERVICE_CHANNEL}`,
             servers: [`nats://${process.env.MQ_ADDRESS}:4222`],
         },
