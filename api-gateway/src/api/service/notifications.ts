@@ -1,4 +1,10 @@
+import { AuthGuard } from '@auth/authorization-helper';
 import { Logger, NotificationService } from '@guardian/common';
+import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
+import {
+    NotificationDTO,
+    ProgressDTO,
+} from '@middlewares/validation/schemas/notifications';
 import {
     Controller,
     Delete,
@@ -8,14 +14,58 @@ import {
     Post,
     Req,
     Response,
+    UseGuards,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import {
+    ApiBearerAuth,
+    ApiExtraModels,
+    ApiInternalServerErrorResponse,
+    ApiOkResponse,
+    ApiOperation,
+    ApiParam,
+    ApiSecurity,
+    ApiTags,
+    ApiUnauthorizedResponse,
+    getSchemaPath,
+} from '@nestjs/swagger';
 
 @Controller('notifications')
 @ApiTags('notifications')
 export class NotificationsApi {
     constructor(private readonly notifier: NotificationService) {}
 
+    @ApiOperation({
+        summary: 'Get all notifications',
+        description: 'Returns all notifications.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiExtraModels(NotificationDTO, InternalServerErrorDTO)
+    @ApiOkResponse({
+        description:
+            'Successful operation. Suggested next and nested block types respectively.',
+        schema: {
+            type: 'array',
+            items: {
+                $ref: getSchemaPath(NotificationDTO),
+            },
+        },
+        headers: {
+            'X-Total-Count': {
+                description: 'Count of notifications',
+            },
+        },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO),
+        },
+    })
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard)
     @Get('/')
     @HttpCode(HttpStatus.OK)
     async getAllNotifications(@Req() req, @Response() res) {
@@ -38,6 +88,33 @@ export class NotificationsApi {
         }
     }
 
+    @ApiOperation({
+        summary: 'Get new notifications',
+        description: 'Returns new notifications.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiExtraModels(NotificationDTO, InternalServerErrorDTO)
+    @ApiOkResponse({
+        description:
+            'Successful operation. Suggested next and nested block types respectively.',
+        schema: {
+            type: 'array',
+            items: {
+                $ref: getSchemaPath(NotificationDTO),
+            },
+        },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO),
+        },
+    })
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard)
     @Get('/new')
     @HttpCode(HttpStatus.OK)
     async getNewNotifications(@Req() req, @Response() res): Promise<any> {
@@ -54,6 +131,33 @@ export class NotificationsApi {
         }
     }
 
+    @ApiOperation({
+        summary: 'Get progresses',
+        description: 'Returns progresses.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiExtraModels(ProgressDTO, InternalServerErrorDTO)
+    @ApiOkResponse({
+        description:
+            'Successful operation. Suggested next and nested block types respectively.',
+        schema: {
+            type: 'array',
+            items: {
+                $ref: getSchemaPath(ProgressDTO),
+            },
+        },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO),
+        },
+    })
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard)
     @Get('/progresses')
     @HttpCode(HttpStatus.OK)
     async getProgresses(@Req() req, @Response() res): Promise<any> {
@@ -68,6 +172,33 @@ export class NotificationsApi {
         }
     }
 
+    @ApiOperation({
+        summary: 'Read all notifications',
+        description: 'Returns new notifications.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiExtraModels(NotificationDTO, InternalServerErrorDTO)
+    @ApiOkResponse({
+        description:
+            'Successful operation. Suggested next and nested block types respectively.',
+        schema: {
+            type: 'array',
+            items: {
+                $ref: getSchemaPath(NotificationDTO),
+            },
+        },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO),
+        },
+    })
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard)
     @Post('/read/all')
     @HttpCode(HttpStatus.OK)
     async readAll(@Req() req, @Response() res): Promise<any> {
@@ -82,12 +213,43 @@ export class NotificationsApi {
         }
     }
 
-    @Delete('/delete/:id')
+    @ApiOperation({
+        summary: 'Delete notifications up to this point',
+        description: 'Returns deleted count.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiParam({
+        name: 'notificationId',
+        type: 'string',
+    })
+    @ApiOkResponse({
+        description:
+            'Successful operation. Suggested next and nested block types respectively.',
+        schema: {
+            type: 'number',
+        },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO),
+        },
+    })
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard)
+    @Delete('/delete/:notificationId')
     @HttpCode(HttpStatus.OK)
     async delete(@Req() req, @Response() res) {
         try {
             return res.json(
-                await this.notifier.deleteUpTo(req.user.id, req.params.id)
+                await this.notifier.deleteUpTo(
+                    req.user.id,
+                    req.params.notificationId
+                )
             );
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
