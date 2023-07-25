@@ -273,15 +273,13 @@ export function replaceArtifactProperties(obj: any, property: any, artifactsMapp
 }
 
 export const generateNumberFromString = (inputString) => {
+    const base = 31; // Prime number for better distribution (you can use other primes)
     let hash = 0;
-    if (inputString.length === 0) return hash;
 
     for (let i = 0; i < inputString.length; i++) {
         const char = inputString.charCodeAt(i);
-        hash = (hash << 5) - hash + char;
-        hash = hash & hash; // Convert to a 32-bit integer
+        hash = (hash * base + char) % Number.MAX_SAFE_INTEGER;
     }
 
-    // Make sure the result is positive (or non-negative)
-    return Math.abs(hash);
+    return hash;
 }
