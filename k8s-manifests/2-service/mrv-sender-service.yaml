@@ -2,6 +2,9 @@
 apiVersion: v1
 kind: Service
 metadata:
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "3003"
   labels:
     io.kompose.service: mrv-sender
   name: mrv-sender

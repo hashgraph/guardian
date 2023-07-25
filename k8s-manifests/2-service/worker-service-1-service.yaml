@@ -2,6 +2,9 @@
 apiVersion: v1
 kind: Service
 metadata:
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "6555"
   labels:
     io.kompose.service: worker-service-1
   name: worker-service-1
