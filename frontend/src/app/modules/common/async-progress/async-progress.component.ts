@@ -241,7 +241,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 this.router.navigate([
                     this.userRole === UserRole.USER ? 'user-profile' : 'config',
                 ]);
-                return;
+                break;
             case TaskAction.DELETE_TOKEN:
             case TaskAction.UPDATE_TOKEN:
             case TaskAction.CREATE_TOKEN:
@@ -266,6 +266,9 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
     }
 
     handleStatuses(statuses: any) {
+        if (!statuses || statuses.length < this.statuses.length) {
+            return;
+        }
         this.statuses = [];
         this.statusesCount = 0;
         const newStatuses: IStatus[] = statuses || [];

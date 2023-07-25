@@ -60,7 +60,6 @@ export function emptyNotifier(): INotifier {
     return empty;
 }
 
-const chanelEvent = MessageAPI.UPDATE_TASK_STATUS;
 const notificationActionMap = new Map<TaskAction, NotificationAction>([
     [TaskAction.CREATE_POLICY, NotificationAction.POLICY_CONFIGURATION],
     [TaskAction.WIZARD_CREATE_POLICY, NotificationAction.POLICY_CONFIGURATION],
@@ -162,6 +161,8 @@ function getNotificationResult(action: TaskAction, result: any) {
     }
 }
 
+const chanelEvent = MessageAPI.UPDATE_TASK_STATUS;
+
 /**
  * Init task notifier
  * @param channel
@@ -188,52 +189,50 @@ export async function initNotifier({
             'Operation started',
             taskId
         );
-        const sendStatuses = async (...statuses: IStatus[]) => {
-            if (statuses.length) {
-                await notify.step(
-                    statuses[statuses.length - 1].message,
-                    Math.floor((currentStepIndex / expectation) * 100)
-                );
-            }
-            await new GuardiansService().sendMessage(chanelEvent, {
+        const sendStatuses = (...statuses: IStatus[]) => {
+            notify.step(
+                statuses[statuses.length - 1].message,
+                Math.floor((currentStepIndex / expectation) * 100)
+            );
+            new GuardiansService().publish(chanelEvent, {
                 taskId,
                 statuses,
             });
         };
         const notifier = {
-            start: async (step: string) => {
+            start: (step: string) => {
                 currentStep = step;
-                await sendStatuses({
+                sendStatuses({
                     message: step,
                     type: StatusType.PROCESSING,
                 });
             },
-            completed: async () => {
+            completed: () => {
                 const oldStep = currentStep;
                 currentStep = undefined;
                 currentStepIndex++;
-                await sendStatuses({
+                sendStatuses({
                     message: oldStep,
                     type: StatusType.COMPLETED,
                 });
             },
-            completedAndStart: async (nextStep: string) => {
+            completedAndStart: (nextStep: string) => {
                 const oldStep = currentStep;
                 currentStepIndex++;
                 if (oldStep) {
                     currentStep = nextStep;
-                    await sendStatuses(
+                    sendStatuses(
                         { message: oldStep, type: StatusType.COMPLETED },
                         { message: currentStep, type: StatusType.PROCESSING }
                     );
                 } else {
-                    await await notifier.start(nextStep);
+                    notifier.start(nextStep);
                 }
             },
-            info: async (message: string) => {
-                await sendStatuses({ message, type: StatusType.INFO });
+            info: (message: string) => {
+                sendStatuses({ message, type: StatusType.INFO });
             },
-            error: async (error: string | Error, code?: string) => {
+            error: (error: string | Error, code?: string) => {
                 const result = {
                     code: code || 500,
                     message: null,
@@ -249,18 +248,18 @@ export async function initNotifier({
                         result.message = 'Unknown error';
                     }
                 }
-                await notify.error({
+                notify.error({
                     title: action,
                     message: error instanceof Error ? error.message : error,
                 });
-                await new GuardiansService().sendMessage(chanelEvent, {
+                new GuardiansService().publish(chanelEvent, {
                     taskId,
                     error: result,
                 });
             },
-            result: async (result: any) => {
+            result: (result: any) => {
                 const resultTitle = getNotificationResultTitle(action, result);
-                await notify.finish(
+                notify.finish(
                     resultTitle
                         ? {
                               title: resultTitle,
@@ -273,7 +272,7 @@ export async function initNotifier({
                           }
                         : null
                 );
-                await new GuardiansService().sendMessage(chanelEvent, {
+                new GuardiansService().publish(chanelEvent, {
                     taskId,
                     result,
                 });
