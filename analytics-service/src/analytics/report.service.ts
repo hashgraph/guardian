@@ -31,7 +31,14 @@ import { AnalyticsPolicyService } from './policy.service';
 import { AnalyticsUtils } from '../utils/utils';
 import { Table } from '../utils/table';
 
-export class ReportServiceService {
+/**
+ * Report service
+ */
+export class ReportService {
+    /**
+     * Create report if need
+     * @param root
+     */
     public static async init(root: string): Promise<void> {
         const report = await new DataBaseHelper(Status).findOne({ root });
         if (!report) {
@@ -45,11 +52,15 @@ export class ReportServiceService {
             await new DataBaseHelper(Status).save(row);
         }
     }
-    
+
+    /**
+     * Reset report status
+     * @param root
+     */
     public static async restart(root: string): Promise<void> {
         const report = await new DataBaseHelper(Status).findOne({ root });
         if (report && report.status !== ReportStatus.FINISHED) {
-            ReportServiceService.update(process.env.INITIALIZATION_TOPIC_ID).then(() => {
+            ReportService.update(process.env.INITIALIZATION_TOPIC_ID).then((item) => {
                 new Logger().info(`Update completed`, ['ANALYTICS_SERVICE']);
             }, (error) => {
                 new Logger().error(`Update error: ${error?.message}`, ['ANALYTICS_SERVICE']);
@@ -57,8 +68,12 @@ export class ReportServiceService {
         }
     }
 
+    /**
+     * Update report
+     * @param root
+     * @param skip
+     */
     public static async update(root: string, skip: boolean = false): Promise<Status> {
-        console.log('ReportService.update')
         let report = await new DataBaseHelper(Status).findOne({ root });
 
         if (!report) {
@@ -124,9 +139,15 @@ export class ReportServiceService {
 
         await AnalyticsUtils.updateStatus(report, ReportSteep.DOCUMENTS, ReportStatus.FINISHED);
 
+        await ReportService.createDashboard(report);
+
         return report;
     }
 
+    /**
+     * Aggregate data
+     * @param uuid
+     */
     private static async loadData(uuid: string): Promise<any> {
         //Total
         const topics = await new DataBaseHelper(TopicCache).find({ uuid });
@@ -145,9 +166,9 @@ export class ReportServiceService {
             {
                 $group: {
                     _id: {
-                        policyTopicId: "$policyTopicId",
-                        type: "$type",
-                        action: "$action"
+                        policyTopicId: '$policyTopicId',
+                        type: '$type',
+                        action: '$action'
                     }, count: { $sum: 1 }
                 }
             }
@@ -157,16 +178,16 @@ export class ReportServiceService {
             {
                 $group: {
                     _id: {
-                        instanceTopicId: "$instanceTopicId",
-                        type: "$type",
-                        action: "$action"
+                        instanceTopicId: '$instanceTopicId',
+                        type: '$type',
+                        action: '$action'
                     }, count: { $sum: 1 }
                 }
             }
         ]);
         const docsGroups = await new DataBaseHelper(Document).aggregate([
             { $match: { uuid } },
-            { $group: { _id: { type: "$type", action: "$action" }, count: { $sum: 1 } } }
+            { $group: { _id: { type: '$type', action: '$action' }, count: { $sum: 1 } } }
         ]);
         const didCount = docsGroups
             .filter(g => g._id.type === DocumentType.DID && g._id.action !== MessageAction.RevokeDocument)
@@ -309,6 +330,11 @@ export class ReportServiceService {
         }
     }
 
+    /**
+     * Create snapshot
+     * @param report
+     * @param size
+     */
     private static async createSnapshot(report: Status, size: number = 10): Promise<any> {
         const {
             topics,
@@ -333,7 +359,7 @@ export class ReportServiceService {
             nftCount,
             ftBalance,
             nftBalance
-        } = await ReportServiceService.loadData(report.uuid);
+        } = await ReportService.loadData(report.uuid);
         const _users = users.filter(u => u.type === UserType.USER);
         const topSRByUsers = AnalyticsUtils.topRateByCount(_users, 'owner', size);
         const topSRByPolicies = AnalyticsUtils.topRateByCount(policies, 'owner', size);
@@ -400,8 +426,8 @@ export class ReportServiceService {
             {
                 $group: {
                     _id: {
-                        name: "$name",
-                        action: "$action",
+                        name: '$name',
+                        action: '$action',
                     }, count: { $sum: 1 }
                 }
             },
@@ -478,12 +504,16 @@ export class ReportServiceService {
         };
     }
 
+    /**
+     * Create snapshot
+     * @param report
+     */
     public static async createDashboard(report: Status): Promise<any> {
         if (report.status !== ReportStatus.FINISHED) {
             throw new Error('Report not finished');
         }
 
-        const data = await ReportServiceService.createSnapshot(report, 10);
+        const data = await ReportService.createSnapshot(report, 10);
         const row = new DataBaseHelper(Dashboard).create({
             uuid: report.uuid,
             root: report.root,
@@ -493,12 +523,21 @@ export class ReportServiceService {
         return await new DataBaseHelper(Dashboard).save(row);
     }
 
+    /**
+     * Get snapshot by id
+     * @param id
+     */
     public static async getDashboard(id: string): Promise<Dashboard> {
         return await new DataBaseHelper(Dashboard).findOne(id);
     }
 
+    /**
+     * Get all snapshots
+     */
     public static async getDashboards(): Promise<Dashboard[]> {
         return await new DataBaseHelper(Dashboard).find(null, {
+            sort: { date: 1 },
+            limit: 10,
             fields: [
                 'uuid',
                 'root',
@@ -507,10 +546,18 @@ export class ReportServiceService {
         });
     }
 
+    /**
+     * Get all reports
+     */
     public static async getReports(): Promise<Status[]> {
         return await new DataBaseHelper(Status).find();
     }
 
+    /**
+     * Get report by uuid
+     * @param uuid
+     * @param size
+     */
     public static async getReport(uuid: string, size: number = 10): Promise<any> {
         const item = await new DataBaseHelper(Status).findOne({ uuid });
         if (!item) {
@@ -521,10 +568,14 @@ export class ReportServiceService {
                 status: item.status
             };
         }
-        const result = await ReportServiceService.createSnapshot(item, size);
+        const result = await ReportService.createSnapshot(item, size);
         return { ...result, status: item.status };
     }
 
+    /**
+     * Convert report to csv
+     * @param uuid
+     */
     public static async csv(uuid: string): Promise<any> {
         const item = await new DataBaseHelper(Status).findOne({ uuid });
 
@@ -561,7 +612,7 @@ export class ReportServiceService {
             nftCount,
             ftBalance,
             nftBalance
-        } = await ReportServiceService.loadData(item.uuid);
+        } = await ReportService.loadData(item.uuid);
 
         const totalCSV = new Table('total');
         totalCSV
@@ -616,13 +667,13 @@ export class ReportServiceService {
             .addHeader('Account', { width: 16 })
             .addHeader('Type', { width: 20 })
             .addHeader('Standard Registry', { width: 80 });
-        for (const item of users) {
+        for (const user of users) {
             usersCSV
-                .add(item.did)
-                .add(item.topicId)
-                .add(item.account)
-                .add(item.type)
-                .add(item.type === UserType.USER ? item.owner : '-')
+                .add(user.did)
+                .add(user.topicId)
+                .add(user.account)
+                .add(user.type)
+                .add(user.type === UserType.USER ? user.owner : '-')
                 .addLine()
         }
 
@@ -680,15 +731,15 @@ export class ReportServiceService {
             .addHeader('Token Symbol', { width: 16 })
             .addHeader('Token Type', { width: 16 })
             .addHeader('Balance', { width: 18, type: 'number' });
-        for (const item of tokens) {
+        for (const token of tokens) {
             tokensCSV
-                .add(item.account)
-                .add(item.owner)
-                .add(item.tokenId)
-                .add(item.tokenName)
-                .add(item.tokenSymbol)
-                .add(item.tokenType)
-                .add(String(item.balance))
+                .add(token.account)
+                .add(token.owner)
+                .add(token.tokenId)
+                .add(token.tokenName)
+                .add(token.tokenSymbol)
+                .add(token.tokenType)
+                .add(String(token.balance))
                 .addLine()
         }
 

@@ -1,11 +1,19 @@
 import { DataBaseHelper, Workers } from '@guardian/common';
-import { GenerateUUIDv4, WorkerTaskType } from '@guardian/interfaces';
-import { AnalyticsTopicCache as TopicCache } from '../entity/analytics-topic-cache';
+import { WorkerTaskType } from '@guardian/interfaces';
 import { AnalyticsStatus as Status } from '../entity/analytics-status';
-import { ReportSteep } from '../interfaces/report-steep.type';
+import { AnalyticsTopicCache as TopicCache } from '../entity/analytics-topic-cache';
 import { ReportStatus } from '../interfaces/report-status.type';
+import { ReportSteep } from '../interfaces/report-steep.type';
 
+/**
+ * Utils
+ */
 export class AnalyticsUtils {
+    /**
+     * Update report progress
+     * @param report
+     * @param max
+     */
     public static async updateProgress(
         report: Status,
         max?: number,
@@ -19,6 +27,12 @@ export class AnalyticsUtils {
         return await new DataBaseHelper(Status).save(report);
     }
 
+    /**
+     * Update report status
+     * @param report
+     * @param steep
+     * @param status
+     */
     public static async updateStatus(
         report: Status,
         steep: ReportSteep,
@@ -29,7 +43,17 @@ export class AnalyticsUtils {
         return await new DataBaseHelper(Status).save(report);
     }
 
-    public static async getTopicCache(uuid: string, topicId: string, skip: boolean = false): Promise<TopicCache | null> {
+    /**
+     * Get topic cache
+     * @param uuid
+     * @param topicId
+     * @param skip
+     */
+    public static async getTopicCache(
+        uuid: string,
+        topicId: string,
+        skip: boolean = false
+    ): Promise<TopicCache | null> {
         if (!topicId) {
             return null;
         }
@@ -48,14 +72,22 @@ export class AnalyticsUtils {
         }
     }
 
+    /**
+     * Update topic cache
+     * @param topicCache
+     */
     public static async updateTopicCache(topicCache: TopicCache): Promise<TopicCache> {
         return await new DataBaseHelper(TopicCache).save(topicCache);
     }
 
+    /**
+     * Load messages
+     * @param topic
+     */
     public static async loadMessages(topic: TopicCache): Promise<any> {
         const messages = [];
         try {
-            console.log('load: ', topic.topicId, topic.timeStamp);
+            console.log('load:', topic.topicId);
             const workers = new Workers();
             let next: string = null;
             do {
@@ -72,7 +104,7 @@ export class AnalyticsUtils {
                 }
                 next = data.next;
                 if (next) {
-                    console.log('next: ', next, topic.topicId, messages.length);
+                    console.log('next:', next, topic.topicId, messages.length);
                 }
             } while (next);
             return { messages };
@@ -85,6 +117,10 @@ export class AnalyticsUtils {
         }
     }
 
+    /**
+     * Load message
+     * @param timeStamp
+     */
     public static async loadMessage(timeStamp: string): Promise<any> {
         try {
             const workers = new Workers();
@@ -100,6 +136,10 @@ export class AnalyticsUtils {
         }
     }
 
+    /**
+     * Compress messages
+     * @param messages
+     */
     public static async compressMessages(messages: any[]): Promise<any[]> {
         const result = [];
         const map = new Map<string, any>();
@@ -138,6 +178,13 @@ export class AnalyticsUtils {
         return result;
     }
 
+    /**
+     * Load messages and update cache
+     * @param report
+     * @param topicId
+     * @param skip
+     * @param callback
+     */
     public static async searchMessages(
         report: Status,
         topicId: string,
@@ -165,7 +212,7 @@ export class AnalyticsUtils {
                 lastIndex = message.sequence_number;
             }
         } catch (e) {
-            console.log(e);
+
             error = e;
         }
         topicCache.timeStamp = lastTimeStamp;
@@ -192,6 +239,12 @@ export class AnalyticsUtils {
         return info;
     }
 
+    /**
+     * Calculate rate
+     * @param array
+     * @param field
+     * @param size
+     */
     public static topRateByCount(
         array: any[],
         field: string,
@@ -214,6 +267,11 @@ export class AnalyticsUtils {
         return result.splice(0, size);
     }
 
+    /**
+     * Calculate rate
+     * @param array
+     * @param size
+     */
     public static topRateByValue(
         array: any[],
         size: number

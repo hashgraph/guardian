@@ -5,17 +5,27 @@ import {
     TagMessage,
 } from '@guardian/common';
 import { AnalyticsStatus as Status } from '../entity/analytics-status';
+import { AnalyticsTag as Tag } from '../entity/analytics-tag';
 import { AnalyticsToken as Token } from '../entity/analytics-token';
 import { AnalyticsTokenCache as TokenCache } from '../entity/analytics-token-cache';
-import { ReportSteep } from '../interfaces/report-steep.type';
 import { ReportStatus } from '../interfaces/report-status.type';
-import { AnalyticsUtils } from '../utils/utils';
+import { ReportSteep } from '../interfaces/report-steep.type';
 import { Tasks } from '../utils/tasks';
-import { AnalyticsTag as Tag } from '../entity/analytics-tag';
+import { AnalyticsUtils } from '../utils/utils';
 
+/**
+ * Search tokens info
+ */
 export class AnalyticsTokenService {
+    /**
+     * Number of processes
+     */
     private static readonly CHUNKS_COUNT = 10;
 
+    /**
+     * Parse token messages
+     * @param message
+     */
     private static parsTagMessage(message: any): Message {
         try {
             if (typeof message.message !== 'string' || !message.message.startsWith('{')) {
@@ -40,6 +50,12 @@ export class AnalyticsTokenService {
         }
     }
 
+    /**
+     * Get token cache
+     * @param uuid
+     * @param tokenId
+     * @param skip
+     */
     public static async getTokenCache(uuid: string, tokenId: string, skip: boolean = false): Promise<TokenCache | null> {
         const tokenCache = await new DataBaseHelper(TokenCache).findOne({ uuid, tokenId });
         if (tokenCache) {
@@ -56,10 +72,20 @@ export class AnalyticsTokenService {
         }
     }
 
+    /**
+     * Update token cache
+     * @param tokenCache
+     */
     public static async updateTokenCache(tokenCache: TokenCache): Promise<TokenCache> {
         return await new DataBaseHelper(TokenCache).save(tokenCache);
     }
 
+    /**
+     * Search token balance by tokenId
+     * @param report
+     * @param token
+     * @param skip
+     */
     public static async searchBalanceByToken(
         report: Status,
         token: Token,
@@ -103,6 +129,12 @@ export class AnalyticsTokenService {
         }
     }
 
+    /**
+     * Search token information by tokenId
+     * @param report
+     * @param token
+     * @param skip
+     */
     public static async searchTagByToken(
         report: Status,
         token: TokenCache,
@@ -140,6 +172,11 @@ export class AnalyticsTokenService {
         }
     }
 
+    /**
+     * Search token information by tokenIds
+     * @param report
+     * @param skip
+     */
     public static async search(report: Status, skip: boolean = false): Promise<Status> {
         await AnalyticsUtils.updateStatus(report, ReportSteep.TOKENS, ReportStatus.PROGRESS);
 
@@ -164,7 +201,7 @@ export class AnalyticsTokenService {
 
         AnalyticsUtils.updateProgress(report, row2.length);
 
-        const task2 = async (token: Token): Promise<void> => {
+        const task2 = async (token: TokenCache): Promise<void> => {
             await AnalyticsTokenService.searchTagByToken(report, token, skip);
             AnalyticsUtils.updateProgress(report);
         }

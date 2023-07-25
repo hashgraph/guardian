@@ -1,4 +1,4 @@
-import { BeforeCreate, Entity, Enum, Property, Unique } from '@mikro-orm/core';
+import { BeforeCreate, Entity, Property, Unique } from '@mikro-orm/core';
 import { BaseEntity } from '@guardian/common';
 import { ReportStatus } from '../interfaces/report-status.type';
 import { ReportSteep } from '../interfaces/report-steep.type';

@@ -3,7 +3,7 @@ import { BaseEntity } from '@guardian/common';
 import { DocumentType } from '../interfaces/document.type';
 
 /**
- * Report collection
+ * Document collection
  */
 @Entity()
 @Unique({ properties: ['uuid'], options: { partialFilterExpression: { did: { $type: 'string' } } } })

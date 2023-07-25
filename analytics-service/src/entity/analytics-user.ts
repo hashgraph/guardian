@@ -1,4 +1,4 @@
-import { BeforeCreate, Entity, Enum, Property, Index } from '@mikro-orm/core';
+import { Entity, Property, Index } from '@mikro-orm/core';
 import { BaseEntity } from '@guardian/common';
 import { UserType } from '../interfaces/user.type';
 
@@ -61,11 +61,4 @@ export class AnalyticsUser extends BaseEntity {
      */
     @Property({ nullable: true })
     action?: string;
-
-    /**
-     * Set defaults
-     */
-    @BeforeCreate()
-    setInitState() {
-    }
 }

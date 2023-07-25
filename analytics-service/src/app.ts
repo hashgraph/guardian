@@ -1,13 +1,21 @@
-import process from 'process';
-import { COMMON_CONNECTION_CONFIG, DataBaseHelper, LargePayloadContainer, Logger, MessageBrokerChannel, Workers, } from '@guardian/common';
-import { NestFactory } from '@nestjs/core';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-import { HttpStatus, ValidationPipe } from '@nestjs/common';
-import express from 'express';
+import {
+    COMMON_CONNECTION_CONFIG,
+    DataBaseHelper,
+    LargePayloadContainer,
+    Logger,
+    MessageBrokerChannel,
+    Workers
+} from '@guardian/common';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
+import { HttpStatus, ValidationPipe } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { CronJob } from 'cron';
+import express from 'express';
+import process from 'process';
+import { ReportService } from './analytics/report.service';
 import { AppModule } from './app.module';
-import { ReportServiceService } from './analytics/report.service';
 
 const PORT = process.env.PORT || 3020;
 Promise.all([
@@ -52,16 +60,18 @@ Promise.all([
             new LargePayloadContainer().runServer();
         }
 
+        await ReportService.init(process.env.INITIALIZATION_TOPIC_ID);
+        await ReportService.restart(process.env.INITIALIZATION_TOPIC_ID);
 
-        await ReportServiceService.init(process.env.INITIALIZATION_TOPIC_ID);
-        await ReportServiceService.restart(process.env.INITIALIZATION_TOPIC_ID);
-        // setTimeout(() => {
-        //     ReportServiceService.update(process.env.INITIALIZATION_TOPIC_ID).then(() => {
-        //         new Logger().info(`Update completed`, ['ANALYTICS_SERVICE']);
-        //     }, (error) => {
-        //         new Logger().error(`Update error: ${error?.message}`, ['ANALYTICS_SERVICE']);
-        //     });
-        // }, 1000000000000);
+        const mask: string = process.env.ANALYTICS_SCHEDULER || '0 0 * * 1';
+        const job = new CronJob(mask, () => {
+            ReportService.update(process.env.INITIALIZATION_TOPIC_ID).then(() => {
+                new Logger().info(`Update completed`, ['ANALYTICS_SERVICE']);
+            }, (error) => {
+                new Logger().error(`Update error: ${error?.message}`, ['ANALYTICS_SERVICE']);
+            });
+        }, null, false, 'UTC');
+        job.start();
 
         app.listen(PORT, async () => {
             const url = await app.getUrl();
