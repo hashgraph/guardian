@@ -173,6 +173,7 @@ export class MeecoAuthService extends NatsService {
               role: userProviderFound?.role || null,
             }
           );
+          clearInterval(interval);
         }
       } catch (ex) {
         this.logger.error(ex);
