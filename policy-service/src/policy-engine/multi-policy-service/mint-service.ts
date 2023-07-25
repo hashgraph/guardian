@@ -33,6 +33,10 @@ import { IPolicyUser } from '@policy-engine/policy-user';
  */
 interface TokenConfig {
     /**
+     * Token name
+     */
+    tokenName: string
+    /**
      * Treasury Account Id
      */
     treasuryId: any;
@@ -93,7 +97,7 @@ export class MintService {
         const notifier = await NotificationHelper.initProgress(
             [documentOwnerUser.id, policyOwner.id],
             'Minting tokens',
-            'Minting started'
+            `Start minting ${token.tokenName}`
         );
         const mintNFT = (metaData: string[]): Promise<number[]> =>
             workers.addRetryableTask(
@@ -158,7 +162,7 @@ export class MintService {
                 ref
             );
             notifier.step(
-                `Mint(${mintId}): Minting and transferring (Chunk: ${
+                `Mint(${token.tokenName}): Minting and transferring (Chunk: ${
                     i * MintService.BATCH_NFT_MINT_SIZE + 1
                 }/${tasks.length * MintService.BATCH_NFT_MINT_SIZE})`,
                 (i * MintService.BATCH_NFT_MINT_SIZE +
@@ -270,7 +274,8 @@ export class MintService {
             treasuryId: token.draftToken ? '0.0.0' : token.adminId,
             tokenId: token.draftToken ? '0.0.0' : token.tokenId,
             supplyKey: null,
-            treasuryKey: null
+            treasuryKey: null,
+            tokenName: token.tokenName,
         }
         if (ref.dryRun) {
             const tokenPK = PrivateKey.generate().toString();
@@ -388,8 +393,8 @@ export class MintService {
                 [policyOwner.id, documentOwnerUser.id].map(
                     async (userId) =>
                         await NotificationHelper.success(
-                            'Mint completed',
-                            'All tokens have been minted and transferred',
+                            `Mint completed`,
+                            `All ${token.tokenName} tokens have been minted and transferred`,
                             userId,
                             NotificationAction.POLICY_VIEW,
                             ref.policyId
@@ -431,7 +436,8 @@ export class MintService {
             treasuryId: token.adminId,
             tokenId: token.tokenId,
             supplyKey: null,
-            treasuryKey: null
+            treasuryKey: null,
+            tokenName: token.tokenName,
         }
         const [treasuryKey, supplyKey] = await Promise.all([
             MintService.wallet.getUserKey(
