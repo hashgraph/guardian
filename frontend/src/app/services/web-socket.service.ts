@@ -47,6 +47,7 @@ export class WebSocketService {
     private meecoVerifyVPSubject: Subject<any> = new Subject();
     private meecoVerifyVPFailedSubject: Subject<any> = new Subject();
     private meecoApproveVCSubject: Subject<any> = new Subject();
+    private meecoRejectVCSubject: Subject<any> = new Subject();
     private serviesStates: any = [];
     private sendingEvent: boolean;
 
@@ -273,6 +274,10 @@ export class WebSocketService {
                     this.meecoApproveVCSubject.next(data);
                     break;
                 }
+                case 'MEECO_REJECT_SUBMISSION_RESPONSE': {
+                    this.meecoRejectVCSubject.next(data);
+                    break;
+                }
                 default:
                     break;
             }
@@ -419,12 +424,12 @@ export class WebSocketService {
         return this.meecoApproveVCSubject.subscribe(next, error, complete);
     }
 
-    public closeVerifyVPSubscription(): void {
-        this.meecoVerifyVPSubject.complete();
-    }
-
-    public closeVerifyVPFailedSubscription(): void {
-        this.meecoVerifyVPFailedSubject.complete();
+    public meecoRejectVCSubscribe(
+        next?: ((event: MeecoApproveSubmissionResponse) => void),
+        error?: ((error: any) => void),
+        complete?: (() => void)
+    ): Subscription {
+        return this.meecoRejectVCSubject.subscribe(next, error, complete);
     }
 
     public approveVCSubject(

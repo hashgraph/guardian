@@ -77,6 +77,7 @@ form ::ng-deep .mat-raised-button.mat-button-disabled.mat-button-disabled {
     cursor: pointer;
     display: table;
 }
+
 .link:hover {
     text-decoration: underline;
 }
@@ -120,7 +121,6 @@ form ::ng-deep .mat-raised-button.mat-button-disabled.mat-button-disabled {
     border: 1px solid rgba(0, 0, 0, 0.7);
     box-shadow: none;
     color: rgba(0, 0, 0, 0.7);
-    margin-top: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -135,6 +135,23 @@ form ::ng-deep .mat-raised-button.mat-button-disabled.mat-button-disabled {
 .login__footer {
     display: flex;
     flex-direction: column;
+}
+
+.login-btns__separator {
+    display: flex;
+    align-items: center;
+    margin: 15px 0;
+    color: #000000;
+    opacity: 0.7;
+}
+
+.login-btns__separator span {
+    padding: 0 6px;
+}
+
+.separator-line {
+    border-top: 1px solid #000000;
+    width: 100%;
 }
 
 @media (max-width: 810px) {

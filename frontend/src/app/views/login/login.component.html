@@ -34,6 +34,12 @@
             <button mat-raised-button type="submit" color="primary" [disabled]="!loginForm.valid">
                 Log In
             </button>
+
+            <div *ngIf="isMeecoLoginAllowed" class="login-btns__separator">
+                <div class="separator-line"></div>
+                <span>OR</span>
+                <div class="separator-line"></div>
+            </div>
     
             <button
                 mat-button

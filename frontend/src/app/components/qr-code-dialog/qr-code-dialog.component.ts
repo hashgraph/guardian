@@ -1,4 +1,4 @@
-import { Component, Inject, OnDestroy } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
 import { WebSocketService } from 'src/app/services/web-socket.service';
@@ -8,7 +8,7 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
     templateUrl: './qr-code-dialog.component.html',
     styleUrls: ['./qr-code-dialog.component.scss'],
 })
-export class QrCodeDialogComponent implements OnDestroy {
+export class QrCodeDialogComponent {
     qrCodeData: string;
     isMobile: boolean = window.innerWidth <= 810;
 
@@ -19,12 +19,8 @@ export class QrCodeDialogComponent implements OnDestroy {
         private wsService: WebSocketService
     ) {
         this.qrCodeData = this.data.qrCodeData;
+        this.handleNoQRCodeData();
         this.handleMeecoVerificationFail();
-    }
-
-    ngOnDestroy(): void {
-        this.wsService.closeVerifyVPSubscription();
-        this.wsService.closeVerifyVPFailedSubscription();
     }
 
     handleMeecoVerificationFail(): void {
@@ -41,6 +37,22 @@ export class QrCodeDialogComponent implements OnDestroy {
                 }
             );
         });
+    }
+
+    handleNoQRCodeData(): void {
+        if (!this.qrCodeData) {
+            this.closeDialog();
+            this.toastr.error(
+                'Please, try again later.',
+                'QR code cannot be generated.',
+                {
+                    timeOut: 10000,
+                    closeButton: true,
+                    positionClass: 'toast-bottom-right',
+                    enableHtml: true,
+                }
+            );
+        }
     }
 
     closeDialog(): void {

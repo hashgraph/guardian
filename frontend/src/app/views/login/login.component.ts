@@ -43,6 +43,8 @@ export class LoginComponent implements OnInit, OnDestroy {
     initialMeecoBtnTitle: string = 'Meeco Login';
     meecoBtnTitle: string = this.initialMeecoBtnTitle;
     qrCodeDialogRef: MatDialogRef<QrCodeDialogComponent>;
+    vcSubmitDialogRef: MatDialogRef<MeecoVCSubmitDialogComponent>;
+    currentMeecoRequestId: string | null = null;
     private _subscriptions: Subscription[] = [];
 
     constructor(
@@ -67,6 +69,7 @@ export class LoginComponent implements OnInit, OnDestroy {
         this.handleMeecoPresentVPMessage();
         this.handleMeecoVPVerification();
         this.handleMeecoVCApproval();
+        this.handleMeecoVCRejection();
     }
 
     ngOnDestroy(): void {
@@ -130,7 +133,9 @@ export class LoginComponent implements OnInit, OnDestroy {
             });
             this.qrCodeDialogRef
                 .afterClosed()
-                .subscribe(() => (this.meecoBtnTitle = this.initialMeecoBtnTitle));
+                .subscribe(
+                    () => (this.meecoBtnTitle = this.initialMeecoBtnTitle)
+                );
         });
     }
 
@@ -138,22 +143,30 @@ export class LoginComponent implements OnInit, OnDestroy {
         this.wsService.meecoVerifyVPSubscribe((event) => {
             this.qrCodeDialogRef.close();
 
-                this.dialog.open(MeecoVCSubmitDialogComponent, {
-                    width: '750px',
-                    disableClose: true,
-                    autoFocus: false,
-                    data: {
-                        document: event.vc,
-                        presentationRequestId: event.presentation_request_id,
-                        submissionId: event.submission_id,
-                        userRole: event.role,
-                    },
-                });
-            });
+            if (event.presentation_request_id !== this.currentMeecoRequestId) {
+                this.vcSubmitDialogRef = this.dialog.open(
+                    MeecoVCSubmitDialogComponent,
+                    {
+                        width: '750px',
+                        disableClose: true,
+                        autoFocus: false,
+                        data: {
+                            document: event.vc,
+                            presentationRequestId:
+                                event.presentation_request_id,
+                            submissionId: event.submission_id,
+                            userRole: event.role,
+                        },
+                    }
+                );
+                this.currentMeecoRequestId = event.presentation_request_id;
+            }
+        });
     }
 
     private handleMeecoVCApproval(): void {
         this.wsService.meecoApproveVCSubscribe((event) => {
+            this.vcSubmitDialogRef.close();
             this.auth.setAccessToken(event.accessToken);
             this.auth.setUsername(event.username);
             this.authState.updateState(true);
@@ -163,6 +176,12 @@ export class LoginComponent implements OnInit, OnDestroy {
                 this.router.navigate(['/']);
             }
         });
+    }
+
+    private handleMeecoVCRejection(): void {
+        this.wsService.meecoRejectVCSubscribe((event) =>
+            this.vcSubmitDialogRef.close()
+        );
     }
 
     private get loginControl(): AbstractControl {

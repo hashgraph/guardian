@@ -50,12 +50,6 @@ export class MeecoVCSubmitDialogComponent {
         this.presentationRequestId = this.data.presentationRequestId;
         this.submissionId = this.data.submissionId;
         this.userRole = this.data.userRole;
-
-        this.handleMeecoVerificationFail();
-    }
-
-    private handleMeecoVerificationFail(): void {
-        this.wsService.meecoVerifyVPFailedSubscribe(() => this.closeDialog());
     }
 
     private closeDialog(): void {
@@ -76,7 +70,6 @@ export class MeecoVCSubmitDialogComponent {
             this.submissionId,
             this.selectedRole
         );
-        this.closeDialog();
     }
 
     get isApproveBtnDisabled(): boolean {
