@@ -8,20 +8,29 @@ import {
     VCMessage,
     VPMessage
 } from '@guardian/common';
-import { AnalyticsStatus as Status } from '../entity/analytics-status';
-import { AnalyticsPolicyInstance as PolicyInstance } from '../entity/analytics-policy-instance';
 import { AnalyticsDocument as Document } from '../entity/analytics-document';
+import { AnalyticsPolicyInstance as PolicyInstance } from '../entity/analytics-policy-instance';
+import { AnalyticsStatus as Status } from '../entity/analytics-status';
 import { AnalyticsTopic as Topic } from '../entity/analytics-topic';
-
-import { ReportSteep } from '../interfaces/report-steep.type';
-import { ReportStatus } from '../interfaces/report-status.type';
-import { AnalyticsUtils } from '../utils/utils';
 import { DocumentType } from '../interfaces/document.type';
+import { ReportStatus } from '../interfaces/report-status.type';
+import { ReportSteep } from '../interfaces/report-steep.type';
 import { Tasks } from '../utils/tasks';
+import { AnalyticsUtils } from '../utils/utils';
 
+/**
+ * Search documents in policy topics
+ */
 export class AnalyticsDocumentService {
+    /**
+     * Number of processes
+     */
     private static readonly CHUNKS_COUNT = 10;
 
+    /**
+     * Pars policy documents
+     * @param message
+     */
     private static parsDocumentMessage(message: any): Message {
         try {
             if (typeof message.message !== 'string' || !message.message.startsWith('{')) {
@@ -59,6 +68,13 @@ export class AnalyticsDocumentService {
         }
     }
 
+    /**
+     * Search document topic
+     * @param report
+     * @param topicId
+     * @param instance
+     * @param skip
+     */
     public static async searchByInstance(
         report: Status,
         topicId: string,
@@ -156,12 +172,15 @@ export class AnalyticsDocumentService {
         }
     }
 
+    /**
+     * Search documents in policy topics
+     * @param report
+     * @param skip
+     */
     public static async searchDocuments(report: Status, skip: boolean = false): Promise<Status> {
         await AnalyticsUtils.updateStatus(report, ReportSteep.DOCUMENTS, ReportStatus.PROGRESS);
 
         //Policy Instance
-        console.log('--- Policy Instance ---')
-
         const row = await new DataBaseHelper(PolicyInstance).find({
             uuid: report.uuid
         });
@@ -177,8 +196,6 @@ export class AnalyticsDocumentService {
         await tasks.run(AnalyticsDocumentService.CHUNKS_COUNT);
 
         //User Topics
-        console.log('--- User Topics ---')
-
         const row2 = await new DataBaseHelper(Topic).find({
             uuid: report.uuid
         });

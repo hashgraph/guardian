@@ -1,4 +1,4 @@
-import { BeforeCreate, Entity, Index, Property } from '@mikro-orm/core';
+import { Entity, Index, Property } from '@mikro-orm/core';
 import { BaseEntity } from '@guardian/common';
 
 /**
@@ -78,11 +78,4 @@ export class AnalyticsToken extends BaseEntity {
      */
     @Property({ nullable: true })
     topicId?: string;
-
-    /**
-     * Set defaults
-     */
-    @BeforeCreate()
-    setInitState() {
-    }
 }

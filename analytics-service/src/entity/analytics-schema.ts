@@ -1,4 +1,4 @@
-import { BeforeCreate, Entity, Index, Property } from '@mikro-orm/core';
+import { Entity, Index, Property } from '@mikro-orm/core';
 import { BaseEntity } from '@guardian/common';
 
 /**
@@ -72,11 +72,4 @@ export class AnalyticsSchema extends BaseEntity {
      */
     @Property({ nullable: true })
     policyTopicId?: string;
-
-    /**
-     * Set defaults
-     */
-    @BeforeCreate()
-    setInitState() {
-    }
 }

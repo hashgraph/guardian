@@ -1,12 +1,19 @@
 import { DataBaseHelper, MessageType, RegistrationMessage } from '@guardian/common';
-import { AnalyticsUser as User } from '../entity/analytics-user';
 import { AnalyticsStatus as Status } from '../entity/analytics-status';
-import { ReportSteep } from '../interfaces/report-steep.type';
+import { AnalyticsUser as User } from '../entity/analytics-user';
 import { ReportStatus } from '../interfaces/report-status.type';
+import { ReportSteep } from '../interfaces/report-steep.type';
 import { UserType } from '../interfaces/user.type';
 import { AnalyticsUtils } from '../utils/utils';
 
+/**
+ * Search users
+ */
 export class AnalyticsUserService {
+    /**
+     * Parse user messages
+     * @param message
+     */
     private static parsStandardRegistry(message: any): RegistrationMessage {
         try {
             if (typeof message.message !== 'string' || !message.message.startsWith('{')) {
@@ -30,6 +37,11 @@ export class AnalyticsUserService {
         }
     }
 
+    /**
+     * Search users in root topic
+     * @param report
+     * @param skip
+     */
     public static async search(report: Status, skip: boolean = false): Promise<Status> {
         await AnalyticsUtils.updateStatus(report, ReportSteep.STANDARD_REGISTRY, ReportStatus.PROGRESS);
         try {

@@ -9,24 +9,33 @@ import {
     TagMessage,
     TokenMessage,
 } from '@guardian/common';
-import { AnalyticsUser as User } from '../entity/analytics-user';
-import { AnalyticsStatus as Status } from '../entity/analytics-status';
+import { AnalyticsModule as Module } from '../entity/analytics-module';
 import { AnalyticsPolicy as Policy } from '../entity/analytics-policy';
 import { AnalyticsPolicyInstance as PolicyInstance } from '../entity/analytics-policy-instance';
-import { AnalyticsModule as Module } from '../entity/analytics-module';
-import { AnalyticsToken as Token } from '../entity/analytics-token';
 import { AnalyticsSchema as Schema } from '../entity/analytics-schema';
+import { AnalyticsStatus as Status } from '../entity/analytics-status';
 import { AnalyticsTag as Tag } from '../entity/analytics-tag';
-
-import { ReportSteep } from '../interfaces/report-steep.type';
+import { AnalyticsToken as Token } from '../entity/analytics-token';
+import { AnalyticsUser as User } from '../entity/analytics-user';
 import { ReportStatus } from '../interfaces/report-status.type';
+import { ReportSteep } from '../interfaces/report-steep.type';
 import { UserType } from '../interfaces/user.type';
-import { AnalyticsUtils } from '../utils/utils';
 import { Tasks } from '../utils/tasks';
+import { AnalyticsUtils } from '../utils/utils';
 
+/**
+ * Search policy\version\schemas\tokens in user topics
+ */
 export class AnalyticsPolicyService {
+    /**
+     * Number of processes
+     */
     private static readonly CHUNKS_COUNT = 10;
 
+    /**
+     * Pars documents
+     * @param message
+     */
     private static parsPolicyMessage(message: any): Message {
         try {
             if (typeof message.message !== 'string' || !message.message.startsWith('{')) {
@@ -63,6 +72,10 @@ export class AnalyticsPolicyService {
         }
     }
 
+    /**
+     * Pars documents
+     * @param message
+     */
     private static parsInstanceMessage(message: any): Message {
         try {
             if (typeof message.message !== 'string' || !message.message.startsWith('{')) {
@@ -96,6 +109,12 @@ export class AnalyticsPolicyService {
         }
     }
 
+    /**
+     * Search policies in user topic
+     * @param report
+     * @param sr
+     * @param skip
+     */
     public static async searchByUser(report: Status, sr: User, skip: boolean = false): Promise<Status> {
         try {
             return await AnalyticsUtils.searchMessages(report, sr.topicId, skip, async (message) => {
@@ -184,6 +203,12 @@ export class AnalyticsPolicyService {
         }
     }
 
+    /**
+     * Search version\schemas\tokens in policy
+     * @param report
+     * @param policy
+     * @param skip
+     */
     public static async searchByPolicy(report: Status, policy: Policy, skip: boolean = false): Promise<Status> {
         try {
             return await AnalyticsUtils.searchMessages(report, policy.topicId, skip, async (message) => {
@@ -264,6 +289,11 @@ export class AnalyticsPolicyService {
         }
     }
 
+    /**
+     * Search policies in user topics
+     * @param report
+     * @param skip
+     */
     public static async searchPolicy(report: Status, skip: boolean = false): Promise<Status> {
         await AnalyticsUtils.updateStatus(report, ReportSteep.POLICIES, ReportStatus.PROGRESS);
 
@@ -284,6 +314,11 @@ export class AnalyticsPolicyService {
         return report;
     }
 
+    /**
+     * Search version\schemas\tokens in policies
+     * @param report
+     * @param skip
+     */
     public static async searchInstance(report: Status, skip: boolean = false): Promise<Status> {
         await AnalyticsUtils.updateStatus(report, ReportSteep.INSTANCES, ReportStatus.PROGRESS);
 
