@@ -50,8 +50,10 @@ services:
       context: .
       dockerfile: ./worker-service/Dockerfile
     depends_on:
-      - ipfs-node
-      - auth-service
+      ipfs-node:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
     env_file:
       - ./worker-service/.env.docker
     environment:
@@ -65,8 +67,10 @@ services:
       context: .
       dockerfile: ./worker-service/Dockerfile
     depends_on:
-      - ipfs-node
-      - auth-service
+      ipfs-node:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
     env_file:
       - ./worker-service/.env.docker
     environment:

@@ -53,7 +53,7 @@
             <mat-select [(value)]="properties.outputSchema" [disabled]="readonly" (selectionChange)="onSelectOutput()">
                 <mat-option [matTooltip]="getSchemaName(schema.name, schema.version || schema.sourceVersion, schema.status)"
                     matTooltipPosition="below" matTooltipClass="guardian-tooltip small-guardian-tooltip" matTooltipShowDelay="500"
-                    *ngFor="let schema of schemas" [value]="schema">{{getSchemaName(schema.name, schema.version ||
+                    *ngFor="let schema of schemas" [value]="schema.value">{{getSchemaName(schema.name, schema.version ||
                     schema.sourceVersion, schema.status)}}</mat-option>
             </mat-select>
         </td>

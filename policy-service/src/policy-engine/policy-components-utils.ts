@@ -1,16 +1,7 @@
-import {
-    PolicyBlockFullArgumentList,
-    PolicyBlockMap,
-    PolicyTagMap,
-    EventActor,
-    PolicyLink,
-    PolicyInputEventType,
-    EventCallback,
-    PolicyOutputEventType
-} from '@policy-engine/interfaces';
+import { EventActor, EventCallback, PolicyBlockFullArgumentList, PolicyBlockMap, PolicyInputEventType, PolicyLink, PolicyOutputEventType, PolicyTagMap } from '@policy-engine/interfaces';
 import { GenerateUUIDv4, PolicyEvents, PolicyType } from '@guardian/interfaces';
 import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock, IPolicyInstance, IPolicyInterfaceBlock, ISerializedBlock, ISerializedBlockExtend } from './policy-engine.interface';
-import { Policy, DatabaseServer } from '@guardian/common';
+import { DatabaseServer, Policy } from '@guardian/common';
 import { STATE_KEY } from '@policy-engine/helpers/constants';
 import { GetBlockByType } from '@policy-engine/blocks/get-block-by-type';
 import { GetOtherOptions } from '@policy-engine/helpers/get-other-options';
@@ -119,7 +110,7 @@ export class PolicyComponentsUtils {
         message: any,
         user: IPolicyUser
     ) => Promise<void> = async (...args) => {
-        blockUpdate('error', args);
+        blockUpdate('error', ...args);
     };
     /**
      * Update user info function
@@ -128,7 +119,7 @@ export class PolicyComponentsUtils {
         user: IPolicyUser,
         policy: Policy
     ) => Promise<void> = async (...args) => {
-        blockUpdate('update-user', args);
+        blockUpdate('update-user', ...args);
     };
     /**
      * External Event function
@@ -136,7 +127,7 @@ export class PolicyComponentsUtils {
     public static ExternalEventFn: (
         event: ExternalEvent<any>
     ) => Promise<void> = async (...args) => {
-        blockUpdate('external', args);
+        blockUpdate('external', ...args);
     };
 
     /**
