@@ -414,7 +414,16 @@ class App {
         });
         toolbar.append(exportBtn);
 
+        this.reportStatus = document.createElement('div');
+        this.reportStatus.className = 'report-status';
+        this.reportStatus.addEventListener('click', async (event) => {
+            event.preventDefault();
+            await this.loadStatus();
+        });
+        toolbar.append(this.reportStatus);
+
         await this.load();
+        await this.loadStatus();
     }
 
     async load() {
@@ -424,6 +433,23 @@ class App {
             this.renderDashboards(this.dashboards);
             this.loader.hide();
             this.selectDashboard(this.dashboards[this.dashboards.length - 1]);
+        } catch (error) {
+            console.error(error);
+            this.loader.hide();
+        }
+    }
+
+    async loadStatus() {
+        try {
+            this.reportStatus.setAttribute('status', 'loading');
+            this.reportStatus.setAttribute('title', 'Loading...');
+            this.lastReport = await ReportService.loadReport();
+            setTimeout(()=> {
+                const status = this.getReportStatus(this.lastReport);
+                const step = this.getReportStep(this.lastReport);
+                this.reportStatus.setAttribute('status', status);
+                this.reportStatus.setAttribute('title', step);
+            }, 500);
         } catch (error) {
             console.error(error);
             this.loader.hide();
@@ -445,7 +471,7 @@ class App {
 
     async selectDashboard(dashboard) {
         try {
-            if(this.dashboard === dashboard) {
+            if (this.dashboard === dashboard) {
                 return;
             }
             this.loader.show();
@@ -697,13 +723,53 @@ class App {
         this.dropdown
             .select('topSRByPolicies');
     }
+
+    getReportStatus(report) {
+        if (!report) {
+            return 'none';
+        }
+        switch (report.status) {
+            case 'PROGRESS':
+                return 'progress';
+            case 'FINISHED':
+                return 'finished';
+            case 'ERROR':
+                return 'error';
+            default:
+                return 'none'
+        }
+    }
+    getReportStep(report) {
+        if (!report) {
+            return '';
+        }
+        if (report.status === 'FINISHED') {
+            return `Report updated: ${report.updateDate}`;
+        }
+        if (report.status === 'ERROR') {
+            return `Error: ${report.error}`;
+        }
+        if (report.status !== 'PROGRESS') {
+            return 'New report';
+        }
+        switch (report.steep) {
+            case 'STANDARD_REGISTRY':
+                return `Searching Standard Registries: ${report.progress} / ${report.maxProgress}`;
+            case 'POLICIES':
+                return `Searching Policies: ${report.progress} / ${report.maxProgress}`;
+            case 'INSTANCES':
+                return `Searching Instances: ${report.progress} / ${report.maxProgress}`;
+            case 'TOKENS':
+                return `Searching Tokens: ${report.progress} / ${report.maxProgress}`;
+            case 'DOCUMENTS':
+                return `Searching Documents: ${report.progress} / ${report.maxProgress}`;
+            default:
+                return `${report.progress} / ${report.maxProgress}`;
+        }
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('container') || document.body;
     const app = new App(container);
 })
-
-
-
-

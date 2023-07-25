@@ -28,6 +28,7 @@ div#container {
     height: 84px;
     padding: 10px 5px 10px 5px;
     box-sizing: border-box;
+    position: relative;
 }
 
 .cards-container {
@@ -121,4 +122,91 @@ div#container {
 
 .export-btn:hover {
     background: #583dd5;
+}
+
+.report-status {
+    position: absolute;
+    top: 24px;
+    right: 18px;
+    width: 94px;
+    height: 22px;
+    border-radius: 10px;
+    cursor: pointer;
+    border: 1px solid #b0b4bd;
+    background: #f1f1f1;
+}
+
+.report-status::after {
+    content: '';
+    display: block;
+    position: absolute;
+    font-size: 12px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    left: 8px;
+    top: 7px;
+    background: #414141;
+}
+
+.report-status::before {
+    content: 'No reports';
+    display: block;
+    position: absolute;
+    font-size: 12px;
+    left: 24px;
+    top: 4px;
+    color: #414141;
+}
+
+.report-status[status="progress"] {
+    width: 96px;
+    border: 1px solid #cb9d3b;
+    background: #ffeabf;
+}
+.report-status[status="progress"]::after {
+    background: #995006;
+}
+.report-status[status="progress"]::before {
+    content: 'In Progress';
+    color: #7d3f00;
+}
+
+.report-status[status="loading"] {
+    width: 86px;
+    border: 1px solid #7e9deb;
+    background: #d3e6fd;
+}
+.report-status[status="loading"]::after {
+    background: #2550bf;
+}
+.report-status[status="loading"]::before {
+    content: 'Loading...';
+    color: #2550bf;
+}
+
+.report-status[status="error"] {
+    width: 65px;
+    background: #f5e4e4;
+    border: 1px solid #d56767;
+}
+.report-status[status="error"]::after {
+    background: #a31313;
+}
+.report-status[status="error"]::before {
+    content: 'Error';
+    color: #a31313;
+}
+
+.report-status[status="finished"] {
+    width: 82px;
+    background: #def7ec;
+    border: 1px solid #5cb7a0;
+}
+.report-status[status="finished"]::after {
+    background: #03543f;
+}
+.report-status[status="finished"]::before {
+    content: 'Updated';
+    color: #03543f;
 }

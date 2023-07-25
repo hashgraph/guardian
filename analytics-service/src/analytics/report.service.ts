@@ -60,6 +60,7 @@ export class ReportService {
     public static async restart(root: string): Promise<void> {
         const report = await new DataBaseHelper(Status).findOne({ root });
         if (report && report.status !== ReportStatus.FINISHED) {
+            await AnalyticsUtils.updateStatus(report, null, ReportStatus.NONE);
             ReportService.update(process.env.INITIALIZATION_TOPIC_ID).then((item) => {
                 new Logger().info(`Update completed`, ['ANALYTICS_SERVICE']);
             }, (error) => {
@@ -551,6 +552,15 @@ export class ReportService {
      */
     public static async getReports(): Promise<Status[]> {
         return await new DataBaseHelper(Status).find();
+    }
+
+    /**
+     * Get current report
+     */
+    public static async getCurrentReport(): Promise<any> {
+        return await new DataBaseHelper(Status).findOne({
+            root: process.env.INITIALIZATION_TOPIC_ID
+        });
     }
 
     /**

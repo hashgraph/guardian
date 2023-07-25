@@ -2,6 +2,36 @@
 
 const BASE_URL = location.href + 'analytics';
 
+async function loadReport() {
+    try {
+        const result = await fetch(`${BASE_URL}/report`);
+        if (result.status === 200) {
+            const data = await result.json();
+            return data;
+        } else {
+            return [];
+        }
+    } catch (error) {
+        console.log(error);
+        return [];
+    }
+}
+
+async function loadReports() {
+    try {
+        const result = await fetch(`${BASE_URL}/reports`);
+        if (result.status === 200) {
+            const data = await result.json();
+            return data;
+        } else {
+            return [];
+        }
+    } catch (error) {
+        console.log(error);
+        return [];
+    }
+}
+
 async function loadDashboards() {
     try {
         const result = await fetch(`${BASE_URL}/dashboards`);
@@ -52,6 +82,8 @@ async function exportInFile(uuid) {
 }
 
 export default {
+    loadReport,
+    loadReports,
     loadDashboards,
     loadData,
     exportInFile
