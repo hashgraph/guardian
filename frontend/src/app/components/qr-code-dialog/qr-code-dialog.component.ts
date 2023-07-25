@@ -10,6 +10,7 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
 })
 export class QrCodeDialogComponent {
     qrCodeData: string;
+    errorMessage: string;
     isMobile: boolean = window.innerWidth <= 810;
 
     constructor(
@@ -26,16 +27,21 @@ export class QrCodeDialogComponent {
     handleMeecoVerificationFail(): void {
         this.wsService.meecoVerifyVPFailedSubscribe((event) => {
             this.closeDialog();
-            this.toastr.error(
-                `${event.error}.`,
-                'Submission for VP presentation request failed.',
-                {
-                    timeOut: 10000,
-                    closeButton: true,
-                    positionClass: 'toast-bottom-right',
-                    enableHtml: true,
-                }
-            );
+
+            if (this.errorMessage && this.errorMessage !== event.error) {
+                this.toastr.error(
+                    `${event.error}.`,
+                    'Submission for VP presentation request failed.',
+                    {
+                        timeOut: 10000,
+                        closeButton: true,
+                        positionClass: 'toast-bottom-right',
+                        enableHtml: true,
+                    }
+                );
+            }
+
+            this.errorMessage = event.error;
         });
     }
 

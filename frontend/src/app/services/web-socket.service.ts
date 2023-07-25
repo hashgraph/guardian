@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Subject, Subscription } from 'rxjs';
+import { Observable, Subject, Subscription, of } from 'rxjs';
 import { webSocket, WebSocketSubject, WebSocketSubjectConfig } from 'rxjs/webSocket';
 import { AuthService } from './auth.service';
 import { ToastrService } from 'ngx-toastr';
@@ -47,7 +47,8 @@ export class WebSocketService {
     private meecoVerifyVPSubject: Subject<any> = new Subject();
     private meecoVerifyVPFailedSubject: Subject<any> = new Subject();
     private meecoApproveVCSubject: Subject<any> = new Subject();
-    private meecoRejectVCSubject: Subject<any> = new Subject();
+    meecoPresentVP$: Observable<any> = this.meecoPresentVPSubject.asObservable();
+    meecoVerifyVP$: Observable<any> = this.meecoVerifyVPSubject.asObservable();
     private serviesStates: any = [];
     private sendingEvent: boolean;
 
@@ -274,10 +275,6 @@ export class WebSocketService {
                     this.meecoApproveVCSubject.next(data);
                     break;
                 }
-                case 'MEECO_REJECT_SUBMISSION_RESPONSE': {
-                    this.meecoRejectVCSubject.next(data);
-                    break;
-                }
                 default:
                     break;
             }
@@ -392,6 +389,8 @@ export class WebSocketService {
         complete?: () => void
     ) {
         return this.deleteProgress.subscribe(next, error, complete);
+    }
+    
     public meecoPresentVPSubscribe(
         next?: ((event: { redirectUri: string }) => void),
         error?: ((error: any) => void),
@@ -422,14 +421,6 @@ export class WebSocketService {
         complete?: (() => void)
     ): Subscription {
         return this.meecoApproveVCSubject.subscribe(next, error, complete);
-    }
-
-    public meecoRejectVCSubscribe(
-        next?: ((event: MeecoApproveSubmissionResponse) => void),
-        error?: ((error: any) => void),
-        complete?: (() => void)
-    ): Subscription {
-        return this.meecoRejectVCSubject.subscribe(next, error, complete);
     }
 
     public approveVCSubject(
