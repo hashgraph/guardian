@@ -50,7 +50,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
         private router: Router,
         private informService: InformService,
         private auth: AuthService,
-        private wizardService: WizardService,
+        private wizardService: WizardService
     ) {}
 
     ngOnInit() {
@@ -139,9 +139,8 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
         }
         switch (this.action) {
             case TaskAction.RESTORE_USER_PROFILE:
-                this.router.navigate(['config']);
-                break;
             case TaskAction.CONNECT_USER:
+                this.wsService.updateProfile();
                 this.router.navigate([
                     this.userRole === UserRole.USER ? 'user-profile' : 'config',
                 ]);
@@ -151,10 +150,19 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.CREATE_TOKEN:
                 this.router.navigate(['tokens']);
                 break;
+            case TaskAction.CLONE_POLICY:
             case TaskAction.CREATE_POLICY:
                 this.router.navigate(['policy-configuration'], {
                     queryParams: {
                         policyId: result,
+                    },
+                });
+                break;
+            case TaskAction.IMPORT_POLICY_FILE:
+            case TaskAction.IMPORT_POLICY_MESSAGE:
+                this.router.navigate(['policy-configuration'], {
+                    queryParams: {
+                        policyId: result.policyId,
                     },
                 });
                 break;
@@ -172,8 +180,6 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 });
                 break;
             case TaskAction.PUBLISH_POLICY:
-            case TaskAction.IMPORT_POLICY_FILE:
-            case TaskAction.IMPORT_POLICY_MESSAGE:
                 if (result) {
                     const { isValid, errors, policyId } = result;
                     if (!isValid) {
@@ -208,17 +214,9 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                     });
                 }
                 break;
-            case TaskAction.CLONE_POLICY:
-                this.router.navigate(['policy-configuration'], {
-                    queryParams: {
-                        policyId: result,
-                    },
-                });
-                break;
             case TaskAction.DELETE_POLICY:
-                this.router.navigate(['policy-viewer']);
+                this.router.navigate(['policies']);
                 break;
-
             case TaskAction.CREATE_SCHEMA:
                 localStorage.removeItem('restoreSchemaData');
                 this.router.navigate(['schemas']);
@@ -237,6 +235,34 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             return;
         }
         this.informService.processAsyncError(error);
+        switch (this.action) {
+            case TaskAction.RESTORE_USER_PROFILE:
+            case TaskAction.CONNECT_USER:
+                this.router.navigate([
+                    this.userRole === UserRole.USER ? 'user-profile' : 'config',
+                ]);
+                return;
+            case TaskAction.DELETE_TOKEN:
+            case TaskAction.UPDATE_TOKEN:
+            case TaskAction.CREATE_TOKEN:
+                this.router.navigate(['tokens']);
+                break;
+            case TaskAction.CLONE_POLICY:
+            case TaskAction.CREATE_POLICY:
+            case TaskAction.IMPORT_POLICY_FILE:
+            case TaskAction.IMPORT_POLICY_MESSAGE:
+            case TaskAction.WIZARD_CREATE_POLICY:
+            case TaskAction.PUBLISH_POLICY:
+            case TaskAction.DELETE_POLICY:
+                this.router.navigate(['policies']);
+                break;
+            case TaskAction.CREATE_SCHEMA:
+            case TaskAction.PUBLISH_SCHEMA:
+            case TaskAction.IMPORT_SCHEMA_FILE:
+            case TaskAction.IMPORT_SCHEMA_MESSAGE:
+                this.router.navigate(['schemas']);
+                break;
+        }
     }
 
     handleStatuses(statuses: any) {
