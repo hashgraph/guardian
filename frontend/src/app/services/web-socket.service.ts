@@ -25,6 +25,7 @@ export class WebSocketService {
     private taskStatusSubject: Subject<any>;
     private updateNotification: Subject<any>;
     private deleteNotification: Subject<any>;
+    private createProgress: Subject<any>;
     private updateProgress: Subject<any>;
     private deleteProgress: Subject<any>;
     private serviesStates: any = [];
@@ -38,6 +39,7 @@ export class WebSocketService {
         this.taskStatusSubject = new Subject();
         this.updateNotification = new Subject();
         this.deleteNotification = new Subject();
+        this.createProgress = new Subject();
         this.updateProgress = new Subject();
         this.deleteProgress = new Subject();
         this.socket = null;
@@ -225,6 +227,9 @@ export class WebSocketService {
                 case NotifyAPI.DELETE_WS:
                     this.deleteNotification.next(event.data);
                     break;
+                case NotifyAPI.CREATE_PROGRESS_WS:
+                    this.createProgress.next(event.data);
+                    break;
                 case NotifyAPI.UPDATE_PROGRESS_WS:
                     this.updateProgress.next(event.data);
                     break;
@@ -315,6 +320,16 @@ export class WebSocketService {
         complete?: () => void
     ) {
         return this.deleteNotification.subscribe(next, error, complete);
+    }
+
+    public createProgressSubscribe(
+        next?: (
+            data: any
+        ) => void,
+        error?: (error: any) => void,
+        complete?: () => void
+    ) {
+        return this.createProgress.subscribe(next, error, complete);
     }
 
     public updateProgressSubscribe(

@@ -112,7 +112,7 @@ export async function importSchemaByFiles(
     topicId: string,
     notifier: INotifier
 ): Promise<ImportResult> {
-    await notifier.start('Import schemas');
+    notifier.start('Import schemas');
 
     const schemasMap: any[] = [];
     const uuidMap: Map<string, string> = new Map();
@@ -142,7 +142,7 @@ export async function importSchemaByFiles(
         file.status = SchemaStatus.DRAFT;
     }
 
-    await notifier.info(`Found ${files.length} schemas`);
+    notifier.info(`Found ${files.length} schemas`);
     for (const file of files) {
         if (file.document) {
             file.document = replaceValueRecursive(file.document, uuidMap);
@@ -178,10 +178,10 @@ export async function importSchemaByFiles(
         file.system = false;
         const item = await createSchema(file, owner, emptyNotifier());
         schemasMap[index].newID = item.id.toString();
-        await notifier.info(`Schema ${index + 1} (${file.name || '-'}) created`);
+        notifier.info(`Schema ${index + 1} (${file.name || '-'}) created`);
     }
 
-    await notifier.completed();
+    notifier.completed();
     return { schemasMap, errors };
 }
 
@@ -198,17 +198,17 @@ export async function importSchemasByMessages(
     topicId: string,
     notifier: INotifier
 ): Promise<ImportResult> {
-    await notifier.start('Load schema files');
+    notifier.start('Load schema files');
     const schemas: ISchema[] = [];
     for (const messageId of messageIds) {
         const newSchema = await loadSchema(messageId, null);
         schemas.push(newSchema);
     }
 
-    await notifier.start('Load tags');
+    notifier.start('Load tags');
     const tags: any[] = [];
 
-    await notifier.completed();
+    notifier.completed();
 
     let result = await importSchemaByFiles(owner, schemas, topicId, notifier);
     result = await importTagsByFiles(result, tags, notifier);
@@ -225,14 +225,14 @@ export async function prepareSchemaPreview(
     messageIds: string[],
     notifier: INotifier
 ): Promise<any[]> {
-    await notifier.start('Load schema file');
+    notifier.start('Load schema file');
     const schemas = [];
     for (const messageId of messageIds) {
         const schema = await loadSchema(messageId, null);
         schemas.push(schema);
     }
 
-    await notifier.completedAndStart('Parse schema');
+    notifier.completedAndStart('Parse schema');
     const messageServer = new MessageServer(null, null);
     const uniqueTopics = schemas.map(res => res.topicId).filter(onlyUnique);
     const anotherSchemas: SchemaMessage[] = [];
@@ -245,7 +245,7 @@ export async function prepareSchemaPreview(
         }
     }
 
-    await notifier.completedAndStart('Verifying');
+    notifier.completedAndStart('Verifying');
     for (const schema of schemas) {
         if (!schema.version) {
             continue;
@@ -265,6 +265,6 @@ export async function prepareSchemaPreview(
             schema.newVersions = newVersions.reverse();
         }
     }
-    await notifier.completed();
+    notifier.completed();
     return schemas;
 }

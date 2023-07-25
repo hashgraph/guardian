@@ -157,7 +157,7 @@ export class MintService {
                 }/${tasks.length * MintService.BATCH_NFT_MINT_SIZE})`,
                 ref
             );
-            await notifier.step(
+            notifier.step(
                 `Mint(${mintId}): Minting and transferring (Chunk: ${
                     i * MintService.BATCH_NFT_MINT_SIZE + 1
                 }/${tasks.length * MintService.BATCH_NFT_MINT_SIZE})`,
@@ -184,7 +184,7 @@ export class MintService {
                 throw error;
             }
         }
-        await notifier.finish();
+        notifier.finish();
         MintService.log(
             `Mint(${mintId}): Minted (Count: ${Math.floor(tokenValue)})`,
             ref

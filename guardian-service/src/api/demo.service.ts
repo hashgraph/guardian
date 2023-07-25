@@ -24,7 +24,7 @@ interface DemoKey {
  * @param notifier
  */
 async function generateDemoKey(role: any, settingsRepository: DataBaseHelper<Settings>, notifier: INotifier): Promise<DemoKey> {
-    await notifier.start('Resolve settings');
+    notifier.start('Resolve settings');
 
     const secretManager = SecretManager.New();
     const { OPERATOR_ID, OPERATOR_KEY } = await secretManager.getSecrets('keys/operator');
@@ -38,7 +38,7 @@ async function generateDemoKey(role: any, settingsRepository: DataBaseHelper<Set
     } catch (error) {
         initialBalance = null;
     }
-    await notifier.completedAndStart('Creating account in Hedera');
+    notifier.completedAndStart('Creating account in Hedera');
 
     const workers = new Workers();
     const result = await workers.addNonRetryableTask({
@@ -50,7 +50,7 @@ async function generateDemoKey(role: any, settingsRepository: DataBaseHelper<Set
         }
     }, 20);
 
-    await notifier.completed();
+    notifier.completed();
     return result;
 }
 
@@ -79,10 +79,10 @@ export async function demoAPI(
 
         RunFunctionAsync(async () => {
             const result = await generateDemoKey(role, settingsRepository, notifier);
-            await notifier.result(result);
+            notifier.result(result);
         }, async (error) => {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
-            await notifier.error(error);
+            notifier.error(error);
         });
 
         return new MessageResponse(task);

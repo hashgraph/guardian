@@ -318,9 +318,9 @@ export class PolicyEngineService {
             RunFunctionAsync(async () => {
                 const did = await this.getUserDid(user.username);
                 const policy = await this.policyEngine.createPolicy(model, did, notifier);
-                await notifier.result(policy.id);
+                notifier.result(policy.id);
             }, async (error) => {
-                await notifier.error(error);
+                notifier.error(error);
             });
             return new MessageResponse(task);
         });
@@ -332,13 +332,13 @@ export class PolicyEngineService {
                 const result = await this.policyEngine.clonePolicy(policyId, model, user.did, notifier);
                 if (result?.errors?.length) {
                     const message = `Failed to clone schemas: ${JSON.stringify(result.errors.map(e => e.name))}`;
-                    await notifier.error(message);
+                    notifier.error(message);
                     new Logger().warn(message, ['GUARDIAN_SERVICE']);
                     return;
                 }
-                await notifier.result(result.policy.id);
+                notifier.result(result.policy.id);
             }, async (error) => {
-                await notifier.error(error);
+                notifier.error(error);
             });
             return new MessageResponse(task);
         });
@@ -347,9 +347,9 @@ export class PolicyEngineService {
             const { policyId, user, task } = msg;
             const notifier = await initNotifier(task);
             RunFunctionAsync(async () => {
-                await notifier.result(await this.policyEngine.deletePolicy(policyId, user, notifier));
+                notifier.result(await this.policyEngine.deletePolicy(policyId, user, notifier));
             }, async (error) => {
-                await notifier.error(error);
+                notifier.error(error);
             });
             return new MessageResponse(task);
         });
@@ -407,14 +407,14 @@ export class PolicyEngineService {
                     throw new Error('Policy version in body is empty');
                 }
 
-                await notifier.start('Resolve Hedera account');
+                notifier.start('Resolve Hedera account');
                 const owner = await this.getUserDid(user.username);
-                await notifier.completed();
+                notifier.completed();
                 const result = await this.policyEngine.validateAndPublishPolicy(model, policyId, owner, notifier);
-                await notifier.result(result);
+                notifier.result(result);
             }, async (error) => {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
-                await notifier.error(error);
+                notifier.error(error);
             });
 
             return new MessageResponse(task);
@@ -756,23 +756,23 @@ export class PolicyEngineService {
                 }
                 new Logger().info(`Import policy by file`, ['GUARDIAN_SERVICE']);
                 const did = await this.getUserDid(user.username);
-                await notifier.start('File parsing');
+                notifier.start('File parsing');
                 const policyToImport = await PolicyImportExportHelper.parseZipFile(Buffer.from(zip.data), true);
-                await notifier.completed();
+                notifier.completed();
                 const result = await PolicyImportExportHelper.importPolicy(policyToImport, did, versionOfTopicId, notifier);
                 if (result?.errors?.length) {
                     const message = `Failed to import schemas: ${JSON.stringify(result.errors.map(e => e.name))}`
-                    await notifier.error(message);
+                    notifier.error(message);
                     new Logger().warn(message, ['GUARDIAN_SERVICE']);
                     return;
                 }
-                await notifier.result({
+                notifier.result({
                     policyId: result.policy.id,
                     errors: result.errors
                 });
             }, async (error) => {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
-                await notifier.error(error);
+                notifier.error(error);
             });
 
             return new MessageResponse(task);
@@ -795,10 +795,10 @@ export class PolicyEngineService {
 
             RunFunctionAsync(async () => {
                 const policyToImport = await this.policyEngine.preparePolicyPreviewMessage(messageId, user, notifier);
-                await notifier.result(policyToImport);
+                notifier.result(policyToImport);
             }, async (error) => {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
-                await notifier.error(error);
+                notifier.error(error);
             });
 
             return new MessageResponse(task);
@@ -838,24 +838,24 @@ export class PolicyEngineService {
                     if (!messageId) {
                         throw new Error('Policy ID in body is empty');
                     }
-                    await notifier.start('Resolve Hedera account');
+                    notifier.start('Resolve Hedera account');
                     const did = await this.getUserDid(user.username);
                     const root = await this.users.getHederaAccount(did);
-                    await notifier.completed();
+                    notifier.completed();
                     const result = await this.policyEngine.importPolicyMessage(messageId, did, root, versionOfTopicId, notifier);
                     if (result?.errors?.length) {
                         const message = `Failed to import schemas: ${JSON.stringify(result.errors.map(e => e.name))}`
-                        await notifier.error(message);
+                        notifier.error(message);
                         new Logger().warn(message, ['GUARDIAN_SERVICE']);
                         return;
                     }
-                    await notifier.result({
+                    notifier.result({
                         policyId: result.policy.id,
                         errors: result.errors
                     });
                 } catch (error) {
                     new Logger().error(error, ['GUARDIAN_SERVICE']);
-                    await notifier.error(error);
+                    notifier.error(error);
                 }
             });
 

@@ -34,8 +34,13 @@ export class NotificationService {
      * @returns Result
      */
     private async sendMessage(subject: NotifyAPI, data: any) {
-        const response = await this.client.send(subject, data).toPromise();
-        return response.body;
+        try {
+            const response = await this.client.send(subject, data).toPromise();
+            return response.body;
+        } catch (error) {
+            console.log(error);
+            return null;
+        }
     }
 
     /**
