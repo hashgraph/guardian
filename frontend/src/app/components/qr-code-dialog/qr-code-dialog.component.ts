@@ -28,7 +28,7 @@ export class QrCodeDialogComponent {
         this.wsService.meecoVerifyVPFailedSubscribe((event) => {
             this.closeDialog();
 
-            if (this.errorMessage && this.errorMessage !== event.error) {
+            if (this.errorMessage !== event.error) {
                 this.toastr.error(
                     `${event.error}.`,
                     'Submission for VP presentation request failed.',
