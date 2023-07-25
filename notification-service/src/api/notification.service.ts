@@ -13,7 +13,6 @@ import { Controller, Module } from '@nestjs/common';
 import {
     Client,
     ClientProxy,
-    ClientsModule,
     MessagePattern,
     Payload,
     Transport,
@@ -45,37 +44,40 @@ export class NotificationService {
                             {
                                 updateDate: {
                                     $lt: new Date(
-                                        now.getTime() + 60 * 60 * 1000
+                                        now.getTime() - 60 * 60 * 1000
                                     ),
                                 },
                                 read: true,
                             }
                         );
-                    if (!updatedNotifications) {
-                        return;
-                    }
-                    const notifications = Array.isArray(updatedNotifications)
-                        ? updatedNotifications
-                        : [updatedNotifications];
-                    for (const notification of notifications) {
-                        await this.deleteNotificationWS(notification);
+                    if (updatedNotifications) {
+                        const notifications = Array.isArray(
+                            updatedNotifications
+                        )
+                            ? updatedNotifications
+                            : [updatedNotifications];
+                        for (const notification of notifications) {
+                            await this.deleteNotificationWS(notification);
+                        }
                     }
 
                     const dbHelperProgresses = new DataBaseHelper(Progress);
-                    const progressesToDelete = await dbHelperProgresses.find({
+                    const progresses = await dbHelperProgresses.find({
                         updateDate: {
-                            $lt: new Date(now.getTime() + 60 * 60 * 1000),
+                            $lt: new Date(now.getTime() - 60 * 60 * 1000),
                         },
                     });
-                    await dbHelperProgresses.remove(progressesToDelete);
-                    for (const progress of progressesToDelete) {
-                        await this.deleteProgressWS(progress);
+                    await dbHelperProgresses.remove(progresses);
+                    if (progresses.length) {
+                        for (const progress of progresses) {
+                            await this.deleteProgressWS(progress);
+                        }
                     }
                 } catch (error) {
                     console.error(error);
                 }
             },
-            10 * 60 * 1000
+            1 * 60 * 1000
         );
     }
 
@@ -506,21 +508,6 @@ export class NotificationService {
  * Notification module
  */
 @Module({
-    imports: [
-        ClientsModule.register([
-            {
-                name: 'NOTIFICATION',
-                transport: Transport.NATS,
-                options: {
-                    servers: [`nats://${process.env.MQ_ADDRESS}:4222`],
-                    queue: 'notification-service',
-                    serializer: new OutboundResponseIdentitySerializer(),
-                    deserializer: new InboundMessageIdentityDeserializer(),
-                    codec: ZipCodec(),
-                },
-            },
-        ]),
-    ],
     controllers: [NotificationService],
 })
 export class NotificationModule {}
