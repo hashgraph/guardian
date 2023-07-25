@@ -125,9 +125,10 @@ div#container {
 }
 
 .report-status {
+    z-index: 3;
     position: absolute;
-    top: 24px;
-    right: 18px;
+    top: 31px;
+    right: 31px;
     width: 94px;
     height: 22px;
     border-radius: 10px;
@@ -209,4 +210,36 @@ div#container {
 .report-status[status="finished"]::before {
     content: 'Updated';
     color: #03543f;
+}
+
+.no-data::after {
+    z-index: 2;
+    content: 'Report not found';
+    display: flex;
+    position: absolute;
+    font-size: 24px;
+    left: 0;
+    top: 0px;
+    bottom: 0;
+    right: 0;
+    user-select: none;
+    color: #373737;
+    font-weight: bold;
+    justify-content: center;
+    align-items: center;
+    padding: 90px 0px 100px 0px;
+}
+
+.no-data .rate-container {
+    display: none !important;
+}
+
+.no-data .cards-container {
+    display: none !important;
+}
+
+.no-data .toolbar {
+    pointer-events: none !important;
+    filter: grayscale(1);
+    opacity: 0.5;
 }
