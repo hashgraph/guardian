@@ -53,16 +53,13 @@ export class ReportService {
      * Reset report status
      * @param root
      */
-    public static async restart(root: string): Promise<void> {
+    public static async restart(root: string): Promise<Status> {
         const report = await new DataBaseHelper(Status).findOne({ root });
         if (report && report.status !== ReportStatus.FINISHED) {
             await AnalyticsUtils.updateStatus(report, null, ReportStatus.NONE);
-            ReportService.update(process.env.INITIALIZATION_TOPIC_ID).then((item) => {
-                new Logger().info(`Update completed`, ['ANALYTICS_SERVICE']);
-            }, (error) => {
-                new Logger().error(`Update error: ${error?.message}`, ['ANALYTICS_SERVICE']);
-            });
+            return await ReportService.run(process.env.INITIALIZATION_TOPIC_ID);
         }
+        return null;
     }
 
     /**
@@ -70,24 +67,45 @@ export class ReportService {
      * @param root
      * @param skip
      */
-    public static async update(root: string, skip: boolean = false): Promise<Status> {
-        let report = await new DataBaseHelper(Status).findOne({ root });
+    public static async run(root: string): Promise<Status> {
+        const report = await new DataBaseHelper(Status).findOne({ root });
 
         if (!report) {
-            throw new Error('Report does not exist');
+            new Logger().error(`Report does not exist`, ['ANALYTICS_SERVICE']);
+            return report;
         }
 
         if (report.status === ReportStatus.PROGRESS) {
-            throw new Error('Report already started');
+            new Logger().error(`Report already started`, ['ANALYTICS_SERVICE']);
+            return report;
         }
 
+        await AnalyticsUtils.updateStatus(report, null, ReportStatus.PROGRESS);
+
+        ReportService.update(report).then((result) => {
+            if (result && result.status === ReportStatus.FINISHED) {
+                new Logger().info(`Update completed`, ['ANALYTICS_SERVICE']);
+            }
+        }, (error) => {
+            new Logger().error(`Update error: ${error?.message}`, ['ANALYTICS_SERVICE']);
+        });
+
+        return report;
+    }
+
+    /**
+     * Update report
+     * @param root
+     * @param skip
+     */
+    private static async update(report: Status, skip: boolean = false): Promise<Status> {
         report.type = ReportType.ALL;
         report.error = null;
 
         report = await AnalyticsUserService.search(report, skip);
         if (report.error) {
             await AnalyticsUtils.updateStatus(report, ReportSteep.STANDARD_REGISTRY, ReportStatus.ERROR);
-            throw new Error('Error');
+            throw new Error('An error occurred while loading Standard Registries');
         }
         if (report.type === ReportType.USERS) {
             await AnalyticsUtils.updateStatus(report, ReportSteep.STANDARD_REGISTRY, ReportStatus.FINISHED);
@@ -97,7 +115,7 @@ export class ReportService {
         report = await AnalyticsPolicyService.searchPolicy(report, skip);
         if (report.error) {
             await AnalyticsUtils.updateStatus(report, ReportSteep.POLICIES, ReportStatus.ERROR);
-            throw new Error('Error');
+            throw new Error('An error occurred while loading Policies');
         }
         if (report.type === ReportType.POLICIES) {
             await AnalyticsUtils.updateStatus(report, ReportSteep.POLICIES, ReportStatus.FINISHED);
@@ -107,7 +125,7 @@ export class ReportService {
         report = await AnalyticsPolicyService.searchInstance(report, skip);
         if (report.error) {
             await AnalyticsUtils.updateStatus(report, ReportSteep.INSTANCES, ReportStatus.ERROR);
-            throw new Error('Error');
+            throw new Error('An error occurred while loading Policy Versions');
         }
         if (report.type === ReportType.INSTANCES) {
             await AnalyticsUtils.updateStatus(report, ReportSteep.INSTANCES, ReportStatus.FINISHED);
@@ -117,7 +135,7 @@ export class ReportService {
         report = await AnalyticsTokenService.search(report, skip);
         if (report.error) {
             await AnalyticsUtils.updateStatus(report, ReportSteep.TOKENS, ReportStatus.ERROR);
-            throw new Error('Error');
+            throw new Error('An error occurred while loading Tokens');
         }
         if (report.type === ReportType.TOKENS) {
             await AnalyticsUtils.updateStatus(report, ReportSteep.TOKENS, ReportStatus.FINISHED);
@@ -127,7 +145,7 @@ export class ReportService {
         report = await AnalyticsDocumentService.searchDocuments(report, skip);
         if (report.error) {
             await AnalyticsUtils.updateStatus(report, ReportSteep.DOCUMENTS, ReportStatus.ERROR);
-            throw new Error('Error');
+            throw new Error('An error occurred while loading Documents');
         }
         if (report.type === ReportType.DOCUMENTS) {
             await AnalyticsUtils.updateStatus(report, ReportSteep.DOCUMENTS, ReportStatus.FINISHED);

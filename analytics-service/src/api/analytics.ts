@@ -52,6 +52,43 @@ export class AnalyticsApi {
     }
 
     /**
+     * Update current report
+     */
+    @ApiOperation({
+        summary: 'Update current report.',
+        description: 'Update current report.'
+    })
+    @ApiExtraModels(ReportDTO, InternalServerErrorDTO)
+    @ApiImplicitQuery({
+        name: 'uuid',
+        type: String,
+        description: 'Report identifier',
+        required: true
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            $ref: getSchemaPath(ReportDTO)
+        }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @HttpCode(HttpStatus.OK)
+    @Get('/report/update')
+    async updateReport(@Req() req: any, @Response() res: any): Promise<any> {
+        try {
+            const result = await ReportService.run(process.env.INITIALIZATION_TOPIC_ID);
+            return res.json(result);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    /**
      * Get all reports
      */
     @ApiOperation({

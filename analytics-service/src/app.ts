@@ -67,11 +67,7 @@ Promise.all([
 
         const mask: string = process.env.ANALYTICS_SCHEDULER || '0 0 * * 1';
         const job = new CronJob(mask, () => {
-            ReportService.update(process.env.INITIALIZATION_TOPIC_ID).then(() => {
-                new Logger().info(`Update completed`, ['ANALYTICS_SERVICE']);
-            }, (error) => {
-                new Logger().error(`Update error: ${error?.message}`, ['ANALYTICS_SERVICE']);
-            });
+            ReportService.run(process.env.INITIALIZATION_TOPIC_ID)
         }, null, false, 'UTC');
         job.start();
 

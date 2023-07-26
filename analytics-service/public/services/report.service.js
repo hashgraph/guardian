@@ -2,6 +2,21 @@
 
 const BASE_URL = location.href + 'analytics';
 
+async function updateReport() {
+    try {
+        const result = await fetch(`${BASE_URL}/report/update`);
+        if (result.status === 200) {
+            const data = await result.json();
+            return data;
+        } else {
+            return [];
+        }
+    } catch (error) {
+        console.log(error);
+        return [];
+    }
+}
+
 async function loadReport() {
     try {
         const result = await fetch(`${BASE_URL}/report`);
@@ -82,6 +97,7 @@ async function exportInFile(uuid) {
 }
 
 export default {
+    updateReport,
     loadReport,
     loadReports,
     loadDashboards,
