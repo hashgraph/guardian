@@ -418,6 +418,7 @@ class App {
         this.reportStatus.className = 'report-status';
         this.reportStatus.addEventListener('click', async (event) => {
             event.preventDefault();
+            await this.updateReport();
             await this.loadStatus();
         });
         this.container.append(this.reportStatus);
@@ -459,6 +460,17 @@ class App {
         }
     }
 
+    async updateReport() {
+        try {
+            this.reportStatus.setAttribute('status', 'loading');
+            this.reportStatus.setAttribute('title', 'Loading...');
+            await ReportService.updateReport();
+        } catch (error) {
+            console.error(error);
+            this.loader.hide();
+        }
+    }
+    
     async onExport() {
         this.loader.show();
         const fileBuffer = await ReportService.exportInFile(this.dashboard?.uuid);
