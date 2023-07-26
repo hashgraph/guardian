@@ -22,6 +22,15 @@ export interface VerifiableCredential {
   iss: string
 }
 
+export interface CredentialStatus {
+  id: string
+  type: string
+  statusPurpose: string
+  statusListIndex: number
+  statusListCredential: string
+}
+
+
 export interface Vc {
   "@context": string[]
   id: string
@@ -31,7 +40,9 @@ export interface Vc {
   issuanceDate: string
   credentialSchema: CredentialSchema
   expirationDate: string
+  credentialStatus: CredentialStatus
 }
+
 
 export interface Issuer {
   id: string

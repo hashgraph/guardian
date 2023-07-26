@@ -1,4 +1,4 @@
-import { DataBaseHelper, MessageResponse, NatsService, Singleton } from '@guardian/common';
+import { DataBaseHelper, MessageResponse, NatsService, Singleton, VerifiableCredential, Vc } from '@guardian/common';
 import { AuthEvents, GenerateUUIDv4, ExternalProviders } from '@guardian/interfaces';
 import { MeecoService } from '../meeco/meeco.service';
 import { Logger } from '@nestjs/common';
@@ -74,7 +74,7 @@ export class MeecoAuthService extends NatsService {
       const requestName = GenerateUUIDv4();
 
       const clientDID = process.env.MEECO_ISSUER_ORGANIZATION_ID;
-      const clientName = process.env.MEECO_ISSUER_ORGANIZATION_NME;
+      const clientName = process.env.MEECO_ISSUER_ORGANIZATION_NAME;
       const presentationDefinitionId = process.env.MEECO_PRESENTATION_DEFINITION_ID;
 
       try {
@@ -146,7 +146,8 @@ export class MeecoAuthService extends NatsService {
             throw new Error('VP verification failed by Meeco');
           }
           
-          const verifiableCredential = this.meecoService.decodeVPToken(vp_token);
+          const verifiableCredential: VerifiableCredential = this.meecoService.decodeVPToken(vp_token);
+          this.validateCredentials(verifiableCredential.vc);
 
           if (!userProviderFound) {
             userProviderFound = await this.sendMessage(
@@ -208,6 +209,27 @@ export class MeecoAuthService extends NatsService {
     if (!issuerWhitelist) {
       throw new Error(`Issuer ${issuerName} is not whitelisted`);
     }
+  }
+
+  validateCredentials(vc: Vc) {
+    if (this.isCredentialExpired(vc.expirationDate)) {
+      throw new Error('Credentials expired');
+    }
+
+    if (vc.credentialStatus?.statusPurpose === 'revocation') {
+      throw new Error('Credentials revoked');
+    }
+  }
+
+  isCredentialExpired(expirationDate: string): boolean {
+    const currentDate = new Date();
+    const timestamp = Date.parse(expirationDate);
+    if (isNaN(timestamp)) {
+      throw new Error('Invalid expiration date from Meeco API credentials');
+    }
+
+    const expiresIn = new Date(expirationDate);
+    return currentDate > expiresIn
   }
 
 }

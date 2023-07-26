@@ -5,7 +5,7 @@ import {
   CredentialSubject,
   MeecoApprovedSubmission,
   MeecoJwt,
-  VerifiableCredential,
+  VerifiableCredential, Vc,
   generateNumberFromString
 } from '@guardian/common';
 import * as jwt from 'jsonwebtoken';
@@ -74,10 +74,15 @@ export class MeecoAuth extends NatsService {
     });
   }
 
-  static extractUserFromApprovedMeecoToken(meecoApprovedSubmission: MeecoApprovedSubmission): CredentialSubject {
+  static extractVerifiableCredentialFromMeecoToken(meecoApprovedSubmission: MeecoApprovedSubmission): Vc {
     const meecoJwt = jwt.decode(meecoApprovedSubmission.vpRequest.submission.vp_token) as MeecoJwt;
     const meecoVerifiableCredentials = jwt.decode(meecoJwt.vp.verifiableCredential[0]) as VerifiableCredential;
-    return meecoVerifiableCredentials.vc.credentialSubject
+    return meecoVerifiableCredentials.vc;
+  }
+
+  static extractUserFromApprovedMeecoToken(meecoApprovedSubmission: MeecoApprovedSubmission): CredentialSubject {
+    const vc = this.extractVerifiableCredentialFromMeecoToken(meecoApprovedSubmission);
+    return vc.credentialSubject;
   }
 
   public async rejectSubmission(ws, presentation_request_id: string, submission_id: string): Promise<string> {
