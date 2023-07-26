@@ -72,6 +72,17 @@ services:
     environment:
       - GUARDIAN_ENV=${GUARDIAN_ENV}
 
+  notification-service:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
+    build:
+      context: .
+      dockerfile: ./notification-service/Dockerfile
+    depends_on:
+      - message-broker
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+
   worker-service-1:
     env_file:
       - ./configs/.env.${GUARDIAN_ENV}.guardian.system
