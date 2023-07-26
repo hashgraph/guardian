@@ -349,130 +349,133 @@ export class WizardApi {
     })
     @ApiBody({
         schema: {
-            'type': 'object',
-            'required': [
-                'policy',
-                'roles',
-                'schemas',
-                'trustChain'
-            ],
-            'properties': {
-                'roles': {
-                    'type': 'array',
-                    'items': {
-                        'type': 'string'
-                    }
+            type: 'object',
+            properties: {
+                saveState: {
+                    type: 'boolean',
                 },
-                'policy': {
-                    'type': 'object',
-                    'properties': {
-                        'name': {
-                            'type': 'string'
+                wizardConfig: {
+                    type: 'object',
+                    required: ['policy', 'roles', 'schemas', 'trustChain'],
+                    properties: {
+                        roles: {
+                            type: 'array',
+                            items: {
+                                type: 'string',
+                            },
                         },
-                        'description': {
-                            'type': 'string'
+                        policy: {
+                            type: 'object',
+                            properties: {
+                                name: {
+                                    type: 'string',
+                                },
+                                description: {
+                                    type: 'string',
+                                },
+                                topicDescription: {
+                                    type: 'string',
+                                },
+                                policyTag: {
+                                    type: 'string',
+                                },
+                            },
                         },
-                        'topicDescription': {
-                            'type': 'string'
-                        },
-                        'policyTag': {
-                            'type': 'string'
-                        }
-                    }
-                },
-                'schemas': {
-                    'type': 'array',
-                    'items': {
-                        'type': 'object',
-                        'properties': {
-                            'name': {
-                                'type': 'string'
-                            },
-                            'iri': {
-                                'type': 'string'
-                            },
-                            'isApproveEnable': {
-                                'type': 'boolean'
-                            },
-                            'isMintSchema': {
-                                'type': 'boolean'
-                            },
-                            'mintOptions': {
-                                'type': 'object',
-                                'properties': {
-                                    'tokenId': {
-                                        'type': 'string'
+                        schemas: {
+                            type: 'array',
+                            items: {
+                                type: 'object',
+                                properties: {
+                                    name: {
+                                        type: 'string',
                                     },
-                                    'rule': {
-                                        'type': 'string'
-                                    }
-                                }
-                            },
-                            'dependencySchemaIri': {
-                                'type': 'string'
-                            },
-                            'relationshipsSchemaIri': {
-                                'type': 'string'
-                            },
-                            'initialRolesFor': {
-                                'type': 'array',
-                                'items': {
-                                    'type': 'string'
-                                }
-                            },
-                            'rolesConfig': {
-                                'type': 'array',
-                                'items': {
-                                    'type': 'object',
-                                    'properties': {
-                                        'role': {
-                                            'type': 'string'
+                                    iri: {
+                                        type: 'string',
+                                    },
+                                    isApproveEnable: {
+                                        type: 'boolean',
+                                    },
+                                    isMintSchema: {
+                                        type: 'boolean',
+                                    },
+                                    mintOptions: {
+                                        type: 'object',
+                                        properties: {
+                                            tokenId: {
+                                                type: 'string',
+                                            },
+                                            rule: {
+                                                type: 'string',
+                                            },
                                         },
-                                        'isApprover': {
-                                            'type': 'boolean'
+                                    },
+                                    dependencySchemaIri: {
+                                        type: 'string',
+                                    },
+                                    relationshipsSchemaIri: {
+                                        type: 'string',
+                                    },
+                                    initialRolesFor: {
+                                        type: 'array',
+                                        items: {
+                                            type: 'string',
                                         },
-                                        'isCreator': {
-                                            'type': 'boolean'
-                                        },
-                                        'gridColumns': {
-                                            'type': 'array',
-                                            'items': {
-                                                'type': 'object',
-                                                'properties': {
-                                                    'field': {
-                                                        'type': 'string'
+                                    },
+                                    rolesConfig: {
+                                        type: 'array',
+                                        items: {
+                                            type: 'object',
+                                            properties: {
+                                                role: {
+                                                    type: 'string',
+                                                },
+                                                isApprover: {
+                                                    type: 'boolean',
+                                                },
+                                                isCreator: {
+                                                    type: 'boolean',
+                                                },
+                                                gridColumns: {
+                                                    type: 'array',
+                                                    items: {
+                                                        type: 'object',
+                                                        properties: {
+                                                            field: {
+                                                                type: 'string',
+                                                            },
+                                                            title: {
+                                                                type: 'string',
+                                                            },
+                                                        },
                                                     },
-                                                    'title': {
-                                                        'type': 'string'
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                        trustChain: {
+                            type: 'array',
+                            items: {
+                                type: 'object',
+                                properties: {
+                                    role: {
+                                        type: 'string',
+                                    },
+                                    mintSchemaIri: {
+                                        type: 'string',
+                                    },
+                                    viewOnlyOwnDocuments: {
+                                        type: 'boolean',
+                                    },
+                                },
+                            },
+                        },
+                    },
                 },
-                'trustChain': {
-                    'type': 'array',
-                    'items': {
-                        'type': 'object',
-                        'properties': {
-                            'role': {
-                                'type': 'string'
-                            },
-                            'mintSchemaIri': {
-                                'type': 'string'
-                            },
-                            'viewOnlyOwnDocuments': {
-                                'type': 'boolean'
-                            }
-                        }
-                    }
-                }
-            }
-        }
+            },
+        },
     })
     @ApiOkResponse({
         description: 'Successful operation.',
