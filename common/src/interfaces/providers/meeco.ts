@@ -30,7 +30,6 @@ export interface CredentialStatus {
   statusListCredential: string
 }
 
-
 export interface Vc {
   "@context": string[]
   id: string
@@ -42,7 +41,6 @@ export interface Vc {
   expirationDate: string
   credentialStatus: CredentialStatus
 }
-
 
 export interface Issuer {
   id: string
