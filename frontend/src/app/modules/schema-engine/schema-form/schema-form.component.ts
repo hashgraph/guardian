@@ -75,7 +75,6 @@ export class SchemaFormComponent implements OnInit {
     @Input('readonly-fields') readonly?: any;
     @Input('schema') schema!: Schema;
     @Input('fields') schemaFields!: SchemaField[];
-    @Input('context') context!: { type: any; context: any };
     @Input('formGroup') group!: FormGroup;
     @Input('delimiter-hide') delimiterHide: boolean = false;
     @Input('conditions') conditions: any = null;
@@ -118,11 +117,6 @@ export class SchemaFormComponent implements OnInit {
         let schemaFields: SchemaField[] | undefined = undefined;
 
         if (this.schema) {
-            this.context = {
-                type: this.schema.type,
-                context: [this.schema.contextURL]
-            };
-
             schemaFields = this.schema.fields;
 
             if (!this.conditions) {
@@ -193,12 +187,6 @@ export class SchemaFormComponent implements OnInit {
             const key = keys[i];
             this.options.removeControl(key);
             this.options.addControl(key, group[key]);
-        }
-        if (this.context) {
-            this.options.removeControl("type");
-            this.options.removeControl("@context");
-            this.options.addControl("type", new FormControl(this.context.type));
-            this.options.addControl("@context", new FormControl(this.context.context));
         }
 
         if (this.fields) {
