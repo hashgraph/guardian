@@ -190,7 +190,6 @@ export class MintService {
                 notifier.finish();
             }
         }
-        notifier.finish();
         MintService.log(
             `Mint(${mintId}): Minted (Count: ${Math.floor(tokenValue)})`,
             ref
