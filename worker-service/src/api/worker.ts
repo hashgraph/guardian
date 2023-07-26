@@ -526,7 +526,7 @@ export class Worker extends NatsService {
                     const user = await new Users().getUserByAccount(userHederaAccountId);
                     await NotificationHelper.info(
                         `${freeze ? 'Freeze' : 'Unfreeze'} token`,
-                        `${token.tokenName} ${freeze ? 'frozed' : 'unfrozed'}`,
+                        `${token.tokenName} ${freeze ? 'frozen' : 'unfrozen'}`,
                         user.id
                     );
                     break;
