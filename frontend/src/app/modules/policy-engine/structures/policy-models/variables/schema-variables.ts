@@ -9,13 +9,14 @@ export class SchemaVariables {
     public status?: string;
     public data?: Schema;
 
-    constructor(schema?: Schema | ModuleVariableModel | string, value?: string) {
+    constructor(schema?: Schema | ModuleVariableModel | string, value?: string, baseSchema?: Schema) {
         if (typeof schema === 'string') {
             this.name = schema;
             this.value = schema;
-        } else if(schema instanceof ModuleVariableModel) {
+        } else if (schema instanceof ModuleVariableModel) {
             this.name = schema.name;
             this.value = schema.name;
+            this.data = baseSchema;
         } else if (schema) {
             this.name = schema.name;
             this.version = schema.version;
