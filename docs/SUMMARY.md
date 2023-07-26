@@ -11,6 +11,7 @@
       * [🔨 Building from source and run using Docker](guardian/readme/getting-started/installation/building-from-source-and-run-using-docker.md)
       * [🔨 Building from Pre-build containers](guardian/readme/getting-started/installation/building-from-pre-build-containers.md)
       * [🔨 Build executables and run manually](guardian/readme/getting-started/installation/build-executables-and-run-manually.md)
+      * [☁ Cloud Deployment](guardian/readme/getting-started/installation/cloud-deployment.md)
       * [🏡 Setting up environment parameters](guardian/readme/getting-started/installation/setting-up-environment-parameters.md)
       * [📁 Summary of URLs and Ports](guardian/readme/getting-started/installation/installation.md)
       * [💻 Launching Guardian](guardian/readme/getting-started/installation/launching-guardian.md)
