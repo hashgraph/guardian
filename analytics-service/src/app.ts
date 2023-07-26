@@ -16,6 +16,8 @@ import express from 'express';
 import process from 'process';
 import { ReportService } from './analytics/report.service';
 import { AppModule } from './app.module';
+import { SwaggerModule } from '@nestjs/swagger';
+import { SwaggerConfig } from '@helpers/swagger-config';
 
 const PORT = process.env.PORT || 3020;
 Promise.all([
@@ -72,6 +74,9 @@ Promise.all([
             });
         }, null, false, 'UTC');
         job.start();
+
+        const document = SwaggerModule.createDocument(app, SwaggerConfig);
+        SwaggerModule.setup('api-docs', app, document);
 
         app.listen(PORT, async () => {
             const url = await app.getUrl();

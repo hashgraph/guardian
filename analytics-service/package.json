@@ -3,8 +3,9 @@
     "_moduleAliases": {
         "@api": "dist/api",
         "@helpers": "dist/helpers",
-        "@auth": "dist/auth",
-        "@subscribers": "dist/subscribers"
+        "@entity": "dist/entity",
+        "@interfaces": "dist/interfaces",
+        "@middlewares": "dist/middlewares"
     },
     "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
     "dependencies": {

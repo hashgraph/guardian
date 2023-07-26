@@ -1,6 +1,18 @@
 import { Controller, Get, HttpCode, HttpException, HttpStatus, Req, Response } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
 import { ReportService } from '../analytics/report.service';
+import {
+    ApiExtraModels,
+    ApiInternalServerErrorResponse,
+    ApiOkResponse,
+    ApiOperation,
+    ApiTags,
+    getSchemaPath
+} from '@nestjs/swagger';
+import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
+import { ReportDTO } from '@middlewares/validation/schemas/report';
+import { DashboardDTO } from '@middlewares/validation/schemas/dashboard';
+import { DataContainerDTO } from '@middlewares/validation/schemas/report-data';
+import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator';
 
 /**
  * Analytics Api
@@ -11,8 +23,25 @@ export class AnalyticsApi {
     /**
      * Get current report
      */
-    @Get('/report')
+    @ApiOperation({
+        summary: 'Returns the status of the current report.',
+        description: 'Returns the status of the current report.'
+    })
+    @ApiExtraModels(ReportDTO, InternalServerErrorDTO)
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            $ref: getSchemaPath(ReportDTO)
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @HttpCode(HttpStatus.OK)
+    @Get('/report')
     async getCurrentReport(@Req() req: any, @Response() res: any): Promise<any> {
         try {
             const report = await ReportService.getCurrentReport();
@@ -25,22 +54,65 @@ export class AnalyticsApi {
     /**
      * Get all reports
      */
-    @Get('/reports')
+    @ApiOperation({
+        summary: 'Returns all reports.',
+        description: 'Returns all reports.'
+    })
+    @ApiExtraModels(ReportDTO, InternalServerErrorDTO)
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            type: 'array',
+            items: {
+                $ref: getSchemaPath(ReportDTO)
+            }
+        }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @HttpCode(HttpStatus.OK)
+    @Get('/reports')
     async getReports(@Req() req: any, @Response() res: any): Promise<any> {
         try {
-            const report = await ReportService.getReports();
-            return res.json(report);
+            const reports = await ReportService.getReports();
+            return res.json(reports);
         } catch (error) {
             throw error;
         }
     }
 
     /**
-     * Get report status by uuid
+     * Get report data by uuid
      */
-    @Get('/reports/:uuid')
+    @ApiOperation({
+        summary: 'Returns report data by report uuid.',
+        description: 'Returns report data by report uuid.'
+    })
+    @ApiExtraModels(DataContainerDTO, InternalServerErrorDTO)
+    @ApiImplicitQuery({
+        name: 'uuid',
+        type: String,
+        description: 'Report identifier',
+        required: true
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            $ref: getSchemaPath(DataContainerDTO)
+        }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @HttpCode(HttpStatus.OK)
+    @Get('/reports/:uuid')
     async getReport(@Req() req: any, @Response() res: any): Promise<any> {
         try {
             if (!req.params.uuid) {
@@ -54,10 +126,34 @@ export class AnalyticsApi {
     }
 
     /**
-     * Export report in csv
+     * Export report data in csv
      */
-    @Get('/reports/:uuid/export/csv')
+    @ApiOperation({
+        summary: 'Export report data in a csv file format.',
+        description: 'Returns a csv file.'
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiImplicitQuery({
+        name: 'uuid',
+        type: String,
+        description: 'Report identifier',
+        required: true
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            type: 'string',
+            format: 'binary'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @HttpCode(HttpStatus.OK)
+    @Get('/reports/:uuid/export/csv')
     async exportToCsv(@Req() req, @Response() res): Promise<any> {
         try {
             if (!req.params.uuid) {
@@ -85,8 +181,32 @@ export class AnalyticsApi {
     /**
      * Export report in xlsx
      */
-    @Get('/reports/:uuid/export/xlsx')
+    @ApiOperation({
+        summary: 'Export report data in a xlsx file format.',
+        description: 'Returns a xlsx file.'
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiImplicitQuery({
+        name: 'uuid',
+        type: String,
+        description: 'Report identifier',
+        required: true
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            type: 'string',
+            format: 'binary'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @HttpCode(HttpStatus.OK)
+    @Get('/reports/:uuid/export/xlsx')
     async exportToXlsx(@Req() req, @Response() res): Promise<any> {
         try {
             if (!req.params.uuid) {
@@ -103,10 +223,30 @@ export class AnalyticsApi {
     }
 
     /**
-     * Get all dashboards(snapshots)
+     * Get all dashboards
      */
-    @Get('/dashboards')
+    @ApiOperation({
+        summary: 'Returns all dashboards.',
+        description: 'Returns all dashboards.'
+    })
+    @ApiExtraModels(DashboardDTO, InternalServerErrorDTO)
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            type: 'array',
+            items: {
+                $ref: getSchemaPath(DashboardDTO)
+            }
+        }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @HttpCode(HttpStatus.OK)
+    @Get('/dashboards')
     async getDashboards(@Req() req: any, @Response() res: any): Promise<any> {
         try {
             const dashboards = await ReportService.getDashboards();
@@ -119,8 +259,31 @@ export class AnalyticsApi {
     /**
      * Get data by dashboard id
      */
-    @Get('/dashboards/:id')
+    @ApiOperation({
+        summary: 'Returns dashboard by uuid.',
+        description: 'Returns dashboard by uuid.'
+    })
+    @ApiExtraModels(DataContainerDTO, InternalServerErrorDTO)
+    @ApiImplicitQuery({
+        name: 'uuid',
+        type: String,
+        description: 'Dashboard identifier',
+        required: true
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            $ref: getSchemaPath(DataContainerDTO)
+        }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @HttpCode(HttpStatus.OK)
+    @Get('/dashboards/:id')
     async getDashboardById(@Req() req: any, @Response() res: any): Promise<any> {
         try {
             if (!req.params.id) {

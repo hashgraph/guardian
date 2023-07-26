@@ -1,10 +1,10 @@
 import { DataBaseHelper, MessageType, RegistrationMessage } from '@guardian/common';
-import { AnalyticsStatus as Status } from '../entity/analytics-status';
-import { AnalyticsUser as User } from '../entity/analytics-user';
-import { ReportStatus } from '../interfaces/report-status.type';
-import { ReportSteep } from '../interfaces/report-steep.type';
-import { UserType } from '../interfaces/user.type';
-import { AnalyticsUtils } from '../utils/utils';
+import { AnalyticsStatus as Status } from '@entity/analytics-status';
+import { AnalyticsUser as User } from '@entity/analytics-user';
+import { ReportStatus } from '@interfaces/report-status.type';
+import { ReportSteep } from '@interfaces/report-steep.type';
+import { UserType } from '@interfaces/user.type';
+import { AnalyticsUtils } from '@helpers/utils';
 
 /**
  * Search users
@@ -32,7 +32,6 @@ export class AnalyticsUserService {
             }
             return null;
         } catch (error) {
-            console.log(error);
             return null;
         }
     }

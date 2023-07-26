@@ -2,34 +2,30 @@ import { DataBaseHelper, Logger, MessageAction } from '@guardian/common';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import JSZip from 'jszip';
 import xl from 'excel4node';
-
-import { AnalyticsStatus as Status } from '../entity/analytics-status';
-import { AnalyticsUser as User } from '../entity/analytics-user';
-import { AnalyticsPolicy as Policy } from '../entity/analytics-policy';
-import { AnalyticsPolicyInstance as PolicyInstance } from '../entity/analytics-policy-instance';
-import { AnalyticsTopicCache as TopicCache } from '../entity/analytics-topic-cache';
-import { AnalyticsDocument as Document } from '../entity/analytics-document';
-import { AnalyticsModule as Module } from '../entity/analytics-module';
-import { AnalyticsToken as Token } from '../entity/analytics-token';
-import { AnalyticsTokenCache as TokenCache } from '../entity/analytics-token-cache';
-import { AnalyticsTopic as Topic } from '../entity/analytics-topic';
-import { AnalyticsSchema as Schema } from '../entity/analytics-schema';
-import { AnalyticsTag as Tag } from '../entity/analytics-tag';
-import { AnalyticsDashboard as Dashboard } from '../entity/analytics-dashboard';
-
-import { ReportSteep } from '../interfaces/report-steep.type';
-import { ReportStatus } from '../interfaces/report-status.type';
-import { UserType } from '../interfaces/user.type';
-import { ReportType } from '../interfaces/report.type';
-import { DocumentType } from '../interfaces/document.type';
-
+import { AnalyticsStatus as Status } from '@entity/analytics-status';
+import { AnalyticsUser as User } from '@entity/analytics-user';
+import { AnalyticsPolicy as Policy } from '@entity/analytics-policy';
+import { AnalyticsPolicyInstance as PolicyInstance } from '@entity/analytics-policy-instance';
+import { AnalyticsTopicCache as TopicCache } from '@entity/analytics-topic-cache';
+import { AnalyticsDocument as Document } from '@entity/analytics-document';
+import { AnalyticsModule as Module } from '@entity/analytics-module';
+import { AnalyticsToken as Token } from '@entity/analytics-token';
+import { AnalyticsTokenCache as TokenCache } from '@entity/analytics-token-cache';
+import { AnalyticsTopic as Topic } from '@entity/analytics-topic';
+import { AnalyticsSchema as Schema } from '@entity/analytics-schema';
+import { AnalyticsTag as Tag } from '@entity/analytics-tag';
+import { AnalyticsDashboard as Dashboard } from '@entity/analytics-dashboard';
+import { ReportSteep } from '@interfaces/report-steep.type';
+import { ReportStatus } from '@interfaces/report-status.type';
+import { UserType } from '@interfaces/user.type';
+import { ReportType } from '@interfaces/report.type';
+import { DocumentType } from '@interfaces/document.type';
+import { AnalyticsUtils } from '@helpers/utils';
+import { Table } from '@helpers/table';
 import { AnalyticsTokenService } from './token.service';
 import { AnalyticsDocumentService } from './document.service';
 import { AnalyticsUserService } from './user.service';
 import { AnalyticsPolicyService } from './policy.service';
-
-import { AnalyticsUtils } from '../utils/utils';
-import { Table } from '../utils/table';
 
 /**
  * Report service
@@ -518,8 +514,8 @@ export class ReportService {
         const row = new DataBaseHelper(Dashboard).create({
             uuid: report.uuid,
             root: report.root,
-            report: data,
-            date: Date.now()
+            date: Date.now(),
+            report: data
         });
         return await new DataBaseHelper(Dashboard).save(row);
     }
@@ -557,7 +553,7 @@ export class ReportService {
     /**
      * Get current report
      */
-    public static async getCurrentReport(): Promise<any> {
+    public static async getCurrentReport(): Promise<Status> {
         return await new DataBaseHelper(Status).findOne({
             root: process.env.INITIALIZATION_TOPIC_ID
         });
@@ -579,7 +575,12 @@ export class ReportService {
             };
         }
         const result = await ReportService.createSnapshot(item, size);
-        return { ...result, status: item.status };
+        return {
+            uuid: item.uuid,
+            root: item.root,
+            status: item.status,
+            report: result
+        };
     }
 
     /**
