@@ -200,7 +200,7 @@ div#container {
 }
 
 .report-status[status="finished"] {
-    width: 82px;
+    width: 145px;
     background: #def7ec;
     border: 1px solid #5cb7a0;
 }
@@ -208,7 +208,7 @@ div#container {
     background: #03543f;
 }
 .report-status[status="finished"]::before {
-    content: 'Updated';
+    content: 'Updated: ' attr(date);
     color: #03543f;
 }
 

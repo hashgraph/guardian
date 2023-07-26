@@ -445,11 +445,13 @@ class App {
             this.reportStatus.setAttribute('status', 'loading');
             this.reportStatus.setAttribute('title', 'Loading...');
             this.lastReport = await ReportService.loadReport();
-            setTimeout(()=> {
+            setTimeout(() => {
                 const status = this.getReportStatus(this.lastReport);
                 const step = this.getReportStep(this.lastReport);
+                const date = this.getReportUpdateDate(this.lastReport);
                 this.reportStatus.setAttribute('status', status);
                 this.reportStatus.setAttribute('title', step);
+                this.reportStatus.setAttribute('date', date);
             }, 500);
         } catch (error) {
             console.error(error);
@@ -740,6 +742,7 @@ class App {
                 return 'none'
         }
     }
+
     getReportStep(report) {
         if (!report) {
             return '';
@@ -767,6 +770,14 @@ class App {
             default:
                 return `${report.progress} / ${report.maxProgress}`;
         }
+    }
+
+    getReportUpdateDate(report) {
+        if (!report) {
+            return '';
+        }
+        const date = new Date(report.updateDate)
+        return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
     }
 }
 
