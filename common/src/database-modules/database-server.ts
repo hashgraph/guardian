@@ -1201,6 +1201,28 @@ export class DatabaseServer {
     }
 
     /**
+     * Get all policy users by role
+     * @param policyId
+     *
+     * @virtual
+     */
+    public async getUsersByRole(policyId: string, role: string): Promise<PolicyRolesCollection[]> {
+        return await this.find(PolicyRolesCollection, { policyId, role });
+    }
+
+    /**
+     * Get user roles
+     * @param policyId
+     * @param did
+     * @returns
+     *
+     * @virtual
+     */
+    public async getUserRoles(policyId: string, did: string): Promise<PolicyRolesCollection[]> {
+        return await this.find(PolicyRolesCollection, { policyId, did });
+    }
+
+    /**
      * Delete user
      * @param group
      *

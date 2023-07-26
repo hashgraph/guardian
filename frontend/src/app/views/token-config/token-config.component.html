@@ -1,4 +1,4 @@
-<div class="content">
+<div class="content" *ngIf="!loading">
     <ng-container *ngIf="isConfirmed; else elseTemplate">
         <div *ngIf="!tokenId">
             <div class="actions">
@@ -169,11 +169,11 @@
             Before starting work you need to get DID <a [routerLink]="['/profile']">here</a>
         </div>
     </ng-template>
-    <div *ngIf="loading && !taskId" class="loading">
-        <mat-spinner></mat-spinner>
-    </div>
-    <div *ngIf="loading && taskId" class="loading">
-        <async-progress class="loading-progress" [taskId]="taskId" [expected]="expectedTaskMessages"
-            (error)="onAsyncError($event)" (completed)="onAsyncCompleted()"></async-progress>
-    </div>
 </div>
+
+<div *ngIf="loading && !taskId" class="loading">
+    <mat-spinner></mat-spinner>
+</div>
+
+<async-progress *ngIf="loading && taskId" [taskId]="taskId"
+    (error)="onAsyncError($event)" (completed)="onAsyncCompleted()"></async-progress>

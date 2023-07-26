@@ -3,6 +3,7 @@ import {
     ExternalMessageEvents,
     GenerateUUIDv4,
     IRootConfig,
+    NotificationAction,
     WorkerTaskType
 } from '@guardian/interfaces';
 import {
@@ -19,6 +20,9 @@ import {
     TopicConfig,
     VcDocumentDefinition as VcDocument,
     Workers,
+    NotificationHelper,
+    IAuthUser,
+    Users,
 } from '@guardian/common';
 import { PrivateKey } from '@hashgraph/sdk';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
@@ -28,6 +32,10 @@ import { IPolicyUser } from '@policy-engine/policy-user';
  * Token Config
  */
 interface TokenConfig {
+    /**
+     * Token name
+     */
+    tokenName: string
     /**
      * Treasury Account Id
      */
@@ -82,8 +90,15 @@ export class MintService {
         targetAccount: string,
         uuid: string,
         transactionMemo: string,
-        ref?: AnyBlockType
+        ref?: AnyBlockType,
+        policyOwner?: IAuthUser,
+        documentOwnerUser?: IAuthUser,
     ): Promise<any[]> {
+        const notifier = await NotificationHelper.initProgress(
+            [documentOwnerUser.id, policyOwner.id],
+            'Minting tokens',
+            `Start minting ${token.tokenName}`
+        );
         const mintNFT = (metaData: string[]): Promise<number[]> =>
             workers.addRetryableTask(
                 {
@@ -146,6 +161,14 @@ export class MintService {
                 }/${tasks.length * MintService.BATCH_NFT_MINT_SIZE})`,
                 ref
             );
+            notifier.step(
+                `Mint(${token.tokenName}): Minting and transferring (Chunk: ${
+                    i * MintService.BATCH_NFT_MINT_SIZE + 1
+                }/${tasks.length * MintService.BATCH_NFT_MINT_SIZE})`,
+                (i * MintService.BATCH_NFT_MINT_SIZE +
+                    1) / (tasks.length * MintService.BATCH_NFT_MINT_SIZE) *
+                    100
+            );
             try {
                 const results = await Promise.all(dataChunk.map(mintAndTransferNFT));
                 for (const serials of results) {
@@ -165,7 +188,7 @@ export class MintService {
                 throw error;
             }
         }
-
+        notifier.finish();
         MintService.log(
             `Mint(${mintId}): Minted (Count: ${Math.floor(tokenValue)})`,
             ref
@@ -251,7 +274,8 @@ export class MintService {
             treasuryId: token.draftToken ? '0.0.0' : token.adminId,
             tokenId: token.draftToken ? '0.0.0' : token.tokenId,
             supplyKey: null,
-            treasuryKey: null
+            treasuryKey: null,
+            tokenName: token.tokenName,
         }
         if (ref.dryRun) {
             const tokenPK = PrivateKey.generate().toString();
@@ -317,7 +341,7 @@ export class MintService {
         targetAccount: string,
         messageId: string,
         transactionMemo: string,
-        documents: VcDocument[]
+        documents: VcDocument[],
     ): Promise<void> {
         const multipleConfig = await MintService.getMultipleConfig(ref, documentOwner);
         if (multipleConfig) {
@@ -351,9 +375,11 @@ export class MintService {
             }
         } else {
             const tokenConfig = await MintService.getTokenConfig(ref, token);
+            const policyOwner = await new Users().getUserById(ref.policyOwner);
+            const documentOwnerUser = await PolicyUtils.getUser(ref, documentOwner.did)
             if (token.tokenType === 'non-fungible') {
                 const serials = await MintService.mintNonFungibleTokens(
-                    tokenConfig, tokenValue, root, targetAccount, messageId, transactionMemo, ref
+                    tokenConfig, tokenValue, root, targetAccount, messageId, transactionMemo, ref, policyOwner, documentOwnerUser
                 );
                 await MintService.updateDocuments(messageId, { tokenId: token.tokenId, serials }, ref);
             } else {
@@ -362,6 +388,19 @@ export class MintService {
                 );
                 await MintService.updateDocuments(messageId, { tokenId: token.tokenId, amount }, ref);
             }
+
+            await Promise.all(
+                [policyOwner.id, documentOwnerUser.id].map(
+                    async (userId) =>
+                        await NotificationHelper.success(
+                            `Mint completed`,
+                            `All ${token.tokenName} tokens have been minted and transferred`,
+                            userId,
+                            NotificationAction.POLICY_VIEW,
+                            ref.policyId
+                        )
+                )
+            );
         }
 
         new ExternalEventChannel().publishMessage(
@@ -397,7 +436,8 @@ export class MintService {
             treasuryId: token.adminId,
             tokenId: token.tokenId,
             supplyKey: null,
-            treasuryKey: null
+            treasuryKey: null,
+            tokenName: token.tokenName,
         }
         const [treasuryKey, supplyKey] = await Promise.all([
             MintService.wallet.getUserKey(

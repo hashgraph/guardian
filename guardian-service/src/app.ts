@@ -97,8 +97,7 @@ Promise.all([
                 `nats://${process.env.MQ_ADDRESS}:4222`
             ]
         },
-    }),
-    MessageBrokerChannel.connect('GUARDIANS_SERVICE')
+    })
 ]).then(async values => {
     const [db, cn, app] = values;
 

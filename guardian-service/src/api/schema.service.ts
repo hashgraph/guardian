@@ -296,8 +296,8 @@ export async function schemaAPI(): Promise<void> {
     });
 
     ApiResponse(MessageAPI.CREATE_SCHEMA_ASYNC, async (msg) => {
-        const { item, taskId } = msg;
-        const notifier = initNotifier(taskId);
+        const { item, task } = msg;
+        const notifier = await initNotifier(task);
         RunFunctionAsync(async () => {
             const schemaObject = item as ISchema;
             schemaObject.category = SchemaCategory.POLICY;
@@ -310,7 +310,7 @@ export async function schemaAPI(): Promise<void> {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             notifier.error(error);
         });
-        return new MessageResponse({ taskId });
+        return new MessageResponse(task);
     });
 
     /**
@@ -458,8 +458,8 @@ export async function schemaAPI(): Promise<void> {
     });
 
     ApiResponse(MessageAPI.PUBLISH_SCHEMA_ASYNC, async (msg) => {
-        const { id, version, owner, taskId } = msg;
-        const notifier = initNotifier(taskId);
+        const { id, version, owner, task } = msg;
+        const notifier = await initNotifier(task);
         RunFunctionAsync(async () => {
             if (!msg) {
                 notifier.error('Invalid id');
@@ -474,7 +474,7 @@ export async function schemaAPI(): Promise<void> {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             notifier.error(error);
         });
-        return new MessageResponse({ taskId });
+        return new MessageResponse(task);
     });
 
     /**
@@ -531,8 +531,8 @@ export async function schemaAPI(): Promise<void> {
     });
 
     ApiResponse(MessageAPI.IMPORT_SCHEMAS_BY_MESSAGES_ASYNC, async (msg) => {
-        const { owner, messageIds, topicId, taskId } = msg;
-        const notifier = initNotifier(taskId);
+        const { owner, messageIds, topicId, task } = msg;
+        const notifier = await initNotifier(task);
         RunFunctionAsync(async () => {
             if (!msg) {
                 notifier.error('Invalid import schema parameter');
@@ -547,7 +547,7 @@ export async function schemaAPI(): Promise<void> {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             notifier.error(error);
         });
-        return new MessageResponse({ taskId });
+        return new MessageResponse(task);
     });
 
     /**
@@ -581,10 +581,10 @@ export async function schemaAPI(): Promise<void> {
     });
 
     ApiResponse(MessageAPI.IMPORT_SCHEMAS_BY_FILE_ASYNC, async (msg) => {
-        const { owner, files, topicId, taskId } = msg;
+        const { owner, files, topicId, task } = msg;
         const { schemas, tags } = files;
 
-        const notifier = initNotifier(taskId);
+        const notifier = await initNotifier(task);
         RunFunctionAsync(async () => {
             if (!msg) {
                 notifier.error('Invalid import schema parameter');
@@ -601,7 +601,7 @@ export async function schemaAPI(): Promise<void> {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             notifier.error(error);
         });
-        return new MessageResponse({ taskId });
+        return new MessageResponse(task);
     });
 
     /**
@@ -643,17 +643,8 @@ export async function schemaAPI(): Promise<void> {
      * @returns {Schema} Found or uploaded schema
      */
     ApiResponse(MessageAPI.PREVIEW_SCHEMA_ASYNC, async (msg) => {
-        const { messageIds, taskId } = msg as {
-            /**
-             * Message ids
-             */
-            messageIds: string[];
-            /**
-             * Task id
-             */
-            taskId: string;
-        };
-        const notifier = initNotifier(taskId);
+        const { messageIds, task } = msg;
+        const notifier = await initNotifier(task);
         RunFunctionAsync(async () => {
             if (!msg) {
                 notifier.error('Invalid preview schema parameters');
@@ -671,7 +662,7 @@ export async function schemaAPI(): Promise<void> {
             notifier.error(error);
         });
 
-        return new MessageResponse({ taskId });
+        return new MessageResponse(task);
     });
 
     /**
