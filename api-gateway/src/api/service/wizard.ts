@@ -174,6 +174,7 @@ export class WizardApi {
     @ApiOperation({
         summary: 'Creates a new policy.',
         description: 'Creates a new policy by wizard. Only users with the Standard Registry role are allowed to make the request.',
+        deprecated: true,
     })
     @ApiBody({
         schema: {
