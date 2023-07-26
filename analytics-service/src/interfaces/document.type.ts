@@ -1,3 +1,6 @@
+/**
+ * Document Type
+ */
 export enum DocumentType {
     NONE = 'NONE',
     VP = 'VP',

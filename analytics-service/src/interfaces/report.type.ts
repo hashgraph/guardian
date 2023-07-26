@@ -1,3 +1,6 @@
+/**
+ * Report Type
+ */
 export enum ReportType {
     ALL = 'ALL',
     USERS = 'USERS',

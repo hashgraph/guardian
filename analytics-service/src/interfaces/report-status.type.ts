@@ -1,3 +1,6 @@
+/**
+ * Report Status
+ */
 export enum ReportStatus {
     NONE = '',
     PROGRESS = 'PROGRESS',

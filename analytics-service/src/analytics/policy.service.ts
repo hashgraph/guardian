@@ -9,19 +9,19 @@ import {
     TagMessage,
     TokenMessage,
 } from '@guardian/common';
-import { AnalyticsModule as Module } from '../entity/analytics-module';
-import { AnalyticsPolicy as Policy } from '../entity/analytics-policy';
-import { AnalyticsPolicyInstance as PolicyInstance } from '../entity/analytics-policy-instance';
-import { AnalyticsSchema as Schema } from '../entity/analytics-schema';
-import { AnalyticsStatus as Status } from '../entity/analytics-status';
-import { AnalyticsTag as Tag } from '../entity/analytics-tag';
-import { AnalyticsToken as Token } from '../entity/analytics-token';
-import { AnalyticsUser as User } from '../entity/analytics-user';
-import { ReportStatus } from '../interfaces/report-status.type';
-import { ReportSteep } from '../interfaces/report-steep.type';
-import { UserType } from '../interfaces/user.type';
-import { Tasks } from '../utils/tasks';
-import { AnalyticsUtils } from '../utils/utils';
+import { AnalyticsModule as Module } from '@entity/analytics-module';
+import { AnalyticsPolicy as Policy } from '@entity/analytics-policy';
+import { AnalyticsPolicyInstance as PolicyInstance } from '@entity/analytics-policy-instance';
+import { AnalyticsSchema as Schema } from '@entity/analytics-schema';
+import { AnalyticsStatus as Status } from '@entity/analytics-status';
+import { AnalyticsTag as Tag } from '@entity/analytics-tag';
+import { AnalyticsToken as Token } from '@entity/analytics-token';
+import { AnalyticsUser as User } from '@entity/analytics-user';
+import { ReportStatus } from '@interfaces/report-status.type';
+import { ReportSteep } from '@interfaces/report-steep.type';
+import { UserType } from '@interfaces/user.type';
+import { Tasks } from '@helpers/tasks';
+import { AnalyticsUtils } from '@helpers/utils';
 
 /**
  * Search policy\version\schemas\tokens in user topics
@@ -67,7 +67,6 @@ export class AnalyticsPolicyService {
             }
             return null;
         } catch (error) {
-            console.log(error);
             return null;
         }
     }
@@ -104,7 +103,6 @@ export class AnalyticsPolicyService {
             }
             return null;
         } catch (error) {
-            console.log(error);
             return null;
         }
     }

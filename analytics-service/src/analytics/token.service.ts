@@ -4,14 +4,14 @@ import {
     MessageType,
     TagMessage,
 } from '@guardian/common';
-import { AnalyticsStatus as Status } from '../entity/analytics-status';
-import { AnalyticsTag as Tag } from '../entity/analytics-tag';
-import { AnalyticsToken as Token } from '../entity/analytics-token';
-import { AnalyticsTokenCache as TokenCache } from '../entity/analytics-token-cache';
-import { ReportStatus } from '../interfaces/report-status.type';
-import { ReportSteep } from '../interfaces/report-steep.type';
-import { Tasks } from '../utils/tasks';
-import { AnalyticsUtils } from '../utils/utils';
+import { AnalyticsStatus as Status } from '@entity/analytics-status';
+import { AnalyticsTag as Tag } from '@entity/analytics-tag';
+import { AnalyticsToken as Token } from '@entity/analytics-token';
+import { AnalyticsTokenCache as TokenCache } from '@entity/analytics-token-cache';
+import { ReportStatus } from '@interfaces/report-status.type';
+import { ReportSteep } from '@interfaces/report-steep.type';
+import { Tasks } from '@helpers/tasks';
+import { AnalyticsUtils } from '@helpers/utils';
 
 /**
  * Search tokens info
@@ -45,7 +45,6 @@ export class AnalyticsTokenService {
             }
             return null;
         } catch (error) {
-            console.log(error);
             return null;
         }
     }
@@ -108,7 +107,6 @@ export class AnalyticsTokenService {
                     error = new Error('Invalid token info');
                 }
             } catch (e) {
-                console.log(e);
                 error = e;
             }
             tokenCache.balance = balance;
@@ -123,7 +121,6 @@ export class AnalyticsTokenService {
                 return report;
             }
         } catch (e) {
-            console.log(e);
             report.error = String(e);
             return report;
         }
@@ -145,8 +142,6 @@ export class AnalyticsTokenService {
                 const data: any = AnalyticsTokenService.parsTagMessage(message);
                 if (data) {
                     if (data.type === MessageType.Tag) {
-                        console.log('--- Tag 3 ---');
-                        console.log(data);
                         const row = new DataBaseHelper(Tag).create({
                             uuid: report.uuid,
                             root: report.root,

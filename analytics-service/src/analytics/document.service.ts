@@ -8,15 +8,15 @@ import {
     VCMessage,
     VPMessage
 } from '@guardian/common';
-import { AnalyticsDocument as Document } from '../entity/analytics-document';
-import { AnalyticsPolicyInstance as PolicyInstance } from '../entity/analytics-policy-instance';
-import { AnalyticsStatus as Status } from '../entity/analytics-status';
-import { AnalyticsTopic as Topic } from '../entity/analytics-topic';
-import { DocumentType } from '../interfaces/document.type';
-import { ReportStatus } from '../interfaces/report-status.type';
-import { ReportSteep } from '../interfaces/report-steep.type';
-import { Tasks } from '../utils/tasks';
-import { AnalyticsUtils } from '../utils/utils';
+import { AnalyticsDocument as Document } from '@entity/analytics-document';
+import { AnalyticsPolicyInstance as PolicyInstance } from '@entity/analytics-policy-instance';
+import { AnalyticsStatus as Status } from '@entity/analytics-status';
+import { AnalyticsTopic as Topic } from '@entity/analytics-topic';
+import { DocumentType } from '@interfaces/document.type';
+import { ReportStatus } from '@interfaces/report-status.type';
+import { ReportSteep } from '@interfaces/report-steep.type';
+import { Tasks } from '@helpers/tasks';
+import { AnalyticsUtils } from '@helpers/utils';
 
 /**
  * Search documents in policy topics
@@ -63,7 +63,6 @@ export class AnalyticsDocumentService {
             }
             return null;
         } catch (error) {
-            console.log(error);
             return null;
         }
     }

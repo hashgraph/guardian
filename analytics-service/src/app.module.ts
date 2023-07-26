@@ -1,10 +1,9 @@
 import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import hpp from 'hpp';
 import process from 'process';
 import express from 'express';
 import fileUpload from 'express-fileupload';
-import hpp from 'hpp';
-import { JwtModule } from '@nestjs/jwt';
 import { AnalyticsApi } from '@api/analytics';
 import { MetricsApi } from '@api/metrics';
 
@@ -22,12 +21,7 @@ const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
                     `nats://${process.env.MQ_ADDRESS}:4222`
                 ]
             }
-        }]),
-        JwtModule.register({
-            global: true,
-            secret: '123123123123123123',
-            signOptions: { expiresIn: '60s' },
-        }),
+        }])
     ],
     controllers: [
         AnalyticsApi,

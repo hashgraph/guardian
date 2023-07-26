@@ -5,9 +5,9 @@ import fs from 'fs';
 
 moduleAlias.addAliases({
     '@api': __dirname + '/api',
-    '@subscribers': __dirname + 'dist/subscribers',
     '@helpers': __dirname + '/helpers',
-    '@auth': __dirname + '/auth',
+    '@entity': __dirname + '/entity',
+    '@interfaces': __dirname + '/interfaces',
     '@middlewares': __dirname + '/middlewares',
 });
 

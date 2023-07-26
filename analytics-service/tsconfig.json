@@ -19,14 +19,14 @@
             "@api/*": [
                 "api/*"
             ],
-            "@entities/*": [
-                "entities/*"
+            "@entity/*": [
+                "entity/*"
             ],
             "@helpers/*": [
                 "helpers/*"
             ],
-            "@auth/*": [
-                "auth/*"
+            "@interfaces/*": [
+                "interfaces/*"
             ],
             "@middlewares/*": [
                 "middlewares/*"
