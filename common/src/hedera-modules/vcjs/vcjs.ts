@@ -490,8 +490,19 @@ export class VCJS {
      * @returns {any} - subject
      */
     public addDryRunContext(subject: any): any {
-        if (subject.type) {
-            subject['@context'] = [`schema#${subject.type}`];
+        if (!subject || !subject.type) {
+            return subject;
+        }
+        subject['@context'] = [`schema#${subject.type}`];
+        // tslint:disable-next-line:no-shadowed-variable
+        for (const key of Object.keys(subject).filter((key) => ![
+            '@context',
+            'type',
+            'policyId',
+            'ref',
+            'id',
+        ].includes(key))) {
+            subject[key] = this.addDryRunContext(subject[key]);
         }
         return subject;
     }
