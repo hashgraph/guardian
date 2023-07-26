@@ -186,6 +186,8 @@ export class MintService {
                     ref
                 );
                 throw error;
+            } finally {
+                notifier.finish();
             }
         }
         notifier.finish();
