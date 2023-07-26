@@ -24,8 +24,8 @@ spec:
         io.kompose.service: frontend
     spec:
       containers:
-        # - image: gcr.io/hedera-registry/frontend:latest
-        - image: public.ecr.aws/m9c9x5t0/frontend:latest
+        - image: gcr.io/hedera-registry/frontend:latest
+        # - image: public.ecr.aws/m9c9x5t0/frontend:latest this image can be use as a temporary workaround for this issue https://github.com/hashgraph/guardian/issues/2442
           name: frontend
           ports:
             - containerPort: 80
