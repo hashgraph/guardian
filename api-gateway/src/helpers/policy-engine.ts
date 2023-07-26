@@ -65,10 +65,10 @@ export class PolicyEngine extends NatsService {
      * Async create policy
      * @param model
      * @param user
-     * @param taskId
+     * @param task
      */
-    public async createPolicyAsync(model, user, taskId) {
-        return await this.sendMessage(PolicyEngineEvents.CREATE_POLICIES_ASYNC, { model, user, taskId });
+    public async createPolicyAsync(model, user, task) {
+        return await this.sendMessage(PolicyEngineEvents.CREATE_POLICIES_ASYNC, { model, user, task });
     }
 
     /**
@@ -76,20 +76,20 @@ export class PolicyEngine extends NatsService {
      * @param policyId Policy identifier
      * @param model Policy configuration
      * @param user User
-     * @param taskId Task identifier
+     * @param task Task
      */
-    public async clonePolicyAsync(policyId, model, user, taskId) {
-        return await this.sendMessage(PolicyEngineEvents.CLONE_POLICY_ASYNC, { policyId, model, user, taskId });
+    public async clonePolicyAsync(policyId, model, user, task) {
+        return await this.sendMessage(PolicyEngineEvents.CLONE_POLICY_ASYNC, { policyId, model, user, task });
     }
 
     /**
      * Async delete policy
      * @param policyId Policy identifier
      * @param user User
-     * @param taskId Task identifier
+     * @param task Task
      */
-    public async deletePolicyAsync(policyId, user, taskId) {
-        return await this.sendMessage(PolicyEngineEvents.DELETE_POLICY_ASYNC, { policyId, user, taskId });
+    public async deletePolicyAsync(policyId, user, task) {
+        return await this.sendMessage(PolicyEngineEvents.DELETE_POLICY_ASYNC, { policyId, user, task });
     }
 
     /**
@@ -117,10 +117,10 @@ export class PolicyEngine extends NatsService {
      * @param model
      * @param user
      * @param policyId
-     * @param taskId
+     * @param task
      */
-    public async publishPolicyAsync(model, user, policyId, taskId) {
-        return await this.sendMessage(PolicyEngineEvents.PUBLISH_POLICIES_ASYNC, { model, user, policyId, taskId });
+    public async publishPolicyAsync(model, user, policyId, task) {
+        return await this.sendMessage(PolicyEngineEvents.PUBLISH_POLICIES_ASYNC, { model, user, policyId, task });
     }
 
     /**
@@ -256,10 +256,10 @@ export class PolicyEngine extends NatsService {
      * @param user
      * @param zip
      * @param versionOfTopicId
-     * @param taskId
+     * @param task
      */
-    public async importFileAsync(user, zip, versionOfTopicId, taskId) {
-        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_FILE_ASYNC, { zip, user, versionOfTopicId, taskId });
+    public async importFileAsync(user, zip, versionOfTopicId, task) {
+        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_FILE_ASYNC, { zip, user, versionOfTopicId, task });
     }
 
     /**
@@ -276,10 +276,10 @@ export class PolicyEngine extends NatsService {
      * @param user
      * @param messageId
      * @param versionOfTopicId
-     * @param taskId
+     * @param task
      */
-    public async importMessageAsync(user, messageId, versionOfTopicId, taskId) {
-        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_ASYNC, { messageId, user, versionOfTopicId, taskId });
+    public async importMessageAsync(user, messageId, versionOfTopicId, task) {
+        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_ASYNC, { messageId, user, versionOfTopicId, task });
     }
 
     /**
@@ -304,10 +304,10 @@ export class PolicyEngine extends NatsService {
      * Async get policy info from message
      * @param user
      * @param messageId
-     * @param taskId
+     * @param task
      */
-    public async importMessagePreviewAsync(user, messageId, taskId: string) {
-        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW_ASYNC, { messageId, user, taskId });
+    public async importMessagePreviewAsync(user, messageId, task) {
+        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW_ASYNC, { messageId, user, task });
     }
 
     /**

@@ -22,7 +22,7 @@ import { RetireTokenDialogComponent } from 'src/app/components/retire-token-dial
 import { noWhitespaceValidator } from 'src/app/validators/no-whitespace-validator';
 
 enum OperationMode {
-    None, Generate, SetProfile, Associate
+    None, Generate, Associate
 }
 
 /**
@@ -297,8 +297,7 @@ export class UserProfileComponent implements OnInit {
         this.profileService.pushSetProfile(profile).subscribe((result) => {
             const { taskId, expectation } = result;
             this.taskId = taskId;
-            this.expectedTaskMessages = expectation;
-            this.operationMode = OperationMode.SetProfile;
+            this.router.navigate(['task', taskId]);
         }, ({ message }) => {
             this.loading = false;
             this.headerProps.setLoading(false);
@@ -514,10 +513,6 @@ export class UserProfileComponent implements OnInit {
                         this.hederaForm.setValue(value);
                         this.loading = false;
                     });
-                    break;
-                case OperationMode.SetProfile:
-                    this.webSocketService.updateProfile();
-                    this.loadDate();
                     break;
                 case OperationMode.Associate:
                     this.loadDate();

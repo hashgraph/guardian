@@ -26,7 +26,7 @@ export class WizardService {
         config: any
     ): Observable<{ taskId: string; expectation: number }> {
         return this.http.post<{ taskId: string; expectation: number }>(
-            `${this.url}/policy/push`,
+            `${this.url}/push/policy`,
             config
         );
     }
