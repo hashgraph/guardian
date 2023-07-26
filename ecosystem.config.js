@@ -33,6 +33,14 @@ module.exports = {
     }
   },
   {
+    name: 'notification',
+    script: 'npm run start',
+    cwd: './notification-service/dist',
+    env: {
+      ...readEnvFile('./notification-service/.env')
+    }
+  },
+  {
     name: 'gateway',
     script: 'npm run start',
     cwd: './api-gateway/dist',
