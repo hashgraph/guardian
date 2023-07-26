@@ -3,6 +3,8 @@
  */
 import { BlockValidator } from './block-validator';
 import { IModulesErrors } from './interfaces/modules-errors.interface';
+import { ISchema } from '@guardian/interfaces';
+import { DatabaseServer } from '@guardian/common';
 
 /**
  * Module Validator
@@ -37,7 +39,7 @@ export class ModuleValidator {
      * Schemas
      * @private
      */
-    private readonly schemas: string[];
+    private readonly schemas: Map<string, ISchema>;
     /**
      * Tokens
      * @private
@@ -70,7 +72,7 @@ export class ModuleValidator {
         this.tags = new Map();
         this.errors = [];
         this.permissions = ['NO_ROLE', 'ANY_ROLE', 'OWNER'];
-        this.schemas = [];
+        this.schemas = new Map();
         this.tokens = [];
         this.topics = [];
         this.tokenTemplates = [];
@@ -94,9 +96,10 @@ export class ModuleValidator {
             for (const variable of module.variables) {
                 this.variables.push(variable);
                 switch (variable.type) {
-                    case 'Schema':
-                        this.schemas.push(variable.name);
+                    case 'Schema': {
+                        this.schemas.set(variable.name, variable.baseSchema);
                         break;
+                    }
                     case 'Token':
                         this.tokens.push(variable.name);
                         break;
@@ -228,11 +231,11 @@ export class ModuleValidator {
      * @param iri
      */
     public async getSchema(iri: string): Promise<any> {
-        if (this.schemas.indexOf(iri) === -1) {
-            return null;
-        } else {
-            return {};
+        let r = this.schemas.get(iri);
+        if (typeof r === 'string') {
+            r = await new DatabaseServer(null).getSchemaByIRI(r);
         }
+        return r;
     }
 
     /**

@@ -2,6 +2,7 @@ import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
+import { ISchema } from '@guardian/interfaces';
 
 /**
  * Services for working from modules.
@@ -84,5 +85,17 @@ export class ModulesService {
 
     public validate(policy: any): Observable<any> {
         return this.http.post<any>(`${this.url}/validate`, policy);
+    }
+
+    public getSchemas(topicId: string, pageIndex?: number, pageSize?: number): Observable<HttpResponse<ISchema[]>> {
+        let url = `${this.url}/schemas`;
+        if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
+            url += `?pageIndex=${pageIndex}&pageSize=${pageSize}`;
+        }
+        return this.http.get<any>(url, {observe: 'response'});
+    }
+
+    public createSchema(schema: ISchema): Observable<ISchema> {
+        return this.http.post<any>(`${this.url}/schemas`, schema);
     }
 }

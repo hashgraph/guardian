@@ -260,10 +260,13 @@ export class PolicyConfigurationComponent implements OnInit {
 
             forkJoin([
                 this.policyEngineService.getBlockInformation(),
-                this.modulesService.menuList()
+                this.modulesService.menuList(),
+                this.modulesService.getSchemas(this.templateModel.topicId),
             ]).subscribe((data: any) => {
                 const blockInformation = data[0] || {};
                 const modules = data[1] || [];
+                this.schemas = SchemaHelper.map(data[2].body || []) || [];
+                this.templateModel.setSchemas(this.schemas);
                 this.registeredService.registerConfig(blockInformation);
                 this.templateModules = modules;
                 this.finishedLoad(this.templateModel);
