@@ -1,0 +1,45 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.service.expose: "true"
+    kompose.service.type: loadbalancer
+  labels:
+    io.kompose.service: frontend
+  name: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      io.kompose.service: frontend
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.service.expose: "true"
+        kompose.service.type: loadbalancer
+      labels:
+        io.kompose.network/guardian-default: "true"
+        io.kompose.service: frontend
+    spec:
+      containers:
+        - image: gcr.io/hedera-registry/frontend:latest
+        # - image: public.ecr.aws/m9c9x5t0/frontend:latest this image can be use as a temporary workaround for this issue https://github.com/hashgraph/guardian/issues/2442
+          name: frontend
+          ports:
+            - containerPort: 80
+          resources: {}
+          volumeMounts:
+            - mountPath: /etc/nginx/conf.d/default.conf
+              name: frontend-service-nginx-conf
+              subPath: default.conf
+      restartPolicy: Always
+      volumes:
+        - configMap:
+            items:
+              - key: default.conf
+                path: default.conf
+            name: frontend-service-nginx-conf
+          name: frontend-service-nginx-conf
+status: {}
