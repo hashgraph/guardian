@@ -6240,86 +6240,91 @@ paths:
           application/json:
             schema:
               type: object
-              required:
-                - policy
-                - roles
-                - schemas
-                - trustChain
               properties:
-                roles:
-                  type: array
-                  items:
-                    type: string
-                policy:
+                saveState:
+                  type: boolean
+                wizardConfig:
                   type: object
+                  required:
+                    - policy
+                    - roles
+                    - schemas
+                    - trustChain
                   properties:
-                    name:
-                      type: string
-                    description:
-                      type: string
-                    topicDescription:
-                      type: string
-                    policyTag:
-                      type: string
-                schemas:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      name:
+                    roles:
+                      type: array
+                      items:
                         type: string
-                      iri:
-                        type: string
-                      isApproveEnable:
-                        type: boolean
-                      isMintSchema:
-                        type: boolean
-                      mintOptions:
+                    policy:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        description:
+                          type: string
+                        topicDescription:
+                          type: string
+                        policyTag:
+                          type: string
+                    schemas:
+                      type: array
+                      items:
                         type: object
                         properties:
-                          tokenId:
+                          name:
                             type: string
-                          rule:
+                          iri:
                             type: string
-                      dependencySchemaIri:
-                        type: string
-                      relationshipsSchemaIri:
-                        type: string
-                      initialRolesFor:
-                        type: array
-                        items:
-                          type: string
-                      rolesConfig:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            role:
+                          isApproveEnable:
+                            type: boolean
+                          isMintSchema:
+                            type: boolean
+                          mintOptions:
+                            type: object
+                            properties:
+                              tokenId:
+                                type: string
+                              rule:
+                                type: string
+                          dependencySchemaIri:
+                            type: string
+                          relationshipsSchemaIri:
+                            type: string
+                          initialRolesFor:
+                            type: array
+                            items:
                               type: string
-                            isApprover:
-                              type: boolean
-                            isCreator:
-                              type: boolean
-                            gridColumns:
-                              type: array
-                              items:
-                                type: object
-                                properties:
-                                  field:
-                                    type: string
-                                  title:
-                                    type: string
-                trustChain:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      role:
-                        type: string
-                      mintSchemaIri:
-                        type: string
-                      viewOnlyOwnDocuments:
-                        type: boolean
+                          rolesConfig:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                role:
+                                  type: string
+                                isApprover:
+                                  type: boolean
+                                isCreator:
+                                  type: boolean
+                                gridColumns:
+                                  type: array
+                                  items:
+                                    type: object
+                                    properties:
+                                      field:
+                                        type: string
+                                      title:
+                                        type: string
+                    trustChain:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          role:
+                            type: string
+                          mintSchemaIri:
+                            type: string
+                          viewOnlyOwnDocuments:
+                            type: boolean
       responses:
         '200':
           description: Successful operation.
