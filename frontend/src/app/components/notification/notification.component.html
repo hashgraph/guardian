@@ -29,13 +29,12 @@
                     </div>
                 </div>
             </div>
-            <div class="notification-menu__delimiter" *ngIf="progressNotifications.length">
-                All
+            <div class="notification-menu__delimiter" *ngIf="progressNotifications.length && notifications.length">
             </div>
-            <div class="notification-list" *ngIf="notifications.length; else noNewNotifications"
+            <div class="notification-list" *ngIf="notifications.length"
                 (scroll)="onScrollNotifications($event)">
                 <div class="notification" [attr.type]="notification.type" [attr.notificationId]="notification.id"
-                    [attr.read]="notification.read" *ngFor="let notification of notifications">
+                    [attr.unread]="!notification.read" *ngFor="let notification of notifications">
                     <mat-icon class="notification__icon">{{
                         getNotificationIcon(notification.type)
                         }}</mat-icon>
@@ -52,13 +51,11 @@
                     </div>
                 </div>
             </div>
+            <div *ngIf="!progressNotifications.length && !notifications.length" class="no-new-notifications">No new
+                notifications</div>
             <div class="notification-menu__view-all link-btn" (click)="viewAllNotifications()">
                 View all notifications
             </div>
         </div>
     </mat-menu>
 </div>
-
-<ng-template #noNewNotifications>
-    <div class="no-new-notifications">No new notifications</div>
-</ng-template>
