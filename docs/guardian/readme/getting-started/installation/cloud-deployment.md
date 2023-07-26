@@ -4,25 +4,21 @@ This document provides a comprehensive guide for deploying the platform on vario
 GCP, and Azure. The guide focuses on using Rancher as the cluster management tool, making it applicable to a wide
 range of cloud providers supported by Rancher, as well as on-premises and hybrid cloud deployments.
 
+> **_NOTE:_** The contents of this guide has been written and tested using Rancher 2.7, the latest stable version at writing time. The guide might not be applicable to different versions of Rancher or Kubernetes, specially major versions.
+
 ## Rancher deployment
 
-To begin the Rancher deployment process, the first step is setting up a Rancher server. Initially, we assume the Rancher
+To begin the Rancher deployment process, the first step is setting up a Rancher server. We'll assume the Rancher
 server will be created in the same cloud provider as the Guardian instance, but it's important to note that this is not
 mandatory. Alternatively, you can use a Rancher container distribution and run it locally, enabling you to deploy the
 Guardian instance to any cloud provider. However, having the Rancher server running in the cloud will be beneficial for
 future cluster management and monitoring.
 
-### Rancher deployment on AWS
+- Rancher deployment on AWS: [Follow this official guide to deploy Rancher 2.7 on AWS](https://ranchermanager.docs.rancher.com/v2.7/getting-started/quick-start-guides/deploy-rancher-manager/aws)
 
-[Follow this official guide to deploy Rancher on AWS](https://ranchermanager.docs.rancher.com/getting-started/quick-start-guides/deploy-rancher-manager/aws)
+- Rancher deployment on GCP: [Follow this official guide to deploy Rancher 2.7 on GCP](https://ranchermanager.docs.rancher.com/v2.7/getting-started/quick-start-guides/deploy-rancher-manager/gcp)
 
-### Rancher deployment on GCP
-
-[Follow this official guide to deploy Rancher on GCP](https://ranchermanager.docs.rancher.com/getting-started/quick-start-guides/deploy-rancher-manager/gcp)
-
-### Rancher deployment on Azure
-
-[Follow this official guide to deploy Rancher on Azure](https://ranchermanager.docs.rancher.com/getting-started/quick-start-guides/deploy-rancher-manager/azure)
+- Rancher deployment on Azure: [Follow this official guide to deploy Rancher 2.7 on Azure](https://ranchermanager.docs.rancher.com/v2.7/getting-started/quick-start-guides/deploy-rancher-manager/azure)
 
 Once you have your Rancher server up and running, you can access it through the web interface, and you should see something like this:
 
@@ -30,42 +26,44 @@ Once you have your Rancher server up and running, you can access it through the 
 
 You should be able to log in with the credentials you created during the installation process. Once you're logged in, you'll be able to manage your clusters and deploy new ones on any cloud provider. Additionally, you'll see a couple of default clusters created by Rancher, one of them is the local cluster, which is the one where Rancher is running, and the other one is the `sandbox` cluster, which is a cluster created by Rancher to test deployments and other features.
 
-## Cluster deployment
+## K8s cluster deployment
 
 After setting up your Rancher server successfully, the next step is to deploy a Kubernetes cluster on your preferred cloud
 provider. In this guide, we will utilize the managed Kubernetes solutions offered by cloud providers. However, you also
 have the option to deploy a cluster using VMs, a different distribution like k3s, or even use the Rancher-provided
-sandbox cluster if you do not intend to use it for production workloads.
+sandbox cluster if you do not intend to use it for production workloads. At the moment of writing this document, the recommended Kubernetes version for AWS and Azure is 1.25, and 1.26 for GCP.
 
-### Cluster deployment on AWS EKS
+- Cluster deployment on AWS EKS: [Follow this official guide to deploy an EKS cluster](https://ranchermanager.docs.rancher.com/v2.7/how-to-guides/new-user-guides/kubernetes-clusters-in-rancher-setup/set-up-clusters-from-hosted-kubernetes-providers/eks)
 
-[Follow this official guide to deploy an EKS cluster](https://ranchermanager.docs.rancher.com/how-to-guides/new-user-guides/kubernetes-clusters-in-rancher-setup/set-up-clusters-from-hosted-kubernetes-providers/eks)
+- Cluster deployment on GCP GKE: [Follow this official guide to deploy a GKE cluster](https://ranchermanager.docs.rancher.com/v2.7/how-to-guides/new-user-guides/kubernetes-clusters-in-rancher-setup/set-up-clusters-from-hosted-kubernetes-providers/gke)
 
-### Cluster deployment on GCP GKE
+- Cluster deployment on Azure AKS: [Follow this official guide to deploy an AKS cluster](https://ranchermanager.docs.rancher.com/v2.7/how-to-guides/new-user-guides/kubernetes-clusters-in-rancher-setup/set-up-clusters-from-hosted-kubernetes-providers/aks)
 
-[Follow this official guide to deploy a GKE cluster](https://ranchermanager.docs.rancher.com/how-to-guides/new-user-guides/kubernetes-clusters-in-rancher-setup/set-up-clusters-from-hosted-kubernetes-providers/gke)
+After the cluster is created, you'll be able to navigate to the cluster management section to see details for the cluster like nodes. In that section you can edit the cluster configuration, add nodes, etc.
 
-### Cluster deployment on Azure AKS
-
-[Follow this official guide to deploy an AKS cluster](https://ranchermanager.docs.rancher.com/how-to-guides/new-user-guides/kubernetes-clusters-in-rancher-setup/set-up-clusters-from-hosted-kubernetes-providers/aks)
-
-## Guardian deployment
-
-Once you have your cluster up and running, you can start deploying the different Guardian components. Not all of them are mandatory, and some of them can be replaced by managed services outside of the cluster.
-
-For this guide we've divided the different manifests into several folders, which name is prefixed by a number, this is to indicate the order in which they should be deployed. The reason for this is that some of the components depend on others, so we need to deploy them in the right order to avoid errors and to ease service discovery.
+You can also explore the cluster by clicking on the cluster name on the left side menu. In this view you can list and create all resources in the cluster, including namespaces, controller, access permissions, services, helm applications, monitoring, etc. From now on we'll focus on this "exploration view", which is the one you'll use to deploy the Guardian components.
 
 ### How to deploy Kubernetes manifests on Rancher
+
+An important part of the Rancher UI is the top header, specially the namespace dropdown. This dropdown allows you to select the namespace where you want to deploy the manifests. By default, Rancher will create a namespace named `default`, but you can create as many namespaces as you want. Get familiar with this dropdown and check it to see the selected namespace before panicking if you don't see the resources you expect to see under any section.
+
+![Rancher header](../../../../.gitbook/assets/rancher-header.png)
 
 To deploy the manifests, you can use the Rancher web interface, or you can use the `kubectl` command line tool. For this guide we're going to use the command line tool. The reason to use the command line tool is because it allows to deploy an entire folder with a single command, but you can use the web interface if you prefer. Simply click on the :outbox_tray:[import yaml] button on the right of header bar on rancher ui for each file.
 
 To use kubectl tool, you need first to install the tool and download the kubeconfig credentials file by clicking on the :page_facing_up:[downlaod kubeconfig] icon on rancher header. You can also navigate to a kubectl console directly from the Rancher UI by clicking on the :terminal:[kubectl shell] icon on rancher header.
 
+## Guardian deployment
+
+Once you have your cluster up and running, you can start deploying the different Guardian components. Not all of them are mandatory, and some of them can be replaced by managed services outside of the cluster. There is a [dedicated section](#types-of-services) on this document with details about the different types of services and the deployment options for external services.
+
+For this guide we've divided the different manifests into several folders, which name is prefixed by a number, this is to indicate the order in which they should be deployed. The reason for this is that some of the components depend on others, so we need to deploy them in the right order to avoid errors and to ease service discovery.
+
 ### Nginx ingress controller
 
 The first component we need to deploy is the Nginx ingress controller. This component is used to expose the different services to the outside world. You can find more details about this component in the official documentation, but for this guide we're going to use the default configuration.
 
-Complete information about this topic can be found in [this link](https://kubernetes.github.io/ingress-nginx/deploy), but here is a summary for the installation steps for the cloud providers referred on this document. 
+Complete information about this topic can be found in [this link](https://kubernetes.github.io/ingress-nginx/deploy), but here is a summary for the installation steps for the cloud providers referred on this document.
 
 #### AWS
 
@@ -160,22 +158,34 @@ This folder contains the manifests for the different controllers that needs to b
 
 > **_NOTE:_** all the manifest modifications described in the whole document can be done also easily in the Rancher UI, navigating to the relevant section and editing the default deployed objects.
 
-## Types of services (comming soon)
+## Types of services {#types-of-services}
 
 ### External (third-party services)
 
-These are third party services that are not part of the Guardian platform, but are required for some of the Guardian components to work. You can choose to deploy them inside the cluster or use managed services outside of the cluster. For heavy workloads, the recommendation would be to use external dedicated services. We'll cover their basic setup, but to see all the details about installation and configuration, please refer to the official documentation of each service.
+These are third party services that are not part of the Guardian platform, but are required for some of the Guardian components to work. You can choose to deploy them inside the cluster or use managed services outside of the cluster. For heavy workloads, the recommendation would be to use external dedicated services. The project included manifests described above cover their basic setup, but to see all the details about installation and configuration, please refer to the official documentation of each service.
 
 - mongo
 - ipfs/kubo
 - message-broker
 - hashicorp vault
-- prometheus and grafana
-- mongo-express (optional)
+- mongo-express
+
+For production workloads it is recommended to use a more robust setup for these services, like a replica set for mongo, a cluster for ipfs, a cluster for the message broker, etc. Navigating to the Apps section of Rancher, you can find the official [Helm](https://helm.sh/) charts for these services, with Rancher support, which can be used to deploy them in a more robust way. As an example, you can follow the steps below to deploy a message broker cluster using the Rancher UI, you'll see something similar to this:
+
+![Rancher charts section](../../../../.gitbook/assets/rancher-charts-setion.png)
+
+1. Navigate to the Apps section of Rancher.
+2. Click on the :heavy_plus_sign:[Charts] button.
+3. Select the `nats-server` chart (use the search bar if neeeded), read the chart documentation and click on the install button.
+4. Follow the installation steps selecting the namespace where you want to deploy the chart, and filling the required values, like in this case, the number of replicas. You can also edit the raw `values.yaml` file, with all the customizable options the chart provides.
+5. Once the chart is successfully deployed you can navigate to the services section, see the details of the service, copy the dns name and update the relevant config map containing the connection string for the message-broker service.
+    - because the internal guardian services read the configuration from environmental variables, you'll need to redeploy them to apply the changes. To do that navigate to the Rancher workloads section, select the relevant deployments and click on the :arrows_clockwise:[Redeply] button.
+
+This same steps can be followed to deploy the rest of the external services, like mongo, ipfs, etc. using Helm charts. One particularly interesting one is kube-prometheus-stack, which is a collection of charts that can be used to deploy a full monitoring stack for the cluster, including prometheus, prometheus-alerts and grafana. In this particular case, Rancher has rebranded the chart as `rancher-monitoring`, so you can follow the same steps described above to deploy it.
 
 ### Internal (Guardian services)
 
-These are the Guardian services that are part of the platform and are required for the platform to work. They are all deployed inside the cluster and are managed by Rancher. Depending on your needs, you may decide not to deploy some of them, like the web proxy (AKA frontend), so feel free to skip the ones that are not relevant for your use case.
+These are the Guardian services that are part of the platform and are required for the platform to work. They are all deployed inside the cluster and are managed by Rancher. Depending on your needs, you may decide not to deploy some of them, like the frontend, so feel free to skip the ones that are not relevant for your use case. For all of them, the project includes a service, a deployment manifest and a configuration sample manifest using config maps. These manifests are used to create the service and the deployment for the service. The deployment manifest is used to create the pods that will run the service, and the service manifest is used to create the service that will expose the pods to the rest of the cluster.
 
 - mrv-sender
 - topic-viewer
@@ -187,4 +197,6 @@ These are the Guardian services that are part of the platform and are required f
 - guardian-service: requires worker-service-1, worker-service-2, policy-service
 - api-gateway: requires guardian-service
 - application-events: requires guardian-service
-- web-proxy: requires mongo-express (optional), api-docs (optional), mrv-sender (optional), api-gateway (optional)
+- frontend
+
+Please, explore the rest of the documentation to learn more about the different services,  their configuration, upgrading guides and so on.
