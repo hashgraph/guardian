@@ -16,7 +16,7 @@ export enum TaskAction {
     UPDATE_TOKEN = 'Update token',
     DELETE_TOKEN = 'Delete token',
     FREEZE_TOKEN = 'Freeze token',
-    UNFREEZE_TOKEN = 'UnFreeze token',
+    UNFREEZE_TOKEN = 'Unfreeze token',
     ASSOCIATE_TOKEN = 'Associate token',
     DISSOCIATE_TOKEN = 'Dissociate token',
     GRANT_KYC = 'Grant KYC',

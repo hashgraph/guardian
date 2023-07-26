@@ -459,7 +459,7 @@ async function grantKycToken(
             hederaAccountId: root.hederaAccountId,
             hederaAccountKey: root.hederaAccountKey,
             userHederaAccountId: user.hederaAccountId,
-            tokenId,
+            token,
             kycKey,
             grant
         }
