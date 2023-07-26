@@ -114,7 +114,7 @@ export class Cryppo {
    * @returns binary string
    */
   decodeBase32 = (val: string) => {
-    const decoded = baseX(base32Alphabet).decode(val.trim().replace(/-/g, ''));
+    const decoded = baseX(base32Alphabet).decode(`${val}`.trim().replace(/-/g, ''));
     return bytesToBinaryString(decoded);
   };
 }

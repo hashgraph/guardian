@@ -73,12 +73,9 @@ export class MeecoAuthService extends NatsService {
       // generate a random UUID as the request name
       const requestName = GenerateUUIDv4();
 
-      // ToDo: get ClientDID from getMe API
-      const clientDID = 'did:web:did-web.securevalue.exchange:343b08f3-dc4d-4cd3-b276-3f2d8a146a0d';
-      // ToDO: get ClientName from Configurations
-      const clientName = 'ieu';
-      // ToDo: get PresentationDefinitionId from Configurations or the process to generate new Schema
-      const presentationDefinitionId = '832e996c-fdba-447f-8989-9d170fa381a8';
+      const clientDID = process.env.MEECO_ISSUER_ORGANIZATION_ID;
+      const clientName = process.env.MEECO_ISSUER_ORGANIZATION_NME;
+      const presentationDefinitionId = process.env.MEECO_PRESENTATION_DEFINITION_ID;
 
       try {
         // create a new VP presentation request from Meeco
@@ -111,7 +108,6 @@ export class MeecoAuthService extends NatsService {
      * @param msg
      */
     this.getMessages<any, any>(AuthEvents.MEECO_APPROVE_SUBMISSION, async (msg: any) => {
-      // ToDo: approve submissions that are not timed out or rejected
       const vpRequest = await this.meecoService.approveVPSubmission(msg.presentation_request_id, msg.submission_id, true);
       return new MessageResponse({vpRequest, cid: msg.cid, role: msg.role});
     });
@@ -122,7 +118,6 @@ export class MeecoAuthService extends NatsService {
      * @param msg
      */
     this.getMessages<any, any>(AuthEvents.MEECO_REJECT_SUBMISSION, async (msg: any) => {
-      // ToDo: reject submissions that are not timed out or approved or rejected before
       const vpRequest = await this.meecoService.approveVPSubmission(msg.presentation_request_id, msg.submission_id, false);
       return new MessageResponse({vpRequest, cid: msg.cid});
     });
