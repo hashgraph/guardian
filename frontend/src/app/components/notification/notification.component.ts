@@ -20,8 +20,6 @@ export class NotificationComponent implements OnInit {
     unreadNotifications = 0;
     progressNotifications: any[] = [];
     menuOpened: boolean = false;
-
-    readFirstNotificationsTimeout: any = null;
     subscription = new Subscription();
 
     viewDetails = (notification: any) =>
@@ -186,9 +184,9 @@ export class NotificationComponent implements OnInit {
                 child.offsetTop >= event.target.scrollTop &&
                 child.offsetTop + 62 < event.target.scrollTop + 310
             ) {
-                if (child.getAttribute('read') === 'false') {
+                if (child.getAttribute('unread') === 'true') {
                     setTimeout(() => {
-                        if (child.getAttribute('read') === 'false') {
+                        if (child.getAttribute('unread') === 'true') {
                             this.ws.sendMessage(
                                 NotifyAPI.READ,
                                 child.getAttribute('notificationId')
@@ -208,22 +206,17 @@ export class NotificationComponent implements OnInit {
     }
 
     readFirstNotification() {
-        if (this.readFirstNotificationsTimeout) {
-            return;
-        }
-        this.readFirstNotificationsTimeout = setTimeout(() => {
-            for (let i = 0; i < 4; i++) {
-                if (!this.notifications[i]) {
-                    break;
+        const notificationToRead = this.notifications.slice(0, 4);
+        setTimeout(() => {
+            notificationToRead.forEach(notification => {
+                if (notification.read) {
+                    return;
                 }
-                if (!this.notifications[i].read) {
-                    this.ws.sendMessage(
-                        NotifyAPI.READ,
-                        this.notifications[i].id
-                    );
-                }
-            }
-            this.readFirstNotificationsTimeout = null;
+                this.ws.sendMessage(
+                    NotifyAPI.READ,
+                    notification.id
+                );
+            })
         }, 5000);
     }
 
