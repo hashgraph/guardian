@@ -1,5 +1,5 @@
 import '../config'
-import { COMMON_CONNECTION_CONFIG, DataBaseHelper, DatabaseServer, entities, Environment, ExternalEventChannel, IPFS, LargePayloadContainer, Logger, MessageBrokerChannel, MessageServer, OldSecretManager, Users, Workers } from '@guardian/common';
+import { COMMON_CONNECTION_CONFIG, DataBaseHelper, DatabaseServer, entities, Environment, ExternalEventChannel, IPFS, LargePayloadContainer, Logger, MessageBrokerChannel, MessageServer, NotificationService, OldSecretManager, Users, Workers } from '@guardian/common';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
@@ -9,6 +9,16 @@ import { CommonVariables } from '@helpers/common-variables';
 import { PolicyEvents } from '@guardian/interfaces';
 import { GridFSBucket } from 'mongodb';
 import { SynchronizationService } from '@policy-engine/multi-policy-service';
+import { Module } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+
+@Module({
+    providers: [
+        NotificationService,
+    ]
+})
+class AppModule {}
 
 const {
     policyId,
@@ -27,9 +37,19 @@ Promise.all([
         ensureIndexes: true,
         entities
     }),
-    MessageBrokerChannel.connect(policyServiceName)
+    MessageBrokerChannel.connect(policyServiceName),
+    NestFactory.createMicroservice<MicroserviceOptions>(AppModule,{
+        transport: Transport.NATS,
+        options: {
+            name: `${process.env.SERVICE_CHANNEL}`,
+            servers: [
+                `nats://${process.env.MQ_ADDRESS}:4222`
+            ]
+        },
+    })
 ]).then(async values => {
-    const [db, cn] = values;
+    const [db, cn, app] = values;
+    app.listen();
     DataBaseHelper.orm = db;
     // @ts-ignore
     DataBaseHelper.gridFS = new GridFSBucket(db.em.getDriver().getConnection().getDb());

@@ -136,16 +136,18 @@ export class CustomLogicBlock {
 
                     const processing = async (document) => {
 
-                        const vcSubject = {
-                            id: idType === 'DOCUMENT'
-                                ? documents[0].document.id
-                                : await this.generateId(
-                                    idType, user, hederaAccount.hederaAccountId, hederaAccount.hederaAccountKey
-                                ),
-                            ...context,
-                            ...document,
-                            policyId: ref.policyId
-                        };
+                        const vcSubject = Object.assign(document, context, {
+                            id:
+                                idType === 'DOCUMENT'
+                                    ? documents[0].document.id
+                                    : await this.generateId(
+                                          idType,
+                                          user,
+                                          hederaAccount.hederaAccountId,
+                                          hederaAccount.hederaAccountKey
+                                      ),
+                            policyId: ref.policyId,
+                        });
                         if (ref.dryRun) {
                             VCHelper.addDryRunContext(vcSubject);
                         }

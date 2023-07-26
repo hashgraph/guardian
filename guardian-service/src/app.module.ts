@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AnalyticsModule } from '@api/analytics.service';
 import { ProfileModule } from '@api/profile.service';
 import { SchemaService } from '@api/schema.service';
+import { NotificationService } from '@guardian/common';
 
 @Module({
     imports: [
@@ -9,7 +10,10 @@ import { SchemaService } from '@api/schema.service';
         ProfileModule
     ],
     controllers: [
-        SchemaService
+        SchemaService,
+    ],
+    providers: [
+        NotificationService,
     ]
 })
 export class AppModule {}

@@ -25,8 +25,6 @@ export class JsonPropertiesComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlockModel;
     @Input('readonly') readonly!: boolean;
 
-    @Output() onInit = new EventEmitter();
-
     propHidden: any = {
         metaData: false,
     };
@@ -63,11 +61,10 @@ export class JsonPropertiesComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        this.onInit.emit(this);
-        this.load(this.currentBlock);
     }
 
     ngOnChanges(changes: SimpleChanges) {
+        this.codeMirrorOptions.readOnly = !!this.readonly;
         this.load(this.currentBlock);
     }
 

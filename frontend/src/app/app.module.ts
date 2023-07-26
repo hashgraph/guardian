@@ -40,6 +40,7 @@ import { ModulesService } from './services/modules.service';
 import { TagsService } from './services/tag.service';
 import { MapService } from './services/map.service';
 import { WizardService } from './modules/policy-engine/services/wizard.service';
+import { NotificationService } from './services/notify.service';
 //Views
 import { UserProfileComponent } from './views/user-profile/user-profile.component';
 import { LoginComponent } from './views/login/login.component';
@@ -59,6 +60,7 @@ import { ContractConfigComponent } from './views/contract-config/contract-config
 import { ContractRequestConfigComponent } from './views/contract-request-config/contract-request-config.component';
 import { SchemaConfigComponent } from './views/schemas/schemas.component';
 import { BrandingDialogComponent } from './components/branding-dialog/branding-dialog.component';
+import { NotificationsComponent } from './views/notifications/notifications.component';
 //Components
 import { InfoComponent } from './components/info/info/info.component';
 import { AddPairDialogComponent } from './components/add-pair-dialog/add-pair-dialog.component';
@@ -67,6 +69,7 @@ import { DataInputDialogComponent } from './components/data-input-dialog/data-in
 import { BrandingComponent } from './views/branding/branding.component';
 import { StandardRegistryCardComponent } from './components/standard-registry-card/standard-registry-card.component';
 import { SuggestionsConfigurationComponent } from './views/suggestions-configuration/suggestions-configuration.component';
+import { NotificationComponent } from './components/notification/notification.component';
 //Modules
 import { MaterialModule } from './modules/common/material.module';
 import { PolicyEngineModule } from './modules/policy-engine/policy-engine.module';
@@ -111,6 +114,8 @@ import { SuggestionsService } from './services/suggestions.service';
         BrandingDialogComponent,
         SuggestionsConfigurationComponent,
         StandardRegistryCardComponent,
+        NotificationComponent,
+        NotificationsComponent,
     ],
     imports: [
         BrowserModule,
@@ -156,6 +161,7 @@ import { SuggestionsService } from './services/suggestions.service';
         ThemeService,
         WizardService,
         SuggestionsService,
+        NotificationService,
         {
             provide: GET_SCHEMA_NAME,
             useValue: SchemaHelper.getSchemaName

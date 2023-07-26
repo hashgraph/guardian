@@ -59,6 +59,19 @@ services:
 # ecosystem variables defined in the "env_file" .env.${GUARDIAN_ENV}.guardian.system
 # specific service variables defined by "environment" can override what is defined in the ecosystem file
 
+  notification-service:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
+    build:
+      context: .
+      dockerfile: ./notification-service/Dockerfile
+    depends_on:
+      - message-broker
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+    volumes:
+      - ./notification-service/configs:/usr/local/notification-service/configs:ro
+
   logger-service:
     env_file:
       - ./configs/.env.${GUARDIAN_ENV}.guardian.system

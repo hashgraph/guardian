@@ -472,8 +472,8 @@ export function profileAPI() {
     });
 
     ApiResponse(MessageAPI.CREATE_USER_PROFILE_COMMON_ASYNC, async (msg) => {
-        const { username, profile, taskId } = msg;
-        const notifier = initNotifier(taskId);
+        const { username, profile, task } = msg;
+        const notifier = await initNotifier(task);
 
         RunFunctionAsync(async () => {
             if (!profile.hederaAccountId) {
@@ -492,12 +492,12 @@ export function profileAPI() {
             notifier.error(error);
         });
 
-        return new MessageResponse({ taskId });
+        return new MessageResponse(task);
     });
 
     ApiResponse(MessageAPI.RESTORE_USER_PROFILE_COMMON_ASYNC, async (msg) => {
-        const { username, profile, taskId } = msg;
-        const notifier = initNotifier(taskId);
+        const { username, profile, task } = msg;
+        const notifier = await initNotifier(task);
 
         RunFunctionAsync(async () => {
             if (!profile.hederaAccountId) {
@@ -509,21 +509,22 @@ export function profileAPI() {
                 return;
             }
 
+            notifier.start('Restore user profile');
             const restore = new RestoreDataFromHedera();
             await restore.restoreRootAuthority(username, profile.hederaAccountId, profile.hederaAccountKey, profile.topicId)
-
+            notifier.completed();
             notifier.result('did');
         }, async (error) => {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             notifier.error(error);
         });
 
-        return new MessageResponse({ taskId });
+        return new MessageResponse(task);
     });
 
     ApiResponse(MessageAPI.GET_ALL_USER_TOPICS_ASYNC, async (msg) => {
-        const { username, profile, taskId } = msg;
-        const notifier = initNotifier(taskId);
+        const { username, profile, task } = msg;
+        const notifier = await initNotifier(task);
 
         RunFunctionAsync(async () => {
             if (!profile.hederaAccountId) {
@@ -535,16 +536,17 @@ export function profileAPI() {
                 return;
             }
 
+            notifier.start('Finding all user topics');
             const restore = new RestoreDataFromHedera();
             const result = await restore.findAllUserTopics(username, profile.hederaAccountId, profile.hederaAccountKey)
-
+            notifier.completed();
             notifier.result(result);
         }, async (error) => {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             notifier.error(error);
         });
 
-        return new MessageResponse({ taskId });
+        return new MessageResponse(task);
     });
 }
 

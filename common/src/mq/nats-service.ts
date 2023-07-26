@@ -187,10 +187,12 @@ export abstract class NatsService {
             queue: this.messageQueueName,
             callback: async (error, msg) => {
                 try {
-                    const messageId = msg.headers.get('messageId');
+                    const messageId = msg.headers?.get('messageId');
                     // const isRaw = msg.headers.get('rawMessage');
                     const head = headers();
-                    head.append('messageId', messageId);
+                    if (messageId) {
+                        head.append('messageId', messageId);
+                    }
                     // head.append('rawMessage', isRaw);
                     if (!noRespond) {
                         msg.respond(await this.codec.encode(await cb(await this.codec.decode(msg.data), msg.headers)), {headers: head});

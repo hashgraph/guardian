@@ -2,10 +2,6 @@
     <div *ngIf="loading" class="loading">
         <mat-spinner></mat-spinner>
     </div>
-    <div *ngIf="loading && taskId" class="loading">
-        <async-progress class="loading-progress" [taskId]="taskId" [expected]="expectedTaskMessages"
-            (error)="onAsyncError($event)" (completed)="onAsyncCompleted()"></async-progress>
-    </div>
 
     <div *ngIf="!isModuleValid" class="not-exist">
         Policy doesn't exist
@@ -709,7 +705,7 @@
                                     [block]="currentBlock"></artifact-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.json">
-                                <json-properties class="readonly-status" *ngIf="options.json" [block]="currentBlock"
+                                <json-properties *ngIf="options.json" [block]="currentBlock"
                                     [readonly]="readonly"></json-properties>
                             </div>
                         </div>
