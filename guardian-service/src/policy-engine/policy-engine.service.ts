@@ -313,8 +313,8 @@ export class PolicyEngineService {
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.CREATE_POLICIES_ASYNC, async (msg) => {
-            const { model, user, taskId } = msg;
-            const notifier = initNotifier(taskId);
+            const { model, user, task } = msg;
+            const notifier = await initNotifier(task);
             RunFunctionAsync(async () => {
                 const did = await this.getUserDid(user.username);
                 const policy = await this.policyEngine.createPolicy(model, did, notifier);
@@ -322,12 +322,12 @@ export class PolicyEngineService {
             }, async (error) => {
                 notifier.error(error);
             });
-            return new MessageResponse({ taskId });
+            return new MessageResponse(task);
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.CLONE_POLICY_ASYNC, async (msg) => {
-            const { policyId, model, user, taskId } = msg;
-            const notifier = initNotifier(taskId);
+            const { policyId, model, user, task } = msg;
+            const notifier = await initNotifier(task);
             RunFunctionAsync(async () => {
                 const result = await this.policyEngine.clonePolicy(policyId, model, user.did, notifier);
                 if (result?.errors?.length) {
@@ -340,18 +340,18 @@ export class PolicyEngineService {
             }, async (error) => {
                 notifier.error(error);
             });
-            return new MessageResponse({ taskId });
+            return new MessageResponse(task);
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.DELETE_POLICY_ASYNC, async (msg) => {
-            const { policyId, user, taskId } = msg;
-            const notifier = initNotifier(taskId);
+            const { policyId, user, task } = msg;
+            const notifier = await initNotifier(task);
             RunFunctionAsync(async () => {
                 notifier.result(await this.policyEngine.deletePolicy(policyId, user, notifier));
             }, async (error) => {
                 notifier.error(error);
             });
-            return new MessageResponse({ taskId });
+            return new MessageResponse(task);
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.SAVE_POLICIES, async (msg) => {
@@ -399,8 +399,8 @@ export class PolicyEngineService {
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.PUBLISH_POLICIES_ASYNC, async (msg) => {
-            const { model, policyId, user, taskId } = msg;
-            const notifier = initNotifier(taskId);
+            const { model, policyId, user, task } = msg;
+            const notifier = await initNotifier(task);
 
             RunFunctionAsync(async () => {
                 if (!model || !model.policyVersion) {
@@ -417,7 +417,7 @@ export class PolicyEngineService {
                 notifier.error(error);
             });
 
-            return new MessageResponse({ taskId });
+            return new MessageResponse(task);
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.DRY_RUN_POLICIES, async (msg) => {
@@ -747,8 +747,8 @@ export class PolicyEngineService {
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_FILE_ASYNC, async (msg) => {
-            const { zip, user, versionOfTopicId, taskId } = msg;
-            const notifier = initNotifier(taskId);
+            const { zip, user, versionOfTopicId, task } = msg;
+            const notifier = await initNotifier(task);
 
             RunFunctionAsync(async () => {
                 if (!zip) {
@@ -775,7 +775,7 @@ export class PolicyEngineService {
                 notifier.error(error);
             });
 
-            return new MessageResponse({ taskId });
+            return new MessageResponse(task);
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW, async (msg) => {
@@ -790,8 +790,8 @@ export class PolicyEngineService {
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW_ASYNC, async (msg) => {
-            const { messageId, user, taskId } = msg;
-            const notifier = initNotifier(taskId);
+            const { messageId, user, task } = msg;
+            const notifier = await initNotifier(task);
 
             RunFunctionAsync(async () => {
                 const policyToImport = await this.policyEngine.preparePolicyPreviewMessage(messageId, user, notifier);
@@ -801,7 +801,7 @@ export class PolicyEngineService {
                 notifier.error(error);
             });
 
-            return new MessageResponse({ taskId });
+            return new MessageResponse(task);
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE, async (msg) => {
@@ -830,8 +830,8 @@ export class PolicyEngineService {
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_ASYNC, async (msg) => {
-            const { messageId, user, versionOfTopicId, taskId } = msg;
-            const notifier = initNotifier(taskId);
+            const { messageId, user, versionOfTopicId, task } = msg;
+            const notifier = await initNotifier(task);
 
             RunFunctionAsync(async () => {
                 try {
@@ -859,7 +859,7 @@ export class PolicyEngineService {
                 }
             });
 
-            return new MessageResponse({ taskId });
+            return new MessageResponse(task);
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA, async (msg) => {

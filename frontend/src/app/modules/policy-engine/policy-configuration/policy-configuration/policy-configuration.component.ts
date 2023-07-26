@@ -155,10 +155,6 @@ export class PolicyConfigurationComponent implements OnInit {
         );
     }
 
-    private operationMode: OperationMode = OperationMode.none;
-    public taskId: string | undefined = undefined;
-    public expectedTaskMessages: number = 0;
-
     private treeOverview!: PolicyTreeComponent;
 
     public get isModuleValid(): boolean {
@@ -928,12 +924,9 @@ export class PolicyConfigurationComponent implements OnInit {
                         description: policy.description
                     }).subscribe((result) => {
                         const { taskId, expectation } = result;
-                        this.taskId = taskId;
-                        this.expectedTaskMessages = expectation;
-                        this.operationMode = OperationMode.create;
+                        this.router.navigate(['task', taskId]);
                     }, (e) => {
                         this.loading = false;
-                        this.taskId = undefined;
                     });
                 } else if (result.action === PolicyAction.CREATE_NEW_VERSION) {
                     delete policy._id;
@@ -944,12 +937,9 @@ export class PolicyConfigurationComponent implements OnInit {
                     policy.previousVersion = json.version;
                     this.policyEngineService.pushCreate(policy).subscribe((result) => {
                         const { taskId, expectation } = result;
-                        this.taskId = taskId;
-                        this.expectedTaskMessages = expectation;
-                        this.operationMode = OperationMode.create;
+                        this.router.navigate(['task', taskId]);
                     }, (e) => {
                         this.loading = false;
-                        this.taskId = undefined;
                     });
                 }
             }
@@ -1003,9 +993,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.loading = true;
         this.policyEngineService.pushPublish(this.policyId, version).subscribe((result) => {
             const { taskId, expectation } = result;
-            this.taskId = taskId;
-            this.expectedTaskMessages = expectation;
-            this.operationMode = OperationMode.publish;
+            this.router.navigate(['task', taskId]);
         }, (e) => {
             console.error(e.error);
             this.loading = false;
@@ -1082,43 +1070,6 @@ export class PolicyConfigurationComponent implements OnInit {
         if (errors && errors.length) {
             const text = errors.map((text) => `<div>${text}</div>`).join('');
             this.informService.errorShortMessage(text, 'The policy is invalid');
-        }
-    }
-
-    public onAsyncError(error: any) {
-        this.informService.processAsyncError(error);
-        console.error(error.error);
-        this.loading = false;
-        this.taskId = undefined;
-    }
-
-    public onAsyncCompleted() {
-        if (this.taskId) {
-            const taskId: string = this.taskId;
-            const operationMode = this.operationMode;
-            this.taskId = undefined;
-            this.operationMode = OperationMode.none;
-            this.taskService.get(taskId).subscribe((task: any) => {
-                switch (operationMode) {
-                    case OperationMode.create:
-                        this.router.navigate(['/policy-configuration'], { queryParams: { policyId: task.result } });
-                        break;
-                    case OperationMode.publish:
-                        const { result } = task;
-                        const { isValid, errors, policyId } = result;
-                        if (isValid) {
-                            this.wizardService.removeWizardPreset(policyId);
-                            this.loadData();
-                        } else {
-                            this.setErrors(errors);
-                            this.loading = false;
-                        }
-                        break;
-                    default:
-                        console.log('Unknown operation mode');
-                        break;
-                }
-            });
         }
     }
 

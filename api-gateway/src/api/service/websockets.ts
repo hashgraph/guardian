@@ -1,15 +1,32 @@
 import WebSocket from 'ws';
 import { IncomingMessage, Server } from 'http';
 import { Users } from '@helpers/users';
-import { ApplicationStates, GenerateUUIDv4, ExternalProviders,
-    IStatus, MessageAPI, UserRole } from '@guardian/interfaces';
+import { 
+    ApplicationStates, 
+    GenerateUUIDv4, 
+    ExternalProviders,
+    IStatus, 
+    MessageAPI, 
+    UserRole, 
+    NotifyAPI 
+} from '@guardian/interfaces';
 import {
-    Logger, MessageResponse, NatsService, Singleton,
-    MeecoApprovedSubmission, generateNumberFromString
+    Logger,
+    MessageResponse,
+    NatsService,
+    NotificationHelper,
+    Singleton,
+    Logger, 
+    MessageResponse, 
+    NatsService, 
+    Singleton,
+    MeecoApprovedSubmission, 
+    generateNumberFromString
 } from '@guardian/common';
 import { NatsConnection } from 'nats';
 import { Injectable } from '@nestjs/common';
 import { MeecoAuth } from '@helpers/meeco';
+import { Mutex } from 'async-mutex';
 
 /**
  * WebSocketsServiceChannel
@@ -56,19 +73,24 @@ export class WebSocketsService {
     private clients = new Map();
 
     /**
-     * Known services
-     * @private
+     * Get statuses mutex
      */
-    private readonly knownServices: {[key: string]: ApplicationStates};
+    private readonly getStatusesMutex = new Mutex();
 
-    constructor(
-        private readonly server: Server,
-        cn: NatsConnection
-    ) {
+    /**
+     * Get statuses clients
+     */
+    private readonly getStatusesClients: Set<WebSocket> = new Set();
+
+    /**
+     * Notification reading set
+     */
+    private readonly notificationReadingMap: Set<string> = new Set();
+
+    constructor(private readonly server: Server, cn: NatsConnection) {
         this.wss = new WebSocket.Server({ server: this.server });
-        this.knownServices = {}
         this.channel = new WebSocketsServiceChannel();
-        this.channel.setConnection(cn)
+        this.channel.setConnection(cn);
     }
 
     /**
@@ -81,19 +103,121 @@ export class WebSocketsService {
     }
 
     /**
+     * Update notification message
+     * @param notification Notification
+     * @param type Message Type
+     */
+    public updateNotification(
+        notification: any,
+        type:
+            | NotifyAPI.UPDATE_PROGRESS_WS
+            | NotifyAPI.UPDATE_WS
+            | NotifyAPI.CREATE_PROGRESS_WS
+    ): void {
+        this.wss.clients.forEach((client: any) => {
+            if (client.user?.id === notification.userId) {
+                this.send(client, {
+                    type,
+                    data: notification,
+                });
+            }
+        });
+    }
+
+    /**
+     * Delete notification message
+     * @param param0 Notification identifier and user identifier
+     * @param type Message type
+     */
+    public deleteNotification(
+        {
+            userId,
+            notificationId,
+        }: {
+            userId: string;
+            notificationId: string;
+        },
+        type: NotifyAPI.DELETE_PROGRESS_WS | NotifyAPI.DELETE_WS
+    ) {
+        this.wss.clients.forEach((client: any) => {
+            if (client.user?.id === userId) {
+                this.send(client, {
+                    type,
+                    data: notificationId,
+                });
+            }
+        });
+    }
+
+    /**
      * Notify about task changes
      * @param taskId
      * @param statuses
      * @param completed
      * @param error
      */
-    public notifyTaskProgress(taskId: string, statuses?: IStatus[], completed?: boolean, error?: any): void {
+    public notifyTaskProgress(task): void {
         this.wss.clients.forEach((client: any) => {
+            if (client.user?.id === task.userId) {
+                this.send(client, {
+                    type: MessageAPI.UPDATE_TASK_STATUS,
+                    data: task,
+                });
+            }
+        });
+    }
+
+    /**
+     * Get statuses handler
+     * @param clients Clients
+     * @returns Response
+     */
+    private async getStatusesHandler(
+        type: MessageAPI.UPDATE_STATUS | MessageAPI.GET_STATUS
+    ) {
+        const channel = new WebSocketsServiceChannel();
+
+        const statuses = {
+            LOGGER_SERVICE: [],
+            GUARDIAN_SERVICE: [],
+            AUTH_SERVICE: [],
+            WORKER: [],
+            POLICY_SERVICE: [],
+            NOTIFICATION_SERVICE: [],
+        };
+
+        const getStatuses = (): Promise<void> => {
+            channel.publish(MessageAPI.GET_STATUS);
+            return new Promise((resolve) => {
+                const sub = channel.subscribe(
+                    MessageAPI.SEND_STATUS,
+                    // tslint:disable-next-line:no-shadowed-variable
+                    (msg) => {
+                        const { name, state } = msg;
+
+                        if (!statuses[name]) {
+                            statuses[name] = [];
+                        }
+                        statuses[name].push(state);
+                    }
+                );
+
+                setTimeout(() => {
+                    sub.unsubscribe();
+                    resolve();
+                }, 300);
+            });
+        };
+
+        await getStatuses();
+
+        this.getStatusesClients.forEach((client: any) => {
             this.send(client, {
-                type: MessageAPI.UPDATE_TASK_STATUS,
-                data: { taskId, statuses, completed, error }
+                type,
+                data: statuses,
             });
         });
+        this.getStatusesClients.clear();
     }
 
     /**
@@ -111,7 +235,7 @@ export class WebSocketsService {
                     if (this.checkUserByDid(client, msg)) {
                         this.send(client, {
                             type: 'update-event',
-                            data: msg.blocks
+                            data: msg.blocks,
                         });
                     }
                 });
@@ -121,7 +245,7 @@ export class WebSocketsService {
         this.channel.subscribe('update-block', async (msg) => {
             updateArray.push(msg);
 
-            return new MessageResponse({})
+            return new MessageResponse({});
         });
 
         this.channel.subscribe('block-error', async (msg) => {
@@ -131,12 +255,12 @@ export class WebSocketsService {
                         type: 'error-event',
                         data: {
                             blockType: msg.blockType,
-                            message: msg.message
-                        }
+                            message: msg.message,
+                        },
                     });
                 }
             });
-            return new MessageResponse({})
+            return new MessageResponse({});
         });
 
         this.channel.subscribe('update-user-info', async (msg) => {
@@ -144,46 +268,72 @@ export class WebSocketsService {
                 if (this.checkUserByDid(client, msg)) {
                     this.send(client, {
                         type: 'update-user-info-event',
-                        data: msg
+                        data: msg,
                     });
                 }
             });
             return new MessageResponse({});
         });
 
-        this.channel.subscribe('update-user-balance',  async (msg) => {
-            this.wss.clients.forEach(client => {
-                new Users().getUserByAccount(msg.operatorAccountId).then(user => {{
-                    Object.assign(msg, {
-                        user: user ? {
-                            username: user.username,
-                            did: user.did
-                        } : null
+        this.channel.subscribe('update-user-balance', async (msg) => {
+            this.wss.clients.forEach((client) => {
+                new Users()
+                    .getUserByAccount(msg.operatorAccountId)
+                    .then((user) => {
+                        {
+                            Object.assign(msg, {
+                                user: user
+                                    ? {
+                                          username: user.username,
+                                          did: user.did,
+                                      }
+                                    : null,
+                            });
+                            if (this.checkUserByName(client, msg)) {
+                                this.send(client, {
+                                    type: 'PROFILE_BALANCE',
+                                    data: msg,
+                                });
+                            }
+                        }
                     });
-                    if (this.checkUserByName(client, msg)) {
-                        this.send(client, {
-                            type: 'PROFILE_BALANCE',
-                            data: msg
-                        });
-                    }
-                }});
             });
 
             return new MessageResponse({});
         });
 
         this.channel.subscribe(MessageAPI.UPDATE_STATUS, async (msg) => {
-            this.wss.clients.forEach((client: any) => {
-                for (const [key, value] of Object.entries(msg)) {
-                    this.knownServices[key] = value as any;
-                }
+            this.wss.clients.forEach(
+                this.getStatusesClients.add,
+                this.getStatusesClients
+            );
+            if (!this.getStatusesMutex.isLocked()) {
+                this.getStatusesMutex.runExclusive(
+                    this.getStatusesHandler.bind(this, MessageAPI.UPDATE_STATUS)
+                );
+            }
+            return new MessageResponse({});
+        });
 
-                this.send(client, {
-                    type: MessageAPI.UPDATE_STATUS,
-                    data: msg
-                });
-            });
-            return new MessageResponse({})
+        this.channel.getMessages(NotifyAPI.UPDATE_WS, async (msg) => {
+            this.updateNotification(msg.data, NotifyAPI.UPDATE_WS);
+            return new MessageResponse(true);
+        });
+        this.channel.getMessages(NotifyAPI.DELETE_WS, async (msg) => {
+            this.deleteNotification(msg.data, NotifyAPI.DELETE_WS);
+            return new MessageResponse(true);
+        });
+        this.channel.getMessages(NotifyAPI.CREATE_PROGRESS_WS, async (msg) => {
+            this.updateNotification(msg.data, NotifyAPI.CREATE_PROGRESS_WS);
+            return new MessageResponse(true);
+        });
+        this.channel.getMessages(NotifyAPI.UPDATE_PROGRESS_WS, async (msg) => {
+            this.updateNotification(msg.data, NotifyAPI.UPDATE_PROGRESS_WS);
+            return new MessageResponse(true);
+        });
+        this.channel.getMessages(NotifyAPI.DELETE_PROGRESS_WS, async (msg) => {
+            this.deleteNotification(msg.data, NotifyAPI.DELETE_PROGRESS_WS);
+            return new MessageResponse(true);
         });
     }
 
@@ -223,10 +373,21 @@ export class WebSocketsService {
         try {
             const { type, data } = this.parseMessage(message);
             switch (type) {
+                case NotifyAPI.READ:
+                    if (this.notificationReadingMap.has(data)) {
+                        break;
+                    }
+                    this.notificationReadingMap.add(data);
+                    await NotificationHelper.read(data);
+                    setTimeout(
+                        () => this.notificationReadingMap.delete(data),
+                        1000
+                    );
+                    break;
                 case 'MEECO_AUTH_REQUEST':
                     const meecoAuthRequestResp = await new MeecoAuth().createMeecoAuthRequest(ws);
                     ws.send(JSON.stringify({
-                        type: 'MEECO_AUTH_PRESENT_VP', 
+                        type: 'MEECO_AUTH_PRESENT_VP',
                         data: meecoAuthRequestResp
                     }));
                     break;
@@ -250,14 +411,14 @@ export class WebSocketsService {
                     );
 
                     ws.send(JSON.stringify({
-                        type: 'MEECO_APPROVE_SUBMISSION_RESPONSE', 
+                        type: 'MEECO_APPROVE_SUBMISSION_RESPONSE',
                         data: guardianData
                     }));
                     break;
                 case 'MEECO_REJECT_SUBMISSION':
                     const meecoSubmissionRejectResp = await new MeecoAuth().rejectSubmission(ws, data.presentation_request_id, data.submission_id);
                     ws.send(JSON.stringify({
-                        type: 'MEECO_REJECT_SUBMISSION_RESPONSE', 
+                        type: 'MEECO_REJECT_SUBMISSION_RESPONSE',
                         data: meecoSubmissionRejectResp
                     }));
                     break;
@@ -271,49 +432,20 @@ export class WebSocketsService {
                     }
                     break;
                 case MessageAPI.GET_STATUS:
-                    const channel = new WebSocketsServiceChannel();
-
-                    const statuses = {
-                        LOGGER_SERVICE: [],
-                        GUARDIAN_SERVICE: [],
-                        AUTH_SERVICE: [],
-                        WORKER: [],
-                        POLICY_SERVICE: []
-                    };
-
-                    const getStatuses = (): Promise<void> => {
-                        channel.publish(MessageAPI.GET_STATUS);
-                        return new Promise(resolve => {
-                            const sub = channel.subscribe(MessageAPI.SEND_STATUS, (msg) => {
-                                const { name, state } = msg;
-
-                                if (!statuses[name]) {
-                                    statuses[name] = [];
-                                }
-                                statuses[name].push(state);
-                            })
-
-                            setTimeout(() => {
-                                sub.unsubscribe();
-                                resolve();
-                            }, 300);
-                        })
+                    this.getStatusesClients.add(ws);
+                    if (!this.getStatusesMutex.isLocked()) {
+                        this.getStatusesMutex.runExclusive(
+                            this.getStatusesHandler.bind(
+                                this,
+                                MessageAPI.GET_STATUS
+                            )
+                        );
                     }
-
-                    await getStatuses();
-
-                    ws.send(JSON.stringify(
-                        {
-                            type: MessageAPI.GET_STATUS,
-                            data: statuses
-                        }
-                    ));
                     break;
                 default:
                     break;
             }
-        }
-        catch (error) {
+        } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
         }
     }
@@ -358,9 +490,9 @@ export class WebSocketsService {
      * @private
      */
     private checkUserByDid(client: any, msg: any): boolean {
-        if(client && client.user) {
-            if(msg && msg.user) {
-                return (client.user.did === msg.user.did || msg.user.virtual);
+        if (client && client.user) {
+            if (msg && msg.user) {
+                return client.user.did === msg.user.did || msg.user.virtual;
             }
             return true;
         }
@@ -374,7 +506,13 @@ export class WebSocketsService {
      * @private
      */
     private checkUserByName(client: any, msg: any): boolean {
-        return client && client.user && msg && msg.user && (client.user.username === msg.user.username);
+        return (
+            client &&
+            client.user &&
+            msg &&
+            msg.user &&
+            client.user.username === msg.user.username
+        );
     }
 
     /**
@@ -385,30 +523,30 @@ export class WebSocketsService {
         /**
          * Message type
          */
-        type: string,
+        type: string;
         /**
          * Message data
          */
-        data: any
+        data: any;
     } {
         try {
             if (typeof message === 'string') {
                 const event = JSON.parse(message);
                 return {
                     type: event.type,
-                    data: event.data
-                }
+                    data: event.data,
+                };
             } else {
                 return {
-                    type: message.type,
-                    data: message.data
-                }
+                    type: null,
+                    data: message,
+                };
             }
         } catch (error) {
             return {
                 type: message,
-                data: null
-            }
+                data: null,
+            };
         }
     }
 }

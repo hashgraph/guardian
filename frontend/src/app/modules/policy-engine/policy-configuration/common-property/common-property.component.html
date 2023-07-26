@@ -1,4 +1,4 @@
-<ng-container *ngIf="property.type === 'Group'">
+<ng-container *ngIf="property.type === 'Group' && visible(property.visible)">
     <tr class="propHeader" [attr.collapse]="collapse">
         <td class="propRowCol cellCollapse" (click)="onHide()" [attr.collapse]="groupCollapse">
             <mat-icon>arrow_drop_down</mat-icon>
@@ -18,7 +18,7 @@
         (update)="onSave()"></div>
 </ng-container>
 
-<ng-container *ngIf="property.type === 'Array'">
+<ng-container *ngIf="property.type === 'Array' && visible(property.visible)">
     <tr class="propHeader" [attr.collapse]="collapse">
         <td class="propRowCol cellCollapse" (click)="onHide()" [attr.collapse]="groupCollapse">
             <mat-icon>arrow_drop_down</mat-icon>
@@ -61,7 +61,7 @@
     </ng-container>
 </ng-container>
 
-<ng-container *ngIf="property.type === 'Input'">
+<ng-container *ngIf="property.type === 'Input' && visible(property.visible)">
     <tr class="propRow" [attr.offset]="offset" [attr.collapse]="collapse">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName" [title]="property.title">
@@ -73,7 +73,7 @@
     </tr>
 </ng-container>
 
-<ng-container *ngIf="property.type === 'Checkbox'">
+<ng-container *ngIf="property.type === 'Checkbox' && visible(property.visible)">
     <tr class="propRow" [attr.offset]="offset" [attr.collapse]="collapse">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName" [title]="property.title">
@@ -85,21 +85,24 @@
     </tr>
 </ng-container>
 
-<ng-container *ngIf="property.type === 'Select'">
+<ng-container *ngIf="property.type === 'Select' && visible(property.visible)">
     <tr class="propRow" [attr.offset]="offset" [attr.collapse]="collapse">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName" [title]="property.title">
             <span *ngIf="property.required" class="required-fields">*</span> {{property.label}}
         </td>
-        <td class="propRowCell ns">
-            <mat-select [(value)]="value" [disabled]="readonly" (change)="onSave()">
+        <td class="propRowCell ns" [ngSwitch]="property.items">
+            <mat-select *ngSwitchCase="'Roles'" [(value)]="value" [disabled]="readonly" (change)="onSave()">
+                <mat-option *ngFor="let item of roles" [value]="item.value">{{item.name}}</mat-option>
+            </mat-select>
+            <mat-select *ngSwitchDefault [(value)]="value" [disabled]="readonly" (change)="onSave()">
                 <mat-option *ngFor="let item of property.items" [value]="item.value">{{item.label}}</mat-option>
             </mat-select>
         </td>
     </tr>
 </ng-container>
 
-<ng-container *ngIf="property.type === 'MultipleSelect'">
+<ng-container *ngIf="property.type === 'MultipleSelect' && visible(property.visible)">
     <tr class="propRow" [attr.offset]="offset" [attr.collapse]="collapse">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName" [title]="property.title">
@@ -140,6 +143,9 @@
                     </div>
                 </mat-option>
             </mat-select>
+            <mat-select *ngSwitchCase="'Roles'" multiple [(value)]="value" [disabled]="readonly" (change)="onSave()">
+                <mat-option *ngFor="let item of roles" [value]="item.value">{{item.name}}</mat-option>
+            </mat-select>
             <mat-select *ngSwitchDefault multiple [(value)]="value" [disabled]="readonly" (change)="onSave()">
                 <mat-option *ngFor="let item of property.items" [value]="item.value">{{item.label}}</mat-option>
             </mat-select>
@@ -147,7 +153,7 @@
     </tr>
 </ng-container>
 
-<ng-container *ngIf="property.type === 'Schemas'">
+<ng-container *ngIf="property.type === 'Schemas' && visible(property.visible)">
     <tr class="propRow" [attr.offset]="offset" [attr.collapse]="collapse">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName" [title]="property.title">
@@ -164,7 +170,7 @@
     </tr>
 </ng-container>
 
-<ng-container *ngIf="property.type === 'Path'">
+<ng-container *ngIf="property.type === 'Path' && visible(property.visible)">
     <tr class="propRow" [attr.offset]="offset" [attr.collapse]="collapse">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName" [title]="property.title">

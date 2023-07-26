@@ -7,6 +7,10 @@ import { UserRole } from '@guardian/interfaces';
  */
 export interface IAuthUser {
     /**
+     * User id
+     */
+    id: string
+    /**
      * User account name
      */
     username: string;

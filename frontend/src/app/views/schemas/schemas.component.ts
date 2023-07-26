@@ -76,8 +76,6 @@ export class SchemaConfigComponent implements OnInit {
     policyNameByTopic: any;
     allSchemas: Schema[] = [];
     tagSchemas: Schema[] = [];
-    taskId: string | undefined = undefined;
-    expectedTaskMessages: number = 0;
     owner: any;
     tagEntity = TagType.Schema;
     type: string = 'system';
@@ -348,11 +346,10 @@ export class SchemaConfigComponent implements OnInit {
                 default: {
                     this.schemaService.pushCreate(schema, schema.topicId).subscribe((result) => {
                         const { taskId, expectation } = result;
-                        this.taskId = taskId;
-                        this.expectedTaskMessages = expectation;
+                        this.router.navigate(['task', taskId]);
+                        // this.expectedTaskMessages = expectation;
                     }, (e) => {
                         this.loading = false;
-                        this.taskId = undefined;
                     });
                     break;
                 }
@@ -419,11 +416,9 @@ export class SchemaConfigComponent implements OnInit {
                 this.loading = true;
                 this.schemaService.newVersion(schema, element.id).subscribe((result) => {
                     const { taskId, expectation } = result;
-                    this.taskId = taskId;
-                    this.expectedTaskMessages = expectation;
+                    this.router.navigate(['task', taskId]);
                 }, (e) => {
                     this.loading = false;
-                    this.taskId = undefined;
                 });
             }
         });
@@ -455,11 +450,9 @@ export class SchemaConfigComponent implements OnInit {
                 this.loading = true;
                 this.schemaService.pushCreate(schema, schema.topicId).subscribe((result) => {
                     const { taskId, expectation } = result;
-                    this.taskId = taskId;
-                    this.expectedTaskMessages = expectation;
+                    this.router.navigate(['task', taskId]);
                 }, (e) => {
                     this.loading = false;
-                    this.taskId = undefined;
                 });
             }
         });
@@ -478,26 +471,12 @@ export class SchemaConfigComponent implements OnInit {
                 this.loading = true;
                 this.schemaService.pushPublish(element.id, version).subscribe((result) => {
                     const { taskId, expectation } = result;
-                    this.taskId = taskId;
-                    this.expectedTaskMessages = expectation;
+                    this.router.navigate(['task', taskId]);
                 }, (e) => {
                     this.loading = false;
-                    this.taskId = undefined;
                 });
             }
         });
-    }
-
-    onAsyncError(error: any) {
-        this.informService.processAsyncError(error);
-        this.loading = false;
-        this.taskId = undefined;
-    }
-
-    onAsyncCompleted() {
-        this.taskId = undefined;
-        localStorage.removeItem('restoreSchemaData');
-        this.loadSchemas();
     }
 
     unpublished(element: any) {
@@ -571,14 +550,12 @@ export class SchemaConfigComponent implements OnInit {
                 if (type == 'message') {
                     this.schemaService.pushImportByMessage(data, result.topicId).subscribe((result) => {
                         const { taskId, expectation } = result;
-                        this.taskId = taskId;
-                        this.expectedTaskMessages = expectation;
+                        this.router.navigate(['task', taskId]);
                     });
                 } else if (type == 'file') {
                     this.schemaService.pushImportByFile(data, result.topicId).subscribe((result) => {
                         const { taskId, expectation } = result;
-                        this.taskId = taskId;
-                        this.expectedTaskMessages = expectation;
+                        this.router.navigate(['task', taskId]);
                     });
                 }
             }

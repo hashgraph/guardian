@@ -12,7 +12,7 @@ export class TaskApi {
         const taskManager = new TaskManager();
         try {
             const taskId = req.params.taskId;
-            const taskState = taskManager.getState(taskId);
+            const taskState = taskManager.getState(req.user.id, taskId);
             return res.json(taskState);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
