@@ -93,8 +93,8 @@ const taskResultTitleMap = new Map<TaskAction, string>([
     [TaskAction.CLONE_POLICY, 'Policy cloned'],
     [TaskAction.CONNECT_USER, 'User connected'],
     [TaskAction.CREATE_RANDOM_KEY, 'Random key created'],
-    [TaskAction.FREEZE_TOKEN, 'Token frozed'],
-    [TaskAction.UNFREEZE_TOKEN, 'Token unfrozed'],
+    [TaskAction.FREEZE_TOKEN, 'Token frozen'],
+    [TaskAction.UNFREEZE_TOKEN, 'Token unfrozen'],
     [TaskAction.GRANT_KYC, 'KYC granted'],
     [TaskAction.REVOKE_KYC, 'KYC revoked'],
     [TaskAction.ASSOCIATE_TOKEN, 'Token associated'],
@@ -118,9 +118,9 @@ function getNotificationResultMessage(action: TaskAction, result: any) {
         case TaskAction.DISSOCIATE_TOKEN:
             return `${result} dissociated`;
         case TaskAction.FREEZE_TOKEN:
-            return `${result.tokenName} was frozed`;
+            return `${result.tokenName} frozen`;
         case TaskAction.UNFREEZE_TOKEN:
-            return `${result.tokenName} was unfrozed`;
+            return `${result.tokenName} unfrozen`;
         case TaskAction.GRANT_KYC:
             return `KYC granted for ${result.tokenName}`;
         case TaskAction.REVOKE_KYC:
