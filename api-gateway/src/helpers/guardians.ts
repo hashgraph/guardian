@@ -1427,6 +1427,26 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Return tag schemas
+     * @param {string} owner
+     * @param {string} [pageIndex]
+     * @param {string} [pageSize]
+     *
+     * @returns {ISchema[]} - all schemas
+     */
+    public async getModuleSchemas(
+        owner: string,
+        pageIndex?: any,
+        pageSize?: any
+    ): Promise<ResponseAndCount<ISchema>> {
+        return await this.sendMessage(MessageAPI.GET_MODULES_SCHEMAS, {
+            owner,
+            pageIndex,
+            pageSize
+        });
+    }
+
+    /**
      * Create tag schema
      *
      * @param {ISchema} item - schema
@@ -1435,6 +1455,17 @@ export class Guardians extends NatsService {
      */
     public async createTagSchema(item: ISchema | any): Promise<ISchema> {
         return await this.sendMessage(MessageAPI.CREATE_TAG_SCHEMA, item);
+    }
+
+    /**
+     * Create module schema
+     *
+     * @param {ISchema} item - schema
+     *
+     * @returns {ISchema[]} - all schemas
+     */
+    public async createModuleSchema(item: ISchema | any): Promise<ISchema> {
+        return await this.sendMessage(MessageAPI.CREATE_MODULE_SCHEMA, item);
     }
 
     /**

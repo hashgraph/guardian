@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, Inject, ViewChild } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormBuilder } from '@angular/forms';
 import { SchemaConfigurationComponent } from '../schema-configuration/schema-configuration.component';
 import { Schema } from '@guardian/interfaces';
@@ -22,6 +22,7 @@ export class SchemaDialog {
     type: 'new' | 'edit' | 'version' = 'new';
     topicId: any;
     policies: any[];
+    modules: any[];
     schemaType: string = 'policy';
     valid: boolean = true;
     extended: boolean = false;
@@ -37,6 +38,7 @@ export class SchemaDialog {
         this.type = data.type || null;
         this.topicId = data.topicId || null;
         this.policies = data.policies || [];
+        this.modules = data.modules || [];
         this.schemaType = data.schemaType || 'policy';
     }
 

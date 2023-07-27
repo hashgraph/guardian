@@ -1,11 +1,12 @@
 import { Logger } from '@guardian/common';
 import { Guardians } from '@helpers/guardians';
-import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Query, Req, Res, Response } from '@nestjs/common';
 import { checkPermission } from '@auth/authorization-helper';
-import { UserRole } from '@guardian/interfaces';
+import { SchemaHelper, UserRole } from '@guardian/interfaces';
 import { ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath } from '@nestjs/swagger';
 import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
 import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator';
+import { SchemaUtils } from '@helpers/schema-utils';
 
 @Controller('modules')
 @ApiTags('modules')
@@ -140,6 +141,65 @@ export class ModulesApi {
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Get('/schemas')
+    @HttpCode(HttpStatus.OK)
+    async getModuleSchemas(
+        @Req() req,
+        @Res() res,
+        @Query('pageIndex') pageIndex,
+        @Query('pageSize') pageSize
+    ): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        try {
+            const user = req.user;
+            const guardians = new Guardians();
+            const owner = user.did;
+
+            const {items, count} = await guardians.getModuleSchemas(owner, pageIndex, pageSize);
+            items.forEach((s) => {
+                s.readonly = s.readonly || s.owner !== owner
+            });
+            return res
+                .setHeader('X-Total-Count', count)
+                .json(SchemaUtils.toOld(items));
+        } catch (error) {
+            await (new Logger()).error(error, ['API_GATEWAY']);
+            throw error;
+        }
+    }
+
+    @Post('/schemas')
+    @HttpCode(HttpStatus.CREATED)
+    async postSchemas(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        try {
+            const user = req.user;
+            const newSchema = req.body;
+
+            if (!newSchema) {
+                throw new HttpException('Schema does not exist.', HttpStatus.UNPROCESSABLE_ENTITY)
+            }
+
+            const guardians = new Guardians();
+            const owner = user.did;
+
+            SchemaUtils.fromOld(newSchema);
+            delete newSchema.version;
+            delete newSchema.id;
+            delete newSchema._id;
+            delete newSchema.status;
+            delete newSchema.topicId;
+
+            SchemaHelper.updateOwner(newSchema, owner);
+            const schema = await guardians.createModuleSchema(newSchema);
+
+            return res.status(201).json(SchemaUtils.toOld(schema));
+        } catch (error) {
+            await (new Logger()).error(error, ['API_GATEWAY']);
+            throw error;
         }
     }
 
@@ -570,5 +630,4 @@ export class ModulesApi {
             throw error
         }
     }
-
 }

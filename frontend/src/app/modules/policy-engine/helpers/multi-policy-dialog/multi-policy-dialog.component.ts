@@ -1,14 +1,7 @@
-import {
-    AfterContentChecked, AfterContentInit,
-    AfterViewChecked,
-    AfterViewInit,
-    Component,
-    Inject,
-    OnInit,
-    ViewChild
-} from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { AfterContentInit, Component, Inject, OnInit } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
+
 /**
  * Export schema dialog.
  */
@@ -92,7 +85,6 @@ export class MultiPolicyDialogComponent implements OnInit, AfterContentInit {
     onInvite() {
         this.loading = true;
         this.policyEngineService.getMultiPolicy(this.policyId).subscribe((result) => {
-            debugger;
             this.loading = false;
         }, (e) => {
             console.error(e.error);
