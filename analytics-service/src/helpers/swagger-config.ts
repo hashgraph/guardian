@@ -19,7 +19,7 @@ export const SwaggerConfig = new DocumentBuilder()
         'http://www.apache.org/licenses/LICENSE-2.0.html'
     )
     .addServer(
-        '/api/v1',
+        '/',
         'version 1.0'
     )
     .build();
