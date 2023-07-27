@@ -6,6 +6,7 @@ If you want to manually build every component with debug information, then build
 
 * [MongoDB](https://www.mongodb.com/) ,
 * [NodeJS](https://nodejs.org/)
+* [Yarn](https://classic.yarnpkg.com/lang/en/docs/install/)
 * [Nats](https://nats.io/)
 
 #### Build and start each component
@@ -18,100 +19,113 @@ Install, configure and start all the prerequisites, then build and start each co
 git clone https://github.com/hashgraph/guardian.git
 ```
 
-2\. From the **interfaces** folder
-
-Build package
+2. Install dependencies
 
 ```
-npm install
-npm run build
+yarn
 ```
 
-3\. From the **common** folder
-
-Build package
+3. Build _**@guardian/interfaces**_ package
 
 ```
-npm install
-npm run build
+ yarn workspace @guardian/interfaces run build
 ```
 
-4\. From the **logger-service** folder
+4. Build _**@guardian/common**_ package
+
+```
+yarn workspace @guardian/common run build
+```
+
+5. &#x20;Build and start _**logger-service**_ service
 
 To build the service:
 
 ```
-npm install
-npm run build
+ yarn workspace logger-service run build
 ```
 
 To start the service:
 
 ```
-npm start
+yarn workspace logger-service start
 ```
 
-5\. From the **auth-service** folder
+6. Build and start _**auth-service**_ service
 
 To build the service:
 
 ```
-npm install
-npm run build
+yarn workspace auth-service run build
 ```
 
 To start the service:
 
 ```
-npm start
+yarn workspace auth-service start
 ```
 
-6\. From the **ipfs-client** folder
+7. Build and start _**policy-service**_ service
 
 To build the service:
 
 ```
-npm install
-npm run build
+yarn workspace policy-service run build
 ```
 
 To start the service:
 
 ```
-npm start
+yarn workspace policy-service start
 ```
 
-7\. From the **guardian-service** folder
+8. Build and start _**worker-service**_ service
+
+Update **IPFS\_STORAGE\_API\_KEY** value in _**worker-service/configs/.env.worker**_ file.
 
 To build the service:
 
 ```
-npm install
-npm run build
+yarn workspace worker-service run build
 ```
 
-To start the service (found on [http://localhost:3004](http://localhost:3004)):
+To start the service:
 
 ```
-npm start
+yarn workspace worker-service start
 ```
 
-8\. From the **api-gateway** folder
+9. Build and start _**guardian-service**_ service
+
+Update **OPERATOR\_ID** and **OPERATOR\_KEY** values in _**guardian-service/configs/.env.worker**_ file.
 
 To build the service:
 
 ```
-npm install
-npm run build
+yarn workspace guardian-service run build
 ```
 
 To start the service (found on [http://localhost:3002](https://localhost:3002)):
 
 ```
-npm start
+ yarn workspace guardian-service start
 ```
 
-9\. From the **mrv-sender** folder
+10. Build and start _**api-gateway**_ service
+
+To build the service:
+
+```
+yarn workspace api-gateway run build
+```
+
+To start the service (found on [http://localhost:3002](https://localhost:3002)):
+
+```
+yarn workspace api-gateway start
+```
+
+11. From the **mrv-sender** folder
 
 To build the service:
 
@@ -126,7 +140,7 @@ To start the service (found on [http://localhost:3005](http://localhost:3005)):
 npm start
 ```
 
-10.From the **frontend** folder
+12. From the **frontend** folder
 
 To build the service:
 
@@ -141,4 +155,4 @@ To start the service (found on [http://localhost:4200](http://localhost:4200))
 npm start
 ```
 
-Browse to [http://localhost:3000](http://localhost:3000) and complete the setup. To get more info, please check: [Launching Guardian](broken-reference/)
+Browse to [http://localhost:3000](http://localhost:3000) and complete the setup. To get more info, please check: [Launching Guardian](launching-guardian.md)

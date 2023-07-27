@@ -16,7 +16,7 @@ in ./guardian/.env you may choose name of the Guardian platform. Leave the field
 GUARDIAN_ENV="develop"
 ```
 
-in `./guardian/configs/.env.develop.guardian.system`
+in `./guardian/configs/..env.guardian.system`
 
 ```
 OPERATOR_ID="..."
@@ -37,7 +37,7 @@ OPERATOR_KEY="..."
 
 For example: [https://github.com/yeasy/docker-ipfs](https://github.com/yeasy/docker-ipfs)
 
-3.1.2 For setup IPFS local node you need to set variables in `./guardian/configs/.env.develop.guardian.system`&#x20;
+3.1.2 For setup IPFS local node you need to set variables in `./guardian/configs/..env.guardian.system`
 
 ```
 IPFS_NODE_ADDRESS="..." # Default IPFS_NODE_ADDRESS="http://localhost:5002"
@@ -75,7 +75,7 @@ docker-compose up -d --build
 About docker-compose: from the end of June 2023 Compose V1 won’t be supported anymore and will be removed from all Docker Desktop versions. Make sure you use Docker Compose V2 (comes with Docker Desktop > 3.6.0) as at https://docs.docker.com/compose/install/
 {% endhint %}
 
-5\. Browse to [http://localhost:3000](http://localhost:3000) and complete the setup. To get more info, please check: [Launching Guardian](broken-reference)
+5\. Browse to [http://localhost:3000](http://localhost:3000) and complete the setup. To get more info, please check: [Launching Guardian](broken-reference/)
 
 ### Local development using Docker
 

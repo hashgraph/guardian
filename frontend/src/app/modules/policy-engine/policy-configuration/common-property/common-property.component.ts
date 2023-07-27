@@ -1,7 +1,19 @@
-import { Component, EventEmitter, Inject, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { Schema } from '@guardian/interfaces';
+import {
+    Component,
+    EventEmitter,
+    Inject,
+    Input,
+    OnInit,
+    Output,
+    SimpleChanges,
+    ViewEncapsulation,
+} from '@angular/core';
 import { RegisteredService } from '../../services/registered.service';
-import { PolicyBlockModel, SchemaVariables } from '../../structures';
+import {
+    PolicyBlockModel,
+    RoleVariables,
+    SchemaVariables,
+} from '../../structures';
 import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
 
 /**
@@ -11,7 +23,7 @@ import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
     selector: '[common-property]',
     templateUrl: './common-property.component.html',
     styleUrls: ['./common-property.component.css'],
-    encapsulation: ViewEncapsulation.None
+    encapsulation: ViewEncapsulation.None,
 })
 export class CommonPropertyComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlockModel;
@@ -46,6 +58,7 @@ export class CommonPropertyComponent implements OnInit {
     childrenBlocks: any[] = [];
     loaded: boolean = false;
     schemas!: SchemaVariables[];
+    roles!: RoleVariables[];
 
     constructor(
         private registeredService: RegisteredService,
@@ -54,7 +67,7 @@ export class CommonPropertyComponent implements OnInit {
             name?: string,
             version?: string,
             status?: string
-        ) => string,
+        ) => string
     ) {}
 
     ngOnInit(): void {
@@ -79,25 +92,47 @@ export class CommonPropertyComponent implements OnInit {
                 if (!Array.isArray(this.data[this.property.name])) {
                     this.data[this.property.name] = [];
                 }
-            } else if (this.property.type === 'Select' || this.property.type === 'MultipleSelect') {
+            } else if (
+                this.property.type === 'Select' ||
+                this.property.type === 'MultipleSelect'
+            ) {
                 this.allBlocks = [];
                 if (moduleVariables?.module?.allBlocks) {
-                    this.allBlocks = moduleVariables.module.allBlocks.map(item => {
-                        return {
-                            name: item.localTag,
-                            icon: this.registeredService.getIcon(item.blockType),
-                            value: item.tag,
-                            parent: item?.parent?.id
+                    this.allBlocks = moduleVariables.module.allBlocks.map(
+                        (item) => {
+                            return {
+                                name: item.localTag,
+                                icon: this.registeredService.getIcon(
+                                    item.blockType
+                                ),
+                                value: item.tag,
+                                parent: item?.parent?.id,
+                            };
                         }
-                    });
+                    );
                 }
-                this.childrenBlocks = this.allBlocks.filter(item => item.parent === this.data?.id);
+                this.childrenBlocks = this.allBlocks.filter(
+                    (item) => item.parent === this.data?.id
+                );
                 this.schemas = moduleVariables?.schemas || [];
-            } else if(this.property.type === 'Schemas') {
+                this.roles =
+                    moduleVariables?.roles?.filter(
+                        (item: any) =>
+                            !['OWNER', 'NO_ROLE', 'ANY_ROLE'].includes(
+                                item.value
+                            )
+                    ) || [];
+            } else if (this.property.type === 'Schemas') {
                 this.schemas = moduleVariables?.schemas || [];
             }
-            if (this.property.type !== 'Group' && this.property.type !== 'Array') {
-                if (this.property.default && !this.data.hasOwnProperty(this.property.name)) {
+            if (
+                this.property.type !== 'Group' &&
+                this.property.type !== 'Array'
+            ) {
+                if (
+                    this.property.default &&
+                    !this.data.hasOwnProperty(this.property.name)
+                ) {
                     this.data[this.property.name] = this.property.default;
                 }
             }
@@ -144,11 +179,23 @@ export class CommonPropertyComponent implements OnInit {
             let text = config.value;
             if (text && text.indexOf('@') !== -1) {
                 for (const prop of config.properties) {
-                    text = text.replaceAll('@' + prop.name, item[prop.name] || '');
+                    text = text.replaceAll(
+                        '@' + prop.name,
+                        item[prop.name] || ''
+                    );
                 }
             }
             config.__value = text;
         }
         return config.__value;
+    }
+
+    visible(expression: string) {
+        return (
+            !expression ||
+            new Function(...Object.keys(this.data), 'return ' + expression)(
+                ...Object.values(this.data)
+            )
+        );
     }
 }

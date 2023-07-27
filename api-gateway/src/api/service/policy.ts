@@ -1,4 +1,4 @@
-import { PolicyType, UserRole } from '@guardian/interfaces';
+import { PolicyType, TaskAction, UserRole } from '@guardian/interfaces';
 import { PolicyEngine } from '@helpers/policy-engine';
 import { Users } from '@helpers/users';
 import { AuthenticatedRequest, Logger, RunFunctionAsync } from '@guardian/common';
@@ -156,18 +156,18 @@ export class PolicyApi {
     @HttpCode(HttpStatus.ACCEPTED)
     async createPolicyAsync(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const taskManager = new TaskManager();
-        const { taskId, expectation } = taskManager.start('Create policy');
         const model = req.body;
         const user = req.user;
+        const taskManager = new TaskManager();
+        const task = taskManager.start(TaskAction.CREATE_POLICY, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const engineService = new PolicyEngine();
-            await engineService.createPolicyAsync(model, user, taskId);
+            await engineService.createPolicyAsync(model, user, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: 500, message: error.message });
+            taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
-        return res.status(202).send({ taskId, expectation });
+        return res.status(202).send(task);
     }
 
     @ApiOperation({})
@@ -189,40 +189,38 @@ export class PolicyApi {
     @HttpCode(HttpStatus.ACCEPTED)
     async updatePolicyAsync(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const taskManager = new TaskManager();
-        const { taskId, expectation } = taskManager.start('Clone policy');
         const policyId = req.params.policyId;
         const model = req.body;
         const user = req.user;
-
+        const taskManager = new TaskManager();
+        const task = taskManager.start(TaskAction.CLONE_POLICY, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const engineService = new PolicyEngine();
-            await engineService.clonePolicyAsync(policyId, model, user, taskId);
+            await engineService.clonePolicyAsync(policyId, model, user, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: 500, message: error.message });
+            taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
-        return res.status(202).send({ taskId, expectation });
+        return res.status(202).send(task);
     }
 
     @ApiSecurity('bearerAuth')
     @Delete('/push/:policyId')
     @HttpCode(HttpStatus.ACCEPTED)
-    async deletePOlicyAsync(@Req() req, @Response() res): Promise<any> {
+    async deletePolicyAsync(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const taskManager = new TaskManager();
-        const { taskId, expectation } = taskManager.start('Delete policy');
         const policyId = req.params.policyId;
         const user = req.user;
-
+        const taskManager = new TaskManager();
+        const task = taskManager.start(TaskAction.DELETE_POLICY, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const engineService = new PolicyEngine();
-            await engineService.deletePolicyAsync(policyId, user, taskId);
+            await engineService.deletePolicyAsync(policyId, user, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: 500, message: error.message });
+            taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
-        return res.status(202).send({ taskId, expectation });
+        return res.status(202).send(task);
     }
 
     @ApiOperation({
@@ -367,21 +365,20 @@ export class PolicyApi {
     @HttpCode(HttpStatus.ACCEPTED)
     async publishPolicyAsync(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const taskManager = new TaskManager();
-        const { taskId, expectation } = taskManager.start('Publish policy');
-
         const model = req.body;
         const user = req.user;
         const policyId = req.params.policyId;
+        const taskManager = new TaskManager();
+        const task = taskManager.start(TaskAction.PUBLISH_POLICY, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const engineService = new PolicyEngine();
-            await engineService.publishPolicyAsync(model, user, policyId, taskId);
+            await engineService.publishPolicyAsync(model, user, policyId, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: 500, message: error.message || error });
+            taskManager.addError(task.taskId, { code: 500, message: error.message || error });
         });
 
-        return res.status(202).send({ taskId, expectation });
+        return res.status(202).send(task);
     }
 
     @ApiOperation({
@@ -861,20 +858,19 @@ export class PolicyApi {
     @HttpCode(HttpStatus.ACCEPTED)
     async importPolicyFromMessageAsync(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const taskManager = new TaskManager();
-        const { taskId, expectation } = taskManager.start('Import policy message');
-
         const user = req.user;
         const messageId = req.body.messageId;
         const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;
+        const taskManager = new TaskManager();
+        const task = taskManager.start(TaskAction.IMPORT_POLICY_MESSAGE, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const engineService = new PolicyEngine();
-            await engineService.importMessageAsync(user, messageId, versionOfTopicId, taskId);
+            await engineService.importMessageAsync(user, messageId, versionOfTopicId, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: 500, message: 'Unknown error: ' + error.message });
+            taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
         });
-        return res.status(202).send({ taskId, expectation });
+        return res.status(202).send(task);
     }
 
     @ApiOperation({
@@ -932,20 +928,19 @@ export class PolicyApi {
     @HttpCode(HttpStatus.ACCEPTED)
     async importPolicyFromFileAsync(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const taskManager = new TaskManager();
-        const { taskId, expectation } = taskManager.start('Import policy file');
-
         const user = req.user;
         const zip = req.body;
         const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;
+        const taskManager = new TaskManager();
+        const task = taskManager.start(TaskAction.IMPORT_POLICY_FILE, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const engineService = new PolicyEngine();
-            await engineService.importFileAsync(user, zip, versionOfTopicId, taskId);
+            await engineService.importFileAsync(user, zip, versionOfTopicId, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: 500, message: 'Unknown error: ' + error.message });
+            taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
         });
-        return res.status(202).send({ taskId, expectation });
+        return res.status(202).send(task);
     }
 
     @ApiOperation({
@@ -1001,20 +996,19 @@ export class PolicyApi {
     @HttpCode(HttpStatus.ACCEPTED)
     async importFromMessagePreview(@Req() req, @Response() res) {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const taskManager = new TaskManager();
-        const { taskId, expectation } = taskManager.start('Preview policy message');
-
         const user = req.user;
         const messageId = req.body.messageId;
+        const taskManager = new TaskManager();
+        const task = taskManager.start(TaskAction.PREVIEW_POLICY_MESSAGE, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const engineService = new PolicyEngine();
-            await engineService.importMessagePreviewAsync(user, messageId, taskId);
+            await engineService.importMessagePreviewAsync(user, messageId, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: 500, message: 'Unknown error: ' + error.message });
+            taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
         });
 
-        return res.status(202).send({ taskId, expectation });
+        return res.status(202).send(task);
     }
 
     @ApiOperation({

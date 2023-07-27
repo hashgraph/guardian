@@ -1,6 +1,6 @@
 import { ApiResponse } from '@api/helpers/api-response';
-import { BinaryMessageResponse, DatabaseServer, Logger, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, ModuleMessage, PolicyModule, TopicConfig, TopicHelper, Users, } from '@guardian/common';
-import { GenerateUUIDv4, MessageAPI, ModuleStatus, TagType, TopicType } from '@guardian/interfaces';
+import { BinaryMessageResponse, DataBaseHelper, DatabaseServer, Logger, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, ModuleMessage, PolicyModule, Schema, TopicConfig, TopicHelper, Users, } from '@guardian/common';
+import { GenerateUUIDv4, MessageAPI, ModuleStatus, SchemaCategory, TagType, TopicType } from '@guardian/interfaces';
 import JSZip from 'jszip';
 import { emptyNotifier, INotifier } from '@helpers/notifier';
 import { ISerializedErrors } from '@policy-engine/policy-validation-results-container';
@@ -35,6 +35,28 @@ export async function generateZipFile(module: PolicyModule): Promise<JSZip> {
         zip.file(`tags/${index}.json`, JSON.stringify(tag));
     }
 
+    const schemaIRIs = moduleObject.config.variables
+        .filter(v => v.type === 'Schema')
+        .map(v => v.baseSchema);
+
+    const schemas = await new DataBaseHelper(Schema).find({
+        iri: {
+            $in: schemaIRIs
+        }
+    });
+
+    zip.folder('schemas');
+    for (const schema of schemas) {
+        tagTargets.push(schema.id.toString());
+        const item = {...schema};
+        delete item._id;
+        delete item.id;
+        delete item.status;
+        delete item.readonly;
+        item.id = schema.id.toString();
+        zip.file(`schemas/${item.iri}.json`, JSON.stringify(item));
+    }
+
     return zip;
 }
 
@@ -54,11 +76,16 @@ export async function parseZipFile(zipFile: any): Promise<any> {
         .filter(file => !file[1].dir)
         .filter(file => /^tags\/.+/.test(file[0]))
         .map(file => file[1].async('string')));
+    const schemasStringArray = await Promise.all(Object.entries(content.files)
+        .filter(file => !file[1].dir)
+        .filter(file => /^schemas\/.+/.test(file[0]))
+        .map(file => file[1].async('string')));
 
     const module = JSON.parse(moduleString);
     const tags = tagsStringArray.map(item => JSON.parse(item));
+    const schemas = schemasStringArray.map(item => JSON.parse(item));
 
-    return { module, tags };
+    return {module, tags, schemas};
 }
 
 /**
@@ -286,6 +313,15 @@ export async function modulesAPI(): Promise<void> {
             const items = await DatabaseServer.getModules({
                 owner: msg.owner
             });
+            for (const item of items) {
+                if (item.config?.variables) {
+                    for (const variable of item.config.variables) {
+                        if (variable.baseSchema) {
+                            variable.baseSchema = await DatabaseServer.getSchema({iri: variable.baseSchema});
+                        }
+                    }
+                }
+            }
             return new MessageResponse(items);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -419,7 +455,7 @@ export async function modulesAPI(): Promise<void> {
 
             const preview = await parseZipFile(Buffer.from(zip.data));
 
-            const { module, tags } = preview;
+            const {module, tags, schemas} = preview;
             delete module._id;
             delete module.id;
             delete module.messageId;
@@ -429,7 +465,7 @@ export async function modulesAPI(): Promise<void> {
             module.owner = owner;
             module.status = 'DRAFT';
             module.type = 'CUSTOM';
-            if (await DatabaseServer.getModule({ name: module.name })) {
+            if (await DatabaseServer.getModule({name: module.name})) {
                 module.name = module.name + '_' + Date.now();
             }
             const item = await DatabaseServer.createModules(module);
@@ -437,6 +473,14 @@ export async function modulesAPI(): Promise<void> {
             if (Array.isArray(tags)) {
                 const moduleTags = tags.filter((t: any) => t.entity === TagType.Module);
                 await importTag(moduleTags, item.id.toString());
+            }
+
+            if (Array.isArray(schemas)) {
+                for (const schema of schemas) {
+                    const schemaObject = DatabaseServer.createSchema(schema);
+                    schemaObject.category = SchemaCategory.MODULE;
+                    await DatabaseServer.saveSchema(schemaObject);
+                }
             }
 
             return new MessageResponse(item);

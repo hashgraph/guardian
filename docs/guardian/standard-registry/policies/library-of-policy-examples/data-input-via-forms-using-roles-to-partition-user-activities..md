@@ -42,7 +42,7 @@ See detailed information about the Roles in [Example 1](creating-and-using-roles
 
 #### 2. To perform data input into the Policy the ‘**requestVcDocumentBlock**’ will be used
 
-&#x20;  2.1 Since the scope of this example includes input of multiple documents the Policy requires logic   similar to what is known as ‘loop’ or ‘iteration’.&#x20;
+2.1 Since the scope of this example includes input of multiple documents the Policy requires logic similar to what is known as ‘loop’ or ‘iteration’.
 
 For this ‘**interfaceStepBlock**’ is required with ‘**Cyclic**’ option enabled. This will allow to return to the initial state after the document was saved.
 
@@ -128,7 +128,7 @@ Configure both ‘**documentSourceAddon**’ blocks similarly to how it was in t
 
 1.4 Separate the documents by status by means of creating the corresponding filters
 
-![Creating Equal status filter](<../../../../.gitbook/assets/19 (1).png>)
+![Creating Equal status filter](<../../../../.gitbook/assets/19 (1) (1).png>)
 
 ![Creating not equal status filter](<../../../../.gitbook/assets/20 (2).png>)
 
@@ -144,7 +144,7 @@ Switch off the ‘Default Active’ option to avoid specifying the button as an 
 
 <figure><img src="../../../../.gitbook/assets/Template_2_screenshot_23.png" alt=""><figcaption></figcaption></figure>
 
-2.3 ‘**buttonBlock**’ is responsible only for the actions, in order to save the refreshed status of the documents.&#x20;
+2.3 ‘**buttonBlock**’ is responsible only for the actions, in order to save the refreshed status of the documents.
 
 Create 2 ‘**sendToGuardianBlock**’ blocks with the corresponding values for the ‘Status’.
 

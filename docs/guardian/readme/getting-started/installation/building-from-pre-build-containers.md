@@ -33,7 +33,7 @@ services:
       - auth-service
     environment:
       SERVICE_CHANNEL: 'worker.1'
-      IPFS_STORAGE_API_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDZhY0FFMmM3QjA5ODdCMjU1ZGZFMjMxZTA0YzI5NDZBZWI0YzE5NkQiLCJpc3MiOiJ3ZWIzLXN0b3JhZ2UiLCJpYXQiOjE2NjAwNzIyNzg4MDgsIm5hbWUiOiJ0ZXN0In0.vzt0-vBlbKiUSeyBZ6i3qTBKVMR3RL7CnkEXVNqvSH4'
+      IPFS_STORAGE_API_KEY: '...'
  
   worker-service-2:
     image: gcr.io/hedera-registry/worker-service:2.9.3
@@ -42,7 +42,7 @@ services:
       - auth-service
     environment:
       SERVICE_CHANNEL: 'worker.2'
-      IPFS_STORAGE_API_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDZhY0FFMmM3QjA5ODdCMjU1ZGZFMjMxZTA0YzI5NDZBZWI0YzE5NkQiLCJpc3MiOiJ3ZWIzLXN0b3JhZ2UiLCJpYXQiOjE2NjAwNzIyNzg4MDgsIm5hbWUiOiJ0ZXN0In0.vzt0-vBlbKiUSeyBZ6i3qTBKVMR3RL7CnkEXVNqvSH4'
+      IPFS_STORAGE_API_KEY: '...'
  
   auth-service:
     image: gcr.io/hedera-registry/auth-service:2.9.3
@@ -85,8 +85,8 @@ services:
       - worker-service-2
       - policy-service
     environment:
-      OPERATOR_ID: '0.0.10295'
-      OPERATOR_KEY: '302e020100300506032b65700422042022c85d6c64bda64aa458cf715314c5469b3b84c58690470f5289cbada3af8dfb'
+      OPERATOR_ID: '...'
+      OPERATOR_KEY: '...'
  
   web-proxy:
     image: gcr.io/hedera-registry/frontend:2.9.3

@@ -3,11 +3,11 @@
         <mat-spinner></mat-spinner>
     </div>
     <div class="toolbar">
-        <div class="toolbar-btn" (click)="onSave()" style="color: #3f51b5">
+        <div class="toolbar-btn toolbar__save-btn" [attr.readonly]="readonly" (click)="onSave()">
             <mat-icon>save</mat-icon>
             <span>Save</span>
         </div>
-        <div class="toolbar-btn" (click)="onClose()" style="color: #c90000;width: 80px">
+        <div class="toolbar-btn toolbar__close-btn" [attr.readonly]="readonly" (click)="onClose()">
             <mat-icon>close</mat-icon>
             <span>Cancel</span>
         </div>

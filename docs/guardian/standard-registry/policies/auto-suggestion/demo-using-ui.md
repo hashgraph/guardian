@@ -2,7 +2,7 @@
 
 “Suggestions” tab is added for Standard Registry (SR) section under Policies menu option.&#x20;
 
-<figure><img src="../../../../.gitbook/assets/image (189).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (189) (2).png" alt=""><figcaption></figcaption></figure>
 
 1. It allows to setup suggestion priority order of policies and modules. A user with SR role can drag and drop items to create specific prioritized sequence of policies to use for suggestions.
 

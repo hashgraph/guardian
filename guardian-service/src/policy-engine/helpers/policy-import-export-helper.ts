@@ -1,11 +1,5 @@
 import JSZip from 'jszip';
-import {
-    ConfigType,
-    GenerateUUIDv4,
-    SchemaEntity,
-    TagType,
-    TopicType,
-} from '@guardian/interfaces';
+import { ConfigType, GenerateUUIDv4, SchemaEntity, TagType, TopicType, } from '@guardian/interfaces';
 import { publishSystemSchemas } from '@api/helpers/schema-publish-helper';
 import { importSchemaByFiles } from '@api/helpers/schema-import-export-helper';
 import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
@@ -193,7 +187,7 @@ export class PolicyImportExportHelper {
         policyOwner: string,
         versionOfTopicId: string,
         notifier: INotifier,
-        additionalPolicyConfig?: Partial<Policy>
+        additionalPolicyConfig?: Partial<Policy>,
     ): Promise<{
         /**
          * New Policy

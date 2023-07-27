@@ -125,7 +125,9 @@ class Line {
                 {
                     color: this.color1,
                     startPlug: 'disc',
-                    endPlug: 'arrow1'
+                    endPlug: 'arrow1',
+                    startSocket: 'right', 
+                    endSocket: 'left'
                 }
             );
             const line = document.querySelectorAll('.leader-line');

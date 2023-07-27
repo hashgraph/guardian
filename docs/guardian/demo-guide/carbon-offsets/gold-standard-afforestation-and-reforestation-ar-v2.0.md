@@ -20,7 +20,7 @@ The Gold Standard AR methodology promotes sustainable land use practices that co
 
 ## **Workflow Description**:
 
-<figure><img src="../../../.gitbook/assets/image (90).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (90) (1).png" alt=""><figcaption></figcaption></figure>
 
 ## Policy Guide
 

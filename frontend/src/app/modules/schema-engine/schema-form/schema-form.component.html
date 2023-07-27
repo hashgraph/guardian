@@ -83,7 +83,7 @@
                     <div class="form-field-postfix" *ngIf="isPostfix(item)">{{item.unit}}</div>
                 </div>
             </div>
-            
+
             <!-- sub schema -->
             <div *ngIf="!item.isArray && item.isRef" class="form-field-group sub-schema">
                 <div class="invalid-field-label" *ngIf="item.control && !item.control.valid && !item.control.disabled">
@@ -105,9 +105,8 @@
                             <app-geojson-type *ngSwitchCase="'geo'" [formGroup]="item.control" [preset]="item.preset"
                                 [disabled]="item.control?.disabled">
                             </app-geojson-type>
-                            <app-schema-form *ngSwitchDefault [formGroup]="item.control" [fields]="item.fields"
-                                [context]="item.context" [private-fields]="hide" [delimiter-hide]="true"
-                                [conditions]="item.conditions" [preset]="item.preset" [isChildSchema]="true">
+                            <app-schema-form *ngSwitchDefault [formGroup]="item.control" [fields]="item.fields" [private-fields]="hide"
+                                [delimiter-hide]="true" [conditions]="item.conditions" [preset]="item.preset" [isChildSchema]="true">
                             </app-schema-form>
                         </ng-container>
                     </div>
@@ -124,7 +123,7 @@
                     </span>
                 </div>
             </div>
-            
+
             <!-- array of simple fields -->
             <div *ngIf="item.isArray && !item.isRef" class="form-field-array">
                 <div class="invalid-field-label" *ngIf="item.control && !item.control.valid && !item.control.disabled">
@@ -224,7 +223,7 @@
                     </span>
                 </div>
             </div>
-            
+
             <!-- array of sub schemas -->
             <div *ngIf="item.isArray && item.isRef" class="form-field-group schema-form-field-array-group sub-schemas">
                 <div class="invalid-field-label" *ngIf="!item.control.valid && !item.control.disabled">
@@ -247,9 +246,8 @@
                             <app-geojson-type *ngSwitchCase="'geo'" [formGroup]="listItem.control"
                                 [disabled]="item.control?.disabled" [preset]="listItem.preset">
                             </app-geojson-type>
-                            <app-schema-form *ngSwitchDefault [formGroup]="listItem.control" [fields]="item.fields"
-                                [context]="item.context" [private-fields]="hide" [delimiter-hide]="true"
-                                [conditions]="item.conditions" [preset]="listItem.preset" [isChildSchema]="true">
+                            <app-schema-form *ngSwitchDefault [formGroup]="listItem.control" [fields]="item.fields" [private-fields]="hide"
+                                [delimiter-hide]="true" [conditions]="item.conditions" [preset]="listItem.preset" [isChildSchema]="true">
                             </app-schema-form>
                         </ng-container>
 

@@ -1,24 +1,8 @@
-import { NgxMatDateAdapter, NGX_MAT_DATE_FORMATS } from '@angular-material-components/datetime-picker';
+import { NGX_MAT_DATE_FORMATS, NgxMatDateAdapter } from '@angular-material-components/datetime-picker';
 import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
-import {
-    AbstractControl,
-    FormBuilder,
-    FormControl,
-    FormGroup,
-    ValidationErrors,
-    ValidatorFn,
-    Validators
-} from '@angular/forms';
-import {
-    Schema,
-    SchemaCondition,
-    SchemaField,
-    FieldTypesDictionary,
-    UnitSystem,
-    SchemaEntity,
-    SchemaCategory
-} from '@guardian/interfaces';
+import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { FieldTypesDictionary, Schema, SchemaCategory, SchemaCondition, SchemaEntity, SchemaField, UnitSystem } from '@guardian/interfaces';
 import * as moment from 'moment';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -45,6 +29,7 @@ export class SchemaConfigurationComponent implements OnInit {
     @Input('type') type!: string;
     @Input('schemas-map') schemasMap!: { [x: string]: Schema[] };
     @Input('policies') policies!: any[];
+    @Input('modules') modules!: any[];
     @Input('topicId') topicId!: any;
     @Input('schemaType') schemaType!: string;
     @Input('extended') extended!: boolean;
@@ -83,8 +68,12 @@ export class SchemaConfigurationComponent implements OnInit {
         return this.schemaType === 'tag';
     }
 
+    public get isModule(): boolean {
+        return this.schemaType === 'module';
+    }
+
     public get isPolicy(): boolean {
-        return this.schemaType !== 'system' && this.schemaType !== 'tag';
+        return this.schemaType !== 'system' && this.schemaType !== 'tag' && this.schemaType !== 'module';
     }
 
     constructor(
@@ -241,6 +230,14 @@ export class SchemaConfigurationComponent implements OnInit {
                 props = {
                     name: ['', Validators.required],
                     description: [''],
+                    fields: this.fieldsForm,
+                    conditions: this.conditionsForm
+                };
+            } else if (this.isModule) {
+                props = {
+                    name: ['', Validators.required],
+                    description: [''],
+                    entity: new FormControl(SchemaEntity.VC, Validators.required),
                     fields: this.fieldsForm,
                     conditions: this.conditionsForm
                 };

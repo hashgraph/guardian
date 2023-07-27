@@ -9,11 +9,9 @@ export class ModuleVariableModel {
     private _name: string;
     private _description: string;
     private _type: string;
-
-    private _changed: boolean;
-
     constructor(
         config: {
+            baseSchema?: any;
             name: string;
             description: string;
             type: string;
@@ -26,7 +24,12 @@ export class ModuleVariableModel {
         this._name = config.name;
         this._description = config.description;
         this._type = config.type;
+        this._baseSchema = config.baseSchema;
     }
+
+    private _changed: boolean;
+
+    private _baseSchema?: any;
 
     public get name(): string {
         return this._name;
@@ -38,6 +41,10 @@ export class ModuleVariableModel {
 
     public get type(): string {
         return this._type;
+    }
+
+    public get baseSchema(): any {
+        return this._baseSchema;
     }
 
     public set name(value: string) {
@@ -52,6 +59,11 @@ export class ModuleVariableModel {
 
     public set type(value: string) {
         this._type = value;
+        this.changed = true;
+    }
+
+    public set baseSchema(value: any) {
+        this._baseSchema = value;
         this.changed = true;
     }
 
@@ -75,7 +87,8 @@ export class ModuleVariableModel {
         return {
             name: this._name,
             description: this._description,
-            type: this._type
+            type: this._type,
+            baseSchema: this._baseSchema
         };
     }
 

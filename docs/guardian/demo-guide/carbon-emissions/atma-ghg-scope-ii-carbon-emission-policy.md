@@ -39,7 +39,7 @@ Next, fill out the Organization data form.
 
 Once completed, add a new entity by clicking on the "New Entity" button and filling out the New Entity form.
 
-<figure><img src="../../../.gitbook/assets/image (20).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (20) (4).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/image (16) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
@@ -51,7 +51,7 @@ Once the form has been submitted, you'll need to define a product. Click on the 
 
 The atma GHG policy issues an NFT token (AtmaProductToken) for every product that has been defined. Once the product has been defined, you can go out of the Policy screen and click over to the Profile screen. There you can click on the "Tokens" tab and notice that the token balance has been increased.
 
-<figure><img src="../../../.gitbook/assets/image (27).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (27) (3).png" alt=""><figcaption></figcaption></figure>
 
 Once the product has been defined, you'll need to define the life cycle stage. Click on the "life cycle stage" button and fill out the life cycle stage form.
 

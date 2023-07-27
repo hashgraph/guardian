@@ -1,5 +1,5 @@
 import { Guardians } from '@helpers/guardians';
-import { ISchema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus, StatusType, UserRole } from '@guardian/interfaces';
+import { ISchema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus, StatusType, TaskAction, UserRole } from '@guardian/interfaces';
 import { Logger, RunFunctionAsync } from '@guardian/common';
 import { PolicyEngine } from '@helpers/policy-engine';
 import { TaskManager } from '@helpers/task-manager';
@@ -65,19 +65,19 @@ export async function createSchema(newSchema: ISchema, owner: string, topicId?: 
  * @param {string} topicId
  * @param {string} taskId
  */
-export async function createSchemaAsync(newSchema: ISchema, owner: string, topicId: string, taskId: string): Promise<any> {
+export async function createSchemaAsync(newSchema: ISchema, owner: string, topicId: string, task: any): Promise<any> {
     const taskManager = new TaskManager();
     const guardians = new Guardians();
 
-    taskManager.addStatus(taskId, 'Check schema version', StatusType.PROCESSING);
+    taskManager.addStatus(task.taskId, 'Check schema version', StatusType.PROCESSING);
     await prepareSchema(newSchema, guardians, owner);
-    taskManager.addStatus(taskId, 'Check schema version', StatusType.COMPLETED);
+    taskManager.addStatus(task.taskId, 'Check schema version', StatusType.COMPLETED);
 
     newSchema.topicId = topicId;
 
     SchemaHelper.checkSchemaKey(newSchema);
     SchemaHelper.updateOwner(newSchema, owner);
-    await guardians.createSchemaAsync(newSchema, taskId);
+    await guardians.createSchemaAsync(newSchema, task);
 }
 
 /**
@@ -179,26 +179,25 @@ export class SchemaApi {
     @HttpCode(HttpStatus.ACCEPTED)
     async setTopicIdAsync(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const taskManager = new TaskManager();
-        const { taskId, expectation } = taskManager.start('Create schema');
-
         const user = req.user;
         const newSchema = req.body;
         const topicId = req.params.topicId;
+        const taskManager = new TaskManager();
+        const task = taskManager.start(TaskAction.CREATE_SCHEMA, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             SchemaUtils.fromOld(newSchema);
             await createSchemaAsync(
                 newSchema,
                 user.did,
                 topicId,
-                taskId,
+                task
             );
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: 500, message: error.message });
+            taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
 
-        return res.status(202).send({ taskId, expectation });
+        return res.status(202).send(task);
     }
 
     @Get('/')
@@ -365,9 +364,6 @@ export class SchemaApi {
     @HttpCode(HttpStatus.ACCEPTED)
     async publishSchemaAsync(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const taskManager = new TaskManager();
-        const { taskId, expectation } = taskManager.start('Publish schema');
-
         const user = req.user;
         const schemaId = req.params.schemaId;
         const guardians = new Guardians();
@@ -379,26 +375,26 @@ export class SchemaApi {
         if (notAllowed) {
             throw new HttpException(notAllowed, HttpStatus.FORBIDDEN)
         }
+        const taskManager = new TaskManager();
+        const task = taskManager.start(TaskAction.PUBLISH_SCHEMA, user.id);
         const version = req.body.version;
         RunFunctionAsync<ServiceError>(async () => {
-            taskManager.addStatus(taskId, 'Load schema data', StatusType.PROCESSING);
             if (schema.status === SchemaStatus.PUBLISHED) {
-                taskManager.addError(taskId, { code: 500, message: 'Schema is published.' });
+                taskManager.addError(task.taskId, { code: 500, message: 'Schema is published.' });
                 return;
             }
             const allVersion = await guardians.getSchemasByUUID(schema.uuid);
             if (allVersion.findIndex(s => s.version === version) !== -1) {
-                taskManager.addError(taskId, { code: 500, message: 'Version already exists.' });
+                taskManager.addError(task.taskId, { code: 500, message: 'Version already exists.' });
                 return;
             }
-            taskManager.addStatus(taskId, 'Load schema data', StatusType.COMPLETED);
-            await guardians.publishSchemaAsync(schemaId, version, user.did, taskId);
+            await guardians.publishSchemaAsync(schemaId, version, user.did, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: 500, message: error.message });
+            taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
 
-        return res.status(202).send({ taskId, expectation });
+        return res.status(202).send(task);
     }
 
     @Post('/import/message/preview')
@@ -420,22 +416,22 @@ export class SchemaApi {
     @HttpCode(HttpStatus.ACCEPTED)
     async importFromMessagePreviewAsync(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const taskManager = new TaskManager();
-        const {taskId, expectation} = taskManager.start('Preview schema message');
-
+        const user = req.user;
         const messageId = req.body.messageId;
         if (!messageId) {
             throw new HttpException('Schema ID in body is empty', HttpStatus.UNPROCESSABLE_ENTITY);
         }
+        const taskManager = new TaskManager();
+        const task = taskManager.start(TaskAction.PREVIEW_SCHEMA_MESSAGE, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
-            await guardians.previewSchemasByMessagesAsync([messageId], taskId);
+            await guardians.previewSchemasByMessagesAsync([messageId], task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, {code: 500, message: error.message});
+            taskManager.addError(task.taskId, {code: 500, message: error.message});
         });
 
-        return res.status(202).send({taskId, expectation});
+        return res.status(202).send(task);
     }
 
     @Post('/import/file/preview')
@@ -483,24 +479,23 @@ export class SchemaApi {
     @HttpCode(HttpStatus.ACCEPTED)
     async importFromMessageAsync(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const taskManager = new TaskManager();
-        const {taskId, expectation} = taskManager.start('Import schema message');
-
         const user = req.user;
         const topicId = req.params.topicId;
         const messageId = req.body.messageId;
         if (!messageId) {
             throw new HttpException('Schema ID in body is empty', HttpStatus.UNPROCESSABLE_ENTITY);
         }
+        const taskManager = new TaskManager();
+        const task = taskManager.start(TaskAction.IMPORT_SCHEMA_MESSAGE, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
-            await guardians.importSchemasByMessagesAsync([messageId], user.did, topicId, taskId);
+            await guardians.importSchemasByMessagesAsync([messageId], user.did, topicId, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, {code: 500, message: error.message});
+            taskManager.addError(task.taskId, {code: 500, message: error.message});
         });
 
-        return res.status(202).send({taskId, expectation});
+        return res.status(202).send(task);
     }
 
     @Post('/:topicId/import/file')
@@ -530,27 +525,24 @@ export class SchemaApi {
     @HttpCode(HttpStatus.ACCEPTED)
     async importToTopicFromFileAsync(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const taskManager = new TaskManager();
-        const { taskId, expectation } = taskManager.start('Import schema file');
-
         const user = req.user;
         const zip = req.body;
         if (!zip) {
             throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
         }
         const topicId = req.params.topicId;
+        const taskManager = new TaskManager();
+        const task = taskManager.start(TaskAction.IMPORT_SCHEMA_FILE, user.id);
         RunFunctionAsync<ServiceError>(async () => {
-            taskManager.addStatus(taskId, 'Parse file', StatusType.PROCESSING);
             const files = await SchemaUtils.parseZipFile(zip);
-            taskManager.addStatus(taskId, 'Parse file', StatusType.COMPLETED);
             const guardians = new Guardians();
-            await guardians.importSchemasByFileAsync(files, user.did, topicId, taskId);
+            await guardians.importSchemasByFileAsync(files, user.did, topicId, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: 500, message: error.message });
+            taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
 
-        return res.status(202).send({ taskId, expectation });
+        return res.status(202).send(task);
     }
 
     @Get('/:schemaId/export/message')
