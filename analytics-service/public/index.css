@@ -106,7 +106,6 @@ div#container {
     background: rgba(0, 0, 0, 0.55);
 }
 
-
 .export-btn {
     height: 44px;
     width: 90px;
@@ -128,7 +127,7 @@ div#container {
     z-index: 3;
     position: absolute;
     top: 31px;
-    right: 31px;
+    right: 110px;
     width: 94px;
     height: 22px;
     border-radius: 10px;
@@ -210,6 +209,29 @@ div#container {
 .report-status[status="finished"]::before {
     content: 'Updated: ' attr(date);
     color: #03543f;
+}
+
+.report-restart {
+    z-index: 3;
+    position: absolute;
+    top: 31px;
+    right: 31px;
+    width: 65px;
+    height: 22px;
+    border-radius: 10px;
+    cursor: pointer;
+    border: 1px solid #6542e7;
+    background: #6542e7;
+}
+
+.report-restart::before {
+    content: 'Restart';
+    display: block;
+    position: absolute;
+    font-size: 12px;
+    left: 12px;
+    top: 4px;
+    color: #fff;
 }
 
 .no-data::after {
