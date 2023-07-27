@@ -2,138 +2,199 @@
 
 To get more information on Roadmap, please click: [https://app.zenhub.com/workspaces/guardian-618c27c08661c0001461263a/roadmap?invite=true](https://app.zenhub.com/workspaces/guardian-618c27c08661c0001461263a/roadmap?invite=true)
 
-### ----February 2023----
+## ---- August 2023----
 
-* ## Linkable policy modules for constructing end-to-end Policy workflows
+### Restore (DR) of user accounts and encrypted documents
 
-Create a facility to define 'higher-order' (than blocks) Policy constructs thus enabling the creation of pre-build policy modules which can then be linked together to compose end-to-end policies, without needing to understand the low-level details of 'blocks' and 'events'. The following are other constraints/parameters of this functionality:
+* An approach to storing/managing all the keys outside Guardian - in the escrow service or just as a back-up. Export/import tooling.
+* Capability to restore user accounts and their associated keys such as to replicate guardian installation
+* Guardian restore functionality should use whatever information is available to it to restore its original setup, specifically when user accounts have been restored it should result in the decryption and thus accessibility of the encrypted documents.
 
-* modules have clearly defined purpose and function
-* modules have API specification, i.e. ingress and egress events and documents they consume/produce
-* modules are published with attribution of the source/author, can be 'imported' and 'exported' from Guardian instance
-* modules can be run on separate 'workers/services' within a single logical Guardian instance, enabling optimal scalability setup (i.e. 1a single instance of the module running in one small-powered service for 'onboarding projects', and multiple 'MRV processing' module instances for aggregating data and minting tokens.
+Referral Link : [https://github.com/hashgraph/guardian/issues/1814](https://github.com/hashgraph/guardian/issues/1814)
 
-Referral Link : [https://github.com/hashgraph/guardian/issues/1657](https://github.com/hashgraph/guardian/issues/1657)
+### CDM's AMS-III.D. Methodology
 
-### ----March 2023----
+* Design schemas for AMS-III.D. methodology, create PowerPoint presentation, and conduct webinar.
+*   Schemas will also be designed for the following tools:
 
-* ## Running multiple instance of services in HA environment
-
-All heavy process backend service need to be able to run load balancing and handle task lock.
-
-Referral Link : [https://github.com/hashgraph/guardian/issues/1454](https://github.com/hashgraph/guardian/issues/1454)
-
-* ## Selective Disclosure support in VC data
-
-Introduce the following functionality in the Guardian:
-
-* Facilities to mark some fields as private (in schema)
-* VC documents based on the schema with 'private' fields **do not** get published as is, instead they are encrypted with the owner key and published encrypted
-* VC documents with 'private' fields use BBS signature `BbsBlsSignature2020` method instead of `Ed25519Signature2018`
-* VPs derived from VC documents with private fields will contain 'cut down' VC only containing public field, signed by the BBS signature as per above.
-
-Referral Link : [https://github.com/hashgraph/guardian/issues/1633](https://github.com/hashgraph/guardian/issues/1633)\
+    * Tool 03 - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion
+    * Tool 05 - Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation
+    * Tool 06 - Project emissions from flaring
+    * Tool 16 - Project and leakage emissions from anaerobic digesters
 
 
-### ----April  2023----
 
-* ## Guidance for open-sourcing Policies for easy QA/testing
+    Referral Link : [https://github.com/hashgraph/guardian/issues/2307](https://github.com/hashgraph/guardian/issues/2307)
 
-Design and implement the process for submitting 'supportable' policies containing:
+### Avery Dennison RFID Inlay GHGP Product Policy (Cradle-To-Gate)
 
-* Policy user guide and description
-* Automated policy workflow, with valid sample MRV data or MRV data generator/simulator
-* IPFS timestamps, .policy files
-* Requirement to run tests before sending Guardian the policy, including backward compatibility tests
+* Expand the Guardian policy to include all applicable supply chain stages.
 
-Referral Link : [https://github.com/hashgraph/guardian/issues/1662](https://github.com/hashgraph/guardian/issues/1662)
+&#x20;    Referral Link : [https://github.com/hashgraph/guardian/issues/2306](https://github.com/hashgraph/guardian/issues/2306)
 
-* ## Tagging of Guardian policy artifacts
+## ---- September 2023----
 
-Create a tagging system with the following properties:
+### Evolution of policy differentiation
 
-* tags can be created by any actor with a valid DID.
-* created tags should be credentialed, i.e. it is clear who and when created or added to a particular tag.
-* tags can have cumulative scores, i.e. two people independently creating/assigning the same tag to the same artifact results in both tagging actions recorded (credentialed etc), and the 'tag score' is then counted as 2.
-* It is possible for users to untag the item, however this action does not remove the record of tagging in the first place it just records the action of untagging (also credentialed), and reduces to score by 1.
-* tags should be associate-able with any identifiable entity/thing/artifact that guardian uses and/or produces, such as:
-  * actors, including SRs (i.e. DIDs),
-  * schemas
-  * policies and policy modules
-  * VCs/VPs,
-  * tokens,
-  * smart contracts (i.e. addresses).
-* tags can be created after the (immutable) artifacts are produced, therefore tags are external to artifacts.
-* it should be possible for DIDs to create and/or follow tag ontologies containing the definition of description of tags.
-* tag registry\[-ies] should be discoverable and useable by automated indexing systems.
+* Add comparison of document schemas associated with the policies
+* Implement the ability fro Guardian to compare policies without importing them into Guardian (i.e. without it appearing in the various grids etc).
+*   Allow for mass-comparison of policies such that a user should be able to search for policies 'similar' to 'different' to some other policy based on some similarity threshold.
 
-Referral Link :  [https://github.com/hashgraph/guardian/issues/1661](https://github.com/hashgraph/guardian/issues/1661)
+    * Ability to pre-process policies creating some data structures (hashes?) to enable more efficient comparison with other policies in the future
 
-### ----May 2023----
+    Referral Link : [https://github.com/hashgraph/guardian/issues/1793](https://github.com/hashgraph/guardian/issues/1793)
 
-* ## Integrate with external data sources
-* Support the use, from inside the policy, of VCs/VPs produced by other Guardian instances published in IPFS.
-* Support other Guardian instances' APIs as sources of the data
-* Support integration with [Agryo](https://www.agryo.com/)
-* Support integration with Google geo-location API
-* Implement integration with these 3rd party data providers (may be similar to IPFS/Hedera integration), such as:
-  * policy can easily add such 'integration' to their policy - potentially using the new policy modules functionality [Linkable policy modules for constructing end-to-end Policy workflows #1657](https://github.com/hashgraph/guardian/issues/1657)
-  * the data can be defined as mandatory or optional (by the policy author)
-  * data imported into Policy artefacts is stored and displayed in its native format, preserving 'mime type' and/or any other indication of the nature of the data as well as the identity/credentials of the source, time/date and other identifying information as appropriate
+### AMS-III.BB. Webinar
 
-Referral Link : [https://github.com/hashgraph/guardian/issues/1658](https://github.com/hashgraph/guardian/issues/1658)
+* Design schemas for AMS-III.BB. methodology, create PowerPoint presentation, and conduct webinar.&#x20;
+* Schemas will also be designed for the following tools:&#x20;
+  * Tool 07 - Tool to calculate the emission factor for an electricity system&#x20;
+  * Tool 21 - Demonstration of additionality of small-scale project activities&#x20;
+  * Tool 33 - Default values for common parameters
 
-* ## Enhancing/Improving Policy Creation
-* Continue working on enhancing policy definition language to enable new capabilities in policies
-* Re-engineer policy creation workflow to simplify the tooling for non-programmer users potentially using such approaches as
-  * wizard-base workflow
-  * data definition enhancements in schemas enabling more precise specification of expected data formats
-  * support for new data types (like 'spatial' etc) which are useful specifically in the ESG domain.
-  * auto-suggestion mechanism (for 'next' block or other policy language constructs) based on the structure of existing policies
-  * syntax highlighting of JSON policy definition view
-* Add new reference UI tools that would simplify comprehension of policy and its execution results for complex use-cases such as those with multi-benefit projects with multiple tokens and multiple MRV sources
+&#x20;   Referral Link : [https://github.com/hashgraph/guardian/issues/2308](https://github.com/hashgraph/guardian/issues/2308)
 
-Referral Link : [https://github.com/hashgraph/guardian/issues/1655](https://github.com/hashgraph/guardian/issues/1655)
+## ---- October 2023----
 
-### ----June 2023----
+### Contract-based delegation for token retirement operations
 
-* ## Enhancement to Methodology Comparison Tool
+Implement an enhancement for the token creation and retirement operation essentially creating contract-managed ACL list of delegate (contract) accounts which can retire tokens. The idea is as follows:
 
-Policy comparison tool to be adapted and enhanced to recognize the linked policy modules and display useful differences, statistic and analysis for compared policy instances.
+* An SR deploys a smart contract which will be the creator/destroyer of tokens of a particular type. This means that the 'burn' and/or 'wipe' key for the token would belong to this smart contract. The SR adds this key as the wipe key to the token 'definition'.
+* This smart contract contains a provision for keeping a map of (contract) account addresses to tokens it controls.
+* Each of the 3rd party 'exchange' contract, for each pair, requests an authorization from the 'Manager' smart contracts for performing retirement operations.
+* When/if the SR approves such request the 'exchange' smart contract's address gets added tot he 'authorized' map of address-token pairs.
+* From this point this 'exchange' smart contract can call 'retire' method on the 'Manager' smart contract, the latter checks if the caller's address is in the 'authorized' list and then performs the requested action.
 
-Referral Link : [https://github.com/hashgraph/guardian/issues/1660](https://github.com/hashgraph/guardian/issues/1660)
+Referral Link : [https://github.com/hashgraph/guardian/issues/2011](https://github.com/hashgraph/guardian/issues/2011)
 
-* ## GHGP Corporate Standard Policy
+### Post-minting data enrichment for issued tokens
 
-Develop and demo a Guardian policy that allows companies to mint CETs and develop GHGP-compliant tokenized GHG inventories.
+Projects should have ability to enrich the trust-chain of tokens with additional data in the form of VC/VP after the tokens have been created through editable metadata. Diagrammatically this should look like this:
 
-Referral Link : [https://github.com/hashgraph/guardian/issues/1666](https://github.com/hashgraph/guardian/issues/1666)
+```scss
+VP1(VC1, VC2) <---- Token
+                  /
+VP2(VC3) <-------/ (edited) 
+```
 
-### ----July 2023----
+Where VP2 (VC3) have been linked to the token after the token have been minted.
 
-* ## Guardian Oracle service to verify token trust chain from within Hedera smart contracts
+It should be possible to specify, at minting time, that a particular token instance prohibits adding and/or removing of any information after the creation.
 
-Develop a Guardian 'Oracle' service to produce (at least) a verifiable binary valid/not valid answer for a given token or group of tokens reachable from within the smart contract, which can then form the basis conditional operation inside the smart contract.
+Probably depends on [https://github.com/hashgraph/hedera-improvement-proposal/discussions/607](https://github.com/hashgraph/hedera-improvement-proposal/discussions/607), also visible here: [https://hips.hedera.com/hip/hip-657](https://hips.hedera.com/hip/hip-657)
 
-Referral Link : [https://github.com/hashgraph/guardian/issues/1040](https://github.com/hashgraph/guardian/issues/1040)
+Referral Link : [https://github.com/hashgraph/guardian/issues/1896](https://github.com/hashgraph/guardian/issues/1896)
 
-* ## On-chain carbon token lifecycle rules enforcement
+### Block and policy discoverability/search
 
-Using a combination of HTS and HSCS capabilities develop a consistent system which enable policy creators to specify rules and parameters of the minted token lifecycle such that:
+* Introduce a capability into Guardian where a user can search, directly from the editor, examples of the usage of specific blocks
+* The search scope should be inside a Guardian instance and, additionally, further through all published policies
+* Uses should be able to preview the usage of the block without having to import policy into their Guardian instance
+*   There should be additional filters in the UI that would allow users to restrict the scope of the search based on:
 
-* rules are enforced regardless of whether Guardian is used or not for token management
-* rules and their parameters can be changed by the SR that originally minted the token
-* anyone can create additional sets of rules and any holder of the token can agree to follow them, thereby imposing on yourself these additional rules. Such rules cannot overwrite the original SR rules, the validation is effectively performed in a sequence:
-  * additional rules applied for validation of the attempted action
-  * SR rules applied
+    * date range
+    * SR (list)
+    * Presence/absence of tags and their scoring (e.g. 'minimum 50 thumbs-up tags')
+    * name
 
-Referral Link : [https://github.com/hashgraph/guardian/issues/1659](https://github.com/hashgraph/guardian/issues/1659)
+    Referral Link : [https://github.com/hashgraph/guardian/issues/2281](https://github.com/hashgraph/guardian/issues/2281)
 
-* ## HBAR GHG Policy
+### Verra VM0044 Webinar
+
+Design schemas for the VM0044 methodology, create a PowerPoint presentation, and conduct webinar.
+
+Referral Link : [https://github.com/hashgraph/guardian/issues/2309](https://github.com/hashgraph/guardian/issues/2309)
+
+## ---- November 2023----
+
+### Conforming to Hedera DID, VC, VP, Standards
+
+Update to memo field VP/DID structure to normalize DID spec with the rest of Hedera DID method work (which will also be updated)
+
+Referral Link : [https://github.com/hashgraph/guardian/issues/2211](https://github.com/hashgraph/guardian/issues/2211)
+
+### FireBlocks/ Meetaco Integration
+
+We need to integrate FireBlocks , a Key management tool to manage the Keys and secure Guardian. To get complete info on Fireblocks, please look at [https://www.fireblocks.com/](https://www.fireblocks.com/)
+
+Referral Link : [https://github.com/hashgraph/guardian/issues/1314](https://github.com/hashgraph/guardian/issues/1314)
+
+### Gold Standard’s Reduced Emissions from Cooking and Heating – TPDDTEC Webinar
+
+Design schemas for the TPDDTEC methodology, create a PowerPoint presentation, and conduct webinar.
+
+Referral Link : [https://github.com/hashgraph/guardian/issues/2311](https://github.com/hashgraph/guardian/issues/2311)
+
+### Supply Chain and Macro Dynamics
+
+Investigate and determine the rules that will govern supply chain and macro dynamics of a decentralized GHG data ecosystem. Key questions include but are not limited to:
+
+* How will the use of offsets and RECs influence upstream and downstream emissions?
+* How will the emissions of material inputs and intermediate products impact the emissions of final products?
+* How will the emissions of final products impact scope 3 emissions of downstream customers?
+* How can supply chain actors better coordinate data, approaches, and methodologies of emissions that are from the same source, but different scopes and categories throughout supply chains and product life cycles? &#x20;
+* How can emissions be properly categorized, calculated, and allocated in a way that avoids double and under counting?
+* As emissions are measured and calculated in real-time, how can corresponding inventories be updated?
+* How can inventories be updated to reflect dynamic changes to supply chains and corporate structures?
+
+Identify and implement new Guardian features that facilitate the necessary supply chain and macro-dynamics.
+
+Referral Link : [https://github.com/hashgraph/guardian/issues/2012](https://github.com/hashgraph/guardian/issues/2012)
+
+## ---- December 2023----
+
+### Policy equivalence assessment based on their execution results for the same data
+
+* Introduce the capability into the Guardian codebase to easily run 'test dataset' on a policy instance such that the results of the 'run' are also captured, saved and can be compared between runs. Such test runs should not have effect on the external persistent storage (Hedera, IPFS), i.e. this should be performed in the 'test-run' mode.
+* Introduce the capability to capture the 'input' into the policy during its execution, in both the 'test-run' and the production operation mode. The 'input' should be saved into the DB, from which it can then be used for running the policy test as per above.
+* It should be possible to export saved inputs and results.
+* Replay the trust chain for an asset based on the public sources and see if the results (the issued assets) would've been the same.
+
+Referral Link : [https://github.com/hashgraph/guardian/issues/1886](https://github.com/hashgraph/guardian/issues/1886)
+
+### Verra VM0041 Webinar
+
+Design schemas for the VM0041 methodology, create a PowerPoint presentation, and conduct webinar.
+
+Referral Link : [https://github.com/hashgraph/guardian/issues/2312](https://github.com/hashgraph/guardian/issues/2312)
+
+## ---- January 2024----
+
+### Implement discontinuing policy workflow
+
+Implement the policy deprecation workflow which includes:
+
+* Guardian UI allowing issuing SR to discontinue a policy (version) or the entire policy from a certain date (in the future or 'now').
+* Policy grid should display a suitable marker against non-active policies, and a different for the ones soon expiring.
+* An appropriate message posted in the corresponding Hedera topic recording the 'discontinuing' decision
+* For in-progress projects that have been registered and are operating under the policy it should be possible to 'switch' to the appropriate version of the policy which is still valid.
+
+&#x20; Referral Link : [https://github.com/hashgraph/guardian/issues/2030](https://github.com/hashgraph/guardian/issues/2030)
+
+### Gold Standard’s Carbon Sequestration through Accelerated Carbonation of Concrete Aggregate Webinar
+
+* Design schemas for the Carbon Sequestration through Accelerated Carbonation of Concrete Aggregate methodology, create a PowerPoint presentation, and conduct webinar.&#x20;
+* Development of the policy using the schemas and workflow designed
+
+Referral Link : [https://github.com/hashgraph/guardian/issues/2321](https://github.com/hashgraph/guardian/issues/2321)
+
+### Business User Policy Development Feature
+
+Business Analyst and Sustainability Consultants generally are less technical than developers. Although JSON is the most functional way to construct Guardian Policies, there may be more formal ways to integrate traditional business tool and rules validation capabilities to automatically compile policies.
+
+Referral Link : [https://github.com/hashgraph/guardian/issues/1885](https://github.com/hashgraph/guardian/issues/1885)
+
+### Geographic raster imagery support in Guardian
+
+Introduce support for getTIFF and other raster types of data.
+
+Referral Link : [https://github.com/hashgraph/guardian/issues/1930](https://github.com/hashgraph/guardian/issues/1930)
+
+### HBAR GHG Policy Research
 
 Create a Guardian policy that quantifies and reports GHG emissions from HBAR, using the GHGP product Standard and ICT Sector Guidance for guidance and requirements mapping.
 
-[https://ghgprotocol.org/sites/default/files/standards/Product-Life-Cycle-Accounting-Reporting-Standard\_041613.pdf](https://ghgprotocol.org/sites/default/files/standards/Product-Life-Cycle-Accounting-Reporting-Standard\_041613.pdf)\
-[https://ghgprotocol.org/sites/default/files/GHGP-ICTSG%20-%20ALL%20Chapters.pdf](https://ghgprotocol.org/sites/default/files/GHGP-ICTSG%20-%20ALL%20Chapters.pdf)
+{% embed url="https://ghgprotocol.org/sites/default/files/standards/Product-Life-Cycle-Accounting-Reporting-Standard_041613.pdfhttps://ghgprotocol.org/sites/default/files/GHGP-ICTSG%20-%20ALL%20Chapters.pdf" %}
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/1667](https://github.com/hashgraph/guardian/issues/1667)
