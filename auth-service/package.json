@@ -6,18 +6,18 @@
   },
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
-    "@guardian/common": "^2.14.2",
-    "@guardian/interfaces": "^2.14.2",
-    "@mikro-orm/core": "5.7.12",
-    "@mikro-orm/mongodb": "5.7.12",
-    "@nestjs/common": "^9.4.1",
-    "@nestjs/core": "^9.4.1",
-    "@nestjs/microservices": "^9.4.1",
-    "dotenv": "^16.0.0",
-    "express": "^4.17.1",
-    "jsonwebtoken": "^8.5.1",
-    "module-alias": "^2.2.2",
-    "node-vault": "^0.9.22",
+      "@guardian/common": "^2.14.3-prerelease",
+      "@guardian/interfaces": "^2.14.3-prerelease",
+      "@mikro-orm/core": "5.7.12",
+      "@mikro-orm/mongodb": "5.7.12",
+      "@nestjs/common": "^9.4.1",
+      "@nestjs/core": "^9.4.1",
+      "@nestjs/microservices": "^9.4.1",
+      "dotenv": "^16.0.0",
+      "express": "^4.17.1",
+      "jsonwebtoken": "^8.5.1",
+      "module-alias": "^2.2.2",
+      "node-vault": "^0.9.22",
     "prom-client": "^14.1.1",
     "prometheus-api-metrics": "3.2.2",
     "reflect-metadata": "^0.1.13"
@@ -43,15 +43,16 @@
   "module": "dist/index.js",
   "name": "auth-service",
   "packageManager": "yarn@3.2.1",
-  "scripts": {
-    "build": "tsc",
-    "build:prod": "tsc --project tsconfig.production.json",
-    "debug": "nodemon dist/index.js",
-    "dev": "tsc -w",
-    "dev:docker": "nodemon .",
-    "lint": "tslint --config ../tslint.json --project .",
-    "start": "node dist/index.js",
-    "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/ui-service.xml"
-  },
-  "version": "2.14.2"
+    "scripts": {
+        "build": "tsc",
+        "build:prod": "tsc --project tsconfig.production.json",
+        "debug": "nodemon dist/index.js",
+        "dev": "tsc -w",
+        "dev:docker": "nodemon .",
+        "lint": "tslint --config ../tslint.json --project .",
+        "start": "node dist/index.js",
+        "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/ui-service.xml"
+    },
+    "version": "2.14.3-prerelease",
+    "stableVersion": "2.14.2"
 }
