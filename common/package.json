@@ -4,7 +4,7 @@
     "@aws-sdk/client-secrets-manager": "^3.319.0",
     "@azure/identity": "^3.2.2",
     "@azure/keyvault-secrets": "^4.7.0",
-    "@guardian/interfaces": "^2.14.3-prerelease",
+    "@guardian/interfaces": "^2.15.0-prerelease",
     "@hashgraph/sdk": "2.24.2",
     "@google-cloud/secret-manager": "^4.2.2",
     "@mattrglobal/jsonld-signatures-bbs": "^1.1.2",
@@ -69,6 +69,6 @@
     "test:local": "mocha tests/**/*.test.js --exit",
     "test:stability": "mocha tests/stability.test.js"
   },
-  "version": "2.14.3-prerelease",
+  "version": "2.15.0-prerelease",
   "stableVersion": "2.14.2"
 }
