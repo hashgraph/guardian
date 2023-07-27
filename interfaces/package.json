@@ -15,16 +15,16 @@
   ],
   "license": "Apache-2.0",
   "main": "dist/index.js",
-    "module": "dist/index.js",
-    "name": "@guardian/interfaces",
-    "scripts": {
-        "build": "tsc",
-        "build:prod": "tsc --project tsconfig.production.json",
-        "dev": "tsc -w",
-        "lint": "tslint --config ../tslint.json --project .",
-        "prepack": "npm run build",
-        "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "version": "2.14.3-prerelease",
-    "stableVersion": "2.14.2"
+  "module": "dist/index.js",
+  "name": "@guardian/interfaces",
+  "scripts": {
+    "build": "tsc",
+    "build:prod": "tsc --project tsconfig.production.json",
+    "dev": "tsc -w",
+    "lint": "tslint --config ../tslint.json --project .",
+    "prepack": "npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "version": "2.14.3-prerelease",
+  "stableVersion": "2.14.2"
 }
