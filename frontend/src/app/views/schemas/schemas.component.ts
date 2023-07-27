@@ -51,8 +51,6 @@ export class SchemaConfigComponent implements OnInit {
     ];
     moduleSchemaColumns: string[] = [
         'type',
-        'version',
-        'entity',
         'status',
         'operation',
         'export',
