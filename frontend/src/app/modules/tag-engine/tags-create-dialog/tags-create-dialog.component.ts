@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 /**
@@ -44,6 +44,7 @@ export class TagCreateDialog {
             if (this.schema) {
                 const vc = this.schemaForm.value;
                 data.document = vc;
+                data.schema = this.schema?.iri;
             }
             this.dialogRef.close(data);
         }

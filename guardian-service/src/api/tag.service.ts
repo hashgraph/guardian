@@ -339,7 +339,7 @@ export async function tagsAPI(): Promise<void> {
                     const vcHelper = new VcHelper();
                     let credentialSubject: any = { ...tag.document } || {};
                     credentialSubject.id = owner;
-                    const tagSchema = await DatabaseServer.getSchema({ iri: `#${credentialSubject.type}` });
+                    const tagSchema = await DatabaseServer.getSchema({iri: tag.schema});
                     if (
                         tagSchema &&
                         tagSchema.category === SchemaCategory.TAG &&
