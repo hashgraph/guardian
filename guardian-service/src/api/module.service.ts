@@ -314,9 +314,11 @@ export async function modulesAPI(): Promise<void> {
                 owner: msg.owner
             });
             for (const item of items) {
-                for (const variable of item.config.variables) {
-                    if (variable.baseSchema) {
-                        variable.baseSchema = await DatabaseServer.getSchema({iri: variable.baseSchema});
+                if (item.config?.variables) {
+                    for (const variable of item.config.variables) {
+                        if (variable.baseSchema) {
+                            variable.baseSchema = await DatabaseServer.getSchema({iri: variable.baseSchema});
+                        }
                     }
                 }
             }

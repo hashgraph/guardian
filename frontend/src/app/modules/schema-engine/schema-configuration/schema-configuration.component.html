@@ -16,15 +16,6 @@
             </mat-select>
         </mat-form-field>
 
-        <mat-form-field *ngIf="isModule" [attr.disabled]="type=='version' || type=='edit'"
-                        appearance="outline">
-            <mat-label>* Module</mat-label>
-            <mat-select (selectionChange)="onFilter($event)" formControlName="topicId" tabindex='-1'>
-                <mat-option [value]="'draft'" class="draft-topic-option">No binding</mat-option>
-                <mat-option *ngFor="let module of modules" [value]="module.id">{{module.name}}</mat-option>
-            </mat-select>
-        </mat-form-field>
-
         <mat-form-field *ngIf="isSystem" appearance="outline" [attr.disabled]="type=='version'">
             <mat-label>For (Entity)</mat-label>
             <mat-select formControlName="entity" tabindex='-1'>
