@@ -15,7 +15,7 @@
       "module-alias": "^2.2.2",
       "reflect-metadata": "^0.1.13"
   },
-  "description": "",
+    "description": "",
     "devDependencies": {
         "@types/fs-extra": "^9.0.12",
         "@types/node": "^18.16.0",
