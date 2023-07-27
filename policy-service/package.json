@@ -11,8 +11,8 @@
     },
     "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
     "dependencies": {
-        "@guardian/common": "2.14.3-prerelease",
-        "@guardian/interfaces": "2.14.3-prerelease",
+        "@guardian/common": "2.15.0-prerelease",
+        "@guardian/interfaces": "2.15.0-prerelease",
         "@hashgraph/sdk": "2.24.2",
         "@mattrglobal/jsonld-signatures-bbs": "^1.1.2",
         "@meeco/cryppo": "2.0.2",
@@ -86,6 +86,6 @@
         "test:local": "mocha tests/**/*.test.js",
         "test:stability": "mocha tests/stability.test.js"
     },
-    "version": "2.14.3-prerelease",
+    "version": "2.15.0-prerelease",
     "stableVersion": "2.14.2"
 }
