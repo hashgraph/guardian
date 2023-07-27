@@ -90,6 +90,150 @@ services:
       - ./worker-service/tls:/usr/local/worker-service/tls:ro
       - ./worker-service/configs:/usr/local/worker-service/configs:ro
 
+  worker-service-3:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
+    build:
+      context: .
+      dockerfile: ./worker-service/Dockerfile
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+      - SERVICE_CHANNEL="worker.3"
+    depends_on:
+      auth-service:
+        condition: service_started
+    expose:
+      - 6555
+    volumes:
+      - ./worker-service/tls:/usr/local/worker-service/tls:ro
+      - ./worker-service/configs:/usr/local/worker-service/configs:ro
+
+  worker-service-4:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
+    build:
+      context: .
+      dockerfile: ./worker-service/Dockerfile
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+      - SERVICE_CHANNEL="worker.4"
+    depends_on:
+      auth-service:
+        condition: service_started
+    expose:
+      - 6555
+    volumes:
+      - ./worker-service/tls:/usr/local/worker-service/tls:ro
+      - ./worker-service/configs:/usr/local/worker-service/configs:ro
+
+  worker-service-5:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
+    build:
+      context: .
+      dockerfile: ./worker-service/Dockerfile
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+      - SERVICE_CHANNEL="worker.5"
+    depends_on:
+      auth-service:
+        condition: service_started
+    expose:
+      - 6555
+    volumes:
+      - ./worker-service/tls:/usr/local/worker-service/tls:ro
+      - ./worker-service/configs:/usr/local/worker-service/configs:ro
+
+  worker-service-6:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
+    build:
+      context: .
+      dockerfile: ./worker-service/Dockerfile
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+      - SERVICE_CHANNEL="worker.6"
+    depends_on:
+      auth-service:
+        condition: service_started
+    expose:
+      - 6555
+    volumes:
+      - ./worker-service/tls:/usr/local/worker-service/tls:ro
+      - ./worker-service/configs:/usr/local/worker-service/configs:ro
+
+  worker-service-7:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
+    build:
+      context: .
+      dockerfile: ./worker-service/Dockerfile
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+      - SERVICE_CHANNEL="worker.7"
+    depends_on:
+      auth-service:
+        condition: service_started
+    expose:
+      - 6555
+    volumes:
+      - ./worker-service/tls:/usr/local/worker-service/tls:ro
+      - ./worker-service/configs:/usr/local/worker-service/configs:ro
+
+  worker-service-8:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
+    build:
+      context: .
+      dockerfile: ./worker-service/Dockerfile
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+      - SERVICE_CHANNEL="worker.8"
+    depends_on:
+      auth-service:
+        condition: service_started
+    expose:
+      - 6555
+    volumes:
+      - ./worker-service/tls:/usr/local/worker-service/tls:ro
+      - ./worker-service/configs:/usr/local/worker-service/configs:ro
+
+  worker-service-9:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
+    build:
+      context: .
+      dockerfile: ./worker-service/Dockerfile
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+      - SERVICE_CHANNEL="worker.9"
+    depends_on:
+      auth-service:
+        condition: service_started
+    expose:
+      - 6555
+    volumes:
+      - ./worker-service/tls:/usr/local/worker-service/tls:ro
+      - ./worker-service/configs:/usr/local/worker-service/configs:ro
+
+  worker-service-10:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
+    build:
+      context: .
+      dockerfile: ./worker-service/Dockerfile
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+      - SERVICE_CHANNEL="worker.10"
+    depends_on:
+      auth-service:
+        condition: service_started
+    expose:
+      - 6555
+    volumes:
+      - ./worker-service/tls:/usr/local/worker-service/tls:ro
+      - ./worker-service/configs:/usr/local/worker-service/configs:ro
+
   analytics-service:
     env_file:
       - ./configs/.env.${GUARDIAN_ENV}.guardian.system
