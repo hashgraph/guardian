@@ -54,7 +54,6 @@ export class SchemaConfigComponent implements OnInit {
         'topic',
         'version',
         'entity',
-        'tags',
         'status',
         'operation',
         'export',
