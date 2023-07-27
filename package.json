@@ -12,6 +12,7 @@
     "mrv-sender",
     "topic-viewer",
     "tree-viewer",
+    "analytics-service",
     "worker-service",
     "policy-service",
     "api-tests",

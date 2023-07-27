@@ -1,0 +1,40 @@
+.grid-body {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+}
+
+.grid-header {
+    display: flex;
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    padding: 10px 10px;
+    border-bottom: 1px solid #bbb;
+    font-weight: bold;
+    box-sizing: border-box;
+}
+
+.grid-body-row {
+    display: flex;
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    padding: 10px 10px;
+    border-bottom: 1px solid #ddd;
+    box-sizing: border-box;
+}
+
+.grid-header-col {
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.grid-body-col {
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

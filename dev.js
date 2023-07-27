@@ -40,6 +40,7 @@ const fs = require('fs');
         "auth-service",
         "guardian-service",
         "api-gateway",
+        "analytics-service",
         "mrv-sender",
         "ipfs-client",
         "topic-viewer"
