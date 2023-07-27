@@ -1,18 +1,18 @@
 {
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
-    "@guardian/common": "^2.14.2",
-    "@guardian/interfaces": "^2.14.2",
-    "@mikro-orm/core": "5.7.12",
-    "@mikro-orm/mongodb": "5.7.12",
-    "@nestjs/common": "^9.4.1",
-    "@nestjs/core": "^9.4.1",
-    "@nestjs/microservices": "^9.4.1",
-    "@web-std/fetch": "3.0.0",
-    "cors": "^2.8.5",
-    "dotenv": "^16.0.0",
-    "fs-extra": "^10.0.0",
-    "module-alias": "^2.2.2",
+      "@guardian/common": "^2.14.3-prerelease",
+      "@guardian/interfaces": "^2.14.3-prerelease",
+      "@mikro-orm/core": "5.7.12",
+      "@mikro-orm/mongodb": "5.7.12",
+      "@nestjs/common": "^9.4.1",
+      "@nestjs/core": "^9.4.1",
+      "@nestjs/microservices": "^9.4.1",
+      "@web-std/fetch": "3.0.0",
+      "cors": "^2.8.5",
+      "dotenv": "^16.0.0",
+      "fs-extra": "^10.0.0",
+      "module-alias": "^2.2.2",
     "reflect-metadata": "^0.1.13"
   },
   "description": "",
@@ -30,15 +30,16 @@
   "main": "dist/index.js",
   "name": "logger-service",
   "packageManager": "yarn@3.2.1",
-  "scripts": {
-    "build": "tsc",
-    "build:prod": "tsc --project tsconfig.production.json",
-    "debug": "nodemon dist/index.js",
-    "dev": "tsc -w",
-    "dev:docker": "nodemon .",
-    "lint": "tslint --config ../tslint.json --project .",
-    "start": "node dist/index.js",
-    "watch": "nodemon src/index.ts"
-  },
-  "version": "2.14.2"
+    "scripts": {
+        "build": "tsc",
+        "build:prod": "tsc --project tsconfig.production.json",
+        "debug": "nodemon dist/index.js",
+        "dev": "tsc -w",
+        "dev:docker": "nodemon .",
+        "lint": "tslint --config ../tslint.json --project .",
+        "start": "node dist/index.js",
+        "watch": "nodemon src/index.ts"
+    },
+    "version": "2.14.3-prerelease",
+    "stableVersion": "2.14.2"
 }
