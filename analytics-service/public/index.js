@@ -418,10 +418,18 @@ class App {
         this.reportStatus.className = 'report-status';
         this.reportStatus.addEventListener('click', async (event) => {
             event.preventDefault();
-            await this.updateReport();
             await this.loadStatus();
         });
         this.container.append(this.reportStatus);
+
+        this.restartBtn = document.createElement('div');
+        this.restartBtn.className = 'report-restart';
+        this.restartBtn.addEventListener('click', async (event) => {
+            event.preventDefault();
+            await this.updateReport();
+            await this.loadStatus();
+        });
+        this.container.append(this.restartBtn);
 
         await this.load();
         await this.loadStatus();
@@ -470,7 +478,7 @@ class App {
             this.loader.hide();
         }
     }
-    
+
     async onExport() {
         this.loader.show();
         const fileBuffer = await ReportService.exportInFile(this.dashboard?.uuid);
