@@ -233,6 +233,14 @@ export class SchemaConfigurationComponent implements OnInit {
                     fields: this.fieldsForm,
                     conditions: this.conditionsForm
                 };
+            } else if (this.isModule) {
+                props = {
+                    name: ['', Validators.required],
+                    description: [''],
+                    entity: new FormControl(SchemaEntity.VC, Validators.required),
+                    fields: this.fieldsForm,
+                    conditions: this.conditionsForm
+                };
             } else {
                 props = {
                     name: ['', Validators.required],
