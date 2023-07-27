@@ -51,6 +51,19 @@ services:
             - MQ_ADDRESS=message-broker
             - DB_HOST=mongo
 
+    notification-service:
+        image: guardian-development
+        depends_on:
+            - dev-tools
+            - message-broker
+        volumes:
+            - ./:/app
+        restart: always
+        command: npm run dev:docker --prefix /app/notification-service
+        environment:
+            - MQ_ADDRESS=message-broker
+            - DB_HOST=mongo
+
     auth-service:
         image: guardian-development
         restart: always

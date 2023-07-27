@@ -12,7 +12,7 @@ There are two roles: ‘**User**_**’**_ and _**‘**_**Approver**_**’**_. _U
 
 (See [example 1](creating-and-using-roles.md) for the more detailed description of how to work with roles)
 
-![Creating 2 roles](<../../../../.gitbook/assets/0 (4) (1).png>)
+![Creating 2 roles](<../../../../.gitbook/assets/0 (4).png>)
 
 2. Create all needed document schemas:
 
