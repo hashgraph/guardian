@@ -14,7 +14,7 @@ import { ConfirmationDialogComponent } from 'src/app/modules/common/confirmation
 import { TagsService } from 'src/app/services/tag.service';
 
 enum OperationMode {
-    None, Create, Kyc, Freeze
+    None, Kyc, Freeze
 }
 
 /**
@@ -208,9 +208,7 @@ export class TokenConfigComponent implements OnInit {
                 this.loading = true;
                 this.tokenService.pushCreate(result).subscribe((result) => {
                     const { taskId, expectation } = result;
-                    this.taskId = taskId;
-                    this.expectedTaskMessages = expectation;
-                    this.operationMode = OperationMode.Create;
+                    this.router.navigate(['task', taskId]);
                 }, (e) => {
                     console.error(e.error);
                     this.loading = false;
@@ -232,9 +230,6 @@ export class TokenConfigComponent implements OnInit {
             this.taskId = undefined;
             this.operationMode = OperationMode.None;
             switch (operationMode) {
-                case OperationMode.Create:
-                    this.loadTokens();
-                    break;
                 case OperationMode.Kyc:
                     this.taskService.get(taskId).subscribe((task) => {
                         this.loading = false;
@@ -360,9 +355,7 @@ export class TokenConfigComponent implements OnInit {
                 this.loading = true;
                 this.tokenService.pushDelete(element.tokenId).subscribe((result) => {
                     const { taskId, expectation } = result;
-                    this.taskId = taskId;
-                    this.expectedTaskMessages = expectation;
-                    this.operationMode = OperationMode.Create;
+                    this.router.navigate(['task', taskId]);
                 }, (e) => {
                     console.error(e.error);
                     this.loading = false;
@@ -410,9 +403,7 @@ export class TokenConfigComponent implements OnInit {
                 result.tokenId = element.tokenId;
                 this.tokenService.pushUpdate(result).subscribe((result) => {
                     const { taskId, expectation } = result;
-                    this.taskId = taskId;
-                    this.expectedTaskMessages = expectation;
-                    this.operationMode = OperationMode.Create;
+                    this.router.navigate(['task', taskId]);
                 }, (e) => {
                     console.error(e.error);
                     this.loading = false;

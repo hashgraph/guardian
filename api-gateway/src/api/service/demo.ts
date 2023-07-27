@@ -5,6 +5,7 @@ import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
 import { Controller, Get, HttpCode, HttpStatus, Req, Response } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { TaskAction } from '@guardian/interfaces';
 
 @Controller('demo')
 @ApiTags('demo')
@@ -79,31 +80,28 @@ export class DemoApi {
     @Get('/push/randomKey')
     @HttpCode(HttpStatus.CREATED)
     async pushRandomKey(@Req() req, @Response() res): Promise<any> {
-        const taskManager = new TaskManager();
-        const {taskId, expectation} = taskManager.start('Create random key');
-
         const authHeader = req?.headers?.authorization;
+        let user = null;
+        if (authHeader) {
+            try {
+                const users = new Users();
+                const token = authHeader.split(' ')[1];
+                user = await users.getUserByToken(token) as any;
+            } catch {
+                user = null;
+            }
+        }
+        const taskManager = new TaskManager();
+        const task = taskManager.start(TaskAction.CREATE_RANDOM_KEY, user?.id);
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
-            let role = null;
-            if (authHeader) {
-                try {
-                    const users = new Users();
-                    const token = authHeader.split(' ')[1];
-                    const user = await users.getUserByToken(token) as any;
-                    role = user?.role;
-                } catch (error) {
-                    role = null;
-                }
-            }
-
-            await guardians.generateDemoKeyAsync(role, taskId);
+            await guardians.generateDemoKeyAsync(user?.role, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: 500, message: error.message });
+            taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
 
-        return res.status(201).send({ taskId, expectation });
+        return res.status(201).send(task);
     }
 
     @Get('/registered-users')
@@ -158,30 +156,27 @@ export class DemoApi {
     @HttpCode(HttpStatus.ACCEPTED)
     async pushRandomKey2(@Req() req, @Response() res): Promise<any> {
         const taskManager = new TaskManager();
-        const { taskId, expectation } = taskManager.start('Create random key');
-
         const authHeader = req?.headers?.authorization;
+        let user = null;
+        if (authHeader) {
+            try {
+                const users = new Users();
+                const token = authHeader.split(' ')[1];
+                user = await users.getUserByToken(token) as any;
+            } catch (error) {
+                user = null;
+            }
+        }
+        const task = taskManager.start(TaskAction.CREATE_RANDOM_KEY, user?.id);
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
-            let role = null;
-            if (authHeader) {
-                try {
-                    const users = new Users();
-                    const token = authHeader.split(' ')[1];
-                    const user = await users.getUserByToken(token) as any;
-                    role = user?.role;
-                } catch (error) {
-                    role = null;
-                }
-            }
-
-            await guardians.generateDemoKeyAsync(role, taskId);
+            await guardians.generateDemoKeyAsync(user?.role, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: 500, message: error.message });
+            taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
 
-        return res.status(202).send({ taskId, expectation });
+        return res.status(202).send(task);
     }
 
 }

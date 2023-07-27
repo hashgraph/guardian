@@ -1,0 +1,88 @@
+.content {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    display: block;
+}
+
+.loading {
+    background: #fff;
+    position: absolute;
+    z-index: 99;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
+}
+
+.notifications-table {
+    max-width: 100vw;
+    width: 100%;
+}
+
+.table-container {
+    max-height: calc(100vh - var(--header-height) - 70px);
+    min-height: 100px;
+    overflow-y: auto;
+    position: relative;
+    z-index: 0;
+}
+
+.table-paginator {
+    height: 60px;
+    border-top: 1px solid #eee;
+    margin-top: 5px;
+}
+
+.operations {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.operations__delete {
+    color: red;
+    cursor: pointer;
+}
+
+.operations__delete mat-icon {
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
+}
+
+.operations__view {
+    cursor: pointer;
+}
+
+.operations__view mat-icon {
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
+}
+
+.notifications-table .mat-column-message {
+    border-right: 1px solid #dddddd;
+}
+
+.notifications-table .mat-column-type,
+.notifications-table .mat-column-title,
+.notifications-table .mat-column-message,
+.notifications-table .mat-column-operations {
+    padding-left: 5px;
+}
+
+.notifications-table .mat-column-type {
+    width: 100px;
+}
+
+.notifications-table .mat-column-operations {
+    width: 200px;
+}

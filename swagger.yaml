@@ -1325,6 +1325,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /modules/schemas:
+    get:
+      operationId: ModulesApi_getModuleSchemas
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: &ref_1
+        - modules
+    post:
+      operationId: ModulesApi_postSchemas
+      parameters: []
+      responses:
+        '201':
+          description: ''
+      tags: *ref_1
   /modules/{uuid}:
     get:
       tags:
@@ -1870,7 +1886,7 @@ paths:
       responses:
         '202':
           description: ''
-      tags: &ref_1
+      tags: &ref_2
         - profiles
   /profiles/restore/topics/{username}:
     put:
@@ -1879,7 +1895,7 @@ paths:
       responses:
         '202':
           description: ''
-      tags: *ref_1
+      tags: *ref_2
   /profiles/{username}/balance:
     get:
       tags:
@@ -2057,18 +2073,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_2
+      tags: &ref_3
         - policies
       security:
         - bearerAuth: []
         - bearerAuth: []
     delete:
-      operationId: PolicyApi_deletePOlicyAsync
+      operationId: PolicyApi_deletePolicyAsync
       parameters: []
       responses:
         '202':
           description: ''
-      tags: *ref_2
+      tags: *ref_3
       security:
         - bearerAuth: []
   /policies/{policyId}:
@@ -2569,7 +2585,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_2
+      tags: *ref_3
       security:
         - bearerAuth: []
         - bearerAuth: []
@@ -2593,7 +2609,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_2
+      tags: *ref_3
       security:
         - bearerAuth: []
         - bearerAuth: []
@@ -2618,7 +2634,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_2
+      tags: *ref_3
       security:
         - bearerAuth: []
         - bearerAuth: []
@@ -2629,7 +2645,7 @@ paths:
       responses:
         '200':
           description: ''
-      tags: *ref_2
+      tags: *ref_3
   /policies/{policyId}/export/file:
     get:
       tags:
@@ -3009,7 +3025,7 @@ paths:
       responses:
         '200':
           description: ''
-      tags: *ref_2
+      tags: *ref_3
   /policies/{policyId}/dry-run/users:
     get:
       tags:
@@ -4174,7 +4190,7 @@ paths:
       responses:
         '200':
           description: ''
-      tags: &ref_3
+      tags: &ref_4
         - schemas
   /schemas/system/{username}:
     post:
@@ -4444,7 +4460,7 @@ paths:
       responses:
         '200':
           description: ''
-      tags: *ref_3
+      tags: *ref_4
   /settings:
     get:
       tags:
@@ -6226,6 +6242,120 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /wizard/push/policy:
+    post:
+      operationId: WizardApi_setPolicyAsyncNew
+      summary: Creates a new policy.
+      description: >-
+        Creates a new policy by wizard. Only users with the Standard Registry
+        role are allowed to make the request.
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                saveState:
+                  type: boolean
+                wizardConfig:
+                  type: object
+                  required:
+                    - policy
+                    - roles
+                    - schemas
+                    - trustChain
+                  properties:
+                    roles:
+                      type: array
+                      items:
+                        type: string
+                    policy:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        description:
+                          type: string
+                        topicDescription:
+                          type: string
+                        policyTag:
+                          type: string
+                    schemas:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          iri:
+                            type: string
+                          isApproveEnable:
+                            type: boolean
+                          isMintSchema:
+                            type: boolean
+                          mintOptions:
+                            type: object
+                            properties:
+                              tokenId:
+                                type: string
+                              rule:
+                                type: string
+                          dependencySchemaIri:
+                            type: string
+                          relationshipsSchemaIri:
+                            type: string
+                          initialRolesFor:
+                            type: array
+                            items:
+                              type: string
+                          rolesConfig:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                role:
+                                  type: string
+                                isApprover:
+                                  type: boolean
+                                isCreator:
+                                  type: boolean
+                                gridColumns:
+                                  type: array
+                                  items:
+                                    type: object
+                                    properties:
+                                      field:
+                                        type: string
+                                      title:
+                                        type: string
+                    trustChain:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          role:
+                            type: string
+                          mintSchemaIri:
+                            type: string
+                          viewOnlyOwnDocuments:
+                            type: boolean
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags:
+        - wizard
   /wizard/{policyId}/config:
     post:
       tags:
@@ -6279,7 +6409,7 @@ paths:
       responses:
         '204':
           description: ''
-      tags: &ref_4
+      tags: &ref_5
         - branding
     get:
       operationId: BrandingApi_getBranding
@@ -6287,7 +6417,7 @@ paths:
       responses:
         '200':
           description: ''
-      tags: *ref_4
+      tags: *ref_5
   /suggestions:
     post:
       operationId: SuggestionsApi_policySuggestions
@@ -6321,7 +6451,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_5
+      tags: &ref_6
         - suggestions
       security:
         - bearer: []
@@ -6355,7 +6485,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_5
+      tags: *ref_6
       security:
         - bearer: []
         - bearerAuth: []
@@ -6381,7 +6511,159 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_5
+      tags: *ref_6
+      security:
+        - bearer: []
+        - bearerAuth: []
+  /notifications:
+    get:
+      operationId: NotificationsApi_getAllNotifications
+      summary: Get all notifications
+      description: Returns all notifications.
+      parameters: []
+      responses:
+        '200':
+          description: >-
+            Successful operation. Suggested next and nested block types
+            respectively.
+          headers:
+            X-Total-Count:
+              description: Count of notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NotificationDTO'
+        '401':
+          description: Unauthorized.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: &ref_7
+        - notifications
+      security:
+        - bearer: []
+        - bearerAuth: []
+  /notifications/new:
+    get:
+      operationId: NotificationsApi_getNewNotifications
+      summary: Get new notifications
+      description: Returns new notifications.
+      parameters: []
+      responses:
+        '200':
+          description: >-
+            Successful operation. Suggested next and nested block types
+            respectively.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NotificationDTO'
+        '401':
+          description: Unauthorized.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_7
+      security:
+        - bearer: []
+        - bearerAuth: []
+  /notifications/progresses:
+    get:
+      operationId: NotificationsApi_getProgresses
+      summary: Get progresses
+      description: Returns progresses.
+      parameters: []
+      responses:
+        '200':
+          description: >-
+            Successful operation. Suggested next and nested block types
+            respectively.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProgressDTO'
+        '401':
+          description: Unauthorized.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_7
+      security:
+        - bearer: []
+        - bearerAuth: []
+  /notifications/read/all:
+    post:
+      operationId: NotificationsApi_readAll
+      summary: Read all notifications
+      description: Returns new notifications.
+      parameters: []
+      responses:
+        '200':
+          description: >-
+            Successful operation. Suggested next and nested block types
+            respectively.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NotificationDTO'
+        '401':
+          description: Unauthorized.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_7
+      security:
+        - bearer: []
+        - bearerAuth: []
+  /notifications/delete/{notificationId}:
+    delete:
+      operationId: NotificationsApi_delete
+      summary: Delete notifications up to this point
+      description: Returns deleted count.
+      parameters:
+        - name: notificationId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >-
+            Successful operation. Suggested next and nested block types
+            respectively.
+          content:
+            application/json:
+              schema:
+                type: number
+        '401':
+          description: Unauthorized.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_7
       security:
         - bearer: []
         - bearerAuth: []
@@ -6760,7 +7042,7 @@ info:
     the heart of the Guardian solution is a sophisticated Policy Workflow Engine
     (PWE) that enables applications to offer a requirements-based tokenization
     implementation.
-  version: 2.14.2
+  version: 2.14.3-prerelease
   contact:
     name: API developer
     url: https://envisionblockchain.com
@@ -7109,6 +7391,67 @@ components:
           $ref: '#/components/schemas/SuggestionsConfigItemDTO'
       required:
         - items
+    NotificationDTO:
+      type: object
+      properties:
+        title:
+          type: string
+        message:
+          type: string
+        type:
+          type: string
+          enum:
+            - INFO
+            - ERROR
+            - WARN
+            - SUCCESS
+        action:
+          type: string
+          enum:
+            - POLICY_CONFIGURATION
+            - POLICY_VIEW
+            - POLICIES_PAGE
+            - SCHEMAS_PAGE
+            - TOKENS_PAGE
+            - PROFILE_PAGE
+        result:
+          type: object
+        read:
+          type: boolean
+        old:
+          type: boolean
+      required:
+        - title
+        - message
+        - type
+        - action
+        - result
+        - read
+        - old
+    ProgressDTO:
+      type: object
+      properties:
+        action:
+          type: string
+        message:
+          type: string
+        progress:
+          type: number
+        type:
+          type: string
+          enum:
+            - INFO
+            - ERROR
+            - WARN
+            - SUCCESS
+        taskId:
+          type: string
+      required:
+        - action
+        - message
+        - progress
+        - type
+        - taskId
     Credentials:
       type: object
       required:

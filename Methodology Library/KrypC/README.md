@@ -1,39 +1,50 @@
-# KrypC CarbonCore Policy – Global Carbon Council
+# KrypC Carbon Core Policy – Global Carbon Council
 
-### KRYPC CARBONCORE GUARDIAN POLICIES 
+### KrypC Guardian Policy Template Methodologies
 
-The purpose of this document is to policy for renewable power generation project using Global Carbon Council Methodology. KrypC CarbonCore platform will use the GCCM0001 methodology to create the policy for tokenization of the carbon credit via Hedera Hashgraph technology. 
-The policy facilitates the project owners of eligible greenhouse gas (GHG) reduction projects to calculate emission reduction of their projects, monitor the emission reductions and develop the project submission in accordance with the methodologies.
+KrypC has developed a custom policy for Renewable Energy Generation projects using Global Carbon Council (GCC) Methodology. The policy facilitates the project owners of eligible Green House Gas (GHG) reduction projects to calculate, monitor the emission reductions of their projects and to develop the project submission in accordance with the methodologies.
 
-The policy refers to the methodology for renewable power generation projects, which either supply power to the connected grid or to recipient captive user for captive consumption (here onwards referred as “the project activity”) facilitates the projects that displace the electricity which would be provided to the grid by more emission-intensive mix of power sources, than that established under project activity. The power generated from the Renewable sources can be either directly sold to the grid or used for captive consumption or can be stored in a Battery storage solution (BESS) attached to renewable energy generation plant and then delivered to the grid or used for captive consumption.
+In this document will take you through the process of Guardian Policy Integration for any product team. 
 
-### SPECIFICATIONS
+KrypC Carbon Core platform is using the GCCM0001 methodology for Renewable Energy Generation Projects Supplying Electricity to Grid or Captive Consumers to create the policy for tokenization of the carbon credit via Hedera Hash graph technology.
 
-This Policy can be used for renewable power generation projects, which either supply power to the connected grid or to recipient captive user for captive consumption (here onwards referred as “the project activity”) facilitates the projects that displace the electricity which would be provided to the grid by more emission-intensive mix of power sources, than that established under project activity. 
+The power generated from the Renewable sources can be either directly sold to the grid or used for captive consumption or can be stored in a Battery storage solution (BESS) attached to renewable energy generation plant and then delivered to the grid or used for captive consumption.
 
-The source of the methodology for the policy is taken from Global Carbon Council (GCC) methodology number GCCM0001 - Methodology for Renewable Energy Generation Projects Supplying Electricity to Grid or Captive Consumers. We will use updated versions of the documentation as and when they are released through the GCC.
+### The different actors within KrypC policies
 
-### POLICIES
+Below Four different types of users involved in Carbon Core platform.
 
-The policy is based on following baseline and monitoring methodologies of CDM/GCC. 
+•	Admin - Onboard system users and project owner
 
-•	ACM0002: Grid connected electricity generation from renewable sources; and 
+•	CC Consultant - Manages Project Documentation outside of the Guardian and transcribes into the Guardian.
 
-•	AMS-I-D: Grid connected renewable electricity generation. 
+•	Auditor - Reviews monitoring reports and approve/reject.
 
-•	AMS I F: Renewable energy generation for Captive use and mini grid
+•	Project Owner – A person who is considered as the owner of the offsets and has complete access to it.
 
-The policy also refers to the latest approved versions of the following tools and guidelines of CDM/GCC:
 
-a)	“Tool to calculate the emission factor for an electricity system” 
+### Emission Calculation using Guardian Middleware API 
 
-b)	“Tool to calculate baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation”. 
+The policy is based on following baseline and monitoring methodologies of CDM/GCC;
 
-c)	“Tool for Demonstration and Assessment of Additionality” 
+•	ACM0002: Grid connected electricity generation from renewable sources; and
+
+•	AMS-I-D: Grid connected renewable electricity generation.
+
+•	AMS I F: Renewable energy generation for Captive use and Mini grid
+
+The policy also refers to the latest approved versions of the following tools and guidelines of CDM/GCC;
+
+•	Tool to calculate the emission factor for an electricity system.
+
+•	Tool to calculate baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation.
+
+•	Tool for Demonstration and Assessment of Additionality.
+
 
 **Baseline emissions**
 
-Baseline emissions include only CO2 emissions from electricity generation in power plants that are displaced due to the project activity. The policy refers to the methodology that assumes that all project electricity generation above baseline levels would have been generated by existing grid connected power plants and the addition of new grid-connected power plants. The baseline emissions are to be calculated as follows:
+This includes only CO2 emissions from electricity generation in power plants that are displaced due to the project activity. The policy refers to the methodology that assumes that all project electricity generation above baseline levels would have been generated by existing grid connected power plants and the addition of new grid-connected power plants. The baseline emissions are to be calculated as follows:
 
 **BEy = EG BL,y × EFCO2,y**
 
@@ -41,7 +52,7 @@ Baseline emissions include only CO2 emissions from electricity generation in pow
 
 **Project Emissions** 
 
-Under this policy we assume that most renewable energy project activities, project emissions are equal to zero
+Under this policy we assume that most renewable energy project activities, project emissions are equal to zero.
 
 **PEy = 0**
 
@@ -53,13 +64,15 @@ As per methodology used in this policy, no leakage emissions are anticipated
 
 **Estimation of emission reductions**
 
-As per policy referred from section 12 of GCCM001 V3.0, the formula to calculate the emission reductions is
+As per policy referred from section 12 of GCCM001 V3.0, the formula to calculate the emission reductions is followed.
 
 **ERY=BEY-PEY-LEY**
 
-### FORMAT OF REFERRED FOR THE CREATION OF THE POLICY SHOWN BELOW
+### Schema
 
 **Project Details**
+
+The following are subsets of common attributes specific to a project.
 
 | Schema Type | Questions | Allow Multiple Answers | Answers | Source of Data |
 |---|---|---|---|---: |
@@ -79,9 +92,11 @@ As per policy referred from section 12 of GCCM001 V3.0, the formula to calculate
 | Date Range | Project Crediting Period | Yes | Date | Project Consultant
 | Date Range | Monitoring Period | Yes | Date | Project Consultant
 | Strings | GHG source | Yes | Fossil Fuel/Natural Gas | Project Consultant
-| Strings | Monitoring Pla | Yes | Based on the methodology "GCCM001" | Project Consultant
+| Strings | Monitoring Plan | Yes | Based on the methodology "GCCM001" | Project Consultant
 
 **Baseline Scenario Emission**
+
+The following are subset of common attributes specifically to submit the predictive data estimated to reduce the emissions.
 
 | Schema Type | Questions | Allow Multiple Answers | Answers | Source of Data |
 |---|---|---|---|---: |
@@ -93,6 +108,8 @@ As per policy referred from section 12 of GCCM001 V3.0, the formula to calculate
 
 **Project Scenario Emission**
 
+The following are common attributes specific to a project’s electricity generation.
+
 | Schema Type | Questions | Allow Multiple Answers | Answers | Source of Data |
 |---|---|---|---|---: |
 | Value | Project Capacity | Yes | 15.94 | Project Owner 
@@ -102,36 +119,77 @@ As per policy referred from section 12 of GCCM001 V3.0, the formula to calculate
 
 **Calculation of Emission Reduction**
 
+A subset of the Common Attributes specifically to submit the monitoring report. Based on meter data emission values are calculated.
+
 | Schema Type | Questions | Allow Multiple Answers | Answers | Source of Data |
 |---|---|---|---|---: |
 | Value | Panel Efficiency Module | No | 21.1 | Manufacturer
 | Value | Panel Degradation second year onwards | No | 0.55% | Manufacturer
-| Auto Calculated | Net GHG Reduction (2022 -23) | Yes | 13682.13547 | System Generated
+| Auto Calculated | Net GHG Reduction (2022 -23) | Yes | 13682.14 | System Generated
 
-### UNDERSTAND KRYPC'S CARBONCORE FROM A HIGH-LEVEL
+**Guardian Policy Workflow Process**
 
-KrypC CarbonCore platform provide solution for all parties simplifying the entire process making Carbon trading market safe, reliable, efficient, convenient, open and inclusive. It acts as ledger for creating the trust chain for the verified carbon units and verified emission reductions created. The platform also help in verifying and minting carbon offset tokens will lend its credibility towards 'high-quality' credits, attracting higher price and allows more funding to projects. 
+![policy_workflow](https://github.com/hashgraph/guardian/assets/134472833/758c8fcc-c6c8-4995-baca-892a9c0d8a6d)
 
-KrypC CarbonCore Platform tokenized the carbon credits via Hedera Hashgraph technology. This will follow a few detailed steps:
+Admin gets the Organization/Project owners information based on offline communication according to due diligence which is part of onboarding process. Then admin adds them to the system.
 
-•	Create specific architecture and libraries for the Project listing process and documentation for various registries
+**Adding Project details & Predictive data**
 
-•	Create MRVs, architecture, and libraries for carbon project listing processes and documentation on Hedera
+Consultant creates a project based on offline communication with Project Owners/Organizations and adds ex ante data. A wallet was created for project owners at the time of the first project creation.
 
-•	Tokenize and mint tons of carbon offsets (tC02e)
+![grid1](https://github.com/hashgraph/guardian/assets/134472833/8e2c0fa8-8ac5-4b38-8cf8-f88af3f634cd)
 
-•	Complete the build with KrypC’s carbon solution platform as a ledger for creating the trust chain for the VCUs/VERs created by any stakeholder/partner
+**Onboarding Meters, Submission & Verification of MRV data**
 
-•	Recognizes different VERs/VCUs of by virtue of running a ‘pricing matrix’ of different ‘series of tokenized VERs/VCUs with the aim of having strong liquidity available
+Consultants need to add devices, set the configuration and share it to Project Owners. They install it in devices which then send the MRV data to the system.
 
-•	Link to KrypC's Carbon solution for a full end-to-end platform for tokenized VCUs/VERs
+![grid2](https://github.com/hashgraph/guardian/assets/134472833/46161b0f-34bb-4d74-b987-5606afd2c778)
 
-**The overall following flow will be followed by KrypC CarbonCore:**
+**Verification of Emission Reduction, Issuance of certificate & Minting Carbon Credits**
 
-<img width="800" alt="image" src="https://user-images.githubusercontent.com/79293833/218481408-3421ed7b-3f2b-404f-bdfd-d0aba3ab7aab.png">
- 
-### OVERVIEW OF THE KRYPC CARBONCORE ONBOARDING FLOW
+Consultant will prepare monitoring report and Emission values are calculated using the data captured from meter. Then he submits the monitoring report to the Auditor for approval.
+Auditors issue the certificate on approval. Then the Consultant uploads the issued certificate, then tokens minted and transferred to project owner’s wallet.
 
-Below are the steps for onboarding to minting of carbon credits.
+![grid3](https://github.com/hashgraph/guardian/assets/134472833/34b7f802-0742-4d56-a1b0-a31171ce78b6)
 
-<img width="800" alt="image" src="https://user-images.githubusercontent.com/79293833/218481487-400aef7f-78f3-490c-a2e1-75533b454c33.png">
+
+### Policy Versioning
+
+KrypC's policies will continue to evolve based on our ongoing requirements, we will do our best to update them within this repository, however, please reference our primary guardian policies repository for all up-to-date versions.
+
+### KrypC’s Carbon Core Process
+
+KrypC Carbon Core platform provides solutions for all parties simplifying the entire process making Carbon trading market safe, reliable, efficient, convenient, open and inclusive. It acts as ledger for creating the trust chain for the verified carbon units and verified emission reductions created. The platform also helps in verifying and minting carbon offset tokens and will lend its credibility towards 'high-quality' credits, attracting higher prices and allowing more funding to projects.
+KrypC Carbon Core Platform tokenizes the carbon credits via Hedera Hash graph technology. This will be following steps;
+
+• Create specific architecture and libraries for the Project listing process and documentation for various registries.
+
+• Create MRVs, Architecture, and Libraries for carbon project listing processes and documentation on Hedera.
+
+• Tokenize and mint tons of carbon offsets (tC02e).
+
+• Complete the build with KrypC’s carbon solution platform as a ledger for creating the trust chain for the VCUs/VERs created by any stakeholder/partner.
+
+• Recognizes different VERs/VCUs of by virtue of running a ‘pricing matrix’ of different ‘series of tokenized VERs/VCUs with the aim of having strong liquidity.
+
+• Link to KrypC's Carbon solution for a full end-to-end platform for tokenized VCUs/VERs.
+
+
+**High level process flow of KrypC’s Carbon Core Platform**
+
+<img width="512" alt="high" src="https://github.com/hashgraph/guardian/assets/134472833/fce9ddfb-3287-438b-902d-d4f5d2572eff">
+
+### Carbon Core Project Flow Example
+
+Following are the steps to onboard organizations, create projects and minting of carbon credits.
+
+<img width="467" alt="flow" src="https://github.com/hashgraph/guardian/assets/134472833/dc955cc2-f301-4b66-8fd7-c8376e964217">
+
+### Technical Architecture
+
+Project creation and other activities happened through Carbon Core UI which then hits the related API services. Client and Admin/Consultant communication is though Jira. Once the policy is created guardian API will be called. Documents stored in IPFS. All the actions are saved in the database.
+
+![arch](https://github.com/hashgraph/guardian/assets/134472833/e89c8f8a-b7ca-4cd1-8791-6ab84e3293d0)
+
+
+

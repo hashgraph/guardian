@@ -3,7 +3,7 @@ import { Subject, Subscription } from 'rxjs';
 import { webSocket, WebSocketSubject, WebSocketSubjectConfig } from 'rxjs/webSocket';
 import { AuthService } from './auth.service';
 import { ToastrService } from 'ngx-toastr';
-import { ApplicationStates, MessageAPI } from '@guardian/interfaces';
+import { ApplicationStates, MessageAPI, NotifyAPI } from '@guardian/interfaces';
 import { Router } from '@angular/router';
 
 /**
@@ -23,6 +23,11 @@ export class WebSocketService {
     private blockUpdateSubject: Subject<any>;
     private userInfoUpdateSubject: Subject<any>;
     private taskStatusSubject: Subject<any>;
+    private updateNotification: Subject<any>;
+    private deleteNotification: Subject<any>;
+    private createProgress: Subject<any>;
+    private updateProgress: Subject<any>;
+    private deleteProgress: Subject<any>;
     private serviesStates: any = [];
     private sendingEvent: boolean;
 
@@ -32,6 +37,11 @@ export class WebSocketService {
         this.servicesReady = new Subject();
         this.profileSubject = new Subject();
         this.taskStatusSubject = new Subject();
+        this.updateNotification = new Subject();
+        this.deleteNotification = new Subject();
+        this.createProgress = new Subject();
+        this.updateProgress = new Subject();
+        this.deleteProgress = new Subject();
         this.socket = null;
         this.sendingEvent = false;
 
@@ -211,6 +221,21 @@ export class WebSocketService {
                     this.taskStatusSubject.next(event.data);
                     break;
                 }
+                case NotifyAPI.UPDATE_WS:
+                    this.updateNotification.next(event.data);
+                    break;
+                case NotifyAPI.DELETE_WS:
+                    this.deleteNotification.next(event.data);
+                    break;
+                case NotifyAPI.CREATE_PROGRESS_WS:
+                    this.createProgress.next(event.data);
+                    break;
+                case NotifyAPI.UPDATE_PROGRESS_WS:
+                    this.updateProgress.next(event.data);
+                    break;
+                case NotifyAPI.DELETE_PROGRESS_WS:
+                    this.deleteProgress.next(event.data);
+                    break;
                 default:
                     break;
             }
@@ -275,6 +300,56 @@ export class WebSocketService {
         complete?: (() => void)
     ): Subscription {
         return this.taskStatusSubject.subscribe(next, error, complete);
+    }
+
+    public updateNotificationSubscribe(
+        next?: (
+            data: any
+        ) => void,
+        error?: (error: any) => void,
+        complete?: () => void
+    ) {
+        return this.updateNotification.subscribe(next, error, complete);
+    }
+
+    public deleteNotificationSubscribe(
+        next?: (
+            data: any
+        ) => void,
+        error?: (error: any) => void,
+        complete?: () => void
+    ) {
+        return this.deleteNotification.subscribe(next, error, complete);
+    }
+
+    public createProgressSubscribe(
+        next?: (
+            data: any
+        ) => void,
+        error?: (error: any) => void,
+        complete?: () => void
+    ) {
+        return this.createProgress.subscribe(next, error, complete);
+    }
+
+    public updateProgressSubscribe(
+        next?: (
+            data: any
+        ) => void,
+        error?: (error: any) => void,
+        complete?: () => void
+    ) {
+        return this.updateProgress.subscribe(next, error, complete);
+    }
+
+    public deleteProgressSubscribe(
+        next?: (
+            data: any
+        ) => void,
+        error?: (error: any) => void,
+        complete?: () => void
+    ) {
+        return this.deleteProgress.subscribe(next, error, complete);
     }
 
     public login() {

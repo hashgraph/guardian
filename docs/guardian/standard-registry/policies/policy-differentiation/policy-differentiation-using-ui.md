@@ -63,7 +63,7 @@ There are different sections in the comparison such as&#x20;
 
 We have several Display settings in Policy Blocks section:
 
-<figure><img src="../../../../.gitbook/assets/image (12) (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (12) (4) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../../.gitbook/assets/image (18) (4).png" alt=""><figcaption></figcaption></figure>
 

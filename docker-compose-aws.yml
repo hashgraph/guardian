@@ -45,13 +45,24 @@ services:
     depends_on:
       - message-broker
 
+  notification-service:
+    build:
+      context: .
+      dockerfile: ./notification-service/Dockerfile
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
+    depends_on:
+      - message-broker
+
   worker-service-1:
     build:
       context: .
       dockerfile: ./worker-service/Dockerfile
     depends_on:
-      - ipfs-node
-      - auth-service
+      ipfs-node:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
     env_file:
       - ./worker-service/.env.docker
     environment:
@@ -65,8 +76,10 @@ services:
       context: .
       dockerfile: ./worker-service/Dockerfile
     depends_on:
-      - ipfs-node
-      - auth-service
+      ipfs-node:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
     env_file:
       - ./worker-service/.env.docker
     environment:

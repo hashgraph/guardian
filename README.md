@@ -37,7 +37,7 @@ When building the reference implementation, you can [manually build every compon
 
 * [Docker](https://www.docker.com)
 
-If you build with docker [MongoDB V6](https://www.mongodb.com), [NodeJS V16](https://nodejs.org) and [Nats 1.12.2](https://nats.io/) will be installed and configured automatically.
+If you build with docker [MongoDB V6](https://www.mongodb.com), [NodeJS V16](https://nodejs.org), [Yarn](https://classic.yarnpkg.com/lang/en/docs/install/#mac-stable) and [Nats 1.12.2](https://nats.io/) will be installed and configured automatically.
 
 ### Installation
 
@@ -47,16 +47,17 @@ If you build with docker [MongoDB V6](https://www.mongodb.com), [NodeJS V16](htt
    git clone https://github.com/hashgraph/guardian.git
    ```
 
-2. Update the following files with your Hedera Testnet account info (see prerequisites) as indicated. Please check complete steps to generate Operation ID and Operator Key by looking at link : [How to Create Operator ID and Operator Key](https://docs.hedera.com/guardian/getting-started/getting-started/how-to-create-operator-id-and-operator-key). There will be other steps in the Demo Usage Guide that will require the generation of Operator IDs and Operator Keys. It is important to mention that the Operator IDs and Operator Keys in the ./guardian/configs/.env.\<GUARDIAN_ENV\>.guardian.system will be used to generate demo accounts.
+2. Update the following files with your Hedera Testnet account info (see prerequisites) as indicated. Please check complete steps to generate Operation_ID and Operator_Key by looking at link: [How to Create Operator_ID and Operator_Key](https://docs.hedera.com/guardian/getting-started/getting-started/how-to-create-operator-id-and-operator-key). There will be other steps in the Demo Usage Guide that will be required for the generation of Operator_ID and Operator_Key. It is important to mention that the Operator_ID and Operator_Key in the ```/configs/.env.\<GUARDIAN_ENV\>.guardian.system``` will be used to generate demo accounts.
 
    For example:
 
-   in ./guardian/.env you may choose name of the Guardian platform. Leave the field empty or unspecified if you update a production environment to keep previous data (for more details read at https://github.com/IntellectEU/guardian/blob/feature/environment/docs/environments/Ecosystem-Envitonment.md)
-   ```plaintext
+   in **.env.template** you may choose name of the Guardian platform. Leave the field empty or unspecified if you update a production environment to keep previous data (for more details read at https://docs.hedera.com/guardian/guardian/readme/environments/ecosystem-environments)
+   
+   ```shell
       GUARDIAN_ENV="develop"
    ```
    
-   in ./guardian/configs/.env.develop.guardian.system
+   in ```/configs/.env.develop.guardian.system```
 
    ```plaintext
    OPERATOR_ID="..."
@@ -65,7 +66,7 @@ If you build with docker [MongoDB V6](https://www.mongodb.com), [NodeJS V16](htt
 
    **Note**. You can use the Schema Topic ID (`INITIALIZATION_TOPIC_ID`) already present in the configuration files, or you can specify your own.
    
-3. Now, we have two options to setup IPFS node :  1. Local node 2. IPFS Web3Storage node.
+4. Now, we have two options to setup IPFS node :  1. Local node 2. IPFS Web3Storage node.
 
    **3.1 Setting up IPFS Local node:**
 
@@ -73,35 +74,32 @@ If you build with docker [MongoDB V6](https://www.mongodb.com), [NodeJS V16](htt
 
    For example: https://github.com/yeasy/docker-ipfs
 
-   - 3.1.2 For setup IPFS local node you need to set variables in the same file ./guardian/configs/.env.develop.guardian.system
+   - 3.1.2 For setup IPFS local node you need to set variables in the same file ```/configs/.env.develop.guardian.system```
 
    ```
    IPFS_NODE_ADDRESS="..." # Default IPFS_NODE_ADDRESS="http://localhost:5002"
    IPFS_PUBLIC_GATEWAY='...' # Default IPFS_PUBLIC_GATEWAY='https://localhost:8080/ipfs/${cid}'
    IPFS_PROVIDER="local"
    ```
-   **Note**
-   1. Default IPFS_NODE_ADDRESS="http://localhost:5002"
-   2. Default IPFS_PUBLIC_GATEWAY='https://localhost:8080/ipfs/${cid}' 
    
    **3.2 Setting up IPFS Web3Storage node:**
    
-   3.2.1 For setup IPFS web3storage node you need to set variables in the same file ./guardian/configs/.env.develop.guardian.system
+   3.2.1 For setup IPFS web3storage node you need to set variables in the same file ```/configs/.env.develop.guardian.system```
    
    ```
    IPFS_STORAGE_API_KEY="..."
    IPFS_PROVIDER="web3storage"
    ```
  
-   To generate Web3.Storage API KEY. Please follow the steps from <https://web3.storage/docs/#quickstart> to obtain it.To know complete information on    generating API Key please check [How to Create Web3.Storage API Key](https://docs.hedera.com/guardian/guardian/readme/getting-started/how-to-generate-web3.storage-api-key).
+   To generate Web3.Storage API KEY. Please follow the steps from <https://web3.storage/docs/#quickstart> to obtain it. To know complete information on generating API Key please check [How to Create Web3.Storage API Key](https://docs.hedera.com/guardian/guardian/readme/getting-started/how-to-generate-web3.storage-api-key).
   
-4. Build and launch with Docker. Please note that this build is meant to be used in production and will not contain any debug information. From the project's root folder:
+5. Build and launch with Docker. Please note that this build is meant to be used in production and will not contain any debug information. From the project's root folder:
 
    ```shell
    docker compose up -d --build
    ```
-**Note**. about docker-compose: from the end of June 2023 Compose V1 won’t be supported anymore and will be removed from all Docker Desktop versions. Make sure you use Docker Compose V2 (comes with Docker Desktop > 3.6.0) as at https://docs.docker.com/compose/install/
-
+   
+**Note**. About docker-compose: from the end of June 2023 Compose V1 won’t be supported anymore and will be removed from all Docker Desktop versions. Make sure you use Docker Compose V2 (comes with Docker Desktop > 3.6.0) as at https://docs.docker.com/compose/install/
 
 5. Browse to <http://localhost:3000> and complete the setup.
 
@@ -114,25 +112,26 @@ If you want to manually build every component with debug information, then build
 * [MongoDB V6](https://www.mongodb.com)
 * [NodeJS V16](https://nodejs.org)
 * [Nats 1.12.2](https://nats.io/)
+* [Yarn](https://classic.yarnpkg.com/lang/en/docs/install/#mac-stable)
 
 ### Build and start each component
 
 Install, configure and start all the prerequisites, then build and start each component.
-Configure .env file in each service
+Configure **.env.template** file in each service
 
    For example:
 
-   in `guardian-service/.env`:
+   in `/guardian-service/.env`:
    ```plaintext
        GUARDIAN_ENV="develop"
    ```
 
-   If need to configure OVERRIDE variables add it in .env file.
+   If need to configure OVERRIDE variables add it in **.env.template** file :
    ```plaintext
        OVERRIDE="false" 
    ```
 
-   in `guardian-service/configs/.env.guardian.develop`:
+   in `/guardian-service/configs/.env.guardian.develop`:
    ```plaintext
    OPERATOR_ID="..."
    OPERATOR_KEY="..."
@@ -145,38 +144,21 @@ Configure .env file in each service
    ```shell
    git clone https://github.com/hashgraph/guardian.git
    ```
-
-2. From the **interfaces** folder
-
-   Build package:
-
-   ```shell
-   npm install
-   npm run build
+2. Install dependencies
+   ```
+   yarn
    ```
 
-3. From the **common** folder
+3. From the **interfaces** folder
 
-   Build package:
-
-   ```shell
-   npm install
-   npm run build
+   ```
+    yarn workspace @guardian/interfaces run build
    ```
 
-4. From the **worker-service** folder
+4. From the **common** folder
 
-   To build the service:
-
-   ```shell
-   npm install
-   npm run build
    ```
-
-   To start the service:
-
-   ```shell
-   npm start
+    yarn workspace @guardian/common run build
    ```
 
 5. From the **logger-service** folder
@@ -184,14 +166,13 @@ Configure .env file in each service
    To build the service:
 
    ```shell
-   npm install
-   npm run build
+   yarn workspace logger-service run build
    ```
 
    To start the service:
 
    ```shell
-   npm start
+   yarn workspace logger-service start
    ```
 
 6. From the **auth-service** folder
@@ -199,59 +180,67 @@ Configure .env file in each service
    To build the service:
 
    ```shell
-   npm install
-   npm run build
+   yarn workspace auth-service run build
    ```
 
    To start the service:
 
    ```shell
-   npm start
+   yarn workspace auth-service start
    ```
-
-7. From the **ipfs-client** folder
+7. From the **policy-service** folder
 
    To build the service:
 
    ```shell
-   npm install
-   npm run build
+   yarn workspace policy-service run build
    ```
-
    To start the service:
-
+   
    ```shell
-   npm start
+   yarn workspace policy-service run build
+   ```
+8. Build and start **worker-service** service
+   
+   Update **IPFS_STORAGE_API_KEY** value in ```/worker-service/configs/.env.worker``` file.
+
+   To build the service:
+   ```
+   yarn workspace worker-service run build
+   ```
+   To start the service:
+   ```
+   yarn workspace worker-service start
    ```
 
-8. From the **guardian-service** folder
+9. Build and start **guardian-service** service
+
+   Update **OPERATOR_ID** and **OPERATOR_KEY** values in ```/guardian-service/configs/.env.worker``` file.
 
    To build the service:
 
    ```shell
-   npm install
-   npm run build
-   ```
-
-   To start the service (found on <http://localhost:3004>):
-
-   ```shell
-   npm start
-   ```
-
-9. From the **api-gateway** folder
-
-   To build the service:
-
-   ```shell
-   npm install
-   npm run build
+   yarn workspace guardian-service run build
    ```
 
    To start the service (found on <http://localhost:3002>):
 
    ```shell
-   npm start
+   yarn workspace guardian-service start
+   ```
+
+10. From the **api-gateway** folder
+
+   To build the service:
+
+   ```shell
+   yarn workspace api-gateway run build
+   ```
+
+   To start the service (found on <http://localhost:3002>):
+
+   ```shell
+   yarn workspace api-gateway start
    ```
 
 10. From the **mrv-sender** folder
@@ -288,7 +277,7 @@ Configure .env file in each service
 
 1. Install a Hedera Local Network following the [official documentation](https://github.com/hashgraph/hedera-local-node#docker)
 
-2. Configure Guardian's configuration files `.env/.env.docker` accordingly:
+2. Configure Guardian's configuration files `/.env/.env.docker` accordingly:
 
    ```shell
    OPERATOR_ID=""

@@ -48,6 +48,18 @@ export class CalculateContainerBlock {
                 return;
             }
 
+            const inputSchema = await validator.getSchema(ref.options.inputSchema);
+            if (!inputSchema) {
+                validator.addError(`Schema with id "${ref.options.inputSchema}" does not exist`);
+                return;
+            }
+
+            const outputSchema = await validator.getSchema(ref.options.outputSchema);
+            if (!outputSchema) {
+                validator.addError(`Schema with id "${ref.options.outputSchema}" does not exist`);
+                return;
+            }
+
             let variables: any = {};
             if (ref.options.inputFields) {
                 for (const field of ref.options.inputFields) {
@@ -77,8 +89,6 @@ export class CalculateContainerBlock {
                     map[field.name] = true;
                 }
             }
-
-            const outputSchema = await validator.getSchema(ref.options.outputSchema);
             const schema = new Schema(outputSchema);
             for (const field of schema.fields) {
                 if (field.required && !map[field.name]) {

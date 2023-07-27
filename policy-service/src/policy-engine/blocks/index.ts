@@ -44,3 +44,4 @@ export { TagsManagerBlock } from './tag-manager';
 export { ExternalTopicBlock } from './external-topic-block';
 export { UploadVcDocumentBlock } from './upload-vc-document-block';
 export { MessagesReportBlock } from './messages-report-block';
+export { NotificationBlock } from './notification.block';

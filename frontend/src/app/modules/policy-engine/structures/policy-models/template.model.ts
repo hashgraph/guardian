@@ -1,4 +1,4 @@
-import { GenerateUUIDv4, ModuleStatus, PolicyType } from '@guardian/interfaces';
+import { GenerateUUIDv4, ModuleStatus, PolicyType, Schema } from '@guardian/interfaces';
 import { PolicyBlockModel } from './block.model';
 import { PolicyModuleModel } from './module.model';
 import { IBlockConfig } from './interfaces/block-config.interface';
@@ -189,7 +189,11 @@ export class TemplateModel {
     }
 
     public getBlock(block: any): PolicyBlockModel | undefined {
-        return this._config, this.getBlock(block);
+        return this._config.getBlock(block);
+    }
+
+    public setSchemas(schemas: Schema[]): void {
+        this._config.setSchemas(schemas);
     }
 
     public refreshData() {

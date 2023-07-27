@@ -1,14 +1,5 @@
-import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
-import {
-    PolicyModel,
-    PolicyTokenModel,
-    PolicyGroupModel,
-    PolicyRoleModel,
-    PolicyTopicModel,
-    PolicyModuleModel,
-    ModuleEventModel,
-    ModuleVariableModel
-} from '../../structures';
+import { ChangeDetectorRef, Component, ElementRef, Input, OnInit, SimpleChanges, ViewChild } from '@angular/core';
+import { ModuleEventModel, ModuleVariableModel } from '../../structures';
 
 /**
  * Settings for module.
@@ -33,21 +24,25 @@ export class ModulePropertiesComponent implements OnInit {
         outputs: {},
     };
 
+    baseSchemas: any[];
+
     variables: ModuleVariableModel[] = [];
     inputs: ModuleEventModel[] = [];
     outputs: ModuleEventModel[] = [];
 
-    constructor(private changeDetector: ChangeDetectorRef) {
+    constructor(
+        private changeDetector: ChangeDetectorRef,
+    ) {
     }
 
     ngOnInit(): void {
-
     }
 
     ngOnChanges(changes: SimpleChanges) {
         this.inputs = this.module.inputEvents;
         this.outputs = this.module.outputEvents;
         this.variables = this.module.variables;
+        this.baseSchemas = this.module.getSchemas();
     }
 
     onHide(item: any, prop: any) {
@@ -92,5 +87,9 @@ export class ModulePropertiesComponent implements OnInit {
 
     onRemoveOutput(output: ModuleEventModel) {
         this.module.removeOutputEvent(output)
+    }
+
+    baseSchemaReadOnly(baseSchema: string | unknown): boolean {
+        return typeof baseSchema === 'object';
     }
 }

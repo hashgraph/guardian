@@ -4,7 +4,9 @@ import {
     MessageResponse,
     NatsService,
     ValidateConfiguration,
-    SecretManager
+    SecretManager,
+    NotificationHelper,
+    Users
 } from '@guardian/common';
 import {
     ExternalMessageEvents, GenerateUUIDv4,
@@ -482,7 +484,7 @@ export class Worker extends NatsService {
                         hederaAccountId,
                         hederaAccountKey,
                         userHederaAccountId,
-                        tokenId,
+                        token,
                         kycKey,
                         grant,
                         dryRun
@@ -490,12 +492,17 @@ export class Worker extends NatsService {
                     const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun, networkOptions);
 
                     if (grant) {
-                        result.data = await client.grantKyc(tokenId, userHederaAccountId, kycKey);
+                        result.data = await client.grantKyc(token.tokenId, userHederaAccountId, kycKey);
                     } else {
-                        result.data = await client.revokeKyc(tokenId, userHederaAccountId, kycKey);
+                        result.data = await client.revokeKyc(token.tokenId, userHederaAccountId, kycKey);
                     }
                     client.destroy();
-
+                    const user = await new Users().getUserByAccount(userHederaAccountId);
+                    await NotificationHelper.info(
+                        `${grant ? 'Grant' : 'Revok'} KYC`,
+                        `KYC ${grant ? 'granted for' : 'revoked for'} ${token.tokenName}`,
+                        user?.id
+                    );
                     break;
                 }
 
@@ -504,19 +511,24 @@ export class Worker extends NatsService {
                         hederaAccountId,
                         hederaAccountKey,
                         userHederaAccountId,
-                        tokenId,
+                        token,
                         freezeKey,
                         freeze,
                         dryRun
                     } = task.data;
                     const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun, networkOptions);
                     if (freeze) {
-                        result.data = await client.freeze(tokenId, userHederaAccountId, freezeKey);
+                        result.data = await client.freeze(token.tokenId, userHederaAccountId, freezeKey);
                     } else {
-                        result.data = await client.unfreeze(tokenId, userHederaAccountId, freezeKey);
+                        result.data = await client.unfreeze(token.tokenId, userHederaAccountId, freezeKey);
                     }
                     client.destroy();
-
+                    const user = await new Users().getUserByAccount(userHederaAccountId);
+                    await NotificationHelper.info(
+                        `${freeze ? 'Freeze' : 'Unfreeze'} token`,
+                        `${token.tokenName} ${freeze ? 'frozen' : 'unfrozen'}`,
+                        user.id
+                    );
                     break;
                 }
 
@@ -664,6 +676,14 @@ export class Worker extends NatsService {
                     result.data = await HederaSDKHelper
                         .setNetwork(networkOptions)
                         .getTopicMessageByIndex(topic, index);
+                    break;
+                }
+
+                case WorkerTaskType.GET_TOPIC_MESSAGE_CHUNKS: {
+                    const { topic, timeStamp, next } = task.data;
+                    result.data = await HederaSDKHelper
+                        .setNetwork(networkOptions)
+                        .getTopicMessageChunks(topic, timeStamp, next);
                     break;
                 }
 

@@ -111,6 +111,14 @@ export class Users extends NatsService {
     }
 
     /**
+     * Return user by did
+     * @param dids
+     */
+    public async getUsersBySrId(did: string): Promise<IAuthUser[]> {
+        return await this.sendMessage(AuthEvents.GET_USERS_BY_SR_ID, { did });
+    }
+
+    /**
      * Return users with role
      * @param role
      */

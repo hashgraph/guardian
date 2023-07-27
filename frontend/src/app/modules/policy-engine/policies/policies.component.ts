@@ -21,15 +21,6 @@ import { SchemaService } from 'src/app/services/schema.service';
 import { WizardMode, WizardService } from 'src/app/modules/policy-engine/services/wizard.service';
 import { FormControl, FormGroup } from '@angular/forms';
 
-enum OperationMode {
-    None,
-    Create,
-    Import,
-    Publish,
-    Delete,
-    WizardCreate
-}
-
 /**
  * Component for choosing a policy and
  * display blocks of the selected policy
@@ -52,12 +43,6 @@ export class PoliciesComponent implements OnInit {
     owner: any;
     tagEntity = TagType.Policy;
     tagSchemas: any[] = [];
-
-    saveWizardState: boolean = false;
-
-    mode: OperationMode = OperationMode.None;
-    taskId: string | undefined = undefined;
-    expectedTaskMessages: number = 0;
 
     publishMenuOption = [{
             id: 'Publish',
@@ -229,46 +214,6 @@ export class PoliciesComponent implements OnInit {
         this.loadAllPolicy();
     }
 
-    onAsyncError(error: any) {
-        this.informService.processAsyncError(error);
-        this.taskId = undefined;
-        this.mode = OperationMode.None;
-        this.loadAllPolicy();
-    }
-
-    onAsyncCompleted() {
-        switch (this.mode) {
-            case OperationMode.Delete:
-            case OperationMode.Create:
-            case OperationMode.Import:
-                this.taskId = undefined;
-                this.mode = OperationMode.None;
-                this.loadAllPolicy();
-                break;
-            case OperationMode.Publish:
-                if (this.taskId) {
-                    const taskId = this.taskId;
-                    this.taskId = undefined;
-                    this.processPublishResult(taskId);
-                }
-                break;
-            case OperationMode.WizardCreate:
-                if (this.taskId) {
-                    const taskId = this.taskId;
-                    this.taskId = undefined;
-                    this.processCreateWizardResult(taskId);
-                    this.mode = OperationMode.None;
-                    this.loadAllPolicy();
-                }
-                break;
-            default:
-                console.log(`Not allowed mode ${this.mode}`);
-                break;
-        }
-
-        this.mode = OperationMode.None;
-    }
-
     dryRun(element: any) {
         this.loading = true;
         this.policyEngineService.dryRun(element.id).subscribe((data: any) => {
@@ -323,9 +268,7 @@ export class PoliciesComponent implements OnInit {
         this.loading = true;
         this.policyEngineService.pushPublish(element.id, version).subscribe((result) => {
                 const { taskId, expectation } = result;
-                this.taskId = taskId;
-                this.expectedTaskMessages = expectation;
-                this.mode = OperationMode.Publish;
+                this.router.navigate(['task', taskId]);
         }, (e) => {
                 this.loading = false;
         });
@@ -350,9 +293,7 @@ export class PoliciesComponent implements OnInit {
             this.loading = true;
             this.policyEngineService.pushDelete(element.id).subscribe((result) => {
                     const { taskId, expectation } = result;
-                    this.taskId = taskId;
-                    this.expectedTaskMessages = expectation;
-                    this.mode = OperationMode.Delete;
+                    this.router.navigate(['task', taskId]);
             }, (e) => {
                     this.loading = false;
             });
@@ -436,9 +377,7 @@ export class PoliciesComponent implements OnInit {
                     this.policyEngineService.pushImportByMessage(data, versionOfTopicId).subscribe(
                             (result) => {
                                 const { taskId, expectation } = result;
-                                this.taskId = taskId;
-                                this.expectedTaskMessages = expectation;
-                                this.mode = OperationMode.Import;
+                                this.router.navigate(['task', taskId]);
                         }, (e) => {
                                 this.loading = false;
                         });
@@ -446,9 +385,7 @@ export class PoliciesComponent implements OnInit {
                     this.policyEngineService.pushImportByFile(data, versionOfTopicId).subscribe(
                             (result) => {
                                 const { taskId, expectation } = result;
-                                this.taskId = taskId;
-                                this.expectedTaskMessages = expectation;
-                                this.mode = OperationMode.Import;
+                                this.router.navigate(['task', taskId]);
                         }, (e) => {
                                 this.loading = false;
                         });
@@ -497,18 +434,6 @@ export class PoliciesComponent implements OnInit {
         // else if (event.id === 'Draft') {
         //     this.draft(element);
         // }
-    }
-
-    private processCreateWizardResult(taskId: string): void {
-        this.taskService.get(taskId).subscribe((task: any) => {
-            const { result } = task;
-            if (this.saveWizardState) {
-                this.wizardService.setWizardPreset(result.policyId, {
-                    data: result.wizardConfig,
-                });
-                this.saveWizardState = false;
-            }
-        });
     }
 
     private processPublishResult(taskId: string): void {
@@ -623,9 +548,7 @@ export class PoliciesComponent implements OnInit {
                 this.loading = true;
                 this.policyEngineService.pushCreate(result).subscribe((result) => {
                         const { taskId, expectation } = result;
-                        this.taskId = taskId;
-                        this.expectedTaskMessages = expectation;
-                        this.mode = OperationMode.Create;
+                        this.router.navigate(['/task', taskId]);
                 }, (e) => {
                         this.loading = false;
                 });
@@ -646,16 +569,16 @@ export class PoliciesComponent implements OnInit {
             this.wizardService.openPolicyWizardDialog(
                 WizardMode.CREATE,
                 (value) => {
-                    this.saveWizardState = value.saveState;
                     this.loading = true;
                     this.wizardService
-                        .createPolicyAsync(value.config)
+                        .createPolicyAsync({
+                            wizardConfig: value.config,
+                            saveState: value.saveState
+                        })
                         .subscribe(
                             (result) => {
                                 const { taskId, expectation } = result;
-                                this.taskId = taskId;
-                                this.expectedTaskMessages = expectation;
-                                this.mode = OperationMode.WizardCreate;
+                                this.router.navigate(['task', taskId]);
                             },
                             (e) => {
                                 this.loading = false;
@@ -675,7 +598,7 @@ export class PoliciesComponent implements OnInit {
             this.noFilterResults = this.filteredPolicies.length === 0;
             return;
         }
-        
+
         this.filters.policyName
             ? this.filterByPolicyName()
             : this.filterByTag();

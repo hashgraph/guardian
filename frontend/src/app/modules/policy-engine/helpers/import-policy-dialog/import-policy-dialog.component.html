@@ -52,8 +52,6 @@
         <mat-spinner></mat-spinner>
     </div>
 
-    <div *ngIf="loading && taskId" class="loading">
-        <async-progress class="loading-progress" [taskId]="taskId" [expected]="expectedTaskMessages"
+    <async-progress *ngIf="loading && taskId" [taskId]="taskId"
             (error)="onAsyncError($event)" (completed)="onAsyncCompleted()"></async-progress>
-    </div>
 </div>

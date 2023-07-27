@@ -16,6 +16,8 @@ POLICY_CONFIG_DIR=$BASE_DIR/configs/vault/policies/policy_configs.json
 APPROLE_CONFIG_DIR=$BASE_DIR/configs/vault/approle/approle.json
 SECRETS_DIR=$BASE_DIR/configs/vault/secrets/secrets.json
 
+TOKENS_DIR=$BASE_DIR/configs/vault/secrets/tokens
+
 # Executes a vault read command using curl
 # $1: URI vault path to be executed
 # $2: optional VAULT_TOKEN for authentication
@@ -148,6 +150,10 @@ get_approle_credentials() {
     ENV_PATHS=$(echo $ROLE | jq -r '.env_path[]')
     ENV_NAMES=$(echo $ROLE | jq -r '.env_name[]')
 
+    # destination for tokens in vault tree for reading back
+    TOKEN_FILE_DIR=$TOKENS_DIR/$ENV_NAMES/
+    TOKEN_FILE_NAME=.env.secrets
+
     COUNTER=0
     for ENV_PATH in ${ENV_PATHS[@]}; do
 
@@ -168,6 +174,10 @@ get_approle_credentials() {
         echo -e "\nVAULT_APPROLE_ROLE_ID=$ROLE_ID" >> "$ENV_FILE"
       fi
 
+      # create and update file for multi-env subsequent configuration
+      mkdir -p $TOKEN_FILE_DIR && touch $TOKEN_FILE_NAME
+      echo -e "\nVAULT_APPROLE_ROLE_ID=$ROLE_ID" >> "$TOKEN_FILE_DIR/$TOKEN_FILE_NAME"
+
       if grep -q "^VAULT_APPROLE_SECRET_ID=" "$ENV_FILE"; then
         # replace the value of the key if it exists
         sed -i "s/^VAULT_APPROLE_SECRET_ID=.*/VAULT_APPROLE_SECRET_ID=$SECRET_ID/" $ENV_FILE
@@ -175,9 +185,11 @@ get_approle_credentials() {
         # add the key and its value if it doesn't exist
         echo "VAULT_APPROLE_SECRET_ID=$SECRET_ID" >> "$ENV_FILE"
       fi
+      #  update file for multi-env subsequent configuration
+      echo "VAULT_APPROLE_SECRET_ID=$SECRET_ID" >> "$TOKEN_FILE_DIR/$TOKEN_FILE_NAME"
+
       let COUNTER++
     done
-
     
   done
 }
