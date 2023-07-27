@@ -1520,8 +1520,6 @@ export class HederaSDKHelper {
         return hbars.toString();
     }
 
-
-
     /**
      * Returns topic messages
      * @param topicId Topic identifier
