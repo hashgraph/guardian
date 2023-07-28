@@ -4,15 +4,15 @@
 
 To compare the modules, click on Compare button in the Modules page as shown below:
 
-![image2.png](<../../../../../.gitbook/assets/0 (1).png>)
+![image2.png](<../../../../../.gitbook/assets/0 (1) (3).png>)
 
 Once, compare button is clicked, we need to select the first and second modules to compare:
 
-![image3.png](../../../../../.gitbook/assets/1.png)
+![image3.png](<../../../../../.gitbook/assets/1 (7).png>)
 
 ### 1.1 Result of comparison:
 
-<figure><img src="../../../../../.gitbook/assets/2.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/2 (1).png" alt=""><figcaption></figcaption></figure>
 
 #### **1.1.1 Params**
 

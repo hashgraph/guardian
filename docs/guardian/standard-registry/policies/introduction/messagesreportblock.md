@@ -1,7 +1,5 @@
 # messagesReportBlock
 
-**Trust Chain**
-
 ## 1. messagesReportBlock:
 
 This Block allows to create report based on the inter-referenced messages.
@@ -85,25 +83,25 @@ Or used in conjunctions with other blocks (e.g. with grid)
 * Only policy topics are displayed
 * Auxiliary events (such as publishing policy) are hidden
 
-![image4.png](../../../../.gitbook/assets/3.png)
+![image4.png](<../../../../.gitbook/assets/3 (6).png>)
 
 #### **2.1.2 Advanced** – complete information is displayed with
 
-* Full hierarchical topic structure&#x20;
-* All auxiliary and system events&#x20;
+* Full hierarchical topic structure
+* All auxiliary and system events
 
-![image5.png](../../../../.gitbook/assets/4.png)
+![image5.png](<../../../../.gitbook/assets/4 (5).png>)
 
 #### **2.1.3 Display layout**
 
 * Left-side panel shows hierarchical catalog of Header topics.
 
-![image6.png](../../../../.gitbook/assets/5.png)
+![image6.png](<../../../../.gitbook/assets/5 (6).png>)
 
 * Central area shows the timeline of the events as they have been recorded (in messages) in the specific topics
 
-![image5.png](<../../../../.gitbook/assets/6 (1).png>)
+![image5.png](<../../../../.gitbook/assets/6 (1) (3).png>)
 
 * Right-side panel shows detailed information about the selected message
 
-![image1.png](../../../../.gitbook/assets/7.png)
+![image1.png](<../../../../.gitbook/assets/7 (1).png>)
