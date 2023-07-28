@@ -6,6 +6,7 @@ import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
 import { INotifier } from '@helpers/notifier';
 import { Artifact, DataBaseHelper, DatabaseServer, findAllEntities, getArtifactType, MessageAction, MessageServer, MessageType, Policy, PolicyMessage, regenerateIds, replaceAllEntities, replaceAllVariables, replaceArtifactProperties, Schema, SchemaFields, Token, Topic, TopicConfig, TopicHelper, Users, } from '@guardian/common';
 import { exportTag, importTag } from '@api/tag.service';
+import { SchemaImportResult } from '@api/helpers/schema-helper';
 
 /**
  * Policy import export helper
@@ -306,6 +307,7 @@ export class PolicyImportExportHelper {
                 replaceAllVariables(policy.config, 'Token', token.tokenId, tokenObject.tokenId);
 
                 tokenMap.set(token.id, tokenObject.id.toString());
+                tokenMap.set(token.tokenId, tokenObject.id.toString());
             }
             notifier.completed();
         }
@@ -342,14 +344,12 @@ export class PolicyImportExportHelper {
             const policyTags = tags.filter((t: any) => t.entity === TagType.Policy);
             const tokenTags = tags.filter((t: any) => t.entity === TagType.Token);
             const schemaTags = tags.filter((t: any) => t.entity === TagType.Schema);
-
             await importTag(policyTags, result.id.toString());
-
             await importTag(tokenTags, tokenMap);
-
             const map3: Map<string, string> = new Map();
             for (const item of schemasMap) {
                 map3.set(item.oldID, item.newID);
+                map3.set(item.oldMessageID, item.newID);
             }
             await importTag(schemaTags, map3);
             notifier.completed();
@@ -390,7 +390,7 @@ export class PolicyImportExportHelper {
      * @param policy
      * @param schemasMap
      */
-    static async replaceConfig(policy: Policy, schemasMap: any, artifactsMap: any) {
+    static async replaceConfig(policy: Policy, schemasMap: SchemaImportResult[], artifactsMap: any) {
         if (await new DataBaseHelper(Policy).findOne({ name: policy.name })) {
             policy.name = policy.name + '_' + Date.now();
         }

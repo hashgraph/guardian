@@ -392,6 +392,10 @@ export interface ModuleMessageBody extends MessageBody {
      */
     owner: string;
     /**
+     * Topic id
+     */
+    topicId: string;
+    /**
      * CID
      */
     cid: string;

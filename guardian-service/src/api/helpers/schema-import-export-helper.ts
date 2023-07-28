@@ -1,8 +1,8 @@
 import { GenerateUUIDv4, ISchema, ModelHelper, Schema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
-import { DatabaseServer, Logger, MessageAction, MessageServer, MessageType, replaceValueRecursive, SchemaConverterUtils, SchemaMessage, UrlType } from '@guardian/common';
+import { DatabaseServer, Logger, MessageAction, MessageServer, MessageType, replaceValueRecursive, SchemaConverterUtils, SchemaMessage, Tag, TagMessage, UrlType } from '@guardian/common';
 import { emptyNotifier, INotifier } from '@helpers/notifier';
 import { importTag } from './../tag.service';
-import { createSchema, fixSchemaDefsOnImport, getDefs, ImportResult, onlyUnique } from './schema-helper';
+import { createSchema, fixSchemaDefsOnImport, getDefs, ImportResult, onlyUnique, SchemaImportResult } from './schema-helper';
 
 export const schemaCache = {};
 
@@ -60,13 +60,14 @@ export async function loadSchema(messageId: string, owner: string) {
  */
 export async function importTagsByFiles(
     result: ImportResult,
-    files: any[],
+    files: Tag[],
     notifier: INotifier
 ): Promise<ImportResult> {
     const { schemasMap } = result;
     const idMap: Map<string, string> = new Map();
     for (const item of schemasMap) {
         idMap.set(item.oldID, item.newID);
+        idMap.set(item.oldMessageID, item.newID);
     }
     await importTag(files, idMap);
     return result;
@@ -114,7 +115,7 @@ export async function importSchemaByFiles(
 ): Promise<ImportResult> {
     notifier.start('Import schemas');
 
-    const schemasMap: any[] = [];
+    const schemasMap: SchemaImportResult[] = [];
     const uuidMap: Map<string, string> = new Map();
 
     for (const file of files) {
@@ -126,7 +127,9 @@ export async function importSchemaByFiles(
             oldUUID,
             newUUID,
             oldIRI: `#${oldUUID}`,
-            newIRI: `#${newUUID}`
+            newIRI: `#${newUUID}`,
+            oldMessageID: file.messageId,
+            newMessageID: null,
         })
         if (oldUUID) {
             uuidMap.set(oldUUID, newUUID);
@@ -206,7 +209,37 @@ export async function importSchemasByMessages(
     }
 
     notifier.start('Load tags');
+    const topics = new Set<string>();
+    for (const schema of schemas) {
+        topics.add(schema.topicId);
+    }
+
     const tags: any[] = [];
+    const messageServer = new MessageServer(null, null);
+    for (const id of topics) {
+        const tagMessages = await messageServer.getMessages<TagMessage>(
+            id,
+            MessageType.Tag,
+            MessageAction.PublishTag
+        );
+        for (const tag of tagMessages) {
+            tags.push({
+                uuid: tag.uuid,
+                name: tag.name,
+                description: tag.description,
+                owner: tag.owner,
+                entity: tag.entity,
+                target: tag.target,
+                status: 'History',
+                topicId: tag.topicId,
+                messageId: tag.id,
+                document: null,
+                uri: null,
+                date: tag.date,
+                id: null
+            });
+        }
+    }
 
     notifier.completed();
 
