@@ -137,10 +137,9 @@ function getNotificationResultMessage(action: TaskAction, result: any) {
 function getNotificationResultTitle(action: TaskAction, result: any) {
     switch (action) {
         case TaskAction.PUBLISH_POLICY:
-            if (result.errors) {
+            if (result.errors && result.errors.length > 0) {
                 return;
             }
-            return 'Policy published';
         default:
             return taskResultTitleMap.get(action);
     }
