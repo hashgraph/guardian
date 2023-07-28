@@ -95,7 +95,7 @@ Registry is allowed to publish and edit policy config, schemas, tokens and all t
 
 2. Feel free to play around with policy config by clicking on edit icon and understanding the different schemas used by policy
 
-<figure><img src="../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (9).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/image (51) (2).png" alt=""><figcaption></figcaption></figure>
 
