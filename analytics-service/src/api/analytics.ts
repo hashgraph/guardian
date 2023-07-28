@@ -5,6 +5,7 @@ import {
     ApiInternalServerErrorResponse,
     ApiOkResponse,
     ApiOperation,
+    ApiParam,
     ApiTags,
     getSchemaPath
 } from '@nestjs/swagger';
@@ -12,7 +13,6 @@ import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
 import { ReportDTO } from '@middlewares/validation/schemas/report';
 import { DashboardDTO } from '@middlewares/validation/schemas/dashboard';
 import { DataContainerDTO } from '@middlewares/validation/schemas/report-data';
-import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator';
 
 /**
  * Analytics Api
@@ -59,12 +59,6 @@ export class AnalyticsApi {
         description: 'Update current report.'
     })
     @ApiExtraModels(ReportDTO, InternalServerErrorDTO)
-    @ApiImplicitQuery({
-        name: 'uuid',
-        type: String,
-        description: 'Report identifier',
-        required: true
-    })
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
@@ -130,7 +124,7 @@ export class AnalyticsApi {
         description: 'Returns report data by report uuid.'
     })
     @ApiExtraModels(DataContainerDTO, InternalServerErrorDTO)
-    @ApiImplicitQuery({
+    @ApiParam({
         name: 'uuid',
         type: String,
         description: 'Report identifier',
@@ -170,7 +164,7 @@ export class AnalyticsApi {
         description: 'Returns a csv file.'
     })
     @ApiExtraModels(InternalServerErrorDTO)
-    @ApiImplicitQuery({
+    @ApiParam({
         name: 'uuid',
         type: String,
         description: 'Report identifier',
@@ -223,7 +217,7 @@ export class AnalyticsApi {
         description: 'Returns a xlsx file.'
     })
     @ApiExtraModels(InternalServerErrorDTO)
-    @ApiImplicitQuery({
+    @ApiParam({
         name: 'uuid',
         type: String,
         description: 'Report identifier',
@@ -301,8 +295,8 @@ export class AnalyticsApi {
         description: 'Returns dashboard by uuid.'
     })
     @ApiExtraModels(DataContainerDTO, InternalServerErrorDTO)
-    @ApiImplicitQuery({
-        name: 'uuid',
+    @ApiParam({
+        name: 'id',
         type: String,
         description: 'Dashboard identifier',
         required: true
