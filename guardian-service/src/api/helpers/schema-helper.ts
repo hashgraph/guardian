@@ -15,36 +15,49 @@ import { INotifier } from '@helpers/notifier';
 /**
  * Import Result
  */
+export interface SchemaImportResult {
+    /**
+     * Old schema id
+     */
+    oldID: string,
+    /**
+     * New schema id
+     */
+    newID: string,
+    /**
+     * Old schema uuid
+     */
+    oldUUID: string,
+    /**
+     * New schema uuid
+     */
+    newUUID: string,
+    /**
+     * Old schema iri
+     */
+    oldIRI: string,
+    /**
+     * New schema iri
+     */
+    newIRI: string,
+    /**
+     * Old schema message id
+     */
+    oldMessageID: string
+    /**
+     * Old schema message id
+     */
+    newMessageID: string
+}
+
+/**
+ * Import Result
+ */
 export interface ImportResult {
     /**
      * New schema uuid
      */
-    schemasMap: {
-        /**
-         * Old schema id
-         */
-        oldID: string,
-        /**
-         * New schema id
-         */
-        newID: string,
-        /**
-         * Old schema uuid
-         */
-        oldUUID: string,
-        /**
-         * New schema uuid
-         */
-        newUUID: string,
-        /**
-         * Old schema iri
-         */
-        oldIRI: string,
-        /**
-         * New schema iri
-         */
-        newIRI: string,
-    }[];
+    schemasMap: SchemaImportResult[];
     /**
      * Errors
      */

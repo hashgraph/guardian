@@ -1,4 +1,4 @@
-import { GenerateUUIDv4, IRootConfig, ModelHelper, NotificationAction, PolicyEvents, PolicyType, Schema, SchemaEntity, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
+import { GenerateUUIDv4, IRootConfig, ModelHelper, NotificationAction, PolicyEvents, PolicyType, Schema, SchemaEntity, SchemaHelper, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
 import {
     Artifact,
     DataBaseHelper,
@@ -926,10 +926,14 @@ export class PolicyEngine extends NatsService {
 
         notifier.completedAndStart('File parsing');
         const policyToImport = await PolicyImportExportHelper.parseZipFile(message.document, true);
+
         if (!Array.isArray(policyToImport.tags)) {
             policyToImport.tags = [];
         }
         for (const tag of tagMessages) {
+            if(tag.entity === TagType.Policy && tag.target !== messageId) {
+                continue;
+            }
             policyToImport.tags.push({
                 uuid: tag.uuid,
                 name: tag.name,
@@ -940,9 +944,9 @@ export class PolicyEngine extends NatsService {
                 status: 'History',
                 topicId: tag.topicId,
                 messageId: tag.id,
+                date: tag.date,
                 document: null,
                 uri: null,
-                date: tag.date,
                 id: null
             });
         }

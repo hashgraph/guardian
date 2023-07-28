@@ -1,5 +1,23 @@
 import { ApiResponse } from '@api/helpers/api-response';
-import { DatabaseServer, Logger, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, Policy as PolicyCollection, PolicyModule as ModuleCollection, Schema as SchemaCollection, Tag, TagMessage, Token as TokenCollection, TopicConfig, UrlType, Users, VcHelper, } from '@guardian/common';
+import {
+    DatabaseServer,
+    Logger,
+    MessageAction,
+    MessageError,
+    MessageResponse,
+    MessageServer,
+    MessageType,
+    PolicyModule as ModuleCollection,
+    Policy as PolicyCollection,
+    Schema as SchemaCollection,
+    Tag,
+    TagMessage,
+    Token as TokenCollection,
+    TopicConfig,
+    UrlType,
+    Users,
+    VcHelper,
+} from '@guardian/common';
 import { GenerateUUIDv4, IRootConfig, MessageAPI, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TagType } from '@guardian/interfaces';
 
 /**
@@ -190,23 +208,33 @@ export async function exportTag(targets: string[], entity?: TagType): Promise<an
  * @param map - Map<OldLocalId, NewLocalId> | NewLocalId
  */
 export async function importTag(
-    tags: any[],
+    tags: Tag[],
     newIds?: Map<string, string> | string
 ): Promise<any> {
     const uuidMap: Map<string, string> = new Map();
+    const newTags: Tag[] = [];
     if (newIds) {
         if (typeof newIds === 'string') {
             for (const tag of tags) {
                 tag.localTarget = newIds;
+                tag.target = null;
+                newTags.push(tag);
             }
         } else {
-            tags = tags.filter(tag => newIds.has(tag.localTarget));
             for (const tag of tags) {
-                tag.localTarget = newIds.get(tag.localTarget);
+                if (tag.target && newIds.has(tag.target)) {
+                    tag.localTarget = newIds.get(tag.target);
+                    tag.target = null;
+                    newTags.push(tag);
+                } else if (tag.localTarget && newIds.has(tag.localTarget)) {
+                    tag.localTarget = newIds.get(tag.localTarget);
+                    tag.target = null;
+                    newTags.push(tag);
+                }
             }
         }
     }
-    for (const tag of tags) {
+    for (const tag of newTags) {
         if (tag.uuid) {
             if (uuidMap.has(tag.uuid)) {
                 tag.uuid = uuidMap.get(tag.uuid);
@@ -339,7 +367,7 @@ export async function tagsAPI(): Promise<void> {
                     const vcHelper = new VcHelper();
                     let credentialSubject: any = { ...tag.document } || {};
                     credentialSubject.id = owner;
-                    const tagSchema = await DatabaseServer.getSchema({iri: tag.schema});
+                    const tagSchema = await DatabaseServer.getSchema({ iri: tag.schema });
                     if (
                         tagSchema &&
                         tagSchema.category === SchemaCategory.TAG &&
