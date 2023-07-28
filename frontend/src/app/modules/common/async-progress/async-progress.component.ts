@@ -205,7 +205,6 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                             text.join(''),
                             'The policy is invalid'
                         );
-                        return;
                     }
                     this.router.navigate(['policy-configuration'], {
                         queryParams: {
