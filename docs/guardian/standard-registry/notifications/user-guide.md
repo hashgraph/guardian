@@ -29,7 +29,3 @@ Users can see the details of the status or progresses of the recent processes by
 Users can see old notifications by clicking on “”View all notifications”. On the notifications status  grid, we can perform two operations on the notification: “Delete up to this point” and “Open”.
 
 ![image6.png](../../../.gitbook/assets/4.png)
-
-1. Policy definitions can now use new Notification block. Users can configure the message, title and type (ERROR, SUCCESS, INFO, WARN), link notification to policy (policy will be opened by clicking on notification), and User (ALL,CURRENT,POLICY\_OWNER,DOCUMENT\_OWNER,DOCUMENT\_ISSUER,GROUP\_OWNER,ROLE). If User == “ROLE”, users can setup appropriate role and also mark it as “Only for current user group”
-
-![image9.png](../../../.gitbook/assets/5.png)
