@@ -259,7 +259,13 @@ export class PolicyImportExportHelper {
             .setTopicObject(parent)
             .sendMessage(message);
         notifier.completedAndStart('Link topic and policy');
-        await topicHelper.twoWayLink(topicRow, parent, messageStatus.getId());
+        if (!versionOfTopicId) {
+            await topicHelper.twoWayLink(
+                topicRow,
+                parent,
+                messageStatus.getId()
+            );
+        }
         notifier.completedAndStart('Publishing schemas');
         const systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
         notifier.info(`Found ${systemSchemas.length} schemas`);
