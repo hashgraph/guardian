@@ -50,7 +50,9 @@ reductions.
 
 This policy is published to the Hedera network and can either be imported via Github(.policy file) or IPFS timestamp.
 
-Timestamp: 1688046287.912072347
+Timestamp: 
+Policy: 1690817347.617246606
+Tool 33: 1690820529.197570717
 
 ### Available Roles 
  
