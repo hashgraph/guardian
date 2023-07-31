@@ -6,8 +6,6 @@ The first adaptation relates to the redesign of the creation of new accounts. Th
 
 Here the images below to show the selection of account type and selection of username and password in order to create a new account.
 
-\\
-
 <figure><img src="../../../.gitbook/assets/2 (5).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/1 (1) (4).png" alt=""><figcaption></figcaption></figure>

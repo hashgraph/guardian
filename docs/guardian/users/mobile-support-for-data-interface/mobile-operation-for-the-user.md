@@ -4,16 +4,14 @@
 
 The first adaptation relates to the redesign of the creation of new accounts. This redesign for mobile solves the overflow previously present while still maintaining the descriptions.
 
-Here the images below show the selection of account type and selection of username and password in order to create a new account.
-
-\
+Here the images below show the selection of account type and selection of username and password in order to create a new account.\
 ![](<../../../.gitbook/assets/1 (1) (4).png>)![](<../../../.gitbook/assets/2 (5).png>)
 
 ### New header for mobile
 
 The header was also adapted for mobile for all types of users. The balance was maintained as one of the elements always present. The new header for mobile, these elements are always present.
 
-![](<../../../.gitbook/assets/3 (1) (1).png>)\\
+<figure><img src="../../../.gitbook/assets/3 (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 The various menus and submenus (in case there are any) have been moved upon clicking on the hamburger menu, presenting the user with the following.
 
@@ -25,7 +23,7 @@ Also some information about the user is also presented, such as the name of the 
 
 As this is an integral part of using Guardian, the association with the users Hedera credentials and the Standard Registry of his choosing were adapted. The mobile adaptation to associate Hedera credentials and Standard Registry upon creating an account.
 
-![](<../../../.gitbook/assets/6 (1) (4).png>)\\
+<figure><img src="../../../.gitbook/assets/6 (1) (4).png" alt="" width="300"><figcaption></figcaption></figure>
 
 ### User policy registration application
 
