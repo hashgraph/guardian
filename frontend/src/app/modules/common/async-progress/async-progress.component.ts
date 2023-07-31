@@ -143,12 +143,16 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 this.wsService.updateProfile();
                 this.router.navigate([
                     this.userRole === UserRole.USER ? 'user-profile' : 'config',
-                ]);
+                ], {
+                    replaceUrl: true,
+                });
                 return;
             case TaskAction.DELETE_TOKEN:
             case TaskAction.UPDATE_TOKEN:
             case TaskAction.CREATE_TOKEN:
-                this.router.navigate(['tokens']);
+                this.router.navigate(['tokens'], {
+                    replaceUrl: true,
+                });
                 break;
             case TaskAction.CLONE_POLICY:
             case TaskAction.CREATE_POLICY:
@@ -156,6 +160,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                     queryParams: {
                         policyId: result,
                     },
+                    replaceUrl: true,
                 });
                 break;
             case TaskAction.IMPORT_POLICY_FILE:
@@ -164,6 +169,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                     queryParams: {
                         policyId: result.policyId,
                     },
+                    replaceUrl: true,
                 });
                 break;
             case TaskAction.WIZARD_CREATE_POLICY:
@@ -177,6 +183,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                     queryParams: {
                         policyId,
                     },
+                    replaceUrl: true,
                 });
                 break;
             case TaskAction.PUBLISH_POLICY:
@@ -210,20 +217,27 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                         queryParams: {
                             policyId,
                         },
+                        replaceUrl: true,
                     });
                 }
                 break;
             case TaskAction.DELETE_POLICY:
-                this.router.navigate(['policies']);
+                this.router.navigate(['policies'],  {
+                    replaceUrl: true,
+                });
                 break;
             case TaskAction.CREATE_SCHEMA:
                 localStorage.removeItem('restoreSchemaData');
-                this.router.navigate(['schemas']);
+                this.router.navigate(['schemas'],  {
+                    replaceUrl: true,
+                });
                 break;
             case TaskAction.PUBLISH_SCHEMA:
             case TaskAction.IMPORT_SCHEMA_FILE:
             case TaskAction.IMPORT_SCHEMA_MESSAGE:
-                this.router.navigate(['schemas']);
+                this.router.navigate(['schemas'],  {
+                    replaceUrl: true,
+                });
                 break;
         }
     }
@@ -239,12 +253,16 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.CONNECT_USER:
                 this.router.navigate([
                     this.userRole === UserRole.USER ? 'user-profile' : 'config',
-                ]);
+                ],  {
+                    replaceUrl: true,
+                });
                 break;
             case TaskAction.DELETE_TOKEN:
             case TaskAction.UPDATE_TOKEN:
             case TaskAction.CREATE_TOKEN:
-                this.router.navigate(['tokens']);
+                this.router.navigate(['tokens'],  {
+                    replaceUrl: true,
+                });
                 break;
             case TaskAction.CLONE_POLICY:
             case TaskAction.CREATE_POLICY:
@@ -253,13 +271,17 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.WIZARD_CREATE_POLICY:
             case TaskAction.PUBLISH_POLICY:
             case TaskAction.DELETE_POLICY:
-                this.router.navigate(['policies']);
+                this.router.navigate(['policies'],  {
+                    replaceUrl: true,
+                });
                 break;
             case TaskAction.CREATE_SCHEMA:
             case TaskAction.PUBLISH_SCHEMA:
             case TaskAction.IMPORT_SCHEMA_FILE:
             case TaskAction.IMPORT_SCHEMA_MESSAGE:
-                this.router.navigate(['schemas']);
+                this.router.navigate(['schemas'],  {
+                    replaceUrl: true,
+                });
                 break;
         }
     }

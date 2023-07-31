@@ -175,7 +175,9 @@ export class NotificationComponent implements OnInit {
     }
 
     viewProgress(taskId: string) {
-        this.router.navigate(['task', taskId]);
+        this.router.navigate(['task', taskId], {
+            replaceUrl: this.router.url.startsWith('/task'),
+        });
     }
 
     onScrollNotifications(event: any) {
