@@ -372,11 +372,35 @@ export class WebSocketsService {
                         1000
                     );
                     break;
+                case 'MEECO_AUTH_REQUEST':
+                    const meecoAuthRequestResp = await new MeecoAuth().createMeecoAuthRequest(ws);
+                    ws.send(JSON.stringify({
+                        type: 'MEECO_AUTH_PRESENT_VP',
+                        data: meecoAuthRequestResp
+                    }));
+                    break;
                 case 'MEECO_APPROVE_SUBMISSION':
-                    const meecoSubmissionApproveResp = await new MeecoAuth().approveSubmission(ws, data.presentation_request_id, data.submission_id);
+                    const meecoSubmissionApproveResp = await new MeecoAuth().approveSubmission(
+                        ws,
+                        data.presentation_request_id, data.submission_id) as MeecoApprovedSubmission;
+
+                    const meecoUser = MeecoAuth.extractUserFromApprovedMeecoToken(meecoSubmissionApproveResp)
+                    // The username structure is necessary to avoid collisions - meeco doest not provide unique username
+                    const userProvider = {
+                        role:  data.role || UserRole.STANDARD_REGISTRY as UserRole,
+                        username: `${meecoUser.firstName}${meecoUser.familyName}${
+                            generateNumberFromString(meecoUser.id)
+                        }`.toLowerCase(),
+                        providerId: meecoUser.id,
+                        provider: ExternalProviders.MEECO,
+                    };
+                    const guardianData = await new Users().generateNewUserTokenBasedOnExternalUserProvider(
+                      userProvider
+                    );
+
                     ws.send(JSON.stringify({
                         type: 'MEECO_APPROVE_SUBMISSION_RESPONSE',
-                        data: meecoSubmissionApproveResp
+                        data: guardianData
                     }));
                     break;
                 case 'MEECO_REJECT_SUBMISSION':

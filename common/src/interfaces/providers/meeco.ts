@@ -86,3 +86,27 @@ export interface Submission {
   verification_result: any
   last_verified_at: any
 }
+
+export interface VerifiableCredentialStatusListResult {
+  iat: number
+  vc: VcStatusList
+  nbf: number
+  iss: string
+  sub: string
+}
+
+export interface VcStatusList {
+  'context': string[]
+  id: string
+  type: string[]
+  issuer: string
+  issuanceDate: string
+  credentialSubject: CredentialSubjectStatusList
+}
+
+export interface CredentialSubjectStatusList {
+  id: string
+  type: string
+  statusPurpose: string
+  encodedList: string
+}

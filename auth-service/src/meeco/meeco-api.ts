@@ -4,6 +4,8 @@ import { IMe } from '../meeco/models/me';
 import { IDEK, IKEK, IKeypair, IPassphraseArtefact } from '../meeco/models/keys';
 import { IPresentationRequest, IPresentationSubmission, IPresentationSubmissions } from './models/presentation-request';
 import { IMeecoSchemaData } from './models/schema';
+import * as jwt from 'jsonwebtoken';
+import { VerifiableCredentialStatusListResult } from '@guardian/common';
 
 export interface IMeecoOauthConfig {
   url: string;
@@ -244,7 +246,7 @@ export class MeecoApi {
   /**
    * Create a new Verifiable Pesentation Request that expires in a short time
    * @param requestName
-   * @param client_did
+   * @param clientDID
    * @param clientName
    * @param presentationDefinitionId
    * @returns {IPresentationRequest} presentation request
@@ -390,5 +392,15 @@ export class MeecoApi {
     const { data: presentationRequest } = result;
 
     return presentationRequest;
+  }
+
+  /**
+   * Get the status list from the Verifiable Credential
+   * @param statusListCredentialUrl
+   * @returns Promise<VerifiableCredentialStatusListResult>
+   */
+  async getVCStatusList(statusListCredentialUrl: string): Promise<VerifiableCredentialStatusListResult> {
+    const { data } = await axios.get(statusListCredentialUrl)
+    return jwt.decode(data) as VerifiableCredentialStatusListResult;
   }
 }
