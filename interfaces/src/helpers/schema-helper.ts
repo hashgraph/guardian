@@ -738,42 +738,51 @@ export class SchemaHelper {
     }
 
     /**
-     * Clear fields context
-     * @param json
-     * @private
-     */
-    private static _clearFieldsContext(json: any): any {
-        delete json.type;
-        delete json['@context'];
-
-        const keys = Object.keys(json);
-        for (const key of keys) {
-            if (Object.prototype.toString.call(json[key]) === '[object Object]') {
-                json[key] = SchemaHelper._clearFieldsContext(json[key]);
-            }
-        }
-
-        return json;
-    }
-
-    /**
      * Update fields context
      * @param fields
      * @param json
      * @private
      */
-    private static _updateFieldsContext(fields: SchemaField[], json: any): any {
+    private static _updateFieldsContext(
+        fields: SchemaField[],
+        json: any,
+        parent?: SchemaField
+    ): any {
+        if (Object.prototype.toString.call(json) === '[object Array]') {
+            for (const item of json) {
+                SchemaHelper._updateFieldsContext(fields, item, parent);
+            }
+            return json;
+        }
+
         if (Object.prototype.toString.call(json) !== '[object Object]') {
             return json;
         }
+
+        if (parent) {
+            if (parent.context.type === 'GeoJSON') {
+                json['@context'] = parent.context.context;
+            } else {
+                json.type = parent.context.type;
+                json['@context'] = parent.context.context;
+            }
+        } else {
+            delete json.type;
+            delete json['@context'];
+        }
+
         for (const field of fields) {
             const value = json[field.name];
             if (field.isRef && value) {
-                SchemaHelper._updateFieldsContext(field.fields, value);
-                value.type = field.context.type;
-                value['@context'] = field.context.context;
+                SchemaHelper._updateFieldsContext(field.fields, value, field);
+            } else if (
+                Object.prototype.toString.call(value) === '[object Object]'
+            ) {
+                delete value.type;
+                delete value['@context'];
             }
         }
+
         return json;
     }
 
@@ -783,7 +792,6 @@ export class SchemaHelper {
      * @param json
      */
     public static updateObjectContext(schema: Schema, json: any): any {
-        json = SchemaHelper._clearFieldsContext(json);
         json = SchemaHelper._updateFieldsContext(schema.fields, json);
         json.type = schema.type;
         json['@context'] = [schema.contextURL];
