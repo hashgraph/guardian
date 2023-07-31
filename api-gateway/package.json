@@ -11,7 +11,7 @@
     "@guardian/common": "^2.15.0-prerelease",
     "@guardian/interfaces": "^2.15.0-prerelease",
     "@nestjs/common": "^9.4.1",
-    "@nestjs/core": "^9.4.1",
+    "@nestjs/core": "^10.1.2",
     "@nestjs/jwt": "^10.0.3",
     "@nestjs/microservices": "^9.4.1",
     "@nestjs/platform-express": "^9.4.2",
