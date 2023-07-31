@@ -541,29 +541,31 @@ export async function modulesAPI(): Promise<void> {
             }
             const item = await DatabaseServer.createModules(module);
 
-            const messageServer = new MessageServer(null, null);
-            const tagMessages = await messageServer.getMessages<TagMessage>(
-                moduleTopicId,
-                MessageType.Tag,
-                MessageAction.PublishTag
-            );
-            for (const tag of tagMessages) {
-                if (tag.entity === TagType.Module && tag.target === messageId) {
-                    tags.push({
-                        uuid: tag.uuid,
-                        name: tag.name,
-                        description: tag.description,
-                        owner: tag.owner,
-                        entity: tag.entity,
-                        target: tag.target,
-                        status: 'History',
-                        topicId: tag.topicId,
-                        messageId: tag.id,
-                        date: tag.date,
-                        document: null,
-                        uri: null,
-                        id: null
-                    });
+            if (moduleTopicId) {
+                const messageServer = new MessageServer(null, null);
+                const tagMessages = await messageServer.getMessages<TagMessage>(
+                    moduleTopicId,
+                    MessageType.Tag,
+                    MessageAction.PublishTag
+                );
+                for (const tag of tagMessages) {
+                    if (tag.entity === TagType.Module && tag.target === messageId) {
+                        tags.push({
+                            uuid: tag.uuid,
+                            name: tag.name,
+                            description: tag.description,
+                            owner: tag.owner,
+                            entity: tag.entity,
+                            target: tag.target,
+                            status: 'History',
+                            topicId: tag.topicId,
+                            messageId: tag.id,
+                            date: tag.date,
+                            document: null,
+                            uri: null,
+                            id: null
+                        });
+                    }
                 }
             }
             if (tags.length) {
