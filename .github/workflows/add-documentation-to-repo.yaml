@@ -36,21 +36,31 @@ jobs:
           npm install
           npm run build
           popd
-            pushd api-gateway
-            npm install
-            npm run build
-            popd
+          pushd api-gateway
+          npm install
+          npm run build
+          popd
+          pushd analytics-service
+          npm install
+          npm run build
+          popd
         env:
           CI: true
       - name: Run service
         run: |
           pushd api-gateway
           npm start &
-          sleep 30
           popd
+          pushd analytics-service
+          npm start &
+          popd
+          sleep 30
       - name: Download file
         run: |
           rm -fv swagger.yaml
+          rm -fv swagger-analytics.yaml
           curl -o swagger.yaml http://localhost:3002/api-docs-yaml
+          curl -o swagger-analytics.yaml http://localhost:3002/api-docs-yaml
           git add swagger.yaml
+          git add swagger-analytics.yaml
           git commit -m "[skip ci] Add swagger.yaml" && git push || exit 0
