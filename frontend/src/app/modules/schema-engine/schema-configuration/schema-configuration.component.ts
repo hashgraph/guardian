@@ -384,6 +384,14 @@ export class SchemaConfigurationComponent implements OnInit {
                 fields: {},
                 conditions: {}
             });
+        } else if (this.isModule) {
+            this.dataForm.setValue({
+                name: this.value.name,
+                description: this.value.description,
+                entity: this.value.entity,
+                fields: {},
+                conditions: {}
+            });
         } else {
             this.dataForm.setValue({
                 name: this.value.name,
