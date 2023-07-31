@@ -249,29 +249,32 @@ export class PolicyImportExportHelper {
             await DatabaseServer.saveTopic(topicRow.toObject());
         }
 
-        notifier.completed();
         policy.topicId = topicRow.topicId;
-        notifier.start('Publish Policy in Hedera');
-        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
-        const message = new PolicyMessage(MessageType.Policy, MessageAction.CreatePolicy);
-        message.setDocument(policy);
-        const messageStatus = await messageServer
-            .setTopicObject(parent)
-            .sendMessage(message);
-        notifier.completedAndStart('Link topic and policy');
+
         if (!versionOfTopicId) {
+            notifier.completedAndStart('Publish Policy in Hedera');
+            const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+            const message = new PolicyMessage(MessageType.Policy, MessageAction.CreatePolicy);
+            message.setDocument(policy);
+            const messageStatus = await messageServer
+                .setTopicObject(parent)
+                .sendMessage(message);
+            notifier.completedAndStart('Link topic and policy');
             await topicHelper.twoWayLink(
                 topicRow,
                 parent,
                 messageStatus.getId()
             );
-        }
-        notifier.completedAndStart('Publishing schemas');
-        const systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
-        notifier.info(`Found ${systemSchemas.length} schemas`);
-        messageServer.setTopicObject(topicRow);
 
-        await publishSystemSchemas(systemSchemas, messageServer, policyOwner, notifier);
+            notifier.completedAndStart('Publishing schemas');
+            const systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
+            notifier.info(`Found ${systemSchemas.length} schemas`);
+            messageServer.setTopicObject(topicRow);
+            await publishSystemSchemas(systemSchemas, messageServer, policyOwner, notifier);
+        } else {
+            notifier.completedAndStart('Skip publishing policy in Hedera');
+            notifier.completedAndStart('Skip publishing schemas');
+        }
 
         notifier.completed();
 
