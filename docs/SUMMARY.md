@@ -419,7 +419,8 @@
     * [🏢 Carbon Emissions Measurement - GHG Corporate Standard Policy Guide](guardian/demo-guide/carbon-emissions/carbon-emissions-measurement-ghg-corporate-standard-policy-guide.md)
     * [🏭 atma GHG Scope II Carbon Emission Policy](guardian/demo-guide/carbon-emissions/atma-ghg-scope-ii-carbon-emission-policy.md)
     * [🏭 Carbon Development Mechanism (CDM) AMS-III.AR Policy](guardian/demo-guide/carbon-emissions/carbon-development-mechanism-cdm-ams-iii.ar-policy.md)
-    * [GHGP Corporate Standard](guardian/demo-guide/carbon-emissions/ghgp-corporate-standard.md)
+    * [🏭 GHGP Corporate Standard](guardian/demo-guide/carbon-emissions/ghgp-corporate-standard.md)
+    * [🏨 CDM AMS II.G](guardian/demo-guide/carbon-emissions/cdm-ams-ii.g.md)
 * [❓ FAQs](faqs/faqs.md)
 
 ***

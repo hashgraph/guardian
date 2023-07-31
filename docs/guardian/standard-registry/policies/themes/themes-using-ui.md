@@ -42,7 +42,7 @@ The matching and styling algorithm is as follows:
 * If/when the block satisfied more than one rule all styles are ‘merged’ and applied to the block resulting in the multi-colored blocks.
 * If/when the block does not match any of the rules’ criteria the default style is applied to the block. Default style always exist in every theme.
 
-<figure><img src="../../../../.gitbook/assets/4 (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/4 (4) (1).png" alt=""><figcaption></figcaption></figure>
 
 **1.2.1 Adding new rules**
 
