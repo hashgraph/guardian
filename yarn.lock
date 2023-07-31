@@ -891,7 +891,7 @@ __metadata:
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
     "@mikro-orm/core": 5.7.12
-    "@mikro-orm/migrations-mongodb": 5.7.12
+    "@mikro-orm/migrations-mongodb": 5.7.14
     "@mikro-orm/mongodb": 5.7.12
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
@@ -1253,17 +1253,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mikro-orm/migrations-mongodb@npm:5.7.12":
-  version: 5.7.12
-  resolution: "@mikro-orm/migrations-mongodb@npm:5.7.12"
+"@mikro-orm/migrations-mongodb@npm:5.7.14":
+  version: 5.7.14
+  resolution: "@mikro-orm/migrations-mongodb@npm:5.7.14"
   dependencies:
-    "@mikro-orm/mongodb": ~5.7.12
+    "@mikro-orm/mongodb": ~5.7.14
     fs-extra: 11.1.1
-    mongodb: 5.6.0
+    mongodb: 5.7.0
     umzug: 3.2.1
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
-  checksum: be1a5c822ee1bc37ba5ce8926884071a4c63bcd55dcdb285fc1ad2775dfd77e8ce3064ea53a4cc511fcbafcc00ad0d0962f41ff1c2aa6b6fbdd8828fc53ee8fa
+  checksum: bbba72d821a64abf21f9c7a4af50746910a40c0c986b3908975e1337ef800df86fd4f2d2500b2e3710156dbe7c0b1a804160e2e000af991fede14f113a596ef1
   languageName: node
   linkType: hard
 
@@ -1292,7 +1292,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mikro-orm/mongodb@npm:~5.7.12":
+"@mikro-orm/mongodb@npm:~5.7.14":
   version: 5.7.14
   resolution: "@mikro-orm/mongodb@npm:5.7.14"
   dependencies:
