@@ -72,11 +72,11 @@ Variable are part of the external interface of Modules, they are used to represe
 
 **Creating variables:**
 
-![image13.png](<../../../../.gitbook/assets/12 (1).png>)
+![image13.png](<../../../../.gitbook/assets/12 (1) (2).png>)
 
 **Using variables inside modules:**
 
-![image14.png](<../../../../.gitbook/assets/13 (1).png>)
+![image14.png](<../../../../.gitbook/assets/13 (1) (3).png>)
 
 **Assigning values to the (module) variables in Policy:**
 

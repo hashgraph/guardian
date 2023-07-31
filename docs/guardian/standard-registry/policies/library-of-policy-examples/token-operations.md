@@ -42,7 +42,7 @@ Switch to the ‘**Tokens**’ tab and create a new token
 
 2.2.1 Add ‘_**tokenActionBlock’**_ immediately after ‘_token\_associate’_
 
-![Adding tokenActionBlock ](<../../../../.gitbook/assets/4 (1) (1) (1).png>)
+![Adding tokenActionBlock](<../../../../.gitbook/assets/4 (1) (1) (1).png>)
 
 2.2.2 Select token and the action type
 
@@ -72,7 +72,7 @@ Switch to the ‘**Tokens**’ tab and create a new token
 
 1.1 Add a new container in which the grid containing results would be placed
 
-![Adidng Container Block](<../../../../.gitbook/assets/10 (1) (1).png>)
+![Adidng Container Block](<../../../../.gitbook/assets/10 (1) (1) (1).png>)
 
 1.2 Ensure that ‘_documents’ and ‘tokens’ are displayed in separate tabs_
 
@@ -82,7 +82,7 @@ Switch to the ‘**Tokens**’ tab and create a new token
 
 1.2.2 Set the property ‘**Title’** to configure tab titles
 
-1.3 Add **‘interfaceDocumentsSourceBlock**_**’** into the ‘_tokens_’_ container and configure its columns
+1.3 Add **‘interfaceDocumentsSourceBlock**_**’** into the ‘tokens’_ container and configure its columns
 
 ![Adding interfaceDocumentsSourceBlock](<../../../../.gitbook/assets/12 (1) (1).png>)
 
