@@ -47,7 +47,7 @@ Coming Soon
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPSF timestamp.
 
-Latest Version - 
+Latest Version - 1690818069.183828783
 
 ### Available Roles 
  
