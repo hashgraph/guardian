@@ -7,7 +7,7 @@ The first adaptation relates to the redesign of the creation of new accounts. Th
 Here the images below show the selection of account type and selection of username and password in order to create a new account.
 
 \
-![](<../../../.gitbook/assets/1 (1) (4) (1).png>)![](<../../../.gitbook/assets/2 (5).png>)
+![](<../../../.gitbook/assets/1 (1) (4).png>)![](<../../../.gitbook/assets/2 (5).png>)
 
 ### New header for mobile
 
@@ -25,7 +25,7 @@ Also some information about the user is also presented, such as the name of the 
 
 As this is an integral part of using Guardian, the association with the users Hedera credentials and the Standard Registry of his choosing were adapted. The mobile adaptation to associate Hedera credentials and Standard Registry upon creating an account.
 
-![](../../../.gitbook/assets/6.png)\\
+![](<../../../.gitbook/assets/6 (1).png>)\\
 
 ### User policy registration application
 

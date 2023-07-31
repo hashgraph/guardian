@@ -6,7 +6,8 @@ import { IMe } from '../meeco/models/me';
 import { IPresentationRequest, IPresentationSubmission, IPresentationSubmissions } from './models/presentation-request';
 import base64url from 'base64url';
 import * as jwt from 'jsonwebtoken';
-import { VerifiableCredential } from '@guardian/common';
+import { VerifiableCredential, Vc } from '@guardian/common';
+import { StatusList } from '@helpers/status-list';
 
 const nacl = require('tweetnacl');
 
@@ -123,7 +124,7 @@ export class MeecoService {
   /**
    * createPresentationRequest creates a Presentation Request on the Meeco API.
    * @param requestName
-   * @param clien_did
+   * @param clientDID
    * @param clientName
    * @param presentationDefinitionId
    * @returns {IPresentationRequest} Presentation Request with an unsigned JWT
@@ -194,5 +195,28 @@ export class MeecoService {
     const decodedVPToken: any = jwt.decode(vpToken);
     const verifiableCredentialJWT = decodedVPToken.vp.verifiableCredential[0];
     return jwt.decode(verifiableCredentialJWT) as VerifiableCredential;
+  }
+
+  /**
+   * validateVC validates the Verifiable Credential.
+   * @param vc
+   * @see https://learn.mattr.global/tutorials/revocation/web-credentials/view-revocation-list
+   */
+  async validateCredentials(vc: Vc): Promise<{message: string, success: boolean}> {
+    console.log('Meeco.validateCredential', vc);
+    const decodedVPToken = await this.meecoApi.getVCStatusList(vc.credentialStatus.statusListCredential)
+    console.log('Meeco.vc?.credentialSubject?.encodedList', decodedVPToken.vc?.credentialSubject?.encodedList);
+    if (!decodedVPToken.vc?.credentialSubject?.encodedList) {
+      return { message: 'No encoded list in the credential subject', success: false };
+    }
+    const statusList = await StatusList.decode({
+      encodedList:decodedVPToken.vc.credentialSubject.encodedList
+    });
+    console.log('Meeco.bitString', statusList.getStatus(vc.credentialStatus.statusListIndex));
+    if (parseInt(statusList.getStatus(vc.credentialStatus.statusListIndex), 2) === 1) {
+      return { message: 'The credential used in the Meeco Wallet has been revoked', success: false };
+    }
+
+    return { message: 'Valid credentials', success: true };
   }
 }

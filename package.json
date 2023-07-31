@@ -12,10 +12,11 @@
     "mrv-sender",
     "topic-viewer",
     "tree-viewer",
+    "analytics-service",
     "worker-service",
     "policy-service",
     "api-tests",
     "notification-service"
   ],
-  "version": "2.14.2"
+  "version": "2.15.0"
 }

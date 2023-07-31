@@ -8,7 +8,7 @@ export interface MeecoJwt {
 }
 
 export interface Vp {
-  "@context": string[]
+  '@context': string[]
   type: string[]
   verifiableCredential: string[]
 }
@@ -31,7 +31,7 @@ export interface CredentialStatus {
 }
 
 export interface Vc {
-  "@context": string[]
+  '@context': string[]
   id: string
   type: string[]
   issuer: Issuer
@@ -87,3 +87,26 @@ export interface Submission {
   last_verified_at: any
 }
 
+export interface VerifiableCredentialStatusListResult {
+  iat: number
+  vc: VcStatusList
+  nbf: number
+  iss: string
+  sub: string
+}
+
+export interface VcStatusList {
+  'context': string[]
+  id: string
+  type: string[]
+  issuer: string
+  issuanceDate: string
+  credentialSubject: CredentialSubjectStatusList
+}
+
+export interface CredentialSubjectStatusList {
+  id: string
+  type: string
+  statusPurpose: string
+  encodedList: string
+}

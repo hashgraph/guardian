@@ -114,9 +114,9 @@ function getNotificationResultMessage(action: TaskAction, result: any) {
         case TaskAction.CREATE_SCHEMA:
             return `Schema ${result} created`;
         case TaskAction.ASSOCIATE_TOKEN:
-            return `${result} associated`;
+            return `${result.tokenName} associated`;
         case TaskAction.DISSOCIATE_TOKEN:
-            return `${result} dissociated`;
+            return `${result.tokenName} dissociated`;
         case TaskAction.FREEZE_TOKEN:
             return `${result.tokenName} frozen`;
         case TaskAction.UNFREEZE_TOKEN:
@@ -137,10 +137,9 @@ function getNotificationResultMessage(action: TaskAction, result: any) {
 function getNotificationResultTitle(action: TaskAction, result: any) {
     switch (action) {
         case TaskAction.PUBLISH_POLICY:
-            if (result.errors) {
+            if (!result.isValid) {
                 return;
             }
-            return 'Policy published';
         default:
             return taskResultTitleMap.get(action);
     }
@@ -156,6 +155,16 @@ function getNotificationResult(action: TaskAction, result: any) {
         case TaskAction.IMPORT_POLICY_MESSAGE:
         case TaskAction.PUBLISH_POLICY:
             return result.policyId;
+        default:
+            return result;
+    }
+}
+
+function getTaskResult(action: TaskAction, result: any) {
+    switch(action) {
+        case TaskAction.ASSOCIATE_TOKEN:
+        case TaskAction.DISSOCIATE_TOKEN:
+            return result.status;
         default:
             return result;
     }
@@ -274,7 +283,7 @@ export async function initNotifier({
                 );
                 new GuardiansService().publish(chanelEvent, {
                     taskId,
-                    result,
+                    result: getTaskResult(action, result),
                 });
             },
         };

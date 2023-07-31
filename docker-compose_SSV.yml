@@ -73,6 +73,19 @@ services:
       - SERVICE_CHANNEL=${LOGGER_SERVICE_CHANNEL}
       - DB_DATABASE=${LOGGER_DB_DATABASE}
 
+  notification-service:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
+    build:
+      context: .
+      dockerfile: ./notification-service/Dockerfile
+    depends_on:
+      - message-broker
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+      - SERVICE_CHANNEL=${NOTIFICATION_SERVICE_CHANNEL}
+      - DB_DATABASE=${NOTIFICATION_DB_DATABASE}
+
   auth-service:
     env_file:
       - ./.env.${GUARDIAN_ENV}.guardian.system

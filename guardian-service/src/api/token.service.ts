@@ -1,5 +1,5 @@
 import { ApiResponse } from '@api/helpers/api-response';
-import { DataBaseHelper, DatabaseServer, KeyType, Logger, MessageError, MessageResponse, RunFunctionAsync, Token, TopicHelper, Users, Wallet, Workers, } from '@guardian/common';
+import { DataBaseHelper, DatabaseServer, KeyType, Logger, MessageError, MessageResponse, NotificationHelper, RunFunctionAsync, Token, TopicHelper, Users, Wallet, Workers, } from '@guardian/common';
 import { GenerateUUIDv4, IRootConfig, IToken, MessageAPI, TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
 import { publishTokenTags } from './tag.service';
@@ -372,7 +372,13 @@ async function deleteToken(token: Token, tokenRepository: DataBaseHelper<Token>,
  * @param tokenRepository
  * @param notifier
  */
-async function associateToken(tokenId: any, did: any, associate: any, tokenRepository: DataBaseHelper<Token>, notifier: INotifier): Promise<[string, boolean]> {
+async function associateToken(
+    tokenId: any,
+    did: any,
+    associate: any,
+    tokenRepository: DataBaseHelper<Token>,
+    notifier: INotifier
+): Promise<{ tokenName: string; status: boolean }> {
     notifier.start('Find token data');
     const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
     if (!token) {
@@ -408,7 +414,7 @@ async function associateToken(tokenId: any, did: any, associate: any, tokenRepos
     }, 20);
 
     notifier.completed();
-    return [token.tokenName, status];
+    return { tokenName: token.tokenName, status };
 }
 
 /**
@@ -542,6 +548,11 @@ async function freezeToken(
         }
     }, 20);
 
+    await NotificationHelper.info(
+        `${freeze ? 'Freeze' : 'Unfreeze'} token ${token.tokenName}`,
+        `Token ${token.tokenName} was ${freeze ? 'unfrozed' : 'frozed'}`,
+        user.id
+    );
     const result = getTokenInfo(info, token);
     notifier.completed();
     return result;
@@ -692,8 +703,8 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
     ApiResponse(MessageAPI.ASSOCIATE_TOKEN, async (msg) => {
         try {
             const { tokenId, did, associate } = msg;
-            const [_, status] = await associateToken(tokenId, did, associate, tokenRepository, emptyNotifier());
-            return new MessageResponse(status);
+            const result = await associateToken(tokenId, did, associate, tokenRepository, emptyNotifier());
+            return new MessageResponse(result);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error, 400);
@@ -705,8 +716,8 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
         const notifier = await initNotifier(task);
 
         RunFunctionAsync(async () => {
-            const [tokenName, _] = await associateToken(tokenId, did, associate, tokenRepository, notifier);
-            notifier.result(tokenName);
+            const result = await associateToken(tokenId, did, associate, tokenRepository, notifier);
+            notifier.result(result);
         }, async (error) => {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             notifier.error(error);

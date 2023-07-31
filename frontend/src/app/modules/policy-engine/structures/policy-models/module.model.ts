@@ -1,6 +1,6 @@
 import { PolicyModel } from './policy.model';
-import { IModuleVariables } from "./variables/module-variables.interface";
-import { IModuleConfig } from "./interfaces/module-config.interface";
+import { IModuleVariables } from './variables/module-variables.interface';
+import { IModuleConfig } from './interfaces/module-config.interface';
 import { PolicyBlockModel } from './block.model';
 import { PolicyEventModel } from './block-event.model';
 import { ModuleEventModel } from './module-event.model';
@@ -14,6 +14,7 @@ import { TopicVariables } from './variables/topic-variables';
 import { TemplateModel } from './template.model';
 import { IBlockConfig } from './interfaces/block-config.interface';
 import { IEventConfig } from './interfaces/event-config.interface';
+import { Schema } from '@guardian/interfaces';
 
 export class PolicyModuleModel extends PolicyBlockModel {
     protected _dataSource!: PolicyBlockModel[];
@@ -26,6 +27,7 @@ export class PolicyModuleModel extends PolicyBlockModel {
     protected _variables!: ModuleVariableModel[];
     protected _innerEvents!: PolicyEventModel[];
     protected _lastVariables!: IModuleVariables;
+    private _schemas: Schema[];
 
     protected _name!: string;
     protected _description!: string;
@@ -317,6 +319,26 @@ export class PolicyModuleModel extends PolicyBlockModel {
         return json;
     }
 
+    public setSchemas(schemas: Schema[]): void {
+        this._schemas = schemas;
+        this.updateVariables();
+    }
+
+    public get blockVariables(): IModuleVariables | null {
+        return this._lastVariables;
+    }
+
+    public get moduleVariables(): IModuleVariables | null {
+        if (this._module) {
+            return this._module.blockVariables;
+        }
+        return null;
+    }
+
+    public getSchemas(): Schema[] {
+        return this._schemas;
+    }
+
     private updateVariables(): void {
         this._lastVariables = {
             module: this,
@@ -345,7 +367,13 @@ export class PolicyModuleModel extends PolicyBlockModel {
             for (const variable of this._variables) {
                 switch (variable.type) {
                     case 'Schema':
-                        this._lastVariables.schemas.push(new SchemaVariables(variable));
+                        let baseSchema: Schema | undefined;
+                        if (typeof variable?.baseSchema === 'string') {
+                            baseSchema = this._schemas?.find(s => s.iri === variable.baseSchema);
+                        } else if (typeof variable?.baseSchema === 'object') {
+                            baseSchema = new Schema(variable.baseSchema);
+                        }
+                        this._lastVariables.schemas.push(new SchemaVariables(variable, undefined, baseSchema));
                         break;
                     case 'Token':
                         this._lastVariables.tokens.push(new TokenVariables(variable));
@@ -365,17 +393,6 @@ export class PolicyModuleModel extends PolicyBlockModel {
                 }
             }
         }
-    }
-
-    public get blockVariables(): IModuleVariables | null {
-        return this._lastVariables;
-    }
-
-    public get moduleVariables(): IModuleVariables | null {
-        if (this._module) {
-            return this._module.blockVariables;
-        }
-        return null;
     }
 
     public override emitUpdate() {

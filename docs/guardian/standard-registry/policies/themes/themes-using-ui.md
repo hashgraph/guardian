@@ -22,7 +22,7 @@ _**Note**: users must click ‘**Save**’ button to preserve the changes to the
 
 #### **1.1 Menu actions**
 
-![image4.png](<../../../../.gitbook/assets/3 (6).png>)
+![image4.png](<../../../../.gitbook/assets/3 (6) (1).png>)
 
 * Create new theme
 * Copy selected theme

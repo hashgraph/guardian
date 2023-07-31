@@ -211,13 +211,16 @@ export class MeecoAuthService extends NatsService {
     }
   }
 
-  validateCredentials(vc: Vc) {
-    if (this.isCredentialExpired(vc.expirationDate)) {
+  async validateCredentials(vc: Vc) {
+    if (vc.expirationDate && this.isCredentialExpired(vc.expirationDate)) {
       throw new Error('Credentials expired');
     }
 
-    if (vc.credentialStatus?.statusPurpose === 'revocation') {
-      throw new Error('Credentials revoked');
+    if (vc.credentialStatus) {
+      const response = await this.meecoService.validateCredentials(vc);
+      if (!response.success) {
+        throw new Error(response.message);
+      }
     }
   }
 

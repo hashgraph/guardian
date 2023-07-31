@@ -42,7 +42,7 @@ export class NotificationsApi {
     @ApiExtraModels(NotificationDTO, InternalServerErrorDTO)
     @ApiOkResponse({
         description:
-            'Successful operation. Suggested next and nested block types respectively.',
+            'Successful operation. Returns notifications and count.',
         schema: {
             type: 'array',
             items: {
@@ -96,7 +96,7 @@ export class NotificationsApi {
     @ApiExtraModels(NotificationDTO, InternalServerErrorDTO)
     @ApiOkResponse({
         description:
-            'Successful operation. Suggested next and nested block types respectively.',
+            'Successful operation. Returns new notifications.',
         schema: {
             type: 'array',
             items: {
@@ -139,7 +139,7 @@ export class NotificationsApi {
     @ApiExtraModels(ProgressDTO, InternalServerErrorDTO)
     @ApiOkResponse({
         description:
-            'Successful operation. Suggested next and nested block types respectively.',
+            'Successful operation. Returns progresses.',
         schema: {
             type: 'array',
             items: {
@@ -180,7 +180,7 @@ export class NotificationsApi {
     @ApiExtraModels(NotificationDTO, InternalServerErrorDTO)
     @ApiOkResponse({
         description:
-            'Successful operation. Suggested next and nested block types respectively.',
+            'Successful operation. Returns notifications.',
         schema: {
             type: 'array',
             items: {
@@ -215,7 +215,7 @@ export class NotificationsApi {
 
     @ApiOperation({
         summary: 'Delete notifications up to this point',
-        description: 'Returns deleted count.',
+        description: 'Returns deleted notifications count.',
     })
     @ApiSecurity('bearerAuth')
     @ApiExtraModels(InternalServerErrorDTO)
@@ -225,7 +225,7 @@ export class NotificationsApi {
     })
     @ApiOkResponse({
         description:
-            'Successful operation. Suggested next and nested block types respectively.',
+            'Successful operation. Returns deleted notifications count.',
         schema: {
             type: 'number',
         },
