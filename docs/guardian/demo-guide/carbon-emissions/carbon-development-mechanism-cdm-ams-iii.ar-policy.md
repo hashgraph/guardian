@@ -172,7 +172,7 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 21. Navigate back to the Administrator’s profile and select the “Mint” button.
 
-<figure><img src="../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
 
 22. The status should now say “Minted”.
 

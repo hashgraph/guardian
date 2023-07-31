@@ -38,7 +38,7 @@ Modules can be exported as files or/and ‘published’ into IPFS. For published
 
 ![image7.png](<../../../../.gitbook/assets/6 (5).png>)
 
-![image8.png](<../../../../.gitbook/assets/7 (1).png>)
+![image8.png](<../../../../.gitbook/assets/7 (1) (3).png>)
 
 #### 1.4 Deleting Module
 

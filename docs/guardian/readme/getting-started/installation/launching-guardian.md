@@ -58,5 +58,5 @@ Where the list of `attributes` is extendable, and all attributes in it are **opt
 | Network    | INITIALIZATION\_TOPIC\_ID |
 | ---------- | ------------------------- |
 | Mainnet    | 0.0.1368856               |
-| Testnet    | 0.0.2030                  |
+| Testnet    | 0.0.2411                  |
 | Previewnet | 0.0.155110                |
