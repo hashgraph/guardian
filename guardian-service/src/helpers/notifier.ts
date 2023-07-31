@@ -137,7 +137,7 @@ function getNotificationResultMessage(action: TaskAction, result: any) {
 function getNotificationResultTitle(action: TaskAction, result: any) {
     switch (action) {
         case TaskAction.PUBLISH_POLICY:
-            if (result.errors && result.errors.length > 0) {
+            if (!result.isValid) {
                 return;
             }
         default:
