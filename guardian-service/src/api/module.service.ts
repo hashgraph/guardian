@@ -8,6 +8,25 @@ import { ModuleValidator } from '@policy-engine/block-validators/module-validato
 import { exportTag, importTag } from './tag.service';
 
 /**
+ * Check and update config file
+ * @param module module
+ *
+ * @returns module
+ */
+export function updateModuleConfig(module: any): any {
+    module.config = module.config || {};
+    module.config.permissions = module.config.permissions || [];
+    module.config.children = module.config.children || [];
+    module.config.events = module.config.events || [];
+    module.config.artifacts = module.config.artifacts || [];
+    module.config.variables = module.config.variables || [];
+    module.config.inputEvents = module.config.inputEvents || [];
+    module.config.outputEvents = module.config.outputEvents || [];
+    module.config.innerEvents = module.config.innerEvents || [];
+    return module;
+}
+
+/**
  * Generate Zip File
  * @param module module to pack
  *
@@ -199,6 +218,7 @@ export async function publishModule(model: PolicyModule, owner: string, notifier
 
     notifier.completedAndStart('Generate file');
 
+    model = updateModuleConfig(model);
     const zip = await generateZipFile(model);
     const buffer = await zip.generateAsync({
         type: 'arraybuffer',
@@ -249,6 +269,8 @@ export async function modulesAPI(): Promise<void> {
             module.owner = owner;
             module.type = 'CUSTOM';
             module.status = ModuleStatus.DRAFT;
+            updateModuleConfig(module);
+
             const item = await DatabaseServer.createModules(module);
             return new MessageResponse(item);
         } catch (error) {
@@ -348,6 +370,7 @@ export async function modulesAPI(): Promise<void> {
             item.config = module.config;
             item.name = module.name;
             item.description = module.description;
+            updateModuleConfig(item);
 
             const result = await DatabaseServer.updateModule(item);
             return new MessageResponse(result);
@@ -384,6 +407,7 @@ export async function modulesAPI(): Promise<void> {
                 throw new Error('Invalid module');
             }
 
+            updateModuleConfig(item);
             const zip = await generateZipFile(item);
             const file = await zip.generateAsync({
                 type: 'arraybuffer',
