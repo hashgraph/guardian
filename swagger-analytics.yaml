@@ -26,13 +26,7 @@ paths:
       operationId: AnalyticsApi_updateReport
       summary: Update current report.
       description: Update current report.
-      parameters:
-        - name: uuid
-          required: true
-          in: query
-          description: Report identifier
-          schema:
-            type: string
+      parameters: []
       responses:
         '200':
           description: Successful operation.
@@ -77,7 +71,7 @@ paths:
       parameters:
         - name: uuid
           required: true
-          in: query
+          in: path
           description: Report identifier
           schema:
             type: string
@@ -103,7 +97,7 @@ paths:
       parameters:
         - name: uuid
           required: true
-          in: query
+          in: path
           description: Report identifier
           schema:
             type: string
@@ -130,7 +124,7 @@ paths:
       parameters:
         - name: uuid
           required: true
-          in: query
+          in: path
           description: Report identifier
           schema:
             type: string
@@ -177,9 +171,9 @@ paths:
       summary: Returns dashboard by uuid.
       description: Returns dashboard by uuid.
       parameters:
-        - name: uuid
+        - name: id
           required: true
-          in: query
+          in: path
           description: Dashboard identifier
           schema:
             type: string
