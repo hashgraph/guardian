@@ -144,7 +144,7 @@ Detailed information for patterns is available on [https://json-schema.org/under
 
 Once the above details are added, click on the Create button.
 
-![](<../../../.gitbook/assets/image (2) (1) (2).png>)
+![](<../../../.gitbook/assets/image (2) (1) (2) (1).png>)
 
 Once the System Schema is created, we have options for activating, deleting, editing and viewing JSON documents.
 

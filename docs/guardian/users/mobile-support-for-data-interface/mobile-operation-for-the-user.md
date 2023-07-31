@@ -25,7 +25,7 @@ Also some information about the user is also presented, such as the name of the 
 
 As this is an integral part of using Guardian, the association with the users Hedera credentials and the Standard Registry of his choosing were adapted. The mobile adaptation to associate Hedera credentials and Standard Registry upon creating an account.
 
-![](<../../../.gitbook/assets/6 (1).png>)\\
+![](<../../../.gitbook/assets/6 (1) (4).png>)\\
 
 ### User policy registration application
 
@@ -35,16 +35,16 @@ The user registration form into a policy has also been redesigned. This makes th
 
 The images below are the registration forms which have been redesigned
 
-![](../../../.gitbook/assets/8.png) ![](<../../../.gitbook/assets/9 (1) (3) (1).png>)
+![](<../../../.gitbook/assets/8 (1).png>) ![](<../../../.gitbook/assets/9 (1) (3) (1).png>)
 
 ### User creating a retire request
 
 The "Create Retire Request" form was also adapted, as can be seen below.
 
-![](../../../.gitbook/assets/10.png)
+![](<../../../.gitbook/assets/10 (1).png>)
 
 ### User Create / Join Multi Policy
 
 The "Create / Join Multi Policy" form was also adapted, as can be seen below:
 
-![](../../../.gitbook/assets/11.png)
+![](<../../../.gitbook/assets/11 (5).png>)
