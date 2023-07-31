@@ -6523,9 +6523,7 @@ paths:
       parameters: []
       responses:
         '200':
-          description: >-
-            Successful operation. Suggested next and nested block types
-            respectively.
+          description: Successful operation. Returns notifications and count.
           headers:
             X-Total-Count:
               description: Count of notifications
@@ -6556,9 +6554,7 @@ paths:
       parameters: []
       responses:
         '200':
-          description: >-
-            Successful operation. Suggested next and nested block types
-            respectively.
+          description: Successful operation. Returns new notifications.
           content:
             application/json:
               schema:
@@ -6585,9 +6581,7 @@ paths:
       parameters: []
       responses:
         '200':
-          description: >-
-            Successful operation. Suggested next and nested block types
-            respectively.
+          description: Successful operation. Returns progresses.
           content:
             application/json:
               schema:
@@ -6614,9 +6608,7 @@ paths:
       parameters: []
       responses:
         '200':
-          description: >-
-            Successful operation. Suggested next and nested block types
-            respectively.
+          description: Successful operation. Returns notifications.
           content:
             application/json:
               schema:
@@ -6639,7 +6631,7 @@ paths:
     delete:
       operationId: NotificationsApi_delete
       summary: Delete notifications up to this point
-      description: Returns deleted count.
+      description: Returns deleted notifications count.
       parameters:
         - name: notificationId
           required: true
@@ -6648,9 +6640,7 @@ paths:
             type: string
       responses:
         '200':
-          description: >-
-            Successful operation. Suggested next and nested block types
-            respectively.
+          description: Successful operation. Returns deleted notifications count.
           content:
             application/json:
               schema:
