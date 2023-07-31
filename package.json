@@ -18,6 +18,5 @@
     "api-tests",
     "notification-service"
   ],
-  "version": "2.15.0-prerelease",
-  "stableVersion": "2.14.2"
+  "version": "2.15.0"
 }
