@@ -1,6 +1,8 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, OnDestroy } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 
 @Component({
@@ -8,7 +10,8 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
     templateUrl: './qr-code-dialog.component.html',
     styleUrls: ['./qr-code-dialog.component.scss'],
 })
-export class QrCodeDialogComponent {
+export class QrCodeDialogComponent implements OnDestroy {
+    private readonly destroy$ = new Subject<void>();
     qrCodeData: string;
     errorMessage: string;
     isMobile: boolean = window.innerWidth <= 810;
@@ -24,11 +27,15 @@ export class QrCodeDialogComponent {
         this.handleMeecoVerificationFail();
     }
 
-    handleMeecoVerificationFail(): void {
-        this.wsService.meecoVerifyVPFailedSubscribe((event) => {
-            this.closeDialog();
+    ngOnDestroy(): void {
+        this.destroy$.next();
+        this.destroy$.complete();
+    }
 
-            if (this.errorMessage !== event.error) {
+    handleMeecoVerificationFail(): void {
+        this.wsService.meecoVerifyVPFailed$
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((event) => {
                 this.toastr.error(
                     `${event.error}.`,
                     'Submission for VP presentation request failed.',
@@ -39,10 +46,9 @@ export class QrCodeDialogComponent {
                         enableHtml: true,
                     }
                 );
-            }
 
-            this.errorMessage = event.error;
-        });
+                this.closeDialog();
+            });
     }
 
     handleNoQRCodeData(): void {

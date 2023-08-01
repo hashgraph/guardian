@@ -46,7 +46,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     meecoBtnTitle: string = this.initialMeecoBtnTitle;
     qrCodeDialogRef: MatDialogRef<QrCodeDialogComponent> | null = null;
     vcSubmitDialogRef: MatDialogRef<MeecoVCSubmitDialogComponent> | null = null;
-    currentMeecoRequestId: string | null = null;
+    currentMeecoRequestId: string | null = null;meecoVerifyVPFailedSubscribe
     private _subscriptions: Subscription[] = [];
 
     constructor(
