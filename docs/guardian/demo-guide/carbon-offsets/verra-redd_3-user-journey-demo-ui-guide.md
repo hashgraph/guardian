@@ -26,8 +26,7 @@ Here in this demo from the standard registry we are creating an account, importi
 
 The first step is that you will need to either login in to your account that you have previously created or create a new account.
 
-To create a new account you will need to click on “Create new” which will then lead you to the page to add the necessary information.\
-
+To create a new account you will need to click on “Create new” which will then lead you to the page to add the necessary information.
 
 <figure><img src="../../../.gitbook/assets/image (205).png" alt=""><figcaption></figcaption></figure>
 

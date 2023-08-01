@@ -62,7 +62,7 @@ This step allows:
 
 ### 4. TrustChain
 
-<figure><img src="../../../../.gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (2) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 This step allows to set up users which are able to view grids with VPs and the grid with the trust chain.
 

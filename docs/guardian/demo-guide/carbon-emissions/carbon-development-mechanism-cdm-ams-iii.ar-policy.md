@@ -47,7 +47,7 @@ These roles are as follows:
 \
 
 
-<figure><img src="../../../.gitbook/assets/0.jpeg" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/0 (1).jpeg" alt=""><figcaption></figcaption></figure>
 
 ## **Policy Guide**
 
@@ -93,7 +93,7 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 
 
-    <figure><img src="../../../.gitbook/assets/image (7).png" alt=""><figcaption></figcaption></figure>
+    <figure><img src="../../../.gitbook/assets/image (7) (6).png" alt=""><figcaption></figcaption></figure>
 2. Enter the IPFS timestamp and select OK.
 
 <figure><img src="../../../.gitbook/assets/image (14).png" alt=""><figcaption></figcaption></figure>
@@ -172,7 +172,7 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 21. Navigate back to the Administrator’s profile and select the “Mint” button.
 
-<figure><img src="../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 22. The status should now say “Minted”.
 

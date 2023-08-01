@@ -121,6 +121,5 @@ Cleans all docker images built if -d or --docker passed as option otherwise if -
     guardian-cli clean --docker
     guardian-cli clean -n
     guardian-cli clean --node
-```
 
-\
+```
