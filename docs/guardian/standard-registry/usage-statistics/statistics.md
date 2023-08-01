@@ -24,7 +24,7 @@ the bottom part of the UI displays top 10 records for the selected statistic.
 
 The sorting criteria can be changed by clicking on the statistics displayed in the top section of the page, or by selecting an option in the drop down list.
 
-<figure><img src="../../../.gitbook/assets/2 (7).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/2 (7) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/3 (7).png" alt=""><figcaption></figcaption></figure>
 
