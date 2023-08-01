@@ -10,23 +10,15 @@ However, as with any technology, there are always opportunities for improvement.
 
 Whether you are building a new API or looking to improve an existing one, the recommendations in this document will help the Guardian to build a more reliable, scalable, and maintainable API.
 
-\
-
-
 ## 2. Web Proxy
 
-As web applications grow in complexity, the need for a robust and scalable proxy server becomes increasingly important. While Nginx has been a popular choice for many years, Node.js Express with TypeScript has emerged as a powerful alternative due to its flexibility, scalability, and ease of customization.\
+As web applications grow in complexity, the need for a robust and scalable proxy server becomes increasingly important. While Nginx has been a popular choice for many years, Node.js Express with TypeScript has emerged as a powerful alternative due to its flexibility, scalability, and ease of customization.
 
+In this document, we will explore the benefits of migrating a proxy application from Nginx to Node.js Express with TypeScript. We will cover topics such as performance optimization, security enhancements, and customization of headers, requests, and responses.
 
-In this document, we will explore the benefits of migrating a proxy application from Nginx to Node.js Express with TypeScript. We will cover topics such as performance optimization, security enhancements, and customization of headers, requests, and responses.\
-
-
-Whether you are looking to improve the scalability of your application or add new security layers, the migration to Node.js Express with TypeScript will provide you with the tools necessary to achieve your goals. By leveraging the power of TypeScript, you can write more maintainable code and take advantage of its type checking capabilities to catch errors early in the development process.\
-
+Whether you are looking to improve the scalability of your application or add new security layers, the migration to Node.js Express with TypeScript will provide you with the tools necessary to achieve your goals. By leveraging the power of TypeScript, you can write more maintainable code and take advantage of its type checking capabilities to catch errors early in the development process.
 
 So, let's get started and see how we can migrate our proxy application to Node.js Express with TypeScript and unlock its full potential!
-
-
 
 Why migrate?\
 \
@@ -181,25 +173,15 @@ Node.js crypto module: This built-in Node.js module provides cryptographic funct
 \
 For some kinds of events due to their own criticality, it would be interesting to contain a recovery or a mechanism to rerun specific payloads, such as dead-letter resources to handle unsubscribed events or even to handle subscriptions that could not run properly. Many applications contain this kind of solution such us Google Pub/Sub, AWS SQS, and so on.
 
+Recently we face a situation that leads some events in NATS to cause the TIMEOUT. In this situation, if we were in Production, we won’t be able to trigger these events again and all the messages would be lost.
 
-
-Recently we face a situation that leads some events in NATS to cause the TIMEOUT. In this situation, if we were in Production, we won’t be able to trigger these events again and all the messages would be lost.\
-
-
-The main idea of this topic would be to provide a strategy to manage and/or circumvent the situation. But after a lot of research, NATS has some benefits but for the blockchain context, it seems not to be the best approach. The suggestion to be prepared for all these upsetting events would be to migrate the current Message Broker. After some analyses, Kafka would fit better due to the fact that it contains more features that would enhance the whole ecosystem of the Guardian application.\
-
+The main idea of this topic would be to provide a strategy to manage and/or circumvent the situation. But after a lot of research, NATS has some benefits but for the blockchain context, it seems not to be the best approach. The suggestion to be prepared for all these upsetting events would be to migrate the current Message Broker. After some analyses, Kafka would fit better due to the fact that it contains more features that would enhance the whole ecosystem of the Guardian application.
 
 Migrating a message broker built on NATS to Kafka may be necessary for specific use cases where NATS' capabilities are insufficient. Kafka offers additional features such as message durability, fault tolerance, and scalability that may be critical for certain applications.
 
-
-
 If your application requires high throughput and real-time processing of streaming data, Kafka's distributed streaming platform and its ability to handle millions of messages per second make it a strong candidate. Additionally, Kafka's built-in partitioning and replication features provide high availability and fault tolerance, ensuring that messages are not lost even in the case of node failures.
 
-
-
 Furthermore, Kafka's support for message ordering within a partition and its ability to store messages on disk make it well-suited for use cases where message durability is critical, such as in a blockchain application.
-
-
 
 However, it's important to note that migrating to Kafka may require additional development effort and expertise, as Kafka has a steeper learning curve and is a more complex system compared to NATS. Therefore, the decision to migrate should be made after carefully evaluating your specific requirements and use case.\
 
@@ -215,26 +197,12 @@ However, it's important to note that migrating to Kafka may require additional d
 | Community    | Growing community, but smaller than Kafka                   | Large and active community                                               |
 | Use cases    | Ideal for high-performance, low-latency messaging scenarios | Ideal for real-time data processing, streaming, and messaging scenarios  |
 
-\
-
-
 Now, about migrating to Kafka for a blockchain application where data loss is critical, there are a few factors to consider.
-
-
 
 Firstly, blockchain applications typically require a high level of data integrity and durability, as the data stored on the blockchain is immutable and cannot be changed once it is added. This means that any loss of data could have serious consequences, so it is important to choose a messaging system that can provide the necessary level of durability.
 
-
-
 While NATS is a high-performance messaging system, it does not provide message durability by default. This means that if a message is lost, it cannot be recovered, which could be problematic for a blockchain application where data loss is critical.
 
-On the other hand, Kafka is designed to provide durability through the retention of messages. It stores messages on disk, and can be configured to replicate messages across multiple brokers to ensure that they are not lost. This makes Kafka a better choice for a blockchain application where data loss is critical.\
-
+On the other hand, Kafka is designed to provide durability through the retention of messages. It stores messages on disk, and can be configured to replicate messages across multiple brokers to ensure that they are not lost. This makes Kafka a better choice for a blockchain application where data loss is critical.
 
 That being said, it is important to note that Kafka is a more complex system than NATS, and requires some learning curve to get started with. Additionally, Kafka may not be necessary for all blockchain applications, depending on the specific use case and requirements. Therefore, it is important to carefully evaluate your needs and choose the messaging system that best fits your requirements.
-
-\
-\
-
-
-\

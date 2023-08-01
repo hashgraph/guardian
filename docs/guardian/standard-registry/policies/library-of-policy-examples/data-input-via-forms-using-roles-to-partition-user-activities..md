@@ -100,7 +100,7 @@ Add ‘Status’ attribute and set the initial ‘New’ value for new documents
 
 1.3.2 Select where to retrieve the documents from
 
-![Selecting VC Document](../../../../.gitbook/assets/14.png)
+![Selecting VC Document](<../../../../.gitbook/assets/14 (1).png>)
 
 1.3.3 Select the schema upon which the selected documents should be based on
 
@@ -108,7 +108,7 @@ Add ‘Status’ attribute and set the initial ‘New’ value for new documents
 
 1.3.4 Select _‘_**Owned by User**_’_ checkbox which would filter in only the documents that are created by this user (this will disable the ability to view other documents)
 
-![Selecting Owned by User checkbox](<../../../../.gitbook/assets/16 (1) (1).png>)
+![Selecting Owned by User checkbox](<../../../../.gitbook/assets/16 (1) (1) (1).png>)
 
 ### **Approving the documents**
 

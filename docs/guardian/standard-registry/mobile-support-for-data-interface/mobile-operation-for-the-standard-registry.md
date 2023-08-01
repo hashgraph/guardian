@@ -6,8 +6,6 @@ The first adaptation relates to the redesign of the creation of new accounts. Th
 
 Here the images below to show the selection of account type and selection of username and password in order to create a new account.
 
-\\
-
 <figure><img src="../../../.gitbook/assets/2 (5).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/1 (1) (4).png" alt=""><figcaption></figcaption></figure>
@@ -28,7 +26,7 @@ Also some information about the user is also presented, such as the name of the 
 
 Some screens for the Standard Registry were also adapted, starting with the registration into Guardian after creating a username and password and also the mobile adaptation to associate Hedera credentials and initial form upon creating an account.
 
-<figure><img src="../../../.gitbook/assets/12.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/12 (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Standard Registry creating / editing a token
 
@@ -36,17 +34,17 @@ Among the adaptations for the Standard Registry, the creation / edition of a new
 
 Below are the images show the creation of a "New Token" form for the Standard Registry.
 
-![](<../../../.gitbook/assets/14 (1).png>) ![](<../../../.gitbook/assets/15 (4).png>)
+![](<../../../.gitbook/assets/14 (1) (2).png>) ![](<../../../.gitbook/assets/15 (4).png>)
 
 Here below are the images to show the creation of a "Edit Token" form for the Standard Registry. On the left for a non published and on the right for a published token.
 
-![](../../../.gitbook/assets/16.png) ![](../../../.gitbook/assets/17.png)
+![](<../../../.gitbook/assets/16 (1).png>) ![](<../../../.gitbook/assets/17 (1).png>)
 
 ### Standard Registry importing policies flow (from IPFS)
 
 The importing of policies was also adapted from the click on the "Import" button under the "Policies" menu, up until the preview of the policy the User is about to import.
 
-![](<../../../.gitbook/assets/18 (1).png>) ![](../../../.gitbook/assets/19.png)
+![](<../../../.gitbook/assets/18 (1) (3).png>) ![](<../../../.gitbook/assets/19 (1).png>)
 
 Below you can see the preview of the imported policy
 
