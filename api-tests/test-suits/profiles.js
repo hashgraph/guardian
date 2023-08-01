@@ -58,7 +58,7 @@ function Profiles() {
 
         let result;
         result = await axios.get(
-            GetURL('demo', 'push', 'randomKey'),
+            GetURL('demo', 'push', 'random-key'),
             {
                 headers: {
                     'Content-Type': 'application/json',
