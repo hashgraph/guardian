@@ -340,53 +340,6 @@ export class TokensApi {
         return res.status(202).send(task);
     }
 
-    /**
-     * @deprecated
-     */
-    @Put('/:tokenId/:username/grantKyc')
-    @HttpCode(HttpStatus.OK)
-    async grantKycOld(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        try {
-            const guardians = new Guardians();
-            const tokenId = req.params.tokenId;
-            const username = req.params.username;
-            const owner = req.user.did;
-            if (!owner) {
-                return res.status(500).json({ code: 500, message: 'User not registered' });
-                return;
-            }
-            const result = await guardians.grantKycToken(tokenId, username, owner);
-            return res.status(200).json(result);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            return res.status(500).json({ code: error.code || 500, message: error.message });
-        }
-    }
-
-    /**
-     * @deprecated
-     */
-    @Put('/:tokenId/:username/grantKyc')
-    @HttpCode(HttpStatus.OK)
-    async grantKycOld2(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        try {
-            const guardians = new Guardians();
-            const tokenId = req.params.tokenId;
-            const username = req.params.username;
-            const owner = req.user.did;
-            if (!owner) {
-                return res.status(500).json({ code: 500, message: 'User not registered' });
-            }
-            const result = await guardians.grantKycToken(tokenId, username, owner);
-            res.status(200).json(result);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            return res.status(500).json({ code: error.code || 500, message: error.message });
-        }
-    }
-
     @Put('/:tokenId/:username/grant-kyc')
     @HttpCode(HttpStatus.OK)
     async grantKyc(@Req() req, @Response() res): Promise<any> {
@@ -412,32 +365,6 @@ export class TokensApi {
         }
     }
 
-    /**
-     * @deprecated
-     */
-    @Put('/push/:tokenId/:username/grantKyc')
-    @HttpCode(HttpStatus.OK)
-    async grantKycAsyncOld(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const tokenId = req.params.tokenId;
-        const username = req.params.username;
-        const user = req.user;
-        if (!user.did) {
-            return res.status(500).json({ code: 500, message: 'User not registered' });
-        }
-        const taskManager = new TaskManager();
-        const task = taskManager.start(TaskAction.GRANT_KYC, user.id);
-        RunFunctionAsync<ServiceError>(async () => {
-            const guardians = new Guardians();
-            await guardians.grantKycTokenAsync(tokenId, username, user.did, task);
-        }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
-        });
-
-        return res.status(200).send(task);
-    }
-
     @Put('/push/:tokenId/:username/grant-kyc')
     @HttpCode(HttpStatus.ACCEPTED)
     async grantKycAsync(@Req() req, @Response() res): Promise<any> {
@@ -459,30 +386,6 @@ export class TokensApi {
         });
 
         return res.status(202).send(task);
-    }
-
-    /**
-     * @deprecated
-     */
-    @Put('/:tokenId/:username/revokeKyc')
-    @HttpCode(HttpStatus.OK)
-    async revokeKycOld(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        try {
-            const guardians = new Guardians();
-            const tokenId = req.params.tokenId;
-            const username = req.params.username;
-            const owner = req.user.did;
-            if (!owner) {
-                return res.status(500).json({ code: 500, message: 'User not registered' });
-                return;
-            }
-            const result = await guardians.revokeKycToken(tokenId, username, owner);
-            res.status(200).json(result);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            return res.status(500).json({ code: error.code || 500, message: error.message });
-        }
     }
 
     @Put('/:tokenId/:username/revoke-kyc')
@@ -509,32 +412,6 @@ export class TokensApi {
             }
             throw error;
         }
-    }
-
-    /**
-     * @deprecated
-     */
-    @Put('/push/:tokenId/:username/revokeKyc')
-    @HttpCode(HttpStatus.OK)
-    async revokeKycAsyncOld(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const tokenId = req.params.tokenId;
-        const username = req.params.username;
-        const user = req.user;
-        if (!user.did) {
-            return res.status(500).json({ code: 500, message: 'User not registered' });
-        }
-        const taskManager = new TaskManager();
-        const task = taskManager.start(TaskAction.REVOKE_KYC, user.id);
-        RunFunctionAsync<ServiceError>(async () => {
-            const guardians = new Guardians();
-            await guardians.revokeKycTokenAsync(tokenId, username, user.did, task);
-        }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
-        });
-
-        return res.status(200).send(task);
     }
 
     @Put('/push/:tokenId/:username/revoke-kyc')

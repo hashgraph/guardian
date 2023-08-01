@@ -204,55 +204,6 @@ export class AccountApi {
     }
 
     /**
-     * Get root authorities
-     * @deprecated 2022-10-01
-     */
-    @ApiOperation({
-        summary: 'Returns all Standard Registries.',
-        description: 'Returns all Standard Registries.',
-        deprecated: true
-    })
-    @ApiSecurity('bearerAuth')
-    @ApiExtraModels(AccountsResponseDTO, InternalServerErrorDTO)
-    @ApiOkResponse({
-        description: 'Successful operation.',
-        schema: {
-            $ref: getSchemaPath(AccountsResponseDTO),
-        },
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
-    @ApiInternalServerErrorResponse({
-        description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
-    })
-    @Get('/root-authorities')
-    @HttpCode(HttpStatus.OK)
-    async getRootAuthorities(@Req() req): Promise<AccountsResponseDTO> {
-        const authHeader = req.headers.authorization;
-        const token = authHeader.split(' ')[1];
-        const users = new Users();
-        const user = await users.getUserByToken(token) as IAuthUser;
-
-        if (!user) {
-            throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
-        }
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(user);
-        try {
-            return await users.getAllStandardRegistryAccounts() as any;
-        } catch (error) {
-            new Logger().error(error.message, ['API_GATEWAY']);
-            throw error;
-        }
-    }
-
-    /**
      * Get SAs
      */
     @ApiOperation({
