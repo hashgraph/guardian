@@ -19,12 +19,12 @@ import { createSchema, fixSchemaDefsOnImport, getDefs, ImportResult, onlyUnique,
 
 export class SchemaCache {
     /**
-     * Load schema
+     * Schema Cache
      */
-    private static map = new Map<string, string>();
+    private static readonly map = new Map<string, string>();
 
     /**
-     * Load schema
+     * Check
      * @param id
      */
     public static hasSchema(id: string) {
@@ -32,7 +32,7 @@ export class SchemaCache {
     }
 
     /**
-     * Load schema
+     * Get schema
      * @param id
      */
     public static getSchema(id: string): any | null {
@@ -45,7 +45,7 @@ export class SchemaCache {
     }
 
     /**
-     * Load schema
+     * Set schema
      * @param id
      * @param schema
      */

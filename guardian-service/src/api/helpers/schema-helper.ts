@@ -5,12 +5,14 @@ import {
     SchemaHelper,
     Schema,
     TopicType,
-    IRootConfig
+    IRootConfig,
+    SchemaCategory
 } from '@guardian/interfaces';
 import path from 'path';
 import { readJSON } from 'fs-extra';
 import { DatabaseServer, MessageAction, MessageServer, Schema as SchemaCollection, SchemaConverterUtils, SchemaMessage, TopicConfig, TopicHelper, Users, } from '@guardian/common';
 import { INotifier } from '@helpers/notifier';
+import { importTag } from '@api/tag.service';
 
 /**
  * Import Result
@@ -320,6 +322,50 @@ export async function sendSchemaMessage(
 }
 
 /**
+ * Check parent schema and create new with tags
+ * @param newSchema
+ * @param guardians
+ * @param owner
+ */
+export async function createSchemaAndArtifacts(
+    newSchema: any,
+    owner: string,
+    notifier: INotifier
+) {
+    let old: SchemaCollection;
+    let previousVersion = '';
+    if (newSchema.id) {
+        old = await DatabaseServer.getSchemaById(newSchema.id);
+        if (!old) {
+            throw new Error('Schema does not exist.');
+        }
+        if (old.creator !== owner) {
+            throw new Error('Invalid creator.');
+        }
+        previousVersion = old.version;
+    }
+
+    delete newSchema._id;
+    delete newSchema.id;
+    delete newSchema.status;
+    newSchema.category = SchemaCategory.POLICY;
+    newSchema.readonly = false;
+    newSchema.system = false;
+
+    SchemaHelper.setVersion(newSchema, null, previousVersion);
+    const row = await createSchema(newSchema, newSchema.owner, notifier);
+
+    if (old) {
+        const tags = await DatabaseServer.getTags({
+            localTarget: old.id
+        });
+        await importTag(tags, row.id.toString());
+    }
+
+    return row;
+}
+
+/**
  * Create schema
  * @param newSchema
  * @param owner
@@ -332,6 +378,7 @@ export async function createSchema(
     if (checkForCircularDependency(newSchema)) {
         throw new Error(`There is circular dependency in schema: ${newSchema.iri}`);
     }
+
     delete newSchema.id;
     delete newSchema._id;
     const users = new Users();

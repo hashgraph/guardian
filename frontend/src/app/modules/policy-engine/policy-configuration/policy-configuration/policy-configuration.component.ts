@@ -854,7 +854,7 @@ export class PolicyConfigurationComponent implements OnInit {
                     if (this.currentBlock !== currentBlock) {
                         return;
                     }
-                    const {next, nested} = result;
+                    const { next, nested } = result;
                     if (
                         next &&
                         this.currentBlock?.parent?.children &&
@@ -862,7 +862,7 @@ export class PolicyConfigurationComponent implements OnInit {
                         this.currentBlock.parent.children.indexOf(
                             this.currentBlock
                         ) + 1
-                            ]
+                        ]
                     ) {
                         this.nextBlock = {
                             icon: this.registeredService.getIcon(next),
@@ -870,7 +870,7 @@ export class PolicyConfigurationComponent implements OnInit {
                             node: {
                                 blockType: next,
                                 permissionsNumber:
-                                this.currentBlock?.permissionsNumber,
+                                    this.currentBlock?.permissionsNumber,
                             },
                             name: this.registeredService.getName(next),
                         };
@@ -887,7 +887,7 @@ export class PolicyConfigurationComponent implements OnInit {
                             node: {
                                 blockType: nested,
                                 permissionsNumber:
-                                this.currentBlock?.permissionsNumber,
+                                    this.currentBlock?.permissionsNumber,
                             },
                             name: this.registeredService.getName(nested),
                         };
