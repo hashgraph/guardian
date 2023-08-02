@@ -57,7 +57,7 @@ Promise.all([
         new WalletService().registerVault(vault);
         new WalletService().registerListeners();
 
-        if (process.env.MEECO_AUTH_PROVIDER_ACTIVE === 'true') {
+        if (process.env.MEECO_AUTH_PROVIDER_ACTIVE) {
             await new MeecoAuthService().setConnection(cn).init();
             new MeecoAuthService().registerListeners();
         }
