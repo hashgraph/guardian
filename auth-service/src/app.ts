@@ -56,8 +56,11 @@ Promise.all([
         await new WalletService().setConnection(cn).init();
         new WalletService().registerVault(vault);
         new WalletService().registerListeners();
-        await new MeecoAuthService().setConnection(cn).init();
-        new MeecoAuthService().registerListeners();
+
+        if (process.env.MEECO_AUTH_PROVIDER_ACTIVE === 'true') {
+            await new MeecoAuthService().setConnection(cn).init();
+            new MeecoAuthService().registerListeners();
+        }
 
         if (process.env.IMPORT_KEYS_FROM_DB) {
             await ImportKeysFromDatabase(vault);
