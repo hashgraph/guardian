@@ -314,7 +314,9 @@ export async function sendSchemaMessage(
     );
     const message = new SchemaMessage(action);
     message.setDocument(schema);
-    await messageServer.setTopicObject(topic).sendMessage(message);
+    await messageServer
+        .setTopicObject(topic)
+        .sendMessage(message);
 }
 
 /**
