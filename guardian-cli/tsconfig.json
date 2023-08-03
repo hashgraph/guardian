@@ -14,7 +14,7 @@
         "experimentalDecorators": true,
         "esModuleInterop": true,
         "skipLibCheck": true,
-        "baseUrl": "./src",
+        "baseUrl": ".",
         "paths": {
             "@entity/*": [
                 "entity/*"
@@ -49,8 +49,7 @@
         }
     },
     "include": [
-        "src/**/*",
-        "../interfaces/src/type/TopicType.ts"
+        "index.ts"
     ],
     "exclude": [
         "node_modules"
