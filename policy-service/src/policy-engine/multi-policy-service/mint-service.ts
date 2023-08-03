@@ -21,7 +21,6 @@ import {
     VcDocumentDefinition as VcDocument,
     Workers,
     NotificationHelper,
-    IAuthUser,
     Users,
 } from '@guardian/common';
 import { PrivateKey } from '@hashgraph/sdk';
@@ -91,14 +90,8 @@ export class MintService {
         uuid: string,
         transactionMemo: string,
         ref?: AnyBlockType,
-        policyOwner?: IAuthUser,
-        documentOwnerUser?: IAuthUser,
+        notifier?: NotificationHelper,
     ): Promise<any[]> {
-        const notifier = await NotificationHelper.initProgress(
-            [documentOwnerUser.id, policyOwner.id],
-            'Minting tokens',
-            `Start minting ${token.tokenName}`
-        );
         const mintNFT = (metaData: string[]): Promise<number[]> =>
             workers.addRetryableTask(
                 {
@@ -161,7 +154,7 @@ export class MintService {
                 }/${tasks.length * MintService.BATCH_NFT_MINT_SIZE})`,
                 ref
             );
-            notifier.step(
+            notifier?.step(
                 `Mint(${token.tokenName}): Minting and transferring (Chunk: ${
                     i * MintService.BATCH_NFT_MINT_SIZE + 1
                 }/${tasks.length * MintService.BATCH_NFT_MINT_SIZE})`,
@@ -178,7 +171,14 @@ export class MintService {
                         }
                     }
                 }
+                notifier?.finish();
             } catch (error) {
+                notifier?.stop({
+                    title: 'Minting tokens',
+                    message: `Mint(${
+                        token.tokenName
+                    }): Error (${PolicyUtils.getErrorMessage(error)})`,
+                });
                 MintService.error(
                     `Mint(${mintId}): Error (${PolicyUtils.getErrorMessage(
                         error
@@ -186,8 +186,6 @@ export class MintService {
                     ref
                 );
                 throw error;
-            } finally {
-                notifier.finish();
             }
         }
         MintService.log(
@@ -345,6 +343,12 @@ export class MintService {
         documents: VcDocument[],
     ): Promise<void> {
         const multipleConfig = await MintService.getMultipleConfig(ref, documentOwner);
+        const users = new Users();
+        const documentOwnerUser = await users.getUserByAccount(documentOwner.did);
+        const policyOwner = await users.getUserById(ref.policyOwner);
+        const notifier = NotificationHelper.init(
+            [documentOwnerUser?.id, policyOwner?.id],
+        );
         if (multipleConfig) {
             const hash = VcDocument.toCredentialHash(documents, (value: any) => {
                 delete value.id;
@@ -376,11 +380,19 @@ export class MintService {
             }
         } else {
             const tokenConfig = await MintService.getTokenConfig(ref, token);
-            const policyOwner = await new Users().getUserById(ref.policyOwner);
-            const documentOwnerUser = await PolicyUtils.getUser(ref, documentOwner.did)
             if (token.tokenType === 'non-fungible') {
                 const serials = await MintService.mintNonFungibleTokens(
-                    tokenConfig, tokenValue, root, targetAccount, messageId, transactionMemo, ref, policyOwner, documentOwnerUser
+                    tokenConfig,
+                    tokenValue,
+                    root,
+                    targetAccount,
+                    messageId,
+                    transactionMemo,
+                    ref,
+                    await notifier.progress(
+                        'Minting tokens',
+                        `Start minting ${token.tokenName}`
+                    )
                 );
                 await MintService.updateDocuments(messageId, { tokenId: token.tokenId, serials }, ref);
             } else {
@@ -389,20 +401,16 @@ export class MintService {
                 );
                 await MintService.updateDocuments(messageId, { tokenId: token.tokenId, amount }, ref);
             }
-
-            await Promise.all(
-                [policyOwner.id, documentOwnerUser.id].map(
-                    async (userId) =>
-                        await NotificationHelper.success(
-                            `Mint completed`,
-                            `All ${token.tokenName} tokens have been minted and transferred`,
-                            userId,
-                            NotificationAction.POLICY_VIEW,
-                            ref.policyId
-                        )
-                )
-            );
         }
+
+        notifier.success(
+            multipleConfig ? `Multi mint` : `Mint completed`,
+            multipleConfig
+                ? `Request to mint is submitted`
+                : `All ${token.tokenName} tokens have been minted and transferred`,
+            NotificationAction.POLICY_VIEW,
+            ref.policyId
+        );
 
         new ExternalEventChannel().publishMessage(
             ExternalMessageEvents.TOKEN_MINTED,
@@ -429,7 +437,8 @@ export class MintService {
         token: Token,
         tokenValue: number,
         targetAccount: string,
-        ids: string[]
+        ids: string[],
+        notifier?: NotificationHelper,
     ): Promise<void> {
         const messageIds = ids.join(',');
         const memo = messageIds;
@@ -457,7 +466,17 @@ export class MintService {
 
         if (token.tokenType === 'non-fungible') {
             const serials = await MintService.mintNonFungibleTokens(
-                tokenConfig, tokenValue, root, targetAccount, messageIds, memo, null
+                tokenConfig,
+                tokenValue,
+                root,
+                targetAccount,
+                messageIds,
+                memo,
+                null,
+                await notifier?.progress(
+                    'Minting tokens',
+                    `Start minting ${token.tokenName}`
+                )
             );
             await MintService.updateDocuments(ids, { tokenId: token.tokenId, serials }, null);
         } else {
@@ -466,6 +485,11 @@ export class MintService {
             );
             await MintService.updateDocuments(ids, { tokenId: token.tokenId, amount }, null);
         }
+
+        notifier?.success(
+            `Mint completed`,
+            `All ${token.tokenName} tokens have been minted and transferred`
+        );
 
         new ExternalEventChannel().publishMessage(
             ExternalMessageEvents.TOKEN_MINTED,
