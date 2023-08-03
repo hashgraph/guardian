@@ -25,7 +25,10 @@ spec:
     spec:
       containers:
         - image: gcr.io/hedera-registry/frontend:latest
-        # - image: public.ecr.aws/m9c9x5t0/frontend:latest this image can be use as a temporary workaround for this issue https://github.com/hashgraph/guardian/issues/2442
+          env:
+            # this prevents the use of the image built-in nginx config template, not needed when using an ingress controller
+            - name: NGINX_ENVSUBST_TEMPLATE_DIR
+              value: "/tmp/foo"
           name: frontend
           ports:
             - containerPort: 80
