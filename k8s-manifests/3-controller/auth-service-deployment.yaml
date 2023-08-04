@@ -237,7 +237,7 @@ spec:
                 configMapKeyRef:
                   key: VAULT_PROVIDER
                   name: general-configs
-          image: gcr.io/hedera-registry/auth-service:latest
+          image: gcr.io/hedera-registry/auth-service:2.14.2
           name: auth-service
           ports:
             - containerPort: 5005

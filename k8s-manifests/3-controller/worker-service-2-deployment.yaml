@@ -231,7 +231,7 @@ spec:
                 configMapKeyRef:
                   key: VAULT_PROVIDER
                   name: general-configs
-          image: gcr.io/hedera-registry/worker-service:latest
+          image: gcr.io/hedera-registry/worker-service:2.14.2
           name: worker-service-2
           ports:
             - containerPort: 6555

@@ -18,7 +18,7 @@ spec:
         io.kompose.service: topic-viewer
     spec:
       containers:
-        - image: gcr.io/hedera-registry/topic-viewer:latest
+        - image: gcr.io/hedera-registry/topic-viewer:2.14.2
           name: topic-viewer
           ports:
             - containerPort: 3006
