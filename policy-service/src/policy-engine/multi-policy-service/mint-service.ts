@@ -171,7 +171,6 @@ export class MintService {
                         }
                     }
                 }
-                notifier?.finish();
             } catch (error) {
                 notifier?.stop({
                     title: 'Minting tokens',
@@ -188,6 +187,9 @@ export class MintService {
                 throw error;
             }
         }
+
+        notifier?.finish();
+
         MintService.log(
             `Mint(${mintId}): Minted (Count: ${Math.floor(tokenValue)})`,
             ref
@@ -344,7 +346,7 @@ export class MintService {
     ): Promise<void> {
         const multipleConfig = await MintService.getMultipleConfig(ref, documentOwner);
         const users = new Users();
-        const documentOwnerUser = await users.getUserByAccount(documentOwner.did);
+        const documentOwnerUser = await users.getUserById(documentOwner.did);
         const policyOwner = await users.getUserById(ref.policyOwner);
         const notifier = NotificationHelper.init(
             [documentOwnerUser?.id, policyOwner?.id],

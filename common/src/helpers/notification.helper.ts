@@ -24,10 +24,10 @@ export class NotificationHelper {
         new CommonVariables().getVariable('notifier');
 
     private constructor(users: string[] = [], notifications: string[] = []) {
-        this._users = users.filter((user) => !!user);
-        this._notifications = notifications.filter(
+        this._users = [...new Set(users.filter((user) => !!user))];
+        this._notifications = [...new Set(notifications.filter(
             (notification) => !!notification
-        );
+        ))];
     }
 
     /**
