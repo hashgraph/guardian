@@ -24,7 +24,7 @@ spec:
         io.kompose.service: frontend
     spec:
       containers:
-        - image: gcr.io/hedera-registry/frontend:latest
+        - image: gcr.io/hedera-registry/frontend:2.14.2
           env:
             # this prevents the use of the image built-in nginx config template, not needed when using an ingress controller
             - name: NGINX_ENVSUBST_TEMPLATE_DIR

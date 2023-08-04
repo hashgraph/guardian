@@ -229,7 +229,7 @@ spec:
                 configMapKeyRef:
                   key: VAULT_PROVIDER
                   name: general-configs
-          image: gcr.io/hedera-registry/api-gateway:latest
+          image: gcr.io/hedera-registry/api-gateway:2.14.2
           name: api-gateway
           ports:
             - containerPort: 3002
