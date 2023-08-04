@@ -229,7 +229,7 @@ spec:
                 configMapKeyRef:
                   key: VAULT_PROVIDER
                   name: general-configs
-          image: gcr.io/hedera-registry/logger-service:latest
+          image: gcr.io/hedera-registry/logger-service:2.14.2
           name: logger-service
           resources: {}
           volumeMounts:

@@ -229,7 +229,7 @@ spec:
                 configMapKeyRef:
                   key: VAULT_PROVIDER
                   name: general-configs
-          image: gcr.io/hedera-registry/guardian-service:latest
+          image: gcr.io/hedera-registry/guardian-service:2.14.2
           name: guardian-service
           ports:
             - containerPort: 5007
