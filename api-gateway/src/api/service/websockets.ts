@@ -390,7 +390,7 @@ export class WebSocketsService {
                         role:  data.role || UserRole.STANDARD_REGISTRY as UserRole,
                         username: `${meecoUser.firstName}${meecoUser.familyName}${
                             generateNumberFromString(meecoUser.id)
-                        }`.toLowerCase(),
+                        }`.toLowerCase().replace(/\s+/g, ''),
                         providerId: meecoUser.id,
                         provider: ExternalProviders.MEECO,
                     };

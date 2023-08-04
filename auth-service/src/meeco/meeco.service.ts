@@ -1,4 +1,3 @@
-import { Injectable } from '@nestjs/common';
 import { Cryppo, IKey, IMasterEncryptionKey } from '../meeco/cryppo';
 import { IMeecoConfig, MeecoApi } from './meeco-api';
 import { IPassphraseArtefact } from './models/keys';
@@ -7,7 +6,7 @@ import { IPresentationRequest, IPresentationSubmission, IPresentationSubmissions
 import base64url from 'base64url';
 import * as jwt from 'jsonwebtoken';
 import { VerifiableCredential, Vc } from '@guardian/common';
-import { StatusListDecoder } from "@helpers/status-list-decoder";
+import { StatusList } from '@helpers/credentials-validation/status-list';
 
 const nacl = require('tweetnacl');
 
@@ -209,8 +208,10 @@ export class MeecoService {
     if (!decodedVPToken.vc?.credentialSubject?.encodedList) {
       return { message: 'No encoded list in the credential subject', success: false };
     }
-    const statusListDecoder = new StatusListDecoder(decodedVPToken.vc.credentialSubject.encodedList);
-    if (statusListDecoder.isRevoked(vc.credentialStatus.statusListIndex)) {
+    const statusListDecoder = await StatusList.decode({
+      encodedList: decodedVPToken.vc.credentialSubject.encodedList
+    });
+    if (!statusListDecoder.getStatus(vc.credentialStatus.statusListIndex)) {
       return { message: 'The credential used in the Meeco Wallet has been revoked', success: false };
     }
 
