@@ -1,5 +1,5 @@
 import process from 'process';
-import { COMMON_CONNECTION_CONFIG, LargePayloadContainer, Logger, MessageBrokerChannel, } from '@guardian/common';
+import { COMMON_CONNECTION_CONFIG, DataBaseHelper, LargePayloadContainer, Logger, MessageBrokerChannel, Workers, } from '@guardian/common';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { HttpStatus, ValidationPipe } from '@nestjs/common';
@@ -7,8 +7,7 @@ import express from 'express';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { AppModule } from './app.module';
-
-console.log(process.env)
+import { ReportService } from './analytics/report.service';
 
 const PORT = process.env.PORT || 3020;
 Promise.all([
@@ -26,6 +25,9 @@ Promise.all([
     MessageBrokerChannel.connect('ANALYTICS_SERVICE'),
 ]).then(async ([db, app, cn]) => {
     try {
+        console.log('--- 1 ---');
+
+        DataBaseHelper.orm = db;
         app.connectMicroservice<MicroserviceOptions>({
             transport: Transport.NATS,
             options: {
@@ -43,11 +45,16 @@ Promise.all([
         app.use(express.json({ limit: '2mb' }));
 
         new Logger().setConnection(cn);
+        const workersHelper = new Workers();
+        await workersHelper.setConnection(cn).init();
+        workersHelper.initListeners();
 
         const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
         if (Number.isInteger(maxPayload)) {
             new LargePayloadContainer().runServer();
         }
+
+        await ReportService.reset();
 
         app.listen(PORT, async () => {
             const url = await app.getUrl();

@@ -43,7 +43,7 @@ import {
     TransferTransaction
 } from '@hashgraph/sdk';
 import { HederaUtils, timeout } from './utils';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { Environment } from './environment';
 import { GenerateUUIDv4, HederaResponseCode } from '@guardian/interfaces';
 import Long from 'long';
@@ -1518,5 +1518,90 @@ export class HederaSDKHelper {
         const balances = res.data.balances[0];
         const hbars = new Hbar(balances.balance, HbarUnit.Tinybar);
         return hbars.toString();
+    }
+
+
+
+    /**
+     * Returns topic messages
+     * @param topicId Topic identifier
+     * @param startTimestamp start timestamp
+     * @param next next chunk
+     * @returns Messages
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    public static async getTopicMessageChunks(
+        topicId: string,
+        startTimestamp?: string,
+        next?: string
+    ): Promise<any> {
+        let url: string;
+        let requestParams: any;
+        if (next) {
+            url = next;
+            requestParams = {
+                responseType: 'json'
+            }
+        } else {
+            url = `${Environment.HEDERA_TOPIC_API}${topicId}/messages`;
+            if (startTimestamp) {
+                requestParams = {
+                    params: {
+                        limit: Number.MAX_SAFE_INTEGER,
+                        timestamp: `gt:${startTimestamp}`
+                    },
+                    responseType: 'json'
+                }
+            } else {
+                requestParams = {
+                    params: {
+                        limit: Number.MAX_SAFE_INTEGER
+                    },
+                    responseType: 'json'
+                }
+            }
+        }
+        let response: AxiosResponse<any, any>;
+        try {
+            response = await axios.get(url, requestParams);
+        } catch (error) {
+            const messages = error?.response?.data?._status?.messages;
+            if (messages && messages[0] && messages[0].message) {
+                throw new Error(messages[0].message)
+            }
+            throw new Error(error.message);
+        }
+        if (!response || !response.data || !response.data.messages) {
+            throw new Error(`Invalid topicId '${topicId}'`);
+        }
+        const items = response.data.messages;
+        const result = {
+            messages: [],
+            next: null,
+            lastTimestamp: startTimestamp
+        }
+        for (const item of items) {
+            const buffer = Buffer.from(item.message, 'base64').toString();
+            const message: any = {
+                id: item.consensus_timestamp,
+                payer_account_id: item.payer_account_id,
+                sequence_number: item.sequence_number,
+                topicId: item.topic_id,
+                message: buffer
+            }
+            if (item.chunk_info) {
+                message.chunk_number = item.chunk_info.number;
+                message.chunk_total = item.chunk_info.total;
+                if (item.chunk_info.initial_transaction_id) {
+                    message.chunk_id = item.chunk_info.initial_transaction_id.transaction_valid_start;
+                }
+            }
+            result.messages.push(message);
+            result.lastTimestamp = item.consensus_timestamp;
+        }
+        if (response.data.links?.next) {
+            result.next = `${response.request.protocol}//${response.request.host}${response.data.links?.next}`;
+        }
+        return result;
     }
 }
