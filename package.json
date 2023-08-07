@@ -18,8 +18,5 @@
     "api-tests",
     "notification-service"
   ],
-  "version": "2.15.0",
-  "dependencies": {
-    "@google-cloud/secret-manager": "^4.2.2"
-  }
+  "version": "2.15.0"
 }
