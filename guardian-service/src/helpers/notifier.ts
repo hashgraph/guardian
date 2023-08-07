@@ -192,8 +192,8 @@ export async function initNotifier({
     if (taskId) {
         let currentStep: string;
         let currentStepIndex = 0;
-        const notify = await NotificationHelper.initProgress(
-            [userId],
+        const notificationHelper = NotificationHelper.init([userId]);
+        const notify = await notificationHelper.progress(
             action,
             'Operation started',
             taskId
@@ -257,7 +257,7 @@ export async function initNotifier({
                         result.message = 'Unknown error';
                     }
                 }
-                notify.error({
+                notify.stop({
                     title: action,
                     message: error instanceof Error ? error.message : error,
                 });

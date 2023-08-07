@@ -8,15 +8,36 @@ import { CommonVariables } from './common-variables';
 
 export class NotificationHelper {
     /**
+     * Users
+     */
+    private readonly _users: string[];
+
+    /**
+     * Notifications
+     */
+    private readonly _notifications: string[];
+
+    /**
      * Notifier service
      */
     private readonly notificationService: NotificationService =
         new CommonVariables().getVariable('notifier');
 
-    private constructor(
-        private readonly _notificationIds: string[],
-        private readonly _users: string[]
-    ) {}
+    private constructor(users: string[] = [], notifications: string[] = []) {
+        this._users = [...new Set(users.filter((user) => !!user))];
+        this._notifications = [...new Set(notifications.filter(
+            (notification) => !!notification
+        ))];
+    }
+
+    /**
+     * Initialize
+     * @param users Users
+     * @returns Notification Helper
+     */
+    public static init(users: string[]) {
+        return new NotificationHelper(users || []);
+    }
 
     /**
      * Read notification
@@ -34,6 +55,8 @@ export class NotificationHelper {
      * @param title
      * @param message
      * @param userId
+     * @param action
+     * @param result
      * @returns Notification
      */
     public static async info(
@@ -54,10 +77,41 @@ export class NotificationHelper {
     }
 
     /**
+     * Create info notifications
+     * @param title
+     * @param message
+     * @param userId
+     * @param action
+     * @param result
+     * @returns Notifications
+     */
+    public async info(
+        title: string,
+        message: string,
+        action?: NotificationAction,
+        result?: any
+    ) {
+        return await Promise.all(
+            this._users.map((userId) =>
+                NotificationHelper.create(
+                    userId,
+                    NotificationType.INFO,
+                    title,
+                    message,
+                    action,
+                    result
+                )
+            )
+        );
+    }
+
+    /**
      * Create error notification
      * @param title
      * @param message
      * @param userId
+     * @param action
+     * @param result
      * @returns Notification
      */
     public static async error(
@@ -78,10 +132,41 @@ export class NotificationHelper {
     }
 
     /**
+     * Create error notifications
+     * @param title
+     * @param message
+     * @param userId
+     * @param action
+     * @param result
+     * @returns Notifications
+     */
+    public async error(
+        title: string,
+        message: string,
+        action?: NotificationAction,
+        result?: any
+    ) {
+        return await Promise.all(
+            this._users.map((userId) =>
+                NotificationHelper.create(
+                    userId,
+                    NotificationType.ERROR,
+                    title,
+                    message,
+                    action,
+                    result
+                )
+            )
+        );
+    }
+
+    /**
      * Create warn notification
      * @param title
      * @param message
      * @param userId
+     * @param action
+     * @param result
      * @returns Notification
      */
     public static async warn(
@@ -98,6 +183,35 @@ export class NotificationHelper {
             message,
             action,
             result
+        );
+    }
+
+    /**
+     * Create warn notifications
+     * @param title
+     * @param message
+     * @param userId
+     * @param action
+     * @param result
+     * @returns Notifications
+     */
+    public async warn(
+        title: string,
+        message: string,
+        action?: NotificationAction,
+        result?: any
+    ) {
+        return await Promise.all(
+            this._users.map((userId) =>
+                NotificationHelper.create(
+                    userId,
+                    NotificationType.WARN,
+                    title,
+                    message,
+                    action,
+                    result
+                )
+            )
         );
     }
 
@@ -124,6 +238,34 @@ export class NotificationHelper {
             message,
             action,
             result
+        );
+    }
+
+    /**
+     * Create success notifications
+     * @param title
+     * @param message
+     * @param action
+     * @param result
+     * @returns Notifications
+     */
+    public async success(
+        title: string,
+        message: string,
+        action?: NotificationAction,
+        result?: any
+    ) {
+        return await Promise.all(
+            this._users.map((userId) =>
+                NotificationHelper.create(
+                    userId,
+                    NotificationType.SUCCESS,
+                    title,
+                    message,
+                    action,
+                    result
+                )
+            )
         );
     }
 
@@ -183,20 +325,18 @@ export class NotificationHelper {
 
     /**
      * Initialize progress
-     * @param users
      * @param action
      * @param startMessage
      * @param taskId
      * @returns Notification Helper instance with attached progress
      */
-    public static async initProgress(
-        users: string[],
+    public async progress(
         action: string | TaskAction,
         startMessage?: string,
         taskId?: string
     ) {
         const notifications = await Promise.all(
-            users.map(
+            this._users.map(
                 async (userId) =>
                     await NotificationHelper.createProgress(
                         userId,
@@ -207,8 +347,8 @@ export class NotificationHelper {
             )
         );
         return new NotificationHelper(
-            notifications.map((item) => item.id),
-            users
+            this._users,
+            notifications.filter((item) => item).map((item) => item.id)
         );
     }
 
@@ -219,7 +359,7 @@ export class NotificationHelper {
      */
     public async step(message: string, progress: number) {
         await Promise.all(
-            this._notificationIds.map(
+            this._notifications.map(
                 async (notificationId) =>
                     await this.notificationService.updateProgress(
                         notificationId,
@@ -240,40 +380,41 @@ export class NotificationHelper {
         action?: NotificationAction;
         result?: any;
     }) {
-        for (const notificationId of this._notificationIds) {
-            await this.notificationService.deleteProgress(notificationId);
-        }
+        await this.stop();
         if (!successNotification) {
             return;
         }
-        for (const userId of this._users) {
-            await NotificationHelper.success(
-                successNotification.title,
-                successNotification.message,
-                userId,
-                successNotification.action,
-                successNotification.result
-            );
-        }
+        await this.success(
+            successNotification.title,
+            successNotification.message,
+            successNotification.action,
+            successNotification.result
+        );
     }
 
     /**
      * Error progress
      * @param errorNotification
      */
-    public async error(errorNotification: { title: string; message: string }) {
-        for (const notificationId of this._notificationIds) {
-            await this.notificationService.deleteProgress(notificationId);
-        }
+    public async stop(errorNotification?: {
+        title: string;
+        message: string;
+        action?: NotificationAction;
+        result?: any;
+    }) {
+        await Promise.all(
+            this._notifications.map((notificationId) =>
+                this.notificationService.deleteProgress(notificationId)
+            )
+        );
         if (!errorNotification) {
             return;
         }
-        for (const userId of this._users) {
-            await NotificationHelper.error(
-                errorNotification.title,
-                errorNotification.message,
-                userId
-            );
-        }
+        await this.error(
+            errorNotification.title,
+            errorNotification.message,
+            errorNotification.action,
+            errorNotification.result
+        );
     }
 }

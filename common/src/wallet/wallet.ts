@@ -2,9 +2,10 @@ import { SecretManager, SecretManagerBase, SecretManagerType } from '../secret-m
 import crypto from 'crypto';
 import * as bs58 from 'bs58';
 import { AzureSecretManager } from '../secret-manager/azure/azure-secret-manager';
+import { GcpSecretManager } from '../secret-manager/gcp/gcp-secret-manager';
 
 /**
- * Class to manage wallet by Secret Manager Resources
+ * Class to manage wallet by Secret Manager Resources.
  */
 export class Wallet {
   /**
@@ -56,11 +57,12 @@ export class Wallet {
   private generateKeyName(token: string, type: string, key: string): string {
     const hashedKey = crypto.createHash(this.encryptionAlg).update(`${token}|${type}|${key}`).digest('hex');
 
-    if (!(this.secretManager instanceof AzureSecretManager)) {
+    if (!(this.secretManager instanceof AzureSecretManager) && !(this.secretManager instanceof GcpSecretManager)) {
       return hashedKey;
     }
-
+    
     // convert hashedKey from hex to Base58 to shoeten key length, Azure does not accept keys longet than 128 chars
+    // convert hashedKey from hex to Base58 to shoeten key length, GCP does not accept keys longet than 255 chars
     const buffer = Buffer.from(hashedKey, 'hex');
     const hashedKeyBase58 = bs58.encode(buffer);
     return hashedKeyBase58;

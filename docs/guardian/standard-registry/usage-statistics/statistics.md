@@ -8,7 +8,15 @@ The service starts by navigating through Hedera structures collecting informatio
 
 Owing to the high resource load the refresh of the statistical information is performed periodically. The _**ANALYTICS\_SCHEDULER**_ environment variable allows to specify the time period. By default the refresh occurs weekly.
 
-## **2. UI**
+## 2. Launching UI Statistics&#x20;
+
+The docker command used to launch Statistics in [localhost:3000](http://localhost:3000/) is&#x20;
+
+```
+docker-compose -f docker-compose-analytics.yml up -d --build
+```
+
+## **3. UI**
 
 By default the system loads the data of the last successful refresh, and the delta with the prior refresh (if exists).
 
@@ -35,21 +43,3 @@ The latest statistical refers can be exported in the format of the Excel file by
 {% hint style="info" %}
 **Note:** The system exports the current state of the statistical data, not the selected refresh.
 {% endhint %}
-
-1. **API**
-
-GET
-
-/analytics/report – returns the status of the report for the current root ‘topic’. In the case of the changes of the topic a new report will be created.
-
-/analytics/reports – returns the list of all created reports.
-
-/analytics/report/:uuid – returns the report with the UUID matching the specified, and the collected statistics
-
-/analytics/report/:uuid/export/csv – exports the current statistics into a csv file
-
-/analytics/report/:uuid/export/xlsx – exports the current statistics into xlsx file
-
-/analytics/dashboards – returns the list of created snapshots in the current report. Snapshots are the aggregated data for the successful refresh of the report.
-
-/analytics/dashboards/:id – returns the statistics for the specified snapshot ID.
