@@ -53,3 +53,4 @@ export { ReportRow } from './table/report-row';
 export { ReportTable } from './table/report-table';
 export { ModuleModel } from './compare/models/module.model';
 export { ModuleComparator } from './compare/comparators/module-comparator';
+export { MessageComparator } from './compare/comparators/message-comparator';

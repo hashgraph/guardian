@@ -42,6 +42,7 @@ import { GuardiansService } from '@helpers/guardians';
 import { Inject } from '@helpers/decorators/inject';
 import { findAndDryRunSchema, findAndPublishSchema, publishSystemSchemas } from '@api/helpers/schema-publish-helper';
 import { deleteSchema, incrementSchemaVersion, sendSchemaMessage } from '@api/helpers/schema-helper';
+import { MessageComparator } from '@analytics';
 
 /**
  * Result of publishing
@@ -312,7 +313,7 @@ export class PolicyEngine extends NatsService {
         await importTag(tags, model.id.toString());
 
         notifier.completedAndStart('Saving in DB');
-        const policy = await DatabaseServer.updatePolicy(model);
+        let policy = await DatabaseServer.updatePolicy(model);
 
         if (newTopic) {
             newTopic.policyId = policy.id.toString();
@@ -323,6 +324,15 @@ export class PolicyEngine extends NatsService {
         for (const addedArtifact of addedArtifacts) {
             addedArtifact.policyId = policy.id;
             await DatabaseServer.saveArtifact(addedArtifact);
+        }
+
+        notifier.completedAndStart('Updating hash');
+        try {
+            const compareModel = await MessageComparator.createModel(policy.id.toString());
+            policy.hash = MessageComparator.createHash(compareModel);
+            policy = await DatabaseServer.updatePolicy(policy);
+        } catch (error) {
+            logger.error(error, ['GUARDIAN_SERVICE, HASH']);
         }
 
         notifier.completed();
@@ -534,6 +544,7 @@ export class PolicyEngine extends NatsService {
         } catch (error) {
             model.status = PolicyType.PUBLISH_ERROR;
             model.version = '';
+            model.hash = '';
             await DatabaseServer.updatePolicy(model);
             throw error;
         }
@@ -668,6 +679,7 @@ export class PolicyEngine extends NatsService {
         } catch (error) {
             model.status = PolicyType.PUBLISH_ERROR;
             model.version = '';
+            model.hash = '';
             await DatabaseServer.updatePolicy(model);
             throw error
         }
@@ -681,7 +693,17 @@ export class PolicyEngine extends NatsService {
 
         notifier.completedAndStart('Saving in DB');
         model.status = PolicyType.PUBLISH;
-        const retVal = await DatabaseServer.updatePolicy(model);
+        let retVal = await DatabaseServer.updatePolicy(model);
+
+        notifier.completedAndStart('Updating hash');
+        try {
+            const compareModel = await MessageComparator.createModel(retVal.id.toString());
+            retVal.hash = MessageComparator.createHash(compareModel);
+            retVal = await DatabaseServer.updatePolicy(retVal);
+        } catch (error) {
+            logger.error(error, ['GUARDIAN_SERVICE, HASH']);
+        }
+
         notifier.completed();
         return retVal
     }
@@ -783,7 +805,16 @@ export class PolicyEngine extends NatsService {
 
         logger.info('Published Policy', ['GUARDIAN_SERVICE']);
 
-        return await DatabaseServer.updatePolicy(model);
+        let retVal = await DatabaseServer.updatePolicy(model);
+        try {
+            const compareModel = await MessageComparator.createModel(retVal.id.toString());
+            retVal.hash = MessageComparator.createHash(compareModel);
+            retVal = await DatabaseServer.updatePolicy(retVal);
+        } catch (error) {
+            logger.error(error, ['GUARDIAN_SERVICE, HASH']);
+        }
+
+        return retVal;
     }
 
     /**
@@ -908,7 +939,7 @@ export class PolicyEngine extends NatsService {
         // const tagMessages = await messageServer.getMessages<TagMessage>(message.policyTopicId, MessageType.Tag, MessageAction.PublishTag);
 
         notifier.completedAndStart('Parse policy files');
-        const policyToImport = await PolicyImportExportHelper.parseZipFile(message.document);
+        const policyToImport = await PolicyImportExportHelper.parseZipFile(message.document, true);
         if (newVersions.length !== 0) {
             policyToImport.newVersions = newVersions.reverse();
         }

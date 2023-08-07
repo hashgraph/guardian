@@ -18,6 +18,12 @@ export class Policy extends BaseEntity {
     uuid?: string;
 
     /**
+     * Policy hash
+     */
+    @Property({ nullable: true })
+    hash?: string;
+    
+    /**
      * Policy name
      */
     @Property({ nullable: true })

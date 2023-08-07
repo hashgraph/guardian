@@ -1,6 +1,7 @@
 import { Token } from '@guardian/common';
 import { ICompareOptions } from '../interfaces/compare-options.interface';
 import MurmurHash3 from 'imurmurhash';
+import { IWeightTree } from '../interfaces/weight-tree';
 
 /**
  * Token Model
@@ -159,5 +160,21 @@ export class TokenModel {
             hashState.hash(String(this.tokenId));
         }
         this._weight = String(hashState.result());
+    }
+
+    /**
+     * Get weight object
+     * @public
+     */
+    public toWeight(options: ICompareOptions): IWeightTree {
+        if (!this._weight) {
+            return {
+                weight: this.tokenId
+            }
+        } else {
+            return {
+                weight: this._weight
+            }
+        }
     }
 }

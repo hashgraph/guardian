@@ -46,12 +46,8 @@
                         <div class="field-name">Version</div>
                         <div class="field-value">{{ policy.version }}</div>
                     </div>
-                    <app-new-versions
-                        class="version-container__new-versions"
-                        type="policy"
-                        [newVersions]="newVersions"
-                        (onClick)="onNewVersionClick($event)"
-                    ></app-new-versions>
+                    <app-new-versions class="version-container__new-versions" type="policy" [newVersions]="newVersions"
+                        (onClick)="onNewVersionClick($event)"></app-new-versions>
                 </div>
 
                 <div class="field">
@@ -89,6 +85,13 @@
                     <div class="field-name">Tokens</div>
                     <div class="field-value">{{tokens}}</div>
                 </div>
+
+                <div *ngIf="similar" class="delimiter"></div>
+
+                <div *ngIf="similar" class="field-last">
+                    <div class="field-name">Similar Policies</div>
+                    <div class="field-value">{{similar}}</div>
+                </div>
             </div>
 
             <div *ngIf="module" class="policy">
@@ -107,7 +110,8 @@
                 </div>
             </div>
             <div class="page-btns">
-                <button *ngIf="innerWidth <= 810" mat-raised-button color="primary" id="create-btn" (click)="onImport()">Import</button>
+                <button *ngIf="innerWidth <= 810" mat-raised-button color="primary" id="create-btn"
+                    (click)="onImport()">Import</button>
             </div>
         </div>
     </div>

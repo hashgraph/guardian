@@ -12,6 +12,7 @@ import { IKeyMap } from '../interfaces/key-map.interface';
 import { TokenModel } from './token.model';
 import { IWeightModel } from '../interfaces/weight-model.interface';
 import { CompareUtils } from '../utils/utils';
+import { IWeightTree } from '../interfaces/weight-tree';
 
 /**
  * Block Model
@@ -411,5 +412,27 @@ export class BlockModel implements IWeightModel {
      */
     public addChildren(child: BlockModel): void {
         this._children.push(child);
+    }
+
+    /**
+     * Get weight object
+     * @public
+     */
+    public toWeight(options: ICompareOptions): IWeightTree {
+        const children: IWeightTree[] = [];
+        for (const child of this._children) {
+            children.push(child.toWeight(options));
+        }
+        if (!this._weight.length) {
+            return {
+                weight: this.blockType,
+                children
+            }
+        } else {
+            return {
+                weight: this._weight[0],
+                children
+            }
+        }
     }
 }
