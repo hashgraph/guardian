@@ -1,7 +1,9 @@
 <div class="service-status-container">
 
 
-    <ng-template #info let-loadingServices="getLoadingServices()" let-stoppedServices="getStoppedServices()">
+    <ng-template #info let-allServicesAreRunning="getIfAllServicesAreRunning()"
+                 let-loadingServices="getLoadingServices()"
+                 let-stoppedServices="getStoppedServices()">
         <h1 class="info-message" *ngIf="loadingServices.length">
             {{ getServiceNames(loadingServices) }}
             is (are) initializing
@@ -11,7 +13,7 @@
         <h1 class="info-message" *ngIf="stoppedServices.length">
             There are some problems with services...
         </h1>
-        <h1 class="info-message" *ngIf="!stoppedServices.length && !loadingServices.length">
+        <h1 *ngIf="allServicesAreRunning" class="info-message">
             All services are running
         </h1>
         <table class="status-table">

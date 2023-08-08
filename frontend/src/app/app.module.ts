@@ -85,6 +85,9 @@ import {
     BLOCK_TYPE_TIPS_VALUE,
 } from './injectors/block-type-tips.injector';
 import { SuggestionsService } from './services/suggestions.service';
+import { QrCodeDialogComponent } from './components/qr-code-dialog/qr-code-dialog.component';
+import { QRCodeModule } from 'angularx-qrcode';
+import { MeecoVCSubmitDialogComponent } from './components/meeco-vc-submit-dialog/meeco-vc-submit-dialog.component';
 
 @NgModule({
     declarations: [
@@ -116,6 +119,8 @@ import { SuggestionsService } from './services/suggestions.service';
         StandardRegistryCardComponent,
         NotificationComponent,
         NotificationsComponent,
+        QrCodeDialogComponent,
+        MeecoVCSubmitDialogComponent,
     ],
     imports: [
         BrowserModule,
@@ -132,6 +137,7 @@ import { SuggestionsService } from './services/suggestions.service';
         CompareModule,
         ToastrModule.forRoot(),
         HttpClientJsonpModule,
+        QRCodeModule,
     ],
     exports: [],
     providers: [

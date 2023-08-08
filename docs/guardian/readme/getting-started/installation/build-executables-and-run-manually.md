@@ -13,6 +13,35 @@ If you want to manually build every component with debug information, then build
 
 Install, configure and start all the prerequisites, then build and start each component.
 
+#### Services Configuration: 
+
+-  for each of the services create the file `./<service_name>/.env` to do this copy, past and rename  the file `./<service_name>/.env.template` 
+
+   For example:
+
+   in `./guardian-service/.env`:
+   ```plaintext
+       GUARDIAN_ENV="develop"
+   ```
+
+   If need to configure OVERRIDE uncomment the variable in file `./guardian-service/.env`:
+   ```plaintext
+       OVERRIDE="false" 
+   ```
+
+-  configure the file `./<service_name>/configs/.env.<service>.<GUARDIAN_ENV>` file: to do this copy, 
+   past and rename the file  `./<service_name>/.env.<service>.template` 
+
+   following previous example:
+
+   in `./guardian-service/configs/.env.guardian.develop`:
+   ```plaintext
+   OPERATOR_ID="..."
+   OPERATOR_KEY="..."
+   ```
+
+> **_NOTE:_** Once you start each service, please wait for the initialization process to be completed.**
+
 1. Clone the repo
 
 ```
@@ -45,6 +74,8 @@ To build the service:
  yarn workspace logger-service run build
 ```
 
+Configure the service as previously described. Do not need special variables configuration.
+
 To start the service:
 
 ```
@@ -58,6 +89,8 @@ To build the service:
 ```
 yarn workspace auth-service run build
 ```
+
+Configure the service as previously described. Do not need special variables configuration.
 
 To start the service:
 
@@ -73,6 +106,8 @@ To build the service:
 yarn workspace policy-service run build
 ```
 
+Configure the service as previously described. Do not need special variables configuration.
+
 To start the service:
 
 ```
@@ -80,14 +115,12 @@ yarn workspace policy-service start
 ```
 
 8. Build and start _**worker-service**_ service
-
-Update **IPFS\_STORAGE\_API\_KEY** value in _**worker-service/configs/.env.worker**_ file.
-
 To build the service:
 
 ```
 yarn workspace worker-service run build
 ```
+   Configure the service as previously described. Update **IPFS_STORAGE_API_KEY** value in `./worker-service/configs/.env.worker` file.
 
 To start the service:
 
@@ -97,13 +130,13 @@ yarn workspace worker-service start
 
 9. Build and start _**guardian-service**_ service
 
-Update **OPERATOR\_ID** and **OPERATOR\_KEY** values in _**guardian-service/configs/.env.worker**_ file.
-
 To build the service:
 
 ```
 yarn workspace guardian-service run build
 ```
+
+Configure the service as previously described. Update **OPERATOR_ID** and **OPERATOR_KEY** values in `./guardian-service/configs/.env.worker` file as in the example above.
 
 To start the service (found on [http://localhost:3002](https://localhost:3002)):
 
@@ -119,6 +152,8 @@ To build the service:
 yarn workspace api-gateway run build
 ```
 
+Configure the service as previously described. Do not need special variables configuration.
+
 To start the service (found on [http://localhost:3002](https://localhost:3002)):
 
 ```
@@ -133,6 +168,8 @@ To build the service:
 npm install
 npm run build
 ```
+
+Configure the service as previously described. Do not need special variables configuration.
 
 To start the service (found on [http://localhost:3005](http://localhost:3005)):
 

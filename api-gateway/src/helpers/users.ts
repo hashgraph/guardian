@@ -1,6 +1,6 @@
 import { Singleton } from '@helpers/decorators/singleton';
 import { ApplicationStates, AuthEvents, GenerateUUIDv4, MessageAPI, UserRole } from '@guardian/interfaces';
-import { AuthenticatedRequest, IAuthUser, NatsService } from '@guardian/common';
+import { AuthenticatedRequest, IAuthUser, NatsService, ProviderAuthUser } from '@guardian/common';
 
 /**
  * Users setvice
@@ -101,7 +101,7 @@ export class Users extends NatsService {
      * @param role
      */
     public async getUsersByRole(role: UserRole): Promise<IAuthUser[]> {
-        return await this.sendMessage(AuthEvents.GET_USERS_BY_ROLE, {role});;
+        return await this.sendMessage(AuthEvents.GET_USERS_BY_ROLE, {role});
     }
 
     /**
@@ -181,5 +181,9 @@ export class Users extends NatsService {
         catch {
             return ApplicationStates.STOPPED;
         }
+    }
+
+    public async generateNewUserTokenBasedOnExternalUserProvider(userProvider: ProviderAuthUser): Promise<any> {
+        return await this.sendMessage(AuthEvents.GENERATE_NEW_TOKEN_BASED_ON_USER_PROVIDER, userProvider);
     }
 }

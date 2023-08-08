@@ -11,6 +11,7 @@ import process from 'process';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { MeecoAuthService } from '@api/meeco-service';
 
 Promise.all([
     Migration({
@@ -18,7 +19,7 @@ Promise.all([
         migrations: {
             path: 'dist/migrations',
             transactional: false
-        }
+        },
     }),
     MikroORM.init<MongoDriver>({
         ...COMMON_CONNECTION_CONFIG,
@@ -34,8 +35,8 @@ Promise.all([
             queue: 'auth-service',
             name: `${process.env.SERVICE_CHANNEL}`,
             servers: [
-                `nats://${process.env.MQ_ADDRESS}:4222`
-            ]
+                `nats://${process.env.MQ_ADDRESS}:4222`,
+            ],
         },
     }),
     InitializeVault(process.env.VAULT_PROVIDER)
@@ -47,8 +48,6 @@ Promise.all([
     try {
         await fixtures();
 
-        console.log(app);
-
         app.listen();
 
         new Logger().setConnection(cn);
@@ -58,6 +57,11 @@ Promise.all([
         new WalletService().registerVault(vault);
         new WalletService().registerListeners();
 
+        if (parseInt(process.env.MEECO_AUTH_PROVIDER_ACTIVE, 10)) {
+            await new MeecoAuthService().setConnection(cn).init();
+            new MeecoAuthService().registerListeners();
+        }
+
         if (process.env.IMPORT_KEYS_FROM_DB) {
             await ImportKeysFromDatabase(vault);
         }
@@ -65,8 +69,8 @@ Promise.all([
         await new OldSecretManager().setConnection(cn).init();
         const secretManager = SecretManager.New();
         let {ACCESS_TOKEN_SECRET } = await secretManager.getSecrets('secretkey/auth');
-	    if (!ACCESS_TOKEN_SECRET) {
-            ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET
+        if (!ACCESS_TOKEN_SECRET) {
+            ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
             await secretManager.setSecrets('secretkey/auth', { ACCESS_TOKEN_SECRET  });
         }
 

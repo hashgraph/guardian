@@ -12,6 +12,7 @@ export enum MessageAPI {
     GET_TOKEN = 'get-token',
     SET_TOKEN = 'set-token',
     SET_TOKEN_ASYNC = 'set-token-async',
+    SET_ACCESS_TOKEN = 'SET_ACCESS_TOKEN',
     UPDATE_TOKEN_ASYNC = 'update-token-async',
     DELETE_TOKEN_ASYNC = 'delete-token-async',
     IMPORT_TOKENS = 'import-tokens',
@@ -141,6 +142,18 @@ export enum MessageAPI {
     SUGGESTIONS = 'policy-engine-event-suggestions',
     GET_SUGGESTIONS_CONFIG = 'policy-engine-event-get-suggestions-config',
     SET_SUGGESTIONS_CONFIG = 'policy-engine-event-set-suggestions-config',
+    PROFILE_BALANCE = 'PROFILE_BALANCE',
+    UPDATE_PROFILE = 'UPDATE_PROFILE',
+    UPDATE_EVENT = 'update-event',
+    ERROR_EVENT = 'error-event',
+    UPDATE_USER_INFO_EVENT = 'update-user-info-event',
+    MEECO_AUTH_REQUEST = 'MEECO_AUTH_REQUEST',
+    MEECO_AUTH_PRESENT_VP = 'MEECO_AUTH_PRESENT_VP',
+    MEECO_VERIFY_VP = 'MEECO_VERIFY_VP',
+    MEECO_VERIFY_VP_FAILED = 'MEECO_VERIFY_VP_FAILED',
+    MEECO_APPROVE_SUBMISSION_RESPONSE = 'MEECO_APPROVE_SUBMISSION_RESPONSE',
+    MEECO_APPROVE_SUBMISSION = 'MEECO_APPROVE_SUBMISSION',
+    MEECO_REJECT_SUBMISSION = 'MEECO_REJECT_SUBMISSION'
 }
 
 /**
