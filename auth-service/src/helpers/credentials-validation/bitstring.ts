@@ -12,9 +12,9 @@ function base64urlDecode(input) {
 }
 
 export class Bitstring {
-  private bits: Uint8Array;
-  private length: number;
-  private leftToRightIndexing: boolean;
+  private readonly bits: Uint8Array;
+  private readonly length: number;
+  private readonly leftToRightIndexing: boolean;
 
   constructor({
                 length,

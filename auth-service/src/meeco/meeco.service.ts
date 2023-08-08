@@ -5,10 +5,9 @@ import { IMe } from '../meeco/models/me';
 import { IPresentationRequest, IPresentationSubmission, IPresentationSubmissions } from './models/presentation-request';
 import base64url from 'base64url';
 import * as jwt from 'jsonwebtoken';
-import { VerifiableCredential, Vc } from '@guardian/common';
+import { Vc, VerifiableCredential } from '@guardian/common';
 import { StatusList } from '@helpers/credentials-validation/status-list';
-
-const nacl = require('tweetnacl');
+import nacl from 'tweetnacl';
 
 export class MeecoService {
   private readonly config: IMeecoConfig;
@@ -145,7 +144,7 @@ export class MeecoService {
     const keyPair = nacl.sign.keyPair.fromSeed(kp.key.bytes);
 
     const signature = nacl.sign.detached(Buffer.from(unsignedRequestJwt), keyPair.secretKey)
-    const signatureBase64 = base64url.encode(signature);
+    const signatureBase64 = base64url.encode(signature as any);
 
     const signedRequest = `${unsignedRequestJwt}.${signatureBase64}`;
 

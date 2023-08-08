@@ -100,7 +100,7 @@ export class MeecoApi {
 
   /**
    * Get the Meeco user's keypair.
-   * @param schemaId 
+   * @param schemaId
    * @returns {Schema} schema
    */
   async getSchema(schemaId: string): Promise<any> {

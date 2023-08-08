@@ -1,7 +1,7 @@
 import { Bitstring } from './bitstring';
 
 export class StatusList {
-  private bitstring: any;
+  private readonly bitstring: any;
   public length: number;
 
   constructor({ length, buffer }: { length?: number; buffer?: any } = {}) {

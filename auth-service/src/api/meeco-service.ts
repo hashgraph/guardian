@@ -1,5 +1,5 @@
-import { DataBaseHelper, MessageResponse, NatsService, Singleton, VerifiableCredential, Vc } from '@guardian/common';
-import { AuthEvents, GenerateUUIDv4, ExternalProviders } from '@guardian/interfaces';
+import { DataBaseHelper, MessageResponse, NatsService, Singleton, Vc, VerifiableCredential } from '@guardian/common';
+import { AuthEvents, ExternalProviders, GenerateUUIDv4 } from '@guardian/interfaces';
 import { MeecoService } from '../meeco/meeco.service';
 import { Logger } from '@nestjs/common';
 import { MeecoIssuerWhitelist } from '@entity/meeco-issuer-whitelist';
@@ -54,10 +54,10 @@ export class MeecoAuthService extends NatsService {
       issuerId: process.env.MEECO_ISSUER_ORGANIZATION_ID, name: process.env.MEECO_ISSUER_ORGANIZATION_NAME });
 
     if (!issuerWhitelist) {
-      const issuerWhitelist = new MeecoIssuerWhitelist();
-      issuerWhitelist.issuerId = process.env.MEECO_ISSUER_ORGANIZATION_ID;
-      issuerWhitelist.name = process.env.MEECO_ISSUER_ORGANIZATION_NAME;
-      issuerWhitelistRepository.save(issuerWhitelist);
+      const _issuerWhitelist = new MeecoIssuerWhitelist();
+      _issuerWhitelist.issuerId = process.env.MEECO_ISSUER_ORGANIZATION_ID;
+      _issuerWhitelist.name = process.env.MEECO_ISSUER_ORGANIZATION_NAME;
+      issuerWhitelistRepository.save(_issuerWhitelist);
     }
   }
 
@@ -203,7 +203,7 @@ export class MeecoAuthService extends NatsService {
   async verifyVP(vpToken: string) {
     const verifiableCredential = this.meecoService.decodeVPToken(vpToken);
     if (new Date(verifiableCredential.vc.expirationDate).getTime() < Date.now()) {
-      throw new Error("VP expired");
+      throw new Error('VP expired');
     }
 
     const { id: issuerId, name: issuerName } = verifiableCredential.vc.issuer;

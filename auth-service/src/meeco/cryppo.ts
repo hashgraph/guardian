@@ -1,5 +1,5 @@
-import { DerivedKeyOptions, EncryptionKey, IDerivedKey, KeyDerivationStrategy, bytesToBinaryString, decodeDerivationArtifacts, decryptWithKey, generateDerivedKey } from '@meeco/cryppo'
-const baseX = require('base-x');
+import { bytesToBinaryString, decodeDerivationArtifacts, decryptWithKey, DerivedKeyOptions, EncryptionKey, generateDerivedKey, IDerivedKey, KeyDerivationStrategy } from '@meeco/cryppo'
+import baseX from 'base-x';
 
 const base32Alphabet = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
 

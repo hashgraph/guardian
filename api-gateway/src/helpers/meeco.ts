@@ -1,13 +1,6 @@
-import {Singleton} from '@helpers/decorators/singleton';
+import { Singleton } from '@helpers/decorators/singleton';
 import { AuthEvents, GenerateUUIDv4 } from '@guardian/interfaces';
-import {
-  NatsService,
-  CredentialSubject,
-  MeecoApprovedSubmission,
-  MeecoJwt,
-  VerifiableCredential, Vc,
-  generateNumberFromString
-} from '@guardian/common';
+import { CredentialSubject, generateNumberFromString, MeecoApprovedSubmission, MeecoJwt, NatsService, Vc, VerifiableCredential } from '@guardian/common';
 import * as jwt from 'jsonwebtoken';
 
 /**
@@ -17,7 +10,7 @@ import * as jwt from 'jsonwebtoken';
 export class MeecoAuth extends NatsService {
   /**
    * Queue name
-  */
+   */
   public messageQueueName = 'api-meeco-auth-queue';
 
   /**
@@ -26,7 +19,24 @@ export class MeecoAuth extends NatsService {
    */
   public replySubject = 'api-meeco-auth-queue-reply-' + GenerateUUIDv4();
 
-  private clients: any = {};
+  private readonly clients: any = {};
+
+  static extractUserFromApprovedMeecoToken(meecoApprovedSubmission: MeecoApprovedSubmission): CredentialSubject {
+    const vc = MeecoAuth.extractVerifiableCredentialFromMeecoToken(meecoApprovedSubmission);
+    return vc.credentialSubject;
+  }
+
+  public async createMeecoAuthRequest(ws): Promise<any> {
+    this.clients[ws.id] = ws;
+
+    const vpRequest = await this.sendMessage<any>(AuthEvents.MEECO_AUTH_START, {
+      cid: ws.id,
+    });
+
+    return {
+      redirectUri: vpRequest.redirectUri,
+    };
+  }
 
   registerListeners(): void {
     this.getMessages<any, any>(AuthEvents.MEECO_VERIFY_VP, async (msg) => {
@@ -46,31 +56,9 @@ export class MeecoAuth extends NatsService {
     this.getMessages<any, any>(AuthEvents.MEECO_VERIFY_VP_FAILED, async (msg) => {
       const ws = this.clients[msg.cid];
       ws.send(JSON.stringify({
-        event: "MEECO_VERIFY_VP_FAILED",
+        event: 'MEECO_VERIFY_VP_FAILED',
         data: msg,
       }));
-    });
-  }
-
-  public async createMeecoAuthRequest(ws): Promise<any> {
-    this.clients[ws.id] = ws;
-
-    const vpRequest = await this.sendMessage<any>(AuthEvents.MEECO_AUTH_START, {
-      cid: ws.id,
-    });
-
-    return {
-      redirectUri: vpRequest.redirectUri,
-    };
-  }
-
-  public async approveSubmission(ws, presentation_request_id: string, submission_id: string): Promise<any> {
-    this.clients[ws.id] = ws;
-
-    return await this.sendMessage<any>(AuthEvents.MEECO_APPROVE_SUBMISSION, {
-      presentation_request_id,
-      submission_id,
-      cid: ws.id,
     });
   }
 
@@ -80,17 +68,22 @@ export class MeecoAuth extends NatsService {
     return meecoVerifiableCredentials.vc;
   }
 
-  static extractUserFromApprovedMeecoToken(meecoApprovedSubmission: MeecoApprovedSubmission): CredentialSubject {
-    const vc = this.extractVerifiableCredentialFromMeecoToken(meecoApprovedSubmission);
-    return vc.credentialSubject;
+  public async approveSubmission(ws, presentationRequestId: string, submissionId: string): Promise<any> {
+    this.clients[ws.id] = ws;
+
+    return await this.sendMessage<any>(AuthEvents.MEECO_APPROVE_SUBMISSION, {
+      presentation_request_id: presentationRequestId,
+      submission_id: submissionId,
+      cid: ws.id,
+    });
   }
 
-  public async rejectSubmission(ws, presentation_request_id: string, submission_id: string): Promise<string> {
+  public async rejectSubmission(ws, presentationRequestId: string, submissionId: string): Promise<string> {
     this.clients[ws.id] = ws;
 
     return await this.sendMessage<any>(AuthEvents.MEECO_REJECT_SUBMISSION, {
-      presentation_request_id,
-      submission_id,
+      presentation_request_id: presentationRequestId,
+      submission_id: submissionId,
       cid: ws.id,
     });
   }

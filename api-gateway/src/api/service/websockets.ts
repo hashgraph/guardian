@@ -2,15 +2,7 @@ import WebSocket from 'ws';
 import { IncomingMessage, Server } from 'http';
 import { Users } from '@helpers/users';
 import { ExternalProviders, GenerateUUIDv4, MessageAPI, NotifyAPI, UserRole } from '@guardian/interfaces';
-import {
-    generateNumberFromString,
-    Logger,
-    MeecoApprovedSubmission,
-    MessageResponse,
-    NatsService,
-    NotificationHelper,
-    Singleton
-} from '@guardian/common';
+import { generateNumberFromString, Logger, MeecoApprovedSubmission, MessageResponse, NatsService, NotificationHelper, Singleton } from '@guardian/common';
 import { NatsConnection } from 'nats';
 import { Injectable } from '@nestjs/common';
 import { MeecoAuth } from '@helpers/meeco';
@@ -58,7 +50,7 @@ export class WebSocketsService {
      */
     private readonly wss: WebSocket.Server;
 
-    private clients = new Map();
+    private readonly clients = new Map();
 
     /**
      * Get statuses mutex
@@ -347,7 +339,7 @@ export class WebSocketsService {
             ws.on('close', () => {
                 this.clients.delete(clientId);
             });
-            ws["user"] = await this.getUserByUrl(req.url);
+            ws.user = await this.getUserByUrl(req.url);
         });
     }
 
