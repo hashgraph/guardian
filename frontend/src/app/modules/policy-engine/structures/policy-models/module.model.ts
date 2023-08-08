@@ -137,8 +137,12 @@ export class PolicyModuleModel extends PolicyBlockModel {
     }
 
     public set name(value: string) {
-        this._name = value;
+        this.setNameSilently(value);
         this._changed = true;
+    }
+
+    public setNameSilently(value: string) {
+        this._name = value;
     }
 
     public get description(): string {
@@ -146,8 +150,12 @@ export class PolicyModuleModel extends PolicyBlockModel {
     }
 
     public set description(value: string) {
-        this._description = value;
+        this.setDescriptionSilently(value);
         this._changed = true;
+    }
+
+    public setDescriptionSilently(value: string) {
+        this._description = value;
     }
 
     public get inputEvents(): ModuleEventModel[] {

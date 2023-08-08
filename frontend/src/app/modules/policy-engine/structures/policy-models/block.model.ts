@@ -105,6 +105,11 @@ export class PolicyBlockModel {
     }
 
     public set localTag(value: string) {
+        this.setLocalTagSilently(value);
+        this.changed = true;
+    }
+
+    public setLocalTagSilently(value: string) {
         this._localTag = value;
         if (this._module) {
             this._lastPrefix = this._module.tagPrefix;
@@ -112,7 +117,6 @@ export class PolicyBlockModel {
         } else {
             this._tag = this._localTag;
         }
-        this.changed = true;
     }
 
     public get permissions(): string[] {
