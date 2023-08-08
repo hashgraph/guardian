@@ -1,0 +1,32 @@
+.qr-code-dialog {
+  position: relative;
+  padding-top: 10px;
+  
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: absolute;
+    font-size: 16px;
+    left: 45px;
+    right: 15px;
+    top: 15px;
+  }
+
+  &__close {
+    cursor: pointer;
+  }
+}
+
+@media (max-width: 810px) {
+  .qr-code-dialog {
+    padding-top: 30px;
+    
+    &__header {
+      font-size: 14px;
+      left: 28px;
+      right: 7px;
+      top: 7px;
+    }
+  }
+}

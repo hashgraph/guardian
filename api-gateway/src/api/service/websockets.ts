@@ -1,16 +1,19 @@
 import WebSocket from 'ws';
 import { IncomingMessage, Server } from 'http';
 import { Users } from '@helpers/users';
-import { GenerateUUIDv4, MessageAPI, NotifyAPI } from '@guardian/interfaces';
+import { ExternalProviders, GenerateUUIDv4, MessageAPI, NotifyAPI, UserRole } from '@guardian/interfaces';
 import {
+    generateNumberFromString,
     Logger,
+    MeecoApprovedSubmission,
     MessageResponse,
     NatsService,
     NotificationHelper,
-    Singleton,
+    Singleton
 } from '@guardian/common';
 import { NatsConnection } from 'nats';
 import { Injectable } from '@nestjs/common';
+import { MeecoAuth } from '@helpers/meeco';
 import { Mutex } from 'async-mutex';
 
 /**
@@ -54,6 +57,8 @@ export class WebSocketsService {
      * @private
      */
     private readonly wss: WebSocket.Server;
+
+    private clients = new Map();
 
     /**
      * Get statuses mutex
@@ -326,6 +331,10 @@ export class WebSocketsService {
      */
     private registerConnection(): void {
         this.wss.on('connection', async (ws: any, req: IncomingMessage) => {
+            const clientId = GenerateUUIDv4();
+            ws.id = clientId;
+            this.clients[clientId] = ws;
+
             ws.on('message', async (data: Buffer) => {
                 const message = data.toString();
                 if (message === 'ping') {
@@ -335,7 +344,10 @@ export class WebSocketsService {
                     this.wsResponse(ws, message);
                 }
             });
-            ws.user = await this.getUserByUrl(req.url);
+            ws.on('close', () => {
+                this.clients.delete(clientId);
+            });
+            ws["user"] = await this.getUserByUrl(req.url);
         });
     }
 
@@ -359,6 +371,44 @@ export class WebSocketsService {
                         () => this.notificationReadingMap.delete(data),
                         1000
                     );
+                    break;
+                case 'MEECO_AUTH_REQUEST':
+                    const meecoAuthRequestResp = await new MeecoAuth().createMeecoAuthRequest(ws);
+                    ws.send(JSON.stringify({
+                        type: 'MEECO_AUTH_PRESENT_VP',
+                        data: meecoAuthRequestResp
+                    }));
+                    break;
+                case 'MEECO_APPROVE_SUBMISSION':
+                    const meecoSubmissionApproveResp = await new MeecoAuth().approveSubmission(
+                        ws,
+                        data.presentation_request_id, data.submission_id) as MeecoApprovedSubmission;
+
+                    const meecoUser = MeecoAuth.extractUserFromApprovedMeecoToken(meecoSubmissionApproveResp)
+                    // The username structure is necessary to avoid collisions - meeco doest not provide unique username
+                    const userProvider = {
+                        role:  data.role || UserRole.STANDARD_REGISTRY as UserRole,
+                        username: `${meecoUser.firstName}${meecoUser.familyName}${
+                            generateNumberFromString(meecoUser.id)
+                        }`.toLowerCase().replace(/\s+/g, ''),
+                        providerId: meecoUser.id,
+                        provider: ExternalProviders.MEECO,
+                    };
+                    const guardianData = await new Users().generateNewUserTokenBasedOnExternalUserProvider(
+                      userProvider
+                    );
+
+                    ws.send(JSON.stringify({
+                        type: 'MEECO_APPROVE_SUBMISSION_RESPONSE',
+                        data: guardianData
+                    }));
+                    break;
+                case 'MEECO_REJECT_SUBMISSION':
+                    const meecoSubmissionRejectResp = await new MeecoAuth().rejectSubmission(ws, data.presentation_request_id, data.submission_id);
+                    ws.send(JSON.stringify({
+                        type: 'MEECO_REJECT_SUBMISSION_RESPONSE',
+                        data: meecoSubmissionRejectResp
+                    }));
                     break;
                 case 'SET_ACCESS_TOKEN':
                 case 'UPDATE_PROFILE':
