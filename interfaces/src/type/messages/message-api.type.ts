@@ -141,6 +141,7 @@ export enum MessageAPI {
     SUGGESTIONS = 'policy-engine-event-suggestions',
     GET_SUGGESTIONS_CONFIG = 'policy-engine-event-get-suggestions-config',
     SET_SUGGESTIONS_CONFIG = 'policy-engine-event-set-suggestions-config',
+    SEARCH_POLICIES = 'SEARCH_POLICIES',
 }
 
 /**

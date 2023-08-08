@@ -1,7 +1,7 @@
 import { DatabaseServer, InboundMessageIdentityDeserializer, Logger, MessageError, MessageResponse, OutboundResponseIdentitySerializer } from '@guardian/common';
 import { MessageAPI } from '@guardian/interfaces';
 import * as crypto from 'crypto';
-import { ModuleComparator, ModuleModel, PolicyComparator, PolicyModel, PropertyType, SchemaComparator, SchemaModel, TokenModel } from '@analytics';
+import { HashComparator, ModuleComparator, ModuleModel, PolicyComparator, PolicyModel, PropertyType, SchemaComparator, SchemaModel, TokenModel } from '@analytics';
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import process from 'process';
@@ -286,7 +286,7 @@ export async function analyticsAPI(): Promise<void> {
 
             const comparator = new PolicyComparator(options);
             const result = comparator.compare(policyModel1, policyModel2);
-            if(type === 'csv') {
+            if (type === 'csv') {
                 const csv = comparator.csv(result);
                 return new MessageResponse(csv);
             } else {
@@ -333,7 +333,7 @@ export async function analyticsAPI(): Promise<void> {
 
             const comparator = new ModuleComparator(options);
             const result = comparator.compare(model1, model2);
-            if(type === 'csv') {
+            if (type === 'csv') {
                 const csv = comparator.csv(result);
                 return new MessageResponse(csv);
             } else {
@@ -374,12 +374,24 @@ export async function analyticsAPI(): Promise<void> {
             model2.update(options);
             const comparator = new SchemaComparator(options);
             const result = comparator.compare(model1, model2);
-            if(type === 'csv') {
+            if (type === 'csv') {
                 const csv = comparator.csv(result);
                 return new MessageResponse(csv);
             } else {
                 return new MessageResponse(result);
             }
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    ApiResponse(MessageAPI.SEARCH_POLICIES, async (msg) => {
+        try {
+            const { policyId } = msg;
+            const policy = await DatabaseServer.getPolicyById(policyId);
+            const result = await HashComparator.search(policy);
+            return new MessageResponse(result);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
@@ -406,4 +418,4 @@ export async function analyticsAPI(): Promise<void> {
         AnalyticsController
     ]
 })
-export class AnalyticsModule {}
+export class AnalyticsModule { }

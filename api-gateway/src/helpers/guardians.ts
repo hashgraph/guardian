@@ -974,6 +974,22 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Search policies
+     * @param user
+     * @param type
+     * @param policyId
+     */
+    public async searchPolicies(
+        user: any,
+        policyId: string
+    ) {
+        return await this.sendMessage(MessageAPI.SEARCH_POLICIES, {
+            user,
+            policyId
+        });
+    }
+
+    /**
      * Create Contract
      * @param did
      * @param description

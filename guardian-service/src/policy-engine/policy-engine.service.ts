@@ -10,7 +10,7 @@ import { NatsConnection } from 'nats';
 import { GuardiansService } from '@helpers/guardians';
 import { Inject } from '@helpers/decorators/inject';
 import { BlockAboutString } from './block-about';
-import { MessageComparator } from '@analytics';
+import { HashComparator } from '@analytics';
 
 /**
  * PolicyEngineChannel
@@ -305,15 +305,7 @@ export class PolicyEngineService {
                 const user = msg.user;
                 const did = await this.getUserDid(user.username);
                 let policy = await this.policyEngine.createPolicy(msg.model, did, emptyNotifier());
-
-                try {
-                    const compareModel = await MessageComparator.createModel(policy.id.toString());
-                    policy.hash = MessageComparator.createHash(compareModel);
-                    policy = await DatabaseServer.updatePolicy(policy);
-                } catch (error) {
-                    new Logger().error(error, ['GUARDIAN_SERVICE, HASH']);
-                }
-
+                policy = await HashComparator.saveHashMap(policy);
                 const policies = await DatabaseServer.getListOfPolicies({ owner: did });
                 return new MessageResponse(policies);
             } catch (error) {
@@ -327,15 +319,7 @@ export class PolicyEngineService {
             RunFunctionAsync(async () => {
                 const did = await this.getUserDid(user.username);
                 let policy = await this.policyEngine.createPolicy(model, did, notifier);
-
-                try {
-                    const compareModel = await MessageComparator.createModel(policy.id.toString());
-                    policy.hash = MessageComparator.createHash(compareModel);
-                    policy = await DatabaseServer.updatePolicy(policy);
-                } catch (error) {
-                    new Logger().error(error, ['GUARDIAN_SERVICE, HASH']);
-                }
-
+                policy = await HashComparator.saveHashMap(policy);
                 notifier.result(policy.id);
             }, async (error) => {
                 notifier.error(error);
@@ -386,15 +370,7 @@ export class PolicyEngineService {
                     throw new Error('Policy is not in draft status.');
                 }
                 let result = await DatabaseServer.updatePolicyConfig(policyId, model);
-
-                try {
-                    const compareModel = await MessageComparator.createModel(result.id.toString());
-                    result.hash = MessageComparator.createHash(compareModel);
-                    result = await DatabaseServer.updatePolicy(result);
-                } catch (error) {
-                    new Logger().error(error, ['GUARDIAN_SERVICE, HASH']);
-                }
-
+                result = await HashComparator.saveHashMap(result);
                 return new MessageResponse(result);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -517,13 +493,7 @@ export class PolicyEngineService {
                 model.version = '';
 
                 let retVal = await DatabaseServer.updatePolicy(model);
-                try {
-                    const compareModel = await MessageComparator.createModel(retVal.id.toString());
-                    retVal.hash = MessageComparator.createHash(compareModel);
-                    retVal = await DatabaseServer.updatePolicy(retVal);
-                } catch (error) {
-                    new Logger().error(error, ['GUARDIAN_SERVICE, HASH']);
-                }
+                retVal = await HashComparator.saveHashMap(retVal);
 
                 await this.policyEngine.destroyModel(model.id.toString());
 
@@ -751,8 +721,8 @@ export class PolicyEngineService {
                 }
                 const owner = await this.getUserDid(user.username);
                 const policyToImport = await PolicyImportExportHelper.parseZipFile(Buffer.from(zip.data), true);
-                const compareModel = await MessageComparator.createModelByFile(policyToImport);
-                const hash = MessageComparator.createHash(compareModel);
+                const compareModel = await HashComparator.createModelByFile(policyToImport);
+                const hash = HashComparator.createHash(compareModel);
                 const similarPolicies = await DatabaseServer.getListOfPolicies({ owner, hash });
                 policyToImport.similar = similarPolicies;
                 return new MessageResponse(policyToImport);
@@ -822,8 +792,8 @@ export class PolicyEngineService {
                 const { messageId, user } = msg;
                 const owner = await this.getUserDid(user.username);
                 const policyToImport = await this.policyEngine.preparePolicyPreviewMessage(messageId, user, emptyNotifier());
-                const compareModel = await MessageComparator.createModelByFile(policyToImport);
-                const hash = MessageComparator.createHash(compareModel);
+                const compareModel = await HashComparator.createModelByFile(policyToImport);
+                const hash = HashComparator.createHash(compareModel);
                 const similarPolicies = await DatabaseServer.getListOfPolicies({ owner, hash });
                 policyToImport.similar = similarPolicies;
                 return new MessageResponse(policyToImport);
@@ -840,8 +810,8 @@ export class PolicyEngineService {
             RunFunctionAsync(async () => {
                 const owner = await this.getUserDid(user.username);
                 const policyToImport = await this.policyEngine.preparePolicyPreviewMessage(messageId, user, notifier);
-                const compareModel = await MessageComparator.createModelByFile(policyToImport);
-                const hash = MessageComparator.createHash(compareModel);
+                const compareModel = await HashComparator.createModelByFile(policyToImport);
+                const hash = HashComparator.createHash(compareModel);
                 const similarPolicies = await DatabaseServer.getListOfPolicies({ owner, hash });
                 policyToImport.similar = similarPolicies;
                 notifier.result(policyToImport);

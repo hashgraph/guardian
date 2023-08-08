@@ -42,7 +42,7 @@ import { GuardiansService } from '@helpers/guardians';
 import { Inject } from '@helpers/decorators/inject';
 import { findAndDryRunSchema, findAndPublishSchema, publishSystemSchemas } from '@api/helpers/schema-publish-helper';
 import { deleteSchema, incrementSchemaVersion, sendSchemaMessage } from '@api/helpers/schema-helper';
-import { MessageComparator } from '@analytics';
+import { HashComparator } from '@analytics';
 
 /**
  * Result of publishing
@@ -327,13 +327,7 @@ export class PolicyEngine extends NatsService {
         }
 
         notifier.completedAndStart('Updating hash');
-        try {
-            const compareModel = await MessageComparator.createModel(policy.id.toString());
-            policy.hash = MessageComparator.createHash(compareModel);
-            policy = await DatabaseServer.updatePolicy(policy);
-        } catch (error) {
-            logger.error(error, ['GUARDIAN_SERVICE, HASH']);
-        }
+        policy = await HashComparator.saveHashMap(policy);
 
         notifier.completed();
         return policy;
@@ -696,13 +690,7 @@ export class PolicyEngine extends NatsService {
         let retVal = await DatabaseServer.updatePolicy(model);
 
         notifier.completedAndStart('Updating hash');
-        try {
-            const compareModel = await MessageComparator.createModel(retVal.id.toString());
-            retVal.hash = MessageComparator.createHash(compareModel);
-            retVal = await DatabaseServer.updatePolicy(retVal);
-        } catch (error) {
-            logger.error(error, ['GUARDIAN_SERVICE, HASH']);
-        }
+        retVal = await HashComparator.saveHashMap(retVal);
 
         notifier.completed();
         return retVal
@@ -806,13 +794,7 @@ export class PolicyEngine extends NatsService {
         logger.info('Published Policy', ['GUARDIAN_SERVICE']);
 
         let retVal = await DatabaseServer.updatePolicy(model);
-        try {
-            const compareModel = await MessageComparator.createModel(retVal.id.toString());
-            retVal.hash = MessageComparator.createHash(compareModel);
-            retVal = await DatabaseServer.updatePolicy(retVal);
-        } catch (error) {
-            logger.error(error, ['GUARDIAN_SERVICE, HASH']);
-        }
+        retVal = await HashComparator.saveHashMap(retVal);
 
         return retVal;
     }

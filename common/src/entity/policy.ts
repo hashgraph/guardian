@@ -18,12 +18,6 @@ export class Policy extends BaseEntity {
     uuid?: string;
 
     /**
-     * Policy hash
-     */
-    @Property({ nullable: true })
-    hash?: string;
-    
-    /**
      * Policy name
      */
     @Property({ nullable: true })
@@ -153,6 +147,24 @@ export class Policy extends BaseEntity {
     registeredUsers?: any
 
     /**
+     * Policy hash
+     */
+    @Property({ nullable: true })
+    hash?: string;
+
+    /**
+     * HashMap
+     */
+    @Property({ persist: false, type: 'unknown' })
+    hashMap?: any;
+
+    /**
+     * HashMap file id
+     */
+    @Property({ nullable: true })
+    hashMapFileId?: ObjectId;
+
+    /**
      * Set policy defaults
      */
     @BeforeCreate()
@@ -164,7 +176,7 @@ export class Policy extends BaseEntity {
     }
 
     /**
-     * Create config
+     * Create File
      */
     @BeforeCreate()
     async createConfig() {
@@ -187,7 +199,7 @@ export class Policy extends BaseEntity {
     }
 
     /**
-     * Update config
+     * Update File
      */
     @BeforeUpdate()
     async updateConfig() {
@@ -202,7 +214,7 @@ export class Policy extends BaseEntity {
     }
 
     /**
-     * Load config
+     * Load File
      */
     @OnLoad()
     async loadConfig() {
@@ -220,13 +232,81 @@ export class Policy extends BaseEntity {
     }
 
     /**
-     * Delete context
+     * Delete File
      */
     @AfterDelete()
     deleteConfig() {
         if (this.configFileId) {
             DataBaseHelper.gridFS
                 .delete(this.configFileId)
+                .catch(console.error);
+        }
+    }
+
+    /**
+     * Create File
+     */
+    @BeforeCreate()
+    async createHashMap() {
+        await new Promise<void>((resolve, reject) => {
+            try {
+                if (this.hashMap) {
+                    const fileStream = DataBaseHelper.gridFS.openUploadStream(
+                        GenerateUUIDv4()
+                    );
+                    this.hashMapFileId = fileStream.id;
+                    fileStream.write(JSON.stringify(this.hashMap));
+                    fileStream.end(() => resolve());
+                } else {
+                    resolve();
+                }
+            } catch (error) {
+                reject(error)
+            }
+        });
+    }
+
+    /**
+     * Update File
+     */
+    @BeforeUpdate()
+    async updateHashMap() {
+        if (this.hashMap) {
+            if (this.hashMapFileId) {
+                DataBaseHelper.gridFS
+                    .delete(this.hashMapFileId)
+                    .catch(console.error);
+            }
+            await this.createHashMap();
+        }
+    }
+
+    /**
+     * Load File
+     */
+    @OnLoad()
+    async loadHashMap() {
+        if (this.hashMapFileId && !this.hashMap) {
+            const fileStream = DataBaseHelper.gridFS.openDownloadStream(
+                this.hashMapFileId
+            );
+            const bufferArray = [];
+            for await (const data of fileStream) {
+                bufferArray.push(data);
+            }
+            const buffer = Buffer.concat(bufferArray);
+            this.hashMap = JSON.parse(buffer.toString());
+        }
+    }
+
+    /**
+     * Delete File
+     */
+    @AfterDelete()
+    deleteHashMap() {
+        if (this.hashMapFileId) {
+            DataBaseHelper.gridFS
+                .delete(this.hashMapFileId)
                 .catch(console.error);
         }
     }
