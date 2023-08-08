@@ -9,32 +9,35 @@ The following steps need to be executed in order to start Guardian using docker:
 5. Build and launch with Docker
 6. Browse to [http://localhost:3000](http://localhost:3000)
 
-
+Here the steps description follows:
 
 1. Clone the repo
 
+   ```shell
+   git clone https://github.com/hashgraph/guardian.git
+   ```
+
+2. Configure project level .env file.
+
+The main configuration files that needs to be provided to the Guardian system are the `.env` file.
+Cut and past the `.env.template` renaming it as `.env` here you may choose the name of the Guardian platform. Leave the field empty or unspecified if you update a production environment to keep previous data ( for more details read [here](https://docs.hedera.com/guardian/guardian/readme/environments/ecosystem-environments)).
+
+For this example pourpose let's name the Guardian platform as "develop"
+
+```shell
+   GUARDIAN_ENV="develop"
 ```
-git clone https://github.com/hashgraph/guardian.git
-```
 
-2.  Configure project level .env file The main configuration files that needs to be provided to the Guardian system are the ".env" file. Cut and past the **.env.template** renaming it as **.env** here you may choose the name of the Guardian platform. Leave the field empty or unspecified if you update a production environment to keep previous data (for more details read at https://docs.hedera.com/guardian/guardian/readme/environments/ecosystem-environments)
+3. Update the following files with your Hedera Testnet account info (see prerequisites) as indicated. Please check complete steps to generate Operation_ID and Operator_Key by looking at link: [How to Create Operator_ID and Operator_Key](https://docs.hedera.com/guardian/getting-started/getting-started/how-to-create-operator-id-and-operator-key).
+The Operation_ID and Operator_Key are all what Guardian needs to access the Hedera Blockchain assuming a role on it. This parameters needs to be configured in a file at the path `./configs`, the file should use the following naming convention:
 
-    for this example pourpose let's name the Guardian platform as "develop"
+   `./configs/.env.\<GUARDIAN_ENV\>.guardian.system`
 
-    ```shell
-      GUARDIAN_ENV="develop"
-    ```
-3. Update the following files with your Hedera Testnet account info (see prerequisites) as indicated. Please check complete steps to generate Operation\_ID and Operator\_Key by looking at link: [How to Create Operator\_ID and Operator\_Key](https://docs.hedera.com/guardian/getting-started/getting-started/how-to-create-operator-id-and-operator-key).
+There will be other steps in the Demo Usage Guide that will be required for the generation of Operator\_ID and Operator\_Key. It is important to mention that the Operator_ID and Operator_Key in the `./configs/.env.<GUARDIAN_ENV>.guardian.system` will be used to generate demo accounts.
 
-The Operation\_ID and Operator\_Key are all what Guardian needs to access the Hedera Blockchain assuming a role on it. This parameters needs to be configured in a file at the path "guardian/configs" the file should use the following naming convention:
-
-* guardian/configs/.env.\<GUARDIAN\_ENV>.guardian.system
-
-There will be other steps in the Demo Usage Guide that will be required for the generation of Operator\_ID and Operator\_Key. It is important to mention that the Operator\_ID and Operator\_Key in the `guardian/configs/.env.\<GUARDIAN_ENV\>.guardian.system` will be used to generate demo accounts.
-
-For example:
-
-following the previous example the file `/configs/.env.develop.guardian.system` is already provided in the folder as example, update the variables OPERATOR\_ID and OPERATOR\_KEY in this file.
+   For example:
+ 
+   following the previous example, the file to configure should be named: `./configs/.env.develop.guardian.system`, this file is already provided in the folder as example, only update the variables OPERATOR_ID and OPERATOR_KEY.
 
 ```plaintext
 OPERATOR_ID="..."
@@ -53,11 +56,10 @@ OPERATOR_KEY="..."
 
 #### 4.1 Setting up IPFS Local node:
 
-4.1.1 We need to install and configure any IPFS node.
+  - 4.1.1 We need to install and configure any IPFS node. [example](https://github.com/yeasy/docker-ipfs)
 
-For example: [https://github.com/yeasy/docker-ipfs](https://github.com/yeasy/docker-ipfs)
+   - 4.1.2 For setup IPFS local node you need to set variables in the same file `./configs/.env.develop.guardian.system`
 
-4.1.2 For setup IPFS local node you need to set variables in `./guardian/configs/.env.develop.guardian.system`
 
 ```
 IPFS_NODE_ADDRESS="..." # Default IPFS_NODE_ADDRESS="http://localhost:5002"
@@ -74,14 +76,14 @@ Note:
 
 #### 4.2 Setting up IPFS Web3Storage node:
 
-4.2.1 For setup IPFS web3storage node you need to set variables in `./guardian/configs/.env.develop.guardian.system`:
+For setup IPFS web3storage node you need to set variables in file `./configs/.env.develop.guardian.system`:
 
 ```
 IPFS_STORAGE_API_KEY="..."
 IPFS_PROVIDER="web3storage"
 ```
 
-To generate Web3.Storage API KEY. Please follow the steps from [https://web3.storage/docs/#quickstart](https://web3.storage/docs/#quickstart) to obtain it. To know complete information on generating API Key please check : [how-to-generate-web3.storage-api-key.md](../../../../../getting-started/getting-started/how-to-generate-web3.storage-api-key.md "mention")
+To generate Web3.Storage API KEY please follow the steps from [https://web3.storage/docs/#quickstart](https://web3.storage/docs/#quickstart) to obtain it. To know complete information on generating API Key please check : [how-to-generate-web3.storage-api-key.md](../../../../../getting-started/getting-started/how-to-generate-web3.storage-api-key.md "mention")
 
 5\. Build and launch with Docker. Make sure you use Docker Compose V2 (comes with Docker Desktop > 3.6.0) as at https://docs.docker.com/compose/install/. Please note that this build is meant to be used in production and will not contain any debug information. From the project's root folder:
 
