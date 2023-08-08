@@ -50,10 +50,10 @@ NFT Owner: The agent fulfilling the 'Project Developer' role.
 7. In addition to an HGICP-L-PD, a Project Developer will need to obtain an HGICP PDD Validation Certificate (HGICP-VCERT-PDD, issued by the ICP PDD Validation Subpolicy) to complete the project registration step of the main policy. To apply for an ICCC issuance, a Project Developer will furthermore need to obtain an HGICP MR Verification Certificate (HGICP-VCERT-MR, issued by the ICP MR Verification Subpolicy).
 
 Testnet message IDs:
-- Improved Cookstove Policy (main): 1684083581.335245003 (v.2.6.1)
-- Improved Cookstove Policy - Agent Application Subpolicy: 1676640723.598879583 (v.2.6.0)
-- Improved Cookstove Policy - PDD Validation Subpolicy: 1676641042.365033796 (v.2.6.0)
-- Improved Cookstove Policy - MR Verification Subpolicy: 1676641311.452316505 (v.2.6.0)
+- Improved Cookstove Policy (main): 1691345307.141431928 (v2.6.1)
+- Improved Cookstove Policy - Agent Application Subpolicy: 1691345646.189561421 (v2.6.0)
+- Improved Cookstove Policy - PDD Validation Subpolicy: 1691346993.825804003 (v2.6.0)
+- Improved Cookstove Policy - MR Verification Subpolicy: 1691346262.475097779 (v2.6.0)
 
 **Policy User Roles**
 
