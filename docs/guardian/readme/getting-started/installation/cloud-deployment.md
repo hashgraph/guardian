@@ -23,7 +23,7 @@ layout:
 
 This document provides a comprehensive guide for deploying the platform on various cloud providers, including AWS, GCP, and Azure. The guide focuses on using Rancher as the cluster management tool, making it applicable to a wide range of cloud providers supported by Rancher, as well as on-premises and hybrid cloud deployments.
 
-> _**NOTE:**_ The contents of this guide has been written and tested using Rancher 2.7, the latest stable version at writing time. The guide might not be applicable to different versions of Rancher or Kubernetes, specially major versions.
+> _**NOTE:**_ The contents of this guide has been written and tested using Guardian 2.14.2 and Rancher 2.7, the latest stable version at writing time. The guide might not be applicable to different versions, specially major versions.
 
 ### Rancher Deployment
 
@@ -162,7 +162,9 @@ This folder contains the manifests for the different services that needs to be c
 
 **3-controller**
 
-This folder contains the manifests for the different controllers that needs to be created in the cluster. These controllers are used to manage the lifecycle of the different services, and to ensure they are always running and healthy. This is the folder you need to pay attention if you want to deploy service versions different than the latest one.
+This folder contains the manifests for the different controllers that needs to be created in the cluster. These controllers are used to manage the lifecycle of the different services, and to ensure they are always running and healthy. This is the folder you need to pay attention if you want to deploy service versions different than the provided one.
+
+> _**NOTE:**_ you may face compatibility issues if you try to deploy different Guardian versions with the provided manifests. Check version release notes before.
 
 > _**NOTE:**_ all the manifest modifications described in the whole document can be done also easily in the Rancher UI, navigating to the relevant section and editing the default deployed objects.
 
