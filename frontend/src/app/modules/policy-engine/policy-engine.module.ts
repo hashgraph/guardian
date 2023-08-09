@@ -101,6 +101,7 @@ import { ExternalTopicBlockComponent } from './policy-viewer/blocks/external-top
 import { UploadDocumentBlockComponent } from './policy-viewer/blocks/upload-document-block/upload-document-block.component';
 import { ViewerDialog } from './helpers/vc-dialog/viewer-dialog.component';
 import { CompareModulesDialogComponent } from './helpers/compare-modules-dialog/compare-modules-dialog.component';
+import { SearchPolicyDialog } from './helpers/search-policy-dialog/search-policy-dialog.component';
 
 @NgModule({
     declarations: [
@@ -185,7 +186,8 @@ import { CompareModulesDialogComponent } from './helpers/compare-modules-dialog/
         ExternalTopicBlockComponent,
         PolicyWizardDialogComponent,
         MessagesReportBlockComponent,
-        ViewerDialog
+        ViewerDialog,
+        SearchPolicyDialog
     ],
     imports: [
         CommonModule,

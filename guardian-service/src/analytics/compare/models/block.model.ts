@@ -12,7 +12,7 @@ import { IKeyMap } from '../interfaces/key-map.interface';
 import { TokenModel } from './token.model';
 import { IWeightModel } from '../interfaces/weight-model.interface';
 import { CompareUtils } from '../utils/utils';
-import { IWeightTree } from '../interfaces/weight-tree';
+import { IWeightBlock } from '../interfaces/weight-tree';
 
 /**
  * Block Model
@@ -418,21 +418,47 @@ export class BlockModel implements IWeightModel {
      * Get weight object
      * @public
      */
-    public toWeight(options: ICompareOptions): IWeightTree {
-        const children: IWeightTree[] = [];
+    public toWeight(options: ICompareOptions): IWeightBlock {
+        const children: IWeightBlock[] = [];
+        let length = 0;
         for (const child of this._children) {
-            children.push(child.toWeight(options));
+            const w = child.toWeight(options);
+            length += 1 + w.length;
+            children.push(w);
         }
-        if (!this._weight.length) {
-            return {
-                weight: this.blockType,
-                children
-            }
-        } else {
-            return {
-                weight: this._weight[0],
-                children
-            }
+        const _index = new String(this.index);
+        const _prop = this._weightMap[WeightType.PROP_LVL_3];
+        const _type = this.blockType;
+
+        let _fullProp = '|';
+        for (const event of this._events) {
+            const w = event.toWeight(options);
+            _fullProp += w.weight;
+        }
+        _fullProp += '|';
+        for (const artifact of this._artifacts) {
+            const w = artifact.toWeight(options);
+            _fullProp += w.weight;
+        }
+        _fullProp += '|';
+        for (const permission of this._prop.getPermissionsList()) {
+            _fullProp += permission;
+        }
+        let _children = '';
+        for (const child of children) {
+            _children += child.weights[0];
+        }
+        const weights = [
+            CompareUtils.sha256(_type + _prop + _fullProp + _children + _index),
+            CompareUtils.sha256(_type + _prop + _fullProp + _children),
+            CompareUtils.sha256(_type + _prop + _fullProp),
+            CompareUtils.sha256(_type + _prop),
+            CompareUtils.sha256(_type)
+        ];
+        return {
+            weights,
+            children,
+            length
         }
     }
 }

@@ -5,7 +5,7 @@ import { IWeightModel } from '../interfaces/weight-model.interface';
 import { PropertyType } from '../types/property.type';
 import { WeightType } from '../types/weight.type';
 import { AnyPropertyModel, PropertyModel } from './property.model';
-import { IWeightTree } from '../interfaces/weight-tree';
+import { IWeightBlock, IWeightItem } from '../interfaces/weight-tree';
 
 /**
  * Role Model
@@ -157,7 +157,7 @@ export class RoleModel implements IWeightModel {
      * Get weight object
      * @public
      */
-    public toWeight(options: ICompareOptions): IWeightTree {
+    public toWeight(options: ICompareOptions): IWeightItem {
         if (!this._weight.length) {
             return {
                 weight: this.name

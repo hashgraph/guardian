@@ -1,7 +1,7 @@
 import { Token } from '@guardian/common';
 import { ICompareOptions } from '../interfaces/compare-options.interface';
 import MurmurHash3 from 'imurmurhash';
-import { IWeightTree } from '../interfaces/weight-tree';
+import { IWeightBlock, IWeightItem } from '../interfaces/weight-tree';
 
 /**
  * Token Model
@@ -166,7 +166,7 @@ export class TokenModel {
      * Get weight object
      * @public
      */
-    public toWeight(options: ICompareOptions): IWeightTree {
+    public toWeight(options: ICompareOptions): IWeightItem {
         if (!this._weight) {
             return {
                 weight: this.tokenId

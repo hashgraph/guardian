@@ -1,0 +1,31 @@
+<div class="g-dialog-content">
+    <div class="g-dialog-header">
+        <div class="g-dialog-title">
+            {{header}}
+        </div>
+        <div mat-dialog-actions>
+            <div class="g-dialog-title-btn" (click)="onOk()">
+                <mat-icon>close</mat-icon>
+            </div>
+        </div>
+    </div>
+    <div class="g-dialog-body">
+        <div *ngFor="let item of list" class="search-result">
+            <div>
+                {{item.topicId}}
+            </div>
+            <div>
+                {{item.name}}
+            </div>
+            <div>
+                {{item.status}}
+            </div>
+            <div>
+                {{item.owner}}
+            </div>
+            <div>
+                {{item.rate}}%
+            </div>
+        </div>
+    </div>
+</div>

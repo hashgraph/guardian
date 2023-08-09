@@ -11,7 +11,7 @@ import { TopicModel } from './topic.model';
 import { TemplateTokenModel } from './template-token.model';
 import { RoleModel } from './role.model';
 import { FileModel } from './file.model';
-import { IWeightTree } from '../interfaces/weight-tree';
+import { IWeightBlock } from '../interfaces/weight-tree';
 
 /**
  * Policy Model

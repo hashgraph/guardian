@@ -6,7 +6,7 @@ import { PropertyType } from '../types/property.type';
 import { WeightType } from '../types/weight.type';
 import { PropertiesModel } from './properties.model';
 import { PropertyModel } from './property.model';
-import { IWeightTree } from '../interfaces/weight-tree';
+import { IWeightBlock, IWeightItem } from '../interfaces/weight-tree';
 
 /**
  * Template Token Model
@@ -165,7 +165,7 @@ export class TemplateTokenModel implements IWeightModel {
      * Get weight object
      * @public
      */
-    public toWeight(options: ICompareOptions): IWeightTree {
+    public toWeight(options: ICompareOptions): IWeightItem {
         if (!this._weight.length) {
             return {
                 weight: this.name

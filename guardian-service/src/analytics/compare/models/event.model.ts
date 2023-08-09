@@ -2,6 +2,7 @@ import MurmurHash3 from 'imurmurhash';
 import { BlockModel } from './block.model';
 import { ICompareOptions } from '../interfaces/compare-options.interface';
 import { IKeyMap } from '../interfaces/key-map.interface';
+import { IWeightItem } from '../interfaces/weight-tree';
 
 /**
  * Event Model
@@ -156,5 +157,15 @@ export class EventModel {
      */
     public equal(event: EventModel): boolean {
         return this._hash === event._hash;
+    }
+
+    /**
+     * Get weight object
+     * @public
+     */
+    public toWeight(options: ICompareOptions): IWeightItem {
+        return {
+            weight: this._hash
+        }
     }
 }

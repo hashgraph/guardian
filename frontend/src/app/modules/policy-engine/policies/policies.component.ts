@@ -21,6 +21,7 @@ import { SchemaService } from 'src/app/services/schema.service';
 import { WizardMode, WizardService } from 'src/app/modules/policy-engine/services/wizard.service';
 import { FormControl, FormGroup } from '@angular/forms';
 import { AnalyticsService } from 'src/app/services/analytics.service';
+import { SearchPolicyDialog } from '../helpers/search-policy-dialog/search-policy-dialog.component';
 
 /**
  * Component for choosing a policy and
@@ -692,10 +693,17 @@ export class PoliciesComponent implements OnInit {
         this.analyticsService.searchPolicies(options).subscribe((value) => {
             let list = value || [];
             list = list.sort((a: any, b: any) => a.rate > b.rate ? -1 : 1);
-            console.info(list);
-            setTimeout(() => {
-                this.loading = false;
-            }, 500);
+            this.loading = false;
+            this.dialog.open(SearchPolicyDialog, {
+                width: '800px',
+                panelClass: 'g-dialog',
+                disableClose: true,
+                autoFocus: false,
+                data: {
+                    header: 'Result',
+                    list
+                }
+            });
         }, ({ message }) => {
             this.loading = false;
             console.error(message);
