@@ -35,7 +35,6 @@ export class StatusList {
 
   static async decode({ encodedList }: { encodedList: string }): Promise<StatusList> {
     try {
-      console.log('encodedList', encodedList)
       const buffer = await Bitstring.decodeBits({ encoded: encodedList });
       return new StatusList({ buffer });
     } catch (e) {
