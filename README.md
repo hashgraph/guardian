@@ -4,7 +4,7 @@
 
 ## Overview
 
-Guardian is a modular open-source solution that includes best-in-class identity management and decentralized ledger technology (DLT) libraries. At the heart of Guardian solution is a sophisticated Policy Workflow Engine (PWE) that enables applications to offer a digital (or digitzed) Measurement, Reporting, and Verification requirements-based tokenization implementation.
+Guardian is a modular open-source solution that includes best-in-class identity management and decentralized ledger technology (DLT) libraries. At the heart of Guardian solution is a sophisticated Policy Workflow Engine (PWE) that enables applications to offer a digital (or digitized) Measurement, Reporting, and Verification requirements-based tokenization implementation.
 
 [HIP-19](https://github.com/hashgraph/hedera-improvement-proposal/blob/master/HIP/hip-19.md) · [HIP-28](https://github.com/hashgraph/hedera-improvement-proposal/blob/master/HIP/hip-28.md) · [HIP-29](https://github.com/hashgraph/hedera-improvement-proposal/blob/master/HIP/hip-29.md) · [Report a Bug](CONTRIBUTING#bug-reports) · [Request a Policy or a Feature](CONTRIBUTING#new-policy-or-feature-requests)
 
@@ -12,7 +12,7 @@ Guardian is a modular open-source solution that includes best-in-class identity 
 
 As identified in Hedera Improvement Proposal 19 (HIP-19), each entity on the Hedera network may contain a specific identifier in the memo field for discoverability. Guardian demonstrates this when every Hedera Consensus Service transaction is logged to a Hedera Consensus Service (HCS) Topic. Observing the Hedera Consensus Service Topic, you can discover newly minted tokens. 
 
-In the memo field of each token mint transaction you will find a unique Hedera message timestamp. This message contains the url of the Verifiable Presentation (VP) associated with the token. The VP can serve as a starting point from which you can traverse the entire sequence of documents produced by Guardian policy workflow, which led to the creation of the token. This includes a digital Methodology (Policy) HCS Topic, an asspciated Registry HCS Topic for that Policy, and a Project HCS Topic.
+In the memo field of each token mint transaction you will find a unique Hedera message timestamp. This message contains the url of the Verifiable Presentation (VP) associated with the token. The VP can serve as a starting point from which you can traverse the entire sequence of documents produced by Guardian policy workflow, which led to the creation of the token. This includes a digital Methodology (Policy) HCS Topic, an associated Registry HCS Topic for that Policy, and a Project HCS Topic.
 
 Please see p.17 in the FAQ for more information. This is further defined in [Hedera Improvement Proposal 28 (HIP-28)](https://hips.hedera.com/hip/hip-28).
 
@@ -22,7 +22,7 @@ Please see p.17 in the FAQ for more information. This is further defined in [Hed
 
 To get a local copy up and running quickly, follow the steps below. Please refer to <https://docs.hedera.com/guardian> for complete documentation.
 
-**Note**. If you have already installed another version of Guardian, remember to **perform backup operation before upgrading**.
+**Note**. If you have already installed another version of Guardian, remember to **perform a backup operation before upgrading**.
 
 ## Prerequisites
 
@@ -60,10 +60,10 @@ Here the steps description follows:
 
 2. Configure project level .env file.
 
-The main configuration files that needs to be provided to the Guardian system are the `.env` file.
-Cut and past the `.env.template` renaming it as `.env` here you may choose the name of the Guardian platform. Leave the field empty or unspecified if you update a production environment to keep previous data ( for more details read [here](https://docs.hedera.com/guardian/guardian/readme/environments/ecosystem-environments)).
+The main configuration file that needs to be provided to the Guardian system is the `.env` file.
+Cut and paste the `.env.template` renaming it as `.env` here you may choose the name of the Guardian platform. Leave the field empty or unspecified if you update a production environment to keep previous data ( for more details read [here](https://docs.hedera.com/guardian/guardian/readme/environments/ecosystem-environments)).
 
-For this example pourpose let's name the Guardian platform as "develop"
+For this example purpose let's name the Guardian platform as "develop"
 
 ```shell
    GUARDIAN_ENV="develop"
@@ -73,8 +73,8 @@ For this example pourpose let's name the Guardian platform as "develop"
 
 3. Update BC access variables.
 
-Update the following files with your Hedera Testnet account info (see prerequisites) as indicated. Please check complete steps to generate Operator_ID and Operator_Key by looking at link: [How to Create Operator_ID and Operator_Key](https://docs.hedera.com/guardian/getting-started/getting-started/how-to-create-operator-id-and-operator-key).
-The Operation_ID and Operator_Key and HEDERA_NET are all what Guardian needs to access an Hedera Blockchain assuming a role on it. This parameters needs to be configured in a file at the path `./configs`, the file should use the following naming convention:
+Update the following files with your Hedera Testnet account info (see prerequisites) as indicated. Please check complete steps to generate Operator_ID and Operator_Key by looking at the link: [How to Create Operator_ID and Operator_Key](https://docs.hedera.com/guardian/getting-started/getting-started/how-to-create-operator-id-and-operator-key).
+The Operator_ID and Operator_Key and HEDERA_NET are all that Guardian needs to access the Hedera Blockchain assuming a role on it. This parameters needs to be configured in a file at the path `./configs`, the file should use the following naming convention:
 
    `./configs/.env.\<GUARDIAN_ENV\>.guardian.system`
 
@@ -84,7 +84,7 @@ The parameter `HEDERA_NET` may assume the following values: `mainnet`, `testnet`
 
    As examples:
  
-   following the previous example, the file to configure should be named: `./configs/.env.develop.guardian.system`, this file is already provided in the folder as example, only update the variables OPERATOR_ID, OPERATOR_KEY and HEDERA_NET.
+   following the previous example, the file to configure should be named: `./configs/.env.develop.guardian.system`, this file is already provided in the folder as an example, only update the variables OPERATOR_ID, OPERATOR_KEY and HEDERA_NET.
 
    ```plaintext
    OPERATOR_ID="..."
@@ -92,18 +92,18 @@ The parameter `HEDERA_NET` may assume the following values: `mainnet`, `testnet`
    HEDERA_NET="..."
    ```
 
-Starting from Multienvironment release (2.13.0) it has been introduced a new parameter `PREUSED_HEDERA_NET`.
+Starting from Multi-environment release (2.13.0) it has been introduced a new parameter `PREUSED_HEDERA_NET`.
 Multienvironemnt is a breaking change and the configuration of this parameter intend to smooth the upgrading. 
 `PREUSED_HEDERA_NET` configuration depends on the installation context.
 
-- If the installation is a completely new one just remove the parameter and feel free to jump next paragraph.
-- if you are upgrading from a release after the multienvironment (>= to 2.13.0) do not change the state of this parameter (so if you removed the paramenter in some previous installation do not introduce it).
-- if the installation is an upgrading from a release previous of the multienvironment (<= to 2.13.0) to a following one you need to configure the `PREUSED_HEDERA_NET`. After that the parameter will last in the configuration unchanged.
+- If the installation is a completely new one just remove the parameter and feel free to jump to the next paragraph.
+- if you are upgrading from a release after the Multi-environment (>= to 2.13.0) do not change the state of this parameter (so if you removed the parameter in some previous installation do not introduce it).
+- if the installation is an upgrading from a release previous of the Multi-environment (<= to 2.13.0) to a following one you need to configure the `PREUSED_HEDERA_NET`. After that the parameter will last in the configuration unchanged.
 
 #### 3.1. PREUSED_HEDERA_NET configuration
 
-The `PREUSED_HEDERA_NET` parameter is intended to hold the target Hedera network that the system already started to notarized data to. PREUSED\_HEDERA\_NET is the reference to the HEDERA_NET that was in usage before of the upgrading.
-To let the multienvironment transition happen in a transparent way the `GUARDIAN_ENV` parameter in the `.env` file has to be configured as empty while  the `PREUSED_HEDERA_NET` has to be set with the same value configured in the `HEDERA_NET` parameter in the previous configuration file.  
+The `PREUSED_HEDERA_NET` parameter is intended to hold the target Hedera network that the system already started to notarize data to. PREUSED\_HEDERA\_NET is the reference to the HEDERA_NET that was in use before the upgrade.
+To let the Multi-environment transition happen in a transparent way the `GUARDIAN_ENV` parameter in the `.env` file has to be configured as empty while  the `PREUSED_HEDERA_NET` has to be set with the same value configured in the `HEDERA_NET` parameter in the previous configuration file.  
 
 `PREUSED_HEDERA_NET` never needs to be changed after the first initialization. On the contrary it will be possible to change `HEDERA_NET` to dials with all the Hedera different networks.
 
@@ -117,13 +117,13 @@ To let the multienvironment transition happen in a transparent way the `GUARDIAN
       GUARDIAN_ENV=""
    ```
 
-   in this case the configuration is stored in the file named: `./configs/.env..guardian.system`, and is already provided in the folder as example, update the variables OPERATOR_ID and OPERATOR_KEY.
+   In this case the configuration is stored in the file named: `./configs/.env..guardian.system`, and is already provided in the folder as an example, updating the variables OPERATOR_ID and OPERATOR_KEY.
 
    ```plaintext
    OPERATOR_ID="..."
    OPERATOR_KEY="..."
    ```
-   PREUSED_HEDERA_NET is the reference to your previous HEDERA_NET configuration then set his value to match your previous HEDERA_NET configuration.
+   PREUSED_HEDERA_NET is the reference to your previous HEDERA_NET configuration then you should set its value to match your previous HEDERA_NET configuration.
 
    ```plaintext
    HEDERA_NET="mainnet"
@@ -132,7 +132,7 @@ To let the multienvironment transition happen in a transparent way the `GUARDIAN
 
    because you are keeping on using HEDERA_NET as it was pointing to the "mainnet" in the previous installation too.
 
-   - As second example: to test the new release change the HEDERA_NET to "testnet". This is the complete configuration:
+   - As a second example: to test the new release change the HEDERA_NET to "testnet". This is the complete configuration:
 
    Set the name of the Guardian platform to whatever descripting name in the `.env` file 
 
@@ -140,7 +140,7 @@ To let the multienvironment transition happen in a transparent way the `GUARDIAN
       GUARDIAN_ENV="testupgrading"
    ```
 
-   in this case the configuration is stored in the file named: `./configs/.env.testupgrading.guardian.system` again update the variables OPERATOR_ID and OPERATOR_KEY using your testnet account.
+   In this case the configuration is stored in the file named: `./configs/.env.testupgrading.guardian.system` again update the variables OPERATOR_ID and OPERATOR_KEY using your testnet account.
 
    ```plaintext
    OPERATOR_ID="..."
@@ -154,12 +154,12 @@ To let the multienvironment transition happen in a transparent way the `GUARDIAN
    PREUSED_HEDERA_NET="mainnet"
    ```
 
-   This configuration allow you to leave untouched all the data referering to Mainnet in the Database while testing on Testnet. Refer to Guardian 
+   This configuration allows you to leave untouched all the data referring to Mainnet in the Database while testing on Testnet. Refer to Guardian 
    [documentation](https://docs.hedera.com/guardian/guardian/readme/environments/multi-session-consistency-according-to-environment) for more details.
 
 > **_NOTE:_**  You can use the Schema Topic ID (`INITIALIZATION_TOPIC_ID`) already present in the configuration files, or you can specify your own.
 
-> **_NOTE:_**  for any other GUARDIAN_ENV name of your choice just copy and past the file `./configs/.env.template.guardian.system` and rename as `./configs/.env.<choosen name>.guardian.system`
+> **_NOTE:_**  for any other GUARDIAN\_ENV name of your choice just copy and paste the file `./configs/.env.template.guardian.system` and rename as `./configs/.env.<choosen name>.guardian.system`
    
 4. Now, we have two options to setup IPFS node :  1. Local node 2. IPFS Web3Storage node.
 
@@ -222,7 +222,7 @@ Install, configure and start all the prerequisites, then build and start each co
 
 #### Services Configuration: 
 
--  for each of the services create the file `./<service_name>/.env` to do this copy, past and rename  the file `./<service_name>/.env.template` 
+-  for each of the services create the file `./<service_name>/.env` to do this copy, paste and rename  the file `./<service_name>/.env.template` 
 
    For example:
 
@@ -237,7 +237,7 @@ Install, configure and start all the prerequisites, then build and start each co
    ```
 
 -  configure the file `./<service_name>/configs/.env.<service>.<GUARDIAN_ENV>` file: to do this copy, 
-   past and rename the file  `./<service_name>/.env.<service>.template` 
+   paste and rename the file  `./<service_name>/.env.<service>.template` 
 
    following previous example:
 
@@ -280,7 +280,7 @@ Install, configure and start all the prerequisites, then build and start each co
    yarn workspace logger-service run build
    ```
 
-   Configure the service as previously described. Do not need special variables configuration.
+   Configure the service as previously described. Do not need special configuration variables.
 
    To start the service:
 
@@ -296,7 +296,7 @@ Install, configure and start all the prerequisites, then build and start each co
    yarn workspace auth-service run build
    ```
 
-   Configure the service as previously described. Do not need special variables configuration.
+   Configure the service as previously described. Do not need special configuration variables.
 
    To start the service:
 
@@ -312,7 +312,7 @@ Install, configure and start all the prerequisites, then build and start each co
    yarn workspace policy-service run build
    ```
 
-   Configure the service as previously described. Do not need special variables configuration.
+   Configure the service as previously described. Do not need special configuration variables.
 
    To start the service:
    
@@ -358,7 +358,7 @@ Install, configure and start all the prerequisites, then build and start each co
    yarn workspace api-gateway run build
    ```
 
-   Configure the service as previously described. Do not need special variables configuration.
+   Configure the service as previously described. Do not need special configuration variables.
 
    To start the service (found on <http://localhost:3002>):
 
@@ -375,7 +375,7 @@ Install, configure and start all the prerequisites, then build and start each co
     npm run build
     ```
 
-    Configure the service as previously described. Do not need special variables configuration.
+    Configure the service as previously described. Do not need special configuration variables.
 
     To start the service (found on <http://localhost:3005>):
 
@@ -413,14 +413,14 @@ Install, configure and start all the prerequisites, then build and start each co
    ```
 
   **Note:**
-   * Set `LOCALNODE_ADDRESS` to the IP address of your local node instance. The value above is given as example.
+   * Set `LOCALNODE_ADDRESS` to the IP address of your local node instance. The value above is given as an example.
    * Set `HEDERA_NET` to `localnode`. If not specified, the default value is `testnet`.
    * Configure `OPERATOR_ID` and `OPERATOR_KEY` accordingly with your local node configuration.
    * Remove `INITIALIZATION_TOPIC_ID` as the topic will be created automatically.
    * Set `LOCALNODE_PROTOCOL` to `http` or `https` accordingly with your local node configuration (it uses HTTP by default).
 
 ## Configuring Hashicorp Vault
-1. Configure .env/.env.docker files in auth-service folder
+1. Configure .env/.env.docker files in the auth-service folder
 
     ```
     VAULT_PROVIDER = "hashicorp"
@@ -428,7 +428,7 @@ Install, configure and start all the prerequisites, then build and start each co
  
     Note: VAULT_PROVIDER can be set to "database" or "hashicorp" to select Database instance or a hashicorp vault instance correspondingly.
     
-   If the VAULT_PROVIDER value is set to "hashicorp" the following 3 parameters should be configured in auth-service folder.   
+   If the VAULT_PROVIDER value is set to "hashicorp" the following 3 parameters should be configured in the auth-service folder.   
    
    1. HASHICORP_ADDRESS : http://localhost:8200 for using local vault. For remote vault, we need to use the value from the configuration settings of    Hashicorp vault service.
    2. HASHICORP_TOKEN : the token from the Hashicorp vault.
@@ -439,7 +439,7 @@ Install, configure and start all the prerequisites, then build and start each co
     2. OPERATOR_KEY
     3. IPFS_STORAGE_API_KEY
     
-    Note: These records in vault will be created automatically if there are environment variables with the matching names.
+    Note: These records in the vault will be created automatically if there are environment variables with the matching names.
     
  **How to import existing user keys from DB into the vault:**
  
@@ -491,7 +491,7 @@ cd guardian-service
 npm run test
 ```
 
-It is also an ability to run Hedera network test only. To do that, the following command needs to be executed:
+It is also an ability to run Hedera network tests only. To do that, the following command needs to be executed:
 
 ```shell
 npm run test:network
