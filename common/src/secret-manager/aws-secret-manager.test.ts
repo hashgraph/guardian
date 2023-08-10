@@ -17,14 +17,12 @@ async function test_aws_secretmanager() {
   })
 
   const { IPFS_STORAGE_API_KEY } = await secretManager.getSecrets('apikey/ipfs')
-  console.log(IPFS_STORAGE_API_KEY);
 
   await secretManager.setSecrets('secretkey/auth', {
     ACCESS_TOKEN_SECRET: 'weakpassword'
   })
 
   const { ACCESS_TOKEN_SECRET } = await secretManager.getSecrets('secretkey/auth')
-  console.log(ACCESS_TOKEN_SECRET);
 
   await secretManager.setSecrets('keys/operator', {
     OPERATOR_ID: '0.0.12345678',
@@ -32,13 +30,11 @@ async function test_aws_secretmanager() {
   })
 
   const { OPERATOR_ID, OPERATOR_KEY } = await secretManager.getSecrets('keys/operator')
-  console.log(OPERATOR_ID, OPERATOR_KEY);
 
   await secretManager.setSecrets('wallet/123', {
     privateKey: 'abcdef0987654321'
   })
   const { privateKey } = await secretManager.getSecrets('wallet/123')
-  console.log(privateKey);
 }
 
 test_aws_secretmanager()
