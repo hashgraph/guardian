@@ -12,8 +12,9 @@ The implementation goes in the same line as Data level separation of concerns: i
 
 <figure><img src="../../../.gitbook/assets/environment.png" alt=""><figcaption></figcaption></figure>
 
-It has been introduced a new parameter PREUSED\_HEDERA\_NET, this parameter is intended to hold the target Hedera network that the system already started to notarized data to. The PREUSED\_HEDERA\_NET can assume the values mainnet, testnet, previewnet, localnode.
+It has been introduced a new parameter PREUSED\_HEDERA\_NET, this parameter is intended to hold the target Hedera network that the system already started to notarized data to. This paramenter is needed only to that Guardina Systems that needs to be upgraded from a release previous Multi-environment (2.13.0) after that the parmaeter will last in the configuration unchanged.  For all the Guardian System that came up after the release 2.13.0 PREUSED\_HEDERA\_NET is unuseful and could be deleted.
+The PREUSED\_HEDERA\_NET can assume the values mainnet, testnet, previewnet, localnode.
 
-To maintain the usage of the current database the GUARDIAN\_ENV parameter has to be left empty while the PREUSED\_HEDERA\_NET should be configured as stated before.
+To maintain the usage of the current database(previous of the upgrading) the GUARDIAN\_ENV parameter has to be left empty while the PREUSED\_HEDERA\_NET should be configured as stated before: PREUSED\_HEDERA\_NET has to be the reference to the HEDERA_NET that was in usage before of the upgrading. Configure this paramenter with the same value as the previous target HEDERA_NET.
 
-Using this configuration the system will keep behaving in the same way as now and the original database names will be used for the data related to the currently used HEDERA\_NET and current Guardian environment. In this way the modification will not impact the current data but will be possible to define multiple different environments and hedera net target BC sharing the same infrastructure without data separation concerns.
+Using this configuration the system will keep behaving in the same way as before of the upgrading and the previous database names will be used for the data related to the currently used HEDERA\_NET and current Guardian environment. In this way the modification will not impact the current data but will be possible to define multiple different environments and hedera net target BC sharing the same infrastructure without data separation concerns.

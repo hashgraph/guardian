@@ -28,21 +28,93 @@ For this example pourpose let's name the Guardian platform as "develop"
    GUARDIAN_ENV="develop"
 ```
 
-3. Update the following files with your Hedera Testnet account info (see prerequisites) as indicated. Please check complete steps to generate Operation_ID and Operator_Key by looking at link: [How to Create Operator_ID and Operator_Key](https://docs.hedera.com/guardian/getting-started/getting-started/how-to-create-operator-id-and-operator-key).
-The Operation_ID and Operator_Key are all what Guardian needs to access the Hedera Blockchain assuming a role on it. This parameters needs to be configured in a file at the path `./configs`, the file should use the following naming convention:
+{% hint style="info" %}
+**Note**  Every single service is provided in its folder with a `.env.template` file, this set of files are only needed for the case of Manual installation. 
+{% endhint %}
+
+3. Update the following files with your Hedera Testnet account info (see prerequisites) as indicated. Please check complete steps to generate Operator_ID and Operator_Key by looking at link: [How to Create Operator_ID and Operator_Key](https://docs.hedera.com/guardian/getting-started/getting-started/how-to-create-operator-id-and-operator-key).
+The Operator_ID and Operator_Key and HEDERA_NET  are all what Guardian needs to access the Hedera Blockchain assuming a role on it. This parameters needs to be configured in a file at the path `./configs`, the file should use the following naming convention:
 
    `./configs/.env.\<GUARDIAN_ENV\>.guardian.system`
 
 There will be other steps in the Demo Usage Guide that will be required for the generation of Operator\_ID and Operator\_Key. It is important to mention that the Operator_ID and Operator_Key in the `./configs/.env.<GUARDIAN_ENV>.guardian.system` will be used to generate demo accounts.
 
-   For example:
- 
-   following the previous example, the file to configure should be named: `./configs/.env.develop.guardian.system`, this file is already provided in the folder as example, only update the variables OPERATOR_ID and OPERATOR_KEY.
+The parameter `HEDERA_NET` may assume the following values: `mainnet`, `testnet`, `previewnet`, `localnode`. choose the right value depending on your target Hedera network on which the `OPERATOR_ID` has been defined.
 
-```plaintext
-OPERATOR_ID="..."
-OPERATOR_KEY="..."
-```
+   As examples:
+ 
+   following the previous example, the file to configure should be named: `./configs/.env.develop.guardian.system`, this file is already provided in the folder as example, only update the variables OPERATOR_ID, OPERATOR_KEY and HEDERA_NET.
+
+   ```plaintext
+   OPERATOR_ID="..."
+   OPERATOR_KEY="..."
+   HEDERA_NET="..."
+   ```
+
+Starting from Multienvironment release (2.13.0) it has been introduced a new parameter `PREUSED_HEDERA_NET`.
+Multienvironemnt is a breaking change and the configuration of this parameter intend to smooth the upgrading. 
+`PREUSED_HEDERA_NET` configuration depends on the installation context.
+
+- If the installation is a completely new one just remove the parameter and feel free to jump next paragraph.
+- if you are upgrading from a release after the multienvironment (>= to 2.13.0) do not change the state of this parameter (so if you removed the paramenter in some previous installation do not introduce it).
+- if the installation is an upgrading from a release previous of the multienvironment (<= to 2.13.0) to a following one you need to configure the `PREUSED_HEDERA_NET`. After that the parameter will last in the configuration unchanged.
+
+#### 3.1. PREUSED_HEDERA_NET configuration
+
+The `PREUSED_HEDERA_NET` parameter is intended to hold the target Hedera network that the system already started to notarized data to. PREUSED\_HEDERA\_NET is the reference to the HEDERA_NET that was in usage before of the upgrading.
+To let the multienvironment transition happen in a transparent way the `GUARDIAN_ENV` parameter in the `.env` file has to be configured as empty while  the `PREUSED_HEDERA_NET` has to be set with the same value configured in the `HEDERA_NET` parameter in the previous configuration file.  
+
+`PREUSED_HEDERA_NET` never needs to be changed after the first initialization. On the contrary it will be possible to change `HEDERA_NET` to dials with all the Hedera different networks.
+
+   - as first Example: 
+
+   in case of the upgrading from a release minor then 2.13.0 to a bigger one and keep using the same HEDERA_NET="Mainnet"(as example)
+
+   configure the name the Guardian platform as empty in the `.env` file 
+
+   ```shell
+      GUARDIAN_ENV=""
+   ```
+
+   in this case the configuration is stored in the file named: `./configs/.env..guardian.system`, and is already provided in the folder as example, update the variables OPERATOR_ID and OPERATOR_KEY.
+
+   ```plaintext
+   OPERATOR_ID="..."
+   OPERATOR_KEY="..."
+   ```
+   PREUSED_HEDERA_NET is the reference to your previous HEDERA_NET configuration then set his value to match your previous HEDERA_NET configuration.
+
+   ```plaintext
+   HEDERA_NET="mainnet"
+   PREUSED_HEDERA_NET="mainnet"
+   ```
+
+   because you are keeping on using HEDERA_NET as it was pointing to the "mainnet" in the previous installation too.
+
+   - As second example: to test the new release change the HEDERA_NET to "testnet". This is the complete configuration:
+
+   Set the name of the Guardian platform to whatever descripting name in the `.env` file 
+
+   ```shell
+      GUARDIAN_ENV="testupgrading"
+   ```
+
+   in this case the configuration is stored in the file named: `./configs/.env.testupgrading.guardian.system` again update the variables OPERATOR_ID and OPERATOR_KEY using your testnet account.
+
+   ```plaintext
+   OPERATOR_ID="..."
+   OPERATOR_KEY="..."
+   ```
+
+   set the HEDERA_NET="testnet" and set the PREUSED_HEDERA_NET to refer to the mainnet as you wish that Mainet data remains unchanged.
+
+   ```plaintext
+   HEDERA_NET="testnet"
+   PREUSED_HEDERA_NET="mainnet"
+   ```
+
+   This configuration allow you to leave untouched all the data referering to Mainnet in the Database while testing on Testnet. Refer to Guardian 
+   [documentation](https://docs.hedera.com/guardian/guardian/readme/environments/multi-session-consistency-according-to-environment) for more details.
 
 {% hint style="info" %}
 **Note**. You can use the Schema Topic ID (`INITIALIZATION_TOPIC_ID`) already present in the configuration files, or you can specify your own.
