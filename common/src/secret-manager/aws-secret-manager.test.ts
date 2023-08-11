@@ -16,25 +16,25 @@ async function test_aws_secretmanager() {
     IPFS_STORAGE_API_KEY: process.env.IPFS_STORAGE_API_KEY
   })
 
-  const { IPFS_STORAGE_API_KEY } = await secretManager.getSecrets('apikey/ipfs')
+  // const { IPFS_STORAGE_API_KEY } = await secretManager.getSecrets('apikey/ipfs')
 
   await secretManager.setSecrets('secretkey/auth', {
     ACCESS_TOKEN_SECRET: 'weakpassword'
   })
 
-  const { ACCESS_TOKEN_SECRET } = await secretManager.getSecrets('secretkey/auth')
+  // const { ACCESS_TOKEN_SECRET } = await secretManager.getSecrets('secretkey/auth')
 
   await secretManager.setSecrets('keys/operator', {
-    OPERATOR_ID: '0.0.12345678',
-    OPERATOR_KEY: '0x1276237349870385464852193749'
+    OPERATOR_ID: process.env.OPERATOR_ID,
+    OPERATOR_KEY: process.env.OPERATOR_KEY
   })
 
-  const { OPERATOR_ID, OPERATOR_KEY } = await secretManager.getSecrets('keys/operator')
+  // const { OPERATOR_ID, OPERATOR_KEY } = await secretManager.getSecrets('keys/operator')
 
   await secretManager.setSecrets('wallet/123', {
     privateKey: 'abcdef0987654321'
   })
-  const { privateKey } = await secretManager.getSecrets('wallet/123')
+  // const { privateKey } = await secretManager.getSecrets('wallet/123')
 }
 
 test_aws_secretmanager()

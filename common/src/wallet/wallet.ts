@@ -60,7 +60,7 @@ export class Wallet {
     if (!(this.secretManager instanceof AzureSecretManager) && !(this.secretManager instanceof GcpSecretManager)) {
       return hashedKey;
     }
-    
+
     // convert hashedKey from hex to Base58 to shoeten key length, Azure does not accept keys longet than 128 chars
     // convert hashedKey from hex to Base58 to shoeten key length, GCP does not accept keys longet than 255 chars
     const buffer = Buffer.from(hashedKey, 'hex');
