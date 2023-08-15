@@ -67,17 +67,12 @@ In general, transaction data in the Guardian application includes any data that 
 
 When it comes to choosing a backup storage location, there are several factors to keep in mind to ensure that your data is secure and easily accessible. Here are some key considerations:
 
-1.Security: Your backup storage location should be secure and protected against unauthorized access. This means using encryption and access controls to prevent data breaches.
-
-2.Reliability: Your backup storage location should be reliable and have a high level of uptime. This means choosing a provider with a proven track record of reliability and ensuring that your data is backed up regularly.
-
-3.Scalability: Your backup storage location should be scalable and able to accommodate your growing data needs. This means choosing a provider that can easily scale up or down as your business needs change.
-
-4.Accessibility: Your backup storage location should be easily accessible, both in terms of physical location and connectivity. This means choosing a provider with multiple data centers in different geographic locations and ensuring that you have reliable internet connectivity.
-
-5.Cost: Your backup storage location should be cost-effective, without sacrificing security or reliability. This means comparing prices from different providers and choosing one that offers the best balance of cost, security, and reliability.
-
-6.Compliance: Your backup storage location should comply with any relevant data protection regulations, such as GDPR or HIPAA. This means choosing a provider that has the necessary certifications and can provide proof of compliance.
+1. Security: Your backup storage location should be secure and protected against unauthorized access. This means using encryption and access controls to prevent data breaches.
+2. Reliability: Your backup storage location should be reliable and have a high level of uptime. This means choosing a provider with a proven track record of reliability and ensuring that your data is backed up regularly.
+3. Scalability: Your backup storage location should be scalable and able to accommodate your growing data needs. This means choosing a provider that can easily scale up or down as your business needs change.
+4. Accessibility: Your backup storage location should be easily accessible, both in terms of physical location and connectivity. This means choosing a provider with multiple data centers in different geographic locations and ensuring that you have reliable internet connectivity.
+5. Cost: Your backup storage location should be cost-effective, without sacrificing security or reliability. This means comparing prices from different providers and choosing one that offers the best balance of cost, security, and reliability.
+6. Compliance: Your backup storage location should comply with any relevant data protection regulations, such as GDPR or HIPAA. This means choosing a provider that has the necessary certifications and can provide proof of compliance.
 
 By keeping these factors in mind, you can choose a backup storage location that meets your business needs and ensures the security and accessibility of your data.
 
@@ -86,17 +81,12 @@ By keeping these factors in mind, you can choose a backup storage location that 
 
 When deciding on a backup schedule, there are several important factors to consider to ensure that your data is protected and easily recoverable in the event of a disaster or data loss. Here are some key considerations:
 
-1.Recovery Point Objective (RPO): The RPO is the maximum amount of data that can be lost before it starts to impact your business. When deciding on a backup schedule, you should consider your RPO and ensure that your backups are frequent enough to meet this requirement.
-
-2.Recovery Time Objective (RTO): The RTO is the amount of time it takes to restore your data after a disaster or data loss. When deciding on a backup schedule, you should consider your RTO and ensure that your backups are frequent enough to meet this requirement.
-
-3.Data Volume: The size of your data volume will affect the backup schedule. Large volumes of data will require more time to back up, so you may need to schedule backups more frequently.
-
-4.Data Criticality: The criticality of your data will also affect the backup schedule. Critical data should be backed up more frequently than non-critical data to minimize the risk of data loss.
-
-5.Backup Window: The backup window is the time during which backups can be performed without impacting the performance of your systems. When deciding on a backup schedule, you should consider your backup window and ensure that backups are scheduled during a time when they will not impact system performance.
-
-6.Backup Type: The type of backup you use will also affect the backup schedule. Full backups may take longer to perform, but they provide complete data protection. Incremental and differential backups may be faster, but they provide less complete data protection.
+1. Recovery Point Objective (RPO): The RPO is the maximum amount of data that can be lost before it starts to impact your business. When deciding on a backup schedule, you should consider your RPO and ensure that your backups are frequent enough to meet this requirement.
+2. Recovery Time Objective (RTO): The RTO is the amount of time it takes to restore your data after a disaster or data loss. When deciding on a backup schedule, you should consider your RTO and ensure that your backups are frequent enough to meet this requirement.
+3. Data Volume: The size of your data volume will affect the backup schedule. Large volumes of data will require more time to back up, so you may need to schedule backups more frequently.
+4. Data Criticality: The criticality of your data will also affect the backup schedule. Critical data should be backed up more frequently than non-critical data to minimize the risk of data loss.
+5. Backup Window: The backup window is the time during which backups can be performed without impacting the performance of your systems. When deciding on a backup schedule, you should consider your backup window and ensure that backups are scheduled during a time when they will not impact system performance.
+6. Backup Type: The type of backup you use will also affect the backup schedule. Full backups may take longer to perform, but they provide complete data protection. Incremental and differential backups may be faster, but they provide less complete data protection.
 
 By considering these factors, you can develop a backup schedule that meets your business needs and ensures the protection and recoverability of your data.
 
