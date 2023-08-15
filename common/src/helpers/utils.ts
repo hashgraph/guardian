@@ -145,7 +145,7 @@ export function getVCField(vcDocument: IVC, name: string): any {
  * Get VC issuer
  * @param vcDocument
  */
-export function getVCIssuer(vcDocument: IVCDocument | IVCDocument): string {
+export function getVCIssuer(vcDocument: IVCDocument): string {
     if (vcDocument && vcDocument.document) {
         if (typeof vcDocument.document.issuer === 'string') {
             return vcDocument.document.issuer;
@@ -270,4 +270,16 @@ export function replaceArtifactProperties(obj: any, property: any, artifactsMapp
             replaceArtifactProperties(child, property, artifactsMapping);
         }
     }
+}
+
+export const generateNumberFromString = (inputString) => {
+    const base = 31; // Prime number for better distribution (you can use other primes)
+    let hash = 0;
+
+    for (let i = 0; i < inputString.length; i++) {
+        const char = inputString.charCodeAt(i);
+        hash = (hash * base + char) % Number.MAX_SAFE_INTEGER;
+    }
+
+    return hash;
 }
