@@ -127,7 +127,7 @@ services:
       - ./configs/.env.${GUARDIAN_ENV}.guardian.system
     build:
       context: .
-      dockerfile: ./auth-service/Dockerfile
+      dockerfile: ./auth-service/Dockerfile.demo
     ports:
       - '5005:5005'
     volumes:
@@ -149,7 +149,7 @@ services:
       - ./configs/.env.${GUARDIAN_ENV}.guardian.system
     build:
       context: .
-      dockerfile: ./api-gateway/Dockerfile
+      dockerfile: ./api-gateway/Dockerfile.demo
     expose:
       - 3002
       - 6555
