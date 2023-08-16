@@ -32,6 +32,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { MatchConstraint } from '@helpers/decorators/match.validator';
 import { NotificationService } from '@guardian/common';
 import { NotificationsApi } from '@api/service/notifications';
+import { ApplicationEnvironment } from './environment';
 
 const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
 const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
@@ -59,7 +60,7 @@ const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
         AnalyticsApi,
         ArtifactApi,
         ContractsApi,
-        DemoApi,
+        ...(ApplicationEnvironment.demoMode ? [DemoApi] : []),
         ExternalApi,
         IpfsApi,
         LoggerApi,

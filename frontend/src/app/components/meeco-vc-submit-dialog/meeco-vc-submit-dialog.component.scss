@@ -1,0 +1,71 @@
+.content {
+  display: flex;
+  flex-direction: column;
+
+  &__role-select {
+    width: fit-content;
+    padding: 12px 0 4px 8px;
+  }
+}
+
+.dialog-content {
+  overflow: hidden;
+  width: 100%;
+
+  &__note {
+    color: #969696;
+    font-size: 14px;
+  }
+}
+
+.dialog-title {
+  display: inline-block;
+}
+
+.dialog-actions {
+  padding-bottom: 20px;
+  justify-content: space-between;
+}
+
+.mat-button-base {
+  background-color: rgba(0,0,0,.12);
+}
+
+.document {
+  font-family: monospace;
+  cursor: text;
+  max-height: 400px;
+  overflow: auto;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  padding: 10px;
+  box-sizing: border-box;
+  margin: 15px 0 8px;
+
+  &-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 4px;
+  
+    &__label {
+      color: #969696;
+      font-weight: bold;
+    }
+  
+    &__value {
+      margin-left: 8px;
+    }
+  }
+}
+
+@media (max-width: 810px) {
+  .json {
+    height: 280px;
+  }
+}
+
+@media (max-width: 375px) {
+  button.mat-button-base {
+    padding: 0 25px;
+  }
+}
