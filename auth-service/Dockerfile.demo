@@ -22,9 +22,11 @@ COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.
 COPY --from=commonModuleBuilder /usr/local/common/guardian-common-*.tgz /tmp/common.tgz
 COPY ./auth-service/package.json ./
 COPY ./auth-service/tsconfig*.json ./
+COPY ./auth-service/Gulpfile.js ./
 RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@guardian/interfaces']='file:/tmp/interfaces.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
 RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@guardian/common']='file:/tmp/common.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
 RUN yarn install
+ADD ./auth-service/environments ./environments/.
 ADD ./auth-service/src ./src/.
 RUN yarn run build:demo
 
