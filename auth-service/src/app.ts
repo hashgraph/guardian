@@ -1,4 +1,3 @@
-import { fixtures } from '@helpers/fixtures';
 import { AccountService } from '@api/account-service';
 import { WalletService } from '@api/wallet-service';
 import { ApplicationState, COMMON_CONNECTION_CONFIG, DataBaseHelper, LargePayloadContainer, Logger, MessageBrokerChannel, Migration, OldSecretManager, SecretManager } from '@guardian/common';
@@ -12,6 +11,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { MeecoAuthService } from '@api/meeco-service';
+import { ApplicationEnvironment } from './environment';
 
 Promise.all([
     Migration({
@@ -46,7 +46,18 @@ Promise.all([
     await state.setServiceName('AUTH_SERVICE').setConnection(cn).init();
     state.updateState(ApplicationStates.INITIALIZING);
     try {
-        await fixtures();
+        if (!ApplicationEnvironment.demoMode) {
+            import('./helpers/fixtures').then(async (module) => {
+                await module.fixtures();
+            });
+        }
+
+        // Include accounts for demo builds only
+        if (ApplicationEnvironment.demoMode) {
+            import('./helpers/fixtures.demo').then(async (module) => {
+                await module.fixtures();
+            });
+        }
 
         app.listen();
 

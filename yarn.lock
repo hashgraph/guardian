@@ -854,6 +854,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@google-cloud/secret-manager@npm:^4.2.2":
+  version: 4.2.2
+  resolution: "@google-cloud/secret-manager@npm:4.2.2"
+  dependencies:
+    google-gax: ^3.5.8
+  checksum: 32522e9d7031d1332d52a5c9deba66acb9f3b2cae0255827b0e5101957b5a0edeacc9bf1fe7a6d58af8258d48a0c7000c604192ef55c6e6fc3c30d903e5bc90b
+  languageName: node
+  linkType: hard
+
 "@grpc/grpc-js@npm:^1.7.3":
   version: 1.8.20
   resolution: "@grpc/grpc-js@npm:1.8.20"
@@ -861,6 +870,16 @@ __metadata:
     "@grpc/proto-loader": ^0.7.0
     "@types/node": ">=12.12.47"
   checksum: 9a18b3b7342b13259567c7fe6161ba1b43d85ee911ed5003939dc392a0575724014978c40e6edb4eedb035126a8d3c66dcf6cb7678153565c2ae77c3bd4b3e97
+  languageName: node
+  linkType: hard
+
+"@grpc/grpc-js@npm:~1.8.0":
+  version: 1.8.21
+  resolution: "@grpc/grpc-js@npm:1.8.21"
+  dependencies:
+    "@grpc/proto-loader": ^0.7.0
+    "@types/node": ">=12.12.47"
+  checksum: 32bbb3667c20005987eaef0268898fcb49b7bf46e8f338f3ad6f3343e5ff125d63da9aa869b6bca2a918adacf39715d29431461f233c677012206faedbd71169
   languageName: node
   linkType: hard
 
@@ -886,6 +905,7 @@ __metadata:
     "@aws-sdk/client-secrets-manager": ^3.319.0
     "@azure/identity": ^3.2.2
     "@azure/keyvault-secrets": ^4.7.0
+    "@google-cloud/secret-manager": ^4.2.2
     "@guardian/interfaces": ^2.15.0
     "@hashgraph/sdk": 2.24.2
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
@@ -904,6 +924,8 @@ __metadata:
     "@transmute/security-context": 0.7.0-unstable.80
     "@transmute/vc.js": 0.7.0-unstable.80
     "@types/express": ^4.17.13
+    "@types/gulp": ^4
+    "@types/gulp-rename": ^2
     "@types/node": ^18.16.0
     "@types/winston": ^2.4.4
     ajv: ^8.10.0
@@ -914,6 +936,11 @@ __metadata:
     dotenv: ^16.0.0
     express: ^4.17.1
     fast-xml-parser: ^4.2.6
+    gulp: ^4.0.2
+    gulp-copy: ^4.0.1
+    gulp-rename: ^2.0.0
+    gulp-sourcemaps: ^3.0.0
+    gulp-typescript: ^6.0.0-alpha.1
     js-base64: ^3.6.1
     lodash.get: ^4.4.2
     lodash.set: ^4.3.2
@@ -935,7 +962,14 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@guardian/interfaces@workspace:interfaces"
   dependencies:
+    "@types/gulp": ^4
+    "@types/gulp-rename": ^2
     "@types/node": ^18.16.0
+    gulp: ^4.0.2
+    gulp-copy: ^4.0.1
+    gulp-rename: ^2.0.0
+    gulp-sourcemaps: ^3.0.0
+    gulp-typescript: ^6.0.0-alpha.1
     mocha-junit-reporter: ^2.0.2
     reflect-metadata: ^0.1.13
     tslint: ^6.1.3
@@ -2785,6 +2819,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/glob@npm:*":
+  version: 8.1.0
+  resolution: "@types/glob@npm:8.1.0"
+  dependencies:
+    "@types/minimatch": ^5.1.2
+    "@types/node": "*"
+  checksum: 9101f3a9061e40137190f70626aa0e202369b5ec4012c3fabe6f5d229cce04772db9a94fa5a0eb39655e2e4ad105c38afbb4af56a56c0996a8c7d4fc72350e3d
+  languageName: node
+  linkType: hard
+
+"@types/gulp-rename@npm:^2":
+  version: 2.0.2
+  resolution: "@types/gulp-rename@npm:2.0.2"
+  dependencies:
+    "@types/node": "*"
+    "@types/vinyl": "*"
+  checksum: 957eee1d73bd354b85b8af83ff56e403c871e8eba01c4546077e0dd0185e6862242eb3f4824544554138f4a476d229a299aff9dd3f80e8cbd9f9c260d90701bf
+  languageName: node
+  linkType: hard
+
 "@types/gulp@npm:^4":
   version: 4.0.13
   resolution: "@types/gulp@npm:4.0.13"
@@ -2876,7 +2930,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/long@npm:^4.0.1":
+"@types/long@npm:^4.0.0, @types/long@npm:^4.0.1":
   version: 4.0.2
   resolution: "@types/long@npm:4.0.2"
   checksum: d16cde7240d834cf44ba1eaec49e78ae3180e724cd667052b194a372f350d024cba8dd3f37b0864931683dab09ca935d52f0c4c1687178af5ada9fc85b0635f4
@@ -2918,6 +2972,13 @@ __metadata:
   version: 3.0.5
   resolution: "@types/minimatch@npm:3.0.5"
   checksum: c41d136f67231c3131cf1d4ca0b06687f4a322918a3a5adddc87ce90ed9dbd175a3610adee36b106ae68c0b92c637c35e02b58c8a56c424f71d30993ea220b92
+  languageName: node
+  linkType: hard
+
+"@types/minimatch@npm:^5.1.2":
+  version: 5.1.2
+  resolution: "@types/minimatch@npm:5.1.2"
+  checksum: 0391a282860c7cb6fe262c12b99564732401bdaa5e395bee9ca323c312c1a0f45efbf34dce974682036e857db59a5c9b1da522f3d6055aeead7097264c8705a8
   languageName: node
   linkType: hard
 
@@ -3003,6 +3064,16 @@ __metadata:
   version: 0.12.0
   resolution: "@types/retry@npm:0.12.0"
   checksum: 61a072c7639f6e8126588bf1eb1ce8835f2cb9c2aba795c4491cf6310e013267b0c8488039857c261c387e9728c1b43205099223f160bb6a76b4374f741b5603
+  languageName: node
+  linkType: hard
+
+"@types/rimraf@npm:^3.0.2":
+  version: 3.0.2
+  resolution: "@types/rimraf@npm:3.0.2"
+  dependencies:
+    "@types/glob": "*"
+    "@types/node": "*"
+  checksum: b47fa302f46434cba704d20465861ad250df79467d3d289f9d6490d3aeeb41e8cb32dd80bd1a8fd833d1e185ac719fbf9be12e05ad9ce9be094d8ee8f1405347
   languageName: node
   linkType: hard
 
@@ -3380,6 +3451,8 @@ __metadata:
     "@nestjs/swagger": ^6.3.0
     "@types/express": ^4.17.13
     "@types/express-fileupload": ^1.4.1
+    "@types/gulp": ^4
+    "@types/gulp-rename": ^2
     "@types/jszip": ^3.4.1
     "@types/node": ^18.16.0
     "@types/ws": ^8.2.2
@@ -3392,6 +3465,11 @@ __metadata:
     excel4node: ^1.8.2
     express: ^4.17.1
     express-fileupload: ^1.4.0
+    gulp: ^4.0.2
+    gulp-copy: ^4.0.1
+    gulp-rename: ^2.0.0
+    gulp-sourcemaps: ^3.0.0
+    gulp-typescript: ^6.0.0-alpha.1
     hpp: ^0.2.3
     http-errors: ^2.0.0
     jszip: ^3.7.1
@@ -3435,6 +3513,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ansi-cyan@npm:^0.1.1":
+  version: 0.1.1
+  resolution: "ansi-cyan@npm:0.1.1"
+  dependencies:
+    ansi-wrap: 0.1.0
+  checksum: 5fb11d52bc4d7ab319913b56f876f8e7aff60edd1c119c3d754a33b14d126b7360df70b2d53c5967c29bae03e85149ebaa32f55c33e089e6d06330230983038e
+  languageName: node
+  linkType: hard
+
 "ansi-escapes@npm:^4.2.1":
   version: 4.3.2
   resolution: "ansi-escapes@npm:4.3.2"
@@ -3450,6 +3537,15 @@ __metadata:
   dependencies:
     ansi-wrap: 0.1.0
   checksum: b1f0cfefe43fb2f2f2f324daa578f528b7079514261e9ed060de05e21d99797e5fabf69d500c466c263f9c6302751a2c0709ab52324912cdee71be249deffbf7
+  languageName: node
+  linkType: hard
+
+"ansi-red@npm:^0.1.1":
+  version: 0.1.1
+  resolution: "ansi-red@npm:0.1.1"
+  dependencies:
+    ansi-wrap: 0.1.0
+  checksum: 84442078e6ae34c79ada32d43d40956e0f953204626be4c562431761407b4388a573cfff950c78a6c8fa20e9eed12441ac8d1c89864d6a35df53e9ef7fce2b98
   languageName: node
   linkType: hard
 
@@ -3558,6 +3654,7 @@ __metadata:
     "@types/express": ^4.17.13
     "@types/express-fileupload": ^1.4.1
     "@types/gulp": ^4
+    "@types/gulp-rename": ^2
     "@types/jszip": ^3.4.1
     "@types/node": ^18.16.0
     "@types/ws": ^8.2.2
@@ -3570,10 +3667,13 @@ __metadata:
     express: ^4.17.1
     express-fileupload: ^1.4.0
     gulp: ^4.0.2
+    gulp-copy: ^4.0.1
+    gulp-rename: ^2.0.0
     gulp-sourcemaps: ^3.0.0
     gulp-typescript: ^6.0.0-alpha.1
     hpp: ^0.2.3
     http-errors: ^2.0.0
+    jsonwebtoken: ^8.5.1
     jszip: ^3.7.1
     mocha: ^9.2.0
     mocha-junit-reporter: ^2.0.2
@@ -3596,9 +3696,16 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "api-tests@workspace:api-tests"
   dependencies:
+    "@types/gulp": ^4
+    "@types/gulp-rename": ^2
     axios: ^1.3.6
     chai: ^4.3.5
     dotenv: ^16.0.1
+    gulp: ^4.0.2
+    gulp-copy: ^4.0.1
+    gulp-rename: ^2.0.0
+    gulp-sourcemaps: ^3.0.0
+    gulp-typescript: ^6.0.0-alpha.1
     mocha: ^9.2.0
     mocha-junit-reporter: ^2.0.2
     tree-kill: ^1.2.2
@@ -3688,6 +3795,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"arr-diff@npm:^1.0.1":
+  version: 1.1.0
+  resolution: "arr-diff@npm:1.1.0"
+  dependencies:
+    arr-flatten: ^1.0.1
+    array-slice: ^0.2.3
+  checksum: 6fa5aade29ff80a8b704bcb6ae582ad718ea9dc31f213f616ba6185e2e033ce2082f9efead3ebc7d35a992852c74f052823c8a51248f15a535f84f346aa2f402
+  languageName: node
+  linkType: hard
+
 "arr-diff@npm:^4.0.0":
   version: 4.0.0
   resolution: "arr-diff@npm:4.0.0"
@@ -3717,6 +3834,13 @@ __metadata:
   dependencies:
     make-iterator: ^1.0.0
   checksum: 51861a8a10b3f9d417468154c0b43a1fd85bbccfeca365f3cafe9d8c81218dc9b5ea9f923f9417365deface95111b36d06d5f348d0214bc9e277dfd2802f3acc
+  languageName: node
+  linkType: hard
+
+"arr-union@npm:^2.0.1":
+  version: 2.1.0
+  resolution: "arr-union@npm:2.1.0"
+  checksum: 19e21d0a8d184eb86c597541eaf90d9912470ce311b9e14b7b3f1be4fd18535ba3511db046565fb190f8be4f7a9ad3216b670cded3c765e03a0e3928a72085ea
   languageName: node
   linkType: hard
 
@@ -3784,6 +3908,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"array-slice@npm:^0.2.3":
+  version: 0.2.3
+  resolution: "array-slice@npm:0.2.3"
+  checksum: e0d97e8a47e78f9311177d38099c59baba45699c07bd96fa4f19d4eb1e276b7447e7b55e0bc76c56c810caee427a5e29672308f4521b0d10ff0b1c207eeadd08
+  languageName: node
+  linkType: hard
+
 "array-slice@npm:^1.0.0":
   version: 1.1.0
   resolution: "array-slice@npm:1.1.0"
@@ -3834,6 +3965,13 @@ __metadata:
   version: 1.0.1
   resolution: "arrify@npm:1.0.1"
   checksum: 745075dd4a4624ff0225c331dacb99be501a515d39bcb7c84d24660314a6ec28e68131b137e6f7e16318170842ce97538cd298fc4cd6b2cc798e0b957f2747e7
+  languageName: node
+  linkType: hard
+
+"arrify@npm:^2.0.0":
+  version: 2.0.1
+  resolution: "arrify@npm:2.0.1"
+  checksum: 067c4c1afd182806a82e4c1cb8acee16ab8b5284fbca1ce29408e6e91281c36bb5b612f6ddfbd40a0f7a7e0c75bf2696eb94c027f6e328d6e9c52465c98e4209
   languageName: node
   linkType: hard
 
@@ -3951,26 +4089,41 @@ __metadata:
   dependencies:
     "@guardian/common": ^2.15.0
     "@guardian/interfaces": ^2.15.0
+    "@meeco/cryppo": ^2.0.2
     "@mikro-orm/core": 5.7.12
     "@mikro-orm/mongodb": 5.7.12
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
     "@nestjs/microservices": ^9.4.1
+    "@types/gulp": ^4
+    "@types/gulp-rename": ^2
     "@types/jsonwebtoken": ^8.5.4
     "@types/node": ^18.16.0
     "@types/node-vault": ^0
+    axios: ^1.4.0
+    base-x: ^4.0.0
+    base64url: ^3.0.1
+    base64url-universal: ^2.0.0
     chai: ^4.3.4
     cross-env: ^7.0.3
     dotenv: ^16.0.0
     express: ^4.17.1
+    gulp: ^4.0.2
+    gulp-copy: ^4.0.1
+    gulp-rename: ^2.0.0
+    gulp-sourcemaps: ^3.0.0
+    gulp-typescript: ^6.0.0-alpha.1
     jsonwebtoken: ^8.5.1
     mocha: ^9.2.0
     mocha-junit-reporter: ^2.0.2
     module-alias: ^2.2.2
+    nacl: ^0.1.3
     node-vault: ^0.9.22
     nodemon: ^2.0.12
+    pako: ^2.1.0
     prom-client: ^14.1.1
     prometheus-api-metrics: 3.2.2
+    querystring: ^0.2.1
     reflect-metadata: ^0.1.13
     tslint: ^6.1.3
     typescript: ^4.5.5
@@ -4008,7 +4161,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^1.3.1, axios@npm:^1.3.6":
+"axios@npm:^1.3.1, axios@npm:^1.3.6, axios@npm:^1.4.0":
   version: 1.4.0
   resolution: "axios@npm:1.4.0"
   dependencies:
@@ -4052,7 +4205,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"base64-js@npm:^1.3.1":
+"base-x@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "base-x@npm:4.0.0"
+  checksum: b25db9e07eb1998472a20557c7f00c797dc0595f79df95155ab74274e7fa98b9f2659b3ee547ac8773666b7f69540656793aeb97ad2b1ceccdb6fa5faaf69ac0
+  languageName: node
+  linkType: hard
+
+"base64-js@npm:^1.3.0, base64-js@npm:^1.3.1":
   version: 1.5.1
   resolution: "base64-js@npm:1.5.1"
   checksum: 669632eb3745404c2f822a18fc3a0122d2f9a7a13f7fb8b5823ee19d1d2ff9ee5b52c53367176ea4ad093c332fd5ab4bd0ebae5a8e27917a4105a4cfc86b1005
@@ -4065,6 +4225,15 @@ __metadata:
   dependencies:
     base64url: ^3.0.0
   checksum: ccc38572082df79ba845ddb84cc064b2e16490687fb1d138ef0e64f0e14d1ca2800b1cbe976f3d59ce79dc31a6cb3985aec7b64e295a8001becbf032bac26276
+  languageName: node
+  linkType: hard
+
+"base64url-universal@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "base64url-universal@npm:2.0.0"
+  dependencies:
+    base64url: ^3.0.1
+  checksum: 4058e0c5ddc0f7058ea970596e762d620b1f0eb071459112b2ac1fe0354bc99acb25e851cce828cacaff3b950d6877978c3ac88a70c3ceb35469a2c4c3e17fb9
   languageName: node
   linkType: hard
 
@@ -4106,7 +4275,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bignumber.js@npm:^9.1.1":
+"bignumber.js@npm:^9.0.0, bignumber.js@npm:^9.1.1":
   version: 9.1.1
   resolution: "bignumber.js@npm:9.1.1"
   checksum: ad243b7e2f9120b112d670bb3d674128f0bd2ca1745b0a6c9df0433bd2c0252c43e6315d944c2ac07b4c639e7496b425e46842773cf89c6a2dcd4f31e5c4b11e
@@ -5650,6 +5819,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"duplexify@npm:^4.0.0":
+  version: 4.1.2
+  resolution: "duplexify@npm:4.1.2"
+  dependencies:
+    end-of-stream: ^1.4.1
+    inherits: ^2.0.3
+    readable-stream: ^3.1.1
+    stream-shift: ^1.0.0
+  checksum: 964376c61c0e92f6ed0694b3ba97c84f199413dc40ab8dfdaef80b7a7f4982fcabf796214e28ed614a5bc1ec45488a29b81e7d46fa3f5ddf65bcb118c20145ad
+  languageName: node
+  linkType: hard
+
 "each-props@npm:^1.3.2":
   version: 1.3.2
   resolution: "each-props@npm:1.3.2"
@@ -5677,7 +5858,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ecdsa-sig-formatter@npm:1.0.11":
+"ecdsa-sig-formatter@npm:1.0.11, ecdsa-sig-formatter@npm:^1.0.11":
   version: 1.0.11
   resolution: "ecdsa-sig-formatter@npm:1.0.11"
   dependencies:
@@ -5761,7 +5942,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"end-of-stream@npm:^1.0.0, end-of-stream@npm:^1.1.0":
+"end-of-stream@npm:^1.0.0, end-of-stream@npm:^1.1.0, end-of-stream@npm:^1.4.1":
   version: 1.4.4
   resolution: "end-of-stream@npm:1.4.4"
   dependencies:
@@ -6314,6 +6495,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"extend-shallow@npm:^1.1.2":
+  version: 1.1.4
+  resolution: "extend-shallow@npm:1.1.4"
+  dependencies:
+    kind-of: ^1.1.0
+  checksum: 437ebb676d031cf98b9952220ef026593bde81f8f100b9f3793b4872a8cc6905d1ef9301c8f8958aed6bc0c5472872f96f43cf417b43446a84a28e67d984a0a6
+  languageName: node
+  linkType: hard
+
 "extend-shallow@npm:^2.0.1":
   version: 2.0.1
   resolution: "extend-shallow@npm:2.0.1"
@@ -6333,7 +6523,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"extend@npm:^3.0.0, extend@npm:~3.0.2":
+"extend@npm:^3.0.0, extend@npm:^3.0.2, extend@npm:~3.0.2":
   version: 3.0.2
   resolution: "extend@npm:3.0.2"
   checksum: a50a8309ca65ea5d426382ff09f33586527882cf532931cb08ca786ea3146c0553310bda688710ff61d7668eba9f96b923fe1420cdf56a2c3eaf30fcab87b515
@@ -6455,6 +6645,13 @@ __metadata:
   version: 2.1.1
   resolution: "fast-safe-stringify@npm:2.1.1"
   checksum: a851cbddc451745662f8f00ddb622d6766f9bd97642dabfd9a405fb0d646d69fc0b9a1243cbf67f5f18a39f40f6fa821737651ff1bceeba06c9992ca2dc5bd3d
+  languageName: node
+  linkType: hard
+
+"fast-text-encoding@npm:^1.0.0, fast-text-encoding@npm:^1.0.3":
+  version: 1.0.6
+  resolution: "fast-text-encoding@npm:1.0.6"
+  checksum: 9d58f694314b3283e785bf61954902536da228607ad246905e30256f9ab8331f780ac987e7222c9f5eafd04168d07e12b8054c85cedb76a2c05af0e82387a903
   languageName: node
   linkType: hard
 
@@ -7025,6 +7222,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"gaxios@npm:^5.0.0, gaxios@npm:^5.0.1":
+  version: 5.1.3
+  resolution: "gaxios@npm:5.1.3"
+  dependencies:
+    extend: ^3.0.2
+    https-proxy-agent: ^5.0.0
+    is-stream: ^2.0.0
+    node-fetch: ^2.6.9
+  checksum: 1cf72697715c64f6db1d6fa6e9243bb57ee14b0c758338a33790ecac2675d819a1fc0c51b2fab312d9bfe8201cc981c171b70ff60adcaaec881c5bc5610c42f1
+  languageName: node
+  linkType: hard
+
+"gcp-metadata@npm:^5.3.0":
+  version: 5.3.0
+  resolution: "gcp-metadata@npm:5.3.0"
+  dependencies:
+    gaxios: ^5.0.0
+    json-bigint: ^1.0.0
+  checksum: 891ea0b902a17f33d7bae753830d23962b63af94ed071092c30496e7d26f8128ba9af43c3d38474bea29cb32a884b4bcb5720ce8b9de4a7e1108475d3d7ae219
+  languageName: node
+  linkType: hard
+
 "genson-js@npm:0.0.5":
   version: 0.0.5
   resolution: "genson-js@npm:0.0.5"
@@ -7280,6 +7499,60 @@ __metadata:
   languageName: node
   linkType: hard
 
+"google-auth-library@npm:^8.0.2":
+  version: 8.9.0
+  resolution: "google-auth-library@npm:8.9.0"
+  dependencies:
+    arrify: ^2.0.0
+    base64-js: ^1.3.0
+    ecdsa-sig-formatter: ^1.0.11
+    fast-text-encoding: ^1.0.0
+    gaxios: ^5.0.0
+    gcp-metadata: ^5.3.0
+    gtoken: ^6.1.0
+    jws: ^4.0.0
+    lru-cache: ^6.0.0
+  checksum: 8e0bc5f1e91804523786413bf4358e4c5ad94b1e873c725ddd03d0f1c242e2b38e26352c0f375334fbc1d94110f761b304aa0429de49b4a27ebc3875a5b56644
+  languageName: node
+  linkType: hard
+
+"google-gax@npm:^3.5.8":
+  version: 3.6.1
+  resolution: "google-gax@npm:3.6.1"
+  dependencies:
+    "@grpc/grpc-js": ~1.8.0
+    "@grpc/proto-loader": ^0.7.0
+    "@types/long": ^4.0.0
+    "@types/rimraf": ^3.0.2
+    abort-controller: ^3.0.0
+    duplexify: ^4.0.0
+    fast-text-encoding: ^1.0.3
+    google-auth-library: ^8.0.2
+    is-stream-ended: ^0.1.4
+    node-fetch: ^2.6.1
+    object-hash: ^3.0.0
+    proto3-json-serializer: ^1.0.0
+    protobufjs: 7.2.4
+    protobufjs-cli: 1.1.1
+    retry-request: ^5.0.0
+  bin:
+    compileProtos: build/tools/compileProtos.js
+    minifyProtoJson: build/tools/minify.js
+  checksum: 16e5fb211d75c6a4cb4d2e62adba7bbf41d160feba74fe39435a70fc31ef8ebc740af4527a2897abab39a1806d131792b2a761da432ae1b916198c9c43aab36e
+  languageName: node
+  linkType: hard
+
+"google-p12-pem@npm:^4.0.0":
+  version: 4.0.1
+  resolution: "google-p12-pem@npm:4.0.1"
+  dependencies:
+    node-forge: ^1.3.1
+  bin:
+    gp12-pem: build/src/bin/gp12-pem.js
+  checksum: 59a5026331ea67455672e83770da29f09d979f02e06cb2227ea5916f8cca437887c2d3869f2602a686dc84437886ae9d2ac010780803cbe8e5f161c2d02d8efd
+  languageName: node
+  linkType: hard
+
 "gopd@npm:^1.0.1":
   version: 1.0.1
   resolution: "gopd@npm:1.0.1"
@@ -7300,6 +7573,17 @@ __metadata:
   version: 1.10.5
   resolution: "growl@npm:1.10.5"
   checksum: 4b86685de6831cebcbb19f93870bea624afee61124b0a20c49017013987cd129e73a8c4baeca295728f41d21265e1f859d25ef36731b142ca59c655fea94bb1a
+  languageName: node
+  linkType: hard
+
+"gtoken@npm:^6.1.0":
+  version: 6.1.2
+  resolution: "gtoken@npm:6.1.2"
+  dependencies:
+    gaxios: ^5.0.1
+    google-p12-pem: ^4.0.0
+    jws: ^4.0.0
+  checksum: cf3210afe2ccee8feaa06f0c7eb942e217244a8563a1d0a71aa3095eea545015896741c1d48654d8de35b7b07579f93e25e5dfe817f06b7e753646b67f7a4ecf
   languageName: node
   linkType: hard
 
@@ -7327,6 +7611,8 @@ __metadata:
     "@types/deep-equal": ^1.0.1
     "@types/express": ^4.17.13
     "@types/fs-extra": ^9.0.12
+    "@types/gulp": ^4
+    "@types/gulp-rename": ^2
     "@types/jszip": ^3.4.1
     "@types/node": ^18.16.0
     ajv: ^8.10.0
@@ -7341,6 +7627,11 @@ __metadata:
     dotenv: ^16.0.0
     express: ^4.17.1
     fs-extra: ^10.0.0
+    gulp: ^4.0.2
+    gulp-copy: ^4.0.1
+    gulp-rename: ^2.0.0
+    gulp-sourcemaps: ^3.0.0
+    gulp-typescript: ^6.0.0-alpha.1
     imurmurhash: ^0.1.4
     jszip: ^3.7.1
     lodash.get: ^4.4.2
@@ -7394,6 +7685,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"gulp-copy@npm:^4.0.1":
+  version: 4.0.1
+  resolution: "gulp-copy@npm:4.0.1"
+  dependencies:
+    gulp: ^4.0.0
+    plugin-error: ^0.1.2
+    through2: ^2.0.3
+  checksum: d5f4363df81ea7ba2e1ae97adf8710a0ca678f021fa7bd395879f5fd5a8a9e6f54e5d600158af998ed1a3023b298e4647393a1a4a2a260c591c506fbc0201c84
+  languageName: node
+  linkType: hard
+
+"gulp-rename@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "gulp-rename@npm:2.0.0"
+  checksum: b9add0d130487dee6067206eebfc3867e4e254117edef154e8c270e3111b112335439ac1cac1519d6a32541343e04bd299484253a333b4e34c7d430039953e99
+  languageName: node
+  linkType: hard
+
 "gulp-sourcemaps@npm:^3.0.0":
   version: 3.0.0
   resolution: "gulp-sourcemaps@npm:3.0.0"
@@ -7429,7 +7738,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"gulp@npm:^4.0.2":
+"gulp@npm:^4.0.0, gulp@npm:^4.0.2":
   version: 4.0.2
   resolution: "gulp@npm:4.0.2"
   dependencies:
@@ -8719,6 +9028,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"is-stream-ended@npm:^0.1.4":
+  version: 0.1.4
+  resolution: "is-stream-ended@npm:0.1.4"
+  checksum: 56cbc9cfa0a77877777a3df9e186abb5b0ca73dcbcaf0fd87ed573fb8f8e61283abec0fc072c9e3412336edc04449439b8a128d2bcc6c2797158de5465cfaf85
+  languageName: node
+  linkType: hard
+
 "is-stream@npm:^2.0.0":
   version: 2.0.1
   resolution: "is-stream@npm:2.0.1"
@@ -9197,6 +9513,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"json-bigint@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "json-bigint@npm:1.0.0"
+  dependencies:
+    bignumber.js: ^9.0.0
+  checksum: c67bb93ccb3c291e60eb4b62931403e378906aab113ec1c2a8dd0f9a7f065ad6fd9713d627b732abefae2e244ac9ce1721c7a3142b2979532f12b258634ce6f6
+  languageName: node
+  linkType: hard
+
 "json-parse-even-better-errors@npm:^2.3.0":
   version: 2.3.1
   resolution: "json-parse-even-better-errors@npm:2.3.1"
@@ -9430,6 +9755,13 @@ __metadata:
     jwa: ^2.0.0
     safe-buffer: ^5.0.1
   checksum: d68d07aa6d1b8cb35c363a9bd2b48f15064d342a5d9dc18a250dbbce8dc06bd7e4792516c50baa16b8d14f61167c19e851fd7f66b59ecc68b7f6a013759765f7
+  languageName: node
+  linkType: hard
+
+"kind-of@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "kind-of@npm:1.1.0"
+  checksum: 29a95ed9d72d2bc8e3cc86dc461b5a61bde9e931f39158c183d76c5c9b83a0659766520f202473f45b06bce517eece7af061e04ba5fcdfbffe7eb80aedf4743a
   languageName: node
   linkType: hard
 
@@ -9811,12 +10143,19 @@ __metadata:
     "@nestjs/core": ^9.4.1
     "@nestjs/microservices": ^9.4.1
     "@types/fs-extra": ^9.0.12
+    "@types/gulp": ^4
+    "@types/gulp-rename": ^2
     "@types/node": ^18.16.0
     "@web-std/fetch": 3.0.0
     chai: 4.3.6
     cors: ^2.8.5
     dotenv: ^16.0.0
     fs-extra: ^10.0.0
+    gulp: ^4.0.2
+    gulp-copy: ^4.0.1
+    gulp-rename: ^2.0.0
+    gulp-sourcemaps: ^3.0.0
+    gulp-typescript: ^6.0.0-alpha.1
     mocha: ^9.2.0
     mocha-junit-reporter: ^2.0.2
     module-alias: ^2.2.2
@@ -10598,8 +10937,15 @@ __metadata:
     "@transmute/security-context": 0.7.0-unstable.80
     "@transmute/vc.js": 0.7.0-unstable.80
     "@types/express": ^4.17.13
+    "@types/gulp": ^4
+    "@types/gulp-rename": ^2
     axios: ^1.3.6
     express: ^4.17.3
+    gulp: ^4.0.2
+    gulp-copy: ^4.0.1
+    gulp-rename: ^2.0.0
+    gulp-sourcemaps: ^3.0.0
+    gulp-typescript: ^6.0.0-alpha.1
     jose: 4.14.1
     nodemon: ^2.0.12
     prom-client: ^14.1.1
@@ -10701,6 +11047,13 @@ __metadata:
   version: 0.0.8
   resolution: "mute-stream@npm:0.0.8"
   checksum: ff48d251fc3f827e5b1206cda0ffdaec885e56057ee86a3155e1951bc940fd5f33531774b1cc8414d7668c10a8907f863f6561875ee6e8768931a62121a531a1
+  languageName: node
+  linkType: hard
+
+"nacl@npm:^0.1.3":
+  version: 0.1.3
+  resolution: "nacl@npm:0.1.3"
+  checksum: f1fbc577d4efef7d8fcf6f35554dbce12326fff49d51b9a2ae0915e38f660fc1cd145de27bd9d15d72492c274fd96af214cf7286074ae63c0d563e745c21c85b
   languageName: node
   linkType: hard
 
@@ -10924,7 +11277,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-fetch@npm:^2.6.1, node-fetch@npm:^2.6.7, node-fetch@npm:^2.6.8":
+"node-fetch@npm:^2.6.1, node-fetch@npm:^2.6.7, node-fetch@npm:^2.6.8, node-fetch@npm:^2.6.9":
   version: 2.6.12
   resolution: "node-fetch@npm:2.6.12"
   dependencies:
@@ -10945,7 +11298,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-forge@npm:^1.2.1":
+"node-forge@npm:^1.2.1, node-forge@npm:^1.3.1":
   version: 1.3.1
   resolution: "node-forge@npm:1.3.1"
   checksum: 08fb072d3d670599c89a1704b3e9c649ff1b998256737f0e06fbd1a5bf41cae4457ccaee32d95052d80bbafd9ffe01284e078c8071f0267dc9744e51c5ed42a9
@@ -11134,12 +11487,19 @@ __metadata:
     "@nestjs/core": ^9.4.1
     "@nestjs/microservices": ^9.4.1
     "@types/fs-extra": ^9.0.12
+    "@types/gulp": ^4
+    "@types/gulp-rename": ^2
     "@types/node": ^18.16.0
     "@web-std/fetch": 3.0.0
     chai: 4.3.6
     cors: ^2.8.5
     dotenv: ^16.0.0
     fs-extra: ^10.0.0
+    gulp: ^4.0.2
+    gulp-copy: ^4.0.1
+    gulp-rename: ^2.0.0
+    gulp-sourcemaps: ^3.0.0
+    gulp-typescript: ^6.0.0-alpha.1
     mocha: ^9.2.0
     mocha-junit-reporter: ^2.0.2
     module-alias: ^2.2.2
@@ -11251,6 +11611,13 @@ __metadata:
     define-property: ^0.2.5
     kind-of: ^3.0.3
   checksum: a9e35f07e3a2c882a7e979090360d1a20ab51d1fa19dfdac3aa8873b328a7c4c7683946ee97c824ae40079d848d6740a3788fa14f2185155dab7ed970a72c783
+  languageName: node
+  linkType: hard
+
+"object-hash@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "object-hash@npm:3.0.0"
+  checksum: 80b4904bb3857c52cc1bfd0b52c0352532ca12ed3b8a6ff06a90cd209dfda1b95cee059a7625eb9da29537027f68ac4619363491eedb2f5d3dddbba97494fd6c
   languageName: node
   linkType: hard
 
@@ -11544,6 +11911,13 @@ __metadata:
   version: 2.2.0
   resolution: "p-try@npm:2.2.0"
   checksum: f8a8e9a7693659383f06aec604ad5ead237c7a261c18048a6e1b5b85a5f8a067e469aa24f5bc009b991ea3b058a87f5065ef4176793a200d4917349881216cae
+  languageName: node
+  linkType: hard
+
+"pako@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "pako@npm:2.1.0"
+  checksum: 71666548644c9a4d056bcaba849ca6fd7242c6cf1af0646d3346f3079a1c7f4a66ffec6f7369ee0dc88f61926c10d6ab05da3e1fca44b83551839e89edd75a3e
   languageName: node
   linkType: hard
 
@@ -11842,6 +12216,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"plugin-error@npm:^0.1.2":
+  version: 0.1.2
+  resolution: "plugin-error@npm:0.1.2"
+  dependencies:
+    ansi-cyan: ^0.1.1
+    ansi-red: ^0.1.1
+    arr-diff: ^1.0.1
+    arr-union: ^2.0.1
+    extend-shallow: ^1.1.2
+  checksum: e363d3b644753ef468fc069fd8a76a67a077ece85320e434386e0889e10bbbc507d9733f8f6d6ef1cfda272a6c7f0d03cd70340a0a1f8014fe41a4d0d1ce59d0
+  languageName: node
+  linkType: hard
+
 "plugin-error@npm:^1.0.1":
   version: 1.0.1
   resolution: "plugin-error@npm:1.0.1"
@@ -11878,6 +12265,8 @@ __metadata:
     "@types/deep-equal": ^1.0.1
     "@types/express": ^4.17.13
     "@types/fs-extra": ^9.0.12
+    "@types/gulp": ^4
+    "@types/gulp-rename": ^2
     "@types/jszip": ^3.4.1
     "@types/node": ^18.16.0
     ajv: ^8.10.0
@@ -11893,6 +12282,11 @@ __metadata:
     express: ^4.17.1
     fast-xml-parser: ^4.2.6
     fs-extra: ^10.0.0
+    gulp: ^4.0.2
+    gulp-copy: ^4.0.1
+    gulp-rename: ^2.0.0
+    gulp-sourcemaps: ^3.0.0
+    gulp-typescript: ^6.0.0-alpha.1
     imurmurhash: ^0.1.4
     jszip: ^3.7.1
     lodash.get: ^4.4.2
@@ -12014,7 +12408,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"protobufjs-cli@npm:^1.0.2":
+"proto3-json-serializer@npm:^1.0.0":
+  version: 1.1.1
+  resolution: "proto3-json-serializer@npm:1.1.1"
+  dependencies:
+    protobufjs: ^7.0.0
+  checksum: 0cd94cb635a9b9b3a2d047700175be4a6c7b7a43e2698826edad17604793764bcdfc270585ea58cb94aa690211b6cdaae5bf7a22522bea68ca67a2844773b4b7
+  languageName: node
+  linkType: hard
+
+"protobufjs-cli@npm:1.1.1, protobufjs-cli@npm:^1.0.2":
   version: 1.1.1
   resolution: "protobufjs-cli@npm:1.1.1"
   dependencies:
@@ -12034,6 +12437,26 @@ __metadata:
     pbjs: bin/pbjs
     pbts: bin/pbts
   checksum: 124a2cb10d6fccdd6e8f2984b0f7d9a351d9c1efd17f237acd4a9e7c4b82d63265364b1c86bfa5c6a6fa17d7119182c4c323a8972c0078e1ac5c5f653d096f9b
+  languageName: node
+  linkType: hard
+
+"protobufjs@npm:7.2.4, protobufjs@npm:^7.0.0, protobufjs@npm:^7.1.2, protobufjs@npm:^7.2.4":
+  version: 7.2.4
+  resolution: "protobufjs@npm:7.2.4"
+  dependencies:
+    "@protobufjs/aspromise": ^1.1.2
+    "@protobufjs/base64": ^1.1.2
+    "@protobufjs/codegen": ^2.0.4
+    "@protobufjs/eventemitter": ^1.1.0
+    "@protobufjs/fetch": ^1.1.0
+    "@protobufjs/float": ^1.0.2
+    "@protobufjs/inquire": ^1.1.0
+    "@protobufjs/path": ^1.1.2
+    "@protobufjs/pool": ^1.1.0
+    "@protobufjs/utf8": ^1.1.0
+    "@types/node": ">=13.7.0"
+    long: ^5.0.0
+  checksum: a952cdf2a5e5250c16ae651b570849b6f5b20a5475c3eef63ffb290ad239aa2916adfc1cc676f7fc93c69f48113df268761c0c246f7f023118c85bdd1a170044
   languageName: node
   linkType: hard
 
@@ -12058,26 +12481,6 @@ __metadata:
     pbjs: bin/pbjs
     pbts: bin/pbts
   checksum: 4a6ce1964167e4c45c53fd8a312d7646415c777dd31b4ba346719947b88e61654912326101f927da387d6b6473ab52a7ea4f54d6f15d63b31130ce28e2e15070
-  languageName: node
-  linkType: hard
-
-"protobufjs@npm:^7.1.2, protobufjs@npm:^7.2.4":
-  version: 7.2.4
-  resolution: "protobufjs@npm:7.2.4"
-  dependencies:
-    "@protobufjs/aspromise": ^1.1.2
-    "@protobufjs/base64": ^1.1.2
-    "@protobufjs/codegen": ^2.0.4
-    "@protobufjs/eventemitter": ^1.1.0
-    "@protobufjs/fetch": ^1.1.0
-    "@protobufjs/float": ^1.0.2
-    "@protobufjs/inquire": ^1.1.0
-    "@protobufjs/path": ^1.1.2
-    "@protobufjs/pool": ^1.1.0
-    "@protobufjs/utf8": ^1.1.0
-    "@types/node": ">=13.7.0"
-    long: ^5.0.0
-  checksum: a952cdf2a5e5250c16ae651b570849b6f5b20a5475c3eef63ffb290ad239aa2916adfc1cc676f7fc93c69f48113df268761c0c246f7f023118c85bdd1a170044
   languageName: node
   linkType: hard
 
@@ -12176,6 +12579,13 @@ __metadata:
   version: 6.5.3
   resolution: "qs@npm:6.5.3"
   checksum: 6f20bf08cabd90c458e50855559539a28d00b2f2e7dddcb66082b16a43188418cb3cb77cbd09268bcef6022935650f0534357b8af9eeb29bf0f27ccb17655692
+  languageName: node
+  linkType: hard
+
+"querystring@npm:^0.2.1":
+  version: 0.2.1
+  resolution: "querystring@npm:0.2.1"
+  checksum: 7b83b45d641e75fd39cd6625ddfd44e7618e741c61e95281b57bbae8fde0afcc12cf851924559e5cc1ef9baa3b1e06e22b164ea1397d65dd94b801f678d9c8ce
   languageName: node
   linkType: hard
 
@@ -12353,7 +12763,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"readable-stream@npm:2 || 3, readable-stream@npm:^3.4.0, readable-stream@npm:^3.6.0":
+"readable-stream@npm:2 || 3, readable-stream@npm:^3.1.1, readable-stream@npm:^3.4.0, readable-stream@npm:^3.6.0":
   version: 3.6.2
   resolution: "readable-stream@npm:3.6.2"
   dependencies:
@@ -12752,6 +13162,16 @@ __metadata:
   version: 2.0.0
   resolution: "retimer@npm:2.0.0"
   checksum: a59c837e1b364c4ef85c19250a94c09a49c55076ec3c5c51fafa335ee89d2ac2b91b7623548c8edb1345d7515b054986e904f8429e6caefa0595c2c70be8923d
+  languageName: node
+  linkType: hard
+
+"retry-request@npm:^5.0.0":
+  version: 5.0.2
+  resolution: "retry-request@npm:5.0.2"
+  dependencies:
+    debug: ^4.1.1
+    extend: ^3.0.2
+  checksum: d6c95d27f4468aa5557605d811cfaa5862be0eaff9fc5f18a338a7c17a7972fbec5b6142abb6b1e494b4c02df875fec2f1c3a281bf79900d33607d8536277ffe
   languageName: node
   linkType: hard
 
@@ -14011,7 +14431,14 @@ __metadata:
   resolution: "topic-viewer@workspace:topic-viewer"
   dependencies:
     "@types/express": ^4.17.13
+    "@types/gulp": ^4
+    "@types/gulp-rename": ^2
     express: ^4.17.3
+    gulp: ^4.0.2
+    gulp-copy: ^4.0.1
+    gulp-rename: ^2.0.0
+    gulp-sourcemaps: ^3.0.0
+    gulp-typescript: ^6.0.0-alpha.1
     nodemon: ^2.0.12
     prom-client: ^14.1.1
     prometheus-api-metrics: 3.2.2
@@ -14087,7 +14514,14 @@ __metadata:
   resolution: "tree-viewer@workspace:tree-viewer"
   dependencies:
     "@types/express": ^4.17.13
+    "@types/gulp": ^4
+    "@types/gulp-rename": ^2
     express: ^4.17.3
+    gulp: ^4.0.2
+    gulp-copy: ^4.0.1
+    gulp-rename: ^2.0.0
+    gulp-sourcemaps: ^3.0.0
+    gulp-typescript: ^6.0.0-alpha.1
     nodemon: ^2.0.12
     typescript: ^4.6.3
   languageName: unknown
@@ -15057,12 +15491,19 @@ __metadata:
     "@transmute/jsonld-schema": 0.7.0-unstable.80
     "@transmute/security-context": 0.7.0-unstable.80
     "@transmute/vc.js": 0.7.0-unstable.80
+    "@types/gulp": ^4
+    "@types/gulp-rename": ^2
     "@types/node": ^18.16.0
     axios: ^1.3.6
     axios-retry: ^3.2.4
     chai: 4.3.4
     cross-blob: ^2.0.1
     dotenv: ^16.0.0
+    gulp: ^4.0.2
+    gulp-copy: ^4.0.1
+    gulp-rename: ^2.0.0
+    gulp-sourcemaps: ^3.0.0
+    gulp-typescript: ^6.0.0-alpha.1
     ipfs-client: 0.5.0
     jsonwebtoken: ^8.5.1
     mocha: ^9.2.0
