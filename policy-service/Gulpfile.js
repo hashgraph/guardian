@@ -13,7 +13,7 @@ gulp.task('configure:demo', () => {
         .pipe(gulp.dest('src'));
 })
 
-gulp.task('configure:prod', () => {
+gulp.task('configure:production', () => {
     return gulp
         .src('environments/environment.prod.ts')
         .pipe(rename('environment.ts'))
