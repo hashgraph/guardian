@@ -6,6 +6,7 @@ import { TokenModel } from '../models/token.model';
 import { FileModel } from '../models/file.model';
 import { IWeightBlock, IWeightItem } from '../interfaces/weight-tree';
 import { CompareUtils } from '../utils/utils';
+import { PolicyComparator } from './policy-comparator';
 
 enum WeightIndex {
     //type + full prop + index + children
@@ -30,65 +31,6 @@ export class HashComparator {
         idLvl: 0,
         propLvl: 2
     };
-
-    public static async createModel(policyId: string): Promise<PolicyModel> {
-        try {
-            //Policy
-            const policy = await DatabaseServer.getPolicyById(policyId);
-
-            if (!policy) {
-                throw new Error('Unknown policy');
-            }
-
-            const policyModel = (new PolicyModel(policy, HashComparator.options));
-
-            //Schemas
-            const schemas = await DatabaseServer.getSchemas({ topicId: policy.topicId });
-
-            const schemaModels: SchemaModel[] = [];
-            for (const schema of schemas) {
-                const m = new SchemaModel(schema, HashComparator.options);
-                m.setPolicy(policy);
-                m.update(HashComparator.options);
-                schemaModels.push(m);
-            }
-            policyModel.setSchemas(schemaModels);
-
-            //Tokens
-            const tokensIds = policyModel.getAllProp<string>(PropertyType.Token)
-                .filter(t => t.value)
-                .map(t => t.value);
-
-            const tokens = await DatabaseServer.getTokens({ where: { tokenId: { $in: tokensIds } } });
-
-            const tokenModels: TokenModel[] = [];
-            for (const token of tokens) {
-                const t = new TokenModel(token, HashComparator.options);
-                t.update(HashComparator.options);
-                tokenModels.push(t);
-            }
-            policyModel.setTokens(tokenModels);
-
-            //Artifacts
-            const files = await DatabaseServer.getArtifacts({ policyId: policyId });
-            const artifactsModels: FileModel[] = [];
-            for (const file of files) {
-                const data = await DatabaseServer.getArtifactFileByUUID(file.uuid);
-                const f = new FileModel(file, data, HashComparator.options);
-                f.update(HashComparator.options);
-                artifactsModels.push(f);
-            }
-            policyModel.setArtifacts(artifactsModels);
-
-            //Compare
-            policyModel.update();
-
-            return policyModel;
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE, HASH']);
-            return null;
-        }
-    }
 
     public static async createModelByFile(file: any): Promise<PolicyModel> {
         try {
@@ -196,7 +138,7 @@ export class HashComparator {
 
     public static async saveHashMap(policy: Policy): Promise<Policy> {
         try {
-            const compareModel = await HashComparator.createModel(policy.id.toString());
+            const compareModel = await PolicyComparator.createModel(policy.id.toString(), HashComparator.options);
             const tree = HashComparator.createTree(compareModel);
             const hash = CompareUtils.sha256(JSON.stringify(tree));
             policy.hash = hash;
@@ -437,42 +379,5 @@ export class HashComparator {
             const rate2 = Math.floor((k * tree2.length + 0.5) / (tree2.length + 1) * 100);
             return Math.min(rate1, rate2);
         }
-    }
-
-    public static async search(policy: Policy, threshold: number = 0): Promise<any[]> {
-        const result = [];
-        if (!policy || !policy.hashMap) {
-            return result;
-        }
-        const policies = await DatabaseServer.getPolicies({
-            $or: [{
-                owner: policy.owner,
-                hash: { $exists: true, $ne: null }
-            }, {
-                status: 'PUBLISH',
-                hash: { $exists: true, $ne: null },
-                owner: { $ne: policy.owner }
-            }]
-        });
-        for (const item of policies) {
-            if (policy.id !== item.id) {
-                const rate = HashComparator.compare(policy, item);
-                if (rate >= threshold) {
-                    result.push({
-                        id: item.id,
-                        uuid: item.uuid,
-                        name: item.name,
-                        description: item.description,
-                        version: item.version,
-                        status: item.status,
-                        topicId: item.topicId,
-                        messageId: item.messageId,
-                        owner: item.owner,
-                        rate
-                    })
-                }
-            }
-        }
-        return result;
     }
 }

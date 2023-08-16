@@ -36,6 +36,7 @@ export class AnalyticsApi {
         const guardians = new Guardians();
         const policyId1 = body ? body.policyId1 : null;
         const policyId2 = body ? body.policyId2 : null;
+        const policyIds = body ? body.policyIds : null;
         const eventsLvl = body ? body.eventsLvl : null;
         const propLvl = body ? body.propLvl : null;
         const childrenLvl = body ? body.childrenLvl : null;
@@ -44,15 +45,22 @@ export class AnalyticsApi {
         if (!user) {
             throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
         }
-        if (!policyId1 || !policyId2) {
+
+        let ids: string[];
+        if (policyId1 && policyId2) {
+            ids = [policyId1, policyId2];
+        } else if (Array.isArray(policyIds) && policyIds.length > 1) {
+            ids = policyIds;
+        }
+
+        if (!ids) {
             throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
         }
         try {
             const result = await guardians.comparePolicies(
                 user,
                 null,
-                policyId1,
-                policyId2,
+                ids,
                 eventsLvl,
                 propLvl,
                 childrenLvl,
@@ -137,6 +145,7 @@ export class AnalyticsApi {
         const type = req.query ? req.query.type : null;
         const policyId1 = body ? body.policyId1 : null;
         const policyId2 = body ? body.policyId2 : null;
+        const policyIds = body ? body.policyIds : null;
         const eventsLvl = body ? body.eventsLvl : null;
         const propLvl = body ? body.propLvl : null;
         const childrenLvl = body ? body.childrenLvl : null;
@@ -145,15 +154,20 @@ export class AnalyticsApi {
         if (!user) {
             throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
         }
-        if (!policyId1 || !policyId2) {
+        let ids: string[];
+        if (policyId1 && policyId2) {
+            ids = [policyId1, policyId2];
+        } else if (Array.isArray(policyIds) && policyIds.length > 1) {
+            ids = policyIds;
+        }
+        if (!ids) {
             throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
         }
         try {
             const result = await guardians.comparePolicies(
                 user,
                 type,
-                policyId1,
-                policyId2,
+                ids,
                 eventsLvl,
                 propLvl,
                 childrenLvl,

@@ -13,8 +13,13 @@
                     </mat-panel-title>
                 </mat-expansion-panel-header>
                 <div class="info-container">
-                    <ng-container *ngTemplateOutlet="policyInfo; context: {policy:policy1}"></ng-container>
-                    <ng-container *ngTemplateOutlet="policyInfo; context: {policy:policy2}"></ng-container>
+                    <div class="left-compare-result compare-result" [attr.open]="true">
+                        <ng-container *ngTemplateOutlet="policyInfo; context: {policy:policy1}"></ng-container>
+                    </div>
+                    <div class="middle-compare-result compare-result" [attr.open]="true"></div>
+                    <div class="right-compare-result compare-result" [attr.open]="true">
+                        <ng-container *ngTemplateOutlet="policyInfo; context: {policy:policy2}"></ng-container>
+                    </div>
                 </div>
             </mat-expansion-panel>
 

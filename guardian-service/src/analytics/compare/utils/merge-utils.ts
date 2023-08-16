@@ -1,10 +1,170 @@
 import { IWeightModel } from '../interfaces/weight-model.interface';
 import { IRateMap } from '../interfaces/rate-map.interface';
+import { IMultiRateMap } from "../interfaces/multi-rate-map.interface.ts";
 
 /**
  * Merge Utils
  */
 export class MergeUtils {
+    /**
+     * Get object's key
+     * @param left
+     * @param right
+     * @private
+     * @static
+     */
+    private static getMultiKey(items: IWeightModel[]): string {
+        for (const item of items) {
+            if (item && item.key) {
+                return item.key;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Merge multiple arrays
+     * @param items1
+     * @param items2
+     * @public
+     * @static
+     */
+    public static fullMultiMerge<T>(items: IWeightModel[][]): IMultiRateMap<T>[] {
+        const result: IMultiRateMap<IWeightModel>[] = [];
+        let max = 0;
+        for (const array of items) {
+            max = Math.max(max, array.length);
+        }
+        for (let i = 0; i < max; i++) {
+            const rowItems: IWeightModel[] = [];
+            for (const array of items) {
+                rowItems.push(array[i]);
+            }
+            result.push({
+                key: MergeUtils.getMultiKey(rowItems),
+                items: rowItems
+            });
+        }
+        return result as any;
+    }
+
+    /**
+     * Does not match arrays
+     * @param items1
+     * @param items2
+     * @public
+     * @static
+     */
+    public static notMultiMerge<T>(items: IWeightModel[][]): IMultiRateMap<T>[] {
+        const result: IMultiRateMap<IWeightModel>[] = [];
+        for (let i = 0; i < items.length; i++) {
+            const array = items[i];
+            for (const item of array) {
+                const rowItems = new Array(items.length);
+                rowItems.fill(null);
+                rowItems[i] = item;
+                result.push({
+                    key: MergeUtils.getKey(item),
+                    items: rowItems
+                });
+            }
+        }
+        return result as any;
+    }
+
+    /**
+     * Matches the left and right side using weights
+     * @param items1
+     * @param items2
+     * @param keepOrder - keep original order
+     * @public
+     * @static
+     */
+    public static partlyMultiMerge<T>(items: IWeightModel[][]): IMultiRateMap<T>[] {
+        const result: IMultiRateMap<IWeightModel>[] = [];
+
+        const left = items[0];
+
+        let maxWeightCount = 0;
+        for (const child of left) {
+            maxWeightCount = child.maxWeight();
+            const rowItems = new Array(items.length);
+            rowItems.fill(null);
+            rowItems[0] = child;
+            result.push({
+                key: MergeUtils.getKey(child),
+                items: rowItems
+            });
+        }
+        maxWeightCount++;
+
+        for (let index = 1; index < items.length; index++) {
+            const right = items[index];
+            if (!right) {
+                continue;
+            }
+
+            //Merge
+            const itemsMap = new Array(right.length);
+            for (let iteration = 0; iteration < maxWeightCount; iteration++) {
+                for (let i = 0; i < right.length; i++) {
+                    if (!itemsMap[i]) {
+                        itemsMap[i] = MergeUtils.multiMapping(result, index, right[i], iteration);
+                    }
+                }
+            }
+
+            //Not Merge
+            for (let i = 0; i < right.length; i++) {
+                if (!itemsMap[i]) {
+                    const child: IWeightModel = right[i];
+                    const rowItems = new Array(items.length);
+                    rowItems.fill(null);
+                    rowItems[index] = child;
+                    result.push({
+                        key: MergeUtils.getKey(child),
+                        items: rowItems
+                    });
+                }
+            }
+
+        }
+
+        return result as any;
+    }
+
+    /**
+     * Set item in map
+     * @param result
+     * @param arrayIndex
+     * @param child
+     * @param iteration - accuracy decreases as iteration increases
+     * @public
+     * @static
+     */
+    public static multiMapping(
+        result: IMultiRateMap<IWeightModel>[],
+        arrayIndex: number,
+        child: IWeightModel,
+        iteration: number
+    ) {
+        for (const row of result) {
+            const left = row.items[0];
+            if (left && !row.items[arrayIndex]) {
+                if (left.checkWeight(iteration)) {
+                    if (left.equal(child, iteration)) {
+                        row.items[arrayIndex] = child;
+                        return true;
+                    }
+                } else if (row.key && row.key === child.key) {
+                    row.items[arrayIndex] = child;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     /**
      * Get left or right object's key
      * @param left
@@ -66,11 +226,10 @@ export class MergeUtils {
      * Matches the left and right side using weights
      * @param items1
      * @param items2
-     * @param keepOrder - keep original order
      * @public
      * @static
      */
-    public static partlyMerge<T>(items1: IWeightModel[], items2: IWeightModel[], keepOrder: boolean): IRateMap<T>[] {
+    public static partlyMerge<T>(items1: IWeightModel[], items2: IWeightModel[]): IRateMap<T>[] {
         const result: IRateMap<IWeightModel>[] = [];
 
         let max = 0;
@@ -91,11 +250,7 @@ export class MergeUtils {
         for (let i = 0; i < items2.length; i++) {
             if (!m[i]) {
                 const child: IWeightModel = items2[i];
-                if (keepOrder) {
-                    result.splice(i, 0, { key: MergeUtils.getKey(child), left: null, right: child });
-                } else {
-                    result.push({ key: MergeUtils.getKey(child), left: null, right: child });
-                }
+                result.push({ key: MergeUtils.getKey(child), left: null, right: child });
             }
         }
         return result as any;

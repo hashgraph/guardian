@@ -277,11 +277,11 @@ export class PoliciesComponent implements OnInit {
         });
     }
 
-    deletePolicy(element: any) {
+    deletePolicy(policyId: any, previousVersion: any) {
         const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
             data: {
                 dialogTitle: 'Delete policy',
-                dialogText: !element.previousVersion
+                dialogText: !previousVersion
                     ? 'Are you sure to delete policy with related schemas?'
                     : 'Are you sure to delete policy?'
             },
@@ -294,7 +294,7 @@ export class PoliciesComponent implements OnInit {
             }
 
             this.loading = true;
-            this.policyEngineService.pushDelete(element.id).subscribe((result) => {
+            this.policyEngineService.pushDelete(policyId).subscribe((result) => {
                 const { taskId, expectation } = result;
                 this.router.navigate(['task', taskId]);
             }, (e) => {
@@ -303,8 +303,8 @@ export class PoliciesComponent implements OnInit {
         });
     }
 
-    exportPolicy(element: any) {
-        this.policyEngineService.exportInMessage(element.id)
+    exportPolicy(policyId: any) {
+        this.policyEngineService.exportInMessage(policyId)
             .subscribe(exportedPolicy => this.dialog.open(ExportPolicyDialog, {
                 width: '700px',
                 panelClass: 'g-dialog',
@@ -513,14 +513,15 @@ export class PoliciesComponent implements OnInit {
         });
     }
 
-    comparePolicy(element?: any) {
+    comparePolicy(policyId?: any) {
+        const item = this.policies?.find(e => e.id === policyId);
         const dialogRef = this.dialog.open(ComparePolicyDialog, {
             width: '650px',
             panelClass: 'g-dialog',
             disableClose: true,
             autoFocus: false,
             data: {
-                policy: element,
+                policy: item,
                 policies: this.policies
             }
         });
@@ -685,12 +686,9 @@ export class PoliciesComponent implements OnInit {
         return this.tagOptions.length > 0;
     }
 
-    public searchPolicy(element: any) {
-        const options = {
-            policyId: element.id,
-        }
+    public searchPolicy(policyId: any) {
         this.loading = true;
-        this.analyticsService.searchPolicies(options).subscribe((value) => {
+        this.analyticsService.searchPolicies({ policyId }).subscribe((value) => {
             let list = value || [];
             list = list.sort((a: any, b: any) => a.rate > b.rate ? -1 : 1);
             this.loading = false;
@@ -701,6 +699,7 @@ export class PoliciesComponent implements OnInit {
                 autoFocus: false,
                 data: {
                     header: 'Result',
+                    policyId,
                     list
                 }
             });

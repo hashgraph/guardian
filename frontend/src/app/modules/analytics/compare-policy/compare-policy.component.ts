@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
+import BlockIcons from '../../policy-engine/services/block-icons';
 
 @Component({
     selector: 'app-compare-policy',
@@ -31,47 +32,7 @@ export class ComparePolicyComponent implements OnInit {
     displayedColumns: string[] = [];
     columns: any[] = [];
 
-    icons: any = {
-        "interfaceContainerBlock": "tab",
-        "interfaceStepBlock": "vertical_split",
-        "policyRolesBlock": "manage_accounts",
-        "groupManagerBlock": "groups",
-        "informationBlock": "info",
-        "interfaceActionBlock": "flash_on",
-        "buttonBlock": "radio_button_checked",
-        "switchBlock": "rule",
-        "interfaceDocumentsSourceBlock": "table_view",
-        "requestVcDocumentBlock": "dynamic_form",
-        "multiSignBlock": "done_all",
-        "sendToGuardianBlock": "send",
-        "externalDataBlock": "cloud",
-        "aggregateDocumentBlock": "calendar_month",
-        "reassigningBlock": "content_copy",
-        "revokeBlock": "restart_alt",
-        "revocationBlock": "restart_alt",
-        "setRelationshipsBlock": "settings",
-        "splitBlock": "content_cut",
-        "filtersAddon": "filter_alt",
-        "documentsSourceAddon": "source",
-        "paginationAddon": "pages",
-        "timerBlock": "schedule",
-        "documentValidatorBlock": "task_alt",
-        "createTokenBlock": "token",
-        "mintDocumentBlock": "paid",
-        "retirementDocumentBlock": "delete",
-        "tokenActionBlock": "generating_tokens",
-        "tokenConfirmationBlock": "key",
-        "impactAddon": "receipt",
-        "calculateContainerBlock": "bar_chart",
-        "customLogicBlock": "bar_chart",
-        "calculateMathAddon": "calculate",
-        "calculateMathVariables": "123",
-        "reportBlock": "addchart",
-        "reportItemBlock": "list_alt",
-        "messagesReportBlock": "addchart",
-        "externalTopicBlock": "cloud",
-        "notificationBlock": "notifications",
-    }
+    icons: any = Object.assign({}, BlockIcons);
 
     type1 = true;
     type2 = true;
@@ -124,10 +85,10 @@ export class ComparePolicyComponent implements OnInit {
             item1._index = i;
             max = Math.max(max, item1.lvl);
         }
-        if(max > 10) {
+        if (max > 10) {
             this._pOffset = 20;
         }
-        if(max > 15) {
+        if (max > 15) {
             this._pOffset = 15;
         }
 
@@ -169,7 +130,7 @@ export class ComparePolicyComponent implements OnInit {
         }
     }
 
-    onScroll(event:any) {
+    onScroll(event: any) {
         document.querySelectorAll('.left-tree').forEach(el => {
             el.scrollLeft = event.target.scrollLeft;
         })
