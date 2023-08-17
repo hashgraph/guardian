@@ -216,7 +216,6 @@ export class PolicyComparator {
             topics: topicsTable,
             tokens: tokensTable
         };
-        (result as any)._old = results;
         return result;
     }
 
@@ -233,7 +232,6 @@ export class PolicyComparator {
             { name: 'left_index', label: 'Index', type: 'number' },
             { name: 'left_type', label: 'Type', type: 'string' },
             { name: 'left_tag', label: 'Tag', type: 'string' },
-
             { name: 'properties', label: '', type: 'object' },
             { name: 'events', label: '', type: 'object' },
             { name: 'permissions', label: '', type: 'object' },
@@ -289,72 +287,10 @@ export class PolicyComparator {
                 }
             }
 
-            row.properties = [];
-            row.events = [];
-            row.permissions = [];
-            row.artifacts = [];
-
-            const properties: any[] = [];
-            const events: any[] = [];
-            const permissions: any[] = [];
-            const artifacts: any[] = [];
-
-            for (const colData of cols) {
-                if (colData) {
-                    properties.push(colData.properties);
-                    events.push(colData.events);
-                    permissions.push(colData.permissions);
-                    artifacts.push(colData.artifacts);
-                } else {
-                    properties.push(null);
-                    events.push(null);
-                    permissions.push(null);
-                    artifacts.push(null);
-                }
-            }
-
-            const mergePropResults = MultiCompareUtils.mergeRates<any>(properties);
-            const mergeEventsResults = MultiCompareUtils.mergeRates<any>(events);
-            const mergePermissionsResults = MultiCompareUtils.mergeRates<any>(permissions);
-            const mergeArtifactsResults = MultiCompareUtils.mergeRates<any>(artifacts);
-
-            for (const mergePropResult of mergePropResults) {
-                const propRow: any[] = [];
-                for (const propData of mergePropResult.cols) {
-                    propRow.push(propData);
-                }
-                row.properties.push(propRow);
-            }
-
-            for (const mergeEventsResult of mergeEventsResults) {
-                const eventsRow: any[] = [];
-                for (const propData of mergeEventsResult.cols) {
-                    eventsRow.push(propData);
-                }
-                row.events.push(eventsRow);
-            }
-
-            for (const mergePermissionsResult of mergePermissionsResults) {
-                const permissionsRow: any[] = [];
-                for (const propData of mergePermissionsResult.cols) {
-                    permissionsRow.push(propData);
-                }
-                row.permissions.push(permissionsRow);
-            }
-
-            for (const mergeArtifactsResult of mergeArtifactsResults) {
-                const artifactsRow: any[] = [];
-                for (const propData of mergeArtifactsResult.cols) {
-                    artifactsRow.push(propData);
-                }
-                row.artifacts.push(artifactsRow);
-            }
-
-            if(row.right_tag_2 === "devices_source_from_filters") {
-                console.debug('---');
-                console.debug(properties);
-                console.debug(mergePropResults);
-            }
+            this.mergeRateTables(row, cols, 'properties');
+            this.mergeRateTables(row, cols, 'events');
+            this.mergeRateTables(row, cols, 'permissions');
+            this.mergeRateTables(row, cols, 'artifacts');
 
             table.push(row);
         }
@@ -373,8 +309,7 @@ export class PolicyComparator {
         const propColumns = [
             { name: 'left', label: '', type: 'object' },
             { name: 'left_name', label: 'Name', type: 'string' },
-
-            // { name: 'properties', label: '', type: 'object' }
+            { name: 'properties', label: '', type: 'object' }
         ];
         for (let index = 0; index < tables.length; index++) {
             propColumns.push({ name: `right_${index + 1}`, label: '', type: 'object' });
@@ -404,12 +339,38 @@ export class PolicyComparator {
                     }
                 }
             }
+
+            this.mergeRateTables(row, cols, 'properties');
+
             table.push(row);
         }
         return {
             columns: propColumns,
             report: table,
         }
+    }
+
+    /**
+     * Merge Rates
+     * @param rates
+     * @private
+     */
+    private mergeRateTables(row: any, cols: any[], propName: string): any {
+        row[propName] = [];
+        const data: any[] = [];
+        for (const colData of cols) {
+            if (colData) {
+                data.push(colData[propName]);
+            } else {
+                data.push(null);
+            }
+        }
+        const mergeResults = MultiCompareUtils.mergeRates<any>(data);
+        for (const mergeResult of mergeResults) {
+            const propRow: any[] = mergeResult.cols.slice();
+            row[propName].push(propRow);
+        }
+        return row;
     }
 
     /**

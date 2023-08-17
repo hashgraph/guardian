@@ -26,7 +26,6 @@ export class CompareComponent implements OnInit {
     visibleType = 'tree';
 
     total: any;
-    minWidth: any;
 
     constructor(
         private route: ActivatedRoute,
@@ -53,7 +52,7 @@ export class CompareComponent implements OnInit {
         this.moduleId2 = this.route.snapshot.queryParams['moduleId2'] || '';
         this.policyIds = this.route.snapshot.queryParams['policyIds'] || [];
         this.result = null;
-        this.minWidth = 1600;
+
         if (this.type === 'policy') {
             this.loadPolicy();
         } else if (this.type === 'schema') {
@@ -78,7 +77,6 @@ export class CompareComponent implements OnInit {
         this.analyticsService.comparePolicy(options).subscribe((value) => {
             this.result = value;
             this.total = this.result?.total;
-            this.minWidth = 740 * this.result?.size;
             setTimeout(() => {
                 this.loading = false;
             }, 1500);

@@ -1,4 +1,4 @@
-<div class="content">
+<div class="content" [style.min-width.px]="minWidth">
     <div *ngIf="policies && policies.length>2" class="list">
 
         <!-- <div class="total-info" [attr.total]="total">
@@ -13,6 +13,7 @@
                     </mat-panel-title>
                 </mat-expansion-panel-header>
                 <div class="info-container" [style.grid-template-columns]="_gridStyle">
+                    
                     <ng-container *ngFor="let context of policies">
                         <div *ngIf="context.left" class="left-compare-result compare-result" [attr.open]="true">
                             <ng-container *ngTemplateOutlet="policyInfo; context: context"></ng-container>
@@ -29,6 +30,7 @@
                             <ng-container *ngTemplateOutlet="policyInfo; context: context"></ng-container>
                         </div>
                     </ng-container>
+
                 </div>
             </mat-expansion-panel>
 
@@ -44,20 +46,22 @@
                         [attr.rate]="item.total_rate"
                         [style.grid-template-columns]="_gridStyle">
 
-                        <ng-container *ngFor="let context of item._contexts">
-                            <div *ngIf="context.left" class="left-compare-result compare-result" [attr.open]="true">
+                        <ng-container *ngFor="let context of item.contexts">
+                            <div 
+                                [style.grid-column-start]="2 * context.index + 1"   
+                                [attr.open]="true"
+                                [ngClass]="{
+                                    'left-compare-result': context.left,
+                                    'right-compare-result': context.right,
+                                    'fantom-block': context.fantom,
+                                    'compare-result': true
+                                }">
                                 <ng-container *ngTemplateOutlet="propInfo; context: context"></ng-container>
                             </div>
                             <div class="middle-compare-result compare-result"
                                 *ngIf="context.right" 
                                 [style.grid-column-start]="2 * context.index" 
                                 [attr.open]="true">
-                            </div>
-                            <div class="right-compare-result compare-result"
-                                *ngIf="context.right"
-                                [style.grid-column-start]="2 * context.index + 1"   
-                                [attr.open]="true">
-                                <ng-container *ngTemplateOutlet="propInfo; context: context"></ng-container>
                             </div>
                         </ng-container>
 
@@ -77,20 +81,22 @@
                         [attr.rate]="item.total_rate"
                         [style.grid-template-columns]="_gridStyle">
 
-                        <ng-container *ngFor="let context of item._contexts">
-                            <div *ngIf="context.left" class="left-compare-result compare-result" [attr.open]="true">
+                        <ng-container *ngFor="let context of item.contexts">
+                            <div 
+                                [style.grid-column-start]="2 * context.index + 1"   
+                                [attr.open]="true"
+                                [ngClass]="{
+                                    'left-compare-result': context.left,
+                                    'right-compare-result': context.right,
+                                    'fantom-block': context.fantom,
+                                    'compare-result': true
+                                }">
                                 <ng-container *ngTemplateOutlet="propInfo; context: context"></ng-container>
                             </div>
                             <div class="middle-compare-result compare-result"
                                 *ngIf="context.right" 
                                 [style.grid-column-start]="2 * context.index" 
                                 [attr.open]="true">
-                            </div>
-                            <div class="right-compare-result compare-result"
-                                *ngIf="context.right"
-                                [style.grid-column-start]="2 * context.index + 1"   
-                                [attr.open]="true">
-                                <ng-container *ngTemplateOutlet="propInfo; context: context"></ng-container>
                             </div>
                         </ng-container>
 
@@ -110,20 +116,22 @@
                         [attr.rate]="item.total_rate"
                         [style.grid-template-columns]="_gridStyle">
 
-                        <ng-container *ngFor="let context of item._contexts">
-                            <div *ngIf="context.left" class="left-compare-result compare-result" [attr.open]="true">
+                        <ng-container *ngFor="let context of item.contexts">
+                            <div 
+                                [style.grid-column-start]="2 * context.index + 1"   
+                                [attr.open]="true"
+                                [ngClass]="{
+                                    'left-compare-result': context.left,
+                                    'right-compare-result': context.right,
+                                    'fantom-block': context.fantom,
+                                    'compare-result': true
+                                }">
                                 <ng-container *ngTemplateOutlet="propInfo; context: context"></ng-container>
                             </div>
                             <div class="middle-compare-result compare-result"
                                 *ngIf="context.right" 
                                 [style.grid-column-start]="2 * context.index" 
                                 [attr.open]="true">
-                            </div>
-                            <div class="right-compare-result compare-result"
-                                *ngIf="context.right"
-                                [style.grid-column-start]="2 * context.index + 1"   
-                                [attr.open]="true">
-                                <ng-container *ngTemplateOutlet="propInfo; context: context"></ng-container>
                             </div>
                         </ng-container>
 
@@ -143,7 +151,7 @@
                         [attr.rate]="item.total_rate"
                         [style.grid-template-columns]="_gridStyle">
 
-                        <ng-container *ngFor="let context of item._contexts">
+                        <ng-container *ngFor="let context of item.contexts">
                             <div *ngIf="context.left" class="left-compare-result compare-result" [attr.open]="true">
                                 <ng-container *ngTemplateOutlet="propInfo; context: context"></ng-container>
                             </div>
@@ -246,7 +254,7 @@
 
                             <ng-container *ngIf="row.open">
                                 <ng-container *ngFor="let context of row.info">
-                                    <div class="left-compare-result compare-result hidden-item" 
+                                    <div
                                         [attr.open]="row.open"
                                         [style.padding-left.px]="row.offset"
                                         [style.grid-column-start]="2 * context.index + 1"
@@ -272,12 +280,15 @@
                         <div class="merge-table-content">
                             <mat-table *ngIf="blocks" [dataSource]="blocks" class="table">
                                 <ng-container *ngFor="let column of columns" [cdkColumnDef]="column.name">
-                                    <mat-header-cell *cdkHeaderCellDef>{{ column.label }}</mat-header-cell>
-                                    <mat-cell *cdkCellDef="let row">{{ row[column.name] }}</mat-cell>
+                                    <mat-header-cell *cdkHeaderCellDef>
+                                        {{ column.label }}
+                                    </mat-header-cell>
+                                    <mat-cell *cdkCellDef="let row">
+                                        {{ row.data[column.name] }}
+                                    </mat-cell>
                                 </ng-container>
                                 <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-                                <mat-row *matRowDef="let row; columns: displayedColumns;" [attr.type]="row.type"
-                                    [attr.rate]="row.total_rate"></mat-row>
+                                <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
                             </mat-table>
                         </div>
                     </div>
@@ -537,23 +548,27 @@
     <div class="prop-delimiter"></div>
 </ng-template>
 
-<ng-template #propInfo let-props="props" let-index="index">
-
+<ng-template #propInfo let-data="data">
     <div class="prop-table">
         <div class="prop-table-body">
-            <div *ngFor="let prop of props.properties" class="prop-table-row" [attr.type]="prop.type"
-                [attr.offset]="prop.lvl" [attr.index]="index">
-                <div class="prop-table-name" [style.padding-left.px]="10*prop.lvl">{{prop.name}}:</div>
-                <div class="prop-table-value" [attr.prop-type]="prop.items[index]?.type">
+            <div *ngFor="let prop of data.properties" 
+                class="prop-table-row"
+                [attr.fantom]="prop.fantom"
+                [attr.type]="prop.type"
+                [attr.offset]="prop.lvl" 
+                [attr.index]="data.index">
+                <div class="prop-table-name" [style.padding-left.px]="prop.offset">
+                    {{prop.name}}:
+                </div>
+                <div class="prop-table-value" [attr.prop-type]="prop.propType">
                     <div class="compare-btn" (click)="compareSchema(prop)">
                         <mat-icon>search</mat-icon>
                     </div>
-                    <span *ngIf="prop.items[index]">
-                        {{prop.items[index].value}}
+                    <span *ngIf="prop.propType" [title]="prop.value">
+                        {{prop.value}}
                     </span>
                 </div>
             </div>
         </div>
     </div>
-
 </ng-template>

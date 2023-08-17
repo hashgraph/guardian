@@ -24,6 +24,7 @@ export class MultiComparePolicyComponent implements OnInit {
     public tokens!: any[];
     public groups!: any[];
     public roles!: any[];
+    public minWidth!: any;
 
     public displayedColumns: string[] = [];
     public columns: any[] = [];
@@ -44,7 +45,7 @@ export class MultiComparePolicyComponent implements OnInit {
     }
 
     ngOnInit() {
-
+        this.minWidth = 1600;
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -56,6 +57,7 @@ export class MultiComparePolicyComponent implements OnInit {
     onInit() {
         this.size = this.value.size;
         this.totals = this.value.totals;
+        this.minWidth = 770 * this.size;
 
         const blocks = this.value.blocks;
         const roles = this.value.roles;
@@ -139,14 +141,14 @@ export class MultiComparePolicyComponent implements OnInit {
                     index: i,
                     number: i + 1,
                     lvl: current.lvl,
-                    collapse:
-                        (current && next && next.lvl > current.lvl) ? 1 : 0,
+                    collapse: (current && next && next.lvl > current.lvl) ? 1 : 0,
                     type: null,
                     rate: null,
                     open: false,
                     offset: 0,
                     contexts,
-                    info
+                    info,
+                    data: current
                 }
                 results.push(item);
                 max = Math.max(max, current.lvl);
@@ -392,15 +394,47 @@ export class MultiComparePolicyComponent implements OnInit {
 
     private createContext(array?: any[]): any[] {
         if (Array.isArray(array)) {
-            for (let i = 0; i < array.length; i++) {
-                const item = array[i];
-                item._contexts = new Array(this.size);
+            for (const row of array) {
+                row.contexts = new Array(this.size);
                 for (let index = 0; index < this.size; index++) {
-                    item._contexts[index] = {
+                    const data: any = {
+                        properties: []
+                    };
+                    for (const properties of row.properties) {
+                        const prop = properties[index];
+                        const propContext = {
+                            fantom: true,
+                            type: index === 0 ? 'RIGHT' : 'LEFT',
+                            lvl: 0,
+                            offset: 0,
+                            name: '',
+                            propType: '',
+                            value: '',
+                        }
+                        if (prop && prop.item) {
+                            propContext.fantom = false;
+                            propContext.type = prop.type;
+                            propContext.lvl = prop.item.lvl;
+                            propContext.offset = 10 * prop.item.lvl;
+                            propContext.name = prop.item.name;
+                            propContext.propType = prop.item.type;
+                            propContext.value = prop.item.value;
+                        } else {
+                            const fantom = properties.find((p: any) => p && p.item);
+                            if (fantom) {
+                                propContext.lvl = fantom.item.lvl;
+                                propContext.offset = 10 * fantom.item.lvl;
+                                propContext.name = fantom.item.name;
+                                propContext.propType = fantom.item.type;
+                            }
+                        }
+                        data.properties.push(propContext);
+                    }
+                    row.contexts[index] = {
                         left: index === 0,
                         right: index !== 0,
-                        props: item,
-                        index
+                        index,
+                        data,
                     };
                 }
             }

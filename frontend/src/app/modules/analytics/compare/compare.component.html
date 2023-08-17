@@ -3,7 +3,7 @@
         <mat-spinner></mat-spinner>
     </div>
 
-    <div *ngIf="result" class="merge-options" [style.min-width.px]="minWidth">
+    <div *ngIf="result" class="merge-options">
         <div class="merge-back">
             <div *ngIf="type === 'schema' && policyId1 && policyId2" (click)="onBack()">
                 <mat-icon>chevron_left</mat-icon>
@@ -73,22 +73,22 @@
         </div>
     </div>
 
-    <div *ngIf="type === 'policy'" class="content-result" [style.min-width.px]="minWidth">
+    <div *ngIf="type === 'policy'" class="content-result">
         <app-compare-policy [type]="visibleType" [value]="result" [eventsLvl]="eventsLvl" [propLvl]="propLvl"
             [childrenLvl]="childrenLvl" [idLvl]="idLvl" (change)="onChange($event)"></app-compare-policy>
     </div>
 
-    <div *ngIf="type === 'schema'" class="content-result" [style.min-width.px]="minWidth">
+    <div *ngIf="type === 'schema'" class="content-result">
         <app-compare-schema [type]="visibleType" [value]="result" [idLvl]="idLvl"
             (change)="onChange($event)"></app-compare-schema>
     </div>
 
-    <div *ngIf="type === 'module'" class="content-result" [style.min-width.px]="minWidth">
+    <div *ngIf="type === 'module'" class="content-result">
         <app-compare-module [type]="visibleType" [value]="result" [eventsLvl]="eventsLvl" [propLvl]="propLvl"
             [childrenLvl]="childrenLvl" [idLvl]="idLvl" (change)="onChange($event)"></app-compare-module>
     </div>
 
-    <div *ngIf="type === 'multi-policy'" class="content-result" [style.min-width.px]="minWidth">
+    <div *ngIf="type === 'multi-policy'" class="content-result">
         <app-multi-compare-policy 
             [type]="visibleType" 
             [value]="result" 
