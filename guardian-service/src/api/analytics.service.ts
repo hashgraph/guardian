@@ -160,9 +160,8 @@ export async function analyticsAPI(): Promise<void> {
             const { policyId } = msg;
             const threshold = 0;
             const policy = await DatabaseServer.getPolicyById(policyId);
-            const result = [];
             if (!policy || !policy.hashMap) {
-                return new MessageResponse(result);
+                return new MessageResponse(null);
             }
             const policies = await DatabaseServer.getPolicies({
                 $or: [{
@@ -188,12 +187,17 @@ export async function analyticsAPI(): Promise<void> {
                     mapTags.set(tag.localTarget, new Set([tag.name]));
                 }
             }
+
+            const result: any = {
+                target: null,
+                result: []
+            };
             for (const item of policies) {
                 if (policy.id !== item.id) {
                     const rate = HashComparator.compare(policy, item);
                     if (rate >= threshold) {
                         const tags = mapTags.has(item.id) ? Array.from(mapTags.get(item.id)) : [];
-                        result.push({
+                        result.result.push({
                             id: item.id,
                             uuid: item.uuid,
                             name: item.name,
@@ -206,6 +210,19 @@ export async function analyticsAPI(): Promise<void> {
                             rate,
                             tags
                         })
+                    }
+                } else {
+                    result.target = {
+                        id: item.id,
+                        uuid: item.uuid,
+                        name: item.name,
+                        description: item.description,
+                        version: item.version,
+                        status: item.status,
+                        topicId: item.topicId,
+                        messageId: item.messageId,
+                        owner: item.owner,
+                        tags
                     }
                 }
             }

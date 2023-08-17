@@ -26,6 +26,9 @@ export class SearchPolicyDialog implements OnInit, AfterContentInit {
     list: any[];
     count: number = 0;
     _list: any[];
+    policy: any;
+    selectedAll: boolean;
+    size: number;
 
     constructor(
         public dialogRef: MatDialogRef<SearchPolicyDialog>,
@@ -33,9 +36,12 @@ export class SearchPolicyDialog implements OnInit, AfterContentInit {
         @Inject(MAT_DIALOG_DATA) public data: any
     ) {
         this.header = data.header;
+        this.policy = data.policy;
         this.policyId = data.policyId;
         this.list = data.list || [];
         this._list = this.list;
+        this.selectedAll = false;
+        this.size = this.list.length + 1;
     }
 
     ngOnInit() {
@@ -53,6 +59,7 @@ export class SearchPolicyDialog implements OnInit, AfterContentInit {
                 item._search = `${item.name} ${item._tags}`.toLowerCase();
             }
         }
+        this.selectedAll = this.count === this.size;
     }
 
     ngAfterContentInit() {
@@ -74,6 +81,7 @@ export class SearchPolicyDialog implements OnInit, AfterContentInit {
                 }
             }
         }
+        this.selectedAll = this.count === this.size;
     }
 
     public onCompare() {
@@ -117,5 +125,19 @@ export class SearchPolicyDialog implements OnInit, AfterContentInit {
         } else {
             this._list = this.list;
         }
+    }
+
+    public onSelectAll() {
+        this.selectedAll = !this.selectedAll;
+        if (this.list) {
+            for (const item of this.list) {
+                item._select = this.selectedAll;
+            }
+        }
+        this.onSelect();
+    }
+
+    public onNewPage() {
+        this.dialogRef.close();
     }
 }

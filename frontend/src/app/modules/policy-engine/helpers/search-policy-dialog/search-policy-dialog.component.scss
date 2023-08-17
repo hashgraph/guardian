@@ -39,7 +39,6 @@
 
 .search-header {
     display: grid;
-    grid-template-columns: 40px 220px 325px 105px 60px;
     height: 28px;
 }
 
@@ -51,7 +50,6 @@
 
 .search-result {
     display: grid;
-    grid-template-columns: 40px 220px 325px 105px 60px;
     height: 42px;
     cursor: pointer;
 
@@ -68,7 +66,15 @@
     text-overflow: ellipsis;
 }
 
+.disabled-result>div {
+    color: #999;
+}
+
 .search-result input {
+    cursor: pointer;
+}
+
+.search-header input {
     cursor: pointer;
 }
 
@@ -76,21 +82,18 @@
     color: #008d0c;
     font-weight: 500;
     text-align: end;
-    padding-right: 1px !important;
 }
 
 .item-color-yellow {
     color: #c79604;
     font-weight: 500;
     text-align: end;
-    padding-right: 1px !important;
 }
 
 .item-color-red {
     color: #e70000;
     font-weight: 500;
     text-align: end;
-    padding-right: 1px !important;
 }
 
 .compare-btn {
@@ -191,6 +194,50 @@
 
         .mat-select-arrow-wrapper {
             transform: unset;
+        }
+    }
+}
+
+.open-in-new {
+    mat-icon {
+        font-size: 26px;
+        top: 10px;
+        left: 10px;
+    }
+}
+
+.color-field {
+    padding-right: 8px;
+}
+
+.g-dialog-content {
+    width: 1000px;
+
+    .search-header, .search-result {
+        grid-template-columns: 40px 220px 360px 270px 60px;
+    }
+}
+
+@media screen and (max-width: 1500px) {
+    .g-dialog-content {
+        width: 800px;
+
+        .search-header, .search-result {
+            grid-template-columns: 40px 220px 325px 105px 60px;
+        }
+    }
+}
+
+@media screen and (max-width: 1000px) {
+    .g-dialog-content {
+        width: 580px;
+
+        .search-header, .search-result {
+            grid-template-columns: 40px 325px 105px 60px;
+        }
+
+        .policy-id-field {
+            display: none;
         }
     }
 }

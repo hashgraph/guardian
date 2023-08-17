@@ -698,17 +698,21 @@ export class PoliciesComponent implements OnInit {
 
     public searchPolicy(policyId: any) {
         this.loading = true;
-        this.analyticsService.searchPolicies({ policyId }).subscribe((value) => {
-            let list = value || [];
-            list = list.sort((a: any, b: any) => a.rate > b.rate ? -1 : 1);
+        this.analyticsService.searchPolicies({ policyId }).subscribe((data) => {
             this.loading = false;
+            if (!data || !data.result) {
+                return;
+            }
+            const { target, result } = data;
+            const list = result.sort((a: any, b: any) => a.rate > b.rate ? -1 : 1);
+            const policy = target;
             this.dialog.open(SearchPolicyDialog, {
-                width: '800px',
                 panelClass: 'g-dialog',
                 disableClose: true,
                 autoFocus: false,
                 data: {
                     header: 'Result',
+                    policy,
                     policyId,
                     list
                 }

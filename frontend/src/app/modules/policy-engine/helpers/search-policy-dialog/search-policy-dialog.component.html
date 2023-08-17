@@ -4,6 +4,9 @@
             {{header}}
         </div>
         <div mat-dialog-actions>
+            <div class="g-dialog-title-btn open-in-new" (click)="onNewPage()">
+                <mat-icon>open_in_new</mat-icon>
+            </div>
             <div class="g-dialog-title-btn" (click)="onOk()">
                 <mat-icon>close</mat-icon>
             </div>
@@ -24,17 +27,36 @@
             </div>
         </div>
         <div class="search-header">
-            <div></div>
-            <div>ID</div>
+            <div>
+                <input class="prop-input" type="checkbox" [checked]="selectedAll"  (change)="onSelectAll()">
+            </div>
+            <div class="policy-id-field">ID</div>
             <div>Name</div>
             <div>Tags</div>
             <div>Rate</div>
         </div>
-        <div *ngFor="let item of _list" class="search-result" (click)="select(item)">
+        <div *ngIf="policy" class="search-result disabled-result">
             <div>
-                <input class="prop-input" type="checkbox" [(ngModel)]="item._select" (change)="onSelect()">
+                <input class="prop-input" type="checkbox" checked="true" disabled="true">
+            </div>
+            <div class="policy-id-field">
+                {{policy.id}}
             </div>
             <div>
+                {{policy.name}}
+            </div>
+            <div>
+                
+            </div>
+            <div>
+                
+            </div>
+        </div>
+        <div *ngFor="let item of _list" class="search-result" (click)="select(item)">
+            <div>
+                <input class="prop-input" type="checkbox" [checked]="item._select" (change)="onSelect()">
+            </div>
+            <div class="policy-id-field">
                 {{item.id}}
             </div>
             <div>
@@ -43,7 +65,7 @@
             <div>
                 {{item._tags}}
             </div>
-            <div class="{{item._color}}">
+            <div class="{{item._color}} color-field">
                 {{item.rate}}%
             </div>
         </div>
