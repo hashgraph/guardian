@@ -526,14 +526,24 @@ export class PoliciesComponent implements OnInit {
             }
         });
         dialogRef.afterClosed().subscribe(async (result) => {
-            if (result) {
-                this.router.navigate(['/compare'], {
-                    queryParams: {
-                        type: 'policy',
-                        policyId1: result.policyId1,
-                        policyId2: result.policyId2
-                    }
-                });
+            if (result && result.policyIds) {
+                const policyIds: string[] = result.policyIds;
+                if (policyIds.length === 2) {
+                    this.router.navigate(['/compare'], {
+                        queryParams: {
+                            type: 'policy',
+                            policyId1: policyIds[0],
+                            policyId2: policyIds[1]
+                        }
+                    });
+                } else {
+                    this.router.navigate(['/compare'], {
+                        queryParams: {
+                            type: 'multi-policy',
+                            policyIds: policyIds,
+                        }
+                    });
+                }
             }
         });
     }
