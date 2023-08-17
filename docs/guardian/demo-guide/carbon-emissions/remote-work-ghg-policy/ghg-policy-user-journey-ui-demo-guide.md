@@ -69,13 +69,13 @@ Once you have clicked on **“Ok”** you can then preview the GHG policy and th
 
 Here we can see the policy being imported.
 
-<figure><img src="../../../../.gitbook/assets/image (6).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (6) (3).png" alt=""><figcaption></figcaption></figure>
 
 **Step 6**
 
 You will then see the GHG Policy with the Status of Draft.
 
-<figure><img src="../../../../.gitbook/assets/image (7) (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (7).png" alt=""><figcaption></figcaption></figure>
 
 We will just add this policy as the 1st version and then click on **“Publish”**.
 
@@ -161,7 +161,7 @@ You will want to set up your Employer role and select the standard registry from
 
 You will then want to go on to the **“Policies”** tab, where you will be able to see the GHG policy which was imported by the Standard Registry, where now you will want to click on the **“Go”** button on the GHG policy.
 
-<figure><img src="../../../../.gitbook/assets/image (113) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (113).png" alt=""><figcaption></figcaption></figure>
 
 **Step 4**
 

@@ -72,7 +72,9 @@ Guardian is supporting Azure Vault Secrets Manager to handle securely the secret
 1. **Create a Key Vault**: From the Azure Portal navigate to **Key Vaults**, choose a Resource Group has been created before from the list, insert a name for the Vault instance, select the region and carefully prepare other configurations and follow to the Next page.
 2. Choose **Vault Access Policy** as Permission model and **Azure Virtual Machines for deployment** as Resource Access. Under Access Policies, click on **Create** and in the prompt window choose all necessary permissions required to grant to a User. For Guardian at least **Get** and **Set** of **Secrets** are required. Next find the registered User to grant access. In the last step choose a registered application if has been created in Azure Active Directory before; otherwise select Next and finalize the process.
 3. Configure Networking, Add Tags and create the Vault.
-4. Now in the directory of auth-service, guardian-service, policy-service and worker-service set **AZURE\_VAULT\_NAME** environment variable by the name chosen as Vault previously.
+4. Now in the directory of auth-service, guardian-service, policy-service and worker-service set **AZURE\_VAULT\_NAME** environment variable by the name chosen as Vault previously.\
+   \
+
 
 ### **Google Cloud Platform (GCP) Secrets Manager**
 

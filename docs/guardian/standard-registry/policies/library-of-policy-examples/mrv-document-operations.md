@@ -12,7 +12,7 @@ There are two roles: ‘**User**_**’**_ and _**‘**_**Approver**_**’**_. _U
 
 (See [example 1](creating-and-using-roles.md) for the more detailed description of how to work with roles)
 
-![Creating 2 roles](<../../../../.gitbook/assets/0 (4).png>)
+![Creating 2 roles](<../../../../.gitbook/assets/0 (4) (1).png>)
 
 2. Create all needed document schemas:
 
@@ -34,11 +34,11 @@ In order to mint tokens into another account (not into the account of the mintin
 
 **Note:** it is important that DID of the user is used for ID of the documents as this value will be used further in the document for filtration
 
-![Adding DID as ID Type](<../../../../.gitbook/assets/2 (3) (2).png>)
+![Adding DID as ID Type](<../../../../.gitbook/assets/2 (3) (2) (1).png>)
 
 4. Add simplified grids for displaying Projects, Reports and Tokens
 
-![Adding grids](<../../../../.gitbook/assets/3 (1) (1) (2).png>)
+![Adding grids](<../../../../.gitbook/assets/3 (1) (1).png>)
 
 5. Create the token
 
@@ -84,7 +84,7 @@ In order to mint tokens into another account (not into the account of the mintin
 
 Record value from **assignedTo** _into_ **Field** (This field will be changing our block)
 
-![Using system Field assignedTo](<../../../../.gitbook/assets/12 (3) (1).png>)
+![Using system Field assignedTo](<../../../../.gitbook/assets/12 (3).png>)
 
 1.4.4 Configure values from which fields from the document would be labels, and which ones would be values
 

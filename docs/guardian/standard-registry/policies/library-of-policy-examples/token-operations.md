@@ -52,7 +52,7 @@ Switch to the ‘**Tokens**’ tab and create a new token
 
 3.1 Add ‘**mintDocumentBlock**_**’**_ immediately after saving the new document (**save\_new\_documents**)
 
-![Adding mintDocumentBlock](<../../../../.gitbook/assets/6 (1) (2).png>)
+![Adding mintDocumentBlock](<../../../../.gitbook/assets/6 (1) (2) (1).png>)
 
 3.2 Select token which will be minted
 

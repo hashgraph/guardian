@@ -74,7 +74,7 @@ Block can work independently (stand-alone):
 
 Or used in conjunctions with other blocks (e.g. with grid)
 
-![image3.png](<../../../../.gitbook/assets/2 (3).png>)
+![image3.png](<../../../../.gitbook/assets/2 (3) (2).png>)
 
 ### **2.1 Display** **Modes**
 
@@ -83,14 +83,14 @@ Or used in conjunctions with other blocks (e.g. with grid)
 * Only policy topics are displayed
 * Auxiliary events (such as publishing policy) are hidden
 
-![image4.png](<../../../../.gitbook/assets/3 (6).png>)
+![image4.png](<../../../../.gitbook/assets/3 (2).png>)
 
 #### **2.1.2 Advanced** – complete information is displayed with
 
 * Full hierarchical topic structure
 * All auxiliary and system events
 
-![image5.png](<../../../../.gitbook/assets/4 (5).png>)
+![image5.png](<../../../../.gitbook/assets/4 (1).png>)
 
 #### **2.1.3 Display layout**
 
@@ -100,8 +100,8 @@ Or used in conjunctions with other blocks (e.g. with grid)
 
 * Central area shows the timeline of the events as they have been recorded (in messages) in the specific topics
 
-![image5.png](<../../../../.gitbook/assets/6 (1) (3).png>)
+![image5.png](<../../../../.gitbook/assets/6 (1).png>)
 
 * Right-side panel shows detailed information about the selected message
 
-![image1.png](<../../../../.gitbook/assets/7 (1).png>)
+![image1.png](<../../../../.gitbook/assets/7 (6).png>)
