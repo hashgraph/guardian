@@ -73,3 +73,20 @@ Guardian is supporting Azure Vault Secrets Manager to handle securely the secret
 2. Choose **Vault Access Policy** as Permission model and **Azure Virtual Machines for deployment** as Resource Access. Under Access Policies, click on **Create** and in the prompt window choose all necessary permissions required to grant to a User. For Guardian at least **Get** and **Set** of **Secrets** are required. Next find the registered User to grant access. In the last step choose a registered application if has been created in Azure Active Directory before; otherwise select Next and finalize the process.
 3. Configure Networking, Add Tags and create the Vault.
 4. Now in the directory of auth-service, guardian-service, policy-service and worker-service set **AZURE\_VAULT\_NAME** environment variable by the name chosen as Vault previously.
+
+### **Google Cloud Platform (GCP) Secrets Manager**
+
+Google Cloud Platform (GCP) Secrets Manager is a managed service that helps you securely store and manage secrets, such as API keys, database credentials, and other sensitive information. It provides a central repository for storing secrets, with built-in security features and integration with other GCP services. It enables secure storage of secrets, secrets versioning and rotation, integration with other Google Cloud services like Cloud Run, VMs, App Engine, etc, supports Access Control, so on.
+
+Guardian now supports GCP Secrets Manager to store its secrets. In order to access GCP Secrets Manager it is required to set the identifier of the project created in google cloud platform that the GCP Secrets Manager is supposed to reside, as GCP\_PROJECT\_ID in the .env file in the configs of auth service.
+
+Here is the steps to create secrets manager in google cloud platform. It is assumed that the project has been created in prior.
+
+1. From Google Cloud Platform, navigate to underlying project
+2. From the Navigation Menu, select Security and then click on Secret Manager
+3. In the Secret Manager page, click on Create Secret
+
+Configure Secret manager by adding Name, Replication policy, Rotation, Expiration, etc according to security policies and click on Create Secret button
+
+<mark style="color:red;">**NOTE:**</mark>\
+<mark style="color:red;">**According to the tests of read/write operations of secrets to the GCP Secrets manager, each secret R/W operation take around 1 second which is too slow to be used constantly in the Guardian Application. The reason is, Guardian generates lots of wallets and requires to retrieve them from the Vault in order to sign transactions. The late response from GCP leads to make Guardian functioning too slowly. Consequently, it is not recommended to use GCP for constant R/W of secrets.**</mark>
