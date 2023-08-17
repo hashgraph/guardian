@@ -73,6 +73,7 @@
     display: flex;
     border: 1px solid #fdfdfd;
     margin-top: 5px;
+    margin-right: 8px;
 }
 
 .f1 {
@@ -202,5 +203,17 @@
         width: 44px;
         overflow: hidden;
         padding-left: 44px;
+    }
+}
+
+@media screen and (max-width: 520px) {
+    .merge-options {
+        min-width: 0px;
+        overflow-y: hidden;
+        overflow-x: auto;
+    }
+
+    .content-result {
+        min-width: 0px;
     }
 }
