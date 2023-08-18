@@ -366,6 +366,7 @@
       * [Setting User Credentials Asynchronously](profile-apis/setting-user-credentials-asynchronously.md)
   * [Fixing UX Issues for Users](guardian/users/fixing-ux-issues-for-users/README.md)
     * [Improvements on the UX](guardian/users/fixing-ux-issues-for-users/improvements-on-the-ux.md)
+  * [User Profile Setup](guardian/users/user-profile-setup.md)
   * [📱 Mobile Support for Data Interface](guardian/users/mobile-support-for-data-interface/README.md)
     * [📱 Mobile Operation for the user](guardian/users/mobile-support-for-data-interface/mobile-operation-for-the-user.md)
 * [🪙 Tokens](guardian/tokens/README.md)
