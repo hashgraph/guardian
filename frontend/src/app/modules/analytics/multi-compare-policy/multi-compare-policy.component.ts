@@ -25,6 +25,7 @@ export class MultiComparePolicyComponent implements OnInit {
     public groups!: any[];
     public roles!: any[];
     public minWidth!: any;
+    public headers: any[];
 
     public displayedColumns: string[] = [];
     public columns: any[] = [];
@@ -59,6 +60,33 @@ export class MultiComparePolicyComponent implements OnInit {
         this.totals = this.value.totals;
         this.minWidth = 770 * this.size;
 
+        this.headers = [];
+        if (this.value.left) {
+            this.headers.push({
+                column: 0,
+                name: this.value.left.name,
+                color: 'none',
+                rate: ''
+            });
+        }
+        for (let i = 0; i < this.value.rights.length; i++) {
+            const rate = this.value.totals[i];
+            const right = this.value.rights[i];
+            let color = 'none';
+            if (rate > 80) {
+                color = 'green';
+            } else if (rate > 50) {
+                color = 'yellow';
+            } else {
+                color = 'red';
+            }
+            this.headers.push({
+                column: 2 * this.headers.length + 1,
+                name: right.name,
+                color: color,
+                rate: `${rate}%`
+            });
+        }
         const blocks = this.value.blocks;
         const roles = this.value.roles;
         const groups = this.value.groups;
@@ -98,9 +126,9 @@ export class MultiComparePolicyComponent implements OnInit {
         }
 
         const k = Math.round(100 / this.size);
-        this._gridStyle = `max(calc(${k}% - 33px), 720px)`;
+        this._gridStyle = `max(calc(${k}vw - 40px), 720px)`;
         for (let i = 1; i < this.size; i++) {
-            this._gridStyle += ` 35px max(calc(${k}% - 33px), 720px)`;
+            this._gridStyle += ` 35px max(calc(${k}vw - 40px), 720px)`;
         }
     }
 

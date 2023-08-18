@@ -90,9 +90,9 @@ export class PolicyComparator {
      * Compare two policies
      * @param policy1 - left policy
      * @param policy2 - right policy
-     * @public
+     * @private
      */
-    public compare(policy1: PolicyModel, policy2: PolicyModel): ICompareResult<any> {
+    private compareTwoPolicies(policy1: PolicyModel, policy2: PolicyModel): ICompareResult<any> {
         const blockColumns = [
             { name: 'lvl', label: 'Offset', type: 'number' },
             { name: 'type', label: '', type: 'string' },
@@ -186,29 +186,36 @@ export class PolicyComparator {
     }
 
     /**
-     * Compare many policies
+     * Compare policies
      * @param policies
      * @public
      */
-    public multiCompare(policies: PolicyModel[]): IMultiCompareResult<any> {
+    public compare(policies: PolicyModel[]): ICompareResult<any>[] {
         const left = policies[0];
         const rights = policies.slice(1);
         const results: ICompareResult<any>[] = [];
         for (const right of rights) {
-            const result = this.compare(left, right);
+            const result = this.compareTwoPolicies(left, right);
             results.push(result);
         }
+        return results;
+    }
 
+    /**
+     * Merge compare results
+     * @param policies
+     * @public
+     */
+    public mergeCompareResults(results: ICompareResult<any>[]): IMultiCompareResult<any> {
         const blocksTable = this.mergeBlockTables(results.map(r => r.blocks));
         const rolesTable = this.mergePropTables(results.map(r => r.roles));
         const groupsTable = this.mergePropTables(results.map(r => r.groups));
         const topicsTable = this.mergePropTables(results.map(r => r.topics));
         const tokensTable = this.mergePropTables(results.map(r => r.tokens));
-
-        const result: IMultiCompareResult<any> = {
-            size: policies.length,
-            left: left.info(),
-            rights: rights.map(r => r.info()),
+        const multiResult: IMultiCompareResult<any> = {
+            size: results.length + 1,
+            left: results[0].left,
+            rights: results.map(r => r.right),
             totals: results.map(r => r.total),
             blocks: blocksTable,
             roles: rolesTable,
@@ -216,7 +223,7 @@ export class PolicyComparator {
             topics: topicsTable,
             tokens: tokensTable
         };
-        return result;
+        return multiResult;
     }
 
     /**
@@ -521,7 +528,7 @@ export class PolicyComparator {
      * @param result
      * @public
      */
-    public tableToCsv(result: ICompareResult<any>): string {
+    public tableToCsv(results: ICompareResult<any>[]): string {
         const csv = new CSV();
 
         csv.add('Policy 1').addLine();
@@ -533,63 +540,59 @@ export class PolicyComparator {
             .add('Policy Version')
             .addLine();
         csv
-            .add(result.left.id)
-            .add(result.left.name)
-            .add(result.left.description)
-            .add(result.left.instanceTopicId)
-            .add(result.left.version)
+            .add(results[0].left.id)
+            .add(results[0].left.name)
+            .add(results[0].left.description)
+            .add(results[0].left.instanceTopicId)
+            .add(results[0].left.version)
             .addLine();
-        csv.addLine();
 
-        csv.add('Policy 2').addLine();
-        csv
-            .add('Policy ID')
-            .add('Policy Name')
-            .add('Policy Description')
-            .add('Policy Topic')
-            .add('Policy Version')
-            .addLine();
-        csv
-            .add(result.right.id)
-            .add(result.right.name)
-            .add(result.right.description)
-            .add(result.right.instanceTopicId)
-            .add(result.right.version)
-            .addLine();
-        csv.addLine();
+        for (let i = 0; i < results.length; i++) {
+            const result = results[i];
+            csv.addLine();
+            csv.add(`Policy ${i + 2}`).addLine();
+            csv
+                .add('Policy ID')
+                .add('Policy Name')
+                .add('Policy Description')
+                .add('Policy Topic')
+                .add('Policy Version')
+                .addLine();
+            csv
+                .add(result.right.id)
+                .add(result.right.name)
+                .add(result.right.description)
+                .add(result.right.instanceTopicId)
+                .add(result.right.version)
+                .addLine();
+            csv.addLine();
 
-        csv.add('Policy Roles').addLine();
-        CompareUtils.tableToCsv(csv, result.roles);
-        csv.addLine();
+            csv.add('Policy Roles').addLine();
+            CompareUtils.tableToCsv(csv, result.roles);
+            csv.addLine();
 
-        csv.add('Policy Groups').addLine();
-        CompareUtils.tableToCsv(csv, result.groups);
-        csv.addLine();
+            csv.add('Policy Groups').addLine();
+            CompareUtils.tableToCsv(csv, result.groups);
+            csv.addLine();
 
-        csv.add('Policy Topics').addLine();
-        CompareUtils.tableToCsv(csv, result.topics);
-        csv.addLine();
+            csv.add('Policy Topics').addLine();
+            CompareUtils.tableToCsv(csv, result.topics);
+            csv.addLine();
 
-        csv.add('Policy Tokens').addLine();
-        CompareUtils.tableToCsv(csv, result.tokens);
-        csv.addLine();
+            csv.add('Policy Tokens').addLine();
+            CompareUtils.tableToCsv(csv, result.tokens);
+            csv.addLine();
 
-        csv.add('Policy Blocks').addLine();
-        CompareUtils.tableToCsv(csv, result.blocks);
-        csv.addLine();
+            csv.add('Policy Blocks').addLine();
+            CompareUtils.tableToCsv(csv, result.blocks);
+            csv.addLine();
 
-        csv.add('Total').add(result.total + '%');
+            csv.add('Total')
+                .add(result.total + '%')
+                .addLine();
+        }
 
         return csv.result();
-    }
-
-    /**
-     * Convert result to CSV
-     * @param result
-     * @public
-     */
-    public multiTableToCsv(result: IMultiCompareResult<any>): string {
-        return null;
     }
 
     public static async createModel(policyId: string, options: ICompareOptions): Promise<PolicyModel> {

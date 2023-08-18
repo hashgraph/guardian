@@ -9,6 +9,8 @@ import { SchemaEngineModule } from '../schema-engine/schema-engine.module';
 import { CommonComponentsModule } from '../common/common-components.module';
 import { TagEngineModule } from '../tag-engine/tag-engine.module';
 import { ArtifactEngineModule } from '../artifact-engine/artifact-engine.module';
+import { CompareModule } from '../analytics/analytics.module';
+import { AppRoutingModule } from 'src/app/app-routing.module';
 //Configuration
 import { CommonPropertiesComponent } from './policy-configuration/common-properties/common-properties.component';
 import { DocumentSourceComponent } from './policy-configuration/blocks/documents/document-viewer-config/document-viewer-config.component';
@@ -45,9 +47,10 @@ import { CreateTokenConfigComponent } from './policy-configuration/blocks/tokens
 import { SwitchConfigComponent } from './policy-configuration/blocks/main/switch-config/switch-config.component';
 import { CommonPropertyComponent } from './policy-configuration/common-property/common-property.component';
 import { GroupManagerConfigComponent } from './policy-configuration/blocks/main/group-manager-config/group-manager-config.component';
+import { PolicySettingsComponent } from './policy-configuration/policy-settings/policy-settings.component';
 //Viewer
-import { PolicyViewerComponent } from './policy-viewer/policy-viewer/policy-viewer.component';
 import { DialogBlock } from './policy-viewer/dialog-block/dialog-block.component';
+import { PolicyViewerComponent } from './policy-viewer/policy-viewer/policy-viewer.component';
 import { RequestDocumentBlockComponent } from './policy-viewer/blocks/request-document-block/request-document-block.component';
 import { DocumentsSourceBlockComponent } from './policy-viewer/blocks/documents-source-block/documents-source-block.component';
 import { ContainerBlockComponent } from './policy-viewer/blocks/container-block/container-block.component';
@@ -68,6 +71,8 @@ import { MultiSignBlockComponent } from './policy-viewer/blocks/multi-sign-block
 import { CreateTokenBlockComponent } from './policy-viewer/blocks/create-token-block/create-token-block.component';
 import { TagsManagerBlockComponent } from './policy-viewer/blocks/tags-manager-block/tags-manager-block.component';
 import { MessagesReportBlockComponent } from './policy-viewer/blocks/messages-report-block/messages-report-block.component';
+import { ExternalTopicBlockComponent } from './policy-viewer/blocks/external-topic-block/external-topic-block.component';
+import { UploadDocumentBlockComponent } from './policy-viewer/blocks/upload-document-block/upload-document-block.component';
 //Helpers
 import { HelpIcon } from './helpers/help-icon/help-icon.component';
 import { SavePolicyDialog } from './helpers/save-policy-dialog/save-policy-dialog.component';
@@ -84,6 +89,11 @@ import { MultiPolicyDialogComponent } from './helpers/multi-policy-dialog/multi-
 import { ComparePolicyDialog } from './helpers/compare-policy-dialog/compare-policy-dialog.component';
 import { NewModuleDialog } from './helpers/new-module-dialog/new-module-dialog.component';
 import { PolicyWizardDialogComponent } from './helpers/policy-wizard-dialog/policy-wizard-dialog.component';
+import { NewPolicyDialog } from './helpers/new-policy-dialog/new-policy-dialog.component';
+import { ImportFileDialog } from './helpers/import-file-dialog/import-file-dialog.component';
+import { NewThemeDialog } from './helpers/new-theme-dialog/new-theme-dialog.component';
+import { ViewerDialog } from './helpers/vc-dialog/viewer-dialog.component';
+import { CompareModulesDialogComponent } from './helpers/compare-modules-dialog/compare-modules-dialog.component';
 //Modules
 import { ModulesListComponent } from './modules-list/modules-list.component';
 //Services
@@ -91,17 +101,6 @@ import { RegisteredService } from './services/registered.service';
 import { WizardService } from './services/wizard.service';
 //Policies Grid
 import { PoliciesComponent } from './policies/policies.component';
-//Routing
-import { AppRoutingModule } from 'src/app/app-routing.module';
-import { NewPolicyDialog } from './helpers/new-policy-dialog/new-policy-dialog.component';
-import { PolicySettingsComponent } from './policy-configuration/policy-settings/policy-settings.component';
-import { ImportFileDialog } from './helpers/import-file-dialog/import-file-dialog.component';
-import { NewThemeDialog } from './helpers/new-theme-dialog/new-theme-dialog.component';
-import { ExternalTopicBlockComponent } from './policy-viewer/blocks/external-topic-block/external-topic-block.component';
-import { UploadDocumentBlockComponent } from './policy-viewer/blocks/upload-document-block/upload-document-block.component';
-import { ViewerDialog } from './helpers/vc-dialog/viewer-dialog.component';
-import { CompareModulesDialogComponent } from './helpers/compare-modules-dialog/compare-modules-dialog.component';
-import { SearchPolicyDialog } from './helpers/search-policy-dialog/search-policy-dialog.component';
 
 @NgModule({
     declarations: [
@@ -186,19 +185,19 @@ import { SearchPolicyDialog } from './helpers/search-policy-dialog/search-policy
         ExternalTopicBlockComponent,
         PolicyWizardDialogComponent,
         MessagesReportBlockComponent,
-        ViewerDialog,
-        SearchPolicyDialog
+        ViewerDialog
     ],
     imports: [
         CommonModule,
         FormsModule,
-        CommonComponentsModule,
-        CodemirrorModule,
         MaterialModule,
+        CodemirrorModule,
+        DragDropModule,
+        CommonComponentsModule,
         SchemaEngineModule,
         ArtifactEngineModule,
         TagEngineModule,
-        DragDropModule,
+        CompareModule,
         AppRoutingModule
     ],
     exports: [

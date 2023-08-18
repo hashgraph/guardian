@@ -1,0 +1,146 @@
+<div class="content">
+    <div *ngIf="loading" class="loading">
+        <mat-spinner></mat-spinner>
+    </div>
+
+    <ng-container *ngIf="!owner">
+        <div class="not-exist">
+            Before starting work you need to get DID <a [routerLink]="['/profile']">here</a>
+        </div>
+    </ng-container>
+
+    <ng-container *ngIf="!policyId">
+        <div class="not-exist">No results found.</div>
+    </ng-container>
+
+    <ng-container *ngIf="owner && policyId && policies">
+        <div class="actions-container">
+            <form class="policy-filters" [formGroup]="filtersForm">
+                <span>Filter by</span>
+
+                <div>
+                    <mat-form-field class="policy-filters__control" appearance="outline">
+                        <input matInput placeholder="Policy name" formControlName="policyName">
+                    </mat-form-field>
+
+                    <mat-form-field *ngIf="hasTagOptions" class="policy-filters__control" appearance="outline">
+                        <mat-label>Tags</mat-label>
+                        <mat-select formControlName="tag">
+                            <mat-option></mat-option>
+                            <mat-option *ngFor="let tag of tagOptions" [value]="tag">
+                                {{ tag }}
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+
+                <button *ngIf="lastFilters" mat-stroked-button (click)="clearFilters()">
+                    Clear filters
+                </button>
+            </form>
+
+            <div>
+                <button mat-raised-button color="primary" (click)="comparePolicy()" class="toolbar-btn">
+                    <mat-icon>compare</mat-icon>
+                    <span>Compare ({{selectedCount}})</span>
+                </button>
+            </div>
+        </div>
+        <div>
+            <div class="table-container">
+                <table mat-table [dataSource]="filteredPolicies" class="table">
+                    <ng-container matColumnDef="selector">
+                        <th mat-header-cell *matHeaderCellDef>
+                            <mat-checkbox color="primary" [checked]="selectedAll"
+                                (change)="selectAllPolicy()"></mat-checkbox>
+                        </th>
+                        <td mat-cell *matCellDef="let element">
+                            <mat-checkbox color="primary" [checked]="element._select"
+                                (change)="selectPolicy(element)"></mat-checkbox>
+                        </td>
+                    </ng-container>
+                    <ng-container matColumnDef="topic">
+                        <th mat-header-cell *matHeaderCellDef> Hedera Topic Id </th>
+                        <td mat-cell *matCellDef="let element">
+                            <hedera-explorer type="topics"
+                                [params]="element.topicId">{{element.topicId}}</hedera-explorer>
+                        </td>
+                    </ng-container>
+                    <ng-container matColumnDef="tokens">
+                        <th mat-header-cell *matHeaderCellDef> Tokens </th>
+                        <td mat-cell *matCellDef="let element">
+                            <a [routerLink]="['/tokens']" [queryParams]="{ policy: element.id }">
+                                Tokens
+                            </a>
+                        </td>
+                    </ng-container>
+                    <ng-container matColumnDef="schemas">
+                        <th mat-header-cell *matHeaderCellDef> Schemas </th>
+                        <td mat-cell *matCellDef="let element">
+                            <a [routerLink]="['/schemas']" [queryParams]="{ topic: element.topicId }">
+                                Schemas
+                            </a>
+                        </td>
+                    </ng-container>
+                    <ng-container matColumnDef="name">
+                        <th mat-header-cell *matHeaderCellDef> Policy Name </th>
+                        <td mat-cell *matCellDef="let element" [matTooltip]="element.name" matTooltipPosition="above"
+                            matTooltipClass="guardian-tooltip" matTooltipShowDelay="500" matTooltipHideDelay="100">
+                            {{ element.name }}
+                        </td>
+                    </ng-container>
+                    <ng-container matColumnDef="version">
+                        <th mat-header-cell *matHeaderCellDef> Version </th>
+                        <td mat-cell *matCellDef="let element">
+                            {{ element.version }}
+                        </td>
+                    </ng-container>
+                    <ng-container matColumnDef="tags">
+                        <th mat-header-cell *matHeaderCellDef> Tags </th>
+                        <td mat-cell *matCellDef="let element">
+                            <tags-explorer [data]="element._tags" [owner]="owner" [target]="element.id"
+                                [schemas]="tagSchemas" [entity]="tagEntity" [service]="tagsService"></tags-explorer>
+                        </td>
+                    </ng-container>
+                    <ng-container matColumnDef="description">
+                        <th mat-header-cell *matHeaderCellDef> Description </th>
+                        <td mat-cell *matCellDef="let element" [matTooltip]="element.description"
+                            matTooltipPosition="above" matTooltipClass="guardian-tooltip" matTooltipShowDelay="500"
+                            matTooltipHideDelay="100">
+                            {{ element.description }}
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="status">
+                        <th mat-header-cell *matHeaderCellDef> Status </th>
+                        <td mat-cell *matCellDef="let element">
+                            <div class="status-draft" *ngIf="element.status == 'DRAFT'">
+                                Draft
+                            </div>
+                            <div class="status-dry-run" *ngIf="element.status == 'DRY-RUN'">
+                                In Dry Run
+                            </div>
+                            <div class="status-publish" *ngIf="element.status == 'PUBLISH'">
+                                Published
+                            </div>
+                            <div class="status-failed" *ngIf="element.status == 'PUBLISH_ERROR'">
+                                Not published
+                            </div>
+                        </td>
+                    </ng-container>
+                    <ng-container matColumnDef="rate">
+                        <th mat-header-cell *matHeaderCellDef> Rate </th>
+                        <td mat-cell *matCellDef="let element">
+                            <div class="{{element._color}} color-field">
+                                {{element._rate}}
+                            </div>
+                        </td>
+                    </ng-container>
+
+                    <tr mat-header-row *matHeaderRowDef="columns; sticky: true"></tr>
+                    <tr mat-row *matRowDef="let row; columns: columns;" [attr.readonly]="row._readonly"></tr>
+                </table>
+            </div>
+        </div>
+    </ng-container>
+</div>

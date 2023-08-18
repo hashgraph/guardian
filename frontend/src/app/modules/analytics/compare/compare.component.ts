@@ -18,14 +18,13 @@ export class CompareComponent implements OnInit {
     moduleId2: any;
     policyIds: any;
     result: any;
-
     eventsLvl = '1';
     propLvl = '2';
     childrenLvl = '2';
     idLvl = '0';
     visibleType = 'tree';
-
     total: any;
+    needApplyFilters: any;
 
     constructor(
         private route: ActivatedRoute,
@@ -42,6 +41,7 @@ export class CompareComponent implements OnInit {
     }
 
     loadData() {
+        this.needApplyFilters = false;
         this.loading = true;
         this.type = this.route.snapshot.queryParams['type'] || '';
         this.policyId1 = this.route.snapshot.queryParams['policyId1'] || '';
@@ -200,7 +200,28 @@ export class CompareComponent implements OnInit {
             this.downloadSchema();
         } else if (this.type === 'module') {
             this.downloadModule();
+        } else if (this.type === 'multi-policy') {
+            this.downloadMultiPolicy();
         }
+    }
+
+    downloadMultiPolicy() {
+        const options = {
+            policyIds: this.policyIds,
+            eventsLvl: this.eventsLvl,
+            propLvl: this.propLvl,
+            childrenLvl: this.childrenLvl,
+            idLvl: this.idLvl
+        }
+        this.analyticsService.comparePolicyFile(options, 'csv').subscribe((data) => {
+            if (data) {
+                this.downloadObjectAsJson(data, 'report');
+            }
+            this.loading = false;
+        }, ({ message }) => {
+            this.loading = false;
+            console.error(message);
+        });
     }
 
     downloadPolicy() {
@@ -276,6 +297,10 @@ export class CompareComponent implements OnInit {
             link.click();
             document.body.removeChild(link);
         }
+    }
+
+    onFilterChange() {
+        this.needApplyFilters = true;
     }
 
 }

@@ -139,5 +139,11 @@ export class SearchPolicyDialog implements OnInit, AfterContentInit {
 
     public onNewPage() {
         this.dialogRef.close();
+        this.router.navigate(['/search'], {
+            queryParams: {
+                type: 'policy',
+                policyId: this.policyId,
+            }
+        });
     }
 }

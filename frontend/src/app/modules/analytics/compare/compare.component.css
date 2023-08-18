@@ -32,6 +32,10 @@
     overflow: auto;
 }
 
+.content-result[headers='true'] {
+    padding-top: 22px;
+}
+
 .merge-options {
     min-width: 1130px;
     width: 100%;
@@ -74,6 +78,12 @@
     border: 1px solid #fdfdfd;
     margin-top: 5px;
     margin-right: 8px;
+}
+
+.merge-lvl-btn[need-apple='true'] {
+    color: #ffffff;
+    background-color: #0c77ff;
+    border: 1px solid #0c77ff;
 }
 
 .f1 {
@@ -128,7 +138,7 @@
 }
 
 
-.merge-back > div {
+.merge-back>div {
     width: 105px;
     height: 38px;
     margin: 6px;
@@ -136,7 +146,7 @@
     cursor: pointer;
 }
 
-.merge-back > div  span {
+.merge-back>div span {
     color: #707070;
     position: absolute;
     top: 9px;
@@ -146,7 +156,7 @@
     pointer-events: none;
 }
 
-.merge-back > div  mat-icon {
+.merge-back>div mat-icon {
     color: #707070;
     position: absolute;
     top: 3px;

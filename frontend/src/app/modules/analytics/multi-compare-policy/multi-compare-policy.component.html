@@ -1,4 +1,15 @@
 <div class="content" [style.min-width.px]="minWidth">
+    <div *ngIf="headers" class="item-headers" [style.grid-template-columns]="_gridStyle">
+        <div *ngFor="let item of headers" [style.grid-column-start]="item.column" class="item-header">
+            <span class="item-header-name">
+                {{item.name}}
+            </span>
+            <span class="item-header-rate item-header-color-{{item.color}}">
+                {{item.rate}}
+            </span>
+        </div>
+    </div>
+
     <div *ngIf="policies && policies.length>2" class="list">
 
         <!-- <div class="total-info" [attr.total]="total">
@@ -207,8 +218,12 @@
                         </div>
                     </div>
 
-                    <div *ngIf="type==='tree'" class="merge-tree" [attr.open]="panelOpenState" [attr.type-1]="type1"
-                        [attr.type-2]="type2" [attr.type-3]="type3" [attr.type-4]="type4">
+                    <div *ngIf="type==='tree'" class="merge-tree" 
+                        [attr.open]="panelOpenState" 
+                        [attr.type-1]="type1"
+                        [attr.type-2]="type2" 
+                        [attr.type-3]="type3" 
+                        [attr.type-4]="type4">
 
                         <div *ngFor="let row of blocks" class="report-item report-item-number" [attr.hidden]="row.hidden"
                             [style.grid-template-columns]="_gridStyle">
@@ -284,7 +299,7 @@
                                         {{ column.label }}
                                     </mat-header-cell>
                                     <mat-cell *cdkCellDef="let row">
-                                        {{ row.data[column.name] }}
+                                        <span class="table-value">{{ row.data[column.name] }}</span>
                                     </mat-cell>
                                 </ng-container>
                                 <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>

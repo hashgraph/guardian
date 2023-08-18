@@ -21,7 +21,7 @@ import { SchemaService } from 'src/app/services/schema.service';
 import { WizardMode, WizardService } from 'src/app/modules/policy-engine/services/wizard.service';
 import { FormControl, FormGroup } from '@angular/forms';
 import { AnalyticsService } from 'src/app/services/analytics.service';
-import { SearchPolicyDialog } from '../helpers/search-policy-dialog/search-policy-dialog.component';
+import { SearchPolicyDialog } from '../../analytics/search-policy-dialog/search-policy-dialog.component';
 
 /**
  * Component for choosing a policy and

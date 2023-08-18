@@ -44,18 +44,21 @@ export async function analyticsAPI(): Promise<void> {
             }
 
             const comparator = new PolicyComparator(options);
-            if (compareModels.length === 2) {
-                const result = comparator.compare(compareModels[0], compareModels[1]);
+            const results = comparator.compare(compareModels);
+            if (results.length === 1) {
                 if (type === 'csv') {
-                    return new MessageResponse(comparator.tableToCsv(result));
+                    const file = comparator.tableToCsv(results);
+                    return new MessageResponse(file);
                 } else {
+                    const result = results[0];
                     return new MessageResponse(result);
                 }
-            } else if (compareModels.length > 2) {
-                const result = comparator.multiCompare(compareModels);
+            } else if (results.length > 1) {
                 if (type === 'csv') {
-                    return new MessageResponse(comparator.multiTableToCsv(result));
+                    const file = comparator.tableToCsv(results)
+                    return new MessageResponse(file);
                 } else {
+                    const result = comparator.mergeCompareResults(results);
                     return new MessageResponse(result);
                 }
             } else {
