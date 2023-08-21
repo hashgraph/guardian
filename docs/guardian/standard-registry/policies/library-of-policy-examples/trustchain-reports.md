@@ -14,7 +14,7 @@ Let’s add several additional attributes into the documents to simplify the doc
 
 ![Adding Entity](<../../../../.gitbook/assets/0 (3) (1).png>)
 
-![Adding Status](<../../../../.gitbook/assets/1 (3).png>)
+![Adding Status](<../../../../.gitbook/assets/1 (3) (1).png>)
 
 ![Adding Entity ](<../../../../.gitbook/assets/2 (4) (1).png>)
 
@@ -58,7 +58,7 @@ To find further documents we will need to use values from the **Ref** variable w
 
 1.3.3 ’**project\_document(approver)**_’_ - Lets use the previously defined variable alongside the static filtration parameters.
 
-![Using previously defined variables](<../../../../.gitbook/assets/11 (5) (1).png>)
+![Using previously defined variables](<../../../../.gitbook/assets/11 (5).png>)
 
 Save the author of the document signature so we can display the information about the user later
 

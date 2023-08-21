@@ -22,7 +22,7 @@ Modules can also be created via the Policy editor UI in two ways: 1. By clicking
 
 ![image3.png](<../../../../.gitbook/assets/2 (6).png>)
 
-![image4.png](<../../../../.gitbook/assets/3 (2).png>)
+![image4.png](<../../../../.gitbook/assets/3 (2) (3).png>)
 
 #### 1.2 Module Import
 
@@ -38,13 +38,13 @@ Modules can be exported as files or/and ‘published’ into IPFS. For published
 
 ![image7.png](<../../../../.gitbook/assets/6 (5).png>)
 
-![image8.png](<../../../../.gitbook/assets/7 (1) (3).png>)
+![image8.png](<../../../../.gitbook/assets/7 (1).png>)
 
 #### 1.4 Deleting Module
 
 Modules which have not been published can be deleted.
 
-![image9.png](<../../../../.gitbook/assets/8 (1) (3).png>)
+![image9.png](<../../../../.gitbook/assets/8 (1).png>)
 
 #### 1.5 Editing Modules
 
@@ -80,7 +80,7 @@ Variable are part of the external interface of Modules, they are used to represe
 
 **Assigning values to the (module) variables in Policy:**
 
-![image15.png](<../../../../.gitbook/assets/14 (4) (1).png>)
+![image15.png](<../../../../.gitbook/assets/14 (4).png>)
 
 #### 2.1.3 Input\Output Events
 

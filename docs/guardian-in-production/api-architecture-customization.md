@@ -2,8 +2,6 @@
 
 ## 1. Introduction
 
-
-
 As the demand for web services continues to increase, the importance of building efficient and scalable APIs has become more important than ever. Node.js has become a popular platform for building APIs due to its event-driven, non-blocking I/O model that makes it ideal for building real-time web applications.
 
 However, as with any technology, there are always opportunities for improvement. In this document, we will explore some best practices for improving your API architecture in Node.js. We will cover some topics to improve the Guardian API.
@@ -24,15 +22,15 @@ Why migrate?\
 \
 Here are some reasons why migrating a proxy application from Nginx to Node.js Express can be beneficial:
 
-Flexibility: While Nginx is a powerful tool for serving static files and proxying requests, it can be limiting when it comes to customizing headers, requests, and responses. Node.js Express, on the other hand, provides a lot of flexibility when it comes to building proxy servers. It allows you to write JavaScript code to handle requests and responses, and provides a lot of middleware that can be used to add features such as authentication, caching, and compression.
+**Flexibility**: While Nginx is a powerful tool for serving static files and proxying requests, it can be limiting when it comes to customizing headers, requests, and responses. Node.js Express, on the other hand, provides a lot of flexibility when it comes to building proxy servers. It allows you to write JavaScript code to handle requests and responses, and provides a lot of middleware that can be used to add features such as authentication, caching, and compression.
 
-Performance: While Nginx is known for its speed and efficiency, Node.js Express can be just as fast, if not faster, when properly optimized. Node.js Express uses an event-driven, non-blocking I/O model that makes it ideal for handling a large number of simultaneous connections. Additionally, because Node.js Express is written in JavaScript, it can be optimized using various tools and techniques to achieve maximum performance.
+**Performance**: While Nginx is known for its speed and efficiency, Node.js Express can be just as fast, if not faster, when properly optimized. Node.js Express uses an event-driven, non-blocking I/O model that makes it ideal for handling a large number of simultaneous connections. Additionally, because Node.js Express is written in JavaScript, it can be optimized using various tools and techniques to achieve maximum performance.
 
-Ease of Development: Nginx configuration files can be complex and difficult to manage, especially for developers who are not familiar with the syntax. Node.js Express, on the other hand, uses JavaScript, which is a familiar language for many developers. Additionally, Node.js Express has a large community and a lot of documentation and tutorials available, making it easier for developers to get started.
+**Ease of Development**: Nginx configuration files can be complex and difficult to manage, especially for developers who are not familiar with the syntax. Node.js Express, on the other hand, uses JavaScript, which is a familiar language for many developers. Additionally, Node.js Express has a large community and a lot of documentation and tutorials available, making it easier for developers to get started.
 
-Customization: Node.js Express provides a lot of customization options, allowing you to tailor your proxy server to fit your specific needs. For example, you can easily add custom middleware to handle specific types of requests or responses, or add your own error handling to handle errors in a specific way. Additionally, because Node.js Express is written in JavaScript, it can be easily extended with third-party modules from npm.
+**Customization**: Node.js Express provides a lot of customization options, allowing you to tailor your proxy server to fit your specific needs. For example, you can easily add custom middleware to handle specific types of requests or responses, or add your own error handling to handle errors in a specific way. Additionally, because Node.js Express is written in JavaScript, it can be easily extended with third-party modules from npm.
 
-TypeScript Support: Node.js Express has built-in support for TypeScript, which is a superset of JavaScript that provides additional features such as static typing and interfaces. TypeScript can help catch errors before they occur and make code more maintainable and easier to read.
+**TypeScript Support**: Node.js Express has built-in support for TypeScript, which is a superset of JavaScript that provides additional features such as static typing and interfaces. TypeScript can help catch errors before they occur and make code more maintainable and easier to read.
 
 How hard would it be?
 
@@ -158,15 +156,13 @@ app.listen(port, () => {
 
 After that, we can apply a bunch of improvements such us middlewares or even packages to increase the security. In this case some packages are recommended:
 
-Helmet: Helmet is a middleware package that adds various HTTP headers to your responses to increase security. These headers can help to protect against various attacks, such as cross-site scripting (XSS), clickjacking, and cross-site request forgery (CSRF).
+**Helmet**: Helmet is a middleware package that adds various HTTP headers to your responses to increase security. These headers can help to protect against various attacks, such as cross-site scripting (XSS), clickjacking, and cross-site request forgery (CSRF).
 
-Express-rate-limit: This package can be used to limit the rate at which clients can make requests to your server. This can help to prevent brute-force attacks and other types of attacks that rely on making a large number of requests in a short period of time.
+**Express-rate-limit**: This package can be used to limit the rate at which clients can make requests to your server. This can help to prevent brute-force attacks and other types of attacks that rely on making a large number of requests in a short period of time.
 
-csurf: This package provides CSRF protection by adding a CSRF token to forms and requests made to your server. This token is verified on the server-side to ensure that requests are coming from legitimate sources.
+**csurf**: This package provides CSRF protection by adding a CSRF token to forms and requests made to your server. This token is verified on the server-side to ensure that requests are coming from legitimate sources.
 
-Node.js crypto module: This built-in Node.js module provides cryptographic functionality, such as hashing, encryption, and decryption. It can be used to secure data and protect against various types of attacks, such as data tampering and eavesdropping.
-
-
+**Node.js crypto module**: This built-in Node.js module provides cryptographic functionality, such as hashing, encryption, and decryption. It can be used to secure data and protect against various types of attacks, such as data tampering and eavesdropping.
 
 ## 3. Dead letter/Retries&#x20;
 
@@ -183,8 +179,7 @@ If your application requires high throughput and real-time processing of streami
 
 Furthermore, Kafka's support for message ordering within a partition and its ability to store messages on disk make it well-suited for use cases where message durability is critical, such as in a blockchain application.
 
-However, it's important to note that migrating to Kafka may require additional development effort and expertise, as Kafka has a steeper learning curve and is a more complex system compared to NATS. Therefore, the decision to migrate should be made after carefully evaluating your specific requirements and use case.\
-
+However, it's important to note that migrating to Kafka may require additional development effort and expertise, as Kafka has a steeper learning curve and is a more complex system compared to NATS. Therefore, the decision to migrate should be made after carefully evaluating your specific requirements and use case.
 
 | Features     | NATS                                                        | Kafka                                                                    |
 | ------------ | ----------------------------------------------------------- | ------------------------------------------------------------------------ |

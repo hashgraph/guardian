@@ -24,7 +24,7 @@ The first step is that you will need to either login in to your account that you
 
 **Note: You can also access the ‘Demo Admin Panel’ where you can just select the ‘Standard Registry’ for demo purposes.**
 
-<figure><img src="../../../.gitbook/assets/image (167) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (167).png" alt=""><figcaption></figcaption></figure>
 
 **Step 2**
 
@@ -60,7 +60,7 @@ Once you have completed the previous steps you can  see the navigation menu and 
 
 Ideally for this flow we will want to import the iREC policy in which all schemas and tokens will be automatically populated.&#x20;
 
-<figure><img src="../../../.gitbook/assets/image (179) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (179).png" alt=""><figcaption></figcaption></figure>
 
 **Step 4**
 
@@ -116,7 +116,7 @@ The first step is that you will need to either login in to your account that you
 
 **Note: You can also access the ‘Demo Admin Panel’ where you can just select the ‘Registrant’ for demo purposes.**
 
-<figure><img src="../../../.gitbook/assets/image (145) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (145).png" alt=""><figcaption></figcaption></figure>
 
 **Step 2**
 
@@ -144,7 +144,7 @@ You will then want to select your role which will be ‘Registrant’ from the d
 
 Once you have filled in your Registrant Application, you will then need to click on **“Ok”**.
 
-<figure><img src="../../../.gitbook/assets/image (220) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (220).png" alt=""><figcaption></figcaption></figure>
 
 After you have clicked on **“Ok”** your Registration application will need to be approved by the Standard Registry.
 

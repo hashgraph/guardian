@@ -49,7 +49,7 @@ Document objects which can be attached to Schemas, Policies, Modules, Tokens, DI
 
 Tags can be created by clicking on "Create Tag" button.
 
-![Create Tag button](<../../../../.gitbook/assets/0 (1).png>)
+![Create Tag button](../../../../.gitbook/assets/0.png)
 
 Tag can be created with label and the description as shown below:
 
@@ -63,7 +63,7 @@ An additional document can be added/linked with the tag using _**Add Document** 
 
 Users (DIDs) who created a tag are able to remove it later.
 
-![Removing Tags](<../../../../.gitbook/assets/3 (1) (2).png>)
+![Removing Tags](<../../../../.gitbook/assets/3 (1) (2) (1).png>)
 
 #### **2.3 View**
 

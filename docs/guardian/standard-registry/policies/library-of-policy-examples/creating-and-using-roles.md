@@ -12,9 +12,9 @@ For a demo example of following steps, here is the policy timestamp: **167516453
 
 2. Create 2 new roles called ‘**Example role 1**_’ and_ ‘_**Example role 2**_’
 
-![Add Role button](<../../../../.gitbook/assets/1 (1) (1).png>)
+![Add Role button](<../../../../.gitbook/assets/1 (1) (1) (1).png>)
 
-![Creating two roles](<../../../../.gitbook/assets/2 (1) (1).png>)
+![Creating two roles](<../../../../.gitbook/assets/2 (1) (1) (1).png>)
 
 3. In the root container create 4 more ’**interfaceContainerBlock**_’_ container called ‘**no\_role**_’_, ‘**owner**_’_, ‘**role\_1**_’ and ‘_**role\_2**_’_
 
