@@ -1508,19 +1508,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nestjs/platform-express@npm:^9.4.2":
-  version: 9.4.3
-  resolution: "@nestjs/platform-express@npm:9.4.3"
+"@nestjs/platform-express@npm:^10.2.0":
+  version: 10.2.0
+  resolution: "@nestjs/platform-express@npm:10.2.0"
   dependencies:
     body-parser: 1.20.2
     cors: 2.8.5
     express: 4.18.2
     multer: 1.4.4-lts.1
-    tslib: 2.5.3
+    tslib: 2.6.1
   peerDependencies:
-    "@nestjs/common": ^9.0.0
-    "@nestjs/core": ^9.0.0
-  checksum: d7fc96a979e4f65a6d1482e517a957b763f307d634a1c98353f3f2d3197366797f9f5cb4968886279308c1b6c22597090a522b3587687cb44f63d462b567958c
+    "@nestjs/common": ^10.0.0
+    "@nestjs/core": ^10.0.0
+  checksum: b6453f8dfe1f7b7b90550241b5aa99d674cc071e9d6f4e3028bd83d8fd5a3ed4c25940f3d46e0b67e17a5b2dae68659565fe51927e1aaf27a9c17af2f78cf074
   languageName: node
   linkType: hard
 
@@ -3447,7 +3447,7 @@ __metadata:
     "@nestjs/core": ^9.4.1
     "@nestjs/jwt": ^10.0.3
     "@nestjs/microservices": ^9.4.1
-    "@nestjs/platform-express": ^9.4.2
+    "@nestjs/platform-express": ^10.2.0
     "@nestjs/swagger": ^6.3.0
     "@types/express": ^4.17.13
     "@types/express-fileupload": ^1.4.1
@@ -3649,7 +3649,7 @@ __metadata:
     "@nestjs/core": ^9.4.1
     "@nestjs/jwt": ^10.0.3
     "@nestjs/microservices": ^9.4.1
-    "@nestjs/platform-express": ^9.4.2
+    "@nestjs/platform-express": ^10.2.0
     "@nestjs/swagger": ^6.3.0
     "@types/express": ^4.17.13
     "@types/express-fileupload": ^1.4.1
@@ -14555,17 +14555,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tslib@npm:2.6.1, tslib@npm:^2.0.0, tslib@npm:^2.0.3, tslib@npm:^2.2.0, tslib@npm:^2.3.1, tslib@npm:^2.4.0, tslib@npm:^2.5.0":
+  version: 2.6.1
+  resolution: "tslib@npm:2.6.1"
+  checksum: b0d176d176487905b66ae4d5856647df50e37beea7571c53b8d10ba9222c074b81f1410fb91da13debaf2cbc970663609068bdebafa844ea9d69b146527c38fe
+  languageName: node
+  linkType: hard
+
 "tslib@npm:^1.11.1, tslib@npm:^1.13.0, tslib@npm:^1.8.1, tslib@npm:^1.9.0":
   version: 1.14.1
   resolution: "tslib@npm:1.14.1"
   checksum: dbe628ef87f66691d5d2959b3e41b9ca0045c3ee3c7c7b906cc1e328b39f199bb1ad9e671c39025bd56122ac57dfbf7385a94843b1cc07c60a4db74795829acd
-  languageName: node
-  linkType: hard
-
-"tslib@npm:^2.0.0, tslib@npm:^2.0.3, tslib@npm:^2.2.0, tslib@npm:^2.3.1, tslib@npm:^2.4.0, tslib@npm:^2.5.0":
-  version: 2.6.1
-  resolution: "tslib@npm:2.6.1"
-  checksum: b0d176d176487905b66ae4d5856647df50e37beea7571c53b8d10ba9222c074b81f1410fb91da13debaf2cbc970663609068bdebafa844ea9d69b146527c38fe
   languageName: node
   linkType: hard
 
