@@ -1,6 +1,6 @@
 import { IWeightModel } from '../interfaces/weight-model.interface';
 import { IRateMap } from '../interfaces/rate-map.interface';
-import { IMultiRateMap } from "../interfaces/multi-rate-map.interface.ts";
+import { IMultiRateMap } from '../interfaces/multi-rate-map.interface.ts';
 
 /**
  * Merge Utils

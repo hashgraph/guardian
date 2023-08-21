@@ -6,7 +6,7 @@ import { PropertyType } from '../types/property.type';
 import { WeightType } from '../types/weight.type';
 import { PropertiesModel } from './properties.model';
 import { PropertyModel } from './property.model';
-import { IWeightBlock, IWeightItem } from '../interfaces/weight-tree';
+import { IWeightItem } from '../interfaces/weight-tree';
 
 /**
  * Group Model

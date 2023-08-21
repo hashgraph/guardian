@@ -1,11 +1,25 @@
-import { DatabaseServer, InboundMessageIdentityDeserializer, Logger, MessageError, MessageResponse, OutboundResponseIdentitySerializer } from '@guardian/common';
+import {
+    HashComparator,
+    ModuleComparator,
+    ModuleModel,
+    PolicyComparator,
+    PolicyModel,
+    SchemaComparator,
+    SchemaModel
+} from '@analytics';
+import {
+    DatabaseServer,
+    InboundMessageIdentityDeserializer,
+    Logger,
+    MessageError,
+    MessageResponse,
+    OutboundResponseIdentitySerializer
+} from '@guardian/common';
+import { ApiResponse } from '@api/helpers/api-response';
 import { MessageAPI } from '@guardian/interfaces';
-import * as crypto from 'crypto';
-import { HashComparator, ModuleComparator, ModuleModel, PolicyComparator, PolicyModel, PropertyType, SchemaComparator, SchemaModel, TokenModel } from '@analytics';
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import process from 'process';
-import { ApiResponse } from '@api/helpers/api-response';
 
 @Controller()
 export class AnalyticsController {
@@ -35,12 +49,8 @@ export async function analyticsAPI(): Promise<void> {
 
             const compareModels: PolicyModel[] = [];
             for (const policyId of ids) {
-                const compareModel = await PolicyComparator.createModel(policyId, options);
-                if (compareModel) {
-                    compareModels.push(compareModel);
-                } else {
-                    throw new Error('Unknown policies');
-                }
+                const compareModel = await PolicyComparator.createModelById(policyId, options);
+                compareModels.push(compareModel);
             }
 
             const comparator = new PolicyComparator(options);
@@ -196,10 +206,10 @@ export async function analyticsAPI(): Promise<void> {
                 result: []
             };
             for (const item of policies) {
+                const policyTags = mapTags.has(item.id) ? Array.from(mapTags.get(item.id)) : [];
                 if (policy.id !== item.id) {
                     const rate = HashComparator.compare(policy, item);
                     if (rate >= threshold) {
-                        const tags = mapTags.has(item.id) ? Array.from(mapTags.get(item.id)) : [];
                         result.result.push({
                             id: item.id,
                             uuid: item.uuid,
@@ -210,8 +220,8 @@ export async function analyticsAPI(): Promise<void> {
                             topicId: item.topicId,
                             messageId: item.messageId,
                             owner: item.owner,
+                            tags: policyTags,
                             rate,
-                            tags
                         })
                     }
                 } else {
@@ -225,7 +235,7 @@ export async function analyticsAPI(): Promise<void> {
                         topicId: item.topicId,
                         messageId: item.messageId,
                         owner: item.owner,
-                        tags
+                        tags: policyTags
                     }
                 }
             }

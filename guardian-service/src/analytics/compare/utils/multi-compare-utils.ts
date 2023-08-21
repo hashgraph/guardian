@@ -1,6 +1,5 @@
-import { IRateTable } from "../interfaces/rate-table.interface";
-import { IRate } from "../interfaces/rate.interface";
-import { IReportTable } from "../interfaces/report-table.interface";
+import { IRateTable } from '../interfaces/rate-table.interface';
+import { IReportTable } from '../interfaces/report-table.interface';
 
 interface IMergeResult<T> {
     mainIndex: number;
@@ -10,13 +9,12 @@ interface IMergeResult<T> {
 
 class ArrayMapper {
     private readonly size: number;
+    private readonly indexMap: Map<number, number>;
+    private readonly rowMap: Map<string, IMergeResult<any>>;
 
     private leftIndex: number;
     private mainIndex: number;
     private subIndex: number;
-
-    private indexMap: Map<number, number>;
-    private rowMap: Map<string, IMergeResult<any>>;
 
     constructor(size: number) {
         this.size = size;

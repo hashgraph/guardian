@@ -1,13 +1,15 @@
 import { DatabaseServer, Logger, Policy } from '@guardian/common';
 import { PolicyModel } from '../models/policy.model';
 import { SchemaModel } from '../models/schema.model';
-import { PropertyType } from '../types/property.type';
 import { TokenModel } from '../models/token.model';
 import { FileModel } from '../models/file.model';
 import { IWeightBlock, IWeightItem } from '../interfaces/weight-tree';
 import { CompareUtils } from '../utils/utils';
 import { PolicyComparator } from './policy-comparator';
 
+/**
+ * Weight Types
+ */
 enum WeightIndex {
     //type + full prop + index + children
     FULL = 0,
@@ -25,13 +27,22 @@ enum WeightIndex {
  * Component for comparing two policies
  */
 export class HashComparator {
-    private static readonly options = {
+    /**
+     * Options
+     */
+    public static readonly options = {
         childLvl: 2,
         eventLvl: 1,
         idLvl: 0,
         propLvl: 2
     };
 
+    /**
+     * Create policy model by zip file
+     * @param file
+     * @public
+     * @static
+     */
     public static async createModelByFile(file: any): Promise<PolicyModel> {
         try {
             if (!file) {
@@ -93,36 +104,43 @@ export class HashComparator {
         }
     }
 
+    /**
+     * Convert policy model to weights tree
+     * @param policy
+     * @public
+     * @static
+     */
     public static createTree(policy: PolicyModel): any {
-        try {
-            if (!policy) {
-                return null;
-            }
-
-            const json: any = {};
-            if (policy.roles) {
-                json.roles = policy.roles.map(item => item.toWeight(policy.options));
-            }
-            if (policy.groups) {
-                json.groups = policy.groups.map(item => item.toWeight(policy.options));
-            }
-            if (policy.topics) {
-                json.topics = policy.topics.map(item => item.toWeight(policy.options));
-            }
-            if (policy.tokens) {
-                json.tokens = policy.tokens.map(item => item.toWeight(policy.options));
-            }
-            if (policy.tree) {
-                json.tree = policy.tree.toWeight(policy.options);
-            }
-
-            return json;
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE, HASH']);
+        if (!policy) {
             return null;
         }
+
+        const json: any = {};
+        if (policy.roles) {
+            json.roles = policy.roles.map(item => item.toWeight(policy.options));
+        }
+        if (policy.groups) {
+            json.groups = policy.groups.map(item => item.toWeight(policy.options));
+        }
+        if (policy.topics) {
+            json.topics = policy.topics.map(item => item.toWeight(policy.options));
+        }
+        if (policy.tokens) {
+            json.tokens = policy.tokens.map(item => item.toWeight(policy.options));
+        }
+        if (policy.tree) {
+            json.tree = policy.tree.toWeight(policy.options);
+        }
+
+        return json;
     }
 
+    /**
+     * Create policy hash
+     * @param policy
+     * @public
+     * @static
+     */
     public static createHash(policy: PolicyModel): string {
         try {
             if (!policy) {
@@ -136,9 +154,15 @@ export class HashComparator {
         }
     }
 
+    /**
+     * Create and save policy hash
+     * @param policy
+     * @public
+     * @static
+     */
     public static async saveHashMap(policy: Policy): Promise<Policy> {
         try {
-            const compareModel = await PolicyComparator.createModel(policy.id.toString(), HashComparator.options);
+            const compareModel = await PolicyComparator.createModelById(policy.id.toString(), HashComparator.options);
             const tree = HashComparator.createTree(compareModel);
             const hash = CompareUtils.sha256(JSON.stringify(tree));
             policy.hash = hash;
@@ -151,6 +175,13 @@ export class HashComparator {
         }
     }
 
+    /**
+     * Compare 2 policies
+     * @param policy1
+     * @param policy2
+     * @public
+     * @static
+     */
     public static compare(policy1: Policy, policy2: Policy): number {
         try {
 
@@ -164,8 +195,6 @@ export class HashComparator {
             if (policy1.hash === policy2.hash) {
                 return 100;
             }
-
-            console.debug('<-------------------------')
 
             const roles = HashComparator.compareArray(policy1.hashMap.roles, policy2.hashMap.roles);
             const groups = HashComparator.compareArray(policy1.hashMap.groups, policy2.hashMap.groups);
@@ -190,18 +219,26 @@ export class HashComparator {
                 (k[4] * tree)
             ) / (k[0] + k[1] + k[2] + k[3] + k[4]));
 
-            console.debug(tree, rate);
-            console.debug('------------------------->')
-
             return rate;
         } catch (error) {
-            console.debug('----', error);
             new Logger().error(error, ['GUARDIAN_SERVICE, HASH']);
             return 0;
         }
     }
 
-    private static arrayFactor(base: number, array1: IWeightBlock[], array2: IWeightBlock[]): number {
+    /**
+     * Check array factor
+     * @param base
+     * @param array1
+     * @param array2
+     * @private
+     * @static
+     */
+    private static arrayFactor(
+        base: number,
+        array1: IWeightBlock[],
+        array2: IWeightBlock[]
+    ): number {
         if (!array1 && !array2) {
             return 0;
         }
@@ -211,7 +248,19 @@ export class HashComparator {
         return base;
     }
 
-    private static treeFactor(base: number, data1: IWeightBlock, data2: IWeightBlock): number {
+    /**
+     * Check tree factor
+     * @param base
+     * @param data1
+     * @param data2
+     * @private
+     * @static
+     */
+    private static treeFactor(
+        base: number,
+        data1: IWeightBlock,
+        data2: IWeightBlock
+    ): number {
         if (!data1 && !data2) {
             return 1;
         }
@@ -224,6 +273,13 @@ export class HashComparator {
         return base;
     }
 
+    /**
+     * Compare 2 array
+     * @param array1
+     * @param array2
+     * @private
+     * @static
+     */
     private static compareArray(array1: IWeightItem[], array2: IWeightItem[]): number {
         if (!array1 || !array2) {
             return 0;
@@ -272,6 +328,15 @@ export class HashComparator {
         return Math.min(rate1, rate2);
     }
 
+    /**
+     * Merge 2 array
+     * @param buffer1
+     * @param buffer2
+     * @param result
+     * @param index
+     * @private
+     * @static
+     */
     private static mapChildren(
         buffer1: IWeightBlock[],
         buffer2: IWeightBlock[],
@@ -295,6 +360,13 @@ export class HashComparator {
         }
     }
 
+    /**
+     * Compare 2 array
+     * @param array1
+     * @param array2
+     * @private
+     * @static
+     */
     private static compareChildren(array1: IWeightBlock[], array2: IWeightBlock[]): number {
         if (array1.length === 0 && array2.length === 0) {
             return 1;
@@ -356,6 +428,13 @@ export class HashComparator {
         return Math.min(rate1, rate2);
     }
 
+    /**
+     * Compare 2 tree
+     * @param tree1
+     * @param tree2
+     * @private
+     * @static
+     */
     private static compareTree(tree1: IWeightBlock, tree2: IWeightBlock): number {
 
         if (!tree1 || !tree2 || !tree1.weights || !tree2.weights) {

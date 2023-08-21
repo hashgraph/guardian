@@ -1,13 +1,12 @@
-import { ICompareOptions } from "../interfaces/compare-options.interface";
-import { IMultiRateMap } from "../interfaces/multi-rate-map.interface.ts";
-import { IRateMap } from "../interfaces/rate-map.interface";
-import { IRate } from "../interfaces/rate.interface";
-import { IWeightModel } from "../interfaces/weight-model.interface";
-import { BlockModel } from "../models/block.model";
-import { BlocksRate } from "../rates/blocks-rate";
-import { ObjectRate } from "../rates/object-rate";
-import { Status } from "../types/status.type";
-import { MergeUtils } from "./merge-utils";
+import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { IRateMap } from '../interfaces/rate-map.interface';
+import { IRate } from '../interfaces/rate.interface';
+import { IWeightModel } from '../interfaces/weight-model.interface';
+import { BlockModel } from '../models/block.model';
+import { BlocksRate } from '../rates/blocks-rate';
+import { ObjectRate } from '../rates/object-rate';
+import { Status } from '../types/status.type';
+import { MergeUtils } from './merge-utils';
 
 /**
  * Compare Utils
@@ -78,7 +77,7 @@ export class ComparePolicyUtils {
         }
         const children: BlocksRate[] = [];
         for (const item of result) {
-            children.push(this.compareTree(item.left, item.right, options));
+            children.push(ComparePolicyUtils.compareTree(item.left, item.right, options));
         }
         return children;
     }

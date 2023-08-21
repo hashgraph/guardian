@@ -1,5 +1,5 @@
 <div class="content" [style.min-width.px]="minWidth">
-    <div *ngIf="headers" class="item-headers" [style.grid-template-columns]="_gridStyle">
+    <div *ngIf="headers && type==='tree'" class="item-headers" [style.grid-template-columns]="_gridStyle">
         <div *ngFor="let item of headers" [style.grid-column-start]="item.column" class="item-header">
             <span class="item-header-name">
                 {{item.name}}
@@ -299,7 +299,12 @@
                                         {{ column.label }}
                                     </mat-header-cell>
                                     <mat-cell *cdkCellDef="let row">
-                                        <span class="table-value">{{ row.data[column.name] }}</span>
+                                        <span class="table-value" 
+                                            [title]="row.data[column.name]"
+                                            [attr.value]="row.data[column.name]"
+                                            [attr.display-type]="column.display">
+                                            {{ row.data[column.name] }}
+                                        </span>
                                     </mat-cell>
                                 </ng-container>
                                 <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>

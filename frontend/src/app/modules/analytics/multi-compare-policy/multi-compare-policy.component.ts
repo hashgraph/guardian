@@ -4,7 +4,7 @@ import BlockIcons from '../../policy-engine/services/block-icons';
 @Component({
     selector: 'app-multi-compare-policy',
     templateUrl: './multi-compare-policy.component.html',
-    styleUrls: ['./multi-compare-policy.component.css']
+    styleUrls: ['./multi-compare-policy.component.scss']
 })
 export class MultiComparePolicyComponent implements OnInit {
     @Input('value') value!: any;

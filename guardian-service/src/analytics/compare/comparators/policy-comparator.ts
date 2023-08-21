@@ -1,26 +1,20 @@
-import { BlockModel } from '../models/block.model';
-import { BlocksRate } from '../rates/blocks-rate';
-import { ICompareOptions } from '../interfaces/compare-options.interface';
-import { PolicyModel } from '../models/policy.model';
+import { DatabaseServer } from '@guardian/common';
+import { CSV } from '../../table/csv';
 import { ReportTable } from '../../table/report-table';
-import { Status } from '../types/status.type';
-import { IRateMap } from '../interfaces/rate-map.interface';
+import { ICompareOptions } from '../interfaces/compare-options.interface';
 import { ICompareResult } from '../interfaces/compare-result.interface';
 import { IMultiCompareResult } from '../interfaces/multi-compare-result.interface';
-import { MergeUtils } from '../utils/merge-utils';
-import { IWeightModel } from '../interfaces/weight-model.interface';
 import { IRate } from '../interfaces/rate.interface';
-import { ObjectRate } from '../rates/object-rate';
-import { CompareUtils } from '../utils/utils';
-import { CSV } from '../../table/csv';
-import { DatabaseServer, Logger } from '@guardian/common';
-import { SchemaModel } from '../models/schema.model';
-import { PropertyType } from '../types/property.type';
-import { TokenModel } from '../models/token.model';
-import { FileModel } from '../models/file.model';
-import { ComparePolicyUtils } from '../utils/compare-policy-utils';
 import { IReportTable } from '../interfaces/report-table.interface';
+import { FileModel } from '../models/file.model';
+import { PolicyModel } from '../models/policy.model';
+import { SchemaModel } from '../models/schema.model';
+import { TokenModel } from '../models/token.model';
+import { BlocksRate } from '../rates/blocks-rate';
+import { PropertyType } from '../types/property.type';
+import { ComparePolicyUtils } from '../utils/compare-policy-utils';
 import { MultiCompareUtils } from '../utils/multi-compare-utils';
+import { CompareUtils } from '../utils/utils';
 
 /**
  * Component for comparing two policies
@@ -103,12 +97,12 @@ export class PolicyComparator {
             { name: 'right_index', label: 'Index', type: 'number' },
             { name: 'right_type', label: 'Type', type: 'string' },
             { name: 'right_tag', label: 'Tag', type: 'string' },
-            { name: 'index_rate', label: 'Index Rate', type: 'number' },
-            { name: 'permission_rate', label: 'Permission Rate', type: 'number' },
-            { name: 'prop_rate', label: 'Prop Rate', type: 'number' },
-            { name: 'event_rate', label: 'Event Rate', type: 'number' },
-            { name: 'artifacts_rate', label: 'Artifact Rate', type: 'number' },
-            { name: 'total_rate', label: 'Total Rate', type: 'number' },
+            { name: 'index_rate', label: 'Index Rate', type: 'number', display: 'Rate' },
+            { name: 'permission_rate', label: 'Permission Rate', type: 'number', display: 'Rate' },
+            { name: 'prop_rate', label: 'Prop Rate', type: 'number', display: 'Rate' },
+            { name: 'event_rate', label: 'Event Rate', type: 'number', display: 'Rate' },
+            { name: 'artifacts_rate', label: 'Artifact Rate', type: 'number', display: 'Rate' },
+            { name: 'total_rate', label: 'Total Rate', type: 'number', display: 'Rate' },
             { name: 'left', label: '', type: 'object' },
             { name: 'right', label: '', type: 'object' },
             { name: 'properties', label: '', type: 'object' },
@@ -119,7 +113,7 @@ export class PolicyComparator {
         const propColumns = [
             { name: 'left_name', label: 'Name', type: 'string' },
             { name: 'right_name', label: 'Name', type: 'string' },
-            { name: 'total_rate', label: 'Total Rate', type: 'number' },
+            { name: 'total_rate', label: 'Total Rate', type: 'number', display: 'Rate' },
             { name: 'left', label: '', type: 'object' },
             { name: 'right', label: '', type: 'object' },
             { name: 'type', label: '', type: 'string' },
@@ -232,7 +226,7 @@ export class PolicyComparator {
      * @private
      */
     private mergeBlockTables(tables: IReportTable[]): IReportTable {
-        const blockColumns = [
+        const blockColumns: any[] = [
             { name: 'lvl', label: 'Offset', type: 'number' },
             { name: 'block_type', label: '', type: 'string' },
             { name: 'left', label: '', type: 'object' },
@@ -251,12 +245,12 @@ export class PolicyComparator {
             blockColumns.push({ name: `right_index_${i}`, label: 'Index', type: 'number' });
             blockColumns.push({ name: `right_type_${i}`, label: 'Type', type: 'string' });
             blockColumns.push({ name: `right_tag_${i}`, label: 'Tag', type: 'string' });
-            blockColumns.push({ name: `index_rate_${i}`, label: 'Index Rate', type: 'number' });
-            blockColumns.push({ name: `permission_rate_${i}`, label: 'Permission Rate', type: 'number' });
-            blockColumns.push({ name: `prop_rate_${i}`, label: 'Prop Rate', type: 'number' });
-            blockColumns.push({ name: `event_rate_${i}`, label: 'Event Rate', type: 'number' });
-            blockColumns.push({ name: `artifacts_rate_${i}`, label: 'Artifact Rate', type: 'number' });
-            blockColumns.push({ name: `total_rate_${i}`, label: 'Total Rate', type: 'number' });
+            blockColumns.push({ name: `index_rate_${i}`, label: 'Index Rate', type: 'number', display: 'Rate' });
+            blockColumns.push({ name: `permission_rate_${i}`, label: 'Permission Rate', type: 'number', display: 'Rate' });
+            blockColumns.push({ name: `prop_rate_${i}`, label: 'Prop Rate', type: 'number', display: 'Rate' });
+            blockColumns.push({ name: `event_rate_${i}`, label: 'Event Rate', type: 'number', display: 'Rate' });
+            blockColumns.push({ name: `artifacts_rate_${i}`, label: 'Artifact Rate', type: 'number', display: 'Rate' });
+            blockColumns.push({ name: `total_rate_${i}`, label: 'Total Rate', type: 'number', display: 'Rate' });
         }
 
         const mergeResults = MultiCompareUtils.mergeTables<any>(tables);
@@ -336,8 +330,8 @@ export class PolicyComparator {
                 const colData = cols[index];
                 if (colData) {
                     if (index === 0) {
-                        row['left'] = colData.left;
-                        row['left_name'] = colData.left_name;
+                        row.left = colData.left;
+                        row.left_name = colData.left_name;
                     } else {
                         row[`right_${index}`] = colData.right;
                         row[`right_name_${index}`] = colData.right_name;
@@ -595,62 +589,64 @@ export class PolicyComparator {
         return csv.result();
     }
 
-    public static async createModel(policyId: string, options: ICompareOptions): Promise<PolicyModel> {
-        try {
-            //Policy
-            const policy = await DatabaseServer.getPolicyById(policyId);
+    /**
+     * Create policy model
+     * @param policyId
+     * @param options
+     * @public
+     * @static
+     */
+    public static async createModelById(policyId: string, options: ICompareOptions): Promise<PolicyModel> {
+        //Policy
+        const policy = await DatabaseServer.getPolicyById(policyId);
 
-            if (!policy) {
-                throw new Error('Unknown policy');
-            }
-
-            const policyModel = new PolicyModel(policy, options);
-
-            //Schemas
-            const schemas = await DatabaseServer.getSchemas({ topicId: policy.topicId });
-
-            const schemaModels: SchemaModel[] = [];
-            for (const schema of schemas) {
-                const m = new SchemaModel(schema, options);
-                m.setPolicy(policy);
-                m.update(options);
-                schemaModels.push(m);
-            }
-            policyModel.setSchemas(schemaModels);
-
-            //Tokens
-            const tokensIds = policyModel.getAllProp<string>(PropertyType.Token)
-                .filter(t => t.value)
-                .map(t => t.value);
-
-            const tokens = await DatabaseServer.getTokens({ where: { tokenId: { $in: tokensIds } } });
-
-            const tokenModels: TokenModel[] = [];
-            for (const token of tokens) {
-                const t = new TokenModel(token, options);
-                t.update(options);
-                tokenModels.push(t);
-            }
-            policyModel.setTokens(tokenModels);
-
-            //Artifacts
-            const files = await DatabaseServer.getArtifacts({ policyId: policyId });
-            const artifactsModels: FileModel[] = [];
-            for (const file of files) {
-                const data = await DatabaseServer.getArtifactFileByUUID(file.uuid);
-                const f = new FileModel(file, data, options);
-                f.update(options);
-                artifactsModels.push(f);
-            }
-            policyModel.setArtifacts(artifactsModels);
-
-            //Compare
-            policyModel.update();
-
-            return policyModel;
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return null;
+        if (!policy) {
+            throw new Error('Unknown policy');
         }
+
+        const policyModel = new PolicyModel(policy, options);
+
+        //Schemas
+        const schemas = await DatabaseServer.getSchemas({ topicId: policy.topicId });
+
+        const schemaModels: SchemaModel[] = [];
+        for (const schema of schemas) {
+            const m = new SchemaModel(schema, options);
+            m.setPolicy(policy);
+            m.update(options);
+            schemaModels.push(m);
+        }
+        policyModel.setSchemas(schemaModels);
+
+        //Tokens
+        const tokensIds = policyModel.getAllProp<string>(PropertyType.Token)
+            .filter(t => t.value)
+            .map(t => t.value);
+
+        const tokens = await DatabaseServer.getTokens({ where: { tokenId: { $in: tokensIds } } });
+
+        const tokenModels: TokenModel[] = [];
+        for (const token of tokens) {
+            const t = new TokenModel(token, options);
+            t.update(options);
+            tokenModels.push(t);
+        }
+        policyModel.setTokens(tokenModels);
+
+        //Artifacts
+        const files = await DatabaseServer.getArtifacts({ policyId });
+        const artifactsModels: FileModel[] = [];
+        for (const file of files) {
+            const data = await DatabaseServer.getArtifactFileByUUID(file.uuid);
+            const f = new FileModel(file, data, options);
+            f.update(options);
+            artifactsModels.push(f);
+        }
+        policyModel.setArtifacts(artifactsModels);
+
+        //Compare
+        policyModel.update();
+
+        return policyModel;
     }
 }

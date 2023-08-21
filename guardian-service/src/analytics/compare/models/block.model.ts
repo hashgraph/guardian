@@ -423,10 +423,10 @@ export class BlockModel implements IWeightModel {
         let length = 0;
         for (const child of this._children) {
             const w = child.toWeight(options);
-            length += 1 + w.length;
+            length = length + w.length + 1;
             children.push(w);
         }
-        const _index = new String(this.index);
+        const _index = String(this.index);
         const _prop = this._weightMap[WeightType.PROP_LVL_3];
         const _type = this.blockType;
 
