@@ -29,6 +29,7 @@ import {
 } from '@guardian/common';
 import { exportTag, importTag } from '@api/tag.service';
 import { SchemaImportResult } from '@api/helpers/schema-helper';
+import { HashComparator } from '@analytics';
 
 /**
  * Policy import export helper
@@ -422,6 +423,9 @@ export class PolicyImportExportHelper {
                 ],
             });
         }
+
+        notifier.completedAndStart('Updating hash');
+        await HashComparator.saveHashMap(result);
 
         notifier.completed();
         return { policy: result, errors };

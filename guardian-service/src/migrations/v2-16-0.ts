@@ -7,8 +7,9 @@ import {
     SchemaModel,
     TokenModel
 } from '@analytics';
+import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { Migration } from '@mikro-orm/migrations-mongodb';
-import { GridFSBucket } from 'mongodb';
+import { GridFSBucket, ObjectId } from 'mongodb';
 
 /**
  * Migration to version 2.16.0
@@ -19,6 +20,24 @@ export class ReleaseMigration extends Migration {
      */
     async up(): Promise<void> {
         await this.setPoliciesHash();
+    }
+
+    async writeFile(gridFS: GridFSBucket, data: any): Promise<ObjectId> {
+        return new Promise<ObjectId>((resolve, reject) => {
+            try {
+                if (data) {
+                    const fileStream = gridFS.openUploadStream(
+                        GenerateUUIDv4()
+                    );
+                    fileStream.write(JSON.stringify(data));
+                    fileStream.end(() => resolve(fileStream.id));
+                } else {
+                    resolve(null);
+                }
+            } catch (error) {
+                reject(error)
+            }
+        });
     }
 
     /**
@@ -140,12 +159,14 @@ export class ReleaseMigration extends Migration {
                 console.error(error);
             }
 
+            const hashMapFileId = await this.writeFile(gridFS, hashMap);
+
             await policyCollection.updateOne(
                 { _id: policy._id },
                 {
                     $set: {
                         'hash': hash,
-                        'hashMap': hashMap
+                        'hashMapFileId': hashMapFileId
                     },
                 },
                 { session: this.ctx, upsert: false }
