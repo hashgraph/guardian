@@ -81,6 +81,10 @@
                         (click)="routActive('SR_COMPARE')">
                         Compare
                     </div>
+                    <div class="nav-list-item only-active" [attr.active]="isActiveLink('SR_SEARCH')"
+                        (click)="routActive('SR_SEARCH')">
+                        Search
+                    </div>
                 </div>
             </mat-menu>
             <mat-menu #subMenu3="matMenu" class="sub-nav-menu" backdropClass="sub-nav-backdrop">
@@ -200,6 +204,10 @@
                         <div class="nav-list-item only-active" [attr.active]="isActiveLink('SR_COMPARE')"
                             (click)="mobileRoutActive('SR_COMPARE')">
                             Compare
+                        </div>
+                        <div class="nav-list-item only-active" [attr.active]="isActiveLink('SR_SEARCH')"
+                            (click)="mobileRoutActive('SR_SEARCH')">
+                            Search
                         </div>
                     </div>
                     <div id="tokens-nav" class="nav-list-item" (click)="openSubMenu('1')"

@@ -51,10 +51,11 @@ import {
     IBlockSetting
 } from "../structures";
 import { BlockType } from '@guardian/interfaces';
+import BlockIcons from './block-icons';
 
 const Container: IBlockSetting = {
     type: BlockType.Container,
-    icon: 'tab',
+    icon: BlockIcons[BlockType.Container],
     group: BlockGroup.Main,
     header: BlockHeaders.UIComponents,
     factory: ContainerBlockComponent,
@@ -99,7 +100,7 @@ const Container: IBlockSetting = {
 
 const Step: IBlockSetting = {
     type: BlockType.Step,
-    icon: 'vertical_split',
+    icon: BlockIcons[BlockType.Step],
     group: BlockGroup.Main,
     header: BlockHeaders.UIComponents,
     factory: StepBlockComponent,
@@ -144,7 +145,7 @@ const Step: IBlockSetting = {
 
 const PolicyRoles: IBlockSetting = {
     type: BlockType.PolicyRoles,
-    icon: 'manage_accounts',
+    icon: BlockIcons[BlockType.PolicyRoles],
     group: BlockGroup.Main,
     header: BlockHeaders.UIComponents,
     factory: RolesBlockComponent,
@@ -153,7 +154,7 @@ const PolicyRoles: IBlockSetting = {
 
 const GroupManagerBlock: IBlockSetting = {
     type: BlockType.GroupManagerBlock,
-    icon: 'groups',
+    icon: BlockIcons[BlockType.GroupManagerBlock],
     group: BlockGroup.Main,
     header: BlockHeaders.UIComponents,
     factory: GroupManagerBlockComponent,
@@ -162,7 +163,7 @@ const GroupManagerBlock: IBlockSetting = {
 
 const container: IBlockSetting = {
     type: BlockType.Information,
-    icon: 'info',
+    icon: BlockIcons[BlockType.Information],
     group: BlockGroup.Main,
     header: BlockHeaders.UIComponents,
     factory: InformationBlockComponent,
@@ -171,7 +172,7 @@ const container: IBlockSetting = {
 
 const Action: IBlockSetting = {
     type: BlockType.Action,
-    icon: 'flash_on',
+    icon: BlockIcons[BlockType.Action],
     group: BlockGroup.Main,
     header: BlockHeaders.UIComponents,
     factory: ActionBlockComponent,
@@ -203,7 +204,7 @@ const Action: IBlockSetting = {
 
 const ButtonBlock: IBlockSetting = {
     type: BlockType.ButtonBlock,
-    icon: 'radio_button_checked',
+    icon: BlockIcons[BlockType.ButtonBlock],
     group: BlockGroup.Main,
     header: BlockHeaders.UIComponents,
     factory: ButtonBlockComponent,
@@ -225,7 +226,7 @@ const ButtonBlock: IBlockSetting = {
 
 const Switch: IBlockSetting = {
     type: BlockType.Switch,
-    icon: 'rule',
+    icon: BlockIcons[BlockType.Switch],
     group: BlockGroup.Main,
     header: BlockHeaders.ServerBlocks,
     factory: null,
@@ -247,7 +248,7 @@ const Switch: IBlockSetting = {
 
 const HttpRequest: IBlockSetting = {
     type: BlockType.HttpRequest,
-    icon: 'http',
+    icon: BlockIcons[BlockType.HttpRequest],
     group: BlockGroup.Main,
     header: BlockHeaders.ServerBlocks,
     factory: null,
@@ -256,7 +257,7 @@ const HttpRequest: IBlockSetting = {
 
 const DocumentsViewer: IBlockSetting = {
     type: BlockType.DocumentsViewer,
-    icon: 'table_view',
+    icon: BlockIcons[BlockType.DocumentsViewer],
     group: BlockGroup.Documents,
     header: BlockHeaders.UIComponents,
     factory: DocumentsSourceBlockComponent,
@@ -283,7 +284,7 @@ const DocumentsViewer: IBlockSetting = {
 
 const Request: IBlockSetting = {
     type: BlockType.Request,
-    icon: 'dynamic_form',
+    icon: BlockIcons[BlockType.Request],
     group: BlockGroup.Documents,
     header: BlockHeaders.UIComponents,
     factory: RequestDocumentBlockComponent,
@@ -299,7 +300,7 @@ const Request: IBlockSetting = {
 
 const Upload: IBlockSetting = {
     type: BlockType.Upload,
-    icon: 'dynamic_form',
+    icon: BlockIcons[BlockType.Upload],
     group: BlockGroup.Documents,
     header: BlockHeaders.UIComponents,
     factory: UploadDocumentBlockComponent,
@@ -315,7 +316,7 @@ const Upload: IBlockSetting = {
 
 const MultiSignBlock: IBlockSetting = {
     type: BlockType.MultiSignBlock,
-    icon: 'done_all',
+    icon: BlockIcons[BlockType.MultiSignBlock],
     group: BlockGroup.Documents,
     header: BlockHeaders.UIComponents,
     factory: MultiSignBlockComponent,
@@ -324,7 +325,7 @@ const MultiSignBlock: IBlockSetting = {
 
 const SendToGuardian: IBlockSetting = {
     type: BlockType.SendToGuardian,
-    icon: 'send',
+    icon: BlockIcons[BlockType.SendToGuardian],
     group: BlockGroup.Documents,
     header: BlockHeaders.ServerBlocks,
     factory: null,
@@ -333,7 +334,7 @@ const SendToGuardian: IBlockSetting = {
 
 const ExternalData: IBlockSetting = {
     type: BlockType.ExternalData,
-    icon: 'cloud',
+    icon: BlockIcons[BlockType.ExternalData],
     group: BlockGroup.Documents,
     header: BlockHeaders.ServerBlocks,
     factory: null,
@@ -346,7 +347,7 @@ const ExternalData: IBlockSetting = {
 
 const ExternalTopic: IBlockSetting = {
     type: BlockType.ExternalTopic,
-    icon: 'cloud',
+    icon: BlockIcons[BlockType.ExternalTopic],
     group: BlockGroup.Documents,
     header: BlockHeaders.UIComponents,
     factory: ExternalTopicBlockComponent,
@@ -359,7 +360,7 @@ const ExternalTopic: IBlockSetting = {
 
 const AggregateDocument: IBlockSetting = {
     type: BlockType.AggregateDocument,
-    icon: 'calendar_month',
+    icon: BlockIcons[BlockType.AggregateDocument],
     group: BlockGroup.Documents,
     header: BlockHeaders.ServerBlocks,
     factory: null,
@@ -368,7 +369,7 @@ const AggregateDocument: IBlockSetting = {
 
 const ReassigningBlock: IBlockSetting = {
     type: BlockType.ReassigningBlock,
-    icon: 'content_copy',
+    icon: BlockIcons[BlockType.ReassigningBlock],
     group: BlockGroup.Documents,
     header: BlockHeaders.ServerBlocks,
     factory: null,
@@ -377,7 +378,7 @@ const ReassigningBlock: IBlockSetting = {
 
 const RevokeBlock: IBlockSetting = {
     type: BlockType.RevokeBlock,
-    icon: 'restart_alt',
+    icon: BlockIcons[BlockType.RevokeBlock],
     group: BlockGroup.Documents,
     header: BlockHeaders.ServerBlocks,
     factory: null,
@@ -386,7 +387,7 @@ const RevokeBlock: IBlockSetting = {
 
 const RevocationBlock: IBlockSetting = {
     type: BlockType.RevocationBlock,
-    icon: 'restart_alt',
+    icon: BlockIcons[BlockType.RevocationBlock],
     group: BlockGroup.Documents,
     header: BlockHeaders.ServerBlocks,
     factory: null,
@@ -395,7 +396,7 @@ const RevocationBlock: IBlockSetting = {
 
 const SetRelationshipsBlock: IBlockSetting = {
     type: BlockType.SetRelationshipsBlock,
-    icon: 'settings',
+    icon: BlockIcons[BlockType.SetRelationshipsBlock],
     group: BlockGroup.Documents,
     header: BlockHeaders.ServerBlocks,
     factory: null,
@@ -408,7 +409,7 @@ const SetRelationshipsBlock: IBlockSetting = {
 
 const SplitBlock: IBlockSetting = {
     type: BlockType.SplitBlock,
-    icon: 'content_cut',
+    icon: BlockIcons[BlockType.SplitBlock],
     group: BlockGroup.Documents,
     header: BlockHeaders.ServerBlocks,
     factory: null,
@@ -417,7 +418,7 @@ const SplitBlock: IBlockSetting = {
 
 const FiltersAddon: IBlockSetting = {
     type: BlockType.FiltersAddon,
-    icon: 'filter_alt',
+    icon: BlockIcons[BlockType.FiltersAddon],
     group: BlockGroup.Documents,
     header: BlockHeaders.Addons,
     factory: FiltersAddonBlockComponent,
@@ -430,7 +431,7 @@ const FiltersAddon: IBlockSetting = {
 
 const DocumentsSourceAddon: IBlockSetting = {
     type: BlockType.DocumentsSourceAddon,
-    icon: 'source',
+    icon: BlockIcons[BlockType.DocumentsSourceAddon],
     group: BlockGroup.Documents,
     header: BlockHeaders.Addons,
     factory: null,
@@ -446,7 +447,7 @@ const DocumentsSourceAddon: IBlockSetting = {
 
 const PaginationAddon: IBlockSetting = {
     type: BlockType.PaginationAddon,
-    icon: 'pages',
+    icon: BlockIcons[BlockType.PaginationAddon],
     group: BlockGroup.Documents,
     header: BlockHeaders.Addons,
     factory: PaginationAddonBlockComponent,
@@ -455,25 +456,25 @@ const PaginationAddon: IBlockSetting = {
 
 const HistoryAddon: IBlockSetting = {
     type: BlockType.HistoryAddon,
-    icon: 'history',
+    icon: BlockIcons[BlockType.HistoryAddon],
     group: BlockGroup.Documents,
     header: BlockHeaders.Addons,
     factory: null,
     property: null,
-};
+}
 
 const SelectiveAttributes: IBlockSetting = {
     type: BlockType.SelectiveAttributes,
-    icon: 'rule_folder',
+    icon: BlockIcons[BlockType.SelectiveAttributes],
     group: BlockGroup.Documents,
     header: BlockHeaders.Addons,
     factory: null,
     property: null,
-};
+}
 
 const TimerBlock: IBlockSetting = {
     type: BlockType.TimerBlock,
-    icon: 'schedule',
+    icon: BlockIcons[BlockType.TimerBlock],
     group: BlockGroup.Documents,
     header: BlockHeaders.Addons,
     factory: null,
@@ -482,7 +483,7 @@ const TimerBlock: IBlockSetting = {
 
 const DocumentValidatorBlock: IBlockSetting = {
     type: BlockType.DocumentValidatorBlock,
-    icon: 'task_alt',
+    icon: BlockIcons[BlockType.DocumentValidatorBlock],
     group: BlockGroup.Documents,
     header: BlockHeaders.Addons,
     factory: null,
@@ -491,7 +492,7 @@ const DocumentValidatorBlock: IBlockSetting = {
 
 const CreateToken: IBlockSetting = {
     type: BlockType.CreateToken,
-    icon: 'token',
+    icon: BlockIcons[BlockType.CreateToken],
     group: BlockGroup.Tokens,
     header: BlockHeaders.UIComponents,
     factory: CreateTokenBlockComponent,
@@ -500,7 +501,7 @@ const CreateToken: IBlockSetting = {
 
 const Mint: IBlockSetting = {
     type: BlockType.Mint,
-    icon: 'paid',
+    icon: BlockIcons[BlockType.Mint],
     group: BlockGroup.Tokens,
     header: BlockHeaders.ServerBlocks,
     factory: null,
@@ -513,7 +514,7 @@ const Mint: IBlockSetting = {
 
 const Wipe: IBlockSetting = {
     type: BlockType.Wipe,
-    icon: 'delete',
+    icon: BlockIcons[BlockType.Wipe],
     group: BlockGroup.Tokens,
     header: BlockHeaders.ServerBlocks,
     factory: null,
@@ -522,7 +523,7 @@ const Wipe: IBlockSetting = {
 
 const TokenActionBlock: IBlockSetting = {
     type: BlockType.TokenActionBlock,
-    icon: 'generating_tokens',
+    icon: BlockIcons[BlockType.TokenActionBlock],
     group: BlockGroup.Tokens,
     header: BlockHeaders.ServerBlocks,
     factory: null,
@@ -531,7 +532,7 @@ const TokenActionBlock: IBlockSetting = {
 
 const TokenConfirmationBlock: IBlockSetting = {
     type: BlockType.TokenConfirmationBlock,
-    icon: 'key',
+    icon: BlockIcons[BlockType.TokenConfirmationBlock],
     group: BlockGroup.Tokens,
     header: BlockHeaders.UIComponents,
     factory: TokenConfirmationBlockComponent,
@@ -540,7 +541,7 @@ const TokenConfirmationBlock: IBlockSetting = {
 
 const ImpactAddon: IBlockSetting = {
     type: BlockType.ImpactAddon,
-    icon: 'receipt',
+    icon: BlockIcons[BlockType.ImpactAddon],
     group: BlockGroup.Tokens,
     header: BlockHeaders.Addons,
     factory: null,
@@ -549,7 +550,7 @@ const ImpactAddon: IBlockSetting = {
 
 const Calculate: IBlockSetting = {
     type: BlockType.Calculate,
-    icon: 'bar_chart',
+    icon: BlockIcons[BlockType.Calculate],
     group: BlockGroup.Calculate,
     header: BlockHeaders.ServerBlocks,
     factory: null,
@@ -565,7 +566,7 @@ const Calculate: IBlockSetting = {
 
 const CustomLogicBlock: IBlockSetting = {
     type: BlockType.CustomLogicBlock,
-    icon: 'bar_chart',
+    icon: BlockIcons[BlockType.CustomLogicBlock],
     group: BlockGroup.Calculate,
     header: BlockHeaders.ServerBlocks,
     factory: null,
@@ -574,7 +575,7 @@ const CustomLogicBlock: IBlockSetting = {
 
 const CalculateMathAddon: IBlockSetting = {
     type: BlockType.CalculateMathAddon,
-    icon: 'calculate',
+    icon: BlockIcons[BlockType.CalculateMathAddon],
     group: BlockGroup.Calculate,
     header: BlockHeaders.Addons,
     factory: null,
@@ -583,7 +584,7 @@ const CalculateMathAddon: IBlockSetting = {
 
 const CalculateMathVariables: IBlockSetting = {
     type: BlockType.CalculateMathVariables,
-    icon: '123',
+    icon: BlockIcons[BlockType.CalculateMathVariables],
     group: BlockGroup.Calculate,
     header: BlockHeaders.Addons,
     factory: null,
@@ -592,7 +593,7 @@ const CalculateMathVariables: IBlockSetting = {
 
 const AutoReport: IBlockSetting = {
     type: BlockType.MessagesReportBlock,
-    icon: 'addchart',
+    icon: BlockIcons[BlockType.MessagesReportBlock],
     group: BlockGroup.Report,
     header: BlockHeaders.UIComponents,
     factory: MessagesReportBlockComponent,
@@ -601,7 +602,7 @@ const AutoReport: IBlockSetting = {
 
 const Report: IBlockSetting = {
     type: BlockType.Report,
-    icon: 'addchart',
+    icon: BlockIcons[BlockType.Report],
     group: BlockGroup.Report,
     header: BlockHeaders.UIComponents,
     factory: ReportBlockComponent,
@@ -614,7 +615,7 @@ const Report: IBlockSetting = {
 
 const ReportItem: IBlockSetting = {
     type: BlockType.ReportItem,
-    icon: 'list_alt',
+    icon: BlockIcons[BlockType.ReportItem],
     group: BlockGroup.Report,
     header: BlockHeaders.Addons,
     factory: null,
@@ -623,7 +624,7 @@ const ReportItem: IBlockSetting = {
 
 const TagManager: IBlockSetting = {
     type: BlockType.TagsManager,
-    icon: 'sell',
+    icon: BlockIcons[BlockType.TagsManager],
     group: BlockGroup.Documents,
     header: BlockHeaders.UIComponents,
     factory: TagsManagerBlockComponent,
@@ -632,7 +633,7 @@ const TagManager: IBlockSetting = {
 
 const NotificationBlock: IBlockSetting = {
     type: BlockType.NotificationBlock,
-    icon: 'notifications',
+    icon: BlockIcons[BlockType.NotificationBlock],
     group: BlockGroup.Main,
     header: BlockHeaders.ServerBlocks,
     factory: null,

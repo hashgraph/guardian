@@ -60,6 +60,7 @@
     position: relative;
     height: var(--header-height);
     user-select: none;
+    overflow: hidden;
 }
 
 .content.header .mat-toolbar.mat-primary {

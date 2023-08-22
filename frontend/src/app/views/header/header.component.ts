@@ -219,6 +219,7 @@ export class HeaderComponent implements OnInit {
                     this.activeLinkRoot === '/policy-viewer' ||
                     this.activeLinkRoot === '/policy-configuration' ||
                     this.activeLinkRoot === '/compare' ||
+                    this.activeLinkRoot === '/search' ||
                     /^\/policy-configuration\/\w+/.test(this.activeLinkRoot) ||
                     this.activeLinkRoot === 'policy-configuration'
                 );
@@ -250,6 +251,8 @@ export class HeaderComponent implements OnInit {
                 return this.activeLinkRoot === '/policy-configuration';
             case 'SR_COMPARE':
                 return this.activeLinkRoot === '/compare';
+            case 'SR_SEARCH':
+                return this.activeLinkRoot === '/search';
             case 'SR_SETTINGS':
                 return this.activeLinkRoot === '/admin/settings';
             case 'SR_LOGS':
@@ -322,6 +325,8 @@ export class HeaderComponent implements OnInit {
             case 'SR_EDITOR':
                 return false;
             case 'SR_COMPARE':
+                return false;
+            case 'SR_SEARCH':
                 return false;
             case 'SR_SETTINGS':
                 this.router.navigate(['/admin/settings']);

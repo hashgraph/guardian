@@ -157,6 +157,10 @@ export interface SchemaMessageBody extends MessageBody {
      */
     code_version: string;
     /**
+     * Relationships
+     */
+    relationships: string[];
+    /**
      * Document CID
      */
     document_cid: string;

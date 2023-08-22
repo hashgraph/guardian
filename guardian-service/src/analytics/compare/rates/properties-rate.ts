@@ -4,6 +4,8 @@ import { ICompareOptions } from '../interfaces/compare-options.interface';
 import { PropertyModel } from '../models/property.model';
 import { CompareUtils } from '../utils/utils';
 import { IRateMap } from '../interfaces/rate-map.interface';
+import { IRateTable } from '../interfaces/rate-table.interface';
+import { IProperties } from '../interfaces/properties.interface';
 
 /**
  * Calculates the difference between two Properties
@@ -163,7 +165,7 @@ export class PropertiesRate implements IRate<PropertyModel<any>> {
      * Convert class to object
      * @public
      */
-    public toObject(): any {
+    public toObject(): IRateTable<IProperties<any>> {
         return {
             type: this.type,
             totalRate: this.totalRate,

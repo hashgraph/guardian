@@ -369,7 +369,7 @@ export class ModuleComparator {
         if (type === Status.FULL) {
             result = MergeUtils.fullMerge<BlockModel>(children1, children2);
         } else if (type === Status.PARTLY) {
-            result = MergeUtils.partlyMerge<BlockModel>(children1, children2, false);
+            result = MergeUtils.partlyMerge<BlockModel>(children1, children2);
         } else {
             result = MergeUtils.notMerge<BlockModel>(children1, children2);
         }
@@ -393,7 +393,7 @@ export class ModuleComparator {
         children2: IWeightModel[],
         options: ICompareOptions
     ): IRate<any>[] {
-        const result = MergeUtils.partlyMerge<IWeightModel>(children1, children2, false);
+        const result = MergeUtils.partlyMerge<IWeightModel>(children1, children2);
         const rates: IRate<any>[] = [];
         for (const item of result) {
             const rate = new ObjectRate(item.left, item.right);

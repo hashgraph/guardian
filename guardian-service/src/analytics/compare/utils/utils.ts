@@ -3,6 +3,8 @@ import { IReportTable } from '../interfaces/report-table.interface';
 import { IRateMap } from '../interfaces/rate-map.interface';
 import { IRate } from '../interfaces/rate.interface';
 import MurmurHash3 from 'imurmurhash';
+import * as crypto from 'crypto';
+import { Hashing } from '@guardian/common';
 
 /**
  * Compare Utils
@@ -79,7 +81,7 @@ export class CompareUtils {
      * @static
      */
     public static calcTotalRates(rates: number[]): number {
-        if(!rates.length) {
+        if (!rates.length) {
             return 100;
         }
         let total = 0;
@@ -125,5 +127,23 @@ export class CompareUtils {
             hashState.hash(h);
         }
         return String(hashState.result());
+    }
+
+    /**
+     * Sha256
+     * @param data
+     * @public
+     * @static
+     */
+    public static sha256(data: string): string {
+        try {
+            const sha256 = crypto
+                .createHash('sha256')
+                .update(data)
+                .digest();
+            return Hashing.base58.encode(sha256);
+        } catch (error) {
+            return '';
+        }
     }
 }

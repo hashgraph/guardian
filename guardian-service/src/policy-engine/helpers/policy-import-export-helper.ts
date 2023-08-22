@@ -4,7 +4,29 @@ import { publishSystemSchemas } from '@api/helpers/schema-publish-helper';
 import { importSchemaByFiles } from '@api/helpers/schema-import-export-helper';
 import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
 import { INotifier } from '@helpers/notifier';
-import { Artifact, DataBaseHelper, DatabaseServer, findAllEntities, getArtifactType, MessageAction, MessageServer, MessageType, Policy, PolicyMessage, regenerateIds, replaceAllEntities, replaceAllVariables, replaceArtifactProperties, Schema, SchemaFields, Token, Topic, TopicConfig, TopicHelper, Users, } from '@guardian/common';
+import {
+    Artifact,
+    DataBaseHelper,
+    DatabaseServer,
+    findAllEntities,
+    getArtifactType,
+    MessageAction,
+    MessageServer,
+    MessageType,
+    Policy,
+    PolicyMessage,
+    regenerateIds,
+    replaceAllEntities,
+    replaceAllVariables,
+    replaceArtifactProperties,
+    Schema,
+    SchemaFields,
+    Token,
+    Topic,
+    TopicConfig,
+    TopicHelper,
+    Users
+} from '@guardian/common';
 import { exportTag, importTag } from '@api/tag.service';
 import { SchemaImportResult } from '@api/helpers/schema-helper';
 
@@ -116,23 +138,37 @@ export class PolicyImportExportHelper {
             .filter(file => /^schem[a,e]s\/.+/.test(file[0]))
             .map(file => file[1].async('string')));
 
-        const artifactsMetaDataFile = await (Object.entries(content.files)
+        const metaDataFile = (Object.entries(content.files)
             .find(file => file[0] === 'artifacts/metadata.json'));
-        const artifactsMetaDataString = artifactsMetaDataFile && await artifactsMetaDataFile[1].async('string') || '[]';
-        const artifactsMetaData = JSON.parse(artifactsMetaDataString);
-        const artifacts = includeArtifactsData ? await Promise.all(Object.entries(content.files)
-            .filter(file => !file[1].dir)
-            .filter(file => /^artifacts\/.+/.test(file[0]) && file[0] !== 'artifacts/metadata.json')
-            .map(async file => {
-                const uuid = file[0].split('/')[1];
-                const artifactMetaData = artifactsMetaData.find(item => item.uuid === uuid);
+        const metaDataString = metaDataFile && await metaDataFile[1].async('string') || '[]';
+        const metaDataBody: any[] = JSON.parse(metaDataString);
+
+        let artifacts: any;
+        if (includeArtifactsData) {
+            const data = Object.entries(content.files)
+                .filter(file => !file[1].dir)
+                .filter(file => /^artifacts\/.+/.test(file[0]) && file[0] !== 'artifacts/metadata.json')
+                .map(async file => {
+                    const uuid = file[0].split('/')[1];
+                    const artifactMetaData = metaDataBody.find(item => item.uuid === uuid);
+                    return {
+                        name: artifactMetaData.name,
+                        extention: artifactMetaData.extention,
+                        uuid: artifactMetaData.uuid,
+                        data: await file[1].async('nodebuffer')
+                    }
+                })
+            artifacts = await Promise.all(data);
+        } else {
+            artifacts = metaDataBody.map((artifactMetaData) => {
                 return {
                     name: artifactMetaData.name,
                     extention: artifactMetaData.extention,
                     uuid: artifactMetaData.uuid,
-                    data: await file[1].async('nodebuffer')
+                    data: null
                 }
-            })) : artifactsMetaDataFile;
+            });
+        }
 
         const tagsStringArray = await Promise.all(Object.entries(content.files)
             .filter(file => !file[1].dir)
@@ -144,7 +180,13 @@ export class PolicyImportExportHelper {
         const schemas = schemasStringArray.map(item => JSON.parse(item));
         const tags = tagsStringArray.map(item => JSON.parse(item));
 
-        return { policy, tokens, schemas, artifacts, tags };
+        return {
+            policy,
+            tokens,
+            schemas,
+            artifacts,
+            tags
+        };
     }
 
     /**

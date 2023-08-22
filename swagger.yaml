@@ -190,6 +190,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /analytics/search/policies:
+    post:
+      operationId: AnalyticsApi_searchPolicies
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: &ref_0
+        - analytics
   /analytics/compare/policies:
     post:
       operationId: AnalyticsApi_comparePolicies
@@ -197,8 +206,7 @@ paths:
       responses:
         '200':
           description: ''
-      tags: &ref_0
-        - analytics
+      tags: *ref_0
   /analytics/compare/modules:
     post:
       operationId: AnalyticsApi_compareModules

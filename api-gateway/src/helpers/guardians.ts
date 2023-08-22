@@ -891,8 +891,7 @@ export class Guardians extends NatsService {
      * Compare two policies
      * @param user
      * @param type
-     * @param policyId1
-     * @param policyId2
+     * @param ids
      * @param eventsLvl
      * @param propLvl
      * @param childrenLvl
@@ -901,8 +900,7 @@ export class Guardians extends NatsService {
     public async comparePolicies(
         user: any,
         type: any,
-        policyId1: any,
-        policyId2: any,
+        ids: string[],
         eventsLvl: any,
         propLvl: any,
         childrenLvl: any,
@@ -911,8 +909,7 @@ export class Guardians extends NatsService {
         return await this.sendMessage(MessageAPI.COMPARE_POLICIES, {
             type,
             user,
-            policyId1,
-            policyId2,
+            ids,
             eventsLvl,
             propLvl,
             childrenLvl,
@@ -970,6 +967,22 @@ export class Guardians extends NatsService {
     ) {
         return await this.sendMessage(MessageAPI.COMPARE_SCHEMAS, {
             user, type, schemaId1, schemaId2, idLvl
+        });
+    }
+
+    /**
+     * Search policies
+     * @param user
+     * @param type
+     * @param policyId
+     */
+    public async searchPolicies(
+        user: any,
+        policyId: string
+    ) {
+        return await this.sendMessage(MessageAPI.SEARCH_POLICIES, {
+            user,
+            policyId
         });
     }
 

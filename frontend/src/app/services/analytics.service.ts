@@ -46,4 +46,8 @@ export class AnalyticsService {
             responseType: 'text'
         });
     }
+
+    public searchPolicies(options: any): Observable<any> {
+        return this.http.post<any>(`${this.url}/search/policies`, options);
+    }
 }
