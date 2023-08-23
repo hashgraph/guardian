@@ -59,6 +59,9 @@ export class SearchPolicyDialog implements OnInit, AfterContentInit {
                 item._search = `${item.name} ${item._tags}`.toLowerCase();
             }
         }
+        if (this.policy) {
+            this.policy._tags = this.policy.tags?.join(', ');
+        }
         this.selectedAll = this.count === this.size;
     }
 
