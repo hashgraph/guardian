@@ -31,7 +31,6 @@
             <mat-form-field appearance="outline" style="width: 100%">
                 <mat-label>Secondary policy</mat-label>
                 <mat-select multiple [(value)]="policyId2" (valueChange)="onChange()">
-                    <mat-option>None</mat-option>
                     <mat-option *ngFor="let policy of list2" [value]="policy.id">{{policy.name}}</mat-option>
                 </mat-select>
             </mat-form-field>
