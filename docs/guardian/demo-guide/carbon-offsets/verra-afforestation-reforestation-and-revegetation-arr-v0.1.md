@@ -48,7 +48,7 @@ Create additional users by clicking the “Create User” button. Once the users
 
 Go to the Standard Registry profile and approve the VVB in the “Approve VVB” tab.
 
-<figure><img src="../../../.gitbook/assets/image (96).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (96) (1).png" alt=""><figcaption></figcaption></figure>
 
 Click on the Project Proponent profile and select “New Project”.
 

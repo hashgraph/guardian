@@ -19,7 +19,7 @@ You will need to run the installation commands, open a tab on your browser and n
 
 Here in this demo for the Standard Registry, we will show the Standard Registry creating an account and importing the policy.
 
-**GHG Policy IPFS timestamp 1674823890.277292460**
+**GHG Policy IPFS timestamp: 1690818219.261824567**
 
 **Step 1**
 
@@ -59,7 +59,7 @@ Here we will want to click on **“Import”** policy.
 
 **Step 5**
 
-Now we will want to import the GHG policy file and the **IPFS timestamp 1674823890.277292460** and click on **“Ok”**.
+Now we will want to import the GHG policy file and the **IPFS timestamp 1690818219.261824567** and click on **“Ok”**.
 
 <figure><img src="../../../../.gitbook/assets/image (185).png" alt=""><figcaption></figcaption></figure>
 
@@ -69,13 +69,13 @@ Once you have clicked on **“Ok”** you can then preview the GHG policy and th
 
 Here we can see the policy being imported.
 
-<figure><img src="../../../../.gitbook/assets/image (6) (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (6).png" alt=""><figcaption></figcaption></figure>
 
 **Step 6**
 
 You will then see the GHG Policy with the Status of Draft.
 
-<figure><img src="../../../../.gitbook/assets/image (7).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (7) (4).png" alt=""><figcaption></figcaption></figure>
 
 We will just add this policy as the 1st version and then click on **“Publish”**.
 
@@ -161,7 +161,7 @@ You will want to set up your Employer role and select the standard registry from
 
 You will then want to go on to the **“Policies”** tab, where you will be able to see the GHG policy which was imported by the Standard Registry, where now you will want to click on the **“Go”** button on the GHG policy.
 
-<figure><img src="../../../../.gitbook/assets/image (113).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (113) (1).png" alt=""><figcaption></figcaption></figure>
 
 **Step 4**
 
@@ -186,3 +186,5 @@ Once you have completed the employee survey, you will then click on the GHG poli
 Once completed you will see the document that you have created with the following information that you have provided.
 
 <figure><img src="../../../../.gitbook/assets/image (191).png" alt=""><figcaption></figcaption></figure>
+
+For more information about different GHG versions and their IPFS timestamps, you can click [here](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/GHG%20Methodology/Remote%20WorkFlow%20Policy/readme.md) to see the GHG policy versions.&#x20;

@@ -16,7 +16,7 @@ description: >-
 
 You will need to run the installation commands, open a tab on your browser and navigate to [http://localhost:3000/](http://localhost:3000/).&#x20;
 
-In this demo we will import the Verra REDD Policy = **1674823642.126585003**
+In this demo we will import the Verra REDD Policy = **1690819293.839911342**
 
 ### Verra REDD\_3 for the Standard Registry&#x20;
 
@@ -42,7 +42,7 @@ Once you have added the correct details to configure your account, you will need
 
 You will need to follow the step below to Configure your account. Here you will need to configure your account. You will need to enter the details shown in the image below.
 
-<figure><img src="../../../.gitbook/assets/image (201).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (201) (1).png" alt=""><figcaption></figcaption></figure>
 
 **Step 3**
 
@@ -59,7 +59,7 @@ Once you have decided that you want to import a specific Verra Policy, you will 
 
 For this demo we will use the Verra REDD 3,&#x20;
 
-**Verra REDD Policy 3 groups = 1674823642.126585003**
+**Verra REDD Policy 3 groups = 1690819293.839911342**
 
 Once you have chosen one, you will add this to the ‘Hedera message Timestamp’ pop up which will then allow you to preview the policy. If you intend to import this policy as a new version of another that you have already been using, just select which policy you wish to refer to under the **“Version of”**.  Once you have done your preview you can click on **“Import”**.
 
@@ -87,7 +87,7 @@ Under the “Policies” menu, click on **“Go”** for the desired policy name
 
 In this case we will approve the submission&#x20;
 
-<figure><img src="../../../.gitbook/assets/image (203).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (203) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/image (210).png" alt=""><figcaption></figcaption></figure>
 
@@ -238,7 +238,7 @@ The first step is that you will need to either login in to your account that you
 
 _**Note: You can access the ‘Demo Admin Panel’ where you can just select the ‘Project Proponent’ for demo purposes.**_
 
-<figure><img src="../../../.gitbook/assets/image (161).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (161) (1).png" alt=""><figcaption></figcaption></figure>
 
 **Step 2**
 
@@ -295,3 +295,5 @@ Once validated you will then want to click on **“Add Reports”** and fill in 
 You will then be able to see the report that you have just added by clicking on **“Monitoring Reports”** which then shows as it **‘Waiting for Verification’**. which then you will need to wait for verification to be approved.&#x20;
 
 <figure><img src="../../../.gitbook/assets/image (170).png" alt=""><figcaption></figcaption></figure>
+
+For more information about different Verra REDD versions and their IPFS timestamps, you can click [here](https://github.com/hashgraph/guardian/tree/main/Methodology%20Library/Verra/Verra%20Redd) to see the Methodology Library for Verra Redd.

@@ -44,7 +44,7 @@ Groups are separate sets of documents access , which can be limited to users who
 
 <figure><img src="../.gitbook/assets/image (22) (2).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../.gitbook/assets/image (17) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (17) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 #### 2.2 Usage
 

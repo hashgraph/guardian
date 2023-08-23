@@ -80,7 +80,7 @@ Select role as `INSTALLER.`
 
 After confirming the roles, enter the owner information in the dialog
 
-<figure><img src="../../../.gitbook/assets/image (66).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (66) (1).png" alt=""><figcaption></figcaption></figure>
 
 Download the device config from the list.
 

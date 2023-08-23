@@ -8,7 +8,7 @@ Here the images below to show the selection of account type and selection of use
 
 
 
-<figure><img src="../../../.gitbook/assets/2 (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/2 (5).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/1 (1) (4).png" alt=""><figcaption></figcaption></figure>
 
@@ -16,7 +16,7 @@ Here the images below to show the selection of account type and selection of use
 
 The header was also adapted for mobile for all types of users. The balance was maintained as one of the elements always present. The new header for mobile, these elements are always present.
 
-<figure><img src="../../../.gitbook/assets/3 (1) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/3 (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 The various menus and submenus (in case there are any) have been moved upon clicking on the hamburger menu, presenting the user with the following.
 
@@ -36,7 +36,7 @@ Among the adaptations for the Standard Registry, the creation / edition of a new
 
 Below are the images show the creation of a "New Token" form for the Standard Registry.
 
-![](<../../../.gitbook/assets/14 (1) (2).png>) ![](<../../../.gitbook/assets/15 (1).png>)
+![](<../../../.gitbook/assets/14 (1) (2).png>) ![](<../../../.gitbook/assets/15 (4).png>)
 
 Here below are the images to show the creation of a "Edit Token" form for the Standard Registry. On the left for a non published and on the right for a published token.
 

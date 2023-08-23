@@ -24,7 +24,7 @@ The first step is that you will need to either login in to your account that you
 
 **Note: You can also access the ‘Demo Admin Panel’ where you can just select the ‘Standard Registry’ for demo purposes.**
 
-<figure><img src="../../../.gitbook/assets/image (167).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (167) (1).png" alt=""><figcaption></figcaption></figure>
 
 **Step 2**
 
@@ -60,11 +60,11 @@ Once you have completed the previous steps you can  see the navigation menu and 
 
 Ideally for this flow we will want to import the iREC policy in which all schemas and tokens will be automatically populated.&#x20;
 
-<figure><img src="../../../.gitbook/assets/image (179).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (179) (1).png" alt=""><figcaption></figcaption></figure>
 
 **Step 4**
 
-Once you have decided that you want to import the iREC 7 Policy, you will need to enter **1674822624.800179003** on the ‘Hedera message timestamp” pop up and click on the **“Ok”** button.
+Once you have decided that you want to import the iREC 7 Policy, you will need to enter **1690484932.571897003** on the ‘Hedera message timestamp” pop up and click on the **“Ok”** button.
 
 <figure><img src="../../../.gitbook/assets/image (160).png" alt=""><figcaption></figcaption></figure>
 
@@ -116,7 +116,7 @@ The first step is that you will need to either login in to your account that you
 
 **Note: You can also access the ‘Demo Admin Panel’ where you can just select the ‘Registrant’ for demo purposes.**
 
-<figure><img src="../../../.gitbook/assets/image (145).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (145) (1).png" alt=""><figcaption></figcaption></figure>
 
 **Step 2**
 
@@ -144,9 +144,10 @@ You will then want to select your role which will be ‘Registrant’ from the d
 
 Once you have filled in your Registrant Application, you will then need to click on **“Ok”**.
 
-<figure><img src="../../../.gitbook/assets/image (220).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (220) (1).png" alt=""><figcaption></figcaption></figure>
 
 After you have clicked on **“Ok”** your Registration application will need to be approved by the Standard Registry.
 
 <figure><img src="../../../.gitbook/assets/image (216).png" alt=""><figcaption></figcaption></figure>
 
+For more information about each **IREC Schema and Policy Versions and their IPFS timestamps,** you can click on the previous section [**"Introduction to International Renewable Energy Credit Standard ( iREC )** ](introduction-to-international-renewable-energy-credit-standard-irec.md)
