@@ -288,6 +288,14 @@ export class BlocksRate extends Rate<BlockModel> {
     }
 
     /**
+     * Set children rates
+     * @public
+     */
+    public override setChildren<U extends IRate<any>>(children: U[]): void {
+        this.children = children as any;
+    }
+
+    /**
      * Get Children Rates
      * @public
      */

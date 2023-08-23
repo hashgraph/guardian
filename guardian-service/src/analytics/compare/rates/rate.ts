@@ -33,6 +33,14 @@ export class Rate<T extends IModel> implements IRate<T> {
     }
 
     /**
+     * Set children rates
+     * @public
+     */
+    public setChildren<U extends IRate<any>>(children: U[]): void {
+        return;
+    }
+
+    /**
      * Get children rates
      * @public
      */

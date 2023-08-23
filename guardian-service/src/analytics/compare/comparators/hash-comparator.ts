@@ -3,7 +3,8 @@ import { PolicyModel } from '../models/policy.model';
 import { SchemaModel } from '../models/schema.model';
 import { TokenModel } from '../models/token.model';
 import { FileModel } from '../models/file.model';
-import { IWeightBlock, IWeightItem } from '../interfaces/weight-tree';
+import { IWeightBlock } from '../interfaces/weight-block.interface';
+import { IWeightItem } from "../interfaces/weight-item.interface";
 import { CompareUtils } from '../utils/utils';
 import { PolicyComparator } from './policy-comparator';
 

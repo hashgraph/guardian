@@ -1,10 +1,14 @@
 import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { IModel } from '../interfaces/model.interface';
 import { IRateMap } from '../interfaces/rate-map.interface';
 import { IRate } from '../interfaces/rate.interface';
-import { IWeightModel } from '../interfaces/weight-model.interface';
+import { IWeightModel, IWeightTreeModel } from '../interfaces/weight-model.interface';
 import { BlockModel } from '../models/block.model';
+import { DocumentModel } from '../models/document.model';
 import { BlocksRate } from '../rates/blocks-rate';
+import { DocumentsRate } from '../rates/documents-rate';
 import { ObjectRate } from '../rates/object-rate';
+import { Rate } from '../rates/rate';
 import { Status } from '../types/status.type';
 import { MergeUtils } from './merge-utils';
 
@@ -13,41 +17,121 @@ import { MergeUtils } from './merge-utils';
  */
 export class ComparePolicyUtils {
     /**
+      * Compare two trees
+      * @param tree1
+      * @param tree2
+      * @param options
+      * @public
+      * @static
+      */
+    public static compareBlocks(
+        tree1: BlockModel,
+        tree2: BlockModel,
+        options: ICompareOptions
+    ): BlocksRate {
+        const createRate = (tree1: BlockModel, tree2: BlockModel) => {
+            const rate = new BlocksRate(tree1, tree2);
+            rate.calc(options);
+            return rate;
+        }
+        return ComparePolicyUtils.compareTree(tree1, tree2, createRate);
+    }
+
+    /**
+      * Compare two trees
+      * @param tree1
+      * @param tree2
+      * @param options
+      * @public
+      * @static
+      */
+    public static compareDocuments(
+        tree1: DocumentModel,
+        tree2: DocumentModel,
+        options: ICompareOptions
+    ): DocumentsRate {
+        const createRate = (tree1: DocumentModel, tree2: DocumentModel) => {
+            const rate = new DocumentsRate(tree1, tree2);
+            rate.calc(options);
+            return rate;
+        }
+        return ComparePolicyUtils.compareTree(tree1, tree2, createRate);
+    }
+
+    /**
      * Compare two trees
-     * @param block1
-     * @param block2
+     * @param tree1
+     * @param tree2
      * @param options
      * @public
      * @static
      */
-    public static compareTree(block1: BlockModel, block2: BlockModel, options: ICompareOptions): BlocksRate {
-        const rate = new BlocksRate(block1, block2);
-        rate.calc(options);
-        if (!block1 && !block2) {
+    public static compareTree<T extends IRate<IModel>>(
+        tree1: IWeightTreeModel,
+        tree2: IWeightTreeModel,
+        createRate: (tree1: IWeightTreeModel, tree2: IWeightTreeModel) => T
+    ): T {
+        const rate = createRate(tree1, tree2);
+        if (!tree1 && !tree2) {
             return rate;
         }
-        if (block1 && !block2) {
+        if (tree1 && !tree2) {
             rate.type = Status.LEFT;
-            rate.children = ComparePolicyUtils.compareChildren(Status.LEFT, block1.children, null, options);
+            rate.setChildren(
+                ComparePolicyUtils.compareChildren(
+                    Status.LEFT,
+                    tree1.children,
+                    null,
+                    createRate
+                )
+            );
             return rate;
         }
-        if (!block1 && block2) {
+        if (!tree1 && tree2) {
             rate.type = Status.RIGHT;
-            rate.children = ComparePolicyUtils.compareChildren(Status.RIGHT, null, block2.children, options);
+            rate.setChildren(
+                ComparePolicyUtils.compareChildren(
+                    Status.RIGHT,
+                    null,
+                    tree2.children,
+                    createRate
+                )
+            );
             return rate;
         }
-        if (block1.equal(block2)) {
+        if (tree1.equal(tree2)) {
             rate.type = Status.FULL;
-            rate.children = ComparePolicyUtils.compareChildren(Status.FULL, block1.children, block2.children, options);
+            rate.setChildren(
+                ComparePolicyUtils.compareChildren(
+                    Status.FULL,
+                    tree1.children,
+                    tree2.children,
+                    createRate
+                )
+            );
             return rate;
         }
-        if (block1.key === block2.key) {
+        if (tree1.key === tree2.key) {
             rate.type = Status.PARTLY;
-            rate.children = ComparePolicyUtils.compareChildren(Status.PARTLY, block1.children, block2.children, options);
+            rate.setChildren(
+                ComparePolicyUtils.compareChildren(
+                    Status.PARTLY,
+                    tree1.children,
+                    tree2.children,
+                    createRate
+                )
+            );
             return rate;
         } else {
             rate.type = Status.LEFT_AND_RIGHT;
-            rate.children = ComparePolicyUtils.compareChildren(Status.LEFT_AND_RIGHT, block1.children, block2.children, options);
+            rate.setChildren(
+                ComparePolicyUtils.compareChildren(
+                    Status.LEFT_AND_RIGHT,
+                    tree1.children,
+                    tree2.children,
+                    createRate
+                )
+            );
             return rate;
         }
     }
@@ -57,27 +141,28 @@ export class ComparePolicyUtils {
      * @param type
      * @param children1
      * @param children2
-     * @param options
      * @public
      * @static
      */
-    public static compareChildren(
+    public static compareChildren<T extends IRate<IModel>>(
         type: Status,
-        children1: BlockModel[],
-        children2: BlockModel[],
-        options: ICompareOptions
-    ): BlocksRate[] {
-        let result: IRateMap<BlockModel>[];
+        children1: IWeightTreeModel[],
+        children2: IWeightTreeModel[],
+        createRate: (tree1: IWeightTreeModel, tree2: IWeightTreeModel) => T
+    ): T[] {
+        let result: IRateMap<IWeightTreeModel>[];
         if (type === Status.FULL) {
-            result = MergeUtils.fullMerge<BlockModel>(children1, children2);
+            result = MergeUtils.fullMerge<IWeightTreeModel>(children1, children2);
         } else if (type === Status.PARTLY) {
-            result = MergeUtils.partlyMerge<BlockModel>(children1, children2);
+            result = MergeUtils.partlyMerge<IWeightTreeModel>(children1, children2);
         } else {
-            result = MergeUtils.notMerge<BlockModel>(children1, children2);
+            result = MergeUtils.notMerge<IWeightTreeModel>(children1, children2);
         }
-        const children: BlocksRate[] = [];
+        const children: T[] = [];
         for (const item of result) {
-            children.push(ComparePolicyUtils.compareTree(item.left, item.right, options));
+            children.push(
+                ComparePolicyUtils.compareTree(item.left, item.right, createRate)
+            );
         }
         return children;
     }

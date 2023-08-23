@@ -12,7 +12,7 @@ import { IKeyMap } from '../interfaces/key-map.interface';
 import { TokenModel } from './token.model';
 import { IWeightModel } from '../interfaces/weight-model.interface';
 import { CompareUtils } from '../utils/utils';
-import { IWeightBlock } from '../interfaces/weight-tree';
+import { IWeightBlock } from '../interfaces/weight-block.interface';
 
 /**
  * Block Model

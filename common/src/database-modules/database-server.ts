@@ -1892,6 +1892,56 @@ export class DatabaseServer {
     }
 
     /**
+     * Get VC
+     * @param id
+     */
+    public static async getVCById(id: string): Promise<VcDocumentCollection> {
+        return await new DataBaseHelper(VcDocumentCollection).findOne(id);
+    }
+
+    /**
+     * Get VC
+     * @param id
+     */
+    public static async getVC(filters?: any, options?: any): Promise<VcDocumentCollection> {
+        return await new DataBaseHelper(VcDocumentCollection).findOne(filters, options);
+    }
+
+    /**
+     * Get VCs
+     * @param filters
+     * @param options
+     */
+    public static async getVCs(filters?: any, options?: any): Promise<VcDocumentCollection[]> {
+        return await new DataBaseHelper(VcDocumentCollection).find(filters, options);
+    }
+
+    /**
+     * Get VC
+     * @param id
+     */
+    public static async getVPById(id: string): Promise<VpDocumentCollection> {
+        return await new DataBaseHelper(VpDocumentCollection).findOne(id);
+    }
+
+    /**
+     * Get VC
+     * @param id
+     */
+    public static async getVP(filters?: any, options?: any): Promise<VpDocumentCollection> {
+        return await new DataBaseHelper(VpDocumentCollection).findOne(filters, options);
+    }
+
+    /**
+     * Get VCs
+     * @param filters
+     * @param options
+     */
+    public static async getVPs(filters?: any, options?: any): Promise<VpDocumentCollection[]> {
+        return await new DataBaseHelper(VpDocumentCollection).find(filters, options);
+    }
+
+    /**
      * Update policy
      * @param policyId
      * @param data

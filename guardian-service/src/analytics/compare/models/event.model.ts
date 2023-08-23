@@ -2,7 +2,7 @@ import MurmurHash3 from 'imurmurhash';
 import { BlockModel } from './block.model';
 import { ICompareOptions } from '../interfaces/compare-options.interface';
 import { IKeyMap } from '../interfaces/key-map.interface';
-import { IWeightItem } from '../interfaces/weight-tree';
+import { IWeightItem } from "../interfaces/weight-item.interface";
 
 /**
  * Event Model
