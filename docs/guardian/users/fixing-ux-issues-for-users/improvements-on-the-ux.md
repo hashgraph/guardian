@@ -82,4 +82,4 @@ We have improved the UX of Registrant Application form by turning it into a wiza
 
 <figure><img src="../../../.gitbook/assets/image (276).png" alt="" width="563"><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (223).png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (223) (1).png" alt="" width="563"><figcaption></figcaption></figure>

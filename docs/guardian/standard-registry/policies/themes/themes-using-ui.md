@@ -22,7 +22,7 @@ _**Note**: users must click ‘**Save**’ button to preserve the changes to the
 
 #### **1.1 Menu actions**
 
-![image4.png](<../../../../.gitbook/assets/3 (6).png>)
+![image4.png](<../../../../.gitbook/assets/3 (6) (1).png>)
 
 * Create new theme
 * Copy selected theme
@@ -60,7 +60,7 @@ Rules can be removed by clicking on remove icon as shown below:
 
 This rule is applied if and only if no other rules’ conditions matches the Block.
 
-![](<../../../../.gitbook/assets/7 (5).png>)
+![](<../../../../.gitbook/assets/7 (5) (1).png>)
 
 **1.2.4 Conditions**
 

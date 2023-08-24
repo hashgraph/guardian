@@ -131,11 +131,17 @@ export class SearchPoliciesComponent implements OnInit {
             return;
         }
         const ids = this.policies.map(e => e.id);
+        if(this.policy) {
+            ids.unshift(this.policy.id);
+        }
         this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
             if (this.policies) {
                 for (const policy of this.policies) {
                     policy._tags = data[policy.id];
                 }
+            }
+            if(this.policy) {
+                this.policy._tags = data[this.policy.id];
             }
             setTimeout(() => {
                 this.loading = false;

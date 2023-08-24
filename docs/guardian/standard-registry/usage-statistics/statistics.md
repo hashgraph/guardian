@@ -22,7 +22,7 @@ By default the system loads the data of the last successful refresh, and the del
 
 The UI allows users to select a particular prior snapshot of the data instead of the default last refresh.
 
-![image1.png](<../../../.gitbook/assets/0 (6) (1).png>)
+![image1.png](<../../../.gitbook/assets/0 (6).png>)
 
 The top part of the page displays numerical statistics of the selected data snapshot (‘refresh’) and&#x20;
 

@@ -66,7 +66,7 @@ Later…
 
 The high level sequence is shown below:
 
-![](<../../../.gitbook/assets/0 (4).png>)
+![](<../../../.gitbook/assets/0 (4) (1).png>)
 
 ### 'Supply' Side <a href="#_bakygsypldnr" id="_bakygsypldnr"></a>
 
