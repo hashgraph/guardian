@@ -55,3 +55,4 @@ export { ModuleModel } from './compare/models/module.model';
 export { ModuleComparator } from './compare/comparators/module-comparator';
 export { HashComparator } from './compare/comparators/hash-comparator';
 export { FileModel } from './compare/models/file.model';
+export { DocumentComparator } from './compare/comparators/document-comparator';

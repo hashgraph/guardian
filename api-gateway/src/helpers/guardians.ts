@@ -897,6 +897,36 @@ export class Guardians extends NatsService {
      * @param childrenLvl
      * @param idLvl
      */
+    public async compareDocuments(
+        user: any,
+        type: any,
+        ids: string[],
+        eventsLvl: any,
+        propLvl: any,
+        childrenLvl: any,
+        idLvl: any,
+    ) {
+        return await this.sendMessage(MessageAPI.COMPARE_DOCUMENTS, {
+            type,
+            user,
+            ids,
+            eventsLvl,
+            propLvl,
+            childrenLvl,
+            idLvl
+        });
+    }
+
+    /**
+     * Compare two policies
+     * @param user
+     * @param type
+     * @param ids
+     * @param eventsLvl
+     * @param propLvl
+     * @param childrenLvl
+     * @param idLvl
+     */
     public async comparePolicies(
         user: any,
         type: any,

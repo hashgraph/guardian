@@ -12,6 +12,7 @@ import { SearchPolicyDialog } from './search-policy-dialog/search-policy-dialog.
 import { TagEngineModule } from '../tag-engine/tag-engine.module';
 import { CommonComponentsModule } from '../common/common-components.module';
 import { AppRoutingModule } from 'src/app/app-routing.module';
+import { CompareDocumentComponent } from './compare-document/compare-document.component';
 
 @NgModule({
     declarations: [
@@ -21,7 +22,8 @@ import { AppRoutingModule } from 'src/app/app-routing.module';
         CompareModuleComponent,
         MultiComparePolicyComponent,
         SearchPoliciesComponent,
-        SearchPolicyDialog
+        SearchPolicyDialog,
+        CompareDocumentComponent
     ],
     imports: [
         CommonModule,
@@ -38,7 +40,8 @@ import { AppRoutingModule } from 'src/app/app-routing.module';
         CompareModuleComponent,
         MultiComparePolicyComponent,
         SearchPoliciesComponent,
-        SearchPolicyDialog
+        SearchPolicyDialog,
+        CompareDocumentComponent
     ]
 })
 export class CompareModule { }

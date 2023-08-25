@@ -239,6 +239,7 @@ export class MultiSignBlock {
             vpDocument.type = DataTypes.MULTI_SIGN;
             vpDocument.messageId = vpMessageId;
             vpDocument.topicId = vpMessageResult.getTopicId();
+            vpDocument.relationships = sourceDoc.messageId ? [sourceDoc.messageId] : null;
             await ref.databaseServer.saveVP(vpDocument);
 
             await ref.databaseServer.setMultiSigStatus(ref.uuid, documentId, currentUser.group, DocumentStatus.SIGNED);

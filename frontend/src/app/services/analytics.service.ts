@@ -50,4 +50,8 @@ export class AnalyticsService {
     public searchPolicies(options: any): Observable<any> {
         return this.http.post<any>(`${this.url}/search/policies`, options);
     }
+
+    public compareDocuments(options: any): Observable<any> {
+        return this.http.post<any>(`${this.url}/compare/documents`, options);
+    }
 }

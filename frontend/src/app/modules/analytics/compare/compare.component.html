@@ -113,4 +113,15 @@
             [idLvl]="idLvl" 
             (change)="onChange($event)"></app-multi-compare-policy>
     </div>
+
+    <div *ngIf="type === 'document'" class="content-result">
+        <app-compare-document 
+            [type]="visibleType" 
+            [value]="result" 
+            [eventsLvl]="eventsLvl" 
+            [propLvl]="propLvl"
+            [childrenLvl]="childrenLvl" 
+            [idLvl]="idLvl" 
+            (change)="onChange($event)"></app-compare-document>
+    </div>
 </div>

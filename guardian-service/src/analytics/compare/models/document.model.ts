@@ -27,7 +27,7 @@ export class DocumentModel implements IWeightModel {
 
     /**
      * Compare Options
-     * @private
+     * @public
      */
     public readonly options: ICompareOptions;
 
@@ -50,34 +50,40 @@ export class DocumentModel implements IWeightModel {
     public readonly topicId: string;
 
     /**
-     * Relationship IDs
+     * Owner
      * @public
      */
-    public readonly relationshipIds: string[];
+    public readonly owner: string;
 
     /**
-     * Schema
-     * @public
+     * Relationship IDs
+     * @protected
      */
-    public readonly schema: string;
+    protected _relationshipIds: string[];
 
     /**
      * All relationships
-     * @private
+     * @protected
      */
-    private _relationships: DocumentModel[];
+    protected _relationships: DocumentModel[];
 
     /**
      * Weights
-     * @private
+     * @protected
      */
-    private _weight: string[];
+    protected _weight: string[];
 
     /**
      * Weights map by name
-     * @private
+     * @protected
      */
-    private _weightMap: IKeyMap<string>;
+    protected _weightMap: IKeyMap<string>;
+
+    /**
+     * Weights
+     * @protected
+     */
+    protected _key: string;
 
     /**
      * Children
@@ -92,7 +98,15 @@ export class DocumentModel implements IWeightModel {
      * @public
      */
     public get key(): string {
-        return this.schema;
+        return this._key;
+    }
+
+    /**
+     * Relationship IDs
+     * @public
+     */
+    public get relationshipIds(): string[] {
+        return this._relationshipIds;
     }
 
     constructor(
@@ -105,7 +119,8 @@ export class DocumentModel implements IWeightModel {
         this.id = document.id;
         this.messageId = document.messageId;
         this.topicId = document.topicId;
-        this.document = document.document;
+        this.owner = document.owner;
+        // this.document = document.document;
 
         this._weight = [];
         this._weightMap = {};
@@ -117,7 +132,11 @@ export class DocumentModel implements IWeightModel {
      * @public
      */
     public setRelationships(relationships: DocumentModel[]): DocumentModel {
-        this._relationships = relationships;
+        if (Array.isArray(relationships)) {
+            this._relationships = relationships;
+        } else {
+            this._relationships = [];
+        }
         return this;
     }
 
@@ -181,21 +200,30 @@ export class DocumentModel implements IWeightModel {
      * @public
      */
     public equal(doc: DocumentModel, index?: number): boolean {
+        if (this.type !== doc.type) {
+            return false;
+        }
         if (this.key !== doc.key) {
             return false;
         }
-        if (!this._weight.length) {
-            return this.key === doc.key;
-        }
-        if (Number.isFinite(index)) {
-            if (this._weight[index] === '0' && doc._weight[index] === '0') {
-                return false;
-            } else {
-                return this._weight[index] === doc._weight[index];
-            }
+        if(Number.isFinite(index) && index > 0) {
+            return true;
         } else {
-            return this._weight[0] === doc._weight[0];
+            return false;
         }
+
+        // if (!this._weight.length) {
+        //     return this.key === doc.key;
+        // }
+        // if (Number.isFinite(index)) {
+        //     if (this._weight[index] === '0' && doc._weight[index] === '0') {
+        //         return false;
+        //     } else {
+        //         return this._weight[index] === doc._weight[index];
+        //     }
+        // } else {
+        //     return this._weight[0] === doc._weight[0];
+        // }
     }
 
     /**
@@ -205,6 +233,17 @@ export class DocumentModel implements IWeightModel {
     public toObject(): any {
         return {};
     }
+
+    /**
+     * Convert class to object
+     * @public
+     */
+    public info(): any {
+        return {
+            id: this.id,
+            type: this.type
+        };
+    }
 }
 
 
@@ -213,8 +252,18 @@ export class DocumentModel implements IWeightModel {
  */
 export class VcDocumentModel extends DocumentModel {
     constructor(vc: VcDocument, options: ICompareOptions) {
-        super(DocumentType.VC, vc, options)
+        super(DocumentType.VC, vc, options);
+
+        this._relationshipIds = [];
+        if (Array.isArray(vc.relationships)) {
+            for (const id of vc.relationships) {
+                this._relationshipIds.push(id);
+            }
+        }
+
+        this._key = vc.schema;
     }
+
 }
 
 /**
@@ -222,6 +271,15 @@ export class VcDocumentModel extends DocumentModel {
  */
 export class VpDocumentModel extends DocumentModel {
     constructor(vp: VpDocument, options: ICompareOptions) {
-        super(DocumentType.VP, vp, options)
+        super(DocumentType.VP, vp, options);
+
+        this._relationshipIds = [];
+        if (Array.isArray(vp.relationships)) {
+            for (const id of vp.relationships) {
+                this._relationshipIds.push(id);
+            }
+        }
+
+        this._key = vp.type;
     }
 }

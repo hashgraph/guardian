@@ -142,7 +142,7 @@ export class RetirementBlock {
         vpDocument.type = DataTypes.RETIREMENT;
         vpDocument.messageId = vpMessageResult.getId();
         vpDocument.topicId = vpMessageResult.getTopicId();
-
+        vpDocument.relationships = relationships;
         await ref.databaseServer.saveVP(vpDocument);
 
         await MintService.wipe(ref, token, tokenValue, root, targetAccountId, vpMessageResult.getId());

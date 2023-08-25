@@ -65,6 +65,7 @@ import { AppModule } from './app.module';
 import { analyticsAPI } from '@api/analytics.service';
 import { GridFSBucket } from 'mongodb';
 import { suggestionsAPI } from '@api/suggestions.service';
+import { DocumentComparator } from '@analytics';
 
 export const obj = {};
 
@@ -90,7 +91,7 @@ Promise.all([
         'v2-16-0'
     ]),
     MessageBrokerChannel.connect('GUARDIANS_SERVICE'),
-    NestFactory.createMicroservice<MicroserviceOptions>(AppModule,{
+    NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
         transport: Transport.NATS,
         options: {
             queue: 'guardian-service',

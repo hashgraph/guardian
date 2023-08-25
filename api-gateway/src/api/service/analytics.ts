@@ -133,6 +133,50 @@ export class AnalyticsApi {
         }
     }
 
+
+    @Post('/compare/documents')
+    @HttpCode(HttpStatus.OK)
+    async compareDocuments(@Body() body, @Req() req): Promise<any> {
+        const guardians = new Guardians();
+        const documentId1 = body ? body.documentId1 : null;
+        const documentId2 = body ? body.documentId2 : null;
+        const documentIds = body ? body.documentIds : null;
+        const eventsLvl = body ? body.eventsLvl : null;
+        const propLvl = body ? body.propLvl : null;
+        const childrenLvl = body ? body.childrenLvl : null;
+        const idLvl = body ? body.idLvl : null;
+        const user = req.user;
+        if (!user) {
+            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+        }
+
+        let ids: string[];
+        if (documentId1 && documentId2) {
+            ids = [documentId1, documentId2];
+        } else if (Array.isArray(documentIds) && documentIds.length > 1) {
+            ids = documentIds;
+        }
+
+        if (!ids) {
+            throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+        try {
+            const result = await guardians.compareDocuments(
+                user,
+                null,
+                ids,
+                eventsLvl,
+                propLvl,
+                childrenLvl,
+                idLvl
+            );
+            return result;
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw error;
+        }
+    }
+
     /**
      * Compare policies export
      * @param body

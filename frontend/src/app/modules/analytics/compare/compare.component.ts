@@ -17,6 +17,10 @@ export class CompareComponent implements OnInit {
     moduleId1: any;
     moduleId2: any;
     policyIds: any;
+    documentId1: any;
+    documentId2: any;
+    documentIds: any;
+    ids: any;
     result: any;
     eventsLvl = '1';
     propLvl = '2';
@@ -51,6 +55,10 @@ export class CompareComponent implements OnInit {
         this.moduleId1 = this.route.snapshot.queryParams['moduleId1'] || '';
         this.moduleId2 = this.route.snapshot.queryParams['moduleId2'] || '';
         this.policyIds = this.route.snapshot.queryParams['policyIds'] || [];
+        this.documentId1 = this.route.snapshot.queryParams['documentId1'] || '';
+        this.documentId2 = this.route.snapshot.queryParams['documentId2'] || '';
+        this.documentIds = this.route.snapshot.queryParams['documentIds'] || [];
+        this.ids = this.route.snapshot.queryParams['ids'] || [];
         this.result = null;
 
         if (this.type === 'policy') {
@@ -61,9 +69,32 @@ export class CompareComponent implements OnInit {
             this.loadModule();
         } else if (this.type === 'multi-policy') {
             this.loadMultiPolicy();
+        } else if (this.type === 'document') {
+            this.loadDocument();
         } else {
             this.loading = false;
         }
+    }
+
+    loadDocument() {
+        const options = {
+            documentId1: this.documentId1,
+            documentId2: this.documentId2,
+            eventsLvl: this.eventsLvl,
+            propLvl: this.propLvl,
+            childrenLvl: this.childrenLvl,
+            idLvl: this.idLvl
+        }
+        this.analyticsService.compareDocuments(options).subscribe((value) => {
+            this.result = value;
+            this.total = this.result?.total;
+            setTimeout(() => {
+                this.loading = false;
+            }, 500);
+        }, ({ message }) => {
+            this.loading = false;
+            console.error(message);
+        });
     }
 
     loadMultiPolicy() {
