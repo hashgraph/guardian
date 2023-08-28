@@ -13,7 +13,8 @@ export async function fixtures(): Promise<void> {
         let user = usersRepository.create({
             username: 'StandardRegistry',
             password: crypto.createHash('sha256').update('test').digest('hex'),
-            walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
+            // walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
+            walletToken: '',
             role: UserRole.STANDARD_REGISTRY
         });
         await usersRepository.save(user);
@@ -21,7 +22,8 @@ export async function fixtures(): Promise<void> {
         user = usersRepository.create({
             username: 'Installer',
             password: crypto.createHash('sha256').update('test').digest('hex'),
-            walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
+            // walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
+            walletToken: '',
             role: UserRole.USER
         });
         await usersRepository.save(user);
@@ -29,7 +31,8 @@ export async function fixtures(): Promise<void> {
         user = usersRepository.create({
             username: 'Installer2',
             password: crypto.createHash('sha256').update('test').digest('hex'),
-            walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
+            // walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
+            walletToken: '',
             role: UserRole.USER
         });
         await usersRepository.save(user);
@@ -37,7 +40,8 @@ export async function fixtures(): Promise<void> {
         user = usersRepository.create({
             username: 'Auditor',
             password: crypto.createHash('sha256').update('test').digest('hex'),
-            walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
+            // walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
+            walletToken: '',
             role: UserRole.AUDITOR
         });
         await usersRepository.save(user);
@@ -45,7 +49,8 @@ export async function fixtures(): Promise<void> {
         user = usersRepository.create({
             username: 'Registrant',
             password: crypto.createHash('sha256').update('test').digest('hex'),
-            walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
+            // walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
+            walletToken: '',
             role: UserRole.USER
         });
         await usersRepository.save(user);
@@ -53,7 +58,8 @@ export async function fixtures(): Promise<void> {
         user = usersRepository.create({
             username: 'VVB',
             password: crypto.createHash('sha256').update('test').digest('hex'),
-            walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
+            // walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
+            walletToken: '',
             role: UserRole.USER
         });
         await usersRepository.save(user);
@@ -61,7 +67,8 @@ export async function fixtures(): Promise<void> {
         user = usersRepository.create({
             username: 'ProjectProponent',
             password: crypto.createHash('sha256').update('test').digest('hex'),
-            walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
+            // walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
+            walletToken: '',
             role: UserRole.USER
         });
         await usersRepository.save(user);
@@ -69,7 +76,8 @@ export async function fixtures(): Promise<void> {
         user = usersRepository.create({
             username: 'Verra',
             password: crypto.createHash('sha256').update('test').digest('hex'),
-            walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
+            // walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
+            walletToken: '',
             role: UserRole.STANDARD_REGISTRY
         });
         await usersRepository.save(user);
