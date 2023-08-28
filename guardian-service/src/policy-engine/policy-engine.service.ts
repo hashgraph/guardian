@@ -529,6 +529,11 @@ export class PolicyEngineService {
             try {
                 const { user, policyId } = msg;
 
+                const error = new PolicyEngine().getPolicyError(policyId);
+                if (error) {
+                    throw new Error(error);
+                }
+
                 const blockData = await new GuardiansService().sendPolicyMessage(PolicyEvents.GET_ROOT_BLOCK_DATA, policyId, {
                     user,
                     policyId
