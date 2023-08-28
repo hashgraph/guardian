@@ -9,4 +9,5 @@
     border: 2px dotted black;
     border-radius: 3%;
     cursor: pointer;
+    user-select: none;
 }

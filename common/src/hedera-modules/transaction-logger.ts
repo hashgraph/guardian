@@ -265,10 +265,6 @@ export class TransactionLogger extends NatsService {
                     case 'error-log': {
                         const { id, operatorAccountId, transactionName, network } = data.data;
                         const error = data.error;
-
-                        console.log('----');
-                        console.log({ id, operatorAccountId, transactionName, network })
-
                         await this.transactionErrorLog(id, operatorAccountId, network, transactionName, error);
                         break;
                     }

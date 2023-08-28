@@ -9,6 +9,7 @@ moduleAlias.addAliases({
   "@subscribers": process.cwd() + '/dist' + "dist/subscribers",
   "@helpers": process.cwd() + '/dist' + "/helpers",
   "@auth": process.cwd() + '/dist' +  "/auth",
+  "@analytics": process.cwd() + '/dist' +  "/analytics",
   "@policy-engine": process.cwd() + '/dist' +  "/policy-engine",
 });
 const { expect, assert } = require('chai');

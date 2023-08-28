@@ -24,15 +24,35 @@
             >
                  visibility_on
             </mat-icon>
-                
+
             <ng-template #hidePassBtn>
                 <mat-icon class="eye-icon" (click)="togglePasswordShow()">visibility_off</mat-icon>
             </ng-template>
         </div>
 
-        <button mat-raised-button type="submit" color="primary" [disabled]="!loginForm.valid">
-            Log In
-        </button>
+        <div class="login__footer">
+            <button mat-raised-button type="submit" color="primary" [disabled]="!loginForm.valid">
+                Log In
+            </button>
+
+            <div *ngIf="isMeecoLoginAllowed" class="login-btns__separator">
+                <div class="separator-line"></div>
+                <span>OR</span>
+                <div class="separator-line"></div>
+            </div>
+
+            <button
+                mat-button
+                *ngIf="isMeecoLoginAllowed"
+                type="button"
+                class="meeco-button"
+                (click)="onMeecoLogin()"
+                [disabled]="shouldDisableMeecoBtn"
+            >
+                <img src="/assets/meeco.svg" class="meeco-button__logo" />
+                {{ meecoBtnTitle }}
+            </button>
+        </div>
 
         <a [routerLink]="['/register']" class="create-link">Create new <mat-icon>chevron_right</mat-icon></a>
     </form>

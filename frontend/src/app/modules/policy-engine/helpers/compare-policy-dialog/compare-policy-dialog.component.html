@@ -9,7 +9,7 @@
             Compare Policy
         </div>
         <div class="g-dialog-actions">
-            <div class="g-dialog-actions-btn" (click)="onCompare()" [attr.disabled]="!policyId1 || !policyId2">
+            <div class="g-dialog-actions-btn" (click)="onCompare()" [attr.disabled]="disabled">
                 Compare
             </div>
         </div>
@@ -30,8 +30,7 @@
 
             <mat-form-field appearance="outline" style="width: 100%">
                 <mat-label>Secondary policy</mat-label>
-                <mat-select [(value)]="policyId2" (valueChange)="onChange()">
-                    <mat-option>None</mat-option>
+                <mat-select multiple [(value)]="policyId2" (valueChange)="onChange()">
                     <mat-option *ngFor="let policy of list2" [value]="policy.id">{{policy.name}}</mat-option>
                 </mat-select>
             </mat-form-field>

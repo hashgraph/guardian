@@ -854,7 +854,7 @@ export class PolicyConfigurationComponent implements OnInit {
                     if (this.currentBlock !== currentBlock) {
                         return;
                     }
-                    const {next, nested} = result;
+                    const { next, nested } = result;
                     if (
                         next &&
                         this.currentBlock?.parent?.children &&
@@ -862,7 +862,7 @@ export class PolicyConfigurationComponent implements OnInit {
                         this.currentBlock.parent.children.indexOf(
                             this.currentBlock
                         ) + 1
-                            ]
+                        ]
                     ) {
                         this.nextBlock = {
                             icon: this.registeredService.getIcon(next),
@@ -870,7 +870,7 @@ export class PolicyConfigurationComponent implements OnInit {
                             node: {
                                 blockType: next,
                                 permissionsNumber:
-                                this.currentBlock?.permissionsNumber,
+                                    this.currentBlock?.permissionsNumber,
                             },
                             name: this.registeredService.getName(next),
                         };
@@ -887,7 +887,7 @@ export class PolicyConfigurationComponent implements OnInit {
                             node: {
                                 blockType: nested,
                                 permissionsNumber:
-                                this.currentBlock?.permissionsNumber,
+                                    this.currentBlock?.permissionsNumber,
                             },
                             name: this.registeredService.getName(nested),
                         };
@@ -927,7 +927,11 @@ export class PolicyConfigurationComponent implements OnInit {
                         description: policy.description
                     }).subscribe((result) => {
                         const { taskId, expectation } = result;
-                        this.router.navigate(['task', taskId]);
+                        this.router.navigate(['task', taskId], {
+                            queryParams: {
+                                last: btoa(location.href)
+                            }
+                        });
                     }, (e) => {
                         this.loading = false;
                     });
@@ -940,7 +944,11 @@ export class PolicyConfigurationComponent implements OnInit {
                     policy.previousVersion = json.version;
                     this.policyEngineService.pushCreate(policy).subscribe((result) => {
                         const { taskId, expectation } = result;
-                        this.router.navigate(['task', taskId]);
+                        this.router.navigate(['task', taskId], {
+                            queryParams: {
+                                last: btoa(location.href)
+                            }
+                        });
                     }, (e) => {
                         this.loading = false;
                     });
@@ -996,7 +1004,11 @@ export class PolicyConfigurationComponent implements OnInit {
         this.loading = true;
         this.policyEngineService.pushPublish(this.policyId, version).subscribe((result) => {
             const { taskId, expectation } = result;
-            this.router.navigate(['task', taskId]);
+            this.router.navigate(['task', taskId], {
+                queryParams: {
+                    last: btoa(location.href)
+                }
+            });
         }, (e) => {
             console.error(e.error);
             this.loading = false;

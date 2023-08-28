@@ -26,13 +26,12 @@ import express from 'express';
 import fileUpload from 'express-fileupload';
 import hpp from 'hpp';
 import { ThemesApi } from '@api/service/themes';
-import { TrustChainsOldApi } from '@api/service/trustchains';
 import { BrandingApi } from '@api/service/branding';
 import { SuggestionsApi } from '@api/service/suggestions';
-import { JwtModule } from '@nestjs/jwt';
 import { MatchConstraint } from '@helpers/decorators/match.validator';
 import { NotificationService } from '@guardian/common';
 import { NotificationsApi } from '@api/service/notifications';
+import { ApplicationEnvironment } from './environment';
 
 const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
 const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
@@ -48,19 +47,14 @@ const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
                     `nats://${process.env.MQ_ADDRESS}:4222`
                 ]
             }
-        }]),
-        JwtModule.register({
-            global: true,
-            secret: '123123123123123123',
-            signOptions: {expiresIn: '60s'},
-        }),
+        }])
     ],
     controllers: [
         AccountApi,
         AnalyticsApi,
         ArtifactApi,
         ContractsApi,
-        DemoApi,
+        ...(ApplicationEnvironment.demoMode ? [DemoApi] : []),
         ExternalApi,
         IpfsApi,
         LoggerApi,
@@ -77,7 +71,6 @@ const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
         TokensApi,
         ThemesApi,
         TrustChainsApi,
-        TrustChainsOldApi,
         WizardApi,
         BrandingApi,
         SuggestionsApi,

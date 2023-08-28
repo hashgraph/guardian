@@ -11,6 +11,7 @@ import { checkPermission } from '@auth/authorization-helper';
 import { AccountsResponseDTO, AccountsSessionResponseDTO, AggregatedDTOItem, BalanceResponseDTO, LoginUserDTO, RegisterUserDTO } from '@middlewares/validation/schemas/accounts';
 import { ApiBearerAuth, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath } from '@nestjs/swagger';
 import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
+import { ApplicationEnvironment } from '../../environment';
 
 /**
  * User account route
@@ -86,8 +87,28 @@ export class AccountApi {
     })
     @Post('/register')
     @HttpCode(HttpStatus.CREATED)
-    async register(@Body() body: RegisterUserDTO): Promise<AccountsResponseDTO> {
+    async register(@Body() body: RegisterUserDTO, @Req() req: any): Promise<AccountsResponseDTO> {
         const users = new Users();
+        if (!ApplicationEnvironment.demoMode) {
+            const authHeader = req.headers.authorization;
+            const token = authHeader?.split(' ')[1];
+            let user;
+            try {
+                user = await users.getUserByToken(token) as IAuthUser;
+            } catch (e) {
+                user = null;
+            }
+
+            if (!user) {
+                throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
+            }
+            try {
+                await checkPermission(UserRole.STANDARD_REGISTRY)(user);
+            } catch (error) {
+                new Logger().error(error, ['API_GATEWAY']);
+                throw error;
+            }
+        }
         try {
             const {username, password} = body;
             let {role} = body;
@@ -199,55 +220,6 @@ export class AccountApi {
             return await users.getAllUserAccounts() as any[];
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error;
-        }
-    }
-
-    /**
-     * Get root authorities
-     * @deprecated 2022-10-01
-     */
-    @ApiOperation({
-        summary: 'Returns all Standard Registries.',
-        description: 'Returns all Standard Registries.',
-        deprecated: true
-    })
-    @ApiSecurity('bearerAuth')
-    @ApiExtraModels(AccountsResponseDTO, InternalServerErrorDTO)
-    @ApiOkResponse({
-        description: 'Successful operation.',
-        schema: {
-            $ref: getSchemaPath(AccountsResponseDTO),
-        },
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
-    @ApiInternalServerErrorResponse({
-        description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
-    })
-    @Get('/root-authorities')
-    @HttpCode(HttpStatus.OK)
-    async getRootAuthorities(@Req() req): Promise<AccountsResponseDTO> {
-        const authHeader = req.headers.authorization;
-        const token = authHeader.split(' ')[1];
-        const users = new Users();
-        const user = await users.getUserByToken(token) as IAuthUser;
-
-        if (!user) {
-            throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
-        }
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(user);
-        try {
-            return await users.getAllStandardRegistryAccounts() as any;
-        } catch (error) {
-            new Logger().error(error.message, ['API_GATEWAY']);
             throw error;
         }
     }

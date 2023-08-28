@@ -1,7 +1,6 @@
 import { Policy } from '@guardian/common';
 import { BlockModel } from './block.model';
 import { ICompareOptions } from '../interfaces/compare-options.interface';
-import { IArtifacts } from '../interfaces/artifacts.interface';
 import { SchemaModel } from './schema.model';
 import { IKeyMap } from '../interfaces/key-map.interface';
 import { PropertyModel } from './property.model';
@@ -11,6 +10,7 @@ import { GroupModel } from './group.model';
 import { TopicModel } from './topic.model';
 import { TemplateTokenModel } from './template-token.model';
 import { RoleModel } from './role.model';
+import { FileModel } from './file.model';
 
 /**
  * Policy Model
@@ -80,7 +80,7 @@ export class PolicyModel {
      * Compare Options
      * @private
      */
-    private readonly options: ICompareOptions;
+    public readonly options: ICompareOptions;
 
     /**
      * All Blocks
@@ -92,7 +92,7 @@ export class PolicyModel {
      * All artifacts
      * @private
      */
-    private _artifacts: IArtifacts[];
+    private _artifacts: FileModel[];
 
     /**
      * All schemas
@@ -249,7 +249,7 @@ export class PolicyModel {
      * @param artifacts
      * @public
      */
-    public setArtifacts(artifacts: IArtifacts[]): PolicyModel {
+    public setArtifacts(artifacts: FileModel[]): PolicyModel {
         this._artifacts = artifacts;
         return this;
     }

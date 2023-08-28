@@ -7,6 +7,7 @@
     display: block;
     min-width: 1600px;
 }
+
 .content[role='USER'] {
     min-width: 1200px;
 }
@@ -203,8 +204,9 @@
 
 .table-container .mat-column-operations {
     padding-left: 8px;
-    width: 125px;
-    max-width: 125px;
+    width: 80px;
+    max-width: 80px;
+    min-width: 80px;
     border-right: 1px solid #dddddd;
 }
 
@@ -340,6 +342,15 @@
     z-index: 0;
 }
 
+.btn-icon-more {
+    font-weight: 500;
+    cursor: pointer;
+    position: relative;
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+}
+
 .btn-icon-edit,
 .btn-icon-delete,
 .btn-icon-import,
@@ -349,6 +360,8 @@
     position: relative;
     width: 30px;
     height: 30px;
+    min-width: 25px;
+    margin-left: 6px;
 }
 
 .btn-icon-import,
@@ -385,6 +398,69 @@
     position: absolute;
     left: 0;
     top: -1px;
+}
+
+.policy-menu-btn {
+    color: #3f51b5;
+    user-select: none;
+    font-size: 16px;
+    position: relative;
+    width: 220px;
+
+    mat-icon {
+        color: #3f51b5;
+        font-size: 26px;
+        top: -2px;
+        position: relative;
+    }
+}
+
+.policy-menu-btn-del {
+    color: #f44336;
+    user-select: none;
+    font-size: 16px;
+    position: relative;
+    width: 220px;
+
+    mat-icon {
+        color: #f44336;
+        font-size: 26px;
+        top: -2px;
+        position: relative;
+    }
+}
+
+.policy-menu-btn-des {
+    color: #b5b5b5;
+    cursor: not-allowed;
+    user-select: none;
+    font-size: 16px;
+    position: relative;
+    width: 220px;
+
+    mat-icon {
+        color: #b5b5b5;
+        font-size: 26px;
+        top: -2px;
+        position: relative;
+    }
+}
+
+.policy-menu-delimiter {
+    width: 100%;
+    height: 10px;
+    position: relative;
+
+    &::after {
+        content: "";
+        pointer-events: none;
+        position: absolute;
+        top: 5px;
+        left: 20px;
+        right: 20px;
+        bottom: 0px;
+        border-top: 1px solid #ccc;
+    }
 }
 
 .btn-icon-go {

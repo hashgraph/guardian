@@ -6,12 +6,37 @@ import { ApiTags } from '@nestjs/swagger';
 @Controller('analytics')
 @ApiTags('analytics')
 export class AnalyticsApi {
+    @Post('/search/policies')
+    @HttpCode(HttpStatus.OK)
+    async searchPolicies(@Body() body, @Req() req): Promise<any> {
+        const guardians = new Guardians();
+        const policyId = body ? body.policyId : null;
+        const user = req.user;
+        if (!user) {
+            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+        }
+        if (!policyId) {
+            throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+        try {
+            const result = await guardians.searchPolicies(
+                user,
+                policyId,
+            );
+            return result;
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw error;
+        }
+    }
+
     @Post('/compare/policies')
     @HttpCode(HttpStatus.OK)
     async comparePolicies(@Body() body, @Req() req): Promise<any> {
         const guardians = new Guardians();
         const policyId1 = body ? body.policyId1 : null;
         const policyId2 = body ? body.policyId2 : null;
+        const policyIds = body ? body.policyIds : null;
         const eventsLvl = body ? body.eventsLvl : null;
         const propLvl = body ? body.propLvl : null;
         const childrenLvl = body ? body.childrenLvl : null;
@@ -20,12 +45,22 @@ export class AnalyticsApi {
         if (!user) {
             throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
         }
+
+        let ids: string[];
+        if (policyId1 && policyId2) {
+            ids = [policyId1, policyId2];
+        } else if (Array.isArray(policyIds) && policyIds.length > 1) {
+            ids = policyIds;
+        }
+
+        if (!ids) {
+            throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
         try {
             const result = await guardians.comparePolicies(
                 user,
                 null,
-                policyId1,
-                policyId2,
+                ids,
                 eventsLvl,
                 propLvl,
                 childrenLvl,
@@ -51,6 +86,9 @@ export class AnalyticsApi {
         const user = req.user;
         if (!user) {
             throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+        }
+        if (!moduleId1 || !moduleId2) {
+            throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
         }
         try {
             const result = await guardians.compareModules(
@@ -84,6 +122,9 @@ export class AnalyticsApi {
         if (!user) {
             throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
         }
+        if (!schemaId1 || !schemaId2) {
+            throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
         try {
             return await guardians.compareSchemas(user, null, schemaId1, schemaId2, idLvl);
         } catch (error) {
@@ -104,6 +145,7 @@ export class AnalyticsApi {
         const type = req.query ? req.query.type : null;
         const policyId1 = body ? body.policyId1 : null;
         const policyId2 = body ? body.policyId2 : null;
+        const policyIds = body ? body.policyIds : null;
         const eventsLvl = body ? body.eventsLvl : null;
         const propLvl = body ? body.propLvl : null;
         const childrenLvl = body ? body.childrenLvl : null;
@@ -112,12 +154,20 @@ export class AnalyticsApi {
         if (!user) {
             throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
         }
+        let ids: string[];
+        if (policyId1 && policyId2) {
+            ids = [policyId1, policyId2];
+        } else if (Array.isArray(policyIds) && policyIds.length > 1) {
+            ids = policyIds;
+        }
+        if (!ids) {
+            throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
         try {
             const result = await guardians.comparePolicies(
                 user,
                 type,
-                policyId1,
-                policyId2,
+                ids,
                 eventsLvl,
                 propLvl,
                 childrenLvl,
@@ -144,6 +194,9 @@ export class AnalyticsApi {
         const user = req.user;
         if (!user) {
             throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+        }
+        if (!moduleId1 || !moduleId2) {
+            throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
         }
         try {
             const result = await guardians.compareModules(
@@ -179,6 +232,9 @@ export class AnalyticsApi {
         const user = req.user;
         if (!user) {
             throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+        }
+        if (!schemaId1 || !schemaId2) {
+            throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
         }
         try {
             return await guardians.compareSchemas(user, type, schemaId1, schemaId2, idLvl);

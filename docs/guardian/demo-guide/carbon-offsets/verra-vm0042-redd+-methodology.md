@@ -2,7 +2,7 @@
 description: Policy developed by Envision Blockchain
 ---
 
-# 🧑🌾 🧑🌾 Verra VM0042 REDD+ Methodology
+# 🎍 Verra VM0042 REDD+ Methodology
 
 * [Policy Description](verra-vm0042-redd+-methodology.md#policy-description)
 * [Workflow Description](verra-vm0042-redd+-methodology.md#workflow-description)

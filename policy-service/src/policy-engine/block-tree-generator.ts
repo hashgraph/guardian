@@ -1,20 +1,7 @@
-import {
-    IPolicyBlock,
-    IPolicyInstance,
-    IPolicyInterfaceBlock
-} from './policy-engine.interface';
+import { IPolicyBlock, IPolicyInstance, IPolicyInterfaceBlock } from './policy-engine.interface';
 import { PolicyComponentsUtils } from './policy-components-utils';
 import { GenerateUUIDv4, IUser, PolicyEvents, UserRole } from '@guardian/interfaces';
-import {
-    Logger,
-    MessageError,
-    MessageResponse,
-    NatsService,
-    Policy,
-    Singleton,
-    DatabaseServer,
-    Users,
-} from '@guardian/common';
+import { DatabaseServer, Logger, MessageError, MessageResponse, NatsService, Policy, Singleton, Users, } from '@guardian/common';
 import { IPolicyUser, PolicyUser } from './policy-user';
 import { ISerializedErrors, PolicyValidator } from '@policy-engine/block-validators';
 import { headers } from 'nats';
@@ -266,7 +253,7 @@ export class BlockTreeGenerator extends NatsService {
         policy: Policy,
         skipRegistration?: boolean,
         policyValidator?: PolicyValidator
-    ): Promise<IPolicyBlock> {
+    ): Promise<IPolicyBlock | { type: 'error', message: string }> {
         if (!policy || (typeof policy !== 'object')) {
             throw new Error('Policy was not exist');
         }
@@ -287,11 +274,14 @@ export class BlockTreeGenerator extends NatsService {
 
             return model as IPolicyInterfaceBlock;
         } catch (error) {
-            new Logger().error(`Error build policy ${error}`, ['GUARDIAN_SERVICE', policy.name, policyId.toString()]);
+            new Logger().error(`Error build policy ${error}`, ['POLICY', policy.name, policyId.toString()]);
             if (policyValidator) {
                 policyValidator.addError(typeof error === 'string' ? error : error.message)
             }
-            return null;
+            return {
+                type: 'error',
+                message: error.message
+            };
         }
     }
 

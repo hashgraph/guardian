@@ -211,7 +211,7 @@ export class SchemaComparator {
         if (type === Status.FULL) {
             result = MergeUtils.fullMerge<FieldModel>(fields1, fields2);
         } else if (type === Status.PARTLY) {
-            result = MergeUtils.partlyMerge<FieldModel>(fields1, fields2, false);
+            result = MergeUtils.partlyMerge<FieldModel>(fields1, fields2);
         } else {
             result = MergeUtils.notMerge<FieldModel>(fields1, fields2);
         }

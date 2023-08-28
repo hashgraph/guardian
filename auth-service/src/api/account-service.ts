@@ -3,7 +3,7 @@ import { sign, verify } from 'jsonwebtoken';
 import { User } from '@entity/user';
 import * as util from 'util';
 import crypto from 'crypto';
-import { DataBaseHelper, Logger, MessageError, MessageResponse, NatsService, SecretManager, Singleton } from '@guardian/common';
+import { DataBaseHelper, Logger, MessageError, MessageResponse, NatsService, ProviderAuthUser, SecretManager, Singleton } from '@guardian/common';
 import {
     AuthEvents,
     GenerateUUIDv4,
@@ -29,7 +29,7 @@ import {
  * Account service
  */
 @Singleton
-export class AccountService extends NatsService{
+export class AccountService extends NatsService {
 
     /**
      * Message queue name
@@ -68,7 +68,7 @@ export class AccountService extends NatsService{
                 const { username, password, role } = msg;
                 const passwordDigest = crypto.createHash('sha256').update(password).digest('hex');
 
-                const checkUserName = await userRepository.count({ username }) > 0;
+                const checkUserName = await userRepository.count({ username });
                 if (checkUserName) {
                     return new MessageError('An account with the same name already exists.');
                 }
@@ -77,12 +77,54 @@ export class AccountService extends NatsService{
                     username,
                     password: passwordDigest,
                     role,
-                    walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
+                    // walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
+                    walletToken: '',
                     parent: null,
                     did: null
                 });
                 return new MessageResponse(await userRepository.save(user));
 
+            } catch (error) {
+                new Logger().error(error, ['AUTH_SERVICE']);
+                return new MessageError(error)
+            }
+        });
+
+        this.getMessages<IRegisterNewUserMessage, User>(AuthEvents.GENERATE_NEW_TOKEN_BASED_ON_USER_PROVIDER,
+          async (msg: ProviderAuthUser) => {
+            try {
+                const userRepository = new DataBaseHelper(User);
+                let user = await userRepository.findOne({
+                    username: msg.username
+                });
+
+                if (!user) {
+                    user = userRepository.create({
+                        username: msg.username,
+                        password: null,
+                        role: msg.role,
+                        // walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
+                        walletToken: '',
+                        parent: null,
+                        did: null,
+                        provider: msg.provider,
+                        providerId: msg.providerId
+                    });
+                    await userRepository.save(user);
+                }
+                const secretManager = SecretManager.New();
+                const { ACCESS_TOKEN_SECRET } = await secretManager.getSecrets('secretkey/auth')
+                const accessToken = sign({
+                    username: user.username,
+                    did: user.did,
+                    role: user.role
+                }, ACCESS_TOKEN_SECRET);
+                return new MessageResponse({
+                    username: user.username,
+                    did: user.did,
+                    role: user.role,
+                    accessToken
+                })
             } catch (error) {
                 new Logger().error(error, ['AUTH_SERVICE']);
                 return new MessageError(error)
@@ -175,9 +217,19 @@ export class AccountService extends NatsService{
 
         this.getMessages<IGetUserMessage, User>(AuthEvents.GET_USER, async (msg) => {
             const { username } = msg;
-
             try {
                 return new MessageResponse(await new DataBaseHelper(User).findOne({ username }));
+            } catch (error) {
+                new Logger().error(error, ['AUTH_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+        this.getMessages<IGetUserMessage, User>(AuthEvents.GET_USER_BY_PROVIDER_USER_DATA, async (msg) => {
+            const { providerId, provider } = msg;
+
+            try {
+                return new MessageResponse(await new DataBaseHelper(User).findOne({ providerId, provider }));
             } catch (error) {
                 new Logger().error(error, ['AUTH_SERVICE']);
                 return new MessageError(error);

@@ -1,0 +1,40 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  annotations:
+    kompose.controller.type: statefulset
+  labels:
+    io.kompose.service: vault
+  name: vault
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: vault
+  serviceName: vault
+  template:
+    metadata:
+      labels:
+        io.kompose.network/guardian-default: "true"
+        io.kompose.service: vault
+    spec:
+      containers:
+        - env:
+            - name: VAULT_DEV_ROOT_TOKEN_ID
+              value: "1234"
+            - name: VAULT_SERVER
+              value: http://0.0.0.0:8200
+          image: vault:1.12.2
+          name: vault
+          ports:
+            - containerPort: 8200
+          resources: {}
+          # securityContext:
+          #   capabilities:
+          #     add:
+          #       - IPC_LOCK
+      restartPolicy: Always
+  updateStrategy: {}
+status:
+  replicas: 0

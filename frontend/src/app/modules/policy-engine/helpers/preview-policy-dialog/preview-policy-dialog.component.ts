@@ -1,6 +1,5 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 
 /**
  * Dialog for export/import policy.
@@ -19,7 +18,7 @@ export class PreviewPolicyDialog {
     newVersions: any[] = [];
     versionOfTopicId: any;
     policies!: any[];
-
+    similar!: any[];
     module!: any;
 
     public innerWidth: any;
@@ -27,20 +26,21 @@ export class PreviewPolicyDialog {
 
     constructor(
         public dialogRef: MatDialogRef<PreviewPolicyDialog>,
-        private policyEngineService: PolicyEngineService,
         @Inject(MAT_DIALOG_DATA) public data: any
     ) {
         if (data.policy) {
-            this.newVersions = data.policy.newVersions || [];
-            this.policy = data.policy.policy;
+            const importFile = data.policy;
+
+            this.newVersions = importFile.newVersions || [];
+            this.policy = importFile.policy;
 
             this.policyGroups = '';
             if (this.policy.policyRoles) {
                 this.policyGroups += this.policy.policyRoles.join(', ');
             }
 
-            const schemas = data.policy.schemas || [];
-            const tokens = data.policy.tokens || [];
+            const schemas = importFile.schemas || [];
+            const tokens = importFile.tokens || [];
 
             this.schemas = schemas.map((s: any) => {
                 if (s.version) {
@@ -50,12 +50,20 @@ export class PreviewPolicyDialog {
             }).join(', ');
             this.tokens = tokens.map((s: any) => s.tokenName).join(', ');
 
-            this.policies = this.data.policies || [];
+            const similar = importFile.similar || [];
+            this.similar = similar.map((s: any) => {
+                if (s.version) {
+                    return `${s.name} (${s.version})`;
+                }
+                return s.name;
+            }).join(', ');
         }
 
         if (data.module) {
             this.module = data.module.module;
         }
+
+        this.policies = data.policies || [];
     }
 
     ngOnInit() {

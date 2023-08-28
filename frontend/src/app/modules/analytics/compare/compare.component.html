@@ -11,19 +11,19 @@
             </div>
         </div>
         <div class="merge-lvl">
-            <div *ngIf="type === 'policy'" class="f1">
+            <div *ngIf="type === 'policy' || type === 'multi-policy'" class="f1">
                 <mat-form-field appearance="outline">
                     <mat-label>Events:</mat-label>
-                    <mat-select [(value)]="eventsLvl">
+                    <mat-select [(value)]="eventsLvl" (selectionChange)="onFilterChange()">
                         <mat-option value="0">Don't compare</mat-option>
                         <mat-option value="1">All events</mat-option>
                     </mat-select>
                 </mat-form-field>
             </div>
-            <div *ngIf="type === 'policy'" class="f1">
+            <div *ngIf="type === 'policy' || type === 'multi-policy'" class="f1">
                 <mat-form-field appearance="outline">
                     <mat-label>Properties:</mat-label>
-                    <mat-select [(value)]="propLvl">
+                    <mat-select [(value)]="propLvl" (selectionChange)="onFilterChange()">
                         <mat-option value="0">Don't compare</mat-option>
                         <mat-option value="1">Only simple properties</mat-option>
                         <mat-option value="2">All properties</mat-option>
@@ -31,10 +31,10 @@
                 </mat-form-field>
 
             </div>
-            <div *ngIf="type === 'policy'" class="f1">
+            <div *ngIf="type === 'policy' || type === 'multi-policy'" class="f1">
                 <mat-form-field appearance="outline">
                     <mat-label>Children:</mat-label>
-                    <mat-select [(value)]="childrenLvl">
+                    <mat-select [(value)]="childrenLvl" (selectionChange)="onFilterChange()">
                         <mat-option value="0">Don't compare</mat-option>
                         <mat-option value="1">Only child blocks of the first level</mat-option>
                         <mat-option value="2">All children</mat-option>
@@ -44,7 +44,7 @@
             <div class="f1">
                 <mat-form-field appearance="outline">
                     <mat-label>UUID:</mat-label>
-                    <mat-select [(value)]="idLvl">
+                    <mat-select [(value)]="idLvl" (selectionChange)="onFilterChange()">
                         <mat-option value="0">Don't compare</mat-option>
                         <mat-option value="1">All UUID</mat-option>
                     </mat-select>
@@ -52,7 +52,7 @@
             </div>
         </div>
         <div class="merge-lvl-apply">
-            <div class="merge-lvl-btn" (click)="onApply()">Apply</div>
+            <div class="merge-lvl-btn" [attr.need-apple]="needApplyFilters" (click)="onApply()">Apply</div>
         </div>
         <div>
             <div class="export-btn" (click)="onExport()">
@@ -74,17 +74,43 @@
     </div>
 
     <div *ngIf="type === 'policy'" class="content-result">
-        <app-compare-policy [type]="visibleType" [value]="result" [eventsLvl]="eventsLvl" [propLvl]="propLvl"
-            [childrenLvl]="childrenLvl" [idLvl]="idLvl" (change)="onChange($event)"></app-compare-policy>
+        <app-compare-policy 
+            [type]="visibleType" 
+            [value]="result" 
+            [eventsLvl]="eventsLvl" 
+            [propLvl]="propLvl"
+            [childrenLvl]="childrenLvl" 
+            [idLvl]="idLvl" 
+            (change)="onChange($event)"></app-compare-policy>
     </div>
 
     <div *ngIf="type === 'schema'" class="content-result">
-        <app-compare-schema [type]="visibleType" [value]="result" [idLvl]="idLvl"
+        <app-compare-schema 
+            [type]="visibleType" 
+            [value]="result" 
+            [idLvl]="idLvl"
             (change)="onChange($event)"></app-compare-schema>
     </div>
 
     <div *ngIf="type === 'module'" class="content-result">
-        <app-compare-module [type]="visibleType" [value]="result" [eventsLvl]="eventsLvl" [propLvl]="propLvl"
-            [childrenLvl]="childrenLvl" [idLvl]="idLvl" (change)="onChange($event)"></app-compare-module>
+        <app-compare-module 
+            [type]="visibleType" 
+            [value]="result" 
+            [eventsLvl]="eventsLvl" 
+            [propLvl]="propLvl"
+            [childrenLvl]="childrenLvl" 
+            [idLvl]="idLvl" 
+            (change)="onChange($event)"></app-compare-module>
+    </div>
+
+    <div *ngIf="type === 'multi-policy'" class="content-result">
+        <app-multi-compare-policy 
+            [type]="visibleType" 
+            [value]="result" 
+            [eventsLvl]="eventsLvl" 
+            [propLvl]="propLvl"
+            [childrenLvl]="childrenLvl" 
+            [idLvl]="idLvl" 
+            (change)="onChange($event)"></app-multi-compare-policy>
     </div>
 </div>

@@ -72,7 +72,7 @@ export async function authorizationHelper(req: AuthenticatedRequest, res: Respon
             next();
             return;
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
+            new Logger().warn(error.message, ['API_GATEWAY']);
         }
     }
     res.sendStatus(401);

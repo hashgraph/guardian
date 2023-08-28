@@ -208,7 +208,11 @@ export class TokenConfigComponent implements OnInit {
                 this.loading = true;
                 this.tokenService.pushCreate(result).subscribe((result) => {
                     const { taskId, expectation } = result;
-                    this.router.navigate(['task', taskId]);
+                    this.router.navigate(['task', taskId], {
+                        queryParams: {
+                            last: btoa(location.href)
+                        }
+                    });
                 }, (e) => {
                     console.error(e.error);
                     this.loading = false;
@@ -355,7 +359,11 @@ export class TokenConfigComponent implements OnInit {
                 this.loading = true;
                 this.tokenService.pushDelete(element.tokenId).subscribe((result) => {
                     const { taskId, expectation } = result;
-                    this.router.navigate(['task', taskId]);
+                    this.router.navigate(['task', taskId], {
+                        queryParams: {
+                            last: btoa(location.href)
+                        }
+                    });
                 }, (e) => {
                     console.error(e.error);
                     this.loading = false;
@@ -403,7 +411,11 @@ export class TokenConfigComponent implements OnInit {
                 result.tokenId = element.tokenId;
                 this.tokenService.pushUpdate(result).subscribe((result) => {
                     const { taskId, expectation } = result;
-                    this.router.navigate(['task', taskId]);
+                    this.router.navigate(['task', taskId], {
+                        queryParams: {
+                            last: btoa(location.href)
+                        }
+                    });
                 }, (e) => {
                     console.error(e.error);
                     this.loading = false;

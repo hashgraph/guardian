@@ -2,7 +2,7 @@ import { ISchema, MessageAPI, SchemaCategory, SchemaHelper, SchemaStatus, TopicT
 import { ApiResponse } from '@api/helpers/api-response';
 import { DatabaseServer, Logger, MessageError, MessageResponse, RunFunctionAsync, Users } from '@guardian/common';
 import { emptyNotifier, initNotifier } from '@helpers/notifier';
-import { checkForCircularDependency, createSchema, deleteSchema, incrementSchemaVersion, updateSchemaDefs } from './helpers/schema-helper';
+import { checkForCircularDependency, createSchemaAndArtifacts, deleteSchema, incrementSchemaVersion, updateSchemaDefs } from './helpers/schema-helper';
 import { exportSchemas, importSchemaByFiles, importSchemasByMessages, importTagsByFiles, prepareSchemaPreview } from './helpers/schema-import-export-helper';
 import { findAndPublishSchema } from './helpers/schema-publish-helper';
 import { getPageOptions } from './helpers/api-helper';
@@ -281,12 +281,7 @@ export async function schemaAPI(): Promise<void> {
      */
     ApiResponse(MessageAPI.CREATE_SCHEMA, async (msg) => {
         try {
-            const schemaObject = msg as ISchema;
-            schemaObject.category = SchemaCategory.POLICY;
-            schemaObject.readonly = false;
-            schemaObject.system = false;
-            SchemaHelper.setVersion(schemaObject, null, schemaObject.version);
-            await createSchema(schemaObject, schemaObject.owner, emptyNotifier());
+            await createSchemaAndArtifacts(msg, msg.owner, emptyNotifier());
             const schemas = await DatabaseServer.getSchemas(null, { limit: 100 });
             return new MessageResponse(schemas);
         } catch (error) {
@@ -299,12 +294,7 @@ export async function schemaAPI(): Promise<void> {
         const { item, task } = msg;
         const notifier = await initNotifier(task);
         RunFunctionAsync(async () => {
-            const schemaObject = item as ISchema;
-            schemaObject.category = SchemaCategory.POLICY;
-            schemaObject.readonly = false;
-            schemaObject.system = false;
-            SchemaHelper.setVersion(schemaObject, null, schemaObject.version);
-            const schema = await createSchema(schemaObject, schemaObject.owner, notifier);
+            const schema = await createSchemaAndArtifacts(item, item.owner, notifier);
             notifier.result(schema.id);
         }, async (error) => {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -394,7 +384,7 @@ export async function schemaAPI(): Promise<void> {
                 where: {
                     readonly: false,
                     system: false,
-                    category: {$nin: [SchemaCategory.TAG, SchemaCategory.MODULE]}
+                    category: { $nin: [SchemaCategory.TAG, SchemaCategory.MODULE] }
                 }
             }
 
@@ -880,7 +870,7 @@ export async function schemaAPI(): Promise<void> {
             }
             const otherOptions: any = getPageOptions(msg);
             const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
-            return new MessageResponse({items, count});
+            return new MessageResponse({ items, count });
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
@@ -908,7 +898,7 @@ export async function schemaAPI(): Promise<void> {
             }
             const otherOptions: any = getPageOptions(msg);
             const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
-            return new MessageResponse({items, count});
+            return new MessageResponse({ items, count });
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);

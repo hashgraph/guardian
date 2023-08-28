@@ -1,10 +1,25 @@
 import { Injectable } from '@angular/core';
-import { Subject, Subscription } from 'rxjs';
+import { Observable, Subject, Subscription, of } from 'rxjs';
 import { webSocket, WebSocketSubject, WebSocketSubjectConfig } from 'rxjs/webSocket';
 import { AuthService } from './auth.service';
 import { ToastrService } from 'ngx-toastr';
-import { ApplicationStates, MessageAPI, NotifyAPI } from '@guardian/interfaces';
+import { ApplicationStates, MessageAPI, NotifyAPI, UserRole } from '@guardian/interfaces';
 import { Router } from '@angular/router';
+
+interface MeecoVerifyVPResponse {
+    vc: any;
+    presentation_request_id: string;
+    submission_id: string;
+    cid: string;
+    role: UserRole | null;
+}
+
+interface MeecoApproveSubmissionResponse {
+    username: string;
+    did: string;
+    role: UserRole;
+    accessToken: string;
+}
 
 /**
  *  WebSocket service.
@@ -28,6 +43,13 @@ export class WebSocketService {
     private createProgress: Subject<any>;
     private updateProgress: Subject<any>;
     private deleteProgress: Subject<any>;
+    private meecoPresentVPSubject: Subject<any> = new Subject();
+    private meecoVerifyVPSubject: Subject<any> = new Subject();
+    private meecoVerifyVPFailedSubject: Subject<any> = new Subject();
+    private meecoApproveVCSubject: Subject<any> = new Subject();
+    meecoPresentVP$: Observable<any> = this.meecoPresentVPSubject.asObservable();
+    meecoVerifyVP$: Observable<any> = this.meecoVerifyVPSubject.asObservable();
+    meecoVerifyVPFailed$: Observable<any> = this.meecoVerifyVPFailedSubject.asObservable();
     private serviesStates: any = [];
     private sendingEvent: boolean;
 
@@ -65,7 +87,7 @@ export class WebSocketService {
 
         this.auth.subscribe(() => {
             this.reconnectAttempts = 10;
-            this.send('SET_ACCESS_TOKEN', this.auth.getAccessToken());
+            this.send(MessageAPI.SET_ACCESS_TOKEN, this.auth.getAccessToken());
         })
         this.connect();
 
@@ -125,7 +147,7 @@ export class WebSocketService {
                     this.reconnect();
                 }
             });
-        this.send('SET_ACCESS_TOKEN', this.auth.getAccessToken());
+        this.send(MessageAPI.SET_ACCESS_TOKEN, this.auth.getAccessToken());
         this.heartbeat();
     }
 
@@ -152,9 +174,9 @@ export class WebSocketService {
             this.sendingEvent = true;
             this.socket?.next(data);
             setTimeout(() => {
-                this.sendingEvent = false;
-                resolve();
-            },
+                    this.sendingEvent = false;
+                    resolve();
+                },
                 100
             );
         })
@@ -183,13 +205,15 @@ export class WebSocketService {
         }
         try {
             const event = JSON.parse(message);
-            switch (event.type) {
-                case 'PROFILE_BALANCE':
+            const { type, data } = event;
+
+            switch (type || event.event) {
+                case MessageAPI.PROFILE_BALANCE:
                     this.profileSubject.next(event);
                     break;
                 case MessageAPI.GET_STATUS:
                 case MessageAPI.UPDATE_STATUS:
-                    this.updateStatus(event.data);
+                    this.updateStatus(data);
                     const allStatesReady = !this.serviesStates.find((item: any) => !item.states.includes(ApplicationStates.READY));
                     // const allStatesReady = true;
                     if (!allStatesReady) {
@@ -200,12 +224,12 @@ export class WebSocketService {
                     }
                     this.servicesReady.next(allStatesReady);
                     break;
-                case 'update-event': {
-                    this.blockUpdateSubject.next(event.data);
+                case MessageAPI.UPDATE_EVENT: {
+                    this.blockUpdateSubject.next(data);
                     break;
                 }
-                case 'error-event': {
-                    this.toastr.error(event.data.message, event.data.blockType, {
+                case MessageAPI.ERROR_EVENT: {
+                    this.toastr.error(data.message, data.blockType, {
                         timeOut: 10000,
                         closeButton: true,
                         positionClass: 'toast-bottom-right',
@@ -213,12 +237,12 @@ export class WebSocketService {
                     });
                     break;
                 }
-                case 'update-user-info-event': {
-                    this.userInfoUpdateSubject.next(event.data);
+                case MessageAPI.UPDATE_USER_INFO_EVENT: {
+                    this.userInfoUpdateSubject.next(data);
                     break;
                 }
                 case MessageAPI.UPDATE_TASK_STATUS: {
-                    this.taskStatusSubject.next(event.data);
+                    this.taskStatusSubject.next(data);
                     break;
                 }
                 case NotifyAPI.UPDATE_WS:
@@ -236,6 +260,22 @@ export class WebSocketService {
                 case NotifyAPI.DELETE_PROGRESS_WS:
                     this.deleteProgress.next(event.data);
                     break;
+                case MessageAPI.MEECO_AUTH_PRESENT_VP: {
+                    this.meecoPresentVPSubject.next(data);
+                    break;
+                }
+                case MessageAPI.MEECO_VERIFY_VP: {
+                    this.meecoVerifyVPSubject.next(data);
+                    break;
+                }
+                case MessageAPI.MEECO_VERIFY_VP_FAILED: {
+                    this.meecoVerifyVPFailedSubject.next(data);
+                    break;
+                }
+                case MessageAPI.MEECO_APPROVE_SUBMISSION_RESPONSE: {
+                    this.meecoApproveVCSubject.next(data);
+                    break;
+                }
                 default:
                     break;
             }
@@ -352,20 +392,51 @@ export class WebSocketService {
         return this.deleteProgress.subscribe(next, error, complete);
     }
 
+    public meecoApproveVCSubscribe(
+        next?: ((event: MeecoApproveSubmissionResponse) => void),
+        error?: ((error: any) => void),
+        complete?: (() => void)
+    ): Subscription {
+        return this.meecoApproveVCSubject.subscribe(next, error, complete);
+    }
+
+    public approveVCSubject(
+        presentation_request_id: string,
+        submission_id: string,
+        role: UserRole
+    ): void {
+        this.send(MessageAPI.MEECO_APPROVE_SUBMISSION, {
+            presentation_request_id,
+            submission_id,
+            role,
+        });
+    }
+
+    public rejectVCSubject(presentation_request_id: string, submission_id: string): void {
+        this.send(MessageAPI.MEECO_REJECT_SUBMISSION, {
+            presentation_request_id,
+            submission_id,
+        });
+    }
+
     public login() {
-        this.send('SET_ACCESS_TOKEN', this.auth.getAccessToken());
+        this.send(MessageAPI.SET_ACCESS_TOKEN, this.auth.getAccessToken());
     }
 
     public logaut() {
-        this.send('SET_ACCESS_TOKEN', null);
+        this.send(MessageAPI.SET_ACCESS_TOKEN, null);
     }
 
     public updateProfile() {
-        this.send('UPDATE_PROFILE', this.auth.getAccessToken());
+        this.send(MessageAPI.UPDATE_PROFILE, this.auth.getAccessToken());
     }
 
     public sendMessage(type: string, data: any = null) {
         this.send(type, data);
+    }
+
+    public meecoLogin(): void {
+        this.send(MessageAPI.MEECO_AUTH_REQUEST, null);
     }
 
     private updateStatus(serviceStatus: any) {

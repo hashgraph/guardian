@@ -1,0 +1,243 @@
+.container {
+    display: flex;
+    justify-content: space-between;
+    padding-right: 14px;
+}
+
+.container button {
+    margin-top: 5px;
+    margin-left: 10px;
+    min-width: 280px;
+}
+
+:host .content {
+    max-height: 400px;
+}
+
+.loading {
+    background: #fff;
+    position: absolute;
+    z-index: 99;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
+}
+
+.g-dialog-title-btn mat-icon {
+    position: absolute;
+    font-size: 32px;
+    top: 7px;
+    left: 7px;
+    color: #646464;
+}
+
+.search-header {
+    display: grid;
+    height: 28px;
+}
+
+.search-header>div {
+    font-weight: 500;
+    padding-left: 5px;
+    border-bottom: 1px solid #eee;
+}
+
+.search-result {
+    display: grid;
+    height: 42px;
+    cursor: pointer;
+
+    &:hover {
+        background-color: rgba(112, 112, 112, 0.04);
+    }
+}
+
+.search-result>div {
+    overflow: hidden;
+    padding: 11px 10px 11px 5px;
+    box-sizing: border-box;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.disabled-result>div {
+    color: #999;
+}
+
+.search-result input {
+    cursor: pointer;
+}
+
+.search-header input {
+    cursor: pointer;
+}
+
+.item-color-green {
+    color: #008d0c;
+    font-weight: 500;
+    text-align: end;
+}
+
+.item-color-yellow {
+    color: #c79604;
+    font-weight: 500;
+    text-align: end;
+}
+
+.item-color-red {
+    color: #e70000;
+    font-weight: 500;
+    text-align: end;
+}
+
+.compare-btn {
+    color: var(--button-primary-color);
+    border: 1px solid var(--button-primary-color);
+    margin: 0px;
+    min-width: 105px;
+    cursor: pointer;
+    font-weight: 500;
+    text-align: left;
+    user-select: none;
+    position: relative;
+    border-radius: 8px;
+    font-size: 14px;
+    height: 34px;
+    padding: 7px 14px 7px 34px !important;
+    box-sizing: border-box;
+    width: fit-content;
+
+    &[disable="true"] {
+        color: #888;
+        border: 1px solid #888;
+        cursor: not-allowed;
+    }
+
+    &:hover {
+        background-color: rgba(112, 112, 112, 0.04);
+    }
+
+    &[disable="true"]:hover {
+        background-color: transparent;
+    }
+}
+
+.compare-btn mat-icon {
+    position: absolute;
+    left: 10px;
+    top: 8px;
+    font-size: 16px;
+}
+
+.search-toolbar {
+    height: 60px;
+    padding: 5px;
+    display: grid;
+    grid-template-columns: auto 220px;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.policy-actions {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    justify-content: end;
+}
+
+.policy-filters {
+    &__control {
+        margin-left: 0px;
+        margin-right: 0px;
+        height: 34px;
+        overflow: visible;
+        width: 300px;
+    }
+
+    &::ng-deep {
+        .mat-stroked-button {
+            border-radius: 25px;
+            font-size: 16px;
+            width: 180px;
+            height: 50px;
+            margin-left: 20px;
+        }
+
+        .mat-stroked-button:not(.mat-button-disabled) {
+            color: var(--button-primary-color);
+            border: 1px solid var(--button-primary-color);
+        }
+
+        .mat-form-field-label {
+            top: 50%;
+            margin-top: 0;
+            color: #9e9e9e;
+        }
+
+        .mat-form-field-wrapper {
+            padding-bottom: 0;
+            margin: 0;
+        }
+
+        .mat-form-field-infix {
+            padding: 14px 0 8px 0;
+            border-top: unset;
+            font-weight: 300;
+            font-size: 14px;
+        }
+
+        .mat-select-arrow-wrapper {
+            transform: unset;
+        }
+    }
+}
+
+.open-in-new {
+    mat-icon {
+        font-size: 26px;
+        top: 10px;
+        left: 10px;
+    }
+}
+
+.color-field {
+    padding-right: 8px;
+}
+
+.g-dialog-content {
+    width: 1000px;
+
+    .search-header, .search-result {
+        grid-template-columns: 40px 220px 360px 270px 60px;
+    }
+}
+
+@media screen and (max-width: 1500px) {
+    .g-dialog-content {
+        width: 800px;
+
+        .search-header, .search-result {
+            grid-template-columns: 40px 220px 325px 105px 60px;
+        }
+    }
+}
+
+@media screen and (max-width: 1000px) {
+    .g-dialog-content {
+        width: 580px;
+
+        .search-header, .search-result {
+            grid-template-columns: 40px 325px 105px 60px;
+        }
+
+        .policy-id-field {
+            display: none;
+        }
+    }
+}

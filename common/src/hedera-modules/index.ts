@@ -32,3 +32,4 @@ export { SynchronizationMessage } from './message/synchronization-message';
 export { ModuleMessage } from './message/module-message';
 export { TagMessage } from './message/tag-message';
 export { RoleMessage } from './message/role-message';
+export { Hashing } from './hashing';

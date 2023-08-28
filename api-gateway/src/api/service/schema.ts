@@ -13,30 +13,6 @@ import { ApiTags } from '@nestjs/swagger';
 import { SystemSchemaDTO } from '@middlewares/validation/schemas/schemas';
 
 /**
- * Prepare new schema object
- * @param newSchema
- * @param guardians
- * @param owner
- */
-async function prepareSchema(newSchema, guardians: Guardians, owner: string) {
-    if (newSchema.id) {
-        const schema = await guardians.getSchemaById(newSchema.id);
-        if (!schema) {
-            throw new Error('Schema does not exist.');
-        }
-        if (schema.creator !== owner) {
-            throw new Error('Invalid creator.');
-        }
-        newSchema.version = schema.version;
-    } else {
-        newSchema.version = '';
-    }
-    delete newSchema._id;
-    delete newSchema.id;
-    delete newSchema.status;
-}
-
-/**
  * Create new schema
  * @param {ISchema} newSchema
  * @param {string} owner
@@ -45,12 +21,7 @@ async function prepareSchema(newSchema, guardians: Guardians, owner: string) {
  */
 export async function createSchema(newSchema: ISchema, owner: string, topicId?: string): Promise<ISchema[]> {
     const guardians = new Guardians();
-    await prepareSchema(newSchema, guardians, owner);
-
-    if (topicId) {
-        newSchema.topicId = topicId;
-    }
-
+    newSchema.topicId = topicId;
     SchemaHelper.checkSchemaKey(newSchema);
     SchemaHelper.updateOwner(newSchema, owner);
     const schemas = (await guardians.createSchema(newSchema));
@@ -63,18 +34,13 @@ export async function createSchema(newSchema: ISchema, owner: string, topicId?: 
  * @param {ISchema} newSchema
  * @param {string} owner
  * @param {string} topicId
- * @param {string} taskId
+ * @param {any} task
  */
 export async function createSchemaAsync(newSchema: ISchema, owner: string, topicId: string, task: any): Promise<any> {
     const taskManager = new TaskManager();
     const guardians = new Guardians();
-
     taskManager.addStatus(task.taskId, 'Check schema version', StatusType.PROCESSING);
-    await prepareSchema(newSchema, guardians, owner);
-    taskManager.addStatus(task.taskId, 'Check schema version', StatusType.COMPLETED);
-
     newSchema.topicId = topicId;
-
     SchemaHelper.checkSchemaKey(newSchema);
     SchemaHelper.updateOwner(newSchema, owner);
     await guardians.createSchemaAsync(newSchema, task);
@@ -320,7 +286,7 @@ export class SchemaApi {
         const user = req.user;
         const guardians = new Guardians();
         const schemaId = req.params.schemaId;
-        const {version} = req.body;
+        const { version } = req.body;
         let schema;
         let allVersion;
         try {
@@ -351,7 +317,7 @@ export class SchemaApi {
         try {
             await guardians.publishSchema(schemaId, version, user.did);
 
-            const {items, count} = await guardians.getSchemasByOwner(user.did);
+            const { items, count } = await guardians.getSchemasByOwner(user.did);
             SchemaHelper.updatePermission(items, user.did);
             return res.setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
         } catch (error) {
@@ -428,7 +394,7 @@ export class SchemaApi {
             await guardians.previewSchemasByMessagesAsync([messageId], task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(task.taskId, {code: 500, message: error.message});
+            taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
 
         return res.status(202).send(task);
@@ -444,7 +410,7 @@ export class SchemaApi {
         }
         try {
             const guardians = new Guardians();
-            const {schemas} = await SchemaUtils.parseZipFile(zip);
+            const { schemas } = await SchemaUtils.parseZipFile(zip);
             const schemaToPreview = await guardians.previewSchemasByFile(schemas);
             return res.json(schemaToPreview);
         } catch (error) {
@@ -466,7 +432,7 @@ export class SchemaApi {
         }
         try {
             await guardians.importSchemasByMessages([messageId], req.user.did, topicId);
-            const {items, count} = await guardians.getSchemasByOwner(user.did);
+            const { items, count } = await guardians.getSchemasByOwner(user.did);
             SchemaHelper.updatePermission(items, user.did);
             return res.status(201).setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
         } catch (error) {
@@ -492,7 +458,7 @@ export class SchemaApi {
             await guardians.importSchemasByMessagesAsync([messageId], user.did, topicId, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(task.taskId, {code: 500, message: error.message});
+            taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
 
         return res.status(202).send(task);
@@ -512,7 +478,7 @@ export class SchemaApi {
         try {
             const files = await SchemaUtils.parseZipFile(zip);
             await guardians.importSchemasByFile(files, req.user.did, topicId);
-            const {items, count} = await guardians.getSchemasByOwner(user.did);
+            const { items, count } = await guardians.getSchemasByOwner(user.did);
             SchemaHelper.updatePermission(items, user.did);
             return res.status(201).setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
         } catch (error) {
