@@ -149,6 +149,14 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
     logger.info('Create DID Document', ['GUARDIAN_SERVICE']);
     const didObject = await DIDDocument.create(hederaAccountKey, topicConfig.topicId);
     const userDID = didObject.getDid();
+
+    const existingUser = await new DataBaseHelper(DidDocumentCollection).findOne({did: userDID});
+    if (existingUser) {
+        notifier.completedAndStart('User restored');
+        notifier.completed();
+        return userDID;
+    }
+
     const didMessage = new DIDMessage(MessageAction.CreateDID);
     didMessage.setDocument(didObject);
     const didDoc = await new DataBaseHelper(DidDocumentCollection).save({

@@ -8,6 +8,7 @@ export enum PolicyEvents {
     POLICY_SERVICE_FREE_STATUS = 'policy-service-free-status',
     GENERATE_POLICY = 'policy-event-generate-policy',
     POLICY_READY = 'policy-event-policy-ready',
+    POLICY_START_ERROR = 'policy-start-error',
     DELETE_POLICY = 'policy-event-delete-policy',
     VALIDATE_POLICY = 'policy-event-validate-policy',
     GET_BLOCK_DATA = 'policy-event-get-block-data',
