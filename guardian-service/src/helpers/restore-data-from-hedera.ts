@@ -561,6 +561,8 @@ export class RestoreDataFromHedera {
             hederaAccountId: hederaAccountID,
         });
 
+        await this.restoreUsers(RAMessages);
+
         await this.restoreTopic(
             {
                 topicId: currentRAMessage.registrantTopicId,
@@ -595,6 +597,23 @@ export class RestoreDataFromHedera {
                 hederaAccountID,
                 hederaAccountKey
             );
+        }
+    }
+
+    private async restoreUsers(messages: any[]) {
+        const userDIDs = this.findMessagesByType(MessageType.DIDDocument, messages);
+        if (!userDIDs) {
+            return;
+        }
+        userDIDs.shift();
+        for (const message of userDIDs) {
+            await new DataBaseHelper(DidDocumentCollection).save({
+                did: message.document.id,
+                document: message.document,
+                status: DidDocumentStatus.CREATE,
+                messageId: message.id,
+                topicId: message.topicId,
+            });
         }
     }
 }
