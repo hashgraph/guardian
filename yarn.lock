@@ -3450,7 +3450,7 @@ __metadata:
     "@types/jszip": ^3.4.1
     "@types/node": ^18.16.0
     "@types/ws": ^8.2.2
-    chai: ^4.3.4
+    chai: ^4.3.8
     class-transformer: ^0.5.1
     class-validator: ^0.14.0
     cron: ^2.0.0
@@ -3653,7 +3653,7 @@ __metadata:
     "@types/node": ^18.16.0
     "@types/ws": ^8.2.2
     async-mutex: ^0.4.0
-    chai: ^4.3.4
+    chai: ^4.3.8
     class-transformer: ^0.5.1
     class-validator: ^0.14.0
     cross-env: ^7.0.3
@@ -3693,7 +3693,7 @@ __metadata:
     "@types/gulp": ^4
     "@types/gulp-rename": ^2
     axios: ^1.3.6
-    chai: ^4.3.5
+    chai: ^4.3.8
     dotenv: ^16.0.1
     gulp: ^4.0.2
     gulp-copy: ^4.0.1
@@ -4098,7 +4098,7 @@ __metadata:
     base-x: ^4.0.0
     base64url: ^3.0.1
     base64url-universal: ^2.0.0
-    chai: ^4.3.4
+    chai: ^4.3.8
     cross-env: ^7.0.3
     dotenv: ^16.0.0
     express: ^4.17.1
@@ -4745,36 +4745,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chai@npm:4.3.4":
-  version: 4.3.4
-  resolution: "chai@npm:4.3.4"
-  dependencies:
-    assertion-error: ^1.1.0
-    check-error: ^1.0.2
-    deep-eql: ^3.0.1
-    get-func-name: ^2.0.0
-    pathval: ^1.1.1
-    type-detect: ^4.0.5
-  checksum: 772c522b3bfe3fcf0e0e74edfe584cd886b0e85a73126dec750095300e023d4e1ec6d40e3c35a80d2bd8f33dca46c42767a36f5f50f32dca6fa31c88b5f49ab8
-  languageName: node
-  linkType: hard
-
-"chai@npm:4.3.6":
-  version: 4.3.6
-  resolution: "chai@npm:4.3.6"
-  dependencies:
-    assertion-error: ^1.1.0
-    check-error: ^1.0.2
-    deep-eql: ^3.0.1
-    get-func-name: ^2.0.0
-    loupe: ^2.3.1
-    pathval: ^1.1.1
-    type-detect: ^4.0.5
-  checksum: acff93fd537f96d4a4d62dd83810285dffcfccb5089e1bf2a1205b28ec82d93dff551368722893cf85004282df10ee68802737c33c90c5493957ed449ed7ce71
-  languageName: node
-  linkType: hard
-
-"chai@npm:^4.3.4, chai@npm:^4.3.5":
+"chai@npm:4.3.8, chai@npm:^4.3.8":
   version: 4.3.8
   resolution: "chai@npm:4.3.8"
   dependencies:
@@ -5541,15 +5512,6 @@ __metadata:
   version: 0.2.2
   resolution: "decode-uri-component@npm:0.2.2"
   checksum: 95476a7d28f267292ce745eac3524a9079058bbb35767b76e3ee87d42e34cd0275d2eb19d9d08c3e167f97556e8a2872747f5e65cbebcac8b0c98d83e285f139
-  languageName: node
-  linkType: hard
-
-"deep-eql@npm:^3.0.1":
-  version: 3.0.1
-  resolution: "deep-eql@npm:3.0.1"
-  dependencies:
-    type-detect: ^4.0.0
-  checksum: 4f4c9fb79eb994fb6e81d4aa8b063adc40c00f831588aa65e20857d5d52f15fb23034a6576ecf886f7ff6222d5ae42e71e9b7d57113e0715b1df7ea1e812b125
   languageName: node
   linkType: hard
 
@@ -7616,7 +7578,7 @@ __metadata:
     axios: ^1.3.6
     bs58: ^4.0.1
     bson: ^5.3.0
-    chai: 4.3.4
+    chai: 4.3.8
     cors: ^2.8.5
     cron: ^2.0.0
     deep-equal: ^2.0.5
@@ -10150,7 +10112,7 @@ __metadata:
     "@types/gulp-rename": ^2
     "@types/node": ^18.16.0
     "@web-std/fetch": 3.0.0
-    chai: 4.3.6
+    chai: 4.3.8
     cors: ^2.8.5
     dotenv: ^16.0.0
     fs-extra: ^10.0.0
@@ -11494,7 +11456,7 @@ __metadata:
     "@types/gulp-rename": ^2
     "@types/node": ^18.16.0
     "@web-std/fetch": 3.0.0
-    chai: 4.3.6
+    chai: 4.3.8
     cors: ^2.8.5
     dotenv: ^16.0.0
     fs-extra: ^10.0.0
@@ -12277,7 +12239,7 @@ __metadata:
     axios: ^1.3.6
     bs58: ^4.0.1
     bson: ~5.3.0
-    chai: 4.3.4
+    chai: 4.3.8
     cors: ^2.8.5
     cron: ^2.0.0
     deep-equal: ^2.0.5
@@ -15516,7 +15478,7 @@ __metadata:
     "@types/node": ^18.16.0
     axios: ^1.3.6
     axios-retry: ^3.2.4
-    chai: 4.3.4
+    chai: 4.3.8
     cross-blob: ^2.0.1
     dotenv: ^16.0.0
     gulp: ^4.0.2
