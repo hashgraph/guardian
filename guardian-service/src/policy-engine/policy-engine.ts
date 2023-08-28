@@ -103,6 +103,12 @@ export class PolicyEngine extends NatsService {
     private readonly policyReadyCallbacks: Map<string, (data: any, error?: any) => void> = new Map();
 
     /**
+     * Policy initialization errors container
+     * @private
+     */
+    private readonly policyInitializationErrors: Map<string, string> = new Map();
+
+    /**
      * Initialization
      */
     public async init(): Promise<void> {
@@ -1035,6 +1041,7 @@ export class PolicyEngine extends NatsService {
                 return new Promise((resolve, reject) => {
                     this.policyReadyCallbacks.set(policyId, (data, error) => {
                         if (error) {
+                            this.policyInitializationErrors.set(policyId, error);
                             reject(new Error(error));
                         }
                         resolve(data);
@@ -1119,5 +1126,16 @@ export class PolicyEngine extends NatsService {
                 this.regenerateIds(child);
             }
         }
+    }
+
+    /**
+     * Get policy errors
+     * @param policyId
+     */
+    public getPolicyError(policyId: string): string | null {
+        if (this.policyInitializationErrors.has(policyId)) {
+            return this.policyInitializationErrors.get(policyId)
+        }
+        return null;
     }
 }

@@ -101,12 +101,21 @@ Promise.all([
     await workersHelper.setConnection(cn).init();;
     workersHelper.initListeners();
 
+    // try {
     new Logger().info(`Process for with id ${policyId} was started started PID: ${process.pid}`, ['POLICY', policyId]);
 
     const generator = new BlockTreeGenerator();
     const policyValidator = new PolicyValidator(policyConfig);
 
-    await generator.generate(policyConfig, skipRegistration, policyValidator);
+    const policyModel = await generator.generate(policyConfig, skipRegistration, policyValidator);
+    if ((policyModel as { type: 'error', message: string }).type === 'error') {
+        generator.publish(PolicyEvents.POLICY_READY, {
+            policyId: policyId.toString(),
+            error: (policyModel as { type: 'error', message: string }).message
+        });
+        return;
+        // throw new Error((policyModel as {type: 'error', message: string}).message);
+    }
 
     const synchronizationService = new SynchronizationService(policyConfig);
     synchronizationService.start();
@@ -127,4 +136,7 @@ Promise.all([
     }
 
     new Logger().info('Start policy', ['POLICY', policyConfig.name, policyId.toString()]);
+    // } catch (e) {
+    //     process.exit(500);
+    // }
 });

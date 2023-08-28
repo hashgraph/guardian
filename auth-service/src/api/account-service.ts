@@ -3,10 +3,7 @@ import { sign, verify } from 'jsonwebtoken';
 import { User } from '@entity/user';
 import * as util from 'util';
 import crypto from 'crypto';
-import { DataBaseHelper, Logger, MessageError,
-    MessageResponse, NatsService, SecretManager,
-    ProviderAuthUser,
-    Singleton } from '@guardian/common';
+import { DataBaseHelper, Logger, MessageError, MessageResponse, NatsService, ProviderAuthUser, SecretManager, Singleton } from '@guardian/common';
 import {
     AuthEvents,
     GenerateUUIDv4,
@@ -80,7 +77,8 @@ export class AccountService extends NatsService {
                     username,
                     password: passwordDigest,
                     role,
-                    walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
+                    // walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
+                    walletToken: '',
                     parent: null,
                     did: null
                 });
@@ -105,7 +103,8 @@ export class AccountService extends NatsService {
                         username: msg.username,
                         password: null,
                         role: msg.role,
-                        walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
+                        // walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
+                        walletToken: '',
                         parent: null,
                         did: null,
                         provider: msg.provider,
