@@ -927,7 +927,11 @@ export class PolicyConfigurationComponent implements OnInit {
                         description: policy.description
                     }).subscribe((result) => {
                         const { taskId, expectation } = result;
-                        this.router.navigate(['task', taskId]);
+                        this.router.navigate(['task', taskId], {
+                            queryParams: {
+                                last: btoa(location.href)
+                            }
+                        });
                     }, (e) => {
                         this.loading = false;
                     });
@@ -940,7 +944,11 @@ export class PolicyConfigurationComponent implements OnInit {
                     policy.previousVersion = json.version;
                     this.policyEngineService.pushCreate(policy).subscribe((result) => {
                         const { taskId, expectation } = result;
-                        this.router.navigate(['task', taskId]);
+                        this.router.navigate(['task', taskId], {
+                            queryParams: {
+                                last: btoa(location.href)
+                            }
+                        });
                     }, (e) => {
                         this.loading = false;
                     });
@@ -996,7 +1004,11 @@ export class PolicyConfigurationComponent implements OnInit {
         this.loading = true;
         this.policyEngineService.pushPublish(this.policyId, version).subscribe((result) => {
             const { taskId, expectation } = result;
-            this.router.navigate(['task', taskId]);
+            this.router.navigate(['task', taskId], {
+                queryParams: {
+                    last: btoa(location.href)
+                }
+            });
         }, (e) => {
             console.error(e.error);
             this.loading = false;

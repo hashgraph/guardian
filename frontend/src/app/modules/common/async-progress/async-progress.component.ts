@@ -36,6 +36,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
     action: TaskAction | string;
     taskNotFound: boolean = false;
     userRole?: UserRole;
+    last?: any;
 
     @Input('taskId') inputTaskId?: string;
     @Output() completed = new EventEmitter<string>();
@@ -51,7 +52,16 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
         private informService: InformService,
         private auth: AuthService,
         private wizardService: WizardService
-    ) {}
+    ) {
+        this.last = this.route?.snapshot?.queryParams?.last;
+        try {
+            if (this.last) {
+                this.last = atob(this.last);
+            }
+        } catch (error) {
+            this.last = null;
+        }
+    }
 
     ngOnInit() {
         this.init(true);
@@ -222,7 +232,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 }
                 break;
             case TaskAction.DELETE_POLICY:
-                this.router.navigate(['policies'],  {
+                this.router.navigate(['policy-viewer'],  {
                     replaceUrl: true,
                 });
                 break;
@@ -247,7 +257,10 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             this.error.emit(error);
             return;
         }
-        this.informService.processAsyncError(error);
+        if (this.last) {
+            window.location.href = this.last;
+            return;
+        }
         switch (this.action) {
             case TaskAction.RESTORE_USER_PROFILE:
             case TaskAction.CONNECT_USER:
@@ -271,7 +284,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.WIZARD_CREATE_POLICY:
             case TaskAction.PUBLISH_POLICY:
             case TaskAction.DELETE_POLICY:
-                this.router.navigate(['policies'],  {
+                this.router.navigate(['policy-viewer'],  {
                     replaceUrl: true,
                 });
                 break;

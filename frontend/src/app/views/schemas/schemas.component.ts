@@ -417,7 +417,11 @@ export class SchemaConfigComponent implements OnInit {
                 default: {
                     this.schemaService.pushCreate(schema, schema.topicId).subscribe((result) => {
                         const {taskId, expectation} = result;
-                        this.router.navigate(['task', taskId]);
+                        this.router.navigate(['task', taskId], {
+                            queryParams: {
+                                last: btoa(location.href)
+                            }
+                        });
                         // this.expectedTaskMessages = expectation;
                     }, (e) => {
                         this.loading = false;
@@ -487,7 +491,11 @@ export class SchemaConfigComponent implements OnInit {
                 this.loading = true;
                 this.schemaService.newVersion(schema, element.id).subscribe((result) => {
                     const { taskId, expectation } = result;
-                    this.router.navigate(['task', taskId]);
+                    this.router.navigate(['task', taskId], {
+                        queryParams: {
+                            last: btoa(location.href)
+                        }
+                    });
                 }, (e) => {
                     this.loading = false;
                 });
@@ -521,7 +529,11 @@ export class SchemaConfigComponent implements OnInit {
                 this.loading = true;
                 this.schemaService.pushCreate(schema, schema.topicId).subscribe((result) => {
                     const { taskId, expectation } = result;
-                    this.router.navigate(['task', taskId]);
+                    this.router.navigate(['task', taskId], {
+                        queryParams: {
+                            last: btoa(location.href)
+                        }
+                    });
                 }, (e) => {
                     this.loading = false;
                 });
@@ -542,7 +554,11 @@ export class SchemaConfigComponent implements OnInit {
                 this.loading = true;
                 this.schemaService.pushPublish(element.id, version).subscribe((result) => {
                     const { taskId, expectation } = result;
-                    this.router.navigate(['task', taskId]);
+                    this.router.navigate(['task', taskId], {
+                        queryParams: {
+                            last: btoa(location.href)
+                        }
+                    });
                 }, (e) => {
                     this.loading = false;
                 });
@@ -621,12 +637,20 @@ export class SchemaConfigComponent implements OnInit {
                 if (type == 'message') {
                     this.schemaService.pushImportByMessage(data, result.topicId).subscribe((result) => {
                         const { taskId, expectation } = result;
-                        this.router.navigate(['task', taskId]);
+                        this.router.navigate(['task', taskId], {
+                            queryParams: {
+                                last: btoa(location.href)
+                            }
+                        });
                     });
                 } else if (type == 'file') {
                     this.schemaService.pushImportByFile(data, result.topicId).subscribe((result) => {
                         const { taskId, expectation } = result;
-                        this.router.navigate(['task', taskId]);
+                        this.router.navigate(['task', taskId], {
+                            queryParams: {
+                                last: btoa(location.href)
+                            }
+                        });
                     });
                 }
             }

@@ -271,7 +271,11 @@ export class PoliciesComponent implements OnInit {
         this.loading = true;
         this.policyEngineService.pushPublish(element.id, version).subscribe((result) => {
             const { taskId, expectation } = result;
-            this.router.navigate(['task', taskId]);
+            this.router.navigate(['task', taskId], {
+                queryParams: {
+                    last: btoa(location.href)
+                }
+            });
         }, (e) => {
             this.loading = false;
         });
@@ -296,7 +300,11 @@ export class PoliciesComponent implements OnInit {
             this.loading = true;
             this.policyEngineService.pushDelete(policyId).subscribe((result) => {
                 const { taskId, expectation } = result;
-                this.router.navigate(['task', taskId]);
+                this.router.navigate(['task', taskId], {
+                    queryParams: {
+                        last: btoa(location.href)
+                    }
+                });
             }, (e) => {
                 this.loading = false;
             });
@@ -380,7 +388,11 @@ export class PoliciesComponent implements OnInit {
                     this.policyEngineService.pushImportByMessage(data, versionOfTopicId).subscribe(
                         (result) => {
                             const { taskId, expectation } = result;
-                            this.router.navigate(['task', taskId]);
+                            this.router.navigate(['task', taskId], {
+                                queryParams: {
+                                    last: btoa(location.href)
+                                }
+                            });
                         }, (e) => {
                             this.loading = false;
                         });
@@ -388,7 +400,11 @@ export class PoliciesComponent implements OnInit {
                     this.policyEngineService.pushImportByFile(data, versionOfTopicId).subscribe(
                         (result) => {
                             const { taskId, expectation } = result;
-                            this.router.navigate(['task', taskId]);
+                            this.router.navigate(['task', taskId], {
+                                queryParams: {
+                                    last: btoa(location.href)
+                                }
+                            });
                         }, (e) => {
                             this.loading = false;
                         });
@@ -592,7 +608,11 @@ export class PoliciesComponent implements OnInit {
                         .subscribe(
                             (result) => {
                                 const { taskId, expectation } = result;
-                                this.router.navigate(['task', taskId]);
+                                this.router.navigate(['task', taskId], {
+                                    queryParams: {
+                                        last: btoa(location.href)
+                                    }
+                                });
                             },
                             (e) => {
                                 this.loading = false;
