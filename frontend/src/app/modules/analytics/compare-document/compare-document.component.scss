@@ -252,6 +252,9 @@
 
         .prop-table-body {
             display: table;
+            width: 100%;
+            box-sizing: border-box;
+            padding-right: 10px;
 
             .prop-table-row {
                 display: table-row;
@@ -313,10 +316,10 @@
                         display: block;
                     }
 
-                    &[prop-type="array"],
-                    &[prop-type="object"] {
-                        display: none;
-                    }
+                    // & *[prop-type="array"],
+                    // & *[prop-type="object"] {
+                    //     display: none;
+                    // }
 
                     span {
                         position: absolute;

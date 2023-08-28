@@ -16,6 +16,7 @@ interface IDocumentContext {
 }
 
 interface IDocumentDetailsContext {
+    index: number;
     id: string;
     messageId: string;
     type: string;
@@ -24,6 +25,17 @@ interface IDocumentDetailsContext {
     documentRate: string;
     owner: string;
     totalRate: string;
+    fields: IFieldContext[];
+}
+
+interface IFieldContext {
+    fantom: boolean;
+    type: string;
+    lvl: number;
+    offset: number;
+    name: string;
+    propType: string;
+    value: string;
 }
 
 @Component({
@@ -86,7 +98,7 @@ export class CompareDocumentComponent implements OnInit {
         const k = Math.round(100 / this.size);
         this._gridStyle = `max(calc(${k}vw - 80px), 680px)`;
         for (let i = 1; i < this.size; i++) {
-            this._gridStyle += ` 35px max(calc(${k}vw - 40px), 720px)`;
+            this._gridStyle += ` 35px max(calc(${k}vw - 45px), 720px)`;
         }
 
         this.createHeaders(this.value);
@@ -301,8 +313,60 @@ export class CompareDocumentComponent implements OnInit {
     }
 
     private createDetailsContext(row: any, index: number): IDocumentDetailsContext {
+        const fieldContexts: IFieldContext[] = [];
+        for (const _field of row.documents) {
+            const fieldContext: IFieldContext = {
+                fantom: true,
+                type: index === 0 ? 'RIGHT' : 'LEFT',
+                lvl: 0,
+                offset: 0,
+                name: '',
+                propType: '',
+                value: '',
+            }
+
+            let item: any;
+            let field: any;
+            let items: any[];
+            if (this.size === 2) {
+                field = _field;
+                item = _field.items[index];
+                items = _field.items;
+            } else {
+                field = _field[index];
+                item = _field.item;
+                items = _field.map((f: any) => f.item);
+            }
+            if (field && item) {
+                fieldContext.fantom = false;
+                fieldContext.type = field.type;
+                fieldContext.lvl = item.lvl;
+                fieldContext.offset = 10 * item.lvl;
+                fieldContext.name = item.name;
+                fieldContext.propType = item.type;
+                fieldContext.value = item.value;
+                if(fieldContext.propType === 'array') {
+                    fieldContext.value = '[...]';
+                }
+                if(fieldContext.propType === 'object') {
+                    fieldContext.value = '{...}';
+                }
+            }
+            if (fieldContext.fantom) {
+                const fantom = items.find((i: any) => i);
+                if (fantom) {
+                    fieldContext.lvl = fantom.lvl;
+                    fieldContext.offset = 10 * fantom.lvl;
+                    fieldContext.name = fantom.name;
+                    fieldContext.propType = fantom.type;
+                }
+            }
+            fieldContexts.push(fieldContext);
+        }
+
         if (index === 0) {
             return {
+                index,
                 id: row['left_id'],
                 messageId: row['left_message_id'],
                 type: row['left_type'],
@@ -311,10 +375,12 @@ export class CompareDocumentComponent implements OnInit {
                 optionsRate: row['options_rate'],
                 documentRate: row['document_rate'],
                 totalRate: row['total_rate'],
+                fields: fieldContexts
             }
         } else {
             if (this.size === 2) {
                 return {
+                    index,
                     id: row['right_id'],
                     messageId: row['right_message_id'],
                     type: row['right_type'],
@@ -323,9 +389,11 @@ export class CompareDocumentComponent implements OnInit {
                     optionsRate: row['options_rate'],
                     documentRate: row['document_rate'],
                     totalRate: row['total_rate'],
+                    fields: fieldContexts
                 }
             } else {
                 return {
+                    index,
                     id: row[`right_id_${index}`],
                     messageId: row[`right_message_id_${index}`],
                     type: row[`right_type_${index}`],
@@ -334,6 +402,7 @@ export class CompareDocumentComponent implements OnInit {
                     optionsRate: row[`options_rate_${index}`],
                     documentRate: row[`document_rate_${index}`],
                     totalRate: row[`total_rate_${index}`],
+                    fields: fieldContexts
                 }
             }
         }

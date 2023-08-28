@@ -1,6 +1,6 @@
 import { ICompareOptions } from '../interfaces/compare-options.interface';
 import { FieldModel } from './field.model';
-import { SubSchemaModel } from './sub-schema-model';
+import { SubSchemaModel } from './sub-schema.model';
 import MurmurHash3 from 'imurmurhash';
 import { Policy, Schema as SchemaCollection } from '@guardian/common';
 

@@ -5,7 +5,7 @@ import { IWeightModel } from '../interfaces/weight-model.interface';
 import { PropertyType } from '../types/property.type';
 import { WeightType } from '../types/weight.type';
 import { AnyPropertyModel, ArrayPropertyModel, PropertyModel, UUIDPropertyModel } from './property.model';
-import { SubSchemaModel } from './sub-schema-model';
+import { SubSchemaModel } from './sub-schema.model';
 
 /**
  * Field Model

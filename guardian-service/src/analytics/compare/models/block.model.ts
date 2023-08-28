@@ -1,7 +1,7 @@
 import MurmurHash3 from 'imurmurhash';
 import { ICompareOptions } from '../interfaces/compare-options.interface';
 import { EventModel } from './event.model';
-import { BlockPropertiesModel } from './block-properties-model';
+import { BlockPropertiesModel } from './block-properties.model';
 import { WeightType } from '../types/weight.type';
 import { ArtifactModel } from './artifact.model';
 import { IArtifacts } from '../interfaces/artifacts.interface';

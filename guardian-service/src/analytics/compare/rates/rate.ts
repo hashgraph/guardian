@@ -9,6 +9,11 @@ import { IRateTable } from '../interfaces/rate-table.interface';
  */
 export class Rate<T extends IModel> implements IRate<T> {
     /**
+     * Total rate name
+     */
+    public static readonly TOTAL_RATE: string = 'total';
+
+    /**
      * Left object
      */
     public readonly left: T;

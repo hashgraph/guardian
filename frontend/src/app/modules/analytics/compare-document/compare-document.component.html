@@ -262,25 +262,28 @@
 
         <div class="prop-delimiter"></div>
 
-        <!-- <div class="prop-table">
-            <div class="prop-table-header">Properties: </div>
+        <div class="prop-table">
+            <div class="prop-table-header">Documents: </div>
             <div class="prop-table-body">
-                <div *ngFor="let prop of data.properties" class="prop-table-row" [attr.fantom]="prop.fantom"
-                    [attr.type]="prop.type" [attr.offset]="prop.lvl" [attr.index]="data.index">
-                    <div class="prop-table-name" [style.padding-left.px]="prop.offset">
-                        {{prop.name}}:
+                <div *ngFor="let field of data.fields" class="prop-table-row" 
+                    [attr.fantom]="field.fantom"
+                    [attr.type]="field.type" 
+                    [attr.offset]="field.lvl" 
+                    [attr.index]="data.index">
+                    <div class="prop-table-name" [style.padding-left.px]="field.offset">
+                        {{field.name}}:
                     </div>
-                    <div class="prop-table-value" [attr.prop-type]="prop.propType">
-                        <div class="compare-btn" (click)="compareSchema(prop)">
+                    <div class="prop-table-value" [attr.prop-type]="field.propType">
+                        <div class="compare-btn" (click)="compareSchema(field)">
                             <mat-icon>search</mat-icon>
                         </div>
-                        <span *ngIf="prop.propType" [title]="prop.value">
-                            {{prop.value}}
+                        <span *ngIf="field.propType" [title]="field.value">
+                            {{field.value}}
                         </span>
                     </div>
                 </div>
             </div>
-        </div> -->
+        </div>
 
         <div class="prop-delimiter"></div>
 

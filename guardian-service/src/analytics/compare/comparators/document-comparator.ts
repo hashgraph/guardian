@@ -55,13 +55,11 @@ export class DocumentComparator {
         row.set('document_type', tree.documentType);
         row.set('document_schema', tree.schema);
 
-        // row.setArray('properties', tree.getSubRate('properties'));
-        // row.setArray('events', tree.getSubRate('events'));
-        // row.setArray('permissions', tree.getSubRate('permissions'));
-        // row.setArray('artifacts', tree.getSubRate('artifacts'));
+        row.setArray('documents', tree.getSubRate(DocumentsRate.DOCUMENTS_RATE));
+        row.setArray('options', tree.getSubRate(DocumentsRate.OPTIONS_RATE));
 
-        // row.set('left', leftItem?.toObject());
-        // row.set('right', rightItem?.toObject());
+        row.set('left', leftItem?.toObject());
+        row.set('right', rightItem?.toObject());
 
         if (leftItem) {
             row.set('left_id', leftItem.id);
@@ -69,9 +67,6 @@ export class DocumentComparator {
             row.set('left_type', leftItem.type);
             row.set('left_schema', leftItem.key);
             row.set('left_owner', leftItem.owner);
-
-            // row.set('left_tag', leftItem.tag);
-            // row.set('left_index', leftItem.index);
         }
         if (rightItem) {
             row.set('right_id', rightItem.id);
@@ -79,24 +74,14 @@ export class DocumentComparator {
             row.set('right_type', rightItem.type);
             row.set('right_schema', rightItem.key);
             row.set('right_owner', rightItem.owner);
-            // row.set('right_tag', rightItem.tag);
-            // row.set('right_index', rightItem.index);
         }
         if (leftItem && rightItem) {
-            // row.set('document_rate', `${tree.getRateValue('document')}%`);
-            // row.set('options_rate', `${tree.getRateValue('options')}%`);
-            // row.set('index_rate', `${tree.getRateValue('index')}%`);
-            // row.set('permission_rate', `${tree.getRateValue('permissions')}%`);
-            // row.set('artifacts_rate', `${tree.getRateValue('artifacts')}%`);
-            row.set('total_rate', `${tree.getRateValue('total')}%`);
-            row.set('document_rate', `-`);
-            row.set('options_rate', `-`);
+            row.set('document_rate', `${tree.getRateValue(DocumentsRate.DOCUMENTS_RATE)}%`);
+            row.set('options_rate', `${tree.getRateValue(DocumentsRate.OPTIONS_RATE)}%`);
+            row.set('total_rate', `${tree.getRateValue(DocumentsRate.TOTAL_RATE)}%`);
         } else {
             row.set('document_rate', `-`);
             row.set('options_rate', `-`);
-            // row.set('index_rate', `-`);
-            // row.set('permission_rate', `-`);
-            // row.set('artifacts_rate', `-`);
             row.set('total_rate', `-`);
         }
 
@@ -123,21 +108,21 @@ export class DocumentComparator {
             { name: 'left_type', label: 'Type', type: 'string' },
             { name: 'left_schema', label: 'Schema', type: 'string' },
             { name: 'left_owner', label: 'Owner', type: 'string' },
-            // { name: 'left_name', label: 'Field Name', type: 'string' },
 
             { name: 'right_id', label: 'ID', type: 'string' },
             { name: 'right_message_id', label: 'Message', type: 'string' },
             { name: 'right_type', label: 'Type', type: 'string' },
             { name: 'right_schema', label: 'Schema', type: 'string' },
             { name: 'right_owner', label: 'Owner', type: 'string' },
-            // { name: 'right_name', label: 'Field Name', type: 'string' },
 
             { name: 'document_rate', label: 'Document Rate', type: 'number' },
             { name: 'options_rate', label: 'Options Rate', type: 'number' },
             { name: 'total_rate', label: 'Total Rate', type: 'number' },
-            // { name: 'left', label: '', type: 'object' },
-            // { name: 'right', label: '', type: 'object' },
-            // { name: 'properties', label: '', type: 'object' }
+
+            { name: 'left', label: '', type: 'object' },
+            { name: 'right', label: '', type: 'object' },
+            { name: 'documents', label: '', type: 'object' },
+            { name: 'options', label: '', type: 'object' }
         ];
 
         const tree = ComparePolicyUtils.compareDocuments(document1, document2, this.options);

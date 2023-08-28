@@ -5,11 +5,23 @@ import { DocumentModel } from '../models/document.model';
 import { CompareUtils } from '../utils/utils';
 import { IRateMap } from '../interfaces/rate-map.interface';
 import { Status } from '../types/status.type';
+import { PropertyModel } from '../models/property.model';
+import { PropertiesRate } from './properties-rate';
 
 /**
  * Calculates the difference between two Documents
  */
 export class DocumentsRate extends Rate<DocumentModel> {
+    /**
+     * Document rate name
+     */
+    public static readonly DOCUMENTS_RATE: string = 'documents';
+
+    /**
+     * Options rate name
+     */
+    public static readonly OPTIONS_RATE: string = 'options';
+
     /**
      * Document type
      */
@@ -77,7 +89,37 @@ export class DocumentsRate extends Rate<DocumentModel> {
         document2: DocumentModel,
         options: ICompareOptions
     ): IRate<any>[] {
+        const list: string[] = [];
+        const map: { [key: string]: IRateMap<PropertyModel<any>> } = {};
+        if (document1) {
+            for (const item of document1.getFieldsList()) {
+                map[item.path] = { left: item, right: null };
+                list.push(item.path);
+            }
+        }
+        if (document2) {
+            for (const item of document2.getFieldsList()) {
+                if (map[item.path]) {
+                    map[item.path].right = item;
+                } else {
+                    map[item.path] = { left: null, right: item };
+                    list.push(item.path);
+                }
+            }
+        }
+        list.sort();
+
         const rates: IRate<any>[] = [];
+        for (const path of list) {
+            const item = map[path];
+            const rate = new PropertiesRate(item.left, item.right);
+            rate.calc(options);
+            rates.push(rate);
+            const subRates = rate.getSubRate();
+            for (const subRate of subRates) {
+                rates.push(subRate);
+            }
+        }
         return rates;
     }
 
@@ -113,23 +155,10 @@ export class DocumentsRate extends Rate<DocumentModel> {
             return;
         }
 
-        if(
-            document1.id === document2.id || 
-            document1.messageId === document2.messageId
-        ) {
-            this.documentRate = 100;
-            this.optionsRate = 100;
-            this.totalRate = 100;
-            return;
-        } else {
-            this.documentRate = 0;
-            this.optionsRate = 0;
-            this.totalRate = 0;
-            return;
-        }
-
         this.documentRate = CompareUtils.calcRate(this.documents);
         this.optionsRate = CompareUtils.calcRate(this.options);
+
+        console.log('---', this.documentRate, this.documents.length)
 
         const rates = [];
         rates.push(this.documentRate);
@@ -154,15 +183,30 @@ export class DocumentsRate extends Rate<DocumentModel> {
     }
 
     /**
+     * Get sub rates by name
+     * @param name - rate name
+     * @public
+     */
+    public getSubRate(name: string): IRate<any>[] {
+        if (name === DocumentsRate.DOCUMENTS_RATE) {
+            return this.documents;
+        }
+        if (name === DocumentsRate.OPTIONS_RATE) {
+            return this.options;
+        }
+        return null;
+    }
+
+    /**
      * Get rate by name
      * @param name - rate name
      * @public
      */
     public override getRateValue(name: string): number {
-        if (name === 'document') {
+        if (name === DocumentsRate.DOCUMENTS_RATE) {
             return this.documentRate;
         }
-        if (name === 'options') {
+        if (name === DocumentsRate.OPTIONS_RATE) {
             return this.optionsRate;
         }
         return this.totalRate;
