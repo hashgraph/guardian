@@ -458,7 +458,7 @@ export class WebSocketsService {
             }
             return null;
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
+            new Logger().warn(error.message || error, ['API_GATEWAY']);
             return null;
         }
     }

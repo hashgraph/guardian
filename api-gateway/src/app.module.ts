@@ -28,7 +28,6 @@ import hpp from 'hpp';
 import { ThemesApi } from '@api/service/themes';
 import { BrandingApi } from '@api/service/branding';
 import { SuggestionsApi } from '@api/service/suggestions';
-import { JwtModule } from '@nestjs/jwt';
 import { MatchConstraint } from '@helpers/decorators/match.validator';
 import { NotificationService } from '@guardian/common';
 import { NotificationsApi } from '@api/service/notifications';
@@ -48,12 +47,7 @@ const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
                     `nats://${process.env.MQ_ADDRESS}:4222`
                 ]
             }
-        }]),
-        JwtModule.register({
-            global: true,
-            secret: '123123123123123123',
-            signOptions: {expiresIn: '60s'},
-        }),
+        }])
     ],
     controllers: [
         AccountApi,
