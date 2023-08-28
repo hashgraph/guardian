@@ -13,6 +13,7 @@
       "@transmute/json-web-signature": "0.7.0-unstable.80",
       "@transmute/jsonld-schema": "0.7.0-unstable.80",
       "@transmute/security-context": "0.7.0-unstable.80",
+      "glob-parent": "^5.1.2",
     "@transmute/vc.js": "0.7.0-unstable.80",
     "axios": "^1.3.6",
     "axios-retry": "^3.2.4",
