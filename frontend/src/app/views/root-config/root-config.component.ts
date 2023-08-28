@@ -61,7 +61,11 @@ export class RootConfigComponent implements OnInit {
                     topicId
                 }).subscribe((result) => {
                     const { taskId, expectation } = result;
-                    this.router.navigate(['task', taskId]);
+                    this.router.navigate(['task', taskId], {
+                        queryParams: {
+                            last: btoa(location.href)
+                        }
+                    });
                 }, (e) => {
                     this.loading = false;
                     this.taskId = undefined;
@@ -204,7 +208,11 @@ export class RootConfigComponent implements OnInit {
             this.headerProps.setLoading(true);
             this.profileService.pushSetProfile(data).subscribe((result) => {
                 const { taskId, expectation } = result;
-                this.router.navigate(['task', taskId]);
+                this.router.navigate(['task', taskId], {
+                    queryParams: {
+                        last: btoa(location.href)
+                    }
+                });
             }, ({ message }) => {
                 this.loading = false;
                 this.headerProps.setLoading(false);

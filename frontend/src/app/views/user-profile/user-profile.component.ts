@@ -297,7 +297,11 @@ export class UserProfileComponent implements OnInit {
         this.profileService.pushSetProfile(profile).subscribe((result) => {
             const { taskId, expectation } = result;
             this.taskId = taskId;
-            this.router.navigate(['task', taskId]);
+            this.router.navigate(['task', taskId], {
+                queryParams: {
+                    last: btoa(location.href)
+                }
+            });
         }, ({ message }) => {
             this.loading = false;
             this.headerProps.setLoading(false);
