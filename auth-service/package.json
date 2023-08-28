@@ -13,7 +13,7 @@
     "@mikro-orm/mongodb": "5.7.12",
     "@nestjs/common": "^9.4.1",
     "@nestjs/core": "^9.4.1",
-    "@nestjs/microservices": "^9.4.1",
+    "@nestjs/microservices": "^10.2.2",
     "axios": "^1.4.0",
     "base-x": "^4.0.0",
     "base64url": "^3.0.1",
