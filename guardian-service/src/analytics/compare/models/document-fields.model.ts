@@ -1,5 +1,4 @@
 import { ICompareOptions } from "../interfaces/compare-options.interface";
-import { IKeyMap } from "../interfaces/key-map.interface";
 import { AnyPropertyModel, ArrayPropertyModel, ObjectPropertyModel, PropertyModel } from "./property.model";
 import { SchemaModel } from "./schema.model";
 
@@ -9,13 +8,56 @@ import { SchemaModel } from "./schema.model";
  */
 export class DocumentFieldsModel {
     /**
+     * Document type
+     * @private
+     */
+    private readonly type: string;
+
+    /**
      * All fields
      * @private
      */
     private readonly fields: PropertyModel<any>[];
 
+    /**
+     * Document schemas
+     * @public
+     */
+    public readonly schemas: string[];
+
     constructor(document: any) {
+        this.type = document.type;
         this.fields = DocumentFieldsModel.createFieldsList(document);
+        this.schemas = DocumentFieldsModel.createSchemasList(document);
+        if (typeof document.type === 'string') {
+            this.type = document.type;
+        } else if (Array.isArray(document.type)) {
+            if (document.type.indexOf('VerifiablePresentation') !== -1) {
+                this.type = 'VerifiablePresentation';
+            } else if (document.type.indexOf('VerifiablePresentation') !== -1) {
+                this.type = 'VerifiableCredential';
+            } else {
+                this.type = document.type[0];
+            }
+        }
+    }
+
+    private getRelativePath(field: PropertyModel<any>): string {
+        let result: string;
+        if (this.type === 'VerifiableCredential') {
+            const path = field.path.match(/^credentialSubject\.(?:\d*\.?)?(.*)/);
+            result = path ? path.pop() : null;
+        } else if (this.type === 'VerifiablePresentation') {
+            const path = field.path.match(/^verifiableCredential\.(?:\d*\.?)?credentialSubject\.(?:\d*\.?)?(.*)/);
+            result = path ? path.pop() : null;
+        } else {
+            result = field.path;
+        }
+        if (result && (result === 'type' || result.indexOf('@context') !== -1)) {
+            return null;
+        } else {
+            return result;
+        }
     }
 
     /**
@@ -36,12 +78,21 @@ export class DocumentFieldsModel {
 
     /**
      * Update schemas
-     * @param schemaMap - schemas
+     * @param schemas - schemas
      * @param options - comparison options
      * @public
      */
-    public updateSchemas(schemaMap: IKeyMap<SchemaModel>, options: ICompareOptions): void {
-
+    public updateSchemas(schemas: SchemaModel[], options: ICompareOptions): void {
+        for (const data of this.fields) {
+            const path = this.getRelativePath(data);
+            for (const schema of schemas) {
+                const field = schema.getField(path);
+                if (field) {
+                    data.setTitle(field.description);
+                    continue;
+                }
+            }
+        }
     }
 
     /**
@@ -52,6 +103,28 @@ export class DocumentFieldsModel {
         return this.fields.slice();
     }
 
+    /**
+     * Create schemas by JSON
+     * @param document - json
+     * @public
+     * @static
+     */
+    public static createSchemasList(document: any): string[] {
+        if (document && document['@context']) {
+            if (typeof document['@context'] === 'string') {
+                return [document['@context']];
+            } else if (Array.isArray(document['@context'])) {
+                const schemas = [];
+                for (const id of document['@context']) {
+                    if (typeof id === 'string') {
+                        schemas.push(id);
+                    }
+                }
+                return schemas;
+            }
+        }
+        return [];
+    }
 
     /**
      * Create fields by JSON

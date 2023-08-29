@@ -5,7 +5,7 @@ import { IWeightModel } from '../interfaces/weight-model.interface';
 import { PropertyType } from '../types/property.type';
 import { WeightType } from '../types/weight.type';
 import { AnyPropertyModel, ArrayPropertyModel, PropertyModel, UUIDPropertyModel } from './property.model';
-import { SubSchemaModel } from './sub-schema.model';
+import { SchemaDocumentModel } from './schema-document.model';
 
 /**
  * Field Model
@@ -169,7 +169,7 @@ export class FieldModel implements IWeightModel {
      * Sub-schema
      * @private
      */
-    private _subSchema: SubSchemaModel;
+    private _subSchema: SchemaDocumentModel;
 
     constructor(
         name: string,
@@ -479,7 +479,7 @@ export class FieldModel implements IWeightModel {
      * @param subSchema
      * @public
      */
-    public setSubSchema(subSchema: SubSchemaModel): void {
+    public setSubSchema(subSchema: SchemaDocumentModel): void {
         this._subSchema = subSchema;
     }
 
@@ -511,5 +511,30 @@ export class FieldModel implements IWeightModel {
      */
     public hash(options: ICompareOptions): string {
         return this._weight[0];
+    }
+
+    /**
+     * Get field
+     * @param path
+     * @public
+     */
+    public getField(path: string): FieldModel {
+        if (!path) {
+            return null;
+        }
+        const index = path.indexOf('.');
+        if (index !== -1) {
+            const name = path.slice(0, index);
+            const next = path.slice(index + 1);
+            if (name === this.name && this._subSchema) {
+                return this._subSchema.getField(next);
+            }
+        } else {
+            const name = path;
+            if (name === this.name) {
+                return this;
+            }
+        }
+        return null;
     }
 }

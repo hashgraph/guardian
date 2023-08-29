@@ -36,6 +36,7 @@ interface IFieldContext {
     name: string;
     propType: string;
     value: string;
+    label: string;
 }
 
 @Component({
@@ -323,6 +324,7 @@ export class CompareDocumentComponent implements OnInit {
                 name: '',
                 propType: '',
                 value: '',
+                label: ''
             }
 
             let item: any;
@@ -345,6 +347,7 @@ export class CompareDocumentComponent implements OnInit {
                 fieldContext.name = item.name;
                 fieldContext.propType = item.type;
                 fieldContext.value = item.value;
+                fieldContext.label = item.title || item.name;
                 if(fieldContext.propType === 'array') {
                     fieldContext.value = '[...]';
                 }

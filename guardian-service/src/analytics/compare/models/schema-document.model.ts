@@ -6,7 +6,7 @@ import MurmurHash3 from 'imurmurhash';
 /**
  * Schema Model
  */
-export class SubSchemaModel {
+export class SchemaDocumentModel {
     /**
      * Fields
      * @public
@@ -65,7 +65,7 @@ export class SubSchemaModel {
             if (field.isRef) {
                 const subSchemas = defs || document.$defs;
                 const subDocument = subSchemas[field.type];
-                const subSchema = new SubSchemaModel(subDocument, index + 1, subSchemas);
+                const subSchema = new SchemaDocumentModel(subDocument, index + 1, subSchemas);
                 field.setSubSchema(subSchema);
             }
             fields.push(field);
@@ -155,5 +155,23 @@ export class SubSchemaModel {
      */
     public hash(options: ICompareOptions): string {
         return this._weight;
+    }
+
+    /**
+     * Get field
+     * @param path
+     * @public
+     */
+    public getField(path: string): FieldModel {
+        if (!path) {
+            return null;
+        }
+        for (const field of this.fields) {
+            const result = field.getField(path);
+            if (result) {
+                return result;
+            }
+        }
+        return null;
     }
 }

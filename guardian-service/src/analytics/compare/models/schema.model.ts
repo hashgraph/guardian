@@ -1,6 +1,6 @@
 import { ICompareOptions } from '../interfaces/compare-options.interface';
 import { FieldModel } from './field.model';
-import { SubSchemaModel } from './sub-schema.model';
+import { SchemaDocumentModel } from './schema-document.model';
 import MurmurHash3 from 'imurmurhash';
 import { Policy, Schema as SchemaCollection } from '@guardian/common';
 
@@ -60,15 +60,15 @@ export class SchemaModel {
      * Schema Model
      * @private
      */
-    private readonly subSchema: SubSchemaModel;
+    private readonly document: SchemaDocumentModel;
 
     /**
      * Fields
      * @public
      */
     public get fields(): FieldModel[] {
-        if (this.subSchema) {
-            return this.subSchema.fields;
+        if (this.document) {
+            return this.document.fields;
         }
         return [];
     }
@@ -110,8 +110,8 @@ export class SchemaModel {
                 const document = (typeof schema.document === 'string') ?
                     JSON.parse(schema.document) :
                     schema.document;
-                this.subSchema = new SubSchemaModel(document, 0, document?.$defs);
-                this.subSchema.update(this.options);
+                this.document = new SchemaDocumentModel(document, 0, document?.$defs);
+                this.document.update(this.options);
             }
         }
     }
@@ -147,8 +147,8 @@ export class SchemaModel {
             hashState.hash(this.uuid || '');
             hashState.hash(this.iri || '');
         }
-        if (this.subSchema) {
-            hashState.hash(this.subSchema.hash(options));
+        if (this.document) {
+            hashState.hash(this.document.hash(options));
         }
         this._weight = String(hashState.result());
     }
@@ -170,5 +170,17 @@ export class SchemaModel {
     public setPolicy(policy: Policy): SchemaModel {
         this._policyName = policy?.name;
         return this;
+    }
+
+    /**
+     * Get field
+     * @param path
+     * @public
+     */
+    public getField(path: string): FieldModel {
+        if (this.document && path) {
+            return this.document.getField(path);
+        }
+        return null;
     }
 }

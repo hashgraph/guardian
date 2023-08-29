@@ -270,8 +270,10 @@
                     [attr.type]="field.type" 
                     [attr.offset]="field.lvl" 
                     [attr.index]="data.index">
-                    <div class="prop-table-name" [style.padding-left.px]="field.offset">
-                        {{field.name}}:
+                    <div class="prop-table-name" 
+                        [style.padding-left.px]="field.offset"
+                        [title]="field.name">
+                        {{field.label}}:
                     </div>
                     <div class="prop-table-value" [attr.prop-type]="field.propType">
                         <div class="compare-btn" (click)="compareSchema(field)">

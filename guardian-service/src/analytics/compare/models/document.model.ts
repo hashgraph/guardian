@@ -1,13 +1,13 @@
-import { VcDocument, VpDocument } from "@guardian/common";
-import { ICompareOptions } from "../interfaces/compare-options.interface";
-import { IWeightModel } from "../interfaces/weight-model.interface";
-import { IKeyMap } from "../interfaces/key-map.interface";
-import { WeightType } from "../types/weight.type";
-import MurmurHash3 from 'imurmurhash';
-import { CompareUtils } from "../utils/utils";
-import { SchemaModel } from "./schema.model";
-import { DocumentFieldsModel } from "./document-fields.model";
-import { PropertyModel } from "./property.model";
+import { DefaultDocumentLoader, VcDocument, VpDocument } from '@guardian/common';
+import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { IWeightModel } from '../interfaces/weight-model.interface';
+import { IKeyMap } from '../interfaces/key-map.interface';
+import { WeightType } from '../types/weight.type';
+import { CompareUtils } from '../utils/utils';
+import { SchemaModel } from './schema.model';
+import { DocumentFieldsModel } from './document-fields.model';
+import { PropertyModel } from './property.model';
+import { HashUtils } from '../utils/hash-utils';
 
 enum DocumentType {
     VC = 'VC',
@@ -96,6 +96,11 @@ export class DocumentModel implements IWeightModel {
      */
     private _hash: string;
 
+    /**
+     * All schemas
+     * @private
+     */
+    private _schemas: SchemaModel[];
 
     /**
      * Properties
@@ -139,7 +144,7 @@ export class DocumentModel implements IWeightModel {
         this.topicId = document.topicId;
         this.owner = document.owner;
 
-        this._document =  new DocumentFieldsModel(document.document);
+        this._document = new DocumentFieldsModel(document.document);
 
         this._weight = [];
         this._weightMap = {};
@@ -162,15 +167,26 @@ export class DocumentModel implements IWeightModel {
 
 
     /**
+     * Set schema models
+     * @param schemas
+     * @public
+     */
+    public setSchemas(schemas: SchemaModel[]): DocumentModel {
+        this._schemas = schemas;
+        return this;
+    }
+
+    /**
      * Update all weight
      * @public
      */
     public update(options: ICompareOptions): DocumentModel {
+        this.updateSchemas(this._schemas, options);
+
         const weights = [];
         const weightMap = {};
+        const hashUtils: HashUtils = new HashUtils();
 
-
-        let _hashState: any;
         let _hash = '0';
         let _children = '0';
         let _children1 = '0';
@@ -179,26 +195,26 @@ export class DocumentModel implements IWeightModel {
         let _documentAndChildren = '0';
 
         if (this._relationships) {
-            _hashState = MurmurHash3();
-            _hashState.hash(this.key);
+            hashUtils.reset();
+            hashUtils.add(this.key);
             for (const child of this._relationships) {
-                _hashState.hash(String(child._hash));
+                hashUtils.add(String(child._hash));
             }
-            _hash = String(_hashState.result());
+            _hash = hashUtils.result();
         }
 
         if (this._relationships && this._relationships.length) {
-            _hashState = MurmurHash3();
+            hashUtils.reset();
             for (const child of this._relationships) {
-                _hashState.hash(child.key);
+                hashUtils.add(child.key);
             }
-            _children1 = String(_hashState.result());
+            _children1 = hashUtils.result();
 
-            _hashState = MurmurHash3();
+            hashUtils.reset();
             for (const child of this._relationships) {
-                _hashState.hash(child.getWeight(WeightType.CHILD_LVL_2));
+                hashUtils.add(child.getWeight(WeightType.CHILD_LVL_2));
             }
-            _children2 = String(_hashState.result());
+            _children2 = hashUtils.result();
 
             if (options.childLvl > 1) {
                 _children = _children2;
@@ -210,10 +226,10 @@ export class DocumentModel implements IWeightModel {
         }
 
         if (this._document) {
-            _hashState = MurmurHash3();
-            _hashState.hash(this.key)
-            _hashState.hash(this._document.hash(options));
-            _document = String(_hashState.result());
+            hashUtils.reset();
+            hashUtils.add(this.key)
+            hashUtils.add(this._document.hash(options));
+            _document = hashUtils.result();
         }
 
         _documentAndChildren = CompareUtils.aggregateHash(_document, _children);
@@ -223,9 +239,9 @@ export class DocumentModel implements IWeightModel {
         weightMap[WeightType.PROP_LVL_2] = _document;
         weightMap[WeightType.PROP_AND_CHILD_2] = _documentAndChildren;
 
-        weights.push(weightMap[WeightType.CHILD_LVL_1]);
-        weights.push(weightMap[WeightType.PROP_LVL_2]);
-        weights.push(weightMap[WeightType.PROP_AND_CHILD_2]);
+        weights.push(_children);
+        weights.push(_document);
+        weights.push(_documentAndChildren);
 
         this._hash = CompareUtils.aggregateHash(_hash, _document);
         this._weightMap = weightMap;
@@ -233,15 +249,33 @@ export class DocumentModel implements IWeightModel {
         return this;
     }
 
+    /**
+     * Get schemas list
+     * @public
+     */
+    public getSchemas(): string[] {
+        const list = new Set<string>();
+        if (this._document) {
+            for (const id of this._document.schemas) {
+                if (id !== 'https://www.w3.org/2018/credentials/v1') {
+                    list.add(id);
+                }
+            }
+        }
+        return Array.from(list);
+    }
 
     /**
      * Update schema weights
-     * @param schemaMap - schemas map
+     * @param schemas - schemas
      * @param options - comparison options
      * @public
      */
-    public updateSchemas(schemaMap: IKeyMap<SchemaModel>, options: ICompareOptions): void {
-        this._document.updateSchemas(schemaMap, options);
+    public updateSchemas(schemas: SchemaModel[], options: ICompareOptions): void {
+        this._document.updateSchemas(schemas, options);
+        if (schemas && schemas.length) {
+            this._key = schemas[0].iri;
+        }
     }
 
     /**

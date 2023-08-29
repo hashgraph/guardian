@@ -7,6 +7,7 @@ import { DocumentsRate } from '../rates/documents-rate';
 import { ReportTable } from '../../table/report-table';
 import { CSV } from '../../table/csv';
 import { IMultiCompareResult } from '../interfaces/multi-compare-result.interface';
+import { SchemaModel } from '../models/schema.model';
 
 /**
  * Component for comparing two documents
@@ -216,17 +217,18 @@ export class DocumentComparator {
     }
 
     private static async createDocument(
-        cache: Map<string, DocumentModel>,
+        cacheDocuments: Map<string, DocumentModel>,
+        cacheSchemas: Map<string, SchemaModel>,
         id: string,
         options: ICompareOptions
     ): Promise<DocumentModel> {
-        if (cache.has(id)) {
-            return cache.get(id);
+        if (cacheDocuments.has(id)) {
+            return cacheDocuments.get(id);
         }
 
         const documentModel = await DocumentComparator.loadDocument(id, options);
 
-        cache.set(id, documentModel);
+        cacheDocuments.set(id, documentModel);
 
         if (!documentModel) {
             return null;
@@ -234,12 +236,27 @@ export class DocumentComparator {
 
         const relationshipModels: DocumentModel[] = [];
         for (const relationship of documentModel.relationshipIds) {
-            const r = await DocumentComparator.createDocument(cache, relationship, options);
+            const r = await DocumentComparator.createDocument(
+                cacheDocuments, cacheSchemas, relationship, options
+            );
             if (r) {
                 relationshipModels.push(r);
             }
         }
         documentModel.setRelationships(relationshipModels);
+
+        //Schemas
+        const schemaModels: SchemaModel[] = [];
+        const schemasIds = documentModel.getSchemas();
+        for (const schemasId of schemasIds) {
+            const schema = await DatabaseServer.getSchema({ contextURL: schemasId });
+            if (schema) {
+                const s = new SchemaModel(schema, options);
+                s.update(options);
+                schemaModels.push(s);
+            }
+        }
+        documentModel.setSchemas(schemaModels);
 
         //Compare
         documentModel.update(options);
@@ -255,8 +272,11 @@ export class DocumentComparator {
      * @static
      */
     public static async createModelById(id: string, options: ICompareOptions): Promise<DocumentModel> {
-        const cache = new Map<string, DocumentModel>();
-        const documentModel = await DocumentComparator.createDocument(cache, id, options);
+        const cacheDocuments = new Map<string, DocumentModel>();
+        const cacheSchemas = new Map<string, SchemaModel>();
+        const documentModel = await DocumentComparator.createDocument(
+            cacheDocuments, cacheSchemas, id, options
+        );
 
         if (!documentModel) {
             throw new Error('Unknown document');

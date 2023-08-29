@@ -30,7 +30,7 @@ export {
 } from './compare/models/property.model';
 export { RoleModel } from './compare/models/role.model';
 export { SchemaModel } from './compare/models/schema.model';
-export { SubSchemaModel } from './compare/models/sub-schema.model';
+export { SchemaDocumentModel as SubSchemaModel } from './compare/models/schema-document.model';
 export { TemplateTokenModel } from './compare/models/template-token.model';
 export { TokenModel } from './compare/models/token.model';
 export { TopicModel } from './compare/models/topic.model';

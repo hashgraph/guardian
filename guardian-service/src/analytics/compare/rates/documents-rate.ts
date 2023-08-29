@@ -158,8 +158,6 @@ export class DocumentsRate extends Rate<DocumentModel> {
         this.documentRate = CompareUtils.calcRate(this.documents);
         this.optionsRate = CompareUtils.calcRate(this.options);
 
-        console.log('---', this.documentRate, this.documents.length)
-
         const rates = [];
         rates.push(this.documentRate);
         rates.push(this.optionsRate);
