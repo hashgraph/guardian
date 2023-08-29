@@ -73,13 +73,3 @@ This document serves as an introduction to the proposed standards for the Guardi
 The structure and processes for drafting, submitting, and approving GSS and GPS proposals require a level of detail beyond the scope of this introductory document. Therefore, these mechanisms will be elaborated upon comprehensively in dedicated standards documents for each category. These subsequent documents will serve as a detailed guide for contributors seeking to propose new features or policy changes. The aim is to ensure clarity, efficiency, and consensus in the decision-making process, driving the continual improvement and evolution of the Guardian project.
 
 By adhering to these standards, we aim to facilitate productive collaboration and innovative development within the Guardian community. We invite all community members to engage in this dynamic process, contributing to the advancement and success of the Guardian ecosystem.
-
-\
-\
-
-
-\
-\
-\
-\
-\

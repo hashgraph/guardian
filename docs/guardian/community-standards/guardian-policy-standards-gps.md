@@ -75,15 +75,3 @@ The level and type of support available for each policy should be clearly commun
 ## Conclusion
 
 The Guardian Policy Standards serve as a critical conduit ensuring effective communication and clear delineation of responsibilities between policy proposers, policy owners, and policy users. These standards aim to promote transparency, predictability, and accountability within the Guardian ecosystem. By adhering to these standards, the Guardian community can ensure the development and upkeep of high-quality, science-based policies, thereby fostering an ecosystem where sustainability assets are accurately represented, effectively communicated, and efficiently tokenized.
-
-\
-\
-\
-
-
-\
-\
-\
-
-
-\

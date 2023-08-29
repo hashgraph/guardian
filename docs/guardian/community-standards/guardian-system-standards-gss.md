@@ -115,5 +115,3 @@ The GSS are designed to foster an open, collaborative environment by providing c
 Effective communication forms a cornerstone of these standards. Regular updates through the Guardian community's established communication channels ensure that all stakeholders stay informed about active GSS proposals. This is particularly important for proposals in the development phase. Clear, timely communication with all stakeholders, especially the codebase Maintainer, is crucial to the successful implementation of new features or changes. This collaborative approach ensures alignment with ongoing work in the application and helps avoid potential conflicts or roadblocks.
 
 By adhering to these standards, we can ensure the Guardian project evolves consistently, sustainably, and beneficially for all stakeholders. These guidelines serve as a roadmap for current and future developments, driving the Guardian project towards its ambitious goal of providing a robust platform for managing and optimizing ESG assets.
-
-\
