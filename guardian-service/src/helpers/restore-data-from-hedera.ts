@@ -572,6 +572,7 @@ export class RestoreDataFromHedera {
                 type: TopicType.UserTopic,
                 policyId: null,
                 policyUUID: null,
+                parent: currentRAMessage.topicId
             },
             user,
             hederaAccountKey,
