@@ -8,6 +8,7 @@ import { SchemaModel } from './schema.model';
 import { DocumentFieldsModel } from './document-fields.model';
 import { PropertyModel } from './property.model';
 import { HashUtils } from '../utils/hash-utils';
+import { PropertiesModel } from './properties.model';
 
 enum DocumentType {
     VC = 'VC',
@@ -109,6 +110,12 @@ export class DocumentModel implements IWeightModel {
     private readonly _document: DocumentFieldsModel;
 
     /**
+     * Properties
+     * @private
+     */
+    private readonly _options: PropertiesModel;
+
+    /**
      * Children
      * @public
      */
@@ -145,6 +152,7 @@ export class DocumentModel implements IWeightModel {
         this.owner = document.owner;
 
         this._document = new DocumentFieldsModel(document.document);
+        this._options = new PropertiesModel(document.option);
 
         this._weight = [];
         this._weightMap = {};
@@ -181,32 +189,43 @@ export class DocumentModel implements IWeightModel {
      * @public
      */
     public update(options: ICompareOptions): DocumentModel {
-        this.updateSchemas(this._schemas, options);
-
         const weights = [];
         const weightMap = {};
         const hashUtils: HashUtils = new HashUtils();
 
         let _hash = '0';
+        let _hashSchemas = '0';
         let _children = '0';
         let _children1 = '0';
         let _children2 = '0';
         let _document = '0';
         let _documentAndChildren = '0';
 
+        if (this._schemas) {
+            this._document.updateSchemas(this._schemas, options);
+        }
+
+        if (this._schemas) {
+            hashUtils.reset();
+            for (const schema of this._schemas) {
+                hashUtils.add(String(schema.hash(options)));
+            }
+            _hashSchemas = hashUtils.result();
+        }
+
         if (this._relationships) {
             hashUtils.reset();
-            hashUtils.add(this.key);
+            hashUtils.add(_hashSchemas);
             for (const child of this._relationships) {
                 hashUtils.add(String(child._hash));
             }
             _hash = hashUtils.result();
         }
 
-        if (this._relationships && this._relationships.length) {
+        if (this._relationships) {
             hashUtils.reset();
             for (const child of this._relationships) {
-                hashUtils.add(child.key);
+                hashUtils.add(child.type);
             }
             _children1 = hashUtils.result();
 
@@ -215,23 +234,21 @@ export class DocumentModel implements IWeightModel {
                 hashUtils.add(child.getWeight(WeightType.CHILD_LVL_2));
             }
             _children2 = hashUtils.result();
-
-            if (options.childLvl > 1) {
-                _children = _children2;
-            } else if (options.childLvl > 0) {
-                _children = _children1;
-            } else {
-                _children = '0';
-            }
         }
 
         if (this._document) {
             hashUtils.reset();
-            hashUtils.add(this.key)
             hashUtils.add(this._document.hash(options));
             _document = hashUtils.result();
         }
 
+        if (options.childLvl > 1) {
+            _children = _children2;
+        } else if (options.childLvl > 0) {
+            _children = _children1;
+        } else {
+            _children = '0';
+        }
         _documentAndChildren = CompareUtils.aggregateHash(_document, _children);
 
         weightMap[WeightType.CHILD_LVL_2] = _children2;
@@ -240,13 +257,32 @@ export class DocumentModel implements IWeightModel {
         weightMap[WeightType.PROP_AND_CHILD_2] = _documentAndChildren;
 
         weights.push(_children);
-        weights.push(_document);
+        weights.push(_document); //Schemas = -3
+        weights.push(_document); //Schemas = -2
+        weights.push(_document); //Schemas = -1
         weights.push(_documentAndChildren);
 
         this._hash = CompareUtils.aggregateHash(_hash, _document);
         this._weightMap = weightMap;
         this._weight = weights.reverse();
         return this;
+    }
+
+    private compareWeight(doc: DocumentModel, index: number, schema: number): boolean {
+        if (index === 1 && schema < -1) {
+            return false;
+        }
+        if (index === 2 && schema < -2) {
+            return false;
+        }
+        if (index === 3 && schema < -3) {
+            return false;
+        }
+        if (this._weight[index] === '0' && doc._weight[index] === '0') {
+            return false;
+        } else {
+            return this._weight[index] === doc._weight[index];
+        }
     }
 
     /**
@@ -263,19 +299,6 @@ export class DocumentModel implements IWeightModel {
             }
         }
         return Array.from(list);
-    }
-
-    /**
-     * Update schema weights
-     * @param schemas - schemas
-     * @param options - comparison options
-     * @public
-     */
-    public updateSchemas(schemas: SchemaModel[], options: ICompareOptions): void {
-        this._document.updateSchemas(schemas, options);
-        if (schemas && schemas.length) {
-            this._key = schemas[0].iri;
-        }
     }
 
     /**
@@ -326,23 +349,30 @@ export class DocumentModel implements IWeightModel {
         if (this.type !== doc.type) {
             return false;
         }
-        if (this.key !== doc.key) {
-            return false;
-        }
+
         if (!this._weight.length) {
-            return this.key === doc.key;
-        }
-        if (Number.isFinite(index)) {
-            if (this._weight[index] === '0' && doc._weight[index] === '0') {
-                return false;
-            } else {
-                return this._weight[index] === doc._weight[index];
-            }
-        } else {
             return this._hash === doc._hash;
         }
+
+        if (!Number.isFinite(index)) {
+            return this._hash === doc._hash;
+        }
+
+        const schemas = CompareUtils.compareSchemas(this._schemas, doc._schemas);
+        if (schemas > 0) {
+            return false;
+        }
+
+        return this.compareWeight(doc, index, schemas);
     }
 
+    /**
+     * Get fields
+     * @public
+     */
+    public getOptionsList(): PropertyModel<any>[] {
+        return this._options.getPropList();
+    }
 
     /**
      * Get fields
@@ -358,9 +388,11 @@ export class DocumentModel implements IWeightModel {
      */
     public toObject(): any {
         const document = this._document.getFieldsList();
+        const options = this._options.getPropList();
         return {
             key: this.key,
             document,
+            options
         }
     }
 
@@ -373,6 +405,26 @@ export class DocumentModel implements IWeightModel {
             id: this.id,
             type: this.type
         };
+    }
+
+    /**
+     * Get schema title
+     * @public
+     */
+    public title(): string {
+        if (this._schemas) {
+            for (const schema of this._schemas) {
+                if (schema.description) {
+                    return schema.description;
+                }
+            }
+            for (const schema of this._schemas) {
+                if (schema.iri) {
+                    return schema.iri;
+                }
+            }
+        }
+        return this.key;
     }
 }
 

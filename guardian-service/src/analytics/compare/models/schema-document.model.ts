@@ -2,6 +2,8 @@ import { FieldModel } from './field.model';
 import { ConditionModel } from './condition.model';
 import { ICompareOptions } from '../interfaces/compare-options.interface';
 import MurmurHash3 from 'imurmurhash';
+import { ComparePolicyUtils } from '../utils/compare-policy-utils';
+import { Status } from '../types/status.type';
 
 /**
  * Schema Model
@@ -173,5 +175,36 @@ export class SchemaDocumentModel {
             }
         }
         return null;
+    }
+
+    /**
+     * Compare
+     * @param document
+     * @public
+     */
+    public compare(document: SchemaDocumentModel): number {
+        if (!document) {
+            return 0;
+        }
+        const fields1 = this.fields;
+        const fields2 = document.fields;
+
+        if (!fields1 || !fields2 || !fields1.length || fields2.length) {
+            return 0;
+        }
+
+        const data = ComparePolicyUtils.compareFields(this.fields, document.fields, null);
+        const rates = ComparePolicyUtils.ratesToTable(data);
+
+        if (!rates.length) {
+            return 0;
+        }
+
+        let total = 0;
+        for (const rate of rates) {
+            total += rate.totalRate;
+        }
+
+        return Math.floor(total / rates.length);
     }
 }

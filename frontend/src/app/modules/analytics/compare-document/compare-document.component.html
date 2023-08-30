@@ -243,33 +243,21 @@
 
         <div class="prop-delimiter"></div>
 
-        <!-- <div class="prop-table">
-            <div class="prop-table-header">Permissions: </div>
-            <div class="prop-table-body">
-                <div *ngFor="let perm of data.permissions" class="prop-table-row" [attr.fantom]="perm.fantom"
-                    [attr.type]="perm.type" [attr.index]="data.index">
-                    <div class="prop-table-name" [style.padding-left.px]="10">
-                        {{perm.name}}:
-                    </div>
-                    <div class="prop-table-value">
-                        <span *ngIf="perm.value">
-                            {{perm.value}}
-                        </span>
-                    </div>
+        <div class="prop-table" [attr.system]="_systemProp">
+            <div class="prop-table-header">
+                Documents: 
+                <div class="prop-table-system-btn" (click)="_systemProp = !_systemProp">
+                    <mat-icon *ngIf="!_systemProp">unfold_more</mat-icon>
+                    <mat-icon *ngIf="_systemProp">unfold_less</mat-icon>
                 </div>
             </div>
-        </div> -->
-
-        <div class="prop-delimiter"></div>
-
-        <div class="prop-table">
-            <div class="prop-table-header">Documents: </div>
             <div class="prop-table-body">
                 <div *ngFor="let field of data.fields" class="prop-table-row" 
                     [attr.fantom]="field.fantom"
                     [attr.type]="field.type" 
                     [attr.offset]="field.lvl" 
-                    [attr.index]="data.index">
+                    [attr.index]="data.index"
+                    [attr.system]="field.system">
                     <div class="prop-table-name" 
                         [style.padding-left.px]="field.offset"
                         [title]="field.name">
@@ -289,123 +277,27 @@
 
         <div class="prop-delimiter"></div>
 
-        <!-- <div class="prop-table">
-            <div class="prop-table-header">Events: </div>
+        <div class="prop-table">
+            <div class="prop-table-header">Attributes: </div>
             <div class="prop-table-body">
-                <ng-container *ngFor="let event of data.events">
-
-                    <div class="prop-table-row" [attr.fantom]="event.fantom" [attr.type]="event.type"
-                        [attr.index]="data.index">
-                        <div class="prop-table-name" [style.padding-left.px]="10">Event:</div>
-                        <div class="prop-table-value"><span></span></div>
+                <div *ngFor="let attribute of data.attributes" class="prop-table-row" 
+                    [attr.fantom]="attribute.fantom"
+                    [attr.type]="attribute.type" 
+                    [attr.offset]="attribute.lvl" 
+                    [attr.index]="data.index">
+                    <div class="prop-table-name" 
+                        [style.padding-left.px]="attribute.offset"
+                        [title]="attribute.name">
+                        {{attribute.label}}:
                     </div>
-
-                    <div class="prop-table-row" [attr.fantom]="event.fantom" [attr.type]="event.type"
-                        [attr.index]="data.index">
-                        <div class="prop-table-name" [style.padding-left.px]="20">source:</div>
-                        <div class="prop-table-value">
-                            <span *ngIf="event.value">
-                                {{event.source}}
-                            </span>
-                        </div>
+                    <div class="prop-table-value" [attr.prop-type]="attribute.propType">
+                        <span *ngIf="attribute.propType" [title]="attribute.value">
+                            {{attribute.value}}
+                        </span>
                     </div>
-
-                    <div class="prop-table-row" [attr.fantom]="event.fantom" [attr.type]="event.type"
-                        [attr.index]="data.index">
-                        <div class="prop-table-name" [style.padding-left.px]="20">output:</div>
-                        <div class="prop-table-value">
-                            <span *ngIf="event.value">
-                                {{event.output}}
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="prop-table-row" [attr.fantom]="event.fantom" [attr.type]="event.type"
-                        [attr.index]="data.index">
-                        <div class="prop-table-name" [style.padding-left.px]="20">target:</div>
-                        <div class="prop-table-value">
-                            <span *ngIf="event.value">
-                                {{event.target}}
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="prop-table-row" [attr.fantom]="event.fantom" [attr.type]="event.type"
-                        [attr.index]="data.index">
-                        <div class="prop-table-name" [style.padding-left.px]="20">input:</div>
-                        <div class="prop-table-value">
-                            <span *ngIf="event.value">
-                                {{event.input}}
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="prop-table-row" [attr.fantom]="event.fantom" [attr.type]="event.type"
-                        [attr.index]="data.index">
-                        <div class="prop-table-name" [style.padding-left.px]="20">actor:</div>
-                        <div class="prop-table-value">
-                            <span *ngIf="event.value">
-                                {{event.actor}}
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="prop-table-row" [attr.fantom]="event.fantom" [attr.type]="event.type"
-                        [attr.index]="data.index">
-                        <div class="prop-table-name" [style.padding-left.px]="20">disabled:</div>
-                        <div class="prop-table-value">
-                            <span *ngIf="event.value">
-                                {{event.disabled}}
-                            </span>
-                        </div>
-                    </div>
-
-                </ng-container>
+                </div>
             </div>
-        </div> -->
-
-        <div class="prop-delimiter"></div>
-
-        <!-- <div class="prop-table">
-            <div class="prop-table-header">Artifacts: </div>
-            <div class="prop-table-body">
-                <ng-container *ngFor="let artifact of data.artifacts">
-                    <div class="prop-table-row" [attr.fantom]="artifact.fantom" [attr.type]="artifact.type"
-                        [attr.index]="data.index">
-                        <div class="prop-table-name" [style.padding-left.px]="10">Artifact:</div>
-                        <div class="prop-table-value"><span></span></div>
-                    </div>
-                    <div class="prop-table-row" [attr.fantom]="artifact.fantom" [attr.type]="artifact.type"
-                        [attr.index]="data.index">
-                        <div class="prop-table-name" [style.padding-left.px]="20">name:</div>
-                        <div class="prop-table-value">
-                            <span *ngIf="artifact.value">{{artifact.fileName}}</span>
-                        </div>
-                    </div>
-                    <div class="prop-table-row" [attr.fantom]="artifact.fantom" [attr.type]="artifact.type"
-                        [attr.index]="data.index">
-                        <div class="prop-table-name" [style.padding-left.px]="20">extension:</div>
-                        <div class="prop-table-value">
-                            <span *ngIf="artifact.value">{{artifact.fileExtension}}</span>
-                        </div>
-                    </div>
-                    <div class="prop-table-row" [attr.fantom]="artifact.fantom" [attr.type]="artifact.type"
-                        [attr.index]="data.index">
-                        <div class="prop-table-name" [style.padding-left.px]="20">type:</div>
-                        <div class="prop-table-value">
-                            <span *ngIf="artifact.value">{{artifact.fileType}}</span>
-                        </div>
-                    </div>
-                    <div class="prop-table-row" [attr.fantom]="artifact.fantom" [attr.type]="artifact.type"
-                        [attr.index]="data.index">
-                        <div class="prop-table-name" [style.padding-left.px]="20">hash:</div>
-                        <div class="prop-table-value">
-                            <span *ngIf="artifact.value">{{artifact.fileHash}}</span>
-                        </div>
-                    </div>
-                </ng-container>
-            </div>
-        </div> -->
+        </div>  
 
         <div class="prop-delimiter"></div>
     </div>

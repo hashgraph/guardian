@@ -16,7 +16,11 @@ export class PropertiesModel {
     private readonly list: PropertyModel<any>[];
 
     constructor(json: any) {
-        this.list = PropertiesModel.createPropList(json);
+        if(json && typeof json === 'object') {
+            this.list = PropertiesModel.createPropList(json);
+        } else {
+            this.list = [];
+        }
     }
 
     /**

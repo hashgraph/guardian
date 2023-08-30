@@ -3,6 +3,7 @@ import { FieldModel } from './field.model';
 import { SchemaDocumentModel } from './schema-document.model';
 import MurmurHash3 from 'imurmurhash';
 import { Policy, Schema as SchemaCollection } from '@guardian/common';
+import { HashUtils } from '../utils/hash-utils';
 
 /**
  * Schema Model
@@ -80,10 +81,22 @@ export class SchemaModel {
     private _weight: string;
 
     /**
+     * Weights
+     * @private
+     */
+    private _weightDocument: string;
+
+    /**
      * Policy name
      * @private
      */
     private _policyName: string;
+
+    /**
+     * Compare Map
+     * @private
+     */
+    private _compareMap: Map<string, number>;
 
     constructor(
         schema: SchemaCollection,
@@ -98,6 +111,8 @@ export class SchemaModel {
         this.version = '';
         this.iri = '';
         this._weight = '';
+        this._weightDocument = '';
+        this._compareMap = new Map<string, number>();
         if (schema) {
             this.id = schema.id;
             this.name = schema.name;
@@ -139,18 +154,26 @@ export class SchemaModel {
      * @public
      */
     public update(options: ICompareOptions): void {
-        const hashState = MurmurHash3();
-        hashState.hash(this.name || '');
-        hashState.hash(this.description || '');
+        const hashUtils: HashUtils = new HashUtils();
+
+        hashUtils.reset();
+        hashUtils.add(this.name || '');
+        hashUtils.add(this.description || '');
         if (options.idLvl > 0) {
-            hashState.hash(this.version || '');
-            hashState.hash(this.uuid || '');
-            hashState.hash(this.iri || '');
+            hashUtils.add(this.version || '');
+            hashUtils.add(this.uuid || '');
+            hashUtils.add(this.iri || '');
         }
         if (this.document) {
-            hashState.hash(this.document.hash(options));
+            hashUtils.add(this.document.hash(options));
         }
-        this._weight = String(hashState.result());
+        this._weight = hashUtils.result();
+
+        hashUtils.reset();
+        if (this.document) {
+            hashUtils.add(this.document.hash(options));
+        }
+        this._weightDocument = hashUtils.result();
     }
 
     /**
@@ -182,5 +205,37 @@ export class SchemaModel {
             return this.document.getField(path);
         }
         return null;
+    }
+
+    /**
+     * Compare
+     * @param schema
+     * @public
+     */
+    public compare(schema: SchemaModel): number {
+        if (this._compareMap.has(schema.iri)) {
+            return this._compareMap.get(schema.iri);
+        }
+
+        if (this._weight === schema._weight) {
+            this._compareMap.set(schema.iri, -1);
+            return -1;
+        }
+        if (this._weightDocument === schema._weightDocument) {
+            this._compareMap.set(schema.iri, -2);
+            return -2;
+        }
+        if (this.document) {
+            const result = this.document.compare(schema.document);
+            if (result < 0) {
+                this._compareMap.set(schema.iri, -3);
+                return -3;
+            } else {
+                this._compareMap.set(schema.iri, result);
+                return result;
+            }
+        }
+        this._compareMap.set(schema.iri, 0);
+        return 0;
     }
 }

@@ -135,7 +135,37 @@ export class DocumentsRate extends Rate<DocumentModel> {
         document2: DocumentModel,
         options: ICompareOptions
     ): IRate<any>[] {
+        const list: string[] = [];
+        const map: { [key: string]: IRateMap<PropertyModel<any>> } = {};
+        if (document1) {
+            for (const item of document1.getOptionsList()) {
+                map[item.path] = { left: item, right: null };
+                list.push(item.path);
+            }
+        }
+        if (document2) {
+            for (const item of document2.getOptionsList()) {
+                if (map[item.path]) {
+                    map[item.path].right = item;
+                } else {
+                    map[item.path] = { left: null, right: item };
+                    list.push(item.path);
+                }
+            }
+        }
+        list.sort();
+
         const rates: IRate<any>[] = [];
+        for (const path of list) {
+            const item = map[path];
+            const rate = new PropertiesRate(item.left, item.right);
+            rate.calc(options);
+            rates.push(rate);
+            const subRates = rate.getSubRate();
+            for (const subRate of subRates) {
+                rates.push(subRate);
+            }
+        }
         return rates;
     }
 

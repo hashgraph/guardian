@@ -66,14 +66,14 @@ export class DocumentComparator {
             row.set('left_id', leftItem.id);
             row.set('left_message_id', leftItem.messageId);
             row.set('left_type', leftItem.type);
-            row.set('left_schema', leftItem.key);
+            row.set('left_schema', leftItem.title());
             row.set('left_owner', leftItem.owner);
         }
         if (rightItem) {
             row.set('right_id', rightItem.id);
             row.set('right_message_id', rightItem.messageId);
             row.set('right_type', rightItem.type);
-            row.set('right_schema', rightItem.key);
+            row.set('right_schema', rightItem.title());
             row.set('right_owner', rightItem.owner);
         }
         if (leftItem && rightItem) {

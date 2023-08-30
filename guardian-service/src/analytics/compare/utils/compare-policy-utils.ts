@@ -5,10 +5,11 @@ import { IRate } from '../interfaces/rate.interface';
 import { IWeightModel, IWeightTreeModel } from '../interfaces/weight-model.interface';
 import { BlockModel } from '../models/block.model';
 import { DocumentModel } from '../models/document.model';
+import { FieldModel } from '../models/field.model';
 import { BlocksRate } from '../rates/blocks-rate';
 import { DocumentsRate } from '../rates/documents-rate';
+import { FieldsRate } from '../rates/fields-rate';
 import { ObjectRate } from '../rates/object-rate';
-import { Rate } from '../rates/rate';
 import { Status } from '../types/status.type';
 import { MergeUtils } from './merge-utils';
 
@@ -16,14 +17,78 @@ import { MergeUtils } from './merge-utils';
  * Compare Utils
  */
 export class ComparePolicyUtils {
+
     /**
-      * Compare two trees
-      * @param tree1
-      * @param tree2
-      * @param options
-      * @public
-      * @static
-      */
+     * Convert array rates to table
+     * @param tree
+     * @public
+     * @static
+     */
+    public static ratesToTable<T>(rates: IRate<T>[]): IRate<T>[] {
+        const table: IRate<T>[] = [];
+        for (const child of rates) {
+            ComparePolicyUtils._rateToTable(child, table);
+        }
+        return table;
+    }
+
+    /**
+     * Convert tree rates to table
+     * @param tree
+     * @public
+     * @static
+     */
+    public static rateToTable<T>(rate: IRate<T>): IRate<T>[] {
+        const table: IRate<T>[] = [];
+        ComparePolicyUtils._rateToTable(rate, table);
+        return table;
+    }
+
+    /**
+     * Convert tree to table
+     * @param tree
+     * @param table
+     * @public
+     * @static
+     */
+    private static _rateToTable<T>(rate: IRate<T>, table: IRate<T>[]): void {
+        table.push(rate);
+        for (const child of rate.getChildren()) {
+            this._rateToTable(child, table);
+        }
+    }
+
+    /**
+     * Compare two trees
+     * @param tree1
+     * @param tree2
+     * @param options
+     * @public
+     * @static
+     */
+    public static compareFields(
+        fields1: FieldModel[],
+        fields2: FieldModel[],
+        options: ICompareOptions
+    ): FieldsRate[] {
+        const createRate = (field1: FieldModel, field2: FieldModel) => {
+            const rate = new FieldsRate(field1, field2);
+            rate.calc(options);
+            return rate;
+        }
+        return ComparePolicyUtils.compareChildren(
+            Status.PARTLY, fields1, fields2, createRate
+        );
+    }
+
+    /**
+     * Compare two trees
+     * @param tree1
+     * @param tree2
+     * @param options
+     * @public
+     * @static
+     */
     public static compareBlocks(
         tree1: BlockModel,
         tree2: BlockModel,
@@ -38,13 +103,13 @@ export class ComparePolicyUtils {
     }
 
     /**
-      * Compare two trees
-      * @param tree1
-      * @param tree2
-      * @param options
-      * @public
-      * @static
-      */
+     * Compare two trees
+     * @param tree1
+     * @param tree2
+     * @param options
+     * @public
+     * @static
+     */
     public static compareDocuments(
         tree1: DocumentModel,
         tree2: DocumentModel,

@@ -248,6 +248,23 @@
         .prop-table-header {
             font-weight: bold;
             color: #686868;
+            position: relative;
+            height: 26px;
+
+            .prop-table-system-btn {
+                position: absolute;
+                top: 0px;
+                right: 11px;
+                cursor: pointer;
+                width: 24px;
+                height: 24px;
+                overflow: hidden;
+                border-radius: 4px;
+
+                &:hover {
+                    background: #f1f1f1;
+                }
+            }
         }
 
         .prop-table-body {
@@ -332,6 +349,12 @@
                         text-overflow: ellipsis;
                     }
                 }
+            }
+        }
+
+        &[system="false"] {
+            .prop-table-row[system="true"] {
+                display: none !important;
             }
         }
     }

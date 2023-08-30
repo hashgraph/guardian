@@ -26,6 +26,7 @@ interface IDocumentDetailsContext {
     owner: string;
     totalRate: string;
     fields: IFieldContext[];
+    attributes: IFieldContext[];
 }
 
 interface IFieldContext {
@@ -37,6 +38,8 @@ interface IFieldContext {
     propType: string;
     value: string;
     label: string;
+    system: boolean;
+    parent?: IFieldContext;
 }
 
 @Component({
@@ -71,6 +74,7 @@ export class CompareDocumentComponent implements OnInit {
     public _type3 = true;
     public _type4 = true;
     public _gridStyle = '';
+    public _systemProp = true;
     private _pOffset = 30;
 
     constructor() {
@@ -313,60 +317,80 @@ export class CompareDocumentComponent implements OnInit {
         }
     }
 
+    private createFieldContext(data: any, index: number): IFieldContext {
+        const fieldContext: IFieldContext = {
+            fantom: true,
+            type: index === 0 ? 'RIGHT' : 'LEFT',
+            lvl: 0,
+            offset: 0,
+            name: '',
+            propType: '',
+            value: '',
+            label: '',
+            system: false
+        }
+        let item: any;
+        let field: any;
+        let items: any[];
+        if (this.size === 2) {
+            field = data;
+            item = data.items[index];
+            items = data.items;
+        } else {
+            field = data[index];
+            item = data.item;
+            items = data.map((f: any) => f.item);
+        }
+        if (field && item) {
+            fieldContext.fantom = false;
+            fieldContext.type = field.type;
+            fieldContext.lvl = item.lvl;
+            fieldContext.offset = 10 * item.lvl;
+            fieldContext.name = item.name;
+            fieldContext.propType = item.type;
+            fieldContext.value = item.value;
+            fieldContext.label = item.title || item.name;
+            if (fieldContext.propType === 'array') {
+                fieldContext.value = '[...]';
+            }
+            if (fieldContext.propType === 'object') {
+                fieldContext.value = '{...}';
+            }
+        }
+        if (fieldContext.fantom) {
+            const fantom = items.find((i: any) => i);
+            if (fantom) {
+                fieldContext.lvl = fantom.lvl;
+                fieldContext.offset = 10 * fantom.lvl;
+                fieldContext.name = fantom.name;
+                fieldContext.propType = fantom.type;
+            }
+        }
+        return fieldContext;
+    }
+
     private createDetailsContext(row: any, index: number): IDocumentDetailsContext {
         const fieldContexts: IFieldContext[] = [];
-        for (const _field of row.documents) {
-            const fieldContext: IFieldContext = {
-                fantom: true,
-                type: index === 0 ? 'RIGHT' : 'LEFT',
-                lvl: 0,
-                offset: 0,
-                name: '',
-                propType: '',
-                value: '',
-                label: ''
-            }
-
-            let item: any;
-            let field: any;
-            let items: any[];
-            if (this.size === 2) {
-                field = _field;
-                item = _field.items[index];
-                items = _field.items;
-            } else {
-                field = _field[index];
-                item = _field.item;
-                items = _field.map((f: any) => f.item);
-            }
-            if (field && item) {
-                fieldContext.fantom = false;
-                fieldContext.type = field.type;
-                fieldContext.lvl = item.lvl;
-                fieldContext.offset = 10 * item.lvl;
-                fieldContext.name = item.name;
-                fieldContext.propType = item.type;
-                fieldContext.value = item.value;
-                fieldContext.label = item.title || item.name;
-                if(fieldContext.propType === 'array') {
-                    fieldContext.value = '[...]';
-                }
-                if(fieldContext.propType === 'object') {
-                    fieldContext.value = '{...}';
-                }
-            }
-            if (fieldContext.fantom) {
-                const fantom = items.find((i: any) => i);
-                if (fantom) {
-                    fieldContext.lvl = fantom.lvl;
-                    fieldContext.offset = 10 * fantom.lvl;
-                    fieldContext.name = fantom.name;
-                    fieldContext.propType = fantom.type;
-                }
-            }
+        for (const documentField of row.documents) {
+            const fieldContext = this.createFieldContext(documentField, index);
             fieldContexts.push(fieldContext);
         }
+        let parents = new Map<number, IFieldContext | undefined>();
+        parents.set(1, undefined);
+        for (const item of fieldContexts) {
+            item.parent = parents.get(item.lvl);
+            parents.set(item.lvl + 1, item);
 
+            item.system =
+                item.name === '@context' ||
+                item.name === 'type' ||
+                (!!item.parent && item.parent.system);
+        }
+        const attributeContexts: IFieldContext[] = [];
+        for (const option of row.options) {
+            const attributeContext = this.createFieldContext(option, index);
+            attributeContexts.push(attributeContext);
+        }
         if (index === 0) {
             return {
                 index,
@@ -378,7 +402,8 @@ export class CompareDocumentComponent implements OnInit {
                 optionsRate: row['options_rate'],
                 documentRate: row['document_rate'],
                 totalRate: row['total_rate'],
-                fields: fieldContexts
+                fields: fieldContexts,
+                attributes: attributeContexts
             }
         } else {
             if (this.size === 2) {
@@ -392,7 +417,8 @@ export class CompareDocumentComponent implements OnInit {
                     optionsRate: row['options_rate'],
                     documentRate: row['document_rate'],
                     totalRate: row['total_rate'],
-                    fields: fieldContexts
+                    fields: fieldContexts,
+                    attributes: attributeContexts
                 }
             } else {
                 return {
@@ -405,7 +431,8 @@ export class CompareDocumentComponent implements OnInit {
                     optionsRate: row[`options_rate_${index}`],
                     documentRate: row[`document_rate_${index}`],
                     totalRate: row[`total_rate_${index}`],
-                    fields: fieldContexts
+                    fields: fieldContexts,
+                    attributes: attributeContexts
                 }
             }
         }
