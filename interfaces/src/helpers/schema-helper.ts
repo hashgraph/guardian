@@ -741,6 +741,7 @@ export class SchemaHelper {
      * Update fields context
      * @param fields
      * @param json
+     * @param parent
      * @private
      */
     private static _updateFieldsContext(
