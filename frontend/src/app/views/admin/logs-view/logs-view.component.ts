@@ -125,6 +125,7 @@ export class LogsViewComponent implements OnInit {
         if (index >= 0) {
             attributes.splice(index, 1);
         }
+        this.onApply();
     }
 
     add(event: MatChipInputEvent): void {
@@ -182,6 +183,7 @@ export class LogsViewComponent implements OnInit {
             attributes.push(value);
         }
         this.autoCompleteControl.patchValue('');
+        this.onApply();
     }
 
     clearValues() {
