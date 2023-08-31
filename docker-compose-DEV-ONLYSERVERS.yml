@@ -20,18 +20,15 @@ services:
     depends_on:
       - mongo
 
-  # ipfs-node:
-  #   image: ipfs/kubo:v0.18.1
-  #   ports:
-  #     - "5001:5001"
-  #     - "5002:5002"
-  #     - "4001:4001"
-  #     - "4002:4002"
-  #     - "8080:8080"
-  #     - "8081:8081"
-  #   volumes:
-  #     - ./runtime-data/ipfs/staging:/export:rw
-  #     - ./runtime-data/ipfs/data:/data/ipfs:rw
+#   ipfs-node:
+#     image: ipfs/kubo:v0.22.0
+#     ports:
+#       - "5001:5001"
+#       - "4001:4001"
+#       - "8080:8080"
+#     volumes:
+#       - ./runtime-data/ipfs/staging:/export:rw
+#       - ./runtime-data/ipfs/data:/data/ipfs:rw
 
 
   message-broker:
