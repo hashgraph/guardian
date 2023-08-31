@@ -23,7 +23,7 @@
             </mat-date-range-input>
             <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
             <mat-date-range-picker #picker></mat-date-range-picker>
-          
+
             <mat-error *ngIf="searchForm.controls.startDate.hasError('matStartDateInvalid')">Invalid start date</mat-error>
             <mat-error *ngIf="searchForm.controls.endDate.hasError('matEndDateInvalid')">Invalid end date</mat-error>
         </mat-form-field>
@@ -36,14 +36,14 @@
                     <mat-icon>cancel</mat-icon>
                 </button>
                 </mat-chip>
-        
+
                 <input
                     #chipInput
                     matInput
                     [matAutocomplete]="auto"
-                    [matChipInputFor]="chipList" 
-                    placeholder="Attributes" 
-                    (matChipInputTokenEnd)="add($event)"
+                    (matChipInputTokenEnd)="add($event, auto); chipInput.value = ''; chipInput.blur();"
+                    [matChipInputFor]="chipList"
+                    placeholder="Attributes"
                     [formControl]="autoCompleteControl">
 
                 <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event); chipInput.value = ''; chipInput.blur()">

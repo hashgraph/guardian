@@ -27,7 +27,7 @@ Furthermore, the services are grouped into external and internal ones. External 
 * &#x20; mongo:6.0.3
 * &#x20; mongo-express:1.0.0-alpha.4
   * &#x20; mongo
-* &#x20; ipfs/kubo:v0.18.1
+* &#x20; ipfs/kubo:v0.22.0
 * &#x20; message-broker:2.9.8
 * &#x20; vault:1.12.2
 

@@ -171,7 +171,7 @@ To let the Multi-environment transition happen in a transparent way the `GUARDIA
 
 
    ```
-   IPFS_NODE_ADDRESS="..." # Default IPFS_NODE_ADDRESS="http://localhost:5002"
+   IPFS_NODE_ADDRESS="..." # Default IPFS_NODE_ADDRESS="http://localhost:5001"
    IPFS_PUBLIC_GATEWAY='...' # Default IPFS_PUBLIC_GATEWAY='https://localhost:8080/ipfs/${cid}'
    IPFS_PROVIDER="local"
    ```
