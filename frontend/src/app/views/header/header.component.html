@@ -111,15 +111,25 @@
                     (click)="routActive('USER_POLICIES')">
                     Policies
                 </div>
-                <div class="nav-list-item" [attr.active]="isActiveLink('USER_TOKENS')"
-                    (click)="routActive('USER_TOKENS')">
+                <div [attr.active]="isActiveLink('USER_TOKENS') || isActiveLink('USER_RETIRE')" [matMenuTriggerFor]="subMenuUserTokens"
+                     class="nav-list-item">
                     Tokens
-                </div>
-                <div class="nav-list-item" [attr.active]="isActiveLink('USER_RETIRE')"
-                    (click)="routActive('USER_RETIRE')">
-                    Token Retire
+                    <mat-icon>arrow_drop_down</mat-icon>
                 </div>
             </div>
+
+            <mat-menu #subMenuUserTokens="matMenu" backdropClass="sub-nav-backdrop" class="sub-nav-menu">
+                <div class="sub-nav-list">
+                    <div (click)="routActive('USER_TOKENS')" [attr.active]="isActiveLink('USER_TOKENS')"
+                         class="nav-list-item">
+                        Tokens
+                    </div>
+                    <div (click)="routActive('USER_RETIRE')" [attr.active]="isActiveLink('USER_RETIRE')"
+                         class="nav-list-item">
+                        Retirement
+                    </div>
+                </div>
+            </mat-menu>
 
             <div *ngIf="isLogin && role==='AUDITOR'" class="nav-list" [attr.disabled]="commonLinksDisabled">
                 <div class="nav-list-item" [attr.active]="isActiveLink('AUDITOR_UP')"
@@ -264,10 +274,6 @@
                     <div class="nav-list-item" [attr.active]="isActiveLink('USER_TOKENS')"
                         (click)="mobileRoutActive('USER_TOKENS')">
                         Tokens
-                    </div>
-                    <div class="nav-list-item" [attr.active]="isActiveLink('USER_RETIRE')"
-                        (click)="mobileRoutActive('USER_RETIRE')">
-                        Token Retire
                     </div>
                 </div>
             </div>

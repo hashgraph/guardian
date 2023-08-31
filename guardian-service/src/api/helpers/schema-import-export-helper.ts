@@ -1,21 +1,9 @@
 import { GenerateUUIDv4, ISchema, ModelHelper, Schema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
-import {
-    DatabaseServer,
-    Logger,
-    MessageAction,
-    MessageServer,
-    MessageType,
-    replaceValueRecursive,
-    SchemaConverterUtils,
-    SchemaMessage,
-    Tag,
-    TagMessage,
-    UrlType,
-    Schema as SchemaCollection
-} from '@guardian/common';
+import { DatabaseServer, Logger, MessageAction, MessageServer, MessageType, replaceValueRecursive, Schema as SchemaCollection, SchemaConverterUtils, SchemaMessage, Tag, TagMessage, UrlType } from '@guardian/common';
 import { emptyNotifier, INotifier } from '@helpers/notifier';
 import { importTag } from './../tag.service';
 import { createSchema, fixSchemaDefsOnImport, getDefs, ImportResult, onlyUnique, SchemaImportResult } from './schema-helper';
+import geoJson from '@guardian/interfaces/dist/helpers/geojson-schema/geo-json';
 
 export class SchemaCache {
     /**
@@ -212,7 +200,9 @@ export async function importSchemaByFiles(
     }
 
     const parsedSchemas = files.map(item => new Schema(item, true));
-    const updatedSchemasMap = {};
+    const updatedSchemasMap = {
+        '#GeoJSON': geoJson
+    };
     const errors: any[] = [];
     for (const file of files) {
         const valid = fixSchemaDefsOnImport(file.iri, parsedSchemas, updatedSchemasMap);

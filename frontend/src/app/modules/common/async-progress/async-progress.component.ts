@@ -1,20 +1,7 @@
-import {
-    Component,
-    EventEmitter,
-    Input,
-    OnDestroy,
-    OnInit,
-    Output,
-    SimpleChanges,
-} from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, SimpleChanges, } from '@angular/core';
 import { WebSocketService } from 'src/app/services/web-socket.service';
-import { Subscription, forkJoin } from 'rxjs';
-import {
-    IStatus,
-    StatusType,
-    TaskAction,
-    UserRole,
-} from '@guardian/interfaces';
+import { forkJoin, Subscription } from 'rxjs';
+import { IStatus, StatusType, TaskAction, UserRole, } from '@guardian/interfaces';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TasksService } from 'src/app/services/tasks.service';
 import { InformService } from 'src/app/services/inform.service';
@@ -258,7 +245,21 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             return;
         }
         if (this.last) {
-            window.location.href = this.last;
+            const url = new URL(this.last);
+            const path = [url.pathname];
+            const queryParams: any = {};
+            for (const [key, value] of url.searchParams.entries()) {
+                if (queryParams.hasOwnProperty(key)) {
+                    if (Array.isArray(queryParams[key])) {
+                        queryParams[key].push(value);
+                    } else {
+                        queryParams[key] = [queryParams[key], value];
+                    }
+                } else {
+                    queryParams[key] = value;
+                }
+            }
+            this.router.navigate(path, {queryParams});
             return;
         }
         switch (this.action) {

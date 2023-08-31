@@ -10,6 +10,7 @@ import FeatureCollection from './feature-collection';
 
 export default {
     $id: '#GeoJSON',
+    type: 'object',
     title: 'GeoJSON',
     oneOf: [
         Point,
