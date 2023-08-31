@@ -88,6 +88,7 @@ import { SuggestionsService } from './services/suggestions.service';
 import { QrCodeDialogComponent } from './components/qr-code-dialog/qr-code-dialog.component';
 import { QRCodeModule } from 'angularx-qrcode';
 import { MeecoVCSubmitDialogComponent } from './components/meeco-vc-submit-dialog/meeco-vc-submit-dialog.component';
+import { CompareStorage } from './services/compare-storage.service';
 
 @NgModule({
     declarations: [
@@ -168,6 +169,7 @@ import { MeecoVCSubmitDialogComponent } from './components/meeco-vc-submit-dialo
         WizardService,
         SuggestionsService,
         NotificationService,
+        CompareStorage,
         {
             provide: GET_SCHEMA_NAME,
             useValue: SchemaHelper.getSchemaName

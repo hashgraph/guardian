@@ -224,8 +224,10 @@ export class RootConfigComponent implements OnInit {
     openVCDocument(document: any, title: string) {
         const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
+            panelClass: 'g-dialog',
             disableClose: true,
             data: {
+                id: document.id,
                 document: document.document,
                 title: title,
                 type: 'VC',
@@ -239,8 +241,10 @@ export class RootConfigComponent implements OnInit {
     openDIDDocument(document: any, title: string) {
         const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
+            panelClass: 'g-dialog',
             disableClose: true,
             data: {
+                id: document.id,
                 document: document.document,
                 title: title,
                 type: 'JSON',

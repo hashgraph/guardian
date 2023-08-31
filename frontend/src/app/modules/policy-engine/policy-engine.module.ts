@@ -92,7 +92,7 @@ import { PolicyWizardDialogComponent } from './helpers/policy-wizard-dialog/poli
 import { NewPolicyDialog } from './helpers/new-policy-dialog/new-policy-dialog.component';
 import { ImportFileDialog } from './helpers/import-file-dialog/import-file-dialog.component';
 import { NewThemeDialog } from './helpers/new-theme-dialog/new-theme-dialog.component';
-import { ViewerDialog } from './helpers/vc-dialog/viewer-dialog.component';
+import { ViewerDialog } from './helpers/viewer-dialog/viewer-dialog.component';
 import { CompareModulesDialogComponent } from './helpers/compare-modules-dialog/compare-modules-dialog.component';
 //Modules
 import { ModulesListComponent } from './modules-list/modules-list.component';

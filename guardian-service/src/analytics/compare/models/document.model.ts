@@ -62,6 +62,12 @@ export class DocumentModel implements IWeightModel {
     public readonly owner: string;
 
     /**
+     * Policy
+     * @public
+     */
+    public readonly policy: string;
+
+    /**
      * Relationship IDs
      * @protected
      */
@@ -150,6 +156,7 @@ export class DocumentModel implements IWeightModel {
         this.messageId = document.messageId;
         this.topicId = document.topicId;
         this.owner = document.owner;
+        this.policy = document.policyId;
 
         this._document = new DocumentFieldsModel(document.document);
         this._options = new PropertiesModel(document.option);
@@ -391,6 +398,8 @@ export class DocumentModel implements IWeightModel {
         const options = this._options.getPropList();
         return {
             key: this.key,
+            owner: this.owner,
+            policy: this.policy,
             document,
             options
         }

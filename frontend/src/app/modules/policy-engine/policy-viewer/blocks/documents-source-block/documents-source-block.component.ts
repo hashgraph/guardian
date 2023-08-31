@@ -7,7 +7,7 @@ import { forkJoin } from 'rxjs';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
-import { ViewerDialog } from '../../../helpers/vc-dialog/viewer-dialog.component';
+import { ViewerDialog } from '../../../helpers/viewer-dialog/viewer-dialog.component';
 
 /**
  * Component for display block of 'interfaceDocumentsSource' types.
@@ -213,7 +213,9 @@ export class DocumentsSourceBlockComponent implements OnInit {
         } else {
             const dialogRef = this.dialog.open(VCViewerDialog, {
                 width: '850px',
+                panelClass: 'g-dialog',
                 data: {
+                    id: row.id,
                     document: document,
                     title: field.dialogContent,
                     type: 'VC',
@@ -350,7 +352,9 @@ export class DocumentsSourceBlockComponent implements OnInit {
         const text = this.getText(row, field);
         const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
+            panelClass: 'g-dialog',
             data: {
+                id: row.id,
                 document: text,
                 title: field.title,
                 type: 'TEXT',

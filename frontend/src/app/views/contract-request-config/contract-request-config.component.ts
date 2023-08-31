@@ -143,8 +143,10 @@ export class ContractRequestConfigComponent implements OnInit, OnDestroy {
 
     viewRetireRequest(document: any) {
         this.dialog.open(VCViewerDialog, {
-            width: '600px',
+            width: '850px',
+            panelClass: 'g-dialog',
             data: {
+                id: document.id,
                 document: document.document,
                 title: 'View Retire Request Result',
                 type: 'VC',

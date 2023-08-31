@@ -7,6 +7,8 @@ import { ITreeItemContext } from '../interfaces/tree-item-context.interface';
 interface IInfoContext {
     id: string;
     type: string;
+    owner: string;
+    policy: string;
 }
 
 interface IDocumentContext {

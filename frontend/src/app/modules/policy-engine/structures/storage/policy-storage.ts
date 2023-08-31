@@ -1,6 +1,5 @@
 import { Stack, PolicyStorageItem } from "./storage";
 
-
 export class PolicyStorage {
     private readonly STORAGE_NAME = 'POLICY_STORAGE';
 

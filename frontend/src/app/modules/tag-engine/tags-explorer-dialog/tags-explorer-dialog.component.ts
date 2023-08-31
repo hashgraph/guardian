@@ -171,11 +171,13 @@ export class TagsExplorerDialog {
         return JSON.stringify(doc, null, 2);
     }
 
-    public openVCDocument(document: any, title: string) {
+    public openVCDocument(item: any, title: string) {
         const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
+            panelClass: 'g-dialog',
             data: {
-                document: document,
+                id: item.id,
+                document: item.document,
                 title: title,
                 type: 'Document',
                 viewDocument: false,

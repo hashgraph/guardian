@@ -202,11 +202,16 @@ export class ReportBlockComponent implements OnInit {
         return result;
     }
 
-    openVCDocument(item: IVCReport | ITokenReport | IPolicyReport | IReportItem | IImpactReport, document?: any) {
+    openVCDocument(
+        item: IVCReport | ITokenReport | IPolicyReport | IReportItem | IImpactReport, 
+        document?: any
+    ) {
         const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
+            panelClass: 'g-dialog',
             disableClose: true,
             data: {
+                id: item.document.id,
                 viewDocument: true,
                 document: document || item.document.document,
                 title: item.type,
@@ -219,8 +224,10 @@ export class ReportBlockComponent implements OnInit {
     openVPDocument(item: IVPReport) {
         const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
+            panelClass: 'g-dialog',
             disableClose: true,
             data: {
+                id: item.document.id,
                 viewDocument: true,
                 document: item.document.document,
                 title: item.type,
@@ -233,8 +240,10 @@ export class ReportBlockComponent implements OnInit {
     openJsonDocument(item: ITokenReport) {
         const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
+            panelClass: 'g-dialog',
             disableClose: true,
             data: {
+                id: item.document.id,
                 document: item.document.document,
                 title: item.type,
                 type: 'JSON',

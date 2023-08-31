@@ -63,7 +63,7 @@
             <ng-container matColumnDef="vp">
                 <th mat-header-cell *matHeaderCellDef> Document </th>
                 <td mat-cell *matCellDef="let element">
-                    <a (click)="openVP(element.document)">View Document</a>
+                    <a (click)="openVP(element)">View Document</a>
                 </td>
             </ng-container>
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>

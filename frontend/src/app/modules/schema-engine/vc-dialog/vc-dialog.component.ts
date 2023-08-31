@@ -11,6 +11,7 @@ import { Schema } from '@guardian/interfaces';
     styleUrls: ['./vc-dialog.component.css']
 })
 export class VCViewerDialog {
+    id: string = "";
     title: string = "";
     json: string = "";
     text: string = "";
@@ -26,6 +27,7 @@ export class VCViewerDialog {
     constructor(
         public dialogRef: MatDialogRef<VCViewerDialog>,
         @Inject(MAT_DIALOG_DATA) public data: {
+            id: string,
             document: any,
             title: string,
             viewDocument?: boolean,
@@ -37,6 +39,7 @@ export class VCViewerDialog {
 
     ngOnInit() {
         const {
+            id,
             document,
             title,
             viewDocument,
@@ -44,6 +47,7 @@ export class VCViewerDialog {
             toggle,
             schema
         } = this.data;
+        this.id = id;
         this.title = title;
         this.json = document ? JSON.stringify((document), null, 4) : '';
         this.text = document || '';

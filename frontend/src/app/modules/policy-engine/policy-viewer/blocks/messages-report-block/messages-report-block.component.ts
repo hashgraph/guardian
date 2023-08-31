@@ -771,7 +771,9 @@ export class MessagesReportBlockComponent implements OnInit {
         if (message.type === 'DID-Document') {
             const dialogRef = this.dialog.open(VCViewerDialog, {
                 width: '850px',
+                panelClass: 'g-dialog',
                 data: {
+                    id: message.id,
                     document: message.document,
                     title: 'Document',
                     type: 'JSON',
@@ -782,7 +784,9 @@ export class MessagesReportBlockComponent implements OnInit {
         } else {
             const dialogRef = this.dialog.open(VCViewerDialog, {
                 width: '850px',
+                panelClass: 'g-dialog',
                 data: {
+                    id: message.id,
                     document: message.document,
                     title: 'Document',
                     type: 'VC',

@@ -188,6 +188,14 @@
             <div class="result-info-field-name">Type</div>
             <div class="result-info-field-value">{{data.type}}</div>
         </div>
+        <div class="result-info-field">
+            <div class="result-info-field-name">Owner</div>
+            <div class="result-info-field-value">{{data.owner}}</div>
+        </div>
+        <div *ngIf="data.policy" class="result-info-field">
+            <div class="result-info-field-name">Policy</div>
+            <div class="result-info-field-value">{{data.policy}}</div>
+        </div>
     </div>
 </ng-template>
 
@@ -201,18 +209,6 @@
             <div class="prop-name">Document Rate: </div>
             <div class="prop-value" [attr.rate]="data.documentRate">{{data.documentRate}}</div>
         </div>
-        <!-- <div class="prop">
-            <div class="prop-name">Events Rate: </div>
-            <div class="prop-value" [attr.rate]="data.eventRate">{{data.eventRate}}</div>
-        </div>
-        <div class="prop">
-            <div class="prop-name">Artifacts Rate: </div>
-            <div class="prop-value" [attr.rate]="data.artifactsRate">{{data.artifactsRate}}</div>
-        </div>
-        <div class="prop">
-            <div class="prop-name">Total Rate: </div>
-            <div class="prop-value" [attr.rate]="data.totalRate">{{data.totalRate}}</div>
-        </div> -->
 
         <div class="prop-delimiter"></div>
 
