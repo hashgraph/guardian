@@ -24,11 +24,8 @@ spec:
           name: ipfs-node
           ports:
             - containerPort: 5001
-            - containerPort: 5002
             - containerPort: 4001
-            - containerPort: 4002
             - containerPort: 8080
-            - containerPort: 8081
           resources: {}
       restartPolicy: Always
   updateStrategy: {}
