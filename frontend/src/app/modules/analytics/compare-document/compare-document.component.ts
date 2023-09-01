@@ -340,8 +340,8 @@ export class CompareDocumentComponent implements OnInit {
             items = data.items;
         } else {
             field = data[index];
-            item = data.item;
-            items = data.map((f: any) => f.item);
+            item = field?.item;
+            items = data.map((f: any) => f?.item);
         }
         if (field && item) {
             fieldContext.fantom = false;

@@ -6,7 +6,7 @@ import { PropertyType } from '../types/property.type';
 import { WeightType } from '../types/weight.type';
 import { PropertiesModel } from './properties.model';
 import { PropertyModel } from './property.model';
-import { IWeightItem } from "../interfaces/weight-item.interface";
+import { IWeightItem } from '../interfaces/weight-item.interface';
 
 /**
  * Topic Model

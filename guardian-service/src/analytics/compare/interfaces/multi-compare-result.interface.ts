@@ -57,4 +57,8 @@ export interface IMultiCompareResult<T> {
      * Field rates (Schema)
      */
     fields?: IReportTable;
+    /**
+     * Documents rates (Document)
+     */
+    documents?: IReportTable;
 }

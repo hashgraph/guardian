@@ -30,6 +30,26 @@ export class CompareComponent implements OnInit {
     total: any;
     needApplyFilters: any;
 
+    public get isEventsLvl(): boolean {
+        return this.type === 'policy' || this.type === 'multi-policy';
+    }
+
+    public get isPropertiesLvl(): boolean {
+        return this.type === 'policy' || this.type === 'multi-policy';
+    }
+
+    public get isChildrenLvl(): boolean {
+        return this.type === 'policy' || this.type === 'multi-policy';
+    }
+
+    public get isUUIDLvl(): boolean {
+        return this.type !== 'document';
+    }
+
+    public get isApplyBtn(): boolean {
+        return this.type !== 'document';
+    }
+
     constructor(
         private route: ActivatedRoute,
         private router: Router,
@@ -77,13 +97,20 @@ export class CompareComponent implements OnInit {
     }
 
     loadDocument() {
-        const options = {
-            documentId1: this.documentId1,
-            documentId2: this.documentId2,
+        const options: any = {
             eventsLvl: this.eventsLvl,
             propLvl: this.propLvl,
             childrenLvl: this.childrenLvl,
             idLvl: this.idLvl
+        }
+        if (Array.isArray(this.documentIds) && this.documentIds.length > 1) {
+            options.documentIds = this.documentIds;
+        } else if (this.documentId1 && this.documentId2) {
+            options.documentId1 = this.documentId1;
+            options.documentId2 = this.documentId2;
+        } else {
+            this.loading = false;
+            return;
         }
         this.analyticsService.compareDocuments(options).subscribe((value) => {
             this.result = value;

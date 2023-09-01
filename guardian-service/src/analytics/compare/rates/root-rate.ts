@@ -30,7 +30,7 @@ export class RootRate<T extends IModel> extends Rate<T> {
      * Get Children Rates
      * @public
      */
-    public override getChildren<T extends IRate<any>>(): T[] {
-        return this.children as any;
+    public override getChildren<U extends IRate<any>>(): U[] {
+        return this.children as U[];
     }
 }

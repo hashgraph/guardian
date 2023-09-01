@@ -76,16 +76,15 @@ export class CompareViewerComponent implements OnInit {
     }
 
     public onCompare(): void {
-        if(this.compareMenu) {
+        if (this.compareMenu) {
             this.compareMenu.closeMenu();
         }
-        if (this.selectedCount === 2) {
+        if (this.selectedCount > 1) {
             const ids = this.ids.filter(id => this.selected[id]);
             this.router.navigate(['/compare'], {
                 queryParams: {
                     type: 'document',
-                    documentId1: ids[0],
-                    documentId2: ids[0]
+                    documentIds: ids
                 }
             });
         }

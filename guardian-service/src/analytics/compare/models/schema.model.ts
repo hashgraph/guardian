@@ -1,7 +1,6 @@
 import { ICompareOptions } from '../interfaces/compare-options.interface';
 import { FieldModel } from './field.model';
 import { SchemaDocumentModel } from './schema-document.model';
-import MurmurHash3 from 'imurmurhash';
 import { Policy, Schema as SchemaCollection } from '@guardian/common';
 import { HashUtils } from '../utils/hash-utils';
 
@@ -96,7 +95,7 @@ export class SchemaModel {
      * Compare Map
      * @private
      */
-    private _compareMap: Map<string, number>;
+    private readonly _compareMap: Map<string, number>;
 
     constructor(
         schema: SchemaCollection,

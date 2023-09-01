@@ -1,6 +1,6 @@
 import MurmurHash3 from 'imurmurhash';
 import { ICompareOptions } from '../interfaces/compare-options.interface';
-import { IWeightItem } from "../interfaces/weight-item.interface";
+import { IWeightItem } from '../interfaces/weight-item.interface';
 
 /**
  * Artifact Model

@@ -1,9 +1,9 @@
-import { ICompareOptions } from "../interfaces/compare-options.interface";
-import { AnyPropertyModel, ArrayPropertyModel, ObjectPropertyModel, PropertyModel } from "./property.model";
-import { SchemaModel } from "./schema.model";
+import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { AnyPropertyModel, ArrayPropertyModel, ObjectPropertyModel, PropertyModel } from './property.model';
+import { SchemaModel } from './schema.model';
 
 /**
- * 
+ * Document fields model
  * @extends IWeightModel
  */
 export class DocumentFieldsModel {
@@ -42,6 +42,12 @@ export class DocumentFieldsModel {
         }
     }
 
+    /**
+     * Replace path
+     * @param id
+     * @param options
+     * @private
+     */
     private getRelativePath(field: PropertyModel<any>): string {
         let result: string;
         if (this.type === 'VerifiableCredential') {
@@ -140,7 +146,6 @@ export class DocumentFieldsModel {
         }
         return list;
     }
-
 
     /**
      * Create PropertyModel

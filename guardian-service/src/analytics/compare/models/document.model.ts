@@ -1,4 +1,4 @@
-import { DefaultDocumentLoader, VcDocument, VpDocument } from '@guardian/common';
+import { VcDocument, VpDocument } from '@guardian/common';
 import { ICompareOptions } from '../interfaces/compare-options.interface';
 import { IWeightModel } from '../interfaces/weight-model.interface';
 import { IKeyMap } from '../interfaces/key-map.interface';
@@ -10,6 +10,9 @@ import { PropertyModel } from './property.model';
 import { HashUtils } from '../utils/hash-utils';
 import { PropertiesModel } from './properties.model';
 
+/**
+ * Document Type
+ */
 enum DocumentType {
     VC = 'VC',
     VP = 'VP'
@@ -180,7 +183,6 @@ export class DocumentModel implements IWeightModel {
         return this;
     }
 
-
     /**
      * Set schema models
      * @param schemas
@@ -275,6 +277,13 @@ export class DocumentModel implements IWeightModel {
         return this;
     }
 
+    /**
+     * Compare weight
+     * @param doc
+     * @param index
+     * @param schema
+     * @private
+     */
     private compareWeight(doc: DocumentModel, index: number, schema: number): boolean {
         if (index === 1 && schema < -1) {
             return false;
@@ -412,7 +421,9 @@ export class DocumentModel implements IWeightModel {
     public info(): any {
         return {
             id: this.id,
-            type: this.type
+            type: this.type,
+            owner: this.owner,
+            policy: this.policy,
         };
     }
 
@@ -436,7 +447,6 @@ export class DocumentModel implements IWeightModel {
         return this.key;
     }
 }
-
 
 /**
  * VC Document Model

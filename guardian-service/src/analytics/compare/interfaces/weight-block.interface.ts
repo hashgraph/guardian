@@ -15,4 +15,3 @@ export interface IWeightBlock {
      */
     length: number;
 }
-

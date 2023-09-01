@@ -268,6 +268,9 @@ export async function analyticsAPI(): Promise<void> {
             const compareModels: DocumentModel[] = [];
             for (const documentsId of ids) {
                 const compareModel = await DocumentComparator.createModelById(documentsId, options);
+                if (!compareModel) {
+                    return new MessageError('Unknown document');
+                }
                 compareModels.push(compareModel);
             }
 
@@ -290,7 +293,7 @@ export async function analyticsAPI(): Promise<void> {
                     return new MessageResponse(result);
                 }
             } else {
-                throw new Error('Invalid size');
+                return new MessageError('Invalid size');
             }
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);

@@ -18,6 +18,9 @@
         xPosition="before" 
         class="compare-menu-panel">
         <div class="compare-menu" (click)="$event.stopPropagation()">
+            <div class="compare-header">
+                Documents
+            </div>
             <div *ngFor="let item of ids" class="compare-item">
                 <div class="compare-item-select" (click)="onSelect(item)">
                     <input 
@@ -33,7 +36,9 @@
                 </div>
             </div>
             <div class="compare-results">
-                <div class="compare-results-btn" [attr.disable]="selectedCount!==2" (click)="onCompare()">
+                <div class="compare-results-btn" 
+                    [attr.disable]="selectedCount<2" 
+                    (click)="onCompare()">
                     Compare ({{selectedCount}})
                 </div>
             </div>

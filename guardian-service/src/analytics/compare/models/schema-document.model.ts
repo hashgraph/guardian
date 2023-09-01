@@ -3,7 +3,6 @@ import { ConditionModel } from './condition.model';
 import { ICompareOptions } from '../interfaces/compare-options.interface';
 import MurmurHash3 from 'imurmurhash';
 import { ComparePolicyUtils } from '../utils/compare-policy-utils';
-import { Status } from '../types/status.type';
 
 /**
  * Schema Model

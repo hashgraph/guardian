@@ -174,7 +174,7 @@ export class CompareUtils {
             for (const schema2 of schemas2) {
                 result = schema1.compare(schema2);
                 if (result < 0) {
-                    result = 104 + result;
+                    result = result + 104;
                 }
                 max = Math.max(max, result);
             }

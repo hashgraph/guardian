@@ -54,7 +54,7 @@ export class ComparePolicyUtils {
     private static _rateToTable<T>(rate: IRate<T>, table: IRate<T>[]): void {
         table.push(rate);
         for (const child of rate.getChildren()) {
-            this._rateToTable(child, table);
+            ComparePolicyUtils._rateToTable(child, table);
         }
     }
 
@@ -94,8 +94,8 @@ export class ComparePolicyUtils {
         tree2: BlockModel,
         options: ICompareOptions
     ): BlocksRate {
-        const createRate = (tree1: BlockModel, tree2: BlockModel) => {
-            const rate = new BlocksRate(tree1, tree2);
+        const createRate = (block1: BlockModel, block2: BlockModel) => {
+            const rate = new BlocksRate(block1, block2);
             rate.calc(options);
             return rate;
         }
@@ -115,8 +115,8 @@ export class ComparePolicyUtils {
         tree2: DocumentModel,
         options: ICompareOptions
     ): DocumentsRate {
-        const createRate = (tree1: DocumentModel, tree2: DocumentModel) => {
-            const rate = new DocumentsRate(tree1, tree2);
+        const createRate = (document1: DocumentModel, document2: DocumentModel) => {
+            const rate = new DocumentsRate(document1, document2);
             rate.calc(options);
             return rate;
         }
