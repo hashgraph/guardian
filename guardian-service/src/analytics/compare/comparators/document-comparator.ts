@@ -112,9 +112,9 @@ export class DocumentComparator {
             { name: 'right_schema', label: 'Schema', type: 'string' },
             { name: 'right_owner', label: 'Owner', type: 'string' },
 
-            { name: 'document_rate', label: 'Document Rate', type: 'number' },
-            { name: 'options_rate', label: 'Options Rate', type: 'number' },
-            { name: 'total_rate', label: 'Total Rate', type: 'number' },
+            { name: 'document_rate', label: 'Document Rate', type: 'number', display: 'Rate' },
+            { name: 'options_rate', label: 'Options Rate', type: 'number', display: 'Rate' },
+            { name: 'total_rate', label: 'Total Rate', type: 'number', display: 'Rate' },
 
             { name: 'left', label: '', type: 'object' },
             { name: 'right', label: '', type: 'object' },

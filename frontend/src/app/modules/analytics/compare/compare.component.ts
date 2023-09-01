@@ -260,7 +260,36 @@ export class CompareComponent implements OnInit {
             this.downloadModule();
         } else if (this.type === 'multi-policy') {
             this.downloadMultiPolicy();
+        } else if (this.type === 'document') {
+            this.downloadDocuments();
         }
+    }
+
+    downloadDocuments() {
+        const options: any = {
+            eventsLvl: this.eventsLvl,
+            propLvl: this.propLvl,
+            childrenLvl: this.childrenLvl,
+            idLvl: this.idLvl
+        }
+        if (Array.isArray(this.documentIds) && this.documentIds.length > 1) {
+            options.documentIds = this.documentIds;
+        } else if (this.documentId1 && this.documentId2) {
+            options.documentId1 = this.documentId1;
+            options.documentId2 = this.documentId2;
+        } else {
+            this.loading = false;
+            return;
+        }
+        this.analyticsService.compareDocumentsFile(options, 'csv').subscribe((data) => {
+            if (data) {
+                this.downloadObjectAsJson(data, 'report');
+            }
+            this.loading = false;
+        }, ({ message }) => {
+            this.loading = false;
+            console.error(message);
+        });
     }
 
     downloadMultiPolicy() {
