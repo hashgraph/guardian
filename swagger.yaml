@@ -255,6 +255,14 @@ paths:
         '200':
           description: ''
       tags: *ref_0
+  /analytics/compare/documents/export:
+    post:
+      operationId: AnalyticsApi_compareDocumentsExport
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_0
   /artifacts:
     get:
       tags:
