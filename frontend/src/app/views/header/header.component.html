@@ -320,7 +320,7 @@
         </div>
 
         <div class="user-content-info" *ngIf="isLogin || displayDemoAccounts">
-            <app-compare-viewer></app-compare-viewer>
+            <app-compare-viewer *ngIf="username"></app-compare-viewer>
             <app-notification *ngIf="username"></app-notification>
             <div *ngIf="username" class="user-balance desktop-user-balance" [attr.balance-type]="balanceType">
                 {{balance}}
