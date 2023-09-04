@@ -2853,21 +2853,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/jsonwebtoken@npm:9.0.2":
+"@types/jsonwebtoken@npm:9.0.2, @types/jsonwebtoken@npm:^9.0.2":
   version: 9.0.2
   resolution: "@types/jsonwebtoken@npm:9.0.2"
   dependencies:
     "@types/node": "*"
   checksum: 3bb8d40e78d7eb53e427db6e9f0f22e0890cfee80965dcf741d08341814913afb211306de6e9847c6d241cc8e36f8a59090cbfdcc510ab7c81af9d650c5afe0e
-  languageName: node
-  linkType: hard
-
-"@types/jsonwebtoken@npm:^8.5.4":
-  version: 8.5.9
-  resolution: "@types/jsonwebtoken@npm:8.5.9"
-  dependencies:
-    "@types/node": "*"
-  checksum: 33815ab02d1371b423118316b7706d2f2ec03eeee5e1494be72da50425d2384e5e0a09ea193f7a5ab4b4f6a9c5847147305f50e965f3d927a95bdf8adb471b2a
   languageName: node
   linkType: hard
 
@@ -3667,7 +3658,7 @@ __metadata:
     gulp-typescript: ^6.0.0-alpha.1
     hpp: ^0.2.3
     http-errors: ^2.0.0
-    jsonwebtoken: ^8.5.1
+    jsonwebtoken: ^9.0.2
     jszip: ^3.7.1
     mocha: ^9.2.0
     mocha-junit-reporter: ^2.0.2
@@ -4091,7 +4082,7 @@ __metadata:
     "@nestjs/microservices": ^9.4.1
     "@types/gulp": ^4
     "@types/gulp-rename": ^2
-    "@types/jsonwebtoken": ^8.5.4
+    "@types/jsonwebtoken": ^9.0.2
     "@types/node": ^18.16.0
     "@types/node-vault": ^0
     axios: ^1.4.0
@@ -4107,7 +4098,7 @@ __metadata:
     gulp-rename: ^2.0.0
     gulp-sourcemaps: ^3.0.0
     gulp-typescript: ^6.0.0-alpha.1
-    jsonwebtoken: ^8.5.1
+    jsonwebtoken: ^9.0.2
     mocha: ^9.2.0
     mocha-junit-reporter: ^2.0.2
     module-alias: ^2.2.2
@@ -9642,9 +9633,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsonwebtoken@npm:^8.5.1":
-  version: 8.5.1
-  resolution: "jsonwebtoken@npm:8.5.1"
+"jsonwebtoken@npm:^9.0.0":
+  version: 9.0.1
+  resolution: "jsonwebtoken@npm:9.0.1"
+  dependencies:
+    jws: ^3.2.2
+    lodash: ^4.17.21
+    ms: ^2.1.1
+    semver: ^7.3.8
+  checksum: 0eafe268896f4e8f9ab1f0f20e8c645721b7a9cddc41c0aba1e58da5c34564e8c9990817c1a5b646d795bcbb1339350826fe57c4569b5379ba9eea4a9aa5bbd0
+  languageName: node
+  linkType: hard
+
+"jsonwebtoken@npm:^9.0.2":
+  version: 9.0.2
+  resolution: "jsonwebtoken@npm:9.0.2"
   dependencies:
     jws: ^3.2.2
     lodash.includes: ^4.3.0
@@ -9655,20 +9658,8 @@ __metadata:
     lodash.isstring: ^4.0.1
     lodash.once: ^4.0.0
     ms: ^2.1.1
-    semver: ^5.6.0
-  checksum: 93c9e3f23c59b758ac88ba15f4e4753b3749dfce7a6f7c40fb86663128a1e282db085eec852d4e0cbca4cefdcd3a8275ee255dbd08fcad0df26ad9f6e4cc853a
-  languageName: node
-  linkType: hard
-
-"jsonwebtoken@npm:^9.0.0":
-  version: 9.0.1
-  resolution: "jsonwebtoken@npm:9.0.1"
-  dependencies:
-    jws: ^3.2.2
-    lodash: ^4.17.21
-    ms: ^2.1.1
-    semver: ^7.3.8
-  checksum: 0eafe268896f4e8f9ab1f0f20e8c645721b7a9cddc41c0aba1e58da5c34564e8c9990817c1a5b646d795bcbb1339350826fe57c4569b5379ba9eea4a9aa5bbd0
+    semver: ^7.5.4
+  checksum: fc739a6a8b33f1974f9772dca7f8493ca8df4cc31c5a09dcfdb7cff77447dcf22f4236fb2774ef3fe50df0abeb8e1c6f4c41eba82f500a804ab101e2fbc9d61a
   languageName: node
   linkType: hard
 
@@ -13390,7 +13381,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"semver@npm:2 || 3 || 4 || 5, semver@npm:^5.3.0, semver@npm:^5.6.0, semver@npm:^5.7.1":
+"semver@npm:2 || 3 || 4 || 5, semver@npm:^5.3.0, semver@npm:^5.7.1":
   version: 5.7.2
   resolution: "semver@npm:5.7.2"
   bin:
@@ -13408,7 +13399,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"semver@npm:^7.1.2, semver@npm:^7.2.1, semver@npm:^7.3.2, semver@npm:^7.3.4, semver@npm:^7.3.5, semver@npm:^7.3.8":
+"semver@npm:^7.1.2, semver@npm:^7.2.1, semver@npm:^7.3.2, semver@npm:^7.3.4, semver@npm:^7.3.5, semver@npm:^7.3.8, semver@npm:^7.5.4":
   version: 7.5.4
   resolution: "semver@npm:7.5.4"
   dependencies:
@@ -15525,7 +15516,7 @@ __metadata:
     gulp-sourcemaps: ^3.0.0
     gulp-typescript: ^6.0.0-alpha.1
     ipfs-client: 0.5.0
-    jsonwebtoken: ^8.5.1
+    jsonwebtoken: ^9.0.2
     mocha: ^9.2.0
     mocha-junit-reporter: ^2.0.2
     module-alias: ^2.2.2
