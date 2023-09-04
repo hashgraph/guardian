@@ -16,7 +16,7 @@
       "gulp-rename": "^2.0.0",
       "gulp-sourcemaps": "^3.0.0",
       "gulp-typescript": "^6.0.0-alpha.1",
-      "jose": "4.14.1",
+      "jose": "4.14.5",
     "prom-client": "^14.1.1",
     "prometheus-api-metrics": "3.2.2"
   },
