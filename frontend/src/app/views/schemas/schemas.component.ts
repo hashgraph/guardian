@@ -438,7 +438,6 @@ export class SchemaConfigComponent implements OnInit {
             panelClass: 'g-dialog',
             disableClose: true,
             data: {
-                id: element.id,
                 document: element.document,
                 title: 'Schema',
                 type: 'JSON',
