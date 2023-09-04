@@ -3205,7 +3205,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@web-std/blob@npm:^3.0.0, @web-std/blob@npm:^3.0.1, @web-std/blob@npm:^3.0.3, @web-std/blob@npm:^3.0.4":
+"@web-std/blob@npm:^3.0.1, @web-std/blob@npm:^3.0.3, @web-std/blob@npm:^3.0.4":
   version: 3.0.4
   resolution: "@web-std/blob@npm:3.0.4"
   dependencies:
@@ -3215,15 +3215,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@web-std/fetch@npm:3.0.0":
-  version: 3.0.0
-  resolution: "@web-std/fetch@npm:3.0.0"
+"@web-std/fetch@npm:4.2.1":
+  version: 4.2.1
+  resolution: "@web-std/fetch@npm:4.2.1"
   dependencies:
-    "@web-std/blob": ^3.0.0
-    "@web-std/form-data": ^3.0.0
+    "@web-std/blob": ^3.0.3
+    "@web-std/file": ^3.0.2
+    "@web-std/form-data": ^3.0.2
+    "@web-std/stream": ^1.0.1
     "@web3-storage/multipart-parser": ^1.0.0
+    abort-controller: ^3.0.0
     data-uri-to-buffer: ^3.0.1
-  checksum: 3a056a0075a3a56719b9969df412e2253b8242558983017eb9fd31e4913d105a9e7c06b1b8bd0471b76b7b0a8ced3c859743e4c7669c8c3c6c8b8ff0ae6964a8
+    mrmime: ^1.0.0
+  checksum: e926301432d051ae7a23b241855119a0685478eb4ec830b7c9ae6d07db4dcc16da088992fc18da68268187a911fc6f0c5314d6c2ad9aa5f6c2564cf1f4e15ed5
   languageName: node
   linkType: hard
 
@@ -3248,7 +3252,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@web-std/form-data@npm:^3.0.0, @web-std/form-data@npm:^3.0.2":
+"@web-std/form-data@npm:^3.0.2":
   version: 3.0.2
   resolution: "@web-std/form-data@npm:3.0.2"
   dependencies:
@@ -3263,6 +3267,15 @@ __metadata:
   dependencies:
     web-streams-polyfill: ^3.1.1
   checksum: 247cc704b5dc18c3e7dac70c02efbbca83357fc237a0b8b2011814a246e6710a0dd403770b756d763ef545c7a118524e405b76cb7c7ac00afea0250171fdd68c
+  languageName: node
+  linkType: hard
+
+"@web-std/stream@npm:^1.0.1":
+  version: 1.0.3
+  resolution: "@web-std/stream@npm:1.0.3"
+  dependencies:
+    web-streams-polyfill: ^3.1.1
+  checksum: 480ef4373c7da42247fd7b58f5da17db230a397ca8d78f365076db2383104169b55407732a384334b8327cd541e532f619a31b3a9a807a5b3851e1e5fa6707a5
   languageName: node
   linkType: hard
 
@@ -10149,7 +10162,7 @@ __metadata:
     "@types/gulp": ^4
     "@types/gulp-rename": ^2
     "@types/node": ^18.16.0
-    "@web-std/fetch": 3.0.0
+    "@web-std/fetch": 4.2.1
     chai: 4.3.6
     cors: ^2.8.5
     dotenv: ^16.0.0
@@ -10927,6 +10940,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"mrmime@npm:^1.0.0":
+  version: 1.0.1
+  resolution: "mrmime@npm:1.0.1"
+  checksum: cc979da44bbbffebaa8eaf7a45117e851f2d4cb46a3ada6ceb78130466a04c15a0de9a9ce1c8b8ba6f6e1b8618866b1352992bf1757d241c0ddca558b9f28a77
+  languageName: node
+  linkType: hard
+
 "mrv-sender@workspace:mrv-sender":
   version: 0.0.0-use.local
   resolution: "mrv-sender@workspace:mrv-sender"
@@ -11493,7 +11513,7 @@ __metadata:
     "@types/gulp": ^4
     "@types/gulp-rename": ^2
     "@types/node": ^18.16.0
-    "@web-std/fetch": 3.0.0
+    "@web-std/fetch": 4.2.1
     chai: 4.3.6
     cors: ^2.8.5
     dotenv: ^16.0.0
