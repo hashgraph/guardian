@@ -4,7 +4,7 @@
       "@guardian/common": "^2.16.0",
       "@guardian/interfaces": "^2.16.0",
       "@hashgraph/sdk": "2.24.2",
-      "@nestjs/common": "^9.4.1",
+      "@nestjs/common": "^10.2.4",
       "@nestjs/core": "^9.4.1",
       "@nestjs/microservices": "^9.4.1",
       "@transmute/credentials-context": "0.7.0-unstable.80",

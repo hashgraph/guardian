@@ -5,7 +5,7 @@
       "@guardian/interfaces": "^2.16.0",
     "@mikro-orm/core": "5.7.12",
     "@mikro-orm/mongodb": "5.7.12",
-    "@nestjs/common": "^9.4.1",
+    "@nestjs/common": "^10.2.4",
     "@nestjs/core": "^9.4.1",
     "@nestjs/microservices": "^9.4.1",
     "@web-std/fetch": "3.0.0",
