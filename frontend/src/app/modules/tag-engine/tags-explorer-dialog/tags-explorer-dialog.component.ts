@@ -177,6 +177,7 @@ export class TagsExplorerDialog {
             panelClass: 'g-dialog',
             data: {
                 id: item.id,
+                dryRun: !!item.dryRunId,
                 document: item.document,
                 title: title,
                 type: 'Document',

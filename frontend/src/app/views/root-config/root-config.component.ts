@@ -228,6 +228,7 @@ export class RootConfigComponent implements OnInit {
             disableClose: true,
             data: {
                 id: document.id,
+                dryRun: !!document.dryRunId,
                 document: document.document,
                 title: title,
                 type: 'VC',
@@ -245,6 +246,7 @@ export class RootConfigComponent implements OnInit {
             disableClose: true,
             data: {
                 id: document.id,
+                dryRun: !!document.dryRunId,
                 document: document.document,
                 title: title,
                 type: 'JSON',

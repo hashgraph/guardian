@@ -216,6 +216,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
                 panelClass: 'g-dialog',
                 data: {
                     id: row.id,
+                    dryRun: !!row.dryRunId,
                     document: document,
                     title: field.dialogContent,
                     type: 'VC',
@@ -355,6 +356,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
             panelClass: 'g-dialog',
             data: {
                 id: row.id,
+                dryRun: !!row.dryRunId,
                 document: text,
                 title: field.title,
                 type: 'TEXT',

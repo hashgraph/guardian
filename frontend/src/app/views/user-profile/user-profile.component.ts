@@ -362,6 +362,7 @@ export class UserProfileComponent implements OnInit {
             disableClose: true,
             data: {
                 id: document.id,
+                dryRun: !!document.dryRunId,
                 document: document.document,
                 title: title,
                 type: 'VC',
@@ -379,6 +380,7 @@ export class UserProfileComponent implements OnInit {
             disableClose: true,
             data: {
                 id: document.id,
+                dryRun: !!document.dryRunId,
                 document: document.document,
                 title: title,
                 type: 'JSON',
@@ -492,6 +494,7 @@ export class UserProfileComponent implements OnInit {
             disableClose: true,
             data: {
                 id: document.id,
+                dryRun: !!document.dryRunId,
                 document: document.document,
                 title: 'View Retire Request Result',
                 type: 'VC',

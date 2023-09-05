@@ -143,6 +143,7 @@ export class AuditComponent implements OnInit {
             panelClass: 'g-dialog',
             data: {
                 id: element.id,
+                dryRun: !!element.dryRunId,
                 document: element.document,
                 title: 'VP',
                 type: 'VP',

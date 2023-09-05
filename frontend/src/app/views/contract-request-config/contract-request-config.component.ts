@@ -147,6 +147,7 @@ export class ContractRequestConfigComponent implements OnInit, OnDestroy {
             panelClass: 'g-dialog',
             data: {
                 id: document.id,
+                dryRun: !!document.dryRunId,
                 document: document.document,
                 title: 'View Retire Request Result',
                 type: 'VC',
