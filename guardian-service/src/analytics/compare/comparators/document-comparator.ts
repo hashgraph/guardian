@@ -359,25 +359,41 @@ export class DocumentComparator {
         document = await DatabaseServer.getVCById(id);
 
         if (document) {
-            return new VcDocumentModel(document, options);
+            if (!options.owner || document.messageId || options.owner === document.owner) {
+                return new VcDocumentModel(document, options);
+            } else {
+                return null;
+            }
         }
 
         document = await DatabaseServer.getVC({ messageId: id });
 
         if (document) {
-            return new VcDocumentModel(document, options);
+            if (!options.owner || document.messageId || options.owner === document.owner) {
+                return new VcDocumentModel(document, options);
+            } else {
+                return null;
+            }
         }
 
         document = await DatabaseServer.getVPById(id);
 
         if (document) {
-            return new VpDocumentModel(document, options);
+            if (!options.owner || document.messageId || options.owner === document.owner) {
+                return new VpDocumentModel(document, options);
+            } else {
+                return null;
+            }
         }
 
         document = await DatabaseServer.getVP({ messageId: id });
 
         if (document) {
-            return new VpDocumentModel(document, options);
+            if (!options.owner || document.messageId || options.owner === document.owner) {
+                return new VpDocumentModel(document, options);
+            } else {
+                return null;
+            }
         }
 
         return null;
@@ -451,7 +467,10 @@ export class DocumentComparator {
         const cacheDocuments = new Map<string, DocumentModel>();
         const cacheSchemas = new Map<string, SchemaModel>();
         const documentModel = await DocumentComparator.createDocument(
-            cacheDocuments, cacheSchemas, id, options
+            cacheDocuments,
+            cacheSchemas,
+            id,
+            options
         );
         return documentModel;
     }

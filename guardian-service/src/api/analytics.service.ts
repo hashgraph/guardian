@@ -1,6 +1,7 @@
 import {
     DocumentComparator,
     HashComparator,
+    ICompareOptions,
     ModuleComparator,
     ModuleModel,
     PolicyComparator,
@@ -17,7 +18,7 @@ import {
     OutboundResponseIdentitySerializer
 } from '@guardian/common';
 import { ApiResponse } from '@api/helpers/api-response';
-import { MessageAPI } from '@guardian/interfaces';
+import { MessageAPI, UserRole } from '@guardian/interfaces';
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import process from 'process';
@@ -251,6 +252,7 @@ export async function analyticsAPI(): Promise<void> {
     ApiResponse(MessageAPI.COMPARE_DOCUMENTS, async (msg) => {
         try {
             const {
+                user,
                 type,
                 ids,
                 eventsLvl,
@@ -258,12 +260,16 @@ export async function analyticsAPI(): Promise<void> {
                 childrenLvl,
                 idLvl
             } = msg;
-            const options = {
+            const options: ICompareOptions = {
+                owner: null,
                 propLvl: parseInt(propLvl, 10),
                 childLvl: parseInt(childrenLvl, 10),
                 eventLvl: parseInt(eventsLvl, 10),
                 idLvl: parseInt(idLvl, 10),
             };
+            if (user?.role === UserRole.STANDARD_REGISTRY) {
+                options.owner = user.did;
+            }
 
             const compareModels: DocumentModel[] = [];
             for (const documentsId of ids) {
