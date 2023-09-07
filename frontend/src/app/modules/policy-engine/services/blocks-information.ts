@@ -47,7 +47,7 @@ import { MessagesReportBlockComponent } from '../policy-viewer/blocks/messages-r
 import {
     BlockGroup,
     BlockHeaders,
-    PolicyBlockModel,
+    PolicyBlock,
     IBlockSetting
 } from "../structures";
 import { BlockType } from '@guardian/interfaces';
@@ -182,7 +182,7 @@ const Action: IBlockSetting = {
         group: BlockGroup.UnGrouped
     }],
     about: {
-        output: (value: any, block: PolicyBlockModel) => {
+        output: (value: any, block: PolicyBlock) => {
             const result = value ? value.slice() : [];
             if (block.properties.type == 'selector') {
                 if (block.properties.uiMetaData?.options) {
@@ -210,7 +210,7 @@ const ButtonBlock: IBlockSetting = {
     factory: ButtonBlockComponent,
     property: ButtonConfigComponent,
     about: {
-        output: (value: any, block: PolicyBlockModel) => {
+        output: (value: any, block: PolicyBlock) => {
             const result = value ? value.slice() : [];
             if (block.properties.uiMetaData?.buttons) {
                 for (const c of block.properties.uiMetaData.buttons) {
@@ -232,7 +232,7 @@ const Switch: IBlockSetting = {
     factory: null,
     property: SwitchConfigComponent,
     about: {
-        output: (value: any, block: PolicyBlockModel) => {
+        output: (value: any, block: PolicyBlock) => {
             const result = value ? value.slice() : [];
             if (block.properties.conditions) {
                 for (const c of block.properties.conditions) {

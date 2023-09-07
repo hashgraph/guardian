@@ -1,8 +1,8 @@
 import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { PolicyModuleModel } from './module.model';
+import { PolicyModule } from './block.model';
 
-export class ModuleEventModel {
-    private readonly module: PolicyModuleModel;
+export class ModuleEvent {
+    private readonly module: PolicyModule;
 
     public readonly id: string;
 
@@ -16,7 +16,7 @@ export class ModuleEventModel {
             name: string;
             description: string;
         },
-        module: PolicyModuleModel
+        module: PolicyModule
     ) {
         this._changed = false;
         this.module = module;

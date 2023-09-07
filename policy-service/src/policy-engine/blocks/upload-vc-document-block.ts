@@ -6,11 +6,10 @@ import { IPolicyDocument, IPolicyRequestBlock } from '@policy-engine/policy-engi
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
 import { EventBlock } from '@policy-engine/helpers/decorators/event-block';
-import { VcHelper, } from '@guardian/common';
+import { VcHelper, VcDocumentDefinition as VcDocument } from '@guardian/common';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
-import { VcDocumentDefinition as VcDocument } from '@guardian/common/dist/hedera-modules';
 
 /**
  * Request VC document block
@@ -162,7 +161,7 @@ export class UploadVcDocumentBlock {
         }
 
         const retArray: unknown[] = [];
-        const badArray: unknown[] =  [];
+        const badArray: unknown[] = [];
 
         try {
             for (const document of data.documents) {
@@ -179,7 +178,8 @@ export class UploadVcDocumentBlock {
                     verify = false;
                 }
 
-                if (verify) {;
+                if (verify) {
+                    ;
                     const vc = VcDocument.fromJsonTree(document);
 
                     const doc = PolicyUtils.createVC(ref, user, vc);
@@ -194,9 +194,9 @@ export class UploadVcDocumentBlock {
                 }
             }
 
-            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, {data: retArray});
+            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, { data: retArray });
             ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, {data: retArray});
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, { data: retArray });
             PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
                 documents: ExternalDocuments(retArray)
             }));

@@ -3,11 +3,10 @@ import {
     GroupAccessType,
     GroupRelationshipType
 } from '@guardian/interfaces';
-import { PolicyModel } from './policy.model';
+import { PolicyTemplate } from './policy.model';
 
-
-export class PolicyGroupModel {
-    private readonly policy: PolicyModel;
+export class PolicyGroup {
+    private readonly policy: PolicyTemplate;
 
     public readonly id: string;
 
@@ -28,7 +27,7 @@ export class PolicyGroupModel {
             groupRelationshipType?: GroupRelationshipType;
             groupAccessType?: GroupAccessType;
         },
-        policy: PolicyModel
+        policy: PolicyTemplate
     ) {
         this._changed = false;
         this.policy = policy;

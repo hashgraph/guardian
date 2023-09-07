@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { IModuleVariables, PolicyBlockModel } from '../../../../structures';
+import { IModuleVariables, PolicyBlock } from '../../../../structures';
 
 /**
  * Settings for block of 'interfaceDocumentsSource' type.
@@ -11,13 +11,13 @@ import { IModuleVariables, PolicyBlockModel } from '../../../../structures';
     encapsulation: ViewEncapsulation.Emulated
 })
 export class DocumentSourceComponent implements OnInit {
-    @Input('block') currentBlock!: PolicyBlockModel;
+    @Input('block') currentBlock!: PolicyBlock;
     @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();
 
     public module: any;
     private moduleVariables!: IModuleVariables | null;
-    private item!: PolicyBlockModel;
+    private item!: PolicyBlock;
 
     propHidden: any = {
         fieldsGroup: false,
@@ -65,7 +65,7 @@ export class DocumentSourceComponent implements OnInit {
         })
     }
 
-    load(block: PolicyBlockModel) {
+    load(block: PolicyBlock) {
         this.moduleVariables = block.moduleVariables;
         this.module = this.moduleVariables?.module;
         if (this.module?.allBlocks) {

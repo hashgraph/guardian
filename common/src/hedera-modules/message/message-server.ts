@@ -3,26 +3,28 @@ import {
     PrivateKey,
     TopicId,
 } from '@hashgraph/sdk';
-import { Message } from './message';
-import { MessageType } from './message-type';
-import { VCMessage } from './vc-message';
-import { DIDMessage } from './did-message';
-import { IPFS, Logger, Workers } from '../../helpers';
-import { PolicyMessage } from './policy-message';
-import { SchemaMessage } from './schema-message';
-import { MessageAction } from './message-action';
-import { VPMessage } from './vp-message';
-import { TransactionLogger } from '../transaction-logger';
 import { GenerateUUIDv4, WorkerTaskType } from '@guardian/interfaces';
+import { IPFS, Logger, Workers } from '../../helpers';
+import { TransactionLogger } from '../transaction-logger';
 import { Environment } from '../environment';
 import { MessageMemo } from '../memo-mappings/message-memo';
+import { DatabaseServer } from '../../database-modules';
+import { TopicConfig } from '../topic';
+import { Message } from './message';
+import { MessageType } from './message-type';
+import { MessageAction } from './message-action';
+import { VCMessage } from './vc-message';
+import { DIDMessage } from './did-message';
+import { PolicyMessage } from './policy-message';
+import { SchemaMessage } from './schema-message';
+import { VPMessage } from './vp-message';
 import { RegistrationMessage } from './registration-message';
 import { TopicMessage } from './topic-message';
-import { RoleMessage, TopicConfig } from '../../hedera-modules';
 import { TokenMessage } from './token-message';
 import { ModuleMessage } from './module-message';
-import { DatabaseServer } from '../../database-modules';
 import { TagMessage } from './tag-message';
+import { ToolMessage } from './tool-message';
+import { RoleMessage } from './role-message';
 
 /**
  * Message server
@@ -295,6 +297,9 @@ export class MessageServer {
                 break;
             case MessageType.Module:
                 message = ModuleMessage.fromMessageObject(json);
+                break;
+            case MessageType.Tool:
+                message = ToolMessage.fromMessageObject(json);
                 break;
             case MessageType.Tag:
                 message = TagMessage.fromMessageObject(json);

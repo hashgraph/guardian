@@ -554,12 +554,25 @@
                             <ngx-codemirror [(ngModel)]="code" [options]="codeMirrorOptions" (ngModelChange)="saveState()">
                             </ngx-codemirror>
                         </div>
-                        <policy-tree *ngIf="isTree" [module]="openModule" [blocks]="openModule.dataSource" [errors]="errorsMap"
-                            [readonly]="readonly" [active]="eventVisible" [connector]="dropListConnector" [suggestions]="isSuggestionsEnabled"
-                            [nextBlock]="nextBlock" [nestedBlock]="nestedBlock" [(currentBlock)]="currentBlock"
-                            (nested)="addSuggestionsBlock($event, true)" (next)="addSuggestionsBlock($event)"
-                            (open)="onOpenModule($event)" (delete)="onDelete($event)" (select)="onSelect($event)"
-                            (reorder)="onReorder($event)" (init)="onInitViewer($event)">
+                        <policy-tree 
+                            *ngIf="isTree" 
+                            [module]="openModule" 
+                            [blocks]="openModule.dataSource" 
+                            [errors]="errorsMap"
+                            [readonly]="readonly" 
+                            [active]="eventVisible" 
+                            [connector]="dropListConnector" 
+                            [suggestions]="isSuggestionsEnabled"
+                            [nextBlock]="nextBlock" 
+                            [nestedBlock]="nestedBlock" 
+                            [(currentBlock)]="currentBlock"
+                            (nested)="addSuggestionsBlock($event, true)" 
+                            (next)="addSuggestionsBlock($event)"
+                            (open)="onOpenModule($event)" 
+                            (delete)="onDelete($event)" 
+                            (select)="onSelect($event)"
+                            (reorder)="onReorder($event)" 
+                            (init)="onInitViewer($event)">
                         </policy-tree>
                     </div>
                 </div>

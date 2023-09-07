@@ -1,16 +1,16 @@
-import { ModuleVariableModel } from '../module-variable.model';
-import { PolicyTokenModel } from '../policy-token.model';
+import { ModuleVariable } from '../module/module-variable.model';
+import { PolicyToken } from '../policy/policy-token.model';
 
 export class TokenTemplateVariables {
     public name?: string;
     public value?: string;
-    public data?: PolicyTokenModel;
+    public data?: PolicyToken;
 
-    constructor(token?: PolicyTokenModel | ModuleVariableModel | string, value?: string) {
+    constructor(token?: PolicyToken | ModuleVariable | string, value?: string) {
         if (typeof token === 'string') {
             this.name = token;
             this.value = token;
-        } else if(token instanceof ModuleVariableModel) {
+        } else if(token instanceof ModuleVariable) {
             this.name = token.name;
             this.value = token.name;
         } else if (token) {

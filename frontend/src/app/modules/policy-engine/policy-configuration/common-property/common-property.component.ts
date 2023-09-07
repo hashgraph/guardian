@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { RegisteredService } from '../../services/registered.service';
 import {
-    PolicyBlockModel,
+    PolicyBlock,
     RoleVariables,
     SchemaVariables,
 } from '../../structures';
@@ -26,7 +26,7 @@ import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
     encapsulation: ViewEncapsulation.None,
 })
 export class CommonPropertyComponent implements OnInit {
-    @Input('block') currentBlock!: PolicyBlockModel;
+    @Input('block') currentBlock!: PolicyBlock;
     @Input('property') property!: any;
     @Input('collapse') collapse!: any;
     @Input('readonly') readonly!: boolean;
@@ -81,7 +81,7 @@ export class CommonPropertyComponent implements OnInit {
         }, 0);
     }
 
-    load(block: PolicyBlockModel) {
+    load(block: PolicyBlock) {
         const moduleVariables = block.moduleVariables;
         if (this.property) {
             if (this.property.type === 'Group') {

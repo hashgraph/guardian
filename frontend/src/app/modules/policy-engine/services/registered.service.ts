@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { BlockType, GenerateUUIDv4 } from '@guardian/interfaces';
-import { BlockAbout, ChildrenType, ControlType, IBlockAbout, IBlockSetting, PolicyBlockModel, PolicyModel, PolicyModuleModel } from '../structures';
+import { BlockAbout, ChildrenType, ControlType, IBlockAbout, IBlockSetting } from '../structures';
 import blocks from './blocks-information';
 import modules from './module-information';
+import { PolicyFolder, PolicyItem } from '../structures/policy-models/interfaces/module.type';
 
 @Injectable()
 export class RegisteredService {
@@ -158,8 +159,8 @@ export class RegisteredService {
     }
 
     public bindAbout(
-        block: PolicyModuleModel | PolicyBlockModel,
-        module: PolicyModel | PolicyModuleModel
+        block: PolicyItem,
+        module: PolicyFolder
     ): IBlockAbout {
         if (this.blockAbout[block.blockType]) {
             return this.blockAbout[block.blockType].bind(block, module);
@@ -169,8 +170,8 @@ export class RegisteredService {
     }
 
     public getAbout(
-        block: PolicyModuleModel | PolicyBlockModel,
-        module: PolicyModel | PolicyModuleModel
+        block: PolicyItem,
+        module: PolicyFolder
     ): IBlockAbout {
         if (this.blockAbout[block.blockType]) {
             return this.blockAbout[block.blockType].getAbout(block, module);

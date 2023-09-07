@@ -3,7 +3,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { IconPreviewDialog } from 'src/app/modules/common/icon-preview-dialog/icon-preview-dialog.component';
 import { IPFS_SCHEMA } from 'src/app/services/api';
 import { IPFSService } from 'src/app/services/ipfs.service';
-import { IModuleVariables, PolicyBlockModel } from '../../../../structures';
+import { IModuleVariables, PolicyBlock } from '../../../../structures';
 
 /**
  * Settings for block of 'reportItemBlock' type.
@@ -15,12 +15,12 @@ import { IModuleVariables, PolicyBlockModel } from '../../../../structures';
     encapsulation: ViewEncapsulation.Emulated
 })
 export class ReportItemConfigComponent implements OnInit {
-    @Input('block') currentBlock!: PolicyBlockModel;
+    @Input('block') currentBlock!: PolicyBlock;
     @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();
 
     private moduleVariables!: IModuleVariables | null;
-    private item!: PolicyBlockModel;
+    private item!: PolicyBlock;
     
     fileLoading = false;
 
@@ -52,7 +52,7 @@ export class ReportItemConfigComponent implements OnInit {
         this.load(this.currentBlock);
     }
 
-    load(block: PolicyBlockModel) {
+    load(block: PolicyBlock) {
         this.moduleVariables = block.moduleVariables;
         this.item = block;
         this.properties = block.properties;

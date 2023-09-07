@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Inject, Input, Output, SimpleChanges } from '@angular/core';
 import { RegisteredService } from '../../services/registered.service';
-import { PolicyBlockModel } from '../../structures';
+import { PolicyBlock } from '../../structures';
 
 /**
  * SelectBlock.
@@ -12,9 +12,9 @@ import { PolicyBlockModel } from '../../structures';
 })
 export class SelectBlock {
     @Input('root') root!: any;
-    @Input('blocks') blocks!: PolicyBlockModel[];
+    @Input('blocks') blocks!: PolicyBlock[];
     @Input('readonly') readonly!: boolean;
-    @Input('value') value: string | PolicyBlockModel | null | undefined;
+    @Input('value') value: string | PolicyBlock | null | undefined;
     @Input('type') type!: string;
     @Output('valueChange') valueChange = new EventEmitter<any>();
     @Output('change') change = new EventEmitter<any>();

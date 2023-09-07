@@ -1,10 +1,11 @@
 import { Component, ComponentFactoryResolver, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, SimpleChanges, ViewChild, Inject } from '@angular/core';
 import { FlatBlockNode } from '../../structures/tree-model/block-node';
 import { CdkDropList } from '@angular/cdk/drag-drop';
-import { PolicyBlockModel, BlocLine, BlockRect, EventCanvas, PolicyModel, PolicyModuleModel } from '../../structures';
+import { PolicyBlock, BlocLine, BlockRect, EventCanvas } from '../../structures';
 import { RegisteredService } from '../../services/registered.service';
 import { ThemeService } from '../../../../services/theme.service';
 import { BLOCK_TYPE_TIPS } from 'src/app/injectors/block-type-tips.injector';
+import { PolicyFolder } from '../../structures/policy-models/interfaces/module.type';
 
 /**
  * Settings for all blocks.
@@ -15,8 +16,8 @@ import { BLOCK_TYPE_TIPS } from 'src/app/injectors/block-type-tips.injector';
     styleUrls: ['./policy-tree.component.css']
 })
 export class PolicyTreeComponent implements OnInit {
-    @Input('module') module!: PolicyModel | PolicyModuleModel;
-    @Input('blocks') blocks!: PolicyBlockModel[];
+    @Input('module') module!: PolicyFolder;
+    @Input('blocks') blocks!: PolicyBlock[];
     @Input('errors') errors!: any;
     @Input('readonly') readonly!: boolean;
     @Input('active') active!: string;
@@ -63,7 +64,7 @@ export class PolicyTreeComponent implements OnInit {
     public data!: FlatBlockNode[];
     public selectedNode?: FlatBlockNode;
     private errorsTree!: any;
-    private root!: PolicyBlockModel;
+    private root!: PolicyBlock;
     private collapsedMap: Map<string, boolean> = new Map<string, boolean>();
     private eventsDisabled = false;
     private paddingLeft = 40;
@@ -184,7 +185,7 @@ export class PolicyTreeComponent implements OnInit {
         }
     }
 
-    private rebuildTree(data: PolicyBlockModel[]) {
+    private rebuildTree(data: PolicyBlock[]) {
         this.root = data[0];
         this.data = this.convertToArray([], data, 0, null);
         if (this.currentBlock) {
@@ -208,7 +209,7 @@ export class PolicyTreeComponent implements OnInit {
         return false;
     }
 
-    private searchErrors(blocks: PolicyBlockModel[]): boolean {
+    private searchErrors(blocks: PolicyBlock[]): boolean {
         if (!blocks) {
             return false;
         }
@@ -228,7 +229,7 @@ export class PolicyTreeComponent implements OnInit {
 
     private convertToArray(
         result: FlatBlockNode[],
-        blocks: PolicyBlockModel[],
+        blocks: PolicyBlock[],
         level: number,
         parent: FlatBlockNode | null
     ): FlatBlockNode[] {

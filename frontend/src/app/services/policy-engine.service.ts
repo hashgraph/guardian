@@ -153,19 +153,6 @@ export class PolicyEngineService {
         return this.http.get<any>(`${this.url}/blocks/about`);
     }
 
-    private getBaseUrl() {
-        let url = location.origin;
-        if (/^https/.test(url)) {
-            return `${url.replace(/^https/, 'wss')}`;
-        }
-        return `${url.replace(/^http/, 'ws')}`;
-    }
-
-    private getUrl(accessToken: string | null) {
-        return `${this.getBaseUrl()}/ws/?token=${accessToken}`;
-    }
-
-
     public getVirtualUsers(policyId: string): Observable<any[]> {
         return this.http.get<any>(`${this.url}/${policyId}/dry-run/users`);
     }

@@ -1,12 +1,12 @@
 import { GenerateUUIDv4, ModuleStatus, PolicyType, Schema } from '@guardian/interfaces';
-import { PolicyBlockModel } from './block.model';
-import { PolicyModuleModel } from './module.model';
-import { IBlockConfig } from './interfaces/block-config.interface';
-import { IModuleVariables } from './variables/module-variables.interface';
-import { PolicyEventModel } from './block-event.model';
-import { PolicyModel } from './policy.model';
+import { IBlockConfig } from '../interfaces/block-config.interface';
+import { IModuleVariables } from '../variables/module-variables.interface';
+import { PolicyBlock } from '../block/block.model';
+import { PolicyEvent } from '../block/block-event.model';
+import { PolicyModule } from './block.model';
+import { PolicyFolder, PolicyItem } from '../interfaces/module.type';
 
-export class TemplateModel {
+export class ModuleTemplate {
     public readonly valid: boolean;
     public readonly id!: string;
     public readonly uuid!: string;
@@ -18,7 +18,7 @@ export class TemplateModel {
     public readonly messageId!: string;
     public readonly topicId!: string;
 
-    private _config!: PolicyModuleModel;
+    private _config!: PolicyModule;
     private _changed: boolean;
 
     public readonly isDraft: boolean = false;
@@ -72,7 +72,7 @@ export class TemplateModel {
         this.changed = true;
     }
 
-    public get root(): PolicyModuleModel {
+    public get root(): PolicyModule {
         return this._config;
     }
 
@@ -88,27 +88,35 @@ export class TemplateModel {
         return '';
     }
 
+    public get localTag(): string {
+        return this._config.localTag;
+    }
+
+    public get dataSource(): PolicyBlock[] {
+        return this._config.dataSource;
+    }
+
     private buildBlock(config: IBlockConfig) {
         if (!config) {
-            config = { blockType: "module" };
+            config = { blockType: 'module' };
         }
-        this._config = this._buildBlock(config, null, this) as PolicyModuleModel;
+        this._config = this._buildBlock(config, null, this) as PolicyModule;
         this._config.isRoot = true;
         this._config.refresh();
     }
 
     private _buildBlock(
         config: IBlockConfig,
-        parent: PolicyModuleModel | PolicyBlockModel | null,
-        module: PolicyModuleModel | TemplateModel
+        parent: PolicyItem | null,
+        module: PolicyFolder
     ) {
-        let block: PolicyModuleModel | PolicyBlockModel;
+        let block: PolicyItem;
         if (config.blockType === 'module') {
-            block = new PolicyModuleModel(config, parent);
+            block = new PolicyModule(config, parent);
             block.setModule(module);
-            module = block as PolicyModuleModel;
+            module = block as PolicyModule;
         } else {
-            block = new PolicyBlockModel(config, parent);
+            block = new PolicyBlock(config, parent);
             block.setModule(module);
         }
         if (Array.isArray(config.children)) {
@@ -176,7 +184,7 @@ export class TemplateModel {
         return null;
     }
 
-    public get allEvents(): PolicyEventModel[] {
+    public get allEvents(): PolicyEvent[] {
         return [];
     }
 
@@ -184,12 +192,24 @@ export class TemplateModel {
         return this._config.getNewTag(type);
     }
 
-    public getRootModule(): PolicyModel | PolicyModuleModel {
-        return this._config
+    public getRootModule(): PolicyFolder {
+        return this._config;
     }
 
-    public getBlock(block: any): PolicyBlockModel | undefined {
+    public getBlock(block: any): PolicyBlock | undefined {
         return this._config.getBlock(block);
+    }
+
+    public createTopic(topic: any): string {
+        return this._config.createTopic(topic);
+    } 
+
+    public removeBlock(block: any): void {
+        return this._config.removeBlock(block);
+    }
+
+    public removeEvent(event: any): void {
+        this._config.removeEvent(event);
     }
 
     public setSchemas(schemas: Schema[]): void {
@@ -205,14 +225,13 @@ export class TemplateModel {
         this.refreshData();
     }
 
-    public getModule(module: any): PolicyModuleModel | undefined {
+    public getModule(module: any): PolicyFolder | undefined {
         return this._config;
     }
 
     public getPermissionsNumber(permission: string): number {
         return -1;
     }
-
 
     public getPermissionsName(permission: string): string | null {
         return null;

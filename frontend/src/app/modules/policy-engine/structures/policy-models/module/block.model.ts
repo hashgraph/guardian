@@ -1,58 +1,56 @@
-import { PolicyModel } from './policy.model';
-import { IModuleVariables } from './variables/module-variables.interface';
-import { IModuleConfig } from './interfaces/module-config.interface';
-import { PolicyBlockModel } from './block.model';
-import { PolicyEventModel } from './block-event.model';
-import { ModuleEventModel } from './module-event.model';
-import { ModuleVariableModel } from './module-variable.model';
-import { GroupVariables } from './variables/group-variables';
-import { RoleVariables } from './variables/role-variables';
-import { SchemaVariables } from './variables/schema-variables';
-import { TokenTemplateVariables } from './variables/token-template-variables';
-import { TokenVariables } from './variables/token-variables';
-import { TopicVariables } from './variables/topic-variables';
-import { TemplateModel } from './template.model';
-import { IBlockConfig } from './interfaces/block-config.interface';
-import { IEventConfig } from './interfaces/event-config.interface';
+import { IModuleVariables } from '../variables/module-variables.interface';
+import { IModuleConfig } from '../interfaces/module-config.interface';
+import { ModuleEvent } from './module-event.model';
+import { ModuleVariable } from './module-variable.model';
+import { GroupVariables } from '../variables/group-variables';
+import { RoleVariables } from '../variables/role-variables';
+import { SchemaVariables } from '../variables/schema-variables';
+import { TokenTemplateVariables } from '../variables/token-template-variables';
+import { TokenVariables } from '../variables/token-variables';
+import { TopicVariables } from '../variables/topic-variables';
+import { IBlockConfig } from '../interfaces/block-config.interface';
+import { IEventConfig } from '../interfaces/event-config.interface';
 import { Schema } from '@guardian/interfaces';
+import { PolicyBlock } from '../block/block.model';
+import { PolicyEvent } from '../block/block-event.model';
+import { PolicyFolder, PolicyItem } from '../interfaces/module.type';
 
-export class PolicyModuleModel extends PolicyBlockModel {
-    protected _dataSource!: PolicyBlockModel[];
-    protected _tagMap: { [tag: string]: PolicyBlockModel; } = {};
-    protected _idMap: { [tag: string]: PolicyBlockModel; } = {};
-    protected _allBlocks!: PolicyBlockModel[];
-    protected _allEvents!: PolicyEventModel[];
-    protected _inputEvents!: ModuleEventModel[];
-    protected _outputEvents!: ModuleEventModel[];
-    protected _variables!: ModuleVariableModel[];
-    protected _innerEvents!: PolicyEventModel[];
+export class PolicyModule extends PolicyBlock {
+    protected _dataSource!: PolicyBlock[];
+    protected _tagMap: { [tag: string]: PolicyBlock; } = {};
+    protected _idMap: { [tag: string]: PolicyBlock; } = {};
+    protected _allBlocks!: PolicyBlock[];
+    protected _allEvents!: PolicyEvent[];
+    protected _inputEvents!: ModuleEvent[];
+    protected _outputEvents!: ModuleEvent[];
+    protected _variables!: ModuleVariable[];
+    protected _innerEvents!: PolicyEvent[];
     protected _lastVariables!: IModuleVariables;
-    private _schemas: Schema[];
-
+    protected _schemas: Schema[];
     protected _name!: string;
     protected _description!: string;
 
-    public get innerEvents(): PolicyEventModel[] {
+    public get innerEvents(): PolicyEvent[] {
         return this._innerEvents;
     }
 
-    public get allEvents(): PolicyEventModel[] {
+    public get allEvents(): PolicyEvent[] {
         return this._allEvents;
     }
 
-    public get allBlocks(): PolicyBlockModel[] {
+    public get allBlocks(): PolicyBlock[] {
         return this._allBlocks;
     }
 
-    public get root(): PolicyBlockModel {
+    public get root(): PolicyBlock {
         return this;
     }
 
-    constructor(config: IModuleConfig, parent: PolicyBlockModel | null) {
+    constructor(config: IModuleConfig, parent: PolicyBlock | null) {
         super(config, parent);
     }
 
-    public init(config: IModuleConfig, parent: PolicyBlockModel | null) {
+    public init(config: IModuleConfig, parent: PolicyBlock | null) {
         super.init(config, parent);
         this._name = config.name || '';
         this._description = config.description || '';
@@ -60,38 +58,38 @@ export class PolicyModuleModel extends PolicyBlockModel {
         this._inputEvents = [];
         if (config.inputEvents && Array.isArray(config.inputEvents)) {
             for (const event of config.inputEvents) {
-                this._inputEvents.push(new ModuleEventModel(event, this));
+                this._inputEvents.push(new ModuleEvent(event, this));
             }
         }
 
         this._outputEvents = [];
         if (config.outputEvents && Array.isArray(config.outputEvents)) {
             for (const event of config.outputEvents) {
-                this._outputEvents.push(new ModuleEventModel(event, this));
+                this._outputEvents.push(new ModuleEvent(event, this));
             }
         }
 
         this._variables = [];
         if (config.variables && Array.isArray(config.variables)) {
             for (const variable of config.variables) {
-                this._variables.push(new ModuleVariableModel(variable, this));
+                this._variables.push(new ModuleVariable(variable, this));
             }
         }
 
         this._innerEvents = [];
         if (Array.isArray(config.innerEvents)) {
             for (const event of config.innerEvents) {
-                const item = new PolicyEventModel(event, this);
+                const item = new PolicyEvent(event, this);
                 this._innerEvents.push(item);
             }
         }
     }
 
-    public get dataSource(): PolicyBlockModel[] {
+    public get dataSource(): PolicyBlock[] {
         return this._dataSource;
     }
 
-    public override setModule(module: PolicyModel | PolicyModuleModel | TemplateModel | undefined): void {
+    public override setModule(module?: PolicyFolder): void {
         if (module !== this) {
             this._module = module;
         } else {
@@ -99,7 +97,7 @@ export class PolicyModuleModel extends PolicyBlockModel {
         }
     }
 
-    private registeredBlock(block: PolicyBlockModel | PolicyModuleModel) {
+    private registeredBlock(block: PolicyItem) {
         if (block === this) {
             this._allBlocks.push(block);
             for (const event of this.innerEvents) {
@@ -108,7 +106,7 @@ export class PolicyModuleModel extends PolicyBlockModel {
             for (const child of block.children) {
                 this.registeredBlock(child);
             }
-        } else if (block instanceof PolicyModuleModel && block.isModule) {
+        } else if (block instanceof PolicyModule && block.isModule) {
             this._allBlocks.push(block);
             for (const event of block.events) {
                 this._allEvents.push(event);
@@ -158,15 +156,15 @@ export class PolicyModuleModel extends PolicyBlockModel {
         this._description = value;
     }
 
-    public get inputEvents(): ModuleEventModel[] {
+    public get inputEvents(): ModuleEvent[] {
         return this._inputEvents;
     }
 
-    public get outputEvents(): ModuleEventModel[] {
+    public get outputEvents(): ModuleEvent[] {
         return this._outputEvents;
     }
 
-    public get variables(): ModuleVariableModel[] {
+    public get variables(): ModuleVariable[] {
         return this._variables;
     }
 
@@ -188,7 +186,7 @@ export class PolicyModuleModel extends PolicyBlockModel {
         }
     }
 
-    public getBlock(block: any): PolicyBlockModel | undefined {
+    public getBlock(block: any): PolicyBlock | undefined {
         return this._idMap[block?.id];
     }
 
@@ -204,20 +202,20 @@ export class PolicyModuleModel extends PolicyBlockModel {
     }
 
     public createInputEvent() {
-        const e = new ModuleEventModel({
+        const e = new ModuleEvent({
             name: '',
             description: ''
         }, this);
         this.addInputEvent(e);
     }
 
-    public addInputEvent(event: ModuleEventModel) {
+    public addInputEvent(event: ModuleEvent) {
         this._changed = true;
         this._inputEvents.push(event);
         this.emitUpdate();
     }
 
-    public removeInputEvent(event: ModuleEventModel) {
+    public removeInputEvent(event: ModuleEvent) {
         this._changed = true;
         const index = this._inputEvents.findIndex((c) => c.id == event.id);
         if (index !== -1) {
@@ -227,20 +225,20 @@ export class PolicyModuleModel extends PolicyBlockModel {
     }
 
     public createOutputEvent() {
-        const e = new ModuleEventModel({
+        const e = new ModuleEvent({
             name: '',
             description: ''
         }, this);
         this.addOutputEvent(e);
     }
 
-    public addOutputEvent(event: ModuleEventModel) {
+    public addOutputEvent(event: ModuleEvent) {
         this._changed = true;
         this._outputEvents.push(event);
         this.emitUpdate();
     }
 
-    public removeOutputEvent(event: ModuleEventModel) {
+    public removeOutputEvent(event: ModuleEvent) {
         this._changed = true;
         const index = this._outputEvents.findIndex((c) => c.id == event.id);
         if (index !== -1) {
@@ -250,7 +248,7 @@ export class PolicyModuleModel extends PolicyBlockModel {
     }
 
     public createVariable(type?: string, name?: string): void {
-        const e = new ModuleVariableModel({
+        const e = new ModuleVariable({
             name: name || '',
             description: '',
             type: type || 'String',
@@ -258,13 +256,13 @@ export class PolicyModuleModel extends PolicyBlockModel {
         this.addVariable(e);
     }
 
-    public addVariable(variable: ModuleVariableModel) {
+    public addVariable(variable: ModuleVariable) {
         this._changed = true;
         this._variables.push(variable);
         this.emitUpdate();
     }
 
-    public removeVariable(variable: ModuleVariableModel) {
+    public removeVariable(variable: ModuleVariable) {
         this._changed = true;
         const index = this._variables.findIndex((c) => c.id == variable.id);
         if (index !== -1) {
@@ -418,7 +416,7 @@ export class PolicyModuleModel extends PolicyBlockModel {
         return name;
     }
 
-    public getRootModule(): PolicyModel | PolicyModuleModel {
+    public getRootModule(): PolicyFolder {
         return this;
     }
 
@@ -465,21 +463,21 @@ export class PolicyModuleModel extends PolicyBlockModel {
     }
 
     public createInnerEvent(event: IEventConfig) {
-        const e = new PolicyEventModel(event, this);
+        const e = new PolicyEvent(event, this);
         this._addInnerEvent(e);
         this.refresh();
     }
 
-    public addInnerEvent(event: PolicyEventModel) {
+    public addInnerEvent(event: PolicyEvent) {
         this._addInnerEvent(event);
         this.refresh();
     }
 
-    private _addInnerEvent(event: PolicyEventModel) {
+    private _addInnerEvent(event: PolicyEvent) {
         this._innerEvents.push(event);
     }
 
-    public removeInnerEvent(event: PolicyEventModel) {
+    public removeInnerEvent(event: PolicyEvent) {
         const index = this._innerEvents.findIndex((c) => c.id == event.id);
         if (index !== -1) {
             this._innerEvents.splice(index, 1);
@@ -487,7 +485,7 @@ export class PolicyModuleModel extends PolicyBlockModel {
         }
     }
 
-    public getActiveEvents(): PolicyEventModel[] {
+    public getActiveEvents(): PolicyEvent[] {
         const events = super.getActiveEvents();
         for (const event of this.innerEvents) {
             if (!event.disabled) {
@@ -548,16 +546,16 @@ export class PolicyModuleModel extends PolicyBlockModel {
 
     private _buildBlock(
         config: IBlockConfig,
-        parent: PolicyModuleModel | PolicyBlockModel | null,
-        module: PolicyModuleModel | PolicyModel
+        parent: PolicyItem | null,
+        module: PolicyFolder
     ) {
-        let block: PolicyModuleModel | PolicyBlockModel;
+        let block: PolicyItem;
         if (config.blockType === 'module') {
-            block = new PolicyModuleModel(config, parent);
+            block = new PolicyModule(config, parent);
             block.setModule(module);
-            module = block as PolicyModuleModel;
+            module = block as PolicyModule;
         } else {
-            block = new PolicyBlockModel(config, parent);
+            block = new PolicyBlock(config, parent);
             block.setModule(module);
         }
         if (Array.isArray(config.children)) {

@@ -1,19 +1,19 @@
-import { ModuleVariableModel } from '../module-variable.model';
-import { PolicyTopicModel } from '../policy-topic.model';
+import { ModuleVariable } from '../module/module-variable.model';
+import { PolicyTopic } from '../policy/policy-topic.model';
 
 export class TopicVariables {
     public name: string;
     public description: string;
     public value: string;
-    public data?: PolicyTopicModel;
+    public data?: PolicyTopic;
 
-    constructor(topic?: PolicyTopicModel | ModuleVariableModel | string, value?: string) {
+    constructor(topic?: PolicyTopic | ModuleVariable | string, value?: string) {
         this.description = '';
         if (typeof topic === 'string') {
             this.name = topic;
             this.description = topic;
             this.value = topic;
-        } else if(topic instanceof ModuleVariableModel) {
+        } else if(topic instanceof ModuleVariable) {
             this.name = topic.name;
             this.description = topic.name;
             this.value = topic.name;

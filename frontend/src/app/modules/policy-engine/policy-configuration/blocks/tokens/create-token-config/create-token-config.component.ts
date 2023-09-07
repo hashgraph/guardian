@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
-import { IModuleVariables, PolicyBlockModel, TokenTemplateVariables } from '../../../../structures';
+import { IModuleVariables, PolicyBlock, TokenTemplateVariables } from '../../../../structures';
 
 
 /**
@@ -11,12 +11,12 @@ import { IModuleVariables, PolicyBlockModel, TokenTemplateVariables } from '../.
     styleUrls: ['./create-token-config.component.css']
 })
 export class CreateTokenConfigComponent implements OnInit {
-    @Input('block') currentBlock!: PolicyBlockModel;
+    @Input('block') currentBlock!: PolicyBlock;
     @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();
 
     private moduleVariables!: IModuleVariables | null;
-    private item!: PolicyBlockModel;
+    private item!: PolicyBlock;
     
     propHidden: any = {
         main: false,
@@ -39,7 +39,7 @@ export class CreateTokenConfigComponent implements OnInit {
         this.load(this.currentBlock);
     }
 
-    load(block: PolicyBlockModel) {
+    load(block: PolicyBlock) {
         this.moduleVariables = block.moduleVariables;
         this.item = block;
         this.properties = block.properties;

@@ -460,3 +460,37 @@ export interface RoleMessageBody extends VcMessageBody {
      */
     group?: string;
 }
+
+/**
+ * Tool message body
+ */
+export interface ToolMessageBody extends MessageBody {
+    /**
+     * UUID
+     */
+    uuid: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description: string;
+    /**
+     * Owner
+     */
+    owner: string;
+    /**
+     * Topic id
+     */
+    topicId: string;
+    /**
+     * CID
+     */
+    cid: string;
+    /**
+     * URI
+     */
+    uri: string;
+}

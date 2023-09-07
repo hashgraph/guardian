@@ -1,8 +1,8 @@
 import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { PolicyModel } from './policy.model';
+import { PolicyTemplate } from './policy.model';
 
-export class PolicyTopicModel {
-    private readonly policy: PolicyModel;
+export class PolicyTopic {
+    private readonly policy: PolicyTemplate;
 
     public readonly id: string;
 
@@ -15,7 +15,7 @@ export class PolicyTopicModel {
 
     private _changed: boolean;
 
-    constructor(topic: any, policy: PolicyModel) {
+    constructor(topic: any, policy: PolicyTemplate) {
         this._changed = false;
 
         this.policy = policy;

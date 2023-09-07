@@ -1,27 +1,25 @@
 import { moveItemInArray } from '@angular/cdk/drag-drop';
 import { GenerateUUIDv4, IArtifact } from '@guardian/interfaces';
 import { BlockType } from '@guardian/interfaces';
-import { PolicyEventModel } from './block-event.model';
-import { PolicyModel } from './policy.model';
-import { IModuleVariables } from "./variables/module-variables.interface";
-import { IBlockConfig } from './interfaces/block-config.interface';
-import { IEventConfig } from './interfaces/event-config.interface';
-import { PolicyModuleModel } from './module.model';
-import { TemplateModel } from './template.model';
+import { PolicyEvent } from './block-event.model';
+import { IBlockConfig } from '../interfaces/block-config.interface';
+import { IEventConfig } from '../interfaces/event-config.interface';
+import { IModuleVariables } from '../variables/module-variables.interface';
+import { PolicyFolder } from '../interfaces/module.type';
 
-export class PolicyBlockModel {
+export class PolicyBlock {
     public id!: string;
     public blockType!: string;
     public properties!: { [name: string]: any; };
 
-    protected _module: PolicyModel | PolicyModuleModel | TemplateModel | undefined;
-    protected _parent!: PolicyBlockModel | null;
-    protected _children!: PolicyBlockModel[];
-    protected _events!: PolicyEventModel[];
+    protected _module: PolicyFolder | undefined;
+    protected _parent!: PolicyBlock | null;
+    protected _children!: PolicyBlock[];
+    protected _events!: PolicyEvent[];
     protected _artifacts!: IArtifact[];
     protected _root!: boolean;
     protected _changed!: boolean;
-    protected _defaultEvent: PolicyEventModel | null | undefined;
+    protected _defaultEvent: PolicyEvent | null | undefined;
     protected _tag!: string;
     protected _localTag!: string;
     protected _lastPrefix!: string;
@@ -29,11 +27,11 @@ export class PolicyBlockModel {
     protected _post!: boolean;
     protected _get!: boolean;
 
-    constructor(config: IBlockConfig, parent: PolicyBlockModel | null) {
+    constructor(config: IBlockConfig, parent: PolicyBlock | null) {
         this.init(config, parent);
     }
 
-    public init(config: IBlockConfig, parent: PolicyBlockModel | null) {
+    public init(config: IBlockConfig, parent: PolicyBlock | null) {
         this._changed = false;
         this._root = false;
 
@@ -58,7 +56,7 @@ export class PolicyBlockModel {
         this._events = [];
         if (Array.isArray(config.events)) {
             for (const event of config.events) {
-                this._events.push(new PolicyEventModel(event, this));
+                this._events.push(new PolicyEvent(event, this));
             }
         }
 
@@ -69,7 +67,7 @@ export class PolicyBlockModel {
         this._get = false;
     }
 
-    public setModule(module: PolicyModel | PolicyModuleModel | TemplateModel | undefined): void {
+    public setModule(module?: PolicyFolder): void {
         this._module = module;
         if (this._module) {
             this._updatePermissions();
@@ -141,11 +139,11 @@ export class PolicyBlockModel {
         }
     }
 
-    public get children(): PolicyBlockModel[] {
+    public get children(): PolicyBlock[] {
         return this._children;
     }
 
-    public get events(): PolicyEventModel[] {
+    public get events(): PolicyEvent[] {
         return this._events;
     }
 
@@ -153,16 +151,16 @@ export class PolicyBlockModel {
         return this._artifacts;
     }
 
-    public get parent(): PolicyBlockModel | null {
+    public get parent(): PolicyBlock | null {
         return this._parent;
     }
 
-    public set parent(value: PolicyBlockModel | null) {
+    public set parent(value: PolicyBlock | null) {
         this._parent = value;
         this.changed = true;
     }
 
-    public get parent2(): PolicyBlockModel | null {
+    public get parent2(): PolicyBlock | null {
         if (this._parent && !this._parent.isModule) {
             return this._parent._parent;
         }
@@ -180,7 +178,7 @@ export class PolicyBlockModel {
         }
     }
 
-    public get next(): PolicyBlockModel | undefined {
+    public get next(): PolicyBlock | undefined {
         if (this.parent) {
             const index = this.parent.children.findIndex(c => c.id == this.id);
             let next = this.parent.children[index + 1];
@@ -189,7 +187,7 @@ export class PolicyBlockModel {
         return undefined;
     }
 
-    public get prev(): PolicyBlockModel | undefined {
+    public get prev(): PolicyBlock | undefined {
         if (this.parent) {
             const index = this.parent.children.findIndex(c => c.id == this.id);
             return this.parent.children[index - 1];
@@ -197,7 +195,7 @@ export class PolicyBlockModel {
         return undefined;
     }
 
-    public get lastChild(): PolicyBlockModel | null {
+    public get lastChild(): PolicyBlock | null {
         try {
             return this._children[this._children.length - 1];
         } catch (error) {
@@ -225,7 +223,7 @@ export class PolicyBlockModel {
         }
     }
 
-    public removeChild(child: PolicyBlockModel) {
+    public removeChild(child: PolicyBlock) {
         this._removeChild(child);
         child._parent = null;
         this.refresh();
@@ -245,7 +243,7 @@ export class PolicyBlockModel {
         this.refresh();
     }
 
-    public addChild(child: PolicyBlockModel, index?: number) {
+    public addChild(child: PolicyBlock, index?: number) {
         this._addChild(child, index);
         this.refresh();
     }
@@ -271,7 +269,7 @@ export class PolicyBlockModel {
 
     protected _createChild(block: IBlockConfig, module: any, index?: number) {
         delete block.children;
-        const child = new PolicyBlockModel(block, this);
+        const child = new PolicyBlock(block, this);
         child.setModule(module);
         if (!child.permissions || !child.permissions.length) {
             child.permissions = this.permissions.slice();
@@ -289,7 +287,7 @@ export class PolicyBlockModel {
         if (module) {
             block.tag = module.getNewTag('Block');
         }
-        const newBlock = new PolicyBlockModel(block, this);
+        const newBlock = new PolicyBlock(block, this);
         newBlock.setModule(module);
         if (module) {
             module._tagMap[newBlock.tag] = newBlock;
@@ -304,7 +302,7 @@ export class PolicyBlockModel {
         }
     }
 
-    private _addChild(child: PolicyBlockModel, index?: number) {
+    private _addChild(child: PolicyBlock, index?: number) {
         child._parent = this;
         if (index !== undefined && Number.isFinite(index)) {
             if (index < 0) {
@@ -319,7 +317,7 @@ export class PolicyBlockModel {
         }
     }
 
-    private _removeChild(child: PolicyBlockModel) {
+    private _removeChild(child: PolicyBlock) {
         const index = this._children.findIndex((c) => c.id == child.id);
         if (index !== -1) {
             this._children.splice(index, 1);
@@ -327,28 +325,28 @@ export class PolicyBlockModel {
     }
 
     public createEvent(event: IEventConfig) {
-        const e = new PolicyEventModel(event, this);
+        const e = new PolicyEvent(event, this);
         this._addEvent(e);
         this.refresh();
     }
 
-    public addEvent(event: PolicyEventModel) {
+    public addEvent(event: PolicyEvent) {
         this._addEvent(event);
         this.refresh();
     }
 
-    private _addEvent(event: PolicyEventModel) {
+    private _addEvent(event: PolicyEvent) {
         this._events.push(event);
     }
 
-    public _removeEvent(event: PolicyEventModel) {
+    public _removeEvent(event: PolicyEvent) {
         const index = this._events.findIndex((c) => c.id == event?.id);
         if (index !== -1) {
             this._events.splice(index, 1);
         }
     }
 
-    public removeEvent(event: PolicyEventModel) {
+    public removeEvent(event: PolicyEvent) {
         const index = this._events.findIndex((c) => c.id == event?.id);
         if (index !== -1) {
             this._events.splice(index, 1);
@@ -443,12 +441,12 @@ export class PolicyBlockModel {
         return false;
     }
 
-    public append(parent: PolicyBlockModel) {
+    public append(parent: PolicyBlock) {
         parent._addChild(this);
         parent.refresh();
     }
 
-    public _replace(oldItem: PolicyBlockModel, newItem: PolicyBlockModel) {
+    public _replace(oldItem: PolicyBlock, newItem: PolicyBlock) {
         oldItem.parent = null;
         newItem.parent = this;
         const index = this._children.findIndex((c) => c.id == oldItem.id);
@@ -459,7 +457,7 @@ export class PolicyBlockModel {
         }
     }
 
-    public replace(oldItem: PolicyBlockModel, newItem: PolicyBlockModel) {
+    public replace(oldItem: PolicyBlock, newItem: PolicyBlock) {
         this._replace(oldItem, newItem);
         this.refresh();
     }
@@ -471,11 +469,11 @@ export class PolicyBlockModel {
         return -1;
     }
 
-    public indexOf(block: PolicyBlockModel): number {
+    public indexOf(block: PolicyBlock): number {
         return this._children.indexOf(block);
     }
 
-    public appendTo(parent: PolicyBlockModel | null, index?: number): boolean {
+    public appendTo(parent: PolicyBlock | null, index?: number): boolean {
         if (parent) {
             if (this._parent) {
                 this._parent._removeChild(this);
@@ -517,7 +515,7 @@ export class PolicyBlockModel {
             this._get = about.get;
         }
         if (about && about.defaultEvent) {
-            this._defaultEvent = new PolicyEventModel({
+            this._defaultEvent = new PolicyEvent({
                 actor: '',
                 disabled: false,
                 input: 'RunEvent',
@@ -531,8 +529,8 @@ export class PolicyBlockModel {
         }
     }
 
-    public getActiveEvents(): PolicyEventModel[] {
-        const events: PolicyEventModel[] = [];
+    public getActiveEvents(): PolicyEvent[] {
+        const events: PolicyEvent[] = [];
         if (!this.properties.stopPropagation && this._defaultEvent) {
             this._defaultEvent.sourceTag = this.tag;
             this._defaultEvent.targetTag = this.next?.tag || '';
@@ -546,7 +544,7 @@ export class PolicyBlockModel {
         return events;
     }
 
-    public search(blockType: string): PolicyBlockModel | null {
+    public search(blockType: string): PolicyBlock | null {
         if (this.blockType === blockType) {
             return this;
         }

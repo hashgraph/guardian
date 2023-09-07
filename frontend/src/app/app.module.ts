@@ -89,6 +89,7 @@ import { QrCodeDialogComponent } from './components/qr-code-dialog/qr-code-dialo
 import { QRCodeModule } from 'angularx-qrcode';
 import { MeecoVCSubmitDialogComponent } from './components/meeco-vc-submit-dialog/meeco-vc-submit-dialog.component';
 import { CompareStorage } from './services/compare-storage.service';
+import { ToolsService } from './services/tools.service';
 
 @NgModule({
     declarations: [
@@ -163,6 +164,7 @@ import { CompareStorage } from './services/compare-storage.service';
         TasksService,
         ContractService,
         ModulesService,
+        ToolsService,
         MapService,
         TagsService,
         ThemeService,

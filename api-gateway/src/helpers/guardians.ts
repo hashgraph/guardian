@@ -643,7 +643,7 @@ export class Guardians extends NatsService {
      * @param {NewTask} task - task
      */
     public async createSchemaAsync(item: ISchema | any, task: NewTask): Promise<NewTask> {
-        return await this.sendMessage(MessageAPI.CREATE_SCHEMA_ASYNC, { item, task});
+        return await this.sendMessage(MessageAPI.CREATE_SCHEMA_ASYNC, { item, task });
     }
 
     /**
@@ -1382,6 +1382,207 @@ export class Guardians extends NatsService {
         return await this.sendMessage(MessageAPI.VALIDATE_MODULES, { owner, module });
     }
 
+
+
+
+
+
+
+
+
+
+    /**
+     * Create tool
+     * @param tool
+     * @param owner
+     * @returns tool
+     */
+    public async createTool(tool: any, owner: string): Promise<any> {
+        return await this.sendMessage(MessageAPI.CREATE_TOOL, { tool, owner });
+    }
+
+    /**
+     * Return tools
+     *
+     * @param {IFilter} [params]
+     *
+     * @returns {ResponseAndCount<any>}
+     */
+    public async getTools(params?: IFilter): Promise<ResponseAndCount<any>> {
+        return await this.sendMessage(MessageAPI.GET_TOOLS, params);
+    }
+
+    /**
+     * Delete tool
+     * @param uuid
+     * @param owner
+     * @returns Operation Success
+     */
+    public async deleteTool(uuid: string, owner: string): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.DELETE_TOOL, { uuid, owner });
+    }
+
+    /**
+     * Delete tool
+     * @param uuid
+     * @param owner
+     * @returns Operation Success
+     */
+    public async getToolById(uuid: string, owner: string): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.GET_TOOL, { uuid, owner });
+    }
+
+    /**
+     * Update tool
+     * @param uuid
+     * @param tool
+     * @param owner
+     * @returns tool
+     */
+    public async updateTool(
+        uuid: string,
+        tool: any,
+        owner: string
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.UPDATE_TOOL, { uuid, tool, owner });
+    }
+
+    /**
+     * Publish tool
+     * @param uuid
+     * @param owner
+     * @param tool
+     */
+    public async publishTool(uuid: string, owner: string, tool: any) {
+        return await this.sendMessage(MessageAPI.PUBLISH_TOOL, { uuid, owner, tool });
+    }
+
+    /**
+     * Publish tool
+     * @param owner
+     * @param tool
+     */
+    public async validateTool(owner: string, tool: any) {
+        return await this.sendMessage(MessageAPI.VALIDATE_TOOL, { owner, tool });
+    }
+
+    /**
+     * Return tools
+     * @param owner
+     * @returns tools
+     */
+    public async getMenuTool(owner: string): Promise<any[]> {
+        return await this.sendMessage(MessageAPI.GET_MENU_TOOLS, { owner });
+    }
+
+    /**
+     * Get tool export file
+     * @param uuid
+     * @param owner
+     */
+    public async exportToolFile(uuid: string, owner: string) {
+        const file = await this.sendMessage(MessageAPI.TOOL_EXPORT_FILE, { uuid, owner }) as any;
+        return Buffer.from(file, 'base64');
+    }
+
+    /**
+     * Get tool export message id
+     * @param uuid
+     * @param owner
+     */
+    public async exportToolMessage(uuid: string, owner: string) {
+        return await this.sendMessage(MessageAPI.TOOL_EXPORT_MESSAGE, { uuid, owner });
+    }
+
+    /**
+     * Load tool file for import
+     * @param zip
+     * @param owner
+     */
+    public async importToolFile(zip: any, owner: string) {
+        return await this.sendMessage(MessageAPI.TOOL_IMPORT_FILE, { zip, owner });
+    }
+
+    /**
+     * Import tool from message
+     * @param messageId
+     * @param owner
+     */
+    public async importToolMessage(messageId: string, owner: string) {
+        return await this.sendMessage(MessageAPI.TOOL_IMPORT_MESSAGE, { messageId, owner });
+    }
+
+    /**
+     * Get tool info from file
+     * @param zip
+     * @param owner
+     */
+    public async previewToolFile(zip: any, owner: string) {
+        return await this.sendMessage(MessageAPI.TOOL_IMPORT_FILE_PREVIEW, { zip, owner });
+    }
+
+    /**
+     * Get tool info from message
+     * @param messageId
+     * @param owner
+     */
+    public async previewToolMessage(messageId: string, owner: string) {
+        return await this.sendMessage(MessageAPI.TOOL_IMPORT_MESSAGE_PREVIEW, { messageId, owner });
+    }
+
+    /**
+     * Return tool schemas
+     * @param {string} owner
+     * @param {string} [pageIndex]
+     * @param {string} [pageSize]
+     *
+     * @returns {ISchema[]} - all schemas
+     */
+    public async getToolSchemas(
+        owner: string,
+        pageIndex?: any,
+        pageSize?: any
+    ): Promise<ResponseAndCount<ISchema>> {
+        return await this.sendMessage(MessageAPI.GET_TOOL_SCHEMAS, {
+            owner,
+            pageIndex,
+            pageSize
+        });
+    }
+
+    /**
+     * Create tool schema
+     *
+     * @param {ISchema} item - schema
+     *
+     * @returns {ISchema[]} - all schemas
+     */
+    public async createToolSchema(item: ISchema | any): Promise<ISchema> {
+        return await this.sendMessage(MessageAPI.CREATE_TOOL_SCHEMA, item);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     /**
      * Get map api key
      */
@@ -1611,7 +1812,7 @@ export class Guardians extends NatsService {
      * @returns Config
      */
     // tslint:disable-next-line:completed-docs
-    public async wizardPolicyCreate(config: any, owner: string): Promise<{ wizardConfig: any; policyId: string; }>  {
+    public async wizardPolicyCreate(config: any, owner: string): Promise<{ wizardConfig: any; policyId: string; }> {
         return await this.sendMessage(MessageAPI.WIZARD_POLICY_CREATE, {
             owner,
             config,
@@ -1679,7 +1880,7 @@ export class Guardians extends NatsService {
      *          or null if the branding is not available.
      */
     // tslint:disable-next-line:completed-docs
-    public async getBranding(): Promise<{config: string} | null> {
+    public async getBranding(): Promise<{ config: string } | null> {
         return await this.sendMessage(MessageAPI.GET_BRANDING);
     }
 

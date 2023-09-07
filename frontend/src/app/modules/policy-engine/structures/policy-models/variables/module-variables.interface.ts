@@ -1,5 +1,4 @@
-import { PolicyModuleModel } from "../module.model";
-import { PolicyModel } from "../policy.model";
+import { PolicyFolder } from "../interfaces/module.type";
 import { GroupVariables } from "./group-variables";
 import { RoleVariables } from "./role-variables";
 import { SchemaVariables } from "./schema-variables";
@@ -8,7 +7,7 @@ import { TokenVariables } from "./token-variables";
 import { TopicVariables } from "./topic-variables";
 
 export interface IModuleVariables {
-    module: PolicyModel | PolicyModuleModel | undefined;
+    module: PolicyFolder | undefined;
     schemas: SchemaVariables[];
     tokens: TokenVariables[];
     tokenTemplates: TokenTemplateVariables[];

@@ -1,9 +1,8 @@
-import { PolicyBlockModel } from "./block.model";
-import { IBlockAboutConfig } from "../interfaces/block-about-config.interface";
-import { IBlockDynamicAboutConfig } from "../interfaces/block-dynamic-about-config.interface";
-import { IBlockAbout } from "../interfaces/block-about.interface";
-import { PolicyModel } from "./policy.model";
-import { PolicyModuleModel } from "./module.model";
+import { IBlockAboutConfig } from '../../interfaces/block-about-config.interface';
+import { IBlockDynamicAboutConfig } from '../../interfaces/block-dynamic-about-config.interface';
+import { IBlockAbout } from '../../interfaces/block-about.interface';
+import { PolicyBlock } from './block.model';
+import { PolicyFolder } from '../interfaces/module.type';
 
 export class BlockAbout {
     private _propFunc: { [x: string]: Function; } = {};
@@ -15,12 +14,12 @@ export class BlockAbout {
                 this._propFunc[name] = dynamic[name];
             } else {
                 this._propVal[name] = dynamic[name];
-                this._propFunc[name] = (value: any, block: any, module?: PolicyModel | PolicyModuleModel) => {
+                this._propFunc[name] = (value: any, block: any, module?: PolicyFolder) => {
                     return value;
                 };
             }
         } else {
-            this._propFunc[name] = (value: any, block: any, module?: PolicyModel | PolicyModuleModel) => {
+            this._propFunc[name] = (value: any, block: any, module?: PolicyFolder) => {
                 return value;
             };
         }
@@ -38,8 +37,8 @@ export class BlockAbout {
     }
 
     public getAbout(
-        block: PolicyBlockModel,
-        module: PolicyModel | PolicyModuleModel
+        block: PolicyBlock,
+        module: PolicyFolder
     ): IBlockAbout {
         return {
             post: this._propFunc.post(this._propVal.post, block, module),
@@ -54,8 +53,8 @@ export class BlockAbout {
     }
 
     public bind(
-        block: PolicyBlockModel,
-        module: PolicyModel | PolicyModuleModel
+        block: PolicyBlock,
+        module: PolicyFolder
     ): IBlockAbout {
         const bind = {
             _block: block,
@@ -86,7 +85,7 @@ export class BlockAbout {
             get deprecated() {
                 return this._func.defaultEvent(this._val.deprecated, this._block, this._module);
             },
-            set module(value: PolicyModel | PolicyModuleModel) {
+            set module(value: PolicyFolder) {
                 this._module = value;
             },
         };

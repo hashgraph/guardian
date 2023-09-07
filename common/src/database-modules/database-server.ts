@@ -37,6 +37,7 @@ import {
 import { BaseEntity } from '../models';
 import { DataBaseHelper } from '../helpers';
 import { Theme } from '../entity/theme';
+import { PolicyTool } from '../entity/tool';
 
 /**
  * Database server
@@ -2455,6 +2456,73 @@ export class DatabaseServer {
      */
     public static async updateModule(row: PolicyModule): Promise<PolicyModule> {
         return await new DataBaseHelper(PolicyModule).update(row);
+    }
+
+    /**
+     * Create Tool
+     * @param tool
+     */
+    public static async createTool(tool: any): Promise<PolicyTool> {
+        const item = new DataBaseHelper(PolicyTool).create(tool);
+        return await new DataBaseHelper(PolicyTool).save(item);
+    }
+
+    /**
+     * Get Tools
+     * @param filters
+     * @param options
+     */
+    public static async getToolsAndCount(filters?: any, options?: any): Promise<[PolicyTool[], number]> {
+        return await new DataBaseHelper(PolicyTool).findAndCount(filters, options);
+    }
+
+    /**
+     * Get Tool By UUID
+     * @param uuid
+     */
+    public static async getToolByUUID(uuid: string): Promise<PolicyTool> {
+        return await new DataBaseHelper(PolicyTool).findOne({ uuid });
+    }
+
+    /**
+     * Get Tool By ID
+     * @param uuid
+     */
+    public static async getToolById(id: string): Promise<PolicyTool> {
+        return await new DataBaseHelper(PolicyTool).findOne(id);
+    }
+
+    /**
+     * Get Tool
+     * @param filters
+     */
+    public static async getTool(filters: any): Promise<PolicyTool> {
+        return await new DataBaseHelper(PolicyTool).findOne(filters);
+    }
+
+    /**
+     * Delete Tool
+     * @param tool
+     */
+    public static async removeTool(tool: PolicyTool): Promise<void> {
+        return await new DataBaseHelper(PolicyTool).remove(tool);
+    }
+
+    /**
+     * Get Tools
+     * @param filters
+     * @param options
+     */
+    public static async getTools(filters?: any, options?: any): Promise<PolicyTool[]> {
+        return await new DataBaseHelper(PolicyTool).find(filters, options);
+    }
+
+    /**
+     * Update Tool
+     * @param row
+     */
+    public static async updateTool(row: PolicyTool): Promise<PolicyTool> {
+        return await new DataBaseHelper(PolicyTool).update(row);
     }
 
     /**

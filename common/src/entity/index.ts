@@ -29,3 +29,4 @@ export * from './external-document';
 export * from './block-cache';
 export * from './branding';
 export * from './suggestions-config';
+export * from './tool';

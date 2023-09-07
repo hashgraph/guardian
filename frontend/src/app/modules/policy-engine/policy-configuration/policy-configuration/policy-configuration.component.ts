@@ -19,17 +19,12 @@ import { NewModuleDialog } from '../../helpers/new-module-dialog/new-module-dial
 import { SaveBeforeDialogComponent } from '../../helpers/save-before-dialog/save-before-dialog.component';
 import { PolicyAction, SavePolicyDialog } from '../../helpers/save-policy-dialog/save-policy-dialog.component';
 import { RegisteredService } from '../../services/registered.service';
-import { Options, PolicyBlockModel, PolicyModel, PolicyModuleModel, PolicyStorage, TemplateModel, Theme, ThemeRule } from '../../structures';
+import { Options, PolicyBlock, PolicyTemplate, PolicyModule, PolicyStorage, TemplateModel, Theme, ThemeRule } from '../../structures';
 import { PolicyTreeComponent } from '../policy-tree/policy-tree.component';
 import { ThemeService } from '../../../../services/theme.service';
 import { WizardMode, WizardService } from 'src/app/modules/policy-engine/services/wizard.service';
 import { SuggestionsService } from '../../../../services/suggestions.service';
-
-enum OperationMode {
-    none,
-    create,
-    publish,
-}
+import { PolicyFolder, PolicyRoot } from '../../structures/policy-models/interfaces/module.type';
 
 /**
  * The page for editing the policy and blocks.
@@ -47,11 +42,11 @@ export class PolicyConfigurationComponent implements OnInit {
     public policyId!: string;
     public moduleId!: string;
 
-    public policyModel!: PolicyModel;
+    public policyModel!: PolicyTemplate;
     public templateModel!: TemplateModel;
-    public openModule!: PolicyModel | PolicyModuleModel;
-    public rootModule!: PolicyModel | TemplateModel;
-    public currentBlock!: PolicyBlockModel | undefined;
+    public openModule!: PolicyFolder;
+    public rootModule!: PolicyRoot;
+    public currentBlock!: PolicyBlock | undefined;
 
     public schemas!: Schema[];
     public tokens!: Token[];
@@ -161,7 +156,7 @@ export class PolicyConfigurationComponent implements OnInit {
         return this.rootModule?.valid;
     }
 
-    public get allSubModule(): PolicyModuleModel[] {
+    public get allSubModule(): PolicyModule[] {
         return this.policyModel.allModule;
     }
 
@@ -184,7 +179,7 @@ export class PolicyConfigurationComponent implements OnInit {
         private suggestionsService: SuggestionsService,
     ) {
         this.options = new Options();
-        this.policyModel = new PolicyModel();
+        this.policyModel = new PolicyTemplate();
         this.storage = new PolicyStorage(localStorage);
         this.openModule = this.policyModel;
         this.matIconRegistry.addSvgIconLiteral('policy-module', this.domSanitizer.bypassSecurityTrustHtml(`
@@ -244,7 +239,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.rootType = 'Module';
         this.modulesService.getById(this.moduleId).subscribe((module: any) => {
             if (!module) {
-                this.policyModel = new PolicyModel();
+                this.policyModel = new PolicyTemplate();
                 this.onOpenRoot(this.policyModel);
                 this.loading = false;
                 return;
@@ -284,13 +279,13 @@ export class PolicyConfigurationComponent implements OnInit {
         this.rootType = 'Policy';
         this.policyEngineService.policy(this.policyId).subscribe((policy: any) => {
             if (!policy) {
-                this.policyModel = new PolicyModel();
+                this.policyModel = new PolicyTemplate();
                 this.onOpenRoot(this.policyModel);
                 this.loading = false;
                 return;
             }
 
-            this.policyModel = new PolicyModel(policy);
+            this.policyModel = new PolicyTemplate(policy);
             this.onOpenRoot(this.policyModel);
 
             if (!this.policyModel.valid) {
@@ -327,7 +322,7 @@ export class PolicyConfigurationComponent implements OnInit {
         });
     }
 
-    private finishedLoad(module: PolicyModel | TemplateModel) {
+    private finishedLoad(module: PolicyTemplate | TemplateModel) {
         this.readonly = module.readonly;
         this.codeMirrorOptions.readOnly = this.readonly;
 
@@ -431,7 +426,7 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     private updatePolicyModel(policy: any) {
-        this.policyModel = new PolicyModel(policy);
+        this.policyModel = new PolicyTemplate(policy);
         this.policyModel.setTokens(this.tokens);
         this.policyModel.setSchemas(this.schemas);
 
@@ -678,7 +673,7 @@ export class PolicyConfigurationComponent implements OnInit {
         }
     }
 
-    public onOpenRoot(root: PolicyModel | TemplateModel) {
+    public onOpenRoot(root: PolicyTemplate | TemplateModel) {
         if (root === this.openModule || !this.saveCodeConfig()) {
             return;
         }
@@ -1185,7 +1180,7 @@ export class PolicyConfigurationComponent implements OnInit {
                     if (policy) {
                         this.updatePolicyModel(policy);
                     } else {
-                        this.policyModel = new PolicyModel();
+                        this.policyModel = new PolicyTemplate();
                     }
                     setTimeout(() => { this.loading = false; }, 500);
                     subscriber.next();
@@ -1281,8 +1276,8 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     private generateSuggestionsInput(
-        parent: PolicyBlockModel | null,
-        selected: PolicyBlockModel
+        parent: PolicyBlock | null,
+        selected: PolicyBlock
     ): any {
         if (!parent) {
             const res = {

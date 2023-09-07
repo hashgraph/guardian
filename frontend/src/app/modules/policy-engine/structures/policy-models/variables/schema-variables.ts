@@ -1,5 +1,5 @@
 import { Schema } from '@guardian/interfaces';
-import { ModuleVariableModel } from '../module-variable.model';
+import { ModuleVariable } from '../module/module-variable.model';
 
 export class SchemaVariables {
     public name?: string;
@@ -9,11 +9,11 @@ export class SchemaVariables {
     public status?: string;
     public data?: Schema;
 
-    constructor(schema?: Schema | ModuleVariableModel | string, value?: string, baseSchema?: Schema) {
+    constructor(schema?: Schema | ModuleVariable | string, value?: string, baseSchema?: Schema) {
         if (typeof schema === 'string') {
             this.name = schema;
             this.value = schema;
-        } else if (schema instanceof ModuleVariableModel) {
+        } else if (schema instanceof ModuleVariable) {
             this.name = schema.name;
             this.value = schema.name;
             this.data = baseSchema;

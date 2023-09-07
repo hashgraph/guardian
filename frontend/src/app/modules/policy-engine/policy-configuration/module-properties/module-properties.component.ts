@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, ElementRef, Input, OnInit, SimpleChanges, ViewChild } from '@angular/core';
-import { ModuleEventModel, ModuleVariableModel } from '../../structures';
+import { ModuleEvent, ModuleVariable } from '../../structures';
 
 /**
  * Settings for module.
@@ -26,9 +26,9 @@ export class ModulePropertiesComponent implements OnInit {
 
     baseSchemas: any[];
 
-    variables: ModuleVariableModel[] = [];
-    inputs: ModuleEventModel[] = [];
-    outputs: ModuleEventModel[] = [];
+    variables: ModuleVariable[] = [];
+    inputs: ModuleEvent[] = [];
+    outputs: ModuleEvent[] = [];
 
     constructor(
         private changeDetector: ChangeDetectorRef,
@@ -54,12 +54,12 @@ export class ModulePropertiesComponent implements OnInit {
         this.module.createVariable();
     }
 
-    onEditVariable(variable: ModuleVariableModel, refresh = false) {
+    onEditVariable(variable: ModuleVariable, refresh = false) {
         variable.changed = true;
         variable.emitUpdate();
     }
 
-    onRemoveVariable(variable: ModuleVariableModel) {
+    onRemoveVariable(variable: ModuleVariable) {
         this.module.removeVariable(variable)
     }
 
@@ -67,12 +67,12 @@ export class ModulePropertiesComponent implements OnInit {
         this.module.createInputEvent();
     }
 
-    onEditInput(input: ModuleEventModel) {
+    onEditInput(input: ModuleEvent) {
         input.changed = true;
         input.emitUpdate();
     }
 
-    onRemoveInput(input: ModuleEventModel) {
+    onRemoveInput(input: ModuleEvent) {
         this.module.removeInputEvent(input)
     }
 
@@ -80,12 +80,12 @@ export class ModulePropertiesComponent implements OnInit {
         this.module.createOutputEvent();
     }
 
-    onEditOutput(output: ModuleEventModel) {
+    onEditOutput(output: ModuleEvent) {
         output.changed = true;
         output.emitUpdate();
     }
 
-    onRemoveOutput(output: ModuleEventModel) {
+    onRemoveOutput(output: ModuleEvent) {
         this.module.removeOutputEvent(output)
     }
 
