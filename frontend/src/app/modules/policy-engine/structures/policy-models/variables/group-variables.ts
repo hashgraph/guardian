@@ -1,6 +1,6 @@
 
-import { ModuleVariable } from '../module/module-variable.model';
 import { PolicyGroup } from '../policy/policy-group.model';
+import { ModuleVariable } from './module-variable.model';
 
 export class GroupVariables {
     public name?: string;

@@ -4,8 +4,8 @@ import { BlockType } from '@guardian/interfaces';
 import { PolicyEvent } from './block-event.model';
 import { IBlockConfig } from '../interfaces/block-config.interface';
 import { IEventConfig } from '../interfaces/event-config.interface';
-import { IModuleVariables } from '../variables/module-variables.interface';
-import { PolicyFolder } from '../interfaces/module.type';
+import { IModuleVariables } from '../interfaces/module-variables.interface';
+import { PolicyFolder } from '../interfaces/types';
 
 export class PolicyBlock {
     public id!: string;
@@ -79,6 +79,10 @@ export class PolicyBlock {
     }
 
     public get isModule(): boolean {
+        return false;
+    }
+
+    public get isTool(): boolean {
         return false;
     }
 

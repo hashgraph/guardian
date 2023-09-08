@@ -1,5 +1,5 @@
-import { ModuleVariable } from '../module/module-variable.model';
 import { PolicyToken } from '../policy/policy-token.model';
+import { ModuleVariable } from './module-variable.model';
 
 export class TokenTemplateVariables {
     public name?: string;

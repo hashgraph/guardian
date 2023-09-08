@@ -14,23 +14,23 @@
         </div>
     </ng-container>
 
-    <ng-container *ngIf="isConfirmed && modules">
+    <ng-container *ngIf="isConfirmed && tools">
         <div class="actions-container">
-            <button mat-raised-button color="primary" (click)="newModules()" class="toolbar-btn add">
+            <button mat-raised-button color="primary" (click)="newTool()" class="toolbar-btn add">
                 <mat-icon>add</mat-icon>
                 <span>Create New</span>
             </button>
-            <button mat-raised-button color="primary" (click)="importModules()" class="toolbar-btn">
+            <button mat-raised-button color="primary" (click)="importTool()" class="toolbar-btn">
                 <mat-icon>file_open</mat-icon>
                 <span>Import</span>
             </button>
-            <button (click)="compareModules()" class="toolbar-btn" color="primary" mat-raised-button>
+            <button (click)="compareTools()" class="toolbar-btn" color="primary" mat-raised-button>
                 <mat-icon>compare</mat-icon>
                 <span>Compare</span>
             </button>
         </div>
         <div class="table-container">
-            <table mat-table [dataSource]="modules" class="table">
+            <table mat-table [dataSource]="tools" class="table">
                 <ng-container matColumnDef="uuid">
                     <th mat-header-cell *matHeaderCellDef> UUID </th>
                     <td mat-cell *matCellDef="let element">
@@ -75,7 +75,7 @@
                 <ng-container matColumnDef="operation">
                     <th mat-header-cell *matHeaderCellDef> Operations </th>
                     <td mat-cell *matCellDef="let element">
-                        <div *ngIf="element.status =='DRAFT'" class="btn-publish" (click)="publishModule(element)">
+                        <div *ngIf="element.status =='DRAFT'" class="btn-publish" (click)="publishTool(element)">
                             Publish
                         </div>
                     </td>
@@ -84,18 +84,18 @@
                     <th mat-header-cell *matHeaderCellDef></th>
                     <td mat-cell *matCellDef="let element">
                         <div class="commands-line">
-                            <div class="btn-icon-import" (click)="exportModules(element)" matTooltip="Export"
+                            <div class="btn-icon-import" (click)="exportTool(element)" matTooltip="Export"
                                  matTooltipClass="guardian-tooltip" matTooltipPosition="above">
                                 <mat-icon>import_export</mat-icon>
                             </div>
-                            <div [queryParams]="{ moduleId: element.uuid }"
+                            <div [queryParams]="{ toolId: element.uuid }"
                                  [routerLink]="['/policy-configuration']"
                                  class="btn-icon-edit" matTooltip="Edit" matTooltipClass="guardian-tooltip"
                                  matTooltipPosition="above">
                                 <mat-icon>edit</mat-icon>
                             </div>
                             <div *ngIf="element.status =='DRAFT'" class="btn-icon-delete"
-                                 (click)="deleteModule(element)" matTooltip="Delete" matTooltipClass="guardian-tooltip"
+                                 (click)="deleteTool(element)" matTooltip="Delete" matTooltipClass="guardian-tooltip"
                                  matTooltipPosition="above">
                                 <mat-icon>delete</mat-icon>
                             </div>
@@ -111,7 +111,7 @@
             </table>
         </div>
         <div class="table-paginator">
-            <mat-paginator [length]="modulesCount" [pageIndex]="pageIndex" [pageSize]="pageSize"
+            <mat-paginator [length]="toolsCount" [pageIndex]="pageIndex" [pageSize]="pageSize"
                 [pageSizeOptions]="[10, 25, 50, 100]" (page)="onPage($event)" aria-label="Select page">
             </mat-paginator>
         </div>

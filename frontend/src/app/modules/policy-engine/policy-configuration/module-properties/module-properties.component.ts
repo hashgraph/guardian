@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, ElementRef, Input, OnInit, SimpleChanges, ViewChild } from '@angular/core';
-import { ModuleEvent, ModuleVariable } from '../../structures';
+import { ModuleEvent, ModuleVariable, PolicyModule } from '../../structures';
 
 /**
  * Settings for module.

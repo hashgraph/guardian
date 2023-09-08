@@ -8,7 +8,7 @@ import {
     ControlType,
     PolicyModule
 } from "../structures";
-import { PolicyFolder } from "../structures/policy-models/interfaces/module.type";
+import { PolicyFolder } from "../structures/policy-models/interfaces/types";
 
 const Tool: IBlockSetting = {
     type: BlockType.Tool,

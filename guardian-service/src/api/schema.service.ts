@@ -906,6 +906,34 @@ export async function schemaAPI(): Promise<void> {
     });
 
     /**
+     * Return schemas
+     *
+     * @param {Object} [payload] - filters
+     *
+     * @returns {ISchema[]} - all schemas
+     */
+    ApiResponse(MessageAPI.GET_TOOL_SCHEMAS, async (msg) => {
+        try {
+            if (!msg) {
+                return new MessageError('Invalid load schema parameter');
+            }
+            const filter: any = {
+                system: false,
+                category: SchemaCategory.TOOL
+            }
+            if (msg.owner) {
+                filter.owner = msg.owner;
+            }
+            const otherOptions: any = getPageOptions(msg);
+            const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
+            return new MessageResponse({ items, count });
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    /**
      * Create schema
      *
      * @param {Object} [payload] - schema
@@ -953,6 +981,36 @@ export async function schemaAPI(): Promise<void> {
             schemaObject.status = SchemaStatus.DRAFT;
             schemaObject.iri = schemaObject.iri || `${schemaObject.uuid}`;
             schemaObject.category = SchemaCategory.MODULE;
+            schemaObject.readonly = false;
+            schemaObject.system = false;
+            const topic = await DatabaseServer.getTopicByType(schemaObject.owner, TopicType.UserTopic);
+            schemaObject.topicId = topic.topicId;
+            const item = await DatabaseServer.createAndSaveSchema(schemaObject);
+            return new MessageResponse(item);
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    /**
+     * Create schema
+     *
+     * @param {Object} [payload] - schema
+     *
+     * @returns {ISchema} - schema
+     */
+    ApiResponse(MessageAPI.CREATE_TOOL_SCHEMA, async (msg) => {
+        try {
+            if (!msg) {
+                return new MessageError('Invalid schema');
+            }
+            const schemaObject = msg as ISchema;
+            SchemaHelper.setVersion(schemaObject, null, null);
+            SchemaHelper.updateIRI(schemaObject);
+            schemaObject.status = SchemaStatus.DRAFT;
+            schemaObject.iri = schemaObject.iri || `${schemaObject.uuid}`;
+            schemaObject.category = SchemaCategory.TOOL;
             schemaObject.readonly = false;
             schemaObject.system = false;
             const topic = await DatabaseServer.getTopicByType(schemaObject.owner, TopicType.UserTopic);

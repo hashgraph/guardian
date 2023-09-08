@@ -1,5 +1,5 @@
 import { PolicyBlock } from '../policy-models/block/block.model';
-import { PolicyFolder } from '../policy-models/interfaces/module.type';
+import { PolicyFolder } from '../policy-models/interfaces/types';
 import { Theme } from './theme';
 
 export class ThemeRule {

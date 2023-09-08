@@ -3,7 +3,7 @@ import { BlockType, GenerateUUIDv4 } from '@guardian/interfaces';
 import { BlockAbout, ChildrenType, ControlType, IBlockAbout, IBlockSetting } from '../structures';
 import blocks from './blocks-information';
 import modules from './module-information';
-import { PolicyFolder, PolicyItem } from '../structures/policy-models/interfaces/module.type';
+import { PolicyFolder, PolicyItem } from '../structures/policy-models/interfaces/types';
 
 @Injectable()
 export class RegisteredService {

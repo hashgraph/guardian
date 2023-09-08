@@ -1,5 +1,6 @@
-import { ModuleVariable } from '../module/module-variable.model';
+
 import { PolicyTopic } from '../policy/policy-topic.model';
+import { ModuleVariable } from './module-variable.model';
 
 export class TopicVariables {
     public name: string;

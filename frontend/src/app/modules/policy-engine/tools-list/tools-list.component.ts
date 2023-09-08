@@ -34,8 +34,8 @@ enum OperationMode {
 export class ToolsListComponent implements OnInit, OnDestroy {
     public loading: boolean = true;
     public isConfirmed: boolean = false;
-    public modules: any[] | null;
-    public modulesCount: any;
+    public tools: any[] | null;
+    public toolsCount: any;
     public pageIndex: number;
     public pageSize: number;
     public columns: string[] = [
@@ -49,7 +49,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
     public mode: OperationMode = OperationMode.None;
     public taskId: string | undefined = undefined;
     public expectedTaskMessages: number = 0;
-    public tagEntity = TagType.Module;
+    public tagEntity = TagType.Tool;
     public owner: any;
     public tagSchemas: any[] = [];
 
@@ -61,23 +61,23 @@ export class ToolsListComponent implements OnInit, OnDestroy {
         private informService: InformService,
         private router: Router,
     ) {
-        this.modules = null;
+        this.tools = null;
         this.pageIndex = 0;
         this.pageSize = 100;
-        this.modulesCount = 0;
+        this.toolsCount = 0;
     }
 
     ngOnInit() {
         this.loading = true;
-        this.loadModules();
+        this.loadTools();
     }
 
     ngOnDestroy() {
 
     }
 
-    private loadModules() {
-        this.modules = null;
+    private loadTools() {
+        this.tools = null;
         this.isConfirmed = false;
         this.loading = true;
         forkJoin([
@@ -92,7 +92,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
             this.tagSchemas = SchemaHelper.map(tagSchemas);
 
             if (this.isConfirmed) {
-                this.loadAllModules();
+                this.loadAllTools();
             } else {
                 setTimeout(() => {
                     this.loading = false;
@@ -103,16 +103,16 @@ export class ToolsListComponent implements OnInit, OnDestroy {
         });
     }
 
-    private loadAllModules() {
+    private loadAllTools() {
         this.loading = true;
         this.toolsService.page(this.pageIndex, this.pageSize).subscribe((policiesResponse) => {
-            this.modules = policiesResponse.body || [];
-            this.modulesCount = policiesResponse.headers.get('X-Total-Count') || this.modules.length;
+            this.tools = policiesResponse.body || [];
+            this.toolsCount = policiesResponse.headers.get('X-Total-Count') || this.tools.length;
 
-            const ids = this.modules.map(e => e.id);
+            const ids = this.tools.map(e => e.id);
             this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
-                if (this.modules) {
-                    for (const policy of this.modules) {
+                if (this.tools) {
+                    for (const policy of this.tools) {
                         (policy as any)._tags = data[policy.id];
                     }
                 }
@@ -136,17 +136,17 @@ export class ToolsListComponent implements OnInit, OnDestroy {
             this.pageIndex = event.pageIndex;
             this.pageSize = event.pageSize;
         }
-        this.loadAllModules();
+        this.loadAllTools();
     }
 
     private importDetails(result: any) {
-        const { type, data, module } = result;
+        const { type, data, tool } = result;
         const dialogRef = this.dialog.open(PreviewPolicyDialog, {
             width: '950px',
             panelClass: 'g-dialog',
             disableClose: true,
             data: {
-                module: module,
+                tool: tool,
             }
         });
         dialogRef.afterClosed().subscribe(async (result) => {
@@ -155,7 +155,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
                     this.loading = true;
                     this.toolsService.importByMessage(data).subscribe(
                         (result) => {
-                            this.loadAllModules();
+                            this.loadAllTools();
                         }, (e) => {
                             this.loading = false;
                         });
@@ -163,7 +163,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
                     this.loading = true;
                     this.toolsService.importByFile(data).subscribe(
                         (result) => {
-                            this.loadAllModules();
+                            this.loadAllTools();
                         }, (e) => {
                             this.loading = false;
                         });
@@ -172,13 +172,13 @@ export class ToolsListComponent implements OnInit, OnDestroy {
         });
     }
 
-    public importModules(messageId?: string) {
+    public importTool(messageId?: string) {
         const dialogRef = this.dialog.open(ImportPolicyDialog, {
             width: '500px',
             autoFocus: false,
             disableClose: true,
             data: {
-                type: 'module',
+                type: 'tool',
                 timeStamp: messageId
             }
         });
@@ -189,39 +189,39 @@ export class ToolsListComponent implements OnInit, OnDestroy {
         });
     }
 
-    compareModules(element?: any) {
+    public compareTools(element?: any) {
         const dialogRef = this.dialog.open(CompareModulesDialogComponent, {
             width: '650px',
             panelClass: 'g-dialog',
             disableClose: true,
             autoFocus: false,
             data: {
-                modules: this.modules,
+                tools: this.tools,
             }
         });
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
                 this.router.navigate(['/compare'], {
                     queryParams: {
-                        type: 'module',
-                        moduleId1: result.moduleId1,
-                        moduleId2: result.moduleId2
+                        type: 'tool',
+                        toolId1: result.toolId1,
+                        toolId2: result.toolId2
                     }
                 });
             }
         });
     }
 
-    public exportModules(element: any) {
+    public exportTool(element: any) {
         this.loading = true;
         this.toolsService.exportInMessage(element.uuid)
-            .subscribe(module => {
+            .subscribe(tool => {
                 this.loading = false;
                 this.dialog.open(ExportPolicyDialog, {
                     width: '700px',
                     panelClass: 'g-dialog',
                     data: {
-                        module
+                        tool
                     },
                     disableClose: true,
                     autoFocus: false
@@ -229,27 +229,29 @@ export class ToolsListComponent implements OnInit, OnDestroy {
             });
     }
 
-    public newModules() {
+    public newTool() {
         const dialogRef = this.dialog.open(NewModuleDialog, {
             width: '650px',
             panelClass: 'g-dialog',
             disableClose: true,
             autoFocus: false,
-            data: {}
+            data: {
+                type: 'tool'
+            }
         });
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
-                const module = {
+                const tool = {
                     name: result.name,
                     description: result.description,
                     menu: "show",
                     config: {
-                        blockType: 'module'
+                        blockType: 'tool'
                     }
                 }
                 this.loading = true;
-                this.toolsService.create(module).subscribe((result) => {
-                    this.loadAllModules();
+                this.toolsService.create(tool).subscribe((result) => {
+                    this.loadAllTools();
                 }, (e) => {
                     this.loading = false;
                 });
@@ -257,11 +259,11 @@ export class ToolsListComponent implements OnInit, OnDestroy {
         });
     }
 
-    public deleteModule(element: any) {
+    public deleteTool(element: any) {
         const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
             data: {
-                dialogTitle: 'Delete module',
-                dialogText: 'Are you sure to delete module?'
+                dialogTitle: 'Delete tool',
+                dialogText: 'Are you sure to delete tool?'
             },
             disableClose: true,
             autoFocus: false
@@ -272,14 +274,14 @@ export class ToolsListComponent implements OnInit, OnDestroy {
             }
             this.loading = true;
             this.toolsService.delete(element.uuid).subscribe((result) => {
-                this.loadAllModules();
+                this.loadAllTools();
             }, (e) => {
                 this.loading = false;
             });
         });
     }
 
-    public publishModule(element: any) {
+    public publishTool(element: any) {
         this.loading = true;
         this.toolsService.publish(element.uuid).subscribe((result) => {
             const { isValid, errors } = result;
@@ -304,9 +306,9 @@ export class ToolsListComponent implements OnInit, OnDestroy {
                         }
                     }
                 }
-                this.informService.errorMessage(text.join(''), 'The module is invalid');
+                this.informService.errorMessage(text.join(''), 'The tool is invalid');
             }
-            this.loadAllModules();
+            this.loadAllTools();
         }, (e) => {
             this.loading = false;
         });

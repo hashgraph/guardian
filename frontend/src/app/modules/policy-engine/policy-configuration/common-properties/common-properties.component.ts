@@ -3,13 +3,12 @@ import { BlockErrorActions, GenerateUUIDv4 } from '@guardian/interfaces';
 import { RegisteredService } from '../../services/registered.service';
 import {
     IBlockAbout,
-    PolicyBlock,
     PolicyEvent,
-    PolicyModule,
     IModuleVariables,
-    RoleVariables
+    RoleVariables,
+    PolicyFolder, 
+    PolicyItem
 } from "../../structures";
-import { PolicyFolder, PolicyItem } from '../../structures/policy-models/interfaces/module.type';
 
 /**
  * Settings for all blocks.
@@ -22,7 +21,7 @@ import { PolicyFolder, PolicyItem } from '../../structures/policy-models/interfa
 export class CommonPropertiesComponent implements OnInit {
     @ViewChild("configContainer", { read: ViewContainerRef }) configContainer!: ViewContainerRef;
 
-    @Input('block') currentBlock!: PolicyBlock;
+    @Input('block') currentBlock!: PolicyItem;
     @Input('module') module!: PolicyFolder;
     @Input('readonly') readonly!: boolean;
     @Input('type') type!: string;
@@ -37,7 +36,7 @@ export class CommonPropertiesComponent implements OnInit {
         eventsGroup: {}
     };
 
-    block!: PolicyBlock;
+    block!: PolicyItem;
     about!: IBlockAbout | undefined;
     errorActions = [
         {
@@ -133,7 +132,7 @@ export class CommonPropertiesComponent implements OnInit {
         this.module.removeEvent(event);
     }
 
-    load(block: PolicyBlock) {
+    load(block: PolicyItem) {
         if (this.block != block && this.type == 'Events') {
             this.block = block;
             this.loadEvents(block);
@@ -144,7 +143,7 @@ export class CommonPropertiesComponent implements OnInit {
         }
     }
 
-    loadEvents(block: PolicyBlock) {
+    loadEvents(block: PolicyItem) {
         this.events = block.events;
         const about = this.registeredService.getAbout(block, this.module);
         this.defaultEvent = about.defaultEvent;
@@ -179,7 +178,7 @@ export class CommonPropertiesComponent implements OnInit {
         }
     }
 
-    loadComponent(block: PolicyBlock) {
+    loadComponent(block: PolicyItem) {
         if (!this.configContainer) {
             return;
         }
@@ -238,7 +237,7 @@ export class CommonPropertiesComponent implements OnInit {
         }
     }
 
-    onChildrenApply(block: PolicyBlock, currentBlock: PolicyBlock) {
+    onChildrenApply(block: PolicyItem, currentBlock: PolicyItem) {
         if (!block) {
             return;
         }

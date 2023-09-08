@@ -1,10 +1,9 @@
-import { PolicyBlockModel } from "../policy-models/block.model";
+import { PolicyItem } from "../policy-models/interfaces/types";
 import { ChildrenType } from "../types/children-type.type";
 import { ControlType } from "../types/control-type.type";
 import { IBlockAbout } from "./block-about.interface";
 
-
-type ConfigFunction<T> = ((value: any, block: PolicyBlockModel, prev?: IBlockAbout, next?: boolean) => T) | T;
+type ConfigFunction<T> = ((value: any, block: PolicyItem, prev?: IBlockAbout, next?: boolean) => T) | T;
 
 export interface IBlockDynamicAboutConfig {
     post?: ConfigFunction<boolean>;

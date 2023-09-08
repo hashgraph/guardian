@@ -1,5 +1,5 @@
-import { ModuleVariable } from '../module/module-variable.model';
 import { PolicyRole } from '../policy/policy-role.model';
+import { ModuleVariable } from './module-variable.model';
 
 export class RoleVariables {
     public name?: string;

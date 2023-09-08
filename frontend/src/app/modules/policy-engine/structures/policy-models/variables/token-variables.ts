@@ -1,5 +1,5 @@
 import { Token } from '@guardian/interfaces';
-import { ModuleVariable } from '../module/module-variable.model';
+import { ModuleVariable } from './module-variable.model';
 
 export class TokenVariables {
     public name?: string;

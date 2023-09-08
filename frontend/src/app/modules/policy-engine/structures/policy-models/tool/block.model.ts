@@ -1,7 +1,5 @@
 import { IModuleVariables } from '../interfaces/module-variables.interface';
 import { IModuleConfig } from '../interfaces/module-config.interface';
-import { ModuleEvent } from '../variables/module-event.model';
-import { ModuleVariable } from '../variables/module-variable.model';
 import { GroupVariables } from '../variables/group-variables';
 import { RoleVariables } from '../variables/role-variables';
 import { SchemaVariables } from '../variables/schema-variables';
@@ -15,8 +13,10 @@ import { PolicyBlock } from '../block/block.model';
 import { PolicyEvent } from '../block/block-event.model';
 import { PolicyFolder, PolicyItem } from '../interfaces/types';
 import { TemplateUtils } from '../utils';
+import { ModuleEvent } from '../variables/module-event.model';
+import { ModuleVariable } from '../variables/module-variable.model';
 
-export class PolicyModule extends PolicyBlock {
+export class PolicyTool extends PolicyBlock {
     protected _dataSource!: PolicyBlock[];
     protected _tagMap: { [tag: string]: PolicyBlock; } = {};
     protected _idMap: { [tag: string]: PolicyBlock; } = {};
@@ -124,11 +124,11 @@ export class PolicyModule extends PolicyBlock {
     }
 
     public get isModule(): boolean {
-        return true;
+        return false;
     }
 
     public get isTool(): boolean {
-        return false;
+        return true;
     }
 
     public get expandable(): boolean {

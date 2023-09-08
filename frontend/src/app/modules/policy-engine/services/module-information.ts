@@ -12,7 +12,7 @@ import {
     PolicyModule,
     PolicyTemplate
 } from "../structures";
-import { PolicyFolder } from "../structures/policy-models/interfaces/module.type";
+import { PolicyFolder } from "../structures/policy-models/interfaces/types";
 
 const Module: IBlockSetting = {
     type: BlockType.Module,

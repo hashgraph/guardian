@@ -1,13 +1,13 @@
-import { GenerateUUIDv4, ModuleStatus, PolicyType, Schema } from '@guardian/interfaces';
+import { GenerateUUIDv4, ModuleStatus, PolicyType, Schema, Token } from '@guardian/interfaces';
 import { IBlockConfig } from '../interfaces/block-config.interface';
 import { IModuleVariables } from '../interfaces/module-variables.interface';
 import { PolicyBlock } from '../block/block.model';
 import { PolicyEvent } from '../block/block-event.model';
-import { PolicyModule } from './block.model';
-import { PolicyFolder, PolicyItem } from '../interfaces/types';
+import { PolicyFolder } from '../interfaces/types';
 import { TemplateUtils } from '../utils';
+import { PolicyTool } from './block.model';
 
-export class ModuleTemplate {
+export class ToolTemplate {
     public readonly valid: boolean;
     public readonly id!: string;
     public readonly uuid!: string;
@@ -19,7 +19,7 @@ export class ModuleTemplate {
     public readonly messageId!: string;
     public readonly topicId!: string;
 
-    private _config!: PolicyModule;
+    private _config!: PolicyTool;
     private _changed: boolean;
 
     public readonly isDraft: boolean = false;
@@ -75,7 +75,7 @@ export class ModuleTemplate {
         this.changed = true;
     }
 
-    public get root(): PolicyModule {
+    public get root(): PolicyTool {
         return this._config;
     }
 
@@ -101,9 +101,9 @@ export class ModuleTemplate {
 
     private buildBlock(config: IBlockConfig) {
         if (!config) {
-            config = { blockType: 'module' };
+            config = { blockType: 'tool' };
         }
-        this._config = TemplateUtils.buildBlock(config, null, this) as PolicyModule;
+        this._config = TemplateUtils.buildBlock(config, null, this) as PolicyTool;
         this._config.isRoot = true;
         this._config.refresh();
     }
@@ -200,6 +200,10 @@ export class ModuleTemplate {
         this._config.setSchemas(schemas);
     }
 
+    public setTokens(tokens: Token[]): void {
+
+    }
+
     public refreshData() {
         this._config.refreshData();
         this.emitUpdate();
@@ -221,11 +225,11 @@ export class ModuleTemplate {
         return null;
     }
 
-    public newModule(template?: any): PolicyModule {
-        throw new Error('A module cannot contain nested modules');
+    public newModule(template?: any): any {
+        throw new Error('A tool cannot contain nested modules');
     }
 
-    public convertModule(block: PolicyBlock): PolicyModule {
+    public convertModule(block: PolicyBlock): any { 
         throw new Error('A tool cannot contain nested modules');
     }
 }

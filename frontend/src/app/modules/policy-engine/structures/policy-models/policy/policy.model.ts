@@ -3,7 +3,7 @@ import { PolicyRole } from './policy-role.model';
 import { PolicyGroup } from './policy-group.model';
 import { PolicyToken } from './policy-token.model';
 import { PolicyTopic } from './policy-topic.model';
-import { IModuleVariables } from './../variables/module-variables.interface';
+import { IModuleVariables } from '../interfaces/module-variables.interface';
 import { TopicVariables } from './../variables/topic-variables';
 import { TokenTemplateVariables } from './../variables/token-template-variables';
 import { GroupVariables } from './../variables/group-variables';
@@ -14,7 +14,8 @@ import { PolicyBlock } from '../block/block.model';
 import { PolicyEvent } from '../block/block-event.model';
 import { IBlockConfig } from '../interfaces/block-config.interface';
 import { PolicyModule } from '../module/block.model';
-import { PolicyFolder, PolicyItem } from '../interfaces/module.type';
+import { PolicyFolder, PolicyItem } from '../interfaces/types';
+import { TemplateUtils } from '../utils';
 
 export class PolicyTemplate {
     public readonly valid: boolean;
@@ -180,7 +181,7 @@ export class PolicyTemplate {
         return this._policyTag;
     }
 
-    public getBlock(block: any): PolicyBlock | undefined {
+    public getBlock(block: any): PolicyItem | undefined {
         return this._idMap[block?.id];
     }
 
@@ -336,34 +337,11 @@ export class PolicyTemplate {
         }
     }
 
-    private _buildBlock(
-        config: IBlockConfig,
-        parent: PolicyItem | null,
-        module: PolicyFolder
-    ) {
-        let block: PolicyItem;
-        if (config.blockType === 'module') {
-            block = new PolicyModule(config, parent);
-            block.setModule(module);
-            module = block as PolicyModule;
-        } else {
-            block = new PolicyBlock(config, parent);
-            block.setModule(module);
-        }
-        if (Array.isArray(config.children)) {
-            for (const childConfig of config.children) {
-                const child = this._buildBlock(childConfig, block, module);
-                block.children.push(child);
-            }
-        }
-        return block;
-    }
-
     private buildBlock(config: IBlockConfig) {
         if (!config) {
             config = { blockType: 'interfaceContainerBlock' };
         }
-        this._config = this._buildBlock(config, null, this);
+        this._config = TemplateUtils.buildBlock(config, null, this) as PolicyBlock;
         this._config.isRoot = true;
         this._refreshData();
     }
@@ -508,7 +486,7 @@ export class PolicyTemplate {
             config.tag = this.getNewTag('Module');
             config.blockType = 'module';
             config.defaultActive = true;
-            const module = this._buildBlock(config, null, this) as PolicyModule;
+            const module = TemplateUtils.buildBlock(config, null, this) as PolicyModule;
             this._tagMap[module.tag] = module;
             return module;
         } else {

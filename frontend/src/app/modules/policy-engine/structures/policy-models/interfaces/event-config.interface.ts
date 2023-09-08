@@ -1,4 +1,4 @@
-import { PolicyBlockModel } from "../block.model";
+import { PolicyItem } from "./types";
 
 export interface IEventConfig {
     id?: string;
@@ -6,6 +6,6 @@ export interface IEventConfig {
     disabled: boolean;
     input: string;
     output: string;
-    source: string | PolicyBlockModel | null;
-    target: string | PolicyBlockModel | null;
+    source: string | PolicyItem | null;
+    target: string | PolicyItem | null;
 }

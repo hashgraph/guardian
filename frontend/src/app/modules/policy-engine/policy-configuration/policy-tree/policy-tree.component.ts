@@ -5,7 +5,17 @@ import { PolicyBlock, BlocLine, BlockRect, EventCanvas } from '../../structures'
 import { RegisteredService } from '../../services/registered.service';
 import { ThemeService } from '../../../../services/theme.service';
 import { BLOCK_TYPE_TIPS } from 'src/app/injectors/block-type-tips.injector';
-import { PolicyFolder } from '../../structures/policy-models/interfaces/module.type';
+import { PolicyFolder } from '../../structures/policy-models/interfaces/types';
+
+enum BlockStyle {
+    None = 'None',
+    Block = 'Block',
+    Module = 'Module',
+    Tool = 'Tool',
+    RootBlock = 'RootBlock',
+    RootModule = 'RootModule',
+    RootTool = 'RootTool'
+}
 
 /**
  * Settings for all blocks.
@@ -257,6 +267,23 @@ export class PolicyTreeComponent implements OnInit {
                 node.parentNode = parent;
             }
             node.offset = `${this.paddingLeft * level}px`;
+            if (node.root) {
+                if (node.isModule) {
+                    node.style = BlockStyle.RootModule;
+                } else if (node.isTool) {
+                    node.style = BlockStyle.RootTool;
+                } else {
+                    node.style = BlockStyle.RootBlock;
+                }
+            } else {
+                if (node.isModule) {
+                    node.style = BlockStyle.Module;
+                } else if (node.isTool) {
+                    node.style = BlockStyle.Tool;
+                } else {
+                    node.style = BlockStyle.Block;
+                }
+            }
             block.setAbout(node.about);
 
             result.push(node);
@@ -272,6 +299,30 @@ export class PolicyTreeComponent implements OnInit {
             }
         }
         return result;
+    }
+
+    public isRootModuleStyle(node: FlatBlockNode):boolean {
+        return node.style === BlockStyle.RootModule;
+    }
+
+    public isRootToolStyle(node: FlatBlockNode):boolean {
+        return node.style === BlockStyle.RootTool;
+    }
+
+    public isRootBlockStyle(node: FlatBlockNode):boolean {
+        return node.style === BlockStyle.RootBlock;
+    }
+
+    public isModuleStyle(node: FlatBlockNode):boolean {
+        return node.style === BlockStyle.Module;
+    }
+
+    public isToolStyle(node: FlatBlockNode):boolean {
+        return node.style === BlockStyle.Tool;
+    }
+
+    public isBlockStyle(node: FlatBlockNode):boolean {
+        return node.style === BlockStyle.Block;
     }
 
     public isSelect(node: FlatBlockNode) {
@@ -640,8 +691,8 @@ export class PolicyTreeComponent implements OnInit {
     }
 
     @HostListener('window:resize', ['$event'])
-    public onResize(event:any) {
-        if(this._resizeTimer) {
+    public onResize(event: any) {
+        if (this._resizeTimer) {
             clearTimeout(this._resizeTimer);
             this._resizeTimer = null;
         }
