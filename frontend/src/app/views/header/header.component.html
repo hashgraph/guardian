@@ -100,6 +100,10 @@
                         (click)="routActive('SR_STATUS')">
                         Status
                     </div>
+                    <div (click)="routActive('SR_ABOUT')" [attr.active]="isActiveLink('SR_ABOUT')"
+                         class="nav-list-item">
+                        About
+                    </div>
                 </div>
             </mat-menu>
 

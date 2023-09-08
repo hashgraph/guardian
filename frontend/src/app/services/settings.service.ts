@@ -1,9 +1,10 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { CommonSettings } from '@guardian/interfaces';
-import { Observable, BehaviorSubject } from 'rxjs';
-import { filter } from 'rxjs/operators';
+import { AboutInterface, CommonSettings } from '@guardian/interfaces';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { filter, shareReplay } from 'rxjs/operators';
 import { API_BASE_URL } from './api';
+
 /**
  * Services for working from user profile.
  */
@@ -38,5 +39,11 @@ export class SettingsService {
         return this.http.get(`${this.url}/environment`, {
             responseType: 'text',
         });
+    }
+
+    public getAbout(): Observable<AboutInterface> {
+        return this.http.get<AboutInterface>(`${this.url}/about`).pipe(
+            shareReplay(1)
+        );
     }
 }

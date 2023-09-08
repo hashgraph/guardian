@@ -2,19 +2,10 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import {
-    HTTP_INTERCEPTORS,
-    HttpClientModule,
-    HttpClientJsonpModule
-} from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientJsonpModule, HttpClientModule } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { ToastrModule } from 'ngx-toastr';
-import {
-    AppRoutingModule,
-    AuditorGuard,
-    UserGuard,
-    StandardRegistryGuard
-} from './app-routing.module';
+import { AppRoutingModule, AuditorGuard, StandardRegistryGuard, UserGuard } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { SchemaHelper } from '@guardian/interfaces';
 //Services
@@ -80,14 +71,12 @@ import { SchemaEngineModule } from './modules/schema-engine/schema-engine.module
 import { ThemeService } from './services/theme.service';
 // Injectors
 import { GET_SCHEMA_NAME } from './injectors/get-schema-name.injector';
-import {
-    BLOCK_TYPE_TIPS,
-    BLOCK_TYPE_TIPS_VALUE,
-} from './injectors/block-type-tips.injector';
+import { BLOCK_TYPE_TIPS, BLOCK_TYPE_TIPS_VALUE, } from './injectors/block-type-tips.injector';
 import { SuggestionsService } from './services/suggestions.service';
 import { QrCodeDialogComponent } from './components/qr-code-dialog/qr-code-dialog.component';
 import { QRCodeModule } from 'angularx-qrcode';
 import { MeecoVCSubmitDialogComponent } from './components/meeco-vc-submit-dialog/meeco-vc-submit-dialog.component';
+import { AboutViewComponent } from './views/admin/about-view/about-view.component';
 
 @NgModule({
     declarations: [
@@ -103,6 +92,7 @@ import { MeecoVCSubmitDialogComponent } from './components/meeco-vc-submit-dialo
         TrustChainComponent,
         LogsViewComponent,
         SettingsViewComponent,
+        AboutViewComponent,
         AdminHeaderComponent,
         DetailsLogDialog,
         ServiceStatusComponent,
