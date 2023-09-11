@@ -33,6 +33,7 @@ import { ArtifactConfigComponent } from './modules/artifact-engine/artifact-conf
 import { CompareComponent } from './modules/analytics/compare/compare.component';
 import { ModulesListComponent } from './modules/policy-engine/modules-list/modules-list.component';
 import { SearchPoliciesComponent } from './modules/analytics/search-policies/search-policies.component';
+import { AboutViewComponent } from './views/admin/about-view/about-view.component';
 
 const USER_IS_NOT_RA = "Page is avaliable for admin only";
 
@@ -169,7 +170,8 @@ const routes: Routes = [
         children: [
             { path: 'status', component: ServiceStatusComponent },
             { path: 'settings', component: SettingsViewComponent },
-            { path: 'logs', component: LogsViewComponent }
+            {path: 'logs', component: LogsViewComponent},
+            {path: 'about', component: AboutViewComponent}
         ]
     },
     { path: 'status', component: ServiceStatusComponent },
