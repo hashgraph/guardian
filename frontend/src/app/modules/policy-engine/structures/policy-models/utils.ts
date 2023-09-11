@@ -23,12 +23,16 @@ export class TemplateUtils {
             block = new PolicyBlock(config, parent);
             block.setModule(module);
         }
-        if (Array.isArray(config.children)) {
-            for (const childConfig of config.children) {
-                const child = TemplateUtils.buildBlock(childConfig, block, module);
-                block.children.push(child);
+        if (parent && config.blockType === 'tool') {
+            return block;
+        } else {
+            if (Array.isArray(config.children)) {
+                for (const childConfig of config.children) {
+                    const child = TemplateUtils.buildBlock(childConfig, block, module);
+                    block.children.push(child);
+                }
             }
+            return block;
         }
-        return block;
     }
 }

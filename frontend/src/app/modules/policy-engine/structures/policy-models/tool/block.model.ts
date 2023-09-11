@@ -8,7 +8,7 @@ import { TokenVariables } from '../variables/token-variables';
 import { TopicVariables } from '../variables/topic-variables';
 import { IBlockConfig } from '../interfaces/block-config.interface';
 import { IEventConfig } from '../interfaces/event-config.interface';
-import { Schema } from '@guardian/interfaces';
+import { BlockType, GenerateUUIDv4, Schema } from '@guardian/interfaces';
 import { PolicyBlock } from '../block/block.model';
 import { PolicyEvent } from '../block/block-event.model';
 import { PolicyFolder, PolicyItem } from '../interfaces/types';
@@ -21,6 +21,7 @@ export class PolicyTool extends PolicyBlock {
     protected _tagMap: { [tag: string]: PolicyBlock; } = {};
     protected _idMap: { [tag: string]: PolicyBlock; } = {};
     protected _allBlocks!: PolicyBlock[];
+    protected _allTools!: PolicyTool[];
     protected _allEvents!: PolicyEvent[];
     protected _inputEvents!: ModuleEvent[];
     protected _outputEvents!: ModuleEvent[];
@@ -41,6 +42,10 @@ export class PolicyTool extends PolicyBlock {
 
     public get allBlocks(): PolicyBlock[] {
         return this._allBlocks;
+    }
+
+    public get allTools(): PolicyTool[] {
+        return this._allTools;
     }
 
     public get root(): PolicyBlock {
@@ -112,6 +117,12 @@ export class PolicyTool extends PolicyBlock {
             for (const event of block.events) {
                 this._allEvents.push(event);
             }
+        } else if (block.isTool) {
+            this._allTools.push(block as PolicyTool);
+            this._allBlocks.push(block);
+            for (const event of block.events) {
+                this._allEvents.push(event);
+            }
         } else {
             this._allBlocks.push(block);
             for (const event of block.events) {
@@ -128,6 +139,18 @@ export class PolicyTool extends PolicyBlock {
     }
 
     public get isTool(): boolean {
+        return true;
+    }
+
+    public get canAddBlocks(): boolean {
+        return true;
+    }
+
+    public get canAddModules(): boolean {
+        return false;
+    }
+
+    public get canAddTools(): boolean {
         return true;
     }
 
@@ -174,7 +197,11 @@ export class PolicyTool extends PolicyBlock {
     }
 
     public get tagPrefix(): string {
-        return this.tag + ':';
+        return '';
+    }
+
+    public get tag(): string {
+        return this._tag;
     }
 
     public removeEvent(event: any) {
@@ -442,10 +469,16 @@ export class PolicyTool extends PolicyBlock {
         this._idMap = {};
         this._allBlocks = [];
         this._allEvents = [];
+        this._allTools = [];
         this.registeredBlock(this);
         for (const block of this._allBlocks) {
             this._tagMap[block.tag] = block;
             this._idMap[block.id] = block;
+        }
+        for (const tool of this._allTools) {
+            this._tagMap[tool.tag] = tool;
+            this._idMap[tool.id] = tool;
+            tool.refreshData();
         }
         for (const event of this._allEvents) {
             if (event.sourceTag) {
@@ -547,5 +580,20 @@ export class PolicyTool extends PolicyBlock {
         }
         this.refreshData();
         this.emitUpdate();
+    }
+
+    public newTool(template?: any): PolicyTool {
+        if (template) {
+            const config = JSON.parse(JSON.stringify(template.config));
+            config.id = GenerateUUIDv4();
+            config.tag = this.getNewTag('Tool');
+            config.blockType = BlockType.Tool;
+            config.defaultActive = true;
+            const tool = TemplateUtils.buildBlock(config, null, this) as PolicyTool;
+            this._tagMap[tool.tag] = tool;
+            return tool;
+        } else {
+            throw new Error('Invalid tool config');
+        }
     }
 }

@@ -17,10 +17,18 @@ export class FlatBlockNode {
     public next!: PolicyItem;
     public parent!: PolicyItem;
     public parentNode!: FlatBlockNode;
+    public prevNode!: FlatBlockNode;
     public data!: any;
     public error!: boolean;
     public deprecated!: boolean;
     public style!: string;
+    public canAddModules!: boolean;
+    public canAddTools!: boolean;
+    public canAddBlocks!: boolean;
+    public canUp!: boolean;
+    public canDown!: boolean;
+    public canLeft!: boolean;
+    public canRight!: boolean;
 
     constructor(node: PolicyItem) {
         this.node = node;

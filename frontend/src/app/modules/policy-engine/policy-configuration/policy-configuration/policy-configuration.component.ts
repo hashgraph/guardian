@@ -109,6 +109,7 @@ export class PolicyConfigurationComponent implements OnInit {
         favorites: [],
         defaultModules: [],
         customModules: [],
+        customTools: [],
     };
     private _searchTimeout!: any;
     private currentCMStyles?: any;
@@ -117,6 +118,10 @@ export class PolicyConfigurationComponent implements OnInit {
         menu: null,
         body: null
     }
+
+    private _disableComponentMenu: boolean = true;
+    private _disableModuleMenu: boolean = true;
+    private _disableToolMenu: boolean = true;
 
     @ViewChild('menuList')
     public set menuList(value: CdkDropList<any>) {
@@ -139,23 +144,15 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     public get disableComponentMenu(): boolean {
-        return (
-            !this.isTree ||
-            (
-                this.selectType === 'Module' &&
-                this.openType === 'Root' &&
-                this.rootType === 'Policy'
-            )
-        );
+        return this._disableComponentMenu;
     }
 
     public get disableModuleMenu(): boolean {
-        return (
-            !this.isTree ||
-            this.rootType === 'Module' ||
-            this.openType === 'Sub' ||
-            this.selectType === 'Module'
-        );
+        return this._disableModuleMenu;
+    }
+
+    public get disableToolMenu(): boolean {
+        return this._disableToolMenu;
     }
 
     private treeOverview!: PolicyTreeComponent;
@@ -166,6 +163,14 @@ export class PolicyConfigurationComponent implements OnInit {
 
     public get allSubModule(): PolicyModule[] {
         return this.policyTemplate.allModule;
+    }
+
+    public get policyDescription(): boolean {
+        return this.openType === 'Root' && this.rootType ==='Policy';
+    }
+
+    public get moduleDescription(): boolean {
+        return this.openType === 'Sub' || this.rootType ==='Module' || this.rootType ==='Tool';
     }
 
     constructor(
@@ -405,6 +410,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.onSelect(this.openFolder.root);
         this.updateComponents();
         this.updateModules();
+        this.updateTools();
 
         setTimeout(() => { this.loading = false; }, 500);
     }
@@ -433,6 +439,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.openFolder.checkChange();
         this.changeDetector.detectChanges();
         this.findSuggestedBlocks(this.currentBlock);
+        this.updateMenuStatus();
         return false;
     }
 
@@ -562,6 +569,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.rootTemplate.getModule(this.openFolder) ||
                 this.rootTemplate.getRootModule();
             this.currentBlock = this.openFolder.root;
+            this.updateMenuStatus();
         }
         return true;
     }
@@ -673,6 +681,19 @@ export class PolicyConfigurationComponent implements OnInit {
         this.treeOverview = event;
     }
 
+    private updateMenuStatus() {
+        this._disableComponentMenu = true;
+        this._disableModuleMenu = true;
+        this._disableToolMenu = true;
+        if (this.isTree && this.openFolder && this.currentBlock) {
+            if ((!this.currentBlock.isModule && !this.currentBlock.isTool) || this.currentBlock === this.openFolder) {
+                this._disableComponentMenu = !this.currentBlock.canAddBlocks;
+                this._disableModuleMenu = !this.currentBlock.canAddModules;
+                this._disableToolMenu = !this.currentBlock.canAddTools;
+            }
+        }
+    }
+
     public setFavorite(event: any, item: any) {
         event.preventDefault();
         event.stopPropagation();
@@ -700,6 +721,7 @@ export class PolicyConfigurationComponent implements OnInit {
         clearTimeout(this._searchTimeout);
         this._searchTimeout = setTimeout(() => {
             this.updateModules();
+            this.updateTools();
         }, 200);
     }
 
@@ -760,12 +782,28 @@ export class PolicyConfigurationComponent implements OnInit {
         }
     }
 
+    private updateTools() {
+        this.modulesList.customTools = [];
+
+        const search = this.searchModule ? this.searchModule.toLowerCase() : null;
+        for (const tool of this.tools) {
+            tool.data = `tool:${tool.uuid}`;
+            tool.search = (tool.name || '').toLowerCase();
+
+            if (search && tool.search.indexOf(search) === -1) {
+                continue;
+            }
+            this.modulesList.customTools.push(tool);
+        }
+    }
+
     public addSuggestionsBlock(type: any, nested: boolean = false) {
         this.currentBlock = this.createNewBlock(
             nested ? this.currentBlock : this.currentBlock?.parent,
             type
         );
         this.onSelect(this.currentBlock);
+        this.updateMenuStatus();
     }
 
     public onSuggestionsClick() {
@@ -792,6 +830,11 @@ export class PolicyConfigurationComponent implements OnInit {
                 const module = this.rootTemplate.newModule(config);
                 event.data.parent?.addChild(module, event.data.index);
             }
+            if (event.data.operation === 'tool') {
+                const config = this.tools.find(e => e.uuid === event.data.name);
+                const tool = this.rootTemplate.newTool(config);
+                event.data.parent?.addChild(tool, event.data.index);
+            }
         } else {
             this.changeDetector.detectChanges();
         }
@@ -811,6 +854,7 @@ export class PolicyConfigurationComponent implements OnInit {
             const newBlock = this.registeredService.getBlockConfig(btn.type);
             this.currentBlock.createChild(newBlock);
         }
+        this.updateMenuStatus();
     }
 
     public onDelete(block: any) {
@@ -825,6 +869,7 @@ export class PolicyConfigurationComponent implements OnInit {
             const module = this.rootTemplate.newModule();
             this.currentBlock.addChild(module);
         }
+        this.updateMenuStatus();
     }
 
     public onOpenModule(module: any) {
@@ -843,6 +888,7 @@ export class PolicyConfigurationComponent implements OnInit {
             }
             this.changeDetector.detectChanges();
         }
+        this.updateMenuStatus();
     }
 
     public onConvertToModule() {
@@ -857,6 +903,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.rootTemplate.convertModule(this.currentBlock);
             }
         }
+        this.updateMenuStatus();
     }
 
     public onOpenRoot(root: PolicyRoot): void {
@@ -873,6 +920,7 @@ export class PolicyConfigurationComponent implements OnInit {
             this.code = this.objectToYaml(this.openFolder.getJSON());
         }
         this.changeDetector.detectChanges();
+        this.updateMenuStatus();
     }
 
     public noReturnPredicate() {
@@ -1035,6 +1083,16 @@ export class PolicyConfigurationComponent implements OnInit {
             const module = this.rootTemplate.newModule(item);
             this.currentBlock.addChild(module);
         }
+        this.updateMenuStatus();
+    }
+
+    public onAddTool(item: any) {
+        this.currentBlock = this.openFolder.getBlock(this.currentBlock);
+        if (this.currentBlock) {
+            const tool = this.rootTemplate.newTool(item);
+            this.currentBlock.addChild(tool);
+        }
+        this.updateMenuStatus();
     }
 
     public savePolicy() {

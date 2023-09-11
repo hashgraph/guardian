@@ -23,6 +23,7 @@ export class Options {
     private readonly _favoritesModulesGroup: BooleanProperty;
     private readonly _defaultModulesGroup: BooleanProperty;
     private readonly _customModulesGroup: BooleanProperty;
+    private readonly _customToolsGroup: BooleanProperty;
     private readonly _descriptionModule: BooleanProperty;
     private readonly _inputsModule: BooleanProperty;
     private readonly _outputsModule: BooleanProperty;
@@ -53,7 +54,8 @@ export class Options {
         this._rightBottomMenu = new BooleanProperty(prefix + 'RIGHT_BOTTOM', false);
         this._favoritesModulesGroup = new BooleanProperty(prefix + 'FAVORITES_MODULES_GROUP', false);
         this._defaultModulesGroup = new BooleanProperty(prefix + 'DEFAULT_MODULES_GROUP', false);
-        this._customModulesGroup = new BooleanProperty(prefix + 'CUSTOM_MODULES_GROUP', false);
+        this._customModulesGroup = new BooleanProperty(prefix + 'CUSTOM_TOOLS_GROUP', false);
+        this._customToolsGroup = new BooleanProperty(prefix + 'CUSTOM_MODULES_GROUP', false);
         this._descriptionModule = new BooleanProperty(prefix + 'DESCRIPTION_MODULE', true);
         this._inputsModule = new BooleanProperty(prefix + 'INPUTS_MODULE', false);
         this._outputsModule = new BooleanProperty(prefix + 'OUTPUTS_MODULE', false);
@@ -86,6 +88,7 @@ export class Options {
             this.favoritesModulesGroup = this._favoritesModulesGroup.load();
             this.defaultModulesGroup = this._defaultModulesGroup.load();
             this.customModulesGroup = this._customModulesGroup.load();
+            this.customToolsGroup = this._customToolsGroup.load();
             this.descriptionModule = this._descriptionModule.load();
             this.inputsModule = this._inputsModule.load();
             this.outputsModule = this._outputsModule.load();
@@ -122,6 +125,7 @@ export class Options {
             this._favoritesModulesGroup.save();
             this._defaultModulesGroup.save();
             this._customModulesGroup.save();
+            this._customToolsGroup.save();
             this._favoritesModules.save();
             this._descriptionModule.save();
             this._inputsModule.save();
@@ -215,6 +219,10 @@ export class Options {
 
     public get customModulesGroup(): boolean {
         return this._customModulesGroup.value;
+    }
+
+    public get customToolsGroup(): boolean {
+        return this._customToolsGroup.value;
     }
 
     public get descriptionModule(): boolean {
@@ -410,6 +418,10 @@ export class Options {
         this._customModulesGroup.value = value;
     }
 
+    public set customToolsGroup(value: boolean) {
+        this._customToolsGroup.value = value;
+    }
+
     public set legendActive(value: boolean) {
         this._legendActive.value = value;
     }
@@ -507,6 +519,8 @@ export class Options {
             this.defaultModulesGroup = !this.defaultModulesGroup;
         } else if (name === 'favoritesModulesGroup') {
             this.favoritesModulesGroup = !this.favoritesModulesGroup;
+        } else if (name === 'customToolsGroup') {
+            this.customToolsGroup = !this.customToolsGroup;
         } else {
             return;
         }

@@ -86,6 +86,27 @@ export class PolicyBlock {
         return false;
     }
 
+    public get canAddBlocks(): boolean {
+        if(this._module) {
+            return this._module.canAddBlocks;
+        }
+        return true;
+    }
+
+    public get canAddModules(): boolean {
+        if(this._module) {
+            return this._module.canAddModules;
+        }
+        return true;
+    }
+
+    public get canAddTools(): boolean {
+        if(this._module) {
+            return this._module.canAddTools;
+        }
+        return true;
+    }
+
     public get isRoot(): boolean {
         return this._root;
     }

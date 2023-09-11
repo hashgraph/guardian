@@ -399,6 +399,30 @@
     grid-column: 1/4;
 }
 
+*[can-up="false"] .move-action-up {
+    pointer-events: none;
+    filter: grayscale(1);
+    opacity: 0.3;
+}
+
+*[can-left="false"] .move-action-left {
+    pointer-events: none;
+    filter: grayscale(1);
+    opacity: 0.3;
+}
+
+*[can-right="false"] .move-action-right {
+    pointer-events: none;
+    filter: grayscale(1);
+    opacity: 0.3;
+}
+
+*[can-down="false"] .move-action-down {
+    pointer-events: none;
+    filter: grayscale(1);
+    opacity: 0.3;
+}
+
 .tree[move-actions="1"] .move-actions-container {
     display: grid;
 }

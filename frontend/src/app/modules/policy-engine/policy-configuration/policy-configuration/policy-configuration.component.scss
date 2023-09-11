@@ -448,6 +448,11 @@
     }
 
     .components-group {
+        &[readonly="true"] .components-group-body {
+            pointer-events: none;
+            filter: grayscale(1);
+        }
+
         .components-group-name {
             height: 38px;
             border-top: 1px solid var(--pc-border-color);

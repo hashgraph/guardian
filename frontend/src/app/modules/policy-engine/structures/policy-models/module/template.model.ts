@@ -1,4 +1,4 @@
-import { GenerateUUIDv4, ModuleStatus, PolicyType, Schema } from '@guardian/interfaces';
+import { BlockType, GenerateUUIDv4, ModuleStatus, PolicyType, Schema } from '@guardian/interfaces';
 import { IBlockConfig } from '../interfaces/block-config.interface';
 import { IModuleVariables } from '../interfaces/module-variables.interface';
 import { PolicyBlock } from '../block/block.model';
@@ -6,6 +6,7 @@ import { PolicyEvent } from '../block/block-event.model';
 import { PolicyModule } from './block.model';
 import { PolicyFolder, PolicyItem } from '../interfaces/types';
 import { TemplateUtils } from '../utils';
+import { PolicyTool } from '../tool/block.model';
 
 export class ModuleTemplate {
     public readonly valid: boolean;
@@ -97,6 +98,18 @@ export class ModuleTemplate {
 
     public get dataSource(): PolicyBlock[] {
         return this._config.dataSource;
+    }
+
+    public get canAddBlocks(): boolean {
+        return true;
+    }
+
+    public get canAddModules(): boolean {
+        return false;
+    }
+
+    public get canAddTools(): boolean {
+        return true;
     }
 
     private buildBlock(config: IBlockConfig) {
@@ -227,5 +240,9 @@ export class ModuleTemplate {
 
     public convertModule(block: PolicyBlock): PolicyModule {
         throw new Error('A tool cannot contain nested modules');
+    }
+
+    public newTool(template?: any): PolicyTool {
+        return this._config.newTool(template);
     }
 }

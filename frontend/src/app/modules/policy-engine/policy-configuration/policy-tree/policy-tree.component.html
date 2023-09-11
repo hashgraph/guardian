@@ -52,7 +52,7 @@
                         </div>
                     </div>
 
-                    <div *ngIf="isModuleStyle(item)" class="block-body module-body">
+                    <div *ngIf="isRootModuleStyle(item)" class="block-body module-body">
                         <div class="block-item" (click)="onSelect($event, item)">
                             <div class="module-item-icon">
                                 <svg xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg"
@@ -92,8 +92,14 @@
                             </div>
                         </div>
                         <div class="block-menu">
-                            <div class="move-actions-container">
-                                <button (click)="onDropUp($event)" mat-icon-button class="action-button move-action-up">
+                            <div class="move-actions-container"
+                                [attr.can-up]="item.canUp"
+                                [attr.can-down]="item.canDown"
+                                [attr.can-left]="item.canLeft"
+                                [attr.can-right]="item.canRight"
+                            >
+                                <button (click)="onDropUp($event)" mat-icon-button 
+                                    class="action-button move-action-up">
                                     <mat-icon>arrow_drop_up</mat-icon>
                                 </button>
                                 <button (click)="onDropLeft($event)" mat-icon-button
@@ -143,8 +149,14 @@
                             </div>
                         </div>
                         <div class="block-menu module-menu">
-                            <div class="move-actions-container">
-                                <button (click)="onDropUp($event)" mat-icon-button class="action-button move-action-up">
+                            <div class="move-actions-container"
+                                [attr.can-up]="item.canUp"
+                                [attr.can-down]="item.canDown"
+                                [attr.can-left]="item.canLeft"
+                                [attr.can-right]="item.canRight"
+                            >
+                                <button (click)="onDropUp($event)" mat-icon-button 
+                                    class="action-button move-action-up">
                                     <mat-icon>arrow_drop_up</mat-icon>
                                 </button>
                                 <button (click)="onDropLeft($event)" mat-icon-button
@@ -179,15 +191,21 @@
                     <div *ngIf="isToolStyle(item)" class="block-body" [style]="blockStyle(item)">
                         <div class="block-item" (click)="onSelect($event, item)" theme-all>
                             <div class="block-item-icon">
-                                <mat-icon theme-text>{{item.icon}}</mat-icon>
+                                <mat-icon theme-text>folder_zip</mat-icon>
                             </div>
                             <div class="block-item-name" theme-text>
                                 {{item.node.localTag}}
                             </div>
                         </div>
                         <div class="block-menu">
-                            <div class="move-actions-container">
-                                <button (click)="onDropUp($event)" mat-icon-button class="action-button move-action-up">
+                            <div class="move-actions-container"
+                                [attr.can-up]="item.canUp"
+                                [attr.can-down]="item.canDown"
+                                [attr.can-left]="item.canLeft"
+                                [attr.can-right]="item.canRight"
+                            >
+                                <button (click)="onDropUp($event)" mat-icon-button 
+                                    class="action-button move-action-up">
                                     <mat-icon>arrow_drop_up</mat-icon>
                                 </button>
                                 <button (click)="onDropLeft($event)" mat-icon-button

@@ -269,8 +269,6 @@
 
         <div class="main-container">
             <div class="left-toolbar">
-
-
                 <div class="pc-tabs">
                     <div class="pc-tabs-headers">
                         <div class="tab-header" [attr.selected]="options.components" (click)="select('components')">
@@ -289,9 +287,7 @@
                         [cdkDropListEnterPredicate]="noReturnPredicate" 
                         (cdkDropListDropped)="drop($event)">
 
-                        <div class="components-container" 
-                            [attr.readonly]="disableComponentMenu"
-                            [hidden]="!options.components">
+                        <div class="components-container" [hidden]="!options.components">
                             
                             <div class="components-search">
                                 <input placeholder="Search" [(ngModel)]="search" (input)="onSearch($event)">
@@ -300,6 +296,7 @@
                             <div 
                                 *ngIf="componentsList.favorites.length" 
                                 class="components-group"
+                                [attr.readonly]="disableComponentMenu"
                                 [attr.collapsed]="options.favoritesGroup">
                                 <div class="components-group-name" (click)="collapse('favoritesGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
@@ -326,7 +323,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="components-group" [attr.collapsed]="options.uiGroup">
+                            <div class="components-group" [attr.readonly]="disableComponentMenu" [attr.collapsed]="options.uiGroup">
                                 <div class="components-group-name" (click)="collapse('uiGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
@@ -350,7 +347,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="components-group" [attr.collapsed]="options.serverGroup">
+                            <div class="components-group" [attr.readonly]="disableComponentMenu" [attr.collapsed]="options.serverGroup">
                                 <div class="components-group-name" (click)="collapse('serverGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
@@ -374,7 +371,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="components-group" [attr.collapsed]="options.addonsGroup">
+                            <div class="components-group" [attr.readonly]="disableComponentMenu" [attr.collapsed]="options.addonsGroup">
                                 <div class="components-group-name" (click)="collapse('addonsGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
@@ -399,7 +396,7 @@
                                 </div>
                             </div>
                             <div *ngIf="componentsList.unGrouped.length" class="components-group"
-                                [attr.collapsed]="options.unGroup">
+                                [attr.readonly]="disableComponentMenu" [attr.collapsed]="options.unGroup">
                                 <div class="components-group-name" (click)="collapse('unGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
@@ -426,14 +423,13 @@
                             </div>
                         </div>
 
-                        <div class="components-container" [attr.readonly]="disableModuleMenu"
-                            [hidden]="!options.library">
+                        <div class="components-container" [hidden]="!options.library">
                             <div class="components-search">
                                 <input placeholder="Search" [(ngModel)]="searchModule" (input)="onModuleSearch($event)">
                                 <mat-icon class="components-search-icon">search</mat-icon>
                             </div>
                             <div *ngIf="modulesList.favorites.length" class="components-group"
-                                [attr.collapsed]="options.favoritesModulesGroup">
+                                [attr.collapsed]="options.favoritesModulesGroup" [attr.readonly]="disableModuleMenu">
                                 <div class="components-group-name" (click)="collapse('favoritesModulesGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
@@ -468,7 +464,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="components-group" [attr.collapsed]="options.defaultModulesGroup">
+                            <div class="components-group" [attr.collapsed]="options.defaultModulesGroup" [attr.readonly]="disableModuleMenu">
                                 <div class="components-group-name" (click)="collapse('defaultModulesGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
@@ -498,7 +494,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="components-group" [attr.collapsed]="options.customModulesGroup">
+                            <div class="components-group" [attr.collapsed]="options.customModulesGroup" [attr.readonly]="disableModuleMenu">
                                 <div class="components-group-name" (click)="collapse('customModulesGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
@@ -523,8 +519,36 @@
                                             <span class="component-btn-toolbar">
                                                 <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
                                                     (click)="setModuleFavorite($event, item)">star</mat-icon>
-                                                <!-- <mat-icon class="component-btn-delete" [attr.favorite]="item.favorite"
-                                                    (click)="onDeleteModule(item)">delete</mat-icon> -->
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="components-group" [attr.collapsed]="options.customToolsGroup" [attr.readonly]="disableToolMenu">
+                                <div class="components-group-name" (click)="collapse('customToolsGroup')">
+                                    <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
+                                    <mat-icon class="components-group-open">arrow_right</mat-icon>
+                                    <span>Tools ({{modulesList.customTools.length}})</span>
+                                </div>
+                                <div class="components-group-body readonly-status">
+                                    <div class="components-group-item" *ngFor="let item of modulesList.customTools">
+                                        <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
+                                            [attr.block-type]="item.header" (click)="onAddTool(item)">
+                                            <div class="drag-component drag-module">
+                                                <div class="drag-component-icon">
+                                                    <mat-icon>folder_zip</mat-icon>
+                                                </div>
+                                                <span class="drag-component-name">{{item.name}}</span>
+                                            </div>
+                                        </div>
+                                        <div class="component-btn" (click)="onAddTool(item)">
+                                            <div class="component-btn-icon">
+                                                <mat-icon>folder_zip</mat-icon>
+                                            </div>
+                                            <span>{{item.name}}</span>
+                                            <span class="component-btn-toolbar">
+                                                <!-- <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
+                                                    (click)="setModuleFavorite($event, item)">star</mat-icon> -->
                                             </span>
                                         </div>
                                     </div>
@@ -533,7 +557,6 @@
                         </div>
                     </div>
                 </div>
-
             </div>
             <div class="center-container">
 
@@ -569,7 +592,7 @@
                             [attr.selected]="true"
                             (click)="onOpenRoot(toolTemplate)" 
                             style="width: 100px;margin-right: 6px">
-                            <mat-icon class="module-root-icon action-color" svgIcon="policy-module"></mat-icon>
+                            <mat-icon class="action-color">folder_zip</mat-icon>
                             Tool
                         </div>
 
@@ -645,7 +668,7 @@
                 <div class="right-top-toolbar" [attr.collapse-top]="options.rightTopMenu"
                     [attr.collapse-bottom]="options.rightBottomMenu">
 
-                    <div *ngIf="openType === 'Root' && rootType ==='Policy'" class="pc-tabs">
+                    <div *ngIf="policyDescription" class="pc-tabs">
                         <div class="pc-tabs-headers">
                             <div class="tab-header" [attr.selected]="options.description"
                                 (click)="select('description')">
@@ -693,7 +716,7 @@
                         </div>
                     </div>
 
-                    <div *ngIf="openType === 'Sub' || rootType ==='Module'" class="pc-tabs">
+                    <div *ngIf="moduleDescription" class="pc-tabs">
                         <div class="pc-tabs-headers">
                             <div class="tab-header" [attr.selected]="options.descriptionModule"
                                 (click)="select('descriptionModule')">

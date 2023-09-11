@@ -1,4 +1,4 @@
-import { GenerateUUIDv4, GroupRelationshipType, PolicyType, Schema, Token, } from '@guardian/interfaces';
+import { BlockType, GenerateUUIDv4, GroupRelationshipType, PolicyType, Schema, Token, } from '@guardian/interfaces';
 import { PolicyRole } from './policy-role.model';
 import { PolicyGroup } from './policy-group.model';
 import { PolicyToken } from './policy-token.model';
@@ -16,6 +16,7 @@ import { IBlockConfig } from '../interfaces/block-config.interface';
 import { PolicyModule } from '../module/block.model';
 import { PolicyFolder, PolicyItem } from '../interfaces/types';
 import { TemplateUtils } from '../utils';
+import { PolicyTool } from '../tool/block.model';
 
 export class PolicyTemplate {
     public readonly valid: boolean;
@@ -49,6 +50,7 @@ export class PolicyTemplate {
     private _allEvents!: PolicyEvent[];
     private _dataSource!: PolicyBlock[];
     private _allModules!: PolicyModule[];
+    private _allTools!: PolicyTool[];
     private _tokens!: Token[];
     private _schemas!: Schema[];
     private _lastVariables!: IModuleVariables;
@@ -141,6 +143,10 @@ export class PolicyTemplate {
         return this._allModules;
     }
 
+    public get allTools(): PolicyTool[] {
+        return this._allTools;
+    }
+
     public get root(): PolicyBlock {
         return this._config;
     }
@@ -179,6 +185,18 @@ export class PolicyTemplate {
 
     public get localTag(): string {
         return this._policyTag;
+    }
+
+    public get canAddBlocks(): boolean {
+        return true;
+    }
+
+    public get canAddModules(): boolean {
+        return true;
+    }
+
+    public get canAddTools(): boolean {
+        return true;
     }
 
     public getBlock(block: any): PolicyItem | undefined {
@@ -272,8 +290,17 @@ export class PolicyTemplate {
     }
 
     private registeredBlock(block: PolicyItem) {
-        if (block instanceof PolicyModule && block.isModule) {
-            this._allModules.push(block);
+        if (!block) {
+            return;
+        }
+        if (block.isModule) {
+            this._allModules.push(block as PolicyModule);
+            this._allBlocks.push(block);
+            for (const event of block.events) {
+                this._allEvents.push(event);
+            }
+        } else if (block.isTool) {
+            this._allTools.push(block as PolicyTool);
             this._allBlocks.push(block);
             for (const event of block.events) {
                 this._allEvents.push(event);
@@ -364,6 +391,7 @@ export class PolicyTemplate {
         this._allBlocks = [];
         this._allEvents = [];
         this._allModules = [];
+        this._allTools = [];
         this.registeredBlock(this._config);
 
         for (const block of this._allBlocks) {
@@ -375,6 +403,12 @@ export class PolicyTemplate {
             this._tagMap[module.tag] = module;
             this._idMap[module.id] = module;
             module.refreshData();
+        }
+
+        for (const tool of this._allTools) {
+            this._tagMap[tool.tag] = tool;
+            this._idMap[tool.id] = tool;
+            tool.refreshData();
         }
 
         for (const event of this._allEvents) {
@@ -479,12 +513,28 @@ export class PolicyTemplate {
         }
     }
 
+
+    public newTool(template?: any): PolicyTool {
+        if (template) {
+            const config = JSON.parse(JSON.stringify(template.config));
+            config.id = GenerateUUIDv4();
+            config.tag = this.getNewTag('Tool');
+            config.blockType = BlockType.Tool;
+            config.defaultActive = true;
+            const tool = TemplateUtils.buildBlock(config, null, this) as PolicyTool;
+            this._tagMap[tool.tag] = tool;
+            return tool;
+        } else {
+            throw new Error('Invalid tool config');
+        }
+    }
+
     public newModule(template?: any): PolicyModule {
         if (template) {
             const config = JSON.parse(JSON.stringify(template.config));
             config.id = GenerateUUIDv4();
             config.tag = this.getNewTag('Module');
-            config.blockType = 'module';
+            config.blockType = BlockType.Module;
             config.defaultActive = true;
             const module = TemplateUtils.buildBlock(config, null, this) as PolicyModule;
             this._tagMap[module.tag] = module;
@@ -493,7 +543,7 @@ export class PolicyTemplate {
             const config = {
                 id: GenerateUUIDv4(),
                 tag: this.getNewTag('Module'),
-                blockType: 'module',
+                blockType: BlockType.Module,
                 defaultActive: true,
                 children: [],
                 permissions: []

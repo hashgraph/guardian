@@ -1,4 +1,4 @@
-import { GenerateUUIDv4, ModuleStatus, PolicyType, Schema, Token } from '@guardian/interfaces';
+import { BlockType, GenerateUUIDv4, ModuleStatus, PolicyType, Schema, Token } from '@guardian/interfaces';
 import { IBlockConfig } from '../interfaces/block-config.interface';
 import { IModuleVariables } from '../interfaces/module-variables.interface';
 import { PolicyBlock } from '../block/block.model';
@@ -49,7 +49,7 @@ export class ToolTemplate {
         this.buildBlock(template.config);
         this._config.setNameSilently(template.name);
         this._config.setDescriptionSilently(template.description);
-        this._config.setLocalTagSilently(this._config.localTag || 'Module');
+        this._config.setLocalTagSilently(this._config.localTag || 'Tool');
 
         this.isDraft = (this.status === PolicyType.DRAFT) || (this.status === ModuleStatus.DRAFT);
         this.isPublished = (this.status === PolicyType.PUBLISH) || (this.status === ModuleStatus.PUBLISHED);
@@ -97,6 +97,18 @@ export class ToolTemplate {
 
     public get dataSource(): PolicyBlock[] {
         return this._config.dataSource;
+    }
+
+    public get canAddBlocks(): boolean {
+        return true;
+    }
+
+    public get canAddModules(): boolean {
+        return false;
+    }
+
+    public get canAddTools(): boolean {
+        return true;
     }
 
     private buildBlock(config: IBlockConfig) {
@@ -231,5 +243,9 @@ export class ToolTemplate {
 
     public convertModule(block: PolicyBlock): any { 
         throw new Error('A tool cannot contain nested modules');
+    }
+
+    public newTool(template?: any): PolicyTool {
+        return this._config.newTool(template);
     }
 }
