@@ -942,7 +942,7 @@ __metadata:
     tslint: ^6.1.3
     typescript: ^4.5.5
     winston: ^3.8.1
-    ws: ^8.2.1
+    ws: ^8.14.1
     zlib: ^1.0.5
   languageName: unknown
   linkType: soft
@@ -3478,7 +3478,7 @@ __metadata:
     sinon: ^15.0.4
     tslint: ^6.1.3
     typescript: ^4.5.5
-    ws: ^8.2.1
+    ws: ^8.14.1
     yaml: ^2.3.1
     yup: ^1.1.1
   languageName: unknown
@@ -3680,7 +3680,7 @@ __metadata:
     sinon: ^15.0.4
     tslint: ^6.1.3
     typescript: ^4.5.5
-    ws: ^8.2.1
+    ws: ^8.14.1
     yaml: ^2.3.1
     yup: ^1.1.1
   languageName: unknown
@@ -15599,9 +15599,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ws@npm:^8.2.1":
-  version: 8.13.0
-  resolution: "ws@npm:8.13.0"
+"ws@npm:^8.14.1":
+  version: 8.14.1
+  resolution: "ws@npm:8.14.1"
   peerDependencies:
     bufferutil: ^4.0.1
     utf-8-validate: ">=5.0.2"
@@ -15610,7 +15610,7 @@ __metadata:
       optional: true
     utf-8-validate:
       optional: true
-  checksum: 53e991bbf928faf5dc6efac9b8eb9ab6497c69feeb94f963d648b7a3530a720b19ec2e0ec037344257e05a4f35bd9ad04d9de6f289615ffb133282031b18c61c
+  checksum: 9e310be2b0ff69e1f87d8c6d093ecd17a1ed4c37f281d17c35e8c30e2bd116401775b3d503249651374e6e0e1e9905db62fff096b694371c77561aee06bc3466
   languageName: node
   linkType: hard
 
