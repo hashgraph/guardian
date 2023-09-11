@@ -256,115 +256,196 @@ Install, configure and start all the prerequisites, then build and start each co
    ```
 2. Install dependencies
 
+   Yarn:
    ```
    yarn
    ```
 
+   Npm:
+   ```
+   npm install
+   ```   
 3. From the **interfaces** folder
 
+   Yarn:
    ```
     yarn workspace @guardian/interfaces run build
    ```
 
+   Npm:
+   ```
+   npm --workspace=api-gateway run build
+   ```
+
 4. From the **common** folder
 
+   Yarn:
    ```
     yarn workspace @guardian/common run build
    ```
 
+   Npm:
+   ```
+   npm --workspace=@guardian/common run build
+   ```
 5. From the **logger-service** folder
 
    To build the service:
 
+   Yarn:
    ```shell
    yarn workspace logger-service run build
    ```
 
+   Npm:
+   ```
+   npm --workspace=logger-service run build
+   ```
+
    Configure the service as previously described. Do not need special configuration variables.
 
    To start the service:
 
+   Yarn:
    ```shell
    yarn workspace logger-service start
    ```
 
+   Npm:
+   ```
+   npm --workspace=logger-service start
+   ```
 6. From the **auth-service** folder
 
    To build the service:
 
+   Yarn:
    ```shell
    yarn workspace auth-service run build
+   ```
+
+   Npm:
+   ```
+   npm --workspace=auth-service run build
    ```
 
    Configure the service as previously described. Do not need special configuration variables.
 
    To start the service:
 
+   Yarn:
    ```shell
    yarn workspace auth-service start
+   ```
+
+   Npm:
+   ```
+   npm --workspace=auth-service start
    ```
    
 7. From the **policy-service** folder
 
    To build the service:
 
+   Yarn:
    ```shell
    yarn workspace policy-service run build
    ```
 
+   Npm:
+   ```
+   npm --workspace=policy-service run build
+   ```
    Configure the service as previously described. Do not need special configuration variables.
 
    To start the service:
-   
+
+   Yarn:
    ```shell
-   yarn workspace policy-service run build
+   yarn workspace policy-service start
    ```
-   
+
+   Npm:
+   ```
+   npm --workspace=policy-service start
+   ```   
 8. Build and start **worker-service** service
 
+   Yarn:
    To build the service:
    ```
    yarn workspace worker-service run build
    ```
 
+   Npm:
+   ```
+   npm --workspace=worker-service run build
+   ```
    Configure the service as previously described. Update **IPFS_STORAGE_API_KEY** value in `./worker-service/configs/.env.worker` file.
 
+   Yarn:
    To start the service:
    ```
    yarn workspace worker-service start
    ```
 
+   Npm:
+   ```
+   npm --workspace=worker-service start
+   ```
 9. Build and start **guardian-service** service
 
    To build the service:
 
+   Yarn:
    ```shell
    yarn workspace guardian-service run build
    ```
-   
+
+   Npm:
+   ```
+   npm --workspace=guardian-service run build
+   ```
    Configure the service as previously described. Update **OPERATOR_ID** and **OPERATOR_KEY** values in `./guardian-service/configs/.env.worker` file as in the example above.
 
    To start the service (found on <http://localhost:3002>):
 
+   Yarn:
    ```shell
    yarn workspace guardian-service start
    ```
 
+   Npm:
+   ```
+   npm --workspace=guardian-service start
+   ```
 10. From the **api-gateway** folder
 
    To build the service:
 
+Yarn:
    ```shell
    yarn workspace api-gateway run build
    ```
 
-   Configure the service as previously described. Do not need special configuration variables.
+Npm:
+```
+npm --workspace=api-gateway run build
+```
+
+Configure the service as previously described. Do not need special configuration variables.
 
    To start the service (found on <http://localhost:3002>):
 
+Yarn:
    ```shell
    yarn workspace api-gateway start
    ```
+
+Npm:
+```
+npm --workspace=api-gateway start
+```
 
 11. From the **mrv-sender** folder
 

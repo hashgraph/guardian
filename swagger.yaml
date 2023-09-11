@@ -4870,6 +4870,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /settings/about:
+    get:
+      operationId: SettingsApi_getAbout
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags:
+        - settings
   /tags:
     post:
       operationId: TagsApi_setTags
