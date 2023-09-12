@@ -23,6 +23,12 @@ export interface IRate<T> {
     totalRate: number;
 
     /**
+     * Set children rates
+     * @public
+     */
+    setChildren<U extends IRate<any>>(children: U[]): void;
+
+    /**
      * Get Children Rates
      * @public
      */

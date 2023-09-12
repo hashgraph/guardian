@@ -15,13 +15,3 @@ export interface IWeightBlock {
      */
     length: number;
 }
-
-/**
- * Weight tree
- */
-export interface IWeightItem {
-    /**
-     * Weight
-     */
-    weight: string;
-}

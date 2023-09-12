@@ -142,8 +142,11 @@ export class TrustChainComponent implements OnInit {
     openVCDocument(item: any) {
         const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
+            panelClass: 'g-dialog',
             disableClose: true,
             data: {
+                id: item.id,
+                dryRun: !!item.dryRunId,
                 viewDocument: true,
                 document: item.document,
                 title: item.type,
@@ -156,8 +159,11 @@ export class TrustChainComponent implements OnInit {
     openVPDocument(item: any) {
         const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
+            panelClass: 'g-dialog',
             disableClose: true,
             data: {
+                id: item.id,
+                dryRun: !!item.dryRunId,
                 viewDocument: true,
                 document: item.document,
                 title: item.type,
@@ -170,8 +176,11 @@ export class TrustChainComponent implements OnInit {
     openJsonDocument(item: any) {
         const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
+            panelClass: 'g-dialog',
             disableClose: true,
             data: {
+                id: item.id,
+                dryRun: !!item.dryRunId,
                 document: item.document,
                 title: item.type,
                 type: 'JSON',

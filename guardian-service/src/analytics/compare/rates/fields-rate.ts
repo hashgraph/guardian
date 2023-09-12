@@ -132,6 +132,14 @@ export class FieldsRate extends Rate<FieldModel> {
     }
 
     /**
+     * Set children rates
+     * @public
+     */
+    public setChildren<U extends IRate<any>>(children: U[]): void {
+        this.fields = children as any;
+    }
+
+    /**
      * Get Children Rates
      * @public
      */

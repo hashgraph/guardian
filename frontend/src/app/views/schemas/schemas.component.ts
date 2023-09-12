@@ -435,6 +435,7 @@ export class SchemaConfigComponent implements OnInit {
     openDocument(element: Schema) {
         const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
+            panelClass: 'g-dialog',
             disableClose: true,
             data: {
                 document: element.document,

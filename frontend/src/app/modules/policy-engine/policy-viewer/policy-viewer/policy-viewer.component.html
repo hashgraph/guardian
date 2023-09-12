@@ -16,7 +16,7 @@
     </ng-container>
 
     <ng-container *ngIf="isConfirmed && policyId && policy">
-        <div *ngIf="policyInfo.status === 'DRY-RUN'" class="dry-run-content">
+        <div *ngIf="isDryRun" class="dry-run-content">
             <div class="dry-run-action-btn" [routerLink]="['/policy-configuration']" [queryParams]="{ policyId }"
                 title="Edit Policy">
                 <mat-icon>edit</mat-icon>
@@ -89,7 +89,9 @@
             <render-block [block]="policy" [policyId]="policyId"></render-block>
         </div>
 
-        <div class="policy-container" [attr.policy-status]="policyInfo.status"
+        <div class="policy-container" 
+            *ngIf="isDryRun"
+            [attr.policy-status]="policyInfo.status"
             [attr.hidden-container]="view === 'policy'">
             <div class="table-container">
                 <table mat-table [dataSource]="documents" class="document-table">
@@ -116,8 +118,11 @@
                     <ng-container matColumnDef="document">
                         <th mat-header-cell *matHeaderCellDef></th>
                         <td mat-cell *matCellDef="let element">
-                            <div class="btn-settings" (click)="openDocument(element)" matTooltip="Document"
-                                matTooltipPosition="above" matTooltipClass="guardian-tooltip">
+                            <div class="btn-settings" 
+                                (click)="openDocument(element)" 
+                                matTooltip="Document"
+                                matTooltipPosition="above" 
+                                matTooltipClass="guardian-tooltip">
                                 <mat-icon>segment</mat-icon>
                             </div>
                         </td>

@@ -1,12 +1,13 @@
 import { FieldModel } from './field.model';
-import { ConditionModel } from './condition-model';
+import { ConditionModel } from './condition.model';
 import { ICompareOptions } from '../interfaces/compare-options.interface';
 import MurmurHash3 from 'imurmurhash';
+import { ComparePolicyUtils } from '../utils/compare-policy-utils';
 
 /**
  * Schema Model
  */
-export class SubSchemaModel {
+export class SchemaDocumentModel {
     /**
      * Fields
      * @public
@@ -65,7 +66,7 @@ export class SubSchemaModel {
             if (field.isRef) {
                 const subSchemas = defs || document.$defs;
                 const subDocument = subSchemas[field.type];
-                const subSchema = new SubSchemaModel(subDocument, index + 1, subSchemas);
+                const subSchema = new SchemaDocumentModel(subDocument, index + 1, subSchemas);
                 field.setSubSchema(subSchema);
             }
             fields.push(field);
@@ -155,5 +156,54 @@ export class SubSchemaModel {
      */
     public hash(options: ICompareOptions): string {
         return this._weight;
+    }
+
+    /**
+     * Get field
+     * @param path
+     * @public
+     */
+    public getField(path: string): FieldModel {
+        if (!path) {
+            return null;
+        }
+        for (const field of this.fields) {
+            const result = field.getField(path);
+            if (result) {
+                return result;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Compare
+     * @param document
+     * @public
+     */
+    public compare(document: SchemaDocumentModel): number {
+        if (!document) {
+            return 0;
+        }
+        const fields1 = this.fields;
+        const fields2 = document.fields;
+
+        if (!fields1 || !fields2 || !fields1.length || fields2.length) {
+            return 0;
+        }
+
+        const data = ComparePolicyUtils.compareFields(this.fields, document.fields, null);
+        const rates = ComparePolicyUtils.ratesToTable(data);
+
+        if (!rates.length) {
+            return 0;
+        }
+
+        let total = 0;
+        for (const rate of rates) {
+            total += rate.totalRate;
+        }
+
+        return Math.floor(total / rates.length);
     }
 }

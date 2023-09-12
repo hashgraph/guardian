@@ -358,8 +358,11 @@ export class UserProfileComponent implements OnInit {
     openVCDocument(document: any, title: string) {
         const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
+            panelClass: 'g-dialog',
             disableClose: true,
             data: {
+                id: document.id,
+                dryRun: !!document.dryRunId,
                 document: document.document,
                 title: title,
                 type: 'VC',
@@ -373,8 +376,11 @@ export class UserProfileComponent implements OnInit {
     openDIDDocument(document: any, title: string) {
         const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
+            panelClass: 'g-dialog',
             disableClose: true,
             data: {
+                id: document.id,
+                dryRun: !!document.dryRunId,
                 document: document.document,
                 title: title,
                 type: 'JSON',
@@ -483,9 +489,12 @@ export class UserProfileComponent implements OnInit {
 
     viewRetireRequest(document: any) {
         this.dialog.open(VCViewerDialog, {
-            width: '600px',
+            width: '850px',
+            panelClass: 'g-dialog',
             disableClose: true,
             data: {
+                id: document.id,
+                dryRun: !!document.dryRunId,
                 document: document.document,
                 title: 'View Retire Request Result',
                 type: 'VC',

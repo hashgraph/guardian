@@ -1,5 +1,5 @@
 .mat-button-base:not([started]) {
-    background-color: rgba(0,0,0,.12);
+    background-color: rgba(0, 0, 0, .12);
 }
 
 .json {
@@ -54,4 +54,9 @@
     padding: 10px;
     box-sizing: border-box;
     margin-top: 10px;
+}
+
+.g-dialog-actions {
+    display: flex;
+    align-items: center;
 }

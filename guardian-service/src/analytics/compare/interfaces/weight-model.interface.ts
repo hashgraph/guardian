@@ -44,3 +44,10 @@ export interface IWeightModel extends IModel {
      */
     update(options: ICompareOptions): void;
 }
+
+/**
+ * Weight Model interface
+ */
+export interface IWeightTreeModel extends IWeightModel {
+    children: IWeightTreeModel[];
+}

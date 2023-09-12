@@ -50,6 +50,12 @@ export class PropertyModel<T> implements IProperties<T> {
      */
     protected _weight: string;
 
+    /**
+     * Title
+     * @protected
+     */
+    protected _title: string;
+
     constructor(
         name: string,
         type: PropertyType,
@@ -81,13 +87,17 @@ export class PropertyModel<T> implements IProperties<T> {
      * @public
      */
     public toObject(): IProperties<T> {
-        return {
+        const item: IProperties<T> = {
             name: this.name,
             lvl: this.lvl,
             path: this.path,
             type: this.type,
             value: this.value
         }
+        if (this._title) {
+            item.title = this._title;
+        }
+        return item;
     }
 
     /**
@@ -113,6 +123,14 @@ export class PropertyModel<T> implements IProperties<T> {
      */
     public getPropList(): PropertyModel<T>[] {
         return this._subProp;
+    }
+
+    /**
+     * Set title
+     * @public
+     */
+    public setTitle(title: string): void {
+        this._title = title;
     }
 }
 

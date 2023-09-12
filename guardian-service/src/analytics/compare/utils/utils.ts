@@ -5,6 +5,7 @@ import { IRate } from '../interfaces/rate.interface';
 import MurmurHash3 from 'imurmurhash';
 import * as crypto from 'crypto';
 import { Hashing } from '@guardian/common';
+import { SchemaModel } from '../models/schema.model';
 
 /**
  * Compare Utils
@@ -144,6 +145,49 @@ export class CompareUtils {
             return Hashing.base58.encode(sha256);
         } catch (error) {
             return '';
+        }
+    }
+
+    /**
+     * Compare schemas
+     * @param schemas1
+     * @param schemas2
+     * @public
+     * @static
+     */
+    public static compareSchemas(schemas1: SchemaModel[], schemas2: SchemaModel[]): number {
+        if (!schemas1 || !schemas2 || !schemas1.length || schemas2.length) {
+            return 0;
+        }
+
+        if (schemas1.length === 1 && schemas2.length === 1) {
+            return schemas1[0].compare(schemas2[0]);
+        }
+
+        let result: number;
+        let max: number;
+        let min: number;
+
+        min = 104;
+        for (const schema1 of schemas1) {
+            max = 0;
+            for (const schema2 of schemas2) {
+                result = schema1.compare(schema2);
+                if (result < 0) {
+                    result = result + 104;
+                }
+                max = Math.max(max, result);
+            }
+            min = Math.min(min, max);
+        }
+        if (min >= 103) {
+            return -1;
+        } else if (min >= 102) {
+            return -2;
+        } else if (min > 100) {
+            return -3;
+        } else {
+            return min;
         }
     }
 }

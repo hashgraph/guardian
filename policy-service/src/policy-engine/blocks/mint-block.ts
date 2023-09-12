@@ -321,6 +321,7 @@ export class MintBlock {
         vpDocument.documentFields = Array.from(
             PolicyComponentsUtils.getDocumentCacheFields(ref.policyId)
         );
+        vpDocument.relationships = messages;
         const savedVp = await ref.databaseServer.saveVP(vpDocument);
         // #endregion
 

@@ -1,0 +1,108 @@
+.context {
+    display: flex;
+}
+
+.context ::ng-deep .mat-badge-content {
+    background: #9c27b0 !important;
+}
+
+.compare-header {
+    font-weight: bold;
+    color: #686868;
+    padding-left: 10px;
+}
+
+.compare-btn {
+    background-color: var(--button-primary-color);
+}
+
+.compare-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 5px 5px 5px 5px;
+}
+
+.compare-item {
+    display: flex;
+    align-items: center;
+    padding: 0px 6px;
+    position: relative;
+    flex-wrap: nowrap;
+
+    &:hover {
+        background: #f1f1f1;
+    }
+
+    .compare-item-select {
+        width: 20px;
+        height: 20px;
+        padding: 5px;
+        cursor: pointer;
+    }
+
+    .compare-item-name {
+        flex: 1;
+        cursor: pointer;
+    }
+    
+    .compare-item-delete {
+        width: 20px;
+        height: 20px;
+        padding: 5px;
+        position: relative;
+        cursor: pointer;
+
+        mat-icon {
+            position: absolute;
+            font-size: 20px;
+            color: #f44336;
+            width: 20px;
+            height: 20px;
+            top: 4px;
+            right: 0;
+        }
+    }
+}
+
+.compare-checkbox {
+    pointer-events: none;
+}
+
+.compare-results-btn {
+    color: var(--button-primary-color);
+    border: 1px solid var(--button-primary-color);
+    margin: 0px;
+    min-width: 105px;
+    cursor: pointer;
+    font-weight: 500;
+    text-align: left;
+    user-select: none;
+    position: relative;
+    border-radius: 8px;
+    font-size: 14px;
+    height: 34px;
+    padding: 7px 24px 7px 24px;
+    box-sizing: border-box;
+    width: fit-content;
+    margin-right: 8px;
+
+    &[disable="true"] {
+        color: #888;
+        border: 1px solid #888;
+        cursor: not-allowed;
+    }
+
+    &:hover {
+        background-color: rgba(112, 112, 112, 0.04);
+    }
+
+    &[disable="true"]:hover {
+        background-color: transparent;
+    }
+}
+
+.compare-results {
+    display: flex;
+    justify-content: center;
+}

@@ -105,26 +105,6 @@ export class MultiComparePolicyComponent implements OnInit {
         this.policies = this.createPolicyContext(this.value.left, this.value.rights);
         this.blocks = this.createTreeContext(blocks?.report);
 
-        let max = 0;
-        for (let i = 0; i < this.blocks.length; i++) {
-            const item1 = this.blocks[i];
-            const item2 = this.blocks[i + 1];
-            if (item1 && item2 && item2.lvl > item1.lvl) {
-                item1._collapse = 1;
-            } else {
-                item1._collapse = 0;
-            }
-            item1._hidden = false;
-            item1._index = i;
-            max = Math.max(max, item1.lvl);
-        }
-        if (max > 10) {
-            this._pOffset = 20;
-        }
-        if (max > 15) {
-            this._pOffset = 15;
-        }
-
         const k = Math.round(100 / this.size);
         this._gridStyle = `max(calc(${k}vw - 40px), 720px)`;
         for (let i = 1; i < this.size; i++) {

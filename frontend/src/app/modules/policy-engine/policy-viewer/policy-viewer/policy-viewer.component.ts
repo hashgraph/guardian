@@ -64,6 +64,11 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public innerWidth: any;
     public innerHeight: any;
 
+
+    public get isDryRun(): boolean {
+        return this.policyInfo && this.policyInfo.status === 'DRY-RUN';
+    }
+
     constructor(
         private profileService: ProfileService,
         private policyEngineService: PolicyEngineService,
@@ -248,7 +253,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
     openDocument(element: any) {
         let dialogRef;
-        
+
         if (this.innerWidth <= 810) {
             const bodyStyles = window.getComputedStyle(document.body);
             const headerHeight: number = parseInt(bodyStyles.getPropertyValue('--header-height'));
@@ -269,6 +274,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         } else {
             dialogRef = this.dialog.open(VCViewerDialog, {
                 width: '900px',
+                panelClass: 'g-dialog',
                 data: {
                     document: element,
                     title: 'Document',

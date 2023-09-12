@@ -9,6 +9,11 @@ import { IRateTable } from '../interfaces/rate-table.interface';
  */
 export class Rate<T extends IModel> implements IRate<T> {
     /**
+     * Total rate name
+     */
+    public static readonly TOTAL_RATE: string = 'total';
+
+    /**
      * Left object
      */
     public readonly left: T;
@@ -30,6 +35,14 @@ export class Rate<T extends IModel> implements IRate<T> {
         this.left = left;
         this.right = right;
         this.totalRate = -1;
+    }
+
+    /**
+     * Set children rates
+     * @public
+     */
+    public setChildren<U extends IRate<any>>(children: U[]): void {
+        return;
     }
 
     /**

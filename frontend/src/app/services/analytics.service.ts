@@ -50,4 +50,14 @@ export class AnalyticsService {
     public searchPolicies(options: any): Observable<any> {
         return this.http.post<any>(`${this.url}/search/policies`, options);
     }
+
+    public compareDocuments(options: any): Observable<any> {
+        return this.http.post<any>(`${this.url}/compare/documents`, options);
+    }
+
+    public compareDocumentsFile(options: any, type: string): Observable<any> {
+        return this.http.post(`${this.url}/compare/documents/export?type=${type}`, options, {
+            responseType: 'text'
+        });
+    }
 }

@@ -1,6 +1,5 @@
-import { Component, Inject, Input } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { Schema } from '@guardian/interfaces';
 
 /**
  * Dialog for display json
@@ -11,21 +10,25 @@ import { Schema } from '@guardian/interfaces';
     styleUrls: ['./vc-dialog.component.css']
 })
 export class VCViewerDialog {
-    title: string = "";
-    json: string = "";
-    text: string = "";
-    viewDocument!: boolean;
-    isVcDocument!: boolean;
-    document: any;
-    type: any;
-    isVpDocument!: boolean;
-    isJsonDocument!: boolean;
-    toggle: boolean = true;
-    schema: any;
+    public id: string = "";
+    public title: string = "";
+    public json: string = "";
+    public text: string = "";
+    public viewDocument!: boolean;
+    public isVcDocument!: boolean;
+    public document: any;
+    public type: any;
+    public isVpDocument!: boolean;
+    public isJsonDocument!: boolean;
+    public toggle: boolean = true;
+    public schema: any;
+    public dryRun: boolean = false;
 
     constructor(
         public dialogRef: MatDialogRef<VCViewerDialog>,
         @Inject(MAT_DIALOG_DATA) public data: {
+            id: string,
+            dryRun: boolean,
             document: any,
             title: string,
             viewDocument?: boolean,
@@ -37,6 +40,8 @@ export class VCViewerDialog {
 
     ngOnInit() {
         const {
+            id,
+            dryRun,
             document,
             title,
             viewDocument,
@@ -44,6 +49,8 @@ export class VCViewerDialog {
             toggle,
             schema
         } = this.data;
+        this.id = id;
+        this.dryRun = !!dryRun;
         this.title = title;
         this.json = document ? JSON.stringify((document), null, 4) : '';
         this.text = document || '';
