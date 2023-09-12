@@ -212,7 +212,7 @@ If you want to manually build every component with debug information, then build
 ### Prerequisites for manual installation
 
 * [MongoDB V6](https://www.mongodb.com)
-* [NodeJS V16](https://nodejs.org
+* [NodeJS V16](https://nodejs.org)
 * [Yarn](https://classic.yarnpkg.com/lang/en/docs/install/#mac-stable)
 * [Nats 1.12.2](https://nats.io/)
 
