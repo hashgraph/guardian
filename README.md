@@ -274,7 +274,7 @@ Install, configure and start all the prerequisites, then build and start each co
 
    Npm:
    ```
-   npm --workspace=api-gateway run build
+   npm --workspace=@guardian/interfaces run build
    ```
 
 4. From the **common** folder
@@ -393,18 +393,18 @@ Install, configure and start all the prerequisites, then build and start each co
    ```
    npm --workspace=worker-service start
    ```
-9. Build and start **guardian-service** service
+9. Build and start **notification-service** service
 
    To build the service:
 
    Yarn:
    ```shell
-   yarn workspace guardian-service run build
+   yarn workspace notification-service run build
    ```
 
    Npm:
    ```
-   npm --workspace=guardian-service run build
+   npm --workspace=notification-service run build
    ```
    Configure the service as previously described. Update **OPERATOR_ID** and **OPERATOR_KEY** values in `./guardian-service/configs/.env.worker` file as in the example above.
 
@@ -412,14 +412,42 @@ Install, configure and start all the prerequisites, then build and start each co
 
    Yarn:
    ```shell
-   yarn workspace guardian-service start
+   yarn workspace notification-service start
    ```
 
    Npm:
    ```
-   npm --workspace=guardian-service start
+   npm --workspace=notification-service start
    ```
-10. From the **api-gateway** folder
+10. Build and start **guardian-service** service
+
+To build the service:
+
+Yarn:
+```shell
+yarn workspace guardian-service run build
+```
+
+Npm:
+```
+npm --workspace=guardian-service run build
+```
+Configure the service as previously described. Update **OPERATOR_ID** and **OPERATOR_KEY** values
+in `./guardian-service/configs/.env.worker` file as in the example above.
+
+To start the service (found on <http://localhost:3002>):
+
+Yarn:
+```shell
+yarn workspace guardian-service start
+```
+
+Npm:
+```
+npm --workspace=guardian-service start
+```
+
+11. From the **api-gateway** folder
 
    To build the service:
 
@@ -435,7 +463,7 @@ npm --workspace=api-gateway run build
 
 Configure the service as previously described. Do not need special configuration variables.
 
-   To start the service (found on <http://localhost:3002>):
+To start the service (found on <http://localhost:3002>):
 
 Yarn:
    ```shell
@@ -447,7 +475,7 @@ Npm:
 npm --workspace=api-gateway start
 ```
 
-11. From the **mrv-sender** folder
+12. From the **mrv-sender** folder
 
     To build the service:
 
@@ -464,7 +492,7 @@ npm --workspace=api-gateway start
     npm start
     ```
 
-12. From the **frontend** folder
+13. From the **frontend** folder
 
     To build the service:
 
