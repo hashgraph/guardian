@@ -121,7 +121,7 @@ export class UploadVcDocumentBlock {
     async getSchema(): Promise<Schema> {
         if (!this.schema) {
             const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
-            const schema = await ref.databaseServer.getSchemaByIRI(ref.options.schema, ref.topicId);
+            const schema = await PolicyUtils.loadSchemaByID(ref, ref.options.schema);
             this.schema = schema ? new Schema(schema) : null;
             if (!this.schema) {
                 throw new BlockActionError('Waiting for schema', ref.blockType, ref.uuid);

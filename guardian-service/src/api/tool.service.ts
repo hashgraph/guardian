@@ -15,7 +15,8 @@ import {
     TagMessage,
     TopicConfig,
     TopicHelper,
-    Users
+    Users,
+    ToolImportExport
 } from '@guardian/common';
 import {
     GenerateUUIDv4,
@@ -25,11 +26,10 @@ import {
     TagType,
     TopicType
 } from '@guardian/interfaces';
-import JSZip from 'jszip';
 import { emptyNotifier, INotifier } from '@helpers/notifier';
 import { ISerializedErrors } from '@policy-engine/policy-validation-results-container';
 import { ToolValidator } from '@policy-engine/block-validators/tool-validator';
-import { exportTag, importTag } from './tag.service';
+import { importTag } from './tag.service';
 
 /**
  * Check and update config file
@@ -48,87 +48,6 @@ export function updateToolConfig(tool: any): any {
     tool.config.outputEvents = tool.config.outputEvents || [];
     tool.config.innerEvents = tool.config.innerEvents || [];
     return tool;
-}
-
-/**
- * Generate Zip File
- * @param tool
- *
- * @returns Zip file
- */
-export async function generateZipFile(tool: PolicyTool): Promise<JSZip> {
-    const tagTargets: string[] = [];
-    tagTargets.push(tool.id.toString());
-
-    const toolObject = { ...tool };
-    delete toolObject._id;
-    delete toolObject.id;
-    delete toolObject.uuid;
-    delete toolObject.messageId;
-    delete toolObject.status;
-    delete toolObject.topicId;
-    delete toolObject.createDate;
-    const zip = new JSZip();
-    zip.file('tool.json', JSON.stringify(toolObject));
-
-    zip.folder('tags');
-    const tags = await exportTag(tagTargets)
-    for (let index = 0; index < tags.length; index++) {
-        const tag = tags[index];
-        zip.file(`tags/${index}.json`, JSON.stringify(tag));
-    }
-
-    const schemaIRIs = toolObject.config.variables
-        .filter(v => v.type === 'Schema')
-        .map(v => v.baseSchema);
-
-    const schemas = await new DataBaseHelper(Schema).find({
-        iri: {
-            $in: schemaIRIs
-        }
-    });
-
-    zip.folder('schemas');
-    for (const schema of schemas) {
-        tagTargets.push(schema.id.toString());
-        const item = { ...schema };
-        delete item._id;
-        delete item.id;
-        delete item.status;
-        delete item.readonly;
-        item.id = schema.id.toString();
-        zip.file(`schemas/${item.iri}.json`, JSON.stringify(item));
-    }
-
-    return zip;
-}
-
-/**
- * Parse zip tool file
- * @param zipFile Zip file
- * @returns Parsed tool
- */
-export async function parseZipFile(zipFile: any): Promise<any> {
-    const zip = new JSZip();
-    const content = await zip.loadAsync(zipFile);
-    if (!content.files['tool.json'] || content.files['tool.json'].dir) {
-        throw new Error('Zip file is not a tool');
-    }
-    const toolString = await content.files['tool.json'].async('string');
-    const tagsStringArray = await Promise.all(Object.entries(content.files)
-        .filter(file => !file[1].dir)
-        .filter(file => /^tags\/.+/.test(file[0]))
-        .map(file => file[1].async('string')));
-    const schemasStringArray = await Promise.all(Object.entries(content.files)
-        .filter(file => !file[1].dir)
-        .filter(file => /^schemas\/.+/.test(file[0]))
-        .map(file => file[1].async('string')));
-
-    const tool = JSON.parse(toolString);
-    const tags = tagsStringArray.map(item => JSON.parse(item)) || [];
-    const schemas = schemasStringArray.map(item => JSON.parse(item));
-
-    return { tool, tags, schemas };
 }
 
 /**
@@ -156,7 +75,7 @@ export async function preparePreviewMessage(messageId: string, owner: string, no
     }
 
     notifier.completedAndStart('Parse tool files');
-    const result = await parseZipFile(message.document);
+    const result:any = await ToolImportExport.parseZipFile(message.document);
     result.messageId = messageId;
     result.toolTopicId = message.toolTopicId;
 
@@ -248,7 +167,7 @@ export async function publishTool(
     notifier.completedAndStart('Generate file');
 
     tool = updateToolConfig(tool);
-    const zip = await generateZipFile(tool);
+    const zip = await ToolImportExport.generate(tool);
     const buffer = await zip.generateAsync({
         type: 'arraybuffer',
         compression: 'DEFLATE',
@@ -441,7 +360,7 @@ export async function toolsAPI(): Promise<void> {
             }
 
             updateToolConfig(item);
-            const zip = await generateZipFile(item);
+            const zip = await ToolImportExport.generate(item);
             const file = await zip.generateAsync({
                 type: 'arraybuffer',
                 compression: 'DEFLATE',
@@ -486,7 +405,7 @@ export async function toolsAPI(): Promise<void> {
             if (!zip) {
                 throw new Error('file in body is empty');
             }
-            const preview = await parseZipFile(Buffer.from(zip.data));
+            const preview = await ToolImportExport.parseZipFile(Buffer.from(zip.data));
             return new MessageResponse(preview);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -512,7 +431,7 @@ export async function toolsAPI(): Promise<void> {
                 throw new Error('file in body is empty');
             }
 
-            const preview = await parseZipFile(Buffer.from(zip.data));
+            const preview = await ToolImportExport.parseZipFile(Buffer.from(zip.data));
 
             const { tool, tags, schemas } = preview;
             delete tool._id;
@@ -522,8 +441,7 @@ export async function toolsAPI(): Promise<void> {
             tool.uuid = GenerateUUIDv4();
             tool.creator = owner;
             tool.owner = owner;
-            tool.status = 'DRAFT';
-            tool.type = 'CUSTOM';
+            tool.status = ModuleStatus.DRAFT;
             if (await DatabaseServer.getTool({ name: tool.name })) {
                 tool.name = tool.name + '_' + Date.now();
             }

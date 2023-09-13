@@ -50,7 +50,7 @@ export class RetirementBlock {
      */
     private async createWipeVC(root: IRootConfig, token: any, data: any, ref: AnyBlockType): Promise<VcDocument> {
         const vcHelper = new VcHelper();
-        const policySchema = await ref.databaseServer.getSchemaByType(ref.topicId, SchemaEntity.WIPE_TOKEN);
+        const policySchema = await PolicyUtils.loadSchemaByType(ref, SchemaEntity.WIPE_TOKEN);
         const amount = data as string;
         const vcSubject = {
             ...SchemaHelper.getContext(policySchema),

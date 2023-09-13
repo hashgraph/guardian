@@ -1,6 +1,6 @@
 import { Guardians } from '@helpers/guardians';
 import { ISchema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus, StatusType, TaskAction, UserRole } from '@guardian/interfaces';
-import { Logger, RunFunctionAsync } from '@guardian/common';
+import { Logger, RunFunctionAsync, SchemaImportExport } from '@guardian/common';
 import { PolicyEngine } from '@helpers/policy-engine';
 import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
@@ -410,7 +410,7 @@ export class SchemaApi {
         }
         try {
             const guardians = new Guardians();
-            const { schemas } = await SchemaUtils.parseZipFile(zip);
+            const { schemas } = await SchemaImportExport.parseZipFile(zip);
             const schemaToPreview = await guardians.previewSchemasByFile(schemas);
             return res.json(schemaToPreview);
         } catch (error) {
@@ -476,7 +476,7 @@ export class SchemaApi {
             throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
         }
         try {
-            const files = await SchemaUtils.parseZipFile(zip);
+            const files = await SchemaImportExport.parseZipFile(zip);
             await guardians.importSchemasByFile(files, req.user.did, topicId);
             const { items, count } = await guardians.getSchemasByOwner(user.did);
             SchemaHelper.updatePermission(items, user.did);
@@ -500,7 +500,7 @@ export class SchemaApi {
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.IMPORT_SCHEMA_FILE, user.id);
         RunFunctionAsync<ServiceError>(async () => {
-            const files = await SchemaUtils.parseZipFile(zip);
+            const files = await SchemaImportExport.parseZipFile(zip);
             const guardians = new Guardians();
             await guardians.importSchemasByFileAsync(files, user.did, topicId, task);
         }, async (error) => {
@@ -551,7 +551,7 @@ export class SchemaApi {
             const ids = schemas.map(s => s.id);
             const tags = await guardians.exportTags('Schema', ids);
             const name = `${Date.now()}`;
-            const zip = await SchemaUtils.generateZipFile(schemas, tags);
+            const zip = await SchemaImportExport.generateZipFile({ schemas, tags });
             const arcStream = zip.generateNodeStream({
                 type: 'nodebuffer',
                 compression: 'DEFLATE',

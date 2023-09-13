@@ -19,4 +19,9 @@ export interface ISerializedErrors {
      * Modules
      */
     modules?: IModulesErrors[];
+
+    /**
+     * Tools
+     */
+    tools?: IModulesErrors[];
 }

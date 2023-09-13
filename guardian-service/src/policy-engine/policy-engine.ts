@@ -14,6 +14,7 @@ import {
     NatsService,
     NotificationHelper,
     Policy,
+    PolicyImportExport,
     PolicyMessage,
     replaceAllEntities,
     replaceAllVariables,
@@ -625,7 +626,7 @@ export class PolicyEngine extends NatsService {
                 await createSynchronizationTopic();
             }
 
-            const zip = await PolicyImportExportHelper.generateZipFile(model);
+            const zip = await PolicyImportExport.generate(model);
             const buffer = await zip.generateAsync({
                 type: 'arraybuffer',
                 compression: 'DEFLATE',
@@ -738,7 +739,7 @@ export class PolicyEngine extends NatsService {
         await databaseServer.saveTopic(rootTopic.toObject());
         model.instanceTopicId = rootTopic.topicId;
 
-        const zip = await PolicyImportExportHelper.generateZipFile(model);
+        const zip = await PolicyImportExport.generate(model);
         const buffer = await zip.generateAsync({
             type: 'arraybuffer',
             compression: 'DEFLATE',
@@ -927,7 +928,7 @@ export class PolicyEngine extends NatsService {
         // const tagMessages = await messageServer.getMessages<TagMessage>(message.policyTopicId, MessageType.Tag, MessageAction.PublishTag);
 
         notifier.completedAndStart('Parse policy files');
-        const policyToImport = await PolicyImportExportHelper.parseZipFile(message.document, true);
+        const policyToImport: any = await PolicyImportExport.parseZipFile(message.document, true);
         if (newVersions.length !== 0) {
             policyToImport.newVersions = newVersions.reverse();
         }
@@ -973,7 +974,7 @@ export class PolicyEngine extends NatsService {
         const tagMessages = await messageServer.getMessages<TagMessage>(message.policyTopicId, MessageType.Tag, MessageAction.PublishTag);
 
         notifier.completedAndStart('File parsing');
-        const policyToImport = await PolicyImportExportHelper.parseZipFile(message.document, true);
+        const policyToImport: any = await PolicyImportExport.parseZipFile(message.document, true);
 
         if (!Array.isArray(policyToImport.tags)) {
             policyToImport.tags = [];

@@ -3,6 +3,7 @@ import { PolicyType } from '@guardian/interfaces';
 import { BlockValidator } from './block-validator';
 import { ModuleValidator } from './module-validator';
 import { ISerializedErrors } from './interfaces/serialized-errors.interface';
+import { ToolValidator } from './tool-validator';
 
 /**
  * Policy Validator
@@ -23,6 +24,11 @@ export class PolicyValidator {
      * @private
      */
     private readonly modules: Map<string, ModuleValidator>;
+    /**
+     * Tools map
+     * @private
+     */
+    private readonly tools: Map<string, ToolValidator>;
     /**
      * Common errors
      * @private
@@ -67,6 +73,7 @@ export class PolicyValidator {
     constructor(policy: Policy) {
         this.blocks = new Map();
         this.modules = new Map();
+        this.tools = new Map();
         this.tags = new Map();
         this.errors = [];
         this.permissions = ['NO_ROLE', 'ANY_ROLE', 'OWNER'];
@@ -110,6 +117,9 @@ export class PolicyValidator {
         if (block.blockType === 'module') {
             const module = new ModuleValidator(block);
             this.modules.set(block.id, module);
+        } else if (block.blockType === 'tool') {
+            const tool = new ToolValidator(block);
+            this.tools.set(block.id, tool);
         } else {
             if (Array.isArray(block.children)) {
                 for (const child of block.children) {
@@ -136,6 +146,9 @@ export class PolicyValidator {
         for (const item of this.modules.values()) {
             item.clear();
         }
+        for (const item of this.tools.values()) {
+            item.clear();
+        }
         for (const item of this.blocks.values()) {
             item.clear();
         }
@@ -146,6 +159,9 @@ export class PolicyValidator {
      */
     public async validate() {
         for (const item of this.modules.values()) {
+            await item.validate();
+        }
+        for (const item of this.tools.values()) {
             await item.validate();
         }
         for (const item of this.blocks.values()) {
@@ -207,6 +223,10 @@ export class PolicyValidator {
         for (const item of this.modules.values()) {
             modulesErrors.push(item.getSerializedErrors());
         }
+        const toolsErrors = [];
+        for (const item of this.tools.values()) {
+            toolsErrors.push(item.getSerializedErrors());
+        }
         const blocksErrors = [];
         for (const item of this.blocks.values()) {
             blocksErrors.push(item.getSerializedErrors());
@@ -224,6 +244,7 @@ export class PolicyValidator {
             errors: commonErrors,
             blocks: blocksErrors,
             modules: modulesErrors,
+            tools: toolsErrors,
         }
     }
 

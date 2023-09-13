@@ -4,6 +4,7 @@ import { EventConfig, IPolicyEvent } from './interfaces';
 import { DatabaseServer } from '@guardian/common';
 import { IPolicyUser } from './policy-user';
 import { IHederaAccount } from './helpers/utils';
+import { ComponentsService } from './helpers/components-service';
 
 /**
  * Policy roles interface
@@ -112,7 +113,14 @@ export interface IPolicyBlock {
      * Block about
      */
     about?: string;
-
+    /**
+     * Block permissions
+     */
+    readonly permissions: string[];
+    /**
+     * Block variables
+     */
+    readonly variables: any[];
     /**
      * Block actions
      */
@@ -137,14 +145,14 @@ export interface IPolicyBlock {
     readonly databaseServer: DatabaseServer;
 
     /**
+     * Database Server
+     */
+    readonly components: ComponentsService;
+
+    /**
      * Dry-run
      */
     readonly dryRun: string;
-
-    /**
-     * If policy contain multiple groups
-     */
-    readonly isMultipleGroups: boolean;
 
     /**
      * Set policy owner
@@ -158,11 +166,6 @@ export interface IPolicyBlock {
      * @param policy
      */
     setPolicyInstance(policyId: string, policy: any): void;
-
-    /**
-     * Register Variables
-     */
-    registerVariables(): void;
 
     /**
      * Set topic id

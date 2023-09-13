@@ -10,11 +10,11 @@ import { PolicyInputEventType } from '@policy-engine/interfaces/policy-event-typ
  * Container block with UI
  */
 @ContainerBlock({
-    blockType: 'module',
+    blockType: 'tool',
     commonBlock: false,
     about: {
-        label: 'Module',
-        title: `Add 'Module' Block`,
+        label: 'Tool',
+        title: `Add 'Tool' Block`,
         post: false,
         get: true,
         children: ChildrenType.Any,
@@ -25,7 +25,7 @@ import { PolicyInputEventType } from '@policy-engine/interfaces/policy-event-typ
     },
     variables: []
 })
-export class ModuleBlock {
+export class ToolBlock {
     /**
      * Input Events
      */
@@ -54,11 +54,11 @@ export class ModuleBlock {
 
     /**
      * Action callback
-     * @event PolicyEventType.ModuleEvent
+     * @event PolicyEventType.ToolEvent
      * @param {IPolicyEvent} event
      */
     @ActionCallback({
-        type: PolicyInputEventType.ModuleEvent
+        type: PolicyInputEventType.ToolEvent
     })
     async onAction(event: IPolicyEvent<any>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
@@ -75,7 +75,6 @@ export class ModuleBlock {
             }
         }
     }
-
     /**
      * Get variables
      * @param names variable name

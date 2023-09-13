@@ -98,20 +98,19 @@ export class CreateTokenBlock {
     async getData(user: IPolicyUser): Promise<any> {
         const options = PolicyComponentsUtils.GetBlockUniqueOptionsObject(this);
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
-
-        const policyTokens = ref.policyInstance.policyTokens || [];
-        const tokenTemplate = policyTokens.find((item) => item.templateTokenTag === ref.options.template);
-        const templateFields = Object.keys(tokenTemplate);
-        for (const fieldName of templateFields) {
-            if (
-                tokenTemplate[fieldName] === '' ||
-                tokenTemplate[fieldName] === null ||
-                tokenTemplate[fieldName] === undefined
-            ) {
-                delete tokenTemplate[fieldName];
+        const tokenTemplate = PolicyUtils.getTokenTemplate(ref, ref.options.template);
+        if (tokenTemplate) {
+            const templateFields = Object.keys(tokenTemplate);
+            for (const fieldName of templateFields) {
+                if (
+                    tokenTemplate[fieldName] === '' ||
+                    tokenTemplate[fieldName] === null ||
+                    tokenTemplate[fieldName] === undefined
+                ) {
+                    delete tokenTemplate[fieldName];
+                }
             }
         }
-
         return {
             id: ref.uuid,
             blockType: ref.blockType,
@@ -170,8 +169,8 @@ export class CreateTokenBlock {
             }
 
             // #region Create new token
-            const policyTokens = ref.policyInstance.policyTokens || [];
-            const tokenTemplate = policyTokens.find((item) => item.templateTokenTag === ref.options.template);
+        
+            const tokenTemplate = PolicyUtils.getTokenTemplate(ref, ref.options.template);
             if (!tokenTemplate) {
                 throw new BlockActionError(
                     'Token template not found',

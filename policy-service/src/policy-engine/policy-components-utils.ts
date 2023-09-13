@@ -9,6 +9,7 @@ import { GetBlockAbout } from '@policy-engine/blocks';
 import { IPolicyUser } from './policy-user';
 import { ExternalEvent } from './interfaces/external-event';
 import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
+import { ComponentsService } from './helpers/components-service';
 
 /**
  * Policy action map type
@@ -272,37 +273,51 @@ export class PolicyComponentsUtils {
         if (
             PolicyComponentsUtils.ActionMapByPolicyId.has(targetBlock.policyId)
         ) {
-            const policyMap = PolicyComponentsUtils.ActionMapByPolicyId.get(
-                targetBlock.policyId
-            );
+            const policyMap = PolicyComponentsUtils.ActionMapByPolicyId.get(targetBlock.policyId);
             if (policyMap.has(targetBlock.uuid)) {
                 const blockMap = policyMap.get(targetBlock.uuid);
-
-                if (targetBlock.blockType === 'module') {
-                    if (blockMap.has(PolicyInputEventType.ModuleEvent)) {
-                        const fn = blockMap.get(
-                            PolicyInputEventType.ModuleEvent
-                        );
-                        return new PolicyLink(
-                            inputName,
-                            outputName,
-                            sourceBlock,
-                            targetBlock,
-                            actor,
-                            fn
-                        );
+                switch (targetBlock.blockType) {
+                    case 'module': {
+                        if (blockMap.has(PolicyInputEventType.ModuleEvent)) {
+                            const fn = blockMap.get(PolicyInputEventType.ModuleEvent);
+                            return new PolicyLink(
+                                inputName,
+                                outputName,
+                                sourceBlock,
+                                targetBlock,
+                                actor,
+                                fn
+                            );
+                        }
+                        break;
                     }
-                } else {
-                    if (blockMap.has(inputName)) {
-                        const fn = blockMap.get(inputName);
-                        return new PolicyLink(
-                            inputName,
-                            outputName,
-                            sourceBlock,
-                            targetBlock,
-                            actor,
-                            fn
-                        );
+                    case 'tool': {
+                        if (blockMap.has(PolicyInputEventType.ToolEvent)) {
+                            const fn = blockMap.get(PolicyInputEventType.ToolEvent);
+                            return new PolicyLink(
+                                inputName,
+                                outputName,
+                                sourceBlock,
+                                targetBlock,
+                                actor,
+                                fn
+                            );
+                        }
+                        break;
+                    }
+                    default: {
+                        if (blockMap.has(inputName)) {
+                            const fn = blockMap.get(inputName);
+                            return new PolicyLink(
+                                inputName,
+                                outputName,
+                                sourceBlock,
+                                targetBlock,
+                                actor,
+                                fn
+                            );
+                        }
+                        break;
                     }
                 }
             }
@@ -425,10 +440,10 @@ export class PolicyComponentsUtils {
         policyId: string,
         block: ISerializedBlock,
         parent: IPolicyBlock,
+        components: ComponentsService,
         allInstances: IPolicyBlock[]
     ): IPolicyBlock {
-        const { blockType, children, ...params }: ISerializedBlockExtend =
-            block;
+        const { blockType, children, ...params }: ISerializedBlockExtend = block;
 
         if (parent) {
             params._parent = parent;
@@ -445,12 +460,15 @@ export class PolicyComponentsUtils {
             options.tag,
             options.permissions,
             options._parent,
-            GetOtherOptions(options as PolicyBlockFullArgumentList)
+            GetOtherOptions(options as PolicyBlockFullArgumentList),
+            components
         );
         blockInstance.setPolicyInstance(policyId, policy);
         blockInstance.setPolicyOwner(policy.owner);
         blockInstance.setTopicId(policy.topicId);
-        blockInstance.registerVariables();
+        blockInstance.setToolId(options._toolId);
+
+        PolicyComponentsUtils.RegisterVariables(blockInstance);
 
         allInstances.push(blockInstance);
 
@@ -461,6 +479,7 @@ export class PolicyComponentsUtils {
                     policyId,
                     child,
                     blockInstance,
+                    components,
                     allInstances
                 );
             }
@@ -479,18 +498,19 @@ export class PolicyComponentsUtils {
     public static BuildBlockTree(
         policy: Policy,
         policyId: string,
-        allInstances: IPolicyBlock[]
-    ): IPolicyInterfaceBlock {
+        components: ComponentsService,
+    ) {
+        const allInstances: IPolicyBlock[] = [];
         const configObject = policy.config as ISerializedBlock;
-        const model = PolicyComponentsUtils.BuildInstance(
+        const rootInstance = PolicyComponentsUtils.BuildInstance(
             policy,
             policyId,
             configObject,
             null,
+            components,
             allInstances
-        );
-
-        return model as any;
+        ) as IPolicyInterfaceBlock;
+        return { rootInstance, allInstances };
     }
 
     /**
@@ -773,7 +793,7 @@ export class PolicyComponentsUtils {
      * @param user
      */
     public static async GetGroups(
-        policy: IPolicyInstance,
+        policy: IPolicyInstance | IPolicyInterfaceBlock,
         user: IPolicyUser
     ): Promise<any[]> {
         return await policy.databaseServer.getGroupsByUser(
@@ -792,7 +812,7 @@ export class PolicyComponentsUtils {
      * @param uuid
      */
     public static async SelectGroup(
-        policy: IPolicyInstance,
+        policy: IPolicyInstance | IPolicyInterfaceBlock,
         user: IPolicyUser,
         uuid: string
     ): Promise<void> {
@@ -918,14 +938,17 @@ export class PolicyComponentsUtils {
      * Get Parent Module
      * @param block
      */
-    public static GetModule<T>(block: any): T {
-        if (!block || !block._parent) {
+    public static GetModule<T>(block: AnyBlockType): T {
+        if (!block || !block.parent) {
             return null;
         }
-        if (block._parent.blockType === 'module') {
-            return block._parent;
+        if (block.parent.blockType === 'module') {
+            return block.parent as T;
         }
-        return PolicyComponentsUtils.GetModule(block._parent);
+        if (block.parent.blockType === 'tool') {
+            return block.parent as T;
+        }
+        return PolicyComponentsUtils.GetModule(block.parent);
     }
 
     /**
@@ -956,6 +979,31 @@ export class PolicyComponentsUtils {
             }
         } catch (error) {
             return;
+        }
+    }
+
+    /**
+     * Register Variables
+     * @param block
+     */
+    public static RegisterVariables(block: AnyBlockType): void {
+        const modules = PolicyComponentsUtils.GetModule<any>(block);
+        if (!modules) {
+            return;
+        }
+
+        for (let index = 0; index < block.permissions.length; index++) {
+            block.permissions[index] = modules.getVariables(block.permissions[index], 'Role');
+        }
+
+        for (const variable of block.variables) {
+            PolicyComponentsUtils.ReplaceObjectValue(
+                block,
+                variable.path,
+                (value: any) => {
+                    return modules.getVariables(value, variable.type);
+                }
+            );
         }
     }
 }

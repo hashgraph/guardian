@@ -6,6 +6,7 @@ import { IPolicyUser, PolicyUser } from './policy-user';
 import { ISerializedErrors, PolicyValidator } from '@policy-engine/block-validators';
 import { headers } from 'nats';
 import { Inject } from '@helpers/decorators/inject';
+import { ComponentsService } from './helpers/components-service';
 
 /**
  * Block tree generator
@@ -41,7 +42,7 @@ export class BlockTreeGenerator extends NatsService {
      * @param policy
      * @param user
      */
-    public async getUser(policy: IPolicyInstance, user: IUser): Promise<IPolicyUser> {
+    public async getUser(policy: IPolicyInstance | IPolicyInterfaceBlock, user: IUser): Promise<IPolicyUser> {
         const regUser = await this.users.getUser(user.username);
         if (!regUser || !regUser.did) {
             throw new Error(`Forbidden`);
@@ -82,13 +83,13 @@ export class BlockTreeGenerator extends NatsService {
                         const head = headers();
                         head.append('messageId', messageId);
                         const respond = await cb(await this.codec.decode(msg.data), msg.headers);
-                        msg.respond(await this.codec.encode(respond), {headers: head});
+                        msg.respond(await this.codec.encode(respond), { headers: head });
                     }
                 } catch (error) {
                     const messageId = msg.headers.get('messageId');
                     const head = headers();
                     head.append('messageId', messageId);
-                    msg.respond(await this.codec.encode(new MessageError(error.message)), {headers: head});
+                    msg.respond(await this.codec.encode(new MessageError(error.message)), { headers: head });
                 }
             }
         });
@@ -97,12 +98,12 @@ export class BlockTreeGenerator extends NatsService {
     /**
      * Init policy events
      */
-    async initPolicyEvents(policyId: string, policyInstance: any): Promise<void> {
-        this.getPolicyMessages(PolicyEvents.CHECK_IF_ALIVE, policyId,async (msg: any) => {
+    async initPolicyEvents(policyId: string, policyInstance: IPolicyInterfaceBlock): Promise<void> {
+        this.getPolicyMessages(PolicyEvents.CHECK_IF_ALIVE, policyId, async (msg: any) => {
             return new MessageResponse(true);
         });
 
-        this.getPolicyMessages(PolicyEvents.GET_ROOT_BLOCK_DATA, policyId,async (msg: any) => {
+        this.getPolicyMessages(PolicyEvents.GET_ROOT_BLOCK_DATA, policyId, async (msg: any) => {
 
             const { user } = msg;
 
@@ -116,13 +117,14 @@ export class BlockTreeGenerator extends NatsService {
             }
         });
 
-        this.getPolicyMessages(PolicyEvents.GET_POLICY_GROUPS, policyId,async (msg: any) => {
+        this.getPolicyMessages(PolicyEvents.GET_POLICY_GROUPS, policyId, async (msg: any) => {
 
             const { user } = msg;
 
             const userFull = await this.getUser(policyInstance, user);
 
-            if (!policyInstance.isMultipleGroups) {
+            const templates = policyInstance.components.getGroupTemplates<any>();
+            if (templates.length === 0) {
                 return new MessageResponse([]);
             }
 
@@ -130,13 +132,14 @@ export class BlockTreeGenerator extends NatsService {
             return new MessageResponse(groups);
         });
 
-        this.getPolicyMessages(PolicyEvents.SELECT_POLICY_GROUP, policyId,async (msg: any) => {
+        this.getPolicyMessages(PolicyEvents.SELECT_POLICY_GROUP, policyId, async (msg: any) => {
 
             const { user, uuid } = msg;
 
             const userFull = await this.getUser(policyInstance, user);
 
-            if (!policyInstance.isMultipleGroups) {
+            const templates = policyInstance.components.getGroupTemplates<any>();
+            if (templates.length === 0) {
                 return new MessageResponse([] as any);
             }
 
@@ -144,7 +147,7 @@ export class BlockTreeGenerator extends NatsService {
             return new MessageResponse(true as any);
         });
 
-        this.getPolicyMessages(PolicyEvents.GET_BLOCK_DATA, policyId,async (msg: any) => {
+        this.getPolicyMessages(PolicyEvents.GET_BLOCK_DATA, policyId, async (msg: any) => {
 
             const { user, blockId } = msg;
 
@@ -159,7 +162,7 @@ export class BlockTreeGenerator extends NatsService {
             }
         });
 
-        this.getPolicyMessages(PolicyEvents.GET_BLOCK_DATA_BY_TAG, policyId,async (msg: any) => {
+        this.getPolicyMessages(PolicyEvents.GET_BLOCK_DATA_BY_TAG, policyId, async (msg: any) => {
             const { user, tag } = msg;
 
             const userFull = await this.getUser(policyInstance, user);
@@ -178,7 +181,7 @@ export class BlockTreeGenerator extends NatsService {
             }
         });
 
-        this.getPolicyMessages(PolicyEvents.SET_BLOCK_DATA, policyId,async (msg: any) => {
+        this.getPolicyMessages(PolicyEvents.SET_BLOCK_DATA, policyId, async (msg: any) => {
 
             const { user, blockId, data } = msg;
 
@@ -198,7 +201,7 @@ export class BlockTreeGenerator extends NatsService {
             }
         });
 
-        this.getPolicyMessages(PolicyEvents.SET_BLOCK_DATA_BY_TAG, policyId,async (msg: any) => {
+        this.getPolicyMessages(PolicyEvents.SET_BLOCK_DATA_BY_TAG, policyId, async (msg: any) => {
             const { user, tag, data } = msg;
 
             const userFull = await this.getUser(policyInstance, user);
@@ -212,13 +215,13 @@ export class BlockTreeGenerator extends NatsService {
             }
         });
 
-        this.getPolicyMessages(PolicyEvents.BLOCK_BY_TAG, policyId,async (msg: any) => {
+        this.getPolicyMessages(PolicyEvents.BLOCK_BY_TAG, policyId, async (msg: any) => {
             const { tag } = msg;
             const block = PolicyComponentsUtils.GetBlockByTag<IPolicyBlock>(policyId, tag);
             return new MessageResponse({ id: block.uuid });
         });
 
-        this.getPolicyMessages(PolicyEvents.GET_BLOCK_PARENTS, policyId,async (msg: any) => {
+        this.getPolicyMessages(PolicyEvents.GET_BLOCK_PARENTS, policyId, async (msg: any) => {
             const { blockId } = msg;
             const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
             let tmpBlock: IPolicyBlock = block;
@@ -230,7 +233,7 @@ export class BlockTreeGenerator extends NatsService {
             return new MessageResponse(parents);
         });
 
-        this.getPolicyMessages(PolicyEvents.MRV_DATA, policyId,async (msg: any) => {
+        this.getPolicyMessages(PolicyEvents.MRV_DATA, policyId, async (msg: any) => {
             const { data } = msg;
 
             for (const block of PolicyComponentsUtils.ExternalDataBlocks.values()) {
@@ -257,22 +260,23 @@ export class BlockTreeGenerator extends NatsService {
         if (!policy || (typeof policy !== 'object')) {
             throw new Error('Policy was not exist');
         }
-        const policyId: string = policy.id || PolicyComponentsUtils.GenerateNewUUID();
+
+        const policyId: string = policy.id?.toString() || PolicyComponentsUtils.GenerateNewUUID();
 
         try {
-            const instancesArray: IPolicyBlock[] = [];
-            const model = PolicyComponentsUtils.BuildBlockTree(policy, policyId, instancesArray);
+            const components = new ComponentsService(policy, policyId);
+            const { rootInstance, allInstances } = PolicyComponentsUtils.BuildBlockTree(policy, policyId, components);
 
             if (!skipRegistration) {
                 await PolicyComponentsUtils.RegisterPolicyInstance(policyId, policy);
-                await PolicyComponentsUtils.RegisterBlockTree(instancesArray);
-                this.models.set(policy.id.toString(), model as any);
+                await PolicyComponentsUtils.RegisterBlockTree(allInstances);
+                this.models.set(policyId, rootInstance);
             }
-            await this.initPolicyEvents(policyId, model);
+            await this.initPolicyEvents(policyId, rootInstance);
 
             await this.validate(policy, policyValidator);
 
-            return model as IPolicyInterfaceBlock;
+            return rootInstance;
         } catch (error) {
             new Logger().error(`Error build policy ${error}`, ['POLICY', policy.name, policyId.toString()]);
             if (policyValidator) {

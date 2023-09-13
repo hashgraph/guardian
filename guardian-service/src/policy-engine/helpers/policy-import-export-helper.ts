@@ -1,14 +1,12 @@
-import JSZip from 'jszip';
+
 import { ConfigType, GenerateUUIDv4, SchemaEntity, TagType, TopicType, } from '@guardian/interfaces';
 import { publishSystemSchemas } from '@api/helpers/schema-publish-helper';
 import { importSchemaByFiles } from '@api/helpers/schema-import-export-helper';
 import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
 import { INotifier } from '@helpers/notifier';
 import {
-    Artifact,
     DataBaseHelper,
     DatabaseServer,
-    findAllEntities,
     getArtifactType,
     MessageAction,
     MessageServer,
@@ -27,7 +25,7 @@ import {
     TopicHelper,
     Users
 } from '@guardian/common';
-import { exportTag, importTag } from '@api/tag.service';
+import { importTag } from '@api/tag.service';
 import { SchemaImportResult } from '@api/helpers/schema-helper';
 import { HashComparator } from '@analytics';
 
@@ -35,161 +33,6 @@ import { HashComparator } from '@analytics';
  * Policy import export helper
  */
 export class PolicyImportExportHelper {
-    /**
-     * Policy filename
-     */
-    static policyFileName = 'policy.json';
-
-    /**
-     * Generate Zip File
-     * @param policy policy to pack
-     *
-     * @returns Zip file
-     */
-    static async generateZipFile(policy: Policy): Promise<JSZip> {
-        const tagTargets: string[] = [];
-        tagTargets.push(policy.id.toString());
-
-        const policyObject = { ...policy };
-        const topicId = policyObject.topicId;
-
-        delete policyObject._id;
-        delete policyObject.id;
-        delete policyObject.messageId;
-        delete policyObject.status;
-        delete policyObject.topicId;
-        delete policyObject.createDate;
-
-        const tokenIds = findAllEntities(policyObject.config, ['tokenId']);
-
-        const tokens = await new DataBaseHelper(Token).find({ where: { tokenId: { $in: tokenIds } } });
-        const schemas = await new DataBaseHelper(Schema).find({
-            topicId,
-            readonly: false
-        });
-
-        const zip = new JSZip();
-        const artifacts = await new DataBaseHelper(Artifact).find({
-            policyId: policy.id
-        })
-        zip.folder('artifacts');
-        for (const artifact of artifacts) {
-            zip.file(`artifacts/${artifact.uuid}`, await DatabaseServer.getArtifactFileByUUID(artifact.uuid));
-        }
-        zip.file(`artifacts/metadata.json`, JSON.stringify(artifacts.map(item => {
-            return {
-                name: item.name,
-                uuid: item.uuid,
-                extention: item.extention
-            }
-        })));
-        zip.folder('tokens');
-        for (const token of tokens) {
-            tagTargets.push(token.id.toString());
-            const item = { ...token };
-            delete item._id;
-            delete item.id;
-            delete item.adminId;
-            delete item.owner;
-            item.id = token.id.toString();
-            zip.file(`tokens/${item.tokenName}.json`, JSON.stringify(item));
-        }
-        zip.folder('schemas');
-        for (const schema of schemas) {
-            tagTargets.push(schema.id.toString());
-            const item = { ...schema };
-            delete item._id;
-            delete item.id;
-            delete item.status;
-            delete item.readonly;
-            item.id = schema.id.toString();
-            zip.file(`schemas/${item.iri}.json`, JSON.stringify(item));
-        }
-
-        zip.folder('tags');
-        const tags = await exportTag(tagTargets)
-        for (let index = 0; index < tags.length; index++) {
-            const tag = tags[index];
-            zip.file(`tags/${index}.json`, JSON.stringify(tag));
-        }
-
-        zip.file(PolicyImportExportHelper.policyFileName, JSON.stringify(policyObject));
-        return zip;
-    }
-
-    /**
-     * Parse zip policy file
-     * @param zipFile Zip file
-     * @returns Parsed policy
-     */
-    static async parseZipFile(zipFile: any, includeArtifactsData: boolean = false): Promise<any> {
-        const zip = new JSZip();
-        const content = await zip.loadAsync(zipFile);
-        if (!content.files[PolicyImportExportHelper.policyFileName] || content.files[PolicyImportExportHelper.policyFileName].dir) {
-            throw new Error('Zip file is not a policy');
-        }
-        const policyString = await content.files[PolicyImportExportHelper.policyFileName].async('string');
-        const tokensStringArray = await Promise.all(Object.entries(content.files)
-            .filter(file => !file[1].dir)
-            .filter(file => /^tokens\/.+/.test(file[0]))
-            .map(file => file[1].async('string')));
-
-        const schemasStringArray = await Promise.all(Object.entries(content.files)
-            .filter(file => !file[1].dir)
-            .filter(file => /^schem[a,e]s\/.+/.test(file[0]))
-            .map(file => file[1].async('string')));
-
-        const metaDataFile = (Object.entries(content.files)
-            .find(file => file[0] === 'artifacts/metadata.json'));
-        const metaDataString = metaDataFile && await metaDataFile[1].async('string') || '[]';
-        const metaDataBody: any[] = JSON.parse(metaDataString);
-
-        let artifacts: any;
-        if (includeArtifactsData) {
-            const data = Object.entries(content.files)
-                .filter(file => !file[1].dir)
-                .filter(file => /^artifacts\/.+/.test(file[0]) && file[0] !== 'artifacts/metadata.json')
-                .map(async file => {
-                    const uuid = file[0].split('/')[1];
-                    const artifactMetaData = metaDataBody.find(item => item.uuid === uuid);
-                    return {
-                        name: artifactMetaData.name,
-                        extention: artifactMetaData.extention,
-                        uuid: artifactMetaData.uuid,
-                        data: await file[1].async('nodebuffer')
-                    }
-                })
-            artifacts = await Promise.all(data);
-        } else {
-            artifacts = metaDataBody.map((artifactMetaData) => {
-                return {
-                    name: artifactMetaData.name,
-                    extention: artifactMetaData.extention,
-                    uuid: artifactMetaData.uuid,
-                    data: null
-                }
-            });
-        }
-
-        const tagsStringArray = await Promise.all(Object.entries(content.files)
-            .filter(file => !file[1].dir)
-            .filter(file => /^tags\/.+/.test(file[0]))
-            .map(file => file[1].async('string')));
-
-        const policy = JSON.parse(policyString);
-        const tokens = tokensStringArray.map(item => JSON.parse(item));
-        const schemas = schemasStringArray.map(item => JSON.parse(item));
-        const tags = tagsStringArray.map(item => JSON.parse(item));
-
-        return {
-            policy,
-            tokens,
-            schemas,
-            artifacts,
-            tags
-        };
-    }
-
     /**
      * Get system schemas
      *

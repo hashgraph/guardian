@@ -1,5 +1,5 @@
 import * as mathjs from 'mathjs';
-import { AnyBlockType, IPolicyDocument } from '@policy-engine/policy-engine.interface';
+import { AnyBlockType, IPolicyDocument, IPolicyRequestBlock } from '@policy-engine/policy-engine.interface';
 import {
     DidDocumentStatus,
     DocumentSignature,
@@ -26,6 +26,7 @@ import {
     Users,
     Workers,
     NotificationHelper,
+    DatabaseServer,
 } from '@guardian/common';
 import { TokenId, TopicId } from '@hashgraph/sdk';
 import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
@@ -1269,12 +1270,13 @@ export class PolicyUtils {
      * @param user
      */
     public static async getGroupContext(ref: AnyBlockType, user: IPolicyUser): Promise<any> {
-        if (!ref.isMultipleGroups) {
+        const policyGroups = PolicyUtils.getGroupTemplates<any>(ref);
+        if (policyGroups.length === 0) {
             return null;
         }
         const group = await ref.databaseServer.getUserInGroup(ref.policyId, user.did, user.group);
         if (group && group.messageId) {
-            const groupSchema = await ref.databaseServer.getSchemaByType(ref.topicId, SchemaEntity.ISSUER);
+            const groupSchema = await PolicyUtils.loadSchemaByType(ref, SchemaEntity.ISSUER);
             return {
                 groupId: group.messageId,
                 context: groupSchema.contextURL,
@@ -1298,5 +1300,68 @@ export class PolicyUtils {
         } else {
             return null
         }
+    }
+
+    /**
+     * Load schema by type
+     * @param ref
+     * @param type
+     */
+    public static async loadSchemaByType(ref: AnyBlockType, type: SchemaEntity): Promise<SchemaCollection> {
+        return await ref.components.loadSchemaByType(type);
+    }
+
+    /**
+     * Load schema by id
+     * @param ref
+     * @param type
+     */
+    public static async loadSchemaByID(ref: AnyBlockType, id: SchemaEntity): Promise<SchemaCollection> {
+        return await ref.components.loadSchemaByID(id);
+    }
+
+    /**
+     * Load schema by id
+     * @param ref
+     * @param uuid
+     */
+    public static async getArtifactFile(ref: AnyBlockType, uuid: string): Promise<string> {
+        return await ref.components.loadArtifactByID(uuid);
+    }
+
+    /**
+     * Load token template by name
+     * @param ref
+     * @param name
+     */
+    public static getTokenTemplate<T>(ref: AnyBlockType, name: any): T {
+        return ref.components.getTokenTemplate<T>(name);
+    }
+
+    /**
+     * Find Group Template
+     * @param ref
+     * @param name
+     */
+    public static getGroupTemplate<T>(ref: AnyBlockType, name: string): T {
+        return ref.components.getGroupTemplate<T>(name);
+    }
+
+    /**
+     * Get Group Templates
+     * @param ref
+     * @param name
+     */
+    public static getGroupTemplates<T>(ref: AnyBlockType): T[] {
+        return ref.components.getGroupTemplates<T>();
+    }
+
+    /**
+     * Find Role Template
+     * @param ref
+     * @param name
+     */
+    public static getRoleTemplate<T>(ref: AnyBlockType, name: string): T {
+        return ref.components.getRoleTemplate<T>(name);
     }
 }

@@ -20,7 +20,8 @@ import {
     VpDocumentDefinition as VpDocument,
     VPMessage,
     Wallet,
-    Workers
+    Workers,
+    PolicyImportExport
 } from '@guardian/common';
 import { DidDocumentStatus, ISchema, PolicyType, SchemaCategory, SchemaStatus, TopicType, UserRole, WorkerTaskType, } from '@guardian/interfaces';
 import { PolicyImportExportHelper } from '@policy-engine/helpers/policy-import-export-helper';
@@ -331,10 +332,7 @@ export class RestoreDataFromHedera {
                 (m) => m._action === 'publish-policy'
             );
             for (const policy of publishedPolicies) {
-                const parsedPolicyFile =
-                    await PolicyImportExportHelper.parseZipFile(
-                        policy.document
-                    );
+                const parsedPolicyFile = await PolicyImportExport.parseZipFile(policy.document);
                 const policyObject = parsedPolicyFile.policy;
 
                 policyObject.instanceTopicId = policy.instanceTopicId;
