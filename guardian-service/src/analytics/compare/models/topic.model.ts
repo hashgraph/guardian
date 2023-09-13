@@ -176,4 +176,13 @@ export class TopicModel implements IWeightModel {
             }
         }
     }
+
+    /**
+     * Comparison of models using key
+     * @param item - model
+     * @public
+     */
+    public equalKey(doc: TopicModel): boolean {
+        return this.key === doc.key;
+    }
 }

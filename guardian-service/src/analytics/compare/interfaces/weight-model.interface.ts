@@ -38,6 +38,13 @@ export interface IWeightModel extends IModel {
     equal(item: any, index?: number): boolean;
 
     /**
+     * Comparison of models using key
+     * @param item - model
+     * @public
+     */
+    equalKey(doc: any): boolean;
+
+    /**
      * Update all weight
      * @param options - comparison options
      * @public

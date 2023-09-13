@@ -156,7 +156,7 @@ export class CompareUtils {
      * @static
      */
     public static compareSchemas(schemas1: SchemaModel[], schemas2: SchemaModel[]): number {
-        if (!schemas1 || !schemas2 || !schemas1.length || schemas2.length) {
+        if (!schemas1 || !schemas2 || !schemas1.length || !schemas2.length) {
             return 0;
         }
 
@@ -180,6 +180,7 @@ export class CompareUtils {
             }
             min = Math.min(min, max);
         }
+
         if (min >= 103) {
             return -1;
         } else if (min >= 102) {
