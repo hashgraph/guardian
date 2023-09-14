@@ -53,10 +53,10 @@ jobs:
       - name: Run service
         run: |
           pushd api-gateway
-          npm start &
+          yarn start &
           popd
           pushd analytics-service
-          npm start &
+          yarn start &
           popd
           sleep 30
       - name: Download file
