@@ -308,6 +308,14 @@
     box-shadow: 0px 0px 0px 2px #fff;
 }
 
+.left-compare-result .compare-btn {
+    display: none !important;
+}
+
+.prop-table-row[fantom=true] .compare-btn {
+    display: none !important;
+}
+
 .prop-table-value[prop-type="schema"] .compare-btn {
     display: block;
 }

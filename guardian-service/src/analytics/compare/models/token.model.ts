@@ -112,6 +112,15 @@ export class TokenModel {
     }
 
     /**
+     * Comparison of models using key
+     * @param item - model
+     * @public
+     */
+    public equalKey(item: TokenModel): boolean {
+        return this.tokenId === item.tokenId;
+    }
+
+    /**
      * Convert class to object
      * @public
      */

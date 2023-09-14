@@ -153,6 +153,15 @@ export class GroupModel implements IWeightModel {
     }
 
     /**
+     * Comparison of models using key
+     * @param item - model
+     * @public
+     */
+    public equalKey(item: GroupModel): boolean {
+        return this.key === item.key;
+    }
+
+    /**
      * Get properties
      * @param type - filter by property type
      * @public

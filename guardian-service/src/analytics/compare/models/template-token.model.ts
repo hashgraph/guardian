@@ -153,6 +153,15 @@ export class TemplateTokenModel implements IWeightModel {
     }
 
     /**
+     * Comparison of models using key
+     * @param item - model
+     * @public
+     */
+    public equalKey(item: TemplateTokenModel): boolean {
+        return this.key === item.key;
+    }
+
+    /**
      * Get properties
      * @param type - filter by property type
      * @public

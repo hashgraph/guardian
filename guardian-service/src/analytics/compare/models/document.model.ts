@@ -266,6 +266,10 @@ export class DocumentModel implements IWeightModel {
         weightMap[WeightType.PROP_AND_CHILD_2] = _documentAndChildren;
 
         weights.push(_children);
+        weights.push(_document);
+        weights.push(''); //Schemas = -3
+        weights.push(''); //Schemas = -2
+        weights.push(''); //Schemas = -1
         weights.push(_document); //Schemas = -3
         weights.push(_document); //Schemas = -2
         weights.push(_document); //Schemas = -1
@@ -285,19 +289,15 @@ export class DocumentModel implements IWeightModel {
      * @private
      */
     private compareWeight(doc: DocumentModel, index: number, schema: number): boolean {
-        if (index === 1 && schema < -1) {
-            return false;
-        }
-        if (index === 2 && schema < -2) {
-            return false;
-        }
-        if (index === 3 && schema < -3) {
-            return false;
-        }
-        if (this._weight[index] === '0' && doc._weight[index] === '0') {
-            return false;
-        } else {
-            return this._weight[index] === doc._weight[index];
+        const result = this._weight[index] === doc._weight[index] && this._weight[index] !== '0';
+        switch (index) {
+            case 1: return schema > -2 && result;
+            case 2: return schema > -3 && result;
+            case 3: return schema > -4 && result;
+            case 4: return schema > -2;
+            case 5: return schema > -3;
+            case 6: return schema > -4;
+            default: return result;
         }
     }
 
@@ -375,11 +375,22 @@ export class DocumentModel implements IWeightModel {
         }
 
         const schemas = CompareUtils.compareSchemas(this._schemas, doc._schemas);
-        if (schemas > 0) {
+        if (schemas > 0 && schemas < 100) {
             return false;
         }
 
         return this.compareWeight(doc, index, schemas);
+    }
+
+    /**
+     * Comparison of models using key
+     * @param item - model
+     * @public
+     */
+    public equalKey(doc: DocumentModel): boolean {
+        const schemas = CompareUtils.compareSchemas(this._schemas, doc._schemas);
+        console.debug('equalKey ', schemas)
+        return schemas < 0;
     }
 
     /**

@@ -357,6 +357,15 @@ export class BlockModel implements IWeightModel {
     }
 
     /**
+     * Comparison of models using key
+     * @param item - model
+     * @public
+     */
+    public equalKey(item: BlockModel): boolean {
+        return this.key === item.key;
+    }
+
+    /**
      * Convert class to object
      * @public
      */

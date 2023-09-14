@@ -176,7 +176,7 @@ export class ComparePolicyUtils {
             );
             return rate;
         }
-        if (tree1.key === tree2.key) {
+        if (tree1.equalKey(tree2)) {
             rate.type = Status.PARTLY;
             rate.setChildren(
                 ComparePolicyUtils.compareChildren(

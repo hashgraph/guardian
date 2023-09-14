@@ -211,6 +211,7 @@ export class MultiComparePolicyComponent implements OnInit {
 
             for (const properties of row.properties) {
                 const prop = properties[j];
+                const left = properties[0];
                 const propContext = {
                     fantom: true,
                     type: j === 0 ? 'RIGHT' : 'LEFT',
@@ -219,6 +220,8 @@ export class MultiComparePolicyComponent implements OnInit {
                     name: '',
                     propType: '',
                     value: '',
+                    left: left?.item,
+                    right: prop?.item
                 }
                 if (prop && prop.item) {
                     propContext.fantom = false;
@@ -453,13 +456,20 @@ export class MultiComparePolicyComponent implements OnInit {
     }
 
     public compareSchema(prop: any) {
-        const schema1 = prop?.items[0];
-        const schema2 = prop?.items[1];
-        this.change.emit({
-            type: 'schema',
-            schemaId1: schema1?.schemaId,
-            schemaId2: schema2?.schemaId
-        })
+        const schema1 = prop.left;
+        const schema2 = prop.right;
+        if (
+            schema1 &&
+            schema2 &&
+            schema1.schemaId &&
+            schema2.schemaId
+        ) {
+            this.change.emit({
+                type: 'schema',
+                schemaId1: schema1.schemaId,
+                schemaId2: schema2.schemaId
+            })
+        }
     }
 
     public onCollapse(item: any) {

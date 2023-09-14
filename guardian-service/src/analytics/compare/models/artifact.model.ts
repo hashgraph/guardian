@@ -98,6 +98,15 @@ export class ArtifactModel {
     }
 
     /**
+     * Comparison of models using key
+     * @param item - model
+     * @public
+     */
+    public equalKey(doc: ArtifactModel): boolean {
+        return this.key === doc.key;
+    }
+
+    /**
      * Get weight object
      * @public
      */
