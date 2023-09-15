@@ -896,6 +896,9 @@ export async function schemaAPI(): Promise<void> {
             if (msg.owner) {
                 filter.owner = msg.owner;
             }
+            if (msg.topicId) {
+                filter.topicId = msg.topicId;
+            }
             const otherOptions: any = getPageOptions(msg);
             const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
             return new MessageResponse({ items, count });
@@ -923,6 +926,9 @@ export async function schemaAPI(): Promise<void> {
             }
             if (msg.owner) {
                 filter.owner = msg.owner;
+            }
+            if (msg.topicId) {
+                filter.topicId = msg.topicId;
             }
             const otherOptions: any = getPageOptions(msg);
             const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);

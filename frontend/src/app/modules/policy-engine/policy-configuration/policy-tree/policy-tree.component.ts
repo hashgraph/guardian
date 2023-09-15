@@ -5,6 +5,8 @@ import { PolicyBlock, BlocLine, BlockRect, EventCanvas, PolicyFolder, PolicyItem
 import { RegisteredService } from '../../services/registered.service';
 import { ThemeService } from '../../../../services/theme.service';
 import { BLOCK_TYPE_TIPS } from 'src/app/injectors/block-type-tips.injector';
+import { DomSanitizer } from '@angular/platform-browser';
+import { MatIconRegistry } from '@angular/material/icon';
 
 enum BlockStyle {
     None = 'None',
@@ -92,6 +94,8 @@ export class PolicyTreeComponent implements OnInit {
         private element: ElementRef,
         private componentFactoryResolver: ComponentFactoryResolver,
         private themeService: ThemeService,
+        private domSanitizer: DomSanitizer,
+        private matIconRegistry: MatIconRegistry,
         @Inject(BLOCK_TYPE_TIPS) public blockTypeTips: any
     ) {
         this.actorMap = {};
@@ -108,6 +112,20 @@ export class PolicyTreeComponent implements OnInit {
         } catch (error) {
             console.error(error)
         }
+        this.matIconRegistry.addSvgIconLiteral('policy-module', this.domSanitizer.bypassSecurityTrustHtml(`
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                <path style="fill:#e1933c" d="M 12,0.83007812 3.0507812,6 12,11.160156 20.949219,6 Z" />
+                <path style="fill:#24bfe1" d="m 21.673828,7.25 -8.96289,5.169922 V 22.75 l 8.96289,-5.199219 z" />
+                <path style="fill:#9e57f5" d="M 2.3261719,7.25 V 17.550781 L 11.279297,22.75 V 12.419922 Z" />
+            </svg>
+        `));
+            this.matIconRegistry.addSvgIconLiteral('policy-tool', this.domSanitizer.bypassSecurityTrustHtml(`
+            <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 24 24">
+                <path style="fill:#e1933c" d="M 12,0.83007812 3.0507812,6 12,11.160156 15.266636,9.2766003 11.8147,7.2852641 14.3213,5.878 17.736428,7.8525082 20.949219,6 Z" />
+                <path style="fill:#e1933c" d="M 21.673828,7.25 18.5,9.076 v 4 c -0.806467,0.526344 -1.661691,0.973915 -2.5,1.447 l -4.61e-4,-4 -3.288601,1.896922 V 22.75 l 8.96289,-5.199219 z" />
+                <path style="fill:#e1933c" d="M 11.279297,22.75 V 12.419922 L 2.3261719,7.25 V 17.550781 M 5.58267,15.641 7.96751,17.09534 v 1.89518 L 5.58267,17.53363 Z" />
+            </svg>
+        `));
     }
 
     public get allCollapse() {
@@ -311,7 +329,7 @@ export class PolicyTreeComponent implements OnInit {
     }
 
     private canAddModules(node: FlatBlockNode, block: PolicyItem): boolean {
-        if(node.root) {
+        if (node.root) {
             if (block.isModule) {
                 return false;
             }
@@ -331,7 +349,7 @@ export class PolicyTreeComponent implements OnInit {
     }
 
     private canAddTools(node: FlatBlockNode, block: PolicyItem): boolean {
-        if(node.root) {
+        if (node.root) {
             if (block.isModule) {
                 return true;
             }
@@ -351,7 +369,7 @@ export class PolicyTreeComponent implements OnInit {
     }
 
     private canAddBlocks(node: FlatBlockNode, block: PolicyItem): boolean {
-        if(node.root) {
+        if (node.root) {
             if (block.isModule) {
                 return true;
             }
@@ -384,44 +402,44 @@ export class PolicyTreeComponent implements OnInit {
     }
 
     private canUp(node: FlatBlockNode, block: PolicyItem): boolean {
-        if(node.root) {
+        if (node.root) {
             return false;
         }
-        if(node.prevNode) {
+        if (node.prevNode) {
             return true;
         }
         return false;
     }
 
     private canDown(node: FlatBlockNode, block: PolicyItem): boolean {
-        if(node.root) {
+        if (node.root) {
             return false;
         }
-        if(node.next) {
+        if (node.next) {
             return true;
         }
         return false;
     }
 
     private canLeft(node: FlatBlockNode, block: PolicyItem): boolean {
-        if(node.root) {
+        if (node.root) {
             return false;
         }
-        if(node.parentNode && !node.parentNode.root) {
+        if (node.parentNode && !node.parentNode.root) {
             return true;
         }
         return false;
     }
 
     private canRight(node: FlatBlockNode, block: PolicyItem): boolean {
-        if(node.root) {
+        if (node.root) {
             return false;
         }
-        if(node.prevNode) {
-            if(block.isModule) {
+        if (node.prevNode) {
+            if (block.isModule) {
                 return node.prevNode.canAddModules;
             }
-            if(block.isTool) {
+            if (block.isTool) {
                 return node.prevNode.canAddTools;
             }
             return node.prevNode.canAddBlocks;

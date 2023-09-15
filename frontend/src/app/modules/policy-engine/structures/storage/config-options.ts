@@ -3,7 +3,8 @@ import { ObjectProperty } from "./object-prop";
 
 export class Options {
     private readonly _components: BooleanProperty;
-    private readonly _library: BooleanProperty;
+    private readonly _moduleLibrary: BooleanProperty;
+    private readonly _toolLibrary: BooleanProperty;
     private readonly _description: BooleanProperty;
     private readonly _roles: BooleanProperty;
     private readonly _groups: BooleanProperty;
@@ -35,7 +36,8 @@ export class Options {
     constructor() {
         const prefix = 'POLICY_CONFIG_';
         this._components = new BooleanProperty(prefix + 'COMPONENTS', true);
-        this._library = new BooleanProperty(prefix + 'LIBRARY', false);
+        this._moduleLibrary = new BooleanProperty(prefix + 'MODULE_LIBRARY', false);
+        this._toolLibrary = new BooleanProperty(prefix + 'TOOL_LIBRARY', false);
         this._description = new BooleanProperty(prefix + 'DESCRIPTION', true);
         this._roles = new BooleanProperty(prefix + 'ROLES', false);
         this._groups = new BooleanProperty(prefix + 'GROUPS', false);
@@ -68,7 +70,8 @@ export class Options {
     public load() {
         try {
             this.components = this._components.load();
-            this.library = this._library.load();
+            this.moduleLibrary = this._moduleLibrary.load();
+            this.toolLibrary = this._toolLibrary.load();
             this.description = this._description.load();
             this.roles = this._roles.load();
             this.groups = this._groups.load();
@@ -104,7 +107,8 @@ export class Options {
     public save() {
         try {
             this._components.save();
-            this._library.save();
+            this._moduleLibrary.save();
+            this._toolLibrary.save();
             this._description.save();
             this._roles.save();
             this._groups.save();
@@ -141,8 +145,12 @@ export class Options {
         return this._components.value;
     }
 
-    public get library(): boolean {
-        return this._library.value;
+    public get moduleLibrary(): boolean {
+        return this._moduleLibrary.value;
+    }
+
+    public get toolLibrary(): boolean {
+        return this._toolLibrary.value;
     }
 
     public get description(): boolean {
@@ -248,14 +256,24 @@ export class Options {
     public set components(value: boolean) {
         if (value) {
             this._components.value = true;
-            this._library.value = false;
+            this._moduleLibrary.value = false;
+            this._toolLibrary.value = false;
         }
     }
 
-    public set library(value: boolean) {
+    public set moduleLibrary(value: boolean) {
         if (value) {
             this._components.value = false;
-            this._library.value = true;
+            this._moduleLibrary.value = true;
+            this._toolLibrary.value = false;
+        }
+    }
+
+    public set toolLibrary(value: boolean) {
+        if (value) {
+            this._components.value = false;
+            this._moduleLibrary.value = false;
+            this._toolLibrary.value = true;
         }
     }
 
@@ -451,8 +469,11 @@ export class Options {
             case 'components':
                 this.components = true;
                 break;
-            case 'library':
-                this.library = true;
+            case 'moduleLibrary':
+                this.moduleLibrary = true;
+                break;
+            case 'toolLibrary':
+                this.toolLibrary = true;
                 break;
             case 'description':
                 this.description = true;

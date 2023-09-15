@@ -1391,6 +1391,26 @@ export class Guardians extends NatsService {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+
     /**
      * Create tool
      * @param tool
@@ -1533,20 +1553,23 @@ export class Guardians extends NatsService {
     /**
      * Return tool schemas
      * @param {string} owner
-     * @param {string} [pageIndex]
-     * @param {string} [pageSize]
-     *
+     * @param {any} [pageIndex]
+     * @param {any} [pageSize]
+     * @param {any} [topicId]
+     * 
      * @returns {ISchema[]} - all schemas
      */
     public async getToolSchemas(
         owner: string,
         pageIndex?: any,
-        pageSize?: any
+        pageSize?: any,
+        topicId?: any
     ): Promise<ResponseAndCount<ISchema>> {
         return await this.sendMessage(MessageAPI.GET_TOOL_SCHEMAS, {
             owner,
             pageIndex,
-            pageSize
+            pageSize,
+            topicId
         });
     }
 
@@ -1673,20 +1696,23 @@ export class Guardians extends NatsService {
     /**
      * Return tag schemas
      * @param {string} owner
-     * @param {string} [pageIndex]
-     * @param {string} [pageSize]
+     * @param {any} [pageIndex]
+     * @param {any} [pageSize]
+     * @param {any} [topicId]
      *
      * @returns {ISchema[]} - all schemas
      */
     public async getModuleSchemas(
         owner: string,
         pageIndex?: any,
-        pageSize?: any
+        pageSize?: any,
+        topicId?: any
     ): Promise<ResponseAndCount<ISchema>> {
         return await this.sendMessage(MessageAPI.GET_MODULES_SCHEMAS, {
             owner,
             pageIndex,
-            pageSize
+            pageSize,
+            topicId
         });
     }
 

@@ -55,15 +55,7 @@
                     <div *ngIf="isRootModuleStyle(item)" class="block-body module-body">
                         <div class="block-item" (click)="onSelect($event, item)">
                             <div class="module-item-icon">
-                                <svg xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 24 24" version="1.1">
-                                    <path style="fill:#e1933c"
-                                        d="M 12,0.83007812 3.0507812,6 12,11.160156 20.949219,6 Z" />
-                                    <path style="fill:#24bfe1"
-                                        d="m 21.673828,7.25 -8.96289,5.169922 V 22.75 l 8.96289,-5.199219 z" />
-                                    <path style="fill:#9e57f5"
-                                        d="M 2.3261719,7.25 V 17.550781 L 11.279297,22.75 V 12.419922 Z" />
-                                </svg>
+                                <mat-icon class="svg-icon" svgIcon="policy-module"></mat-icon>
                             </div>
                             <div class="module-item-name">
                                 Module
@@ -74,7 +66,7 @@
                     <div *ngIf="isRootToolStyle(item)" class="block-body module-body">
                         <div class="block-item" (click)="onSelect($event, item)">
                             <div class="module-item-icon">
-                                <mat-icon>folder_zip</mat-icon>
+                                <mat-icon class="tool-icon">handyman</mat-icon>
                             </div>
                             <div class="module-item-name">
                                 Tool
@@ -134,15 +126,7 @@
                     <div *ngIf="isModuleStyle(item)" class="block-body module-body">
                         <div class="block-item" (click)="onSelect($event, item)" (dblclick)="onOpen($event, item)">
                             <div class="module-item-icon">
-                                <svg xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 24 24" version="1.1">
-                                    <path style="fill:#e1933c"
-                                        d="M 12,0.83007812 3.0507812,6 12,11.160156 20.949219,6 Z" />
-                                    <path style="fill:#24bfe1"
-                                        d="m 21.673828,7.25 -8.96289,5.169922 V 22.75 l 8.96289,-5.199219 z" />
-                                    <path style="fill:#9e57f5"
-                                        d="M 2.3261719,7.25 V 17.550781 L 11.279297,22.75 V 12.419922 Z" />
-                                </svg>
+                                <mat-icon class="svg-icon" svgIcon="policy-module"></mat-icon>
                             </div>
                             <div class="module-item-name">
                                 {{item.node.localTag}}
@@ -188,16 +172,16 @@
                         </div>
                     </div>
 
-                    <div *ngIf="isToolStyle(item)" class="block-body" [style]="blockStyle(item)">
-                        <div class="block-item" (click)="onSelect($event, item)" theme-all>
-                            <div class="block-item-icon">
-                                <mat-icon theme-text>folder_zip</mat-icon>
+                    <div *ngIf="isToolStyle(item)" class="block-body tool-body">
+                        <div class="block-item" (click)="onSelect($event, item)">
+                            <div class="module-item-icon">
+                                <mat-icon class="tool-icon">handyman</mat-icon>
                             </div>
-                            <div class="block-item-name" theme-text>
+                            <div class="module-item-name">
                                 {{item.node.localTag}}
                             </div>
                         </div>
-                        <div class="block-menu">
+                        <div class="block-menu module-menu">
                             <div class="move-actions-container"
                                 [attr.can-up]="item.canUp"
                                 [attr.can-down]="item.canDown"

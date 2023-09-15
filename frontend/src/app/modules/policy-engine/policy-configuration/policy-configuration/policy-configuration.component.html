@@ -271,11 +271,17 @@
             <div class="left-toolbar">
                 <div class="pc-tabs">
                     <div class="pc-tabs-headers">
-                        <div class="tab-header" [attr.selected]="options.components" (click)="select('components')">
-                            Components
+                        <div class="tab-header tab-header-min" [attr.selected]="options.components" (click)="select('components')">
+                            <mat-icon class="action-color">article</mat-icon>
+                            <span>Blocks</span>
                         </div>
-                        <div class="tab-header" [attr.selected]="options.library" (click)="select('library')">
-                            Modules
+                        <div class="tab-header tab-header-min" [attr.selected]="options.moduleLibrary" (click)="select('moduleLibrary')">
+                            <mat-icon class="action-color" svgIcon="policy-module"></mat-icon>
+                            <span>Modules</span>
+                        </div>
+                        <div class="tab-header tab-header-min" [attr.selected]="options.toolLibrary" (click)="select('toolLibrary')">
+                            <mat-icon class="action-color tool-icon">handyman</mat-icon>
+                            <span>Tools</span>
                         </div>
                     </div>
 
@@ -423,7 +429,7 @@
                             </div>
                         </div>
 
-                        <div class="components-container" [hidden]="!options.library">
+                        <div class="components-container" [hidden]="!options.moduleLibrary">
                             <div class="components-search">
                                 <input placeholder="Search" [(ngModel)]="searchModule" (input)="onModuleSearch($event)">
                                 <mat-icon class="components-search-icon">search</mat-icon>
@@ -524,6 +530,13 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+
+                        <div class="components-container" [hidden]="!options.toolLibrary">
+                            <div class="components-search">
+                                <input placeholder="Search" [(ngModel)]="searchModule" (input)="onModuleSearch($event)">
+                                <mat-icon class="components-search-icon">search</mat-icon>
+                            </div>
                             <div class="components-group" [attr.collapsed]="options.customToolsGroup" [attr.readonly]="disableToolMenu">
                                 <div class="components-group-name" (click)="collapse('customToolsGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
@@ -536,14 +549,14 @@
                                             [attr.block-type]="item.header" (click)="onAddTool(item)">
                                             <div class="drag-component drag-module">
                                                 <div class="drag-component-icon">
-                                                    <mat-icon>folder_zip</mat-icon>
+                                                    <mat-icon class="tool-icon">handyman</mat-icon>
                                                 </div>
                                                 <span class="drag-component-name">{{item.name}}</span>
                                             </div>
                                         </div>
                                         <div class="component-btn" (click)="onAddTool(item)">
                                             <div class="component-btn-icon">
-                                                <mat-icon>folder_zip</mat-icon>
+                                                <mat-icon class="tool-icon">handyman</mat-icon>
                                             </div>
                                             <span>{{item.name}}</span>
                                             <span class="component-btn-toolbar">
@@ -592,7 +605,7 @@
                             [attr.selected]="true"
                             (click)="onOpenRoot(toolTemplate)" 
                             style="width: 100px;margin-right: 6px">
-                            <mat-icon class="action-color">folder_zip</mat-icon>
+                            <mat-icon class="module-root-icon action-color tool-icon">handyman</mat-icon>
                             Tool
                         </div>
 

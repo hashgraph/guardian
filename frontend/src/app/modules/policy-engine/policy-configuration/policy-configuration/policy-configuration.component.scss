@@ -694,6 +694,14 @@
                     left: 5px;
                     top: 6px;
                     font-size: 18px;
+                    height: 20px;
+                    width: 20px;
+                }
+
+                span {
+                    padding-left: 30px;
+                    position: relative;
+                    top: 1px;
                 }
 
                 &.tab-header-icon {
@@ -702,6 +710,20 @@
 
                 &:first-child {
                     margin-left: 0px;
+                }
+
+                &.tab-header-min {
+                    text-align: left;
+
+                    &[selected="false"] {
+                        width: 31px;
+                        max-width: 31px;
+                        overflow: hidden;
+
+                        span {
+                            display: none;
+                        }
+                    }
                 }
             }
 
@@ -1501,6 +1523,10 @@
     padding: 10px;
     background: #fff;
     border-top: 1px solid #c9c9c9;
+}
+
+.tool-icon {
+    color: #c37a29 !important;
 }
 
 @media (max-width: 810px) {

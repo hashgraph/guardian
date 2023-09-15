@@ -412,7 +412,6 @@ export class HederaSDKHelper {
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
     public async balance(accountId: string | AccountId): Promise<string> {
-        return '';
         const client = this.client;
         const query = new AccountBalanceQuery()
             .setAccountId(accountId);

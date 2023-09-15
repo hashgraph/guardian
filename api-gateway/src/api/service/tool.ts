@@ -172,7 +172,8 @@ export class ToolsApi {
         @Req() req,
         @Res() res,
         @Query('pageIndex') pageIndex,
-        @Query('pageSize') pageSize
+        @Query('pageSize') pageSize,
+        @Query('topicId') topicId
     ): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
@@ -180,7 +181,7 @@ export class ToolsApi {
             const guardians = new Guardians();
             const owner = user.did;
 
-            const { items, count } = await guardians.getToolSchemas(owner, pageIndex, pageSize);
+            const { items, count } = await guardians.getToolSchemas(owner, pageIndex, pageSize, topicId);
             items.forEach((s) => {
                 s.readonly = s.readonly || s.owner !== owner
             });
