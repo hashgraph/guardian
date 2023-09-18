@@ -1,5 +1,5 @@
 import { Singleton } from '@helpers/decorators/singleton';
-import { ApplicationStates, CommonSettings, GenerateUUIDv4, IArtifact, IChainItem, IDidObject, ISchema, IToken, ITokenInfo, IUser, IVCDocument, IVPDocument, MessageAPI, SuggestionsOrderPriority } from '@guardian/interfaces';
+import { ApplicationStates, CommonSettings, GenerateUUIDv4, IArtifact, IChainItem, IDidObject, ISchema, IToken, ITokenInfo, IUser, IVCDocument, IVPDocument, MessageAPI, SchemaCategory, SuggestionsOrderPriority } from '@guardian/interfaces';
 import { NatsService } from '@guardian/common';
 import { NewTask } from './task-manager';
 
@@ -470,25 +470,12 @@ export class Guardians extends NatsService {
 
     /**
      * Return schemas
-     * @param {string} did
-     * @param {string} [topicId]
-     * @param {string} [pageIndex]
-     * @param {string} [pageSize]
+     * @param {any} options
      *
      * @returns {ISchema[]} - all schemas
      */
-    public async getSchemasByOwner(
-        did: string,
-        topicId?: string,
-        pageIndex?: any,
-        pageSize?: any
-    ): Promise<ResponseAndCount<ISchema>> {
-        return await this.sendMessage(MessageAPI.GET_SCHEMAS, {
-            owner: did,
-            topicId,
-            pageIndex,
-            pageSize
-        });
+    public async getSchemasByOwner(options: any): Promise<ResponseAndCount<ISchema>> {
+        return await this.sendMessage(MessageAPI.GET_SCHEMAS, options);
     }
 
     /**
@@ -499,9 +486,7 @@ export class Guardians extends NatsService {
      * @returns {ISchema[]} - all schemas
      */
     public async getSchemasByUUID(uuid: string): Promise<ISchema[]> {
-        const { items } = await this.sendMessage(
-            MessageAPI.GET_SCHEMAS, { uuid }
-        ) as any;
+        const { items } = await this.sendMessage<ResponseAndCount<ISchema>>(MessageAPI.GET_SCHEMAS, { uuid });
         return items;
     }
 
@@ -633,7 +618,8 @@ export class Guardians extends NatsService {
      *
      * @returns {ISchema[]} - all schemas
      */
-    public async createSchema(item: ISchema | any): Promise<ISchema[]> {
+    public async createSchema(category: SchemaCategory, item: ISchema | any): Promise<ISchema[]> {
+        item.category = category;
         return await this.sendMessage(MessageAPI.CREATE_SCHEMA, item);
     }
 
@@ -642,7 +628,8 @@ export class Guardians extends NatsService {
      * @param {ISchema} item - schema
      * @param {NewTask} task - task
      */
-    public async createSchemaAsync(item: ISchema | any, task: NewTask): Promise<NewTask> {
+    public async createSchemaAsync(category: SchemaCategory, item: ISchema | any, task: NewTask): Promise<NewTask> {
+        item.category = category;
         return await this.sendMessage(MessageAPI.CREATE_SCHEMA_ASYNC, { item, task });
     }
 
@@ -1408,7 +1395,7 @@ export class Guardians extends NatsService {
 
 
 
-    
+
 
 
     /**
@@ -1550,41 +1537,6 @@ export class Guardians extends NatsService {
         return await this.sendMessage(MessageAPI.TOOL_IMPORT_MESSAGE_PREVIEW, { messageId, owner });
     }
 
-    /**
-     * Return tool schemas
-     * @param {string} owner
-     * @param {any} [pageIndex]
-     * @param {any} [pageSize]
-     * @param {any} [topicId]
-     * 
-     * @returns {ISchema[]} - all schemas
-     */
-    public async getToolSchemas(
-        owner: string,
-        pageIndex?: any,
-        pageSize?: any,
-        topicId?: any
-    ): Promise<ResponseAndCount<ISchema>> {
-        return await this.sendMessage(MessageAPI.GET_TOOL_SCHEMAS, {
-            owner,
-            pageIndex,
-            pageSize,
-            topicId
-        });
-    }
-
-    /**
-     * Create tool schema
-     *
-     * @param {ISchema} item - schema
-     *
-     * @returns {ISchema[]} - all schemas
-     */
-    public async createToolSchema(item: ISchema | any): Promise<ISchema> {
-        return await this.sendMessage(MessageAPI.CREATE_TOOL_SCHEMA, item);
-    }
-
-
 
 
 
@@ -1694,29 +1646,6 @@ export class Guardians extends NatsService {
     }
 
     /**
-     * Return tag schemas
-     * @param {string} owner
-     * @param {any} [pageIndex]
-     * @param {any} [pageSize]
-     * @param {any} [topicId]
-     *
-     * @returns {ISchema[]} - all schemas
-     */
-    public async getModuleSchemas(
-        owner: string,
-        pageIndex?: any,
-        pageSize?: any,
-        topicId?: any
-    ): Promise<ResponseAndCount<ISchema>> {
-        return await this.sendMessage(MessageAPI.GET_MODULES_SCHEMAS, {
-            owner,
-            pageIndex,
-            pageSize,
-            topicId
-        });
-    }
-
-    /**
      * Create tag schema
      *
      * @param {ISchema} item - schema
@@ -1725,17 +1654,6 @@ export class Guardians extends NatsService {
      */
     public async createTagSchema(item: ISchema | any): Promise<ISchema> {
         return await this.sendMessage(MessageAPI.CREATE_TAG_SCHEMA, item);
-    }
-
-    /**
-     * Create module schema
-     *
-     * @param {ISchema} item - schema
-     *
-     * @returns {ISchema[]} - all schemas
-     */
-    public async createModuleSchema(item: ISchema | any): Promise<ISchema> {
-        return await this.sendMessage(MessageAPI.CREATE_MODULE_SCHEMA, item);
     }
 
     /**

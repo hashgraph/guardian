@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ISchema, IUser, Schema, SchemaHelper, TagType } from '@guardian/interfaces';
+import { ISchema, IUser, Schema, SchemaCategory, SchemaHelper, TagType } from '@guardian/interfaces';
 import { forkJoin, Observable } from 'rxjs';
 //services
 import { ProfileService } from '../../services/profile.service';
@@ -191,6 +191,23 @@ export class SchemaConfigComponent implements OnInit {
         }
     }
 
+    private getCategory(): SchemaCategory {
+        switch (this.type) {
+            case SchemaType.Tag:
+                return SchemaCategory.TAG;
+            case SchemaType.Policy:
+                return SchemaCategory.POLICY;
+            case SchemaType.Module:
+                return SchemaCategory.MODULE;
+            case SchemaType.Tool:
+                return SchemaCategory.TOOL;
+            case SchemaType.System:
+                return SchemaCategory.SYSTEM;
+            default:
+                return SchemaCategory.SYSTEM;
+        }
+    }
+
     private getTopicId(): string {
         switch (this.type) {
             case SchemaType.Tag:
@@ -325,26 +342,18 @@ export class SchemaConfigComponent implements OnInit {
         this.currentTopic = this.getTopicId();
         let loader: Observable<HttpResponse<ISchema[]>>;
         switch (this.type) {
-            case SchemaType.System: {
-                loader = this.schemaService.getSystemSchemas(this.pageIndex, this.pageSize);
-                break;
-            }
             case SchemaType.Tag: {
                 loader = this.tagsService.getSchemas(this.pageIndex, this.pageSize);
                 break;
             }
-            case SchemaType.Policy: {
-                loader = this.schemaService.getSchemasByPage(this.currentTopic, this.pageIndex, this.pageSize);
-                break;
-            }
-            case SchemaType.Module: {
-                loader = this.moduleService.getSchemas(this.currentTopic, this.pageIndex, this.pageSize);
-                break;
-            }
+            case SchemaType.Policy:
+            case SchemaType.Module:
             case SchemaType.Tool: {
-                loader = this.moduleService.getSchemas(this.currentTopic, this.pageIndex, this.pageSize);
+                const category = this.getCategory();
+                loader = this.schemaService.getSchemasByPage(category, this.currentTopic, this.pageIndex, this.pageSize);
                 break;
             }
+            case SchemaType.System:
             default: {
                 loader = this.schemaService.getSystemSchemas(this.pageIndex, this.pageSize);
                 break;
@@ -450,16 +459,6 @@ export class SchemaConfigComponent implements OnInit {
         this.schemas = this.schemas.slice();
     }
 
-    private downloadObjectAsJson(exportObj: any, exportName: string) {
-        const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(exportObj));
-        const downloadAnchorNode = document.createElement('a');
-        downloadAnchorNode.setAttribute('href', dataStr);
-        downloadAnchorNode.setAttribute('download', exportName + '.json');
-        document.body.appendChild(downloadAnchorNode);
-        downloadAnchorNode.click();
-        downloadAnchorNode.remove();
-    }
-
     private createSchema(schema: Schema | null): void {
         if (!schema) {
             return;
@@ -467,15 +466,6 @@ export class SchemaConfigComponent implements OnInit {
 
         this.loading = true;
         switch (this.type) {
-            case SchemaType.System: {
-                this.schemaService.createSystemSchemas(schema).subscribe((data) => {
-                    localStorage.removeItem('restoreSchemaData');
-                    this.loadSchemas();
-                }, (e) => {
-                    this.loadError(e);
-                });
-                break;
-            }
             case SchemaType.Tag: {
                 this.tagsService.createSchema(schema).subscribe((data) => {
                     localStorage.removeItem('restoreSchemaData');
@@ -485,26 +475,11 @@ export class SchemaConfigComponent implements OnInit {
                 });
                 break;
             }
-            case SchemaType.Module: {
-                this.moduleService.createSchema(schema).subscribe((data) => {
-                    localStorage.removeItem('restoreSchemaData');
-                    this.loadSchemas();
-                }, (e) => {
-                    this.loadError(e);
-                });
-                break;
-            }
-            case SchemaType.Tool: {
-                this.toolService.createSchema(schema).subscribe((data) => {
-                    localStorage.removeItem('restoreSchemaData');
-                    this.loadSchemas();
-                }, (e) => {
-                    this.loadError(e);
-                });
-                break;
-            }
+            case SchemaType.Module:
+            case SchemaType.Tool:
             case SchemaType.Policy: {
-                this.schemaService.pushCreate(schema, schema.topicId).subscribe((result) => {
+                const category = this.getCategory();
+                this.schemaService.pushCreate(category, schema, schema.topicId).subscribe((result) => {
                     const { taskId } = result;
                     this.router.navigate(['task', taskId], {
                         queryParams: {
@@ -516,6 +491,7 @@ export class SchemaConfigComponent implements OnInit {
                 });
                 break;
             }
+            case SchemaType.System:
             default: {
                 this.schemaService.createSystemSchemas(schema).subscribe((data) => {
                     localStorage.removeItem('restoreSchemaData');
@@ -553,24 +529,8 @@ export class SchemaConfigComponent implements OnInit {
                 });
                 break;
             }
-            case SchemaType.Module: {
-                // this.moduleService.updateSchema(schema, id).subscribe((data) => {
-                //     localStorage.removeItem('restoreSchemaData');
-                //     this.loadSchemas();
-                // }, (e) => {
-                //     this.loadError(e);
-                // });
-                break;
-            }
-            case SchemaType.Tool: {
-                // this.toolService.updateSchema(schema, id).subscribe((data) => {
-                //     localStorage.removeItem('restoreSchemaData');
-                //     this.loadSchemas();
-                // }, (e) => {
-                //     this.loadError(e);
-                // });
-                break;
-            }
+            case SchemaType.Module:
+            case SchemaType.Tool:
             case SchemaType.Policy: {
                 this.schemaService.update(schema, id).subscribe((data) => {
                     localStorage.removeItem('restoreSchemaData');
@@ -600,43 +560,16 @@ export class SchemaConfigComponent implements OnInit {
         this.loading = true;
         switch (this.type) {
             case SchemaType.System: {
-                // this.schemaService.updateSystemSchema(schema, id).subscribe((data) => {
-                //     localStorage.removeItem('restoreSchemaData');
-                //     this.loadSchemas();
-                // }, (e) => {
-                //     this.loadError(e);
-                // });
-                break;
+                return;
             }
             case SchemaType.Tag: {
-                // this.tagsService.updateSchema(schema, id).subscribe((data) => {
-                //     localStorage.removeItem('restoreSchemaData');
-                //     this.loadSchemas();
-                // }, (e) => {
-                //     this.loadError(e);
-                // });
-                break;
+                return;
             }
-            case SchemaType.Module: {
-                // this.moduleService.updateSchema(schema, id).subscribe((data) => {
-                //     localStorage.removeItem('restoreSchemaData');
-                //     this.loadSchemas();
-                // }, (e) => {
-                //     this.loadError(e);
-                // });
-                break;
-            }
-            case SchemaType.Tool: {
-                // this.toolService.updateSchema(schema, id).subscribe((data) => {
-                //     localStorage.removeItem('restoreSchemaData');
-                //     this.loadSchemas();
-                // }, (e) => {
-                //     this.loadError(e);
-                // });
-                break;
-            }
+            case SchemaType.Module:
+            case SchemaType.Tool:
             case SchemaType.Policy: {
-                this.schemaService.newVersion(schema, id).subscribe((result) => {
+                const category = this.getCategory();
+                this.schemaService.newVersion(category, schema, id).subscribe((result) => {
                     const { taskId } = result;
                     this.router.navigate(['task', taskId], {
                         queryParams: {
@@ -649,13 +582,7 @@ export class SchemaConfigComponent implements OnInit {
                 break;
             }
             default: {
-                // this.schemaService.updateSystemSchema(schema, id).subscribe((data) => {
-                //     localStorage.removeItem('restoreSchemaData');
-                //     this.loadSchemas();
-                // }, (e) => {
-                //     this.loadError(e);
-                // });
-                break;
+                return;
             }
         }
     }
@@ -683,22 +610,8 @@ export class SchemaConfigComponent implements OnInit {
                 });
                 break;
             }
-            case SchemaType.Module: {
-                // this.moduleService.deleteSchema(id).subscribe((data: any) => {
-                //     this.loadSchemas();
-                // }, (e) => {
-                //     this.loadError(e);
-                // });
-                break;
-            }
-            case SchemaType.Tool: {
-                // this.toolService.deleteSchema(id).subscribe((data: any) => {
-                //     this.loadSchemas();
-                // }, (e) => {
-                //     this.loadError(e);
-                // });
-                break;
-            }
+            case SchemaType.Module:
+            case SchemaType.Tool:
             case SchemaType.Policy: {
                 this.schemaService.delete(id).subscribe((data: any) => {
                     this.loadSchemas();
@@ -722,13 +635,7 @@ export class SchemaConfigComponent implements OnInit {
         this.loading = true;
         switch (this.type) {
             case SchemaType.System: {
-                // this.schemaService.updateSystemSchema(schema, id).subscribe((data) => {
-                //     localStorage.removeItem('restoreSchemaData');
-                //     this.loadSchemas();
-                // }, (e) => {
-                //     this.loadError(e);
-                // });
-                break;
+                return;
             }
             case SchemaType.Tag: {
                 this.tagsService.publishSchema(id).subscribe((res) => {
@@ -739,24 +646,8 @@ export class SchemaConfigComponent implements OnInit {
                 });
                 break;
             }
-            case SchemaType.Module: {
-                // this.moduleService.updateSchema(schema, id).subscribe((data) => {
-                //     localStorage.removeItem('restoreSchemaData');
-                //     this.loadSchemas();
-                // }, (e) => {
-                //     this.loadError(e);
-                // });
-                break;
-            }
-            case SchemaType.Tool: {
-                // this.toolService.updateSchema(schema, id).subscribe((data) => {
-                //     localStorage.removeItem('restoreSchemaData');
-                //     this.loadSchemas();
-                // }, (e) => {
-                //     this.loadError(e);
-                // });
-                break;
-            }
+            case SchemaType.Module:
+            case SchemaType.Tool:
             case SchemaType.Policy: {
                 this.schemaService.pushPublish(id, version).subscribe((result) => {
                     const { taskId } = result;
@@ -771,13 +662,7 @@ export class SchemaConfigComponent implements OnInit {
                 break;
             }
             default: {
-                // this.schemaService.updateSystemSchema(schema, id).subscribe((data) => {
-                //     localStorage.removeItem('restoreSchemaData');
-                //     this.loadSchemas();
-                // }, (e) => {
-                //     this.loadError(e);
-                // });
-                break;
+                return;
             }
         }
     }
@@ -797,42 +682,15 @@ export class SchemaConfigComponent implements OnInit {
         this.loading = true;
         switch (this.type) {
             case SchemaType.System: {
-                // this.schemaService.updateSystemSchema(schema, id).subscribe((data) => {
-                //     localStorage.removeItem('restoreSchemaData');
-                //     this.loadSchemas();
-                // }, (e) => {
-                //     this.loadError(e);
-                // });
-                break;
+                return;
             }
             case SchemaType.Tag: {
-                // this.tagsService.publishSchema(id).subscribe((res) => {
-                //     this.loading = false;
-                //     this.loadSchemas();
-                // }, (e) => {
-                //     this.loadError(e);
-                // });
-                break;
+                return;
             }
-            case SchemaType.Module: {
-                // this.moduleService.updateSchema(schema, id).subscribe((data) => {
-                //     localStorage.removeItem('restoreSchemaData');
-                //     this.loadSchemas();
-                // }, (e) => {
-                //     this.loadError(e);
-                // });
-                break;
-            }
-            case SchemaType.Tool: {
-                // this.toolService.updateSchema(schema, id).subscribe((data) => {
-                //     localStorage.removeItem('restoreSchemaData');
-                //     this.loadSchemas();
-                // }, (e) => {
-                //     this.loadError(e);
-                // });
-                break;
-            }
+            case SchemaType.Module:
+            case SchemaType.Tool:
             case SchemaType.Policy: {
+                const category = this.getCategory();
                 this.schemaService.pushImportByMessage(data, topicId).subscribe((result) => {
                     const { taskId } = result;
                     this.router.navigate(['task', taskId], {
@@ -846,13 +704,7 @@ export class SchemaConfigComponent implements OnInit {
                 break;
             }
             default: {
-                // this.schemaService.updateSystemSchema(schema, id).subscribe((data) => {
-                //     localStorage.removeItem('restoreSchemaData');
-                //     this.loadSchemas();
-                // }, (e) => {
-                //     this.loadError(e);
-                // });
-                break;
+                return;
             }
         }
     }
@@ -861,42 +713,15 @@ export class SchemaConfigComponent implements OnInit {
         this.loading = true;
         switch (this.type) {
             case SchemaType.System: {
-                // this.schemaService.updateSystemSchema(schema, id).subscribe((data) => {
-                //     localStorage.removeItem('restoreSchemaData');
-                //     this.loadSchemas();
-                // }, (e) => {
-                //     this.loadError(e);
-                // });
-                break;
+                return;
             }
             case SchemaType.Tag: {
-                // this.tagsService.publishSchema(id).subscribe((res) => {
-                //     this.loading = false;
-                //     this.loadSchemas();
-                // }, (e) => {
-                //     this.loadError(e);
-                // });
-                break;
+                return;
             }
-            case SchemaType.Module: {
-                // this.moduleService.updateSchema(schema, id).subscribe((data) => {
-                //     localStorage.removeItem('restoreSchemaData');
-                //     this.loadSchemas();
-                // }, (e) => {
-                //     this.loadError(e);
-                // });
-                break;
-            }
-            case SchemaType.Tool: {
-                // this.toolService.updateSchema(schema, id).subscribe((data) => {
-                //     localStorage.removeItem('restoreSchemaData');
-                //     this.loadSchemas();
-                // }, (e) => {
-                //     this.loadError(e);
-                // });
-                break;
-            }
+            case SchemaType.Module:
+            case SchemaType.Tool:
             case SchemaType.Policy: {
+                const category = this.getCategory();
                 this.schemaService.pushImportByFile(data, topicId).subscribe((result) => {
                     const { taskId } = result;
                     this.router.navigate(['task', taskId], {
@@ -910,13 +735,7 @@ export class SchemaConfigComponent implements OnInit {
                 break;
             }
             default: {
-                // this.schemaService.updateSystemSchema(schema, id).subscribe((data) => {
-                //     localStorage.removeItem('restoreSchemaData');
-                //     this.loadSchemas();
-                // }, (e) => {
-                //     this.loadError(e);
-                // });
-                break;
+                return;
             }
         }
     }

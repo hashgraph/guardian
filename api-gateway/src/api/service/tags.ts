@@ -236,7 +236,6 @@ export class TagsApi {
             return res.json(newSchema);
         } catch (error) {
             await (new Logger()).error(error, ['API_GATEWAY']);
-            // return next(error);
             throw error;
         }
     }

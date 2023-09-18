@@ -1,16 +1,51 @@
 import { Guardians } from '@helpers/guardians';
 import { ISchema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus, StatusType, TaskAction, UserRole } from '@guardian/interfaces';
 import { Logger, RunFunctionAsync, SchemaImportExport } from '@guardian/common';
-import { PolicyEngine } from '@helpers/policy-engine';
+import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, getSchemaPath } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response } from '@nestjs/common';
+import process from 'process';
+import { checkPermission } from '@auth/authorization-helper';
+import { Client, ClientProxy, Transport } from '@nestjs/microservices';
 import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
 import { SchemaUtils } from '@helpers/schema-utils';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response } from '@nestjs/common';
-import { checkPermission } from '@auth/authorization-helper';
-import { Client, ClientProxy, Transport } from '@nestjs/microservices';
-import process from 'process';
-import { ApiTags } from '@nestjs/swagger';
-import { SystemSchemaDTO } from '@middlewares/validation/schemas/schemas';
+import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator';
+import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator';
+import { InternalServerErrorDTO, TaskDTO, SystemSchemaDTO, SchemaDTO, ExportSchemaDTO } from '@middlewares/validation/schemas';
+
+const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
+
+/**
+ * Prepare the schema pagination
+ *
+ * @param req
+ * @param user
+ */
+function prepareSchemaPagination(req: any, user: any, topicId?: string): any {
+    const options: any = {};
+    options.pageIndex = undefined;
+    options.pageSize = undefined;
+    if (req.query && req.query.pageIndex && req.query.pageSize) {
+        options.pageIndex = req.query.pageIndex;
+        options.pageSize = req.query.pageSize;
+    }
+    if (req.query) {
+        options.category = req.query.category;
+        if (topicId) {
+            options.topicId = topicId;
+        } else {
+            options.policyId = req.query.policyId;
+            options.moduleId = req.query.moduleId;
+            options.toolId = req.query.toolId;
+            options.topicId = req.query.topicId;
+        }
+    }
+    options.owner = user.parent;
+    if (user.role === UserRole.STANDARD_REGISTRY) {
+        options.owner = user.did;
+    }
+    return options;
+}
 
 /**
  * Create new schema
@@ -24,7 +59,7 @@ export async function createSchema(newSchema: ISchema, owner: string, topicId?: 
     newSchema.topicId = topicId;
     SchemaHelper.checkSchemaKey(newSchema);
     SchemaHelper.updateOwner(newSchema, owner);
-    const schemas = (await guardians.createSchema(newSchema));
+    const schemas = (await guardians.createSchema(SchemaCategory.POLICY, newSchema));
     SchemaHelper.updatePermission(schemas, owner);
     return schemas;
 }
@@ -43,7 +78,7 @@ export async function createSchemaAsync(newSchema: ISchema, owner: string, topic
     newSchema.topicId = topicId;
     SchemaHelper.checkSchemaKey(newSchema);
     SchemaHelper.updateOwner(newSchema, owner);
-    await guardians.createSchemaAsync(newSchema, task);
+    await guardians.createSchemaAsync(SchemaCategory.POLICY, newSchema, task);
 }
 
 /**
@@ -120,13 +155,311 @@ export class SchemaApi {
     })
     client: ClientProxy;
 
+    /**
+     * Get page
+     */
+    @Get('/')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Return a list of all schemas.',
+        description: 'Returns all schemas.',
+    })
+    @ApiImplicitQuery({
+        name: 'pageIndex',
+        type: Number,
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
+    })
+    @ApiImplicitQuery({
+        name: 'pageSize',
+        type: Number,
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
+    })
+    @ApiImplicitQuery({
+        name: 'category',
+        type: String,
+        description: 'Schema category',
+        required: false,
+        example: SchemaCategory.POLICY
+    })
+    @ApiImplicitQuery({
+        name: 'policyId',
+        type: String,
+        description: 'Policy id',
+        required: false,
+        example: '000000000000000000000000'
+    })
+    @ApiImplicitQuery({
+        name: 'moduleId',
+        type: String,
+        description: 'Module id',
+        required: false,
+        example: '000000000000000000000000'
+    })
+    @ApiImplicitQuery({
+        name: 'toolId',
+        type: String,
+        description: 'Tool id',
+        required: false,
+        example: '000000000000000000000000'
+    })
+    @ApiImplicitQuery({
+        name: 'topicId',
+        type: String,
+        description: 'Topic id',
+        required: false,
+        example: '0.0.1'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        headers: {
+            'x-total-count': {
+                schema: {
+                    'type': 'integer'
+                },
+                description: 'Total items in the collection.'
+            }
+        },
+        schema: {
+            $ref: getSchemaPath(SchemaDTO)
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @HttpCode(HttpStatus.OK)
+    async getSchemasPage(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)(req.user);
+        try {
+            const guardians = new Guardians();
+            const user = req.user;
+            const options: any = prepareSchemaPagination(req, user);
+            const { items, count } = await guardians.getSchemasByOwner(options);
+            SchemaHelper.updatePermission(items, user.did);
+            return res.setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Get page
+     */
+    @Get('/:topicId')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Return a list of all schemas.',
+        description: 'Returns all schemas.',
+    })
+    @ApiImplicitParam({
+        name: 'topicId',
+        type: String,
+        description: 'Topic Id',
+        required: true,
+        example: '0.0.1'
+    })
+    @ApiImplicitQuery({
+        name: 'pageIndex',
+        type: Number,
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
+    })
+    @ApiImplicitQuery({
+        name: 'pageSize',
+        type: Number,
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
+    })
+    @ApiImplicitQuery({
+        name: 'category',
+        type: String,
+        description: 'Schema category',
+        required: false,
+        example: SchemaCategory.POLICY
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        headers: {
+            'x-total-count': {
+                schema: {
+                    'type': 'integer'
+                },
+                description: 'Total items in the collection.'
+            }
+        },
+        schema: {
+            $ref: getSchemaPath(SchemaDTO)
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @HttpCode(HttpStatus.OK)
+    async getSchemasPageByTopicId(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER, UserRole.AUDITOR)(req.user);
+        try {
+            const guardians = new Guardians();
+            const user = req.user;
+            const { topicId } = req.params;
+            const options = prepareSchemaPagination(req, user, topicId);
+            const { items, count } = await guardians.getSchemasByOwner(options);
+            SchemaHelper.updatePermission(items, user.did);
+            return res.setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Get schema by type
+     */
+    @Get('/type/:schemaType')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Finds the schema using the json document type.',
+        description: 'Finds the schema using the json document type.',
+    })
+    @ApiImplicitParam({
+        name: 'schemaType',
+        type: String,
+        description: 'Type',
+        required: true
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            $ref: getSchemaPath(SchemaDTO)
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @HttpCode(HttpStatus.OK)
+    async getSchemaByType(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER, UserRole.AUDITOR)(req.user)
+        let schema: any;
+        try {
+            const guardians = new Guardians();
+            schema = await guardians.getSchemaByType(req.params.schemaType);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (!schema) {
+            throw new HttpException(`Schema not found: ${req.params.schemaType}`, HttpStatus.NOT_FOUND);
+        }
+        try {
+            return res.send({
+                uuid: schema.uuid,
+                iri: schema.iri,
+                name: schema.name,
+                version: schema.version,
+                document: schema.document,
+                documentURL: schema.documentURL,
+                context: schema.context,
+                contextURL: schema.contextURL,
+            });
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Get all schemas
+     */
+    @Get('/list/all')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Returns a list of schemas.',
+        description: 'Returns a list of schemas.' + ONLY_SR,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        schema: {
+            $ref: getSchemaPath(SchemaDTO)
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @HttpCode(HttpStatus.OK)
+    async getAll(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        try {
+            const user = req.user;
+            const guardians = new Guardians();
+            if (user.did) {
+                const schemas = await guardians.getListSchemas(user.did);
+                return res.send(schemas);
+            }
+            res.send([]);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw error;
+        }
+    }
+
+    /**
+     * Create Schema
+     */
     @Post('/:topicId')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Creates a new schema.',
+        description: 'Creates a new schema.' + ONLY_SR,
+    })
+    @ApiImplicitParam({
+        name: 'topicId',
+        type: String,
+        description: 'Topic Id',
+        required: true,
+        example: '0.0.1'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        schema: {
+            $ref: getSchemaPath(SchemaDTO)
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @HttpCode(HttpStatus.CREATED)
-    async setTopicId(@Req() req, @Response() res): Promise<any> {
+    async createNewSchema(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const newSchema = req.body;
+            if (newSchema.category) {
+                newSchema.category = SchemaCategory.POLICY;
+            }
             SchemaUtils.fromOld(newSchema);
             const topicId = req.params.topicId;
             const schemas = await createSchema(
@@ -141,15 +474,45 @@ export class SchemaApi {
         }
     }
 
+    /**
+     * Create Schema (Async)
+     */
     @Post('/push/:topicId')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Creates a new schema.',
+        description: 'Creates a new schema.' + ONLY_SR,
+    })
+    @ApiImplicitParam({
+        name: 'topicId',
+        type: String,
+        description: 'Topic Id',
+        required: true,
+        example: '0.0.1'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            $ref: getSchemaPath(TaskDTO)
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @HttpCode(HttpStatus.ACCEPTED)
-    async setTopicIdAsync(@Req() req, @Response() res): Promise<any> {
+    async createNewSchemaAsync(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const user = req.user;
         const newSchema = req.body;
         const topicId = req.params.topicId;
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.CREATE_SCHEMA, user.id);
+        if (newSchema.category) {
+            newSchema.category = SchemaCategory.POLICY;
+        }
         RunFunctionAsync<ServiceError>(async () => {
             SchemaUtils.fromOld(newSchema);
             await createSchemaAsync(
@@ -166,58 +529,28 @@ export class SchemaApi {
         return res.status(202).send(task);
     }
 
-    @Get('/')
-    @HttpCode(HttpStatus.OK)
-    async getSchemas(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)(req.user);
-        try {
-            const user = req.user;
-            const { guardians, pageIndex, pageSize, owner } = prepareSchemaPagination(req, user);
-            let topicId = null;
-            const policyId = req.query?.policyId;
-            if (policyId) {
-                const engineService = new PolicyEngine();
-                const model = (await engineService.getPolicy({
-                    filters: policyId,
-                    userDid: user.did,
-                }));
-                topicId = model?.topicId;
-            }
-
-            const { items, count } = await guardians.getSchemasByOwner(owner, topicId, pageIndex, pageSize);
-            // const result = await this.client.send(MessageAPI.GET_SCHEMAS, {
-            //     owner,
-            //     topicId,
-            //     pageIndex,
-            //     pageSize
-            // }).toPromise();
-            // const { items, count } = result.body;
-            SchemaHelper.updatePermission(items, user.did);
-            return res.setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    @Get('/:topicId')
-    @HttpCode(HttpStatus.OK)
-    async getByTopicId(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER, UserRole.AUDITOR)(req.user);
-        try {
-            const user = req.user;
-            const { topicId } = req.params;
-            const { guardians, pageIndex, pageSize, owner } = prepareSchemaPagination(req, user);
-            const { items, count } = await guardians.getSchemasByOwner(owner, topicId, pageIndex, pageSize);
-            SchemaHelper.updatePermission(items, user.did);
-            return res.setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
+    /**
+     * Update Schema
+     */
     @Put('/')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Updates the schema.',
+        description: 'Updates the schema.' + ONLY_SR,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        schema: {
+            $ref: getSchemaPath(SchemaDTO)
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @HttpCode(HttpStatus.OK)
     async setSchema(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
@@ -245,7 +578,35 @@ export class SchemaApi {
         }
     }
 
+    /**
+     * Delete Schema
+     */
     @Delete('/:schemaId')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Deletes the schema with the provided schema ID.',
+        description: 'Deletes the schema with the provided schema ID.' + ONLY_SR,
+    })
+    @ApiImplicitParam({
+        name: 'schemaId',
+        type: String,
+        description: 'Schema ID',
+        required: true,
+        example: '000000000000000000000000'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        schema: {
+            $ref: getSchemaPath(SchemaDTO)
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @HttpCode(HttpStatus.OK)
     async deleteSchema(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
@@ -279,7 +640,43 @@ export class SchemaApi {
         }
     }
 
+    /**
+     * Publish Schema
+     */
     @Put('/:schemaId/publish')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Publishes the schema with the provided schema ID.',
+        description: 'Publishes the schema with the provided (internal) schema ID onto IPFS, sends a message featuring IPFS CID into the corresponding Hedera topic.' + ONLY_SR,
+    })
+    @ApiImplicitParam({
+        name: 'schemaId',
+        type: String,
+        description: 'Schema ID',
+        required: true,
+        example: '000000000000000000000000'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        headers: {
+            'x-total-count': {
+                schema: {
+                    'type': 'integer'
+                },
+                description: 'Total items in the collection.'
+            }
+        },
+        schema: {
+            $ref: getSchemaPath(SchemaDTO)
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @HttpCode(HttpStatus.OK)
     async publishSchema(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
@@ -316,8 +713,10 @@ export class SchemaApi {
         }
         try {
             await guardians.publishSchema(schemaId, version, user.did);
-
-            const { items, count } = await guardians.getSchemasByOwner(user.did);
+            const { items, count } = await guardians.getSchemasByOwner({
+                category: SchemaCategory.POLICY,
+                owner: user.did
+            });
             SchemaHelper.updatePermission(items, user.did);
             return res.setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
         } catch (error) {
@@ -326,7 +725,34 @@ export class SchemaApi {
         }
     }
 
+    /**
+     * Publish Schema (Async)
+     */
     @Put('/push/:schemaId/publish')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Publishes the schema with the provided schema ID.',
+        description: 'Publishes the schema with the provided (internal) schema ID onto IPFS, sends a message featuring IPFS CID into the corresponding Hedera topic.' + ONLY_SR,
+    })
+    @ApiImplicitParam({
+        name: 'schemaId',
+        type: String,
+        description: 'Schema ID',
+        required: true,
+        example: '000000000000000000000000'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            $ref: getSchemaPath(TaskDTO)
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @HttpCode(HttpStatus.ACCEPTED)
     async publishSchemaAsync(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
@@ -363,7 +789,27 @@ export class SchemaApi {
         return res.status(202).send(task);
     }
 
+    /**
+     * Preview Schema from IPFS
+     */
     @Post('/import/message/preview')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Previews the schema from IPFS without loading it into the local DB.',
+        description: 'Previews the schema from IPFS without loading it into the local DB.' + ONLY_SR,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @HttpCode(HttpStatus.OK)
     async importFromMessagePreview(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
@@ -378,7 +824,27 @@ export class SchemaApi {
         }
     }
 
+    /**
+     * Preview Schema from IPFS (Async)
+     */
     @Post('/push/import/message/preview')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Previews the schema from IPFS without loading it into the local DB.',
+        description: 'Previews the schema from IPFS without loading it into the local DB.' + ONLY_SR,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            $ref: getSchemaPath(TaskDTO)
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @HttpCode(HttpStatus.ACCEPTED)
     async importFromMessagePreviewAsync(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
@@ -400,7 +866,27 @@ export class SchemaApi {
         return res.status(202).send(task);
     }
 
+    /**
+     * Preview Schema from a zip file
+     */
     @Post('/import/file/preview')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Previews the schema from a zip file.',
+        description: 'Previews the schema from a zip file.' + ONLY_SR,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @HttpCode(HttpStatus.OK)
     async importFromFilePreview(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
@@ -419,7 +905,43 @@ export class SchemaApi {
         }
     }
 
+    /**
+     * Import Schema from IPFS
+     */
     @Post('/:topicId/import/message')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Imports new schema from IPFS into the local DB.',
+        description: 'Imports new schema from IPFS into the local DB.' + ONLY_SR,
+    })
+    @ApiImplicitParam({
+        name: 'topicId',
+        type: String,
+        description: 'Topic Id',
+        required: true,
+        example: '0.0.1'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        headers: {
+            'x-total-count': {
+                schema: {
+                    'type': 'integer'
+                },
+                description: 'Total items in the collection.'
+            }
+        },
+        schema: {
+            $ref: getSchemaPath(SchemaDTO)
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @HttpCode(HttpStatus.CREATED)
     async importFromMessage(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
@@ -432,7 +954,10 @@ export class SchemaApi {
         }
         try {
             await guardians.importSchemasByMessages([messageId], req.user.did, topicId);
-            const { items, count } = await guardians.getSchemasByOwner(user.did);
+            const { items, count } = await guardians.getSchemasByOwner({
+                category: SchemaCategory.POLICY,
+                owner: user.did
+            });
             SchemaHelper.updatePermission(items, user.did);
             return res.status(201).setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
         } catch (error) {
@@ -441,7 +966,34 @@ export class SchemaApi {
         }
     }
 
+    /**
+     * Import Schema from IPFS (Async)
+     */
     @Post('/push/:topicId/import/message')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Imports new schema from IPFS into the local DB.',
+        description: 'Imports new schema from IPFS into the local DB.' + ONLY_SR,
+    })
+    @ApiImplicitParam({
+        name: 'topicId',
+        type: String,
+        description: 'Topic Id',
+        required: true,
+        example: '0.0.1'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            $ref: getSchemaPath(TaskDTO)
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @HttpCode(HttpStatus.ACCEPTED)
     async importFromMessageAsync(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
@@ -464,7 +1016,43 @@ export class SchemaApi {
         return res.status(202).send(task);
     }
 
+    /**
+     * Import Schema from a zip file
+     */
     @Post('/:topicId/import/file')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Imports new schema from a zip file into the local DB.',
+        description: 'Imports new schema from a zip file into the local DB.' + ONLY_SR,
+    })
+    @ApiImplicitParam({
+        name: 'topicId',
+        type: String,
+        description: 'Topic Id',
+        required: true,
+        example: '0.0.1'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        headers: {
+            'x-total-count': {
+                schema: {
+                    'type': 'integer'
+                },
+                description: 'Total items in the collection.'
+            }
+        },
+        schema: {
+            $ref: getSchemaPath(SchemaDTO)
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @HttpCode(HttpStatus.CREATED)
     async importToTopicFromFile(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
@@ -478,7 +1066,10 @@ export class SchemaApi {
         try {
             const files = await SchemaImportExport.parseZipFile(zip);
             await guardians.importSchemasByFile(files, req.user.did, topicId);
-            const { items, count } = await guardians.getSchemasByOwner(user.did);
+            const { items, count } = await guardians.getSchemasByOwner({
+                category: SchemaCategory.POLICY,
+                owner: user.did
+            });
             SchemaHelper.updatePermission(items, user.did);
             return res.status(201).setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
         } catch (error) {
@@ -487,7 +1078,34 @@ export class SchemaApi {
         }
     }
 
+    /**
+     * Import Schema from a zip file (Async)
+     */
     @Post('/push/:topicId/import/file')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Imports new schema from a zip file into the local DB.',
+        description: 'Imports new schema from a zip file into the local DB.' + ONLY_SR,
+    })
+    @ApiImplicitParam({
+        name: 'topicId',
+        type: String,
+        description: 'Topic Id',
+        required: true,
+        example: '0.0.1'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            $ref: getSchemaPath(TaskDTO)
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @HttpCode(HttpStatus.ACCEPTED)
     async importToTopicFromFileAsync(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
@@ -512,6 +1130,30 @@ export class SchemaApi {
     }
 
     @Get('/:schemaId/export/message')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Returns Hedera message IDs of the published schemas.',
+        description: 'Returns Hedera message IDs of the published schemas, these messages contain IPFS CIDs of these schema files.' + ONLY_SR,
+    })
+    @ApiImplicitParam({
+        name: 'schemaId',
+        type: String,
+        description: 'Schema ID',
+        required: true,
+        example: '000000000000000000000000'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            $ref: getSchemaPath(ExportSchemaDTO)
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @HttpCode(HttpStatus.OK)
     async exportMessage(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
@@ -538,6 +1180,27 @@ export class SchemaApi {
     }
 
     @Get('/:schemaId/export/file')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Returns schema files for the schema.',
+        description: 'Returns schema files for the schema.' + ONLY_SR,
+    })
+    @ApiImplicitParam({
+        name: 'schemaId',
+        type: String,
+        description: 'Schema ID',
+        required: true,
+        example: '000000000000000000000000'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation. Response zip file.'
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
     @HttpCode(HttpStatus.OK)
     async exportToFile(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
@@ -569,37 +1232,19 @@ export class SchemaApi {
         }
     }
 
-    @Get('/type/:schemaType')
-    @HttpCode(HttpStatus.OK)
-    async getSchemaType(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER, UserRole.AUDITOR)(req.user)
-        let schema;
-        try {
-            const guardians = new Guardians();
-            schema = await guardians.getSchemaByType(req.params.schemaType);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        if (!schema) {
-            throw new HttpException(`Schema not found: ${req.params.schemaType}`, HttpStatus.NOT_FOUND);
-        }
-        try {
-            return res.send({
-                uuid: schema.uuid,
-                iri: schema.iri,
-                name: schema.name,
-                version: schema.version,
-                document: schema.document,
-                documentURL: schema.documentURL,
-                context: schema.context,
-                contextURL: schema.contextURL,
-            });
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     @Post('/system/:username')
     @HttpCode(HttpStatus.CREATED)
@@ -762,43 +1407,4 @@ export class SchemaApi {
             throw error
         }
     }
-
-    @Get('/list/all')
-    @HttpCode(HttpStatus.OK)
-    async getAll(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        try {
-            const user = req.user;
-            const guardians = new Guardians();
-            if (user.did) {
-                const schemas = await guardians.getListSchemas(user.did);
-                return res.send(schemas);
-            }
-            res.send([]);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
-        }
-    }
-}
-
-/**
- * Prepare the schema pagination
- *
- * @param req
- * @param user
- */
-function prepareSchemaPagination(req, user) {
-    const guardians = new Guardians();
-    let pageIndex: any;
-    let pageSize: any;
-    if (req.query && req.query.pageIndex && req.query.pageSize) {
-        pageIndex = req.query.pageIndex;
-        pageSize = req.query.pageSize;
-    }
-    let owner = user.parent;
-    if (user.role === UserRole.STANDARD_REGISTRY) {
-        owner = user.did;
-    }
-    return { guardians, pageIndex, pageSize, owner };
 }

@@ -322,12 +322,12 @@ export class PolicyConfigurationComponent implements OnInit {
 
             forkJoin([
                 this.policyEngineService.getBlockInformation(),
-                this.modulesService.getSchemas(this.moduleTemplate.topicId),
+                this.schemaService.getSchemas(this.moduleTemplate.topicId),
                 this.modulesService.menuList(),
                 this.toolsService.menuList()
             ]).subscribe((data) => {
                 const blockInformation = data[0] || {};
-                const schemas = data[1].body || [];
+                const schemas = data[1] || [];
                 const modules = data[2] || [];
                 const tools = data[3] || [];
 
@@ -368,13 +368,13 @@ export class PolicyConfigurationComponent implements OnInit {
             forkJoin([
                 this.policyEngineService.getBlockInformation(),
                 this.tokenService.getTokens(),
-                this.toolsService.getSchemas(this.toolTemplate.topicId),
+                this.schemaService.getSchemas(this.toolTemplate.topicId),
                 this.modulesService.menuList(),
                 this.toolsService.menuList()
             ]).subscribe((data) => {
                 const blockInformation = data[0] || {};
                 const tokens = data[1] || [];
-                const schemas = data[2].body || [];
+                const schemas = data[2] || [];
                 const modules = data[3] || [];
                 const tools = data[4] || [];
 
