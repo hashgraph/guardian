@@ -59,9 +59,10 @@ export async function schemaAPI(): Promise<void> {
 
     ApiResponse(MessageAPI.CREATE_SCHEMA_ASYNC, async (msg) => {
         const { item, task } = msg;
+        console.debug('msg', JSON.stringify(msg, null, 4));
         const notifier = await initNotifier(task);
         RunFunctionAsync(async () => {
-            const schema = await createSchemaAndArtifacts(msg.category, item, item.owner, notifier);
+            const schema = await createSchemaAndArtifacts(item.category, item, item.owner, notifier);
             notifier.result(schema.id);
         }, async (error) => {
             new Logger().error(error, ['GUARDIAN_SERVICE']);

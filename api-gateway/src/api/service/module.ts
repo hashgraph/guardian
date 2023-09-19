@@ -200,8 +200,9 @@ export class ModulesApi {
             delete newSchema.status;
             delete newSchema.topicId;
 
+            newSchema.category = SchemaCategory.MODULE;
             SchemaHelper.updateOwner(newSchema, owner);
-            const schema = await guardians.createSchema(SchemaCategory.MODULE, newSchema);
+            const schema = await guardians.createSchema(newSchema);
 
             return res.status(201).json(SchemaUtils.toOld(schema));
         } catch (error) {

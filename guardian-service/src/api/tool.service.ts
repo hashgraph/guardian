@@ -1,7 +1,6 @@
 import { ApiResponse } from '@api/helpers/api-response';
 import {
     BinaryMessageResponse,
-    DataBaseHelper,
     DatabaseServer,
     Logger,
     MessageAction,
@@ -11,12 +10,12 @@ import {
     MessageType,
     ToolMessage,
     PolicyTool,
-    Schema,
     TagMessage,
     TopicConfig,
     TopicHelper,
     Users,
-    ToolImportExport
+    ToolImportExport,
+    RunFunctionAsync
 } from '@guardian/common';
 import {
     GenerateUUIDv4,
@@ -26,10 +25,11 @@ import {
     TagType,
     TopicType
 } from '@guardian/interfaces';
-import { emptyNotifier, INotifier } from '@helpers/notifier';
+import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
 import { ISerializedErrors } from '@policy-engine/policy-validation-results-container';
 import { ToolValidator } from '@policy-engine/block-validators/tool-validator';
 import { importTag } from './tag.service';
+import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
 
 /**
  * Check and update config file
@@ -75,7 +75,7 @@ export async function preparePreviewMessage(messageId: string, owner: string, no
     }
 
     notifier.completedAndStart('Parse tool files');
-    const result:any = await ToolImportExport.parseZipFile(message.document);
+    const result: any = await ToolImportExport.parseZipFile(message.document);
     result.messageId = messageId;
     result.toolTopicId = message.toolTopicId;
 
@@ -85,13 +85,13 @@ export async function preparePreviewMessage(messageId: string, owner: string, no
 
 /**
  * Validate and publish tool
- * @param uuid
+ * @param id
  * @param owner
  * @param notifier
  */
-export async function validateAndPublish(uuid: string, owner: string, notifier: INotifier) {
+export async function validateAndPublish(id: string, owner: string, notifier: INotifier) {
     notifier.start('Find and validate tool');
-    const item = await DatabaseServer.getToolByUUID(uuid);
+    const item = await DatabaseServer.getToolById(id);
     if (!item) {
         throw new Error('Unknown tool');
     }
@@ -105,11 +105,12 @@ export async function validateAndPublish(uuid: string, owner: string, notifier: 
     const errors = await validateTool(item);
     const isValid = !errors.blocks.some(block => !block.isValid);
     notifier.completed();
+
     if (isValid) {
         const newTool = await publishTool(item, owner, notifier);
-        return { item: newTool, isValid, errors };
+        return { tool: newTool, isValid, errors };
     } else {
-        return { item, isValid, errors };
+        return { tool: item, isValid, errors };
     }
 }
 
@@ -136,36 +137,9 @@ export async function publishTool(
     notifier: INotifier
 ): Promise<PolicyTool> {
     const logger = new Logger();
-
     logger.info('Publish tool', ['GUARDIAN_SERVICE']);
-    notifier.start('Resolve Hedera account');
-    const users = new Users();
-    const root = await users.getHederaAccount(owner);
-    notifier.completedAndStart('Find topic');
 
-    const userTopic = await TopicConfig.fromObject(
-        await DatabaseServer.getTopicByType(owner, TopicType.UserTopic), true
-    );
-    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
-        .setTopicObject(userTopic);
-
-    notifier.completedAndStart('Create tool topic');
-    const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
-    const rootTopic = await topicHelper.create({
-        type: TopicType.ToolTopic,
-        name: tool.name || TopicType.ToolTopic,
-        description: TopicType.ToolTopic,
-        owner,
-        policyId: null,
-        policyUUID: null
-    });
-    await rootTopic.saveKeys();
-    await DatabaseServer.saveTopic(rootTopic.toObject());
-
-    tool.topicId = rootTopic.topicId;
-
-    notifier.completedAndStart('Generate file');
-
+    notifier.start('Generate file');
     tool = updateToolConfig(tool);
     const zip = await ToolImportExport.generate(tool);
     const buffer = await zip.generateAsync({
@@ -176,24 +150,108 @@ export async function publishTool(
         }
     });
 
+    notifier.completedAndStart('Resolve Hedera account');
+    const users = new Users();
+    const root = await users.getHederaAccount(owner);
+
+    notifier.completedAndStart('Find topic');
+    const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(tool.topicId), true);
+    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
+        .setTopicObject(topic);
+
     notifier.completedAndStart('Publish tool');
     const message = new ToolMessage(MessageType.Tool, MessageAction.PublishTool);
     message.setDocument(tool, buffer);
     const result = await messageServer
         .sendMessage(message);
 
+    notifier.completedAndStart('Saving in DB');
     tool.messageId = result.getId();
     tool.status = ModuleStatus.PUBLISHED;
+    const retVal = await DatabaseServer.updateTool(tool);
 
-    notifier.completedAndStart('Link topic and tool');
-    await topicHelper.twoWayLink(rootTopic, userTopic, result.getId());
+    notifier.completed();
 
     logger.info('Published tool', ['GUARDIAN_SERVICE']);
 
-    notifier.completedAndStart('Saving in DB');
-    const retVal = await DatabaseServer.updateTool(tool);
-    notifier.completed();
     return retVal
+}
+
+/**
+ * Create tool
+ * @param tool
+ * @param owner
+ * @param version
+ * @param notifier
+ */
+export async function createTool(
+    json: any,
+    owner: string,
+    notifier: INotifier
+): Promise<PolicyTool> {
+    const logger = new Logger();
+    logger.info('Create Policy', ['GUARDIAN_SERVICE']);
+    notifier.start('Save in DB');
+    if (json) {
+        delete json._id;
+        delete json.id;
+        delete json.status;
+        delete json.owner;
+        delete json.version;
+        delete json.messageId;
+    }
+    json.creator = owner;
+    json.owner = owner;
+    json.type = 'CUSTOM';
+    json.status = ModuleStatus.DRAFT;
+    json.codeVersion = PolicyConverterUtils.VERSION;
+    updateToolConfig(json);
+    const tool = await DatabaseServer.createTool(json);
+
+    try {
+        if (!tool.topicId) {
+            notifier.completedAndStart('Resolve Hedera account');
+            const users = new Users();
+            const root = await users.getHederaAccount(owner);
+
+            notifier.completedAndStart('Create topic');
+            logger.info('Create Tool: Create New Topic', ['GUARDIAN_SERVICE']);
+            const parent = await TopicConfig.fromObject(
+                await DatabaseServer.getTopicByType(owner, TopicType.UserTopic), true
+            );
+            const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
+            const topic = await topicHelper.create({
+                type: TopicType.ToolTopic,
+                name: tool.name || TopicType.ToolTopic,
+                description: tool.description || TopicType.ToolTopic,
+                owner,
+                targetId: tool.id.toString(),
+                targetUUID: tool.uuid
+            });
+            await topic.saveKeys();
+
+            notifier.completedAndStart('Create tool in Hedera');
+            const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+            const message = new ToolMessage(MessageType.Tool, MessageAction.CreateTool);
+            message.setDocument(tool);
+            const messageStatus = await messageServer
+                .setTopicObject(parent)
+                .sendMessage(message);
+
+            notifier.completedAndStart('Link topic and tool');
+            await topicHelper.twoWayLink(topic, parent, messageStatus.getId());
+
+            await DatabaseServer.saveTopic(topic.toObject());
+            tool.topicId = topic.topicId;
+            await DatabaseServer.updateTool(tool);
+            notifier.completed();
+        }
+
+        return tool;
+    } catch (error) {
+        await DatabaseServer.removeTool(tool);
+        throw error;
+    }
 }
 
 /**
@@ -212,15 +270,8 @@ export async function toolsAPI(): Promise<void> {
             if (!msg) {
                 throw new Error('Invalid Params');
             }
-
             const { tool, owner } = msg;
-            tool.creator = owner;
-            tool.owner = owner;
-            tool.type = 'CUSTOM';
-            tool.status = ModuleStatus.DRAFT;
-            updateToolConfig(tool);
-
-            const item = await DatabaseServer.createTool(tool);
+            const item = await createTool(tool, owner, emptyNotifier());
             return new MessageResponse(item);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -228,10 +279,30 @@ export async function toolsAPI(): Promise<void> {
         }
     });
 
+    /**
+     * Create new tool
+     *
+     * @param payload - tool
+     *
+     * @returns {PolicyTool} new tool
+     */
+    ApiResponse(MessageAPI.CREATE_TOOL_ASYNC, async (msg) => {
+        if (!msg) {
+            throw new Error('Invalid Params');
+        }
+        const { tool, owner, task } = msg;
+        const notifier = await initNotifier(task);
+        RunFunctionAsync(async () => {
+            const item = await createTool(tool, owner, notifier);
+            notifier.result(item.id);
+        }, async (error) => {
+            notifier.error(error);
+        });
+        return new MessageResponse(task);
+    });
+
     ApiResponse(MessageAPI.GET_TOOLS, async (msg) => {
         try {
-
-            console.debug('--- GET_TOOLS');
             if (!msg) {
                 return new MessageError('Invalid load tools parameter');
             }
@@ -256,7 +327,6 @@ export async function toolsAPI(): Promise<void> {
 
             const [items, count] = await DatabaseServer.getToolsAndCount(filter, otherOptions);
 
-            console.debug('--- GET_TOOLS return');
             return new MessageResponse({ items, count });
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -266,10 +336,10 @@ export async function toolsAPI(): Promise<void> {
 
     ApiResponse(MessageAPI.DELETE_TOOL, async (msg) => {
         try {
-            if (!msg.uuid || !msg.owner) {
+            if (!msg.id || !msg.owner) {
                 return new MessageError('Invalid load tools parameter');
             }
-            const item = await DatabaseServer.getToolByUUID(msg.uuid);
+            const item = await DatabaseServer.getToolById(msg.id);
             if (!item || item.owner !== msg.owner) {
                 throw new Error('Invalid tool');
             }
@@ -310,8 +380,8 @@ export async function toolsAPI(): Promise<void> {
             if (!msg) {
                 return new MessageError('Invalid load tools parameter');
             }
-            const { uuid, tool, owner } = msg;
-            const item = await DatabaseServer.getToolByUUID(uuid);
+            const { id, tool, owner } = msg;
+            const item = await DatabaseServer.getToolById(id);
             if (!item || item.owner !== owner) {
                 throw new Error('Invalid tool');
             }
@@ -334,10 +404,10 @@ export async function toolsAPI(): Promise<void> {
 
     ApiResponse(MessageAPI.GET_TOOL, async (msg) => {
         try {
-            if (!msg.uuid || !msg.owner) {
+            if (!msg.id || !msg.owner) {
                 return new MessageError('Invalid load tools parameter');
             }
-            const item = await DatabaseServer.getToolByUUID(msg.uuid);
+            const item = await DatabaseServer.getToolById(msg.id);
             if (!item || item.owner !== msg.owner) {
                 throw new Error('Invalid tool');
             }
@@ -350,11 +420,11 @@ export async function toolsAPI(): Promise<void> {
 
     ApiResponse(MessageAPI.TOOL_EXPORT_FILE, async (msg) => {
         try {
-            if (!msg.uuid || !msg.owner) {
+            if (!msg.id || !msg.owner) {
                 return new MessageError('Invalid load tools parameter');
             }
 
-            const item = await DatabaseServer.getToolByUUID(msg.uuid);
+            const item = await DatabaseServer.getToolById(msg.id);
             if (!item || item.owner !== msg.owner) {
                 throw new Error('Invalid tool');
             }
@@ -377,16 +447,17 @@ export async function toolsAPI(): Promise<void> {
 
     ApiResponse(MessageAPI.TOOL_EXPORT_MESSAGE, async (msg) => {
         try {
-            if (!msg.uuid || !msg.owner) {
+            if (!msg.id || !msg.owner) {
                 return new MessageError('Invalid load tools parameter');
             }
 
-            const item = await DatabaseServer.getToolByUUID(msg.uuid);
+            const item = await DatabaseServer.getToolById(msg.id);
             if (!item || item.owner !== msg.owner) {
                 throw new Error('Invalid tool');
             }
 
             return new MessageResponse({
+                id: item.id,
                 uuid: item.uuid,
                 name: item.name,
                 description: item.description,
@@ -532,13 +603,29 @@ export async function toolsAPI(): Promise<void> {
 
     ApiResponse(MessageAPI.PUBLISH_TOOL, async (msg) => {
         try {
-            const { uuid, owner } = msg;
-            const result = await validateAndPublish(uuid, owner, emptyNotifier());
-            return new MessageResponse({
-                tool: result.item,
-                isValid: result.isValid,
-                errors: result.errors,
+            const { id, owner } = msg;
+            const result = await validateAndPublish(id, owner, emptyNotifier());
+            return new MessageResponse(result);
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    ApiResponse(MessageAPI.PUBLISH_TOOL_ASYNC, async (msg) => {
+        try {
+            const { id, owner, task } = msg;
+            const notifier = await initNotifier(task);
+
+            RunFunctionAsync(async () => {
+                const result = await validateAndPublish(id, owner, notifier);
+                notifier.result(result);
+            }, async (error) => {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                notifier.error(error);
             });
+
+            return new MessageResponse(task);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);

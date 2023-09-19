@@ -751,7 +751,8 @@ export class SchemaConfigComponent implements OnInit {
                 schemasMap: this.schemasMap,
                 topicId: this.currentTopic,
                 policies: this.policies,
-                modules: this.modules
+                modules: this.modules,
+                tools: this.tools
             }
         });
         dialogRef.afterClosed().subscribe(async (schema: Schema | null) => {

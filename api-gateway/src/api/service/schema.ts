@@ -1,8 +1,38 @@
 import { Guardians } from '@helpers/guardians';
-import { ISchema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus, StatusType, TaskAction, UserRole } from '@guardian/interfaces';
+import {
+    ISchema,
+    SchemaCategory,
+    SchemaEntity,
+    SchemaHelper,
+    SchemaStatus,
+    StatusType,
+    TaskAction,
+    UserRole
+} from '@guardian/interfaces';
 import { Logger, RunFunctionAsync, SchemaImportExport } from '@guardian/common';
-import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, getSchemaPath } from '@nestjs/swagger';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response } from '@nestjs/common';
+import {
+    ApiInternalServerErrorResponse,
+    ApiUnauthorizedResponse,
+    ApiForbiddenResponse,
+    ApiOkResponse,
+    ApiOperation,
+    ApiSecurity,
+    ApiTags,
+    getSchemaPath
+} from '@nestjs/swagger';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpException,
+    HttpStatus,
+    Post,
+    Put,
+    Req,
+    Response
+} from '@nestjs/common';
 import process from 'process';
 import { checkPermission } from '@auth/authorization-helper';
 import { Client, ClientProxy, Transport } from '@nestjs/microservices';
@@ -57,9 +87,10 @@ function prepareSchemaPagination(req: any, user: any, topicId?: string): any {
 export async function createSchema(newSchema: ISchema, owner: string, topicId?: string): Promise<ISchema[]> {
     const guardians = new Guardians();
     newSchema.topicId = topicId;
+    newSchema.category = newSchema.category || SchemaCategory.POLICY;
     SchemaHelper.checkSchemaKey(newSchema);
     SchemaHelper.updateOwner(newSchema, owner);
-    const schemas = (await guardians.createSchema(SchemaCategory.POLICY, newSchema));
+    const schemas = await guardians.createSchema(newSchema);
     SchemaHelper.updatePermission(schemas, owner);
     return schemas;
 }
@@ -76,9 +107,10 @@ export async function createSchemaAsync(newSchema: ISchema, owner: string, topic
     const guardians = new Guardians();
     taskManager.addStatus(task.taskId, 'Check schema version', StatusType.PROCESSING);
     newSchema.topicId = topicId;
+    newSchema.category = newSchema.category || SchemaCategory.POLICY;
     SchemaHelper.checkSchemaKey(newSchema);
     SchemaHelper.updateOwner(newSchema, owner);
-    await guardians.createSchemaAsync(SchemaCategory.POLICY, newSchema, task);
+    await guardians.createSchemaAsync(newSchema, task);
 }
 
 /**
@@ -228,6 +260,12 @@ export class SchemaApi {
             $ref: getSchemaPath(SchemaDTO)
         },
     })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         schema: {
@@ -302,6 +340,12 @@ export class SchemaApi {
             $ref: getSchemaPath(SchemaDTO)
         },
     })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         schema: {
@@ -345,6 +389,12 @@ export class SchemaApi {
         schema: {
             $ref: getSchemaPath(SchemaDTO)
         },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -399,6 +449,12 @@ export class SchemaApi {
             $ref: getSchemaPath(SchemaDTO)
         },
     })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         schema: {
@@ -445,6 +501,12 @@ export class SchemaApi {
             $ref: getSchemaPath(SchemaDTO)
         },
     })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         schema: {
@@ -457,9 +519,6 @@ export class SchemaApi {
         try {
             const user = req.user;
             const newSchema = req.body;
-            if (newSchema.category) {
-                newSchema.category = SchemaCategory.POLICY;
-            }
             SchemaUtils.fromOld(newSchema);
             const topicId = req.params.topicId;
             const schemas = await createSchema(
@@ -496,6 +555,12 @@ export class SchemaApi {
             $ref: getSchemaPath(TaskDTO)
         },
     })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         schema: {
@@ -510,9 +575,6 @@ export class SchemaApi {
         const topicId = req.params.topicId;
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.CREATE_SCHEMA, user.id);
-        if (newSchema.category) {
-            newSchema.category = SchemaCategory.POLICY;
-        }
         RunFunctionAsync<ServiceError>(async () => {
             SchemaUtils.fromOld(newSchema);
             await createSchemaAsync(
@@ -544,6 +606,12 @@ export class SchemaApi {
         schema: {
             $ref: getSchemaPath(SchemaDTO)
         },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -600,6 +668,12 @@ export class SchemaApi {
         schema: {
             $ref: getSchemaPath(SchemaDTO)
         },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -670,6 +744,12 @@ export class SchemaApi {
         schema: {
             $ref: getSchemaPath(SchemaDTO)
         },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -747,6 +827,12 @@ export class SchemaApi {
             $ref: getSchemaPath(TaskDTO)
         },
     })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         schema: {
@@ -804,6 +890,12 @@ export class SchemaApi {
             'type': 'object'
         },
     })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         schema: {
@@ -838,6 +930,12 @@ export class SchemaApi {
         schema: {
             $ref: getSchemaPath(TaskDTO)
         },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -880,6 +978,12 @@ export class SchemaApi {
         schema: {
             'type': 'object'
         },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -936,6 +1040,12 @@ export class SchemaApi {
             $ref: getSchemaPath(SchemaDTO)
         },
     })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         schema: {
@@ -987,6 +1097,12 @@ export class SchemaApi {
         schema: {
             $ref: getSchemaPath(TaskDTO)
         },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -1047,6 +1163,12 @@ export class SchemaApi {
             $ref: getSchemaPath(SchemaDTO)
         },
     })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         schema: {
@@ -1100,6 +1222,12 @@ export class SchemaApi {
             $ref: getSchemaPath(TaskDTO)
         },
     })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         schema: {
@@ -1148,6 +1276,12 @@ export class SchemaApi {
             $ref: getSchemaPath(ExportSchemaDTO)
         },
     })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         schema: {
@@ -1194,6 +1328,12 @@ export class SchemaApi {
     })
     @ApiOkResponse({
         description: 'Successful operation. Response zip file.'
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',

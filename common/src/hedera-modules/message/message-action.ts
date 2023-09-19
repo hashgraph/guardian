@@ -24,5 +24,6 @@ export enum MessageAction {
     PublishModule = 'publish-module',
     PublishTag = 'publish-tag',
     DeleteTag = 'delete-tag',
-    PublishTool = 'publish-tool'
+    PublishTool = 'publish-tool',
+    CreateTool = 'create-tool'
 }

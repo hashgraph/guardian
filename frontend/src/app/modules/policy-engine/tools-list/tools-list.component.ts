@@ -41,6 +41,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
     public columns: string[] = [
         'name',
         'description',
+        'topic',
         'tags',
         'status',
         'operation',

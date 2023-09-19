@@ -618,8 +618,7 @@ export class Guardians extends NatsService {
      *
      * @returns {ISchema[]} - all schemas
      */
-    public async createSchema(category: SchemaCategory, item: ISchema | any): Promise<ISchema[]> {
-        item.category = category;
+    public async createSchema(item: ISchema | any): Promise<ISchema[]> {
         return await this.sendMessage(MessageAPI.CREATE_SCHEMA, item);
     }
 
@@ -628,8 +627,7 @@ export class Guardians extends NatsService {
      * @param {ISchema} item - schema
      * @param {NewTask} task - task
      */
-    public async createSchemaAsync(category: SchemaCategory, item: ISchema | any, task: NewTask): Promise<NewTask> {
-        item.category = category;
+    public async createSchemaAsync(item: ISchema | any, task: NewTask): Promise<NewTask> {
         return await this.sendMessage(MessageAPI.CREATE_SCHEMA_ASYNC, { item, task });
     }
 
@@ -1409,6 +1407,16 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Create tool
+     * @param tool
+     * @param owner
+     * @returns tool
+     */
+    public async createToolAsync(tool: any, owner: string, task: NewTask): Promise<any> {
+        return await this.sendMessage(MessageAPI.CREATE_TOOL_ASYNC, { tool, owner, task });
+    }
+
+    /**
      * Return tools
      *
      * @param {IFilter} [params]
@@ -1421,47 +1429,57 @@ export class Guardians extends NatsService {
 
     /**
      * Delete tool
-     * @param uuid
+     * @param id
      * @param owner
      * @returns Operation Success
      */
-    public async deleteTool(uuid: string, owner: string): Promise<boolean> {
-        return await this.sendMessage(MessageAPI.DELETE_TOOL, { uuid, owner });
+    public async deleteTool(id: string, owner: string): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.DELETE_TOOL, { id, owner });
     }
 
     /**
      * Delete tool
-     * @param uuid
+     * @param id
      * @param owner
      * @returns Operation Success
      */
-    public async getToolById(uuid: string, owner: string): Promise<boolean> {
-        return await this.sendMessage(MessageAPI.GET_TOOL, { uuid, owner });
+    public async getToolById(id: string, owner: string): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.GET_TOOL, { id, owner });
     }
 
     /**
      * Update tool
-     * @param uuid
+     * @param id
      * @param tool
      * @param owner
      * @returns tool
      */
     public async updateTool(
-        uuid: string,
+        id: string,
         tool: any,
         owner: string
     ): Promise<any> {
-        return await this.sendMessage(MessageAPI.UPDATE_TOOL, { uuid, tool, owner });
+        return await this.sendMessage(MessageAPI.UPDATE_TOOL, { id, tool, owner });
     }
 
     /**
      * Publish tool
-     * @param uuid
+     * @param id
      * @param owner
      * @param tool
      */
-    public async publishTool(uuid: string, owner: string, tool: any) {
-        return await this.sendMessage(MessageAPI.PUBLISH_TOOL, { uuid, owner, tool });
+    public async publishTool(id: string, owner: string, tool: any) {
+        return await this.sendMessage(MessageAPI.PUBLISH_TOOL, { id, owner, tool });
+    }
+
+    /**
+     * Async Publish tool
+     * @param id
+     * @param owner
+     * @param tool
+     */
+    public async publishToolAsync(id: string, owner: string, tool: any, task: NewTask) {
+        return await this.sendMessage(MessageAPI.PUBLISH_TOOL_ASYNC, { id, owner, tool, task });
     }
 
     /**
@@ -1484,21 +1502,21 @@ export class Guardians extends NatsService {
 
     /**
      * Get tool export file
-     * @param uuid
+     * @param id
      * @param owner
      */
-    public async exportToolFile(uuid: string, owner: string) {
-        const file = await this.sendMessage(MessageAPI.TOOL_EXPORT_FILE, { uuid, owner }) as any;
+    public async exportToolFile(id: string, owner: string) {
+        const file = await this.sendMessage(MessageAPI.TOOL_EXPORT_FILE, { id, owner }) as any;
         return Buffer.from(file, 'base64');
     }
 
     /**
      * Get tool export message id
-     * @param uuid
+     * @param id
      * @param owner
      */
-    public async exportToolMessage(uuid: string, owner: string) {
-        return await this.sendMessage(MessageAPI.TOOL_EXPORT_MESSAGE, { uuid, owner });
+    public async exportToolMessage(id: string, owner: string) {
+        return await this.sendMessage(MessageAPI.TOOL_EXPORT_MESSAGE, { id, owner });
     }
 
     /**
