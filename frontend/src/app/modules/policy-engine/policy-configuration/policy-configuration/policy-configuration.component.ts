@@ -122,6 +122,7 @@ export class PolicyConfigurationComponent implements OnInit {
     private _disableComponentMenu: boolean = true;
     private _disableModuleMenu: boolean = true;
     private _disableToolMenu: boolean = true;
+    private _lastUpdate: any;
 
     @ViewChild('menuList')
     public set menuList(value: CdkDropList<any>) {
@@ -405,15 +406,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.storage.load(root.id);
         this.checkState();
 
-        root.subscribe(() => {
-            this.changeDetector.detectChanges();
-            this.saveState();
-            setTimeout(() => {
-                if (this.treeOverview) {
-                    this.treeOverview.render();
-                }
-            }, 10);
-        });
+        root.subscribe(this.onConfigChange.bind(this));
 
         this.onSelect(this.openFolder.root);
         this.updateComponents();
@@ -424,6 +417,21 @@ export class PolicyConfigurationComponent implements OnInit {
         setTimeout(() => { this.loading = false; }, 500);
     }
 
+    public onConfigChange() {
+        if (this._lastUpdate) {
+            clearTimeout(this._lastUpdate);
+        }
+        this._lastUpdate = setTimeout(() => {
+            this._lastUpdate = null;
+            this.changeDetector.detectChanges();
+            this.saveState();
+            setTimeout(() => {
+                if (this.treeOverview) {
+                    this.treeOverview.render();
+                }
+            }, 10);
+        }, 1000);
+    }
 
     public select(name: string) {
         this.options.select(name);
