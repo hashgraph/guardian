@@ -1,13 +1,12 @@
 
-import { ConfigType, GenerateUUIDv4, SchemaEntity, TagType, TopicType, } from '@guardian/interfaces';
+import { ConfigType, GenerateUUIDv4, PolicyType, SchemaEntity, TagType, TopicType, } from '@guardian/interfaces';
 import { publishSystemSchemas } from '@api/helpers/schema-publish-helper';
-import { importSchemaByFiles } from '@api/helpers/schema-import-export-helper';
 import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
 import { INotifier } from '@helpers/notifier';
 import {
     DataBaseHelper,
     DatabaseServer,
-    getArtifactType,
+    IPolicyComponents,
     MessageAction,
     MessageServer,
     MessageType,
@@ -25,9 +24,15 @@ import {
     TopicHelper,
     Users
 } from '@guardian/common';
-import { importTag } from '@api/tag.service';
+import { importTag } from '@api/helpers/tag-import-export-helper';
 import { SchemaImportResult } from '@api/helpers/schema-helper';
 import { HashComparator } from '@analytics';
+import {
+    importToolsByPolicy,
+    importSchemaByFiles,
+    importTokensByFiles,
+    importArtifactsByFiles
+} from '@api/helpers';
 
 /**
  * Policy import export helper
@@ -70,7 +75,7 @@ export class PolicyImportExportHelper {
      * @returns Policies by owner
      */
     static async importPolicy(
-        policyToImport: any,
+        policyToImport: IPolicyComponents,
         policyOwner: string,
         versionOfTopicId: string,
         notifier: INotifier,
@@ -90,7 +95,8 @@ export class PolicyImportExportHelper {
             tokens,
             schemas,
             artifacts,
-            tags
+            tags,
+            tools
         } = policyToImport;
 
         delete policy._id;
@@ -104,7 +110,7 @@ export class PolicyImportExportHelper {
         policy.uuid = GenerateUUIDv4();
         policy.creator = policyOwner;
         policy.owner = policyOwner;
-        policy.status = 'DRAFT';
+        policy.status = PolicyType.DRAFT;
         policy.instanceTopicId = null;
         policy.synchronizationTopicId = null;
         policy.name = additionalPolicyConfig?.name || policy.name;
@@ -166,60 +172,24 @@ export class PolicyImportExportHelper {
         notifier.completed();
 
         // Import Tokens
-        const tokenMap = new Map<string, string>();
-        if (tokens) {
-            notifier.start('Import tokens');
-            const tokenRepository = new DataBaseHelper(Token);
-            for (const token of tokens) {
-                const tokenObject = tokenRepository.create({
-                    tokenId: GenerateUUIDv4(),
-                    tokenName: token.tokenName,
-                    tokenSymbol: token.tokenSymbol,
-                    tokenType: token.tokenType,
-                    decimals: token.decimals,
-                    initialSupply: token.initialSupply,
-                    adminId: null,
-                    changeSupply: !!(token.changeSupply || token.supplyKey),
-                    enableAdmin: !!(token.enableAdmin || token.adminKey),
-                    enableFreeze: !!(token.enableFreeze || token.freezeKey),
-                    enableKYC: !!(token.enableKYC || token.kycKey),
-                    enableWipe: !!(token.enableWipe || token.wipeKey),
-                    owner: root.did,
-                    policyId: null,
-                    draftToken: true
-                });
-                await tokenRepository.save(tokenObject);
-                replaceAllEntities(policy.config, ['tokenId'], token.tokenId, tokenObject.tokenId);
-                replaceAllVariables(policy.config, 'Token', token.tokenId, tokenObject.tokenId);
-
-                tokenMap.set(token.id, tokenObject.id.toString());
-                tokenMap.set(token.tokenId, tokenObject.id.toString());
-            }
-            notifier.completed();
-        }
+        const tokensResult = await importTokensByFiles(policyOwner, tokens, notifier);
+        const tokenMap = tokensResult.tokenMap;
 
         // Import Schemas
-        const { schemasMap, errors } = await importSchemaByFiles(policyOwner, schemas, topicRow.topicId, notifier);
+        const schemasResult = await importSchemaByFiles(policyOwner, schemas, topicRow.topicId, notifier);
+        const schemasMap = schemasResult.schemasMap;
 
-        // Upload Artifacts
-        notifier.start('Upload Artifacts');
-        const artifactsMap = new Map<string, string>();
-        const addedArtifacts = [];
-        for (const artifact of artifacts) {
-            delete artifact._id;
-            delete artifact.id;
-            const newArtifactUUID = GenerateUUIDv4();
-            artifactsMap.set(artifact.uuid, newArtifactUUID);
-            artifact.owner = policyOwner;
-            artifact.uuid = newArtifactUUID;
-            artifact.type = getArtifactType(artifact.extention);
-            addedArtifacts.push(await DatabaseServer.saveArtifact(artifact));
-            await DatabaseServer.saveArtifactFile(newArtifactUUID, artifact.data);
-        }
+        // Import Tools
+        const toolsResult = await importToolsByPolicy(root, tools, notifier);
+
+        // Import Artifacts
+        const artifactsResult = await importArtifactsByFiles(policyOwner, artifacts, notifier);
+        const artifactsMap = artifactsResult.artifactsMap;
 
         notifier.completedAndStart('Saving in DB');
+
         // Replace id
-        await PolicyImportExportHelper.replaceConfig(policy, schemasMap, artifactsMap);
+        await PolicyImportExportHelper.replaceConfig(policy, schemasMap, artifactsMap, tokenMap);
 
         // Save
         const model = new DataBaseHelper(Policy).create(policy as Policy);
@@ -231,13 +201,18 @@ export class PolicyImportExportHelper {
             const tokenTags = tags.filter((t: any) => t.entity === TagType.Token);
             const schemaTags = tags.filter((t: any) => t.entity === TagType.Schema);
             await importTag(policyTags, result.id.toString());
-            await importTag(tokenTags, tokenMap);
-            const map3: Map<string, string> = new Map();
-            for (const item of schemasMap) {
-                map3.set(item.oldID, item.newID);
-                map3.set(item.oldMessageID, item.newID);
+            const tokenIdMap: Map<string, string> = new Map();
+            for (const item of tokenMap) {
+                tokenIdMap.set(item.oldID, item.newID);
+                tokenIdMap.set(item.oldTokenID, item.newID);
             }
-            await importTag(schemaTags, map3);
+            await importTag(tokenTags, tokenIdMap);
+            const schemaIdMap: Map<string, string> = new Map();
+            for (const item of schemasMap) {
+                schemaIdMap.set(item.oldID, item.newID);
+                schemaIdMap.set(item.oldMessageID, item.newID);
+            }
+            await importTag(schemaTags, schemaIdMap);
             notifier.completed();
         }
 
@@ -246,7 +221,7 @@ export class PolicyImportExportHelper {
         _topicRow.policyUUID = result.uuid;
         await new DataBaseHelper(Topic).update(_topicRow);
 
-        for (const addedArtifact of addedArtifacts) {
+        for (const addedArtifact of artifactsResult.artifacts) {
             addedArtifact.policyId = result.id;
             await DatabaseServer.saveArtifact(addedArtifact);
         }
@@ -270,6 +245,18 @@ export class PolicyImportExportHelper {
         notifier.completedAndStart('Updating hash');
         await HashComparator.saveHashMap(result);
 
+        const errors: any[] = [];
+        if (schemasResult.errors) {
+            for (const error of schemasResult.errors) {
+                errors.push(error);
+            }
+        }
+        if (toolsResult.errors) {
+            for (const error of toolsResult.errors) {
+                errors.push(error);
+            }
+        }
+
         notifier.completed();
         return { policy: result, errors };
     }
@@ -279,7 +266,12 @@ export class PolicyImportExportHelper {
      * @param policy
      * @param schemasMap
      */
-    static async replaceConfig(policy: Policy, schemasMap: SchemaImportResult[], artifactsMap: any) {
+    static async replaceConfig(
+        policy: Policy,
+        schemasMap: SchemaImportResult[],
+        artifactsMap: Map<string, string>,
+        tokenMap: any[]
+    ) {
         if (await new DataBaseHelper(Policy).findOne({ name: policy.name })) {
             policy.name = policy.name + '_' + Date.now();
         }
@@ -287,6 +279,11 @@ export class PolicyImportExportHelper {
         for (const item of schemasMap) {
             replaceAllEntities(policy.config, SchemaFields, item.oldIRI, item.newIRI);
             replaceAllVariables(policy.config, 'Schema', item.oldIRI, item.newIRI);
+        }
+
+        for (const item of tokenMap) {
+            replaceAllEntities(policy.config, ['tokenId'], item.oldTokenID, item.newTokenID);
+            replaceAllVariables(policy.config, 'Token', item.oldTokenID, item.newTokenID);
         }
 
         // compatibility with older versions

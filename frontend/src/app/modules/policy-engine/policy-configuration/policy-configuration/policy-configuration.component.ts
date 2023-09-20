@@ -1437,7 +1437,9 @@ export class PolicyConfigurationComponent implements OnInit {
             tool.description = result.description;
             this.loading = true;
             this.toolsService.create(tool).subscribe((result) => {
-                this.router.navigate(['/policy-configuration'], { queryParams: { toolId: result.uuid } });
+                this.router.navigate(['/policy-configuration'], { 
+                    queryParams: { toolId: result.id } 
+                });
             }, (e) => {
                 this.loading = false;
             });

@@ -2,7 +2,10 @@ import JSZip from 'jszip';
 import { Tag } from '../entity';
 import { ISchema } from '@guardian/interfaces';
 
-interface ISchemaComponents {
+/**
+ * Schema components
+ */
+export interface ISchemaComponents {
     schemas: ISchema[];
     tags: Tag[];
 }

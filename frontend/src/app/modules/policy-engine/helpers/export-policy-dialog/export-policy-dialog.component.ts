@@ -82,7 +82,7 @@ export class ExportPolicyDialog {
 
     toolToFile() {
         this.loading = true;
-        this.toolsService.exportInFile(this.tool.uuid)
+        this.toolsService.exportInFile(this.tool.id)
             .subscribe(fileBuffer => {
                 let downloadLink = document.createElement('a');
                 downloadLink.href = window.URL.createObjectURL(new Blob([new Uint8Array(fileBuffer)], {

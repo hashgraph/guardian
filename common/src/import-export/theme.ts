@@ -1,7 +1,10 @@
 import JSZip from 'jszip';
 import { Theme } from '../entity';
 
-interface IThemeComponents {
+/**
+ * Theme components
+ */
+export interface IThemeComponents {
     theme: Theme;
 }
 

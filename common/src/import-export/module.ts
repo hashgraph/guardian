@@ -3,7 +3,10 @@ import { PolicyModule, Schema, Tag } from '../entity';
 import { DataBaseHelper } from '../helpers';
 import { DatabaseServer } from '../database-modules';
 
-interface IModuleComponents {
+/**
+ * Module components
+ */
+export interface IModuleComponents {
     module: PolicyModule;
     schemas: Schema[];
     tags: Tag[];

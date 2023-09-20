@@ -371,11 +371,10 @@ export class ToolsApi {
         }
     }
 
-
     /**
-     * Publish tool
+     * Publish tool (Async)
      */
-    @Put('/:id/publish')
+    @Put('/:id/push/publish')
     @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Publishes the tool onto IPFS.',
@@ -596,11 +595,11 @@ export class ToolsApi {
      * Import tool from IPFS
      */
     @Post('/import/message')
+    @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Imports new tool from IPFS.',
         description: 'Imports new tool and all associated artifacts from IPFS into the local DB.' + ONLY_SR
     })
-    @ApiSecurity('bearerAuth')
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
@@ -676,12 +675,11 @@ export class ToolsApi {
      * Import tool from IPFS
      */
     @Post('/import/file')
-
+    @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Imports new tool from a zip file.',
         description: 'Imports new tool and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR
     })
-    @ApiSecurity('bearerAuth')
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
@@ -713,9 +711,106 @@ export class ToolsApi {
         }
     }
 
+    /**
+     * Import tool from IPFS (Async)
+     */
+    @Post('/push/import/file')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Imports new tool from a zip file.',
+        description: 'Imports new tool and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            $ref: getSchemaPath(TaskDTO)
+        }
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @HttpCode(HttpStatus.ACCEPTED)
+    async toolImportFileAsync(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        try {
+            const user = req.user;
+            const guardian = new Guardians();
+            const taskManager = new TaskManager();
+            const task = taskManager.start(TaskAction.CREATE_TOOL, user.id);
+            RunFunctionAsync<ServiceError>(async () => {
+                await guardian.importToolFile(req.body, req.user.did);
+            }, async (error) => {
+                new Logger().error(error, ['API_GATEWAY']);
+                taskManager.addError(task.taskId, { code: 500, message: error.message });
+            });
+            return res.status(202).send(task);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
+    /**
+     * Import tool from IPFS (Async)
+     */
+    @Post('/push/import/message')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Imports new tool from IPFS.',
+        description: 'Imports new tool and all associated artifacts from IPFS into the local DB.' + ONLY_SR
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            $ref: getSchemaPath(TaskDTO)
+        }
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @HttpCode(HttpStatus.ACCEPTED)
+    async toolImportMessageAsync(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        try {
+            const user = req.user;
+            const guardian = new Guardians();
+            const taskManager = new TaskManager();
+            const task = taskManager.start(TaskAction.CREATE_TOOL, user.id);
+            RunFunctionAsync<ServiceError>(async () => {
+                await guardian.importToolMessage(req.body.messageId, req.user.did);
+            }, async (error) => {
+                new Logger().error(error, ['API_GATEWAY']);
+                taskManager.addError(task.taskId, { code: 500, message: error.message });
+            });
+            return res.status(202).send(task);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
-    @Get('/menu')
+    /**
+     * Policy config menu
+     */
+    @Get('/menu/all')
     @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Return a list of tools.',

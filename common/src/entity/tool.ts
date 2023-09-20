@@ -9,6 +9,11 @@ import { DataBaseHelper } from '../helpers';
  */
 @Entity()
 export class PolicyTool extends BaseEntity {
+    /**
+     * Policy hash
+     */
+    @Property({ nullable: true })
+    hash?: string;
 
     /**
      * Tool UUID

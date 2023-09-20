@@ -29,7 +29,7 @@ import {
 import { emptyNotifier, INotifier } from '@helpers/notifier';
 import { ISerializedErrors } from '@policy-engine/policy-validation-results-container';
 import { ModuleValidator } from '@policy-engine/block-validators/module-validator';
-import { importTag } from './tag.service';
+import { importTag } from './helpers/tag-import-export-helper';
 
 /**
  * Check and update config file

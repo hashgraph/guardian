@@ -119,7 +119,7 @@ export class PolicyValidator {
             this.modules.set(block.id, module);
         } else if (block.blockType === 'tool') {
             const tool = new ToolValidator(block);
-            this.tools.set(block.id, tool);
+            this.tools.set(block.id, tool);  
         } else {
             if (Array.isArray(block.children)) {
                 for (const child of block.children) {

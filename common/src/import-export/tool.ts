@@ -3,7 +3,10 @@ import { PolicyTool, Schema, Tag } from '../entity';
 import { DataBaseHelper } from '../helpers';
 import { DatabaseServer } from '../database-modules';
 
-interface IToolComponents {
+/**
+ * Tool components
+ */
+export interface IToolComponents {
     tool: PolicyTool;
     schemas: Schema[];
     tags: Tag[];
@@ -68,6 +71,9 @@ export class ToolImportExport {
         delete toolObject.status;
         delete toolObject.topicId;
         delete toolObject.createDate;
+        delete toolObject.updateDate;
+        delete toolObject.hash;
+        delete toolObject.configFileId;
 
         const zip = new JSZip();
 

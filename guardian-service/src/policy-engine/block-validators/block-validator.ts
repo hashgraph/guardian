@@ -48,6 +48,7 @@ import { ExternalTopicBlock } from './blocks/external-topic-block';
 import { MessagesReportBlock } from './blocks/messages-report-block';
 import { NotificationBlock } from './blocks/notification.block';
 import { ISchema, SchemaField, SchemaHelper } from '@guardian/interfaces';
+import { ToolValidator } from './tool-validator';
 
 export const validators = [
     InterfaceDocumentActionBlock,
@@ -109,7 +110,7 @@ export class BlockValidator {
      * Errors
      * @private
      */
-    private readonly validator: PolicyValidator | ModuleValidator;
+    private readonly validator: PolicyValidator | ModuleValidator | ToolValidator;
     /**
      * UUID
      * @private
@@ -143,7 +144,7 @@ export class BlockValidator {
 
     constructor(
         config: any,
-        validator: PolicyValidator | ModuleValidator
+        validator: PolicyValidator | ModuleValidator | ToolValidator
     ) {
         this.errors = [];
         this.validator = validator;

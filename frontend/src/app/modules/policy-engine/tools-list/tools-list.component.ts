@@ -13,6 +13,7 @@ import { ExportPolicyDialog } from '../helpers/export-policy-dialog/export-polic
 import { ImportPolicyDialog } from '../helpers/import-policy-dialog/import-policy-dialog.component';
 import { NewModuleDialog } from '../helpers/new-module-dialog/new-module-dialog.component';
 import { PreviewPolicyDialog } from '../helpers/preview-policy-dialog/preview-policy-dialog.component';
+import { mobileDialog } from 'src/app/utils/mobile-utils';
 
 enum OperationMode {
     None,
@@ -142,17 +143,17 @@ export class ToolsListComponent implements OnInit, OnDestroy {
 
     private importDetails(result: any) {
         const { type, data, tool } = result;
-        const dialogRef = this.dialog.open(PreviewPolicyDialog, {
+        const dialogRef = this.dialog.open(PreviewPolicyDialog, mobileDialog({
             width: '950px',
             panelClass: 'g-dialog',
             disableClose: true,
             data: {
                 tool: tool,
             }
-        });
+        }));
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
-                if (type == 'message') {
+                if (type === 'message') {
                     this.loading = true;
                     this.toolsService.importByMessage(data).subscribe(
                         (result) => {
@@ -160,7 +161,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
                         }, (e) => {
                             this.loading = false;
                         });
-                } else if (type == 'file') {
+                } else if (type === 'file') {
                     this.loading = true;
                     this.toolsService.importByFile(data).subscribe(
                         (result) => {
@@ -215,7 +216,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
 
     public exportTool(element: any) {
         this.loading = true;
-        this.toolsService.exportInMessage(element.uuid)
+        this.toolsService.exportInMessage(element.id)
             .subscribe(tool => {
                 this.loading = false;
                 this.dialog.open(ExportPolicyDialog, {
@@ -274,7 +275,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
                 return;
             }
             this.loading = true;
-            this.toolsService.delete(element.uuid).subscribe((result) => {
+            this.toolsService.delete(element.id).subscribe((result) => {
                 this.loadAllTools();
             }, (e) => {
                 this.loading = false;
@@ -284,7 +285,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
 
     public publishTool(element: any) {
         this.loading = true;
-        this.toolsService.publish(element.uuid).subscribe((result) => {
+        this.toolsService.publish(element.id).subscribe((result) => {
             const { isValid, errors } = result;
             if (!isValid) {
                 let text = [];

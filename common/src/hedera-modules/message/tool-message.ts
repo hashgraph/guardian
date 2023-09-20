@@ -14,7 +14,6 @@ export class ToolMessage extends Message {
      * Document
      */
     public document: ArrayBuffer;
-
     /**
      * UUID
      */
@@ -31,6 +30,10 @@ export class ToolMessage extends Message {
      * Owner
      */
     public owner: string;
+    /**
+     * Hash
+     */
+    public hash: string;
     /**
      * Tool topic ID
      * @private
@@ -53,6 +56,7 @@ export class ToolMessage extends Message {
         this.name = model.name;
         this.description = model.description;
         this.owner = model.owner;
+        this.hash = model.hash;
         this.document = zip;
         this.toolTopicId = model.topicId;
     }
@@ -78,6 +82,7 @@ export class ToolMessage extends Message {
             name: this.name,
             description: this.description,
             owner: this.owner,
+            hash: this.hash,
             topicId: this.toolTopicId?.toString(),
             cid: this.getDocumentUrl(UrlType.cid),
             uri: this.getDocumentUrl(UrlType.url)
@@ -139,6 +144,7 @@ export class ToolMessage extends Message {
         message.name = json.name;
         message.description = json.description;
         message.owner = json.owner;
+        message.hash = json.hash;
         message.toolTopicId = json.topicId;
 
         if (json.cid) {
@@ -185,6 +191,7 @@ export class ToolMessage extends Message {
         result.name = this.name;
         result.description = this.description;
         result.owner = this.owner;
+        result.hash = this.hash;
         result.document = this.document;
         result.toolTopicId = this.toolTopicId;
         return result;

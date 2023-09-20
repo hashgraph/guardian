@@ -12,7 +12,7 @@ import path from 'path';
 import { readJSON } from 'fs-extra';
 import { DatabaseServer, MessageAction, MessageServer, Schema as SchemaCollection, SchemaConverterUtils, SchemaMessage, TopicConfig, TopicHelper, Users, } from '@guardian/common';
 import { INotifier } from '@helpers/notifier';
-import { importTag } from '@api/tag.service';
+import { importTag } from '@api/helpers/tag-import-export-helper';
 
 /**
  * Import Result

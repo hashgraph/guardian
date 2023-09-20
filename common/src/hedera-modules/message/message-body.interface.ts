@@ -482,6 +482,10 @@ export interface ToolMessageBody extends MessageBody {
      */
     owner: string;
     /**
+     * Hash
+     */
+    hash: string;
+    /**
      * Topic id
      */
     topicId: string;

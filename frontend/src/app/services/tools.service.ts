@@ -21,8 +21,8 @@ export class ToolsService {
         return this.http.get<any>(`${this.url}`, { observe: 'response' });
     }
 
-    public getById(uuid: string): Observable<any> {
-        return this.http.get<any>(`${this.url}/${uuid}`);
+    public getById(id: string): Observable<any> {
+        return this.http.get<any>(`${this.url}/${id}`);
     }
 
     public create(tool: any): Observable<any> {
@@ -30,33 +30,33 @@ export class ToolsService {
     }
 
     public menuList(): Observable<any[]> {
-        return this.http.get<any[]>(`${this.url}/menu`);
+        return this.http.get<any[]>(`${this.url}/menu/all`);
     }
 
-    public delete(uuid: string): Observable<boolean> {
-        return this.http.delete<boolean>(`${this.url}/${uuid}`);
+    public delete(id: string): Observable<boolean> {
+        return this.http.delete<boolean>(`${this.url}/${id}`);
     }
 
-    public update(uuid: string, tool: any): Observable<any> {
-        return this.http.put<any[]>(`${this.url}/${uuid}`, tool);
+    public update(id: string, tool: any): Observable<any> {
+        return this.http.put<any[]>(`${this.url}/${id}`, tool);
     }
 
-    public publish(uuid: string): Observable<any> {
-        return this.http.put<any[]>(`${this.url}/${uuid}/publish`, null);
+    public publish(id: string): Observable<any> {
+        return this.http.put<any[]>(`${this.url}/${id}/publish`, null);
     }
 
-    public pushPublish(uuid: string): Observable<{ taskId: string, expectation: number }> {
-        return this.http.put<any>(`${this.url}/${uuid}/push/publish`, null);
+    public pushPublish(id: string): Observable<{ taskId: string, expectation: number }> {
+        return this.http.put<any>(`${this.url}/${id}/push/publish`, null);
     }
 
-    public exportInFile(uuid: string): Observable<ArrayBuffer> {
-        return this.http.get(`${this.url}/${uuid}/export/file`, {
+    public exportInFile(id: string): Observable<ArrayBuffer> {
+        return this.http.get(`${this.url}/${id}/export/file`, {
             responseType: 'arraybuffer'
         });
     }
 
-    public exportInMessage(uuid: string): Observable<any> {
-        return this.http.get(`${this.url}/${uuid}/export/message`);
+    public exportInMessage(id: string): Observable<any> {
+        return this.http.get(`${this.url}/${id}/export/message`);
     }
 
     public previewByMessage(messageId: string): Observable<any> {

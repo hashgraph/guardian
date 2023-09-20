@@ -1,6 +1,6 @@
 import JSZip from 'jszip';
-import { Artifact, Policy, Schema, Tag, Token } from '../entity';
-import { DataBaseHelper, findAllEntities } from '../helpers';
+import { Artifact, Policy, PolicyTool, Schema, Tag, Token } from '../entity';
+import { DataBaseHelper, findAllEntities, findAllTools } from '../helpers';
 import { DatabaseServer } from '../database-modules';
 
 interface IArtifact {
@@ -10,12 +10,16 @@ interface IArtifact {
     data: any;
 }
 
-interface IPolicyComponents {
+/**
+ * Policy components
+ */
+export interface IPolicyComponents {
     policy: Policy;
     tokens: Token[];
     schemas: Schema[];
     artifacts: IArtifact[];
     tags: Tag[];
+    tools: PolicyTool[];
 }
 
 /**
@@ -36,8 +40,10 @@ export class PolicyImportExport {
     public static async loadPolicyComponents(policy: Policy): Promise<IPolicyComponents> {
         const topicId = policy.topicId;
         const tokenIds = findAllEntities(policy.config, ['tokenId']);
+        const toolIds = findAllTools(policy.config);
         const tokens = await new DataBaseHelper(Token).find({ tokenId: { $in: tokenIds } });
         const schemas = await new DataBaseHelper(Schema).find({ topicId, readonly: false });
+        const tools = await new DataBaseHelper(PolicyTool).find({ hash: { $in: toolIds } });
         const artifacts: IArtifact[] = [];
         const row = await new DataBaseHelper(Artifact).find({ policyId: policy.id });
         for (const item of row) {
@@ -59,7 +65,7 @@ export class PolicyImportExport {
             tagTargets.push(schema.id.toString());
         }
         const tags = await DatabaseServer.getTags({ localTarget: { $in: tagTargets } });
-        return { policy, tokens, schemas, artifacts, tags };
+        return { policy, tokens, schemas, tools, artifacts, tags };
     }
 
     /**
@@ -114,6 +120,7 @@ export class PolicyImportExport {
             item.id = token.id.toString();
             zip.file(`tokens/${item.tokenName}.json`, JSON.stringify(item));
         }
+
         zip.folder('schemas');
         for (const schema of components.schemas) {
             const item = { ...schema };
@@ -125,8 +132,19 @@ export class PolicyImportExport {
             zip.file(`schemas/${item.iri}.json`, JSON.stringify(item));
         }
 
-        zip.folder('tags');
+        zip.folder('tools');
+        for (const tool of components.tools) {
+            const item = {
+                name: tool.name,
+                description: tool.description,
+                messageId: tool.messageId,
+                owner: tool.creator,
+                hash: tool.hash
+            };
+            zip.file(`tools/${tool.hash}.json`, JSON.stringify(item));
+        }
 
+        zip.folder('tags');
         for (let index = 0; index < components.tags.length; index++) {
             const tag = { ...components.tags[index] };
             delete tag.id;
@@ -159,6 +177,11 @@ export class PolicyImportExport {
         const schemasStringArray = await Promise.all(Object.entries(content.files)
             .filter(file => !file[1].dir)
             .filter(file => /^schem[a,e]s\/.+/.test(file[0]))
+            .map(file => file[1].async('string')));
+
+        const toolsStringArray = await Promise.all(Object.entries(content.files)
+            .filter(file => !file[1].dir)
+            .filter(file => /^tools\/.+/.test(file[0]))
             .map(file => file[1].async('string')));
 
         const metaDataFile = (Object.entries(content.files)
@@ -201,6 +224,7 @@ export class PolicyImportExport {
         const policy = JSON.parse(policyString);
         const tokens = tokensStringArray.map(item => JSON.parse(item));
         const schemas = schemasStringArray.map(item => JSON.parse(item));
+        const tools = toolsStringArray.map(item => JSON.parse(item));
         const tags = tagsStringArray.map(item => JSON.parse(item));
 
         return {
@@ -208,7 +232,8 @@ export class PolicyImportExport {
             tokens,
             schemas,
             artifacts,
-            tags
+            tags,
+            tools
         };
     }
 }

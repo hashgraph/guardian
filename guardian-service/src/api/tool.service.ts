@@ -15,21 +15,50 @@ import {
     TopicHelper,
     Users,
     ToolImportExport,
-    RunFunctionAsync
+    RunFunctionAsync,
+    SchemaFields,
+    replaceAllEntities,
+    replaceAllVariables
 } from '@guardian/common';
 import {
     GenerateUUIDv4,
+    IRootConfig,
     MessageAPI,
     ModuleStatus,
     SchemaCategory,
+    SchemaStatus,
     TagType,
     TopicType
 } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
+import { findAndPublishSchema } from '@api/helpers/schema-publish-helper';
+import { incrementSchemaVersion } from '@api/helpers/schema-helper';
 import { ISerializedErrors } from '@policy-engine/policy-validation-results-container';
 import { ToolValidator } from '@policy-engine/block-validators/tool-validator';
-import { importTag } from './tag.service';
+import { importTag } from './helpers/tag-import-export-helper';
 import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
+import * as crypto from 'crypto';
+import { Hashing } from '@guardian/common';
+import { importToolByFile, importToolByMessage } from './helpers';
+
+/**
+ * Sha256
+ * @param data
+ * @public
+ * @static
+ */
+export function sha256(data: ArrayBuffer): string {
+    try {
+        const array = new Uint8Array(data);
+        const sha256 = crypto
+            .createHash('sha256')
+            .update(array)
+            .digest();
+        return Hashing.base58.encode(sha256);
+    } catch (error) {
+        return '';
+    }
+}
 
 /**
  * Check and update config file
@@ -56,7 +85,11 @@ export function updateToolConfig(tool: any): any {
  * @param owner
  * @param notifier
  */
-export async function preparePreviewMessage(messageId: string, owner: string, notifier: INotifier): Promise<any> {
+export async function preparePreviewMessage(
+    messageId: string,
+    owner: string,
+    notifier: INotifier
+): Promise<any> {
     notifier.start('Resolve Hedera account');
     if (!messageId) {
         throw new Error('Message ID in body is empty');
@@ -136,45 +169,101 @@ export async function publishTool(
     owner: string,
     notifier: INotifier
 ): Promise<PolicyTool> {
-    const logger = new Logger();
-    logger.info('Publish tool', ['GUARDIAN_SERVICE']);
+    try {
+        const logger = new Logger();
+        logger.info('Publish tool', ['GUARDIAN_SERVICE']);
 
-    notifier.start('Generate file');
-    tool = updateToolConfig(tool);
-    const zip = await ToolImportExport.generate(tool);
-    const buffer = await zip.generateAsync({
-        type: 'arraybuffer',
-        compression: 'DEFLATE',
-        compressionOptions: {
-            level: 3
+        notifier.start('Resolve Hedera account');
+        const users = new Users();
+        const root = await users.getHederaAccount(owner);
+
+        notifier.completedAndStart('Find topic');
+        const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(tool.topicId), true);
+        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
+            .setTopicObject(topic);
+
+        notifier.completedAndStart('Publish schemas');
+        tool = await publishSchemas(tool, owner, root, notifier);
+
+        notifier.completedAndStart('Generate file');
+        tool = updateToolConfig(tool);
+        const zip = await ToolImportExport.generate(tool);
+        const buffer = await zip.generateAsync({
+            type: 'arraybuffer',
+            compression: 'DEFLATE',
+            compressionOptions: {
+                level: 3
+            }
+        });
+        tool.hash = sha256(buffer);
+
+        notifier.completedAndStart('Publish tool');
+        const message = new ToolMessage(MessageType.Tool, MessageAction.PublishTool);
+        message.setDocument(tool, buffer);
+        const result = await messageServer
+            .sendMessage(message);
+
+        notifier.completedAndStart('Saving in DB');
+        tool.messageId = result.getId();
+        tool.status = ModuleStatus.PUBLISHED;
+        const retVal = await DatabaseServer.updateTool(tool);
+
+        notifier.completed();
+
+        logger.info('Published tool', ['GUARDIAN_SERVICE']);
+
+        return retVal
+    } catch (error) {
+        tool.status = ModuleStatus.PUBLISH_ERROR;
+        await DatabaseServer.updateTool(tool);
+        throw error;
+    }
+}
+
+/**
+ * Policy schemas
+ * @param tool
+ * @param owner
+ * @param root
+ * @param notifier
+ */
+export async function publishSchemas(
+    tool: PolicyTool,
+    owner: string,
+    root: IRootConfig,
+    notifier: INotifier
+): Promise<PolicyTool> {
+    const schemas = await DatabaseServer.getSchemas({ topicId: tool.topicId });
+
+    notifier.info(`Found ${schemas.length} schemas`);
+    const schemaIRIs = schemas.map(s => s.iri);
+    let num: number = 0;
+    let skipped: number = 0;
+    for (const schemaIRI of schemaIRIs) {
+        const schema = await incrementSchemaVersion(schemaIRI, owner);
+        if (!schema || schema.status === SchemaStatus.PUBLISHED) {
+            skipped++;
+            continue;
         }
-    });
+        const newSchema = await findAndPublishSchema(
+            schema.id,
+            schema.version,
+            owner,
+            root,
+            emptyNotifier()
+        );
+        replaceAllEntities(tool.config, SchemaFields, schemaIRI, newSchema.iri);
+        replaceAllVariables(tool.config, 'Schema', schemaIRI, newSchema.iri);
 
-    notifier.completedAndStart('Resolve Hedera account');
-    const users = new Users();
-    const root = await users.getHederaAccount(owner);
+        const name = newSchema.name;
+        num++;
+        notifier.info(`Schema ${num} (${name || '-'}) published`);
+    }
 
-    notifier.completedAndStart('Find topic');
-    const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(tool.topicId), true);
-    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
-        .setTopicObject(topic);
-
-    notifier.completedAndStart('Publish tool');
-    const message = new ToolMessage(MessageType.Tool, MessageAction.PublishTool);
-    message.setDocument(tool, buffer);
-    const result = await messageServer
-        .sendMessage(message);
-
-    notifier.completedAndStart('Saving in DB');
-    tool.messageId = result.getId();
-    tool.status = ModuleStatus.PUBLISHED;
-    const retVal = await DatabaseServer.updateTool(tool);
-
-    notifier.completed();
-
-    logger.info('Published tool', ['GUARDIAN_SERVICE']);
-
-    return retVal
+    if (skipped) {
+        notifier.info(`Skip published ${skipped}`);
+    }
+    return tool;
 }
 
 /**
@@ -353,22 +442,41 @@ export async function toolsAPI(): Promise<void> {
 
     ApiResponse(MessageAPI.GET_MENU_TOOLS, async (msg) => {
         try {
-            if (!msg.owner) {
-                return new MessageError('Invalid load tools parameter');
-            }
-            const items = await DatabaseServer.getTools({
-                owner: msg.owner
+            const tools: any[] = await DatabaseServer.getTools({
+                status: ModuleStatus.PUBLISHED
+            }, {
+                fields: [
+                    'id',
+                    'name',
+                    'description',
+                    'topicId',
+                    'hash',
+                ]
             });
-            // for (const item of items) {
-            //     if (item.config?.variables) {
-            //         for (const variable of item.config.variables) {
-            //             if (variable.baseSchema) {
-            //                 variable.baseSchema = await DatabaseServer.getSchema({ iri: variable.baseSchema });
-            //             }
-            //         }
-            //     }
-            // }
-            return new MessageResponse(items);
+            const ids = tools.map(t => t.topicId);
+            const schemas = await DatabaseServer.getSchemas(
+                { topicId: { $in: ids } },
+                {
+                    fields: [
+                        'id',
+                        'name',
+                        'description',
+                        'topicId',
+                        'iri',
+                    ]
+                }
+            );
+            const map = new Map<string, any>();
+            for (const tool of tools) {
+                tool.schemas = [];
+                map.set(tool.topicId, tool);
+            }
+            for (const schema of schemas) {
+                if (map.has(schema.topicId)) {
+                    map.get(schema.topicId).schemas.push(schema);
+                }
+            }
+            return new MessageResponse(tools);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
@@ -501,36 +609,8 @@ export async function toolsAPI(): Promise<void> {
             if (!zip) {
                 throw new Error('file in body is empty');
             }
-
             const preview = await ToolImportExport.parseZipFile(Buffer.from(zip.data));
-
-            const { tool, tags, schemas } = preview;
-            delete tool._id;
-            delete tool.id;
-            delete tool.messageId;
-            delete tool.createDate;
-            tool.uuid = GenerateUUIDv4();
-            tool.creator = owner;
-            tool.owner = owner;
-            tool.status = ModuleStatus.DRAFT;
-            if (await DatabaseServer.getTool({ name: tool.name })) {
-                tool.name = tool.name + '_' + Date.now();
-            }
-            const item = await DatabaseServer.createTool(tool);
-
-            if (Array.isArray(tags)) {
-                const toolTags = tags.filter((t: any) => t.entity === TagType.Tool);
-                await importTag(toolTags, item.id.toString());
-            }
-
-            if (Array.isArray(schemas)) {
-                for (const schema of schemas) {
-                    const schemaObject = DatabaseServer.createSchema(schema);
-                    schemaObject.category = SchemaCategory.TOOL;
-                    await DatabaseServer.saveSchema(schemaObject);
-                }
-            }
-
+            const item = await importToolByFile(owner, preview);
             return new MessageResponse(item);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -544,61 +624,54 @@ export async function toolsAPI(): Promise<void> {
             if (!messageId) {
                 throw new Error('Message ID in body is empty');
             }
-
             const notifier = emptyNotifier();
-            const preview = await preparePreviewMessage(messageId, owner, notifier);
-
-            const { tool, tags, toolTopicId } = preview;
-            delete tool._id;
-            delete tool.id;
-            delete tool.messageId;
-            delete tool.createDate;
-            tool.uuid = GenerateUUIDv4();
-            tool.creator = owner;
-            tool.owner = owner;
-            tool.status = 'DRAFT';
-            tool.type = 'CUSTOM';
-            if (await DatabaseServer.getTool({ name: tool.name })) {
-                tool.name = tool.name + '_' + Date.now();
-            }
-            const item = await DatabaseServer.createTool(tool);
-
-            if (toolTopicId) {
-                const messageServer = new MessageServer(null, null);
-                const tagMessages = await messageServer.getMessages<TagMessage>(
-                    toolTopicId,
-                    MessageType.Tag,
-                    MessageAction.PublishTag
-                );
-                for (const tag of tagMessages) {
-                    if (tag.entity === TagType.Tool && tag.target === messageId) {
-                        tags.push({
-                            uuid: tag.uuid,
-                            name: tag.name,
-                            description: tag.description,
-                            owner: tag.owner,
-                            entity: tag.entity,
-                            target: tag.target,
-                            status: 'History',
-                            topicId: tag.topicId,
-                            messageId: tag.id,
-                            date: tag.date,
-                            document: null,
-                            uri: null,
-                            id: null
-                        });
-                    }
-                }
-            }
-            if (tags.length) {
-                const toolTags = tags.filter((t: any) => t.entity === TagType.Tool);
-                await importTag(toolTags, item.id.toString());
-            }
+            const users = new Users();
+            const root = await users.getHederaAccount(owner);
+            const item = await importToolByMessage(root, messageId, notifier);
             return new MessageResponse(item);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
+    });
+
+    ApiResponse(MessageAPI.TOOL_IMPORT_FILE_ASYNC, async (msg) => {
+        const { zip, owner, task } = msg;
+        const notifier = await initNotifier(task);
+        RunFunctionAsync(async () => {
+            if (!zip) {
+                throw new Error('file in body is empty');
+            }
+            const preview = await ToolImportExport.parseZipFile(Buffer.from(zip.data));
+            const item = await importToolByFile(owner, preview);
+            notifier.result({
+                policyId: item.id,
+                errors: []
+            });
+        }, async (error) => {
+            notifier.error(error);
+        });
+        return new MessageResponse(task);
+    });
+
+    ApiResponse(MessageAPI.TOOL_IMPORT_MESSAGE_ASYNC, async (msg) => {
+        const { messageId, owner, task } = msg;
+        const notifier = await initNotifier(task);
+        RunFunctionAsync(async () => {
+            if (!messageId) {
+                throw new Error('Message ID in body is empty');
+            }
+            const users = new Users();
+            const root = await users.getHederaAccount(owner);
+            const item = await importToolByMessage(root, messageId, notifier);
+            notifier.result({
+                policyId: item.id,
+                errors: []
+            });
+        }, async (error) => {
+            notifier.error(error);
+        });
+        return new MessageResponse(task);
     });
 
     ApiResponse(MessageAPI.PUBLISH_TOOL, async (msg) => {

@@ -1,7 +1,7 @@
 import { GenerateUUIDv4, ISchema, ModelHelper, Schema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
 import { DatabaseServer, Logger, MessageAction, MessageServer, MessageType, replaceValueRecursive, Schema as SchemaCollection, SchemaConverterUtils, SchemaMessage, Tag, TagMessage, UrlType } from '@guardian/common';
 import { emptyNotifier, INotifier } from '@helpers/notifier';
-import { importTag } from './../tag.service';
+import { importTag } from '@api/helpers/tag-import-export-helper';
 import { createSchema, fixSchemaDefsOnImport, getDefs, ImportResult, onlyUnique, SchemaImportResult } from './schema-helper';
 import geoJson from '@guardian/interfaces/dist/helpers/geojson-schema/geo-json';
 

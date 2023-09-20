@@ -4,7 +4,7 @@
     </div>
 
     <div *ngIf="!isModuleValid" class="not-exist">
-        Policy doesn't exist
+        Component doesn't exist
     </div>
 
     <policy-settings *ngIf="openSettings" (update)="onChangeSettings($event)"></policy-settings>

@@ -51,6 +51,39 @@ export function findAllEntities(obj: { [key: string]: any }, names: string[]): s
 }
 
 /**
+ * Find all blocks by type
+ * @param obj
+ * @param blockType
+ */
+export function findAllBlocks(
+    obj: { [key: string]: any },
+    blockType: string
+): { [key: string]: any } {
+    const finder = (blockConfig: any, blockType: string, results: any[]): any[] => {
+        if (blockConfig.blockType === blockType) {
+            results.push(blockConfig);
+        }
+        if (blockConfig.hasOwnProperty('children')) {
+            for (const child of blockConfig.children) {
+                finder(child, blockType, results);
+            }
+        }
+        return results;
+    }
+    return finder(obj, blockType, []);
+}
+
+/**
+ * Find all blocks by type
+ * @param obj
+ * @param blockType
+ */
+export function findAllTools(obj: { [key: string]: any }): string[] {
+    const tools = findAllBlocks(obj, 'tool');
+    return tools.map((tool: any) => tool.hash);
+}
+
+/**
  * Replace all entities
  * @param obj
  * @param names

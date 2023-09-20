@@ -1410,6 +1410,7 @@ export class Guardians extends NatsService {
      * Create tool
      * @param tool
      * @param owner
+     * @param task
      * @returns tool
      */
     public async createToolAsync(tool: any, owner: string, task: NewTask): Promise<any> {
@@ -1477,6 +1478,7 @@ export class Guardians extends NatsService {
      * @param id
      * @param owner
      * @param tool
+     * @param task
      */
     public async publishToolAsync(id: string, owner: string, tool: any, task: NewTask) {
         return await this.sendMessage(MessageAPI.PUBLISH_TOOL_ASYNC, { id, owner, tool, task });
@@ -1553,6 +1555,26 @@ export class Guardians extends NatsService {
      */
     public async previewToolMessage(messageId: string, owner: string) {
         return await this.sendMessage(MessageAPI.TOOL_IMPORT_MESSAGE_PREVIEW, { messageId, owner });
+    }
+
+    /**
+     * Load tool file for import
+     * @param zip
+     * @param owner
+     * @param task
+     */
+    public async importToolFileAsync(zip: any, owner: string, task: NewTask) {
+        return await this.sendMessage(MessageAPI.TOOL_IMPORT_FILE_ASYNC, { zip, owner, task });
+    }
+
+    /**
+     * Import tool from message
+     * @param messageId
+     * @param owner
+     * @param task
+     */
+    public async importToolMessageAsync(messageId: string, owner: string, task: NewTask) {
+        return await this.sendMessage(MessageAPI.TOOL_IMPORT_MESSAGE_ASYNC, { messageId, owner, task });
     }
 
 
