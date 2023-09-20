@@ -1676,7 +1676,7 @@ paths:
                 $ref: '#/components/schemas/Error'
   /tools:
     post:
-      operationId: ToolsApi_postTools
+      operationId: ToolsApi_createNewTool
       summary: Creates a new tool.
       description: >-
         Creates a new tool. Only users with the Standard Registry role are
@@ -1685,6 +1685,10 @@ paths:
       responses:
         '200':
           description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToolDTO'
         '500':
           description: Internal server error.
           content:
@@ -1699,8 +1703,8 @@ paths:
       operationId: ToolsApi_getTools
       summary: Return a list of all tools.
       description: >-
-        Returns all tools. Only users with the Standard Registry and Installer
-        role are allowed to make the request.
+        Returns all tools. Only users with the Standard Registry role are
+        allowed to make the request.
       parameters:
         - name: pageSize
           required: false
@@ -1716,10 +1720,83 @@ paths:
             set
           schema:
             type: number
-        - name: policyId
-          required: false
-          in: query
-          description: Policy identifier
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToolDTO'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearerAuth: []
+  /tools/push:
+    post:
+      operationId: ToolsApi_createNewToolAsync
+      summary: Creates a new tool.
+      description: >-
+        Creates a new tool. Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearerAuth: []
+  /tools/{id}:
+    delete:
+      operationId: ToolsApi_deleteTool
+      summary: >-
+        Deletes the tool with the provided tool ID. Only users with the Standard
+        Registry role are allowed to make the request.
+      description: Deletes the tool.
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Tool ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearerAuth: []
+    get:
+      operationId: ToolsApi_getToolById
+      summary: Retrieves tool configuration.
+      description: >-
+        Retrieves tool configuration for the specified tool ID. Only users with
+        the Standard Registry role are allowed to make the request.
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Tool ID
           schema:
             type: string
       responses:
@@ -1728,86 +1805,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                  uuid:
-                    type: string
-                  name:
-                    type: string
-                  description:
-                    type: string
-                  config:
-                    type: object
-                  status:
-                    type: string
-                  creator:
-                    type: string
-                  owner:
-                    type: string
-                  topicId:
-                    type: string
-                  messageId:
-                    type: string
-                  codeVersion:
-                    type: string
-                  createDate:
-                    type: string
-                  type:
-                    type: string
-        '500':
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_2
-      security:
-        - bearerAuth: []
-  /tools/schemas:
-    get:
-      operationId: ToolsApi_getToolSchemas
-      parameters: []
-      responses:
-        '200':
-          description: ''
-      tags: *ref_2
-    post:
-      operationId: ToolsApi_postSchemas
-      parameters: []
-      responses:
-        '201':
-          description: ''
-      tags: *ref_2
-  /tools/{uuid}:
-    delete:
-      operationId: ToolsApi_deleteTool
-      summary: >-
-        Deletes the tool with the provided tool ID. Only users with the Standard
-        Registry role are allowed to make the request.
-      description: Deletes the tool.
-      parameters: []
-      responses:
-        '200':
-          description: ''
-      tags: *ref_2
-      security:
-        - bearerAuth: []
-    get:
-      operationId: ToolsApi_getTool
-      summary: Retrieves tool configuration.
-      description: >-
-        Retrieves tool configuration for the specified tool ID. Only users with
-        the Standard Registry role are allowed to make the request.
-      parameters: []
-      responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                type: object
+                $ref: '#/components/schemas/ToolDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -1822,19 +1820,25 @@ paths:
       security:
         - bearerAuth: []
     put:
-      operationId: ToolsApi_putTool
+      operationId: ToolsApi_updateTool
       summary: Updates tool configuration.
       description: >-
         Updates tool configuration for the specified tool ID. Only users with
         the Standard Registry role are allowed to make the request.
-      parameters: []
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Tool ID
+          schema:
+            type: string
       responses:
         '200':
-          description: ''
+          description: Successful operation.
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/ToolDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -1848,211 +1852,7 @@ paths:
       tags: *ref_2
       security:
         - bearerAuth: []
-  /tools/menu:
-    get:
-      operationId: ToolsApi_getMenu
-      summary: Return a list of tools.
-      description: >-
-        Returns tools menu. Only users with the Standard Registry and Installer
-        role are allowed to make the request.
-      parameters: []
-      responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                type: array
-        '401':
-          description: Unauthorized.
-        '403':
-          description: Forbidden.
-        '500':
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_2
-      security:
-        - bearerAuth: []
-  /tools/{uuid}/export/file:
-    get:
-      operationId: ToolsApi_toolExportFile
-      summary: >-
-        Return tool and its artifacts in a zip file format for the specified
-        tool.
-      description: >-
-        Returns a zip file containing the published tool and all associated
-        artifacts, i.e. schemas and VCs. Only users with the Standard Registry
-        role are allowed to make the request.
-      parameters: []
-      responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                type: object
-        '401':
-          description: Unauthorized.
-        '403':
-          description: Forbidden.
-        '500':
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_2
-      security:
-        - bearerAuth: []
-  /tools/{uuid}/export/message:
-    get:
-      operationId: ToolsApi_toolExportMessage
-      summary: Return Heder message ID for the specified published tool.
-      description: >-
-        Returns the Hedera message ID for the specified tool published onto
-        IPFS. Only users with the Standard Registry role are allowed to make the
-        request.
-      parameters: []
-      responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                type: object
-        '401':
-          description: Unauthorized.
-        '403':
-          description: Forbidden.
-        '500':
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_2
-      security:
-        - bearerAuth: []
-  /tools/import/message:
-    post:
-      operationId: ToolsApi_toolImportMessage
-      summary: Imports new tool from IPFS.
-      description: >-
-        Imports new tool and all associated artifacts from IPFS into the local
-        DB. Only users with the Standard Registry role are allowed to make the
-        request.
-      parameters: []
-      responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                type: object
-        '401':
-          description: Unauthorized.
-        '403':
-          description: Forbidden.
-        '500':
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_2
-      security:
-        - bearerAuth: []
-  /tools/import/file:
-    post:
-      operationId: ToolsApi_toolImportFile
-      summary: Imports new tool from a zip file.
-      description: >-
-        Imports new tool and all associated artifacts, such as schemas and VCs,
-        from the provided zip file into the local DB. Only users with the
-        Standard Registry role are allowed to make the request.
-      parameters: []
-      responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                type: object
-        '401':
-          description: Unauthorized.
-        '403':
-          description: Forbidden.
-        '500':
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_2
-      security:
-        - bearerAuth: []
-  /tools/import/message/preview:
-    post:
-      operationId: ToolsApi_toolImportMessagePreview
-      summary: Imports new tool from IPFS.
-      description: >-
-        Imports new tool and all associated artifacts from IPFS into the local
-        DB. Only users with the Standard Registry role are allowed to make the
-        request.
-      parameters: []
-      responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                type: object
-        '401':
-          description: Unauthorized.
-        '403':
-          description: Forbidden.
-        '500':
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_2
-      security:
-        - bearerAuth: []
-  /tools/import/file/preview:
-    post:
-      operationId: ToolsApi_toolImportFilePreview
-      summary: Imports new tool from a zip file.
-      description: >-
-        Imports new tool and all associated artifacts, such as schemas and VCs,
-        from the provided zip file into the local DB. Only users with the
-        Standard Registry role are allowed to make the request.
-      parameters: []
-      responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                type: object
-        '401':
-          description: Unauthorized.
-        '403':
-          description: Forbidden.
-        '500':
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_2
-      security:
-        - bearerAuth: []
-  /tools/{uuid}/publish:
+  /tools/{id}/publish:
     put:
       operationId: ToolsApi_publishTool
       summary: Publishes the tool onto IPFS.
@@ -2061,14 +1861,56 @@ paths:
         sends a message featuring its IPFS CID into the corresponding Hedera
         topic. Only users with the Standard Registry role are allowed to make
         the request.
-      parameters: []
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Tool ID
+          schema:
+            type: string
       responses:
         '200':
-          description: ''
+          description: Successful operation.
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/ToolDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearerAuth: []
+  /tools/{id}/push/publish:
+    put:
+      operationId: ToolsApi_publishToolAsync
+      summary: Publishes the tool onto IPFS.
+      description: >-
+        Publishes the tool with the specified (internal) tool ID onto IPFS,
+        sends a message featuring its IPFS CID into the corresponding Hedera
+        topic. Only users with the Standard Registry role are allowed to make
+        the request.
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Tool ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -2097,6 +1939,276 @@ paths:
             application/json:
               schema:
                 type: object
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearerAuth: []
+  /tools/{id}/export/file:
+    get:
+      operationId: ToolsApi_toolExportFile
+      summary: >-
+        Return tool and its artifacts in a zip file format for the specified
+        tool.
+      description: >-
+        Returns a zip file containing the published tool and all associated
+        artifacts, i.e. schemas and VCs. Only users with the Standard Registry
+        role are allowed to make the request.
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Tool ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation. Response zip file.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearerAuth: []
+  /tools/{id}/export/message:
+    get:
+      operationId: ToolsApi_toolExportMessage
+      summary: Return Heder message ID for the specified published tool.
+      description: >-
+        Returns the Hedera message ID for the specified tool published onto
+        IPFS. Only users with the Standard Registry role are allowed to make the
+        request.
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Tool ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearerAuth: []
+  /tools/import/message/preview:
+    post:
+      operationId: ToolsApi_toolImportMessagePreview
+      summary: Imports new tool from IPFS.
+      description: >-
+        Imports new tool and all associated artifacts from IPFS into the local
+        DB. Only users with the Standard Registry role are allowed to make the
+        request.
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearerAuth: []
+  /tools/import/message:
+    post:
+      operationId: ToolsApi_toolImportMessage
+      summary: Imports new tool from IPFS.
+      description: >-
+        Imports new tool and all associated artifacts from IPFS into the local
+        DB. Only users with the Standard Registry role are allowed to make the
+        request.
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToolDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearerAuth: []
+  /tools/import/file/preview:
+    post:
+      operationId: ToolsApi_toolImportFilePreview
+      summary: Imports new tool from a zip file.
+      description: >-
+        Imports new tool and all associated artifacts, such as schemas and VCs,
+        from the provided zip file into the local DB. Only users with the
+        Standard Registry role are allowed to make the request.
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearerAuth: []
+  /tools/import/file:
+    post:
+      operationId: ToolsApi_toolImportFile
+      summary: Imports new tool from a zip file.
+      description: >-
+        Imports new tool and all associated artifacts, such as schemas and VCs,
+        from the provided zip file into the local DB. Only users with the
+        Standard Registry role are allowed to make the request.
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToolDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearerAuth: []
+  /tools/push/import/file:
+    post:
+      operationId: ToolsApi_toolImportFileAsync
+      summary: Imports new tool from a zip file.
+      description: >-
+        Imports new tool and all associated artifacts, such as schemas and VCs,
+        from the provided zip file into the local DB. Only users with the
+        Standard Registry role are allowed to make the request.
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearerAuth: []
+  /tools/push/import/message:
+    post:
+      operationId: ToolsApi_toolImportMessageAsync
+      summary: Imports new tool from IPFS.
+      description: >-
+        Imports new tool and all associated artifacts from IPFS into the local
+        DB. Only users with the Standard Registry role are allowed to make the
+        request.
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearerAuth: []
+  /tools/menu/all:
+    get:
+      operationId: ToolsApi_getMenu
+      summary: Return a list of tools.
+      description: >-
+        Returns tools menu. Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
         '401':
           description: Unauthorized.
         '403':
@@ -3770,6 +3882,59 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /schemas:
+    get:
+      tags:
+        - schemas
+      description: Returns all schemas.
+      security:
+        - bearerAuth: []
+      summary: Returns all schemas.
+      parameters:
+        - in: query
+          name: pageIndex
+          schema:
+            type: integer
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          examples:
+            pageIndex:
+              summary: Example of a pageIndex
+              value: 0
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+          description: The numbers of items to return
+          examples:
+            pageSize:
+              summary: Example of a pageSize
+              value: 100
+      responses:
+        '200':
+          description: Successful operation.
+          headers:
+            x-total-count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Schema'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /schemas/{topicId}:
     post:
       tags:
@@ -3873,6 +4038,67 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /schemas/type/{schemaType}:
+    get:
+      operationId: SchemaApi_getSchemaByType
+      summary: Finds the schema using the json document type.
+      description: Finds the schema using the json document type.
+      parameters:
+        - name: schemaType
+          required: true
+          in: path
+          description: Type
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchemaDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: &ref_5
+        - schemas
+      security:
+        - bearerAuth: []
+  /schemas/list/all:
+    get:
+      operationId: SchemaApi_getAll
+      summary: Returns a list of schemas.
+      description: >-
+        Returns a list of schemas. Only users with the Standard Registry role
+        are allowed to make the request.
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchemaDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_5
+      security:
+        - bearerAuth: []
   /schemas/push/{topicId}:
     post:
       tags:
@@ -3908,59 +4134,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Task'
-        '401':
-          description: Unauthorized.
-        '403':
-          description: Forbidden.
-        '500':
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  /schemas:
-    get:
-      tags:
-        - schemas
-      description: Returns all schemas.
-      security:
-        - bearerAuth: []
-      summary: Returns all schemas.
-      parameters:
-        - in: query
-          name: pageIndex
-          schema:
-            type: integer
-          description: >-
-            The number of pages to skip before starting to collect the result
-            set
-          examples:
-            pageIndex:
-              summary: Example of a pageIndex
-              value: 0
-        - in: query
-          name: pageSize
-          schema:
-            type: integer
-          description: The numbers of items to return
-          examples:
-            pageSize:
-              summary: Example of a pageSize
-              value: 100
-      responses:
-        '200':
-          description: Successful operation.
-          headers:
-            x-total-count:
-              schema:
-                type: integer
-              description: Total items in the collection.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Schema'
         '401':
           description: Unauthorized.
         '403':
@@ -4523,15 +4696,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /schemas/type/{schemaType}:
-    get:
-      operationId: SchemaApi_getSchemaType
-      parameters: []
-      responses:
-        '200':
-          description: ''
-      tags: &ref_5
-        - schemas
   /schemas/system/{username}:
     post:
       tags:
@@ -4793,14 +4957,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /schemas/list/all:
-    get:
-      operationId: SchemaApi_getAll
-      parameters: []
-      responses:
-        '200':
-          description: ''
-      tags: *ref_5
   /settings:
     get:
       tags:
