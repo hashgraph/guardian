@@ -25,14 +25,10 @@ export class CustomLogicConfigComponent implements OnInit {
     schemas!: SchemaVariables[];
 
     constructor(
-        private dialog: MatDialog,
-        @Inject(GET_SCHEMA_NAME)
-        public getSchemaName: (
-            name?: string,
-            version?: string,
-            status?: string
-        ) => string,
-    ) { }
+        private dialog: MatDialog
+    ) { 
+        
+    }
 
     ngOnInit(): void {
         this.schemas = [];

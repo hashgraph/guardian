@@ -32,12 +32,6 @@ export class RequestConfigComponent implements OnInit {
     presetMap: any;
 
     constructor(
-        @Inject(GET_SCHEMA_NAME)
-        public getSchemaName: (
-            name?: string,
-            version?: string,
-            status?: string
-        ) => string,
     ) {
         this.presetMap = [];
     }

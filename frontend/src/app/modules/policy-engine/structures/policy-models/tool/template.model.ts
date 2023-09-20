@@ -212,6 +212,10 @@ export class ToolTemplate {
         this._config.setSchemas(schemas);
     }
 
+    public setTemporarySchemas(schemas: Schema[]): void {
+        this._config.setTemporarySchemas(schemas);
+    }
+
     public setTokens(tokens: Token[]): void {
 
     }

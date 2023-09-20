@@ -53,6 +53,7 @@ export class PolicyTemplate {
     private _allTools!: PolicyTool[];
     private _tokens!: Token[];
     private _schemas!: Schema[];
+    private _temporarySchemas!: Schema[];
     private _lastVariables!: IModuleVariables;
     private _changed: boolean;
 
@@ -600,6 +601,11 @@ export class PolicyTemplate {
                 this._lastVariables.schemas.push(new SchemaVariables(schema));
             }
         }
+        if (this._temporarySchemas) {
+            for (const schema of this._temporarySchemas) {
+                this._lastVariables.schemas.push(new SchemaVariables(schema));
+            }
+        }
         if (this._tokens) {
             for (const token of this._tokens) {
                 this._lastVariables.tokens.push(new TokenVariables(token));
@@ -629,6 +635,11 @@ export class PolicyTemplate {
 
     public setSchemas(schemas: Schema[]): void {
         this._schemas = schemas;
+        this.updateVariables();
+    }
+
+    public setTemporarySchemas(schemas: Schema[]): void {
+        this._temporarySchemas = schemas;
         this.updateVariables();
     }
 

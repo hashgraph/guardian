@@ -61,13 +61,7 @@ export class CommonPropertyComponent implements OnInit {
     roles!: RoleVariables[];
 
     constructor(
-        private registeredService: RegisteredService,
-        @Inject(GET_SCHEMA_NAME)
-        public getSchemaName: (
-            name?: string,
-            version?: string,
-            status?: string
-        ) => string
+        private registeredService: RegisteredService
     ) {}
 
     ngOnInit(): void {

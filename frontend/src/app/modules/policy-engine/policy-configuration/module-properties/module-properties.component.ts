@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, ElementRef, Input, OnInit, SimpleChanges, ViewChild } from '@angular/core';
-import { ModuleEvent, ModuleVariable, PolicyModule } from '../../structures';
+import { ModuleEvent, ModuleVariable, PolicyModule, SchemaVariables } from '../../structures';
 
 /**
  * Settings for module.
@@ -17,22 +17,20 @@ export class ModulePropertiesComponent implements OnInit {
 
     @ViewChild('body') body?: ElementRef;
 
-    propHidden: any = {
+    public propHidden: any = {
         main: false,
         variables: {},
         inputs: {},
         outputs: {},
     };
 
-    baseSchemas: any[];
+    public baseSchemas: SchemaVariables[];
 
-    variables: ModuleVariable[] = [];
-    inputs: ModuleEvent[] = [];
-    outputs: ModuleEvent[] = [];
+    public variables: ModuleVariable[] = [];
+    public inputs: ModuleEvent[] = [];
+    public outputs: ModuleEvent[] = [];
 
-    constructor(
-        private changeDetector: ChangeDetectorRef,
-    ) {
+    constructor() {
     }
 
     ngOnInit(): void {
@@ -42,7 +40,8 @@ export class ModulePropertiesComponent implements OnInit {
         this.inputs = this.module.inputEvents;
         this.outputs = this.module.outputEvents;
         this.variables = this.module.variables;
-        this.baseSchemas = this.module.getSchemas();
+        const baseSchemas: any[] = this.module.getSchemas() || [];
+        this.baseSchemas = baseSchemas.map(s => new SchemaVariables(s));
     }
 
     onHide(item: any, prop: any) {

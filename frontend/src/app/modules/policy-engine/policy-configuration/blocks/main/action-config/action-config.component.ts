@@ -32,13 +32,9 @@ export class ActionConfigComponent implements OnInit {
     schemas!: SchemaVariables[];
 
     constructor(
-        @Inject(GET_SCHEMA_NAME)
-        public getSchemaName: (
-            name?: string,
-            version?: string,
-            status?: string
-        ) => string,
-    ) {}
+    ) {
+        
+    }
 
     ngOnInit(): void {
         this.schemas = [];

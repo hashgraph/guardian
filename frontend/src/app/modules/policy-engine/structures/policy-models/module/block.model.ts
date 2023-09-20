@@ -30,6 +30,7 @@ export class PolicyModule extends PolicyBlock {
     protected _innerEvents!: PolicyEvent[];
     protected _lastVariables!: IModuleVariables;
     protected _schemas: Schema[];
+    protected _temporarySchemas: Schema[];
     protected _name!: string;
     protected _description!: string;
 
@@ -359,6 +360,11 @@ export class PolicyModule extends PolicyBlock {
         this.updateVariables();
     }
 
+    public setTemporarySchemas(schemas: Schema[]): void {
+        this._temporarySchemas = schemas;
+        this.updateVariables();
+    }
+
     public get blockVariables(): IModuleVariables | null {
         return this._lastVariables;
     }
@@ -372,6 +378,10 @@ export class PolicyModule extends PolicyBlock {
 
     public getSchemas(): Schema[] {
         return this._schemas;
+    }
+
+    public getTemporarySchemas(): Schema[] {
+        return this._temporarySchemas;
     }
 
     private updateVariables(): void {
@@ -397,6 +407,11 @@ export class PolicyModule extends PolicyBlock {
             topics: [
                 new TopicVariables(),
             ]
+        }
+        if (this._temporarySchemas) {
+            for (const schema of this._temporarySchemas) {
+                this._lastVariables.schemas.push(new SchemaVariables(schema));
+            }
         }
         if (this._variables) {
             for (const variable of this._variables) {

@@ -166,11 +166,11 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     public get policyDescription(): boolean {
-        return this.openType === 'Root' && this.rootType ==='Policy';
+        return this.openType === 'Root' && this.rootType === 'Policy';
     }
 
     public get moduleDescription(): boolean {
-        return this.openType === 'Sub' || this.rootType ==='Module' || this.rootType ==='Tool';
+        return this.openType === 'Sub' || this.rootType === 'Module' || this.rootType === 'Tool';
     }
 
     constructor(
@@ -386,6 +386,7 @@ export class PolicyConfigurationComponent implements OnInit {
 
                 this.toolTemplate.setTokens(this.tokens);
                 this.toolTemplate.setSchemas(this.schemas);
+
                 this.finishedLoad(this.toolTemplate);
             }, ({ message }) => {
                 this.loading = false;
@@ -418,6 +419,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.updateComponents();
         this.updateModules();
         this.updateTools();
+        this.updateTemporarySchemas();
 
         setTimeout(() => { this.loading = false; }, 500);
     }
@@ -801,6 +803,18 @@ export class PolicyConfigurationComponent implements OnInit {
                 continue;
             }
             this.modulesList.customTools.push(tool);
+        }
+    }
+
+    private updateTemporarySchemas(): void {
+        if (this.tools) {
+            const temporarySchemas: any[] = [];
+            for (const schema of this.schemas) {
+                temporarySchemas.push({ ...schema, status: 'TOOL' });
+            }
+            this.openFolder.setTemporarySchemas(temporarySchemas);
+        } else {
+            this.openFolder.setTemporarySchemas([]);
         }
     }
 
@@ -1437,8 +1451,8 @@ export class PolicyConfigurationComponent implements OnInit {
             tool.description = result.description;
             this.loading = true;
             this.toolsService.create(tool).subscribe((result) => {
-                this.router.navigate(['/policy-configuration'], { 
-                    queryParams: { toolId: result.id } 
+                this.router.navigate(['/policy-configuration'], {
+                    queryParams: { toolId: result.id }
                 });
             }, (e) => {
                 this.loading = false;

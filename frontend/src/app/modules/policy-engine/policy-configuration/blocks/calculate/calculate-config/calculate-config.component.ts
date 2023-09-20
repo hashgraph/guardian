@@ -27,14 +27,9 @@ export class CalculateConfigComponent implements OnInit {
     properties!: any;
     schemas!: SchemaVariables[];
 
-    constructor(
-        @Inject(GET_SCHEMA_NAME)
-        public getSchemaName: (
-            name?: string,
-            version?: string,
-            status?: string
-        ) => string,
-    ) {}
+    constructor() {
+        
+    }
 
     ngOnInit(): void {
         this.schemas = [];

@@ -17,6 +17,7 @@
     --pc-btn-border-color: #dcdcdc;
     --pc-selected-btn-color: #9c27b0;
     --pc-event-color: #bd9012;
+    --pc-event-icon-color: #ffc107;
     --pc-prop-border-color: #e5e5e5;
     --pc-tabs-active-color: #fff;
     --pc-tabs-color: #e6e6e6;
@@ -24,6 +25,9 @@
     --pc-tabs-hover-color: #f0f0f0;
     --pc-prop-btn-color: #6166ff;
     --pc-del-color: #eb0303;
+    --pc-required-color: #eb0303;
+    --pc-wizard-color: #9c27b0;
+    --pc-hover-color: #d0d0d0;
 
     --pc-ui-block-background-color: #efe5fc;
     --pc-server-block-background-color: #e2f9fe;
@@ -32,6 +36,12 @@
     --pc-ui-block-border-color: #c396fa;
     --pc-server-block-border-color: #7bd0e3;
     --pc-addon-block-border-color: #f9b465;
+    --pc-tool-block-color: #c37a29;
+
+    --pc-drag-text-color: #404040;
+    --pc-readonly-text-color: rgba(0, 0, 0, .45);
+    --pc-text-color: #000;
+    --pc-background-color: #fff;
 }
 
 .content {
@@ -65,7 +75,7 @@
 }
 
 .loading {
-    background: white;
+    background: var(--pc-background-color);
     position: absolute;
     z-index: 999;
     top: 0;
@@ -110,7 +120,7 @@
     right: 0;
     height: 80px;
     display: flex;
-    background: white;
+    background: var(--pc-background-color);
     border: 4px solid var(--pc-main-grid-border);
     border-top-width: 7px;
     border-left-width: 4px;
@@ -189,7 +199,7 @@
     max-height: 340px;
     height: 340px;
     flex: 1;
-    background: white;
+    background: var(--pc-background-color);
 
     &[collapse-top="true"] {
         max-height: 35px;
@@ -213,7 +223,7 @@
     box-sizing: border-box;
     position: relative;
     flex: 1;
-    background: white;
+    background: var(--pc-background-color);
 
     &[collapse-top="true"] {
         max-height: 100%;
@@ -243,20 +253,20 @@
     }
 
     .top-toolbar-label {
-        background: rgb(252 252 252) !important;
-        border: 1px solid rgb(252 252 252) !important;
+        background: var(--pc-background-color) !important;
+        border: 1px solid var(--pc-background-color) !important;
         cursor: default !important;
     }
 
     .btn-mode-active {
-        background-color: #d1d1d1 !important;
+        background-color: var(--pc-hover-color) !important;
 
         &:active {
-            background-color: #ffffff !important;
+            background-color: var(--pc-background-color) !important;
         }
 
         &:hover {
-            background-color: #d1d1d1 !important;
+            background-color: var(--pc-hover-color) !important;
         }
     }
 
@@ -322,7 +332,7 @@
         &>.error-count {
             position: absolute;
             top: 0;
-            color: white;
+            color: var(--pc-background-color);
             right: 0;
             background: var(--pc-error-color);
             border-radius: 50%;
@@ -335,7 +345,7 @@
     }
 
     .wizard-btn {
-        color: #9c27b0;
+        color: var(--pc-wizard-color);
     }
 
     .top-toolbar-group {
@@ -406,7 +416,7 @@
 }
 
 .components-container {
-    border-top: 4px solid white;
+    border-top: 4px solid var(--pc-background-color);
     margin: 4px 0px 0px 0px;
     overflow: auto;
     position: absolute !important;
@@ -556,7 +566,7 @@
                 position: absolute;
                 top: 3px;
                 right: 6px;
-                color: white;
+                color: var(--pc-background-color);
                 cursor: pointer;
                 font-size: 22px;
 
@@ -617,7 +627,7 @@
 }
 
 .prop-container {
-    border-top: 0px solid white;
+    border-top: 0px solid var(--pc-background-color);
     margin: 4px 0px 0px 0px;
     overflow: auto;
     position: absolute !important;
@@ -855,7 +865,7 @@
             z-index: 5;
             border-bottom-left-radius: 6px;
             box-shadow: -2px 2px 4px 0px #00000020;
-            background: #fff;
+            background: var(--pc-background-color);
             overflow: auto;
             max-height: calc(100vh - 260px);
         }
@@ -867,7 +877,7 @@
             display: grid;
             grid-template-columns: 50px auto;
             margin-right: 0px;
-            background: #fff;
+            background: var(--pc-background-color);
             padding: 4px 6px;
             pointer-events: all;
         }
@@ -892,7 +902,7 @@
             }
 
             .theme-legends-icon {
-                background: #fff;
+                background: var(--pc-background-color);
                 color: var(--pc-active-icon-color);
             }
         }
@@ -1070,7 +1080,7 @@
                 width: var(--col-value-width);
                 max-width: var(--col-value-width);
                 min-width: var(--col-value-width);
-                background: white;
+                background: var(--pc-background-color);
                 position: relative;
                 overflow: hidden;
                 text-overflow: ellipsis;
@@ -1085,7 +1095,7 @@
                 width: 8px !important;
                 max-width: 8px !important;
                 display: inline !important;
-                color: #f00 !important;
+                color: var(--pc-required-color) !important;
             }
 
             input {
@@ -1179,7 +1189,6 @@
             cursor: pointer;
             font-size: 12px;
             color: var(--pc-active-icon-color);
-            ;
             padding-left: 23px;
             position: relative;
             font-weight: 500;
@@ -1211,7 +1220,7 @@
             position: absolute;
             top: 4px;
             right: 0;
-            color: #e30101;
+            color: var(--pc-del-color);
             cursor: pointer;
 
             mat-icon {
@@ -1224,7 +1233,7 @@
         }
 
         .propBottom {
-            background: #fff;
+            background: var(--pc-background-color);
             font-weight: 500;
             position: absolute;
             bottom: 4px;
@@ -1258,7 +1267,7 @@
             font-size: 18px;
             line-height: 10px;
             height: 18px;
-            color: #ffc107;
+            color: var(--pc-event-icon-color);
             width: 16px;
             position: relative;
             top: 4px;
@@ -1271,7 +1280,6 @@
             line-height: 10px;
             height: 18px;
             color: var(--pc-active-icon-color);
-            ;
             width: 18px;
             position: relative;
             top: 4px;
@@ -1280,7 +1288,7 @@
 
         .readonly-prop {
             padding-left: 6px;
-            color: rgba(0, 0, 0, .45);
+            color: var(--pc-readonly-text-color);
             max-width: 328px;
             display: block;
             overflow: hidden;
@@ -1357,8 +1365,7 @@
             font-size: 12px;
             line-height: 25px;
             color: var(--pc-active-icon-color);
-            ;
-            background-color: white;
+            background-color: var(--pc-background-color);
         }
 
         .common-properties-button-container {
@@ -1424,8 +1431,8 @@
             height: 34px;
             position: relative;
             min-width: 160px;
-            background: #fff;
-            border: 2px solid #000;
+            background: var(--pc-background-color);
+            border: 2px solid var(--pc-text-color);
             box-sizing: border-box;
             padding: 4px 12px;
             cursor: pointer;
@@ -1433,7 +1440,7 @@
             margin: 0px 0px 0px 0px;
             box-shadow: 4px 4px 6px 0px #00000040;
             width: 160px;
-            background: #fff;
+            background: var(--pc-background-color);
             border-color: #838383;
 
             .drag-component-icon {
@@ -1441,7 +1448,7 @@
                 position: absolute;
                 top: 6px;
                 left: 9px;
-                color: #404040;
+                color: var(--pc-drag-text-color);
                 font-size: 18px;
                 pointer-events: none;
                 width: 24px;
@@ -1455,7 +1462,7 @@
                 max-width: 330px;
                 text-overflow: ellipsis;
                 white-space: nowrap;
-                color: #404040;
+                color: var(--pc-drag-text-color);
             }
         }
 
@@ -1504,9 +1511,9 @@
 
 .errors-property {
     border-radius: 3px;
-    border: 1px solid #f90000;
+    border: 1px solid var(--pc-error-color);
     padding: 5px;
-    color: #f90000;
+    color: var(--pc-error-color);
     background: #fff2f2;
     position: relative;
     padding-left: 10px;
@@ -1521,16 +1528,36 @@
     right: 0px;
     z-index: 99;
     padding: 10px;
-    background: #fff;
+    background: var(--pc-background-color);
     border-top: 1px solid #c9c9c9;
 }
 
 .tool-icon {
-    color: #c37a29 !important;
+    color: var(--pc-tool-block-color) !important;
 }
 
 @media (max-width: 810px) {
     .policy-configuration {
         height: calc(100vh - var(--header-height));
+    }
+}
+
+::ng-deep .schema-variable {
+    color: var(--pc-text-color);
+
+    &[status="DRAFT"] {
+        color: var(--pc-edit-status-color);
+    }
+
+    &[status="VARIABLE"] {
+        color: var(--pc-active-icon-color);
+    }
+
+    &[status="PUBLISHED"] {
+        color: var(--pc-publish-status-color);
+    }
+
+    &[status="TOOL"] {
+        color: var(--pc-tool-block-color);
     }
 }
