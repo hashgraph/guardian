@@ -117,7 +117,7 @@ export class HttpRequestBlock {
         }
 
         if (!verify) {
-            throw new Error('Document is not VC');
+            throw new Error('Received data is not VC');
         }
 
         return VcDocument.fromJsonTree(res);

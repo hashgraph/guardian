@@ -38,7 +38,7 @@ COPY --from=workerServiceBuilder  /usr/local/worker-service/yarn.lock ./
 COPY ./worker-service/package.json ./
 RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@guardian/interfaces']='file:/tmp/interfaces.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
 RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@guardian/common']='file:/tmp/common.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
-RUN yarn install --frozen-lockfile
+RUN yarn install
 COPY --from=workerServiceBuilder /usr/local/worker-service/dist ./dist
 RUN rm /tmp/interfaces.tgz /tmp/common.tgz
 
