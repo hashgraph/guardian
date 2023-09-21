@@ -17,6 +17,7 @@ import { PolicyModule } from '../module/block.model';
 import { PolicyFolder, PolicyItem } from '../interfaces/types';
 import { TemplateUtils } from '../utils';
 import { PolicyTool } from '../tool/block.model';
+import { ToolVariables } from '../variables/tool-variables';
 
 export class PolicyTemplate {
     public readonly valid: boolean;
@@ -53,6 +54,7 @@ export class PolicyTemplate {
     private _allTools!: PolicyTool[];
     private _tokens!: Token[];
     private _schemas!: Schema[];
+    private _tools: any[];
     private _temporarySchemas!: Schema[];
     private _lastVariables!: IModuleVariables;
     private _changed: boolean;
@@ -577,6 +579,7 @@ export class PolicyTemplate {
     private updateVariables(): void {
         this._lastVariables = {
             module: this,
+            tools: [],
             schemas: [
                 new SchemaVariables(),
             ],
@@ -598,37 +601,42 @@ export class PolicyTemplate {
                 new TopicVariables(),
             ]
         }
-        if (this._schemas) {
+        if (Array.isArray(this._tools)) {
+            for (const tool of this._tools) {
+                this._lastVariables.tools.push(new ToolVariables(tool));
+            }
+        }
+        if (Array.isArray(this._schemas)) {
             for (const schema of this._schemas) {
                 this._lastVariables.schemas.push(new SchemaVariables(schema));
             }
         }
-        if (this._temporarySchemas) {
+        if (Array.isArray(this._temporarySchemas)) {
             for (const schema of this._temporarySchemas) {
                 this._lastVariables.schemas.push(new SchemaVariables(schema));
             }
         }
-        if (this._tokens) {
+        if (Array.isArray(this._tokens)) {
             for (const token of this._tokens) {
                 this._lastVariables.tokens.push(new TokenVariables(token));
             }
         }
-        if (this._policyRoles) {
+        if (Array.isArray(this._policyRoles)) {
             for (const role of this._policyRoles) {
                 this._lastVariables.roles.push(new RoleVariables(role));
             }
         }
-        if (this._policyGroups) {
+        if (Array.isArray(this._policyGroups)) {
             for (const group of this._policyGroups) {
                 this._lastVariables.groups.push(new GroupVariables(group));
             }
         }
-        if (this._policyTokens) {
+        if (Array.isArray(this._policyTokens)) {
             for (const tokenTemplate of this._policyTokens) {
                 this._lastVariables.tokenTemplates.push(new TokenTemplateVariables(tokenTemplate));
             }
         }
-        if (this._policyTopics) {
+        if (Array.isArray(this._policyTopics)) {
             for (const topic of this._policyTopics) {
                 this._lastVariables.topics.push(new TopicVariables(topic));
             }
@@ -637,6 +645,11 @@ export class PolicyTemplate {
 
     public setSchemas(schemas: Schema[]): void {
         this._schemas = schemas;
+        this.updateVariables();
+    }
+
+    public setTools(tools: any[]): void {
+        this._tools = tools;
         this.updateVariables();
     }
 

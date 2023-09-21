@@ -5,6 +5,7 @@ import { SchemaVariables } from "../variables/schema-variables";
 import { TokenTemplateVariables } from "../variables/token-template-variables";
 import { TokenVariables } from "../variables/token-variables";
 import { TopicVariables } from "../variables/topic-variables";
+import { ToolVariables } from "../variables/tool-variables";
 
 export interface IModuleVariables {
     module: PolicyFolder | undefined;
@@ -14,4 +15,5 @@ export interface IModuleVariables {
     roles: RoleVariables[];
     groups: GroupVariables[];
     topics: TopicVariables[];
+    tools: ToolVariables[];
 }

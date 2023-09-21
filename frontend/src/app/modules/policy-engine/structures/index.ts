@@ -34,6 +34,7 @@ export { TokenTemplateVariables } from './policy-models/variables/token-template
 export { RoleVariables } from './policy-models/variables/role-variables';
 export { GroupVariables } from './policy-models/variables/group-variables';
 export { TopicVariables } from './policy-models/variables/topic-variables';
+export { ToolVariables } from './policy-models/variables/tool-variables';
 export { BlockGroup } from './types/block-group.type';
 export { BlockHeaders } from './types/block-headers.type';
 export { ChildrenType } from './types/children-type.type';

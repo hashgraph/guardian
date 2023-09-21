@@ -1,4 +1,12 @@
-import { Component, EventEmitter, Inject, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
+import {
+    Component,
+    EventEmitter,
+    Input,
+    OnInit,
+    Output,
+    SimpleChanges,
+    ViewEncapsulation
+} from '@angular/core';
 import {
     GroupVariables,
     IModuleVariables,
@@ -8,9 +16,9 @@ import {
     SchemaVariables,
     TokenTemplateVariables,
     TokenVariables,
+    ToolVariables,
     TopicVariables
 } from '../../../structures';
-import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
 
 /**
  * Settings for block of 'policyRolesBlock' type.
@@ -26,29 +34,32 @@ export class ToolComponent implements OnInit {
     @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();
 
+    public propHidden: any = {
+        main: false,
+        tool: false
+    };
+    public tool!: any;
+    public properties!: any;
+    public variables!: any[];
+    public tools!: ToolVariables[];
+    public schemas!: SchemaVariables[];
+    public tokens!: TokenVariables[];
+    public tokenTemplate!: TokenTemplateVariables[];
+    public topics!: TopicVariables[];
+    public roles!: RoleVariables[];
+    public groups!: GroupVariables[];
+    public variablesHidden = [];
+
     private moduleVariables!: IModuleVariables | null;
     private item!: PolicyBlock;
 
-    propHidden: any = {
-        main: false
-    };
-
-    properties!: any;
-    variables!: any[];
-    schemas!: SchemaVariables[];
-    tokens!: TokenVariables[];
-    tokenTemplate!: TokenTemplateVariables[];
-    topics!: TopicVariables[];
-    roles!: RoleVariables[];
-    groups!: GroupVariables[];
-    variablesHidden = [];
-
     constructor(
     ) {
-        
+
     }
 
     ngOnInit(): void {
+        this.tool = {};
         this.schemas = [];
         this.tokens = [];
         this.tokenTemplate = [];
@@ -64,8 +75,9 @@ export class ToolComponent implements OnInit {
         this.load(this.currentBlock as any);
     }
 
-    load(block: PolicyModule) {
+    private load(block: PolicyModule) {
         this.moduleVariables = block.moduleVariables;
+        this.tools = this.moduleVariables?.tools || [];
         this.schemas = this.moduleVariables?.schemas || [];
         this.tokens = this.moduleVariables?.tokens || [];
         this.tokenTemplate = this.moduleVariables?.tokenTemplates || [];
@@ -73,7 +85,7 @@ export class ToolComponent implements OnInit {
         this.roles = this.moduleVariables?.roles || [];
         this.groups = this.moduleVariables?.groups || [];
 
-        this.properties = block.properties;
+        this.properties = block.properties || {};
         this.variables = [];
         if (Array.isArray(block.variables)) {
             for (const item of block.variables) {
@@ -87,13 +99,29 @@ export class ToolComponent implements OnInit {
                 })
             }
         }
+
+        const messageId = this.properties.messageId;
+        const tool = this.tools.find(t => t.messageId === messageId);
+        if (tool) {
+            this.tool = {
+                name: tool.name,
+                description: tool.description,
+                owner: tool.owner,
+                messageId: tool.messageId,
+                hash: tool.hash,
+            };
+        } else {
+            this.tool = {
+                messageId: messageId,
+            };
+        }
     }
 
-    onHide(item: any, prop: any) {
+    public onHide(item: any, prop: any) {
         item[prop] = !item[prop];
     }
 
-    selectTopic(event: any, item: any) {
+    public selectTopic(event: any, item: any) {
         if (event.value === 'new') {
             const name = this.moduleVariables?.module?.createTopic({
                 description: '',
@@ -104,7 +132,7 @@ export class ToolComponent implements OnInit {
         }
     }
 
-    onSave() {
+    public onSave() {
         this.item.changed = true;
     }
 }

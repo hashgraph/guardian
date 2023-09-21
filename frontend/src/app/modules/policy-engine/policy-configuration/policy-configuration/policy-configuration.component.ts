@@ -298,6 +298,7 @@ export class PolicyConfigurationComponent implements OnInit {
 
                 this.policyTemplate.setTokens(this.tokens);
                 this.policyTemplate.setSchemas(this.schemas);
+                this.policyTemplate.setTools(this.tools);
                 this.finishedLoad(this.policyTemplate);
             }, ({ message }) => {
                 this.loading = false;
@@ -342,6 +343,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.tools = tools;
 
                 this.moduleTemplate.setSchemas(this.schemas);
+                this.moduleTemplate.setTools(this.tools);
                 this.finishedLoad(this.moduleTemplate);
             }, ({ message }) => {
                 this.loading = false;
@@ -391,6 +393,7 @@ export class PolicyConfigurationComponent implements OnInit {
 
                 this.toolTemplate.setTokens(this.tokens);
                 this.toolTemplate.setSchemas(this.schemas);
+                this.toolTemplate.setTools(this.tools);
 
                 this.finishedLoad(this.toolTemplate);
             }, ({ message }) => {
@@ -899,6 +902,7 @@ export class PolicyConfigurationComponent implements OnInit {
 
     public onDelete(block: any) {
         this.openFolder.removeBlock(block);
+        this.updateTemporarySchemas();
         this.onSelect(this.openFolder.root);
         return false;
     }
@@ -1325,6 +1329,9 @@ export class PolicyConfigurationComponent implements OnInit {
                         this.updatePolicyTemplate(policy);
                     } else {
                         this.policyTemplate = new PolicyTemplate();
+                        this.policyTemplate.setTokens(this.tokens);
+                        this.policyTemplate.setSchemas(this.schemas);
+                        this.policyTemplate.setTools(this.tools);
                     }
                     setTimeout(() => { this.loading = false; }, 500);
                     subscriber.next();
@@ -1340,6 +1347,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.policyTemplate = new PolicyTemplate(policy);
         this.policyTemplate.setTokens(this.tokens);
         this.policyTemplate.setSchemas(this.schemas);
+        this.policyTemplate.setTools(this.tools);
 
         this.currentView = 'blocks';
         this.errors = [];

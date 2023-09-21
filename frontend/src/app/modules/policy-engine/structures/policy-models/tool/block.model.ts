@@ -15,6 +15,7 @@ import { PolicyFolder, PolicyItem } from '../interfaces/types';
 import { TemplateUtils } from '../utils';
 import { ModuleEvent } from '../variables/module-event.model';
 import { ModuleVariable } from '../variables/module-variable.model';
+import { ToolVariables } from '../variables/tool-variables';
 
 export class PolicyTool extends PolicyBlock {
     protected _dataSource!: PolicyBlock[];
@@ -29,6 +30,7 @@ export class PolicyTool extends PolicyBlock {
     protected _innerEvents!: PolicyEvent[];
     protected _lastVariables!: IModuleVariables;
     protected _schemas: Schema[];
+    protected _tools: any[];
     protected _temporarySchemas: Schema[];
     protected _name!: string;
     protected _description!: string;
@@ -367,6 +369,11 @@ export class PolicyTool extends PolicyBlock {
         this.updateVariables();
     }
 
+    public setTools(tools: any[]): void {
+        this._tools = tools;
+        this.updateVariables();
+    }
+
     public setTemporarySchemas(schemas: Schema[]): void {
         this._temporarySchemas = schemas;
         this.updateVariables();
@@ -394,6 +401,7 @@ export class PolicyTool extends PolicyBlock {
     private updateVariables(): void {
         this._lastVariables = {
             module: this,
+            tools: [],
             schemas: [
                 new SchemaVariables(),
             ],
@@ -414,6 +422,11 @@ export class PolicyTool extends PolicyBlock {
             topics: [
                 new TopicVariables(),
             ]
+        }
+        if (Array.isArray(this._tools)) {
+            for (const tool of this._tools) {
+                this._lastVariables.tools.push(new ToolVariables(tool));
+            }
         }
         if (Array.isArray(this._schemas)) {
             for (const schema of this._schemas) {

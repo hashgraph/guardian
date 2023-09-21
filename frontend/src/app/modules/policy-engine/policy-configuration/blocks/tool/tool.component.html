@@ -1,4 +1,48 @@
 <table class="properties" [attr.readonly]="readonly" *ngIf="properties">
+    
+    <tr class="propHeader">
+        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'tool')" [attr.collapse]="propHidden.tool">
+            <mat-icon>arrow_drop_down</mat-icon>
+        </td>
+        <td class="propHeaderCell cellName">Tool</td>
+        <td class="propHeaderCell"></td>
+    </tr>
+    <tr class="propRow" [attr.collapse]="propHidden.tool">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Name</td>
+        <td class="propRowCell">
+            <span class="readonly-prop">{{tool.name}}</span>
+        </td>
+    </tr>
+    <tr class="propRow" [attr.collapse]="propHidden.tool">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Description</td>
+        <td class="propRowCell">
+            <span class="readonly-prop">{{tool.description}}</span>
+        </td>
+    </tr>
+    <tr class="propRow" [attr.collapse]="propHidden.tool">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Owner</td>
+        <td class="propRowCell">
+            <span class="readonly-prop">{{tool.owner}}</span>
+        </td>
+    </tr>
+    <tr class="propRow" [attr.collapse]="propHidden.tool">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Message ID</td>
+        <td class="propRowCell">
+            <span class="readonly-prop">{{tool.messageId}}</span>
+        </td>
+    </tr>
+    <tr class="propRow" [attr.collapse]="propHidden.tool">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Hash</td>
+        <td class="propRowCell">
+            <span class="readonly-prop">{{tool.hash}}</span>
+        </td>
+    </tr>
+    
     <tr class="propHeader">
         <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
             <mat-icon>arrow_drop_down</mat-icon>

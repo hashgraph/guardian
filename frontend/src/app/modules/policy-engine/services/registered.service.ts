@@ -3,6 +3,7 @@ import { BlockType, GenerateUUIDv4 } from '@guardian/interfaces';
 import { BlockAbout, ChildrenType, ControlType, IBlockAbout, IBlockSetting } from '../structures';
 import blocks from './blocks-information';
 import modules from './module-information';
+import tools from './tool-information';
 import { PolicyFolder, PolicyItem } from '../structures/policy-models/interfaces/types';
 
 @Injectable()
@@ -60,6 +61,10 @@ export class RegisteredService {
             this.registerModule(config);
         }
 
+        for (const config of tools) {
+            this.registerTool(config);
+        }
+
         for (const key in this.about) {
             this.blockAbout[key] = new BlockAbout({
                 post: false,
@@ -88,6 +93,17 @@ export class RegisteredService {
     }
 
     private registerModule(setting: IBlockSetting): void {
+        const type: BlockType = setting.type;
+        this.factories[type] = setting.factory;
+        this.properties[type] = setting.property;
+        this.icons[type] = setting.icon;
+        this.group[type] = setting.group;
+        this.header[type] = setting.header;
+        this.allowedChildren[type] = setting.allowedChildren;
+        this.about[type] = setting.about;
+    }
+
+    private registerTool(setting: IBlockSetting): void {
         const type: BlockType = setting.type;
         this.factories[type] = setting.factory;
         this.properties[type] = setting.property;

@@ -6,7 +6,7 @@ import {
     BlockHeaders, IBlockSetting,
     ChildrenType,
     ControlType,
-    PolicyModule
+    PolicyTool
 } from "../structures";
 import { PolicyFolder } from "../structures/policy-models/interfaces/types";
 
@@ -54,14 +54,14 @@ const Tool: IBlockSetting = {
     about: {
         post: false,
         get: false,
-        input: (value: any, block: PolicyModule, module?: PolicyFolder): string[] => {
-            if(block === module) {
+        input: (value: any, block: PolicyTool, folder?: PolicyFolder): string[] => {
+            if (block === folder) {
                 return block.outputEvents.map(e => e.name);
             }
             return block.inputEvents.map(e => e.name);
         },
-        output: (value: any, block: PolicyModule, module?: PolicyFolder): string[] => {
-            if(block === module) {
+        output: (value: any, block: PolicyTool, folder?: PolicyFolder): string[] => {
+            if (block === folder) {
                 return block.inputEvents.map(e => e.name);
             }
             return block.outputEvents.map(e => e.name);
