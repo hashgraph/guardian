@@ -3,11 +3,11 @@ import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
 /**
  * Policy roles block
  */
-export class ModuleBlock {
+export class ToolBlock {
     /**
      * Block type
      */
-    public static readonly blockType: string = 'module';
+    public static readonly blockType: string = 'tool';
 
     /**
      * Validate block options
@@ -22,15 +22,11 @@ export class ModuleBlock {
                 } else {
                     const value = ref.options[variable.name];
                     switch (variable.type) {
-                        case 'Schema': {
-                            const schema = await validator.getSchema(value);
-                            if (!schema) {
+                        case 'Schema':
+                            if (await validator.schemaNotExist(value)) {
                                 validator.addError(`Schema with id "${value}" does not exist`);
-                            } else if (!validator.compareSchema(variable.baseSchema, schema)) {
-                                validator.addError(`Schema is not supported`);
                             }
                             break;
-                        }
                         case 'Token':
                             if (await validator.tokenNotExist(value)) {
                                 validator.addError(`Token with id ${value} does not exist`);

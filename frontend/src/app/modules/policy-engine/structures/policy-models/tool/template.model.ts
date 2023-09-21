@@ -245,11 +245,15 @@ export class ToolTemplate {
         throw new Error('A tool cannot contain nested modules');
     }
 
-    public convertModule(block: PolicyBlock): any { 
+    public convertModule(block: PolicyBlock): any {
         throw new Error('A tool cannot contain nested modules');
     }
 
     public newTool(template?: any): PolicyTool {
         return this._config.newTool(template);
+    }
+
+    public getAllTools(): Set<string> {
+        return this._config.getAllTools();
     }
 }

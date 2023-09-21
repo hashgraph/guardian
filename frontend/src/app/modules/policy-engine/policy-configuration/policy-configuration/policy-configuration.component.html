@@ -707,24 +707,39 @@
                         </div>
                         <div class="pc-tabs-content" [attr.readonly]="!isTree">
                             <div class="prop-container" [hidden]="!options.description">
-                                <policy-properties class="readonly-status" [policy]="policyTemplate" [readonly]="readonly"
-                                    type="Main"></policy-properties>
+                                <policy-properties 
+                                    class="readonly-status"
+                                    type="Main" 
+                                    [policy]="policyTemplate" 
+                                    [readonly]="readonly"></policy-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.roles">
-                                <policy-properties class="readonly-status" [policy]="policyTemplate" [readonly]="readonly"
-                                    type="Role"></policy-properties>
+                                <policy-properties 
+                                    class="readonly-status"
+                                    type="Role" 
+                                    [policy]="policyTemplate" 
+                                    [readonly]="readonly"></policy-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.groups">
-                                <policy-properties class="readonly-status" [policy]="policyTemplate" [readonly]="readonly"
-                                    type="Groups"></policy-properties>
+                                <policy-properties 
+                                    class="readonly-status" 
+                                    type="Groups"
+                                    [policy]="policyTemplate" 
+                                    [readonly]="readonly"></policy-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.topics">
-                                <policy-properties class="readonly-status" [policy]="policyTemplate" [readonly]="readonly"
-                                    type="Topics"></policy-properties>
+                                <policy-properties 
+                                    class="readonly-status"
+                                    type="Topics" 
+                                    [policy]="policyTemplate" 
+                                    [readonly]="readonly"></policy-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.tokens">
-                                <policy-properties class="readonly-status" [policy]="policyTemplate" [readonly]="readonly"
-                                    type="Tokens"></policy-properties>
+                                <policy-properties 
+                                    class="readonly-status"
+                                    type="Tokens" 
+                                    [policy]="policyTemplate" 
+                                    [readonly]="readonly"></policy-properties>
                             </div>
                         </div>
                     </div>

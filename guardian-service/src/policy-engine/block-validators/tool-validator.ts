@@ -1,7 +1,5 @@
 import { DatabaseServer, PolicyTool } from '@guardian/common';
 import { BlockValidator } from './block-validator';
-import { ModuleValidator } from './module-validator';
-import { ISerializedErrors } from './interfaces/serialized-errors.interface';
 import { IModulesErrors } from './interfaces/modules-errors.interface';
 import { ISchema } from '@guardian/interfaces';
 
@@ -15,20 +13,25 @@ export class ToolValidator {
      */
     private readonly uuid: string;
     /**
-     * Common errors
+     * Tags
      * @private
      */
-    private readonly errors: string[];
+    private readonly tags: Map<string, number>;
     /**
      * Blocks map
      * @private
      */
     private readonly blocks: Map<string, BlockValidator>;
     /**
-     * Tags
+     * Modules map
      * @private
      */
-    private readonly tags: Map<string, number>;
+    private readonly tools: Map<string, ToolValidator>;
+    /**
+     * Common errors
+     * @private
+     */
+    private readonly errors: string[];
     /**
      * Schemas
      * @private
@@ -64,26 +67,57 @@ export class ToolValidator {
      * @private
      */
     private readonly permissions: string[];
+    /**
+     * Topic Id
+     * @private
+     */
+    private topicId: string;
 
     constructor(tool: any) {
         this.uuid = tool.id;
-        this.errors = [];
         this.blocks = new Map();
-
-        this.permissions = ['NO_ROLE', 'ANY_ROLE', 'OWNER'];
+        this.tools = new Map();
         this.tags = new Map();
+        this.errors = [];
+        this.permissions = ['NO_ROLE', 'ANY_ROLE', 'OWNER'];
         this.schemas = new Map();
         this.tokens = [];
         this.topics = [];
         this.tokenTemplates = [];
         this.groups = [];
         this.variables = [];
+    }
 
-        this.registerVariables(tool);
-        if (Array.isArray(tool.children)) {
-            for (const child of tool.children) {
-                this.registerBlock(child);
+    /**
+     * Register components
+     * @param tool
+     */
+    public async build(tool: PolicyTool): Promise<boolean> {
+        if (!tool || (typeof tool !== 'object')) {
+            this.addError('Invalid tool config');
+            return false;
+        } else {
+            this.topicId = tool.topicId;
+            const block = tool.config;
+            this.registerVariables(block);
+            if (Array.isArray(block.children)) {
+                for (const child of block.children) {
+                    await this.registerBlock(child);
+                }
             }
+            await this.registerSchemas();
+            return true;
+        }
+    }
+
+    /**
+     * Register schemas
+     * @param block
+     */
+    private async registerSchemas(): Promise<void> {
+        const schemas = await DatabaseServer.getSchemas({ topicId: this.topicId });
+        for (const schema of schemas) {
+            this.schemas.set(schema.iri, schema);
         }
     }
 
@@ -91,7 +125,53 @@ export class ToolValidator {
      * Register new block
      * @param block
      */
-    public registerVariables(tool: any): void {
+    private async registerBlock(block: any): Promise<BlockValidator> {
+        let validator: BlockValidator;
+        if (block.id) {
+            if (this.blocks.has(block.id)) {
+                validator = this.blocks.get(block.id);
+                this.errors.push(`UUID ${block.id} already exist`);
+            } else {
+                validator = new BlockValidator(block, this);
+                this.blocks.set(block.id, validator);
+            }
+        } else {
+            validator = new BlockValidator(block, this);
+            this.errors.push(`UUID is not set`);
+        }
+        if (block.tag) {
+            if (this.tags.has(block.tag)) {
+                this.tags.set(block.tag, 2);
+            } else {
+                this.tags.set(block.tag, 1);
+            }
+        }
+        if (block.blockType === 'module') {
+            this.errors.push(`The tool can't contain another module`);
+        } else if (block.blockType === 'tool') {
+            const tool = new ToolValidator(block);
+            const policyTool = await DatabaseServer.getTool({
+                messageId: block.messageId,
+                hash: block.hash
+            });
+            await tool.build(policyTool);
+            this.tools.set(block.id, tool);
+        } else {
+            if (Array.isArray(block.children)) {
+                for (const child of block.children) {
+                    const v = await this.registerBlock(child);
+                    validator.addChild(v);
+                }
+            }
+        }
+        return validator;
+    }
+
+    /**
+     * Register new block
+     * @param block
+     */
+    private registerVariables(tool: any): void {
         if (Array.isArray(tool.variables)) {
             for (const variable of tool.variables) {
                 this.variables.push(variable);
@@ -148,59 +228,21 @@ export class ToolValidator {
     }
 
     /**
-     * Register new block
-     * @param block
+     * Clear
      */
-    public registerBlock(block: any): BlockValidator {
-        let validator: BlockValidator;
-        if (block.id) {
-            if (this.blocks.has(block.id)) {
-                validator = this.blocks.get(block.id);
-                this.errors.push(`UUID ${block.id} already exist`);
-            } else {
-                validator = new BlockValidator(block, this);
-                this.blocks.set(block.id, validator);
-            }
-        } else {
-            validator = new BlockValidator(block, this);
-            this.errors.push(`UUID is not set`);
+    public clear(): void {
+        for (const item of this.blocks.values()) {
+            item.clear();
         }
-        if (block.tag) {
-            if (this.tags.has(block.tag)) {
-                this.tags.set(block.tag, 2);
-            } else {
-                this.tags.set(block.tag, 1);
-            }
-        }
-        if (Array.isArray(block.children)) {
-            for (const child of block.children) {
-                const v = this.registerBlock(child);
-                validator.addChild(v);
-            }
-        }
-        return validator;
     }
 
     /**
-     * Get permission
-     * @param permission
+     * Validate
      */
-    public getPermission(permission: string): string {
-        if (this.permissions.indexOf(permission) !== -1) {
-            return permission;
+    public async validate(): Promise<void> {
+        for (const item of this.blocks.values()) {
+            await item.validate();
         }
-        return null
-    }
-
-    /**
-     * Tag Count
-     * @param tag
-     */
-    public tagCount(tag: string): number {
-        if (this.tags.has(tag)) {
-            return this.tags.get(tag);
-        }
-        return 0;
     }
 
     /**
@@ -216,6 +258,76 @@ export class ToolValidator {
             }
         }
         return null;
+    }
+
+    /**
+     * Tag Count
+     * @param tag
+     */
+    public tagCount(tag: string): number {
+        if (this.tags.has(tag)) {
+            return this.tags.get(tag);
+        }
+        return 0;
+    }
+
+    /**
+     * Add Error
+     * @param error
+     */
+    public addError(error: string): void {
+        this.errors.push(error);
+    }
+
+    /**
+     * Get serialized errors
+     */
+    public getSerializedErrors(): IModulesErrors {
+        let valid = !this.errors.length;
+        const blocksErrors = [];
+        for (const item of this.blocks.values()) {
+            const result = item.getSerializedErrors()
+            blocksErrors.push(result);
+            valid = valid && result.isValid;
+        }
+        for (const item of this.errors) {
+            blocksErrors.push({
+                id: null,
+                name: null,
+                errors: [item],
+                isValid: false
+            });
+        }
+        const commonErrors = this.errors.slice();
+        return {
+            id: this.uuid,
+            isValid: valid,
+            errors: commonErrors,
+            blocks: blocksErrors
+        }
+    }
+
+    /**
+     * Get permission
+     * @param permission
+     */
+    public getPermission(permission: string): string {
+        if (this.permissions.indexOf(permission) !== -1) {
+            return permission;
+        }
+        return null
+    }
+
+    /**
+     * Get Group
+     * @param iri
+     */
+    public getGroup(group: string): any {
+        if (this.groups.indexOf(group) === -1) {
+            return null;
+        } else {
+            return {};
+        }
     }
 
     /**
@@ -271,64 +383,6 @@ export class ToolValidator {
             return null;
         } else {
             return {};
-        }
-    }
-
-    /**
-     * Get Group
-     * @param iri
-     */
-    public getGroup(group: string): any {
-        if (this.groups.indexOf(group) === -1) {
-            return null;
-        } else {
-            return {};
-        }
-    }
-
-    /**
-     * Clear
-     */
-    public clear(): void {
-        for (const item of this.blocks.values()) {
-            item.clear();
-        }
-    }
-
-    /**
-     * Validate
-     */
-    public async validate(): Promise<void> {
-        for (const item of this.blocks.values()) {
-            await item.validate();
-        }
-    }
-
-    /**
-     * Get serialized errors
-     */
-    public getSerializedErrors(): IModulesErrors {
-        let valid = !this.errors.length;
-        const blocksErrors = [];
-        for (const item of this.blocks.values()) {
-            const result = item.getSerializedErrors()
-            blocksErrors.push(result);
-            valid = valid && result.isValid;
-        }
-        for (const item of this.errors) {
-            blocksErrors.push({
-                id: null,
-                name: null,
-                errors: [item],
-                isValid: false
-            });
-        }
-        const commonErrors = this.errors.slice();
-        return {
-            id: this.uuid,
-            isValid: valid,
-            errors: commonErrors,
-            blocks: blocksErrors
         }
     }
 }

@@ -514,14 +514,16 @@ export class PolicyTemplate {
         }
     }
 
-
     public newTool(template?: any): PolicyTool {
         if (template) {
-            const config = JSON.parse(JSON.stringify(template.config));
-            config.id = GenerateUUIDv4();
-            config.tag = this.getNewTag('Tool');
-            config.blockType = BlockType.Tool;
-            config.defaultActive = true;
+            const config: any = {
+                id: GenerateUUIDv4(),
+                tag: this.getNewTag('Tool'),
+                blockType: BlockType.Tool,
+                defaultActive: true,
+                hash: template.hash,
+                messageId: template.messageId
+            }
             const tool = TemplateUtils.buildBlock(config, null, this) as PolicyTool;
             this._tagMap[tool.tag] = tool;
             return tool;
@@ -690,5 +692,28 @@ export class PolicyTemplate {
         } else {
             return this._policyRoles[permission]?.name;
         }
+    }
+
+    public getAllTools(): Set<string> {
+        const map = new Set<string>();
+        if (this.allTools) {
+            for (const tool of this.allTools) {
+                if (tool.messageId) {
+                    map.add(tool.messageId);
+                }
+            }
+        }
+        if (this.allModule) {
+            for (const m of this.allModule) {
+                if (m.allTools) {
+                    for (const tool of m.allTools) {
+                        if (tool.messageId) {
+                            map.add(tool.messageId);
+                        }
+                    }
+                }
+            }
+        }
+        return map;
     }
 }

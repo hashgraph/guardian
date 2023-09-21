@@ -71,7 +71,11 @@ export class SchemaDialog {
 
     onCreate() {
         const schema = this.schemaControl?.getSchema();
-        localStorage.setItem('restoreSchemaData', JSON.stringify(schema));
+        try {
+            localStorage.setItem('restoreSchemaData', JSON.stringify(schema));
+        } catch (error) {
+            console.error(error);
+        }
         this.dialogRef.close(schema);
     }
 

@@ -49,6 +49,7 @@ import { MessagesReportBlock } from './blocks/messages-report-block';
 import { NotificationBlock } from './blocks/notification.block';
 import { ISchema, SchemaField, SchemaHelper } from '@guardian/interfaces';
 import { ToolValidator } from './tool-validator';
+import { ToolBlock } from './blocks/tool';
 
 export const validators = [
     InterfaceDocumentActionBlock,
@@ -95,6 +96,7 @@ export const validators = [
     ExternalTopicBlock,
     MessagesReportBlock,
     NotificationBlock,
+    ToolBlock
 ];
 
 /**
@@ -254,7 +256,7 @@ export class BlockValidator {
      * Get Schema
      * @param iri
      */
-    public async getSchema(iri: string): Promise<any> {
+    public async getSchema(iri: string): Promise<ISchema> {
         return await this.validator.getSchema(iri);
     }
 
@@ -375,7 +377,6 @@ export class BlockValidator {
         }
         const baseFields = this.getSchemaFields(baseSchema.document);
         const schemaFields = this.getSchemaFields(schema.document);
-
         return this.ifExtendFields(schemaFields, baseFields);
     }
 

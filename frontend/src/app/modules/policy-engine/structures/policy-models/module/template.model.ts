@@ -249,4 +249,8 @@ export class ModuleTemplate {
     public newTool(template?: any): PolicyTool {
         return this._config.newTool(template);
     }
+
+    public getAllTools(): Set<string> {
+        return this._config.getAllTools();
+    }
 }

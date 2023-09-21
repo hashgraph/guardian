@@ -171,6 +171,13 @@
     text-overflow: ellipsis;
 }
 
+.table-container .mat-column-schemas {
+    padding-left: 8px;
+    width: 90px;
+    max-width: 90px;
+    border-left: 1px solid #dddddd;
+}
+
 .actions-container {
     display: block;
     z-index: 2;

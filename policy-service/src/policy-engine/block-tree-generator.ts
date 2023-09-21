@@ -298,16 +298,16 @@ export class BlockTreeGenerator extends NatsService {
         policy: Policy,
         policyValidator?: PolicyValidator
     ): Promise<ISerializedErrors> {
-        policyValidator = policyValidator || new PolicyValidator(policy);
-        if (!policy || (typeof policy !== 'object')) {
-            policyValidator.addError('Invalid policy config');
+        if(!policyValidator) {
+            policyValidator = new PolicyValidator(policy);
+        }
+        const valid = await policyValidator.build(policy);
+        if(valid) {
+            await policyValidator.validate();
+            return policyValidator.getSerializedErrors();
+        } else {
             return policyValidator.getSerializedErrors();
         }
-        const policyConfig = policy.config;
-        policyValidator.registerBlock(policyConfig);
-        policyValidator.addPermissions(policy.policyRoles);
-        await policyValidator.validate();
-        return policyValidator.getSerializedErrors();
     }
 
     /**

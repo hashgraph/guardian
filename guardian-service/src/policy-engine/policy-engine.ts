@@ -1079,8 +1079,7 @@ export class PolicyEngine extends NatsService {
             policyId = policy.id.toString();
         }
         const policyValidator = new PolicyValidator(policy);
-        policyValidator.registerBlock(policy.config);
-        policyValidator.addPermissions(policy.policyRoles);
+        await policyValidator.build(policy);
         await policyValidator.validate();
         return policyValidator.getSerializedErrors();
     }

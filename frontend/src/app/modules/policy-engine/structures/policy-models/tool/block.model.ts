@@ -53,6 +53,10 @@ export class PolicyTool extends PolicyBlock {
         return this;
     }
 
+    public get messageId(): string {
+        return this.properties.messageId;
+    }
+
     constructor(config: IModuleConfig, parent: PolicyBlock | null) {
         super(config, parent);
     }
@@ -604,16 +608,31 @@ export class PolicyTool extends PolicyBlock {
 
     public newTool(template?: any): PolicyTool {
         if (template) {
-            const config = JSON.parse(JSON.stringify(template.config));
-            config.id = GenerateUUIDv4();
-            config.tag = this.getNewTag('Tool');
-            config.blockType = BlockType.Tool;
-            config.defaultActive = true;
+            const config: any = {
+                id: GenerateUUIDv4(),
+                tag: this.getNewTag('Tool'),
+                blockType: BlockType.Tool,
+                defaultActive: true,
+                hash: template.hash,
+                messageId: template.messageId
+            }
             const tool = TemplateUtils.buildBlock(config, null, this) as PolicyTool;
             this._tagMap[tool.tag] = tool;
             return tool;
         } else {
             throw new Error('Invalid tool config');
         }
+    }
+
+    public getAllTools(): Set<string> {
+        const map = new Set<string>();
+        if (this._allTools) {
+            for (const tool of this._allTools) {
+                if (tool.messageId) {
+                    map.add(tool.messageId);
+                }
+            }
+        }
+        return map;
     }
 }

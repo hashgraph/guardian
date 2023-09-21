@@ -451,6 +451,7 @@ export async function toolsAPI(): Promise<void> {
                     'description',
                     'topicId',
                     'hash',
+                    'messageId'
                 ]
             });
             const ids = tools.map(t => t.topicId);

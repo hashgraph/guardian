@@ -1,5 +1,5 @@
-import { Policy, DatabaseServer } from '@guardian/common';
-import { PolicyType } from '@guardian/interfaces';
+import { DatabaseServer, Policy } from '@guardian/common';
+import { ISchema, PolicyType } from '@guardian/interfaces';
 import { BlockValidator } from './block-validator';
 import { ModuleValidator } from './module-validator';
 import { ISerializedErrors } from './interfaces/serialized-errors.interface';
@@ -25,7 +25,7 @@ export class PolicyValidator {
      */
     private readonly modules: Map<string, ModuleValidator>;
     /**
-     * Tools map
+     * Modules map
      * @private
      */
     private readonly tools: Map<string, ToolValidator>;
@@ -40,20 +40,10 @@ export class PolicyValidator {
      */
     private readonly permissions: string[];
     /**
-     * Database instance
-     * @private
-     */
-    private readonly databaseServer: DatabaseServer;
-    /**
      * Topic Id
      * @private
      */
     private readonly topicId: string;
-    /**
-     * DryRun Id
-     * @private
-     */
-    private readonly dryRun: string;
     /**
      * Policy Tokens
      * @private
@@ -69,6 +59,11 @@ export class PolicyValidator {
      * @private
      */
     private readonly policyGroups: any[];
+    /**
+     * Schemas
+     * @private
+     */
+    private readonly schemas: Map<string, ISchema>;
 
     constructor(policy: Policy) {
         this.blocks = new Map();
@@ -77,23 +72,46 @@ export class PolicyValidator {
         this.tags = new Map();
         this.errors = [];
         this.permissions = ['NO_ROLE', 'ANY_ROLE', 'OWNER'];
-        if (policy.status === PolicyType.DRY_RUN) {
-            this.dryRun = policy.id.toString();
-        } else {
-            this.dryRun = null;
-        }
         this.topicId = policy.topicId;
-        this.databaseServer = new DatabaseServer(this.dryRun);
         this.policyTokens = policy.policyTokens || [];
         this.policyTopics = policy.policyTopics || [];
         this.policyGroups = policy.policyGroups;
+        this.schemas = new Map();
+    }
+
+    /**
+     * Register components
+     * @param policy
+     */
+    public async build(policy: Policy): Promise<boolean> {
+        if (!policy || (typeof policy !== 'object')) {
+            this.addError('Invalid policy config');
+            return false;
+        } else {
+            this.addPermissions(policy.policyRoles);
+            await this.registerBlock(policy.config);
+            await this.registerSchemas();
+            return true;
+        }
+    }
+
+    /**
+     * Register schemas
+     * @param block
+     */
+    private async registerSchemas(): Promise<void> {
+        const schemas = await DatabaseServer.getSchemas({ topicId: this.topicId });
+        this.schemas.clear();
+        for (const schema of schemas) {
+            this.schemas.set(schema.iri, schema);
+        }
     }
 
     /**
      * Register new block
      * @param block
      */
-    public registerBlock(block: any): BlockValidator {
+    private async registerBlock(block: any): Promise<BlockValidator> {
         let validator: BlockValidator;
         if (block.id) {
             if (this.blocks.has(block.id)) {
@@ -116,14 +134,20 @@ export class PolicyValidator {
         }
         if (block.blockType === 'module') {
             const module = new ModuleValidator(block);
+            await module.build(block);
             this.modules.set(block.id, module);
         } else if (block.blockType === 'tool') {
             const tool = new ToolValidator(block);
-            this.tools.set(block.id, tool);  
+            const policyTool = await DatabaseServer.getTool({
+                messageId: block.messageId,
+                hash: block.hash
+            });
+            await tool.build(policyTool);
+            this.tools.set(block.id, tool);
         } else {
             if (Array.isArray(block.children)) {
                 for (const child of block.children) {
-                    const v = this.registerBlock(child);
+                    const v = await this.registerBlock(child);
                     validator.addChild(v);
                 }
             }
@@ -135,14 +159,14 @@ export class PolicyValidator {
      * Add permission
      * @param role
      */
-    public addPermission(role: string): void {
+    private addPermission(role: string): void {
         this.permissions.push(role);
     }
 
     /**
      * Clear
      */
-    public clear() {
+    public clear(): void {
         for (const item of this.modules.values()) {
             item.clear();
         }
@@ -157,7 +181,7 @@ export class PolicyValidator {
     /**
      * Validate
      */
-    public async validate() {
+    public async validate(): Promise<void> {
         for (const item of this.modules.values()) {
             await item.validate();
         }
@@ -279,8 +303,8 @@ export class PolicyValidator {
      * Get Schema
      * @param iri
      */
-    public async getSchema(iri: string): Promise<any> {
-        return await this.databaseServer.getSchemaByIRI(iri, this.topicId);
+    public async getSchema(iri: string): Promise<ISchema> {
+        return this.schemas.get(iri);
     }
 
     /**
@@ -296,7 +320,7 @@ export class PolicyValidator {
      * @param tokenId
      */
     public async getToken(tokenId: string): Promise<any> {
-        return await this.databaseServer.getToken(tokenId);
+        return await new DatabaseServer(null).getToken(tokenId);
     }
 
     /**

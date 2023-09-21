@@ -233,6 +233,10 @@ export class PolicyConfigurationComponent implements OnInit {
         });
     }
 
+    public ngOnDestroy(): void {
+        this.storage.destroy();
+    }
+
     private loadData(): void {
         this.errors = [];
         this.errorsCount = -1;
@@ -804,7 +808,7 @@ export class PolicyConfigurationComponent implements OnInit {
 
         const search = this.searchModule ? this.searchModule.toLowerCase() : null;
         for (const tool of this.tools) {
-            tool.data = `tool:${tool.uuid}`;
+            tool.data = `tool:${tool.messageId}`;
             tool.search = (tool.name || '').toLowerCase();
 
             if (search && tool.search.indexOf(search) === -1) {
@@ -817,8 +821,14 @@ export class PolicyConfigurationComponent implements OnInit {
     private updateTemporarySchemas(): void {
         if (this.tools) {
             const temporarySchemas: any[] = [];
-            for (const schema of this.schemas) {
-                temporarySchemas.push({ ...schema, status: 'TOOL' });
+            const toolIds = this.rootTemplate.getAllTools();
+            for (const messageId of toolIds) {
+                const menu = this.tools.find(f => f.messageId === messageId);
+                if(menu) {
+                    for (const schema of menu.schemas) {
+                        temporarySchemas.push({ ...schema, status: 'TOOL' });
+                    }
+                }
             }
             this.openFolder.setTemporarySchemas(temporarySchemas);
         } else {
@@ -867,6 +877,7 @@ export class PolicyConfigurationComponent implements OnInit {
         } else {
             this.changeDetector.detectChanges();
         }
+        this.updateTemporarySchemas();
     }
 
     private createNewBlock(parent: any, type: string) {
@@ -1122,6 +1133,7 @@ export class PolicyConfigurationComponent implements OnInit {
             this.currentBlock.addChild(tool);
         }
         this.updateMenuStatus();
+        this.updateTemporarySchemas();
     }
 
     public savePolicy() {

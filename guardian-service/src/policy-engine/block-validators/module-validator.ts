@@ -5,6 +5,7 @@ import { BlockValidator } from './block-validator';
 import { IModulesErrors } from './interfaces/modules-errors.interface';
 import { ISchema } from '@guardian/interfaces';
 import { DatabaseServer } from '@guardian/common';
+import { ToolValidator } from './tool-validator';
 
 /**
  * Module Validator
@@ -25,6 +26,11 @@ export class ModuleValidator {
      * @private
      */
     private readonly blocks: Map<string, BlockValidator>;
+    /**
+     * Modules map
+     * @private
+     */
+    private readonly tools: Map<string, ToolValidator>;
     /**
      * Common errors
      * @private
@@ -66,9 +72,10 @@ export class ModuleValidator {
      */
     private readonly variables: any[];
 
-    constructor(module: any) {
-        this.uuid = module.id;
+    constructor(moduleConfig: any) {
+        this.uuid = moduleConfig.id;
         this.blocks = new Map();
+        this.tools = new Map();
         this.tags = new Map();
         this.errors = [];
         this.permissions = ['NO_ROLE', 'ANY_ROLE', 'OWNER'];
@@ -78,22 +85,89 @@ export class ModuleValidator {
         this.tokenTemplates = [];
         this.groups = [];
         this.variables = [];
+    }
 
-        this.registerVariables(module);
-        if (Array.isArray(module.children)) {
-            for (const child of module.children) {
-                this.registerBlock(child);
+    /**
+     * Register components
+     * @param moduleConfig
+     */
+    public async build(moduleConfig: any): Promise<boolean> {
+        if (!moduleConfig || (typeof moduleConfig !== 'object')) {
+            this.addError('Invalid module config');
+            return false;
+        } else {
+            this.registerVariables(moduleConfig);
+            if (Array.isArray(moduleConfig.children)) {
+                for (const child of moduleConfig.children) {
+                    await this.registerBlock(child);
+                }
             }
+            await this.registerSchemas();
+            return true;
         }
+    }
+
+    /**
+     * Register schemas
+     * @param block
+     */
+    private async registerSchemas(): Promise<void> {
+        return;
     }
 
     /**
      * Register new block
      * @param block
      */
-    public registerVariables(module: any): void {
-        if (Array.isArray(module.variables)) {
-            for (const variable of module.variables) {
+    private async registerBlock(block: any): Promise<BlockValidator> {
+        let validator: BlockValidator;
+        if (block.id) {
+            if (this.blocks.has(block.id)) {
+                validator = this.blocks.get(block.id);
+                this.errors.push(`UUID ${block.id} already exist`);
+            } else {
+                validator = new BlockValidator(block, this);
+                this.blocks.set(block.id, validator);
+            }
+        } else {
+            validator = new BlockValidator(block, this);
+            this.errors.push(`UUID is not set`);
+        }
+        if (block.tag) {
+            if (this.tags.has(block.tag)) {
+                this.tags.set(block.tag, 2);
+            } else {
+                this.tags.set(block.tag, 1);
+            }
+        }
+        if (block.blockType === 'module') {
+            this.errors.push(`The module can't contain another module`);
+        } else if (block.blockType === 'tool') {
+            const tool = new ToolValidator(block);
+            const policyTool = await DatabaseServer.getTool({
+                messageId: block.messageId,
+                hash: block.hash
+            });
+            await tool.build(policyTool);
+            this.tools.set(block.id, tool);
+        } else {
+            if (Array.isArray(block.children)) {
+                for (const child of block.children) {
+                    const v = await this.registerBlock(child);
+                    validator.addChild(v);
+                }
+            }
+        }
+        return validator;
+    }
+
+    /**
+     * Register new block
+     * @param block
+     */
+    private registerVariables(moduleConfig: any): void {
+        if (Array.isArray(moduleConfig.variables)) {
+            for (const variable of moduleConfig.variables) {
                 this.variables.push(variable);
                 switch (variable.type) {
                     case 'Schema': {
@@ -122,8 +196,8 @@ export class ModuleValidator {
             }
         }
         const events = new Map<string, number>();
-        if (Array.isArray(module.inputEvents)) {
-            for (const e of module.inputEvents) {
+        if (Array.isArray(moduleConfig.inputEvents)) {
+            for (const e of moduleConfig.inputEvents) {
                 if (events.has(e.name)) {
                     events.set(e.name, 2);
                 } else {
@@ -131,8 +205,8 @@ export class ModuleValidator {
                 }
             }
         }
-        if (Array.isArray(module.outputEvents)) {
-            for (const e of module.outputEvents) {
+        if (Array.isArray(moduleConfig.outputEvents)) {
+            for (const e of moduleConfig.outputEvents) {
                 if (events.has(e.name)) {
                     events.set(e.name, 2);
                 } else {
@@ -148,59 +222,27 @@ export class ModuleValidator {
     }
 
     /**
-     * Register new block
-     * @param block
+     * Clear
      */
-    public registerBlock(block: any): BlockValidator {
-        let validator: BlockValidator;
-        if (block.id) {
-            if (this.blocks.has(block.id)) {
-                validator = this.blocks.get(block.id);
-                this.errors.push(`UUID ${block.id} already exist`);
-            } else {
-                validator = new BlockValidator(block, this);
-                this.blocks.set(block.id, validator);
-            }
-        } else {
-            validator = new BlockValidator(block, this);
-            this.errors.push(`UUID is not set`);
+    public clear() {
+        for (const item of this.tools.values()) {
+            item.clear();
         }
-        if (block.tag) {
-            if (this.tags.has(block.tag)) {
-                this.tags.set(block.tag, 2);
-            } else {
-                this.tags.set(block.tag, 1);
-            }
+        for (const item of this.blocks.values()) {
+            item.clear();
         }
-        if (Array.isArray(block.children)) {
-            for (const child of block.children) {
-                const v = this.registerBlock(child);
-                validator.addChild(v);
-            }
-        }
-        return validator;
     }
 
     /**
-     * Get permission
-     * @param permission
+     * Validate
      */
-    public getPermission(permission: string): string {
-        if (this.permissions.indexOf(permission) !== -1) {
-            return permission;
+    public async validate() {
+        for (const item of this.tools.values()) {
+            await item.validate();
         }
-        return null
-    }
-
-    /**
-     * Tag Count
-     * @param tag
-     */
-    public tagCount(tag: string): number {
-        if (this.tags.has(tag)) {
-            return this.tags.get(tag);
+        for (const item of this.blocks.values()) {
+            await item.validate();
         }
-        return 0;
     }
 
     /**
@@ -216,6 +258,83 @@ export class ModuleValidator {
             }
         }
         return null;
+    }
+
+    /**
+     * Tag Count
+     * @param tag
+     */
+    public tagCount(tag: string): number {
+        if (this.tags.has(tag)) {
+            return this.tags.get(tag);
+        }
+        return 0;
+    }
+
+    /**
+     * Add Error
+     * @param error
+     */
+    public addError(error: string): void {
+        this.errors.push(error);
+    }
+
+    /**
+     * Get serialized errors
+     */
+    public getSerializedErrors(): IModulesErrors {
+        let valid = !this.errors.length;
+        const toolsErrors = [];
+        for (const item of this.tools.values()) {
+            const result = item.getSerializedErrors();
+            toolsErrors.push(result);
+            valid = valid && result.isValid;
+        }
+        const blocksErrors = [];
+        for (const item of this.blocks.values()) {
+            const result = item.getSerializedErrors();
+            blocksErrors.push(result);
+            valid = valid && result.isValid;
+        }
+        for (const item of this.errors) {
+            blocksErrors.push({
+                id: null,
+                name: null,
+                errors: [item],
+                isValid: false
+            });
+        }
+        const commonErrors = this.errors.slice();
+        return {
+            errors: commonErrors,
+            blocks: blocksErrors,
+            tools: toolsErrors,
+            id: this.uuid,
+            isValid: valid
+        }
+    }
+
+    /**
+     * Get permission
+     * @param permission
+     */
+    public getPermission(permission: string): string {
+        if (this.permissions.indexOf(permission) !== -1) {
+            return permission;
+        }
+        return null
+    }
+
+    /**
+     * Get Group
+     * @param iri
+     */
+    public getGroup(group: string): any {
+        if (this.groups.indexOf(group) === -1) {
+            return null;
+        } else {
+            return {};
+        }
     }
 
     /**
@@ -271,64 +390,6 @@ export class ModuleValidator {
             return null;
         } else {
             return {};
-        }
-    }
-
-    /**
-     * Get Group
-     * @param iri
-     */
-    public getGroup(group: string): any {
-        if (this.groups.indexOf(group) === -1) {
-            return null;
-        } else {
-            return {};
-        }
-    }
-
-    /**
-     * Clear
-     */
-    public clear() {
-        for (const item of this.blocks.values()) {
-            item.clear();
-        }
-    }
-
-    /**
-     * Validate
-     */
-    public async validate() {
-        for (const item of this.blocks.values()) {
-            await item.validate();
-        }
-    }
-
-    /**
-     * Get serialized errors
-     */
-    public getSerializedErrors(): IModulesErrors {
-        let valid = !this.errors.length;
-        const blocksErrors = [];
-        for (const item of this.blocks.values()) {
-            const result = item.getSerializedErrors()
-            blocksErrors.push(result);
-            valid = valid && result.isValid;
-        }
-        for (const item of this.errors) {
-            blocksErrors.push({
-                id: null,
-                name: null,
-                errors: [item],
-                isValid: false
-            });
-        }
-        const commonErrors = this.errors.slice();
-        return {
-            id: this.uuid,
-            isValid: valid,
-            errors: commonErrors,
-            blocks: blocksErrors
         }
     }
 }
