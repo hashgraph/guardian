@@ -10,7 +10,7 @@ import { TokenVariables } from '../variables/token-variables';
 import { TopicVariables } from '../variables/topic-variables';
 import { IBlockConfig } from '../interfaces/block-config.interface';
 import { IEventConfig } from '../interfaces/event-config.interface';
-import { BlockType, GenerateUUIDv4, Schema } from '@guardian/interfaces';
+import { BlockType, GenerateUUIDv4, Schema, Token } from '@guardian/interfaces';
 import { PolicyBlock } from '../block/block.model';
 import { PolicyEvent } from '../block/block-event.model';
 import { PolicyFolder, PolicyItem } from '../interfaces/types';
@@ -33,6 +33,7 @@ export class PolicyModule extends PolicyBlock {
     protected _schemas: Schema[];
     protected _tools: any[];
     protected _temporarySchemas: Schema[];
+    protected _tokens!: Token[];
     protected _name!: string;
     protected _description!: string;
 
@@ -367,6 +368,9 @@ export class PolicyModule extends PolicyBlock {
         this.updateVariables();
     }
 
+    public setTokens(tokens: Token[]): void {
+    }
+
     public setTemporarySchemas(schemas: Schema[]): void {
         this._temporarySchemas = schemas;
         this.updateVariables();
@@ -635,5 +639,24 @@ export class PolicyModule extends PolicyBlock {
             }
         }
         return map;
+    }
+
+    public getEnvironments(): any {
+        return {
+            schemas: this._schemas,
+            tools: this._tools,
+            tokens: this._tokens,
+            temporarySchemas: this._temporarySchemas
+        }
+    }
+
+    public setEnvironments(env: any): void {
+        if(env) {
+            this._schemas = env.schemas;
+            this._tools = env.tools;
+            this._tokens = env.tokens;
+            this._temporarySchemas = env.temporarySchemas;
+            this.updateVariables();
+        }
     }
 }

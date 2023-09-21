@@ -1,5 +1,5 @@
 import { DatabaseServer, Policy } from '@guardian/common';
-import { ISchema, PolicyType } from '@guardian/interfaces';
+import { ISchema, ModuleStatus, PolicyType } from '@guardian/interfaces';
 import { BlockValidator } from './block-validator';
 import { ModuleValidator } from './module-validator';
 import { ISerializedErrors } from './interfaces/serialized-errors.interface';
@@ -139,6 +139,7 @@ export class PolicyValidator {
         } else if (block.blockType === 'tool') {
             const tool = new ToolValidator(block);
             const policyTool = await DatabaseServer.getTool({
+                status: ModuleStatus.PUBLISHED,
                 messageId: block.messageId,
                 hash: block.hash
             });

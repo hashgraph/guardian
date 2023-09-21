@@ -3,7 +3,7 @@
  */
 import { BlockValidator } from './block-validator';
 import { IModulesErrors } from './interfaces/modules-errors.interface';
-import { ISchema } from '@guardian/interfaces';
+import { ISchema, ModuleStatus } from '@guardian/interfaces';
 import { DatabaseServer } from '@guardian/common';
 import { ToolValidator } from './tool-validator';
 
@@ -145,6 +145,7 @@ export class ModuleValidator {
         } else if (block.blockType === 'tool') {
             const tool = new ToolValidator(block);
             const policyTool = await DatabaseServer.getTool({
+                status: ModuleStatus.PUBLISHED,
                 messageId: block.messageId,
                 hash: block.hash
             });

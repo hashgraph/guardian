@@ -1,4 +1,4 @@
-import { BlockType, GenerateUUIDv4, ModuleStatus, PolicyType, Schema } from '@guardian/interfaces';
+import { BlockType, GenerateUUIDv4, ModuleStatus, PolicyType, Schema, Token } from '@guardian/interfaces';
 import { IBlockConfig } from '../interfaces/block-config.interface';
 import { IModuleVariables } from '../interfaces/module-variables.interface';
 import { PolicyBlock } from '../block/block.model';
@@ -20,13 +20,13 @@ export class ModuleTemplate {
     public readonly messageId!: string;
     public readonly topicId!: string;
 
-    private _config!: PolicyModule;
-    private _changed: boolean;
-
     public readonly isDraft: boolean = false;
     public readonly isPublished: boolean = false;
     public readonly isPublishError: boolean = false;
     public readonly readonly: boolean = false;
+
+    private _config!: PolicyModule;
+    private _changed: boolean;
 
     constructor(template?: any) {
         this._changed = false;
@@ -116,9 +116,11 @@ export class ModuleTemplate {
         if (!config) {
             config = { blockType: 'module' };
         }
+        const last = this._config?.getEnvironments();
         this._config = TemplateUtils.buildBlock(config, null, this) as PolicyModule;
         this._config.isRoot = true;
         this._config.refresh();
+        this._config.setEnvironments(last);
     }
 
     public rebuild(object?: any) {
@@ -219,7 +221,11 @@ export class ModuleTemplate {
 
     public setTools(tools: any[]): void {
         this._config.setTools(tools);
-    }   
+    }
+
+    public setTokens(tokens: Token[]): void {
+        this._config.setTokens(tokens);
+    }
 
     public refreshData() {
         this._config.refreshData();

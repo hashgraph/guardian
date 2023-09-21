@@ -19,13 +19,13 @@ export class ToolTemplate {
     public readonly messageId!: string;
     public readonly topicId!: string;
 
-    private _config!: PolicyTool;
-    private _changed: boolean;
-
     public readonly isDraft: boolean = false;
     public readonly isPublished: boolean = false;
     public readonly isPublishError: boolean = false;
     public readonly readonly: boolean = false;
+
+    private _config!: PolicyTool;
+    private _changed: boolean;
 
     constructor(template?: any) {
         this._changed = false;
@@ -115,9 +115,11 @@ export class ToolTemplate {
         if (!config) {
             config = { blockType: 'tool' };
         }
+        const last = this._config?.getEnvironments();
         this._config = TemplateUtils.buildBlock(config, null, this) as PolicyTool;
         this._config.isRoot = true;
         this._config.refresh();
+        this._config.setEnvironments(last);
     }
 
     public rebuild(object?: any) {
@@ -221,7 +223,7 @@ export class ToolTemplate {
     }   
 
     public setTokens(tokens: Token[]): void {
-
+        this._config.setTokens(tokens);
     }
 
     public refreshData() {

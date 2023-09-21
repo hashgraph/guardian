@@ -827,7 +827,7 @@ export class PolicyConfigurationComponent implements OnInit {
             const toolIds = this.rootTemplate.getAllTools();
             for (const messageId of toolIds) {
                 const menu = this.tools.find(f => f.messageId === messageId);
-                if(menu) {
+                if (menu) {
                     for (const schema of menu.schemas) {
                         temporarySchemas.push({ ...schema, status: 'TOOL' });
                     }
@@ -978,6 +978,7 @@ export class PolicyConfigurationComponent implements OnInit {
     private setErrors(results: any) {
         const blocks = results.blocks || [];
         const modules = results.modules || [];
+        const tools = results.tools || [];
         const commonErrors = results.errors || [];
         this.errors = [];
         for (const block of blocks) {
@@ -990,6 +991,16 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.errors.push(module);
             }
             for (const block of module.blocks) {
+                if (!block.isValid) {
+                    this.errors.push(block);
+                }
+            }
+        }
+        for (const tool of tools) {
+            if (!tool.isValid) {
+                this.errors.push(tool);
+            }
+            for (const block of tool.blocks) {
                 if (!block.isValid) {
                     this.errors.push(block);
                 }

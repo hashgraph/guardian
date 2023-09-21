@@ -1,7 +1,7 @@
 import { DatabaseServer, PolicyTool } from '@guardian/common';
 import { BlockValidator } from './block-validator';
 import { IModulesErrors } from './interfaces/modules-errors.interface';
-import { ISchema } from '@guardian/interfaces';
+import { ISchema, ModuleStatus } from '@guardian/interfaces';
 
 /**
  * Policy Validator
@@ -151,6 +151,7 @@ export class ToolValidator {
         } else if (block.blockType === 'tool') {
             const tool = new ToolValidator(block);
             const policyTool = await DatabaseServer.getTool({
+                status: ModuleStatus.PUBLISHED,
                 messageId: block.messageId,
                 hash: block.hash
             });

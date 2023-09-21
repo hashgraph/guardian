@@ -1,7 +1,7 @@
 import { DatabaseServer, PolicyTool } from '@guardian/common';
 import { BlockValidator } from './block-validator';
 import { IModulesErrors } from './interfaces/modules-errors.interface';
-import { ISchema } from '@guardian/interfaces';
+import { ISchema, ModuleStatus } from '@guardian/interfaces';
 
 /**
  * Policy Validator
@@ -93,8 +93,9 @@ export class ToolValidator {
      * @param tool
      */
     public async build(tool: PolicyTool): Promise<boolean> {
+        console.debug('--- TOOL BUILD ---', tool);
         if (!tool || (typeof tool !== 'object')) {
-            this.addError('Invalid tool config');
+            this.errors.push('Invalid tool config');
             return false;
         } else {
             this.topicId = tool.topicId;
@@ -151,6 +152,7 @@ export class ToolValidator {
         } else if (block.blockType === 'tool') {
             const tool = new ToolValidator(block);
             const policyTool = await DatabaseServer.getTool({
+                status: ModuleStatus.PUBLISHED,
                 messageId: block.messageId,
                 hash: block.hash
             });
@@ -283,6 +285,8 @@ export class ToolValidator {
      * Get serialized errors
      */
     public getSerializedErrors(): IModulesErrors {
+        console.debug('--- TOOL Serialized ---')
+
         let valid = !this.errors.length;
         const blocksErrors = [];
         for (const item of this.blocks.values()) {
@@ -300,10 +304,10 @@ export class ToolValidator {
         }
         const commonErrors = this.errors.slice();
         return {
-            id: this.uuid,
-            isValid: valid,
             errors: commonErrors,
-            blocks: blocksErrors
+            blocks: blocksErrors,
+            id: this.uuid,
+            isValid: valid
         }
     }
 
