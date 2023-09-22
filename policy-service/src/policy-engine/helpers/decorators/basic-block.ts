@@ -410,6 +410,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 } else if (user) {
                     users[user.did] = user;
                 }
+
                 for (const item of Object.values(users)) {
                     PolicyComponentsUtils.BlockUpdateFn(this as any, item);
                 }

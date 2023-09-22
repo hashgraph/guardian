@@ -93,7 +93,6 @@ export class ToolValidator {
      * @param tool
      */
     public async build(tool: PolicyTool): Promise<boolean> {
-        console.debug('--- TOOL BUILD ---', tool);
         if (!tool || (typeof tool !== 'object')) {
             this.errors.push('Invalid tool config');
             return false;
@@ -116,6 +115,13 @@ export class ToolValidator {
      * @param block
      */
     private async registerSchemas(): Promise<void> {
+        const db = new DatabaseServer(null);
+        for (const [key, value] of this.schemas) {
+            if (typeof value === 'string') {
+                const baseSchema = await db.getSchemaByIRI(value);
+                this.schemas.set(key, baseSchema);
+            }
+        }
         const schemas = await DatabaseServer.getSchemas({ topicId: this.topicId });
         for (const schema of schemas) {
             this.schemas.set(schema.iri, schema);
@@ -285,8 +291,6 @@ export class ToolValidator {
      * Get serialized errors
      */
     public getSerializedErrors(): IModulesErrors {
-        console.debug('--- TOOL Serialized ---')
-
         let valid = !this.errors.length;
         const blocksErrors = [];
         for (const item of this.blocks.values()) {
@@ -346,12 +350,17 @@ export class ToolValidator {
      * Get Schema
      * @param iri
      */
-    public async getSchema(iri: string): Promise<any> {
-        let r = this.schemas.get(iri);
-        if (typeof r === 'string') {
-            r = await new DatabaseServer(null).getSchemaByIRI(r);
+    public getSchema(iri: string): ISchema {
+        if (this.schemas.has(iri)) {
+            return this.schemas.get(iri);
         }
-        return r;
+        for (const item of this.tools.values()) {
+            const schema = item.getSchema(iri);
+            if (schema) {
+                schema;
+            }
+        }
+        return null;
     }
 
     /**

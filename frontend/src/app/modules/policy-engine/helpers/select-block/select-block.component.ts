@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Inject, Input, Output, SimpleChanges } from '@angular/core';
 import { RegisteredService } from '../../services/registered.service';
-import { PolicyBlock } from '../../structures';
+import { PolicyBlock, PolicyFolder } from '../../structures';
 
 /**
  * SelectBlock.
@@ -11,7 +11,7 @@ import { PolicyBlock } from '../../structures';
     styleUrls: ['./select-block.component.css']
 })
 export class SelectBlock {
-    @Input('root') root!: any;
+    @Input('root') root!: PolicyFolder;
     @Input('blocks') blocks!: PolicyBlock[];
     @Input('readonly') readonly!: boolean;
     @Input('value') value: string | PolicyBlock | null | undefined;
@@ -29,31 +29,26 @@ export class SelectBlock {
     }
 
     onChange() {
-        if (this.value && typeof this.value === 'object') {
-            this.text = this.value === this.root ? 'Module' : this.value.localTag;
-        } else {
-            this.text = this.value;
-        }
+        this.text = this.getText(this.value);
         this.valueChange.emit(this.value);
         this.change.emit();
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (this.value && typeof this.value === 'object') {
-            this.text = this.value === this.root ? 'Module' : this.value.localTag;
-        } else {
-            this.text = this.value;
-        }
+        this.text = this.getText(this.value);
         setTimeout(() => {
             this.data = [];
             if (this.blocks) {
                 for (const block of this.blocks) {
                     const search = (block.tag || '').toLocaleLowerCase();
                     const root = block === this.root;
+                    const name = this.getText(block);
+                    const icon = this.getIcon(block);
                     this.data.push({
-                        name: root ? 'Module' : block.localTag,
+                        name,
                         value: this.type === 'object' ? block : block.tag,
-                        icon: this.registeredService.getIcon(block.blockType),
+                        icon: icon.icon,
+                        svg: icon.svg,
                         root,
                         search
                     });
@@ -61,6 +56,43 @@ export class SelectBlock {
             }
             this.update();
         }, 0);
+    }
+
+    private getText(value: string | PolicyBlock | null | undefined): string {
+        if (value && typeof value === 'object') {
+            if (value === this.root) {
+                if (this.root.isModule) {
+                    return 'Module';
+                } else if (this.root.isTool) {
+                    return 'Tool';
+                } else {
+                    return 'Policy';
+                }
+            } else {
+                return value.localTag;
+            }
+        } if (value) {
+            return value;
+        } else {
+            return '';
+        }
+    }
+
+    private getIcon(value: PolicyBlock) {
+        if (value === this.root) {
+            if (this.root.isModule) {
+                return { icon: 'policy-module', svg: true };
+            } else if (this.root.isTool) {
+                return { icon: 'handyman', svg: false };
+            } else {
+                return { icon: 'article', svg: false };
+            }
+        } else {
+            return {
+                icon: this.registeredService.getIcon(value.blockType),
+                svg: false
+            };
+        }
     }
 
     public onSearch(event: any) {

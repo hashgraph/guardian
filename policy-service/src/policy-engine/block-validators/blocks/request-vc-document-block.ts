@@ -26,12 +26,12 @@ export class RequestVcDocumentBlock {
                 return;
             }
 
-            if (await validator.schemaNotExist(ref.options.schema)) {
+            if (validator.schemaNotExist(ref.options.schema)) {
                 validator.addError(`Schema with id "${ref.options.schema}" does not exist`);
                 return;
             }
             if (ref.options.presetSchema) {
-                if (await validator.schemaNotExist(ref.options.presetSchema)) {
+                if (validator.schemaNotExist(ref.options.presetSchema)) {
                     validator.addError(`Schema with id "${ref.options.presetSchema}" does not exist`);
                     return;
                 }

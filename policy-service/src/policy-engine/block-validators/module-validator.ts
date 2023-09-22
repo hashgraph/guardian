@@ -112,7 +112,13 @@ export class ModuleValidator {
      * @param block
      */
     private async registerSchemas(): Promise<void> {
-        return;
+        const db = new DatabaseServer(null);
+        for (const [key, value] of this.schemas) {
+            if (typeof value === 'string') {
+                const baseSchema = await db.getSchemaByIRI(value);
+                this.schemas.set(key, baseSchema);
+            }
+        }
     }
 
     /**
@@ -350,12 +356,17 @@ export class ModuleValidator {
      * Get Schema
      * @param iri
      */
-    public async getSchema(iri: string): Promise<any> {
-        let r = this.schemas.get(iri);
-        if (typeof r === 'string') {
-            r = await new DatabaseServer(null).getSchemaByIRI(r);
+    public getSchema(iri: string): ISchema {
+        if (this.schemas.has(iri)) {
+            return this.schemas.get(iri);
         }
-        return r;
+        for (const item of this.tools.values()) {
+            const schema = item.getSchema(iri);
+            if (schema) {
+                schema;
+            }
+        }
+        return null;
     }
 
     /**

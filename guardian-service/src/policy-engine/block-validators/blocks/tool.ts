@@ -22,11 +22,15 @@ export class ToolBlock {
                 } else {
                     const value = ref.options[variable.name];
                     switch (variable.type) {
-                        case 'Schema':
-                            if (await validator.schemaNotExist(value)) {
+                        case 'Schema': {
+                            const schema = validator.getSchema(value);
+                            if (!schema) {
                                 validator.addError(`Schema with id "${value}" does not exist`);
+                            } else if (!validator.compareSchema(variable.baseSchema, schema)) {
+                                validator.addError(`Schema is not supported`);
                             }
                             break;
+                        }
                         case 'Token':
                             if (await validator.tokenNotExist(value)) {
                                 validator.addError(`Token with id ${value} does not exist`);

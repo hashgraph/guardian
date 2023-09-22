@@ -256,8 +256,8 @@ export class BlockValidator {
      * Get Schema
      * @param iri
      */
-    public async getSchema(iri: string): Promise<ISchema> {
-        return await this.validator.getSchema(iri);
+    public getSchema(iri: string): ISchema {
+        return this.validator.getSchema(iri);
     }
 
     /**
@@ -272,8 +272,8 @@ export class BlockValidator {
      * Schema not exist
      * @param iri
      */
-    public async schemaNotExist(iri: string): Promise<boolean> {
-        return !await this.validator.getSchema(iri);
+    public schemaNotExist(iri: string): boolean {
+        return !this.validator.getSchema(iri);
     }
 
     /**

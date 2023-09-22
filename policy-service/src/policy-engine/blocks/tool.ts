@@ -74,6 +74,9 @@ export class ToolBlock {
                 return;
             }
         }
+        if (event.inputType === PolicyInputEventType.RefreshEvent) {
+            ref.updateBlock(event.data, event.user, ref.tag);
+        }
     }
     /**
      * Get variables

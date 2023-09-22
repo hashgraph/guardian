@@ -1,7 +1,7 @@
 import { EventActor, EventCallback, PolicyBlockFullArgumentList, PolicyBlockMap, PolicyInputEventType, PolicyLink, PolicyOutputEventType, PolicyTagMap } from '@policy-engine/interfaces';
-import { GenerateUUIDv4, PolicyEvents, PolicyType } from '@guardian/interfaces';
+import { GenerateUUIDv4, ModuleStatus, PolicyEvents, PolicyType } from '@guardian/interfaces';
 import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock, IPolicyInstance, IPolicyInterfaceBlock, ISerializedBlock, ISerializedBlockExtend } from './policy-engine.interface';
-import { DatabaseServer, Policy } from '@guardian/common';
+import { DatabaseServer, Policy, PolicyTool } from '@guardian/common';
 import { STATE_KEY } from '@policy-engine/helpers/constants';
 import { GetBlockByType } from '@policy-engine/blocks/get-block-by-type';
 import { GetOtherOptions } from '@policy-engine/helpers/get-other-options';
@@ -222,7 +222,6 @@ export class PolicyComponentsUtils {
      * @param target
      * @param eventType
      * @param fn
-     * @constructor
      */
     public static RegisterAction(
         target: IPolicyBlock,
@@ -258,7 +257,6 @@ export class PolicyComponentsUtils {
      * @param targetBlock
      * @param inputName
      * @param actor
-     * @constructor
      */
     public static CreateLink<T>(
         sourceBlock: IPolicyBlock,
@@ -332,7 +330,6 @@ export class PolicyComponentsUtils {
      * @param target
      * @param input
      * @param actor
-     * @constructor
      */
     public static RegisterLink(
         source: IPolicyBlock,
@@ -382,7 +379,6 @@ export class PolicyComponentsUtils {
      * Register new block instance in policy
      * @param policyId
      * @param component
-     * @constructor
      */
     private static RegisterComponent(
         policyId: string,
@@ -432,49 +428,44 @@ export class PolicyComponentsUtils {
      * @param policyId
      * @param block
      * @param parent
+     * @param components
      * @param allInstances
-     * @constructor
      */
-    public static BuildInstance(
+    public static async BuildInstance(
         policy: Policy,
         policyId: string,
         block: ISerializedBlock,
         parent: IPolicyBlock,
         components: ComponentsService,
         allInstances: IPolicyBlock[]
-    ): IPolicyBlock {
-        const { blockType, children, ...params }: ISerializedBlockExtend = block;
-
-        if (parent) {
-            params._parent = parent;
-        }
-
-        let options = params as any;
-        if (options.options) {
-            options = Object.assign(options, options.options);
-        }
+    ): Promise<IPolicyBlock> {
+        const {
+            blockType,
+            options,
+            children,
+            otherOptions
+        } = await PolicyComponentsUtils.GetInstanceParams(block, parent);
         const blockConstructor = GetBlockByType(blockType) as any;
         const blockInstance = new blockConstructor(
-            options.id || PolicyComponentsUtils.GenerateNewUUID(),
+            options.id,
             options.defaultActive,
             options.tag,
             options.permissions,
             options._parent,
-            GetOtherOptions(options as PolicyBlockFullArgumentList),
+            otherOptions,
             components
         );
         blockInstance.setPolicyInstance(policyId, policy);
         blockInstance.setPolicyOwner(policy.owner);
         blockInstance.setTopicId(policy.topicId);
-        blockInstance.setToolId(options._toolId);
 
         PolicyComponentsUtils.RegisterVariables(blockInstance);
 
         allInstances.push(blockInstance);
 
-        if (children && children.length) {
+        if (Array.isArray(children)) {
             for (const child of children) {
-                PolicyComponentsUtils.BuildInstance(
+                await PolicyComponentsUtils.BuildInstance(
                     policy,
                     policyId,
                     child,
@@ -489,20 +480,45 @@ export class PolicyComponentsUtils {
     }
 
     /**
+     * Get block instance options
+     * @param block
+     * @param parent
+     */
+    public static async GetInstanceParams(
+        block: ISerializedBlock,
+        parent: IPolicyBlock
+    ) {
+        const { blockType, children, ...params }: ISerializedBlockExtend = block;
+        if (parent) {
+            params._parent = parent;
+        }
+        let options = params as any;
+        if (options.options) {
+            options = Object.assign(options, options.options);
+        }
+        if (!options.id) {
+            options.id = PolicyComponentsUtils.GenerateNewUUID();
+        }
+
+        const otherOptions = GetOtherOptions(options as PolicyBlockFullArgumentList);
+
+        return { blockType, options, children, otherOptions };
+    }
+
+    /**
      * Build block instances tree
      * @param policy
      * @param policyId
      * @param allInstances
-     * @constructor
      */
-    public static BuildBlockTree(
+    public static async BuildBlockTree(
         policy: Policy,
         policyId: string,
         components: ComponentsService,
     ) {
         const allInstances: IPolicyBlock[] = [];
         const configObject = policy.config as ISerializedBlock;
-        const rootInstance = PolicyComponentsUtils.BuildInstance(
+        const rootInstance = await PolicyComponentsUtils.BuildInstance(
             policy,
             policyId,
             configObject,
@@ -514,11 +530,57 @@ export class PolicyComponentsUtils {
     }
 
     /**
+     * Build block instances tree
+     * @param policy
+     * @param policyId
+     * @param allInstances
+     */
+    public static async RegeneratePolicy(
+        policy: Policy
+    ) {
+        const configObject = policy.config as ISerializedBlock;
+        const tools: PolicyTool[] = [];
+        await PolicyComponentsUtils.RegeneratePolicyComponents(configObject, '', tools);
+        policy.config = configObject;
+        return { policy, tools };
+    }
+
+    /**
+     * Build block instances tree
+     * @param policy
+     * @param policyId
+     * @param allInstances
+     */
+    public static async RegeneratePolicyComponents(
+        block: any,
+        parentTag: string,
+        tools: PolicyTool[]
+    ): Promise<void> {
+        if (parentTag && block.tag) {
+            block.tag = `${parentTag}:${block.tag}`;
+        }
+        if (block.blockType === 'tool') {
+            parentTag = block.tag;
+            const tool = await DatabaseServer.getTool({
+                status: ModuleStatus.PUBLISHED,
+                messageId: block.messageId,
+                hash: block.hash
+            });
+            block.children = tool?.config?.children || [];
+            tools.push(tool);
+        }
+        if (Array.isArray(block.children)) {
+            for (const child of block.children) {
+                await PolicyComponentsUtils.RegeneratePolicyComponents(child, parentTag, tools);
+            }
+        }
+    }
+
+    /**
      * Register policy instance
      *
      * @param policyId
      * @param policy
-     * @constructor
      */
     public static async RegisterPolicyInstance(
         policyId: string,
@@ -541,7 +603,6 @@ export class PolicyComponentsUtils {
     /**
      * Register block instances tree
      * @param allInstances
-     * @constructor
      */
     public static async RegisterBlockTree(allInstances: IPolicyBlock[]) {
         for (const instance of allInstances) {
@@ -571,7 +632,6 @@ export class PolicyComponentsUtils {
     /**
      * Unregister blocks
      * @param policyId
-     * @constructor
      */
     public static async UnregisterBlocks(policyId: string) {
         const blockList =
@@ -592,7 +652,6 @@ export class PolicyComponentsUtils {
     /**
      * Unregister blocks
      * @param policyId
-     * @constructor
      */
     public static async UnregisterPolicy(policyId: string) {
         PolicyComponentsUtils.PolicyById.delete(policyId);
@@ -601,7 +660,6 @@ export class PolicyComponentsUtils {
     /**
      * Register default events
      * @param instance
-     * @constructor
      * @private
      */
     private static async RegisterDefaultEvent(instance: IPolicyBlock) {
@@ -615,11 +673,10 @@ export class PolicyComponentsUtils {
             );
         }
         if (instance.parent?.blockClassName === 'ContainerBlock') {
-            const parent = instance.parent as IPolicyContainerBlock;
             PolicyComponentsUtils.RegisterLink(
                 instance,
                 PolicyOutputEventType.RefreshEvent,
-                parent,
+                instance.parent as IPolicyContainerBlock,
                 PolicyInputEventType.RefreshEvent,
                 EventActor.EventInitiator
             );
@@ -628,7 +685,7 @@ export class PolicyComponentsUtils {
             PolicyComponentsUtils.RegisterLink(
                 instance,
                 PolicyOutputEventType.ReleaseEvent,
-                instance.parent,
+                instance.parent as IPolicyContainerBlock,
                 PolicyInputEventType.ReleaseEvent,
                 EventActor.EventInitiator
             );
@@ -638,7 +695,6 @@ export class PolicyComponentsUtils {
     /**
      * Register custom events
      * @param instance
-     * @constructor
      * @private
      */
     private static async RegisterCustomEvent(instance: IPolicyBlock) {

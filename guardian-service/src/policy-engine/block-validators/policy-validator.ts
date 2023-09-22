@@ -244,8 +244,6 @@ export class PolicyValidator {
      * Get serialized errors
      */
     public getSerializedErrors(): ISerializedErrors {
-        console.debug('--- Policy Serialized ---')
-
         const modulesErrors = [];
         for (const item of this.modules.values()) {
             modulesErrors.push(item.getSerializedErrors());
@@ -306,8 +304,17 @@ export class PolicyValidator {
      * Get Schema
      * @param iri
      */
-    public async getSchema(iri: string): Promise<ISchema> {
-        return this.schemas.get(iri);
+    public getSchema(iri: string): ISchema {
+        if (this.schemas.has(iri)) {
+            return this.schemas.get(iri);
+        }
+        for (const item of this.tools.values()) {
+            const schema = item.getSchema(iri);
+            if (schema) {
+                return schema;
+            }
+        }
+        return null;
     }
 
     /**

@@ -254,8 +254,8 @@ export class BlockTreeGenerator extends NatsService {
      */
     public async generate(
         policy: Policy,
-        skipRegistration?: boolean,
-        policyValidator?: PolicyValidator
+        skipRegistration: boolean,
+        policyValidator: PolicyValidator
     ): Promise<IPolicyBlock | { type: 'error', message: string }> {
         if (!policy || (typeof policy !== 'object')) {
             throw new Error('Policy was not exist');
@@ -264,8 +264,20 @@ export class BlockTreeGenerator extends NatsService {
         const policyId: string = policy.id?.toString() || PolicyComponentsUtils.GenerateNewUUID();
 
         try {
+            if (await policyValidator.build(policy)) {
+                await policyValidator.validate();
+            }
+
+            const { tools } = await PolicyComponentsUtils.RegeneratePolicy(policy);
+
             const components = new ComponentsService(policy, policyId);
-            const { rootInstance, allInstances } = PolicyComponentsUtils.BuildBlockTree(policy, policyId, components);
+            await components.registerPolicy(policy);
+            for (const tool of tools) {
+                await components.registerTool(tool);
+            }
+
+            const { rootInstance, allInstances } =
+                await PolicyComponentsUtils.BuildBlockTree(policy, policyId, components);
 
             if (!skipRegistration) {
                 await PolicyComponentsUtils.RegisterPolicyInstance(policyId, policy);
@@ -274,14 +286,10 @@ export class BlockTreeGenerator extends NatsService {
             }
             await this.initPolicyEvents(policyId, rootInstance);
 
-            await this.validate(policy, policyValidator);
-
             return rootInstance;
         } catch (error) {
             new Logger().error(`Error build policy ${error}`, ['POLICY', policy.name, policyId.toString()]);
-            if (policyValidator) {
-                policyValidator.addError(typeof error === 'string' ? error : error.message)
-            }
+            policyValidator.addError(typeof error === 'string' ? error : error.message);
             return {
                 type: 'error',
                 message: error.message
@@ -289,26 +297,6 @@ export class BlockTreeGenerator extends NatsService {
         }
     }
 
-    /**
-     * Validate policy by config
-     * @private
-     * @param policy
-     */
-    public async validate(
-        policy: Policy,
-        policyValidator?: PolicyValidator
-    ): Promise<ISerializedErrors> {
-        if(!policyValidator) {
-            policyValidator = new PolicyValidator(policy);
-        }
-        const valid = await policyValidator.build(policy);
-        if(valid) {
-            await policyValidator.validate();
-            return policyValidator.getSerializedErrors();
-        } else {
-            return policyValidator.getSerializedErrors();
-        }
-    }
 
     /**
      * Generate policy instance from config

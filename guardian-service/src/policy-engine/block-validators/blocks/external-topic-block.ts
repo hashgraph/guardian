@@ -21,7 +21,7 @@ export class ExternalTopicBlock {
                     validator.addError('Option "schema" must be a string');
                     return;
                 }
-                if (await validator.schemaNotExist(ref.options.schema)) {
+                if (validator.schemaNotExist(ref.options.schema)) {
                     validator.addError(`Schema with id "${ref.options.schema}" does not exist`);
                     return;
                 }

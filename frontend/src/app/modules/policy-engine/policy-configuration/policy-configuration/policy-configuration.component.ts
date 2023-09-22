@@ -198,21 +198,6 @@ export class PolicyConfigurationComponent implements OnInit {
         this.policyTemplate = new PolicyTemplate();
         this.openFolder = this.policyTemplate;
         this.rootTemplate = this.policyTemplate;
-
-        this.matIconRegistry.addSvgIconLiteral('policy-module', this.domSanitizer.bypassSecurityTrustHtml(`
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                <path style="fill:#e1933c" d="M 12,0.83007812 3.0507812,6 12,11.160156 20.949219,6 Z" />
-                <path style="fill:#24bfe1" d="m 21.673828,7.25 -8.96289,5.169922 V 22.75 l 8.96289,-5.199219 z" />
-                <path style="fill:#9e57f5" d="M 2.3261719,7.25 V 17.550781 L 11.279297,22.75 V 12.419922 Z" />
-            </svg>
-        `));
-        this.matIconRegistry.addSvgIconLiteral('policy-tool', this.domSanitizer.bypassSecurityTrustHtml(`
-            <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 24 24">
-                <path style="fill:#c37a29" d="M 12,0.83007812 3.0507812,6 12,11.160156 15.266636,9.2766003 11.8147,7.2852641 14.3213,5.878 17.736428,7.8525082 20.949219,6 Z" />
-                <path style="fill:#c37a29" d="M 21.673828,7.25 18.5,9.076 v 4 c -0.806467,0.526344 -1.661691,0.973915 -2.5,1.447 l -4.61e-4,-4 -3.288601,1.896922 V 22.75 l 8.96289,-5.199219 z" />
-                <path style="fill:#c37a29" d="M 11.279297,22.75 V 12.419922 L 2.3261719,7.25 V 17.550781 M 5.58267,15.641 7.96751,17.09534 v 1.89518 L 5.58267,17.53363 Z" />
-            </svg>
-        `));
     }
 
     public ngOnInit() {
