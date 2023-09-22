@@ -120,7 +120,7 @@ export async function validateAndPublish(uuid: string, owner: string, notifier: 
  */
 export async function validateModel(module: PolicyModule): Promise<ISerializedErrors> {
     const moduleValidator = new ModuleValidator(module.config);
-    await moduleValidator.build(module);
+    await moduleValidator.build(module.config);
     await moduleValidator.validate();
     return moduleValidator.getSerializedErrors();
 }

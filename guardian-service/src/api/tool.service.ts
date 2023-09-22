@@ -153,6 +153,7 @@ export async function validateAndPublish(id: string, owner: string, notifier: IN
  */
 export async function validateTool(tool: PolicyTool): Promise<ISerializedErrors> {
     const toolValidator = new ToolValidator(tool.config);
+    await toolValidator.build(tool);
     await toolValidator.validate();
     return toolValidator.getSerializedErrors();
 }
