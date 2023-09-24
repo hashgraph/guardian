@@ -129,6 +129,24 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
         );
     }
 
+    redirect(urlString: string) {
+        const url = new URL(urlString);
+        const path = [url.pathname];
+        const queryParams: any = {};
+        for (const [key, value] of url.searchParams.entries()) {
+            if (queryParams.hasOwnProperty(key)) {
+                if (Array.isArray(queryParams[key])) {
+                    queryParams[key].push(value);
+                } else {
+                    queryParams[key] = [queryParams[key], value];
+                }
+            } else {
+                queryParams[key] = value;
+            }
+        }
+        this.router.navigate(path, {queryParams});
+    }
+
     handleResult(result: any) {
         if (this.inputTaskId) {
             this.completed.emit(result);
@@ -223,15 +241,17 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                     replaceUrl: true,
                 });
                 break;
+            // @ts-ignore
             case TaskAction.CREATE_SCHEMA:
                 localStorage.removeItem('restoreSchemaData');
-                this.router.navigate(['schemas'],  {
-                    replaceUrl: true,
-                });
-                break;
+            case TaskAction.CREATE_SCHEMA:
             case TaskAction.PUBLISH_SCHEMA:
             case TaskAction.IMPORT_SCHEMA_FILE:
             case TaskAction.IMPORT_SCHEMA_MESSAGE:
+                if (this.last) {
+                    this.redirect(this.last);
+                    return;
+                }
                 this.router.navigate(['schemas'],  {
                     replaceUrl: true,
                 });
@@ -244,24 +264,12 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             this.error.emit(error);
             return;
         }
+
         if (this.last) {
-            const url = new URL(this.last);
-            const path = [url.pathname];
-            const queryParams: any = {};
-            for (const [key, value] of url.searchParams.entries()) {
-                if (queryParams.hasOwnProperty(key)) {
-                    if (Array.isArray(queryParams[key])) {
-                        queryParams[key].push(value);
-                    } else {
-                        queryParams[key] = [queryParams[key], value];
-                    }
-                } else {
-                    queryParams[key] = value;
-                }
-            }
-            this.router.navigate(path, {queryParams});
+            this.redirect(this.last);
             return;
         }
+
         switch (this.action) {
             case TaskAction.RESTORE_USER_PROFILE:
             case TaskAction.CONNECT_USER:
