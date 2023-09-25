@@ -304,3 +304,8 @@ a {
     border-left: 1px solid #dddddd;
     padding-left: 10px;
 }
+
+.toolbar-btn[readonly="true"] {
+    background: #b5b5b5;
+    cursor: not-allowed;
+}

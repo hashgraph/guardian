@@ -398,11 +398,6 @@ export async function toolsAPI(): Promise<void> {
             }
 
             const { pageIndex, pageSize, owner } = msg;
-            const filter: any = {}
-            if (owner) {
-                filter.owner = owner;
-            }
-
             const otherOptions: any = {};
             const _pageSize = parseInt(pageSize, 10);
             const _pageIndex = parseInt(pageIndex, 10);
@@ -414,9 +409,25 @@ export async function toolsAPI(): Promise<void> {
                 otherOptions.orderBy = { createDate: 'DESC' };
                 otherOptions.limit = 100;
             }
-
-            const [items, count] = await DatabaseServer.getToolsAndCount(filter, otherOptions);
-
+            otherOptions.fields = [
+                'id',
+                'creator',
+                'owner',
+                'name',
+                'description',
+                'uuid',
+                'topicId',
+                'messageId',
+                'hash',
+                'status'
+            ];
+            const [items, count] = await DatabaseServer.getToolsAndCount({
+                $or: [{
+                    owner: owner
+                }, {
+                    status: ModuleStatus.PUBLISHED
+                }]
+            }, otherOptions);
             return new MessageResponse({ items, count });
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);

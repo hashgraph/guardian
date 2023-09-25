@@ -97,6 +97,7 @@ export class SchemaConfigComponent implements OnInit {
     public policyNameByTopic: { [x: string]: string } = {};
     public moduleNameByTopic: { [x: string]: string } = {};
     public toolNameByTopic: { [x: string]: string } = {};
+    public readonlyByTopic: { [x: string]: boolean } = {};
     public tagSchemas: Schema[] = [];
     public tagEntity = TagType.Schema;
     public policies: any[] = [];
@@ -117,6 +118,7 @@ export class SchemaConfigComponent implements OnInit {
         private router: Router,
         private dialog: MatDialog
     ) {
+        this.readonlyByTopic = {};
     }
 
     public get isSystem(): boolean {
@@ -149,6 +151,18 @@ export class SchemaConfigComponent implements OnInit {
         );
     }
 
+    public get canCreate(): boolean {
+        return (this.isAny);
+    }
+
+    public get canImport(): boolean {
+        return (this.isPolicy || this.isModule || this.isTool);
+    }
+
+    public get readonly(): boolean {
+        return this.readonlyByTopic[this.currentTopic];
+    }
+
     ngOnInit() {
         const type = this.route.snapshot.queryParams['type'];
         const topic = this.route.snapshot.queryParams['topic'];
@@ -170,7 +184,7 @@ export class SchemaConfigComponent implements OnInit {
             case 'system':
                 return SchemaType.System;
             default:
-                return SchemaType.System;
+                return SchemaType.Policy;
         }
     }
 
@@ -187,7 +201,7 @@ export class SchemaConfigComponent implements OnInit {
             case SchemaType.System:
                 return systemSchemaColumns;
             default:
-                return systemSchemaColumns;
+                return policySchemaColumns;
         }
     }
 
@@ -204,7 +218,7 @@ export class SchemaConfigComponent implements OnInit {
             case SchemaType.System:
                 return SchemaCategory.SYSTEM;
             default:
-                return SchemaCategory.SYSTEM;
+                return SchemaCategory.POLICY;
         }
     }
 
@@ -233,7 +247,11 @@ export class SchemaConfigComponent implements OnInit {
             case SchemaType.System:
                 return '';
             default:
-                return '';
+                if (!this.policyNameByTopic[this.currentTopic]) {
+                    return '';
+                } else {
+                    return this.currentTopic;
+                }
         }
     }
 
@@ -270,6 +288,8 @@ export class SchemaConfigComponent implements OnInit {
                 this.tagSchemas = SchemaHelper.map(tagSchemas);
 
                 //Filters
+                this.readonlyByTopic = {};
+
                 const policies: any[] = value[2] || [];
                 this.policyNameByTopic = {};
                 this.policies = [];
@@ -277,6 +297,7 @@ export class SchemaConfigComponent implements OnInit {
                     if (policy.topicId) {
                         this.policyNameByTopic[policy.topicId] = policy.name;
                         this.policies.push(policy);
+                        this.readonlyByTopic[policy.topicId] = policy.creator !== this.owner;
                     }
                 }
 
@@ -287,6 +308,7 @@ export class SchemaConfigComponent implements OnInit {
                     if (module.topicId) {
                         this.moduleNameByTopic[module.topicId] = module.name;
                         this.modules.push(module);
+                        this.readonlyByTopic[module.topicId] = module.creator !== this.owner;
                     }
                 }
 
@@ -297,6 +319,7 @@ export class SchemaConfigComponent implements OnInit {
                     if (tool.topicId) {
                         this.toolNameByTopic[tool.topicId] = tool.name;
                         this.tools.push(tool);
+                        this.readonlyByTopic[tool.topicId] = tool.creator !== this.owner;
                     }
                 }
 
@@ -342,20 +365,20 @@ export class SchemaConfigComponent implements OnInit {
         this.currentTopic = this.getTopicId();
         let loader: Observable<HttpResponse<ISchema[]>>;
         switch (this.type) {
+            case SchemaType.System: {
+                loader = this.schemaService.getSystemSchemas(this.pageIndex, this.pageSize);
+                break;
+            }
             case SchemaType.Tag: {
                 loader = this.tagsService.getSchemas(this.pageIndex, this.pageSize);
                 break;
             }
             case SchemaType.Policy:
             case SchemaType.Module:
-            case SchemaType.Tool: {
+            case SchemaType.Tool:
+            default: {
                 const category = this.getCategory();
                 loader = this.schemaService.getSchemasByPage(category, this.currentTopic, this.pageIndex, this.pageSize);
-                break;
-            }
-            case SchemaType.System:
-            default: {
-                loader = this.schemaService.getSystemSchemas(this.pageIndex, this.pageSize);
                 break;
             }
         }
@@ -378,6 +401,7 @@ export class SchemaConfigComponent implements OnInit {
         this.schemasMap = {};
         for (let i = 0; i < schemas.length; i++) {
             const schema: any = schemas[i];
+            schema.readonly = this.readonlyByTopic[schema.topicId];
             if (this.schemasMap[schema.topicId]) {
                 this.schemasMap[schema.topicId].push(schema);
             } else {
@@ -411,6 +435,7 @@ export class SchemaConfigComponent implements OnInit {
         this.pageIndex = 0;
         this.router.navigate(['/schemas'], {
             queryParams: {
+                type: this.type,
                 topic: this.currentTopic || 'all'
             }
         });
@@ -432,7 +457,9 @@ export class SchemaConfigComponent implements OnInit {
         this.pageIndex = 0;
         this.pageSize = 100;
         this.currentTopic = '';
-        this.router.navigate(['/schemas'], { queryParams: { type: this.type } });
+        this.router.navigate(['/schemas'], { queryParams: { 
+            type: this.type 
+        } });
         this.loadSchemas();
     }
 
@@ -466,6 +493,15 @@ export class SchemaConfigComponent implements OnInit {
 
         this.loading = true;
         switch (this.type) {
+            case SchemaType.System: {
+                this.schemaService.createSystemSchemas(schema).subscribe((data) => {
+                    localStorage.removeItem('restoreSchemaData');
+                    this.loadSchemas();
+                }, (e) => {
+                    this.loadError(e);
+                });
+                break;
+            }
             case SchemaType.Tag: {
                 this.tagsService.createSchema(schema).subscribe((data) => {
                     localStorage.removeItem('restoreSchemaData');
@@ -477,7 +513,8 @@ export class SchemaConfigComponent implements OnInit {
             }
             case SchemaType.Module:
             case SchemaType.Tool:
-            case SchemaType.Policy: {
+            case SchemaType.Policy:
+            default: {
                 const category = this.getCategory();
                 this.schemaService.pushCreate(category, schema, schema.topicId).subscribe((result) => {
                     const { taskId } = result;
@@ -486,16 +523,6 @@ export class SchemaConfigComponent implements OnInit {
                             last: btoa(location.href)
                         }
                     });
-                }, (e) => {
-                    this.loadError(e);
-                });
-                break;
-            }
-            case SchemaType.System:
-            default: {
-                this.schemaService.createSystemSchemas(schema).subscribe((data) => {
-                    localStorage.removeItem('restoreSchemaData');
-                    this.loadSchemas();
                 }, (e) => {
                     this.loadError(e);
                 });
@@ -531,17 +558,9 @@ export class SchemaConfigComponent implements OnInit {
             }
             case SchemaType.Module:
             case SchemaType.Tool:
-            case SchemaType.Policy: {
-                this.schemaService.update(schema, id).subscribe((data) => {
-                    localStorage.removeItem('restoreSchemaData');
-                    this.loadSchemas();
-                }, (e) => {
-                    this.loadError(e);
-                });
-                break;
-            }
+            case SchemaType.Policy:
             default: {
-                this.schemaService.updateSystemSchema(schema, id).subscribe((data) => {
+                this.schemaService.update(schema, id).subscribe((data) => {
                     localStorage.removeItem('restoreSchemaData');
                     this.loadSchemas();
                 }, (e) => {
@@ -567,7 +586,8 @@ export class SchemaConfigComponent implements OnInit {
             }
             case SchemaType.Module:
             case SchemaType.Tool:
-            case SchemaType.Policy: {
+            case SchemaType.Policy:
+            default: {
                 const category = this.getCategory();
                 this.schemaService.newVersion(category, schema, id).subscribe((result) => {
                     const { taskId } = result;
@@ -580,9 +600,6 @@ export class SchemaConfigComponent implements OnInit {
                     this.loadError(e);
                 });
                 break;
-            }
-            default: {
-                return;
             }
         }
     }
@@ -612,16 +629,9 @@ export class SchemaConfigComponent implements OnInit {
             }
             case SchemaType.Module:
             case SchemaType.Tool:
-            case SchemaType.Policy: {
-                this.schemaService.delete(id).subscribe((data: any) => {
-                    this.loadSchemas();
-                }, (e) => {
-                    this.loadError(e);
-                });
-                break;
-            }
+            case SchemaType.Policy:
             default: {
-                this.schemaService.deleteSystemSchema(id).subscribe((data: any) => {
+                this.schemaService.delete(id).subscribe((data: any) => {
                     this.loadSchemas();
                 }, (e) => {
                     this.loadError(e);
@@ -648,7 +658,8 @@ export class SchemaConfigComponent implements OnInit {
             }
             case SchemaType.Module:
             case SchemaType.Tool:
-            case SchemaType.Policy: {
+            case SchemaType.Policy:
+            default: {
                 this.schemaService.pushPublish(id, version).subscribe((result) => {
                     const { taskId } = result;
                     this.router.navigate(['task', taskId], {
@@ -660,9 +671,6 @@ export class SchemaConfigComponent implements OnInit {
                     this.loadError(e);
                 });
                 break;
-            }
-            default: {
-                return;
             }
         }
     }
@@ -689,7 +697,8 @@ export class SchemaConfigComponent implements OnInit {
             }
             case SchemaType.Module:
             case SchemaType.Tool:
-            case SchemaType.Policy: {
+            case SchemaType.Policy:
+            default: {
                 const category = this.getCategory();
                 this.schemaService.pushImportByMessage(data, topicId).subscribe((result) => {
                     const { taskId } = result;
@@ -702,9 +711,6 @@ export class SchemaConfigComponent implements OnInit {
                     this.loadError(e);
                 });
                 break;
-            }
-            default: {
-                return;
             }
         }
     }
@@ -720,7 +726,8 @@ export class SchemaConfigComponent implements OnInit {
             }
             case SchemaType.Module:
             case SchemaType.Tool:
-            case SchemaType.Policy: {
+            case SchemaType.Policy:
+            default: {
                 const category = this.getCategory();
                 this.schemaService.pushImportByFile(data, topicId).subscribe((result) => {
                     const { taskId } = result;
@@ -734,13 +741,13 @@ export class SchemaConfigComponent implements OnInit {
                 });
                 break;
             }
-            default: {
-                return;
-            }
         }
     }
 
     public onCreateSchemas(): void {
+        if (this.readonly) {
+            return;
+        }
         const dialogRef = this.dialog.open(SchemaDialog, {
             width: '950px',
             panelClass: 'g-dialog',
@@ -874,6 +881,9 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     public onImportSchemas(messageId?: string): void {
+        if (this.readonly) {
+            return;
+        }
         const dialogRef = this.dialog.open(ImportSchemaDialog, {
             width: '500px',
             autoFocus: false,
