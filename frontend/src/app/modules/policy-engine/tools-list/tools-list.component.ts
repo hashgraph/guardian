@@ -43,7 +43,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
         'name',
         'description',
         'topic',
-        'tags',
+        // 'tags',
         'schemas',
         'status',
         'operation',

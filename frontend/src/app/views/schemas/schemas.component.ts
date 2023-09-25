@@ -104,6 +104,7 @@ export class SchemaConfigComponent implements OnInit {
     public policies: any[] = [];
     public modules: any[] = [];
     public tools: any[] = [];
+    public draftTools: any[] = [];
     public allSchemas: any[] = [];
     public columns: string[] = [];
     private schemasMap: { [x: string]: ISchema[] } = {};
@@ -316,11 +317,15 @@ export class SchemaConfigComponent implements OnInit {
                 const tools: any[] = value[4]?.body || [];
                 this.toolNameByTopic = {};
                 this.tools = [];
+                this.draftTools = [];
                 for (const tool of tools) {
                     if (tool.topicId) {
                         this.toolNameByTopic[tool.topicId] = tool.name;
                         this.tools.push(tool);
                         this.readonlyByTopic[tool.topicId] = tool.creator !== this.owner;
+                        if (tool.status !== 'PUBLISHED') {
+                            this.draftTools.push(tool);
+                        }
                     }
                 }
 
@@ -458,9 +463,11 @@ export class SchemaConfigComponent implements OnInit {
         this.pageIndex = 0;
         this.pageSize = 100;
         this.currentTopic = '';
-        this.router.navigate(['/schemas'], { queryParams: { 
-            type: this.type 
-        } });
+        this.router.navigate(['/schemas'], {
+            queryParams: {
+                type: this.type
+            }
+        });
         this.loadSchemas();
     }
 
@@ -760,7 +767,7 @@ export class SchemaConfigComponent implements OnInit {
                 topicId: this.currentTopic,
                 policies: this.policies,
                 modules: this.modules,
-                tools: this.tools
+                tools: this.draftTools
             }
         });
         dialogRef.afterClosed().subscribe(async (schema: Schema | null) => {
@@ -823,7 +830,7 @@ export class SchemaConfigComponent implements OnInit {
                 this.dialog.open(AlertComponent, {
                     data: {
                         type: AlertType.WARN,
-                        text:  `There are some schemas that depend on this schema:\r\n${parents.map((parent) =>
+                        text: `There are some schemas that depend on this schema:\r\n${parents.map((parent) =>
                             SchemaHelper.getSchemaName(
                                 parent.name,
                                 parent.version || parent.sourceVersion,
@@ -833,7 +840,7 @@ export class SchemaConfigComponent implements OnInit {
                     }
                 });
             }
-        }, () => {}, () => {
+        }, () => { }, () => {
             this.loading = false;
         });
     }
