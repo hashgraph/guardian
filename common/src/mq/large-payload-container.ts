@@ -72,7 +72,11 @@ export class LargePayloadContainer {
         this.PROTOCOL = (process.env.DIRECT_MESSAGE_PROTOCOL) ? process.env.DIRECT_MESSAGE_PROTOCOL as any : 'http';
 
         this.objectsMap = new Map();
-        this.logger = new Logger();
+        try {
+            this.logger = new Logger();
+        } catch (e) {
+            console.warn(e.message);
+        }
         this._started = false;
     }
 
@@ -97,7 +101,11 @@ export class LargePayloadContainer {
 
         const server = app.listen(this.PORT, () => {
             this._started = true;
-            this.logger.info(`Large objects server starts on ${this.PORT} port`, [process.env.SERVICE_CHANNEL?.toUpperCase()]);
+            try {
+                this.logger.info(`Large objects server starts on ${this.PORT} port`, [process.env.SERVICE_CHANNEL?.toUpperCase()]);
+            } catch (e) {
+                console.warn(e.message)
+            }
         });
         server.on('error', (error) => {
             if (!this._portGenerated) {
