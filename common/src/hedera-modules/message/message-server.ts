@@ -329,8 +329,11 @@ export class MessageServer {
      * @private
      */
     private async getTopicMessage<T extends Message>(timeStamp: string, type?: MessageType): Promise<T> {
-        const { operatorId, operatorKey, dryRun } = this.clientOptions;
+        if (timeStamp && typeof timeStamp === 'string') {
+            timeStamp = timeStamp.trim();
+        }
 
+        const { operatorId, operatorKey, dryRun } = this.clientOptions;
         const workers = new Workers();
         const { topicId, message } = await workers.addRetryableTask({
             type: WorkerTaskType.GET_TOPIC_MESSAGE,
@@ -369,6 +372,10 @@ export class MessageServer {
 
         if (!topicId) {
             throw new Error(`Invalid Topic Id`);
+        }
+
+        if (timeStamp && typeof timeStamp === 'string') {
+            timeStamp = timeStamp.trim();
         }
 
         const topic = topicId.toString();
@@ -544,9 +551,9 @@ export class MessageServer {
      */
     public async findTopic(messageId: string): Promise<string> {
         try {
-            if (messageId) {
+            if (messageId && typeof messageId === 'string') {
+                const timeStamp = messageId.trim();
                 const { operatorId, operatorKey, dryRun } = this.clientOptions;
-
                 const workers = new Workers();
                 const { topicId } = await workers.addRetryableTask({
                     type: WorkerTaskType.GET_TOPIC_MESSAGE,
@@ -554,7 +561,7 @@ export class MessageServer {
                         operatorId,
                         operatorKey,
                         dryRun,
-                        timeStamp: messageId
+                        timeStamp
                     }
                 }, 10);
                 return topicId;
@@ -569,15 +576,17 @@ export class MessageServer {
      * Get messages
      * @param timeStamp
      */
-    public static async getMessage<T extends Message>(timeStamp: string): Promise<T> {
-        const workers = new Workers();
-        const message = await workers.addRetryableTask({
-            type: WorkerTaskType.GET_TOPIC_MESSAGE,
-            data: {
-                timeStamp
-            }
-        }, 10);
+    public static async getMessage<T extends Message>(messageId: string): Promise<T> {
         try {
+            if (!messageId || typeof messageId !== 'string') {
+                return null;
+            }
+            const timeStamp = messageId.trim();
+            const workers = new Workers();
+            const message = await workers.addRetryableTask({
+                type: WorkerTaskType.GET_TOPIC_MESSAGE,
+                data: { timeStamp }
+            }, 10);
             const item = MessageServer.fromMessage(message.message);
             item.setAccount(message.payer_account_id);
             item.setIndex(message.sequence_number);
@@ -604,6 +613,9 @@ export class MessageServer {
     ): Promise<T[]> {
         if (!topicId) {
             throw new Error(`Invalid Topic Id`);
+        }
+        if (timeStamp && typeof timeStamp === 'string') {
+            timeStamp = timeStamp.trim();
         }
         const topic = topicId.toString();
         const workers = new Workers();
