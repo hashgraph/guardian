@@ -797,7 +797,7 @@ export class SchemaConfigComponent implements OnInit {
     public onDeleteSchema(element: Schema): void {
         this.loading = true;
         this.schemaService.getSchemaParents(element.id).subscribe((parents) => {
-            if (!Array.isArray(parents) || !parent.length) {
+            if (!Array.isArray(parents) || !parents.length) {
                 const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
                     data: {
                         dialogTitle: 'Delete schema',
@@ -816,13 +816,13 @@ export class SchemaConfigComponent implements OnInit {
                 this.dialog.open(AlertComponent, {
                     data: {
                         type: AlertType.WARN,
-                        text:  `Schema depends on: ${parents.map((parent) =>
+                        text:  `There are some schemas that depend on this schema:\r\n${parents.map((parent) =>
                             SchemaHelper.getSchemaName(
                                 parent.name,
                                 parent.version || parent.sourceVersion,
                                 parent.status
                             )
-                        ).join(', ')}`
+                        ).join('\r\n')}`
                     }
                 });
             }

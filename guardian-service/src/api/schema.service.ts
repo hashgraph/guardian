@@ -327,13 +327,13 @@ export async function schemaAPI(): Promise<void> {
             });
             if (parents.length > 0) {
                 return new MessageError(
-                    `Schema depends on: ${parents.map((parent) =>
+                    `There are some schemas that depend on this schema:\r\n${parents.map((parent) =>
                         SchemaHelper.getSchemaName(
                             parent.name,
                             parent.version || parent.sourceVersion,
                             parent.status
                         )
-                    ).join(', ')}`
+                    ).join('\r\n')}`
                 );
             }
 
