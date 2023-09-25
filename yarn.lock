@@ -900,7 +900,7 @@ __metadata:
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
     "@mikro-orm/core": 5.7.12
-    "@mikro-orm/migrations-mongodb": 5.7.12
+    "@mikro-orm/migrations-mongodb": 5.8.3
     "@mikro-orm/mongodb": 5.7.12
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
@@ -1299,17 +1299,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mikro-orm/migrations-mongodb@npm:5.7.12":
-  version: 5.7.12
-  resolution: "@mikro-orm/migrations-mongodb@npm:5.7.12"
+"@mikro-orm/migrations-mongodb@npm:5.8.3":
+  version: 5.8.3
+  resolution: "@mikro-orm/migrations-mongodb@npm:5.8.3"
   dependencies:
-    "@mikro-orm/mongodb": ~5.7.12
+    "@mikro-orm/mongodb": ~5.8.3
     fs-extra: 11.1.1
-    mongodb: 5.6.0
-    umzug: 3.2.1
+    mongodb: 5.8.1
+    umzug: 3.3.1
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
-  checksum: be1a5c822ee1bc37ba5ce8926884071a4c63bcd55dcdb285fc1ad2775dfd77e8ce3064ea53a4cc511fcbafcc00ad0d0962f41ff1c2aa6b6fbdd8828fc53ee8fa
+  checksum: 74dcfffdcb89a60b8112fed9227213534917c6da02e6f2af1bb65c4a46af209db1b61b62399094338f63493073f0a51185049885cb22096c260476a4c71518fb
   languageName: node
   linkType: hard
 
@@ -1338,12 +1338,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mikro-orm/mongodb@npm:~5.7.12":
-  version: 5.7.14
-  resolution: "@mikro-orm/mongodb@npm:5.7.14"
+"@mikro-orm/mongodb@npm:~5.8.3":
+  version: 5.8.3
+  resolution: "@mikro-orm/mongodb@npm:5.8.3"
   dependencies:
     bson: ^5.4.0
-    mongodb: 5.7.0
+    mongodb: 5.8.1
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
     "@mikro-orm/entity-generator": ^5.0.0
@@ -1359,7 +1359,16 @@ __metadata:
       optional: true
     "@mikro-orm/seeder":
       optional: true
-  checksum: 3faf9cb2c652459bdf04f99819120466ec7ea4a783398a09155073f21f8a905c424a0aa8e178a9081fda838bc83e91647588587a944690bdf229f6c481f4fd00
+  checksum: 25fd28e510394f47156880f8ca9834d051108df12a809101a0f6c0f7e415a60beec60f8d384eb3d9af7a42e211512e71e6affe3616e445bb3cd4567a57291895
+  languageName: node
+  linkType: hard
+
+"@mongodb-js/saslprep@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "@mongodb-js/saslprep@npm:1.1.0"
+  dependencies:
+    sparse-bitfield: ^3.0.3
+  checksum: 1479a43e216734672f8eb1a2a55165b6896841bd00fb5bd645390a24374ef6c29f0f6d19a43618a19b8f1912fcbd2b2cc2210a62361103d1f28dce6852cf31d4
   languageName: node
   linkType: hard
 
@@ -5893,10 +5902,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"emittery@npm:^0.12.1":
-  version: 0.12.1
-  resolution: "emittery@npm:0.12.1"
-  checksum: 64ad8f2c498be09449b232730d07044976ef2662aa891e9ecfb956d70fc1c39a46aa66adb70f2d2a097059c5f923408723f2ec1778b86360268591b403348c1c
+"emittery@npm:^0.13.0":
+  version: 0.13.1
+  resolution: "emittery@npm:0.13.1"
+  checksum: 2b089ab6306f38feaabf4f6f02792f9ec85fc054fda79f44f6790e61bbf6bc4e1616afb9b232e0c5ec5289a8a452f79bfa6d905a6fd64e94b49981f0934001c6
   languageName: node
   linkType: hard
 
@@ -7039,16 +7048,6 @@ __metadata:
     jsonfile: ^6.0.1
     universalify: ^2.0.0
   checksum: dc94ab37096f813cc3ca12f0f1b5ad6744dfed9ed21e953d72530d103cea193c2f81584a39e9dee1bea36de5ee66805678c0dddc048e8af1427ac19c00fffc50
-  languageName: node
-  linkType: hard
-
-"fs-jetpack@npm:^4.3.1":
-  version: 4.3.1
-  resolution: "fs-jetpack@npm:4.3.1"
-  dependencies:
-    minimatch: ^3.0.2
-    rimraf: ^2.6.3
-  checksum: ffe90946ec250c6042569faa2ec7753594779ca0e8a72eea0b76b82574542c50d580974f54c5d6885f44f5719ece173be778cf82dc50ad90f43dab043f4061c9
   languageName: node
   linkType: hard
 
@@ -10599,7 +10598,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"minimatch@npm:^3.0.2, minimatch@npm:^3.0.4, minimatch@npm:^3.1.1, minimatch@npm:^3.1.2":
+"minimatch@npm:^3.0.4, minimatch@npm:^3.1.1, minimatch@npm:^3.1.2":
   version: 3.1.2
   resolution: "minimatch@npm:3.1.2"
   dependencies:
@@ -10886,22 +10885,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mongodb@npm:5.7.0":
-  version: 5.7.0
-  resolution: "mongodb@npm:5.7.0"
+"mongodb@npm:5.8.1":
+  version: 5.8.1
+  resolution: "mongodb@npm:5.8.1"
   dependencies:
+    "@mongodb-js/saslprep": ^1.1.0
     bson: ^5.4.0
     mongodb-connection-string-url: ^2.6.0
-    saslprep: ^1.0.3
     socks: ^2.7.1
   peerDependencies:
-    "@aws-sdk/credential-providers": ^3.201.0
-    "@mongodb-js/zstd": ^1.1.0
-    kerberos: ^2.0.1
+    "@aws-sdk/credential-providers": ^3.188.0
+    "@mongodb-js/zstd": ^1.0.0
+    kerberos: ^1.0.0 || ^2.0.0
     mongodb-client-encryption: ">=2.3.0 <3"
     snappy: ^7.2.2
   dependenciesMeta:
-    saslprep:
+    "@mongodb-js/saslprep":
       optional: true
   peerDependenciesMeta:
     "@aws-sdk/credential-providers":
@@ -10914,7 +10913,7 @@ __metadata:
       optional: true
     snappy:
       optional: true
-  checksum: 16357b6229abac165aecea15a6efa873ec8662a00411ecb9e49853f05a590be31aab63d404486125778eedaafe76d70e84eea682fa89b138decc247f4870d2ec
+  checksum: da8fc05952266f9b636000d74e6c8889306fc287922651526029a61ede3c75f793edb504a02c1f64fec9fea9aa17323bf95eb4902776778a1def5eba07b32b72
   languageName: node
   linkType: hard
 
@@ -12310,7 +12309,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"pony-cause@npm:^2.1.2":
+"pony-cause@npm:^2.1.4":
   version: 2.1.10
   resolution: "pony-cause@npm:2.1.10"
   checksum: 8b61378f213e61056312dc274a1c79980154e9d864f6ad86e0c8b91a50d3ce900d430995ee24147c9f3caa440dfe7d51c274b488d7f033b65b206522536d7217
@@ -13232,7 +13231,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rimraf@npm:^2.6.3, rimraf@npm:^2.7.1":
+"rimraf@npm:^2.7.1":
   version: 2.7.1
   resolution: "rimraf@npm:2.7.1"
   dependencies:
@@ -14722,10 +14721,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"type-fest@npm:^2.18.0, type-fest@npm:^2.19.0":
+"type-fest@npm:^2.19.0":
   version: 2.19.0
   resolution: "type-fest@npm:2.19.0"
   checksum: a4ef07ece297c9fba78fc1bd6d85dff4472fe043ede98bd4710d2615d15776902b595abf62bd78339ed6278f021235fb28a96361f8be86ed754f778973a0d278
+  languageName: node
+  linkType: hard
+
+"type-fest@npm:^3.0.0":
+  version: 3.13.1
+  resolution: "type-fest@npm:3.13.1"
+  checksum: c06b0901d54391dc46de3802375f5579868949d71f93b425ce564e19a428a0d411ae8d8cb0e300d330071d86152c3ea86e744c3f2860a42a79585b6ec2fdae8e
   languageName: node
   linkType: hard
 
@@ -14891,17 +14897,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"umzug@npm:3.2.1":
-  version: 3.2.1
-  resolution: "umzug@npm:3.2.1"
+"umzug@npm:3.3.1":
+  version: 3.3.1
+  resolution: "umzug@npm:3.3.1"
   dependencies:
     "@rushstack/ts-command-line": ^4.12.2
-    emittery: ^0.12.1
-    fs-jetpack: ^4.3.1
+    emittery: ^0.13.0
     glob: ^8.0.3
-    pony-cause: ^2.1.2
-    type-fest: ^2.18.0
-  checksum: 8b118345cf4a9faedfaf2d169deb9a630ff630719c684070d02d0f55b8eb4b8f4b03648d6ff7ff03de03ce2650f05b7dde88c2b4f564b279af153c92e1739f38
+    pony-cause: ^2.1.4
+    type-fest: ^3.0.0
+  checksum: 3a6ce3dca1de1178e46484641cd306fc06bfa8c1313bd2b8e475458c69e11782fd1ea1974b363563ce09af2deca32ac29055949fd1a66713db8222ea490cdf62
   languageName: node
   linkType: hard
 
