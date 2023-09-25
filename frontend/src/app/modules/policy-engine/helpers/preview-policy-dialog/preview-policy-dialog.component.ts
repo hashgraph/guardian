@@ -10,19 +10,17 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
     styleUrls: ['./preview-policy-dialog.component.css']
 })
 export class PreviewPolicyDialog {
-    loading = true;
-    policy!: any;
-    schemas!: string;
-    tokens!: string;
-    policyGroups!: string;
-    newVersions: any[] = [];
-    versionOfTopicId: any;
-    policies!: any[];
-    similar!: any[];
-    module!: any;
-
-    public innerWidth: any;
-    public innerHeight: any;
+    public loading = true;
+    public policy!: any;
+    public schemas!: string;
+    public tokens!: string;
+    public policyGroups!: string;
+    public newVersions: any[] = [];
+    public versionOfTopicId: any;
+    public policies!: any[];
+    public similar!: any[];
+    public module!: any;
+    public tool!: any;
 
     constructor(
         public dialogRef: MatDialogRef<PreviewPolicyDialog>,
@@ -60,15 +58,17 @@ export class PreviewPolicyDialog {
         }
 
         if (data.module) {
-            this.module = data.module.module;
+            this.module = data.module?.module;
+        }
+
+        if (data.tool) {
+            this.tool = data.tool?.tool;
         }
 
         this.policies = data.policies || [];
     }
 
     ngOnInit() {
-        this.innerWidth = window.innerWidth;
-        this.innerHeight = window.innerHeight;
         this.loading = false;
     }
 

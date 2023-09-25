@@ -1,22 +1,33 @@
 <form class="context" [formGroup]="dataForm">
     <div class="block-delimiter" data-label="Schema Properties" style="top:-20px;height:80px;"></div>
 
-    <mat-form-field appearance="outline" [attr.disabled]="type=='version'">
+    <mat-form-field appearance="outline" [attr.disabled]="isNewVersion">
         <mat-label>* Schema Name</mat-label>
         <input matInput type="text" placeholder="Schema Name" formControlName="name" [tabindex]='value ? -1 : 0'>
     </mat-form-field>
 
     <div class="optional-row">
-        <mat-form-field *ngIf="isPolicy" appearance="outline"
-                        [attr.disabled]="type=='version' || type=='edit'">
+        <mat-form-field *ngIf="isPolicy" appearance="outline" [attr.disabled]="isEdit">
             <mat-label>* Policy</mat-label>
             <mat-select formControlName="topicId" tabindex='-1' (selectionChange)="onFilter($event)">
                 <mat-option class="draft-topic-option" [value]="'draft'">No binding</mat-option>
-                <mat-option *ngFor="let policy of policies" [value]="policy.topicId">{{policy.name}}</mat-option>
+                <mat-option *ngFor="let policy of policies" [value]="policy.topicId">
+                    {{policy.name}}
+                </mat-option>
             </mat-select>
         </mat-form-field>
 
-        <mat-form-field *ngIf="isSystem" appearance="outline" [attr.disabled]="type=='version'">
+        <mat-form-field *ngIf="isTool" appearance="outline" [attr.disabled]="isEdit">
+            <mat-label>* Tool</mat-label>
+            <mat-select formControlName="topicId" tabindex='-1' (selectionChange)="onFilter($event)">
+                <mat-option class="draft-topic-option" [value]="'draft'">No binding</mat-option>
+                <mat-option *ngFor="let tool of tools" [value]="tool.topicId">
+                    {{tool.name}}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <mat-form-field *ngIf="isSystem" appearance="outline" [attr.disabled]="isNewVersion">
             <mat-label>For (Entity)</mat-label>
             <mat-select formControlName="entity" tabindex='-1'>
                 <mat-option value="STANDARD_REGISTRY">STANDARD REGISTRY</mat-option>
@@ -24,7 +35,7 @@
             </mat-select>
         </mat-form-field>
 
-        <mat-form-field *ngIf="isPolicy || isModule" [attr.disabled]="type=='version'" appearance="outline">
+        <mat-form-field *ngIf="isPolicy || isModule" [attr.disabled]="isNewVersion" appearance="outline">
             <mat-label>For (Entity)</mat-label>
             <mat-select formControlName="entity" tabindex='-1'>
                 <mat-option value="NONE">Default</mat-option>
@@ -44,7 +55,10 @@
         <div class="fields">
             <div class="custom-fields">
                 <div *ngFor="let field of fields" class="custom-schema-field">
-                    <schema-field-configuration [value]="field" [readonly]="true" [extended]="extended">
+                    <schema-field-configuration 
+                        [value]="field" 
+                        [readonly]="true" 
+                        [extended]="extended">
                     </schema-field-configuration>
                 </div>
             </div>
@@ -59,9 +73,15 @@
                 <div class="re-order-handler" cdkDragHandle>
                     <mat-icon>drag_handle</mat-icon>
                 </div>
-                <schema-field-configuration [form]="dataForm" [field]="field" [types]="types"
-                    [private]="dataForm.value?.entity === 'EVC'" [measureTypes]="measureTypes"
-                    [schemaTypes]="schemaTypes" [extended]="extended" (remove)="onRemove(field)">
+                <schema-field-configuration 
+                    [form]="dataForm" 
+                    [field]="field" 
+                    [types]="types"
+                    [private]="dataForm.value?.entity === 'EVC'" 
+                    [measureTypes]="measureTypes"
+                    [schemaTypes]="schemaTypes" 
+                    [extended]="extended" 
+                    (remove)="onRemove(field)">
                 </schema-field-configuration>
             </div>
         </div>
@@ -95,11 +115,11 @@
                         <span class="condition-label" *ngIf="condition.field?.value">=</span>
 
                         <mat-form-field appearance="outline" *ngIf="isConditionType1(condition)">
-                            <mat-label>{{condition.field.value.controlRequired.value ? "* Field value" :
-                                "Field value"}}</mat-label>
+                            <mat-label>
+                                {{condition.field.value.controlRequired.value ? "* Field value" : "Field value"}}
+                            </mat-label>
                             <input matInput placeholder="Field value" [formControl]="condition.fieldValue">
                         </mat-form-field>
-
 
                         <mat-form-field *ngIf="isConditionType2(condition)"
                             class="example-full-width required-form-field" appearance="outline">
@@ -135,15 +155,23 @@
 
                     <p class="condition-label">THEN</p>
                     <div class="condition-container" *ngIf="condition.thenControls">
-                        <div class="custom-fields" cdkDropList [cdkDropListData]="condition.thenControls"
-                            (cdkDropListDropped)="drop($event)" [cdkDropListAutoScrollDisabled]>
+                        <div class="custom-fields" 
+                            cdkDropList 
+                            [cdkDropListData]="condition.thenControls"
+                            (cdkDropListDropped)="drop($event)" 
+                            [cdkDropListAutoScrollDisabled]>
                             <div *ngFor="let conditionField of condition.thenControls" cdkDragLockAxis="y" cdkDrag
                                 class="custom-schema-field">
                                 <div class="re-order-handler" cdkDragHandle>
                                     <mat-icon>drag_handle</mat-icon>
                                 </div>
-                                <schema-field-configuration [form]="dataForm" [field]="conditionField" [types]="types"
-                                    [measureTypes]="measureTypes" [schemaTypes]="schemaTypes" [extended]="extended"
+                                <schema-field-configuration 
+                                    [form]="dataForm" 
+                                    [field]="conditionField" 
+                                    [types]="types"
+                                    [measureTypes]="measureTypes" 
+                                    [schemaTypes]="schemaTypes" 
+                                    [extended]="extended"
                                     (remove)="onConditionFieldRemove(condition, conditionField, 'then')">
                                 </schema-field-configuration>
                             </div>
@@ -157,15 +185,23 @@
 
                     <p class="condition-label">ELSE</p>
                     <div class="condition-container" *ngIf="condition.elseControls">
-                        <div class="custom-fields" cdkDropList [cdkDropListData]="condition.elseControls"
-                            (cdkDropListDropped)="drop($event)" [cdkDropListAutoScrollDisabled]>
+                        <div class="custom-fields" 
+                            cdkDropList 
+                            [cdkDropListData]="condition.elseControls"
+                            (cdkDropListDropped)="drop($event)" 
+                            [cdkDropListAutoScrollDisabled]>
                             <div *ngFor="let conditionField of condition.elseControls" cdkDragLockAxis="y" cdkDrag
                                 class="custom-schema-field">
                                 <div class="re-order-handler" cdkDragHandle>
                                     <mat-icon>drag_handle</mat-icon>
                                 </div>
-                                <schema-field-configuration [form]="dataForm" [field]="conditionField" [types]="types"
-                                    [measureTypes]="measureTypes" [schemaTypes]="schemaTypes" [extended]="extended"
+                                <schema-field-configuration 
+                                    [form]="dataForm" 
+                                    [field]="conditionField" 
+                                    [types]="types"
+                                    [measureTypes]="measureTypes" 
+                                    [schemaTypes]="schemaTypes" 
+                                    [extended]="extended"
                                     (remove)="onConditionFieldRemove(condition, conditionField, 'else')">
                                 </schema-field-configuration>
                             </div>

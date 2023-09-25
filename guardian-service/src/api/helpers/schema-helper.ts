@@ -12,7 +12,7 @@ import path from 'path';
 import { readJSON } from 'fs-extra';
 import { DatabaseServer, MessageAction, MessageServer, Schema as SchemaCollection, SchemaConverterUtils, SchemaMessage, TopicConfig, TopicHelper, Users, } from '@guardian/common';
 import { INotifier } from '@helpers/notifier';
-import { importTag } from '@api/tag.service';
+import { importTag } from '@api/helpers/tag-import-export-helper';
 
 /**
  * Import Result
@@ -323,11 +323,13 @@ export async function sendSchemaMessage(
 
 /**
  * Check parent schema and create new with tags
+ * @param category
  * @param newSchema
  * @param guardians
  * @param owner
  */
 export async function createSchemaAndArtifacts(
+    category: SchemaCategory,
     newSchema: any,
     owner: string,
     notifier: INotifier
@@ -348,7 +350,7 @@ export async function createSchemaAndArtifacts(
     delete newSchema._id;
     delete newSchema.id;
     delete newSchema.status;
-    newSchema.category = SchemaCategory.POLICY;
+    newSchema.category = category || SchemaCategory.POLICY;
     newSchema.readonly = false;
     newSchema.system = false;
 

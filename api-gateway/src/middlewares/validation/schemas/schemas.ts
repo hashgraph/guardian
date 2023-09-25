@@ -5,34 +5,120 @@ import { IsIn, IsNotEmpty, IsString } from 'class-validator';
 import { UserRole } from '@guardian/interfaces';
 
 export const schemaSchema = () => {
-  const {messageId} = fieldsValidation
-  return yup.object({
-    body: yup.object({
-      messageId
-    }),
-  });
+    const { messageId } = fieldsValidation
+    return yup.object({
+        body: yup.object({
+            messageId
+        }),
+    });
 }
 
 export const systemEntitySchema = () => {
-  const {name, entity} = fieldsValidation
-  return yup.object({
-    body: yup.object({
-      name, entity
-    }),
-  });
+    const { name, entity } = fieldsValidation
+    return yup.object({
+        body: yup.object({
+            name, entity
+        }),
+    });
 }
 
 export class SystemSchemaDTO {
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  name: string;
+    @ApiProperty()
+    @IsString()
+    @IsNotEmpty()
+    name: string;
 
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  @IsIn([UserRole.STANDARD_REGISTRY, UserRole.USER])
-  entity: string;
+    @ApiProperty()
+    @IsString()
+    @IsNotEmpty()
+    @IsIn([UserRole.STANDARD_REGISTRY, UserRole.USER])
+    entity: string;
 
-  [key: string]: any
+    [key: string]: any
+}
+
+export class SchemaDTO {
+    @ApiProperty()
+    @IsString()
+    @IsNotEmpty()
+    id: string;
+
+    @ApiProperty()
+    @IsString()
+    @IsNotEmpty()
+    name: string;
+
+    @ApiProperty()
+    @IsString()
+    description: string;
+
+    @ApiProperty()
+    @IsString()
+    @IsNotEmpty()
+    entity: string;
+
+    @ApiProperty()
+    @IsString()
+    @IsNotEmpty()
+    document: string;
+
+    @ApiProperty()
+    @IsString()
+    uuid: string;
+
+    @ApiProperty()
+    @IsString()
+    iri: string;
+
+    @ApiProperty()
+    @IsString()
+    hash: string;
+
+    @ApiProperty()
+    @IsString()
+    status: string;
+
+    @ApiProperty()
+    @IsString()
+    topicId: string;
+
+    @ApiProperty()
+    @IsString()
+    version: string;
+
+    @ApiProperty()
+    @IsString()
+    owner: string;
+
+    @ApiProperty()
+    @IsString()
+    messageId: string;
+}
+
+export class ExportSchemaDTO {
+    @ApiProperty()
+    @IsString()
+    @IsNotEmpty()
+    id: string;
+
+    @ApiProperty()
+    @IsString()
+    @IsNotEmpty()
+    name: string;
+
+    @ApiProperty()
+    @IsString()
+    description: string;
+
+    @ApiProperty()
+    @IsString()
+    version: string;
+
+    @ApiProperty()
+    @IsString()
+    owner: string;
+
+    @ApiProperty()
+    @IsString()
+    messageId: string;
 }

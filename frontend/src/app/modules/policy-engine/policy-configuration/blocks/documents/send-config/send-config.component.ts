@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { IModuleVariables, PolicyBlockModel, TopicVariables } from '../../../../structures';
+import { IModuleVariables, PolicyBlock, TopicVariables } from '../../../../structures';
 
 /**
  * Settings for block of 'sendToGuardian' type.
@@ -11,12 +11,12 @@ import { IModuleVariables, PolicyBlockModel, TopicVariables } from '../../../../
     encapsulation: ViewEncapsulation.Emulated
 })
 export class SendConfigComponent implements OnInit {
-    @Input('block') currentBlock!: PolicyBlockModel;
+    @Input('block') currentBlock!: PolicyBlock;
     @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();
 
     private moduleVariables!: IModuleVariables | null;
-    private item!: PolicyBlockModel;
+    private item!: PolicyBlock;
     
     propHidden: any = {
         main: false,
@@ -40,7 +40,7 @@ export class SendConfigComponent implements OnInit {
         this.load(this.currentBlock);
     }
 
-    load(block: PolicyBlockModel) {
+    load(block: PolicyBlock) {
         this.moduleVariables = block.moduleVariables;
         this.item = block;
         this.properties = block.properties;

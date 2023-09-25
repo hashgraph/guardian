@@ -41,7 +41,7 @@ export class CalculateMathVariables {
                     validator.addError('Option "sourceSchema" must be a string');
                     return;
                 }
-                if (await validator.schemaNotExist(ref.options.sourceSchema)) {
+                if (validator.schemaNotExist(ref.options.sourceSchema)) {
                     validator.addError(`Schema with id "${ref.options.sourceSchema}" does not exist`);
                     return;
                 }

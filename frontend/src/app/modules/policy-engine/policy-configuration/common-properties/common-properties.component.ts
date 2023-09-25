@@ -1,14 +1,13 @@
 import { Component, ComponentFactoryResolver, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core';
-import { BlockErrorActions, GenerateUUIDv4, Schema, Token } from '@guardian/interfaces';
+import { BlockErrorActions, GenerateUUIDv4 } from '@guardian/interfaces';
 import { RegisteredService } from '../../services/registered.service';
 import {
     IBlockAbout,
-    PolicyModel,
-    PolicyBlockModel,
-    PolicyEventModel,
-    PolicyModuleModel,
+    PolicyEvent,
     IModuleVariables,
-    RoleVariables
+    RoleVariables,
+    PolicyFolder, 
+    PolicyItem
 } from "../../structures";
 
 /**
@@ -22,8 +21,8 @@ import {
 export class CommonPropertiesComponent implements OnInit {
     @ViewChild("configContainer", { read: ViewContainerRef }) configContainer!: ViewContainerRef;
 
-    @Input('block') currentBlock!: PolicyBlockModel;
-    @Input('module') module!: PolicyModel | PolicyModuleModel;
+    @Input('block') currentBlock!: PolicyItem;
+    @Input('module') module!: PolicyFolder;
     @Input('readonly') readonly!: boolean;
     @Input('type') type!: string;
 
@@ -37,7 +36,7 @@ export class CommonPropertiesComponent implements OnInit {
         eventsGroup: {}
     };
 
-    block!: PolicyBlockModel;
+    block!: PolicyItem;
     about!: IBlockAbout | undefined;
     errorActions = [
         {
@@ -57,12 +56,12 @@ export class CommonPropertiesComponent implements OnInit {
             value: BlockErrorActions.GOTO_TAG
         }
     ];
-    events: PolicyEventModel[] = [];
+    events: PolicyEvent[] = [];
     defaultEvent: boolean = false;
     customProperties!: any[] | undefined;
     roles!: RoleVariables[];
     private moduleVariables!: IModuleVariables | null;
-    
+
     constructor(
         private registeredService: RegisteredService,
         private componentFactoryResolver: ComponentFactoryResolver
@@ -87,15 +86,15 @@ export class CommonPropertiesComponent implements OnInit {
         item[prop] = !item[prop];
     }
 
-    isOutputEvent(event: PolicyEventModel) {
+    isOutputEvent(event: PolicyEvent) {
         return event.isSource(this.block);
     }
 
-    isInputEvent(event: PolicyEventModel) {
+    isInputEvent(event: PolicyEvent) {
         return event.isTarget(this.block);
     }
 
-    chanceType(event: any, item: PolicyEventModel) {
+    chanceType(event: any, item: PolicyEvent) {
         if (event.value != this.isInputEvent(item)) {
             const s = item.source;
             item.source = item.target;
@@ -106,7 +105,7 @@ export class CommonPropertiesComponent implements OnInit {
         this.onSave();
     }
 
-    isInvalid(item: PolicyEventModel) {
+    isInvalid(item: PolicyEvent) {
         return (
             !item.target ||
             !item.source ||
@@ -129,11 +128,11 @@ export class CommonPropertiesComponent implements OnInit {
         this.block.createEvent(event);
     }
 
-    onRemoveEvent(event: PolicyEventModel) {
+    onRemoveEvent(event: PolicyEvent) {
         this.module.removeEvent(event);
     }
 
-    load(block: PolicyBlockModel) {
+    load(block: PolicyItem) {
         if (this.block != block && this.type == 'Events') {
             this.block = block;
             this.loadEvents(block);
@@ -144,13 +143,13 @@ export class CommonPropertiesComponent implements OnInit {
         }
     }
 
-    loadEvents(block: PolicyBlockModel) {
+    loadEvents(block: PolicyItem) {
         this.events = block.events;
         const about = this.registeredService.getAbout(block, this.module);
         this.defaultEvent = about.defaultEvent;
     }
 
-    private getAbout(block: PolicyModuleModel | PolicyBlockModel | null): any {
+    private getAbout(block: PolicyItem | null): any {
         try {
             if (block && block.blockType) {
                 return this.registeredService.getAbout(block, this.module);
@@ -161,7 +160,7 @@ export class CommonPropertiesComponent implements OnInit {
         }
     }
 
-    getOutputEvents(event: PolicyEventModel): string[] {
+    getOutputEvents(event: PolicyEvent): string[] {
         const about = this.getAbout(event.source);
         if (about && about.output) {
             return about.output;
@@ -170,7 +169,7 @@ export class CommonPropertiesComponent implements OnInit {
         }
     }
 
-    getInputEvents(event: PolicyEventModel): string[] {
+    getInputEvents(event: PolicyEvent): string[] {
         const about = this.getAbout(event.target);
         if (about && about.input) {
             return about.input;
@@ -179,7 +178,7 @@ export class CommonPropertiesComponent implements OnInit {
         }
     }
 
-    loadComponent(block: PolicyBlockModel) {
+    loadComponent(block: PolicyItem) {
         if (!this.configContainer) {
             return;
         }
@@ -238,7 +237,7 @@ export class CommonPropertiesComponent implements OnInit {
         }
     }
 
-    onChildrenApply(block: PolicyBlockModel, currentBlock: PolicyBlockModel) {
+    onChildrenApply(block: PolicyItem, currentBlock: PolicyItem) {
         if (!block) {
             return;
         }

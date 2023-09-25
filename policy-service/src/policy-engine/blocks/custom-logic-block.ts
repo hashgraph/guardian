@@ -10,8 +10,7 @@ import {
     DIDMessage,
     MessageAction,
     MessageServer,
-    KeyType,
-    DatabaseServer,
+    KeyType
 } from '@guardian/common';
 import { ArtifactType, GenerateUUIDv4, SchemaHelper } from '@guardian/interfaces';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
@@ -118,7 +117,7 @@ export class CustomLogicBlock {
                             root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
                             break;
                     }
-                    const outputSchema = await ref.databaseServer.getSchemaByIRI(ref.options.outputSchema, ref.topicId);
+                    const outputSchema = await PolicyUtils.loadSchemaByID(ref, ref.options.outputSchema);
                     const context = SchemaHelper.getContext(outputSchema);
 
                     const relationships = [];
@@ -190,10 +189,8 @@ export class CustomLogicBlock {
                     ) || [];
                 let execCode = '';
                 for (const execCodeArtifact of execCodeArtifacts) {
-                    const artifactFile = await DatabaseServer.getArtifactFileByUUID(
-                        execCodeArtifact.uuid
-                    );
-                    execCode += artifactFile.toString();
+                    const artifactFile = await PolicyUtils.getArtifactFile(ref, execCodeArtifact.uuid);
+                    execCode += artifactFile;
                 }
 
                 const artifacts = [];
@@ -202,10 +199,8 @@ export class CustomLogicBlock {
                         (artifact) => artifact.type === ArtifactType.JSON
                     ) || [];
                 for (const jsonArtifact of jsonArtifacts) {
-                    const artifactFile = await DatabaseServer.getArtifactFileByUUID(
-                        jsonArtifact.uuid
-                    );
-                    artifacts.push(JSON.parse(artifactFile.toString()));
+                    const artifactFile = await PolicyUtils.getArtifactFile(ref, jsonArtifact.uuid);
+                    artifacts.push(JSON.parse(artifactFile));
                 }
 
                 const worker = new Worker(path.join(path.dirname(__filename), '..', 'helpers', 'custom-logic-worker.js'), {

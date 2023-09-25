@@ -70,10 +70,13 @@
         <mat-label>Which schemas will be used in policy?</mat-label>
         <mat-select [value]="selectedSchemas" (selectionChange)="onSelectedSchemasChange($event.value)" multiple>
             <mat-optgroup *ngFor="let group of groupedSchemas" [label]="group.name">
-                <mat-option [matTooltip]="getSchemaName(schema.name, schema.version || schema.sourceVersion, schema.status)"
-                    matTooltipPosition="below" matTooltipClass="guardian-tooltip" matTooltipShowDelay="500"
-                    *ngFor="let schema of group.schemas" [value]="schema">{{getSchemaName(schema.name, schema.version ||
-                    schema.sourceVersion, schema.status)}}</mat-option>
+                <mat-option 
+                    *ngFor="let schema of group.schemas" 
+                    [matTooltip]="getSchemaName(schema.name, schema.version || schema.sourceVersion, schema.status)"
+                    matTooltipPosition="below" 
+                    matTooltipClass="guardian-tooltip" 
+                    matTooltipShowDelay="500"
+                    [value]="schema">{{getSchemaName(schema.name, schema.version || schema.sourceVersion, schema.status)}}</mat-option>
             </mat-optgroup>
         </mat-select>
     </mat-form-field>

@@ -11,6 +11,7 @@ import { MapApi } from '@api/service/map';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { MetricsApi } from '@api/service/metrics';
 import { ModulesApi } from '@api/service/module';
+import { ToolsApi } from '@api/service/tool';
 import { ProfileApi } from '@api/service/profile';
 import { AuthGuard, authorizationHelper } from '@auth/authorization-helper';
 import { PolicyApi } from '@api/service/policy';
@@ -76,6 +77,7 @@ const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
         MapApi,
         MetricsApi,
         ModulesApi,
+        ToolsApi,
         ProfileApi,
         PolicyApi,
         SingleSchemaApi,
@@ -112,6 +114,7 @@ export class AppModule {
         consumer.apply(authorizationHelper).forRoutes(AnalyticsApi);
         consumer.apply(authorizationHelper).forRoutes(ContractsApi);
         consumer.apply(authorizationHelper).forRoutes(ModulesApi);
+        consumer.apply(authorizationHelper).forRoutes(ToolsApi);
         consumer.apply(authorizationHelper).forRoutes(TagsApi);
         consumer.apply(authorizationHelper).forRoutes(ThemesApi);
         consumer.apply(authorizationHelper).forRoutes(TokensApi);

@@ -1,9 +1,9 @@
 import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { IEventConfig } from './interfaces/event-config.interface';
-import { PolicyBlockModel } from "./block.model";
+import { PolicyBlock } from './block.model';
+import { IEventConfig } from '../interfaces/event-config.interface';
 
-export class PolicyEventModel {
-    private readonly block: PolicyBlockModel;
+export class PolicyEvent {
+    private readonly block: PolicyBlock;
 
     public readonly id: string;
 
@@ -11,15 +11,15 @@ export class PolicyEventModel {
     private _disabled: boolean;
     private _input: string;
     private _output: string;
-    private _source: PolicyBlockModel | null;
+    private _source: PolicyBlock | null;
     private _sourceTag: string;
-    private _target: PolicyBlockModel | null;
+    private _target: PolicyBlock | null;
     private _targetTag: string;
     private _changed: boolean;
 
     public default: boolean;
 
-    constructor(event: IEventConfig, block: PolicyBlockModel) {
+    constructor(event: IEventConfig, block: PolicyBlock) {
         this.default = false;
 
         this._changed = false;
@@ -27,25 +27,25 @@ export class PolicyEventModel {
         this.block = block;
         this.id = event.id || GenerateUUIDv4();
 
-        this._actor = event.actor || "";
+        this._actor = event.actor || '';
         this._disabled = !!event.disabled;
-        this._input = event.input || "";
-        this._output = event.output || "";
+        this._input = event.input || '';
+        this._output = event.output || '';
 
-        if (typeof event.source == "string") {
+        if (typeof event.source == 'string') {
             this._source = null;
-            this._sourceTag = event.source || "";
+            this._sourceTag = event.source || '';
         } else {
             this._source = event.source;
-            this._sourceTag = "";
+            this._sourceTag = '';
         }
 
-        if (typeof event.target == "string") {
+        if (typeof event.target == 'string') {
             this._target = null;
-            this._targetTag = event.target || "";
+            this._targetTag = event.target || '';
         } else {
             this._target = event.target;
-            this._targetTag = "";
+            this._targetTag = '';
         }
     }
     public get actor(): string {
@@ -84,11 +84,11 @@ export class PolicyEventModel {
         this.changed = true;
     }
 
-    public get source(): PolicyBlockModel | null {
+    public get source(): PolicyBlock | null {
         return this._source;
     }
 
-    public set source(value: PolicyBlockModel | null) {
+    public set source(value: PolicyBlock | null) {
         this._source = value;
         this.changed = true;
     }
@@ -104,11 +104,11 @@ export class PolicyEventModel {
         this._sourceTag = value;
     }
 
-    public get target(): PolicyBlockModel | null {
+    public get target(): PolicyBlock | null {
         return this._target;
     }
 
-    public set target(value: PolicyBlockModel | null) {
+    public set target(value: PolicyBlock | null) {
         this._target = value;
         this.changed = true;
     }
@@ -152,15 +152,15 @@ export class PolicyEventModel {
         return json;
     }
 
-    public check(block: PolicyBlockModel): boolean {
+    public check(block: PolicyBlock): boolean {
         return block.id == this.target?.id || block.id == this.source?.id;
     }
 
-    public isTarget(block: PolicyBlockModel): boolean {
+    public isTarget(block: PolicyBlock): boolean {
         return block.id == this.target?.id && block.id != this.source?.id;
     }
 
-    public isSource(block: PolicyBlockModel): boolean {
+    public isSource(block: PolicyBlock): boolean {
         return block.id == this.source?.id;
     }
 

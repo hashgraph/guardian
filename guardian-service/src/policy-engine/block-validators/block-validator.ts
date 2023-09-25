@@ -48,6 +48,8 @@ import { ExternalTopicBlock } from './blocks/external-topic-block';
 import { MessagesReportBlock } from './blocks/messages-report-block';
 import { NotificationBlock } from './blocks/notification.block';
 import { ISchema, SchemaField, SchemaHelper } from '@guardian/interfaces';
+import { ToolValidator } from './tool-validator';
+import { ToolBlock } from './blocks/tool';
 
 export const validators = [
     InterfaceDocumentActionBlock,
@@ -94,6 +96,7 @@ export const validators = [
     ExternalTopicBlock,
     MessagesReportBlock,
     NotificationBlock,
+    ToolBlock
 ];
 
 /**
@@ -109,7 +112,7 @@ export class BlockValidator {
      * Errors
      * @private
      */
-    private readonly validator: PolicyValidator | ModuleValidator;
+    private readonly validator: PolicyValidator | ModuleValidator | ToolValidator;
     /**
      * UUID
      * @private
@@ -143,7 +146,7 @@ export class BlockValidator {
 
     constructor(
         config: any,
-        validator: PolicyValidator | ModuleValidator
+        validator: PolicyValidator | ModuleValidator | ToolValidator
     ) {
         this.errors = [];
         this.validator = validator;
@@ -253,8 +256,8 @@ export class BlockValidator {
      * Get Schema
      * @param iri
      */
-    public async getSchema(iri: string): Promise<any> {
-        return await this.validator.getSchema(iri);
+    public getSchema(iri: string): ISchema {
+        return this.validator.getSchema(iri);
     }
 
     /**
@@ -269,8 +272,8 @@ export class BlockValidator {
      * Schema not exist
      * @param iri
      */
-    public async schemaNotExist(iri: string): Promise<boolean> {
-        return !await this.validator.getSchema(iri);
+    public schemaNotExist(iri: string): boolean {
+        return !this.validator.getSchema(iri);
     }
 
     /**
@@ -374,7 +377,6 @@ export class BlockValidator {
         }
         const baseFields = this.getSchemaFields(baseSchema.document);
         const schemaFields = this.getSchemaFields(schema.document);
-
         return this.ifExtendFields(schemaFields, baseFields);
     }
 

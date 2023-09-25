@@ -1,12 +1,14 @@
-import { GenerateUUIDv4, ModuleStatus, PolicyType, Schema } from '@guardian/interfaces';
-import { PolicyBlockModel } from './block.model';
-import { PolicyModuleModel } from './module.model';
-import { IBlockConfig } from './interfaces/block-config.interface';
-import { IModuleVariables } from './variables/module-variables.interface';
-import { PolicyEventModel } from './block-event.model';
-import { PolicyModel } from './policy.model';
+import { BlockType, GenerateUUIDv4, ModuleStatus, PolicyType, Schema, Token } from '@guardian/interfaces';
+import { IBlockConfig } from '../interfaces/block-config.interface';
+import { IModuleVariables } from '../interfaces/module-variables.interface';
+import { PolicyBlock } from '../block/block.model';
+import { PolicyEvent } from '../block/block-event.model';
+import { PolicyModule } from './block.model';
+import { PolicyFolder, PolicyItem } from '../interfaces/types';
+import { TemplateUtils } from '../utils';
+import { PolicyTool } from '../tool/block.model';
 
-export class TemplateModel {
+export class ModuleTemplate {
     public readonly valid: boolean;
     public readonly id!: string;
     public readonly uuid!: string;
@@ -18,12 +20,13 @@ export class TemplateModel {
     public readonly messageId!: string;
     public readonly topicId!: string;
 
-    private _config!: PolicyModuleModel;
-    private _changed: boolean;
-
     public readonly isDraft: boolean = false;
     public readonly isPublished: boolean = false;
+    public readonly isPublishError: boolean = false;
     public readonly readonly: boolean = false;
+
+    private _config!: PolicyModule;
+    private _changed: boolean;
 
     constructor(template?: any) {
         this._changed = false;
@@ -51,7 +54,8 @@ export class TemplateModel {
 
         this.isDraft = (this.status === PolicyType.DRAFT) || (this.status === ModuleStatus.DRAFT);
         this.isPublished = (this.status === PolicyType.PUBLISH) || (this.status === ModuleStatus.PUBLISHED);
-        this.readonly = this.isPublished;
+        this.isPublishError = this.status === PolicyType.PUBLISH_ERROR;
+        this.readonly = this.isPublished || this.isPublishError;
     }
 
     public get name(): string {
@@ -72,7 +76,7 @@ export class TemplateModel {
         this.changed = true;
     }
 
-    public get root(): PolicyModuleModel {
+    public get root(): PolicyModule {
         return this._config;
     }
 
@@ -88,36 +92,35 @@ export class TemplateModel {
         return '';
     }
 
-    private buildBlock(config: IBlockConfig) {
-        if (!config) {
-            config = { blockType: "module" };
-        }
-        this._config = this._buildBlock(config, null, this) as PolicyModuleModel;
-        this._config.isRoot = true;
-        this._config.refresh();
+    public get localTag(): string {
+        return this._config.localTag;
     }
 
-    private _buildBlock(
-        config: IBlockConfig,
-        parent: PolicyModuleModel | PolicyBlockModel | null,
-        module: PolicyModuleModel | TemplateModel
-    ) {
-        let block: PolicyModuleModel | PolicyBlockModel;
-        if (config.blockType === 'module') {
-            block = new PolicyModuleModel(config, parent);
-            block.setModule(module);
-            module = block as PolicyModuleModel;
-        } else {
-            block = new PolicyBlockModel(config, parent);
-            block.setModule(module);
+    public get dataSource(): PolicyBlock[] {
+        return this._config.dataSource;
+    }
+
+    public get canAddBlocks(): boolean {
+        return true;
+    }
+
+    public get canAddModules(): boolean {
+        return false;
+    }
+
+    public get canAddTools(): boolean {
+        return true;
+    }
+
+    private buildBlock(config: IBlockConfig) {
+        if (!config) {
+            config = { blockType: 'module' };
         }
-        if (Array.isArray(config.children)) {
-            for (const childConfig of config.children) {
-                const child = this._buildBlock(childConfig, block, module);
-                block.children.push(child);
-            }
-        }
-        return block;
+        const last = this._config?.getEnvironments();
+        this._config = TemplateUtils.buildBlock(config, null, this) as PolicyModule;
+        this._config.isRoot = true;
+        this._config.refresh();
+        this._config.setEnvironments(last);
     }
 
     public rebuild(object?: any) {
@@ -176,24 +179,52 @@ export class TemplateModel {
         return null;
     }
 
-    public get allEvents(): PolicyEventModel[] {
-        return [];
+    public get allEvents(): PolicyEvent[] {
+        return this._config.allEvents;
+    }
+
+    public get allBlocks(): PolicyBlock[] {
+        return this._config.allBlocks;
     }
 
     public getNewTag(type: string): string {
         return this._config.getNewTag(type);
     }
 
-    public getRootModule(): PolicyModel | PolicyModuleModel {
-        return this._config
+    public getRootModule(): PolicyFolder {
+        return this._config;
     }
 
-    public getBlock(block: any): PolicyBlockModel | undefined {
+    public getBlock(block: any): PolicyBlock | undefined {
         return this._config.getBlock(block);
+    }
+
+    public createTopic(topic: any): string {
+        return this._config.createTopic(topic);
+    }
+
+    public removeBlock(block: any): void {
+        return this._config.removeBlock(block);
+    }
+
+    public removeEvent(event: any): void {
+        this._config.removeEvent(event);
     }
 
     public setSchemas(schemas: Schema[]): void {
         this._config.setSchemas(schemas);
+    }
+
+    public setTemporarySchemas(schemas: Schema[]): void {
+        this._config.setTemporarySchemas(schemas);
+    }
+
+    public setTools(tools: any[]): void {
+        this._config.setTools(tools);
+    }
+
+    public setTokens(tokens: Token[]): void {
+        this._config.setTokens(tokens);
     }
 
     public refreshData() {
@@ -205,7 +236,7 @@ export class TemplateModel {
         this.refreshData();
     }
 
-    public getModule(module: any): PolicyModuleModel | undefined {
+    public getModule(module: any): PolicyFolder | undefined {
         return this._config;
     }
 
@@ -213,8 +244,23 @@ export class TemplateModel {
         return -1;
     }
 
-
     public getPermissionsName(permission: string): string | null {
         return null;
+    }
+
+    public newModule(template?: any): PolicyModule {
+        throw new Error('A module cannot contain nested modules');
+    }
+
+    public convertModule(block: PolicyBlock): PolicyModule {
+        throw new Error('A tool cannot contain nested modules');
+    }
+
+    public newTool(template?: any): PolicyTool {
+        return this._config.newTool(template);
+    }
+
+    public getAllTools(): Set<string> {
+        return this._config.getAllTools();
     }
 }

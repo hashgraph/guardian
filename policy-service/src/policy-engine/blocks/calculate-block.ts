@@ -134,7 +134,7 @@ export class CalculateContainerBlock {
         // <-- new vc
         const VCHelper = new VcHelper();
 
-        const outputSchema = await ref.databaseServer.getSchemaByIRI(ref.options.outputSchema, ref.topicId);
+        const outputSchema = await PolicyUtils.loadSchemaByID(ref, ref.options.outputSchema);
         const vcSubject: any = {
             ...SchemaHelper.getContext(outputSchema),
             ...newJson

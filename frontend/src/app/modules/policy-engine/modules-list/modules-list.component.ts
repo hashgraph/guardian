@@ -13,6 +13,7 @@ import { NewModuleDialog } from '../helpers/new-module-dialog/new-module-dialog.
 import { TagsService } from 'src/app/services/tag.service';
 import { forkJoin } from 'rxjs';
 import { CompareModulesDialogComponent } from '../helpers/compare-modules-dialog/compare-modules-dialog.component';
+import { mobileDialog } from 'src/app/utils/mobile-utils';
 
 enum OperationMode {
     None,
@@ -141,14 +142,14 @@ export class ModulesListComponent implements OnInit, OnDestroy {
 
     private importDetails(result: any) {
         const { type, data, module } = result;
-        const dialogRef = this.dialog.open(PreviewPolicyDialog, {
+        const dialogRef = this.dialog.open(PreviewPolicyDialog, mobileDialog({
             width: '950px',
             panelClass: 'g-dialog',
             disableClose: true,
             data: {
                 module: module,
             }
-        });
+        }));
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
                 if (type == 'message') {

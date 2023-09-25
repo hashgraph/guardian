@@ -162,7 +162,7 @@ export class MintBlock {
         root: IHederaAccount, token: any, data: string, ref: AnyBlockType
     ): Promise<VcDocument> {
         const vcHelper = new VcHelper();
-        const policySchema = await ref.databaseServer.getSchemaByType(ref.topicId, SchemaEntity.MINT_TOKEN);
+        const policySchema = await PolicyUtils.loadSchemaByType(ref, SchemaEntity.MINT_TOKEN);
         const amount = data as string;
         const vcSubject = {
             ...SchemaHelper.getContext(policySchema),
@@ -199,7 +199,7 @@ export class MintBlock {
             (additionalMessages && additionalMessages.length)
         ) {
             const vcHelper = new VcHelper();
-            const policySchema = await ref.databaseServer.getSchemaByType(ref.topicId, SchemaEntity.TOKEN_DATA_SOURCE);
+            const policySchema = await PolicyUtils.loadSchemaByType(ref, SchemaEntity.TOKEN_DATA_SOURCE);
             const vcSubject: any = { ...SchemaHelper.getContext(policySchema) };
             if (messages) {
                 vcSubject.dataSource = messages.slice();

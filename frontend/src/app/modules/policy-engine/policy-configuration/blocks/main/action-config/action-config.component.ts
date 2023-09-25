@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Inject, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { UserType } from '@guardian/interfaces';
-import { IModuleVariables, PolicyBlockModel, SchemaVariables } from '../../../../structures';
+import { IModuleVariables, PolicyBlock, SchemaVariables } from '../../../../structures';
 import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
 
 /**
@@ -13,12 +13,12 @@ import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
     encapsulation: ViewEncapsulation.Emulated
 })
 export class ActionConfigComponent implements OnInit {
-    @Input('block') currentBlock!: PolicyBlockModel;
+    @Input('block') currentBlock!: PolicyBlock;
     @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();
 
     private moduleVariables!: IModuleVariables | null;
-    private item!: PolicyBlockModel;
+    private item!: PolicyBlock;
 
     propHidden: any = {
         main: false,
@@ -32,13 +32,9 @@ export class ActionConfigComponent implements OnInit {
     schemas!: SchemaVariables[];
 
     constructor(
-        @Inject(GET_SCHEMA_NAME)
-        public getSchemaName: (
-            name?: string,
-            version?: string,
-            status?: string
-        ) => string,
-    ) {}
+    ) {
+        
+    }
 
     ngOnInit(): void {
         this.schemas = [];
@@ -50,7 +46,7 @@ export class ActionConfigComponent implements OnInit {
         this.load(this.currentBlock);
     }
 
-    load(block: PolicyBlockModel) {
+    load(block: PolicyBlock) {
         this.moduleVariables = block.moduleVariables;
         this.item = block;
         this.properties = block.properties;

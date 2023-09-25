@@ -9,7 +9,7 @@ import {
     ViewChild,
     ViewContainerRef
 } from '@angular/core';
-import { PolicyBlockModel } from "../../structures/";
+import { PolicyBlock } from "../../structures/";
 
 /**
  * Settings for all blocks.
@@ -22,14 +22,14 @@ import { PolicyBlockModel } from "../../structures/";
 export class JsonPropertiesComponent implements OnInit {
     @ViewChild("configContainer", { read: ViewContainerRef }) configContainer!: ViewContainerRef;
 
-    @Input('block') currentBlock!: PolicyBlockModel;
+    @Input('block') currentBlock!: PolicyBlock;
     @Input('readonly') readonly!: boolean;
 
     propHidden: any = {
         metaData: false,
     };
 
-    block!: PolicyBlockModel;
+    block!: PolicyBlock;
 
     codeMirrorOptions: any = {
         theme: 'default',
@@ -72,7 +72,7 @@ export class JsonPropertiesComponent implements OnInit {
         item[prop] = !item[prop];
     }
 
-    load(block: PolicyBlockModel) {
+    load(block: PolicyBlock) {
         this.loading = false;
         this.errors = [];
         this.block = block;

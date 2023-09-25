@@ -61,6 +61,10 @@
                         (click)="routActive('SR_MODULES')">
                         Modules
                     </div>
+                    <div class="nav-list-item" [attr.active]="isActiveLink('SR_TOOLS')"
+                        (click)="routActive('SR_TOOLS')">
+                        Tools
+                    </div>
                     <div class="nav-list-item" [attr.active]="isActiveLink('SR_POLICIES_LIST')"
                         (click)="routActive('SR_POLICIES_LIST')">
                         Policies
@@ -198,6 +202,10 @@
                         <div class="nav-list-item" [attr.active]="isActiveLink('SR_MODULES')"
                             (click)="mobileRoutActive('SR_MODULES')">
                             Modules
+                        </div>
+                        <div class="nav-list-item" [attr.active]="isActiveLink('SR_TOOLS')"
+                            (click)="mobileRoutActive('SR_TOOLS')">
+                            Tools
                         </div>
                         <div class="nav-list-item" [attr.active]="isActiveLink('SR_POLICIES_LIST')"
                             (click)="mobileRoutActive('SR_POLICIES_LIST')">

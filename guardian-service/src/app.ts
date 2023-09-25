@@ -48,6 +48,7 @@ import { contractAPI } from '@api/contract.service';
 import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels-container';
 import { PolicyEngine } from '@policy-engine/policy-engine';
 import { modulesAPI } from '@api/module.service';
+import { toolsAPI } from '@api/tool.service';
 import { GuardiansService } from '@helpers/guardians';
 import { mapAPI } from '@api/map.service';
 import { tagsAPI } from '@api/tag.service';
@@ -156,6 +157,7 @@ Promise.all([
         await artifactAPI();
         await contractAPI(contractRepository, retireRequestRepository);
         await modulesAPI();
+        await toolsAPI();
         await tagsAPI();
         await analyticsAPI();
         await mapAPI();

@@ -3,7 +3,8 @@ import { ObjectProperty } from "./object-prop";
 
 export class Options {
     private readonly _components: BooleanProperty;
-    private readonly _library: BooleanProperty;
+    private readonly _moduleLibrary: BooleanProperty;
+    private readonly _toolLibrary: BooleanProperty;
     private readonly _description: BooleanProperty;
     private readonly _roles: BooleanProperty;
     private readonly _groups: BooleanProperty;
@@ -23,6 +24,7 @@ export class Options {
     private readonly _favoritesModulesGroup: BooleanProperty;
     private readonly _defaultModulesGroup: BooleanProperty;
     private readonly _customModulesGroup: BooleanProperty;
+    private readonly _customToolsGroup: BooleanProperty;
     private readonly _descriptionModule: BooleanProperty;
     private readonly _inputsModule: BooleanProperty;
     private readonly _outputsModule: BooleanProperty;
@@ -34,7 +36,8 @@ export class Options {
     constructor() {
         const prefix = 'POLICY_CONFIG_';
         this._components = new BooleanProperty(prefix + 'COMPONENTS', true);
-        this._library = new BooleanProperty(prefix + 'LIBRARY', false);
+        this._moduleLibrary = new BooleanProperty(prefix + 'MODULE_LIBRARY', false);
+        this._toolLibrary = new BooleanProperty(prefix + 'TOOL_LIBRARY', false);
         this._description = new BooleanProperty(prefix + 'DESCRIPTION', true);
         this._roles = new BooleanProperty(prefix + 'ROLES', false);
         this._groups = new BooleanProperty(prefix + 'GROUPS', false);
@@ -53,7 +56,8 @@ export class Options {
         this._rightBottomMenu = new BooleanProperty(prefix + 'RIGHT_BOTTOM', false);
         this._favoritesModulesGroup = new BooleanProperty(prefix + 'FAVORITES_MODULES_GROUP', false);
         this._defaultModulesGroup = new BooleanProperty(prefix + 'DEFAULT_MODULES_GROUP', false);
-        this._customModulesGroup = new BooleanProperty(prefix + 'CUSTOM_MODULES_GROUP', false);
+        this._customModulesGroup = new BooleanProperty(prefix + 'CUSTOM_TOOLS_GROUP', false);
+        this._customToolsGroup = new BooleanProperty(prefix + 'CUSTOM_MODULES_GROUP', false);
         this._descriptionModule = new BooleanProperty(prefix + 'DESCRIPTION_MODULE', true);
         this._inputsModule = new BooleanProperty(prefix + 'INPUTS_MODULE', false);
         this._outputsModule = new BooleanProperty(prefix + 'OUTPUTS_MODULE', false);
@@ -66,7 +70,8 @@ export class Options {
     public load() {
         try {
             this.components = this._components.load();
-            this.library = this._library.load();
+            this.moduleLibrary = this._moduleLibrary.load();
+            this.toolLibrary = this._toolLibrary.load();
             this.description = this._description.load();
             this.roles = this._roles.load();
             this.groups = this._groups.load();
@@ -86,6 +91,7 @@ export class Options {
             this.favoritesModulesGroup = this._favoritesModulesGroup.load();
             this.defaultModulesGroup = this._defaultModulesGroup.load();
             this.customModulesGroup = this._customModulesGroup.load();
+            this.customToolsGroup = this._customToolsGroup.load();
             this.descriptionModule = this._descriptionModule.load();
             this.inputsModule = this._inputsModule.load();
             this.outputsModule = this._outputsModule.load();
@@ -101,7 +107,8 @@ export class Options {
     public save() {
         try {
             this._components.save();
-            this._library.save();
+            this._moduleLibrary.save();
+            this._toolLibrary.save();
             this._description.save();
             this._roles.save();
             this._groups.save();
@@ -122,6 +129,7 @@ export class Options {
             this._favoritesModulesGroup.save();
             this._defaultModulesGroup.save();
             this._customModulesGroup.save();
+            this._customToolsGroup.save();
             this._favoritesModules.save();
             this._descriptionModule.save();
             this._inputsModule.save();
@@ -137,8 +145,12 @@ export class Options {
         return this._components.value;
     }
 
-    public get library(): boolean {
-        return this._library.value;
+    public get moduleLibrary(): boolean {
+        return this._moduleLibrary.value;
+    }
+
+    public get toolLibrary(): boolean {
+        return this._toolLibrary.value;
     }
 
     public get description(): boolean {
@@ -217,6 +229,10 @@ export class Options {
         return this._customModulesGroup.value;
     }
 
+    public get customToolsGroup(): boolean {
+        return this._customToolsGroup.value;
+    }
+
     public get descriptionModule(): boolean {
         return this._descriptionModule.value;
     }
@@ -240,14 +256,24 @@ export class Options {
     public set components(value: boolean) {
         if (value) {
             this._components.value = true;
-            this._library.value = false;
+            this._moduleLibrary.value = false;
+            this._toolLibrary.value = false;
         }
     }
 
-    public set library(value: boolean) {
+    public set moduleLibrary(value: boolean) {
         if (value) {
             this._components.value = false;
-            this._library.value = true;
+            this._moduleLibrary.value = true;
+            this._toolLibrary.value = false;
+        }
+    }
+
+    public set toolLibrary(value: boolean) {
+        if (value) {
+            this._components.value = false;
+            this._moduleLibrary.value = false;
+            this._toolLibrary.value = true;
         }
     }
 
@@ -410,6 +436,10 @@ export class Options {
         this._customModulesGroup.value = value;
     }
 
+    public set customToolsGroup(value: boolean) {
+        this._customToolsGroup.value = value;
+    }
+
     public set legendActive(value: boolean) {
         this._legendActive.value = value;
     }
@@ -439,8 +469,11 @@ export class Options {
             case 'components':
                 this.components = true;
                 break;
-            case 'library':
-                this.library = true;
+            case 'moduleLibrary':
+                this.moduleLibrary = true;
+                break;
+            case 'toolLibrary':
+                this.toolLibrary = true;
                 break;
             case 'description':
                 this.description = true;
@@ -507,6 +540,8 @@ export class Options {
             this.defaultModulesGroup = !this.defaultModulesGroup;
         } else if (name === 'favoritesModulesGroup') {
             this.favoritesModulesGroup = !this.favoritesModulesGroup;
+        } else if (name === 'customToolsGroup') {
+            this.customToolsGroup = !this.customToolsGroup;
         } else {
             return;
         }
