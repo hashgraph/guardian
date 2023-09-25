@@ -1,4 +1,4 @@
-import { ApplicationState, COMMON_CONNECTION_CONFIG, DataBaseHelper, MessageBrokerChannel, Migration } from '@guardian/common';
+import { ApplicationState, COMMON_CONNECTION_CONFIG, DataBaseHelper, LargePayloadContainer, Logger, MessageBrokerChannel, Migration } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
@@ -59,6 +59,11 @@ Promise.all([
     state.updateState(ApplicationStates.STARTED);
 
     state.updateState(ApplicationStates.INITIALIZING);
+    new Logger().setConnection(mqConnection);
+    const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
+    if (Number.isInteger(maxPayload)) {
+        new LargePayloadContainer().runServer();
+    }
 
     state.updateState(ApplicationStates.READY);
     // const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
