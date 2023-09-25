@@ -269,7 +269,6 @@ export class ToolsApi {
         }
     }
 
-
     /**
      * Update tool
      */

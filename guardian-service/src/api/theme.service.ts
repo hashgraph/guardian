@@ -1,5 +1,12 @@
 import { ApiResponse } from '@api/helpers/api-response';
-import { BinaryMessageResponse, DatabaseServer, Logger, MessageError, MessageResponse, Theme, ThemeImportExport, } from '@guardian/common';
+import {
+    BinaryMessageResponse,
+    DatabaseServer,
+    Logger,
+    MessageError,
+    MessageResponse,
+    ThemeImportExport
+} from '@guardian/common';
 import { GenerateUUIDv4, MessageAPI } from '@guardian/interfaces';
 
 /**

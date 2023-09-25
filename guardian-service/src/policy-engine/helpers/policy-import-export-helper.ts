@@ -18,7 +18,6 @@ import {
     replaceArtifactProperties,
     Schema,
     SchemaFields,
-    Token,
     Topic,
     TopicConfig,
     TopicHelper,

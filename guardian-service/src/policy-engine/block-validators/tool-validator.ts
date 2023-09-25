@@ -357,7 +357,7 @@ export class ToolValidator {
         for (const item of this.tools.values()) {
             const schema = item.getSchema(iri);
             if (schema) {
-                schema;
+                return schema;
             }
         }
         return null;

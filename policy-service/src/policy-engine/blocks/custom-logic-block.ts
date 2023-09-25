@@ -10,8 +10,7 @@ import {
     DIDMessage,
     MessageAction,
     MessageServer,
-    KeyType,
-    DatabaseServer,
+    KeyType
 } from '@guardian/common';
 import { ArtifactType, GenerateUUIDv4, SchemaHelper } from '@guardian/interfaces';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';

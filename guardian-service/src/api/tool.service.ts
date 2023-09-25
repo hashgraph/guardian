@@ -10,7 +10,6 @@ import {
     MessageType,
     ToolMessage,
     PolicyTool,
-    TagMessage,
     TopicConfig,
     TopicHelper,
     Users,
@@ -18,16 +17,14 @@ import {
     RunFunctionAsync,
     SchemaFields,
     replaceAllEntities,
-    replaceAllVariables
+    replaceAllVariables,
+    Hashing
 } from '@guardian/common';
 import {
-    GenerateUUIDv4,
     IRootConfig,
     MessageAPI,
     ModuleStatus,
-    SchemaCategory,
     SchemaStatus,
-    TagType,
     TopicType
 } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
@@ -35,11 +32,9 @@ import { findAndPublishSchema } from '@api/helpers/schema-publish-helper';
 import { incrementSchemaVersion } from '@api/helpers/schema-helper';
 import { ISerializedErrors } from '@policy-engine/policy-validation-results-container';
 import { ToolValidator } from '@policy-engine/block-validators/tool-validator';
-import { importTag } from './helpers/tag-import-export-helper';
 import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
-import * as crypto from 'crypto';
-import { Hashing } from '@guardian/common';
 import { importToolByFile, importToolByMessage } from './helpers';
+import * as crypto from 'crypto';
 
 /**
  * Sha256
@@ -50,11 +45,11 @@ import { importToolByFile, importToolByMessage } from './helpers';
 export function sha256(data: ArrayBuffer): string {
     try {
         const array = new Uint8Array(data);
-        const sha256 = crypto
+        const buffer = crypto
             .createHash('sha256')
             .update(array)
             .digest();
-        return Hashing.base58.encode(sha256);
+        return Hashing.base58.encode(buffer);
     } catch (error) {
         return '';
     }
@@ -423,7 +418,7 @@ export async function toolsAPI(): Promise<void> {
             ];
             const [items, count] = await DatabaseServer.getToolsAndCount({
                 $or: [{
-                    owner: owner
+                    owner
                 }, {
                     status: ModuleStatus.PUBLISHED
                 }]

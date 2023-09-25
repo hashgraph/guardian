@@ -1,5 +1,5 @@
 import { DatabaseServer, Policy } from '@guardian/common';
-import { ISchema, ModuleStatus, PolicyType } from '@guardian/interfaces';
+import { ISchema, ModuleStatus } from '@guardian/interfaces';
 import { BlockValidator } from './block-validator';
 import { ModuleValidator } from './module-validator';
 import { ISerializedErrors } from './interfaces/serialized-errors.interface';

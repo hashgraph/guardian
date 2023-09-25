@@ -23,8 +23,16 @@ import {
     Workers,
     PolicyImportExport
 } from '@guardian/common';
-import { DidDocumentStatus, ISchema, PolicyType, SchemaCategory, SchemaStatus, TopicType, UserRole, WorkerTaskType, } from '@guardian/interfaces';
-import { PolicyImportExportHelper } from '@policy-engine/helpers/policy-import-export-helper';
+import {
+    DidDocumentStatus,
+    ISchema,
+    PolicyType,
+    SchemaCategory,
+    SchemaStatus,
+    TopicType,
+    UserRole,
+    WorkerTaskType
+} from '@guardian/interfaces';
 import { PolicyEngine } from '@policy-engine/policy-engine';
 
 /**

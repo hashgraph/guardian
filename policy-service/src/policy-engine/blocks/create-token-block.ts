@@ -169,7 +169,7 @@ export class CreateTokenBlock {
             }
 
             // #region Create new token
-        
+
             const tokenTemplate = PolicyUtils.getTokenTemplate(ref, ref.options.template);
             if (!tokenTemplate) {
                 throw new BlockActionError(

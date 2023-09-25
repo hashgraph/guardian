@@ -3,7 +3,7 @@ import { PolicyComponentsUtils } from './policy-components-utils';
 import { GenerateUUIDv4, IUser, PolicyEvents, UserRole } from '@guardian/interfaces';
 import { DatabaseServer, Logger, MessageError, MessageResponse, NatsService, Policy, Singleton, Users, } from '@guardian/common';
 import { IPolicyUser, PolicyUser } from './policy-user';
-import { ISerializedErrors, PolicyValidator } from '@policy-engine/block-validators';
+import { PolicyValidator } from '@policy-engine/block-validators';
 import { headers } from 'nats';
 import { Inject } from '@helpers/decorators/inject';
 import { ComponentsService } from './helpers/components-service';
@@ -296,7 +296,6 @@ export class BlockTreeGenerator extends NatsService {
             };
         }
     }
-
 
     /**
      * Generate policy instance from config

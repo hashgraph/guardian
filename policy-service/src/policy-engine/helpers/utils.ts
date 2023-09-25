@@ -1,5 +1,5 @@
 import * as mathjs from 'mathjs';
-import { AnyBlockType, IPolicyDocument, IPolicyRequestBlock } from '@policy-engine/policy-engine.interface';
+import { AnyBlockType, IPolicyDocument } from '@policy-engine/policy-engine.interface';
 import {
     DidDocumentStatus,
     DocumentSignature,
@@ -25,8 +25,7 @@ import {
     KeyType, Wallet,
     Users,
     Workers,
-    NotificationHelper,
-    DatabaseServer,
+    NotificationHelper
 } from '@guardian/common';
 import { TokenId, TopicId } from '@hashgraph/sdk';
 import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';

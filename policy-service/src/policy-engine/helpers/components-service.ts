@@ -3,9 +3,9 @@ import {
     Policy as PolicyCollection,
     PolicyTool as PolicyToolCollection,
     Schema as SchemaCollection
-} from "@guardian/common";
-import { PolicyType, SchemaEntity } from "@guardian/interfaces";
-import { IPolicyBlock } from "@policy-engine/policy-engine.interface";
+} from '@guardian/common';
+import { PolicyType, SchemaEntity } from '@guardian/interfaces';
+import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
 
 export class ComponentsService {
     public readonly topicId: string;
@@ -15,8 +15,8 @@ export class ComponentsService {
     private policyTokens: any[];
     private policyGroups: any[];
     private policyRoles: string[];
-    private schemasByID: Map<string, SchemaCollection>;
-    private schemasByType: Map<string, SchemaCollection>;
+    private readonly schemasByID: Map<string, SchemaCollection>;
+    private readonly schemasByType: Map<string, SchemaCollection>;
 
     /**
      * Database instance
@@ -46,7 +46,6 @@ export class ComponentsService {
      */
     public async loadSchemaByType(type: SchemaEntity): Promise<SchemaCollection> {
         return this.schemasByType.get(type);
-        return await this.databaseServer.getSchemaByType(this.topicId, type);
     }
 
     /**
@@ -55,7 +54,6 @@ export class ComponentsService {
      */
     public async loadSchemaByID(id: SchemaEntity): Promise<SchemaCollection> {
         return this.schemasByID.get(id);
-        return await this.databaseServer.getSchemaByIRI(id, this.topicId);
     }
 
     /**
@@ -139,5 +137,6 @@ export class ComponentsService {
      * @param name
      */
     public async registerInstance(blockInstance: IPolicyBlock): Promise<void> {
+        return;
     }
 }

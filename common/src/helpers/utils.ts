@@ -53,11 +53,11 @@ export function findAllEntities(obj: { [key: string]: any }, names: string[]): s
 /**
  * Find all blocks by type
  * @param obj
- * @param blockType
+ * @param type
  */
 export function findAllBlocks(
     obj: { [key: string]: any },
-    blockType: string
+    type: string
 ): { [key: string]: any } {
     const finder = (blockConfig: any, blockType: string, results: any[]): any[] => {
         if (blockConfig.blockType === blockType) {
@@ -70,7 +70,7 @@ export function findAllBlocks(
         }
         return results;
     }
-    return finder(obj, blockType, []);
+    return finder(obj, type, []);
 }
 
 /**

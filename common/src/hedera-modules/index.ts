@@ -7,24 +7,5 @@ export { TransactionLogger, TransactionLogLvl } from './transaction-logger';
 export { TopicHelper } from './topic-helper';
 export { TopicConfig } from './topic';
 export { Hashing } from './hashing';
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 export { MessageMemo } from './memo-mappings/message-memo';
 export { TopicMemo } from './memo-mappings/topic-memo';
-
-
-
-

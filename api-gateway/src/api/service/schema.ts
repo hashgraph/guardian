@@ -1420,20 +1420,6 @@ export class SchemaApi {
         }
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     @Post('/system/:username')
     @HttpCode(HttpStatus.CREATED)
     async postSystemSchema(@Body() body: SystemSchemaDTO, @Req() req, @Response() res): Promise<any> {

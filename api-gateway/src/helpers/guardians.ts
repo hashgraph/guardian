@@ -1,5 +1,20 @@
 import { Singleton } from '@helpers/decorators/singleton';
-import { ApplicationStates, CommonSettings, GenerateUUIDv4, IArtifact, IChainItem, IDidObject, ISchema, IToken, ITokenInfo, IUser, IVCDocument, IVPDocument, MessageAPI, SchemaCategory, SuggestionsOrderPriority } from '@guardian/interfaces';
+import {
+    ApplicationStates,
+    CommonSettings,
+    GenerateUUIDv4,
+    IArtifact,
+    IChainItem,
+    IDidObject,
+    ISchema,
+    IToken,
+    ITokenInfo,
+    IUser,
+    IVCDocument,
+    IVPDocument,
+    MessageAPI,
+    SuggestionsOrderPriority
+} from '@guardian/interfaces';
 import { NatsService } from '@guardian/common';
 import { NewTask } from './task-manager';
 
@@ -1376,35 +1391,6 @@ export class Guardians extends NatsService {
         return await this.sendMessage(MessageAPI.VALIDATE_MODULES, { owner, module });
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     /**
      * Create tool
      * @param tool
@@ -1585,27 +1571,6 @@ export class Guardians extends NatsService {
     public async importToolMessageAsync(messageId: string, owner: string, task: NewTask) {
         return await this.sendMessage(MessageAPI.TOOL_IMPORT_MESSAGE_ASYNC, { messageId, owner, task });
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     /**
      * Get map api key
