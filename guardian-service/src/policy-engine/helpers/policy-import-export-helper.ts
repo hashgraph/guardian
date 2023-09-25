@@ -43,7 +43,7 @@ export class PolicyImportExportHelper {
      *
      * @returns Array of schemas
      */
-    static async getSystemSchemas(): Promise<Schema[]> {
+    public static async getSystemSchemas(): Promise<Schema[]> {
         const schemas = await Promise.all([
             DatabaseServer.getSystemSchema(SchemaEntity.POLICY),
             DatabaseServer.getSystemSchema(SchemaEntity.MINT_TOKEN),
@@ -74,7 +74,7 @@ export class PolicyImportExportHelper {
      *
      * @returns Policies by owner
      */
-    static async importPolicy(
+    public static async importPolicy(
         policyToImport: IPolicyComponents,
         policyOwner: string,
         versionOfTopicId: string,
@@ -266,7 +266,7 @@ export class PolicyImportExportHelper {
      * @param policy
      * @param schemasMap
      */
-    static async replaceConfig(
+    public static async replaceConfig(
         policy: Policy,
         schemasMap: SchemaImportResult[],
         artifactsMap: Map<string, string>,
@@ -292,5 +292,35 @@ export class PolicyImportExportHelper {
         regenerateIds(policy.config);
 
         replaceArtifactProperties(policy.config, 'uuid', artifactsMap);
+    }
+
+    /**
+     * Convert errors to string
+     * @param errors
+     */
+    public static errorsMessage(errors: any[]): string {
+        const schemas: string[] = [];
+        const tools: string[] = [];
+        const others: string[] = []
+        for (const e of errors) {
+            if (e.type === 'schema') {
+                schemas.push(e.name);
+            } else if (e.type === 'tool') {
+                tools.push(e.name);
+            } else {
+                others.push(e.name);
+            }
+        }
+        let message: string = 'Failed to import components:';
+        if (schemas.length) {
+            message += ` schemas: ${JSON.stringify(schemas)};`
+        }
+        if (tools.length) {
+            message += ` tools: ${JSON.stringify(tools)};`
+        }
+        if (others.length) {
+            message += ` others: ${JSON.stringify(others)};`
+        }
+        return message;
     }
 }

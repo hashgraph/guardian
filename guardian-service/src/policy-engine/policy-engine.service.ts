@@ -748,7 +748,7 @@ export class PolicyEngineService {
                 const policyToImport = await PolicyImportExport.parseZipFile(Buffer.from(zip.data), true);
                 const result = await PolicyImportExportHelper.importPolicy(policyToImport, did, versionOfTopicId, emptyNotifier());
                 if (result?.errors?.length) {
-                    const message = `Failed to import schemas: ${JSON.stringify(result.errors.map(e => e.name))}`;
+                    const message = PolicyImportExportHelper.errorsMessage(result.errors);
                     new Logger().warn(message, ['GUARDIAN_SERVICE']);
                     return new MessageError(message);
                 }
@@ -775,7 +775,7 @@ export class PolicyEngineService {
                 notifier.completed();
                 const result = await PolicyImportExportHelper.importPolicy(policyToImport, did, versionOfTopicId, notifier);
                 if (result?.errors?.length) {
-                    const message = `Failed to import schemas: ${JSON.stringify(result.errors.map(e => e.name))}`
+                    const message = PolicyImportExportHelper.errorsMessage(result.errors);
                     notifier.error(message);
                     new Logger().warn(message, ['GUARDIAN_SERVICE']);
                     return;
@@ -840,7 +840,7 @@ export class PolicyEngineService {
 
                 const result = await this.policyEngine.importPolicyMessage(messageId, did, root, versionOfTopicId, emptyNotifier());
                 if (result?.errors?.length) {
-                    const message = `Failed to import schemas: ${JSON.stringify(result.errors.map(e => e.name))}`
+                    const message = PolicyImportExportHelper.errorsMessage(result.errors);
                     new Logger().warn(message, ['GUARDIAN_SERVICE']);
                     return new MessageError(message);
                 }
@@ -868,7 +868,7 @@ export class PolicyEngineService {
                     notifier.completed();
                     const result = await this.policyEngine.importPolicyMessage(messageId, did, root, versionOfTopicId, notifier);
                     if (result?.errors?.length) {
-                        const message = `Failed to import schemas: ${JSON.stringify(result.errors.map(e => e.name))}`
+                        const message = PolicyImportExportHelper.errorsMessage(result.errors);
                         notifier.error(message);
                         new Logger().warn(message, ['GUARDIAN_SERVICE']);
                         return;

@@ -43,6 +43,7 @@ export async function importToolsByPolicy(
             await importToolByMessage(hederaAccount, message.messageId, notifier);
         } catch (error) {
             errors.push({
+                type: 'tool',
                 hash: message.uuid,
                 name: message.name,
                 error: 'Invalid tool'

@@ -208,6 +208,7 @@ export async function importSchemaByFiles(
         const valid = fixSchemaDefsOnImport(file.iri, parsedSchemas, updatedSchemasMap);
         if (!valid) {
             errors.push({
+                type: 'schema',
                 uuid: file.uuid,
                 name: file.name,
                 error: 'invalid defs'

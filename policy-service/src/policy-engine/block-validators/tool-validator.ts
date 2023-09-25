@@ -94,7 +94,7 @@ export class ToolValidator {
      */
     public async build(tool: PolicyTool): Promise<boolean> {
         if (!tool || (typeof tool !== 'object')) {
-            this.errors.push('Invalid tool config');
+            this.errors.push('Tool not found');
             return false;
         } else {
             this.topicId = tool.topicId;
