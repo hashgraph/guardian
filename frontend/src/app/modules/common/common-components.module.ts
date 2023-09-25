@@ -24,6 +24,7 @@ import { NgxMaskModule } from 'ngx-mask';
 import { NewVersionsComponent } from './new-versions/new-versions.component';
 import { CompareBtnComponent } from './compare-btn/compare-btn.component';
 import { CompareViewerComponent } from './compare-viewer/compare-viewer.component';
+import { AlertComponent } from './alert/alert.component';
 
 @NgModule({
     declarations: [
@@ -44,7 +45,8 @@ import { CompareViewerComponent } from './compare-viewer/compare-viewer.componen
         SeparateStepperComponent,
         NewVersionsComponent,
         CompareBtnComponent,
-        CompareViewerComponent
+        CompareViewerComponent,
+        AlertComponent
     ],
     imports: [
         CommonModule,

@@ -18,7 +18,8 @@ import {
     ApiOperation,
     ApiSecurity,
     ApiTags,
-    getSchemaPath
+    getSchemaPath,
+    ApiExtraModels
 } from '@nestjs/swagger';
 import {
     Body,
@@ -137,7 +138,7 @@ export async function updateSchema(newSchema: ISchema, owner: string): Promise<I
 }
 
 @Controller('schema')
-@ApiTags('schemas')
+@ApiTags('schema')
 export class SingleSchemaApi {
     @Get('/:schemaId')
     @HttpCode(HttpStatus.OK)
@@ -165,6 +166,53 @@ export class SingleSchemaApi {
                 SchemaHelper.updatePermission([schema], owner);
             }
             return res.json(SchemaUtils.toOld(schema));
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw error
+        }
+    }
+
+    @Get('/:schemaId/parents')
+    @HttpCode(HttpStatus.OK)
+    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Returns all parent schemas.',
+        description: 'Returns all parent schemas.',
+    })
+    @ApiImplicitParam({
+        name: 'schemaId',
+        type: String,
+        description: 'Schema identifier',
+        required: true
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        schema: {
+            $ref: getSchemaPath(SchemaDTO)
+        },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    async getSchemaParents(@Req() req): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)(req.user);
+        try {
+            const user = req.user;
+            const schemaId = req.params.schemaId;
+            const guardians = new Guardians();
+            const schemas = await guardians.getSchemaParents(schemaId, user?.did);
+            return SchemaUtils.toOld(schemas);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error
@@ -705,7 +753,7 @@ export class SchemaApi {
             throw new HttpException('Schema is published.', HttpStatus.UNPROCESSABLE_ENTITY)
         }
         try {
-            const schemas = (await guardians.deleteSchema(schemaId, true) as ISchema[]);
+            const schemas = (await guardians.deleteSchema(schemaId, user?.did, true) as ISchema[]);
             SchemaHelper.updatePermission(schemas, user.did);
             return res.json(SchemaUtils.toOld(schemas));
         } catch (error) {
@@ -1461,7 +1509,7 @@ export class SchemaApi {
             if (schema.active) {
                 throw new HttpException('Schema is active.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
-            await guardians.deleteSchema(schemaId);
+            await guardians.deleteSchema(schemaId, user?.did);
             return res.status(204).send();
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
