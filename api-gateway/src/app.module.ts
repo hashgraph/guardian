@@ -8,7 +8,7 @@ import { ExternalApi } from '@api/service/external';
 import { IpfsApi } from '@api/service/ipfs';
 import { LoggerApi, LoggerService } from '@api/service/logger';
 import { MapApi } from '@api/service/map';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ClientsModule, Deserializer, Serializer, Transport } from '@nestjs/microservices';
 import { MetricsApi } from '@api/service/metrics';
 import { ModulesApi } from '@api/service/module';
 import { ToolsApi } from '@api/service/tool';
@@ -37,6 +37,19 @@ import { ApplicationEnvironment } from './environment';
 const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
 const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
 
+class LogClientSerializer implements Serializer {
+    serialize(value: any, options?: Record<string, any>): any {
+        value.data = Buffer.from(JSON.stringify(value), 'utf-8')
+        return value;
+    }
+}
+
+class LogClientDeserializer implements Deserializer {
+    deserialize(value: any, options?: Record<string, any>): any {
+        return JSON.parse(value.toString())
+    }
+}
+
 @Module({
     imports: [
         ClientsModule.register([{
@@ -46,7 +59,9 @@ const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
                 name: `${process.env.SERVICE_CHANNEL}`,
                 servers: [
                     `nats://${process.env.MQ_ADDRESS}:4222`
-                ]
+                ],
+                serializer: new LogClientSerializer(),
+                deserializer: new LogClientDeserializer()
             }
         }])
     ],

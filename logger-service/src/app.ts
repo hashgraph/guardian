@@ -3,9 +3,22 @@ import { ApplicationStates } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { NestFactory } from '@nestjs/core';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { Deserializer, IncomingRequest, MicroserviceOptions, Serializer, Transport } from '@nestjs/microservices';
 import process from 'process';
 import { AppModule } from './app.module';
+
+export class LoggerSerializer implements Serializer {
+    serialize(value: any, options?: Record<string, any>): any {
+        value.data = Buffer.from(JSON.stringify(value), 'utf-8')
+        return value
+    }
+}
+
+export class LoggerDeserializer implements Deserializer {
+    deserialize(value: any, options?: Record<string, any>): IncomingRequest {
+        return JSON.parse(value.toString())
+    }
+}
 
 Promise.all([
     Migration({
@@ -30,7 +43,9 @@ Promise.all([
             name: `${process.env.SERVICE_CHANNEL}`,
             servers: [
                 `nats://${process.env.MQ_ADDRESS}:4222`
-            ]
+            ],
+            serializer: new LoggerSerializer(),
+            deserializer: new LoggerDeserializer(),
         },
     }),
 ]).then(async values => {
