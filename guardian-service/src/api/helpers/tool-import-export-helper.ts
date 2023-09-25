@@ -92,7 +92,7 @@ export async function importToolByMessage(
         ) {
             return oldTool;
         } else {
-            // TODO
+            throw new Error('Incorrect file hash');
         }
     }
 
@@ -107,6 +107,7 @@ export async function importToolByMessage(
     components.tool.creator = message.owner;
     components.tool.owner = message.owner;
     components.tool.topicId = message.topicId.toString();
+    components.tool.messageId = message.id;
     components.tool.status = ModuleStatus.PUBLISHED;
 
     const result = await DatabaseServer.createTool(components.tool);

@@ -439,6 +439,9 @@ export async function toolsAPI(): Promise<void> {
             if (!item || item.owner !== msg.owner) {
                 throw new Error('Invalid tool');
             }
+            if (item.status === ModuleStatus.PUBLISHED) {
+                throw new Error('Tool published');
+            }
             await DatabaseServer.removeTool(item);
             return new MessageResponse(true);
         } catch (error) {
@@ -525,7 +528,10 @@ export async function toolsAPI(): Promise<void> {
                 return new MessageError('Invalid load tools parameter');
             }
             const item = await DatabaseServer.getToolById(msg.id);
-            if (!item || item.owner !== msg.owner) {
+            if (!item) {
+                throw new Error('Invalid tool');
+            }
+            if (item.status !== ModuleStatus.PUBLISHED && item.owner !== msg.owner) {
                 throw new Error('Invalid tool');
             }
             return new MessageResponse(item);
@@ -543,6 +549,9 @@ export async function toolsAPI(): Promise<void> {
 
             const item = await DatabaseServer.getToolById(msg.id);
             if (!item) {
+                throw new Error('Invalid tool');
+            }
+            if (item.status !== ModuleStatus.PUBLISHED && item.owner !== msg.owner) {
                 throw new Error('Invalid tool');
             }
 
@@ -632,6 +641,10 @@ export async function toolsAPI(): Promise<void> {
             const { messageId, owner } = msg;
             if (!messageId) {
                 throw new Error('Message ID in body is empty');
+            }
+            const oldTool = await DatabaseServer.getTool({ messageId });
+            if (oldTool) {
+                throw new Error('The tool already exists');
             }
             const notifier = emptyNotifier();
             const users = new Users();
