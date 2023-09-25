@@ -858,7 +858,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 event.data.parent?.addChild(module, event.data.index);
             }
             if (event.data.operation === 'tool') {
-                const config = this.tools.find(e => e.uuid === event.data.name);
+                const config = this.tools.find(e => e.messageId === event.data.name);
                 const tool = this.rootTemplate.newTool(config);
                 event.data.parent?.addChild(tool, event.data.index);
             }
