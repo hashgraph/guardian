@@ -1,22 +1,5 @@
-import {
-    DocumentComparator,
-    HashComparator,
-    ICompareOptions,
-    ModuleComparator,
-    ModuleModel,
-    PolicyComparator,
-    PolicyModel,
-    SchemaComparator,
-    SchemaModel
-} from '@analytics';
-import {
-    DatabaseServer,
-    InboundMessageIdentityDeserializer,
-    Logger,
-    MessageError,
-    MessageResponse,
-    OutboundResponseIdentitySerializer
-} from '@guardian/common';
+import { DocumentComparator, HashComparator, ICompareOptions, ModuleComparator, ModuleModel, PolicyComparator, PolicyModel, SchemaComparator, SchemaModel } from '@analytics';
+import { DatabaseServer, Logger, MessageError, MessageResponse, } from '@guardian/common';
 import { ApiResponse } from '@api/helpers/api-response';
 import { MessageAPI, UserRole } from '@guardian/interfaces';
 import { Controller, Module } from '@nestjs/common';
@@ -318,8 +301,8 @@ export async function analyticsAPI(): Promise<void> {
                     `nats://${process.env.MQ_ADDRESS}:4222`
                 ],
                 queue: 'analytics-service',
-                serializer: new OutboundResponseIdentitySerializer(),
-                deserializer: new InboundMessageIdentityDeserializer(),
+                // serializer: new OutboundResponseIdentitySerializer(),
+                // deserializer: new InboundMessageIdentityDeserializer(),
             }
         }]),
     ],
