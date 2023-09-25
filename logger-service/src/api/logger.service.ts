@@ -44,7 +44,7 @@ export class LoggerService {
                 filters.datetime.$lt = new Date(filters.datetime.$lt);
             }
             const pageParameters = msg && msg.pageParameters || {};
-            if (!pageParameters.limit || pageParameters.limit > 2000) {
+            if (!pageParameters.limit) {
                 pageParameters.limit = 2000;
             }
             const logs = await logRepository.find(filters, {
@@ -56,7 +56,6 @@ export class LoggerService {
             const totalCount = await logRepository.count(filters as any);
             const directLink = new LargePayloadContainer().addObject(Buffer.from(JSON.stringify(logs)));
             return new MessageResponse({
-                logs,
                 directLink,
                 totalCount
             });
