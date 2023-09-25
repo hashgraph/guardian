@@ -44,9 +44,9 @@ export class LoggerService {
                 filters.datetime.$lt = new Date(filters.datetime.$lt);
             }
             const pageParameters = msg && msg.pageParameters || {};
-            if (!pageParameters.limit) {
-                pageParameters.limit = 2000;
-            }
+            // if (!pageParameters.limit) {
+            //     pageParameters.limit = 2000;
+            // }
             const logs = await logRepository.find(filters, {
                     orderBy: {
                         datetime: msg.sortDirection && msg.sortDirection.toUpperCase() || 'DESC'
