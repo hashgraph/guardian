@@ -639,17 +639,18 @@ export async function toolsAPI(): Promise<void> {
     ApiResponse(MessageAPI.TOOL_IMPORT_MESSAGE, async (msg) => {
         try {
             const { messageId, owner } = msg;
-            if (!messageId) {
+            if (!messageId || typeof messageId !== 'string') {
                 throw new Error('Message ID in body is empty');
             }
-            const oldTool = await DatabaseServer.getTool({ messageId });
+            const id = messageId.trim();
+            const oldTool = await DatabaseServer.getTool({ messageId: id });
             if (oldTool) {
                 throw new Error('The tool already exists');
             }
             const notifier = emptyNotifier();
             const users = new Users();
             const root = await users.getHederaAccount(owner);
-            const item = await importToolByMessage(root, messageId, notifier);
+            const item = await importToolByMessage(root, id, notifier);
             return new MessageResponse(item);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -680,16 +681,17 @@ export async function toolsAPI(): Promise<void> {
         const { messageId, owner, task } = msg;
         const notifier = await initNotifier(task);
         RunFunctionAsync(async () => {
-            if (!messageId) {
+            if (!messageId || typeof messageId !== 'string') {
                 throw new Error('Message ID in body is empty');
             }
-            const oldTool = await DatabaseServer.getTool({ messageId });
+            const id = messageId.trim();
+            const oldTool = await DatabaseServer.getTool({ messageId: id });
             if (oldTool) {
                 throw new Error('The tool already exists');
             }
             const users = new Users();
             const root = await users.getHederaAccount(owner);
-            const item = await importToolByMessage(root, messageId, notifier);
+            const item = await importToolByMessage(root, id, notifier);
             notifier.result({
                 policyId: item.id,
                 errors: []

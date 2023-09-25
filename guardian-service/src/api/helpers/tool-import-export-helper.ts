@@ -71,6 +71,10 @@ export async function importToolByMessage(
         hederaAccount.hederaAccountId,
         hederaAccount.hederaAccountKey
     );
+    if (!messageId || typeof messageId !== 'string') {
+        throw new Error('Invalid Message Id');
+    }
+    messageId = messageId.trim();
     const message = await messageServer.getMessage<ToolMessage>(messageId);
     if (!message) {
         throw new Error('Invalid Message');
