@@ -3882,6 +3882,39 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /schema/{schemaId}/parents:
+    get:
+      operationId: SingleSchemaApi_getSchemaParents
+      summary: Returns all parent schemas.
+      description: Returns all parent schemas.
+      parameters:
+        - name: schemaId
+          required: true
+          in: path
+          description: Schema identifier
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchemaDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags:
+        - schema
+      security:
+        - bearerAuth: []
   /schemas:
     get:
       tags:
@@ -7540,6 +7573,49 @@ components:
           type: string
       required:
         - contractId
+    SchemaDTO:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        entity:
+          type: string
+        document:
+          type: string
+        uuid:
+          type: string
+        iri:
+          type: string
+        hash:
+          type: string
+        status:
+          type: string
+        topicId:
+          type: string
+        version:
+          type: string
+        owner:
+          type: string
+        messageId:
+          type: string
+      required:
+        - id
+        - name
+        - description
+        - entity
+        - document
+        - uuid
+        - iri
+        - hash
+        - status
+        - topicId
+        - version
+        - owner
+        - messageId
     SystemSchemaDTO:
       type: object
       properties:

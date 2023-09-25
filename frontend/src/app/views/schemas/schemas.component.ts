@@ -20,6 +20,7 @@ import { ExportSchemaDialog } from '../../modules/schema-engine/export-schema-di
 import { CompareSchemaDialog } from '../../modules/schema-engine/compare-schema-dialog/compare-schema-dialog.component';
 import { ModulesService } from '../../services/modules.service';
 import { ToolsService } from 'src/app/services/tools.service';
+import { AlertComponent, AlertType } from 'src/app/modules/common/alert/alert.component';
 
 enum SchemaType {
     System = 'system',
@@ -794,19 +795,39 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     public onDeleteSchema(element: Schema): void {
-        const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-            data: {
-                dialogTitle: 'Delete schema',
-                dialogText: 'Are you sure to delete schema?'
-            },
-            disableClose: true,
-            autoFocus: false
-        });
-        dialogRef.afterClosed().subscribe((result) => {
-            if (!result) {
-                return;
+        this.loading = true;
+        this.schemaService.getSchemaParents(element.id).subscribe((parents) => {
+            if (!Array.isArray(parents) || !parents.length) {
+                const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+                    data: {
+                        dialogTitle: 'Delete schema',
+                        dialogText: 'Are you sure to delete schema?'
+                    },
+                    disableClose: true,
+                    autoFocus: false
+                });
+                dialogRef.afterClosed().subscribe((result) => {
+                    if (!result) {
+                        return;
+                    }
+                    this.deleteSchema(element.id);
+                });
+            } else {
+                this.dialog.open(AlertComponent, {
+                    data: {
+                        type: AlertType.WARN,
+                        text:  `There are some schemas that depend on this schema:\r\n${parents.map((parent) =>
+                            SchemaHelper.getSchemaName(
+                                parent.name,
+                                parent.version || parent.sourceVersion,
+                                parent.status
+                            )
+                        ).join('\r\n')}`
+                    }
+                });
             }
-            this.deleteSchema(element.id);
+        }, () => {}, () => {
+            this.loading = false;
         });
     }
 

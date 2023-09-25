@@ -207,7 +207,7 @@ export class TagsApi {
             if (error) {
                 throw new HttpException(error, HttpStatus.FORBIDDEN)
             }
-            await guardians.deleteSchema(schemaId);
+            await guardians.deleteSchema(schemaId, user?.did);
             return res.json(true);
         } catch (error) {
             await (new Logger()).error(error, ['API_GATEWAY']);
