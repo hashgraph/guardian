@@ -14,7 +14,7 @@
     "@mikro-orm/mongodb": "5.7.12",
     "@nestjs/common": "^9.4.1",
     "@nestjs/core": "^9.4.1",
-    "@nestjs/microservices": "^9.4.1",
+    "@nestjs/microservices": "^10.2.6",
     "@transmute/credentials-context": "0.7.0-unstable.80",
     "@transmute/did-context": "0.7.0-unstable.80",
     "@transmute/ed25519-signature-2018": "0.7.0-unstable.80",
