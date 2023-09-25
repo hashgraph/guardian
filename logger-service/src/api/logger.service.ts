@@ -2,7 +2,7 @@ import { Log } from '@entity/log';
 import { DataBaseHelper, LargePayloadContainer, MessageError, MessageResponse } from '@guardian/common';
 import { MessageAPI } from '@guardian/interfaces';
 import { Controller, Module } from '@nestjs/common';
-import { ClientsModule, Ctx, Deserializer, MessagePattern, NatsContext, Payload, Serializer, Transport } from '@nestjs/microservices';
+import { ClientsModule, Ctx, MessagePattern, NatsContext, Payload, Transport } from '@nestjs/microservices';
 import process from 'process';
 
 @Controller()
@@ -44,9 +44,9 @@ export class LoggerService {
                 filters.datetime.$lt = new Date(filters.datetime.$lt);
             }
             const pageParameters = msg && msg.pageParameters || {};
-            if (!pageParameters.limit) {
-                pageParameters.limit = 2000;
-            }
+            // if (!pageParameters.limit) {
+            //     pageParameters.limit = 2000;
+            // }
             const logs = await logRepository.find(filters, {
                     orderBy: {
                         datetime: msg.sortDirection && msg.sortDirection.toUpperCase() || 'DESC'
@@ -90,22 +90,22 @@ export class LoggerService {
     }
 }
 
-class LogClientSerializer implements Serializer {
-    serialize(value: any, options?: Record<string, any>): any {
-        console.log('s', value, options);
-
-        value.data = JSON.stringify(value.data)
-
-        return value;
-    }
-}
-
-class LogClientDeserializer implements Deserializer {
-    deserialize(value: any, options?: Record<string, any>): any {
-        console.log('d', value, options);
-        return value;
-    }
-}
+// class LogClientSerializer implements Serializer {
+//     serialize(value: any, options?: Record<string, any>): any {
+//         console.log('s', value, options);
+//
+//         value.data = JSON.stringify(value.data)
+//
+//         return value;
+//     }
+// }
+//
+// class LogClientDeserializer implements Deserializer {
+//     deserialize(value: any, options?: Record<string, any>): any {
+//         console.log('d', value, options);
+//         return value;
+//     }
+// }
 
 /**
  * Logger module
@@ -120,8 +120,8 @@ class LogClientDeserializer implements Deserializer {
                     `nats://${process.env.MQ_ADDRESS}:4222`
                 ],
                 queue: 'logger-service',
-                serializer: new LogClientSerializer(),
-                deserializer: new LogClientDeserializer(),
+                // serializer: new LogClientSerializer(),
+                // deserializer: new LogClientDeserializer(),
             }
         }]),
     ],
