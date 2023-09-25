@@ -547,7 +547,7 @@ export async function toolsAPI(): Promise<void> {
             }
 
             const item = await DatabaseServer.getToolById(msg.id);
-            if (!item || item.owner !== msg.owner) {
+            if (!item) {
                 throw new Error('Invalid tool');
             }
 
@@ -574,7 +574,7 @@ export async function toolsAPI(): Promise<void> {
             }
 
             const item = await DatabaseServer.getToolById(msg.id);
-            if (!item || item.owner !== msg.owner) {
+            if (!item) {
                 throw new Error('Invalid tool');
             }
 
