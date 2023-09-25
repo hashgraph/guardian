@@ -1,4 +1,4 @@
-import { ApplicationState, COMMON_CONNECTION_CONFIG, DataBaseHelper, LargePayloadContainer, Logger, MessageBrokerChannel, Migration } from '@guardian/common';
+import { ApplicationState, COMMON_CONNECTION_CONFIG, DataBaseHelper, LargePayloadContainer, MessageBrokerChannel, Migration } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
@@ -44,8 +44,8 @@ Promise.all([
             servers: [
                 `nats://${process.env.MQ_ADDRESS}:4222`
             ],
-            serializer: new LoggerSerializer(),
-            deserializer: new LoggerDeserializer(),
+            // serializer: new LoggerSerializer(),
+            // deserializer: new LoggerDeserializer(),
         },
     }),
 ]).then(async values => {
@@ -59,7 +59,6 @@ Promise.all([
     state.updateState(ApplicationStates.STARTED);
 
     state.updateState(ApplicationStates.INITIALIZING);
-    new Logger().setConnection(mqConnection);
     const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
     if (Number.isInteger(maxPayload)) {
         new LargePayloadContainer().runServer();
