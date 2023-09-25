@@ -513,6 +513,15 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Get schema parents
+     * @param id Schema identifier
+     * @returns Schemas
+     */
+    public async getSchemaParents(id: string, owner: string): Promise<ISchema[]> {
+        return await this.sendMessage(MessageAPI.GET_SCHEMA_PARENTS, { id, owner });
+    }
+
+    /**
      * Import schema
      *
      * @param {string[]} messageIds - schema uuid
@@ -649,8 +658,8 @@ export class Guardians extends NatsService {
      *
      * @returns {ISchema[]} - all schemas
      */
-    public async deleteSchema(id: string, needResult = false): Promise<ISchema[] | boolean> {
-        return await this.sendMessage(MessageAPI.DELETE_SCHEMA, { id, needResult });
+    public async deleteSchema(id: string, owner: string, needResult = false): Promise<ISchema[] | boolean> {
+        return await this.sendMessage(MessageAPI.DELETE_SCHEMA, { id, owner, needResult });
     }
 
     /**

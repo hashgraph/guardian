@@ -13,6 +13,7 @@ type ITask = { taskId: string, expectation: number };
 @Injectable()
 export class SchemaService {
     private readonly url: string = `${API_BASE_URL}/schemas`;
+    private readonly singleSchemaUrl: string = `${API_BASE_URL}/schema`;
 
     constructor(
         private http: HttpClient,
@@ -162,5 +163,9 @@ export class SchemaService {
 
     public getSystemSchemasByEntity(entity: SchemaEntity): Observable<ISchema> {
         return this.http.get<ISchema>(`${this.url}/system/entity/${entity}`);
+    }
+
+    public getSchemaParents(id: string): Observable<ISchema[]> {
+        return this.http.get<ISchema[]>(`${this.singleSchemaUrl}/${id}/parents`);
     }
 }

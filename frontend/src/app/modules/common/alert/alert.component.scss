@@ -1,0 +1,16 @@
+.dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    &[type='Error'] {
+        color: darkred;
+    }
+    &[type='Warning'] {
+        color: goldenrod;
+    }
+    &[type='Info'] {
+        color: var(--primary-color);
+    }
+}

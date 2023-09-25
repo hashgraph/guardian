@@ -132,6 +132,52 @@ export async function schemaAPI(): Promise<void> {
     });
 
     /**
+     * Return parent schemas
+     *
+     * @param {Object} [msg] - payload
+     *
+     * @returns {ISchema[]} - Parent schemas
+     */
+    ApiResponse(MessageAPI.GET_SCHEMA_PARENTS, async (msg) => {
+        try {
+            if (!msg) {
+                return new MessageError('Invalid load schema parameter');
+            }
+
+            const { id, owner } = msg;
+            if (!id) {
+                return new MessageError('Invalid schema id');
+            }
+            if (!owner) {
+                return new MessageError('Invalid schema owner');
+            }
+
+            const schema = await DatabaseServer.getSchema({
+                id,
+                owner
+            });
+            if (!schema) {
+                return new MessageError('Schema is not found');
+            }
+
+            return new MessageResponse(await DatabaseServer.getSchemas({
+                defs: schema.iri,
+                owner
+            }, {
+                fields: [
+                    'name',
+                    'version',
+                    'sourceVersion',
+                    'status'
+                ]
+            }));
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    /**
      * Return schemas
      *
      * @param {Object} [payload] - filters
@@ -252,10 +298,48 @@ export async function schemaAPI(): Promise<void> {
             if (!msg) {
                 return new MessageError('Invalid delete schema parameter');
             }
-            if (msg.id) {
-                await deleteSchema(msg.id, emptyNotifier());
+
+            const { id, owner, needResult } = msg;
+            if (!id) {
+                return new MessageError('Invalid schema id');
             }
-            if (msg.needResult) {
+            if (!owner) {
+                return new MessageError('Invalid schema owner');
+            }
+
+            const schema = await DatabaseServer.getSchema({
+                id, owner
+            });
+            if (!schema) {
+                return new MessageError('Schema is not found');
+            }
+
+            const parents = await DatabaseServer.getSchemas({
+                defs: schema.iri,
+                owner
+            }, {
+                fields: [
+                    'name',
+                    'version',
+                    'sourceVersion',
+                    'status'
+                ]
+            });
+            if (parents.length > 0) {
+                return new MessageError(
+                    `Schema depends on: ${parents.map((parent) =>
+                        SchemaHelper.getSchemaName(
+                            parent.name,
+                            parent.version || parent.sourceVersion,
+                            parent.status
+                        )
+                    ).join(', ')}`
+                );
+            }
+
+            await deleteSchema(id, emptyNotifier());
+
+            if (needResult) {
                 const schemas = await DatabaseServer.getSchemas(null, { limit: 100 });
                 return new MessageResponse(schemas);
             } else {
