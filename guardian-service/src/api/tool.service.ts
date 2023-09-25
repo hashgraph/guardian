@@ -683,6 +683,10 @@ export async function toolsAPI(): Promise<void> {
             if (!messageId) {
                 throw new Error('Message ID in body is empty');
             }
+            const oldTool = await DatabaseServer.getTool({ messageId });
+            if (oldTool) {
+                throw new Error('The tool already exists');
+            }
             const users = new Users();
             const root = await users.getHederaAccount(owner);
             const item = await importToolByMessage(root, messageId, notifier);
