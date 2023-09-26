@@ -1,4 +1,5 @@
 import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
+import { CommonBlock } from './common';
 
 /**
  * Retirement block
@@ -16,6 +17,7 @@ export class RetirementBlock {
      */
     public static async validate(validator: BlockValidator, ref: IBlockProp): Promise<void> {
         try {
+            await CommonBlock.validate(validator, ref);
             if (!ref.options.tokenId) {
                 validator.addError('Option "tokenId" is not set');
             } else if (typeof ref.options.tokenId !== 'string') {

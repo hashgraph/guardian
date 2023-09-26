@@ -37,16 +37,17 @@ export async function importArtifactsByFiles(
     notifier.start('Import artifacts');
     const addedArtifacts = [];
     for (const artifact of artifacts) {
+        const oldArtifactUUID = artifact.uuid;
+        const newArtifactUUID = GenerateUUIDv4();
         delete artifact._id;
         delete artifact.id;
-        const newArtifactUUID = GenerateUUIDv4();
         artifact.owner = owner;
         artifact.uuid = newArtifactUUID;
         artifact.type = getArtifactType(artifact.extention);
-        addedArtifacts.push(await DatabaseServer.saveArtifact(artifact));
+        const file = await DatabaseServer.saveArtifact(artifact)
         await DatabaseServer.saveArtifactFile(newArtifactUUID, artifact.data);
-
-        artifactsMap.set(artifact.uuid, newArtifactUUID);
+        addedArtifacts.push(file);
+        artifactsMap.set(oldArtifactUUID, newArtifactUUID);
     }
 
     notifier.completed();

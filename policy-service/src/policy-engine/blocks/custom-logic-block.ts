@@ -140,11 +140,11 @@ export class CustomLogicBlock {
                                 idType === 'DOCUMENT'
                                     ? documents[0].document.id
                                     : await this.generateId(
-                                          idType,
-                                          user,
-                                          hederaAccount.hederaAccountId,
-                                          hederaAccount.hederaAccountKey
-                                      ),
+                                        idType,
+                                        user,
+                                        hederaAccount.hederaAccountId,
+                                        hederaAccount.hederaAccountKey
+                                    ),
                             policyId: ref.policyId,
                         });
                         if (ref.dryRun) {
@@ -183,10 +183,8 @@ export class CustomLogicBlock {
                     }
                 }
 
-                const execCodeArtifacts =
-                    ref.options.artifacts?.filter(
-                        (artifact) => artifact.type === ArtifactType.EXECUTABLE_CODE
-                    ) || [];
+                const files = Array.isArray(ref.options.artifacts) ? ref.options.artifacts : [];
+                const execCodeArtifacts = files.filter((file: any) => file.type === ArtifactType.EXECUTABLE_CODE);
                 let execCode = '';
                 for (const execCodeArtifact of execCodeArtifacts) {
                     const artifactFile = await PolicyUtils.getArtifactFile(ref, execCodeArtifact.uuid);
@@ -194,10 +192,7 @@ export class CustomLogicBlock {
                 }
 
                 const artifacts = [];
-                const jsonArtifacts =
-                    ref.options.artifacts?.filter(
-                        (artifact) => artifact.type === ArtifactType.JSON
-                    ) || [];
+                const jsonArtifacts = files.filter((file: any) => file.type === ArtifactType.JSON);
                 for (const jsonArtifact of jsonArtifacts) {
                     const artifactFile = await PolicyUtils.getArtifactFile(ref, jsonArtifact.uuid);
                     artifacts.push(JSON.parse(artifactFile));

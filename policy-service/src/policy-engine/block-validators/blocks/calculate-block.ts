@@ -2,6 +2,7 @@ import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
 import { CalculateMathAddon } from './calculate-math-addon';
 import { CalculateMathVariables } from './calculate-math-variables';
 import { Schema } from '@guardian/interfaces';
+import { CommonBlock } from './common';
 
 /**
  * Calculate block
@@ -19,6 +20,7 @@ export class CalculateContainerBlock {
      */
     public static async validate(validator: BlockValidator, ref: IBlockProp): Promise<void> {
         try {
+            await CommonBlock.validate(validator, ref);
             // Test schema options
             if (!ref.options.inputSchema) {
                 validator.addError('Option "inputSchema" is not set');

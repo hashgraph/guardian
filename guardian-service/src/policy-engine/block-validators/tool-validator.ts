@@ -423,4 +423,12 @@ export class ToolValidator {
             return {};
         }
     }
+
+    /**
+     * Get artifact
+     * @param uuid
+     */
+    public async getArtifact(uuid: string) {
+        return await DatabaseServer.getArtifact({ uuid });
+    }
 }

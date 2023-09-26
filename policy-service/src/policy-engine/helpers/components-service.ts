@@ -62,7 +62,10 @@ export class ComponentsService {
      */
     public async loadArtifactByID(uuid: string): Promise<string> {
         const artifactFile = await DatabaseServer.getArtifactFileByUUID(uuid);
-        return artifactFile?.toString() || '';
+        if(artifactFile) {
+            return artifactFile.toString();
+        }
+        return null;
     }
 
     /**

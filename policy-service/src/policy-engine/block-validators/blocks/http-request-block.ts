@@ -1,4 +1,5 @@
 import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
+import { CommonBlock } from './common';
 
 /**
  * Http request block
@@ -15,13 +16,20 @@ export class HttpRequestBlock {
      * @param config
      */
     public static async validate(validator: BlockValidator, ref: IBlockProp): Promise<void> {
-        if (!ref.options.url?.trim()) {
-            validator.addError('Option "url" must be set');
-        }
+        try {
+            await CommonBlock.validate(validator, ref);
 
-        if (!['GET', 'POST', 'PUT', 'PATCH', 'DELETE'].find(item => item === ref.options.method?.toUpperCase())) {
-            validator.addError(`Option "method" must be "GET", "POST", "PUT", "PATCH" or "DELETE"`);
+            if (!ref.options.url?.trim()) {
+                validator.addError('Option "url" must be set');
+            }
+
+            if (!['GET', 'POST', 'PUT', 'PATCH', 'DELETE'].find(item => item === ref.options.method?.toUpperCase())) {
+                validator.addError(`Option "method" must be "GET", "POST", "PUT", "PATCH" or "DELETE"`);
+            }
+        } catch (error) {
+            validator.addError(
+                `Unhandled exception ${validator.getErrorMessage(error)}`
+            );
         }
     }
-
 }

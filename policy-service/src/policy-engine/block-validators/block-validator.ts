@@ -317,6 +317,14 @@ export class BlockValidator {
     }
 
     /**
+     * Get artifact
+     * @param uuid
+     */
+    public async getArtifact(uuid: string) {
+        return await this.validator.getArtifact(uuid);
+    }
+
+    /**
      * Parse formula
      * @param formula
      */

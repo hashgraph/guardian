@@ -1325,7 +1325,15 @@ export class PolicyUtils {
      * @param uuid
      */
     public static async getArtifactFile(ref: AnyBlockType, uuid: string): Promise<string> {
-        return await ref.components.loadArtifactByID(uuid);
+        if (!uuid) {
+            throw new Error(`File does not exist`);
+        }
+        const file = await ref.components.loadArtifactByID(uuid);
+        if (typeof file === 'string') {
+            return file;
+        } else {
+            throw new Error(`File does not exist`);
+        }
     }
 
     /**

@@ -1,4 +1,5 @@
 import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
+import { CommonBlock } from './common';
 
 /**
  * External topic block
@@ -16,6 +17,7 @@ export class ExternalTopicBlock {
      */
     public static async validate(validator: BlockValidator, ref: IBlockProp): Promise<void> {
         try {
+            await CommonBlock.validate(validator, ref);
             if (ref.options.schema) {
                 if (typeof ref.options.schema !== 'string') {
                     validator.addError('Option "schema" must be a string');

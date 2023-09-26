@@ -1,4 +1,5 @@
 import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
+import { CommonBlock } from './common';
 
 /**
  * Document action clock with UI
@@ -16,6 +17,7 @@ export class InterfaceDocumentActionBlock {
      */
     public static async validate(validator: BlockValidator, ref: IBlockProp): Promise<void> {
         try {
+            await CommonBlock.validate(validator, ref);
             if (!ref.options.type) {
                 validator.addError('Option "type" is not set');
             } else {

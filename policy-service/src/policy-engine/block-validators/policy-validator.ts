@@ -357,4 +357,12 @@ export class PolicyValidator {
     public getTopicTemplate(topicName: string): any {
         return this.policyTopics.find(e => e.name === topicName);
     }
+
+    /**
+     * Get artifact
+     * @param uuid
+     */
+    public async getArtifact(uuid: string) {
+        return await DatabaseServer.getArtifact({ uuid });
+    }
 }
