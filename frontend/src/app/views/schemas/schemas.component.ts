@@ -392,8 +392,7 @@ export class SchemaConfigComponent implements OnInit {
             this.finishLoadSchemas(schemasResponse);
             this.loadTagsData();
         }, (e) => {
-            console.error(e.error);
-            this.loading = false;
+            this.loadError(e);
         });
     }
 
@@ -407,7 +406,7 @@ export class SchemaConfigComponent implements OnInit {
         this.schemasMap = {};
         for (let i = 0; i < schemas.length; i++) {
             const schema: any = schemas[i];
-            schema.readonly = this.readonlyByTopic[schema.topicId];
+            schema.readonly = schema.readonly || this.readonlyByTopic[schema.topicId];
             if (this.schemasMap[schema.topicId]) {
                 this.schemasMap[schema.topicId].push(schema);
             } else {
@@ -427,8 +426,7 @@ export class SchemaConfigComponent implements OnInit {
                     this.loading = false;
                 }, 500);
             }, (e) => {
-                console.error(e.error);
-                this.loading = false;
+                this.loadError(e);
             });
         } else {
             setTimeout(() => {
@@ -840,7 +838,9 @@ export class SchemaConfigComponent implements OnInit {
                     }
                 });
             }
-        }, () => { }, () => {
+        }, (e) => {
+            this.loadError(e);
+        }, () => {
             this.loading = false;
         });
     }
