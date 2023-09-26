@@ -300,9 +300,17 @@ export class ToolValidator {
         }
         for (const item of this.errors) {
             blocksErrors.push({
-                id: null,
-                name: null,
+                id: this.uuid,
+                name: 'tool',
                 errors: [item],
+                isValid: false
+            });
+        }
+        if (!valid) {
+            blocksErrors.push({
+                id: this.uuid,
+                name: 'tool',
+                errors: ['Tool is invalid'],
                 isValid: false
             });
         }

@@ -305,9 +305,17 @@ export class ModuleValidator {
         }
         for (const item of this.errors) {
             blocksErrors.push({
-                id: null,
-                name: null,
+                id: this.uuid,
+                name: 'module',
                 errors: [item],
+                isValid: false
+            });
+        }
+        if (!valid) {
+            blocksErrors.push({
+                id: this.uuid,
+                name: 'module',
+                errors: ['Module is invalid'],
                 isValid: false
             });
         }
