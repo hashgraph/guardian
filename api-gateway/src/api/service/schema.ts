@@ -1495,7 +1495,7 @@ export class SchemaApi {
             if (schema.active) {
                 throw new HttpException('Schema is active.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
-            await guardians.deleteSchema(schemaId, user?.did);
+            await guardians.deleteSchema(schemaId, user.username);
             return res.status(204).send();
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);

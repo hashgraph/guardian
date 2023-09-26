@@ -806,43 +806,51 @@ export class SchemaConfigComponent implements OnInit {
         });
     }
 
-    public onDeleteSchema(element: Schema): void {
-        this.loading = true;
-        this.schemaService.getSchemaParents(element.id).subscribe((parents) => {
-            if (!Array.isArray(parents) || !parents.length) {
-                const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-                    data: {
-                        dialogTitle: 'Delete schema',
-                        dialogText: 'Are you sure to delete schema?'
-                    },
-                    disableClose: true,
-                    autoFocus: false
-                });
-                dialogRef.afterClosed().subscribe((result) => {
-                    if (!result) {
-                        return;
-                    }
-                    this.deleteSchema(element.id);
-                });
-            } else {
-                this.dialog.open(AlertComponent, {
-                    data: {
-                        type: AlertType.WARN,
-                        text: `There are some schemas that depend on this schema:\r\n${parents.map((parent) =>
-                            SchemaHelper.getSchemaName(
-                                parent.name,
-                                parent.version || parent.sourceVersion,
-                                parent.status
-                            )
-                        ).join('\r\n')}`
-                    }
-                });
-            }
-        }, (e) => {
-            this.loadError(e);
-        }, () => {
-            this.loading = false;
-        });
+    public onCheckDeleteSchema(element: Schema): void {
+        if (this.type === SchemaType.System) {
+            this.onDeleteSchema(element);
+        } else {
+            this.loading = true;
+            this.schemaService.getSchemaParents(element.id).subscribe((parents) => {
+                this.onDeleteSchema(element, parents);
+            }, (e) => {
+                this.loadError(e);
+            }, () => {
+                this.loading = false;
+            });
+        }
+    }
+
+    private onDeleteSchema(element: Schema, parents?: ISchema[]): void {
+        if (!Array.isArray(parents) || !parents.length) {
+            const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+                data: {
+                    dialogTitle: 'Delete schema',
+                    dialogText: 'Are you sure to delete schema?'
+                },
+                disableClose: true,
+                autoFocus: false
+            });
+            dialogRef.afterClosed().subscribe((result) => {
+                if (!result) {
+                    return;
+                }
+                this.deleteSchema(element.id);
+            });
+        } else {
+            this.dialog.open(AlertComponent, {
+                data: {
+                    type: AlertType.WARN,
+                    text: `There are some schemas that depend on this schema:\r\n${parents.map((parent) =>
+                        SchemaHelper.getSchemaName(
+                            parent.name,
+                            parent.version || parent.sourceVersion,
+                            parent.status
+                        )
+                    ).join('\r\n')}`
+                }
+            });
+        }
     }
 
     public onNewVersion(element: Schema): void {
