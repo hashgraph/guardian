@@ -11,7 +11,7 @@
     "dependencies": {
         "@guardian/common": "^2.17.0-prerelease",
         "@guardian/interfaces": "^2.17.0-prerelease",
-        "@nestjs/common": "^9.4.1",
+        "@nestjs/common": "^10.2.6",
         "@nestjs/core": "^9.4.1",
         "@nestjs/jwt": "^10.0.3",
         "@nestjs/microservices": "^9.4.1",
