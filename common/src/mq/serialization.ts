@@ -1,4 +1,4 @@
-import { Serializer, ConsumerDeserializer, IncomingRequest } from '@nestjs/microservices';
+import { ConsumerDeserializer, IncomingRequest, OutgoingResponse, ProducerSerializer } from '@nestjs/microservices';
 
 /**
  * NestJS deserializer
@@ -10,7 +10,7 @@ export class InboundMessageIdentityDeserializer implements ConsumerDeserializer 
      * @param options
      */
     deserialize(value: any, options?: Record<string, any>): IncomingRequest {
-        console.log(value, options);
+        console.log('d', value, options);
         return value;
     }
 }
@@ -18,14 +18,14 @@ export class InboundMessageIdentityDeserializer implements ConsumerDeserializer 
 /**
  * NestJS serializer
  */
-export class OutboundResponseIdentitySerializer implements Serializer {
+export class OutboundResponseIdentitySerializer implements ProducerSerializer {
     /**
      * Serialize
      * @param value
      * @param options
      */
-    serialize(value: any, options?: Record<string, any>): any {
-        console.log(value, options);
-        return value;
+    serialize(value: any, options?: Record<string, any>): OutgoingResponse {
+        console.log('s', value, options);
+        return value.data;
     }
 }

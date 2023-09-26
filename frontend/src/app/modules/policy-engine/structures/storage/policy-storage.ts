@@ -23,6 +23,10 @@ export class PolicyStorage {
         }
     }
 
+    public destroy(): void {
+
+    }
+
     public get current(): PolicyStorageItem | null {
         return this._policyStorage.current();
     }

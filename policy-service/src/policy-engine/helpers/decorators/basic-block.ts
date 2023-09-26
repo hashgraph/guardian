@@ -9,6 +9,7 @@ import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/inte
 import { Logger, DatabaseServer } from '@guardian/common';
 import deepEqual from 'deep-equal';
 import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
+import { ComponentsService } from '../components-service';
 
 /**
  * Basic block decorator
@@ -93,11 +94,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              */
             protected logger: Logger;
             /**
-             * Database instance
-             * @protected
-             */
-            protected databaseServer: DatabaseServer;
-            /**
              * Policy id
              */
             public policyId: string;
@@ -113,6 +109,10 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * Topic id
              */
             public topicId: string;
+            /**
+             * Topic id
+             */
+            public toolId: string;
             /**
              * Source links
              */
@@ -141,6 +141,14 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * Block variables
              */
             public readonly variables: any[];
+            /**
+             * Components service
+             */
+            public readonly components: ComponentsService;
+            /**
+             * Database service
+             */
+            public readonly databaseServer: DatabaseServer;
 
             constructor(
                 _uuid: string,
@@ -148,7 +156,8 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 _tag: string,
                 _permissions: PolicyRole[],
                 _parent: IPolicyBlock,
-                _options: any
+                _options: any,
+                _components: ComponentsService
             ) {
                 const tag = _tag || defaultOptions.tag;
                 const permissions = _permissions || defaultOptions.permissions;
@@ -165,9 +174,10 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                     parent,
                     _options
                 );
+                this.components = _components;
+                this.databaseServer = this.components.databaseServer;
                 this._dryRun = null;
                 this.logger = new Logger();
-                this.databaseServer = new DatabaseServer(this.dryRun);
 
                 if (this.parent) {
                     this.parent.registerChild(this as any as IPolicyBlock);
@@ -212,20 +222,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                     return this.parent.getNextChild(this.uuid);
                 }
                 return undefined;
-            }
-
-            /**
-             * If policy contain multiple groups
-             */
-            public get isMultipleGroups(): boolean {
-                if (
-                    this.policyInstance &&
-                    this.policyInstance.policyGroups &&
-                    this.policyInstance.policyGroups.length
-                ) {
-                    return true;
-                }
-                return false;
             }
 
             /**
@@ -414,6 +410,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 } else if (user) {
                     users[user.did] = user;
                 }
+
                 for (const item of Object.values(users)) {
                     PolicyComponentsUtils.BlockUpdateFn(this as any, item);
                 }
@@ -469,7 +466,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 } else {
                     this._dryRun = null;
                 }
-                this.databaseServer.setDryRun(this._dryRun);
             }
 
             /**
@@ -481,23 +477,11 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             }
 
             /**
-             * Register Variables
+             * Set tool id
+             * @param id
              */
-            public registerVariables(): void {
-                const modules = PolicyComponentsUtils.GetModule<any>(this);
-                if (!modules) {
-                    return;
-                }
-
-                for (let index = 0; index < this.permissions.length; index++) {
-                    this.permissions[index] = modules.getModuleVariable(this.permissions[index], 'Role');
-                }
-
-                for (const variable of this.variables) {
-                    PolicyComponentsUtils.ReplaceObjectValue(this, variable.path, (value: any) => {
-                        return modules.getModuleVariable(value, variable.type);
-                    });
-                }
+            public setToolId(id: string): void {
+                this.toolId = id;
             }
 
             /**
@@ -516,7 +500,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * Is block active
              * @param user
              */
-            isActive(user: IPolicyUser): boolean {
+            public isActive(user: IPolicyUser): boolean {
                 if (!this.parent) {
                     return true;
                 }

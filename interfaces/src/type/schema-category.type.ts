@@ -5,5 +5,6 @@ export enum SchemaCategory {
     POLICY = 'POLICY',
     MODULE = 'MODULE',
     SYSTEM = 'SYSTEM',
-    TAG = 'TAG'
+    TAG = 'TAG',
+    TOOL = 'TOOL'
 }

@@ -389,7 +389,6 @@ export class DocumentModel implements IWeightModel {
      */
     public equalKey(doc: DocumentModel): boolean {
         const schemas = CompareUtils.compareSchemas(this._schemas, doc._schemas);
-        console.debug('equalKey ', schemas)
         return schemas < 0;
     }
 

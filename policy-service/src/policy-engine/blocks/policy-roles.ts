@@ -159,15 +159,13 @@ export class PolicyRolesBlock {
      * @param groupLabel
      */
     private getGroupConfig(ref: AnyBlockType, groupName: string, groupLabel: string): IGroupConfig {
-        const policyGroups: IGroupConfig[] = ref.policyInstance.policyGroups || [];
-        const groupConfig = policyGroups.find(e => e.name === groupName);
+        const groupConfig = PolicyUtils.getGroupTemplate<IGroupConfig>(ref, groupName);
 
         if (groupConfig) {
             const label = groupConfig.groupAccessType === GroupAccessType.Global ? groupConfig.name : groupLabel;
             return { ...groupConfig, label };
         } else {
-            const policyRoles: string[] = ref.policyInstance.policyRoles || [];
-            const roleConfig = policyRoles.find(e => e === groupName);
+            const roleConfig = PolicyUtils.getRoleTemplate<string>(ref, groupName);
             if (roleConfig) {
                 return {
                     name: roleConfig,
@@ -312,7 +310,7 @@ export class PolicyRolesBlock {
      * @private
      */
     private async createVC(ref: AnyBlockType, user: IPolicyUser, group: IUserGroup): Promise<string> {
-        const policySchema = await ref.databaseServer.getSchemaByType(ref.topicId, SchemaEntity.USER_ROLE);
+        const policySchema = await PolicyUtils.loadSchemaByType(ref, SchemaEntity.USER_ROLE);
         if (!policySchema) {
             return null;
         }
@@ -368,7 +366,7 @@ export class PolicyRolesBlock {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const roles: string[] = Array.isArray(ref.options.roles) ? ref.options.roles : [];
         const groups: string[] = Array.isArray(ref.options.groups) ? ref.options.groups : [];
-        const policyGroups: IGroupConfig[] = ref.policyInstance.policyGroups || [];
+        const policyGroups = PolicyUtils.getGroupTemplates<IGroupConfig>(ref);
         const groupMap = {};
         for (const item of policyGroups) {
             if (groups.indexOf(item.name) > -1) {
@@ -382,7 +380,7 @@ export class PolicyRolesBlock {
             roles,
             groups,
             groupMap,
-            isMultipleGroups: ref.isMultipleGroups,
+            isMultipleGroups: policyGroups.length > 0,
             uiMetaData: ref.options.uiMetaData
         }
     }
@@ -434,7 +432,6 @@ export class PolicyRolesBlock {
         }
 
         await PolicyComponentsUtils.UpdateUserInfoFn(user, ref.policyInstance);
-
         PolicyComponentsUtils.BlockUpdateFn(ref.parent, user);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
             group: group.uuid,

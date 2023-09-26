@@ -63,7 +63,7 @@ export class InterfaceDocumentActionBlock {
                             break;
                         }
 
-                        if (await validator.schemaNotExist(ref.options.schema)) {
+                        if (validator.schemaNotExist(ref.options.schema)) {
                             validator.addError(`Schema with id "${ref.options.schema}" does not exist`);
                             break;
                         }

@@ -25,4 +25,6 @@ export enum TaskAction {
     CLONE_POLICY = 'Clone policy',
     RESTORE_USER_PROFILE = 'Restore user profile',
     GET_USER_TOPICS = 'Get user topics',
+    CREATE_TOOL = 'Create tool',
+    PUBLISH_TOOL = 'Publish tool'
 }

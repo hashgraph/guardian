@@ -76,7 +76,7 @@ export class TokenOperationAddon {
     async getSchema(): Promise<Schema> {
         if (!this.schema) {
             const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-            this.schema = await ref.databaseServer.getSchemaByType(ref.topicId, SchemaEntity.ACTIVITY_IMPACT);
+            this.schema = await PolicyUtils.loadSchemaByType(ref, SchemaEntity.ACTIVITY_IMPACT);
             if (!this.schema) {
                 throw new BlockActionError('Waiting for schema', ref.blockType, ref.uuid);
             }

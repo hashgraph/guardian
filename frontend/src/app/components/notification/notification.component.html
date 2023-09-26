@@ -11,7 +11,7 @@
                 <b class="notification-menu-header__title">Notifications</b>
                 <div class="link-btn" (click)="readAll()">Mark all as read</div>
             </div>
-            <div class="notification-list" *ngIf="progressNotifications.length">
+            <div class="notification-list" *ngIf="progressNotifications?.length">
                 <div class="progress" *ngFor="let progress of progressNotifications">
                     <b class="progress__action" [matTooltip]="progress.action" matTooltipPosition="below"
                         matTooltipClass="guardian-tooltip small-guardian-tooltip" [matTooltipShowDelay]="1000">{{

@@ -36,6 +36,12 @@ Promise.all([
 
     await state.updateState(ApplicationStates.READY);
 
+    // c.addPolicy({
+    //     policyId: '650d7b55ea15c2ccb1e92e46',
+    //     skipRegistration: false,
+    //     policyServiceName: '1234'
+    // })
+
     startMetricsServer();
 }, (reason) => {
     console.log(reason);

@@ -80,9 +80,10 @@
                     <ng-container matColumnDef="schemas">
                         <th mat-header-cell *matHeaderCellDef> Schemas </th>
                         <td mat-cell *matCellDef="let element">
-                            <a [routerLink]="['/schemas']" [queryParams]="{ topic: element.topicId }">
-                                Schemas
-                            </a>
+                            <a [routerLink]="['/schemas']" [queryParams]="{ 
+                                type: 'policy',
+                                topic: element.topicId 
+                            }">Schemas</a>
                         </td>
                     </ng-container>
                     <ng-container matColumnDef="name">

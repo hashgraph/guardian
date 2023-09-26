@@ -82,7 +82,15 @@ export class TopicHelper {
             /**
              * Memo parameters object
              */
-            memoObj?: any
+            memoObj?: any,
+            /**
+             * Target ID
+             */
+            targetId?: string,
+            /**
+             * Target UUID
+             */
+            targetUUID?: string,
         },
         keys?: {
             /**
@@ -127,6 +135,8 @@ export class TopicHelper {
             type: config.type,
             policyId: config.policyId,
             policyUUID: config.policyUUID,
+            targetId: config.targetId,
+            targetUUID: config.targetUUID,
         }, adminKey, submitKey);
     }
 

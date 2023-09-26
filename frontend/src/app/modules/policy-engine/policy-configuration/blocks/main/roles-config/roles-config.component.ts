@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { GroupVariables, IModuleVariables, PolicyBlockModel, RoleVariables } from '../../../../structures';
+import { GroupVariables, IModuleVariables, PolicyBlock, RoleVariables } from '../../../../structures';
 
 /**
  * Settings for block of 'policyRolesBlock' type.
@@ -11,12 +11,12 @@ import { GroupVariables, IModuleVariables, PolicyBlockModel, RoleVariables } fro
     encapsulation: ViewEncapsulation.Emulated
 })
 export class RolesConfigComponent implements OnInit {
-    @Input('block') currentBlock!: PolicyBlockModel;
+    @Input('block') currentBlock!: PolicyBlock;
     @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();
 
     private moduleVariables!: IModuleVariables | null;
-    private item!: PolicyBlockModel;
+    private item!: PolicyBlock;
     
     propHidden: any = {
         main: false,
@@ -40,7 +40,7 @@ export class RolesConfigComponent implements OnInit {
         this.load(this.currentBlock);
     }
 
-    load(block: PolicyBlockModel) {
+    load(block: PolicyBlock) {
         this.moduleVariables = block.moduleVariables;
         this.item = block;
         this.properties = block.properties;

@@ -6,6 +6,7 @@ import { ImportType } from '@guardian/interfaces';
 import { InformService } from 'src/app/services/inform.service';
 import { TasksService } from 'src/app/services/tasks.service';
 import { ModulesService } from 'src/app/services/modules.service';
+import { ToolsService } from 'src/app/services/tools.service';
 
 /**
  * Dialog for creating policy.
@@ -27,19 +28,33 @@ export class ImportPolicyDialog {
 
     public isImportTypeSelected: boolean = false;
 
-  public innerWidth: any;
-  public innerHeight: any;
+    public innerWidth: any;
+    public innerHeight: any;
 
     constructor(
         public dialogRef: MatDialogRef<ImportPolicyDialog>,
         private fb: FormBuilder,
         private policyEngineService: PolicyEngineService,
         private modulesService: ModulesService,
+        private toolsService: ToolsService,
         private informService: InformService,
         private taskService: TasksService,
         @Inject(MAT_DIALOG_DATA) public data: any
     ) {
-        this.type = data.type === 'module' ? 'module' : 'policy';
+        switch (data.type) {
+            case 'policy':
+                this.type = 'policy';
+                break;
+            case 'module':
+                this.type = 'module';
+                break;
+            case 'tool':
+                this.type = 'tool';
+                break;
+            default:
+                this.type = 'policy';
+                break;
+        }
         if (data.timeStamp) {
             this.importType = ImportType.IPFS;
             this.isImportTypeSelected = true;
@@ -50,27 +65,27 @@ export class ImportPolicyDialog {
         }
     }
 
-  ngOnInit() {
-    this.innerWidth = window.innerWidth;
-    this.innerHeight = window.innerHeight;
-  }
+    ngOnInit() {
+        this.innerWidth = window.innerWidth;
+        this.innerHeight = window.innerHeight;
+    }
 
-    setImportType(importType: ImportType) {
+    public setImportType(importType: ImportType) {
         this.importType = importType;
         this.isImportTypeSelected = true;
     }
 
-    onNoClick(): void {
+    public onNoClick(): void {
         this.dialogRef.close(null);
     }
 
-    onAsyncError(error: any) {
+    public onAsyncError(error: any) {
         this.informService.processAsyncError(error);
         this.loading = false;
         this.taskId = undefined;
     }
 
-    onAsyncCompleted() {
+    public onAsyncCompleted() {
         if (this.taskId) {
             const taskId: string = this.taskId;
             this.taskId = undefined;
@@ -88,23 +103,27 @@ export class ImportPolicyDialog {
         }
     }
 
-    importFromMessage() {
-        if(this.type === 'module') {
+    public importFromMessage() {
+        if (this.type === 'module') {
             this.moduleFromMessage();
+        } else if (this.type === 'tool') {
+            this.toolFromMessage();
         } else {
             this.policyFromMessage();
         }
     }
 
-    importFromFile(file: any) {
-        if(this.type === 'module') {
+    public importFromFile(file: any) {
+        if (this.type === 'module') {
             this.moduleFromFile(file);
+        } else if (this.type === 'tool') {
+            this.toolFromFile(file);
         } else {
             this.policyFromFile(file);
         }
     }
 
-    moduleFromMessage() {
+    private moduleFromMessage() {
         if (!this.dataForm.valid) {
             return;
         }
@@ -122,7 +141,7 @@ export class ImportPolicyDialog {
         });
     }
 
-    moduleFromFile(file: any) {
+    private moduleFromFile(file: any) {
         const reader = new FileReader()
         reader.readAsArrayBuffer(file);
         reader.addEventListener('load', (e: any) => {
@@ -141,7 +160,7 @@ export class ImportPolicyDialog {
         });
     }
 
-    policyFromMessage() {
+    private policyFromMessage() {
         if (!this.dataForm.valid) {
             return;
         }
@@ -157,7 +176,7 @@ export class ImportPolicyDialog {
         });
     }
 
-    policyFromFile(file: any) {
+    private policyFromFile(file: any) {
         const reader = new FileReader()
         reader.readAsArrayBuffer(file);
         reader.addEventListener('load', (e: any) => {
@@ -169,6 +188,43 @@ export class ImportPolicyDialog {
                     type: 'file',
                     data: arrayBuffer,
                     policy: result
+                });
+            }, (e) => {
+                this.loading = false;
+            });
+        });
+    }
+
+    private toolFromMessage() {
+        if (!this.dataForm.valid) {
+            return;
+        }
+        this.loading = true;
+        const messageId = this.dataForm.get('timestamp')?.value;
+        this.toolsService.previewByMessage(messageId).subscribe((result) => {
+            this.loading = false;
+            this.dialogRef.close({
+                type: 'message',
+                data: this.dataForm.get('timestamp')?.value,
+                tool: result
+            });
+        }, (error) => {
+            this.loading = false;
+        });
+    }
+
+    private toolFromFile(file: any) {
+        const reader = new FileReader()
+        reader.readAsArrayBuffer(file);
+        reader.addEventListener('load', (e: any) => {
+            const arrayBuffer = e.target.result;
+            this.loading = true;
+            this.toolsService.previewByFile(arrayBuffer).subscribe((result) => {
+                this.loading = false;
+                this.dialogRef.close({
+                    type: 'file',
+                    data: arrayBuffer,
+                    tool: result
                 });
             }, (e) => {
                 this.loading = false;

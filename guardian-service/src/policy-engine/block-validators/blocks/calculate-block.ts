@@ -28,7 +28,7 @@ export class CalculateContainerBlock {
                 validator.addError('Option "inputSchema" must be a string');
                 return;
             }
-            if (await validator.schemaNotExist(ref.options.inputSchema)) {
+            if (validator.schemaNotExist(ref.options.inputSchema)) {
                 validator.addError(`Schema with id "${ref.options.inputSchema}" does not exist`);
                 return;
             }
@@ -43,18 +43,18 @@ export class CalculateContainerBlock {
                 return;
             }
 
-            if (await validator.schemaNotExist(ref.options.outputSchema)) {
+            if (validator.schemaNotExist(ref.options.outputSchema)) {
                 validator.addError(`Schema with id "${ref.options.outputSchema}" does not exist`);
                 return;
             }
 
-            const inputSchema = await validator.getSchema(ref.options.inputSchema);
+            const inputSchema = validator.getSchema(ref.options.inputSchema);
             if (!inputSchema) {
                 validator.addError(`Schema with id "${ref.options.inputSchema}" does not exist`);
                 return;
             }
 
-            const outputSchema = await validator.getSchema(ref.options.outputSchema);
+            const outputSchema = validator.getSchema(ref.options.outputSchema);
             if (!outputSchema) {
                 validator.addError(`Schema with id "${ref.options.outputSchema}" does not exist`);
                 return;

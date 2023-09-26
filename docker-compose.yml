@@ -79,6 +79,8 @@ services:
       - message-broker
     environment:
       - GUARDIAN_ENV=${GUARDIAN_ENV}
+    expose:
+      - 6555
     volumes:
       - ./logger-service/configs:/usr/local/logger-service/configs:ro
 

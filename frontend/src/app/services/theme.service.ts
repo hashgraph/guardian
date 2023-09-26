@@ -1,6 +1,6 @@
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { PolicyBlockModel, Theme, ThemeRule, ThemeSettings } from '../modules/policy-engine/structures';
+import { PolicyBlock, Theme, ThemeRule, ThemeSettings } from '../modules/policy-engine/structures';
 import { byRolesTheme } from '../modules/policy-engine/themes/by-roles';
 import { defaultTheme } from '../modules/policy-engine/themes/default';
 import { byApiTheme } from '../modules/policy-engine/themes/by-api';
@@ -88,7 +88,7 @@ export class ThemeService {
         this.storage.save();
     }
 
-    public getStyle(item: PolicyBlockModel): any {
+    public getStyle(item: PolicyBlock): any {
         return this.storage.currentTheme.getStyle(item);
     }
 

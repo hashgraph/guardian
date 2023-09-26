@@ -20,6 +20,11 @@ export interface IModulesErrors {
     blocks?: IBlockErrors[];
 
     /**
+     * Blocks
+     */
+    tools?: IModulesErrors[];
+
+    /**
      * Common errors
      */
     errors?: string[];

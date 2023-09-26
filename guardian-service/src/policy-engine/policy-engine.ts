@@ -14,6 +14,7 @@ import {
     NatsService,
     NotificationHelper,
     Policy,
+    PolicyImportExport,
     PolicyMessage,
     replaceAllEntities,
     replaceAllVariables,
@@ -36,7 +37,8 @@ import { emptyNotifier, INotifier } from '@helpers/notifier';
 import { ISerializedErrors } from './policy-validation-results-container';
 import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels-container';
 import { PolicyValidator } from '@policy-engine/block-validators';
-import { importTag, publishPolicyTags } from '@api/tag.service';
+import { publishPolicyTags } from '@api/tag.service';
+import { importTag } from '@api/helpers/tag-import-export-helper';
 import { createHederaToken } from '@api/token.service';
 import { GuardiansService } from '@helpers/guardians';
 import { Inject } from '@helpers/decorators/inject';
@@ -392,11 +394,14 @@ export class PolicyEngine extends NatsService {
 
         const tags = await DatabaseServer.getTags({ localTarget: policyId });
 
+        const tools = [];
+
         const dataToCreate = {
             policy,
             schemas,
             tokens,
             artifacts,
+            tools,
             tags
         };
         return await PolicyImportExportHelper.importPolicy(
@@ -625,7 +630,7 @@ export class PolicyEngine extends NatsService {
                 await createSynchronizationTopic();
             }
 
-            const zip = await PolicyImportExportHelper.generateZipFile(model);
+            const zip = await PolicyImportExport.generate(model);
             const buffer = await zip.generateAsync({
                 type: 'arraybuffer',
                 compression: 'DEFLATE',
@@ -738,7 +743,7 @@ export class PolicyEngine extends NatsService {
         await databaseServer.saveTopic(rootTopic.toObject());
         model.instanceTopicId = rootTopic.topicId;
 
-        const zip = await PolicyImportExportHelper.generateZipFile(model);
+        const zip = await PolicyImportExport.generate(model);
         const buffer = await zip.generateAsync({
             type: 'arraybuffer',
             compression: 'DEFLATE',
@@ -927,7 +932,7 @@ export class PolicyEngine extends NatsService {
         // const tagMessages = await messageServer.getMessages<TagMessage>(message.policyTopicId, MessageType.Tag, MessageAction.PublishTag);
 
         notifier.completedAndStart('Parse policy files');
-        const policyToImport = await PolicyImportExportHelper.parseZipFile(message.document, true);
+        const policyToImport: any = await PolicyImportExport.parseZipFile(message.document, true);
         if (newVersions.length !== 0) {
             policyToImport.newVersions = newVersions.reverse();
         }
@@ -973,7 +978,7 @@ export class PolicyEngine extends NatsService {
         const tagMessages = await messageServer.getMessages<TagMessage>(message.policyTopicId, MessageType.Tag, MessageAction.PublishTag);
 
         notifier.completedAndStart('File parsing');
-        const policyToImport = await PolicyImportExportHelper.parseZipFile(message.document, true);
+        const policyToImport = await PolicyImportExport.parseZipFile(message.document, true);
 
         if (!Array.isArray(policyToImport.tags)) {
             policyToImport.tags = [];
@@ -996,7 +1001,7 @@ export class PolicyEngine extends NatsService {
                 document: null,
                 uri: null,
                 id: null
-            });
+            } as any);
         }
         notifier.completed();
         return await PolicyImportExportHelper.importPolicy(policyToImport, owner, versionOfTopicId, notifier);
@@ -1074,8 +1079,7 @@ export class PolicyEngine extends NatsService {
             policyId = policy.id.toString();
         }
         const policyValidator = new PolicyValidator(policy);
-        policyValidator.registerBlock(policy.config);
-        policyValidator.addPermissions(policy.policyRoles);
+        await policyValidator.build(policy);
         await policyValidator.validate();
         return policyValidator.getSerializedErrors();
     }

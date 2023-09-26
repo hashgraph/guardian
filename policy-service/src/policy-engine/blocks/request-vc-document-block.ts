@@ -75,10 +75,7 @@ export class RequestVcDocumentBlock {
                 ref.uuid
             );
         }
-        const schema = await ref.databaseServer.getSchemaByIRI(
-            schemaIRI,
-            ref.topicId
-        );
+        const schema = await PolicyUtils.loadSchemaByID(ref, schemaIRI);
         if (!schema) {
             throw new BlockActionError(
                 `Can not find schema with IRI: ${schemaIRI}`,

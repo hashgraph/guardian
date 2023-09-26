@@ -109,9 +109,25 @@
                     <div class="field-value" [title]="module.owner">{{module.owner}}</div>
                 </div>
             </div>
+
+            <div *ngIf="tool" class="policy">
+                <div class="policy-header">{{tool.name}}</div>
+
+                <div class="delimiter"></div>
+
+                <div class="field">
+                    <div class="field-name">Description</div>
+                    <div class="field-value">{{tool.description}}</div>
+                </div>
+
+                <div class="field">
+                    <div class="field-name">Creator</div>
+                    <div class="field-value" [title]="tool.owner">{{tool.owner}}</div>
+                </div>
+            </div>
+
             <div class="page-btns">
-                <button *ngIf="innerWidth <= 810" mat-raised-button color="primary" id="create-btn"
-                    (click)="onImport()">Import</button>
+                <button mat-raised-button color="primary" id="create-btn" (click)="onImport()">Import</button>
             </div>
         </div>
     </div>

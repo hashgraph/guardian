@@ -100,10 +100,18 @@
                                 Base schema
                             </td>
                             <td *ngIf="!baseSchemaReadOnly(item.baseSchema)" class="propRowCell">
-                                <mat-select (valueChange)="onEditVariable(item, true)" [(ngModel)]="item.baseSchema"
-                                            [disabled]="readonly">
-                                    <mat-option *ngFor="let schema of baseSchemas"
-                                                [value]="schema.iri">{{schema.name}}</mat-option>
+                                <mat-select 
+                                    (valueChange)="onEditVariable(item, true)" 
+                                    [(ngModel)]="item.baseSchema" 
+                                    [disabled]="readonly">
+                                    <mat-option 
+                                        *ngFor="let schema of baseSchemas" 
+                                        matTooltipPosition="below" 
+                                        matTooltipClass="guardian-tooltip small-guardian-tooltip" 
+                                        matTooltipShowDelay="500"
+                                        [matTooltip]="schema.tooltip"
+                                        [value]="schema.value"
+                                    >{{schema.displayName}}</mat-option>
                                 </mat-select>
                             </td>
                             <td *ngIf="baseSchemaReadOnly(item.baseSchema)" class="propRowCell">

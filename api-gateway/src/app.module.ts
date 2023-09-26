@@ -11,6 +11,7 @@ import { MapApi } from '@api/service/map';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { MetricsApi } from '@api/service/metrics';
 import { ModulesApi } from '@api/service/module';
+import { ToolsApi } from '@api/service/tool';
 import { ProfileApi } from '@api/service/profile';
 import { AuthGuard, authorizationHelper } from '@auth/authorization-helper';
 import { PolicyApi } from '@api/service/policy';
@@ -36,6 +37,19 @@ import { ApplicationEnvironment } from './environment';
 const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
 const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
 
+// class LogClientSerializer implements Serializer {
+//     serialize(value: any, options?: Record<string, any>): any {
+//         value.data = Buffer.from(JSON.stringify(value), 'utf-8')
+//         return value;
+//     }
+// }
+//
+// class LogClientDeserializer implements Deserializer {
+//     deserialize(value: any, options?: Record<string, any>): any {
+//         return JSON.parse(value.toString())
+//     }
+// }
+
 @Module({
     imports: [
         ClientsModule.register([{
@@ -45,7 +59,9 @@ const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
                 name: `${process.env.SERVICE_CHANNEL}`,
                 servers: [
                     `nats://${process.env.MQ_ADDRESS}:4222`
-                ]
+                ],
+                // serializer: new LogClientSerializer(),
+                // deserializer: new LogClientDeserializer()
             }
         }])
     ],
@@ -61,6 +77,7 @@ const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
         MapApi,
         MetricsApi,
         ModulesApi,
+        ToolsApi,
         ProfileApi,
         PolicyApi,
         SingleSchemaApi,
@@ -97,6 +114,7 @@ export class AppModule {
         consumer.apply(authorizationHelper).forRoutes(AnalyticsApi);
         consumer.apply(authorizationHelper).forRoutes(ContractsApi);
         consumer.apply(authorizationHelper).forRoutes(ModulesApi);
+        consumer.apply(authorizationHelper).forRoutes(ToolsApi);
         consumer.apply(authorizationHelper).forRoutes(TagsApi);
         consumer.apply(authorizationHelper).forRoutes(ThemesApi);
         consumer.apply(authorizationHelper).forRoutes(TokensApi);

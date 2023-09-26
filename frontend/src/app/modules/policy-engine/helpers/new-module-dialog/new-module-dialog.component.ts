@@ -11,22 +11,44 @@ import { FormBuilder, Validators } from '@angular/forms';
     styleUrls: ['./new-module-dialog.component.css']
 })
 export class NewModuleDialog {
-    started = false;
-    dataForm = this.fb.group({
+    public type = 'module';
+    public started = false;
+    public dataForm = this.fb.group({
         name: ['', Validators.required],
         description: ['']
     });
+
+    public title = 'New Module';
+    public placeholder = 'Module name';
 
     constructor(
         public dialogRef: MatDialogRef<NewModuleDialog>,
         private fb: FormBuilder,
         @Inject(MAT_DIALOG_DATA) public data: any) {
-            if(data) {
-                this.dataForm.setValue({
-                    name: data.name || '',
-                    description: data.description || '',
-                });
+        if (data) {
+            switch (data.type) {
+                case 'module':
+                    this.type = 'module';
+                    break;
+                case 'tool':
+                    this.type = 'tool';
+                    break;
+                default:
+                    this.type = 'module';
+                    break;
             }
+            this.dataForm.setValue({
+                name: data.name || '',
+                description: data.description || '',
+            });
+        }
+        if (this.type === 'module') {
+            this.title = 'New Module';
+            this.placeholder = 'Module name';
+        } else if (this.type === 'tool') {
+            this.title = 'New Tool';
+            this.placeholder = 'Tool name';
+        }
     }
 
     ngOnInit() {

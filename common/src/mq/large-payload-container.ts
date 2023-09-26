@@ -1,9 +1,6 @@
-// import util from 'util';
 import express from 'express'
-// import { lookup } from 'dns';
 import { hostname } from 'os';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { Logger } from '../helpers';
 import { Singleton } from '../decorators/singleton';
 
 /**
@@ -30,12 +27,6 @@ export class LargePayloadContainer {
     public get started(): boolean {
         return this._started;
     }
-
-    /**
-     * Logger
-     * @private
-     */
-    private readonly logger: Logger;
 
     /**
      * Objects map
@@ -72,7 +63,6 @@ export class LargePayloadContainer {
         this.PROTOCOL = (process.env.DIRECT_MESSAGE_PROTOCOL) ? process.env.DIRECT_MESSAGE_PROTOCOL as any : 'http';
 
         this.objectsMap = new Map();
-        this.logger = new Logger();
         this._started = false;
     }
 
@@ -97,7 +87,12 @@ export class LargePayloadContainer {
 
         const server = app.listen(this.PORT, () => {
             this._started = true;
-            this.logger.info(`Large objects server starts on ${this.PORT} port`, [process.env.SERVICE_CHANNEL?.toUpperCase()]);
+            try {
+                // this.logger.info(`Large objects server starts on ${this.PORT} port`, [process.env.SERVICE_CHANNEL?.toUpperCase()]);
+                console.info(`Large objects server starts on ${this.PORT} port`);
+            } catch (e) {
+                console.warn(e.message)
+            }
         });
         server.on('error', (error) => {
             if (!this._portGenerated) {

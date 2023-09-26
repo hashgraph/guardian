@@ -28,7 +28,7 @@ export class CalculateContainerBlock {
                 validator.addError('Option "inputSchema" must be a string');
                 return;
             }
-            if (await validator.schemaNotExist(ref.options.inputSchema)) {
+            if (validator.schemaNotExist(ref.options.inputSchema)) {
                 validator.addError(`Schema with id "${ref.options.inputSchema}" does not exist`);
                 return;
             }
@@ -43,7 +43,19 @@ export class CalculateContainerBlock {
                 return;
             }
 
-            if (await validator.schemaNotExist(ref.options.outputSchema)) {
+            if (validator.schemaNotExist(ref.options.outputSchema)) {
+                validator.addError(`Schema with id "${ref.options.outputSchema}" does not exist`);
+                return;
+            }
+
+            const inputSchema = validator.getSchema(ref.options.inputSchema);
+            if (!inputSchema) {
+                validator.addError(`Schema with id "${ref.options.inputSchema}" does not exist`);
+                return;
+            }
+
+            const outputSchema = validator.getSchema(ref.options.outputSchema);
+            if (!outputSchema) {
                 validator.addError(`Schema with id "${ref.options.outputSchema}" does not exist`);
                 return;
             }
@@ -77,8 +89,6 @@ export class CalculateContainerBlock {
                     map[field.name] = true;
                 }
             }
-
-            const outputSchema = await validator.getSchema(ref.options.outputSchema);
             const schema = new Schema(outputSchema);
             for (const field of schema.fields) {
                 if (field.required && !map[field.name]) {

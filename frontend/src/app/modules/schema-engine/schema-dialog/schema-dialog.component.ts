@@ -16,18 +16,22 @@ import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 export class SchemaDialog {
     @ViewChild('document') schemaControl!: SchemaConfigurationComponent;
 
-    scheme: Schema;
-    schemasMap: any;
-    started: boolean = false;
-    type: 'new' | 'edit' | 'version' = 'new';
-    topicId: any;
-    policies: any[];
-    modules: any[];
-    schemaType: string = 'policy';
-    valid: boolean = true;
-    extended: boolean = false;
-    fields: any[] = [];
-    restoreData: any = null;
+    public scheme: Schema;
+    public schemasMap: any;
+    public started: boolean = false;
+    public type: 'new' | 'edit' | 'version' = 'new';
+    public topicId: any;
+
+    public schemaType: string = 'policy';
+    public valid: boolean = true;
+    public extended: boolean = false;
+    public fields: any[] = [];
+    public restoreData: any = null;
+
+    public policies: any[];
+    public modules: any[];
+    public tools: any[];
+
     constructor(
         public dialogRef: MatDialogRef<SchemaDialog>,
         private fb: FormBuilder,
@@ -37,9 +41,10 @@ export class SchemaDialog {
         this.scheme = data.scheme || null;
         this.type = data.type || null;
         this.topicId = data.topicId || null;
+        this.schemaType = data.schemaType || 'policy';
         this.policies = data.policies || [];
         this.modules = data.modules || [];
-        this.schemaType = data.schemaType || 'policy';
+        this.tools = data.tools || [];
     }
 
     ngOnInit(): void {
@@ -66,7 +71,11 @@ export class SchemaDialog {
 
     onCreate() {
         const schema = this.schemaControl?.getSchema();
-        localStorage.setItem('restoreSchemaData', JSON.stringify(schema));
+        try {
+            localStorage.setItem('restoreSchemaData', JSON.stringify(schema));
+        } catch (error) {
+            console.error(error);
+        }
         this.dialogRef.close(schema);
     }
 

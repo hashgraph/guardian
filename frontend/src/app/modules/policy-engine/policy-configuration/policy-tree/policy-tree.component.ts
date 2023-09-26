@@ -1,10 +1,22 @@
 import { Component, ComponentFactoryResolver, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, SimpleChanges, ViewChild, Inject } from '@angular/core';
 import { FlatBlockNode } from '../../structures/tree-model/block-node';
 import { CdkDropList } from '@angular/cdk/drag-drop';
-import { PolicyBlockModel, BlocLine, BlockRect, EventCanvas, PolicyModel, PolicyModuleModel } from '../../structures';
+import { PolicyBlock, BlocLine, BlockRect, EventCanvas, PolicyFolder, PolicyItem } from '../../structures';
 import { RegisteredService } from '../../services/registered.service';
 import { ThemeService } from '../../../../services/theme.service';
 import { BLOCK_TYPE_TIPS } from 'src/app/injectors/block-type-tips.injector';
+import { DomSanitizer } from '@angular/platform-browser';
+import { MatIconRegistry } from '@angular/material/icon';
+
+enum BlockStyle {
+    None = 'None',
+    Block = 'Block',
+    Module = 'Module',
+    Tool = 'Tool',
+    RootBlock = 'RootBlock',
+    RootModule = 'RootModule',
+    RootTool = 'RootTool'
+}
 
 /**
  * Settings for all blocks.
@@ -15,8 +27,8 @@ import { BLOCK_TYPE_TIPS } from 'src/app/injectors/block-type-tips.injector';
     styleUrls: ['./policy-tree.component.css']
 })
 export class PolicyTreeComponent implements OnInit {
-    @Input('module') module!: PolicyModel | PolicyModuleModel;
-    @Input('blocks') blocks!: PolicyBlockModel[];
+    @Input('module') module!: PolicyFolder;
+    @Input('blocks') blocks!: PolicyBlock[];
     @Input('errors') errors!: any;
     @Input('readonly') readonly!: boolean;
     @Input('active') active!: string;
@@ -63,7 +75,7 @@ export class PolicyTreeComponent implements OnInit {
     public data!: FlatBlockNode[];
     public selectedNode?: FlatBlockNode;
     private errorsTree!: any;
-    private root!: PolicyBlockModel;
+    private root!: PolicyBlock;
     private collapsedMap: Map<string, boolean> = new Map<string, boolean>();
     private eventsDisabled = false;
     private paddingLeft = 40;
@@ -80,7 +92,6 @@ export class PolicyTreeComponent implements OnInit {
     constructor(
         private registeredService: RegisteredService,
         private element: ElementRef,
-        private componentFactoryResolver: ComponentFactoryResolver,
         private themeService: ThemeService,
         @Inject(BLOCK_TYPE_TIPS) public blockTypeTips: any
     ) {
@@ -184,7 +195,7 @@ export class PolicyTreeComponent implements OnInit {
         }
     }
 
-    private rebuildTree(data: PolicyBlockModel[]) {
+    private rebuildTree(data: PolicyBlock[]) {
         this.root = data[0];
         this.data = this.convertToArray([], data, 0, null);
         if (this.currentBlock) {
@@ -208,7 +219,7 @@ export class PolicyTreeComponent implements OnInit {
         return false;
     }
 
-    private searchErrors(blocks: PolicyBlockModel[]): boolean {
+    private searchErrors(blocks: PolicyBlock[]): boolean {
         if (!blocks) {
             return false;
         }
@@ -228,13 +239,14 @@ export class PolicyTreeComponent implements OnInit {
 
     private convertToArray(
         result: FlatBlockNode[],
-        blocks: PolicyBlockModel[],
+        blocks: PolicyBlock[],
         level: number,
         parent: FlatBlockNode | null
     ): FlatBlockNode[] {
         if (!blocks) {
             return result;
         }
+        let prevNode: any = undefined;
         for (let i = 0; i < blocks.length; i++) {
             const block = blocks[i];
             const next = blocks[i + 1];
@@ -255,7 +267,33 @@ export class PolicyTreeComponent implements OnInit {
                 node.parent = parent.node;
                 node.parentNode = parent;
             }
+            node.prevNode = prevNode;
+            node.canAddModules = this.canAddModules(node, block);
+            node.canAddTools = this.canAddTools(node, block);
+            node.canAddBlocks = this.canAddBlocks(node, block);
+            node.canUp = this.canUp(node, block);
+            node.canDown = this.canDown(node, block);
+            node.canLeft = this.canLeft(node, block);
+            node.canRight = this.canRight(node, block);
             node.offset = `${this.paddingLeft * level}px`;
+            if (node.root) {
+                if (node.isModule) {
+                    node.style = BlockStyle.RootModule;
+                } else if (node.isTool) {
+                    node.style = BlockStyle.RootTool;
+                } else {
+                    node.style = BlockStyle.RootBlock;
+                }
+            } else {
+                if (node.isModule) {
+                    node.style = BlockStyle.Module;
+                } else if (node.isTool) {
+                    node.style = BlockStyle.Tool;
+                } else {
+                    node.style = BlockStyle.Block;
+                }
+            }
+            prevNode = node;
             block.setAbout(node.about);
 
             result.push(node);
@@ -266,11 +304,154 @@ export class PolicyTreeComponent implements OnInit {
                 this.collapsedMap.set(node.id, node.collapsed);
             }
 
-            if (!node.collapsed && (!block.isModule || node.root)) {
+            if (this.ifCanHaveChildren(node, block)) {
                 result = this.convertToArray(result, block.children, level + 1, node);
             }
         }
         return result;
+    }
+
+    private canAddModules(node: FlatBlockNode, block: PolicyItem): boolean {
+        if (node.root) {
+            if (block.isModule) {
+                return false;
+            }
+            if (block.isTool) {
+                return false;
+            }
+            return true;
+        } else {
+            if (block.isModule) {
+                return false;
+            }
+            if (block.isTool) {
+                return false;
+            }
+            return true;
+        }
+    }
+
+    private canAddTools(node: FlatBlockNode, block: PolicyItem): boolean {
+        if (node.root) {
+            if (block.isModule) {
+                return true;
+            }
+            if (block.isTool) {
+                return true;
+            }
+            return true;
+        } else {
+            if (block.isModule) {
+                return false;
+            }
+            if (block.isTool) {
+                return false;
+            }
+            return true;
+        }
+    }
+
+    private canAddBlocks(node: FlatBlockNode, block: PolicyItem): boolean {
+        if (node.root) {
+            if (block.isModule) {
+                return true;
+            }
+            if (block.isTool) {
+                return true;
+            }
+            return true;
+        } else {
+            if (block.isModule) {
+                return false;
+            }
+            if (block.isTool) {
+                return false;
+            }
+            return true;
+        }
+    }
+
+    private ifCanHaveChildren(node: FlatBlockNode, block: PolicyItem): boolean {
+        if (node.root) {
+            return true;
+        }
+        if (node.collapsed) {
+            return false;
+        }
+        if (block.isModule || block.isTool) {
+            return false;
+        }
+        return true;
+    }
+
+    private canUp(node: FlatBlockNode, block: PolicyItem): boolean {
+        if (node.root) {
+            return false;
+        }
+        if (node.prevNode) {
+            return true;
+        }
+        return false;
+    }
+
+    private canDown(node: FlatBlockNode, block: PolicyItem): boolean {
+        if (node.root) {
+            return false;
+        }
+        if (node.next) {
+            return true;
+        }
+        return false;
+    }
+
+    private canLeft(node: FlatBlockNode, block: PolicyItem): boolean {
+        if (node.root) {
+            return false;
+        }
+        if (node.parentNode && !node.parentNode.root) {
+            return true;
+        }
+        return false;
+    }
+
+    private canRight(node: FlatBlockNode, block: PolicyItem): boolean {
+        if (node.root) {
+            return false;
+        }
+        if (node.prevNode) {
+            if (block.isModule) {
+                return node.prevNode.canAddModules;
+            }
+            if (block.isTool) {
+                return node.prevNode.canAddTools;
+            }
+            return node.prevNode.canAddBlocks;
+        }
+        return false;
+    }
+
+    public isRootModuleStyle(node: FlatBlockNode): boolean {
+        return node.style === BlockStyle.RootModule;
+    }
+
+    public isRootToolStyle(node: FlatBlockNode): boolean {
+        return node.style === BlockStyle.RootTool;
+    }
+
+    public isRootBlockStyle(node: FlatBlockNode): boolean {
+        return node.style === BlockStyle.RootBlock;
+    }
+
+    public isModuleStyle(node: FlatBlockNode): boolean {
+        return node.style === BlockStyle.Module;
+    }
+
+    public isToolStyle(node: FlatBlockNode): boolean {
+        return node.style === BlockStyle.Tool;
+    }
+
+    public isBlockStyle(node: FlatBlockNode): boolean {
+        return node.style === BlockStyle.Block;
     }
 
     public isSelect(node: FlatBlockNode) {
@@ -286,6 +467,10 @@ export class PolicyTreeComponent implements OnInit {
             return true;
         }
         return false;
+    }
+
+    public blockStyle(node: FlatBlockNode): any {
+        return this.themeService.getStyle(node.node);
     }
 
     public onSelect(event: MouseEvent, node: FlatBlockNode) {
@@ -564,7 +749,9 @@ export class PolicyTreeComponent implements OnInit {
     public drop(event: any) {
         const data = event.item.data;
         if (typeof data === 'string' && (
-            data.startsWith('new:') || data.startsWith('module:')
+            data.startsWith('new:') ||
+            data.startsWith('module:') ||
+            data.startsWith('tool:')
         )) {
             const [operation, name] = data.split(':');
             const prev = this.data[event.currentIndex - 1];
@@ -634,13 +821,9 @@ export class PolicyTreeComponent implements OnInit {
         return { type, data };
     }
 
-    public blockStyle(node: FlatBlockNode): any {
-        return this.themeService.getStyle(node.node);
-    }
-
     @HostListener('window:resize', ['$event'])
-    public onResize(event:any) {
-        if(this._resizeTimer) {
+    public onResize(event: any) {
+        if (this._resizeTimer) {
             clearTimeout(this._resizeTimer);
             this._resizeTimer = null;
         }

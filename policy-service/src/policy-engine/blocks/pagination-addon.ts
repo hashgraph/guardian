@@ -80,7 +80,6 @@ export class PaginationAddon {
 
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         PolicyComponentsUtils.BlockUpdateFn(ref.parent, user);
-
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, data));
     }
 }
