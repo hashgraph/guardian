@@ -273,7 +273,15 @@ export class BlockValidator {
      * @param iri
      */
     public schemaNotExist(iri: string): boolean {
-        return !this.validator.getSchema(iri);
+        return !this.validator.schemaExist(iri);
+    }
+
+    /**
+     * Schema exist
+     * @param iri
+     */
+    public schemaExist(iri: string): boolean {
+        return this.validator.schemaExist(iri);
     }
 
     /**

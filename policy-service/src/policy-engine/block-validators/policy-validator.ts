@@ -318,6 +318,23 @@ export class PolicyValidator {
     }
 
     /**
+     * Schema exist
+     * @param iri
+     */
+    public schemaExist(iri: string): boolean {
+        if (this.schemas.has(iri)) {
+            return true;
+        }
+        for (const item of this.tools.values()) {
+            const exist = item.schemaExist(iri);
+            if (exist) {
+                return exist;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Get Token Template
      * @param templateName
      */
