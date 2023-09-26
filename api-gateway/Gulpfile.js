@@ -41,7 +41,7 @@ gulp.task('compile:production', () => {
 
 gulp.task('build:demo', gulp.series(['configure:demo', 'compile:dev']));
 gulp.task('build:prod', gulp.series(['configure:production', 'compile:production']));
-gulp.task('watch', () => {
-    // gulp.series(['build:demo']);
+gulp.task('watch:only', () => {
     gulp.watch('src/**/*.ts', gulp.series(['compile:dev']));
 })
+gulp.task('watch', gulp.series(['build:demo', 'watch:only']))
