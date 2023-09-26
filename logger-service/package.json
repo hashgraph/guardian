@@ -3,7 +3,7 @@
   "dependencies": {
     "@guardian/common": "^2.17.0-prerelease",
     "@guardian/interfaces": "^2.17.0-prerelease",
-    "@mikro-orm/core": "5.7.12",
+    "@mikro-orm/core": "5.8.3",
     "@mikro-orm/mongodb": "5.7.12",
     "@nestjs/common": "^9.4.1",
     "@nestjs/core": "^9.4.1",
