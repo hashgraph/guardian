@@ -1,4 +1,5 @@
 import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
+import { CommonBlock } from './common';
 
 /**
  * Timer block
@@ -16,6 +17,7 @@ export class TimerBlock {
      */
     public static async validate(validator: BlockValidator, ref: IBlockProp): Promise<void> {
         try {
+            await CommonBlock.validate(validator, ref);
             if (!ref.options.startDate) {
                 validator.addError('Option "startDate" is not set');
             } else if (typeof ref.options.startDate !== 'string') {

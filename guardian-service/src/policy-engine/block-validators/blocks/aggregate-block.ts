@@ -1,4 +1,5 @@
 import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
+import { CommonBlock } from './common';
 
 /**
  * Aggregate block
@@ -16,6 +17,7 @@ export class AggregateBlock {
      */
     public static async validate(validator: BlockValidator, ref: IBlockProp): Promise<void> {
         try {
+            await CommonBlock.validate(validator, ref);
             if (ref.options.aggregateType === 'cumulative') {
                 const variables: any = {};
                 if (ref.options.expressions) {

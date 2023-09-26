@@ -6,7 +6,7 @@ import { PropertyType } from '../types/property.type';
 import { WeightType } from '../types/weight.type';
 import { PropertiesModel } from './properties.model';
 import { PropertyModel } from './property.model';
-import { IWeightItem } from '../interfaces/weight-tree';
+import { IWeightItem } from '../interfaces/weight-item.interface';
 
 /**
  * Group Model
@@ -150,6 +150,15 @@ export class GroupModel implements IWeightModel {
         } else {
             return this._weight[0] === field._weight[0];
         }
+    }
+
+    /**
+     * Comparison of models using key
+     * @param item - model
+     * @public
+     */
+    public equalKey(item: GroupModel): boolean {
+        return this.key === item.key;
     }
 
     /**

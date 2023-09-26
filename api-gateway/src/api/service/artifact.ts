@@ -7,7 +7,7 @@ import { checkPermission } from '@auth/authorization-helper';
 import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, getSchemaPath } from '@nestjs/swagger';
 import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
 import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator';
-import { ArtifactDTOItem } from '@middlewares/validation/schemas/atrifacts';
+import { ArtifactDTOItem } from '@middlewares/validation/schemas/artifacts';
 
 @Controller('artifacts')
 @ApiTags('artifacts')

@@ -97,8 +97,11 @@ form {
     margin-top: 3px;
 }
 
-@media (max-width: 810px) {
+#create-btn {
+    display: none;
+}
 
+@media (max-width: 810px) {
     .g-dialog-header {
         width: 90%;
         padding: 16px 0 22px 0;
@@ -185,4 +188,7 @@ form {
         transform: translateX(-50%);
     }
 
+    #create-btn {
+        display: block !important;
+    }
 }

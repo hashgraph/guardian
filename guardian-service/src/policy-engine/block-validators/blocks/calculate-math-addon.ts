@@ -1,4 +1,5 @@
 import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
+import { CommonBlock } from './common';
 
 /**
  * Calculate math addon
@@ -16,6 +17,7 @@ export class CalculateMathAddon {
      */
     public static async validate(validator: BlockValidator, ref: IBlockProp): Promise<void> {
         try {
+            await CommonBlock.validate(validator, ref);
             if (ref.options.equations) {
                 for (const equation of ref.options.equations) {
                     if (!validator.validateFormula(equation.formula)) {

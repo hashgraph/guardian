@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Inject, Input, OnInit, Output, ViewEncapsulation } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { CodeEditorDialogComponent } from '../../../../helpers/code-editor-dialog/code-editor-dialog.component';
-import { IModuleVariables, PolicyBlockModel, SchemaVariables } from '../../../../structures';
+import { IModuleVariables, PolicyBlock, SchemaVariables } from '../../../../structures';
 import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
 
 @Component({
@@ -11,12 +11,12 @@ import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
     encapsulation: ViewEncapsulation.Emulated
 })
 export class CustomLogicConfigComponent implements OnInit {
-    @Input('block') currentBlock!: PolicyBlockModel;
+    @Input('block') currentBlock!: PolicyBlock;
     @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();
 
     private moduleVariables!: IModuleVariables | null;
-    private item!: PolicyBlockModel;
+    private item!: PolicyBlock;
 
     properties!: any;
     propHidden: any = {
@@ -25,14 +25,10 @@ export class CustomLogicConfigComponent implements OnInit {
     schemas!: SchemaVariables[];
 
     constructor(
-        private dialog: MatDialog,
-        @Inject(GET_SCHEMA_NAME)
-        public getSchemaName: (
-            name?: string,
-            version?: string,
-            status?: string
-        ) => string,
-    ) { }
+        private dialog: MatDialog
+    ) { 
+        
+    }
 
     ngOnInit(): void {
         this.schemas = [];
@@ -40,7 +36,7 @@ export class CustomLogicConfigComponent implements OnInit {
         this.load(this.currentBlock);
     }
 
-    load(block: PolicyBlockModel) {
+    load(block: PolicyBlock) {
         this.moduleVariables = block.moduleVariables;
         this.item = block;
         this.properties = block.properties;

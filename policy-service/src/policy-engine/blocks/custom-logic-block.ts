@@ -10,8 +10,7 @@ import {
     DIDMessage,
     MessageAction,
     MessageServer,
-    KeyType,
-    DatabaseServer,
+    KeyType
 } from '@guardian/common';
 import { ArtifactType, GenerateUUIDv4, SchemaHelper } from '@guardian/interfaces';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
@@ -118,7 +117,7 @@ export class CustomLogicBlock {
                             root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
                             break;
                     }
-                    const outputSchema = await ref.databaseServer.getSchemaByIRI(ref.options.outputSchema, ref.topicId);
+                    const outputSchema = await PolicyUtils.loadSchemaByID(ref, ref.options.outputSchema);
                     const context = SchemaHelper.getContext(outputSchema);
 
                     const relationships = [];
@@ -141,11 +140,11 @@ export class CustomLogicBlock {
                                 idType === 'DOCUMENT'
                                     ? documents[0].document.id
                                     : await this.generateId(
-                                          idType,
-                                          user,
-                                          hederaAccount.hederaAccountId,
-                                          hederaAccount.hederaAccountKey
-                                      ),
+                                        idType,
+                                        user,
+                                        hederaAccount.hederaAccountId,
+                                        hederaAccount.hederaAccountKey
+                                    ),
                             policyId: ref.policyId,
                         });
                         if (ref.dryRun) {
@@ -184,28 +183,19 @@ export class CustomLogicBlock {
                     }
                 }
 
-                const execCodeArtifacts =
-                    ref.options.artifacts?.filter(
-                        (artifact) => artifact.type === ArtifactType.EXECUTABLE_CODE
-                    ) || [];
+                const files = Array.isArray(ref.options.artifacts) ? ref.options.artifacts : [];
+                const execCodeArtifacts = files.filter((file: any) => file.type === ArtifactType.EXECUTABLE_CODE);
                 let execCode = '';
                 for (const execCodeArtifact of execCodeArtifacts) {
-                    const artifactFile = await DatabaseServer.getArtifactFileByUUID(
-                        execCodeArtifact.uuid
-                    );
-                    execCode += artifactFile.toString();
+                    const artifactFile = await PolicyUtils.getArtifactFile(ref, execCodeArtifact.uuid);
+                    execCode += artifactFile;
                 }
 
                 const artifacts = [];
-                const jsonArtifacts =
-                    ref.options.artifacts?.filter(
-                        (artifact) => artifact.type === ArtifactType.JSON
-                    ) || [];
+                const jsonArtifacts = files.filter((file: any) => file.type === ArtifactType.JSON);
                 for (const jsonArtifact of jsonArtifacts) {
-                    const artifactFile = await DatabaseServer.getArtifactFileByUUID(
-                        jsonArtifact.uuid
-                    );
-                    artifacts.push(JSON.parse(artifactFile.toString()));
+                    const artifactFile = await PolicyUtils.getArtifactFile(ref, jsonArtifact.uuid);
+                    artifacts.push(JSON.parse(artifactFile));
                 }
 
                 const worker = new Worker(path.join(path.dirname(__filename), '..', 'helpers', 'custom-logic-worker.js'), {

@@ -129,7 +129,7 @@ export class DocumentValidatorBlock {
         }
 
         if (ref.options.schema) {
-            const schema = await ref.databaseServer.getSchemaByIRI(ref.options.schema, ref.topicId);
+            const schema = await PolicyUtils.loadSchemaByID(ref, ref.options.schema);
             if (!PolicyUtils.checkDocumentSchema(ref, document, schema)) {
                 return `Invalid document schema`;
             }

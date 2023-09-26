@@ -1,4 +1,5 @@
 import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
+import { CommonBlock } from './common';
 
 /**
  * Mint block
@@ -16,6 +17,7 @@ export class MintBlock {
      */
     public static async validate(validator: BlockValidator, ref: IBlockProp): Promise<void> {
         try {
+            await CommonBlock.validate(validator, ref);
             if (ref.options.useTemplate) {
                 if (!ref.options.template) {
                     validator.addError('Option "template" is not set');

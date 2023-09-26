@@ -159,4 +159,13 @@ export class VariableModel implements IWeightModel {
     public getPropList(type?: PropertyType): PropertyModel<any>[] {
         return this._prop.getPropList(type);
     }
+
+    /**
+     * Comparison of models using key
+     * @param item - model
+     * @public
+     */
+    public equalKey(doc: VariableModel): boolean {
+        return this.key === doc.key;
+    }
 }

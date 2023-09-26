@@ -1,5 +1,20 @@
 import { Singleton } from '@helpers/decorators/singleton';
-import { ApplicationStates, CommonSettings, GenerateUUIDv4, IArtifact, IChainItem, IDidObject, ISchema, IToken, ITokenInfo, IUser, IVCDocument, IVPDocument, MessageAPI, SuggestionsOrderPriority } from '@guardian/interfaces';
+import {
+    ApplicationStates,
+    CommonSettings,
+    GenerateUUIDv4,
+    IArtifact,
+    IChainItem,
+    IDidObject,
+    ISchema,
+    IToken,
+    ITokenInfo,
+    IUser,
+    IVCDocument,
+    IVPDocument,
+    MessageAPI,
+    SuggestionsOrderPriority
+} from '@guardian/interfaces';
 import { NatsService } from '@guardian/common';
 import { NewTask } from './task-manager';
 
@@ -470,25 +485,12 @@ export class Guardians extends NatsService {
 
     /**
      * Return schemas
-     * @param {string} did
-     * @param {string} [topicId]
-     * @param {string} [pageIndex]
-     * @param {string} [pageSize]
+     * @param {any} options
      *
      * @returns {ISchema[]} - all schemas
      */
-    public async getSchemasByOwner(
-        did: string,
-        topicId?: string,
-        pageIndex?: any,
-        pageSize?: any
-    ): Promise<ResponseAndCount<ISchema>> {
-        return await this.sendMessage(MessageAPI.GET_SCHEMAS, {
-            owner: did,
-            topicId,
-            pageIndex,
-            pageSize
-        });
+    public async getSchemasByOwner(options: any): Promise<ResponseAndCount<ISchema>> {
+        return await this.sendMessage(MessageAPI.GET_SCHEMAS, options);
     }
 
     /**
@@ -499,9 +501,7 @@ export class Guardians extends NatsService {
      * @returns {ISchema[]} - all schemas
      */
     public async getSchemasByUUID(uuid: string): Promise<ISchema[]> {
-        const { items } = await this.sendMessage(
-            MessageAPI.GET_SCHEMAS, { uuid }
-        ) as any;
+        const { items } = await this.sendMessage<ResponseAndCount<ISchema>>(MessageAPI.GET_SCHEMAS, { uuid });
         return items;
     }
 
@@ -525,6 +525,15 @@ export class Guardians extends NatsService {
      */
     public async getSchemaById(id: string): Promise<ISchema> {
         return await this.sendMessage(MessageAPI.GET_SCHEMA, { id });
+    }
+
+    /**
+     * Get schema parents
+     * @param id Schema identifier
+     * @returns Schemas
+     */
+    public async getSchemaParents(id: string, owner: string): Promise<ISchema[]> {
+        return await this.sendMessage(MessageAPI.GET_SCHEMA_PARENTS, { id, owner });
     }
 
     /**
@@ -643,7 +652,7 @@ export class Guardians extends NatsService {
      * @param {NewTask} task - task
      */
     public async createSchemaAsync(item: ISchema | any, task: NewTask): Promise<NewTask> {
-        return await this.sendMessage(MessageAPI.CREATE_SCHEMA_ASYNC, { item, task});
+        return await this.sendMessage(MessageAPI.CREATE_SCHEMA_ASYNC, { item, task });
     }
 
     /**
@@ -664,8 +673,8 @@ export class Guardians extends NatsService {
      *
      * @returns {ISchema[]} - all schemas
      */
-    public async deleteSchema(id: string, needResult = false): Promise<ISchema[] | boolean> {
-        return await this.sendMessage(MessageAPI.DELETE_SCHEMA, { id, needResult });
+    public async deleteSchema(id: string, owner: string, needResult = false): Promise<ISchema[] | boolean> {
+        return await this.sendMessage(MessageAPI.DELETE_SCHEMA, { id, owner, needResult });
     }
 
     /**
@@ -884,6 +893,36 @@ export class Guardians extends NatsService {
     public async getFileIpfs(cid: string, responseType: any): Promise<any> {
         return await this.sendMessage(MessageAPI.IPFS_GET_FILE, {
             cid, responseType
+        });
+    }
+
+    /**
+     * Compare two policies
+     * @param user
+     * @param type
+     * @param ids
+     * @param eventsLvl
+     * @param propLvl
+     * @param childrenLvl
+     * @param idLvl
+     */
+    public async compareDocuments(
+        user: any,
+        type: any,
+        ids: string[],
+        eventsLvl: any,
+        propLvl: any,
+        childrenLvl: any,
+        idLvl: any,
+    ) {
+        return await this.sendMessage(MessageAPI.COMPARE_DOCUMENTS, {
+            type,
+            user,
+            ids,
+            eventsLvl,
+            propLvl,
+            childrenLvl,
+            idLvl
         });
     }
 
@@ -1353,6 +1392,187 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Create tool
+     * @param tool
+     * @param owner
+     * @returns tool
+     */
+    public async createTool(tool: any, owner: string): Promise<any> {
+        return await this.sendMessage(MessageAPI.CREATE_TOOL, { tool, owner });
+    }
+
+    /**
+     * Create tool
+     * @param tool
+     * @param owner
+     * @param task
+     * @returns tool
+     */
+    public async createToolAsync(tool: any, owner: string, task: NewTask): Promise<any> {
+        return await this.sendMessage(MessageAPI.CREATE_TOOL_ASYNC, { tool, owner, task });
+    }
+
+    /**
+     * Return tools
+     *
+     * @param {IFilter} [params]
+     *
+     * @returns {ResponseAndCount<any>}
+     */
+    public async getTools(params?: IFilter): Promise<ResponseAndCount<any>> {
+        return await this.sendMessage(MessageAPI.GET_TOOLS, params);
+    }
+
+    /**
+     * Delete tool
+     * @param id
+     * @param owner
+     * @returns Operation Success
+     */
+    public async deleteTool(id: string, owner: string): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.DELETE_TOOL, { id, owner });
+    }
+
+    /**
+     * Delete tool
+     * @param id
+     * @param owner
+     * @returns Operation Success
+     */
+    public async getToolById(id: string, owner: string): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.GET_TOOL, { id, owner });
+    }
+
+    /**
+     * Update tool
+     * @param id
+     * @param tool
+     * @param owner
+     * @returns tool
+     */
+    public async updateTool(
+        id: string,
+        tool: any,
+        owner: string
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.UPDATE_TOOL, { id, tool, owner });
+    }
+
+    /**
+     * Publish tool
+     * @param id
+     * @param owner
+     * @param tool
+     */
+    public async publishTool(id: string, owner: string, tool: any) {
+        return await this.sendMessage(MessageAPI.PUBLISH_TOOL, { id, owner, tool });
+    }
+
+    /**
+     * Async Publish tool
+     * @param id
+     * @param owner
+     * @param tool
+     * @param task
+     */
+    public async publishToolAsync(id: string, owner: string, tool: any, task: NewTask) {
+        return await this.sendMessage(MessageAPI.PUBLISH_TOOL_ASYNC, { id, owner, tool, task });
+    }
+
+    /**
+     * Publish tool
+     * @param owner
+     * @param tool
+     */
+    public async validateTool(owner: string, tool: any) {
+        return await this.sendMessage(MessageAPI.VALIDATE_TOOL, { owner, tool });
+    }
+
+    /**
+     * Return tools
+     * @param owner
+     * @returns tools
+     */
+    public async getMenuTool(owner: string): Promise<any[]> {
+        return await this.sendMessage(MessageAPI.GET_MENU_TOOLS, { owner });
+    }
+
+    /**
+     * Get tool export file
+     * @param id
+     * @param owner
+     */
+    public async exportToolFile(id: string, owner: string) {
+        const file = await this.sendMessage(MessageAPI.TOOL_EXPORT_FILE, { id, owner }) as any;
+        return Buffer.from(file, 'base64');
+    }
+
+    /**
+     * Get tool export message id
+     * @param id
+     * @param owner
+     */
+    public async exportToolMessage(id: string, owner: string) {
+        return await this.sendMessage(MessageAPI.TOOL_EXPORT_MESSAGE, { id, owner });
+    }
+
+    /**
+     * Load tool file for import
+     * @param zip
+     * @param owner
+     */
+    public async importToolFile(zip: any, owner: string) {
+        return await this.sendMessage(MessageAPI.TOOL_IMPORT_FILE, { zip, owner });
+    }
+
+    /**
+     * Import tool from message
+     * @param messageId
+     * @param owner
+     */
+    public async importToolMessage(messageId: string, owner: string) {
+        return await this.sendMessage(MessageAPI.TOOL_IMPORT_MESSAGE, { messageId, owner });
+    }
+
+    /**
+     * Get tool info from file
+     * @param zip
+     * @param owner
+     */
+    public async previewToolFile(zip: any, owner: string) {
+        return await this.sendMessage(MessageAPI.TOOL_IMPORT_FILE_PREVIEW, { zip, owner });
+    }
+
+    /**
+     * Get tool info from message
+     * @param messageId
+     * @param owner
+     */
+    public async previewToolMessage(messageId: string, owner: string) {
+        return await this.sendMessage(MessageAPI.TOOL_IMPORT_MESSAGE_PREVIEW, { messageId, owner });
+    }
+
+    /**
+     * Load tool file for import
+     * @param zip
+     * @param owner
+     * @param task
+     */
+    public async importToolFileAsync(zip: any, owner: string, task: NewTask) {
+        return await this.sendMessage(MessageAPI.TOOL_IMPORT_FILE_ASYNC, { zip, owner, task });
+    }
+
+    /**
+     * Import tool from message
+     * @param messageId
+     * @param owner
+     * @param task
+     */
+    public async importToolMessageAsync(messageId: string, owner: string, task: NewTask) {
+        return await this.sendMessage(MessageAPI.TOOL_IMPORT_MESSAGE_ASYNC, { messageId, owner, task });
+    }
+
+    /**
      * Get map api key
      */
     public async getMapApiKey(): Promise<string> {
@@ -1440,26 +1660,6 @@ export class Guardians extends NatsService {
     }
 
     /**
-     * Return tag schemas
-     * @param {string} owner
-     * @param {string} [pageIndex]
-     * @param {string} [pageSize]
-     *
-     * @returns {ISchema[]} - all schemas
-     */
-    public async getModuleSchemas(
-        owner: string,
-        pageIndex?: any,
-        pageSize?: any
-    ): Promise<ResponseAndCount<ISchema>> {
-        return await this.sendMessage(MessageAPI.GET_MODULES_SCHEMAS, {
-            owner,
-            pageIndex,
-            pageSize
-        });
-    }
-
-    /**
      * Create tag schema
      *
      * @param {ISchema} item - schema
@@ -1468,17 +1668,6 @@ export class Guardians extends NatsService {
      */
     public async createTagSchema(item: ISchema | any): Promise<ISchema> {
         return await this.sendMessage(MessageAPI.CREATE_TAG_SCHEMA, item);
-    }
-
-    /**
-     * Create module schema
-     *
-     * @param {ISchema} item - schema
-     *
-     * @returns {ISchema[]} - all schemas
-     */
-    public async createModuleSchema(item: ISchema | any): Promise<ISchema> {
-        return await this.sendMessage(MessageAPI.CREATE_MODULE_SCHEMA, item);
     }
 
     /**
@@ -1581,7 +1770,7 @@ export class Guardians extends NatsService {
      * @returns Config
      */
     // tslint:disable-next-line:completed-docs
-    public async wizardPolicyCreate(config: any, owner: string): Promise<{ wizardConfig: any; policyId: string; }>  {
+    public async wizardPolicyCreate(config: any, owner: string): Promise<{ wizardConfig: any; policyId: string; }> {
         return await this.sendMessage(MessageAPI.WIZARD_POLICY_CREATE, {
             owner,
             config,
@@ -1649,7 +1838,7 @@ export class Guardians extends NatsService {
      *          or null if the branding is not available.
      */
     // tslint:disable-next-line:completed-docs
-    public async getBranding(): Promise<{config: string} | null> {
+    public async getBranding(): Promise<{ config: string } | null> {
         return await this.sendMessage(MessageAPI.GET_BRANDING);
     }
 

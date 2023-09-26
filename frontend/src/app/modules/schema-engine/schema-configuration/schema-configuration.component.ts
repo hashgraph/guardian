@@ -30,6 +30,7 @@ export class SchemaConfigurationComponent implements OnInit {
     @Input('schemas-map') schemasMap!: { [x: string]: Schema[] };
     @Input('policies') policies!: any[];
     @Input('modules') modules!: any[];
+    @Input('tools') tools!: any[];
     @Input('topicId') topicId!: any;
     @Input('schemaType') schemaType!: string;
     @Input('extended') extended!: boolean;
@@ -37,22 +38,22 @@ export class SchemaConfigurationComponent implements OnInit {
     @Output('change-form') changeForm = new EventEmitter<any>();
     @Output('change-fields') changeFields = new EventEmitter<any>();
 
-    started = false;
-    fields!: FieldControl[];
-    conditions!: ConditionControl[];
+    public started = false;
+    public fields!: FieldControl[];
+    public conditions!: ConditionControl[];
 
-    fieldsForm!: FormGroup;
-    conditionsForm!: FormGroup;
-    dataForm!: FormGroup;
-    defaultFieldsMap!: any;
-    typesMap!: any;
-    types!: any[];
-    measureTypes!: any[];
+    public fieldsForm!: FormGroup;
+    public conditionsForm!: FormGroup;
+    public dataForm!: FormGroup;
+    public defaultFieldsMap!: any;
+    public typesMap!: any;
+    public types!: any[];
+    public measureTypes!: any[];
 
-    schemaTypes!: any[];
-    schemaTypeMap!: any;
-    destroy$: Subject<boolean> = new Subject<boolean>();
-    schemas!: Schema[];
+    public schemaTypes!: any[];
+    public schemaTypeMap!: any;
+    public destroy$: Subject<boolean> = new Subject<boolean>();
+    public schemas!: Schema[];
 
     private _patternByNumberType: any = {
         duration: /^[0-9]+$/,
@@ -72,8 +73,25 @@ export class SchemaConfigurationComponent implements OnInit {
         return this.schemaType === 'module';
     }
 
+    public get isTool(): boolean {
+        return this.schemaType === 'tool';
+    }
+
     public get isPolicy(): boolean {
-        return this.schemaType !== 'system' && this.schemaType !== 'tag' && this.schemaType !== 'module';
+        return (
+            this.schemaType !== 'system' &&
+            this.schemaType !== 'tag' &&
+            this.schemaType !== 'module' &&
+            this.schemaType !== 'tool'
+        );
+    }
+
+    public get isEdit(): boolean {
+        return this.type === 'version' || this.type === 'edit';
+    }
+
+    public get isNewVersion(): boolean {
+        return this.type === 'version';
     }
 
     constructor(

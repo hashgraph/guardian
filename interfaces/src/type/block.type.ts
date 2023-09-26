@@ -47,4 +47,5 @@ export enum BlockType {
     ExternalTopic = 'externalTopicBlock',
     MessagesReportBlock = 'messagesReportBlock',
     NotificationBlock = 'notificationBlock',
+    Tool = 'tool',
 }

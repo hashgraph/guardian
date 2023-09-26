@@ -1,4 +1,5 @@
 import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
+import { CommonBlock } from './common';
 
 /**
  * Revoke document action with UI
@@ -19,6 +20,7 @@ export class RevocationBlock {
         ref: IBlockProp
     ): Promise<void> {
         try {
+            await CommonBlock.validate(validator, ref);
             if (ref.options.updatePrevDoc && !ref.options.prevDocStatus) {
                 validator.addError('Option "Status Value" is not set');
             }

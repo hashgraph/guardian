@@ -137,11 +137,14 @@ export class AuditComponent implements OnInit {
         this.currentPolicy = this.policies.find(p => p.id == this.currentPolicy)?.id || '';
     }
 
-    openVP(document: any) {
+    openVP(element: any) {
         const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
+            panelClass: 'g-dialog',
             data: {
-                document: document,
+                id: element.id,
+                dryRun: !!element.dryRunId,
+                document: element.document,
                 title: 'VP',
                 type: 'VP',
                 viewDocument: true

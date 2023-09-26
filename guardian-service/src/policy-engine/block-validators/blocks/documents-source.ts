@@ -1,4 +1,5 @@
 import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
+import { CommonBlock } from './common';
 
 /**
  * Document source block with UI
@@ -16,6 +17,7 @@ export class InterfaceDocumentsSource {
      */
     public static async validate(validator: BlockValidator, ref: IBlockProp): Promise<void> {
         try {
+            await CommonBlock.validate(validator, ref);
             if (ref.options.uiMetaData) {
                 if (Array.isArray(ref.options.uiMetaData.fields)) {
                     for (const tag of ref.options.uiMetaData.fields.map(i => i.bindBlock).filter(item => !!item)) {

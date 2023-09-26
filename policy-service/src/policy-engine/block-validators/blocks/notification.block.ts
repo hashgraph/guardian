@@ -1,5 +1,6 @@
 import { NotificationType, UserOption } from '@guardian/interfaces';
 import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
+import { CommonBlock } from './common';
 
 /**
  * Notification Block
@@ -20,6 +21,7 @@ export class NotificationBlock {
         ref: IBlockProp
     ): Promise<void> {
         try {
+            await CommonBlock.validate(validator, ref);
             if (!ref.options.title) {
                 validator.addError('Option "title" is empty');
             }

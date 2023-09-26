@@ -495,7 +495,8 @@ export class PolicyWizardHelper {
     ): [tabContainer: any, trustChainBlockTag: string] {
         const findRelatedSchemas = (
             iri: string,
-            result: IWizardSchemaConfig[] = []
+            result: IWizardSchemaConfig[] = [],
+            srcIri: string = iri
         ) => {
             const currentSchema = schemaConfigs.find(
                 (item) => item.iri === iri
@@ -503,20 +504,39 @@ export class PolicyWizardHelper {
             if (!currentSchema) {
                 return result;
             }
+
             const dependencySchema = schemaConfigs.find(
                 (item) => item.dependencySchemaIri === iri
             );
+            if (
+                dependencySchema &&
+                result.findIndex(
+                    (schema) => schema.iri === dependencySchema.iri
+                ) < 0 &&
+                srcIri !== dependencySchema.iri
+            ) {
+                result.push(dependencySchema);
+                return findRelatedSchemas(dependencySchema.iri, result, srcIri);
+            }
+
             const relationShipSchema = schemaConfigs.find(
                 (item) => item.iri === currentSchema?.relationshipsSchemaIri
             );
-            if (dependencySchema && dependencySchema.iri !== iri) {
-                result.push(dependencySchema);
-                findRelatedSchemas(dependencySchema.iri, result);
-            }
-            if (relationShipSchema && relationShipSchema.iri !== iri) {
+            if (
+                relationShipSchema &&
+                result.findIndex(
+                    (schema) => schema.iri === relationShipSchema.iri
+                ) < 0 &&
+                srcIri !== relationShipSchema.iri
+            ) {
                 result.push(relationShipSchema);
-                findRelatedSchemas(relationShipSchema.iri, result);
+                return findRelatedSchemas(
+                    relationShipSchema.iri,
+                    result,
+                    srcIri
+                );
             }
+
             return result;
         };
 

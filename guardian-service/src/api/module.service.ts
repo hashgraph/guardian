@@ -1,11 +1,33 @@
 import { ApiResponse } from '@api/helpers/api-response';
-import { BinaryMessageResponse, DataBaseHelper, DatabaseServer, Logger, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, ModuleMessage, PolicyModule, Schema, TagMessage, TopicConfig, TopicHelper, Users, } from '@guardian/common';
-import { GenerateUUIDv4, MessageAPI, ModuleStatus, SchemaCategory, TagType, TopicType } from '@guardian/interfaces';
-import JSZip from 'jszip';
+import {
+    BinaryMessageResponse,
+    DatabaseServer,
+    Logger,
+    MessageAction,
+    MessageError,
+    MessageResponse,
+    MessageServer,
+    MessageType,
+    ModuleImportExport,
+    ModuleMessage,
+    PolicyModule,
+    TagMessage,
+    TopicConfig,
+    TopicHelper,
+    Users
+} from '@guardian/common';
+import {
+    GenerateUUIDv4,
+    MessageAPI,
+    ModuleStatus,
+    SchemaCategory,
+    TagType,
+    TopicType
+} from '@guardian/interfaces';
 import { emptyNotifier, INotifier } from '@helpers/notifier';
 import { ISerializedErrors } from '@policy-engine/policy-validation-results-container';
 import { ModuleValidator } from '@policy-engine/block-validators/module-validator';
-import { exportTag, importTag } from './tag.service';
+import { importTag } from './helpers/tag-import-export-helper';
 
 /**
  * Check and update config file
@@ -24,87 +46,6 @@ export function updateModuleConfig(module: any): any {
     module.config.outputEvents = module.config.outputEvents || [];
     module.config.innerEvents = module.config.innerEvents || [];
     return module;
-}
-
-/**
- * Generate Zip File
- * @param module module to pack
- *
- * @returns Zip file
- */
-export async function generateZipFile(module: PolicyModule): Promise<JSZip> {
-    const tagTargets: string[] = [];
-    tagTargets.push(module.id.toString());
-
-    const moduleObject = { ...module };
-    delete moduleObject._id;
-    delete moduleObject.id;
-    delete moduleObject.uuid;
-    delete moduleObject.messageId;
-    delete moduleObject.status;
-    delete moduleObject.topicId;
-    delete moduleObject.createDate;
-    const zip = new JSZip();
-    zip.file('module.json', JSON.stringify(moduleObject));
-
-    zip.folder('tags');
-    const tags = await exportTag(tagTargets)
-    for (let index = 0; index < tags.length; index++) {
-        const tag = tags[index];
-        zip.file(`tags/${index}.json`, JSON.stringify(tag));
-    }
-
-    const schemaIRIs = moduleObject.config.variables
-        .filter(v => v.type === 'Schema')
-        .map(v => v.baseSchema);
-
-    const schemas = await new DataBaseHelper(Schema).find({
-        iri: {
-            $in: schemaIRIs
-        }
-    });
-
-    zip.folder('schemas');
-    for (const schema of schemas) {
-        tagTargets.push(schema.id.toString());
-        const item = { ...schema };
-        delete item._id;
-        delete item.id;
-        delete item.status;
-        delete item.readonly;
-        item.id = schema.id.toString();
-        zip.file(`schemas/${item.iri}.json`, JSON.stringify(item));
-    }
-
-    return zip;
-}
-
-/**
- * Parse zip module file
- * @param zipFile Zip file
- * @returns Parsed module
- */
-export async function parseZipFile(zipFile: any): Promise<any> {
-    const zip = new JSZip();
-    const content = await zip.loadAsync(zipFile);
-    if (!content.files['module.json'] || content.files['module.json'].dir) {
-        throw new Error('Zip file is not a module');
-    }
-    const moduleString = await content.files['module.json'].async('string');
-    const tagsStringArray = await Promise.all(Object.entries(content.files)
-        .filter(file => !file[1].dir)
-        .filter(file => /^tags\/.+/.test(file[0]))
-        .map(file => file[1].async('string')));
-    const schemasStringArray = await Promise.all(Object.entries(content.files)
-        .filter(file => !file[1].dir)
-        .filter(file => /^schemas\/.+/.test(file[0]))
-        .map(file => file[1].async('string')));
-
-    const module = JSON.parse(moduleString);
-    const tags = tagsStringArray.map(item => JSON.parse(item)) || [];
-    const schemas = schemasStringArray.map(item => JSON.parse(item));
-
-    return { module, tags, schemas };
 }
 
 /**
@@ -132,7 +73,7 @@ export async function preparePreviewMessage(messageId: string, owner: string, no
     }
 
     notifier.completedAndStart('Parse module files');
-    const result = await parseZipFile(message.document);
+    const result: any = await ModuleImportExport.parseZipFile(message.document);
     result.messageId = messageId;
     result.moduleTopicId = message.moduleTopicId;
 
@@ -177,6 +118,7 @@ export async function validateAndPublish(uuid: string, owner: string, notifier: 
  */
 export async function validateModel(module: PolicyModule): Promise<ISerializedErrors> {
     const moduleValidator = new ModuleValidator(module.config);
+    await moduleValidator.build(module.config);
     await moduleValidator.validate();
     return moduleValidator.getSerializedErrors();
 }
@@ -219,7 +161,7 @@ export async function publishModule(model: PolicyModule, owner: string, notifier
     notifier.completedAndStart('Generate file');
 
     model = updateModuleConfig(model);
-    const zip = await generateZipFile(model);
+    const zip = await ModuleImportExport.generate(model);
     const buffer = await zip.generateAsync({
         type: 'arraybuffer',
         compression: 'DEFLATE',
@@ -408,7 +350,7 @@ export async function modulesAPI(): Promise<void> {
             }
 
             updateModuleConfig(item);
-            const zip = await generateZipFile(item);
+            const zip = await ModuleImportExport.generate(item);
             const file = await zip.generateAsync({
                 type: 'arraybuffer',
                 compression: 'DEFLATE',
@@ -453,7 +395,7 @@ export async function modulesAPI(): Promise<void> {
             if (!zip) {
                 throw new Error('file in body is empty');
             }
-            const preview = await parseZipFile(Buffer.from(zip.data));
+            const preview = await ModuleImportExport.parseZipFile(Buffer.from(zip.data));
             return new MessageResponse(preview);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -479,7 +421,7 @@ export async function modulesAPI(): Promise<void> {
                 throw new Error('file in body is empty');
             }
 
-            const preview = await parseZipFile(Buffer.from(zip.data));
+            const preview = await ModuleImportExport.parseZipFile(Buffer.from(zip.data));
 
             const { module, tags, schemas } = preview;
             delete module._id;
@@ -489,7 +431,7 @@ export async function modulesAPI(): Promise<void> {
             module.uuid = GenerateUUIDv4();
             module.creator = owner;
             module.owner = owner;
-            module.status = 'DRAFT';
+            module.status = ModuleStatus.DRAFT;
             module.type = 'CUSTOM';
             if (await DatabaseServer.getModule({ name: module.name })) {
                 module.name = module.name + '_' + Date.now();

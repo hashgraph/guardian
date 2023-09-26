@@ -1,4 +1,5 @@
 import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
+import { CommonBlock } from './common';
 
 /**
  * Document Validator
@@ -16,6 +17,7 @@ export class DocumentValidatorBlock {
      */
     public static async validate(validator: BlockValidator, ref: IBlockProp): Promise<void> {
         try {
+            await CommonBlock.validate(validator, ref);
             const types = [
                 'vc-document',
                 'vp-document',
@@ -31,7 +33,7 @@ export class DocumentValidatorBlock {
                     validator.addError('Option "schema" must be a string');
                     return;
                 }
-                if (await validator.schemaNotExist(ref.options.schema)) {
+                if (validator.schemaNotExist(ref.options.schema)) {
                     validator.addError(`Schema with id "${ref.options.schema}" does not exist`);
                     return;
                 }

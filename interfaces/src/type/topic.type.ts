@@ -12,4 +12,5 @@ export enum TopicType {
     TokenTopic = 'TOKEN_TOPIC',
     ModuleTopic = 'MODULE_TOPIC',
     ContractTopic = 'CONTRACT_TOPIC',
+    ToolTopic = 'TOOL_TOPIC',
 }

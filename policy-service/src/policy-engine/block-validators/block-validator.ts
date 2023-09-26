@@ -47,6 +47,9 @@ import { TagsManagerBlock } from './blocks/tag-manager';
 import { ExternalTopicBlock } from './blocks/external-topic-block';
 import { MessagesReportBlock } from './blocks/messages-report-block';
 import { NotificationBlock } from './blocks/notification.block';
+import { ISchema, SchemaField, SchemaHelper } from '@guardian/interfaces';
+import { ToolValidator } from './tool-validator';
+import { ToolBlock } from './blocks/tool';
 
 export const validators = [
     InterfaceDocumentActionBlock,
@@ -92,7 +95,8 @@ export const validators = [
     TagsManagerBlock,
     ExternalTopicBlock,
     MessagesReportBlock,
-    NotificationBlock
+    NotificationBlock,
+    ToolBlock
 ];
 
 /**
@@ -108,7 +112,7 @@ export class BlockValidator {
      * Errors
      * @private
      */
-    private readonly validator: PolicyValidator | ModuleValidator;
+    private readonly validator: PolicyValidator | ModuleValidator | ToolValidator;
     /**
      * UUID
      * @private
@@ -142,7 +146,7 @@ export class BlockValidator {
 
     constructor(
         config: any,
-        validator: PolicyValidator | ModuleValidator
+        validator: PolicyValidator | ModuleValidator | ToolValidator
     ) {
         this.errors = [];
         this.validator = validator;
@@ -252,8 +256,8 @@ export class BlockValidator {
      * Get Schema
      * @param iri
      */
-    public async getSchema(iri: string): Promise<any> {
-        return await this.validator.getSchema(iri);
+    public getSchema(iri: string): ISchema {
+        return this.validator.getSchema(iri);
     }
 
     /**
@@ -268,8 +272,16 @@ export class BlockValidator {
      * Schema not exist
      * @param iri
      */
-    public async schemaNotExist(iri: string): Promise<boolean> {
-        return !await this.validator.getSchema(iri);
+    public schemaNotExist(iri: string): boolean {
+        return !this.validator.schemaExist(iri);
+    }
+
+    /**
+     * Schema exist
+     * @param iri
+     */
+    public schemaExist(iri: string): boolean {
+        return this.validator.schemaExist(iri);
     }
 
     /**
@@ -302,6 +314,14 @@ export class BlockValidator {
      */
     public groupNotExist(group: string) {
         return !this.validator.getGroup(group);
+    }
+
+    /**
+     * Get artifact
+     * @param uuid
+     */
+    public async getArtifact(uuid: string) {
+        return await this.validator.getArtifact(uuid);
     }
 
     /**
@@ -364,6 +384,99 @@ export class BlockValidator {
         } else {
             console.error(error);
             return 'Unidentified error';
+        }
+    }
+
+    public compareSchema(baseSchema: ISchema, schema: ISchema): boolean {
+        if (!baseSchema) {
+            return true
+        }
+        const baseFields = this.getSchemaFields(baseSchema.document);
+        const schemaFields = this.getSchemaFields(schema.document);
+        return this.ifExtendFields(schemaFields, baseFields);
+    }
+
+    /**
+     * Compare Schema Fields
+     * @param f1
+     * @param f2
+     * @private
+     */
+    private compareFields(f1: SchemaField, f2: SchemaField): boolean {
+        if (
+            f1.name !== f2.name ||
+            f1.title !== f2.title ||
+            f1.description !== f2.description ||
+            f1.required !== f2.required ||
+            f1.isArray !== f2.isArray ||
+            f1.isRef !== f2.isRef
+        ) {
+            return false;
+        }
+        if (f1.isRef) {
+            return true;
+        } else {
+            return (
+                f1.type === f2.type &&
+                f1.format === f2.format &&
+                f1.pattern === f2.pattern &&
+                f1.unit === f2.unit &&
+                f1.unitSystem === f2.unitSystem &&
+                f1.customType === f2.customType
+            );
+        }
+        // remoteLink?: string;
+        // enum?: string[];
+    }
+
+    /**
+     * Compare Schemas
+     * @param extension
+     * @param base
+     * @private
+     */
+    private ifExtendFields(extension: SchemaField[], base: SchemaField[]): boolean {
+        try {
+            if (!extension || !base) {
+                return false;
+            }
+            const map = new Map<string, SchemaField>();
+            for (const f of extension) {
+                map.set(f.name, f);
+            }
+            for (const baseField of base) {
+                const extensionField = map.get(baseField.name)
+                if (!extensionField) {
+                    return false;
+                }
+                if (!this.compareFields(baseField, extensionField)) {
+                    return false;
+                }
+                if (baseField.isRef) {
+                    if (!this.ifExtendFields(extensionField.fields, baseField.fields)) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        } catch (error) {
+            return false;
+        }
+    }
+
+    /**
+     * Get Schema Fields
+     * @param document
+     * @private
+     */
+    private getSchemaFields(document: any): SchemaField[] {
+        try {
+            if (typeof document === 'string') {
+                document = JSON.parse(document);
+            }
+            return SchemaHelper.parseFields(document, null, null, false);
+        } catch (error) {
+            return null;
         }
     }
 }

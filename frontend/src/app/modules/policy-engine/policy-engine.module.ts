@@ -43,6 +43,7 @@ import { HttpRequestConfigComponent } from './policy-configuration/blocks/main/h
 import { PolicyTreeComponent } from './policy-configuration/policy-tree/policy-tree.component';
 import { ModulePropertiesComponent } from './policy-configuration/module-properties/module-properties.component';
 import { ModuleComponent } from './policy-configuration/blocks/module/module.component';
+import { ToolComponent } from "./policy-configuration/blocks/tool/tool.component";
 import { CreateTokenConfigComponent } from './policy-configuration/blocks/tokens/create-token-config/create-token-config.component';
 import { SwitchConfigComponent } from './policy-configuration/blocks/main/switch-config/switch-config.component';
 import { CommonPropertyComponent } from './policy-configuration/common-property/common-property.component';
@@ -92,10 +93,10 @@ import { PolicyWizardDialogComponent } from './helpers/policy-wizard-dialog/poli
 import { NewPolicyDialog } from './helpers/new-policy-dialog/new-policy-dialog.component';
 import { ImportFileDialog } from './helpers/import-file-dialog/import-file-dialog.component';
 import { NewThemeDialog } from './helpers/new-theme-dialog/new-theme-dialog.component';
-import { ViewerDialog } from './helpers/vc-dialog/viewer-dialog.component';
+import { ViewerDialog } from './helpers/viewer-dialog/viewer-dialog.component';
 import { CompareModulesDialogComponent } from './helpers/compare-modules-dialog/compare-modules-dialog.component';
-//Modules
 import { ModulesListComponent } from './modules-list/modules-list.component';
+import { ToolsListComponent } from './tools-list/tools-list.component';
 //Services
 import { RegisteredService } from './services/registered.service';
 import { WizardService } from './services/wizard.service';
@@ -175,7 +176,9 @@ import { PoliciesComponent } from './policies/policies.component';
         PolicyTreeComponent,
         ModulePropertiesComponent,
         ModuleComponent,
+        ToolComponent,
         ModulesListComponent,
+        ToolsListComponent,
         NewModuleDialog,
         TagsManagerBlockComponent,
         NewPolicyDialog,

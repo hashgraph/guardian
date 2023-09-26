@@ -32,7 +32,9 @@ import { PolicyViewerComponent } from './modules/policy-engine/policy-viewer/pol
 import { ArtifactConfigComponent } from './modules/artifact-engine/artifact-config/artifact-config.component';
 import { CompareComponent } from './modules/analytics/compare/compare.component';
 import { ModulesListComponent } from './modules/policy-engine/modules-list/modules-list.component';
+import { ToolsListComponent } from './modules/policy-engine/tools-list/tools-list.component';
 import { SearchPoliciesComponent } from './modules/analytics/search-policies/search-policies.component';
+import { AboutViewComponent } from './views/admin/about-view/about-view.component';
 
 const USER_IS_NOT_RA = "Page is avaliable for admin only";
 
@@ -169,7 +171,8 @@ const routes: Routes = [
         children: [
             { path: 'status', component: ServiceStatusComponent },
             { path: 'settings', component: SettingsViewComponent },
-            { path: 'logs', component: LogsViewComponent }
+            {path: 'logs', component: LogsViewComponent},
+            {path: 'about', component: AboutViewComponent}
         ]
     },
     { path: 'status', component: ServiceStatusComponent },
@@ -181,9 +184,10 @@ const routes: Routes = [
     { path: 'policy-viewer/:id', component: PolicyViewerComponent, canActivate: [ServicesStatusGuard] },
     { path: 'policy-configuration', component: PolicyConfigurationComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
     { path: 'modules', component: ModulesListComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
+    { path: 'tools', component: ToolsListComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
     { path: 'suggestions', component: SuggestionsConfigurationComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
 
-    { path: 'compare', component: CompareComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
+    { path: 'compare', component: CompareComponent, canActivate: [ServicesStatusGuard] },
     { path: 'search', component: SearchPoliciesComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
 
     { path: 'branding', component: BrandingComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },

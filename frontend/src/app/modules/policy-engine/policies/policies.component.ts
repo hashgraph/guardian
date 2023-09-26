@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { IUser, Schema, SchemaHelper, TagType, Token, UserRole } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
@@ -22,6 +22,7 @@ import { WizardMode, WizardService } from 'src/app/modules/policy-engine/service
 import { FormControl, FormGroup } from '@angular/forms';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 import { SearchPolicyDialog } from '../../analytics/search-policy-dialog/search-policy-dialog.component';
+import { mobileDialog } from 'src/app/utils/mobile-utils';
 
 /**
  * Component for choosing a policy and
@@ -85,8 +86,6 @@ export class PoliciesComponent implements OnInit {
         }
     ];
 
-    public innerWidth: number;
-    public innerHeight: number;
     tagOptions: string[] = [];
     filteredPolicies: any[] = [];
     filtersForm = new FormGroup({
@@ -138,8 +137,6 @@ export class PoliciesComponent implements OnInit {
 
     ngOnInit() {
         this.loading = true;
-        this.innerWidth = window.innerWidth;
-        this.innerHeight = window.innerHeight;
         this.loadPolicy();
         this.handleTagsUpdate();
     }
@@ -343,38 +340,15 @@ export class PoliciesComponent implements OnInit {
     importPolicyDetails(result: any) {
         const { type, data, policy } = result;
         const distinctPolicies = this.getDistinctPolicy();
-        let dialogRef;
-        if (this.innerWidth <= 810) {
-            const bodyStyles = window.getComputedStyle(document.body);
-            const headerHeight: number = parseInt(bodyStyles.getPropertyValue('--header-height'));
-            dialogRef = this.dialog.open(PreviewPolicyDialog, {
-                width: `${this.innerWidth.toString()}px`,
-                maxWidth: '100vw',
-                height: `${this.innerHeight - headerHeight}px`,
-                position: {
-                    'bottom': '0'
-                },
-                panelClass: 'g-dialog',
-                hasBackdrop: true, // Shadows beyond the dialog
-                closeOnNavigation: true,
-                autoFocus: false,
-                disableClose: true,
-                data: {
-                    policy: policy,
-                    policies: distinctPolicies
-                }
-            });
-        } else {
-            dialogRef = this.dialog.open(PreviewPolicyDialog, {
-                width: '950px',
-                panelClass: 'g-dialog',
-                disableClose: true,
-                data: {
-                    policy: policy,
-                    policies: distinctPolicies
-                }
-            });
-        }
+        let dialogRef = this.dialog.open(PreviewPolicyDialog, mobileDialog({
+            width: '950px',
+            panelClass: 'g-dialog',
+            disableClose: true,
+            data: {
+                policy: policy,
+                policies: distinctPolicies
+            }
+        }));
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
                 if (result.messageId) {
@@ -491,37 +465,15 @@ export class PoliciesComponent implements OnInit {
     }
 
     createMultiPolicy(element: any) {
-        let dialogRef;
-        const bodyStyles = window.getComputedStyle(document.body);
-        const headerHeight: number = parseInt(bodyStyles.getPropertyValue('--header-height'));
-        if (this.innerWidth <= 810) {
-            dialogRef = this.dialog.open(MultiPolicyDialogComponent, {
-                width: `${this.innerWidth.toString()}px`,
-                maxWidth: '100vw',
-                height: `${this.innerHeight - headerHeight}px`,
-                position: {
-                    'bottom': '0'
-                },
-                panelClass: 'g-dialog',
-                hasBackdrop: true, // Shadows beyond the dialog
-                closeOnNavigation: true,
-                autoFocus: false,
-                disableClose: true,
-                data: {
-                    policyId: element.id
-                }
-            });
-        } else {
-            dialogRef = this.dialog.open(MultiPolicyDialogComponent, {
-                width: '650px',
-                panelClass: 'g-dialog',
-                disableClose: true,
-                autoFocus: false,
-                data: {
-                    policyId: element.id
-                }
-            });
-        }
+        const dialogRef = this.dialog.open(MultiPolicyDialogComponent, mobileDialog({
+            width: '650px',
+            panelClass: 'g-dialog',
+            disableClose: true,
+            autoFocus: false,
+            data: {
+                policyId: element.id
+            }
+        }));
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
                 this.importPolicyDetails(result);

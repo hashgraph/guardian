@@ -1,4 +1,5 @@
 import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
+import { CommonBlock } from './common';
 
 /**
  * Request VC document block
@@ -16,6 +17,7 @@ export class RequestVcDocumentBlock {
      */
     public static async validate(validator: BlockValidator, ref: IBlockProp): Promise<void> {
         try {
+            await CommonBlock.validate(validator, ref);
             // Test schema options
             if (!ref.options.schema) {
                 validator.addError('Option "schema" is not set');
@@ -26,12 +28,12 @@ export class RequestVcDocumentBlock {
                 return;
             }
 
-            if (await validator.schemaNotExist(ref.options.schema)) {
+            if (validator.schemaNotExist(ref.options.schema)) {
                 validator.addError(`Schema with id "${ref.options.schema}" does not exist`);
                 return;
             }
             if (ref.options.presetSchema) {
-                if (await validator.schemaNotExist(ref.options.presetSchema)) {
+                if (validator.schemaNotExist(ref.options.presetSchema)) {
                     validator.addError(`Schema with id "${ref.options.presetSchema}" does not exist`);
                     return;
                 }

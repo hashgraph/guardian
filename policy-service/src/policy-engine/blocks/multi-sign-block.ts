@@ -172,6 +172,7 @@ export class MultiSignBlock {
         await this.updateThreshold(users, sourceDoc, documentId, user);
 
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
+
         PolicyComponentsUtils.BlockUpdateFn(ref.parent, user);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
             documents: ExternalDocuments(document)
@@ -239,6 +240,7 @@ export class MultiSignBlock {
             vpDocument.type = DataTypes.MULTI_SIGN;
             vpDocument.messageId = vpMessageId;
             vpDocument.topicId = vpMessageResult.getTopicId();
+            vpDocument.relationships = sourceDoc.messageId ? [sourceDoc.messageId] : null;
             await ref.databaseServer.saveVP(vpDocument);
 
             await ref.databaseServer.setMultiSigStatus(ref.uuid, documentId, currentUser.group, DocumentStatus.SIGNED);

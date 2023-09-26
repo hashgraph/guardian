@@ -2,7 +2,7 @@ import { Logger } from '@guardian/common';
 import { Guardians } from '@helpers/guardians';
 import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Query, Req, Res, Response } from '@nestjs/common';
 import { checkPermission } from '@auth/authorization-helper';
-import { SchemaHelper, UserRole } from '@guardian/interfaces';
+import { SchemaCategory, SchemaHelper, UserRole } from '@guardian/interfaces';
 import { ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath } from '@nestjs/swagger';
 import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
 import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator';
@@ -150,7 +150,8 @@ export class ModulesApi {
         @Req() req,
         @Res() res,
         @Query('pageIndex') pageIndex,
-        @Query('pageSize') pageSize
+        @Query('pageSize') pageSize,
+        @Query('topicId') topicId
     ): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
@@ -158,7 +159,13 @@ export class ModulesApi {
             const guardians = new Guardians();
             const owner = user.did;
 
-            const {items, count} = await guardians.getModuleSchemas(owner, pageIndex, pageSize);
+            const { items, count } = await guardians.getSchemasByOwner({
+                category: SchemaCategory.MODULE,
+                owner,
+                topicId,
+                pageIndex,
+                pageSize
+            });
             items.forEach((s) => {
                 s.readonly = s.readonly || s.owner !== owner
             });
@@ -193,8 +200,9 @@ export class ModulesApi {
             delete newSchema.status;
             delete newSchema.topicId;
 
+            newSchema.category = SchemaCategory.MODULE;
             SchemaHelper.updateOwner(newSchema, owner);
-            const schema = await guardians.createModuleSchema(newSchema);
+            const schema = await guardians.createSchema(newSchema);
 
             return res.status(201).json(SchemaUtils.toOld(schema));
         } catch (error) {

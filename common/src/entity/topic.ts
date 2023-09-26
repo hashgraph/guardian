@@ -6,7 +6,7 @@ import { BaseEntity } from '../models';
  * Topics collection
  */
 @Entity()
-@Unique({ properties: ['topicId'], options: { partialFilterExpression: { topicId: { $type: 'string' }}}})
+@Unique({ properties: ['topicId'], options: { partialFilterExpression: { topicId: { $type: 'string' } } } })
 export class Topic extends BaseEntity {
     /**
      * Topic id
@@ -55,4 +55,16 @@ export class Topic extends BaseEntity {
      */
     @Property({ nullable: true })
     policyUUID?: string;
+
+    /**
+     * Target id
+     */
+    @Property({ nullable: true })
+    targetId?: string;
+
+    /**
+     * Target UUID
+     */
+    @Property({ nullable: true })
+    targetUUID?: string;
 }

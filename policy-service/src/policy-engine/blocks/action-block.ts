@@ -107,7 +107,7 @@ export class InterfaceDocumentActionBlock {
             const sensorKey = await PolicyUtils.getAccountKey(ref, userDID, KeyType.KEY, sensorDid);
             const hederaAccountId = hederaAccount.hederaAccountId;
             const hederaAccountKey = hederaAccount.hederaAccountKey;
-            const schemaObject = await ref.databaseServer.getSchemaByIRI(ref.options.schema);
+            const schemaObject = await PolicyUtils.loadSchemaByID(ref, ref.options.schema);
             const schema = new Schema(schemaObject);
             const didDocument = await DidDocumentBase.createByPrivateKey(sensorDid, PrivateKey.fromString(sensorKey));
             result = {

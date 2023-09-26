@@ -122,7 +122,7 @@ export class ExternalDataBlock {
             return null;
         }
         if (!this.schema) {
-            const schema = await ref.databaseServer.getSchemaByIRI(ref.options.schema, ref.topicId);
+            const schema = await PolicyUtils.loadSchemaByID(ref, ref.options.schema);
             this.schema = schema ? new Schema(schema) : null;
             if (!this.schema) {
                 throw new BlockActionError('Waiting for schema', ref.blockType, ref.uuid);

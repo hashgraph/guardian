@@ -2,8 +2,8 @@ import { Component, EventEmitter, Inject, Input, OnInit, Output, SimpleChanges, 
 import {
     GroupVariables,
     IModuleVariables,
-    PolicyBlockModel,
-    PolicyModuleModel,
+    PolicyBlock,
+    PolicyModule,
     RoleVariables,
     SchemaVariables,
     TokenTemplateVariables,
@@ -22,12 +22,12 @@ import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
     encapsulation: ViewEncapsulation.Emulated
 })
 export class ModuleComponent implements OnInit {
-    @Input('block') currentBlock!: PolicyBlockModel;
+    @Input('block') currentBlock!: PolicyBlock;
     @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();
 
     private moduleVariables!: IModuleVariables | null;
-    private item!: PolicyBlockModel;
+    private item!: PolicyBlock;
 
     propHidden: any = {
         main: false
@@ -44,13 +44,9 @@ export class ModuleComponent implements OnInit {
     variablesHidden = [];
 
     constructor(
-        @Inject(GET_SCHEMA_NAME)
-        public getSchemaName: (
-            name?: string,
-            version?: string,
-            status?: string
-        ) => string,
-    ) {}
+    ) {
+        
+    }
 
     ngOnInit(): void {
         this.schemas = [];
@@ -68,7 +64,7 @@ export class ModuleComponent implements OnInit {
         this.load(this.currentBlock as any);
     }
 
-    load(block: PolicyModuleModel) {
+    load(block: PolicyModule) {
         this.moduleVariables = block.moduleVariables;
         this.schemas = this.moduleVariables?.schemas || [];
         this.tokens = this.moduleVariables?.tokens || [];

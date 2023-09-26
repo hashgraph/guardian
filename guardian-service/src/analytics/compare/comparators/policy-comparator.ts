@@ -125,7 +125,7 @@ export class PolicyComparator {
         const topicsTable = new ReportTable(propColumns);
         const tokensTable = new ReportTable(propColumns);
 
-        const tree = ComparePolicyUtils.compareTree(policy1.tree, policy2.tree, this.options);
+        const tree = ComparePolicyUtils.compareBlocks(policy1.tree, policy2.tree, this.options);
         const roles = ComparePolicyUtils.compareArray(policy1.roles, policy2.roles, this.options);
         const groups = ComparePolicyUtils.compareArray(policy1.groups, policy2.groups, this.options);
         const topics = ComparePolicyUtils.compareArray(policy1.topics, policy2.topics, this.options);

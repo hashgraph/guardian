@@ -6,7 +6,7 @@ import { PropertyType } from '../types/property.type';
 import { WeightType } from '../types/weight.type';
 import { PropertiesModel } from './properties.model';
 import { PropertyModel } from './property.model';
-import { IWeightItem } from '../interfaces/weight-tree';
+import { IWeightItem } from '../interfaces/weight-item.interface';
 
 /**
  * Topic Model
@@ -175,5 +175,14 @@ export class TopicModel implements IWeightModel {
                 weight: this._weight[0]
             }
         }
+    }
+
+    /**
+     * Comparison of models using key
+     * @param item - model
+     * @public
+     */
+    public equalKey(doc: TopicModel): boolean {
+        return this.key === doc.key;
     }
 }

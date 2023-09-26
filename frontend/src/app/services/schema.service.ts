@@ -1,9 +1,11 @@
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { ISchema, Schema, SchemaEntity } from '@guardian/interfaces';
+import { ISchema, SchemaCategory, SchemaEntity } from '@guardian/interfaces';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
 import { AuthService } from './auth.service';
+
+type ITask = { taskId: string, expectation: number };
 
 /**
  * Services for working from Schemas.
@@ -11,6 +13,7 @@ import { AuthService } from './auth.service';
 @Injectable()
 export class SchemaService {
     private readonly url: string = `${API_BASE_URL}/schemas`;
+    private readonly singleSchemaUrl: string = `${API_BASE_URL}/schema`;
 
     constructor(
         private http: HttpClient,
@@ -18,22 +21,29 @@ export class SchemaService {
     ) {
     }
 
-    public create(schema: Schema, topicId: any): Observable<ISchema[]> {
+    public create(category: SchemaCategory, schema: ISchema, topicId: any): Observable<ISchema[]> {
+        schema.category = category;
         return this.http.post<any[]>(`${this.url}/${topicId}`, schema);
     }
 
-    public pushCreate(schema: Schema, topicId: any): Observable<{ taskId: string, expectation: number }> {
-        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/${topicId}`, schema);
+    public pushCreate(category: SchemaCategory, schema: ISchema, topicId: any): Observable<ITask> {
+        schema.category = category;
+        return this.http.post<ITask>(`${this.url}/push/${topicId}`, schema);
     }
 
-    public update(schema: Schema, id?: string): Observable<ISchema[]> {
+    public update(schema: ISchema, id?: string): Observable<ISchema[]> {
         const data = Object.assign({}, schema, { id: id || schema.id });
         return this.http.put<any[]>(`${this.url}`, data);
     }
 
-    public newVersion(schema: Schema, id?: string): Observable<{ taskId: string, expectation: number }> {
+    public newVersion(category: SchemaCategory, schema: ISchema, id?: string): Observable<ITask> {
         const data = Object.assign({}, schema, { id: id || schema.id });
-        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/${data.topicId}`, data);
+        schema.category = category;
+        return this.http.post<ITask>(`${this.url}/push/${data.topicId}`, data);
+    }
+
+    public list(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.url}/list/all`);
     }
 
     public getSchemas(topicId?: string): Observable<ISchema[]> {
@@ -43,21 +53,25 @@ export class SchemaService {
         return this.http.get<ISchema[]>(`${this.url}`);
     }
 
-    public list(): Observable<any[]> {
-        return this.http.get<any[]>(`${this.url}/list/all`);
-    }
-
     public getSchemasByPolicy(policyId: string): Observable<ISchema[]> {
         return this.http.get<ISchema[]>(`${this.url}?policyId=${policyId}`);
     }
 
-    public getSchemasByPage(topicId?: string, pageIndex?: number, pageSize?: number): Observable<HttpResponse<ISchema[]>> {
+    public getSchemasByPage(
+        category?: SchemaCategory,
+        topicId?: string,
+        pageIndex?: number,
+        pageSize?: number
+    ): Observable<HttpResponse<ISchema[]>> {
         let url = `${this.url}`;
         if (topicId) {
             url += `/${topicId}`
         }
+        if (category) {
+            url += `?category=${category}`;
+        }
         if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
-            url += `?pageIndex=${pageIndex}&pageSize=${pageSize}`;
+            url += `&pageIndex=${pageIndex}&pageSize=${pageSize}`;
         }
         return this.http.get<any>(url, { observe: 'response' });
     }
@@ -70,8 +84,8 @@ export class SchemaService {
         return this.http.put<any[]>(`${this.url}/${id}/publish`, { version });
     }
 
-    public pushPublish(id: string, version: string): Observable<{ taskId: string, expectation: number }> {
-        return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${id}/publish`, { version });
+    public pushPublish(id: string, version: string): Observable<ITask> {
+        return this.http.put<ITask>(`${this.url}/push/${id}/publish`, { version });
     }
 
     public unpublished(id: string): Observable<ISchema[]> {
@@ -92,12 +106,12 @@ export class SchemaService {
         return this.http.get<any[]>(`${this.url}/${id}/export/message`);
     }
 
-    public pushImportByMessage(messageId: string, topicId: any): Observable<{ taskId: string, expectation: number }> {
-        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/${topicId}/import/message`, { messageId });
+    public pushImportByMessage(messageId: string, topicId: any): Observable<ITask> {
+        return this.http.post<ITask>(`${this.url}/push/${topicId}/import/message`, { messageId });
     }
 
-    public pushImportByFile(schemasFile: any, topicId: any): Observable<{ taskId: string, expectation: number }> {
-        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/${topicId}/import/file`, schemasFile, {
+    public pushImportByFile(schemasFile: any, topicId: any): Observable<ITask> {
+        return this.http.post<ITask>(`${this.url}/push/${topicId}/import/file`, schemasFile, {
             headers: {
                 'Content-Type': 'binary/octet-stream'
             }
@@ -108,8 +122,8 @@ export class SchemaService {
         return this.http.post<any>(`${this.url}/import/message/preview`, { messageId });
     }
 
-    public pushPreviewByMessage(messageId: string): Observable<{ taskId: string, expectation: number }> {
-        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/import/message/preview`, { messageId });
+    public pushPreviewByMessage(messageId: string): Observable<ITask> {
+        return this.http.post<ITask>(`${this.url}/push/import/message/preview`, { messageId });
     }
 
     public previewByFile(schemasFile: any): Observable<ISchema[]> {
@@ -120,7 +134,7 @@ export class SchemaService {
         });
     }
 
-    public createSystemSchemas(schema: Schema): Observable<ISchema> {
+    public createSystemSchemas(schema: ISchema): Observable<ISchema> {
         const username = encodeURIComponent(this.auth.getUsername());
         return this.http.post<any>(`${this.url}/system/${username}`, schema);
     }
@@ -138,7 +152,7 @@ export class SchemaService {
         return this.http.delete<any>(`${this.url}/system/${id}`);
     }
 
-    public updateSystemSchema(schema: Schema, id?: string): Observable<ISchema[]> {
+    public updateSystemSchema(schema: ISchema, id?: string): Observable<ISchema[]> {
         const data = Object.assign({}, schema, { id: id || schema.id });
         return this.http.put<any[]>(`${this.url}/system/${id}`, data);
     }
@@ -149,5 +163,9 @@ export class SchemaService {
 
     public getSystemSchemasByEntity(entity: SchemaEntity): Observable<ISchema> {
         return this.http.get<ISchema>(`${this.url}/system/entity/${entity}`);
+    }
+
+    public getSchemaParents(id: string): Observable<ISchema[]> {
+        return this.http.get<ISchema[]>(`${this.singleSchemaUrl}/${id}/parents`);
     }
 }

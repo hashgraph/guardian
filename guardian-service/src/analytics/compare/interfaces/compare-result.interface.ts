@@ -52,4 +52,8 @@ export interface ICompareResult<T> {
      * Field rates (Schema)
      */
     fields?: IReportTable;
+    /**
+     * Documents rates (Document)
+     */
+    documents?: IReportTable;
 }

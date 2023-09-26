@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, ElementRef, Input, OnInit, SimpleChanges, ViewChild } from '@angular/core';
-import { ModuleEventModel, ModuleVariableModel } from '../../structures';
+import { ModuleEvent, ModuleVariable, PolicyModule, SchemaVariables } from '../../structures';
 
 /**
  * Settings for module.
@@ -17,22 +17,20 @@ export class ModulePropertiesComponent implements OnInit {
 
     @ViewChild('body') body?: ElementRef;
 
-    propHidden: any = {
+    public propHidden: any = {
         main: false,
         variables: {},
         inputs: {},
         outputs: {},
     };
 
-    baseSchemas: any[];
+    public baseSchemas: SchemaVariables[];
 
-    variables: ModuleVariableModel[] = [];
-    inputs: ModuleEventModel[] = [];
-    outputs: ModuleEventModel[] = [];
+    public variables: ModuleVariable[] = [];
+    public inputs: ModuleEvent[] = [];
+    public outputs: ModuleEvent[] = [];
 
-    constructor(
-        private changeDetector: ChangeDetectorRef,
-    ) {
+    constructor() {
     }
 
     ngOnInit(): void {
@@ -42,7 +40,8 @@ export class ModulePropertiesComponent implements OnInit {
         this.inputs = this.module.inputEvents;
         this.outputs = this.module.outputEvents;
         this.variables = this.module.variables;
-        this.baseSchemas = this.module.getSchemas();
+        const baseSchemas: any[] = this.module.getSchemas() || [];
+        this.baseSchemas = baseSchemas.map(s => new SchemaVariables(s));
     }
 
     onHide(item: any, prop: any) {
@@ -54,12 +53,12 @@ export class ModulePropertiesComponent implements OnInit {
         this.module.createVariable();
     }
 
-    onEditVariable(variable: ModuleVariableModel, refresh = false) {
+    onEditVariable(variable: ModuleVariable, refresh = false) {
         variable.changed = true;
         variable.emitUpdate();
     }
 
-    onRemoveVariable(variable: ModuleVariableModel) {
+    onRemoveVariable(variable: ModuleVariable) {
         this.module.removeVariable(variable)
     }
 
@@ -67,12 +66,12 @@ export class ModulePropertiesComponent implements OnInit {
         this.module.createInputEvent();
     }
 
-    onEditInput(input: ModuleEventModel) {
+    onEditInput(input: ModuleEvent) {
         input.changed = true;
         input.emitUpdate();
     }
 
-    onRemoveInput(input: ModuleEventModel) {
+    onRemoveInput(input: ModuleEvent) {
         this.module.removeInputEvent(input)
     }
 
@@ -80,12 +79,12 @@ export class ModulePropertiesComponent implements OnInit {
         this.module.createOutputEvent();
     }
 
-    onEditOutput(output: ModuleEventModel) {
+    onEditOutput(output: ModuleEvent) {
         output.changed = true;
         output.emitUpdate();
     }
 
-    onRemoveOutput(output: ModuleEventModel) {
+    onRemoveOutput(output: ModuleEvent) {
         this.module.removeOutputEvent(output)
     }
 

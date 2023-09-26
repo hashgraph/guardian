@@ -17,10 +17,16 @@
         <td class="propRowCell cellName">Input Schema</td>
         <td class="propRowCell">
             <mat-select [(value)]="properties.inputSchema" [disabled]="readonly" (selectionChange)="onSelectInput()">
-                <mat-option [matTooltip]="getSchemaName(schema.name, schema.version || schema.sourceVersion, schema.status)"
-                    matTooltipPosition="below" matTooltipClass="guardian-tooltip small-guardian-tooltip" matTooltipShowDelay="500"
-                    *ngFor="let schema of schemas" [value]="schema.value">{{getSchemaName(schema.name, schema.version ||
-                    schema.sourceVersion, schema.status)}}</mat-option>
+                <mat-option 
+                    *ngFor="let schema of schemas" 
+                    class="schema-variable"
+                    [attr.status]="schema.status"
+                    matTooltipPosition="below" 
+                    matTooltipClass="guardian-tooltip small-guardian-tooltip" 
+                    matTooltipShowDelay="500"
+                    [matTooltip]="schema.tooltip"
+                    [value]="schema.value"
+                >{{schema.displayName}}</mat-option>
             </mat-select>
         </td>
     </tr>
@@ -51,10 +57,16 @@
         <td class="propRowCell cellName">Output Schema</td>
         <td class="propRowCell">
             <mat-select [(value)]="properties.outputSchema" [disabled]="readonly" (selectionChange)="onSelectOutput()">
-                <mat-option [matTooltip]="getSchemaName(schema.name, schema.version || schema.sourceVersion, schema.status)"
-                    matTooltipPosition="below" matTooltipClass="guardian-tooltip small-guardian-tooltip" matTooltipShowDelay="500"
-                    *ngFor="let schema of schemas" [value]="schema.value">{{getSchemaName(schema.name, schema.version ||
-                    schema.sourceVersion, schema.status)}}</mat-option>
+                <mat-option 
+                    *ngFor="let schema of schemas" 
+                    class="schema-variable"
+                    [attr.status]="schema.status"
+                    matTooltipPosition="below" 
+                    matTooltipClass="guardian-tooltip small-guardian-tooltip" 
+                    matTooltipShowDelay="500"
+                    [matTooltip]="schema.tooltip"
+                    [value]="schema.value"
+                >{{schema.displayName}}</mat-option>
             </mat-select>
         </td>
     </tr>

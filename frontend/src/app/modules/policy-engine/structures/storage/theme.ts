@@ -1,5 +1,5 @@
 import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { PolicyBlockModel } from '..';
+import { PolicyBlock } from '..';
 import { ThemeRule } from './theme-rule';
 import { DEFAULT_SYNTAX_GROUPS } from '../../themes/default-syntax-groups';
 import { ThemeSyntaxGroup } from './theme-syntax-groups';
@@ -80,7 +80,7 @@ export class Theme {
         this._rules = this._rules.filter(r => r != rule);
     }
 
-    public getStyle(item: PolicyBlockModel): any {
+    public getStyle(item: PolicyBlock): any {
         try {
             let styleNumber = 0;
             for (let i = 0; i < this._rules.length; i++) {

@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { IModuleVariables, PolicyBlockModel, TokenTemplateVariables, TokenVariables } from '../../../../structures';
+import { IModuleVariables, PolicyBlock, TokenTemplateVariables, TokenVariables } from '../../../../structures';
 
 /**
  * Settings for block of 'mintDocument' and 'wipeDocument' types.
@@ -11,12 +11,12 @@ import { IModuleVariables, PolicyBlockModel, TokenTemplateVariables, TokenVariab
     encapsulation: ViewEncapsulation.Emulated
 })
 export class MintConfigComponent implements OnInit {
-    @Input('block') currentBlock!: PolicyBlockModel;
+    @Input('block') currentBlock!: PolicyBlock;
     @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();
 
     private moduleVariables!: IModuleVariables | null;
-    private item!: PolicyBlockModel;
+    private item!: PolicyBlock;
     
     propHidden: any = {
         main: false,
@@ -40,7 +40,7 @@ export class MintConfigComponent implements OnInit {
         this.load(this.currentBlock);
     }
 
-    load(block: PolicyBlockModel) {
+    load(block: PolicyBlock) {
         this.moduleVariables = block.moduleVariables;
         this.item = block;
         this.properties = block.properties;

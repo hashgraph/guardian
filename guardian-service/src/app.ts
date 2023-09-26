@@ -45,10 +45,10 @@ import { ipfsAPI } from '@api/ipfs.service';
 import { artifactAPI } from '@api/artifact.service';
 import { sendKeysToVault } from '@helpers/send-keys-to-vault';
 import { contractAPI } from '@api/contract.service';
-// import { analyticsAPI } from '@api/analytics.service';
 import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels-container';
 import { PolicyEngine } from '@policy-engine/policy-engine';
 import { modulesAPI } from '@api/module.service';
+import { toolsAPI } from '@api/tool.service';
 import { GuardiansService } from '@helpers/guardians';
 import { mapAPI } from '@api/map.service';
 import { tagsAPI } from '@api/tag.service';
@@ -90,7 +90,7 @@ Promise.all([
         'v2-16-0'
     ]),
     MessageBrokerChannel.connect('GUARDIANS_SERVICE'),
-    NestFactory.createMicroservice<MicroserviceOptions>(AppModule,{
+    NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
         transport: Transport.NATS,
         options: {
             queue: 'guardian-service',
@@ -157,6 +157,7 @@ Promise.all([
         await artifactAPI();
         await contractAPI(contractRepository, retireRequestRepository);
         await modulesAPI();
+        await toolsAPI();
         await tagsAPI();
         await analyticsAPI();
         await mapAPI();

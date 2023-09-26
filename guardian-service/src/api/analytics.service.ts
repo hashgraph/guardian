@@ -1,25 +1,11 @@
-import {
-    HashComparator,
-    ModuleComparator,
-    ModuleModel,
-    PolicyComparator,
-    PolicyModel,
-    SchemaComparator,
-    SchemaModel
-} from '@analytics';
-import {
-    DatabaseServer,
-    InboundMessageIdentityDeserializer,
-    Logger,
-    MessageError,
-    MessageResponse,
-    OutboundResponseIdentitySerializer
-} from '@guardian/common';
+import { DocumentComparator, HashComparator, ICompareOptions, ModuleComparator, ModuleModel, PolicyComparator, PolicyModel, SchemaComparator, SchemaModel } from '@analytics';
+import { DatabaseServer, Logger, MessageError, MessageResponse, } from '@guardian/common';
 import { ApiResponse } from '@api/helpers/api-response';
-import { MessageAPI } from '@guardian/interfaces';
+import { MessageAPI, UserRole } from '@guardian/interfaces';
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import process from 'process';
+import { DocumentModel } from 'analytics/compare/models/document.model';
 
 @Controller()
 export class AnalyticsController {
@@ -245,6 +231,64 @@ export async function analyticsAPI(): Promise<void> {
             return new MessageError(error);
         }
     });
+
+    ApiResponse(MessageAPI.COMPARE_DOCUMENTS, async (msg) => {
+        try {
+            const {
+                user,
+                type,
+                ids,
+                eventsLvl,
+                propLvl,
+                childrenLvl,
+                idLvl
+            } = msg;
+            const options: ICompareOptions = {
+                owner: null,
+                propLvl: parseInt(propLvl, 10),
+                childLvl: parseInt(childrenLvl, 10),
+                eventLvl: parseInt(eventsLvl, 10),
+                idLvl: parseInt(idLvl, 10),
+            };
+            if (user?.role === UserRole.STANDARD_REGISTRY) {
+                options.owner = user.did;
+            }
+
+            const compareModels: DocumentModel[] = [];
+            for (const documentsId of ids) {
+                const compareModel = await DocumentComparator.createModelById(documentsId, options);
+                if (!compareModel) {
+                    return new MessageError('Unknown document');
+                }
+                compareModels.push(compareModel);
+            }
+
+            const comparator = new DocumentComparator(options);
+            const results = comparator.compare(compareModels);
+            if (results.length === 1) {
+                if (type === 'csv') {
+                    const file = DocumentComparator.tableToCsv(results);
+                    return new MessageResponse(file);
+                } else {
+                    const result = results[0];
+                    return new MessageResponse(result);
+                }
+            } else if (results.length > 1) {
+                if (type === 'csv') {
+                    const file = DocumentComparator.tableToCsv(results);
+                    return new MessageResponse(file);
+                } else {
+                    const result = comparator.mergeCompareResults(results);
+                    return new MessageResponse(result);
+                }
+            } else {
+                return new MessageError('Invalid size');
+            }
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
 }
 
 @Module({
@@ -257,8 +301,8 @@ export async function analyticsAPI(): Promise<void> {
                     `nats://${process.env.MQ_ADDRESS}:4222`
                 ],
                 queue: 'analytics-service',
-                serializer: new OutboundResponseIdentitySerializer(),
-                deserializer: new InboundMessageIdentityDeserializer(),
+                // serializer: new OutboundResponseIdentitySerializer(),
+                // deserializer: new InboundMessageIdentityDeserializer(),
             }
         }]),
     ],

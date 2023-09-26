@@ -215,6 +215,7 @@ export class HeaderComponent implements OnInit {
                     this.activeLinkRoot === '/schemas' ||
                     this.activeLinkRoot === '/artifacts' ||
                     this.activeLinkRoot === '/modules' ||
+                    this.activeLinkRoot === '/tools' ||
                     this.activeLinkRoot === '/suggestions' ||
                     this.activeLinkRoot === '/policy-viewer' ||
                     this.activeLinkRoot === '/policy-configuration' ||
@@ -241,6 +242,8 @@ export class HeaderComponent implements OnInit {
                 return this.activeLinkRoot === '/artifacts';
             case 'SR_MODULES':
                 return this.activeLinkRoot === '/modules';
+            case 'SR_TOOLS':
+                return this.activeLinkRoot === '/tools';
             case 'SR_SUGGESTIONS':
                 return this.activeLinkRoot === '/suggestions';
             case 'SR_POLICIES_LIST':
@@ -259,7 +262,8 @@ export class HeaderComponent implements OnInit {
                 return this.activeLinkRoot === '/admin/logs';
             case 'SR_STATUS':
                 return this.activeLinkRoot === '/admin/status';
-
+            case 'SR_ABOUT':
+                return this.activeLinkRoot === '/admin/about';
             case 'USER_TOKENS':
                 return this.activeLink === '/user-profile?tab=tokens';
             case 'USER_RETIRE':
@@ -314,6 +318,9 @@ export class HeaderComponent implements OnInit {
             case 'SR_MODULES':
                 this.router.navigate(['/modules']);
                 return true;
+            case 'SR_TOOLS':
+                this.router.navigate(['/tools']);
+                return true;
             case 'SR_POLICIES_LIST':
                 this.router.navigate(['/policy-viewer']);
                 return true;
@@ -336,6 +343,9 @@ export class HeaderComponent implements OnInit {
                 return true;
             case 'SR_STATUS':
                 this.router.navigate(['/admin/status']);
+                return true;
+            case 'SR_ABOUT':
+                this.router.navigate(['/admin/about']);
                 return true;
 
             case 'USER_TOKENS':

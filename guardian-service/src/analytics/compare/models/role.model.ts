@@ -5,7 +5,7 @@ import { IWeightModel } from '../interfaces/weight-model.interface';
 import { PropertyType } from '../types/property.type';
 import { WeightType } from '../types/weight.type';
 import { AnyPropertyModel, PropertyModel } from './property.model';
-import { IWeightItem } from '../interfaces/weight-tree';
+import { IWeightItem } from '../interfaces/weight-item.interface';
 
 /**
  * Role Model
@@ -142,6 +142,15 @@ export class RoleModel implements IWeightModel {
         } else {
             return this._weight[0] === field._weight[0];
         }
+    }
+
+    /**
+     * Comparison of models using key
+     * @param item - model
+     * @public
+     */
+    public equalKey(item: RoleModel): boolean {
+        return this.key === item.key;
     }
 
     /**

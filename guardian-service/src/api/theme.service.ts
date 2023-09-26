@@ -1,44 +1,13 @@
 import { ApiResponse } from '@api/helpers/api-response';
-import { BinaryMessageResponse, DatabaseServer, Logger, MessageError, MessageResponse, Theme, } from '@guardian/common';
-import JSZip from 'jszip';
+import {
+    BinaryMessageResponse,
+    DatabaseServer,
+    Logger,
+    MessageError,
+    MessageResponse,
+    ThemeImportExport
+} from '@guardian/common';
 import { GenerateUUIDv4, MessageAPI } from '@guardian/interfaces';
-
-/**
- * Generate Zip File
- * @param theme
- *
- * @returns Zip file
- */
-export async function generateZipFile(theme: Theme): Promise<JSZip> {
-    const object = { ...theme };
-    delete object.id;
-    delete object._id;
-    delete object.owner;
-    delete object.createDate;
-    delete object.updateDate;
-    if (!Array.isArray(object.rules)) {
-        object.rules = [];
-    }
-    const zip = new JSZip();
-    zip.file('theme.json', JSON.stringify(object));
-    return zip;
-}
-
-/**
- * Parse zip theme file
- * @param zipFile Zip file
- * @returns Parsed theme
- */
-export async function parseZipFile(zipFile: any): Promise<any> {
-    const zip = new JSZip();
-    const content = await zip.loadAsync(zipFile);
-    if (!content.files['theme.json'] || content.files['theme.json'].dir) {
-        throw new Error('Zip file is not a theme');
-    }
-    const themeString = await content.files['theme.json'].async('string');
-    const theme = JSON.parse(themeString);
-    return { theme };
-}
 
 /**
  * Connect to the message broker methods of working with themes.
@@ -190,7 +159,7 @@ export async function themeAPI(): Promise<void> {
             if (!item || item.owner !== owner) {
                 throw new Error('Invalid theme');
             }
-            const zip = await generateZipFile(item);
+            const zip = await ThemeImportExport.generate(item);
             const file = await zip.generateAsync({
                 type: 'arraybuffer',
                 compression: 'DEFLATE',
@@ -219,7 +188,7 @@ export async function themeAPI(): Promise<void> {
                 throw new Error('file in body is empty');
             }
 
-            const preview = await parseZipFile(Buffer.from(zip.data));
+            const preview = await ThemeImportExport.parseZipFile(Buffer.from(zip.data));
 
             const { theme } = preview;
             delete theme._id;

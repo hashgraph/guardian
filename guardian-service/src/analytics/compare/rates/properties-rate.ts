@@ -72,6 +72,14 @@ export class PropertiesRate implements IRate<PropertyModel<any>> {
     }
 
     /**
+     * Set children rates
+     * @public
+     */
+    public setChildren<U extends IRate<any>>(children: U[]): void {
+        return;
+    }
+
+    /**
      * Get Children Rates
      * @public
      */

@@ -1,4 +1,5 @@
 import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
+import { CommonBlock } from './common';
 
 /**
  * Document action clock with UI
@@ -16,6 +17,7 @@ export class InterfaceDocumentActionBlock {
      */
     public static async validate(validator: BlockValidator, ref: IBlockProp): Promise<void> {
         try {
+            await CommonBlock.validate(validator, ref);
             if (!ref.options.type) {
                 validator.addError('Option "type" is not set');
             } else {
@@ -63,7 +65,7 @@ export class InterfaceDocumentActionBlock {
                             break;
                         }
 
-                        if (await validator.schemaNotExist(ref.options.schema)) {
+                        if (validator.schemaNotExist(ref.options.schema)) {
                             validator.addError(`Schema with id "${ref.options.schema}" does not exist`);
                             break;
                         }

@@ -47,11 +47,12 @@ export class WebSocketService {
     private meecoVerifyVPSubject: Subject<any> = new Subject();
     private meecoVerifyVPFailedSubject: Subject<any> = new Subject();
     private meecoApproveVCSubject: Subject<any> = new Subject();
-    meecoPresentVP$: Observable<any> = this.meecoPresentVPSubject.asObservable();
-    meecoVerifyVP$: Observable<any> = this.meecoVerifyVPSubject.asObservable();
-    meecoVerifyVPFailed$: Observable<any> = this.meecoVerifyVPFailedSubject.asObservable();
     private serviesStates: any = [];
     private sendingEvent: boolean;
+
+    public readonly meecoPresentVP$: Observable<any> = this.meecoPresentVPSubject.asObservable();
+    public readonly meecoVerifyVP$: Observable<any> = this.meecoVerifyVPSubject.asObservable();
+    public readonly meecoVerifyVPFailed$: Observable<any> = this.meecoVerifyVPFailedSubject.asObservable();
 
     constructor(private auth: AuthService, private toastr: ToastrService, private router: Router) {
         this.blockUpdateSubject = new Subject();
@@ -72,10 +73,10 @@ export class WebSocketService {
             url: this.getUrl(),
             deserializer: (e) => {
                 this.sendingEvent = true;
-                return e.data
+                return e.data;
             },
             serializer: (value) => {
-                return value
+                return value;
             },
             closeObserver: {
                 next: this.closeWebSocket.bind(this)
@@ -174,9 +175,9 @@ export class WebSocketService {
             this.sendingEvent = true;
             this.socket?.next(data);
             setTimeout(() => {
-                    this.sendingEvent = false;
-                    resolve();
-                },
+                this.sendingEvent = false;
+                resolve();
+            },
                 100
             );
         })

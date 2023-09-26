@@ -1,0 +1,47 @@
+<div class="context" *ngIf="count">
+    <button 
+        class="compare-btn" 
+        mat-mini-fab 
+        matBadgePosition="after" 
+        matBadgeColor="warn"
+        [matBadge]="count"
+        [matBadgeHidden]="count < 1" 
+        (menuOpened)="onMenuOpened()" 
+        (menuClosed)="menuOpened = false" 
+        [matMenuTriggerFor]="compareMenu">
+        <mat-icon>compare</mat-icon>
+    </button>
+
+    <mat-menu 
+        #compareMenu="matMenu" 
+        yPosition="below" 
+        xPosition="before" 
+        class="compare-menu-panel">
+        <div class="compare-menu" (click)="$event.stopPropagation()">
+            <div class="compare-header">
+                Documents
+            </div>
+            <div *ngFor="let item of ids" class="compare-item">
+                <div class="compare-item-select" (click)="onSelect(item)">
+                    <input 
+                    class="compare-checkbox" 
+                    type="checkbox" 
+                    [checked]="isSelected(item)">
+                </div>
+                <div class="compare-item-name" (click)="onSelect(item)">
+                    {{item}}
+                </div>
+                <div class="compare-item-delete" (click)="onDelete(item)">
+                    <mat-icon>delete</mat-icon>
+                </div>
+            </div>
+            <div class="compare-results">
+                <div class="compare-results-btn" 
+                    [attr.disable]="selectedCount<2" 
+                    (click)="onCompare()">
+                    Compare ({{selectedCount}})
+                </div>
+            </div>
+        </div>
+    </mat-menu>
+</div>

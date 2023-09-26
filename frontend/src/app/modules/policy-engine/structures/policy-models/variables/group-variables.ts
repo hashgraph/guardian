@@ -1,16 +1,17 @@
-import { ModuleVariableModel } from '../module-variable.model';
-import { PolicyGroupModel } from '../policy-group.model';
+
+import { PolicyGroup } from '../policy/policy-group.model';
+import { ModuleVariable } from './module-variable.model';
 
 export class GroupVariables {
     public name?: string;
     public value?: string;
-    public data?: PolicyGroupModel;
+    public data?: PolicyGroup;
 
-    constructor(group?: PolicyGroupModel | ModuleVariableModel | string, value?: string) {
+    constructor(group?: PolicyGroup | ModuleVariable | string, value?: string) {
         if (typeof group === 'string') {
             this.name = group;
             this.value = group;
-        } else if(group instanceof ModuleVariableModel) {
+        } else if(group instanceof ModuleVariable) {
             this.name = group.name;
             this.value = group.name;
         } else if (group) {
