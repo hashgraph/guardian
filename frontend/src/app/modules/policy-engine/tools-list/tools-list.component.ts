@@ -43,7 +43,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
         'name',
         'description',
         'topic',
-        // 'tags',
+        'tags',
         'schemas',
         'status',
         'operation',
@@ -253,8 +253,9 @@ export class ToolsListComponent implements OnInit, OnDestroy {
                     }
                 }
                 this.loading = true;
-                this.toolsService.create(tool).subscribe((result) => {
-                    this.loadAllTools();
+                this.toolsService.pushCreate(tool).subscribe((result) => {
+                    const { taskId, expectation } = result;
+                    this.router.navigate(['/task', taskId]);
                 }, (e) => {
                     this.loading = false;
                 });
@@ -286,32 +287,13 @@ export class ToolsListComponent implements OnInit, OnDestroy {
 
     public publishTool(element: any) {
         this.loading = true;
-        this.toolsService.publish(element.id).subscribe((result) => {
-            const { isValid, errors } = result;
-            if (!isValid) {
-                let text = [];
-                const blocks = errors.blocks;
-                const invalidBlocks = blocks.filter(
-                    (block: any) => !block.isValid
-                );
-                for (let i = 0; i < invalidBlocks.length; i++) {
-                    const block = invalidBlocks[i];
-                    for (
-                        let j = 0;
-                        j < block.errors.length;
-                        j++
-                    ) {
-                        const error = block.errors[j];
-                        if (block.id) {
-                            text.push(`<div>${block.id}: ${error}</div>`);
-                        } else {
-                            text.push(`<div>${error}</div>`);
-                        }
-                    }
+        this.toolsService.pushPublish(element.id).subscribe((result) => {
+            const { taskId, expectation } = result;
+            this.router.navigate(['task', taskId], {
+                queryParams: {
+                    last: btoa(location.href)
                 }
-                this.informService.errorMessage(text.join(''), 'The tool is invalid');
-            }
-            this.loadAllTools();
+            });
         }, (e) => {
             this.loading = false;
         });

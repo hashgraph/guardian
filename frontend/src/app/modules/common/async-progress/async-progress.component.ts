@@ -144,7 +144,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 queryParams[key] = value;
             }
         }
-        this.router.navigate(path, {queryParams});
+        this.router.navigate(path, { queryParams });
     }
 
     handleResult(result: any) {
@@ -174,6 +174,14 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 this.router.navigate(['policy-configuration'], {
                     queryParams: {
                         policyId: result,
+                    },
+                    replaceUrl: true,
+                });
+                break;
+            case TaskAction.CREATE_TOOL:
+                this.router.navigate(['policy-configuration'], {
+                    queryParams: {
+                        toolId: result,
                     },
                     replaceUrl: true,
                 });
@@ -236,8 +244,43 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                     });
                 }
                 break;
+            case TaskAction.PUBLISH_TOOL:
+                if (result) {
+                    const { isValid, errors, tool } = result;
+                    if (!isValid) {
+                        let text = [];
+                        const blocks = errors.blocks;
+                        const invalidBlocks = blocks.filter(
+                            (block: any) => !block.isValid
+                        );
+                        for (let i = 0; i < invalidBlocks.length; i++) {
+                            const block = invalidBlocks[i];
+                            for (let j = 0; j < block.errors.length; j++) {
+                                const error = block.errors[j];
+                                if (block.id) {
+                                    text.push(
+                                        `<div>${block.id}: ${error}</div>`
+                                    );
+                                } else {
+                                    text.push(`<div>${error}</div>`);
+                                }
+                            }
+                        }
+                        this.informService.errorMessage(
+                            text.join(''),
+                            'The tool is invalid'
+                        );
+                    }
+                    this.router.navigate(['policy-configuration'], {
+                        queryParams: {
+                            toolId: tool?.id
+                        },
+                        replaceUrl: true,
+                    });
+                }
+                break;
             case TaskAction.DELETE_POLICY:
-                this.router.navigate(['policy-viewer'],  {
+                this.router.navigate(['policy-viewer'], {
                     replaceUrl: true,
                 });
                 break;
@@ -252,7 +295,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                     this.redirect(this.last);
                     return;
                 }
-                this.router.navigate(['schemas'],  {
+                this.router.navigate(['schemas'], {
                     replaceUrl: true,
                 });
                 break;
@@ -275,14 +318,14 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.CONNECT_USER:
                 this.router.navigate([
                     this.userRole === UserRole.USER ? 'user-profile' : 'config',
-                ],  {
+                ], {
                     replaceUrl: true,
                 });
                 break;
             case TaskAction.DELETE_TOKEN:
             case TaskAction.UPDATE_TOKEN:
             case TaskAction.CREATE_TOKEN:
-                this.router.navigate(['tokens'],  {
+                this.router.navigate(['tokens'], {
                     replaceUrl: true,
                 });
                 break;
@@ -293,7 +336,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.WIZARD_CREATE_POLICY:
             case TaskAction.PUBLISH_POLICY:
             case TaskAction.DELETE_POLICY:
-                this.router.navigate(['policy-viewer'],  {
+                this.router.navigate(['policy-viewer'], {
                     replaceUrl: true,
                 });
                 break;
@@ -301,7 +344,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.PUBLISH_SCHEMA:
             case TaskAction.IMPORT_SCHEMA_FILE:
             case TaskAction.IMPORT_SCHEMA_MESSAGE:
-                this.router.navigate(['schemas'],  {
+                this.router.navigate(['schemas'], {
                     replaceUrl: true,
                 });
                 break;
