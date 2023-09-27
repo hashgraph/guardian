@@ -3,7 +3,7 @@
         <div>
             <mat-progress-bar mode="buffer" [value]="progressValue"></mat-progress-bar>
         </div>
-        <div>
+        <div class="loading-progress-info">
             <mat-nav-list>
                 <div mat-list-item href="..." *ngFor="let status of statuses" class="status-grid">
                     <div [ngClass]="{'info': isInfo(status)}"><span *ngIf="isInfo(status)">INFO: </span>{{
