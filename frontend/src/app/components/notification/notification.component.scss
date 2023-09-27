@@ -24,7 +24,7 @@
 .notification-menu-header {
     display: flex;
     justify-content: space-between;
-    align-items: end;
+    align-items: flex-end;
     padding: 0 5px;
 
     &__title {
@@ -134,7 +134,7 @@
 .progress-bar {
     display: flex;
     gap: 10px;
-    align-items: end;
+    align-items: flex-end;
     grid-area: progress;
     margin-bottom: 3px;
 

@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { IUser, SchemaHelper, TagType } from '@guardian/interfaces';
+import { GenerateUUIDv4, IUser, SchemaHelper, TagType } from '@guardian/interfaces';
 import { forkJoin } from 'rxjs';
 import { ConfirmationDialogComponent } from 'src/app/modules/common/confirmation-dialog/confirmation-dialog.component';
 import { InformService } from 'src/app/services/inform.service';
@@ -249,6 +249,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
                     description: result.description,
                     menu: "show",
                     config: {
+                        id: GenerateUUIDv4(),
                         blockType: 'tool'
                     }
                 }
