@@ -497,4 +497,8 @@ export interface ToolMessageBody extends MessageBody {
      * URI
      */
     uri: string;
+    /**
+     * Tags topic ID
+     */
+    tagsTopicId: string;
 }

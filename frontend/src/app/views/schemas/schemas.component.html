@@ -52,7 +52,6 @@
                     <mat-label>Tools</mat-label>
                     <mat-select [(value)]="currentTopic" (selectionChange)="onFilter()">
                         <mat-option value="">All</mat-option>
-                        <mat-option class="draft-topic-option" value="draft">No binding</mat-option>
                         <mat-option *ngFor="let tool of tools" [value]="tool.topicId">
                             <span>{{tool.name}}</span>
                             <span> ({{tool.topicId}})</span>
