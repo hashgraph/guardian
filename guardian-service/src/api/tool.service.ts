@@ -484,7 +484,9 @@ export async function toolsAPI(): Promise<void> {
                     'topicId',
                     'hash',
                     'messageId',
-                    'owner'
+                    'owner',
+                    'config',
+                    'configFileId'
                 ]
             });
             const ids = tools.map(t => t.topicId);
@@ -502,6 +504,13 @@ export async function toolsAPI(): Promise<void> {
             );
             const map = new Map<string, any>();
             for (const tool of tools) {
+                if (tool.config) {
+                    tool.config = {
+                        inputEvents: tool.config.inputEvents,
+                        outputEvents: tool.config.outputEvents,
+                        variables: tool.config.variables
+                    }
+                }
                 tool.schemas = [];
                 map.set(tool.topicId, tool);
             }
