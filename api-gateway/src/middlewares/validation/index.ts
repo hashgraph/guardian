@@ -9,7 +9,7 @@ type ValidationError = string & { errors: string[] }
  * @param err
  */
 const getValidationErrors = (err: ValidationError): string[] => {
-  return err?.errors || [err]
+    return err?.errors || [err]
 }
 
 /**
@@ -18,7 +18,7 @@ const getValidationErrors = (err: ValidationError): string[] => {
  * @param type
  */
 export const prepareValidationResponse = (err, type: string = 'ValidationError') => {
-  return { type, message: getValidationErrors(err) };
+    return { type, message: getValidationErrors(err) };
 }
 
 /**
@@ -26,16 +26,16 @@ export const prepareValidationResponse = (err, type: string = 'ValidationError')
  * @param schema
  */
 const validate = (schema) => async (req, res, next) => {
-  try {
-    await schema.validate({
-      body: req.body,
-      query: req.query,
-      params: req.params,
-    }, { abortEarly: false });
-    return next();
-  } catch (err) {
-    return res.status(422).json(prepareValidationResponse(err, err.name));
-  }
+    try {
+        await schema.validate({
+            body: req.body,
+            query: req.query,
+            params: req.params,
+        }, { abortEarly: false });
+        return next();
+    } catch (err) {
+        return res.status(422).json(prepareValidationResponse(err, err.name));
+    }
 };
 
 export default validate

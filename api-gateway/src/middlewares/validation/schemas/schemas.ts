@@ -122,3 +122,17 @@ export class ExportSchemaDTO {
     @IsString()
     messageId: string;
 }
+
+export class VersionSchemaDTO {
+    @ApiProperty()
+    @IsString()
+    @IsNotEmpty()
+    version: string;
+}
+
+export class MessageSchemaDTO {
+    @ApiProperty()
+    @IsString()
+    @IsNotEmpty()
+    messageId: string;
+}

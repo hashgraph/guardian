@@ -1,13 +1,71 @@
 import { Guardians } from '@helpers/guardians';
 import { Body, Controller, HttpCode, HttpException, HttpStatus, Post, Req } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import {
+    ApiInternalServerErrorResponse,
+    ApiUnauthorizedResponse,
+    ApiForbiddenResponse,
+    ApiBody,
+    ApiOkResponse,
+    ApiOperation,
+    ApiSecurity,
+    ApiTags
+} from '@nestjs/swagger';
 import { checkPermission } from '@auth/authorization-helper';
 import { UserRole } from '@guardian/interfaces';
+import {
+    FilterDocumentsDTO,
+    FilterModulesDTO,
+    FilterPoliciesDTO,
+    FilterSchemasDTO,
+    FilterSearchPoliciesDTO,
+    InternalServerErrorDTO,
+    CompareDocumentsDTO,
+    CompareModulesDTO,
+    ComparePoliciesDTO,
+    CompareSchemasDTO,
+    SearchPoliciesDTO
+} from '@middlewares/validation/schemas';
+
+const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
 
 @Controller('analytics')
 @ApiTags('analytics')
 export class AnalyticsApi {
+    /**
+     * Search policies
+     */
     @Post('/search/policies')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Search policies.',
+        description: 'Search policies.' + ONLY_SR,
+    })
+    @ApiBody({
+        description: 'Filters.',
+        required: true,
+        type: FilterSearchPoliciesDTO,
+        examples: {
+            Filter: {
+                value: {
+                    policyId: '000000000000000000000000'
+                }
+            }
+        }
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: SearchPoliciesDTO,
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
     @HttpCode(HttpStatus.OK)
     async searchPolicies(@Body() body, @Req() req): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
@@ -30,7 +88,55 @@ export class AnalyticsApi {
         }
     }
 
+    /**
+     * Compare policies
+     */
     @Post('/compare/policies')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Compare policies.',
+        description: 'Compare policies.' + ONLY_SR,
+    })
+    @ApiBody({
+        description: 'Filters.',
+        required: true,
+        type: FilterPoliciesDTO,
+        examples: {
+            Filter1: {
+                value: {
+                    policyId1: '000000000000000000000001',
+                    policyId2: '000000000000000000000002',
+                    eventsLvl: '0',
+                    propLvl: '0',
+                    childrenLvl: '0',
+                    idLvl: '0'
+                }
+            },
+            Filter2: {
+                value: {
+                    policyIds: ['000000000000000000000001', '000000000000000000000002'],
+                    eventsLvl: '0',
+                    propLvl: '0',
+                    childrenLvl: '0',
+                    idLvl: '0'
+                }
+            }
+        }
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: ComparePoliciesDTO
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
     @HttpCode(HttpStatus.OK)
     async comparePolicies(@Body() body, @Req() req): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
@@ -72,7 +178,45 @@ export class AnalyticsApi {
         }
     }
 
+    /**
+     * Compare modules
+     */
     @Post('/compare/modules')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Compare modules.',
+        description: 'Compare modules.' + ONLY_SR,
+    })
+    @ApiBody({
+        description: 'Filters.',
+        required: true,
+        type: FilterModulesDTO,
+        examples: {
+            Filter: {
+                value: {
+                    moduleId1: '000000000000000000000001',
+                    moduleId2: '000000000000000000000002',
+                    propLvl: '0',
+                    childrenLvl: '0',
+                    idLvl: '0'
+                }
+            }
+        }
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: CompareModulesDTO
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
     @HttpCode(HttpStatus.OK)
     async compareModules(@Body() body, @Req() req): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
@@ -110,6 +254,39 @@ export class AnalyticsApi {
      * Compare schemas
      */
     @Post('/compare/schemas')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Compare schemas.',
+        description: 'Compare schemas.' + ONLY_SR,
+    })
+    @ApiBody({
+        description: 'Filters.',
+        required: true,
+        type: FilterSchemasDTO,
+        examples: {
+            Filter: {
+                value: {
+                    schemaId1: '000000000000000000000001',
+                    schemaId2: '000000000000000000000002',
+                    idLvl: '0'
+                }
+            }
+        }
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: CompareSchemasDTO
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
     @HttpCode(HttpStatus.OK)
     async compareSchemas(@Body() body, @Req() req): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
@@ -135,6 +312,43 @@ export class AnalyticsApi {
      * Compare documents
      */
     @Post('/compare/documents')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Compare documents.',
+        description: 'Compare documents.' + ONLY_SR,
+    })
+    @ApiBody({
+        description: 'Filters.',
+        required: true,
+        type: FilterDocumentsDTO,
+        examples: {
+            Filter1: {
+                value: {
+                    documentId1: '000000000000000000000001',
+                    documentId2: '000000000000000000000002'
+                }
+            },
+            Filter2: {
+                value: {
+                    documentIds: ['000000000000000000000001', '000000000000000000000002'],
+                }
+            }
+        }
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: CompareDocumentsDTO
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
     @HttpCode(HttpStatus.OK)
     async compareDocuments(@Body() body, @Req() req): Promise<any> {
         const guardians = new Guardians();
@@ -175,11 +389,54 @@ export class AnalyticsApi {
     }
 
     /**
-     * Compare policies export
-     * @param body
-     * @param req
+     * Compare policies (CSV)
      */
     @Post('/compare/policies/export')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Compare policies.',
+        description: 'Compare policies.' + ONLY_SR,
+    })
+    @ApiBody({
+        description: 'Filters.',
+        required: true,
+        type: FilterPoliciesDTO,
+        examples: {
+            Filter1: {
+                value: {
+                    policyId1: '000000000000000000000001',
+                    policyId2: '000000000000000000000002',
+                    eventsLvl: '0',
+                    propLvl: '0',
+                    childrenLvl: '0',
+                    idLvl: '0'
+                }
+            },
+            Filter2: {
+                value: {
+                    policyIds: ['000000000000000000000001', '000000000000000000000002'],
+                    eventsLvl: '0',
+                    propLvl: '0',
+                    childrenLvl: '0',
+                    idLvl: '0'
+                }
+            }
+        }
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: String
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
     @HttpCode(HttpStatus.OK)
     async comparePoliciesExport(@Body() body, @Req() req): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
@@ -220,7 +477,45 @@ export class AnalyticsApi {
         }
     }
 
+    /**
+     * Compare modules (CSV)
+     */
     @Post('/compare/modules/export')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Compare modules.',
+        description: 'Compare modules.' + ONLY_SR,
+    })
+    @ApiBody({
+        description: 'Filters.',
+        required: true,
+        type: FilterModulesDTO,
+        examples: {
+            Filter: {
+                value: {
+                    moduleId1: '000000000000000000000001',
+                    moduleId2: '000000000000000000000002',
+                    propLvl: '0',
+                    childrenLvl: '0',
+                    idLvl: '0'
+                }
+            }
+        }
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: String
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
     @HttpCode(HttpStatus.OK)
     async compareModulesExport(@Body() body, @Req() req): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
@@ -256,11 +551,42 @@ export class AnalyticsApi {
     }
 
     /**
-     * compareSchemasExport
-     * @param body
-     * @param req
+     * Compare schemas (CSV)
      */
     @Post('/compare/schemas/export')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Compare schemas.',
+        description: 'Compare schemas.' + ONLY_SR,
+    })
+    @ApiBody({
+        description: 'Filters.',
+        required: true,
+        type: FilterSchemasDTO,
+        examples: {
+            Filter: {
+                value: {
+                    schemaId1: '000000000000000000000001',
+                    schemaId2: '000000000000000000000002',
+                    idLvl: '0'
+                }
+            }
+        }
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: String
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
     @HttpCode(HttpStatus.OK)
     async compareSchemasExport(@Body() body, @Req() req): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
@@ -284,11 +610,46 @@ export class AnalyticsApi {
     }
 
     /**
-     * Compare documents export
-     * @param body
-     * @param req
+     * Compare documents (CSV)
      */
     @Post('/compare/documents/export')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Compare documents.',
+        description: 'Compare documents.' + ONLY_SR,
+    })
+    @ApiBody({
+        description: 'Filters.',
+        required: true,
+        type: FilterDocumentsDTO,
+        examples: {
+            Filter1: {
+                value: {
+                    documentId1: '000000000000000000000001',
+                    documentId2: '000000000000000000000002'
+                }
+            },
+            Filter2: {
+                value: {
+                    documentIds: ['000000000000000000000001', '000000000000000000000002'],
+                }
+            }
+        }
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: String
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
     @HttpCode(HttpStatus.OK)
     async compareDocumentsExport(@Body() body, @Req() req): Promise<any> {
         const guardians = new Guardians();
