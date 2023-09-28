@@ -19,7 +19,6 @@ import {
     ApiSecurity,
     ApiBody,
     ApiTags,
-    getSchemaPath,
     ApiExtraModels
 } from '@nestjs/swagger';
 import {
