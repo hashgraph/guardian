@@ -31,6 +31,9 @@ export class CompareModulesDialogComponent {
 
     ngOnInit() {
         this.loading = false;
+        setTimeout(() => {
+            this.onChange();
+        });
     }
 
     setData(data: any) {
