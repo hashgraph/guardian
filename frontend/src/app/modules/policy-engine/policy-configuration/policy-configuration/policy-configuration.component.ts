@@ -1,8 +1,6 @@
 import { CdkDropList } from '@angular/cdk/drag-drop';
 import { ChangeDetectorRef, Component, HostListener, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { MatIconRegistry } from '@angular/material/icon';
-import { DomSanitizer } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Schema, SchemaHelper, Token } from '@guardian/interfaces';
 import * as yaml from 'js-yaml';
@@ -18,7 +16,17 @@ import { NewModuleDialog } from '../../helpers/new-module-dialog/new-module-dial
 import { SaveBeforeDialogComponent } from '../../helpers/save-before-dialog/save-before-dialog.component';
 import { PolicyAction, SavePolicyDialog } from '../../helpers/save-policy-dialog/save-policy-dialog.component';
 import { RegisteredService } from '../../services/registered.service';
-import { Options, PolicyBlock, PolicyTemplate, PolicyModule, PolicyStorage, ModuleTemplate, Theme, ThemeRule, ToolTemplate } from '../../structures';
+import {
+    Options,
+    PolicyBlock,
+    PolicyTemplate,
+    PolicyModule,
+    PolicyStorage,
+    ModuleTemplate,
+    Theme,
+    ThemeRule,
+    ToolTemplate
+} from '../../structures';
 import { PolicyTreeComponent } from '../policy-tree/policy-tree.component';
 import { ThemeService } from '../../../../services/theme.service';
 import { WizardMode, WizardService } from 'src/app/modules/policy-engine/services/wizard.service';
@@ -179,8 +187,6 @@ export class PolicyConfigurationComponent implements OnInit {
         private router: Router,
         private dialog: MatDialog,
         private changeDetector: ChangeDetectorRef,
-        private domSanitizer: DomSanitizer,
-        private matIconRegistry: MatIconRegistry,
         private informService: InformService,
         private registeredService: RegisteredService,
         private themeService: ThemeService,

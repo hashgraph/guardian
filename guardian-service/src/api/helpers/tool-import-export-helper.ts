@@ -129,9 +129,9 @@ export async function importToolByMessage(
     }
 
     const toolTags = components.tags?.filter((t: any) => t.entity === TagType.Tool) || [];
-    if (message.toolTopicId) {
+    if (message.tagsTopicId) {
         const tagMessages = await messageServer.getMessages<TagMessage>(
-            message.toolTopicId,
+            message.tagsTopicId,
             MessageType.Tag,
             MessageAction.PublishTag
         );

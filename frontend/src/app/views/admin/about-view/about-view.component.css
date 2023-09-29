@@ -32,7 +32,7 @@
 .title-column {
     max-width: 300px;
     font-weight: 500;
-    align-items: end;
+    align-items: flex-end;
 }
 
 .value-column {

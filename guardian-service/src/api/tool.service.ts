@@ -35,6 +35,7 @@ import { ToolValidator } from '@policy-engine/block-validators/tool-validator';
 import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
 import { importToolByFile, importToolByMessage } from './helpers';
 import * as crypto from 'crypto';
+import { publishToolTags } from './tag.service';
 
 /**
  * Sha256
@@ -181,6 +182,20 @@ export async function publishTool(
         notifier.completedAndStart('Publish schemas');
         tool = await publishSchemas(tool, owner, root, notifier);
 
+        notifier.completedAndStart('Create tags topic');
+        const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
+        const tagsTopic = await topicHelper.create({
+            type: TopicType.TagsTopic,
+            name: tool.name || TopicType.TagsTopic,
+            description: tool.description || TopicType.TagsTopic,
+            owner,
+            policyId: tool.id.toString(),
+            policyUUID: tool.uuid
+        }, { admin: true, submit: false });
+        await tagsTopic.saveKeys();
+        await DatabaseServer.saveTopic(tagsTopic.toObject());
+        tool.tagsTopicId = tagsTopic.topicId;
+
         notifier.completedAndStart('Generate file');
         tool = updateToolConfig(tool);
         const zip = await ToolImportExport.generate(tool);
@@ -198,6 +213,13 @@ export async function publishTool(
         message.setDocument(tool, buffer);
         const result = await messageServer
             .sendMessage(message);
+
+        notifier.completedAndStart('Publish tags');
+        try {
+            await publishToolTags(tool, root);
+        } catch (error) {
+            logger.error(error, ['GUARDIAN_SERVICE, TAGS']);
+        }
 
         notifier.completedAndStart('Saving in DB');
         tool.messageId = result.getId();
@@ -312,7 +334,7 @@ export async function createTool(
                 owner,
                 targetId: tool.id.toString(),
                 targetUUID: tool.uuid
-            });
+            }, { admin: true, submit: true });
             await topic.saveKeys();
 
             notifier.completedAndStart('Create tool in Hedera');
@@ -462,7 +484,9 @@ export async function toolsAPI(): Promise<void> {
                     'topicId',
                     'hash',
                     'messageId',
-                    'owner'
+                    'owner',
+                    'config',
+                    'configFileId'
                 ]
             });
             const ids = tools.map(t => t.topicId);
@@ -480,6 +504,13 @@ export async function toolsAPI(): Promise<void> {
             );
             const map = new Map<string, any>();
             for (const tool of tools) {
+                if (tool.config) {
+                    tool.config = {
+                        inputEvents: tool.config.inputEvents,
+                        outputEvents: tool.config.outputEvents,
+                        variables: tool.config.variables
+                    }
+                }
                 tool.schemas = [];
                 map.set(tool.topicId, tool);
             }

@@ -631,7 +631,10 @@ export class PolicyTool extends PolicyBlock {
                 blockType: BlockType.Tool,
                 defaultActive: true,
                 hash: template.hash,
-                messageId: template.messageId
+                messageId: template.messageId,
+                inputEvents: template.config?.inputEvents,
+                outputEvents: template.config?.outputEvents,
+                variables: template.config?.variables
             }
             const tool = TemplateUtils.buildBlock(config, null, this) as PolicyTool;
             this._tagMap[tool.tag] = tool;

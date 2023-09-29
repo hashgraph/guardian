@@ -29,6 +29,10 @@ export class ToolsService {
         return this.http.post<any>(`${this.url}/`, tool);
     }
 
+    public pushCreate(tool: any): Observable<{ taskId: string, expectation: number }> {
+        return this.http.post<any>(`${this.url}/push`, tool);
+    }
+
     public menuList(): Observable<any[]> {
         return this.http.get<any[]>(`${this.url}/menu/all`);
     }

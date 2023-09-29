@@ -9,16 +9,26 @@ import {
     MessageType,
     PolicyModule as ModuleCollection,
     Policy as PolicyCollection,
+    PolicyTool as PolicyToolCollection,
     Schema as SchemaCollection,
+    Token as TokenCollection,
     Tag,
     TagMessage,
-    Token as TokenCollection,
     TopicConfig,
     UrlType,
     Users,
     VcHelper,
 } from '@guardian/common';
-import { GenerateUUIDv4, IRootConfig, MessageAPI, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TagType } from '@guardian/interfaces';
+import {
+    GenerateUUIDv4,
+    IRootConfig,
+    MessageAPI,
+    Schema,
+    SchemaCategory,
+    SchemaHelper,
+    SchemaStatus,
+    TagType
+} from '@guardian/interfaces';
 
 /**
  * Publish schema tags
@@ -99,6 +109,32 @@ export async function publishTokenTags(
 
     for (const tag of tags) {
         tag.target = token.tokenId;
+        await publishTag(tag, messageServer);
+        await DatabaseServer.updateTag(tag);
+    }
+}
+
+/**
+ * Publish tool tags
+ * @param tool
+ * @param messageServer
+ */
+export async function publishToolTags(
+    tool: PolicyToolCollection,
+    user: IRootConfig
+): Promise<void> {
+    const filter: any = {
+        localTarget: tool.id,
+        entity: TagType.Tool,
+        status: 'Draft'
+    }
+    const tags = await DatabaseServer.getTags(filter);
+    const topic = await DatabaseServer.getTopicById(tool.tagsTopicId);
+    const topicConfig = await TopicConfig.fromObject(topic, true);
+    const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey)
+        .setTopicObject(topicConfig);
+    for (const tag of tags) {
+        tag.target = tool.tagsTopicId;
         await publishTag(tag, messageServer);
         await DatabaseServer.updateTag(tag);
     }
@@ -276,6 +312,18 @@ export async function getTarget(entity: TagType, id: string): Promise<{
                     id: item.id.toString(),
                     target: item.contractId,
                     topicId: item.topicId
+                };
+            } else {
+                return null;
+            }
+        }
+        case TagType.Tool: {
+            const item = await DatabaseServer.getToolById(id);
+            if (item) {
+                return {
+                    id: item.id.toString(),
+                    target: item.messageId,
+                    topicId: item.tagsTopicId
                 };
             } else {
                 return null;

@@ -17,8 +17,8 @@ import {
     ApiOkResponse,
     ApiOperation,
     ApiSecurity,
+    ApiBody,
     ApiTags,
-    getSchemaPath,
     ApiExtraModels
 } from '@nestjs/swagger';
 import {
@@ -42,7 +42,15 @@ import { ServiceError } from '@helpers/service-requests-base';
 import { SchemaUtils } from '@helpers/schema-utils';
 import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator';
 import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator';
-import { InternalServerErrorDTO, TaskDTO, SystemSchemaDTO, SchemaDTO, ExportSchemaDTO } from '@middlewares/validation/schemas';
+import {
+    InternalServerErrorDTO,
+    TaskDTO,
+    SystemSchemaDTO,
+    SchemaDTO,
+    ExportSchemaDTO,
+    MessageSchemaDTO,
+    VersionSchemaDTO
+} from '@middlewares/validation/schemas';
 
 const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
 
@@ -189,9 +197,7 @@ export class SingleSchemaApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
-        schema: {
-            $ref: getSchemaPath(SchemaDTO)
-        },
+        type: SchemaDTO
     })
     @ApiUnauthorizedResponse({
         description: 'Unauthorized.',
@@ -201,9 +207,7 @@ export class SingleSchemaApi {
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO
     })
     async getSchemaParents(@Req() req): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)(req.user);
@@ -270,21 +274,21 @@ export class SchemaApi {
         type: String,
         description: 'Policy id',
         required: false,
-        example: '000000000000000000000000'
+        example: '000000000000000000000001'
     })
     @ApiImplicitQuery({
         name: 'moduleId',
         type: String,
         description: 'Module id',
         required: false,
-        example: '000000000000000000000000'
+        example: '000000000000000000000001'
     })
     @ApiImplicitQuery({
         name: 'toolId',
         type: String,
         description: 'Tool id',
         required: false,
-        example: '000000000000000000000000'
+        example: '000000000000000000000001'
     })
     @ApiImplicitQuery({
         name: 'topicId',
@@ -304,9 +308,7 @@ export class SchemaApi {
                 description: 'Total items in the collection.'
             }
         },
-        schema: {
-            $ref: getSchemaPath(SchemaDTO)
-        },
+        type: SchemaDTO
     })
     @ApiUnauthorizedResponse({
         description: 'Unauthorized.',
@@ -316,9 +318,7 @@ export class SchemaApi {
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
     async getSchemasPage(@Req() req, @Response() res): Promise<any> {
@@ -384,9 +384,7 @@ export class SchemaApi {
                 description: 'Total items in the collection.'
             }
         },
-        schema: {
-            $ref: getSchemaPath(SchemaDTO)
-        },
+        type: SchemaDTO
     })
     @ApiUnauthorizedResponse({
         description: 'Unauthorized.',
@@ -396,9 +394,7 @@ export class SchemaApi {
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
     async getSchemasPageByTopicId(@Req() req, @Response() res): Promise<any> {
@@ -434,9 +430,7 @@ export class SchemaApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            $ref: getSchemaPath(SchemaDTO)
-        },
+        type: SchemaDTO
     })
     @ApiUnauthorizedResponse({
         description: 'Unauthorized.',
@@ -446,9 +440,7 @@ export class SchemaApi {
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
     async getSchemaByType(@Req() req, @Response() res): Promise<any> {
@@ -493,9 +485,7 @@ export class SchemaApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
-        schema: {
-            $ref: getSchemaPath(SchemaDTO)
-        },
+        type: SchemaDTO
     })
     @ApiUnauthorizedResponse({
         description: 'Unauthorized.',
@@ -505,9 +495,7 @@ export class SchemaApi {
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
     async getAll(@Req() req, @Response() res): Promise<any> {
@@ -542,12 +530,15 @@ export class SchemaApi {
         required: true,
         example: '0.0.1'
     })
+    @ApiBody({
+        description: 'Object that contains a valid schema.',
+        required: true,
+        type: SchemaDTO
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
-        schema: {
-            $ref: getSchemaPath(SchemaDTO)
-        },
+        type: SchemaDTO
     })
     @ApiUnauthorizedResponse({
         description: 'Unauthorized.',
@@ -557,9 +548,7 @@ export class SchemaApi {
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.CREATED)
     async createNewSchema(@Req() req, @Response() res): Promise<any> {
@@ -597,11 +586,14 @@ export class SchemaApi {
         required: true,
         example: '0.0.1'
     })
+    @ApiBody({
+        description: 'Object that contains a valid schema.',
+        required: true,
+        type: SchemaDTO
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            $ref: getSchemaPath(TaskDTO)
-        },
+        type: TaskDTO
     })
     @ApiUnauthorizedResponse({
         description: 'Unauthorized.',
@@ -611,9 +603,7 @@ export class SchemaApi {
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.ACCEPTED)
     async createNewSchemaAsync(@Req() req, @Response() res): Promise<any> {
@@ -648,12 +638,15 @@ export class SchemaApi {
         summary: 'Updates the schema.',
         description: 'Updates the schema.' + ONLY_SR,
     })
+    @ApiBody({
+        description: 'Object that contains a valid schema.',
+        required: true,
+        type: SchemaDTO
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
-        schema: {
-            $ref: getSchemaPath(SchemaDTO)
-        },
+        type: SchemaDTO
     })
     @ApiUnauthorizedResponse({
         description: 'Unauthorized.',
@@ -663,9 +656,7 @@ export class SchemaApi {
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
     async setSchema(@Req() req, @Response() res): Promise<any> {
@@ -708,14 +699,12 @@ export class SchemaApi {
         type: String,
         description: 'Schema ID',
         required: true,
-        example: '000000000000000000000000'
+        example: '000000000000000000000001'
     })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
-        schema: {
-            $ref: getSchemaPath(SchemaDTO)
-        },
+        type: SchemaDTO
     })
     @ApiUnauthorizedResponse({
         description: 'Unauthorized.',
@@ -725,9 +714,7 @@ export class SchemaApi {
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
     async deleteSchema(@Req() req, @Response() res): Promise<any> {
@@ -776,7 +763,19 @@ export class SchemaApi {
         type: String,
         description: 'Schema ID',
         required: true,
-        example: '000000000000000000000000'
+        example: '000000000000000000000001'
+    })
+    @ApiBody({
+        description: 'Object that contains version.',
+        required: true,
+        type: VersionSchemaDTO,
+        examples: {
+            Version: {
+                value: {
+                    version: '1.0.0'
+                }
+            }
+        }
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -789,9 +788,7 @@ export class SchemaApi {
                 description: 'Total items in the collection.'
             }
         },
-        schema: {
-            $ref: getSchemaPath(SchemaDTO)
-        },
+        type: SchemaDTO
     })
     @ApiUnauthorizedResponse({
         description: 'Unauthorized.',
@@ -801,9 +798,7 @@ export class SchemaApi {
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
     async publishSchema(@Req() req, @Response() res): Promise<any> {
@@ -812,8 +807,8 @@ export class SchemaApi {
         const guardians = new Guardians();
         const schemaId = req.params.schemaId;
         const { version } = req.body;
-        let schema;
-        let allVersion;
+        let schema: ISchema;
+        let allVersion: ISchema[];
         try {
             schema = await guardians.getSchemaById(schemaId);
         } catch (error) {
@@ -867,13 +862,23 @@ export class SchemaApi {
         type: String,
         description: 'Schema ID',
         required: true,
-        example: '000000000000000000000000'
+        example: '000000000000000000000001'
+    })
+    @ApiBody({
+        description: 'Object that contains version.',
+        required: true,
+        type: VersionSchemaDTO,
+        examples: {
+            Version: {
+                value: {
+                    version: '1.0.0'
+                }
+            }
+        }
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            $ref: getSchemaPath(TaskDTO)
-        },
+        type: TaskDTO
     })
     @ApiUnauthorizedResponse({
         description: 'Unauthorized.',
@@ -883,9 +888,7 @@ export class SchemaApi {
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.ACCEPTED)
     async publishSchemaAsync(@Req() req, @Response() res): Promise<any> {
@@ -932,6 +935,18 @@ export class SchemaApi {
         summary: 'Previews the schema from IPFS without loading it into the local DB.',
         description: 'Previews the schema from IPFS without loading it into the local DB.' + ONLY_SR,
     })
+    @ApiBody({
+        description: 'Object that contains version.',
+        required: true,
+        type: MessageSchemaDTO,
+        examples: {
+            Message: {
+                value: {
+                    messageId: '0000000000.000000000'
+                }
+            }
+        }
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
@@ -946,9 +961,7 @@ export class SchemaApi {
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
     async importFromMessagePreview(@Req() req, @Response() res): Promise<any> {
@@ -973,11 +986,21 @@ export class SchemaApi {
         summary: 'Previews the schema from IPFS without loading it into the local DB.',
         description: 'Previews the schema from IPFS without loading it into the local DB.' + ONLY_SR,
     })
+    @ApiBody({
+        description: 'Object that contains version.',
+        required: true,
+        type: MessageSchemaDTO,
+        examples: {
+            Message: {
+                value: {
+                    messageId: '0000000000.000000000'
+                }
+            }
+        }
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            $ref: getSchemaPath(TaskDTO)
-        },
+        type: TaskDTO
     })
     @ApiUnauthorizedResponse({
         description: 'Unauthorized.',
@@ -987,9 +1010,7 @@ export class SchemaApi {
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.ACCEPTED)
     async importFromMessagePreviewAsync(@Req() req, @Response() res): Promise<any> {
@@ -1021,6 +1042,10 @@ export class SchemaApi {
         summary: 'Previews the schema from a zip file.',
         description: 'Previews the schema from a zip file.' + ONLY_SR,
     })
+    @ApiBody({
+        description: 'A zip file containing schema to be imported.',
+        required: true
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
@@ -1035,9 +1060,7 @@ export class SchemaApi {
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
     async importFromFilePreview(@Req() req, @Response() res): Promise<any> {
@@ -1073,6 +1096,18 @@ export class SchemaApi {
         required: true,
         example: '0.0.1'
     })
+    @ApiBody({
+        description: 'Object that contains version.',
+        required: true,
+        type: MessageSchemaDTO,
+        examples: {
+            Message: {
+                value: {
+                    messageId: '0000000000.000000000'
+                }
+            }
+        }
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
@@ -1084,9 +1119,7 @@ export class SchemaApi {
                 description: 'Total items in the collection.'
             }
         },
-        schema: {
-            $ref: getSchemaPath(SchemaDTO)
-        },
+        type: SchemaDTO
     })
     @ApiUnauthorizedResponse({
         description: 'Unauthorized.',
@@ -1096,9 +1129,7 @@ export class SchemaApi {
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.CREATED)
     async importFromMessage(@Req() req, @Response() res): Promise<any> {
@@ -1140,11 +1171,21 @@ export class SchemaApi {
         required: true,
         example: '0.0.1'
     })
+    @ApiBody({
+        description: 'Object that contains version.',
+        required: true,
+        type: MessageSchemaDTO,
+        examples: {
+            Message: {
+                value: {
+                    messageId: '0000000000.000000000'
+                }
+            }
+        }
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            $ref: getSchemaPath(TaskDTO)
-        },
+        type: TaskDTO
     })
     @ApiUnauthorizedResponse({
         description: 'Unauthorized.',
@@ -1154,9 +1195,7 @@ export class SchemaApi {
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.ACCEPTED)
     async importFromMessageAsync(@Req() req, @Response() res): Promise<any> {
@@ -1196,6 +1235,10 @@ export class SchemaApi {
         required: true,
         example: '0.0.1'
     })
+    @ApiBody({
+        description: 'A zip file containing schema to be imported.',
+        required: true
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
@@ -1207,9 +1250,7 @@ export class SchemaApi {
                 description: 'Total items in the collection.'
             }
         },
-        schema: {
-            $ref: getSchemaPath(SchemaDTO)
-        },
+        type: SchemaDTO
     })
     @ApiUnauthorizedResponse({
         description: 'Unauthorized.',
@@ -1219,9 +1260,7 @@ export class SchemaApi {
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.CREATED)
     async importToTopicFromFile(@Req() req, @Response() res): Promise<any> {
@@ -1264,11 +1303,13 @@ export class SchemaApi {
         required: true,
         example: '0.0.1'
     })
+    @ApiBody({
+        description: 'A zip file containing schema to be imported.',
+        required: true
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            $ref: getSchemaPath(TaskDTO)
-        },
+        type: TaskDTO
     })
     @ApiUnauthorizedResponse({
         description: 'Unauthorized.',
@@ -1278,9 +1319,7 @@ export class SchemaApi {
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.ACCEPTED)
     async importToTopicFromFileAsync(@Req() req, @Response() res): Promise<any> {
@@ -1316,13 +1355,11 @@ export class SchemaApi {
         type: String,
         description: 'Schema ID',
         required: true,
-        example: '000000000000000000000000'
+        example: '000000000000000000000001'
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            $ref: getSchemaPath(ExportSchemaDTO)
-        },
+        type: ExportSchemaDTO
     })
     @ApiUnauthorizedResponse({
         description: 'Unauthorized.',
@@ -1332,9 +1369,7 @@ export class SchemaApi {
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
     async exportMessage(@Req() req, @Response() res): Promise<any> {
@@ -1372,7 +1407,7 @@ export class SchemaApi {
         type: String,
         description: 'Schema ID',
         required: true,
-        example: '000000000000000000000000'
+        example: '000000000000000000000001'
     })
     @ApiOkResponse({
         description: 'Successful operation. Response zip file.'
@@ -1385,9 +1420,7 @@ export class SchemaApi {
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
     async exportToFile(@Req() req, @Response() res): Promise<any> {
@@ -1420,7 +1453,36 @@ export class SchemaApi {
         }
     }
 
+    /**
+     * Create system schema
+     */
     @Post('/system/:username')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Creates a new system schema.',
+        description: 'Creates a new system schema.' + ONLY_SR
+    })
+    @ApiImplicitParam({
+        name: 'username',
+        type: String,
+        description: 'username',
+        required: true,
+        example: 'username'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: SchemaDTO
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
     @HttpCode(HttpStatus.CREATED)
     async postSystemSchema(@Body() body: SystemSchemaDTO, @Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
@@ -1453,7 +1515,59 @@ export class SchemaApi {
         }
     }
 
+    /**
+     * Get system schemas page
+     */
     @Get('/system/:username')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Return a list of all system schemas.',
+        description: 'Returns all system schemas.' + ONLY_SR
+    })
+    @ApiImplicitParam({
+        name: 'username',
+        type: String,
+        description: 'username',
+        required: true,
+        example: 'username'
+    })
+    @ApiImplicitQuery({
+        name: 'pageIndex',
+        type: Number,
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
+    })
+    @ApiImplicitQuery({
+        name: 'pageSize',
+        type: Number,
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        headers: {
+            'x-total-count': {
+                schema: {
+                    'type': 'integer'
+                },
+                description: 'Total items in the collection.'
+            }
+        },
+        type: SchemaDTO
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
     @HttpCode(HttpStatus.OK)
     async getSystemSchema(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
@@ -1476,7 +1590,35 @@ export class SchemaApi {
         }
     }
 
+    /**
+     * Delete system schema
+     */
     @Delete('/system/:schemaId')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Deletes the system schema with the provided schema ID.',
+        description: 'Deletes the system schema with the provided schema ID.' + ONLY_SR,
+    })
+    @ApiImplicitParam({
+        name: 'schemaId',
+        type: String,
+        description: 'Schema ID',
+        required: true,
+        example: '000000000000000000000001'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
     @HttpCode(HttpStatus.NO_CONTENT)
     async deleteSystemSchema(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
@@ -1503,7 +1645,42 @@ export class SchemaApi {
         }
     }
 
+    /**
+     * Update system schema
+     */
     @Put('/system/:schemaId')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Updates the system schema.',
+        description: 'Updates the system schema.' + ONLY_SR,
+    })
+    @ApiImplicitParam({
+        name: 'schemaId',
+        type: String,
+        description: 'Schema ID',
+        required: true,
+        example: '000000000000000000000001'
+    })
+    @ApiBody({
+        description: 'Object that contains a valid schema.',
+        required: true,
+        type: SchemaDTO
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        type: SchemaDTO
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
     @HttpCode(HttpStatus.OK)
     async setSystemSchema(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
@@ -1531,7 +1708,35 @@ export class SchemaApi {
         }
     }
 
+    /**
+     * Makes the selected scheme active.
+     */
     @Put('/system/:schemaId/active')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Makes the selected scheme active. Other schemes of the same type become inactive',
+        description: 'Makes the selected scheme active. Other schemes of the same type become inactive' + ONLY_SR,
+    })
+    @ApiImplicitParam({
+        name: 'schemaId',
+        type: String,
+        description: 'Schema ID',
+        required: true,
+        example: '000000000000000000000001'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
     @HttpCode(HttpStatus.OK)
     async activeSystemSchema(@Req() req: any): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
@@ -1556,7 +1761,36 @@ export class SchemaApi {
         }
     }
 
+    /**
+     * Finds the schema by entity.
+     */
     @Get('/system/entity/:schemaEntity')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Finds the schema using the schema type.',
+        description: 'Finds the schema using the schema type.',
+    })
+    @ApiImplicitParam({
+        name: 'schemaEntity',
+        enum: ['STANDARD_REGISTRY', 'USER', 'POLICY', 'MINT_TOKEN', 'WIPE_TOKEN', 'MINT_NFTOKEN'],
+        description: 'Entity name',
+        required: true,
+        example: 'STANDARD_REGISTRY'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: TaskDTO
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
     @HttpCode(HttpStatus.OK)
     async getSchemaEntity(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER, UserRole.AUDITOR)(req.user)

@@ -619,7 +619,10 @@ export class PolicyModule extends PolicyBlock {
                 blockType: BlockType.Tool,
                 defaultActive: true,
                 hash: template.hash,
-                messageId: template.messageId
+                messageId: template.messageId,
+                inputEvents: template.config?.inputEvents,
+                outputEvents: template.config?.outputEvents,
+                variables: template.config?.variables
             }
             const tool = TemplateUtils.buildBlock(config, null, this) as PolicyTool;
             this._tagMap[tool.tag] = tool;
@@ -651,7 +654,7 @@ export class PolicyModule extends PolicyBlock {
     }
 
     public setEnvironments(env: any): void {
-        if(env) {
+        if (env) {
             this._schemas = env.schemas;
             this._tools = env.tools;
             this._tokens = env.tokens;
