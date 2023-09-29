@@ -16,7 +16,7 @@ async function delay(ms) {
 }
 
 describe('Hedera SDK Helper', function () {
-    const transactionTimeout = 30 * 1000;
+    const transactionTimeout = 90 * 1000;
 
     let sdk, accountId, accountKey, tokenId, account2Id, account2Key, token2Id, nft;
 
