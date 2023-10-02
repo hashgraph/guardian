@@ -2756,13 +2756,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/express-fileupload@npm:^1.4.1":
-  version: 1.4.1
-  resolution: "@types/express-fileupload@npm:1.4.1"
+"@types/express-fileupload@npm:^1.4.2":
+  version: 1.4.2
+  resolution: "@types/express-fileupload@npm:1.4.2"
   dependencies:
     "@types/busboy": "*"
     "@types/express": "*"
-  checksum: 54fff7a11dea74ddc716c0ae610dbf557fa27eb5eb4dff99cd2c88c4722321188342319e77d4df94e801d601d5ccd8287d0c31aea786d652b7760a1e681223b6
+  checksum: 82644ff6e4adb50c98267f4aaf744137fe2302ba59cbf99f1efe23f4c04fa2e1b44e497cc94b72a2398b7ae98465ede73cc1dc4efe13f8257e77fd68c656b707
   languageName: node
   linkType: hard
 
@@ -3446,7 +3446,7 @@ __metadata:
     "@nestjs/platform-express": ^9.4.2
     "@nestjs/swagger": ^6.3.0
     "@types/express": ^4.17.13
-    "@types/express-fileupload": ^1.4.1
+    "@types/express-fileupload": ^1.4.2
     "@types/gulp": ^4
     "@types/gulp-rename": ^2
     "@types/jszip": ^3.4.1
@@ -3460,7 +3460,7 @@ __metadata:
     dotenv: ^16.0.0
     excel4node: ^1.8.2
     express: ^4.17.1
-    express-fileupload: ^1.4.0
+    express-fileupload: ^1.4.1
     gulp: ^4.0.2
     gulp-copy: ^4.0.1
     gulp-rename: ^2.0.0
@@ -3648,7 +3648,7 @@ __metadata:
     "@nestjs/platform-express": ^9.4.2
     "@nestjs/swagger": ^6.3.0
     "@types/express": ^4.17.13
-    "@types/express-fileupload": ^1.4.1
+    "@types/express-fileupload": ^1.4.2
     "@types/gulp": ^4
     "@types/gulp-rename": ^2
     "@types/jszip": ^3.4.1
@@ -3662,7 +3662,7 @@ __metadata:
     cross-env: ^7.0.3
     dotenv: ^16.0.0
     express: ^4.17.1
-    express-fileupload: ^1.4.0
+    express-fileupload: ^1.4.1
     gulp: ^4.0.2
     gulp-copy: ^4.0.1
     gulp-rename: ^2.0.0
@@ -6436,12 +6436,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"express-fileupload@npm:^1.4.0":
-  version: 1.4.0
-  resolution: "express-fileupload@npm:1.4.0"
+"express-fileupload@npm:^1.4.1":
+  version: 1.4.1
+  resolution: "express-fileupload@npm:1.4.1"
   dependencies:
     busboy: ^1.6.0
-  checksum: 4dad1dab1279eab72412857c3bb6b364f86ae512ac760cb4ae140e7f5793daefd2656c2a7cc60033a476d7267ab9d89ac85b2106ce9d5697ec5d3ba9c315ac6f
+  checksum: ac7a64689b8fad51790c9b53cc108fc3d21c559459b158ac5d7b9b351492ea853a14298616a006847f2d2fc54fca7fc399d21a8595ddcfe6eb8d855ed36dd1e6
   languageName: node
   linkType: hard
 
