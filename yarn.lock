@@ -2742,10 +2742,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/deep-equal@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "@types/deep-equal@npm:1.0.1"
-  checksum: 689b5737dd0a37d173d9e1231c07f70a1a9a989087b757422e1d167ec3640fd7eb8a538bd6008b3df400c4c11ed07a6c2a92d9aafc1f98ffaa04731a9442c781
+"@types/deep-equal@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "@types/deep-equal@npm:1.0.2"
+  checksum: 856dcb29e99347f0389ae2619bdce6f21b33b6f36eef0134b95a043a00773e365f10409ad0804b1fb0b96006e5cb19cdaea220e3af1b65ba122bc283ff1c2efe
   languageName: node
   linkType: hard
 
@@ -7607,7 +7607,7 @@ __metadata:
     "@transmute/jsonld-schema": 0.7.0-unstable.80
     "@transmute/security-context": 0.7.0-unstable.80
     "@transmute/vc.js": 0.7.0-unstable.80
-    "@types/deep-equal": ^1.0.1
+    "@types/deep-equal": ^1.0.2
     "@types/express": ^4.17.13
     "@types/fs-extra": ^9.0.12
     "@types/gulp": ^4
@@ -12269,7 +12269,7 @@ __metadata:
     "@transmute/jsonld-schema": 0.7.0-unstable.80
     "@transmute/security-context": 0.7.0-unstable.80
     "@transmute/vc.js": 0.7.0-unstable.80
-    "@types/deep-equal": ^1.0.1
+    "@types/deep-equal": ^1.0.2
     "@types/express": ^4.17.13
     "@types/fs-extra": ^9.0.12
     "@types/gulp": ^4
