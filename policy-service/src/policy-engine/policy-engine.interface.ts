@@ -1,4 +1,4 @@
-import { DocumentStatus, PolicyRole } from '@guardian/interfaces';
+import { DidDocumentStatus, DocumentStatus, PolicyRole } from '@guardian/interfaces';
 import { BlockCacheType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { EventConfig, IPolicyEvent } from './interfaces';
 import { DatabaseServer } from '@guardian/common';
@@ -271,7 +271,11 @@ export interface IPolicyBlock {
      * @param user
      * @param data
      */
-    triggerEvents(eventType: PolicyOutputEventType, user?: IPolicyUser, data?: any): void;
+    triggerEvents<T>(
+        eventType: PolicyOutputEventType,
+        user: IPolicyUser,
+        data: T
+    ): void;
 
     /**
      * Trigger event
@@ -279,7 +283,11 @@ export interface IPolicyBlock {
      * @param user
      * @param data
      */
-    triggerEvent(event: any, user?: IPolicyUser, data?: any): void;
+    triggerEvent<T>(
+        event: IPolicyEvent<T>,
+        user: IPolicyUser,
+        data: T
+    ): void;
 
     /**
      * Save block state
@@ -328,7 +336,9 @@ export interface IPolicyBlock {
      * @param {AnyBlockType} parent
      */
     joinData<T extends IPolicyDocument | IPolicyDocument[]>(
-        data: T, user: IPolicyUser, parent: AnyBlockType
+        data: T,
+        user: IPolicyUser,
+        parent: AnyBlockType
     ): Promise<T>;
 
     /**
@@ -739,7 +749,19 @@ export type AnyBlockType =
 /**
  * Policy document
  */
-export interface IPolicyDocument {
+export interface IPolicyDBDocument<T> {
+    /**
+     * id
+     */
+    id?: string;
+    /**
+     * id
+     */
+    _id?: any;
+    /**
+     * DID
+     */
+    did?: string;
     /**
      * Policy id
      */
@@ -748,10 +770,6 @@ export interface IPolicyDocument {
      * Block Tag
      */
     tag?: string;
-    /**
-     * Document instance
-     */
-    document?: any;
     /**
      * Document owner
      */
@@ -783,7 +801,11 @@ export interface IPolicyDocument {
     /**
      * Hedera Status
      */
-    hederaStatus?: DocumentStatus;
+    hederaStatus?: any;
+    /**
+     * status
+     */
+    status?: any;
     /**
      * Hash
      */
@@ -801,38 +823,79 @@ export interface IPolicyDocument {
      */
     type?: string;
     /**
-     * Other fields
+     * Schema
      */
-    [x: string]: any;
-}
-
-/**
- * Policy document
- */
-export interface IPolicyState<T> {
+    schema?: string;
     /**
-     * Data
+     * Accounts
      */
-    data: T;
+    accounts?: any;
+    /**
+     * Options
+     */
+    option?: any;
+    /**
+     * Signature
+     */
+    signature?: any;
+    /**
+     * Ref
+     */
+    documentFields?: string[];
+    /**
+     * Tokens
+     */
+    tokens?: any;
+    /**
+     * comment
+     */
+    comment?: string;
+    /**
+     * Document instance
+     */
+    document?: T;
 }
 
 /**
  * Policy document
  */
-export type IPolicyEventState = IPolicyState<IPolicyDocument | IPolicyDocument[]>;
+export interface IPolicyDocument extends IPolicyDBDocument<any> {
+    /**
+     * Ref
+     */
+    ref?: any;
+    /**
+     * blocks
+     */
+    blocks?: any;
+    /**
+     * blocks
+     */
+    target?: any;
+    /**
+     * sourceTag
+     */
+    __sourceTag__?: string;
+}
 
 /**
- * Policy document
+ * Policy event
  */
-export interface IPolicyMintEventState {
+export interface IPolicyEventState {
     /**
      * Data
      */
     data: IPolicyDocument | IPolicyDocument[];
+
     /**
-     * Data
+     * Result
      */
-    result: IPolicyDocument | IPolicyDocument[];
+    result?: IPolicyDocument | IPolicyDocument[];
+
+    /**
+     * Source
+     */
+    source?: IPolicyDocument | IPolicyDocument[];
 }
 
 /**

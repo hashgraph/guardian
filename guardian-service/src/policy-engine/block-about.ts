@@ -1157,7 +1157,32 @@ export const BlockAbout = {
                 'visible': 'user === "ROLE"'
             }
         ]
-    }
+    },
+    'extractDataBlock': {
+        'label': 'Extract Data',
+        'title': 'Add \'Extract Data\' Block',
+        'post': false,
+        'get': false,
+        'children': 'None',
+        'control': 'Server',
+        'input': [
+            'RunEvent'
+        ],
+        'output': [
+            'RunEvent',
+            'RefreshEvent',
+            'ErrorEvent'
+        ],
+        'defaultEvent': false,
+        'properties': [
+            {
+                'name': 'schema',
+                'label': 'Schema',
+                'title': 'Schema',
+                'type': 'Schemas'
+            }
+        ]
+    },
 }
 
 /**

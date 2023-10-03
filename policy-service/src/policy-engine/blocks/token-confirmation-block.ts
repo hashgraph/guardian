@@ -43,7 +43,26 @@ export class TokenConfirmationBlock {
      * @private
      */
     @StateField()
-    private readonly state: { [key: string]: any } = {};
+    private readonly state: {
+        [key: string]: {
+            /**
+             * Hedera account
+             */
+            accountId: string,
+            /**
+             * Event data
+             */
+            data: IPolicyEventState,
+            /**
+             * Event user
+             */
+            user: IPolicyUser,
+            /**
+             * Token id
+             */
+            tokenId: string
+        }
+    } = {};
 
     /**
      * Token
@@ -68,7 +87,7 @@ export class TokenConfirmationBlock {
      */
     async getData(user: IPolicyUser) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
-        const blockState = this.state[user?.id] || {};
+        const blockState: any = this.state[user?.id] || {};
         const token = await this.getToken();
         const block: any = {
             id: ref.uuid,
@@ -126,7 +145,7 @@ export class TokenConfirmationBlock {
             hederaAccountKey: data.hederaAccountKey
         }
 
-        let token:any;
+        let token: any;
         if (ref.options.useTemplate) {
             if (state.tokenId) {
                 token = await ref.databaseServer.getToken(state.tokenId, ref.dryRun);

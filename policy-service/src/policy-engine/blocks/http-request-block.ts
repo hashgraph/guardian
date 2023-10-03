@@ -165,11 +165,14 @@ export class HttpRequestBlock {
         const doc = await this.requestDocument(method, url, headers, requestBody ? JSON.parse(requestBody) : undefined);
         const item = PolicyUtils.createVC(ref, event.user, doc);
 
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, {data: item});
+        const state: IPolicyEventState = { data: item };
+        ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, state);
         ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, {data: item});
-        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
-            documents: ExternalDocuments({data: item})
-        }));
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, state);
+        PolicyComponentsUtils.ExternalEventFn(
+            new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
+                documents: ExternalDocuments(item)
+            })
+        );
     }
 }

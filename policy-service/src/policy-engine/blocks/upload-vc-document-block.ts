@@ -2,7 +2,7 @@ import { DocumentSignature, Schema } from '@guardian/interfaces';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { BlockActionError } from '@policy-engine/errors';
 import { ActionCallback } from '@policy-engine/helpers/decorators';
-import { IPolicyDocument, IPolicyRequestBlock } from '@policy-engine/policy-engine.interface';
+import { IPolicyDocument, IPolicyEventState, IPolicyRequestBlock } from '@policy-engine/policy-engine.interface';
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
 import { EventBlock } from '@policy-engine/helpers/decorators/event-block';
@@ -153,7 +153,7 @@ export class UploadVcDocumentBlock {
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
-    async setData(user: IPolicyUser, data: IPolicyDocument): Promise<any> {
+    async setData(user: IPolicyUser, data: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
 
         if (!user.did) {
@@ -194,9 +194,10 @@ export class UploadVcDocumentBlock {
                 }
             }
 
-            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, { data: retArray });
+            const state: IPolicyEventState = { data: retArray };
+            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
             ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, { data: retArray });
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
             PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
                 documents: ExternalDocuments(retArray)
             }));
@@ -209,7 +210,5 @@ export class UploadVcDocumentBlock {
             ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }
-
-        return {};
     }
 }

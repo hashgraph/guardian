@@ -50,6 +50,7 @@ import { NotificationBlock } from './blocks/notification.block';
 import { ISchema, SchemaField, SchemaHelper } from '@guardian/interfaces';
 import { ToolValidator } from './tool-validator';
 import { ToolBlock } from './blocks/tool';
+import { ExtractDataBlock } from './blocks/extract-data';
 
 export const validators = [
     InterfaceDocumentActionBlock,
@@ -96,7 +97,8 @@ export const validators = [
     ExternalTopicBlock,
     MessagesReportBlock,
     NotificationBlock,
-    ToolBlock
+    ToolBlock,
+    ExtractDataBlock
 ];
 
 /**

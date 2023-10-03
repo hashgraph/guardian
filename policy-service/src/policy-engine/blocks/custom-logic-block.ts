@@ -89,8 +89,8 @@ export class CustomLogicBlock {
      * @param state
      * @param user
      */
-    execute(state: IPolicyEventState, user: IPolicyUser): Promise<any> {
-        return new Promise(async (resolve, reject) => {
+    execute(state: IPolicyEventState, user: IPolicyUser): Promise<IPolicyDocument | IPolicyDocument[]> {
+        return new Promise<IPolicyDocument | IPolicyDocument[]>(async (resolve, reject) => {
             try {
                 const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
                 const idType = ref.options.idType;
@@ -133,8 +133,7 @@ export class CustomLogicBlock {
 
                     const VCHelper = new VcHelper();
 
-                    const processing = async (document) => {
-
+                    const processing = async (document: any): Promise<IPolicyDocument> => {
                         const vcSubject = Object.assign(document, context, {
                             id:
                                 idType === 'DOCUMENT'
@@ -171,7 +170,7 @@ export class CustomLogicBlock {
                     }
 
                     if (Array.isArray(result)) {
-                        const items = [];
+                        const items: IPolicyDocument[] = [];
                         for (const r of result) {
                             items.push(await processing(r))
                         }

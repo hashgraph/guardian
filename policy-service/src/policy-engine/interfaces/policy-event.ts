@@ -116,13 +116,13 @@ export class PolicyLink<T> {
      * @param user
      * @param data
      */
-    public run(user?: IPolicyUser, data?: T): void {
+    public run(user: IPolicyUser, data: T): void {
         if (this.actor === EventActor.Owner) {
             user = this.getOwner(data);
         } else if (this.actor === EventActor.Issuer) {
             user = this.getIssuer(data);
         }
-        this.callback.call(this.target, {
+        const event: IPolicyEvent<T> = {
             type: this.type,
             inputType: this.inputType,
             outputType: this.outputType,
@@ -133,7 +133,8 @@ export class PolicyLink<T> {
             targetId: this.target.uuid,
             user,
             data
-        })
+        };
+        this.callback.call(this.target, event);
     }
 
     /**

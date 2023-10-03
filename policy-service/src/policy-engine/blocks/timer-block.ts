@@ -213,14 +213,14 @@ export class TimerBlock {
         ref.log(`tick scheduler`);
 
         const users = Object.keys(this.state);
-        const map = [];
+        const map: string[] = [];
         for (const id of users) {
             if (this.state[id] === true) {
                 map.push(id);
             }
         }
 
-        ref.triggerEvents(PolicyOutputEventType.TimerEvent, null, map);
+        ref.triggerEvents<string[]>(PolicyOutputEventType.TimerEvent, null, map);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.TickCron, ref, null, null));
     }
 

@@ -48,4 +48,5 @@ export enum BlockType {
     MessagesReportBlock = 'messagesReportBlock',
     NotificationBlock = 'notificationBlock',
     Tool = 'tool',
+    ExtractDataBlock = 'extractDataBlock',
 }

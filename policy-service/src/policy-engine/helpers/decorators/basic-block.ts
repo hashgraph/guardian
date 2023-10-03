@@ -2,7 +2,7 @@ import { PolicyBlockDefaultOptions } from '@policy-engine/helpers/policy-block-d
 import { BlockCacheType, EventConfig } from '@policy-engine/interfaces';
 import { PolicyBlockDecoratorOptions, PolicyBlockFullArgumentList } from '@policy-engine/interfaces/block-options';
 import { PolicyRole, PolicyType } from '@guardian/interfaces';
-import { AnyBlockType, IPolicyBlock, IPolicyDocument, ISerializedBlock, } from '../../policy-engine.interface';
+import { AnyBlockType, IPolicyBlock, IPolicyDocument, IPolicyEventState, ISerializedBlock, } from '../../policy-engine.interface';
 import { PolicyComponentsUtils } from '../../policy-components-utils';
 import { IPolicyEvent, PolicyLink } from '@policy-engine/interfaces/policy-event';
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
@@ -310,7 +310,11 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param user
              * @param data
              */
-            public triggerEvents(output: PolicyOutputEventType, user?: IPolicyUser, data?: any): void {
+            public triggerEvents<T>(
+                output: PolicyOutputEventType,
+                user: IPolicyUser,
+                data: T
+            ): void {
                 for (const link of this.sourceLinks) {
                     if (link.outputType === output) {
                         link.run(user, data);
@@ -324,7 +328,11 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param user
              * @param data
              */
-            public triggerEvent(event: any, user?: IPolicyUser, data?: any): void {
+            public triggerEvent<T>(
+                event: IPolicyEvent<T>,
+                user: IPolicyUser,
+                data: T
+            ): void {
                 console.error('triggerEvent');
             }
 
@@ -364,7 +372,9 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param {AnyBlockType} parent
              */
             public async joinData<U extends IPolicyDocument | IPolicyDocument[]>(
-                data: U, user: IPolicyUser, parent: AnyBlockType
+                data: U, 
+                user: IPolicyUser, 
+                parent: AnyBlockType
             ): Promise<U> {
                 if (typeof super.joinData === 'function') {
                     return await super.joinData(data, user, parent);

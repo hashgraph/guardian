@@ -4,7 +4,7 @@ import { IVC, Schema, SchemaField, SchemaHelper, TopicType } from '@guardian/int
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
-import { AnyBlockType, IPolicyAddonBlock, IPolicyDocument, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
+import { AnyBlockType, IPolicyAddonBlock, IPolicyDocument, IPolicyEventState, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
 import { BlockActionError } from '@policy-engine/errors';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
@@ -626,7 +626,7 @@ export class ExternalTopicBlock {
             result.relationships = [message.getId()];
         }
 
-        const state = { data: result };
+        const state: IPolicyEventState = { data: result };
         ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
         ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);

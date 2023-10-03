@@ -89,7 +89,10 @@ export class CalculateContainerBlock {
      * @param ref
      * @private
      */
-    private async process(documents: IPolicyDocument | IPolicyDocument[], ref: IPolicyCalculateBlock): Promise<any> {
+    private async process(
+        documents: IPolicyDocument | IPolicyDocument[],
+        ref: IPolicyCalculateBlock
+    ): Promise<IPolicyDocument> {
         const isArray = Array.isArray(documents);
         if (!documents || (isArray && !documents.length)) {
             throw new BlockActionError('Invalid VC', ref.blockType, ref.uuid);
@@ -97,8 +100,8 @@ export class CalculateContainerBlock {
 
         // <-- aggregate
         const relationships = [];
-        let accounts = {};
-        let tokens = {};
+        let accounts:any = {};
+        let tokens:any = {};
         const owner = PolicyUtils.getDocumentOwner(ref, isArray ? documents[0] : documents);
 
         let vcs: VcDocument | VcDocument[];
@@ -182,7 +185,7 @@ export class CalculateContainerBlock {
 
         if (ref.options.inputDocuments === 'separate') {
             if (Array.isArray(event.data.data)) {
-                const result = [];
+                const result: IPolicyDocument[] = [];
                 for (const doc of event.data.data) {
                     const newVC = await this.process(doc, ref);
                     result.push(newVC)

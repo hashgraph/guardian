@@ -1,6 +1,6 @@
 import { EventBlock } from '@policy-engine/helpers/decorators';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { IPolicyAddonBlock, IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
+import { IPolicyAddonBlock, IPolicyDocument, IPolicyEventState, IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyInputEventType } from '@policy-engine/interfaces';
 import { IPolicyUser } from '@policy-engine/policy-user';
@@ -60,8 +60,9 @@ export class ButtonBlock {
         tag: any
     }): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
-
-        ref.triggerEvents(blockData.tag, user, { data: blockData.document });
+        const data: IPolicyDocument = blockData.document;
+        const state: IPolicyEventState = { data };
+        ref.triggerEvents(blockData.tag, user, state);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
             button: blockData.tag,
             documents: ExternalDocuments(blockData.document)

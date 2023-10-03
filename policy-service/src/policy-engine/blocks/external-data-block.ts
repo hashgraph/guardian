@@ -4,7 +4,7 @@ import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { AnyBlockType, IPolicyDocument, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
+import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
 import { BlockActionError } from '@policy-engine/errors';
 import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
@@ -185,7 +185,7 @@ export class ExternalDataBlock {
             DocumentSignature.INVALID);
         doc = PolicyUtils.setDocumentRef(doc, documentRef);
 
-        const state = { data: doc };
+        const state: IPolicyEventState = { data: doc };
 
         const error = await this.validateDocuments(user, state);
         if (error) {
