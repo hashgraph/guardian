@@ -281,42 +281,50 @@ export class SchemaConfigurationComponent implements OnInit {
         }
     }
 
-    onFilter(event: any) {
+    public onFilter(event: any) {
         const topicId = event.value;
         this.updateSubSchemas(topicId);
     }
 
-    updateSubSchemas(topicId: string | null) {
-        this.schemaTypes = [];
-        if (this.schemasMap && topicId) {
-            this.schemas = this.schemasMap[topicId]
-                ?.filter(s => {
-                    if (this.value?.document?.$id) {
-                        const isInDefs = Object.keys(s.document?.$defs || {})
-                            .includes(this.value.document.$id);
-                        return s.document?.$id !== this.value.document.$id && !isInDefs;
-                    }
-                    return true;
-                });
+    private checkDependencies(currentId: any, schema: Schema): boolean {
+        if (currentId && schema.document) {
+            if (schema.document.$id === currentId) {
+                return false;
+            }
+            if (schema.document.$defs && schema.document.$defs[currentId]) {
+                return false;
+            }
         }
-        if (this.schemas) {
-            for (let i = 0; i < this.schemas.length; i++) {
-                const value = this.getId('schemas');
-                this.schemaTypes.push({
-                    name: this.schemas[i].version
-                        ? `${this.schemas[i].name} (${this.schemas[i].version})`
-                        : this.schemas[i].name,
-                    value: value,
-                });
-                this.schemaTypeMap[value] = {
-                    type: this.schemas[i].iri,
-                    format: undefined,
-                    pattern: undefined,
-                    isRef: true,
+        return true;
+    }
+
+    private findSubSchemas(result: Schema[], topicId: any): void {
+        const id = this.value?.document?.$id;
+        if (this.schemasMap && topicId && this.schemasMap[topicId]) {
+            for (const schema of this.schemasMap[topicId]) {
+                if (this.checkDependencies(id, schema)) {
+                    result.push(schema);
                 }
             }
-        } else {
-            this.schemas = [];
+        }
+    }
+
+    private updateSubSchemas(topicId: string | null) {
+        this.schemaTypes = [];
+        this.schemas = [];
+        this.findSubSchemas(this.schemas, topicId);
+        for (const schema of this.schemas) {
+            const value = this.getId('schemas');
+            this.schemaTypes.push({
+                name: schema.version ? `${schema.name} (${schema.version})` : schema.name,
+                value: value,
+            });
+            this.schemaTypeMap[value] = {
+                type: schema.iri,
+                format: undefined,
+                pattern: undefined,
+                isRef: true,
+            }
         }
     }
 

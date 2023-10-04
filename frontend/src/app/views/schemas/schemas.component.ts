@@ -55,6 +55,17 @@ const moduleSchemaColumns: string[] = [
     'document',
 ];
 
+const toolSchemaColumns: string[] = [
+    'tool',
+    'type',
+    'status',
+    'operation',
+    'export',
+    'edit',
+    'delete',
+    'document',
+];
+
 const systemSchemaColumns: string[] = [
     'type',
     'owner',
@@ -99,6 +110,8 @@ export class SchemaConfigComponent implements OnInit {
     public moduleNameByTopic: { [x: string]: string } = {};
     public toolNameByTopic: { [x: string]: string } = {};
     public readonlyByTopic: { [x: string]: boolean } = {};
+    public policyIdByTopic: { [x: string]: string } = {};
+    public toolIdByTopic: { [x: string]: string } = {};
     public tagSchemas: Schema[] = [];
     public tagEntity = TagType.Schema;
     public policies: any[] = [];
@@ -199,7 +212,7 @@ export class SchemaConfigComponent implements OnInit {
             case SchemaType.Module:
                 return moduleSchemaColumns;
             case SchemaType.Tool:
-                return moduleSchemaColumns;
+                return toolSchemaColumns;
             case SchemaType.System:
                 return systemSchemaColumns;
             default:
@@ -294,9 +307,11 @@ export class SchemaConfigComponent implements OnInit {
 
                 const policies: any[] = value[2] || [];
                 this.policyNameByTopic = {};
+                this.policyIdByTopic = {};
                 this.policies = [];
                 for (const policy of policies) {
                     if (policy.topicId) {
+                        this.policyIdByTopic[policy.topicId] = policy.id;
                         this.policyNameByTopic[policy.topicId] = policy.name;
                         this.policies.push(policy);
                         this.readonlyByTopic[policy.topicId] = policy.creator !== this.owner;
@@ -316,10 +331,12 @@ export class SchemaConfigComponent implements OnInit {
 
                 const tools: any[] = value[4]?.body || [];
                 this.toolNameByTopic = {};
+                this.toolIdByTopic = {};
                 this.tools = [];
                 this.draftTools = [];
                 for (const tool of tools) {
                     if (tool.topicId) {
+                        this.toolIdByTopic[tool.topicId] = tool.id;
                         this.toolNameByTopic[tool.topicId] = tool.name;
                         this.tools.push(tool);
                         this.readonlyByTopic[tool.topicId] = tool.creator !== this.owner;

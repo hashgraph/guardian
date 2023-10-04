@@ -1,4 +1,4 @@
-import { DidDocumentStatus, DocumentStatus, PolicyRole } from '@guardian/interfaces';
+import { PolicyRole } from '@guardian/interfaces';
 import { BlockCacheType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { EventConfig, IPolicyEvent } from './interfaces';
 import { DatabaseServer } from '@guardian/common';

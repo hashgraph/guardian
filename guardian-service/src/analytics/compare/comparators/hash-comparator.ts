@@ -168,7 +168,6 @@ export class HashComparator {
             const hash = CompareUtils.sha256(JSON.stringify(tree));
             policy.hash = hash;
             policy.hashMap = tree;
-            policy = await DatabaseServer.updatePolicy(policy);
             return policy;
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE, HASH']);

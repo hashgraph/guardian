@@ -228,6 +228,15 @@
             <div class="delimiter"></div>
 
             <ng-container *ngIf="isTree">
+                <div class="top-toolbar-btn all-status" (click)="onSchemas()" title="Settings">
+                    <mat-icon>dataset</mat-icon>
+                    <span>Schemas</span>
+                </div>
+
+                <div class="delimiter"></div>
+            </ng-container>
+
+            <ng-container *ngIf="isTree">
                 <div class="top-toolbar-group all-status event-color" [matMenuTriggerFor]="eventMenu"
                     style="width: 60px">
                     <mat-icon *ngIf="eventVisible =='All'" class="event-color">flash_on</mat-icon>

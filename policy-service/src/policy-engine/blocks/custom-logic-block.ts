@@ -14,9 +14,9 @@ import {
 } from '@guardian/common';
 import { ArtifactType, GenerateUUIDv4, SchemaHelper } from '@guardian/interfaces';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
+import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser } from '@policy-engine/policy-user';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
 import { BlockActionError } from '@policy-engine/errors';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
@@ -41,7 +41,13 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-eng
             PolicyOutputEventType.RefreshEvent,
             PolicyOutputEventType.ErrorEvent
         ],
-        defaultEvent: true
+        defaultEvent: true,
+        properties: [{
+            name: 'unsigned',
+            label: 'Unsigned VC',
+            title: 'Unsigned document',
+            type: PropertyType.Checkbox
+        }]
     },
     variables: [
         { path: 'options.outputSchema', alias: 'schema', type: 'Schema' }
@@ -93,82 +99,28 @@ export class CustomLogicBlock {
         return new Promise<IPolicyDocument | IPolicyDocument[]>(async (resolve, reject) => {
             try {
                 const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
-                const idType = ref.options.idType;
-                let documents: IPolicyDocument[] = null;
+                let documents: IPolicyDocument[];
                 if (Array.isArray(state.data)) {
                     documents = state.data;
                 } else {
                     documents = [state.data];
                 }
 
-                const done = async (result) => {
-                    const owner = PolicyUtils.getDocumentOwner(ref, documents[0]);
-                    const hederaAccount = await PolicyUtils.getHederaAccount(ref, user.did);
-                    let root;
-                    switch (ref.options.documentSigner) {
-                        case 'owner':
-                            root = await PolicyUtils.getHederaAccount(ref, owner.did);
-                            break;
-                        case 'issuer':
-                            const issuer = PolicyUtils.getDocumentIssuer(documents[0].document);
-                            root = await PolicyUtils.getHederaAccount(ref, issuer);
-                            break;
-                        default:
-                            root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
-                            break;
-                    }
-                    const outputSchema = await PolicyUtils.loadSchemaByID(ref, ref.options.outputSchema);
-                    const context = SchemaHelper.getContext(outputSchema);
+                let metadata: any;
+                if (ref.options.unsigned) {
+                    metadata = null;
+                } else {
+                    metadata = await this.aggregateMetadata(documents, user, ref);
+                }
 
-                    const relationships = [];
-                    let accounts = {};
-                    let tokens = {};
-                    for (const doc of documents) {
-                        accounts = Object.assign(accounts, doc.accounts);
-                        tokens = Object.assign(tokens, doc.tokens);
-                        if (doc.messageId) {
-                            relationships.push(doc.messageId);
+                const done = async (result: any | any[]) => {
+                    const processing = async (json: any): Promise<IPolicyDocument> => {
+                        if (ref.options.unsigned) {
+                            return await this.createUnsignedDocument(json, ref);
+                        } else {
+                            return await this.createDocument(json, metadata, ref);
                         }
                     }
-
-                    const VCHelper = new VcHelper();
-
-                    const processing = async (document: any): Promise<IPolicyDocument> => {
-                        const vcSubject = Object.assign(document, context, {
-                            id:
-                                idType === 'DOCUMENT'
-                                    ? documents[0].document.id
-                                    : await this.generateId(
-                                        idType,
-                                        user,
-                                        hederaAccount.hederaAccountId,
-                                        hederaAccount.hederaAccountKey
-                                    ),
-                            policyId: ref.policyId,
-                        });
-                        if (ref.dryRun) {
-                            VCHelper.addDryRunContext(vcSubject);
-                        }
-
-                        const res = await VCHelper.verifySubject(vcSubject);
-                        if (!res.ok) {
-                            throw new Error(JSON.stringify(res.error));
-                        }
-                        const newVC = await VCHelper.createVC(
-                            root.did,
-                            root.hederaAccountKey,
-                            vcSubject
-                        );
-
-                        const item = PolicyUtils.createVC(ref, owner, newVC);
-                        item.type = outputSchema.iri;
-                        item.schema = outputSchema.iri;
-                        item.relationships = relationships.length ? relationships : null;
-                        item.accounts = Object.keys(accounts).length ? accounts : null;
-                        item.tokens = Object.keys(tokens).length ? tokens : null;
-                        return item;
-                    }
-
                     if (Array.isArray(result)) {
                         const items: IPolicyDocument[] = [];
                         for (const r of result) {
@@ -222,13 +174,160 @@ export class CustomLogicBlock {
     }
 
     /**
+     * Generate document metadata
+     * @param documents
+     * @param user
+     * @param ref
+     */
+    private async aggregateMetadata(
+        documents: IPolicyDocument | IPolicyDocument[],
+        user: IPolicyUser,
+        ref: IPolicyCalculateBlock
+    ) {
+        const isArray = Array.isArray(documents);
+        const firstDocument = isArray ? documents[0] : documents;
+        const owner = PolicyUtils.getDocumentOwner(ref, firstDocument);
+        const relationships = [];
+        let accounts: any = {};
+        let tokens: any = {};
+        let id: string;
+        let reference: string;
+        if (isArray) {
+            const credentialSubject = documents[0].document?.credentialSubject;
+            if (credentialSubject) {
+                if (Array.isArray(credentialSubject)) {
+                    id = credentialSubject[0].id;
+                    reference = credentialSubject[0].ref;
+                } else if (credentialSubject) {
+                    id = credentialSubject.id;
+                    reference = credentialSubject.ref;
+                }
+            }
+            for (const doc of documents) {
+                accounts = Object.assign(accounts, doc.accounts);
+                tokens = Object.assign(tokens, doc.tokens);
+                if (doc.messageId) {
+                    relationships.push(doc.messageId);
+                }
+            }
+        } else {
+            const credentialSubject = documents.document?.credentialSubject;
+            if (credentialSubject) {
+                if (Array.isArray(credentialSubject)) {
+                    id = credentialSubject[0].id;
+                    reference = credentialSubject[0].ref;
+                } else if (credentialSubject) {
+                    id = credentialSubject.id;
+                    reference = credentialSubject.ref;
+                }
+            }
+            accounts = Object.assign(accounts, documents.accounts);
+            tokens = Object.assign(tokens, documents.tokens);
+            if (documents.messageId) {
+                relationships.push(documents.messageId);
+            }
+        }
+
+        if (ref.options.idType !== 'DOCUMENT') {
+            id = await this.generateId(ref.options.idType, user);
+        }
+
+        let root: IHederaAccount;
+        switch (ref.options.documentSigner) {
+            case 'owner':
+                root = await PolicyUtils.getHederaAccount(ref, owner.did);
+                break;
+            case 'issuer':
+                const issuer = PolicyUtils.getDocumentIssuer(firstDocument.document);
+                root = await PolicyUtils.getHederaAccount(ref, issuer);
+                break;
+            default:
+                root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
+                break;
+        }
+
+        return { owner, id, reference, accounts, tokens, relationships, root };
+    }
+
+    /**
+     * Generate signed document
+     * @param json
+     * @param metadata
+     * @param ref
+     */
+    private async createDocument(
+        json: any,
+        metadata: any,
+        ref: IPolicyCalculateBlock
+    ): Promise<IPolicyDocument> {
+        const {
+            owner,
+            id,
+            reference,
+            accounts,
+            tokens,
+            relationships,
+            root
+        } = metadata;
+
+        // <-- new vc
+        const VCHelper = new VcHelper();
+
+        const outputSchema = await PolicyUtils.loadSchemaByID(ref, ref.options.outputSchema);
+        const vcSubject: any = {
+            ...SchemaHelper.getContext(outputSchema),
+            ...json
+        }
+        vcSubject.policyId = ref.policyId;
+        vcSubject.id = id;
+        if (reference) {
+            vcSubject.ref = reference;
+        }
+        if (ref.dryRun) {
+            VCHelper.addDryRunContext(vcSubject);
+        }
+        const res = await VCHelper.verifySubject(vcSubject);
+        if (!res.ok) {
+            throw new Error(JSON.stringify(res.error));
+        }
+
+        const newVC = await VCHelper.createVC(ref.policyOwner, root.hederaAccountKey, vcSubject);
+
+        const item = PolicyUtils.createVC(ref, owner, newVC);
+        item.type = outputSchema.iri;
+        item.schema = outputSchema.iri;
+        item.relationships = relationships.length ? relationships : null;
+        item.accounts = accounts && Object.keys(accounts).length ? accounts : null;
+        item.tokens = tokens && Object.keys(tokens).length ? tokens : null;
+        // -->
+
+        return item;
+    }
+
+    /**
+     * Generate unsigned document
+     * @param json
+     * @param ref
+     */
+    private async createUnsignedDocument(
+        json: any,
+        ref: IPolicyCalculateBlock
+    ): Promise<IPolicyDocument> {
+        const vc = PolicyUtils.createVcFromSubject(json);
+        return PolicyUtils.createUnsignedVC(ref, vc);
+    }
+
+    /**
      * Generate id
      * @param idType
      * @param user
      * @param userHederaAccount
      * @param userHederaKey
      */
-    async generateId(idType: string, user: IPolicyUser, userHederaAccount: string, userHederaKey: string): Promise<string | undefined> {
+    private async generateId(
+        idType: string,
+        user: IPolicyUser
+    ): Promise<string | undefined> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {
             if (idType === 'UUID') {
@@ -244,7 +343,12 @@ export class CustomLogicBlock {
                 const message = new DIDMessage(MessageAction.CreateDID);
                 message.setDocument(didObject);
 
-                const client = new MessageServer(userHederaAccount, userHederaKey, ref.dryRun);
+                const hederaAccount = await PolicyUtils.getHederaAccount(ref, user.did);
+                const client = new MessageServer(
+                    hederaAccount.hederaAccountId,
+                    hederaAccount.hederaAccountKey,
+                    ref.dryRun
+                );
                 const messageResult = await client
                     .setTopicObject(topic)
                     .sendMessage(message);

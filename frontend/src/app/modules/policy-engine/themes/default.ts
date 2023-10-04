@@ -58,7 +58,8 @@ export const defaultTheme = {
                 'switchBlock',
                 'tokenActionBlock',
                 'retirementDocumentBlock',
-                'notificationBlock'
+                'notificationBlock',
+                'extractDataBlock'
             ]
         },
         {

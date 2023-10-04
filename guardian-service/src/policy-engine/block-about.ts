@@ -20,70 +20,70 @@ export const BlockAbout = {
             'RefreshEvent'
         ],
         'defaultEvent': true,
-        properties: [
+        'properties': [
             {
-                name: 'uiMetaData',
-                label: 'UI',
-                title: 'UI Properties',
-                type: 'Group',
-                properties: [
+                'name': 'uiMetaData',
+                'label': 'UI',
+                'title': 'UI Properties',
+                'type': 'Group',
+                'properties': [
                     {
-                        name: 'type',
-                        label: 'Type',
-                        title: 'Type',
-                        type: 'Select',
-                        items: [
+                        'name': 'type',
+                        'label': 'Type',
+                        'title': 'Type',
+                        'type': 'Select',
+                        'items': [
                             {
-                                label: 'Page',
-                                value: 'page'
+                                'label': 'Page',
+                                'value': 'page'
                             },
                             {
-                                label: 'dialog',
-                                value: 'dialog'
+                                'label': 'dialog',
+                                'value': 'dialog'
                             }
                         ]
                     },
                     {
-                        name: 'buttonClass',
-                        label: 'Dialog button class',
-                        title: 'Dialog button class',
-                        type: 'Input'
+                        'name': 'buttonClass',
+                        'label': 'Dialog button class',
+                        'title': 'Dialog button class',
+                        'type': 'Input'
                     },
                     {
-                        name: 'buttonText',
-                        label: 'Dialog button text',
-                        title: 'Dialog button text',
-                        type: 'Input'
+                        'name': 'buttonText',
+                        'label': 'Dialog button text',
+                        'title': 'Dialog button text',
+                        'type': 'Input'
                     },
                     {
-                        name: 'dialogTitle',
-                        label: 'Dialog title',
-                        title: 'Dialog title',
-                        type: 'Input'
+                        'name': 'dialogTitle',
+                        'label': 'Dialog title',
+                        'title': 'Dialog title',
+                        'type': 'Input'
                     },
                     {
-                        name: 'dialogClass',
-                        label: 'Dialog class',
-                        title: 'Dialog class',
-                        type: 'Input'
+                        'name': 'dialogClass',
+                        'label': 'Dialog class',
+                        'title': 'Dialog class',
+                        'type': 'Input'
                     },
                     {
-                        name: 'dialogDescription',
-                        label: 'Dialog description',
-                        title: 'Dialog description',
-                        type: 'Input'
+                        'name': 'dialogDescription',
+                        'label': 'Dialog description',
+                        'title': 'Dialog description',
+                        'type': 'Input'
                     },
                     {
-                        name: 'pageTitle',
-                        label: 'Page title',
-                        title: 'Page title',
-                        type: 'Input'
+                        'name': 'pageTitle',
+                        'label': 'Page title',
+                        'title': 'Page title',
+                        'type': 'Input'
                     },
                     {
-                        name: 'pageDescription',
-                        label: 'Page description',
-                        title: 'Page description',
-                        type: 'Input'
+                        'name': 'pageDescription',
+                        'label': 'Page description',
+                        'title': 'Page description',
+                        'type': 'Input'
                     }
                 ]
             }
@@ -149,7 +149,13 @@ export const BlockAbout = {
             'RefreshEvent',
             'ErrorEvent'
         ],
-        'defaultEvent': true
+        'defaultEvent': true,
+        'properties': [{
+            'name': 'unsigned',
+            'label': 'Unsigned VC',
+            'title': 'Unsigned document',
+            'type': 'Checkbox'
+        }]
     },
     'calculateMathAddon': {
         'label': 'Math Addon',
@@ -177,7 +183,13 @@ export const BlockAbout = {
             'RefreshEvent',
             'ErrorEvent'
         ],
-        'defaultEvent': true
+        'defaultEvent': true,
+        'properties': [{
+            'name': 'unsigned',
+            'label': 'Unsigned VC',
+            'title': 'Unsigned document',
+            'type': 'Checkbox'
+        }]
     },
     'documentsSourceAddon': {
         'label': 'Source',
@@ -1173,8 +1185,25 @@ export const BlockAbout = {
             'RefreshEvent',
             'ErrorEvent'
         ],
-        'defaultEvent': false,
+        'defaultEvent': true,
         'properties': [
+            {
+                'name': 'action',
+                'label': 'Action',
+                'title': 'Action',
+                'type': 'Select',
+                'items': [
+                    {
+                        'label': 'Get',
+                        'value': 'get'
+                    },
+                    {
+                        'label': 'Set',
+                        'value': 'set'
+                    }
+                ],
+                'default': 'get'
+            },
             {
                 'name': 'schema',
                 'label': 'Schema',

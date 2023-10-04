@@ -1,5 +1,5 @@
 
-import { ConfigType, GenerateUUIDv4, PolicyType, SchemaEntity, TagType, TopicType, } from '@guardian/interfaces';
+import { BlockType, ConfigType, GenerateUUIDv4, ModuleStatus, PolicyType, SchemaEntity, TagType, TopicType, } from '@guardian/interfaces';
 import { publishSystemSchemas } from '@api/helpers/schema-publish-helper';
 import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
 import { INotifier } from '@helpers/notifier';
@@ -242,7 +242,7 @@ export class PolicyImportExportHelper {
         }
 
         notifier.completedAndStart('Updating hash');
-        await HashComparator.saveHashMap(result);
+        await PolicyImportExportHelper.updatePolicyComponents(result);
 
         const errors: any[] = [];
         if (schemasResult.errors) {
@@ -321,5 +321,47 @@ export class PolicyImportExportHelper {
             message += ` others: ${JSON.stringify(others)};`
         }
         return message;
+    }
+
+    public static findTools(block: any, result: Set<string>) {
+        if (!block) {
+            return;
+        }
+        if (block.blockType === BlockType.Tool) {
+            if (block.messageId && typeof block.messageId === 'string') {
+                result.add(block.messageId);
+            }
+        } else {
+            if (Array.isArray(block.children)) {
+                for (const child of block.children) {
+                    PolicyImportExportHelper.findTools(child, result);
+                }
+            }
+        }
+    }
+
+    /**
+     * Update policy components
+     * @param policy
+     */
+    public static async updatePolicyComponents(policy: Policy): Promise<Policy> {
+        policy = await HashComparator.saveHashMap(policy);
+        const toolIds = new Set<string>()
+        PolicyImportExportHelper.findTools(policy.config, toolIds);
+        const tools = await DatabaseServer.getTools({
+            status: ModuleStatus.PUBLISHED,
+            messageId: { $in: Array.from(toolIds.values()) }
+        }, {
+            fields: ['name', 'topicId', 'messageId']
+        });
+        policy.tools = tools.map((row) => {
+            return {
+                name: row.name,
+                topicId: row.topicId,
+                messageId: row.messageId
+            }
+        })
+        policy = await DatabaseServer.updatePolicy(policy);
+        return policy;
     }
 }

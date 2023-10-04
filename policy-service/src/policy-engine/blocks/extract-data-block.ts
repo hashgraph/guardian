@@ -4,18 +4,10 @@ import { PolicyComponentsUtils } from '../policy-components-utils';
 import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { AnyBlockType, IPolicyBlock, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
-import { IPolicyUser } from '@policy-engine/policy-user';
-import {
-    SplitDocuments,
-    Schema as SchemaCollection,
-    VcHelper,
-    VcDocumentDefinition as VcDocument,
-} from '@guardian/common';
-import { Schema, SchemaEntity } from '@guardian/interfaces';
+import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { Schema } from '@guardian/interfaces';
 import { BlockActionError } from '@policy-engine/errors';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
-import { Inject } from '@helpers/decorators/inject';
 
 /**
  * Extract block
@@ -40,6 +32,22 @@ import { Inject } from '@helpers/decorators/inject';
         ],
         defaultEvent: true,
         properties: [{
+            name: 'action',
+            label: 'Action',
+            title: 'Action',
+            type: PropertyType.Select,
+            items: [
+                {
+                    label: 'Get',
+                    value: 'get'
+                },
+                {
+                    label: 'Set',
+                    value: 'set'
+                }
+            ],
+            default: 'get'
+        }, {
             name: 'schema',
             label: 'Schema',
             title: 'Schema',
@@ -51,13 +59,6 @@ import { Inject } from '@helpers/decorators/inject';
     ]
 })
 export class ExtractDataBlock {
-    /**
-     * VC helper
-     * @private
-     */
-    @Inject()
-    private readonly vcHelper: VcHelper;
-
     /**
      * Schema
      * @private
@@ -93,7 +94,7 @@ export class ExtractDataBlock {
         schema: string,
         result: any[]
     ): void {
-        if (typeof json !== 'object') {
+        if (!json || typeof json !== 'object') {
             return;
         }
         if (Array.isArray(json)) {
@@ -101,14 +102,14 @@ export class ExtractDataBlock {
                 this.extract(item, schema, result);
             }
         } else {
-            const entities = Object.entries(json);
-            for (const [key, value] of entities) {
-                if (key === 'type') {
-                    if (value === schema) {
-                        result.push(value);
+            if (json.type === schema) {
+                result.push(json);
+            } else {
+                const entities = Object.entries(json);
+                for (const [key, value] of entities) {
+                    if (key !== '@context' && key !== 'type') {
+                        this.extract(value, schema, result);
                     }
-                } else if (key !== '@context') {
-                    this.extract(value, schema, result);
                 }
             }
         }
@@ -134,48 +135,30 @@ export class ExtractDataBlock {
      * @param event
      */
     private async setAction(ref: IPolicyBlock, event: IPolicyEvent<IPolicyEventState>) {
-        const schema = this._schema.contextURL;
+        const schema = this._schema.type;
         const sources: IPolicyDocument[] = this.getDocuments(event.data.source);
         const data: IPolicyDocument[] = this.getDocuments(event.data.data);
         if (!sources || !data) {
-            throw new BlockActionError(`Invalid documents:`, ref.blockType, ref.uuid);
+            throw new BlockActionError(`Invalid documents`, ref.blockType, ref.uuid);
         }
-        const subDocs: any[] = [];
+        const sourceSubjects: any[] = [];
         for (const source of sources) {
-            this.extract(source, schema, subDocs);
+            this.extract(source.document, schema, sourceSubjects);
         }
-        if (data.length !== subDocs.length) {
-            throw new BlockActionError(`Invalid documents count:`, ref.blockType, ref.uuid);
+        if (data.length !== sourceSubjects.length) {
+            throw new BlockActionError(`Invalid documents count`, ref.blockType, ref.uuid);
         }
-        for (let i = 0; i < subDocs.length; i++) {
-            const subDoc = subDocs[i];
+        for (let i = 0; i < sourceSubjects.length; i++) {
+            const sourceSubject = sourceSubjects[i];
             const newDoc = data[i];
-            Object.assign(subDoc, newDoc);
+            const newSubject = newDoc.document?.credentialSubject;
+            if (Array.isArray(newSubject)) {
+                Object.assign(sourceSubject, newSubject[0]);
+            } else if (newSubject) {
+                Object.assign(sourceSubject, newSubject);
+            }
         }
-
-        const result: IPolicyDocument[] = [];
-        const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
-        for (const document of sources) {
-            const owner: IPolicyUser = PolicyUtils.getDocumentOwner(ref, document);
-            const vcDocument = document.document;
-            const credentialSubject = vcDocument.credentialSubject[0];
-            const vc: any = await this.vcHelper.createVC(
-                root.did,
-                root.hederaAccountKey,
-                credentialSubject,
-                null
-            );
-            let item = PolicyUtils.createVC(ref, owner, vc);
-            item.type = document.type;
-            item.schema = document.schema;
-            item.assignedTo = document.assignedTo;
-            item.assignedToGroup = document.assignedToGroup;
-            item.option = Object.assign({}, document.option);
-            item = PolicyUtils.setDocumentRef(item, document);
-            result.push(item);
-        }
-
-        const state = { data: result };
+        const state = { data: sources };
         ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, state);
     }
 
@@ -188,26 +171,21 @@ export class ExtractDataBlock {
         const schema = this._schema.type;
         const docs: IPolicyDocument | IPolicyDocument[] = event.data.data;
         if (!docs) {
-            throw new BlockActionError(`Invalid documents:`, ref.blockType, ref.uuid);
+            throw new BlockActionError(`Invalid documents`, ref.blockType, ref.uuid);
         }
         const subDocs: any[] = [];
         if (Array.isArray(docs)) {
             for (const doc of docs) {
-                this.extract(doc, schema, subDocs);
+                this.extract(doc.document, schema, subDocs);
             }
         } else {
-            this.extract(docs, schema, subDocs);
+            this.extract(docs.document, schema, subDocs);
         }
 
         const result: IPolicyDocument[] = [];
         for (const json of subDocs) {
-            result.push({
-                document: {
-                    credentialSubject: [
-                        json
-                    ]
-                }
-            })
+            const vc = PolicyUtils.createVcFromSubject(json);
+            result.push(PolicyUtils.createUnsignedVC(ref, vc));
         }
         const state: IPolicyEventState = {
             source: docs,
@@ -232,7 +210,7 @@ export class ExtractDataBlock {
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
 
-        if (ref.options.type === 'set') {
+        if (ref.options.action === 'set') {
             await this.setAction(ref, event);
         } else {
             await this.getAction(ref, event);
@@ -240,7 +218,7 @@ export class ExtractDataBlock {
 
         PolicyComponentsUtils.ExternalEventFn(
             new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
-                type: ref.options.type,
+                action: ref.options.action,
                 documents: ExternalDocuments(event.data.data)
             })
         );

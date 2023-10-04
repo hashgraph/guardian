@@ -1116,6 +1116,37 @@ export class PolicyConfigurationComponent implements OnInit {
         this.openSettings = true;
     }
 
+    public onSchemas() {
+        switch (this.rootType) {
+            case 'Policy': {
+                this.router.navigate(['/schemas'], {
+                    queryParams: {
+                        type: 'policy',
+                        topic: this.policyTemplate?.topicId
+                    }
+                });
+                break;
+            }
+            case 'Module': {
+                this.router.navigate(['/schemas'], {
+                    queryParams: {
+                        type: 'module'
+                    }
+                });
+                break;
+            }
+            case 'Tool': {
+                this.router.navigate(['/schemas'], {
+                    queryParams: {
+                        type: 'tool',
+                        topic: this.toolTemplate?.topicId
+                    }
+                });
+                break;
+            }
+        }
+    }
+
     public setTheme(theme: Theme) {
         this.themeService.setCurrent(theme);
         this.themeService.saveTheme();
@@ -1505,8 +1536,13 @@ export class PolicyConfigurationComponent implements OnInit {
 
     public tryPublishTool() {
         this.loading = true;
-        this.toolsService.publish(this.toolId).subscribe((result) => {
-            this.loadData();
+        this.toolsService.pushPublish(this.toolId).subscribe((result) => {
+            const { taskId, expectation } = result;
+            this.router.navigate(['task', taskId], {
+                queryParams: {
+                    last: btoa(location.href)
+                }
+            });
         }, (e) => {
             console.error(e.error);
             this.loading = false;

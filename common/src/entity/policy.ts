@@ -165,6 +165,12 @@ export class Policy extends BaseEntity {
     hashMapFileId?: ObjectId;
 
     /**
+     * Tools
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    tools?: any;
+
+    /**
      * Set policy defaults
      */
     @BeforeCreate()

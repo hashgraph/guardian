@@ -270,6 +270,13 @@ export async function publishSchemas(
             root,
             emptyNotifier()
         );
+        if (Array.isArray(tool.config?.variables)) {
+            for (const variable of tool.config?.variables) {
+                if (variable.baseSchema === schemaIRI) {
+                    variable.baseSchema = newSchema.iri;
+                }
+            }
+        }
         replaceAllEntities(tool.config, SchemaFields, schemaIRI, newSchema.iri);
         replaceAllVariables(tool.config, 'Schema', schemaIRI, newSchema.iri);
 

@@ -230,6 +230,7 @@ export async function schemaAPI(): Promise<void> {
                         filter.where.category = msg.category;
                     }
                 }
+
             }
             const otherOptions: any = getPageOptions(msg);
             const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
@@ -239,6 +240,56 @@ export async function schemaAPI(): Promise<void> {
             return new MessageError(error);
         }
     });
+
+    // /**
+    //  * Return schemas
+    //  *
+    //  * @param {Object} [payload] - filters
+    //  *
+    //  * @returns {any[]} - all schemas
+    //  */
+    // ApiResponse(MessageAPI.GET_SUB_SCHEMAS, async (msg) => {
+    //     try {
+    //         const { topicId, owner, category } = msg;
+    //         if (owner) {
+    //             return new MessageError('Invalid schema owner');
+    //         }
+    //         const topicIds = new Set<string>();
+    //         topicIds.add(topicId);
+    //         let parents: any[];
+    //         const options = {
+    //             fields: [
+    //                 'name',
+    //                 'topicId',
+    //                 'tools'
+    //             ]
+    //         };
+    //         if (category === SchemaCategory.POLICY) {
+    //             parents = await DatabaseServer.getPolicies({ owner, topicId }, options);
+    //         } else if (category === SchemaCategory.TOOL) {
+    //             parents = await DatabaseServer.getTools({ owner, topicId }, options);
+    //         }
+    //         if (Array.isArray(parents)) {
+    //             for (const parent of parents) {
+    //                 if (Array.isArray(parent.tools)) {
+    //                     for (const tool of parent.tools) {
+    //                         topicIds.add(tool.topicId);
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //         const schema = await DatabaseServer.getSchemas({
+    //             owner,
+    //             system: false,
+    //             readonly: false,
+    //             topicId: { $in: Array.from(topicIds.values()) }
+    //         });
+    //         return new MessageResponse(schema);
+    //     } catch (error) {
+    //         new Logger().error(error, ['GUARDIAN_SERVICE']);
+    //         return new MessageError(error);
+    //     }
+    // });
 
     /**
      * Change the status of a schema on PUBLISHED.
