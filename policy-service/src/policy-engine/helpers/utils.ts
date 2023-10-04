@@ -25,7 +25,8 @@ import {
     KeyType, Wallet,
     Users,
     Workers,
-    NotificationHelper
+    NotificationHelper,
+    VcSubject
 } from '@guardian/common';
 import { TokenId, TopicId } from '@hashgraph/sdk';
 import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
@@ -157,6 +158,17 @@ export class PolicyUtils {
      */
     public static getVCScope(item: VcDocument) {
         return item.getCredentialSubject(0).getFields();
+    }
+
+    /**
+     * Get VC scope
+     * @param item
+     */
+    public static createVcFromSubject(subject: any): VcDocument {
+        const vc = new VcDocument();
+        const credentialSubject = VcSubject.create(subject);
+        vc.addCredentialSubject(credentialSubject);
+        return vc;
     }
 
     /**
@@ -1201,6 +1213,20 @@ export class PolicyUtils {
             group: owner.group,
             status: DocumentStatus.NEW,
             signature: DocumentSignature.NEW
+        };
+    }
+
+    /**
+     * Create VC Document
+     * @param ref
+     * @param owner
+     * @param document
+     */
+    public static createUnsignedVC(ref: AnyBlockType, document: VcDocument): IPolicyDocument {
+        return {
+            policyId: ref.policyId,
+            tag: ref.tag,
+            document: document.toJsonTree()
         };
     }
 

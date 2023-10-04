@@ -250,7 +250,7 @@ export class SplitBlock {
         await ref.databaseServer.setResidue(current);
 
         for (const chunk of data) {
-            const state = {
+            const state: IPolicyEventState = {
                 data: chunk.map(c => {
                     delete c.document.id;
                     delete c.document._id;

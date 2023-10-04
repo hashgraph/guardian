@@ -310,7 +310,11 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param user
              * @param data
              */
-            public triggerEvents(output: PolicyOutputEventType, user?: IPolicyUser, data?: any): void {
+            public triggerEvents<U>(
+                output: PolicyOutputEventType,
+                user: IPolicyUser,
+                data: U
+            ): void {
                 for (const link of this.sourceLinks) {
                     if (link.outputType === output) {
                         link.run(user, data);
@@ -324,7 +328,11 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param user
              * @param data
              */
-            public triggerEvent(event: any, user?: IPolicyUser, data?: any): void {
+            public triggerEvent<U>(
+                event: IPolicyEvent<U>,
+                user: IPolicyUser,
+                data: U
+            ): void {
                 console.error('triggerEvent');
             }
 
@@ -364,7 +372,9 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param {AnyBlockType} parent
              */
             public async joinData<U extends IPolicyDocument | IPolicyDocument[]>(
-                data: U, user: IPolicyUser, parent: AnyBlockType
+                data: U,
+                user: IPolicyUser,
+                parent: AnyBlockType
             ): Promise<U> {
                 if (typeof super.joinData === 'function') {
                     return await super.joinData(data, user, parent);

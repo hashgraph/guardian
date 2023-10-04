@@ -83,7 +83,9 @@ export class MultiSignBlock {
      * @param {AnyBlockType} parent
      */
     public async joinData<T extends IPolicyDocument | IPolicyDocument[]>(
-        documents: T, user: IPolicyUser, parent: AnyBlockType
+        documents: T,
+        user: IPolicyUser,
+        parent: AnyBlockType
     ): Promise<T> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const getData = await this.getData(user);
@@ -245,17 +247,24 @@ export class MultiSignBlock {
 
             await ref.databaseServer.setMultiSigStatus(ref.uuid, documentId, currentUser.group, DocumentStatus.SIGNED);
 
-            ref.triggerEvents(PolicyOutputEventType.SignatureQuorumReachedEvent, currentUser, { data: sourceDoc });
-            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.SignatureQuorumReachedEvent, ref, null, {
-                documents: ExternalDocuments(data),
-                result: ExternalDocuments(vpDocument),
-            }));
+            const state: IPolicyEventState = { data: sourceDoc };
+            ref.triggerEvents(PolicyOutputEventType.SignatureQuorumReachedEvent, currentUser, state);
+            PolicyComponentsUtils.ExternalEventFn(
+                new ExternalEvent(ExternalEventType.SignatureQuorumReachedEvent, ref, null, {
+                    documents: ExternalDocuments(data),
+                    result: ExternalDocuments(vpDocument),
+                })
+            );
         } else if (declined >= declinedThreshold) {
             await ref.databaseServer.setMultiSigStatus(ref.uuid, documentId, currentUser.group, DocumentStatus.DECLINED);
-            ref.triggerEvents(PolicyOutputEventType.SignatureSetInsufficientEvent, currentUser, { data: sourceDoc });
-            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.SignatureSetInsufficientEvent, ref, null, {
-                documents: ExternalDocuments(data)
-            }));
+
+            const state: IPolicyEventState = { data: sourceDoc };
+            ref.triggerEvents(PolicyOutputEventType.SignatureSetInsufficientEvent, currentUser, state);
+            PolicyComponentsUtils.ExternalEventFn(
+                new ExternalEvent(ExternalEventType.SignatureSetInsufficientEvent, ref, null, {
+                    documents: ExternalDocuments(data)
+                })
+            );
         }
     }
 

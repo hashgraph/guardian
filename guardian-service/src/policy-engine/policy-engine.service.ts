@@ -1,5 +1,28 @@
-import { ExternalMessageEvents, GenerateUUIDv4, PolicyEngineEvents, PolicyEvents, PolicyType, TopicType } from '@guardian/interfaces';
-import { BinaryMessageResponse, DatabaseServer, DIDDocument, findAllEntities, IAuthUser, Logger, MessageError, MessageResponse, NatsService, Policy, PolicyImportExport, RunFunctionAsync, Singleton, TopicConfig, Users } from '@guardian/common';
+import {
+    ExternalMessageEvents,
+    GenerateUUIDv4,
+    PolicyEngineEvents,
+    PolicyEvents,
+    PolicyType,
+    TopicType
+} from '@guardian/interfaces';
+import {
+    BinaryMessageResponse,
+    DatabaseServer,
+    DIDDocument,
+    findAllEntities,
+    IAuthUser,
+    Logger,
+    MessageError,
+    MessageResponse,
+    NatsService,
+    Policy,
+    PolicyImportExport,
+    RunFunctionAsync,
+    Singleton,
+    TopicConfig,
+    Users
+} from '@guardian/common';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 import { PolicyComponentsUtils } from './policy-components-utils';
 import { IPolicyUser } from './policy-user';
@@ -275,7 +298,8 @@ export class PolicyEngineService {
                         'messageId',
                         'codeVersion',
                         'createDate',
-                        'instanceTopicId'
+                        'instanceTopicId',
+                        'tools'
                     ]
                 };
                 const _pageSize = parseInt(pageSize, 10);
@@ -305,7 +329,7 @@ export class PolicyEngineService {
                 const user = msg.user;
                 const did = await this.getUserDid(user.username);
                 let policy = await this.policyEngine.createPolicy(msg.model, did, emptyNotifier());
-                policy = await HashComparator.saveHashMap(policy);
+                policy = await PolicyImportExportHelper.updatePolicyComponents(policy);
                 const policies = await DatabaseServer.getListOfPolicies({ owner: did });
                 return new MessageResponse(policies);
             } catch (error) {
@@ -319,7 +343,7 @@ export class PolicyEngineService {
             RunFunctionAsync(async () => {
                 const did = await this.getUserDid(user.username);
                 let policy = await this.policyEngine.createPolicy(model, did, notifier);
-                policy = await HashComparator.saveHashMap(policy);
+                policy = await PolicyImportExportHelper.updatePolicyComponents(policy);
                 notifier.result(policy.id);
             }, async (error) => {
                 notifier.error(error);
@@ -370,7 +394,7 @@ export class PolicyEngineService {
                     throw new Error('Policy is not in draft status.');
                 }
                 let result = await DatabaseServer.updatePolicyConfig(policyId, model);
-                result = await HashComparator.saveHashMap(result);
+                result = await PolicyImportExportHelper.updatePolicyComponents(result);
                 return new MessageResponse(result);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -493,7 +517,7 @@ export class PolicyEngineService {
                 model.version = '';
 
                 let retVal = await DatabaseServer.updatePolicy(model);
-                retVal = await HashComparator.saveHashMap(retVal);
+                retVal = await PolicyImportExportHelper.updatePolicyComponents(retVal);
 
                 await this.policyEngine.destroyModel(model.id.toString());
 

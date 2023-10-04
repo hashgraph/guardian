@@ -5,6 +5,7 @@ import { IPolicyUser } from '@policy-engine/policy-user';
 import { ActionCallback } from '@policy-engine/helpers/decorators';
 import { IPolicyEvent } from '@policy-engine/interfaces';
 import { PolicyInputEventType } from '@policy-engine/interfaces/policy-event-type';
+import { IPolicyEventState } from '@policy-engine/policy-engine.interface';
 
 /**
  * Container block with UI
@@ -60,7 +61,7 @@ export class ToolBlock {
     @ActionCallback({
         type: PolicyInputEventType.ToolEvent
     })
-    async onAction(event: IPolicyEvent<any>) {
+    async onAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         for (const e of this.inputEvents) {
             if (e.name === event.inputType) {

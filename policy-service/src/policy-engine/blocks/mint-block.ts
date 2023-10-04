@@ -14,7 +14,7 @@ import {
     VcHelper,
 } from '@guardian/common';
 import { DataTypes, IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
-import { AnyBlockType, IPolicyDocument, IPolicyMintEventState, IPolicyTokenBlock } from '@policy-engine/policy-engine.interface';
+import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyTokenBlock } from '@policy-engine/policy-engine.interface';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser } from '@policy-engine/policy-user';
@@ -340,7 +340,7 @@ export class MintBlock {
     @ActionCallback({
         type: PolicyInputEventType.AdditionalMintEvent
     })
-    async additionalMintEvent(event: IPolicyEvent<IPolicyMintEventState>) {
+    async additionalMintEvent(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyTokenBlock>(this);
 
         const docs = PolicyUtils.getArray<IPolicyDocument>(event.data.data);
@@ -371,7 +371,7 @@ export class MintBlock {
         ]
     })
     @CatchErrors()
-    async runAction(event: IPolicyEvent<IPolicyMintEventState>) {
+    async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyTokenBlock>(this);
 
         const docs = PolicyUtils.getArray<IPolicyDocument>(event.data.data);
@@ -396,7 +396,7 @@ export class MintBlock {
      */
     private async run(
         ref: IPolicyTokenBlock,
-        event: IPolicyEvent<IPolicyMintEventState>,
+        event: IPolicyEvent<IPolicyEventState>,
         user: IPolicyUser,
         docs: IPolicyDocument[],
         additionalDocs?: IPolicyDocument[]
@@ -408,10 +408,11 @@ export class MintBlock {
         const accountId = await this.getAccount(ref, docs, accounts);
         const [vp, amount] = await this.mintProcessing(token, topicId, user, accountId, vcs, messages, additionalMessages);
 
-        event.data.result = vp;
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, user, event.data);
+        const state: IPolicyEventState = event.data;
+        state.result = vp;
+        ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
         ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, event.data);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
 
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
             tokenId: token.tokenId,

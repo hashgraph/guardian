@@ -35,7 +35,11 @@
             </mat-select>
         </mat-form-field>
 
-        <mat-form-field *ngIf="isPolicy || isModule" [attr.disabled]="isNewVersion" appearance="outline">
+        <mat-form-field 
+            *ngIf="isPolicy || isModule || isTool" 
+            [attr.disabled]="isNewVersion" 
+            appearance="outline"
+        >
             <mat-label>For (Entity)</mat-label>
             <mat-select formControlName="entity" tabindex='-1'>
                 <mat-option value="NONE">Default</mat-option>

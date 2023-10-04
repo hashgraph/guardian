@@ -53,7 +53,10 @@ const Module: IBlockSetting = {
         { type: BlockType.MultiSignBlock },
         { type: BlockType.CreateToken },
         { type: BlockType.SplitBlock },
-        { type: BlockType.MessagesReportBlock }
+        { type: BlockType.ExternalTopic },
+        { type: BlockType.MessagesReportBlock },
+        { type: BlockType.NotificationBlock },
+        { type: BlockType.ExtractDataBlock },
     ],
     about: {
         post: false,

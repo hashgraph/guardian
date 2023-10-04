@@ -13,7 +13,8 @@ export const SchemaFields = [
     'schema',
     'inputSchema',
     'outputSchema',
-    'presetSchema'
+    'presetSchema',
+    'baseSchema'
 ];
 
 /**
@@ -127,6 +128,17 @@ export function replaceAllVariables(
     const finder = (blockConfig: any, type: string): void => {
         if (
             blockConfig.blockType === 'module' &&
+            blockConfig.hasOwnProperty('variables') &&
+            Array.isArray(blockConfig.variables)
+        ) {
+            for (const variable of blockConfig.variables) {
+                if (variable.type === type && blockConfig[variable.name] === oldValue) {
+                    blockConfig[variable.name] = newValue;
+                }
+            }
+        }
+        if (
+            blockConfig.blockType === 'tool' &&
             blockConfig.hasOwnProperty('variables') &&
             Array.isArray(blockConfig.variables)
         ) {

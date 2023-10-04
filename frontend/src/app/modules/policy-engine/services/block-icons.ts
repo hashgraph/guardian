@@ -45,5 +45,6 @@ BlockIcons[BlockType.Report] = 'addchart';
 BlockIcons[BlockType.ReportItem] = 'list_alt';
 BlockIcons[BlockType.TagsManager] = 'sell';
 BlockIcons[BlockType.NotificationBlock] = 'notifications';
+BlockIcons[BlockType.ExtractDataBlock] = 'find_in_page';
 
 export default BlockIcons;
