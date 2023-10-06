@@ -1,6 +1,5 @@
 import { ChangeDetectorRef, Component, Inject, ViewChild } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { FormBuilder } from '@angular/forms';
 import { SchemaConfigurationComponent } from '../schema-configuration/schema-configuration.component';
 import { Schema } from '@guardian/interfaces';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
@@ -17,12 +16,10 @@ export class SchemaDialog {
     @ViewChild('document') schemaControl!: SchemaConfigurationComponent;
 
     public scheme: Schema;
-    public schemasMap: any;
     public started: boolean = false;
     public type: 'new' | 'edit' | 'version' = 'new';
     public topicId: any;
-
-    public schemaType: string = 'policy';
+    public schemaType: any;
     public valid: boolean = true;
     public extended: boolean = false;
     public fields: any[] = [];
@@ -34,10 +31,9 @@ export class SchemaDialog {
 
     constructor(
         public dialogRef: MatDialogRef<SchemaDialog>,
-        private fb: FormBuilder,
         private cdr: ChangeDetectorRef,
-        @Inject(MAT_DIALOG_DATA) public data: any) {
-        this.schemasMap = data.schemasMap || {};
+        @Inject(MAT_DIALOG_DATA) public data: any
+    ) {
         this.scheme = data.scheme || null;
         this.type = data.type || null;
         this.topicId = data.topicId || null;

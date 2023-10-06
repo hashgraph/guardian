@@ -813,6 +813,21 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Return sub schemas
+     *
+     * @param {string} category - schemas category
+     * @param {string} topicId - topic id
+     * @param {string} owner - schemas owner
+     *
+     * @returns {ISchema[]} - schemas
+     */
+    public async getSubSchemas(category, topicId: string, owner: string): Promise<ISchema[]> {
+        return await this.sendMessage(MessageAPI.GET_SUB_SCHEMAS, { topicId, owner, category });
+    }
+
+    
+
+    /**
      * Upload Policy Artifacts
      *
      * @param {any} artifact - Artifact

@@ -88,6 +88,12 @@ export class PolicyTool extends BaseEntity {
     tagsTopicId?: string;
 
     /**
+     * Tools
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    tools?: any;
+
+    /**
      * Set policy defaults
      */
     @BeforeCreate()

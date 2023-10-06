@@ -52,13 +52,12 @@
         cdkDropList 
         [cdkDropListData]="fields" 
         (cdkDropListDropped)="drop($event)">
-        <div style="padding: 0px 55px 30px 55px;">
+        <div class="context">
             <app-schema-configuration 
                 #document 
                 [type]="type"
                 [value]="scheme"
                 [extended]="extended"
-                [schemas-map]="schemasMap" 
                 [schemaType]="schemaType"
                 [modules]="modules"
                 [policies]="policies" 

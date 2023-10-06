@@ -93,7 +93,7 @@
     </div>
 
     <div *ngIf="isAny" class="table-container">
-        <table mat-table [dataSource]="schemas" class="schemas-table" [attr.system]="isSystem">
+        <table mat-table [dataSource]="page" class="schemas-table" [attr.system]="isSystem">
             <ng-container matColumnDef="selected">
                 <th mat-header-cell *matHeaderCellDef>
                     <mat-checkbox class="example-margin" [checked]="selectedAll" color="primary"

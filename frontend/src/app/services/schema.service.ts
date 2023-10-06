@@ -53,6 +53,21 @@ export class SchemaService {
         return this.http.get<ISchema[]>(`${this.url}`);
     }
 
+    public getSubSchemas(
+        topicId?: string,
+        category?: SchemaCategory
+    ): Observable<any[]> {
+        if (topicId && category) {
+            return this.http.get<any[]>(`${this.url}/list/sub?topicId=${topicId}&category=${category}`);
+        } else if (topicId) {
+            return this.http.get<any[]>(`${this.url}/list/sub?topicId=${topicId}`);
+        } else if (category) {
+            return this.http.get<any[]>(`${this.url}/list/sub?category=${category}`);
+        } else {
+            return this.http.get<any[]>(`${this.url}/list/sub`);
+        }
+    }
+
     public getSchemasByPolicy(policyId: string): Observable<ISchema[]> {
         return this.http.get<ISchema[]>(`${this.url}?policyId=${policyId}`);
     }
