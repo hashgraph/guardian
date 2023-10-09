@@ -1,6 +1,7 @@
 <form *ngIf="options" [formGroup]="options" [attr.dialogForm]="comesFromDialog" [attr.childSchema]="isChildSchema" [attr.showButtons]="showButtons">
     <ng-container *ngFor="let item of fields; let i = index">
-        <div *ngIf="!item.hide" class="form-field-container" [attr.showMobileField]="isShown[i] || isChildSchema">
+        <div *ngIf="!item.hide && !item.hidden" [attr.showMobileField]="isShown[i] || isChildSchema"
+             class="form-field-container">
             <!-- simple field -->
             <div *ngIf="!item.isArray && !item.isRef" class="form-field">
                 <div class="invalid-field-label"

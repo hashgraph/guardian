@@ -1,8 +1,4 @@
-import {
-    FormArray,
-    FormControl,
-    FormGroup, ValidationErrors, ValidatorFn, Validators
-} from '@angular/forms';
+import { FormArray, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { SchemaField } from '@guardian/interfaces';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -16,6 +12,7 @@ export class FieldControl {
     public readonly name: string;
 
     public controlKey: FormControl;
+    public hidden: FormControl;
     public controlTitle: FormControl;
     public controlDescription: FormControl;
     public controlType: FormControl;
@@ -61,6 +58,7 @@ export class FieldControl {
             this.controlRemoteLink = new FormControl(field.remoteLink);
             this.controlPrivate = new FormControl(field.isPrivate || false);
             this.controlEnum = new FormArray([]);
+            this.hidden = new FormControl(!!field.hidden)
             field.enum?.forEach(item => {
                 this.controlEnum.push(new FormControl(item))
             });
@@ -168,6 +166,7 @@ export class FieldControl {
             controlBold: this.controlBold,
             controlPrivate: this.controlPrivate,
             controlPattern: this.controlPattern,
+            hidden: this.hidden
         });
     }
 
@@ -190,6 +189,7 @@ export class FieldControl {
             const textBold = group.controlBold;
             const isPrivate = group.controlPrivate;
             const pattern = group.controlPattern;
+            const hidden = group.hidden;
             return {
                 key,
                 title,
@@ -205,6 +205,7 @@ export class FieldControl {
                 textBold,
                 isPrivate,
                 pattern,
+                hidden
             };
         } else {
             return null;

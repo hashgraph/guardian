@@ -576,6 +576,7 @@ export class SchemaConfigurationComponent implements OnInit {
             textBold,
             isPrivate,
             pattern,
+            hidden
         } = fieldConfig.getValue(data);
         const type = this.schemaTypeMap[typeIndex];
         return {
@@ -594,6 +595,7 @@ export class SchemaConfigurationComponent implements OnInit {
             textColor,
             textSize,
             textBold,
+            hidden,
             readOnly: false,
             remoteLink: type.customType === 'enum' ? remoteLink : undefined,
             enum:

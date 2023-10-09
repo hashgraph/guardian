@@ -66,9 +66,10 @@ export class SchemaHelper {
      * @param name
      * @param property
      * @param required
+     * @param hidden
      * @param url
      */
-    public static parseField(name: string, property: any, required: boolean, url: string): [SchemaField, number] {
+    public static parseField(name: string, property: any, required: boolean, hidden: boolean, url: string): [SchemaField, number] {
         const field: SchemaField = SchemaHelper.parseProperty(name, property);
         const {
             unit,
@@ -96,6 +97,7 @@ export class SchemaHelper {
         field.customType = customType ? String(customType) : null;
         field.isPrivate = isPrivate;
         field.required = required;
+        field.hidden = hidden;
         return [field, orderPosition];
     }
 
@@ -104,6 +106,7 @@ export class SchemaHelper {
      * @param field
      * @param name
      * @param contextURL
+     * @param orderPosition
      */
     public static buildField(field: SchemaField, name: string, contextURL: string, orderPosition?: number): any {
         let item: any;
@@ -246,6 +249,7 @@ export class SchemaHelper {
      * @param document
      * @param contextURL
      * @param defs
+     * @param includeSystemProperties
      */
     public static parseFields(document: ISchemaDocument, contextURL: string, defs?: any, includeSystemProperties: boolean = false): SchemaField[] {
         const fields: SchemaField[] = [];
@@ -260,6 +264,12 @@ export class SchemaHelper {
                 required[element] = true;
             }
         }
+        const hidden = {}
+        if (document.hidden) {
+            for (const element of document.required) {
+                hidden[element] = true;
+            }
+        }
 
         const fieldsWithPositions = [];
         const properties = Object.keys(document.properties);
@@ -268,7 +278,7 @@ export class SchemaHelper {
             if (!includeSystemProperties && property.readOnly) {
                 continue;
             }
-            const [field, orderPosition] = SchemaHelper.parseField(name, property, !!required[name], contextURL);
+            const [field, orderPosition] = SchemaHelper.parseField(name, property, !!required[name], !!hidden[name], contextURL);
             if (field.isRef) {
                 const subSchemas = defs || document.$defs;
                 const subDocument = subSchemas[field.type];
@@ -340,6 +350,7 @@ export class SchemaHelper {
                 }
             },
             required: ['@context', 'type'],
+            hidden: [],
             additionalProperties: false,
             allOf: []
         };
@@ -362,9 +373,10 @@ export class SchemaHelper {
             };
 
             let req = []
+            let hidden = [];
             let props = {}
 
-            SchemaHelper.getFieldsFromObject(element.thenFields, req, props, schema.contextURL);
+            SchemaHelper.getFieldsFromObject(element.thenFields, req, hidden, props, schema.contextURL);
             // To prevent including condition field in common required fields
             element.thenFields?.forEach(item => item.required = false);
             fields.splice(insertingPosition, 0, ...element.thenFields);
@@ -379,9 +391,10 @@ export class SchemaHelper {
             }
 
             req = []
+            hidden = []
             props = {}
 
-            SchemaHelper.getFieldsFromObject(element.elseFields, req, props, schema.contextURL);
+            SchemaHelper.getFieldsFromObject(element.elseFields, req, hidden, props, schema.contextURL);
             // To prevent including condition field in common required fields
             element.elseFields?.forEach(item => item.required = false);
             fields.splice(insertingPosition + element.thenFields.length, 0, ...element.elseFields);
@@ -398,7 +411,7 @@ export class SchemaHelper {
             documentConditions.push(condition);
         }
 
-        SchemaHelper.getFieldsFromObject(fields, document.required, document.properties, schema.contextURL);
+        SchemaHelper.getFieldsFromObject(fields, document.required, document.hidden, document.properties, schema.contextURL);
 
         return document;
     }
@@ -407,12 +420,12 @@ export class SchemaHelper {
      * Get fields from object
      * @param fields
      * @param required
+     * @param hidden
      * @param properties
      * @param contextURL
-     * @param condition
      * @private
      */
-    private static getFieldsFromObject(fields: SchemaField[], required: string[], properties: any, contextURL: string) {
+    private static getFieldsFromObject(fields: SchemaField[], required: string[], hidden: string[], properties: any, contextURL: string) {
         const fieldsWithoutSystemFields = fields.filter(item => !item.readOnly);
         for (const field of fields) {
             const property = SchemaHelper.buildField(field, field.name, contextURL, fieldsWithoutSystemFields.indexOf(field));
@@ -424,6 +437,9 @@ export class SchemaHelper {
             }
             if (field.required) {
                 required.push(field.name);
+            }
+            if (field.hidden) {
+                hidden.push(field.name);
             }
             properties[field.name] = property;
         }

@@ -113,6 +113,11 @@
     </ng-container>
     <ng-template #notHelpText>
         <div class="custom-field-required">
+            <mat-checkbox [formControl]="field.hidden" color="primary">
+                Hidden field
+            </mat-checkbox>
+        </div>
+        <div class="custom-field-required">
             <mat-checkbox color="primary" [formControl]="field.controlRequired">
                 Required Field
             </mat-checkbox>

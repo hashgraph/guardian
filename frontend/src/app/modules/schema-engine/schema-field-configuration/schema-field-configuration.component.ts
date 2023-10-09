@@ -1,23 +1,12 @@
-import {
-    Component,
-    Input,
-    OnInit,
-    SimpleChanges,
-    EventEmitter,
-    Output
-} from '@angular/core';
-import {
-    FormControl,
-    FormGroup,
-    Validators,
-} from '@angular/forms';
+import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
+import { FormControl, FormGroup, Validators, } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { UnitSystem } from '@guardian/interfaces';
 import { ToastrService } from 'ngx-toastr';
 import { IPFS_SCHEMA } from 'src/app/services/api';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { EnumEditorDialog } from '../enum-editor-dialog/enum-editor-dialog.component';
-import { FieldControl } from "../field-control";
+import { FieldControl } from '../field-control';
 
 /**
  * Schemas constructor
@@ -54,6 +43,7 @@ export class SchemaFieldConfigurationComponent implements OnInit {
     ) { }
 
     ngOnInit(): void {
+        console.log(this);
         if (this.field) {
             const enumValues = this.field.controlEnum.value
             if (enumValues && enumValues.length) {
