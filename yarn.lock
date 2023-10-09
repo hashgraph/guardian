@@ -901,7 +901,7 @@ __metadata:
     "@meeco/cryppo": ^2.0.2
     "@mikro-orm/core": 5.7.12
     "@mikro-orm/migrations-mongodb": 5.7.12
-    "@mikro-orm/mongodb": 5.7.12
+    "@mikro-orm/mongodb": 5.8.7
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
     "@nestjs/microservices": ^9.4.1
@@ -1315,12 +1315,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mikro-orm/mongodb@npm:5.7.12":
-  version: 5.7.12
-  resolution: "@mikro-orm/mongodb@npm:5.7.12"
+"@mikro-orm/mongodb@npm:5.8.7":
+  version: 5.8.7
+  resolution: "@mikro-orm/mongodb@npm:5.8.7"
   dependencies:
-    bson: ^5.3.0
-    mongodb: 5.6.0
+    bson: ^5.4.0
+    mongodb: 5.8.1
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
     "@mikro-orm/entity-generator": ^5.0.0
@@ -1336,7 +1336,7 @@ __metadata:
       optional: true
     "@mikro-orm/seeder":
       optional: true
-  checksum: 3005a47f057480f1cccefa3b2dae0484b3514eebe05eadcea09d71430ddde3a36ce244f9e4ede371ce641b0984ddfb4a30e33bb0ee95883f074f2408d901c31b
+  checksum: 291844fb12a360b54df66885ff8a00905867b474408fd5844ccf5f2ec2c2e2d2792917c4e5e8352adc01fb3626158620c1630fce3ac9e3d0086b3c1520c89937
   languageName: node
   linkType: hard
 
@@ -1362,6 +1362,15 @@ __metadata:
     "@mikro-orm/seeder":
       optional: true
   checksum: 3faf9cb2c652459bdf04f99819120466ec7ea4a783398a09155073f21f8a905c424a0aa8e178a9081fda838bc83e91647588587a944690bdf229f6c481f4fd00
+  languageName: node
+  linkType: hard
+
+"@mongodb-js/saslprep@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "@mongodb-js/saslprep@npm:1.1.0"
+  dependencies:
+    sparse-bitfield: ^3.0.3
+  checksum: 1479a43e216734672f8eb1a2a55165b6896841bd00fb5bd645390a24374ef6c29f0f6d19a43618a19b8f1912fcbd2b2cc2210a62361103d1f28dce6852cf31d4
   languageName: node
   linkType: hard
 
@@ -4088,7 +4097,7 @@ __metadata:
     "@guardian/interfaces": ^2.17.0
     "@meeco/cryppo": ^2.0.2
     "@mikro-orm/core": 5.7.12
-    "@mikro-orm/mongodb": 5.7.12
+    "@mikro-orm/mongodb": 5.8.7
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
     "@nestjs/microservices": ^9.4.1
@@ -7596,7 +7605,7 @@ __metadata:
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
     "@mikro-orm/core": 5.7.12
-    "@mikro-orm/mongodb": 5.7.12
+    "@mikro-orm/mongodb": 5.8.7
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
     "@nestjs/microservices": ^9.4.1
@@ -10144,7 +10153,7 @@ __metadata:
     "@guardian/common": ^2.17.0
     "@guardian/interfaces": ^2.17.0
     "@mikro-orm/core": 5.7.12
-    "@mikro-orm/mongodb": 5.7.12
+    "@mikro-orm/mongodb": 5.8.7
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
     "@nestjs/microservices": ^9.4.1
@@ -10922,6 +10931,38 @@ __metadata:
   languageName: node
   linkType: hard
 
+"mongodb@npm:5.8.1":
+  version: 5.8.1
+  resolution: "mongodb@npm:5.8.1"
+  dependencies:
+    "@mongodb-js/saslprep": ^1.1.0
+    bson: ^5.4.0
+    mongodb-connection-string-url: ^2.6.0
+    socks: ^2.7.1
+  peerDependencies:
+    "@aws-sdk/credential-providers": ^3.188.0
+    "@mongodb-js/zstd": ^1.0.0
+    kerberos: ^1.0.0 || ^2.0.0
+    mongodb-client-encryption: ">=2.3.0 <3"
+    snappy: ^7.2.2
+  dependenciesMeta:
+    "@mongodb-js/saslprep":
+      optional: true
+  peerDependenciesMeta:
+    "@aws-sdk/credential-providers":
+      optional: true
+    "@mongodb-js/zstd":
+      optional: true
+    kerberos:
+      optional: true
+    mongodb-client-encryption:
+      optional: true
+    snappy:
+      optional: true
+  checksum: da8fc05952266f9b636000d74e6c8889306fc287922651526029a61ede3c75f793edb504a02c1f64fec9fea9aa17323bf95eb4902776778a1def5eba07b32b72
+  languageName: node
+  linkType: hard
+
 "move-file@npm:^2.1.0":
   version: 2.1.0
   resolution: "move-file@npm:2.1.0"
@@ -11489,7 +11530,7 @@ __metadata:
     "@guardian/common": ^2.17.0
     "@guardian/interfaces": ^2.17.0
     "@mikro-orm/core": 5.7.12
-    "@mikro-orm/mongodb": 5.7.12
+    "@mikro-orm/mongodb": 5.8.7
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
     "@nestjs/microservices": ^9.4.1
@@ -12258,7 +12299,7 @@ __metadata:
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": 2.0.2
     "@mikro-orm/core": 5.7.12
-    "@mikro-orm/mongodb": 5.7.12
+    "@mikro-orm/mongodb": 5.8.7
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
     "@nestjs/microservices": ^9.4.1
