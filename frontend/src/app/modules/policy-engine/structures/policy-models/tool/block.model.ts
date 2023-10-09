@@ -472,6 +472,7 @@ export class PolicyTool extends PolicyBlock {
                 }
             }
         }
+        TemplateUtils.checkSchemaVariables(this._lastVariables.schemas);
     }
 
     public override emitUpdate() {

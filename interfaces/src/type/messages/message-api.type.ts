@@ -35,6 +35,7 @@ export enum MessageAPI {
     IPFS_GET_FILE = 'ipfs-get-file',
     IPFS_GET_FILE_ASYNC = 'ipfs-get-file-async',
     GET_SCHEMA = 'get-schema',
+    GET_SCHEMAS_BY_UUID = 'get-schema-by-uuid',
     GET_SCHEMA_PARENTS = 'get-schema-parents',
     GET_SUB_SCHEMAS = 'get-sub-schema',
     GENERATE_DEMO_KEY = 'GENERATE_DEMO_KEY',

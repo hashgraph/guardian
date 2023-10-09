@@ -12,6 +12,7 @@ import {
 import {
     ISchema,
     MessageAPI,
+    ModuleStatus,
     SchemaCategory,
     SchemaHelper,
     SchemaStatus,
@@ -189,52 +190,70 @@ export async function schemaAPI(): Promise<void> {
             if (!msg) {
                 return new MessageError('Invalid load schema parameter');
             }
+            const otherOptions: any = getPageOptions(msg);
             const filter: any = {
-                where: {
-                    readonly: false,
-                    system: false
-                }
+                readonly: false,
+                system: false
             }
             if (msg.owner) {
-                filter.where.owner = msg.owner;
+                filter.owner = msg.owner;
             }
-            if (msg.uuid) {
-                filter.where.uuid = msg.uuid;
+            if (Array.isArray(msg.category)) {
+                filter.category = { $in: msg.category };
+            } else if (typeof msg.category === 'string') {
+                filter.category = msg.category;
             }
             if (msg.policyId) {
-                filter.where.category = SchemaCategory.POLICY;
+                filter.category = SchemaCategory.POLICY;
                 const policy = await DatabaseServer.getPolicyById(msg.policyId);
-                if (policy) {
-                    filter.where.topicId = policy.topicId;
-                }
+                filter.topicId = policy?.topicId;
             } else if (msg.moduleId) {
-                filter.where.category = SchemaCategory.MODULE;
+                filter.category = SchemaCategory.MODULE;
                 const module = await DatabaseServer.getModuleById(msg.moduleId);
-                if (module) {
-                    filter.where.topicId = module.topicId;
-                }
+                filter.topicId = module?.topicId;
             } else if (msg.toolId) {
-                filter.where.category = SchemaCategory.TOOL;
+                filter.category = SchemaCategory.TOOL;
                 const tool = await DatabaseServer.getToolById(msg.toolId);
-                if (tool) {
-                    filter.where.topicId = tool.topicId;
+                filter.topicId = tool?.topicId;
+                if (tool && tool.status === ModuleStatus.PUBLISHED) {
+                    delete filter.owner;
                 }
-            } else {
-                if (msg.topicId) {
-                    filter.where.topicId = msg.topicId;
-                }
-                if (msg.category) {
-                    if (Array.isArray(msg.category)) {
-                        filter.where.category = { $in: msg.category };
-                    } else {
-                        filter.where.category = msg.category;
+            }
+            if (msg.topicId) {
+                filter.topicId = msg.topicId;
+                if (filter.category === SchemaCategory.TOOL) {
+                    const tool = await DatabaseServer.getTool({ topicId: msg.topicId });
+                    if (tool && tool.status === ModuleStatus.PUBLISHED) {
+                        delete filter.owner;
                     }
                 }
-
             }
-            const otherOptions: any = getPageOptions(msg);
             const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
             return new MessageResponse({ items, count });
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    /**
+     * Return schemas
+     *
+     * @param {Object} [payload] - filters
+     *
+     * @returns {ISchema[]} - all schemas
+     */
+    ApiResponse(MessageAPI.GET_SCHEMAS_BY_UUID, async (msg) => {
+        try {
+            if (!msg) {
+                return new MessageError('Invalid load schema parameter');
+            }
+            const items = await DatabaseServer.getSchemas({
+                uuid: msg.uuid,
+                readonly: false,
+                system: false
+            });
+            return new MessageResponse(items);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);

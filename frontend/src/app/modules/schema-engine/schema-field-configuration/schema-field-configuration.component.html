@@ -72,9 +72,9 @@
                 <mat-optgroup *ngIf="schemaTypes && schemaTypes.length" label="Schema defined">
                     <mat-option 
                         *ngFor="let type of schemaTypes"
-                        class="sub-schema-type-{{type.type}}" 
+                        class="sub-schema-opt sub-schema-type-{{type.type}}" 
                         [value]="type.value" 
-                        [title]="type.name">
+                        [title]="type.title">
                         <span *ngIf="type.component" class="sub-schema-component">{{type.component}}:</span>
                         <span class="sub-schema-name">{{type.name}}</span>
                         <span *ngIf="type.version" class="sub-schema-version">{{type.version}}</span>

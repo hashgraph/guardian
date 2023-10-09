@@ -460,6 +460,7 @@ export class PolicyModule extends PolicyBlock {
                 }
             }
         }
+        TemplateUtils.checkSchemaVariables(this._lastVariables.schemas);
     }
 
     public override emitUpdate() {

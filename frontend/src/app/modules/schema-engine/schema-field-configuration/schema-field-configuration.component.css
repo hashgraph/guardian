@@ -366,3 +366,10 @@
 .sub-schema-type-main .sub-schema-component {
     display: none;
 }
+
+.sub-schema-opt {
+    height: unset !important;
+    white-space: normal !important;
+    line-height: 27px !important;
+    padding: 10px 16px 10px 32px !important;
+}

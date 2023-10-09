@@ -501,8 +501,7 @@ export class Guardians extends NatsService {
      * @returns {ISchema[]} - all schemas
      */
     public async getSchemasByUUID(uuid: string): Promise<ISchema[]> {
-        const { items } = await this.sendMessage<ResponseAndCount<ISchema>>(MessageAPI.GET_SCHEMAS, { uuid });
-        return items;
+        return await this.sendMessage(MessageAPI.GET_SCHEMAS_BY_UUID, { uuid });
     }
 
     /**
@@ -821,11 +820,9 @@ export class Guardians extends NatsService {
      *
      * @returns {ISchema[]} - schemas
      */
-    public async getSubSchemas(category, topicId: string, owner: string): Promise<ISchema[]> {
+    public async getSubSchemas(category: string, topicId: string, owner: string): Promise<ISchema[]> {
         return await this.sendMessage(MessageAPI.GET_SUB_SCHEMAS, { topicId, owner, category });
     }
-
-    
 
     /**
      * Upload Policy Artifacts

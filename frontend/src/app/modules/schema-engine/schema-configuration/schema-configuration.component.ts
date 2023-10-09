@@ -377,11 +377,19 @@ export class SchemaConfigurationComponent implements OnInit {
                 const name = schema.name;
                 const version = schema.version ? `v${schema.version}` : '';
                 const component = (schema.topicId !== topicId && schema.component) ? schema.component : '';
+                let title = name;
+                if (component) {
+                    title = component + ': ' + title;
+                }
+                if (version) {
+                    title = title + ` (${version})`;
+                }
                 this.schemaTypes.push({
                     type,
                     name,
                     version,
                     component,
+                    title,
                     value
                 });
                 this.schemaTypeMap[value] = {

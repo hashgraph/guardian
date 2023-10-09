@@ -26,11 +26,14 @@ export class ModuleBlock {
                         const value = ref.options[variable.name];
                         switch (variable.type) {
                             case 'Schema': {
-                                const schema = validator.getSchema(value);
-                                if (!schema) {
-                                    validator.addError(`Schema with id "${value}" does not exist`);
-                                } else if (!validator.compareSchema(variable.baseSchema, schema)) {
-                                    validator.addError(`Schema is not supported`);
+                                const schemaError = validator.validateSchema(value);
+                                if (schemaError) {
+                                    validator.addError(schemaError);
+                                } else {
+                                    const baseSchemaError = validator.validateBaseSchema(variable.baseSchema, value);
+                                    if (baseSchemaError) {
+                                        validator.addError(baseSchemaError);
+                                    }
                                 }
                                 break;
                             }
