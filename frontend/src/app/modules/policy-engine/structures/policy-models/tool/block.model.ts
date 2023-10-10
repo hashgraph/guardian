@@ -313,8 +313,6 @@ export class PolicyTool extends PolicyBlock {
 
     public override getJSON(): any {
         const json: any = {
-            name: this._name,
-            description: this._description,
             ...this.properties
         };
         delete json.children;

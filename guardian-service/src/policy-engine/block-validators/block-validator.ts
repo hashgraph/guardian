@@ -292,7 +292,7 @@ export class BlockValidator {
      */
     public validateSchema(iri: string): string | null {
         if (this.validator.unsupportedSchema(iri)) {
-            return `Schema with id "${iri}" unsupported`;
+            return `Schema with id "${iri}" refers to non-existing schema`;
         }
         if (this.validator.schemaExist(iri)) {
             return null;
