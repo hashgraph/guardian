@@ -4467,6 +4467,48 @@ paths:
       tags: *ref_5
       security:
         - bearerAuth: []
+  /schemas/list/sub:
+    get:
+      operationId: SchemaApi_getSub
+      summary: Returns a list of schemas.
+      description: >-
+        Returns a list of schemas. Only users with the Standard Registry role
+        are allowed to make the request.
+      parameters:
+        - name: category
+          required: false
+          in: query
+          description: Schema category
+          schema:
+            type: string
+        - name: topicId
+          required: false
+          in: query
+          description: Topic Id
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SchemaDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_5
+      security:
+        - bearerAuth: []
   /schemas/push/{topicId}:
     post:
       tags:
