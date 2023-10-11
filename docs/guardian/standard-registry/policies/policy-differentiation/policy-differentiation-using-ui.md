@@ -1,6 +1,6 @@
-# 💻 Policy Differentiation using UI
+# 💻 Multi Policy Differentiation using UI
 
-We can now perform a detailed comparison between two policies.
+We can now perform a detailed comparison between more than two policies.
 
 ## 1. Start Comparison and choose policies:
 
@@ -17,6 +17,10 @@ When Compare button is clicked, we get a pop up to select policies, which we wan
 We have several different sections in our comparison screen including filter parameters:
 
 <figure><img src="../../../../.gitbook/assets/image (4) (6).png" alt=""><figcaption></figcaption></figure>
+
+Selected Policies are compared to the first Policy (displayed in the section on the left-hand side), the rest of the sections show the results of the ‘diffs’.
+
+<figure><img src="../../../../.gitbook/assets/image (200).png" alt=""><figcaption></figcaption></figure>
 
 ### 2.1 Comparison Parameters
 
