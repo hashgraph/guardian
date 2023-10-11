@@ -35,13 +35,31 @@ This folder contains sub folders for each Methodology and their authors (with ma
 1. GHG Methodology - Remote Workflow - Envision
 2. Tymlez - CET & CRU
 3. GHG Scope II - Atma
-4. GHGP Product Standard - Avery Dennison (Coming soon)
-5. E-Mission (Coming soon)
-6. RDA - Serapis (Coming soon)
-7. GHGP Corporate Standard (Coming soon)
-8. EPA CFR 40 p75 (Coming soon)
-9. GHGP Data Center Guidance (Coming soon)
-10. GHG calcs for NFTGrade (Coming soon)
+4. GHGP Corporate Standard - Envision
+5. Gold Standard Afforestation / Reforestation - Envision
+6. CDM AMS-II.G - Envision
+7. CDM AMS-III.AR - Envision
+8. CDM AMS-III.BB - Envision
+9. CDM AMS-III.D - Envision
+10. CDM AR-ACM0003 - Envision
+11. GHGP Product Standard - Avery Dennison (Coming soon)
+12. E-Mission (Coming soon)
+13. RDA - Serapis (Coming soon)
+14. EPA CFR 40 p75 (Coming soon)
+15. GHGP Data Center Guidance (Coming soon)
+16. GHG calcs for NFTGrade (Coming soon)
+17. CDM AMS-I.C (Coming Soon)
+18. CDM ACM0001 (Coming Soon)
+19. CDM ACM0002 (Coming Soon)
+20. CDM AMS-III.F (Coming Soon)
+21. CDM ACM0006 (Coming Soon)
+22. CDM ACM0018 (Coming Soon)
+23. CDM AMS-III.AV (Coming Soon)
+24. CDM AMS-III.H (Coming Soon)
+25. CDM AMS-I.F (Coming Soon)
+26. CDM ACM0007 (Coming Soon)
+27. CDM AMS-I.A (Coming Soon)
+28. CDM AMS-II.J (Coming Soon)
 
 
 [IREC](https://github.com/hashgraph/guardian/tree/main/Methodology%20Library/iREC)
