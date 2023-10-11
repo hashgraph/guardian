@@ -1,7 +1,5 @@
 # Read All Notifications
 
-
-
 {% swagger method="post" path="" baseUrl="/notifications/read/all" summary="Read all notifications" %}
 {% swagger-description %}
 Returns new notifications.

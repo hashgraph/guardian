@@ -12,15 +12,15 @@ We will use [example 4](mrv-document-operations.md) to assemble multiple documen
 
 Let’s add several additional attributes into the documents to simplify the document search.
 
-![Adding Entity](<../../../../.gitbook/assets/0 (3) (1).png>)
+![Adding Entity](<../../../../.gitbook/assets/0 (3).png>)
 
-![Adding Status](<../../../../.gitbook/assets/1 (3).png>)
+![Adding Status](<../../../../.gitbook/assets/1 (3) (1).png>)
 
-![Adding Entity ](<../../../../.gitbook/assets/2 (4) (1).png>)
+![Adding Entity](<../../../../.gitbook/assets/2 (4) (2).png>)
 
-![Adding Entity](<../../../../.gitbook/assets/3 (4).png>)
+![Adding Entity](<../../../../.gitbook/assets/3 (4) (1).png>)
 
-![Adding Type Attribute](<../../../../.gitbook/assets/4 (3) (1).png>)
+![Adding Type Attribute](<../../../../.gitbook/assets/4 (3) (2).png>)
 
 ## **Building the trustchain report:**
 
@@ -28,7 +28,7 @@ Let’s add several additional attributes into the documents to simplify the doc
 
 1.1 Add new container
 
-![Adding new container](<../../../../.gitbook/assets/5 (2) (2).png>)
+![Adding new container](<../../../../.gitbook/assets/5 (2).png>)
 
 1.2 Add ‘_**reportBlock**_’
 
@@ -36,25 +36,25 @@ Let’s add several additional attributes into the documents to simplify the doc
 
 In Guardian policy ‘**reportBlock**’ finds VP documents based on their _id_ or _hash_ and displays document information, related policy and token information. To retrieve the linked information ‘**reportItemBlock**’ must be used.
 
-1.3 We will build the following chain in this example: **mint **_**VP – MRV Report – Project (approved and signed the the Approver) – Approver document – Project (created and signed by the user) – User document.**_
+1.3 We will build the following chain in this example: **mint \_VP – MRV Report – Project (approved and signed the the Approver) – Approver document – Project (created and signed by the user) – User document.**\_
 
 We will need 6 ‘**reportItemBlock**’ items correspondingly, 1 per each document.
 
-![Adding 6 reportItemBlocks ](<../../../../.gitbook/assets/7 (3).png>)
+![Adding 6 reportItemBlocks](<../../../../.gitbook/assets/7 (3) (1).png>)
 
 The ‘**reportItemBlock**’ items are executed sequentially, thus in the filter for each consecutive ‘**reportItemBlock**’ we can use values from the previous blocks/documents.
 
 1.3.1 ‘**mint\_document**’. To find this document which described the token mint operation we will use one of the **Common Variables** - _actionId_
 
-![Using actionId value](<../../../../.gitbook/assets/8 (4) (1).png>)
+![Using actionId value](<../../../../.gitbook/assets/8 (4).png>)
 
 1.3.2 ’**report\_document**_’_. To find the MRV report (i.e. data document which was the basis of the decision to mint tokens) we will also use one of the **Common Variables** – _documentId_
 
-![Adding documentId value](<../../../../.gitbook/assets/9 (3) (1) (1).png>)
+![Adding documentId value](<../../../../.gitbook/assets/9 (3) (1).png>)
 
 To find further documents we will need to use values from the **Ref** variable which point to the previous document. Let’s save in a new variable:
 
-![Using Ref variable](<../../../../.gitbook/assets/10 (3).png>)
+![Using Ref variable](<../../../../.gitbook/assets/10 (3) (1).png>)
 
 1.3.3 ’**project\_document(approver)**_’_ - Lets use the previously defined variable alongside the static filtration parameters.
 

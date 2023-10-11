@@ -9,19 +9,19 @@ Creates new contract pair. Only users with the Standard Registry role are allowe
 Contract identifier
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="baseTokenId" type="String" %}
+{% swagger-parameter in="body" name="baseTokenId" type="String" required="false" %}
 
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="oppositeTokenId" type="String" %}
+{% swagger-parameter in="body" name="oppositeTokenId" type="String" required="false" %}
 
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="baseTokenCount" type="Integer" %}
+{% swagger-parameter in="body" name="baseTokenCount" type="Integer" required="false" %}
 
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="oppositeTokenCount" type="Integer" %}
+{% swagger-parameter in="body" name="oppositeTokenCount" type="Integer" required="false" %}
 
 {% endswagger-parameter %}
 

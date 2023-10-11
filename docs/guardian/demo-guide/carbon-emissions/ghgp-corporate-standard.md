@@ -24,9 +24,9 @@ description: This policy is developed by Envision
 
 ### [Step by Step](ghgp-corporate-standard.md#step-by-step)
 
-#### &#x20;          [Organization Flow](ghgp-corporate-standard.md#organization-flow)
+#### [Organization Flow](ghgp-corporate-standard.md#organization-flow)
 
-#### &#x20;           [Administrator (Registry) Flow](ghgp-corporate-standard.md#administrator-registry-flow)
+#### [Administrator (Registry) Flow](ghgp-corporate-standard.md#administrator-registry-flow)
 
 ### [Futureproofing (Automated GHG Inventories)](ghgp-corporate-standard.md#\_toc141460623)
 
@@ -56,7 +56,7 @@ The Guardian GHGP Corporate Policy offers a unique technical opportunity for com
 
 ### Policy Workflow <a href="#_toc141460615" id="_toc141460615"></a>
 
-![](<../../../.gitbook/assets/0 (7).png>)
+![](<../../../.gitbook/assets/0 (7) (1).png>)
 
 ### Policy Guide <a href="#_toc141460616" id="_toc141460616"></a>
 

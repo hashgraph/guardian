@@ -41,7 +41,7 @@ The SD model is
 2. When the Guardian subsequently creates a document based on that schema,
    1. A private VC is created. The private VC is signed with BBS. BBS makes it possible to create a public VP from the private VC that does not include the private attributes but the signature is still verifiable.
    2. A public VP is created from the public VC
-   3. The private VC is encrypted (for a **Pex Responder(**s) ) with the appropriate public key obtained by resolving the **Pex Responder** DID
+   3. The private VC is encrypted (for a \*\*Pex Responder(\*\*s) ) with the appropriate public key obtained by resolving the **Pex Responder** DID
    4. Both the public VP and encrypted VC are published to IPFS. The public VP CID is indexed via an HCS message so it can be found.
 3. All can view the attributes within the public VP
 

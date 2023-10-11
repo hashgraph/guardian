@@ -4,10 +4,10 @@
 
 We have fixed issue when the user is unable to distinguish the schema policy based on version during schema creation;
 
-**Here is the previous state:**&#x20;
+**Here is the previous state:**
 
 <figure><img src="../../../../.gitbook/assets/image (264).png" alt="" width="563"><figcaption></figcaption></figure>
 
-**Here is the current state of the UX Improvements:**&#x20;
+**Here is the current state of the UX Improvements:**
 
 <figure><img src="../../../../.gitbook/assets/image (267).png" alt="" width="563"><figcaption></figcaption></figure>

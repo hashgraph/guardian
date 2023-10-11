@@ -1,7 +1,5 @@
 # Update current report
 
-
-
 {% swagger method="get" path="" baseUrl="/analytics/report/update" summary="Update current report" %}
 {% swagger-description %}
 Update current report

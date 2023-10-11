@@ -6,10 +6,10 @@ description: >-
 
 # Fixing UX Issues on the Token UI
 
-We have made improvements on:&#x20;
+We have made improvements on:
 
 Disabled action buttons in some modal dialogs;
 
 * **"New Token"** page
 * **"Edit Token"** Page:
-* #### Publishing the policy version:&#x20;
+* **Publishing the policy version:**

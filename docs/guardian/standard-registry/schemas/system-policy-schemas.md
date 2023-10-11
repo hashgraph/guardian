@@ -17,7 +17,7 @@ To display System / Policy Schemas in the GUI, we have added a toggle in the Sch
 
 Whenever an account is created, System Schemas are generated automatically.
 
-<figure><img src="../../../.gitbook/assets/image (16) (3) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 Note: By default System Schemas cannot be edited/deleted.
@@ -47,7 +47,7 @@ To create module schema, we need to click on Create New button:
 
 <figure><img src="../../../.gitbook/assets/image (225).png" alt=""><figcaption></figcaption></figure>
 
-### Using schemas:&#x20;
+### Using schemas:
 
 Select module schema in “BaseSchema” fileld in module variables section
 

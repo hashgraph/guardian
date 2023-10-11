@@ -10,20 +10,20 @@ The parameter GUARDIAN\_ENV is defined univocally in an `.env` file. The contain
 
 Also Guardian services are allowed to define specific service variables. This different set of variables allow to have a hierarchical definition of the same variable in a way that a developer could redefine some of them in a service specific way or add new variables extending the usage of the ecosystem environment. The environment variables that are specific to services can be specified by the means of `.env.<service_name>.<GUARDIAN_ENV>` files located in each service at `guardian/<service_name>/configs` subfolder.
 
-It has been added a new environment variable named OVERRIDE that can assume values as "true"/"false"  to let the variables defined in the `.env.<service_name>.<GUARDIAN_ENV>.<GUARDIAN_ENV>` to override the common defined ecosystem variables or only add the new ones. 
+It has been added a new environment variable named OVERRIDE that can assume values as "true"/"false" to let the variables defined in the `.env.<service_name>.<GUARDIAN_ENV>.<GUARDIAN_ENV>` to override the common defined ecosystem variables or only add the new ones.
 
 For example If OVERRIDE=true a variable with the same name as the one already defined in the `.env.<GUARDIAN_ENV>.guardian.system` file will assume the value specify at service level. The OVERRIDE parameter is not mandatory. if OVERRIDE="false" (default value) specific service variables can only be added to the global ones. In each service a new `./configs` folder holds the set of parametric service level environment files.
 
 In this way it is possible to use the ecosystem environment plus the service specific variables leaving the service specific variables under the responsibility of the service itself.
 
- The same service specific configuration are used when Guardian is bootstrapped without the docker compose orchestrator in the per service way. In this case every service environment is configured using the two files:
+The same service specific configuration are used when Guardian is bootstrapped without the docker compose orchestrator in the per service way. In this case every service environment is configured using the two files:
 
 1. `.env` file in the specific service folder `./guardian/<service_name>`
 2. `./<service_name>/configs/.env.<service_name>.<GUARDIAN_ENV>` file.
 
-The Environment is read in two steps: at first steps the service .env file at service folder `./guardian/<service_name>` is loaded by Node while at second step `.env.<service_name>.\<GUARDIAN_ENV>` file is loaded. 
+The Environment is read in two steps: at first steps the service .env file at service folder `./guardian/<service_name>` is loaded by Node while at second step `.env.<service_name>.\<GUARDIAN_ENV>` file is loaded.
 
-For example If OVERRIDE=true a variable with the same name as the one already defined in the `.env` file will assume the value specify at service level. 
+For example If OVERRIDE=true a variable with the same name as the one already defined in the `.env` file will assume the value specify at service level.
 
 ### EXAMPLES:
 
@@ -105,7 +105,7 @@ OPERATOR_KEY="302e020100300506032b6570042..................34c805215e7099b30abd6
 INITIALIZATION_TOPIC_ID="0.0.2411"
 ```
 
-this shows that the root level environment is loaded: OPERATOR_ID defined in the root level "0.0.3422318" is used while "0.0.4523185" specified at service level remains unused.
+this shows that the root level environment is loaded: OPERATOR\_ID defined in the root level "0.0.3422318" is used while "0.0.4523185" specified at service level remains unused.
 
 ### 2) Docker Compose Configuration to maintain the same database already in use
 
@@ -185,9 +185,9 @@ OPERATOR_KEY="302e020100300506032b6570042..................34c805215e7099b30abd6
 INITIALIZATION_TOPIC_ID="0.0.2411"
 ```
 
-###  3) Configure each service without an orchestrator
+### 3) Configure each service without an orchestrator
 
-Configure .env, in ./guardian/\<service\_name\>/.env. Insert the variable GUARDIAN\_ENV and give it the name that you choose for you Guardian platform environment (production, develop ...). If you update a production environment to keep working with your previous data leave the field GUARDIAN\_ENV="" empty.
+Configure .env, in ./guardian/\<service\_name>/.env. Insert the variable GUARDIAN\_ENV and give it the name that you choose for you Guardian platform environment (production, develop ...). If you update a production environment to keep working with your previous data leave the field GUARDIAN\_ENV="" empty.
 
 The OVERRIDE variable is not mandatory and it default to "false".
 
@@ -196,7 +196,7 @@ GUARDIAN_ENV="develop"
 # OVERRIDE="false"
 ```
 
-Every variable that is used by the service is configured inside the .guardian/\<service\_name\>/configs folder. Because GUARDIAN\_ENV is configured as "develop" each service configuration are stored in files with format `./<service_name>/configs/.env.<service_mane>.develop` that follows the template in the same folder.
+Every variable that is used by the service is configured inside the .guardian/\<service\_name>/configs folder. Because GUARDIAN\_ENV is configured as "develop" each service configuration are stored in files with format `./<service_name>/configs/.env.<service_mane>.develop` that follows the template in the same folder.
 
 Configure the guardian-service in ./guardian/guardian-service/configs/.env.guardian.develop
 

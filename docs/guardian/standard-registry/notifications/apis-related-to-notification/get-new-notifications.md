@@ -1,7 +1,5 @@
 # Get new Notifications
 
-
-
 {% swagger method="get" path="" baseUrl="/notifications/new" summary="Get new notifications" %}
 {% swagger-description %}
 Returns new notifications.

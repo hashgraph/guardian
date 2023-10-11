@@ -1,7 +1,5 @@
 # Returns dashboard by uuid
 
-
-
 {% swagger method="get" path="" baseUrl="/analytics/dashboards/{id}" summary="Returns dashboard by uuid" %}
 {% swagger-description %}
 Returns dashboard by uuid

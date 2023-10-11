@@ -8,20 +8,20 @@ description: Policy developed by Gautam Prajapati during the SBS Hackathon
 
 * [Table of content](goldstandard-metered-energy-cooking.md#table-of-content)
 * [Introduction](goldstandard-metered-energy-cooking.md#introduction)
-* [Why ME\&ED(Metered and Measured Energy) Methodology?](broken-reference/)
-* [Demo Video](broken-reference/)
-* [Policy Workflow](broken-reference/)
-* [Policy Guide](broken-reference/)
-  * [Available Roles](broken-reference/)
-  * [Important Documents & Schemas](broken-reference/)
-  * [Token(Carbon credit)](broken-reference/)
-  * [Step By Step](broken-reference/)
-    * [Registry(Gold Standard) Flow](broken-reference/)
-    * [Project Proponent Flow](broken-reference/)
-    * [VVB Flow](broken-reference/)
-* [Futureproofing(Automated credit issuance)](broken-reference/)
-* [TODO](broken-reference/)
-* [Existing Cookstove Policy Comparison](broken-reference/)
+* [Why ME\&ED(Metered and Measured Energy) Methodology?](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
+* [Demo Video](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
+* [Policy Workflow](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
+* [Policy Guide](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
+  * [Available Roles](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
+  * [Important Documents & Schemas](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
+  * [Token(Carbon credit)](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
+  * [Step By Step](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
+    * [Registry(Gold Standard) Flow](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
+    * [Project Proponent Flow](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
+    * [VVB Flow](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
+* [Futureproofing(Automated credit issuance)](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
+* [TODO](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
+* [Existing Cookstove Policy Comparison](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
 
 ### Introduction
 
@@ -55,7 +55,7 @@ This approach is more precise than traditional methodologies, which rely on more
 
 ### Policy Workflow
 
-<figure><img src="../../../.gitbook/assets/image (12) (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (12) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Policy Guide
 
@@ -91,31 +91,31 @@ Registry is allowed to publish and edit policy config, schemas, tokens and all t
 
 1. Login into the service using registry credentials
 
-<figure><img src="../../../.gitbook/assets/image (26).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (26) (2).png" alt=""><figcaption></figcaption></figure>
 
 2. Feel free to play around with policy config by clicking on edit icon and understanding the different schemas used by policy
 
-<figure><img src="../../../.gitbook/assets/image (1) (9).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (9) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/image (51) (2).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (29).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (29) (2).png" alt=""><figcaption></figcaption></figure>
 
 3. Registry can review account applications by clicking manage accounts
 
-<figure><img src="../../../.gitbook/assets/image (63).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (63) (1).png" alt=""><figcaption></figcaption></figure>
 
 4. Registry can review project inception documents allowing the listing of projects on standard website and trigger project execution on ground.
 
-<figure><img src="../../../.gitbook/assets/image (9) (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (7) (2).png" alt=""><figcaption></figcaption></figure>
 
 5. Once PDD and MR are approved by VVB, project proponents can submit credit issue requests(VER) which registries have to take decisions on.
 
-<figure><img src="../../../.gitbook/assets/image (17) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (17) (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 6. Once VER issue request is approved, an end-to-end trust chain can be viewed by administrator. Since everything is happening transparently on public ledger(Hedera), anyone can trace the source of credits and each step that happened in the process.
 
-<figure><img src="../../../.gitbook/assets/image (28).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (28) (2).png" alt=""><figcaption></figcaption></figure>
 
 **Project Proponent Flow**
 
@@ -123,33 +123,33 @@ Registry is allowed to publish and edit policy config, schemas, tokens and all t
 
 <figure><img src="../../../.gitbook/assets/image (44).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (40).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (40) (1).png" alt=""><figcaption></figcaption></figure>
 
 2. Wait till the application is approved by the registry admin. Once approved, proponents will be able to submit project inception documents. This includes stakeholder consultation report as well.
 
-<figure><img src="../../../.gitbook/assets/image (38).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (38) (3).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (13) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (13) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 3. Once project is approved by registry, a detailed PDD(project design document) needs to be submitted. This is the most important document highlighting the technical details of project. It includes calculations around baseline, project and leakage scenarios for accurate calculation of avoided emissions.
 
-<figure><img src="../../../.gitbook/assets/image (19).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (19) (4).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/image (50).png" alt=""><figcaption></figcaption></figure>
 
 4. After PDD approval, project proponent will execute the project on ground and submit regular monitoring reports(MR)
 
-<figure><img src="../../../.gitbook/assets/image (22).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (22) (5).png" alt=""><figcaption></figcaption></figure>
 
 5. Once a monitoring report is approved by VVB, project proponent can request corresponding carbon credits(VER in this case) to be credited in their account. It would need a VC document ID for both monitoring report and it's approved review by VVB.
 
-<figure><img src="../../../.gitbook/assets/image (18).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (18) (4).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/image (53).png" alt=""><figcaption></figcaption></figure>
 
 6. Once registry reviews and approves the credit request, they'll be credited into the hedera account provided by project proponent. This is represented by successful minted status.
 
-<figure><img src="../../../.gitbook/assets/image (4) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (4) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 **VVB Flow**
 
@@ -157,15 +157,15 @@ VVB is the external independent third party responsible for reviewing Project De
 
 1. After logging in as VVB, they can view review requests related to project documents. First step is to review PDDs submitted by project proponents.
 
-<figure><img src="../../../.gitbook/assets/image (61).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (61) (2).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (10).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (10) (6).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/image (46).png" alt=""><figcaption></figcaption></figure>
 
 2. After PDD approval, proponents will be able to send monitoring reports for review. Once approved, project proponents will be able to claim corresponding VERs.
 
-<figure><img src="../../../.gitbook/assets/image (24).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (24) (3).png" alt=""><figcaption></figcaption></figure>
 
 ### Future proofing(Automated credit issuance)
 
@@ -179,7 +179,7 @@ This workflow includes a bonus flow which is a major distinction from other exis
 
 2. Device can be approved/rejected by the VVB
 
-<figure><img src="../../../.gitbook/assets/image (41).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (41) (1).png" alt=""><figcaption></figcaption></figure>
 
 3. Once approved, project developer can raise on-demand credit issuance associated with approved devices. These requests would contain stove fuel usage and temperature data collected automatically by the device
 

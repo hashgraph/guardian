@@ -69,13 +69,13 @@ Once you have clicked on **“Ok”** you can then preview the GHG policy and th
 
 Here we can see the policy being imported.
 
-<figure><img src="../../../../.gitbook/assets/image (6).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (6) (4).png" alt=""><figcaption></figcaption></figure>
 
 **Step 6**
 
 You will then see the GHG Policy with the Status of Draft.
 
-<figure><img src="../../../../.gitbook/assets/image (7) (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (7) (4) (1).png" alt=""><figcaption></figcaption></figure>
 
 We will just add this policy as the 1st version and then click on **“Publish”**.
 
@@ -187,4 +187,4 @@ Once completed you will see the document that you have created with the followin
 
 <figure><img src="../../../../.gitbook/assets/image (191).png" alt=""><figcaption></figcaption></figure>
 
-For more information about different GHG versions and their IPFS timestamps, you can click [here](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/GHG%20Methodology/Remote%20WorkFlow%20Policy/readme.md) to see the GHG policy versions.&#x20;
+For more information about different GHG versions and their IPFS timestamps, you can click [here](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/GHG%20Methodology/Remote%20WorkFlow%20Policy/readme.md) to see the GHG policy versions.

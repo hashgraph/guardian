@@ -22,15 +22,13 @@ Referral Link : [https://github.com/hashgraph/guardian/issues/1814](https://gith
     * Tool 06 - Project emissions from flaring
     * Tool 16 - Project and leakage emissions from anaerobic digesters
 
-
-
     Referral Link : [https://github.com/hashgraph/guardian/issues/2307](https://github.com/hashgraph/guardian/issues/2307)
 
 ### Avery Dennison RFID Inlay GHGP Product Policy (Cradle-To-Gate)
 
 * Expand the Guardian policy to include all applicable supply chain stages.
 
-&#x20;    Referral Link : [https://github.com/hashgraph/guardian/issues/2306](https://github.com/hashgraph/guardian/issues/2306)
+Referral Link : [https://github.com/hashgraph/guardian/issues/2306](https://github.com/hashgraph/guardian/issues/2306)
 
 ## ---- September 2023----
 
@@ -46,13 +44,13 @@ Referral Link : [https://github.com/hashgraph/guardian/issues/1814](https://gith
 
 ### AMS-III.BB. Webinar
 
-* Design schemas for AMS-III.BB. methodology, create PowerPoint presentation, and conduct webinar.&#x20;
-* Schemas will also be designed for the following tools:&#x20;
-  * Tool 07 - Tool to calculate the emission factor for an electricity system&#x20;
-  * Tool 21 - Demonstration of additionality of small-scale project activities&#x20;
+* Design schemas for AMS-III.BB. methodology, create PowerPoint presentation, and conduct webinar.
+* Schemas will also be designed for the following tools:
+  * Tool 07 - Tool to calculate the emission factor for an electricity system
+  * Tool 21 - Demonstration of additionality of small-scale project activities
   * Tool 33 - Default values for common parameters
 
-&#x20;   Referral Link : [https://github.com/hashgraph/guardian/issues/2308](https://github.com/hashgraph/guardian/issues/2308)
+Referral Link : [https://github.com/hashgraph/guardian/issues/2308](https://github.com/hashgraph/guardian/issues/2308)
 
 ## ---- October 2023----
 
@@ -133,7 +131,7 @@ Investigate and determine the rules that will govern supply chain and macro dyna
 * How will the use of offsets and RECs influence upstream and downstream emissions?
 * How will the emissions of material inputs and intermediate products impact the emissions of final products?
 * How will the emissions of final products impact scope 3 emissions of downstream customers?
-* How can supply chain actors better coordinate data, approaches, and methodologies of emissions that are from the same source, but different scopes and categories throughout supply chains and product life cycles? &#x20;
+* How can supply chain actors better coordinate data, approaches, and methodologies of emissions that are from the same source, but different scopes and categories throughout supply chains and product life cycles?
 * How can emissions be properly categorized, calculated, and allocated in a way that avoids double and under counting?
 * As emissions are measured and calculated in real-time, how can corresponding inventories be updated?
 * How can inventories be updated to reflect dynamic changes to supply chains and corporate structures?
@@ -170,11 +168,11 @@ Implement the policy deprecation workflow which includes:
 * An appropriate message posted in the corresponding Hedera topic recording the 'discontinuing' decision
 * For in-progress projects that have been registered and are operating under the policy it should be possible to 'switch' to the appropriate version of the policy which is still valid.
 
-&#x20; Referral Link : [https://github.com/hashgraph/guardian/issues/2030](https://github.com/hashgraph/guardian/issues/2030)
+Referral Link : [https://github.com/hashgraph/guardian/issues/2030](https://github.com/hashgraph/guardian/issues/2030)
 
 ### Gold Standard’s Carbon Sequestration through Accelerated Carbonation of Concrete Aggregate Webinar
 
-* Design schemas for the Carbon Sequestration through Accelerated Carbonation of Concrete Aggregate methodology, create a PowerPoint presentation, and conduct webinar.&#x20;
+* Design schemas for the Carbon Sequestration through Accelerated Carbonation of Concrete Aggregate methodology, create a PowerPoint presentation, and conduct webinar.
 * Development of the policy using the schemas and workflow designed
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/2321](https://github.com/hashgraph/guardian/issues/2321)

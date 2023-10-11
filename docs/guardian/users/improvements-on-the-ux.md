@@ -6,26 +6,26 @@ description: >-
 
 # Improvements on the UX
 
-We have made improvements on:&#x20;
+We have made improvements on:
 
-* Inside the Finish setup form&#x20;
+* Inside the Finish setup form
 * Validation inside the Login Form
-* Validation inside the Create account Form&#x20;
-* Improvements inside the Create account Form&#x20;
-* Error message fixed inside the Create account form&#x20;
+* Validation inside the Create account Form
+* Improvements inside the Create account Form
+* Error message fixed inside the Create account form
 * Show/hide functionality for Passwords
 * Missing required \* sign in some forms
-* Improvements on the Registrant application form&#x20;
+* Improvements on the Registrant application form
 
-## 1.  UX Improvement inside the Finish setup form
+## 1. UX Improvement inside the Finish setup form
 
-We have Improved the UX of the Next button inside Finish setup form. Button with dropdown was divided into two separate buttons to provide all available options to the user immediately;&#x20;
+We have Improved the UX of the Next button inside Finish setup form. Button with dropdown was divided into two separate buttons to provide all available options to the user immediately;
 
 **Here is the previous state:**
 
 <figure><img src="../../.gitbook/assets/image (255).png" alt="" width="563"><figcaption></figcaption></figure>
 
-**Here is the current state of the UX Improvements:**&#x20;
+**Here is the current state of the UX Improvements:**
 
 <figure><img src="../../.gitbook/assets/image (262).png" alt="" width="563"><figcaption></figcaption></figure>
 
@@ -37,7 +37,7 @@ We have added validation for spaces and empty values inside Login form, error me
 
 <figure><img src="../../.gitbook/assets/image (260).png" alt="" width="563"><figcaption></figcaption></figure>
 
-## 3. Added Validation inside Create account Form&#x20;
+## 3. Added Validation inside Create account Form
 
 We have added validation for spaces and password/confirm password match inside Create account form, error messages are displayed accordingly;
 
@@ -55,13 +55,13 @@ We have improved the UX of the Back button inside Create account form, now it lo
 
 <figure><img src="../../.gitbook/assets/image (254).png" alt="" width="563"><figcaption></figcaption></figure>
 
-## 5. Error message fixed&#x20;
+## 5. Error message fixed
 
 We have fixed the error message displaying on UI when the user is trying to create an another user with already existing username;
 
 <figure><img src="../../.gitbook/assets/image (258).png" alt="" width="563"><figcaption></figcaption></figure>
 
-## 6. Added show/hide functionality for Passwords&#x20;
+## 6. Added show/hide functionality for Passwords
 
 We have added show/hide functionality for password fields;
 
@@ -83,7 +83,7 @@ We have added missing required \* signs in some forms;
 
 <figure><img src="../../.gitbook/assets/image (249).png" alt="" width="563"><figcaption></figcaption></figure>
 
-## 8. Improvement on the Registrant application form&#x20;
+## 8. Improvement on the Registrant application form
 
 We have improved the UX of Registrant Application form by turning it into a wizard with steps also for the desktop version. Now it is more convenient for the user and provides much more information immediately;
 
@@ -91,11 +91,9 @@ We have improved the UX of Registrant Application form by turning it into a wiza
 
 <figure><img src="../../.gitbook/assets/image (272).png" alt="" width="563"><figcaption></figcaption></figure>
 
-**Here is the current state of the UX Improvements:**&#x20;
+**Here is the current state of the UX Improvements:**
 
 <figure><img src="../../.gitbook/assets/image (269).png" alt="" width="563"><figcaption></figcaption></figure>
-
-
 
 <figure><img src="../../.gitbook/assets/image (276).png" alt="" width="563"><figcaption></figcaption></figure>
 

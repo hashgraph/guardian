@@ -11,12 +11,12 @@ There are items to be submitted to process open source policies and add it to op
 
 It should also include the following items:
 
-1. Policy / Methodology Description&#x20;
+1. Policy / Methodology Description
 2. Workflow Description
 3. Workflow Diagram
 4. Youtube video explaining the above points in detailed.
 
-### Example:&#x20;
+### Example:
 
 We will be using iREC 4 as an example in this Guide for submitting an open source policy:
 
@@ -32,11 +32,11 @@ The workflow begins with the Registrant, generally the owner of an energy produc
 
 <figure><img src="../.gitbook/assets/image (67).png" alt=""><figcaption></figcaption></figure>
 
-### Youtube Link:&#x20;
+### Youtube Link:
 
 Youtube video can also be recorded, which would explain the policy in detail including the workflow and policy execution.
 
-Please visit this [link](https://www.youtube.com/watch?v=nOQpLmbW0hA) to get an idea for creating a detailed youtube video for the open source policy.&#x20;
+Please visit this [link](https://www.youtube.com/watch?v=nOQpLmbW0hA) to get an idea for creating a detailed youtube video for the open source policy.
 
 ## User Guide
 
@@ -44,7 +44,7 @@ Second step is to provide a detailed User Guide of the policy, meaning, a step b
 
 For reference, please check [iREC 7 Demo UI Guide.](demo-guide/renewable-energy-credits/irec-7-demo-guide.md)
 
-## Automated Policy Workflow with valid sample Input data&#x20;
+## Automated Policy Workflow with valid sample Input data
 
 To run the submitted policy, it would be good to have all the valid sample input data, which is required to run the policy from start to end such as data required for all the forms present in the policy, etc. , so that we can test it with that data and validate the policy with an expected Trustchain and no. of tokens minted.
 
@@ -69,4 +69,4 @@ Please check sample example for iREC 4 policy:\
 **IPFS timestamp: 1674821702.668883536**\
 **Policy file:**
 
-{% file src="../.gitbook/assets/IRec Policy 4.policy" %}
+{% file src="../.gitbook/assets/IRec Policy 4 (1).policy" %}
