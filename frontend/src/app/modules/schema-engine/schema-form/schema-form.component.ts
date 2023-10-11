@@ -181,7 +181,6 @@ export class SchemaFormComponent implements OnInit {
         }
 
         this.fields = fields;
-        console.log(fields);
 
         const keys = Object.keys(group);
         for (let i = 0; i < keys.length; i++) {

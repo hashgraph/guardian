@@ -43,7 +43,6 @@ export class SchemaFieldConfigurationComponent implements OnInit {
     ) { }
 
     ngOnInit(): void {
-        console.log(this);
         if (this.field) {
             const enumValues = this.field.controlEnum.value
             if (enumValues && enumValues.length) {
