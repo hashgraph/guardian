@@ -1,4 +1,4 @@
-# Demo Experience
+# 📹 Demo Experience
 
 Guardian now includes a "Demo Experience" feature which separates the production and demo versions by default. In order to access either the production or demo version, the user will need to build and deploy Guardian, defining on the ‘.env’ file present in the root directory the variable ‘DEMO=true’ if the demo is desired or not stating it at all if the production mode is intended.
 
