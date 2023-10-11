@@ -5,7 +5,7 @@
 Retire tokens. Only users with the Standard Registry role are allowed to make the request.
 {% endswagger-description %}
 
-{% swagger-parameter in="body" name="requestId" type="String" %}
+{% swagger-parameter in="body" name="requestId" type="String" required="false" %}
 
 {% endswagger-parameter %}
 

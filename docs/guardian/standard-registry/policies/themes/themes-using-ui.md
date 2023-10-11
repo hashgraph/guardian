@@ -10,15 +10,15 @@ Block’s display style is determined by their matching of the criteria defined 
 
 Policy Configurator contains a section, it can be navigated to by clicking the corresponding button named **Settings** in the top panel.
 
-<figure><img src="../../../../.gitbook/assets/0 (5) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/0 (5).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../.gitbook/assets/1 (5) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/1 (5).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 _**Note**: users must click ‘**Save**’ button to preserve the changes to the theme after edits as shown below:_
 {% endhint %}
 
-<figure><img src="../../../../.gitbook/assets/2 (5) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/2 (5).png" alt=""><figcaption></figcaption></figure>
 
 #### **1.1 Menu actions**
 
@@ -48,7 +48,7 @@ The matching and styling algorithm is as follows:
 
 New rules can be added by clicking on **Create Rule** button.
 
-<figure><img src="../../../../.gitbook/assets/5 (4) (1).png" alt=""><figcaption><p>Adding new Rules</p></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/5 (4).png" alt=""><figcaption><p>Adding new Rules</p></figcaption></figure>
 
 **1.2.2 Removing rules**
 
@@ -70,11 +70,11 @@ Multiple types of conditions can be used in rule definitions
 
 * Types – allows matching based on the type of the block
 
-![](<../../../../.gitbook/assets/9 (4) (1).png>)
+![](<../../../../.gitbook/assets/9 (4).png>)
 
 * Roles – allows matching based on block permissions, i.e. based on the roles to whom the blocks are accessible
 
-<figure><img src="../../../../.gitbook/assets/10 (5) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/10 (5).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 **Note:**
@@ -110,7 +110,7 @@ _In the case when multiple theme rules are applied to the block (when multiple r
 
 Description – is a textual description of the rule. It is displayed next to the explainer drop down in the Policy Configurator.
 
-![](<../../../../.gitbook/assets/15 (4) (1).png>)
+![](<../../../../.gitbook/assets/15 (4).png>)
 
 **1.3 Syntax**
 
@@ -122,9 +122,9 @@ New color-stylization of policy syntax groups is now possible as shown below:
 
 The syntax highlighting is used in the JSON or YAML view in the policy configurator. Colors correspond to different ‘types’ of keywords in the code, the current colors-to-types mapping is displayed in the legend in the top right corner.
 
-<figure><img src="broken-reference" alt=""><figcaption></figcaption></figure>
+<figure><img src="https://github.com/hashgraph/guardian/blob/main/docs/guardian/standard-registry/policies/themes/broken-reference" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../.gitbook/assets/image (36).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (36) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### **2. Using themes**
 
@@ -132,7 +132,7 @@ The syntax highlighting is used in the JSON or YAML view in the policy configura
 
 Themes can be selected from the drop down button as shown below:
 
-<figure><img src="../../../../.gitbook/assets/16 (4) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/16 (4).png" alt=""><figcaption></figcaption></figure>
 
 **2.2 Explainer drop-down :** We are able to see all the defined settings in policy configurator screen.
 

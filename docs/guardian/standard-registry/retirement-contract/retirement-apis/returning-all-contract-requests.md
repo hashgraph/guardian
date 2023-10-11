@@ -5,15 +5,15 @@
 Returns all contract requests.
 {% endswagger-description %}
 
-{% swagger-parameter in="path" type="String" name="contractId" %}
+{% swagger-parameter in="path" type="String" name="contractId" required="false" %}
 Contract Identifier
 {% endswagger-parameter %}
 
-{% swagger-parameter in="path" type="Integer" name="pageIndex" %}
+{% swagger-parameter in="path" type="Integer" name="pageIndex" required="false" %}
 The number of pages to skip before starting to collect the result set
 {% endswagger-parameter %}
 
-{% swagger-parameter in="path" name="pageSize" type="Integer" %}
+{% swagger-parameter in="path" name="pageSize" type="Integer" required="false" %}
 The numbers of items to return
 {% endswagger-parameter %}
 

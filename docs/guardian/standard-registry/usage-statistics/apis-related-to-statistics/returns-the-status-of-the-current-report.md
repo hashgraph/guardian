@@ -1,7 +1,5 @@
 # Returns the status of the current report
 
-
-
 {% swagger method="get" path="" baseUrl="/analytics/report" summary="Returns the status of the current report" %}
 {% swagger-description %}
 Returns the status of the current report

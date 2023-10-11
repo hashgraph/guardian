@@ -10,11 +10,9 @@ At the end of this doc, this is what suppose to see in the Guardian app.
 
 <figure><img src="../../../.gitbook/assets/Screenshot 2023-08-02 at 20.23.36.png" alt=""><figcaption></figcaption></figure>
 
-
-
 ### Meeco credentials
 
-Be sure to configure your Meeco credentials in `configs/.env.develop.guardian.system`&#x20;
+Be sure to configure your Meeco credentials in `configs/.env.develop.guardian.system`
 
 ```
 MEECO_AUTH_PROVIDER_ACTIVE=1
@@ -65,7 +63,6 @@ Once the env variables are defined you have to turn it on on the frontend. Set t
 
 Note that there are at least three different environment files: `environment.prod.ts`, `environment.demo.ts` (e.g) change them according to your configurations.
 
-Be sure to run the `docker-compose up --build` (e.g) command again to have it done.\
-
+Be sure to run the `docker-compose up --build` (e.g) command again to have it done.\\
 
 So, enjoy your new authentication mechanism.

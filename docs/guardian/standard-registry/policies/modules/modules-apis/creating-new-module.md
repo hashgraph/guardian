@@ -49,8 +49,6 @@ Object that contains module configuration
 {% endswagger-response %}
 
 {% swagger-response status="422: Unprocessable Entity" description="Unprocessable Entity" %}
-
-
 ```
 Invalid module config
 ```
@@ -67,4 +65,3 @@ Invalid module config
 ```
 {% endswagger-response %}
 {% endswagger %}
-

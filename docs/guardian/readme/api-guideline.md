@@ -4,79 +4,79 @@ We have changed the code avoiding the generalization of the validation status co
 
 ### **1xx Informational**
 
-#### **100 Continue:**&#x20;
+#### **100 Continue:**
 
 The server has received the request headers and the client should proceed to send the request body.
 
-#### **101 Switching Protocols:**&#x20;
+#### **101 Switching Protocols:**
 
 The server understands and is willing to comply with the client's request, via the Upgrade message header field, for a change in the application protocol being used on this connection.
 
 ### **2xx Success**
 
-#### **200 OK:**&#x20;
+#### **200 OK:**
 
 The request was successful and the server has returned the requested data.
 
-#### **201 Created:**&#x20;
+#### **201 Created:**
 
 The request was successful and the server has created a new resource based on the request data.
 
-#### **204 No Content:**&#x20;
+#### **204 No Content:**
 
 The request was successful but there is no data to return.
 
 ### **3xx Redirection**
 
-#### **301 Moved Permanently:**&#x20;
+#### **301 Moved Permanently:**
 
 The requested resource has been moved permanently to a new location.
 
-#### **302 Found:**&#x20;
+#### **302 Found:**
 
 The requested resource can be found at a different location temporarily.
 
-#### **304 Not Modified:**&#x20;
+#### **304 Not Modified:**
 
 The requested resource has not been modified since the last time it was accessed.
 
 ### **4xx Client Error**
 
-#### **400 Bad Request:**&#x20;
+#### **400 Bad Request:**
 
 The request was invalid or could not be understood by the server.
 
-#### **401 Unauthorized:**&#x20;
+#### **401 Unauthorized:**
 
 The request requires user authentication.
 
-#### **403 Forbidden:**&#x20;
+#### **403 Forbidden:**
 
 The request is valid but the server refuses to respond due to lack of permission.
 
-#### **404 Not Found:**&#x20;
+#### **404 Not Found:**
 
 The requested resource could not be found on the server.
 
-#### **422 Unprocessable Entity:**&#x20;
+#### **422 Unprocessable Entity:**
 
 The request was well-formed, but the server could not process it because it contains invalid data.
 
 ### **5xx Server Error**
 
-#### **500 Internal Server Error:**&#x20;
+#### **500 Internal Server Error:**
 
 The server encountered an unexpected condition that prevented it from fulfilling the request.
 
-#### **502 Bad Gateway:**&#x20;
+#### **502 Bad Gateway:**
 
 The server received an invalid response from an upstream server while trying to fulfill the request.
 
-#### **503 Service Unavailable:**&#x20;
+#### **503 Service Unavailable:**
 
 The server is currently unable to handle the request due to a temporary overload or maintenance.
 
-#### The most prominent changes are described below&#x20;
+#### The most prominent changes are described below
 
 For validation errors, the **422 unprocessable Entity status** code is commonly used, which indicates that the request was well-formed, but contains invalid data. This could include missing or invalid parameters, incorrect data types, or other issues with the data in the request. A JSON payload could be returned with more details about the validation error.
 
@@ -110,19 +110,19 @@ Use hyphens to separate words in resource names. For example, you might use /use
 
 Use HTTP verbs to represent actions on resources. Here are some common HTTP verbs and their actions:
 
-**GET:**&#x20;
+**GET:**
 
 Retrieve a resource or a collection of resources.
 
-**POST:**&#x20;
+**POST:**
 
 Create a new resource.
 
-**PUT:**&#x20;
+**PUT:**
 
 Update an existing resource.
 
-**DELETE:**&#x20;
+**DELETE:**
 
 Delete a resource.
 
@@ -130,7 +130,7 @@ For example, you might use GET /products to retrieve a list of products, and POS
 
 #### Query Parameters
 
-Use query parameters to filter, sort, or paginate resources.&#x20;
+Use query parameters to filter, sort, or paginate resources.
 
 Here are some guidelines for naming query parameters:
 

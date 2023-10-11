@@ -23,7 +23,7 @@ To address the aforementioned issues and enhance the efficiency of the minting p
 
 **Performance Evaluation:** Conduct a thorough evaluation of the existing Node.js infrastructure, including hardware and software components involved in the minting process. Identify potential bottlenecks and areas for improvement specific to Node.js.
 
-**System Scaling:** Explore options for scaling up the Node.js infrastructure to handle larger minting volumes. This may involve upgrading hardware components, optimizing network configurations, and leveraging cloud-based services to distribute the processing load.&#x20;
+**System Scaling:** Explore options for scaling up the Node.js infrastructure to handle larger minting volumes. This may involve upgrading hardware components, optimizing network configurations, and leveraging cloud-based services to distribute the processing load.
 
 **Batch Size Optimization**: Reconsider the batch quantity processed during each minting operation, taking advantage of Promise.all. By using Promise.all in Node.js, it can concurrently process multiple tokens within a batch, significantly reducing overall processing time. Dynamically adjust the batch size based on system capabilities and workload, considering factors such as available memory and CPU resources.
 
@@ -31,7 +31,7 @@ To address the aforementioned issues and enhance the efficiency of the minting p
 
 **Asynchronous Operations:** Maximize the use of asynchronous operations in the Node.js codebase. By utilizing asynchronous APIs and non-blocking I/O operations, it can ensure that the minting process remains responsive and efficient. Avoid blocking or synchronous operations that may introduce unnecessary delays.
 
-The topics above are indicated regardless of the kind of application which handles asynchronous tasks, process and so on.&#x20;
+The topics above are indicated regardless of the kind of application which handles asynchronous tasks, process and so on.
 
 ## Code Analysis
 
@@ -39,12 +39,11 @@ At the time when this issue was addressed the current functionalities were not d
 
 According to the history, one month before this issue was created on github ([https://github.com/hashgraph/guardian/issues/1756](https://github.com/hashgraph/guardian/issues/1756)) a developer, Simonov Valery was working on this topic, available at that time on the release v2.9.0, 3e6b8f89e32bb1ab8b9d4a7a099dc7adb6c620cc.
 
-Considering all strategies above, this particular operation **already covers the best practices to mint the tokens.**&#x20;
+Considering all strategies above, this particular operation **already covers the best practices to mint the tokens.**
 
-However, some changes were applied in the main function which handles directly the minting actions, but no difference was found in terms of performance, according to [this draft PR](https://github.com/hashgraph/guardian/pull/2401/files) that uses Promise.allSettled vs Promise.all.&#x20;
+However, some changes were applied in the main function which handles directly the minting actions, but no difference was found in terms of performance, according to [this draft PR](https://github.com/hashgraph/guardian/pull/2401/files) that uses Promise.allSettled vs Promise.all.
 
-V2:\
-
+V2:\\
 
 <figure><img src="https://lh4.googleusercontent.com/Jtf1mhdOt51sngHt0cYjCkx4v00ZqeN2LRu4A6x0bJNO9mq12moZwVG2S2kRyj23TbieMDpoQYDKgdcBVXGb8BOZMJWw4ju7l8tp9M9Ax91FdfawL7XbMxKI0i0V2bYszp_JqYHWm3AV3oF3NFlxDw8" alt=""><figcaption></figcaption></figure>
 

@@ -55,7 +55,7 @@ Let's click on Publish button to publish the Policy to Hedera network.
 
 <figure><img src="../../../.gitbook/assets/iREC_5.6.png" alt=""><figcaption></figcaption></figure>
 
-7\. Now, we create a group by selecting Registrant in the Dropdown. or we enter an invite link of the group received to join that particular group in the Accept invitation option.&#x20;
+7\. Now, we create a group by selecting Registrant in the Dropdown. or we enter an invite link of the group received to join that particular group in the Accept invitation option.
 
 <figure><img src="../../../.gitbook/assets/iREC_5.7.png" alt=""><figcaption></figcaption></figure>
 
@@ -121,7 +121,7 @@ Once details are submitted, Registrant waits for the approval.
 
 21\. Now, we login back as Approver1 and approves the device created by Registrant. Device is approved by clicking on Sign button.
 
-<figure><img src="../../../.gitbook/assets/iREC_5.18 (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/iREC_5.18.png" alt=""><figcaption></figcaption></figure>
 
 22\. We logout as an Approver1 and login as Approver2 and approve the device by following step 21.
 
@@ -135,7 +135,7 @@ Once details are submitted, Registrant waits for the approval.
 
 <figure><img src="../../../.gitbook/assets/iREC_5.20.png" alt=""><figcaption></figcaption></figure>
 
-26\. Once the Issue Request is submitted, the request status can be checked by clicking on Issue Requests tab. &#x20;
+26\. Once the Issue Request is submitted, the request status can be checked by clicking on Issue Requests tab.
 
 <figure><img src="../../../.gitbook/assets/iREC_5.21.png" alt=""><figcaption></figcaption></figure>
 

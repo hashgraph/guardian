@@ -1,7 +1,5 @@
 # Returns all reports
 
-
-
 {% swagger method="get" path="" baseUrl="/analytics/reports" summary="Returns all reports" %}
 {% swagger-description %}
 Returns all reports

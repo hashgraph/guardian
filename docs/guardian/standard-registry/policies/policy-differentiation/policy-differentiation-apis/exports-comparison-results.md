@@ -9,27 +9,27 @@ Returns the result of comparing two policies. Only users with the Standard Regis
 File type.
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="policyId1" type="String" %}
+{% swagger-parameter in="body" name="policyId1" type="String" required="false" %}
 Policy 1 Identifier
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="policyId2" type="String" %}
+{% swagger-parameter in="body" name="policyId2" type="String" required="false" %}
 Policy 2 Identifier
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="eventsLvl" type="String" %}
+{% swagger-parameter in="body" name="eventsLvl" type="String" required="false" %}
 Event comparison setting (0/1)
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="propLvl" type="String" %}
+{% swagger-parameter in="body" name="propLvl" type="String" required="false" %}
 Properties comparison setting (0/1/2)
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="childrenLvl" type="String" %}
+{% swagger-parameter in="body" name="childrenLvl" type="String" required="false" %}
 Child block comparison setting (0/1/2)
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="idLvl" type="String" %}
+{% swagger-parameter in="body" name="idLvl" type="String" required="false" %}
 UUID comparison setting (0/1)
 {% endswagger-parameter %}
 

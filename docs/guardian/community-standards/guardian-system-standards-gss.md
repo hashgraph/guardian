@@ -68,7 +68,7 @@ The proposal should be clear, concise, and well-structured to facilitate underst
 
 **Security Considerations:** Any potential security implications of the proposed changes. This could include a discussion of possible attack vectors and their likelihood, or other security risks.
 
-**Copyright Waiver:** A statement that the proposal is licensed under Apache 2.0 in alignment with the broader Guardian application.&#x20;
+**Copyright Waiver:** A statement that the proposal is licensed under Apache 2.0 in alignment with the broader Guardian application.
 
 The format and structure of a GSS proposal should be designed to facilitate discussion and decision-making. It should clearly present the problem, the proposed solution, and the rationale behind the proposed solution. By following this structure, the community can effectively evaluate and decide on the proposal.
 

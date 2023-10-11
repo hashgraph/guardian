@@ -4,7 +4,7 @@
 
 This Block allows to create report based on the inter-referenced messages.
 
-![image1.png](<../../../../.gitbook/assets/0 (2).png>)
+![image1.png](<../../../../.gitbook/assets/0 (7).png>)
 
 ## **1.1 Properties**
 
@@ -70,7 +70,7 @@ Does not contain additional settings.
 
 Block can work independently (stand-alone):
 
-![image2.png](<../../../../.gitbook/assets/1 (2).png>)
+![image2.png](<../../../../.gitbook/assets/1 (2) (1).png>)
 
 Or used in conjunctions with other blocks (e.g. with grid)
 
@@ -90,13 +90,13 @@ Or used in conjunctions with other blocks (e.g. with grid)
 * Full hierarchical topic structure
 * All auxiliary and system events
 
-![image5.png](<../../../../.gitbook/assets/4 (5).png>)
+![image5.png](<../../../../.gitbook/assets/4 (5) (1).png>)
 
 #### **2.1.3 Display layout**
 
 * Left-side panel shows hierarchical catalog of Header topics.
 
-![image6.png](<../../../../.gitbook/assets/5 (6).png>)
+![image6.png](<../../../../.gitbook/assets/5 (6) (1).png>)
 
 * Central area shows the timeline of the events as they have been recorded (in messages) in the specific topics
 
@@ -104,4 +104,4 @@ Or used in conjunctions with other blocks (e.g. with grid)
 
 * Right-side panel shows detailed information about the selected message
 
-![image1.png](<../../../../.gitbook/assets/7 (1).png>)
+![image1.png](<../../../../.gitbook/assets/7 (6).png>)

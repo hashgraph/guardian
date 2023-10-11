@@ -48,8 +48,7 @@ Coming Soon
 
 ### Policy Workflow <a href="#_toc2070089206" id="_toc2070089206"></a>
 
-\
-
+\\
 
 <figure><img src="../../../.gitbook/assets/0.jpeg" alt=""><figcaption></figcaption></figure>
 
@@ -84,11 +83,11 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 1. The policy can be imported using IPFS timestamp 1690462366.484472937
 
-![](../../../.gitbook/assets/1.png)
+![](<../../../.gitbook/assets/1 (2).png>)
 
 2. Select “Import”.
 
-![](../../../.gitbook/assets/2.png)
+![](<../../../.gitbook/assets/2 (4).png>)
 
 3. Place status in “Dry Run” and select “Go”.
 
@@ -108,15 +107,15 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 7. Virtual User 1 will be assigned to the Project\_Proponent
 
-![](../../../.gitbook/assets/7.png)
+![](<../../../.gitbook/assets/7 (2).png>)
 
 8. Virtual User 2 will be assigned to the VVB
 
-![](../../../.gitbook/assets/8.png)
+![](<../../../.gitbook/assets/8 (8).png>)
 
 9. Add the VVBs name
 
-![](../../../.gitbook/assets/9.png)
+![](<../../../.gitbook/assets/9 (7).png>)
 
 10. The final role that will be assigned to Virtual User 3 is the Designated National Authority
 
@@ -124,7 +123,7 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 11. Click on the Users dropdown menu and select Virtual User 1 (Project Proponent) and select the “New Project” button.
 
-![](../../../.gitbook/assets/11.png)
+![](<../../../.gitbook/assets/11 (1).png>)
 
 12. Once the form is completed, go to Virtual User 3’s (Designated National Authority) profile. The Designated National Authority can now view the project information document by selecting “view document” and then they can select validate or reject.
 
@@ -132,7 +131,7 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 13. Go to the Administrator’s (Standard Registry) profile. The Standard Registry can now approve the VVB.
 
-![](../../../.gitbook/assets/13.png)
+![](<../../../.gitbook/assets/13 (6).png>)
 
 14. Stay on the Administrator’s (Standard Registry) profile. The Standard Registry now has access to the project information document by clicking “view document” once they have reviewed it they can select “Add” to add the project to the project pipeline.
 
@@ -160,21 +159,20 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 20. Navigate back to the Administrator’s profile and select the “Mint” button.
 
-![](../../../.gitbook/assets/20.png)
+![](<../../../.gitbook/assets/20 (3).png>)
 
 21. The status should now say “Minted”.
 
-<figure><img src="../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (195).png" alt=""><figcaption></figcaption></figure>
 
 22. By selecting the “Token History” tab you can see the number of tokens minted and then you can select “View TrustChain”
 
-<figure><img src="../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 23. The Verified Presentation should now be open. You can view information like the recipient's name, token amount, mint date, verified signature, etc.
 
-<figure><img src="../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2) (8).png" alt=""><figcaption></figcaption></figure>
 
 24. By scrolling to the bottom of the page you can view the TrustChain.
 
-<figure><img src="../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
-
+<figure><img src="../../../.gitbook/assets/image (3) (6).png" alt=""><figcaption></figcaption></figure>

@@ -4,25 +4,25 @@ To implement a backup and recovery strategy for installation data and transactio
 
 ## Guidelines
 
-A. Determine what data needs to be backed up: Identify installation data and transaction data that needs to be backed up, determine the frequency at which it needs to be backed up.&#x20;
+A. Determine what data needs to be backed up: Identify installation data and transaction data that needs to be backed up, determine the frequency at which it needs to be backed up.
 
-B. Choose a backup storage location: Select a secure and reliable location to store your backups. Cloud storage services like Amazon S3, Google Cloud Storage, and Microsoft Azure are popular options.&#x20;
+B. Choose a backup storage location: Select a secure and reliable location to store your backups. Cloud storage services like Amazon S3, Google Cloud Storage, and Microsoft Azure are popular options.
 
-C. Decide on a backup schedule: Define a backup schedule that ensures all critical data is backed up regularly and create a backup policy based on it.&#x20;
+C. Decide on a backup schedule: Define a backup schedule that ensures all critical data is backed up regularly and create a backup policy based on it.
 
 D. Develop backup scripts: Write backup scripts in Node.js that automate the backup process. Use libraries like Node.js's built-in fs module or third-party libraries like node-schedule or node-cron to create and schedule backup jobs. Alternatively, we can use open source tools like "node-backup-manager" or "duplicity".
 
-E. Test backups and recovery procedures: Test your backups regularly to ensure that the data is being backed up correctly and can be restored in the event of data loss. Develop recovery procedures that detail how to restore data from backups.&#x20;
+E. Test backups and recovery procedures: Test your backups regularly to ensure that the data is being backed up correctly and can be restored in the event of data loss. Develop recovery procedures that detail how to restore data from backups.
 
-F. Monitor backups and automate notifications: Monitor the backup process to ensure that backups are being created and stored correctly. Automate notifications to alert you of any backup failures or issues.&#x20;
+F. Monitor backups and automate notifications: Monitor the backup process to ensure that backups are being created and stored correctly. Automate notifications to alert you of any backup failures or issues.
 
-G.Automate the backup process: Automating the backup process can save time and reduce the risk of human error.&#x20;
+G.Automate the backup process: Automating the backup process can save time and reduce the risk of human error.
 
 H.Secure backups: Backups should be encrypted to prevent unauthorized access to sensitive data. This includes using strong passwords and encryption algorithms to protect data both in transit and at rest.
 
 I.Test backups regularly: It is important to test backups regularly to ensure that the backup process is working correctly. This includes testing the restore process to ensure that data can be recovered in the event of a disaster.
 
-J. Update backup strategy as necessary: Revisit your backup strategy periodically to ensure that it remains relevant and effective. Make changes as necessary based on changes to your data or infrastructure.&#x20;
+J. Update backup strategy as necessary: Revisit your backup strategy periodically to ensure that it remains relevant and effective. Make changes as necessary based on changes to your data or infrastructure.
 
 By following these steps, the implementer company can implement a backup and recovery strategy for the installation and transaction data in their Guardian application to protect them in the event of data loss or other issues.
 
@@ -30,23 +30,23 @@ By following these steps, the implementer company can implement a backup and rec
 
 **A. Determine what data needs to be backed up: Identify installation data and transaction data that needs to be backed up, determine the frequency at which it needs to be backed up.**
 
-### **Installation data:**&#x20;
+### **Installation data:**
 
 Installation data refers to the configuration settings and other data that are necessary to install and set up a software application. Some examples of installation data in a Guardian application might include:
 
-1\. Server configurations: This includes information about the hardware and software requirements for the application to run, such as the operating system, CPU, memory, and storage.&#x20;
+1\. Server configurations: This includes information about the hardware and software requirements for the application to run, such as the operating system, CPU, memory, and storage.
 
-2\. Environment variables: These are variables that specify settings for the environment in which the application runs. For example, they might include the database connection string, API keys, or other environment-specific settings.&#x20;
+2\. Environment variables: These are variables that specify settings for the environment in which the application runs. For example, they might include the database connection string, API keys, or other environment-specific settings.
 
-3\. Application settings: These are settings that are specific to the application, such as the default language, time zone, or other user preferences.&#x20;
+3\. Application settings: These are settings that are specific to the application, such as the default language, time zone, or other user preferences.
 
-4\. Dependencies: These binary files are the external libraries or modules that the application relies on to function correctly. They might include Node.js modules, third-party libraries, or other software packages. These executable files, required for the application to run, are part of the installation data.&#x20;
+4\. Dependencies: These binary files are the external libraries or modules that the application relies on to function correctly. They might include Node.js modules, third-party libraries, or other software packages. These executable files, required for the application to run, are part of the installation data.
 
-5\. Scripts: These are scripts that are run during the installation process to perform certain tasks, such as setting up the **database schema** or initializing the application.&#x20;
+5\. Scripts: These are scripts that are run during the installation process to perform certain tasks, such as setting up the **database schema** or initializing the application.
 
-**Note**: The Guardian application does use a **MongoDB** database hence the database schema is part of the installation data that needs to be backed up.&#x20;
+**Note**: The Guardian application does use a **MongoDB** database hence the database schema is part of the installation data that needs to be backed up.
 
-6\. License agreements: These are the legal agreements that govern the use of the application and must be agreed upon before installation.&#x20;
+6\. License agreements: These are the legal agreements that govern the use of the application and must be agreed upon before installation.
 
 7\. Customizations: If you have made any customizations to your application or system during installation or setup, these customizations are part of the installation data and need to be backed up.
 
@@ -63,7 +63,7 @@ Transaction data in the Guardian application refers to the data related to user 
 
 In general, transaction data in the Guardian application includes any data that is generated or modified by different users’ actions within the application. This data is critical to the proper functioning of the application and must be backed up and protected in case of data loss or corruption.
 
-**B. Choose a backup storage location: Select a secure and reliable location to store your backups. Cloud storage services like Amazon S3, Google Cloud Storage, and Microsoft Azure are popular options.**&#x20;
+**B. Choose a backup storage location: Select a secure and reliable location to store your backups. Cloud storage services like Amazon S3, Google Cloud Storage, and Microsoft Azure are popular options.**
 
 When it comes to choosing a backup storage location, there are several factors to keep in mind to ensure that your data is secure and easily accessible. Here are some key considerations:
 
@@ -76,8 +76,7 @@ When it comes to choosing a backup storage location, there are several factors t
 
 By keeping these factors in mind, you can choose a backup storage location that meets your business needs and ensures the security and accessibility of your data.
 
-**C. Decide on a backup schedule: Define a backup schedule that ensures all critical data is backed up regularly and create a backup policy based on it.**\
-
+**C. Decide on a backup schedule: Define a backup schedule that ensures all critical data is backed up regularly and create a backup policy based on it.**\\
 
 When deciding on a backup schedule, there are several important factors to consider to ensure that your data is protected and easily recoverable in the event of a disaster or data loss. Here are some key considerations:
 
@@ -343,13 +342,13 @@ We then set the duplicity command options, including disabling statistics output
 
 Next, we create the duplicity backup command by combining the duplicity executable, the --full-if-older-than option to perform full backups after 1 month, the duplicityOptions, the sourceDirs, and the targetUrl. If a passphrase is provided, we add the encryption option to the command.
 
-Finally, we use the child\_process.spawn method to run the duplicity command as a child process. We listen for events from the backup process, including stdout, stderr, and close events.&#x20;
+Finally, we use the child\_process.spawn method to run the duplicity command as a child process. We listen for events from the backup process, including stdout, stderr, and close events.
 
-**E. Test backups and recovery procedures: Test your backups regularly to ensure that the data is being backed up correctly and can be restored in the event of data loss. Develop recovery procedures that detail how to restore data from backups.**&#x20;
+**E. Test backups and recovery procedures: Test your backups regularly to ensure that the data is being backed up correctly and can be restored in the event of data loss. Develop recovery procedures that detail how to restore data from backups.**
 
-**F. Monitor backups and automate notifications: Monitor the backup process to ensure that backups are being created and stored correctly. Automate notifications to alert you of any backup failures or issues.**&#x20;
+**F. Monitor backups and automate notifications: Monitor the backup process to ensure that backups are being created and stored correctly. Automate notifications to alert you of any backup failures or issues.**
 
-**G. Update backup strategy as necessary: Revisit your backup strategy periodically to ensure that it remains relevant and effective. Make changes as necessary based on changes to your data or infrastructure.**&#x20;
+**G. Update backup strategy as necessary: Revisit your backup strategy periodically to ensure that it remains relevant and effective. Make changes as necessary based on changes to your data or infrastructure.**
 
 ## Implementation: MongoDB and .env Files Backup
 
@@ -383,8 +382,7 @@ backup:
 
 4.  The dockerfile will look like this:\
     \
-    `FROM mongo:latest`\
-
+    `FROM mongo:latest`\\
 
     \# Set the working directory
 
@@ -392,14 +390,11 @@ backup:
 
     `COPY . .`
 
-
-
     \# Install required tools
 
     `RUN apt-get update && apt-get install -y \`
 
-    &#x20;  `curl unzip cron zip`\
-
+    `curl unzip cron zip`\\
 
     \# Install AWS CLI dependencies
 
@@ -420,8 +415,6 @@ RUN apt-get update && apt-get install -y \
 \# Add AWS CLI to the system path
 
 `ENV PATH="/usr/local/aws-cli/bin:${PATH}"`
-
-
 
 \# Copy your backup script to the container
 
@@ -480,7 +473,7 @@ CMD ["/usr/local/bin/entrypoint.sh"]
 
 7. **entrypoint.sh script:**
 
-The script below will execute hourly to backup the database and the configuration files.&#x20;
+The script below will execute hourly to backup the database and the configuration files.
 
 `#!/bin/bash`
 

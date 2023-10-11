@@ -1,7 +1,5 @@
 # Returns report data by report uuid
 
-
-
 {% swagger method="get" path="" baseUrl="/analytics/reports/{uuid}" summary="Returns report data by report uuid" %}
 {% swagger-description %}
 Returns report data by report uuid

@@ -6,6 +6,6 @@ description: >-
 
 # Fixing UX issues on the Schema UI
 
-We have made improvements on:&#x20;
+We have made improvements on:
 
-* Fixing issue to distinguish the schema policy version&#x20;
+* Fixing issue to distinguish the schema policy version
