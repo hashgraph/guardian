@@ -211,11 +211,12 @@ export class SchemaConfigurationComponent implements OnInit {
     }
 
     public ngOnChanges(changes: SimpleChanges): void {
-        this.started = false;
-
         if (changes.extended && Object.keys(changes).length === 1) {
             return;
         }
+
+        this.started = false;
+
         if (changes.value && Object.keys(changes).length === 1) {
             this.dataForm = null as any;
         }
