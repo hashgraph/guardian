@@ -1,4 +1,4 @@
-import { DocumentComparator, HashComparator, ICompareOptions, ModuleComparator, ModuleModel, PolicyComparator, PolicyModel, SchemaComparator, SchemaModel } from '@analytics';
+import { DocumentComparator, HashComparator, ICompareOptions, ModuleComparator, ModuleModel, PolicyComparator, PolicyModel, SchemaComparator, SchemaModel, ToolComparator, ToolModel } from '@analytics';
 import { DatabaseServer, Logger, MessageError, MessageResponse, } from '@guardian/common';
 import { ApiResponse } from '@api/helpers/api-response';
 import { MessageAPI, UserRole } from '@guardian/interfaces';
@@ -279,6 +279,64 @@ export async function analyticsAPI(): Promise<void> {
                     return new MessageResponse(file);
                 } else {
                     const result = comparator.mergeCompareResults(results);
+                    return new MessageResponse(result);
+                }
+            } else {
+                return new MessageError('Invalid size');
+            }
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    ApiResponse(MessageAPI.COMPARE_TOOLS, async (msg) => {
+        try {
+            const {
+                user,
+                type,
+                ids,
+                eventsLvl,
+                propLvl,
+                childrenLvl,
+                idLvl
+            } = msg;
+            const options: ICompareOptions = {
+                owner: null,
+                propLvl: parseInt(propLvl, 10),
+                childLvl: parseInt(childrenLvl, 10),
+                eventLvl: parseInt(eventsLvl, 10),
+                idLvl: parseInt(idLvl, 10),
+            };
+            if (user?.role === UserRole.STANDARD_REGISTRY) {
+                options.owner = user.did;
+            }
+
+            const compareModels: ToolModel[] = [];
+            for (const toolId of ids) {
+                const compareModel = await ToolComparator.createModelById(toolId, options);
+                if (!compareModel) {
+                    return new MessageError('Unknown tool');
+                }
+                compareModels.push(compareModel);
+            }
+
+            const comparator = new ToolComparator(options);
+            const results = comparator.compare(compareModels);
+            if (results.length === 1) {
+                if (type === 'csv') {
+                    const file = ToolComparator.tableToCsv(results);
+                    return new MessageResponse(file);
+                } else {
+                    const result = results[0];
+                    return new MessageResponse(result);
+                }
+            } else if (results.length > 1) {
+                if (type === 'csv') {
+                    const file = ToolComparator.tableToCsv(results);
+                    return new MessageResponse(file);
+                } else {
+                    const result = ToolComparator.mergeCompareResults(results);
                     return new MessageResponse(result);
                 }
             } else {

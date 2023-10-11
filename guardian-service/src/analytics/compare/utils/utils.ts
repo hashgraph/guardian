@@ -217,4 +217,51 @@ export class CompareUtils {
             return block;
         }
     }
+
+    /**
+     * Create Block by JSON
+     * @param json
+     * @param index
+     * @public
+     * @static
+     */
+    public static createToolModel(json: any, index: number): BlockModel {
+        const block = new BlockModel(json, index + 1);
+        if (Array.isArray(json.children)) {
+            for (let i = 0; i < json.children.length; i++) {
+                const childJSON = json.children[i];
+                const child = CompareUtils.createBlockModel(childJSON, i);
+                block.addChildren(child);
+            }
+        }
+        return block;
+    }
+
+    /**
+     * Calculate total rate
+     * @param rates
+     * @private
+     */
+    public static total(rates: IRate<any>[]): number {
+        let total = 0;
+        let count = 0;
+
+        for (const child of rates) {
+            if (child.totalRate > 99) {
+                total += 100;
+            } else if (child.totalRate > 50) {
+                total += 50;
+            } else {
+                total += 0;
+            }
+            count++;
+        }
+
+        if (count) {
+            return Math.floor(total / count);
+        }
+
+        return 100;
+    }
+
 }

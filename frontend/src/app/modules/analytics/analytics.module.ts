@@ -13,6 +13,7 @@ import { CommonComponentsModule } from '../common/common-components.module';
 import { AppRoutingModule } from 'src/app/app-routing.module';
 import { CompareDocumentComponent } from './compare-document/compare-document.component';
 import { CompareComponent } from './compare/compare.component';
+import { CompareToolComponent } from './compare-tool/compare-tool.component';
 
 @NgModule({
     declarations: [
@@ -23,7 +24,8 @@ import { CompareComponent } from './compare/compare.component';
         MultiComparePolicyComponent,
         SearchPoliciesComponent,
         SearchPolicyDialog,
-        CompareDocumentComponent
+        CompareDocumentComponent,
+        CompareToolComponent
     ],
     imports: [
         CommonModule,
@@ -41,7 +43,8 @@ import { CompareComponent } from './compare/compare.component';
         MultiComparePolicyComponent,
         SearchPoliciesComponent,
         SearchPolicyDialog,
-        CompareDocumentComponent
+        CompareDocumentComponent,
+        CompareToolComponent
     ]
 })
 export class CompareModule { }
