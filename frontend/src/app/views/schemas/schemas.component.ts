@@ -339,9 +339,14 @@ export class SchemaConfigComponent implements OnInit {
                         this.toolIdByTopic[tool.topicId] = tool.id;
                         this.toolNameByTopic[tool.topicId] = tool.name;
                         this.tools.push(tool);
-                        this.readonlyByTopic[tool.topicId] = tool.creator !== this.owner;
-                        if (tool.status !== 'PUBLISHED') {
+                        if (
+                            tool.creator === this.owner &&
+                            tool.status !== 'PUBLISHED'
+                        ) {
+                            this.readonlyByTopic[tool.topicId] = false;
                             this.draftTools.push(tool);
+                        } else {
+                            this.readonlyByTopic[tool.topicId] = true;
                         }
                     }
                 }
@@ -784,6 +789,8 @@ export class SchemaConfigComponent implements OnInit {
                 schemaType: this.type,
                 topicId: this.currentTopic,
                 policies: this.policies,
+                modules: this.modules,
+                tools: this.draftTools,
                 scheme: element
             }
         });
@@ -847,7 +854,10 @@ export class SchemaConfigComponent implements OnInit {
             data: {
                 type: 'version',
                 topicId: this.currentTopic,
+                schemaType: this.type,
                 policies: this.policies,
+                modules: this.modules,
+                tools: this.draftTools,
                 scheme: element
             }
         });
@@ -872,7 +882,10 @@ export class SchemaConfigComponent implements OnInit {
             data: {
                 type: 'version',
                 topicId: this.currentTopic,
+                schemaType: this.type,
                 policies: this.policies,
+                modules: this.modules,
+                tools: this.draftTools,
                 scheme: newDocument
             }
         });
@@ -923,7 +936,10 @@ export class SchemaConfigComponent implements OnInit {
             data: {
                 schemas: schemas,
                 topicId: this.currentTopic,
+                schemaType: this.type,
                 policies: this.policies,
+                modules: this.modules,
+                tools: this.draftTools
             }
         });
         dialogRef.afterClosed().subscribe(async (result) => {
