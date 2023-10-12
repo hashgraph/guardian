@@ -742,32 +742,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /artifacts/{policyId}:
+  /artifacts/{parentId}:
     post:
-      tags:
-        - artifacts
+      operationId: ArtifactApi_uploadArtifacts
+      summary: Upload artifact.
       description: Upload artifact. For users with the Standard Registry role only.
-      security:
-        - bearerAuth: []
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                artifacts:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
       parameters:
-        - in: path
-          name: policyId
+        - name: parentId
+          required: true
+          in: path
+          description: Parent ID
           schema:
             type: string
-          required: true
-          description: Policy identifier
-      summary: Upload Artifact.
       responses:
         '200':
           description: Successful operation.
@@ -776,7 +762,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Artifact'
+                  $ref: '#/components/schemas/ArtifactDTOItem'
         '401':
           description: Unauthorized.
         '403':
@@ -786,7 +772,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags:
+        - artifacts
+      security:
+        - bearerAuth: []
   /artifacts/{artifactId}:
     delete:
       tags:
@@ -7570,6 +7560,51 @@ paths:
                 type: string
         '401':
           description: Unauthorized.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /artifacts/{policyId}:
+    post:
+      tags:
+        - artifacts
+      description: Upload artifact. For users with the Standard Registry role only.
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                artifacts:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      parameters:
+        - in: path
+          name: policyId
+          schema:
+            type: string
+          required: true
+          description: Policy identifier
+      summary: Upload Artifact.
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Artifact'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
         '500':
           description: Internal server error.
           content:
