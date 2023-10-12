@@ -1,8 +1,17 @@
 <div class="content">
     <div *ngIf="isConfirmed" class="actions">
+
         <mat-form-field appearance="outline">
+            <mat-label>Type</mat-label>
+            <mat-select [(value)]="type" (selectionChange)="onChangeType($event)">
+                <mat-option value="policy">Policy Artifacts</mat-option>
+                <mat-option value="tool">Tool Artifacts</mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" *ngIf="isPolicy">
             <mat-label>Policy</mat-label>
-            <mat-select [(value)]="currentPolicyId" (selectionChange)="onFilter()">
+            <mat-select [(value)]="currentId" (selectionChange)="onFilter()">
                 <mat-option value="">All policies</mat-option>
                 <mat-option *ngFor="let policy of policies" [value]="policy.id">
                     <span>{{policy.name}}</span>
@@ -10,8 +19,25 @@
                 </mat-option>
             </mat-select>
         </mat-form-field>
+
+        <mat-form-field appearance="outline" *ngIf="isTool">
+            <mat-label>Tool</mat-label>
+            <mat-select [(value)]="currentId" (selectionChange)="onFilter()">
+                <mat-option value="">All tools</mat-option>
+                <mat-option *ngFor="let tool of tools" [value]="tool.id">
+                    <span>{{tool.name}}</span>
+                    <span> ({{tool.topicId}})</span>
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+
         <div style="text-align: end">
-            <button mat-raised-button color="primary" class="g-btn" (click)="importArtifacts()">
+            <button 
+                [attr.readonly]="readonly"
+                mat-raised-button 
+                color="primary" 
+                class="g-btn toolbar-btn" 
+                (click)="importArtifacts()">
                 Import
             </button>
         </div>

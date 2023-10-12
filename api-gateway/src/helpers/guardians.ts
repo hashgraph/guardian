@@ -829,40 +829,27 @@ export class Guardians extends NatsService {
      *
      * @param {any} artifact - Artifact
      * @param {string} owner - Owner
-     * @param {string} policyId - Policy Identifier
+     * @param {string} parentId - Policy Identifier
      *
      * @returns - Uploaded Artifacts
      */
-    public async uploadArtifact(artifact: any, owner: string, policyId: string): Promise<IArtifact[]> {
+    public async uploadArtifact(artifact: any, owner: string, parentId: string): Promise<IArtifact[]> {
         return await this.sendMessage(MessageAPI.UPLOAD_ARTIFACT, {
             owner,
             artifact,
-            policyId
+            parentId
         });
     }
 
     /**
      * Get Policy Artifacts
      *
-     * @param {string} owner - Owner
-     * @param {string} policyId - Policy Identifier
-     * @param {string} pageIndex - Page Index
-     * @param {string} pageSize - Page Size
+     * @param {any} options
      *
      * @returns - Artifact
      */
-    public async getArtifacts(
-        owner: string,
-        policyId: string,
-        pageIndex: string,
-        pageSize: string,
-    ): Promise<any> {
-        return await this.sendMessage(MessageAPI.GET_ARTIFACTS, {
-            owner,
-            policyId,
-            pageIndex,
-            pageSize
-        });
+    public async getArtifacts(options: any): Promise<any> {
+        return await this.sendMessage(MessageAPI.GET_ARTIFACTS, options);
     }
 
     /**
