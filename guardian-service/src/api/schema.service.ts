@@ -227,6 +227,21 @@ export async function schemaAPI(): Promise<void> {
                         delete filter.owner;
                     }
                 }
+            } else {
+                if (filter.category === SchemaCategory.TOOL) {
+                    const tools = await DatabaseServer.getTools({
+                        $or: [{
+                            owner: msg.owner
+                        }, {
+                            status: ModuleStatus.PUBLISHED
+                        }]
+                    }, {
+                        fields: ['topicId']
+                    });
+                    const ids = tools.map(t => t.topicId);
+                    delete filter.owner;
+                    filter.topicId = { $in: ids }
+                }
             }
             const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
             return new MessageResponse({ items, count });
