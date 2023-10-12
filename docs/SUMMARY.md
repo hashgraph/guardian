@@ -54,8 +54,6 @@
     * [📂 Available Schema Types](guardian/standard-registry/schemas/available-schema-types.md)
     * [ℹ System/Policy Schemas](guardian/standard-registry/schemas/system-policy-schemas.md)
     * [💻 Creating Schema using UI](guardian/standard-registry/schemas/creating-system-schema-using-ui.md)
-    * [Fixing UX issues on the Schema UI](guardian/standard-registry/schemas/fixing-ux-issues-on-the-schema-ui/README.md)
-      * [Improvements on the Schema UI](guardian/standard-registry/schemas/fixing-ux-issues-on-the-schema-ui/improvements-on-the-schema-ui.md)
     * [⚙ Schema creation using APIs](guardian/standard-registry/schemas/schema-creation-using-apis/README.md)
       * [Listing of Schema](guardian/standard-registry/schemas/schema-creation-using-apis/creation-of-a-schema-1.md)
       * [Publishing Schema based on Schema ID](guardian/standard-registry/schemas/schema-creation-using-apis/publishing-schema-based-on-schema-id.md)
