@@ -62,6 +62,8 @@ export class ToolBlock {
                                     validator.addError(`Topic "${value}" does not exist`);
                                 }
                                 break;
+                            case 'String':
+                                break;
                             default:
                                 validator.addError(`Type '${variable.type}' does not exist`);
                                 break;

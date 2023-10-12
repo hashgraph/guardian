@@ -228,6 +228,8 @@ export class ToolValidator {
                     case 'Topic':
                         this.topics.push(variable.name);
                         break;
+                    case 'String':
+                        break;
                     default:
                         this.errors.push(`Type '${variable.type}' does not exist`);
                         break;
