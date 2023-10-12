@@ -1,5 +1,5 @@
 
-import { BlockType, ConfigType, GenerateUUIDv4, ModuleStatus, PolicyType, SchemaEntity, TagType, TopicType, } from '@guardian/interfaces';
+import { BlockType, ConfigType, GenerateUUIDv4, ModuleStatus, PolicyType, SchemaCategory, SchemaEntity, TagType, TopicType, } from '@guardian/interfaces';
 import { publishSystemSchemas } from '@api/helpers/schema-publish-helper';
 import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
 import { INotifier } from '@helpers/notifier';
@@ -175,7 +175,9 @@ export class PolicyImportExportHelper {
         const tokenMap = tokensResult.tokenMap;
 
         // Import Schemas
-        const schemasResult = await importSchemaByFiles(policyOwner, schemas, topicRow.topicId, notifier);
+        const schemasResult = await importSchemaByFiles(
+            SchemaCategory.POLICY, policyOwner, schemas, topicRow.topicId, notifier
+        );
         const schemasMap = schemasResult.schemasMap;
 
         // Import Tools

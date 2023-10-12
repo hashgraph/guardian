@@ -30,7 +30,8 @@ import {
     createSchemaAndArtifacts,
     deleteSchema,
     incrementSchemaVersion,
-    updateSchemaDefs
+    updateSchemaDefs,
+    getSchemaCategory
 } from './helpers';
 
 @Controller()
@@ -467,7 +468,10 @@ export async function schemaAPI(): Promise<void> {
                 return new MessageError('Invalid import schema parameter');
             }
 
-            const schemasMap = await importSchemasByMessages(owner, messageIds, topicId, emptyNotifier());
+            const category = await getSchemaCategory(topicId);
+            const schemasMap = await importSchemasByMessages(
+                category, owner, messageIds, topicId, emptyNotifier()
+            );
             return new MessageResponse(schemasMap);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -487,7 +491,10 @@ export async function schemaAPI(): Promise<void> {
                 notifier.error('Invalid import schema parameter');
             }
 
-            const schemasMap = await importSchemasByMessages(owner, messageIds, topicId, notifier);
+            const category = await getSchemaCategory(topicId);
+            const schemasMap = await importSchemasByMessages(
+                category, owner, messageIds, topicId, notifier
+            );
             notifier.result(schemasMap);
         }, async (error) => {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -515,7 +522,10 @@ export async function schemaAPI(): Promise<void> {
             const { schemas, tags } = files;
             const notifier = emptyNotifier();
 
-            let result = await importSchemaByFiles(owner, schemas, topicId, notifier);
+            const category = await getSchemaCategory(topicId);
+            let result = await importSchemaByFiles(
+                category, owner, schemas, topicId, notifier
+            );
             result = await importTagsByFiles(result, tags, notifier);
 
             return new MessageResponse(result);
@@ -539,7 +549,10 @@ export async function schemaAPI(): Promise<void> {
                 notifier.error('Invalid import schema parameter');
             }
 
-            let result = await importSchemaByFiles(owner, schemas, topicId, notifier);
+            const category = await getSchemaCategory(topicId);
+            let result = await importSchemaByFiles(
+                category, owner, schemas, topicId, notifier
+            );
             result = await importTagsByFiles(result, tags, notifier);
 
             notifier.result(result);
