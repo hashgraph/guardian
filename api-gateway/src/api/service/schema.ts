@@ -515,6 +515,64 @@ export class SchemaApi {
     }
 
     /**
+     * Get sub schemas
+     */
+    @Get('/list/sub')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Returns a list of schemas.',
+        description: 'Returns a list of schemas.' + ONLY_SR,
+    })
+    @ApiImplicitQuery({
+        name: 'topicId',
+        type: String,
+        description: 'Topic Id',
+        required: false,
+        example: '0.0.1'
+    })
+    @ApiImplicitQuery({
+        name: 'category',
+        type: String,
+        description: 'Schema category',
+        required: false,
+        example: SchemaCategory.POLICY
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        type: SchemaDTO
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @HttpCode(HttpStatus.OK)
+    async getSub(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        try {
+            const guardians = new Guardians();
+            if (!req.user.did) {
+                return res.send([]);
+            }
+            const schemas = await guardians.getSubSchemas(
+                req.query.category,
+                req.query.topicId,
+                req.user.did
+            );
+            return res.send(schemas);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw error;
+        }
+    }
+
+    /**
      * Create Schema
      */
     @Post('/:topicId')

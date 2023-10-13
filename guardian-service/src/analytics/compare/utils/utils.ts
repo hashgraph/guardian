@@ -6,6 +6,9 @@ import MurmurHash3 from 'imurmurhash';
 import * as crypto from 'crypto';
 import { Hashing } from '@guardian/common';
 import { SchemaModel } from '../models/schema.model';
+import { BlockModel } from '../models/block.model';
+import { BlockType } from '@guardian/interfaces';
+import { BlockToolModel } from '../models/block-tool.model';
 
 /**
  * Compare Utils
@@ -191,4 +194,74 @@ export class CompareUtils {
             return min;
         }
     }
+
+    /**
+     * Create Block by JSON
+     * @param json
+     * @param index
+     * @public
+     * @static
+     */
+    public static createBlockModel(json: any, index: number): BlockModel {
+        if (json.blockType === BlockType.Tool) {
+            return new BlockToolModel(json, index + 1);
+        } else {
+            const block = new BlockModel(json, index + 1);
+            if (Array.isArray(json.children)) {
+                for (let i = 0; i < json.children.length; i++) {
+                    const childJSON = json.children[i];
+                    const child = CompareUtils.createBlockModel(childJSON, i);
+                    block.addChildren(child);
+                }
+            }
+            return block;
+        }
+    }
+
+    /**
+     * Create Block by JSON
+     * @param json
+     * @param index
+     * @public
+     * @static
+     */
+    public static createToolModel(json: any, index: number): BlockModel {
+        const block = new BlockModel(json, index + 1);
+        if (Array.isArray(json.children)) {
+            for (let i = 0; i < json.children.length; i++) {
+                const childJSON = json.children[i];
+                const child = CompareUtils.createBlockModel(childJSON, i);
+                block.addChildren(child);
+            }
+        }
+        return block;
+    }
+
+    /**
+     * Calculate total rate
+     * @param rates
+     * @private
+     */
+    public static total(rates: IRate<any>[]): number {
+        let total = 0;
+        let count = 0;
+
+        for (const child of rates) {
+            if (child.totalRate > 99) {
+                total += 100;
+            } else if (child.totalRate > 50) {
+                total += 50;
+            } else {
+                total += 0;
+            }
+            count++;
+        }
+
+        if (count) {
+            return Math.floor(total / count);
+        }
+
+        return 100;
+    }
+
 }

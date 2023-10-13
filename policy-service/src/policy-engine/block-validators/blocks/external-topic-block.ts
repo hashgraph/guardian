@@ -18,16 +18,9 @@ export class ExternalTopicBlock {
     public static async validate(validator: BlockValidator, ref: IBlockProp): Promise<void> {
         try {
             await CommonBlock.validate(validator, ref);
-            if (ref.options.schema) {
-                if (typeof ref.options.schema !== 'string') {
-                    validator.addError('Option "schema" must be a string');
-                    return;
-                }
-                if (validator.schemaNotExist(ref.options.schema)) {
-                    validator.addError(`Schema with id "${ref.options.schema}" does not exist`);
-                    return;
-                }
-            }
+            validator.checkBlockError(
+                validator.validateSchemaVariable('schema', ref.options.schema, false)
+            );
         } catch (error) {
             validator.addError(`Unhandled exception ${validator.getErrorMessage(error)}`);
         }

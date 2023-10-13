@@ -30,17 +30,9 @@ export class DocumentsSourceAddon {
             if (types.indexOf(ref.options.dataType) === -1) {
                 validator.addError('Option "dataType" must be one of ' + types.join(','));
             }
-
-            if (ref.options.schema) {
-                if (typeof ref.options.schema !== 'string') {
-                    validator.addError('Option "schema" must be a string');
-                    return;
-                }
-                if (validator.schemaNotExist(ref.options.schema)) {
-                    validator.addError(`Schema with id "${ref.options.schema}" does not exist`);
-                    return;
-                }
-            }
+            validator.checkBlockError(
+                validator.validateSchemaVariable('schema', ref.options.schema, false)
+            );
         } catch (error) {
             validator.addError(`Unhandled exception ${validator.getErrorMessage(error)}`);
         }

@@ -44,8 +44,7 @@ These roles are as follows:
 * **Designated National Authority (DNA)** - The DNA is a governmental body representing the country where the emission reduction project is being implemented. They review and approve the project's eligibility in accordance with national policies and regulations. The DNA's endorsement is essential for the project to proceed with the AMS-III.AR policy.
 * **Registry (UNFCCC)** - The United Nations Framework Convention on Climate Change (UNFCCC) serves as the registry for the CDM. They oversee the multiple workflow steps involved in the project's approval, including the verification and validation process by the VVB and the endorsement by the DNA. The UNFCCC's approval is necessary for the project's successful registration and issuance of CER tokens
 
-\
-
+\\
 
 <figure><img src="../../../.gitbook/assets/0 (1).jpeg" alt=""><figcaption></figcaption></figure>
 
@@ -62,7 +61,7 @@ This policy is published to the Hedera network and can either be imported via Gi
 
 **Default Values (Tool 33) -** Tool 33 is included as a module within the policy. This module is used to calculate default values for common parameters like emission factors for diesel generator systems.
 
-### **Minimum Requirements for the Design Specifications of Project Lamps –**&#x20;
+### **Minimum Requirements for the Design Specifications of Project Lamps –**
 
 This schema is included in the policy as a form within the project information form, fields are included to collect the following information about the project:
 
@@ -91,16 +90,14 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 1.  The policy can be imported using IPFS timestamp 1687813769.029473000
 
-
-
-    <figure><img src="../../../.gitbook/assets/image (7) (6).png" alt=""><figcaption></figcaption></figure>
+    <figure><img src="../../../.gitbook/assets/image (7) (6) (1).png" alt=""><figcaption></figcaption></figure>
 2. Enter the IPFS timestamp and select OK.
 
-<figure><img src="../../../.gitbook/assets/image (14).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (14) (6).png" alt=""><figcaption></figcaption></figure>
 
 3. Select “Import”.
 
-<figure><img src="../../../.gitbook/assets/image (27).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (27) (2).png" alt=""><figcaption></figcaption></figure>
 
 4. Place status in “Dry Run” and select “Go”.
 
@@ -112,7 +109,7 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 6. You can access and view the module by selecting the module tab in the policy configurator.
 
-<figure><img src="../../../.gitbook/assets/image (13).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (13) (6).png" alt=""><figcaption></figcaption></figure>
 
 7. Going back to the policy workflow, add users by selecting the “create user” button. Then select the dropdown user menu and select “Virtual User 1”.
 
@@ -132,7 +129,7 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 11. Add the VVBs name
 
-<figure><img src="../../../.gitbook/assets/image (20).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (20) (3).png" alt=""><figcaption></figcaption></figure>
 
 12. Once the VVB’s name has been added a new screen will show up that says, “Waiting for approval”. Continue to assign the final role to Virtual User 3.
 
@@ -140,7 +137,7 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 13. The final role that will be assigned to Virtual User 3 is the Designated National Authority
 
-<figure><img src="../../../.gitbook/assets/image (25).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (25) (2).png" alt=""><figcaption></figcaption></figure>
 
 14. Click on the Users dropdown menu and select Virtual User 1 (Project Proponent) and select the “New Project” button.
 
@@ -148,11 +145,11 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 15. Once the form is completed, go to Virtual User 3’s (Designated National Authority) profile
 
-<figure><img src="../../../.gitbook/assets/image (96).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (96) (2).png" alt=""><figcaption></figcaption></figure>
 
 16. The Designated National Authority can now view the project information document by selecting “view document” and then they can select validate or reject.
 
-<figure><img src="../../../.gitbook/assets/image (47).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (47) (1).png" alt=""><figcaption></figcaption></figure>
 
 17. Go to the Administrator’s (Standard Registry) profile. The Standard Registry now has access to the project information document by clicking “view document” once they have reviewed it they can select “Add” to add the project to the project pipeline.
 
@@ -160,7 +157,7 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 18. Navigate back to Virtual User 1’s (Project Proponent) profile and select “Add Report”.
 
-<figure><img src="../../../.gitbook/assets/image (12).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (12) (3).png" alt=""><figcaption></figcaption></figure>
 
 19. Based on the methodologies monitoring plan fill out the monitoring form appropriately and select “Ok”.
 
@@ -172,15 +169,15 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 21. Navigate back to the Administrator’s profile and select the “Mint” button.
 
-<figure><img src="../../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1) (4).png" alt=""><figcaption></figcaption></figure>
 
 22. The status should now say “Minted”.
 
-<figure><img src="../../../.gitbook/assets/image (90).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (90) (2).png" alt=""><figcaption></figcaption></figure>
 
 23. By selecting the “Token History” tab you can see the number of tokens minted and then you can select “View TrustChain”
 
-<figure><img src="../../../.gitbook/assets/image (17).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (17) (5).png" alt=""><figcaption></figcaption></figure>
 
 24. The Verified Presentation should now be open. You can view information like the recipients name, token amount, mint date, verified signature, etc.
 

@@ -56,3 +56,5 @@ export { ModuleComparator } from './compare/comparators/module-comparator';
 export { HashComparator } from './compare/comparators/hash-comparator';
 export { FileModel } from './compare/models/file.model';
 export { DocumentComparator } from './compare/comparators/document-comparator';
+export { ToolComparator } from './compare/comparators/tool-comparator';
+export { ToolModel } from './compare/models/tool.model';

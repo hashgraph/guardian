@@ -4,9 +4,9 @@ Here are some examples of rules and processes that can be created for receiving 
 
 ## Examples of Rules and Processes when receiving feedback
 
-### Define feedback channels&#x20;
+### Define feedback channels
 
-Define the channels through which users can provide feedback, such as email, chatbot, in-app feedback forms, social media, or any other channels that are relevant to Hedera Guardian application.&#x20;
+Define the channels through which users can provide feedback, such as email, chatbot, in-app feedback forms, social media, or any other channels that are relevant to Hedera Guardian application.
 
 Feedback forms are better ways to collect feedback. Here are some of the key benefits of implementing feedback forms for collecting feedback:
 
@@ -14,7 +14,7 @@ Feedback forms are better ways to collect feedback. Here are some of the key ben
 * **Consistency:** Feedback forms provide a consistent way to collect feedback, ensuring that all responses are organized and structured in the same way. This makes it easier to analyze the feedback and identify common themes or issues.
 * **Efficiency:** Collecting feedback through a form is often more efficient than other methods, such as phone or email. It allows customers to provide feedback at their own convenience, without the need for real-time interaction with a customer support representative.
 * **Accuracy:** Feedback forms can help to ensure that the feedback received is accurate and complete. The form can include specific questions and prompts to guide users in providing detailed and specific feedback, reducing the risk of misunderstandings or incomplete information.
-* **Data analysis:** Feedback forms can be easily analyzed using automated tools and software, allowing businesses to quickly identify patterns and trends in customer feedback. This can help businesses to make data-driven decisions and improve their products or services.&#x20;
+* **Data analysis:** Feedback forms can be easily analyzed using automated tools and software, allowing businesses to quickly identify patterns and trends in customer feedback. This can help businesses to make data-driven decisions and improve their products or services.
 
 Overall, implementing feedback forms is an effective way to collect and analyze feedback, providing valuable insights into the needs and preferences of customers.
 
@@ -44,7 +44,7 @@ _At Hedera Guardian, we value your feedback and strive to continuously improve o
 
 _By following these guidelines, you can help us improve Hedera Guardian and provide a better experience for all users. Thank you for your feedback and support._
 
-### &#x20;Categorize feedback
+### Categorize feedback
 
 Develop a taxonomy for categorizing feedback based on the type, severity, and source of the feedback. This can help in prioritizing feedback and identifying areas that require immediate attention.
 
@@ -70,11 +70,11 @@ For Hedera Guardian application, here's a possible taxonomy for categorizing fee
 * _**Internal feedback:** Feedback from internal stakeholders such as developers, testers, or project managers._
 * _**Customer support feedback:** Feedback received through customer support interactions._
 
-_**Security:**_&#x20;
+_**Security:**_
 
 * _Feedback related to security vulnerabilities or concerns._
 
-_**Performance:**_&#x20;
+_**Performance:**_
 
 * _Feedback related to the speed or efficiency of the application._
 
@@ -82,13 +82,13 @@ _**User interface:**_
 
 * _Feedback related to the visual design or usability of the application._
 
-_**Integrations:**_&#x20;
+_**Integrations:**_
 
 * _Feedback related to the integration of the application with other tools or systems._
 
 _**Documentation:**_
 
-* &#x20;_Feedback related to the documentation or help resources for the application._
+* _Feedback related to the documentation or help resources for the application._
 
 **Note**: When collecting feedback, users should be prompted to select the appropriate category or tag to help prioritize and route the feedback to the appropriate team or individual for review and action.
 
@@ -98,7 +98,7 @@ Use a ticketing system to capture and organize user feedback. Assign each feedba
 
 Here is an example of how to set up a feedback-tracking system for Hedera Guardian application:
 
-* **Choose a feedback-tracking tool:** There are many feedback-tracking tools available such as Trello, Asana, Jira, etc. But for the Hedera Guardian application Trello is  recommend since it is very simple to learn and particularly, operate.
+* **Choose a feedback-tracking tool:** There are many feedback-tracking tools available such as Trello, Asana, Jira, etc. But for the Hedera Guardian application Trello is recommend since it is very simple to learn and particularly, operate.
 * **Create a feedback board:** Create a board or a project in the feedback-tracking tool Trello and set it up with the necessary columns such as "To Do," "In Progress," "Completed," etc.
 * **Add categories or tags:** Add categories or tags to the feedback board to help categorize the feedback. As mentioned earlier, tags could be "bug report," "feature request," or "general feedback," or other categories relevant to your project.
 * **Link feedback submission form (JotForm) to the feedback board:** Link the feedback submission form to the feedback board using the tool's integration options. For example, if you are using Trello, you can use the Trello Power-Up to link the form to the board. Here is the [link](https://www.jotform.com/help/454-using-the-jotform-power-up-in-trello/) to refer to the Trello board integration with JotForm.
@@ -135,13 +135,11 @@ By creating the above rules and processes, it can be ensured that user feedback 
 
 Step 1 :Create a profile on JotForm website and Login
 
-&#x20;[https://www.jotform.com/](https://www.jotform.com/)
+[https://www.jotform.com/](https://www.jotform.com/)
 
 <figure><img src="https://lh4.googleusercontent.com/SK0lhArjvSYTjxPhTAY_L2n8vMVKBor-q2dkffIMMkvidyscBDmuOqS1K1DnR4BOo8D1T-J4v3ECLyaHJRJ2GEeUrfucT5uBgxvekE7AJJEZ3An8MJqEYwnxmR1BpL6g99mq4WgQAaKgegXxKAbV2Os" alt=""><figcaption></figcaption></figure>
 
-
-
-Step 2: Click on "Create Form"&#x20;
+Step 2: Click on "Create Form"
 
 <figure><img src="https://lh3.googleusercontent.com/05NuIc32gC9BwbmVJ-YHM9AXAbgtFpE0mm4imDedFD9CDvT1p-xb7RYvIIzyVZE4QkB0e3mOvY_999d3QdZH1b-wOBU-A0e4JbIhxhxYk8RbnIY-3FQ3r8XcJ6s_MM_S0vMX2ZZeOHcSbuE8WLEEPJA" alt=""><figcaption></figcaption></figure>
 
@@ -152,7 +150,7 @@ Step 3: Click on (Start from Scratch)
 
 <figure><img src="https://lh6.googleusercontent.com/KjxdYaK6b323y3oaDIAwGvAGZDKTj3i6ax7LDXF9Jstd1rdSDwPVQcoiQoSYwwL6bH67LvvTpMA-o-kKBOnZpSGPyJbU4mOZkleqfCgOn9E4CzrncbZ6FvJn3Ge98fv8s7VBTOCUmGismzqJuQNDzGk" alt=""><figcaption></figcaption></figure>
 
-Step 4: Select form Layout ( Classic Form )&#x20;
+Step 4: Select form Layout ( Classic Form )
 
 <figure><img src="https://lh4.googleusercontent.com/8e-7fh2SLJzKTOjaj__4pQT-VaPqjjlo-Jc8SBSd3c-9MM1cihlpaM0SfCStrw0DZb1sklCODCFjFkbR52F0Iskl7BWtn8D0RqWi2AcPoxfBYwAyOTkvOQBhecKBvlz2oLE-_CCKM4tT0QsaanMHAW4" alt=""><figcaption></figcaption></figure>
 
@@ -162,7 +160,7 @@ Step 5: Add a logo for your organization
 
 <figure><img src="https://lh6.googleusercontent.com/jRKg-ApAD9uq1p0DKx-79ptU1FmoC6mM4B5SX3xre_BHQ9R67bKBIAYuhGe5HVHoPB8pHwz2gP7lx3SmhDA9YKVV8l8-SV49lBkHXIH7ZvhUCPpXg8mtvEQ5UxIYXuC9Bh7q5JksVd5yMEOQnGjch24" alt=""><figcaption></figcaption></figure>
 
-Step 6: Update the “Form” object to create a form heading&#x20;
+Step 6: Update the “Form” object to create a form heading
 
 <figure><img src="https://lh4.googleusercontent.com/3v2egcUu_zDTgStE0k9YctDAndMsjLSoZPfodM55Wts5C41Xy_U101W3L0i_mqfG2u8kKDoqGAPAxnSme0ApfUU5YMGNdYKDkKZsd-_6QIZvge6qqfgFhYZAgrdOyE6LmFd5-reBoCiD_XYr-pM5nHQ" alt=""><figcaption></figcaption></figure>
 
@@ -173,11 +171,11 @@ Step 7: Add different objects on your form by selecting from the options on the 
 <figure><img src="https://lh5.googleusercontent.com/WueJnYOg8WMjpxc8qWNpK4hwmK59kGdQqiNliL6hjecjSQvbCFwRT61WtV9zCpLoeBxVTDvdQD_EGMjEOXV-KOs_Zi7joe_UUyQLJQimwnPMjVc0G194ns62UVL7d6UNeCYtAjFlPk3FWkT6eUemfjo" alt=""><figcaption></figcaption></figure>
 
 \
-&#x20;&#x20;
+
 
 <figure><img src="https://lh3.googleusercontent.com/yGEMzi41dB-Qll_vtU0Xb2Ik7Kevn2x4jh6HWwGDaGuvs6vlZKpJxVrfAgksdzk27_LJ9StzvWwvZbitrq0c9FjelkHtSiuCaA2bpToFxdYDiTKOiMgmX8OnTuC8hpvXFzaeOWKAjP7VE-4npU4uKjU" alt="" width="375"><figcaption></figcaption></figure>
 
-Eventually the form should look like this&#x20;
+Eventually the form should look like this
 
 <figure><img src="https://lh4.googleusercontent.com/8uy3i8oXr1PuqFsVDEtrqwqijuV2M88xEWDZi4AxR_eS1G-49uAE3RxjKsyATsyVd7d1JbX7n2a--_egcepWH1WwQQTiid0ZpT6U4FiSicQI29wmAInxGy8pBsI2C73J3B7ARWvgmYehssGl-d7taHE" alt="" width="375"><figcaption></figcaption></figure>
 
@@ -189,14 +187,13 @@ Step 8 : Publish the form
 
 <figure><img src="https://lh3.googleusercontent.com/wm0LLMjkUFs4e8buElAPZO2znLCBAakyQPFZGD5wWjQKxI4dEHARHL0qek6NsTOguLaUFQVzvM97OEsGp7-R7kGRUYqlBOyJH6D1XgMoj43qV4pQHk3o24Ys2iJ18SsEICsQAz8eeBAGMFkd3g_AkuY" alt=""><figcaption></figcaption></figure>
 
-\
-
+\\
 
 COPY LINK will give you the following url https://form.jotform.com/231232735256452
 
 Note : This link can be placed on the Guardian application’s home page using a button or a link.
 
-Step 9: Access the form by pasting the above url in the browser, and then populate & submit  the form.
+Step 9: Access the form by pasting the above url in the browser, and then populate & submit the form.
 
 <figure><img src="https://lh5.googleusercontent.com/RInwiTe-y7MuORECeFwX1BNKdOfhVwN19jZ2HJ2dv53P1P3OQKt1TlTiqnOxD-DRSIW2QiObXqciAEyHMi9ENx_phPdMFIeTIDjx8UKVz4m80SeEzuU4pM0ie-cPwqwm_8y3pnHuIajuc3uAW2DppcY" alt=""><figcaption></figcaption></figure>
 
@@ -204,7 +201,7 @@ The above submission will send an email to the recipient.
 
 <figure><img src="https://lh6.googleusercontent.com/FH7Z8EB0catupQsK6fqpjQw4JgJbKErfy15nLLEYb_cFXJ0Ro5H62401vFfcDcwVXhQ72SpsIhBIaFgK7kYZGep5AOzbkRymAdq0Jk1AuZV093UjNDQxKANzo7b-mgJ55BZ8zMz8YcVrgT8xjNda4Hk" alt=""><figcaption></figcaption></figure>
 
-The above submission will ALSO  send an email to the sender..
+The above submission will ALSO send an email to the sender..
 
 <figure><img src="https://lh6.googleusercontent.com/ZOYGX2iXGGOqi-wkq5LFcD2pa0MJouUD5y3HbtN9FqH0ujw69CKHI1VFw6JinUMEcZKPXbh7Xkj_VeU5S4BCA5AupeWkcJwa-UhWd47APhxYTTVJHNzXltA3IoX9MBfnT2YRpGQRRIko9iNSirSjADU" alt=""><figcaption></figcaption></figure>
 
@@ -215,8 +212,7 @@ Step 10: Check and verify the submitted data- Method 1
 <figure><img src="https://lh5.googleusercontent.com/Pc5Hli18gI4TPmP-jUXfawoRc4u8foTW_vMEPCpbD1btYE8nu5ovhYuDtXHqYgIbtZ9XQD9CPwym99D19gmx2bDcTQLtdduWVWRJ-Cgi62LgKJWh8XFS0DK0qrGXpVjRQM6dHcZN6b4yQ2p5D_IWOXA" alt=""><figcaption></figcaption></figure>
 
 \
-\
-
+\\
 
 Step 11:Check and verify the submitted data- Method2
 
@@ -231,9 +227,9 @@ Step 1 :Create a profile on Trello website and Login. Here's a step-by-step guid
 #### Create Trello User Profile
 
 \
-&#x20;1\. Open your web browser and go to the Trello website (https://trello.com).
+1\. Open your web browser and go to the Trello website (https://trello.com).
 
-&#x20; 2\. Click on the "Sign Up" or “Get Trello for free” button in the upper right corner of the screen.
+2\. Click on the "Sign Up" or “Get Trello for free” button in the upper right corner of the screen.
 
 <figure><img src="https://lh4.googleusercontent.com/pX6FNE0y-zHA6m45FsBTTvtvrFeMm8QxAxtFyKN8BmRmQ1onS1PiCpc43CkTfg2fbUuYws7tDOJddSM1VXmUkasKI7whFLBzHemDlclqgKX0LCezTJNMPs1mAcBjUDbVGrJgfjZWILeYwCrTUh5GN68" alt=""><figcaption></figcaption></figure>
 
@@ -243,11 +239,11 @@ Step 3: You will be prompted to create your account using a number of options. S
 
 Step 4. Trello will send you a confirmation email to the email address you provided. Check your inbox and click on the confirmation link in the email to verify your account.
 
-Step 5.  Once your account is verified, you will be redirected to the Trello website. You can now start using Trello to create boards, lists, cards, and collaborate with others.
+Step 5. Once your account is verified, you will be redirected to the Trello website. You can now start using Trello to create boards, lists, cards, and collaborate with others.
 
 #### Create Trello Workspace
 
-Step 1: After signing in to your account, create a "Workspace"&#x20;
+Step 1: After signing in to your account, create a "Workspace"
 
 <figure><img src="https://lh3.googleusercontent.com/n0-BnVMukE672oHANJBQWrN8hctVbN_GZax7q6aiG83_QfQk-LzHj9EshVHk3JteKOak95kSBS2dU79KwIXU4aEXF2CMe7DgTospBmVU_T_rYSe3mfVGlT6c2rQOl5LMLQwalhIXFJ6cU100aGlI8Z0" alt=""><figcaption></figcaption></figure>
 
@@ -257,7 +253,7 @@ Step 2: Enter a name for your new Workspace, and choose the Workspace type.
 
 Step 3: Click on the "Continue" button to create the Workspace.
 
-Step 4:  Once your Workspace is created, you can invite members to join it, create boards, lists, and cards, and start collaborating with your team.
+Step 4: Once your Workspace is created, you can invite members to join it, create boards, lists, and cards, and start collaborating with your team.
 
 <figure><img src="https://lh5.googleusercontent.com/MlcJ9X1aHQwEyQv8UBk0jG_BveZDW0BKjeJdiMPFbPMQDATMv5eB93N2YeTySU5_gwzkAWOu8PkmtYQnr0sfo2OriiVsSe3k-PW_vozliQUUY90j3lSJiu8OKOSW7yUZ-ENoJqh70Av4MPoquEWq2ck" alt="" width="563"><figcaption></figcaption></figure>
 
@@ -289,7 +285,7 @@ Step 1: Create tags like "bug report," "feature request," or "general feedback,"
 
 <figure><img src="https://lh3.googleusercontent.com/jzZU7vBPk9Ga-csBSMeehIqRFlez2sr5uWDFviBYiFoICUPWsA4MPXUfw1nbLg3wWpRxxtWSSA3i-PgEMXIuzipRwbdkXzAiWWkbiJ4qwsUTcuMSj87tBSkcYCmMMDrrQjesOBNI_GjdTCcaqEJMyZE" alt=""><figcaption></figcaption></figure>
 
-&#x20;Step 2: Add categories or tags to the feedback board to help categorize the feedback.
+Step 2: Add categories or tags to the feedback board to help categorize the feedback.
 
 <figure><img src="https://lh3.googleusercontent.com/z_uyXmElYI4XvlbElv1yQ55ciTMNKxNzBJ9a1aZaKFA9fxnql9gMq6PvQywsLlAB3vBXkLdAY8WgiSUkBLYa3Y3Je97HDL-J6ktloU8MWg0NMgXtniE5ArNk_m9E_VIP82neUDM48OfkfJR3cWW3qAk" alt=""><figcaption></figcaption></figure>
 
@@ -299,7 +295,7 @@ Integrating JotForm with Trello can be a useful way to streamline your workflow 
 
 Step 1: First, you need to have a JotForm account and a Trello account. If you don't have one, sign up for both.
 
-Step 2:  In JotForm, go to the form that you want to integrate with Trello. Click on the "Settings" button in the top menu, and then select "Integrations".
+Step 2: In JotForm, go to the form that you want to integrate with Trello. Click on the "Settings" button in the top menu, and then select "Integrations".
 
 <figure><img src="https://lh5.googleusercontent.com/oTc7RGnsnClhwa-6MTsVDPeDQ4ZH2RAX-EmAb-cHOxmR41Pk4-fBayoe2MvOgPaikR1P8fjWutfBEiWy59BcFPx3wx1bv8ytIITl1mwNuDjTmQSoYs2s11jqoUR-d2eyTgEyP04-mTGcFeYkMV5OqmU" alt=""><figcaption></figcaption></figure>
 
@@ -314,7 +310,7 @@ Step 3: In the Integrations menu, look for the Trello icon and click on it. Then
 <figure><img src="https://lh3.googleusercontent.com/A7QfcfsfDtrz6FksNwLTq2irvEZ-3OWGbU_OJTm4hOHgoYIndsw1NAHVbV1i1YkTeF7DMeyivwVyK_oMzV8acQcoYfk1ViFOebikYUmmMeMXA2ZkXjGVDig3-mf0mj6UA0uxKHSuCdglWLugxLUHNn4" alt=""><figcaption></figcaption></figure>
 
 \
-&#x20;Step 4: A popup page will open in a separate window asking to check if you want to give Trello access to JotForm. Click on the “Allow” button.
+Step 4: A popup page will open in a separate window asking to check if you want to give Trello access to JotForm. Click on the “Allow” button.
 
 <figure><img src="https://lh6.googleusercontent.com/WJofXjlnkHEupoAcVgxyYX64N-vw2ZbtAPJqVT2KYP5_p4cqCukuShpZBIrIT7Cdi_uh9n4Rrf_mRueDKRYfbKrA-s0krHKIMWCGUEkQkvop4R7tZdk_nj8T69RXt8ZutO3fMXOW-R5_1eEvcUSnzQY" alt="" width="375"><figcaption></figcaption></figure>
 
@@ -342,11 +338,11 @@ Step 8: Click on “FINISH” button to complete the integration process.
 
 #### Test the integration
 
-Step 1: Fill in the feedback form at [https://form.jotform.com/231232735256452](https://form.jotform.com/231232735256452)  and submit.
+Step 1: Fill in the feedback form at [https://form.jotform.com/231232735256452](https://form.jotform.com/231232735256452) and submit.
 
 <figure><img src="https://lh5.googleusercontent.com/tv_GvbweRbEbcorFh8DcOZ2gllqbEosmTu1UGzEcF95ZuhVBxOZzYFYX7N-lVvp9LEP8PbgawqBRElBobibie85G2K1-SZsELEX0XNjfdG8TW4v_durD7msKd6-u9nBFBi0-lgF-4YUgkW4jcsCEX3U" alt="" width="375"><figcaption></figcaption></figure>
 
-Check the Trello board. There should be an entry done via integration.&#x20;
+Check the Trello board. There should be an entry done via integration.
 
 <figure><img src="https://lh4.googleusercontent.com/P2TGunEM-3voJbvremSGMTFSM3E0TFXSnVdXH8plY1AkNXiqA4y-76zdaf8JpnbNtrOcSvch42GRzgBszmouvt3Tk5SCYgk2s4-0v6aHJFh6l8WF_2OC0pWhjWIkcN8ZxjQwVBKNjUNO0GLHtljge3A" alt=""><figcaption></figcaption></figure>
 
@@ -362,7 +358,7 @@ Step 1 :Create a profile on MonkeyLearn website and Login. Here's a step-by-step
 
 <figure><img src="https://lh4.googleusercontent.com/KsRTaZc3CSDgsoacli2NyQwQZaM9raRsN2cUbNlD-b06r-cK-3G9qieCsZN9yVSZilbCL267_wx46Vy_nNE7rUu6lOZNU3IhPCZVVG3oGhTB7AR6Pmxas-mWWILJOOkHMxygUdG-pxtId_OdYEWQmyQ" alt="" width="375"><figcaption></figcaption></figure>
 
-Note :  We have selected “Other” because there was no option to select “Feedback”.
+Note : We have selected “Other” because there was no option to select “Feedback”.
 
 <figure><img src="https://lh3.googleusercontent.com/whAXc7c8-nSxOInM4EsVqI71VcPB9iZNBN6Bs1Wqnj5-zTA9Yg4M24v87m3qr2bJbS-er-e22rVLJ70GfOGKWfidmmehSPhafSpdwFZ0on3dcmTrFdTYsP9e8kZmU84qAiTI6vExidHCw9OgkbEdbDw" alt=""><figcaption></figcaption></figure>
 
@@ -396,7 +392,7 @@ Step 2: On the “SETTINGS” tab search for “WebHooks” and click-open it.
 
 Step 2: In the “Add Webhook” text box enter the following Webhook URL[https://api.monkeylearn.com/v3/classifiers/7fa12eb2c01f4e271caed477aad50430b68e38f3/classify/](https://api.monkeylearn.com/v3/classifiers/7fa12eb2c01f4e271caed477aad50430b68e38f3/classify/)
 
-**Note** :  The structure of Webhook URL is something like this->: The URL of the MonkeyLearn API, which should be https://api.monkeylearn.com/v3/classifiers/{<mark style="color:red;">classifier\_id</mark>}/classify/.&#x20;
+**Note** : The structure of Webhook URL is something like this->: The URL of the MonkeyLearn API, which should be https://api.monkeylearn.com/v3/classifiers/{<mark style="color:red;">classifier\_id</mark>}/classify/.
 
 Replace {<mark style="color:red;">classifier\_id</mark>} with the “Your API Key” of your MonkeyLearn model which you took a note of in the Step 5 of section “MonkeyLearn Account Setup”
 
@@ -406,9 +402,9 @@ Replace {<mark style="color:red;">classifier\_id</mark>} with the “Your API Ke
 
 ### Zapier Account Setup
 
-Step 1 :Create a profile on Zapier  website and Login. Here's a step-by-step guide to creating a profile on the Zapier  website: [https://zapier.com/](https://zapier.com/)
+Step 1 :Create a profile on Zapier website and Login. Here's a step-by-step guide to creating a profile on the Zapier website: [https://zapier.com/](https://zapier.com/)
 
-![](https://lh5.googleusercontent.com/1LvhgOMCwdypWKrfdDNtJbixJ24i7YvaAej4m3sF\_Sx11BeSWKPKNSF4woFKGLefTYs3FbxZyRAJ-3hWKI1lI7ENR7vg0IDLDfdFd3-8SiA2syGVkLvW0\_PYdoZfsu6a4M9DsBlN6E-rA2UfwjbDGsE)![](https://lh5.googleusercontent.com/xyTlSNRCsShEDYo1hH25Rx-PrWrjVym5be2fEZex2Dhr7ImPC9KDJ7j0Xrj3PjOdVpIwo96N9nT3zKky4\_ZzZBrUs9PuDl4zUi1wmp32Tp\_2t9jOnKMLm\_m9Sd8wgSy\_uS03q67ge5gOoUN9Wv783I8)
+![](https://lh5.googleusercontent.com/1LvhgOMCwdypWKrfdDNtJbixJ24i7YvaAej4m3sF\_Sx11BeSWKPKNSF4woFKGLefTYs3FbxZyRAJ-3hWKI1lI7ENR7vg0IDLDfdFd3-8SiA2syGVkLvW0\_PYdoZfsu6a4M9DsBlN6E-rA2UfwjbDGsE) ![](https://lh5.googleusercontent.com/xyTlSNRCsShEDYo1hH25Rx-PrWrjVym5be2fEZex2Dhr7ImPC9KDJ7j0Xrj3PjOdVpIwo96N9nT3zKky4\_ZzZBrUs9PuDl4zUi1wmp32Tp\_2t9jOnKMLm\_m9Sd8wgSy\_uS03q67ge5gOoUN9Wv783I8)
 
 <figure><img src="https://lh6.googleusercontent.com/nKmcac6RKHCpsRf8ghIf4X79VOARazTPSxsOSCjDFNA4ZJBW4Cr9SkjouMaNwwkZdl9S6umGmriTZuyI8FZE9O0bQ5TWBAeL_6xupqsLMOk0YGLpLSjcGdCBMSEYfIBpbsm3uMB0TBzXrtMeerqmtgA" alt=""><figcaption></figcaption></figure>
 
@@ -416,7 +412,7 @@ Step 1 :Create a profile on Zapier  website and Login. Here's a step-by-step gui
 
 Note : Up to here your Zapier account has been created. Now we will connect your MonkeyLearn and JotForm accounts to Zapier in the next steps.
 
-Step 2: Create Zap by clicking on “Create Zap” on  your Zapier dashboard.
+Step 2: Create Zap by clicking on “Create Zap” on your Zapier dashboard.
 
 <figure><img src="https://lh3.googleusercontent.com/EPcorv6dQe6pEgrcPPJCSZEwMveFBd4N2wVHtljXv5B0jRagqtACtRQtDtxZyDdsqOOLywoekImDpO6Ue3-dGyaeBXi_WsvTGVAsxk3X_H9mcqpMfETrGEXohqabfi4KqwTlVcwgCYW9Snq7uzkbNI4" alt=""><figcaption></figcaption></figure>
 
@@ -428,7 +424,7 @@ Step 4: Rename “Trigger” to “1. New Submission in Jotform”, and set up t
 
 <figure><img src="https://lh6.googleusercontent.com/BCgi39HdSQVPdR9J2IANzj-HdRaUGl7sZ1GUHX73_yrSNkkqYkV1NdZbI6DHgWPwf-etqKmLWKWues5-DdzONB42CCuymACG1nMhD4T7r79SSZpzI8srZJxzGTCokCFuZ64ga2qCXIW72RcZy6vh8oU" alt=""><figcaption></figcaption></figure>
 
-Step 5: In the “Account” section select the JotForm account created earlier. Then test the connection.&#x20;
+Step 5: In the “Account” section select the JotForm account created earlier. Then test the connection.
 
 <figure><img src="https://lh6.googleusercontent.com/9JrD_00wJAhFkWMFHH-WF_2cmnV5CEHtbF-3VyDHzfuCyBY7ku4vKk1kzZHl9PFsi7pV4s_pxcBF5cDRyi7FfYNe0jGHIJlHO2YUE8UZ8k2c6q9GZt4fi6SwXsaGPz7oaia7Rjjqh0GKtQSldX9FMQk" alt=""><figcaption></figcaption></figure>
 
@@ -436,13 +432,13 @@ Step 5: In the “Account” section select the JotForm account created earlier.
 
 <figure><img src="https://lh3.googleusercontent.com/_u82ZHbC7dUVGvByfdLCjaDYjNNa_-uKxLDuvp-ldzUkxMktG7lXjsnuT3RFO0ai7n8RqakSllLvfa7bWPTIX3cc2PXBx3NxFJMjUoxu5SvihGF87TtHyEQtpm6QaXyw0WbxcRSnW3-bM67w7wc7h4w" alt=""><figcaption></figcaption></figure>
 
-Step 6: In the trigger section select the form created in the JotForm application.&#x20;
+Step 6: In the trigger section select the form created in the JotForm application.
 
 <figure><img src="https://lh5.googleusercontent.com/pRNwIoE0MceA-IgqUGCJUMdzoEdI9GosXODS1MW4m30CnW3hSmFbrmjTsMiNWh5GLz4kqHIjjX6TIR8SjATF5KnwWu4eiMfzMhZ04JjLAb4U_mQDJ0DpAxjBKc1zqNOcHLW7uLZlJ8JqFkUHuO4PS0k" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="https://lh5.googleusercontent.com/OvUF7929dqu8DRRkdsc_4-CcNVt5ju8G0d4gWJU7gBnpRSumg16V3zrLF142CFj65diTtNte4J2Qg9BHWPPkLX6sb6rpLvoW5mXGusEoK12uYIx0HsQdaGixIDHVw3jBx5CYyvz0jxpEV0anRmgaEhY" alt=""><figcaption></figcaption></figure>
 
-Step 7: In the “Test” section select  one of the past submissions. The click on Continue.
+Step 7: In the “Test” section select one of the past submissions. The click on Continue.
 
 <figure><img src="https://lh6.googleusercontent.com/MrG1L43iiboCJ-kIJb0WuUgWbPn4T-razcNtOy7AJc-oXEvnYWNrq5ROmf2te5Xohu9WG9Z5xnT_ZKe1QNtJK3BvuN5uZ--tX01SRDzndHsd-R-gVL-DI-g9lQopVry3UCEmNf3U7ehN8c91ADn0pMI" alt=""><figcaption></figcaption></figure>
 
@@ -450,11 +446,11 @@ Step 7: In the “Test” section select  one of the past submissions. The click
 
 **Note:** By now we have set up the “Trigger” in the Zapier application. Now we will create an “Action” to be followed when the “Trigger” happens.
 
-Step 8: Click on ![](https://lh4.googleusercontent.com/mC7YCUgU2dRfle9K9FFcEERiANTgAiGGaPBfhpvXVEWJRtfid5H-uNLEI4DrNP73yAIVPnYPIH1Ql-TIPwhuZIppgzcJhF\_UZ0tmQRq74yJ0JHylWqkIKXBZU6XdTWl8EwibMKnESnRko9OyyIwy8qE) icon below the Trigger setup and choose "MonkeyLearn" as the action app and "Classify Text" as the action event. Also, rename the section to&#x20;
+Step 8: Click on ![](https://lh4.googleusercontent.com/mC7YCUgU2dRfle9K9FFcEERiANTgAiGGaPBfhpvXVEWJRtfid5H-uNLEI4DrNP73yAIVPnYPIH1Ql-TIPwhuZIppgzcJhF\_UZ0tmQRq74yJ0JHylWqkIKXBZU6XdTWl8EwibMKnESnRko9OyyIwy8qE) icon below the Trigger setup and choose "MonkeyLearn" as the action app and "Classify Text" as the action event. Also, rename the section to
 
 <figure><img src="https://lh4.googleusercontent.com/6Fq7g2_m5bgavTuYpikwVnP3r0nPGIkHIpHTx6qa-DhTPiaMX_DfpATG9hUpKoAd-8lHvnCzZxGdElQjGHC2ec6m4STLVcH4tJx9QwJ1wQ8SWu7X4gfsHAYCJs6YFy-XCRQBMbfh7NIDaaXdGhzdhVA" alt=""><figcaption></figcaption></figure>
 
-Step 9 : In the “Account” section select the MonkeyLearn account created earlier. Then test the connection.&#x20;
+Step 9 : In the “Account” section select the MonkeyLearn account created earlier. Then test the connection.
 
 <figure><img src="https://lh4.googleusercontent.com/GJe22KvFmPTYhe8ubtYgTRqwnZInx0ePLS9VqjiN6aDi5xxpJItQYq5gTC33P99M4FNURKY6u0B_wiXqrcYqM4im2fRn8YfrMPpU8ONv0fm_bfIize3IqTJJUFeB6Ior_3sHmlku0WY95kAeHXQtsrY" alt=""><figcaption></figcaption></figure>
 
@@ -462,15 +458,13 @@ Step 9 : In the “Account” section select the MonkeyLearn account created ear
 
 <figure><img src="https://lh5.googleusercontent.com/uTduEjhAiDyibzBAqpGT4DDvw_HXXkPuXUxJE20LH8z5kw5CEduXDCUlRquXmxiVPEqb77ixBhucLJA-oeBfUKWRhx60uvaZWGiRxEEr2JoxtNatNnX_6sE4z_HX9R4bUhU1j-QkWds9RJyx50HX-cY" alt=""><figcaption></figcaption></figure>
 
-Step 10 : In the “Action” section, in the “Classifier” text box,  select the Model ID of your MonkeyLearn model which you took a note of in the Step 5 of section “MonkeyLearn Account Setup”
+Step 10 : In the “Action” section, in the “Classifier” text box, select the Model ID of your MonkeyLearn model which you took a note of in the Step 5 of section “MonkeyLearn Account Setup”
 
 <figure><img src="https://lh4.googleusercontent.com/XkSrivpKn2xcWkpLjX6XHqqqUAulM-4lA68YDQIYfhp26TjOoyPVCQo1OchVjOZIQQZAPbBbKtq9cjLQrwS8lEyZ6WVz2U6hxz76UDeG1y11yjbNzV0EMPlW96fsGX3UnhAsiSqGMeGOMSX0uYQcCSA" alt=""><figcaption></figcaption></figure>
 
 Step 11: In the “Text” textbox, select field(s) which is/are storing/ capturing the “sentiments” on the JotForm setup earlier. In our case we have only one field “Describe Your Feedback” which we want to use for sentiment analysis.
 
 ![](https://lh3.googleusercontent.com/nA-UrgA2VEl8rL84ogbVsrIJ5ROO8xUP2944Boc3aiomQK3tzB51LJ6S3r4sbzRMtC9tV2DvmThfAy3PIyBEq2Oz1mT9\_IMdY6NXir935XQbd9FrG-DY3OytN9ArzUlrywDCfUxVaKEE4zI5lHiQCy0) ![](https://lh5.googleusercontent.com/npIdJoj0owj-a0qUwIii2QBJB0djMB9QXVArTF0ggzFTAmG9A4MjE4diSj6KAqaaZopDLrNcSij7wW00mleJ0LjITEBD5HCZJ2nkmP7EuyxR20hUAIk4nYJ41n4X7l5SbsAVgrVACoc3xRgoCROun94)
-
-
 
 Step 12: Select “Yes” in the “Use Production” selection. Then click on Continue.
 
@@ -490,13 +484,13 @@ Step 14 :Finally publish the Zap
 
 <figure><img src="https://lh4.googleusercontent.com/TwsOTOmwp7_gxEUhryWfjZIZ6ccop3a-j1SyxVF8xq9w_gnE3zudfCLvvVp9HSHwAgUvqHEP6PQXZIugxxbzIaeJnyhpY2Vyca6iuF8yghUW1rBzB3qSq9ThoYs_ifSbgfxCZhaF6Q4jlY2bmz44WfI" alt=""><figcaption></figcaption></figure>
 
-Note : By now the integration of JotForm and MonkeyLearn is done via Zapier. Whenever the JotForm is submitted then Zapier will send that data to MonkeyLearn and get the feedback analyzed, meaning MonkeyLearn will send the result as “Negative” or “Positive” back to Zapier. If you have taken a Silver level subscription for the JotForm then the individual form can be updated back with that result, provided we have already created a field on that form to receive the feedback analysis.&#x20;
+Note : By now the integration of JotForm and MonkeyLearn is done via Zapier. Whenever the JotForm is submitted then Zapier will send that data to MonkeyLearn and get the feedback analyzed, meaning MonkeyLearn will send the result as “Negative” or “Positive” back to Zapier. If you have taken a Silver level subscription for the JotForm then the individual form can be updated back with that result, provided we have already created a field on that form to receive the feedback analysis.
 
 Now in the next section we are going to test the Zapier integration.
 
 #### Test the integration
 
-Step 1 : Fill in the feedback form at [https://form.jotform.com/231232735256452](https://form.jotform.com/231232735256452)  and submit.
+Step 1 : Fill in the feedback form at [https://form.jotform.com/231232735256452](https://form.jotform.com/231232735256452) and submit.
 
 <figure><img src="https://lh4.googleusercontent.com/1wUoapb8LwKii_OQm1gxU1PGe6Wisbj8kPh2kMUglyz99E8lfdIKhXLKRCa7W6lh0JOFzyN0ki_B-T_THWHOpRp33MFMVgMjrx0DiEzkSseYB2-patM566wvuOI5fsJvIWa2amrOpVHBG5gLF5S5sq8" alt=""><figcaption></figcaption></figure>
 
@@ -530,10 +524,4 @@ Note : The sentiment analysis engine of MonkeyLearn has sent a “positive” re
 
 <figure><img src="https://lh4.googleusercontent.com/M-qz5xu8vXMWA7Cm31FoY9YLL1VjUrvYJQy7Zygjwmg4YmGtrzzqUIqnTctbekZ_ryGg4MV-wExCRuRGFNvSn2DKUbdoVLqLS9Wiqtu68TRvKEvSaARQT9PSlhigU0InLvow7vjdwUWNLGbeQBLqFk4" alt=""><figcaption></figcaption></figure>
 
-
-
-
-
-\
-
-
+\\

@@ -1,7 +1,5 @@
 # (deprecated) Delete Artifact
 
-
-
 {% swagger method="delete" path="" baseUrl="/artifact/{artifactId}" summary="Delete artifact." %}
 {% swagger-description %}
 Delete artifact.

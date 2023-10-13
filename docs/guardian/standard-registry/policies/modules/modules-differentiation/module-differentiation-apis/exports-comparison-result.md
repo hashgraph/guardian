@@ -5,27 +5,27 @@
 Returns the result of comparing two modules. Only users with the Standard Registry role are allowed to make the request.
 {% endswagger-description %}
 
-{% swagger-parameter in="body" name="moduleId1" type="String" %}
+{% swagger-parameter in="body" name="moduleId1" type="String" required="false" %}
 ID of first module
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="moduleId2" type="String" %}
+{% swagger-parameter in="body" name="moduleId2" type="String" required="false" %}
 ID of second module
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="eventLvl" type="String" %}
+{% swagger-parameter in="body" name="eventLvl" type="String" required="false" %}
 depth (level) of Event comparison (0/1)
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="propLvl" type="String" %}
+{% swagger-parameter in="body" name="propLvl" type="String" required="false" %}
 depth (level) of Properties comparison (0/1/2)
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="childrenLvl" type="String" %}
+{% swagger-parameter in="body" name="childrenLvl" type="String" required="false" %}
 depth (level) of child block comparison (0/1/2)
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="idLvl" type="String" %}
+{% swagger-parameter in="body" name="idLvl" type="String" required="false" %}
 depth (level) of uuid comparision (0/1)
 {% endswagger-parameter %}
 

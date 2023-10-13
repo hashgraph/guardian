@@ -5,13 +5,13 @@
 The first adaptation relates to the redesign of the creation of new accounts. This redesign for mobile solves the overflow previously present while still maintaining the descriptions.
 
 Here the images below show the selection of account type and selection of username and password in order to create a new account.\
-![](<../../../.gitbook/assets/1 (1) (4).png>)![](<../../../.gitbook/assets/2 (5).png>)
+![](<../../../.gitbook/assets/1 (1) (2).png>)![](<../../../.gitbook/assets/2 (6).png>)
 
 ### New header for mobile
 
 The header was also adapted for mobile for all types of users. The balance was maintained as one of the elements always present. The new header for mobile, these elements are always present.
 
-<figure><img src="../../../.gitbook/assets/3 (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/3 (3).png" alt=""><figcaption></figcaption></figure>
 
 The various menus and submenus (in case there are any) have been moved upon clicking on the hamburger menu, presenting the user with the following.
 
@@ -29,11 +29,11 @@ As this is an integral part of using Guardian, the association with the users He
 
 The user registration form into a policy has also been redesigned. This makes the long form divisible in a more digestible manner, compartmentalizing each category of input into a page of its own. The mobile adaptation to the registration into a policy.
 
-![](<../../../.gitbook/assets/7 (2).png>)
+![](../../../.gitbook/assets/7.png)
 
 The images below are the registration forms which have been redesigned
 
-![](<../../../.gitbook/assets/8 (1).png>) ![](<../../../.gitbook/assets/9 (1) (3) (1).png>)
+![](<../../../.gitbook/assets/8 (2).png>) ![](<../../../.gitbook/assets/9 (1) (3) (1).png>)
 
 ### User creating a retire request
 

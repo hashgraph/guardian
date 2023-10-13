@@ -51,6 +51,7 @@ export class PolicyConfigurationComponent implements OnInit {
     public policyId!: string;
     public moduleId!: string;
     public toolId!: string;
+    public rootId!: string;
 
     public policyTemplate!: PolicyTemplate;
     public moduleTemplate!: ModuleTemplate;
@@ -253,6 +254,7 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     private loadPolicy(): void {
+        this.rootId = this.policyId;
         this.policyEngineService.policy(this.policyId).subscribe((policy: any) => {
             if (!policy) {
                 this.policyTemplate = new PolicyTemplate();
@@ -302,6 +304,7 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     private loadModule(): void {
+        this.rootId = this.moduleId;
         this.modulesService.getById(this.moduleId).subscribe((module: any) => {
             if (!module) {
                 this.moduleTemplate = new ModuleTemplate();
@@ -348,6 +351,7 @@ export class PolicyConfigurationComponent implements OnInit {
 
 
     private loadTool(): void {
+        this.rootId = this.toolId;
         this.toolsService.getById(this.toolId).subscribe((tool: any) => {
             if (!tool) {
                 this.toolTemplate = new ToolTemplate();

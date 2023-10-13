@@ -1,7 +1,5 @@
 # Export report data in a csv file format
 
-
-
 {% swagger method="get" path="" baseUrl="/analytics/reports/{uuid}/export/csv" summary="Export report data in a csv file format" %}
 {% swagger-description %}
 Returns a csv file

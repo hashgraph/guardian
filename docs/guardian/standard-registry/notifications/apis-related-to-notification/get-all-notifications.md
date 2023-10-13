@@ -1,7 +1,5 @@
 # Get All Notifications
 
-
-
 {% swagger method="get" path="" baseUrl="/notifications" summary="Get all notifications." %}
 {% swagger-description %}
 Returns all notifications.

@@ -20,7 +20,7 @@ Users are able to filter the list of standard registries by policy name and geog
 
 <figure><img src="https://lh4.googleusercontent.com/FL15XAuxEEC7ca2rTKg6YIak_85f2nUVmzQ1TIiC6fANve2h1X6ijvJvmUabELconFm1HTdmEhQ3gAT2HJSpBo2igGvPEkajhtJHztSeOnARJhhzhqy4KXy4QnI9tN5w-8dz4eZAYmqlbxGhLZ-LsiU" alt=""><figcaption></figcaption></figure>
 
-One the user has clicked on "Apply" they can see the Standard Registry related by the policy name and geography.&#x20;
+One the user has clicked on "Apply" they can see the Standard Registry related by the policy name and geography.
 
 <figure><img src="https://lh5.googleusercontent.com/KS92dHn6P_yf8Mmd8aDa9wBQ9zEVSZTmCmvpKRgRbSlm9SfpmdGorMjlvHCYUpEqG6-Dn_phkOf7LTvxCkX1nOzY8nfncEf07eHndssb6Ou9js7UBtLYcPceeqot7whiJj4dxyi-gMjIH3GUA2Svdfg" alt=""><figcaption></figcaption></figure>
 
@@ -30,8 +30,7 @@ At this step the user needs to fill out the operator id and key fields or click 
 
 <figure><img src="https://lh3.googleusercontent.com/dKFCYVxrs8PsWt-nICVOTQbSbcBA-Nfz0xyxZsSy8hi07Xzy31-KUgvh6Cn-53YVFJzIFLLjrW8191qhLC46ybQFfMGXwnRzqtyJBjDZcmyckGHBiZfASHXB4EcrguicB76T6R5ONYGpWitITufdbpc" alt=""><figcaption></figcaption></figure>
 
-\
-
+\\
 
 <figure><img src="https://lh6.googleusercontent.com/giBfsQzdLhxqhCfcyhSxQR3IZ-Dc5a9x3HcKUaACTYooDkHrHLY5FQCXN-7AoT6RLlfFBztTqcro6PvEEd2Kgsf7hvzS-uCiOZFvaP845uGNC9ZQvP_xJ7hgJwWSlq3UF2nnMW_c4G6I5w8zMwM7GYk" alt=""><figcaption></figcaption></figure>
 
@@ -43,7 +42,5 @@ After submitting the wizard and successful account setup user will see the infor
 
 <figure><img src="https://lh6.googleusercontent.com/LdlyxsHk8AtUb8UPzGvgMC76_3cSCWm5WJNb-anTbSHzIDyZw89IaFlbIsWZx5pqhVYPCRkVj-pJWOgSw4otBJy6o0CTrZwS-5zphP1-eAThT22r6s_JK1VaMhDQWL6V7B5W9bl-MfS1Autm2jeqNqM" alt="" width="375"><figcaption></figcaption></figure>
 
-
-
 \
-\
+\\

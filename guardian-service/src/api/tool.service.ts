@@ -33,7 +33,7 @@ import { incrementSchemaVersion } from '@api/helpers/schema-helper';
 import { ISerializedErrors } from '@policy-engine/policy-validation-results-container';
 import { ToolValidator } from '@policy-engine/block-validators/tool-validator';
 import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
-import { importToolByFile, importToolByMessage } from './helpers';
+import { importToolByFile, importToolByMessage, updateToolConfig } from './helpers';
 import * as crypto from 'crypto';
 import { publishToolTags } from './tag.service';
 
@@ -54,25 +54,6 @@ export function sha256(data: ArrayBuffer): string {
     } catch (error) {
         return '';
     }
-}
-
-/**
- * Check and update config file
- * @param tool
- *
- * @returns tool
- */
-export function updateToolConfig(tool: any): any {
-    tool.config = tool.config || {};
-    tool.config.permissions = tool.config.permissions || [];
-    tool.config.children = tool.config.children || [];
-    tool.config.events = tool.config.events || [];
-    tool.config.artifacts = tool.config.artifacts || [];
-    tool.config.variables = tool.config.variables || [];
-    tool.config.inputEvents = tool.config.inputEvents || [];
-    tool.config.outputEvents = tool.config.outputEvents || [];
-    tool.config.innerEvents = tool.config.innerEvents || [];
-    return tool;
 }
 
 /**
@@ -197,7 +178,7 @@ export async function publishTool(
         tool.tagsTopicId = tagsTopic.topicId;
 
         notifier.completedAndStart('Generate file');
-        tool = updateToolConfig(tool);
+        tool = await updateToolConfig(tool);
         const zip = await ToolImportExport.generate(tool);
         const buffer = await zip.generateAsync({
             type: 'arraybuffer',
@@ -319,7 +300,8 @@ export async function createTool(
     json.type = 'CUSTOM';
     json.status = ModuleStatus.DRAFT;
     json.codeVersion = PolicyConverterUtils.VERSION;
-    updateToolConfig(json);
+
+    json = await updateToolConfig(json);
     const tool = await DatabaseServer.createTool(json);
 
     try {
@@ -550,8 +532,8 @@ export async function toolsAPI(): Promise<void> {
             item.config = tool.config;
             item.name = tool.name;
             item.description = tool.description;
-            updateToolConfig(item);
 
+            await updateToolConfig(item);
             const result = await DatabaseServer.updateTool(item);
             return new MessageResponse(result);
         } catch (error) {
@@ -593,7 +575,7 @@ export async function toolsAPI(): Promise<void> {
                 throw new Error('Invalid tool');
             }
 
-            updateToolConfig(item);
+            await updateToolConfig(item);
             const zip = await ToolImportExport.generate(item);
             const file = await zip.generateAsync({
                 type: 'arraybuffer',

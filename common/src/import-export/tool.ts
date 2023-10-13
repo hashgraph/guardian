@@ -28,17 +28,8 @@ export class ToolImportExport {
      * @returns components
      */
     public static async loadToolComponents(tool: PolicyTool): Promise<IToolComponents> {
-        const schemaIRIs = tool.config.variables
-            .filter((v: any) => v.type === 'Schema')
-            .map((v: any) => v.baseSchema);
-
-        const schemas = await new DataBaseHelper(Schema).find({
-            $or: [{
-                iri: { $in: schemaIRIs }
-            }, {
-                topicId: tool.topicId
-            }]
-        });
+        const topicId = tool.topicId;
+        const schemas = await new DataBaseHelper(Schema).find({ topicId, readonly: false });
         const tagTargets: string[] = [];
         tagTargets.push(tool.id.toString());
         for (const schema of schemas) {

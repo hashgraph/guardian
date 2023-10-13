@@ -130,7 +130,7 @@ export class PolicyComparator {
         const groups = ComparePolicyUtils.compareArray(policy1.groups, policy2.groups, this.options);
         const topics = ComparePolicyUtils.compareArray(policy1.topics, policy2.topics, this.options);
         const tokens = ComparePolicyUtils.compareArray(policy1.tokens, policy2.tokens, this.options);
-        const blocks = this.treeToArray(tree, []);
+        const blocks = ComparePolicyUtils.treeToArray(tree, []);
 
         this.treeToTable(tree, treeTable, 1);
         this.ratesToTable(roles, rolesTable);
@@ -138,11 +138,11 @@ export class PolicyComparator {
         this.ratesToTable(topics, topicsTable);
         this.ratesToTable(tokens, tokensTable);
 
-        const blockRate = this.total(blocks);
-        const roleRate = this.total(roles);
-        const groupRate = this.total(groups);
-        const topicRate = this.total(topics);
-        const tokenRate = this.total(tokens);
+        const blockRate = CompareUtils.total(blocks);
+        const roleRate = CompareUtils.total(roles);
+        const groupRate = CompareUtils.total(groups);
+        const topicRate = CompareUtils.total(topics);
+        const tokenRate = CompareUtils.total(tokens);
         const otherRate = CompareUtils.calcTotalRate(
             roleRate,
             groupRate,
@@ -302,8 +302,8 @@ export class PolicyComparator {
     }
 
     /**
-     * Calculate total rate
-     * @param rates
+     * Merge table
+     * @param tables
      * @private
      */
     private mergePropTables(tables: IReportTable[]): IReportTable {
@@ -372,47 +372,6 @@ export class PolicyComparator {
             row[propName].push(propRow);
         }
         return row;
-    }
-
-    /**
-     * Calculate total rate
-     * @param rates
-     * @private
-     */
-    private total(rates: IRate<any>[]): number {
-        let total = 0;
-        let count = 0;
-
-        for (const child of rates) {
-            if (child.totalRate > 99) {
-                total += 100;
-            } else if (child.totalRate > 50) {
-                total += 50;
-            } else {
-                total += 0;
-            }
-            count++;
-        }
-
-        if (count) {
-            return Math.floor(total / count);
-        }
-
-        return 100;
-    }
-
-    /**
-     * Convert tree to array
-     * @param tree
-     * @param result
-     * @private
-     */
-    private treeToArray(tree: IRate<any>, result: IRate<any>[]): IRate<any>[] {
-        result.push(tree);
-        for (const child of tree.getChildren<BlocksRate>()) {
-            this.treeToArray(child, result);
-        }
-        return result;
     }
 
     /**

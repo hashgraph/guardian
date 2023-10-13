@@ -151,7 +151,7 @@ export class BlockModel implements IWeightModel {
 
         if (this._children) {
             _hashState = MurmurHash3();
-            _hashState.hash(this.blockType);
+            _hashState.hash(this.key);
             for (const child of this._children) {
                 _hashState.hash(String(child._hash));
             }
@@ -160,14 +160,14 @@ export class BlockModel implements IWeightModel {
 
         if (this._children && this._children.length) {
             _hashState = MurmurHash3();
-            _hashState.hash(this.blockType);
+            _hashState.hash(this.key);
             for (const child of this._children) {
-                _hashState.hash(child.blockType);
+                _hashState.hash(child.key);
             }
             _children1 = String(_hashState.result());
 
             _hashState = MurmurHash3();
-            _hashState.hash(this.blockType);
+            _hashState.hash(this.key);
             for (const child of this._children) {
                 _hashState.hash(child.getWeight(WeightType.CHILD_LVL_2));
             }
@@ -184,14 +184,14 @@ export class BlockModel implements IWeightModel {
 
         if (this._prop) {
             _hashState = MurmurHash3();
-            _hashState.hash(this.blockType)
+            _hashState.hash(this.key)
             _hashState.hash(this._prop.hash(options));
             _prop = String(_hashState.result());
         }
 
         if (this.tag) {
             _hashState = MurmurHash3();
-            _hashState.hash(this.blockType)
+            _hashState.hash(this.key)
             _hashState.hash(this.tag);
             _tag = String(_hashState.result());
         }
@@ -339,11 +339,11 @@ export class BlockModel implements IWeightModel {
      * @public
      */
     public equal(block: BlockModel, index?: number): boolean {
-        if (this.blockType !== block.blockType) {
+        if (this.key !== block.key) {
             return false;
         }
         if (!this._weight.length) {
-            return this.blockType === block.blockType;
+            return this.key === block.key;
         }
         if (Number.isFinite(index)) {
             if (this._weight[index] === '0' && block._weight[index] === '0') {
@@ -437,7 +437,7 @@ export class BlockModel implements IWeightModel {
         }
         const _index = String(this.index);
         const _prop = this._weightMap[WeightType.PROP_LVL_3];
-        const _type = this.blockType;
+        const _type = this.key;
 
         let _fullProp = '|';
         for (const event of this._events) {

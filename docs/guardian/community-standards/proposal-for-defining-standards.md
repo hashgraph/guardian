@@ -45,14 +45,14 @@ The success of the Guardian project relies heavily on the community's active par
 
 **Users:** Users are the individuals and entities who use the project's software. They may not contribute directly to the project, but their feedback and usage help guide the project's development.
 
-## &#x20;Communication Channels
+## Communication Channels
 
 Effective communication is a cornerstone of any successful open-source community. For the Guardian ecosystem, we primarily leverage three channels to facilitate dialogue and collaboration:
 
 * **GitHub**: GitHub serves as our primary platform for code hosting, version control, and collaboration. It's where you can find the latest versions of the codebase, contribute to the project, submit issues, and review ongoing proposals.
 * **Weekly Community Calls**: These scheduled calls serve as a platform for structured discussions and updates. It's an opportunity for contributors to present their proposals, share updates on ongoing work, discuss issues, and receive feedback from the Guardian team and the broader community.
 
-## &#x20;Code of Conduct
+## Code of Conduct
 
 Every participant in the Guardian community is asked to adhere to the Code of Conduct, which outlines the behavioral norms we expect from all members of the community. The key points of our Code of Conduct include:
 
@@ -68,7 +68,7 @@ Every participant in the Guardian community is asked to adhere to the Code of Co
 
 ## Conclusion
 
-This document serves as an introduction to the proposed standards for the Guardian project, outlining the key concepts, roles, and communication channels which form the foundation of our collaborative environment. The necessity for standards in the Guardian ecosystem has been established, with a high-level overview of Guardian System Standards (GSS) and Guardian Policy Standards (GPS) introduced.&#x20;
+This document serves as an introduction to the proposed standards for the Guardian project, outlining the key concepts, roles, and communication channels which form the foundation of our collaborative environment. The necessity for standards in the Guardian ecosystem has been established, with a high-level overview of Guardian System Standards (GSS) and Guardian Policy Standards (GPS) introduced.
 
 The structure and processes for drafting, submitting, and approving GSS and GPS proposals require a level of detail beyond the scope of this introductory document. Therefore, these mechanisms will be elaborated upon comprehensively in dedicated standards documents for each category. These subsequent documents will serve as a detailed guide for contributors seeking to propose new features or policy changes. The aim is to ensure clarity, efficiency, and consensus in the decision-making process, driving the continual improvement and evolution of the Guardian project.
 

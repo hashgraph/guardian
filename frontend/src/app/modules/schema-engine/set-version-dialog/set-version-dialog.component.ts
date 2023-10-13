@@ -19,7 +19,9 @@ export class SetVersionDialog {
     constructor(
         public dialogRef: MatDialogRef<SetVersionDialog>,
         @Inject(MAT_DIALOG_DATA) public data: any
-    ) {}
+    ) {
+        
+    }
 
     onNoClick(): void {
         this.dialogRef.close(null);

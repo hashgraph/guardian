@@ -32,7 +32,7 @@ export class Artifact extends BaseEntity {
     type?: string;
 
     /**
-     * Atifact owner
+     * Artifact owner
      */
     @Property({ nullable: true })
     owner?: string;
@@ -42,6 +42,12 @@ export class Artifact extends BaseEntity {
      */
     @Property({ nullable: true })
     extention?: string;
+
+    /**
+     * Artifact Category.
+     */
+    @Property({ nullable: true })
+    category?: 'tool' | 'policy';
 
     /**
      * Default document values

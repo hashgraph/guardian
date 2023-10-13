@@ -4,16 +4,15 @@ import { Router } from '@angular/router';
 import { GenerateUUIDv4, IUser, SchemaHelper, TagType } from '@guardian/interfaces';
 import { forkJoin } from 'rxjs';
 import { ConfirmationDialogComponent } from 'src/app/modules/common/confirmation-dialog/confirmation-dialog.component';
-import { InformService } from 'src/app/services/inform.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TagsService } from 'src/app/services/tag.service';
 import { ToolsService } from 'src/app/services/tools.service';
-import { CompareModulesDialogComponent } from '../helpers/compare-modules-dialog/compare-modules-dialog.component';
 import { ExportPolicyDialog } from '../helpers/export-policy-dialog/export-policy-dialog.component';
 import { ImportPolicyDialog } from '../helpers/import-policy-dialog/import-policy-dialog.component';
 import { NewModuleDialog } from '../helpers/new-module-dialog/new-module-dialog.component';
 import { PreviewPolicyDialog } from '../helpers/preview-policy-dialog/preview-policy-dialog.component';
 import { mobileDialog } from 'src/app/utils/mobile-utils';
+import { ComparePolicyDialog } from '../helpers/compare-policy-dialog/compare-policy-dialog.component';
 
 enum OperationMode {
     None,
@@ -61,7 +60,6 @@ export class ToolsListComponent implements OnInit, OnDestroy {
         private profileService: ProfileService,
         private toolsService: ToolsService,
         private dialog: MatDialog,
-        private informService: InformService,
         private router: Router,
     ) {
         this.tools = null;
@@ -192,23 +190,26 @@ export class ToolsListComponent implements OnInit, OnDestroy {
         });
     }
 
-    public compareTools(element?: any) {
-        const dialogRef = this.dialog.open(CompareModulesDialogComponent, {
+    public compareTools(toolId?: any) {
+        const item = this.tools?.find(e => e.id === toolId);
+        const dialogRef = this.dialog.open(ComparePolicyDialog, {
             width: '650px',
             panelClass: 'g-dialog',
             disableClose: true,
             autoFocus: false,
             data: {
+                type: 'tool',
+                tool: item,
                 tools: this.tools,
             }
         });
         dialogRef.afterClosed().subscribe(async (result) => {
-            if (result) {
+            if (result && result.toolIds) {
+                const toolIds: string[] = result.toolIds;
                 this.router.navigate(['/compare'], {
                     queryParams: {
                         type: 'tool',
-                        toolId1: result.toolId1,
-                        toolId2: result.toolId2
+                        toolIds: toolIds,
                     }
                 });
             }

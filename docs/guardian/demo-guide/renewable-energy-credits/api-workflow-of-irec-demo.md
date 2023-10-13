@@ -18,7 +18,7 @@ rootPassword
 {% endswagger-parameter %}
 
 {% swagger-parameter in="body" name="role" type="String" required="true" %}
-STANDARD_REGISTRY
+STANDARD\_REGISTRY
 {% endswagger-parameter %}
 
 {% swagger-response status="201: Created" description="Successful Operation" %}
@@ -9353,7 +9353,7 @@ rootDID
 {% endswagger-description %}
 
 {% swagger-parameter in="body" name="document" required="false" %}
-{ "type": "{{registrant_schema_type}}", "@context": [ "{{registrant_schema_context}}" ], "field0": "2022-05-11", "field1": { "type": "{{registrant_schema_field1_type}}", "@context": [ "{{registrant_schema_field1_context}}" ], "field0": "Applicant Legal Name", "field1": "Registered address line 1", "field2": "Registered address line 2", "field3": "Registered address line 3", "field4": "Postal (ZIP) code", "field5": "Country", "field6": "Legal Status", "field7": "Country of company registration/private residence", "field8": "Corporate registration number/passport number", "field9": "VAT number", "field10": "Website URL", "field11": "Main business (e.g. food retailer)", "field12": 1, "field13": 1, "field14": "Name of the Chief Executive Officer/General Manager", "field15": "Chief Executive Officer/General Manager passport number", "field16": "Please state in which countries the organization is active", "field17": "Please list the main (>10%) shareholders", "field18": 1, "field19": "email@email.com" }, "field2": { "type": "{{registrant_schema_field2_type}}", "@context": [ "{{registrant_schema_field2_context}}" ], "field0": "Organization Name", "field1": "Address line 1", "field2": "Address line 2", "field3": "Address line 3", "field4": "Postal code", "field5": "Country", "field6": "Contact person", "field7": "email@email.com", "field8": "123456789", "field9": "Fax", "field10": "Existing I-REC Registry organization(s) to become subsidiary" }, "field3": { "type": "{{registrant_schema_field3_type}}", "@context": [ "{{registrant_schema_field3_context}}" ], "field0": "Family Name (surname)", "field1": "Other (Given) Names", "field2": "Title", "field3": "email@email.com", "field4": "123456789", "field5": "Fax" }
+{ "type": "\{{registrant\_schema\_type\}}", "@context": \[ "\{{registrant\_schema\_context\}}" ], "field0": "2022-05-11", "field1": { "type": "\{{registrant\_schema\_field1\_type\}}", "@context": \[ "\{{registrant\_schema\_field1\_context\}}" ], "field0": "Applicant Legal Name", "field1": "Registered address line 1", "field2": "Registered address line 2", "field3": "Registered address line 3", "field4": "Postal (ZIP) code", "field5": "Country", "field6": "Legal Status", "field7": "Country of company registration/private residence", "field8": "Corporate registration number/passport number", "field9": "VAT number", "field10": "Website URL", "field11": "Main business (e.g. food retailer)", "field12": 1, "field13": 1, "field14": "Name of the Chief Executive Officer/General Manager", "field15": "Chief Executive Officer/General Manager passport number", "field16": "Please state in which countries the organization is active", "field17": "Please list the main (>10%) shareholders", "field18": 1, "field19": "email@email.com" }, "field2": { "type": "\{{registrant\_schema\_field2\_type\}}", "@context": \[ "\{{registrant\_schema\_field2\_context\}}" ], "field0": "Organization Name", "field1": "Address line 1", "field2": "Address line 2", "field3": "Address line 3", "field4": "Postal code", "field5": "Country", "field6": "Contact person", "field7": "email@email.com", "field8": "123456789", "field9": "Fax", "field10": "Existing I-REC Registry organization(s) to become subsidiary" }, "field3": { "type": "\{{registrant\_schema\_field3\_type\}}", "@context": \[ "\{{registrant\_schema\_field3\_context\}}" ], "field0": "Family Name (surname)", "field1": "Other (Given) Names", "field2": "Title", "field3": "email@email.com", "field4": "123456789", "field5": "Fax" }
 {% endswagger-parameter %}
 
 {% swagger-parameter in="body" name="ref" required="false" %}
@@ -11160,7 +11160,7 @@ null
 {% endswagger-description %}
 
 {% swagger-parameter in="body" required="true" %}
-\{{req_body}}
+\{{req\_body\}}
 {% endswagger-parameter %}
 
 {% swagger-response status="200: OK" description="Successful Operation" %}
@@ -11421,7 +11421,7 @@ null
 {% endswagger-description %}
 
 {% swagger-parameter in="body" required="false" %}
-\{{req_body}}
+\{{req\_body\}}
 {% endswagger-parameter %}
 
 {% swagger-response status="200: OK" description="Successful Operation" %}
@@ -13144,7 +13144,7 @@ null
 {% endswagger-description %}
 
 {% swagger-parameter in="body" required="false" %}
-\{{req_body}}
+\{{req\_body\}}
 {% endswagger-parameter %}
 
 {% swagger-response status="200: OK" description="Successful Operation" %}
@@ -13395,7 +13395,7 @@ null
 {% endswagger-description %}
 
 {% swagger-parameter in="body" required="false" %}
-\{{req_body}}
+\{{req\_body\}}
 {% endswagger-parameter %}
 
 {% swagger-response status="200: OK" description="Successful Operation" %}

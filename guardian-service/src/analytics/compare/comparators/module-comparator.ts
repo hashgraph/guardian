@@ -437,7 +437,7 @@ export class ModuleComparator {
             .addLine();
         csv.addLine();
 
-        csv.add('Module InputEvents').addLine();
+        csv.add('Module Input Events').addLine();
         CompareUtils.tableToCsv(csv, result.inputEvents);
         csv.addLine();
 

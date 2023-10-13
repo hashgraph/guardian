@@ -1,7 +1,5 @@
 # Get Progresses
 
-
-
 {% swagger method="get" path="" baseUrl="/notifications/progresses" summary="Get progresses" %}
 {% swagger-description %}
 Returns progresses

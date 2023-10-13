@@ -29,7 +29,7 @@ See detailed information about the Roles in [Example 1](creating-and-using-roles
 
 1.1 Go to ‘Schemas’ tab and create a new schema
 
-![Creating new Schema](<../../../../.gitbook/assets/1 (2) (1).png>)
+![Creating new Schema](<../../../../.gitbook/assets/1 (1).png>)
 
 1.2 To make sure there is some demo/test data content in this schema create 3 fields:
 
@@ -38,7 +38,7 @@ See detailed information about the Roles in [Example 1](creating-and-using-roles
 * **End Date** of type ‘Date’
 * **Amount** of type ‘Number to represent the amount of CO2 emissions for the time period (between the ‘Start Date’ and ‘End Date’)
 
-![Creation of 3 fields](<../../../../.gitbook/assets/2 (2) (1) (1).png>)
+![Creation of 3 fields](<../../../../.gitbook/assets/2 (2).png>)
 
 #### 2. To perform data input into the Policy the ‘**requestVcDocumentBlock**’ will be used
 
@@ -46,39 +46,39 @@ See detailed information about the Roles in [Example 1](creating-and-using-roles
 
 For this ‘**interfaceStepBlock**’ is required with ‘**Cyclic**’ option enabled. This will allow to return to the initial state after the document was saved.
 
-![InterfaceStepBlock is added as cyclic\_container](<../../../../.gitbook/assets/3 (2) (1).png>)
+![InterfaceStepBlock is added as cyclic\_container](<../../../../.gitbook/assets/3 (1) (1).png>)
 
 2.2 Add ‘**requestVcDocumentBlock**’ into the ‘_cyclic\_container_’
 
-![Adding requestVcDocumentBlock into cyclic\_container](<../../../../.gitbook/assets/4 (2) (1).png>)
+![Adding requestVcDocumentBlock into cyclic\_container](<../../../../.gitbook/assets/4 (1) (1).png>)
 
 2.3 Then select the previously created Schema
 
-![Selecting already created Schema](<../../../../.gitbook/assets/5 (2) (1).png>)
+![Selecting already created Schema](<../../../../.gitbook/assets/5 (1) (1).png>)
 
 2.4 Select ‘New UUID’ to configure automatic generation of unique IDs for each document
 
-![Selecting UUID](<../../../../.gitbook/assets/6 (2) (1).png>)
+![Selecting UUID](<../../../../.gitbook/assets/6 (1).png>)
 
 2.5 By default ‘**requestVcDocumentBlock**’ is displayed as a Form covering the entire page. To prevent this choose ‘**DIALOG**’ value for the field ‘Type’.
 
-![Selecting DIALOG as Type](<../../../../.gitbook/assets/7 (2) (1) (1).png>)
+![Selecting DIALOG as Type](<../../../../.gitbook/assets/7 (1).png>)
 
 #### 3. Save documents in the Database.
 
 3.1 Add ‘**sendToGuardianBlock**’ into the container ‘_cyclic\_container’_ immediately after ‘_create\_new\_document’_
 
-![Adding sendToGuardianBlock in container cyclic\_container](<../../../../.gitbook/assets/8 (2).png>)
+![Adding sendToGuardianBlock in container cyclic\_container](<../../../../.gitbook/assets/8 (1) (1).png>)
 
 3.2 Select data type and where to store the document
 
-![Selecting Data Source and Type](<../../../../.gitbook/assets/9 (2) (1) (1).png>)
+![Selecting Data Source and Type](<../../../../.gitbook/assets/9 (1).png>)
 
 3.3 Create appropriate attributes to capture/store document status
 
 Add ‘Status’ attribute and set the initial ‘New’ value for new documents
 
-![Adding Status Attribute with New Value](<../../../../.gitbook/assets/10 (2) (1).png>)
+![Adding Status Attribute with New Value](<../../../../.gitbook/assets/10 (1) (1).png>)
 
 ### **Displaying the documents**
 
@@ -86,17 +86,17 @@ Add ‘Status’ attribute and set the initial ‘New’ value for new documents
 
 1.1 Add ’**interfaceDocumentsSourceBlock**_’_ into the ‘**user\_roles**_’_ container
 
-![Adding interfaceDocumentsSourceBlock into user\_roles container](<../../../../.gitbook/assets/11 (2) (1).png>)
+![Adding interfaceDocumentsSourceBlock into user\_roles container](../../../../.gitbook/assets/11.png)
 
 1.2 Specify the needed columns, their titles and where the values will be taken for display
 
-![Specifying paths, type and titles of the columns](<../../../../.gitbook/assets/12 (2) (1).png>)
+![Specifying paths, type and titles of the columns](<../../../../.gitbook/assets/12 (2).png>)
 
 1.3 To retrieve the data from the database ’**documentsSourceAddon**_’ block is used_
 
 1.3.1 Add ‘**documentsSourceAddon**_’ to the_ ‘**user\_grid**_’_
 
-![Adding documentsSourceAddon to retrieve data](<../../../../.gitbook/assets/13 (2) (1).png>)
+![Adding documentsSourceAddon to retrieve data](../../../../.gitbook/assets/13.png)
 
 1.3.2 Select where to retrieve the documents from
 
@@ -104,7 +104,7 @@ Add ‘Status’ attribute and set the initial ‘New’ value for new documents
 
 1.3.3 Select the schema upon which the selected documents should be based on
 
-![Selecting Schema](<../../../../.gitbook/assets/15 (5).png>)
+![Selecting Schema](<../../../../.gitbook/assets/15 (6).png>)
 
 1.3.4 Select _‘_**Owned by User**_’_ checkbox which would filter in only the documents that are created by this user (this will disable the ability to view other documents)
 
@@ -118,11 +118,11 @@ Add ‘Status’ attribute and set the initial ‘New’ value for new documents
 
 1.2 Add additional column which would contain the ‘**Approve**’ button
 
-![Adding Approve column](<../../../../.gitbook/assets/17 (1) (1).png>)
+![Adding Approve column](<../../../../.gitbook/assets/17 (5).png>)
 
 1.3 Since the Approve button should be displayed only for new documents use two ‘**documentSourceAddon**’ block
 
-![Adding two documentSourceAddon Blocks](<../../../../.gitbook/assets/18 (1) (2).png>)
+![Adding two documentSourceAddon Blocks](<../../../../.gitbook/assets/18 (5).png>)
 
 Configure both ‘**documentSourceAddon**’ blocks similarly to how it was in the previous sections, except here do not select the ‘_Owned by User_’ checkbox to allow the Approvers to see all documents (created by all users)
 
@@ -130,7 +130,7 @@ Configure both ‘**documentSourceAddon**’ blocks similarly to how it was in t
 
 ![Creating Equal status filter](<../../../../.gitbook/assets/19 (1) (1).png>)
 
-![Creating not equal status filter](<../../../../.gitbook/assets/20 (2).png>)
+![Creating not equal status filter](../../../../.gitbook/assets/20.png)
 
 2. To enable actions (in this example ‘Approve’ and ‘Reject’) the ‘**buttonBlock**’ block is used.
 

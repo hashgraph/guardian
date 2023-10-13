@@ -501,8 +501,7 @@ export class Guardians extends NatsService {
      * @returns {ISchema[]} - all schemas
      */
     public async getSchemasByUUID(uuid: string): Promise<ISchema[]> {
-        const { items } = await this.sendMessage<ResponseAndCount<ISchema>>(MessageAPI.GET_SCHEMAS, { uuid });
-        return items;
+        return await this.sendMessage(MessageAPI.GET_SCHEMAS_BY_UUID, { uuid });
     }
 
     /**
@@ -813,44 +812,44 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Return sub schemas
+     *
+     * @param {string} category - schemas category
+     * @param {string} topicId - topic id
+     * @param {string} owner - schemas owner
+     *
+     * @returns {ISchema[]} - schemas
+     */
+    public async getSubSchemas(category: string, topicId: string, owner: string): Promise<ISchema[]> {
+        return await this.sendMessage(MessageAPI.GET_SUB_SCHEMAS, { topicId, owner, category });
+    }
+
+    /**
      * Upload Policy Artifacts
      *
      * @param {any} artifact - Artifact
      * @param {string} owner - Owner
-     * @param {string} policyId - Policy Identifier
+     * @param {string} parentId - Policy Identifier
      *
      * @returns - Uploaded Artifacts
      */
-    public async uploadArtifact(artifact: any, owner: string, policyId: string): Promise<IArtifact[]> {
+    public async uploadArtifact(artifact: any, owner: string, parentId: string): Promise<IArtifact[]> {
         return await this.sendMessage(MessageAPI.UPLOAD_ARTIFACT, {
             owner,
             artifact,
-            policyId
+            parentId
         });
     }
 
     /**
      * Get Policy Artifacts
      *
-     * @param {string} owner - Owner
-     * @param {string} policyId - Policy Identifier
-     * @param {string} pageIndex - Page Index
-     * @param {string} pageSize - Page Size
+     * @param {any} options
      *
      * @returns - Artifact
      */
-    public async getArtifacts(
-        owner: string,
-        policyId: string,
-        pageIndex: string,
-        pageSize: string,
-    ): Promise<any> {
-        return await this.sendMessage(MessageAPI.GET_ARTIFACTS, {
-            owner,
-            policyId,
-            pageIndex,
-            pageSize
-        });
+    public async getArtifacts(options: any): Promise<any> {
+        return await this.sendMessage(MessageAPI.GET_ARTIFACTS, options);
     }
 
     /**
@@ -897,7 +896,7 @@ export class Guardians extends NatsService {
     }
 
     /**
-     * Compare two policies
+     * Compare documents
      * @param user
      * @param type
      * @param ids
@@ -916,6 +915,36 @@ export class Guardians extends NatsService {
         idLvl: any,
     ) {
         return await this.sendMessage(MessageAPI.COMPARE_DOCUMENTS, {
+            type,
+            user,
+            ids,
+            eventsLvl,
+            propLvl,
+            childrenLvl,
+            idLvl
+        });
+    }
+
+    /**
+     * Compare tools
+     * @param user
+     * @param type
+     * @param ids
+     * @param eventsLvl
+     * @param propLvl
+     * @param childrenLvl
+     * @param idLvl
+     */
+    public async compareTools(
+        user: any,
+        type: any,
+        ids: string[],
+        eventsLvl: any,
+        propLvl: any,
+        childrenLvl: any,
+        idLvl: any,
+    ) {
+        return await this.sendMessage(MessageAPI.COMPARE_TOOLS, {
             type,
             user,
             ids,

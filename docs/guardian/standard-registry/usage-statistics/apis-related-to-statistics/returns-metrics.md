@@ -1,7 +1,5 @@
 # Returns Metrics
 
-
-
 {% swagger method="get" path="" baseUrl="/metrics" summary="Returns Metrics" %}
 {% swagger-description %}
 Returns Metrics

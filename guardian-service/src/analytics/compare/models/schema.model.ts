@@ -1,7 +1,7 @@
 import { ICompareOptions } from '../interfaces/compare-options.interface';
 import { FieldModel } from './field.model';
 import { SchemaDocumentModel } from './schema-document.model';
-import { Policy, Schema as SchemaCollection } from '@guardian/common';
+import { Policy, PolicyTool, Schema as SchemaCollection } from '@guardian/common';
 import { HashUtils } from '../utils/hash-utils';
 
 /**
@@ -92,6 +92,12 @@ export class SchemaModel {
     private _policyName: string;
 
     /**
+     * Tool name
+     * @private
+     */
+    private _toolName: string;
+
+    /**
      * Compare Map
      * @private
      */
@@ -143,7 +149,8 @@ export class SchemaModel {
             topicId: this.topicId,
             version: this.version,
             iri: this.iri,
-            policy: this._policyName
+            policy: this._policyName,
+            tool: this._toolName
         };
     }
 
@@ -191,6 +198,16 @@ export class SchemaModel {
      */
     public setPolicy(policy: Policy): SchemaModel {
         this._policyName = policy?.name;
+        return this;
+    }
+
+    /**
+     * Set tool
+     * @param tool
+     * @public
+     */
+    public setTool(tool: PolicyTool): SchemaModel {
+        this._toolName = tool?.name;
         return this;
     }
 

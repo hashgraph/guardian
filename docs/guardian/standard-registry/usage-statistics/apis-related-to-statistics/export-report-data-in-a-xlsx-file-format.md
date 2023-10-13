@@ -1,7 +1,5 @@
 # Export report data in a xlsx file format
 
-
-
 {% swagger method="get" path="" baseUrl="/analytics/reports/{uuid}/export/xlsx" summary="Export report data in a xlsx file format." %}
 {% swagger-description %}
 Returns a .xlsx file

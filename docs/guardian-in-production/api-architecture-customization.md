@@ -164,7 +164,7 @@ After that, we can apply a bunch of improvements such us middlewares or even pac
 
 **Node.js crypto module**: This built-in Node.js module provides cryptographic functionality, such as hashing, encryption, and decryption. It can be used to secure data and protect against various types of attacks, such as data tampering and eavesdropping.
 
-## 3. Dead letter/Retries&#x20;
+## 3. Dead letter/Retries
 
 \
 For some kinds of events due to their own criticality, it would be interesting to contain a recovery or a mechanism to rerun specific payloads, such as dead-letter resources to handle unsubscribed events or even to handle subscriptions that could not run properly. Many applications contain this kind of solution such us Google Pub/Sub, AWS SQS, and so on.

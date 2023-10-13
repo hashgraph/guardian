@@ -9,7 +9,7 @@ Add new contract user. Only users with the Standard Registry role are allowed to
 Contract identifier
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="userId" type="String" %}
+{% swagger-parameter in="body" name="userId" type="String" required="false" %}
 Request Object Parameters
 {% endswagger-parameter %}
 

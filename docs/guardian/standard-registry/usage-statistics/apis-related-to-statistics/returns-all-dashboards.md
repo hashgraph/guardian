@@ -1,7 +1,5 @@
 # Returns all dashboards
 
-
-
 {% swagger method="get" path="" baseUrl="/analytics/dashboards" summary="Returns all dashboards." %}
 {% swagger-description %}
 Returns all dashboards.

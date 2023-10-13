@@ -9,27 +9,27 @@ Creates new contract retire request.
 Contract identifier
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="baseTokenId" type="String" %}
+{% swagger-parameter in="body" name="baseTokenId" type="String" required="false" %}
 
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="oppositeTokenId" type="String" %}
+{% swagger-parameter in="body" name="oppositeTokenId" type="String" required="false" %}
 
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="baseTokenCount" type="Integer" %}
+{% swagger-parameter in="body" name="baseTokenCount" type="Integer" required="false" %}
 
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="oppositeTokenCount" type="Integer" %}
+{% swagger-parameter in="body" name="oppositeTokenCount" type="Integer" required="false" %}
 
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="baseTokenSerials" type="array" %}
+{% swagger-parameter in="body" name="baseTokenSerials" type="array" required="false" %}
 
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="oppositeTokenSerials" type="array" %}
+{% swagger-parameter in="body" name="oppositeTokenSerials" type="array" required="false" %}
 
 {% endswagger-parameter %}
 
