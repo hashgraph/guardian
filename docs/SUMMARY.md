@@ -249,6 +249,8 @@
         * [Previews Imported Tool from Zip](guardian/standard-registry/policies/tools/tools-apis/previews-imported-tool-from-zip.md)
         * [Importing Tool from Zip](guardian/standard-registry/policies/tools/tools-apis/importing-tool-from-zip.md)
         * [Imports new tool from Zip Asynchronously](guardian/standard-registry/policies/tools/tools-apis/imports-new-tool-from-zip-asynchronously.md)
+        * [Imports new tool from IPFS Asynchronously](guardian/standard-registry/policies/tools/tools-apis/imports-new-tool-from-ipfs-asynchronously.md)
+        * [Returns List of Tools](guardian/standard-registry/policies/tools/tools-apis/returns-list-of-tools-1.md)
     * [📁 Modules](guardian/standard-registry/policies/modules/README.md)
       * [💻 Modules using UI](guardian/standard-registry/policies/modules/modules-using-ui.md)
       * [⚙ Modules APIs](guardian/standard-registry/policies/modules/modules-apis/README.md)
