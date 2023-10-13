@@ -88,6 +88,7 @@ export class FieldControl {
             this.controlBold = new FormControl(false);
             this.controlPrivate = new FormControl(false);
             this.controlPattern = new FormControl('');
+            this.hidden = new FormControl(false);
         }
         if (this._entityType) {
             this._entityType.valueChanges
