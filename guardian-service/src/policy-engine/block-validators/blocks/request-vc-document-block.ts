@@ -18,26 +18,12 @@ export class RequestVcDocumentBlock {
     public static async validate(validator: BlockValidator, ref: IBlockProp): Promise<void> {
         try {
             await CommonBlock.validate(validator, ref);
-            // Test schema options
-            if (!ref.options.schema) {
-                validator.addError('Option "schema" is not set');
-                return;
-            }
-            if (typeof ref.options.schema !== 'string') {
-                validator.addError('Option "schema" must be a string');
-                return;
-            }
-
-            if (validator.schemaNotExist(ref.options.schema)) {
-                validator.addError(`Schema with id "${ref.options.schema}" does not exist`);
-                return;
-            }
-            if (ref.options.presetSchema) {
-                if (validator.schemaNotExist(ref.options.presetSchema)) {
-                    validator.addError(`Schema with id "${ref.options.presetSchema}" does not exist`);
-                    return;
-                }
-            }
+            validator.checkBlockError(
+                validator.validateSchemaVariable('schema', ref.options.schema, true)
+            );
+            validator.checkBlockError(
+                validator.validateSchemaVariable('presetSchema', ref.options.presetSchema, false)
+            );
         } catch (error) {
             validator.addError(`Unhandled exception ${validator.getErrorMessage(error)}`);
         }

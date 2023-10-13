@@ -644,6 +644,8 @@ export class PolicyTemplate {
                 this._lastVariables.topics.push(new TopicVariables(topic));
             }
         }
+
+        TemplateUtils.checkSchemaVariables(this._lastVariables.schemas);
     }
 
     public setSchemas(schemas: Schema[]): void {

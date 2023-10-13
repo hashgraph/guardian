@@ -3,6 +3,7 @@ import { IBlockConfig } from "./interfaces/block-config.interface";
 import { PolicyFolder, PolicyItem } from "./interfaces/types";
 import { PolicyModule } from "./module/block.model";
 import { PolicyTool } from "./tool/block.model";
+import { SchemaVariables } from "./variables/schema-variables";
 
 export class TemplateUtils {
     public static buildBlock(
@@ -33,6 +34,30 @@ export class TemplateUtils {
                 }
             }
             return block;
+        }
+    }
+
+    public static checkSchemaVariables(variables: SchemaVariables[]): void {
+        const map = new Set<string>();
+        for (const variable of variables) {
+            variable.disable = false;
+            map.add(variable.value);
+        }
+        TemplateUtils._checkSchemaVariables(variables, map);
+    }
+
+    private static _checkSchemaVariables(variables: SchemaVariables[], map: Set<string>): void {
+        for (const variable of variables) {
+            if(!variable.disable && variable.defs && variable.defs.length) {
+                for (const iri of variable.defs) {
+                    if (!map.has(iri)) {
+                        variable.disable = true;
+                        map.delete(variable.value);
+                        TemplateUtils._checkSchemaVariables(variables, map);
+                        return;
+                    }
+                }
+            }
         }
     }
 }

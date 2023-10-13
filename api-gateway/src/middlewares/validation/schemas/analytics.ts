@@ -112,6 +112,36 @@ export class CompareDocumentsDTO {
     total: any;
 }
 
+export class CompareToolsDTO {
+    @ApiProperty()
+    @IsObject()
+    blocks: any;
+
+    @ApiProperty()
+    @IsObject()
+    left: any;
+
+    @ApiProperty()
+    @IsObject()
+    right: any;
+
+    @ApiProperty()
+    @IsObject()
+    inputEvents: any;
+
+    @ApiProperty()
+    @IsObject()
+    outputEvents: any;
+
+    @ApiProperty()
+    @IsObject()
+    variables: any;
+
+    @ApiProperty()
+    @IsObject()
+    total: any;
+}
+
 export class FilterSearchPoliciesDTO {
     @ApiProperty()
     @IsString()
@@ -202,4 +232,19 @@ export class FilterDocumentsDTO {
     @IsArray()
     @Type(() => String)
     documentIds: string[];
+}
+
+export class FilterToolsDTO {
+    @ApiProperty()
+    @IsString()
+    toolId1: string;
+
+    @ApiProperty()
+    @IsString()
+    toolId2: string;
+
+    @ApiProperty({ type: () => String })
+    @IsArray()
+    @Type(() => String)
+    toolIds: string[];
 }

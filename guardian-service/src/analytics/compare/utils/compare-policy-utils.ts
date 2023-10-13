@@ -17,6 +17,19 @@ import { MergeUtils } from './merge-utils';
  * Compare Utils
  */
 export class ComparePolicyUtils {
+    /**
+     * Convert tree to array
+     * @param tree
+     * @param result
+     * @private
+     */
+    public static treeToArray(tree: IRate<any>, result: IRate<any>[]): IRate<any>[] {
+        result.push(tree);
+        for (const child of tree.getChildren<BlocksRate>()) {
+            ComparePolicyUtils.treeToArray(child, result);
+        }
+        return result;
+    }
 
     /**
      * Convert array rates to table

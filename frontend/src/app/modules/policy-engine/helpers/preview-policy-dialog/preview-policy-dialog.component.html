@@ -46,7 +46,10 @@
                         <div class="field-name">Version</div>
                         <div class="field-value">{{ policy.version }}</div>
                     </div>
-                    <app-new-versions class="version-container__new-versions" type="policy" [newVersions]="newVersions"
+                    <app-new-versions 
+                        class="version-container__new-versions" 
+                        type="policy" 
+                        [newVersions]="newVersions"
                         (onClick)="onNewVersionClick($event)"></app-new-versions>
                 </div>
 

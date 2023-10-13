@@ -38,6 +38,11 @@ export class ToolValidator {
      */
     private readonly schemas: Map<string, ISchema>;
     /**
+     * Unsupported Schemas
+     * @private
+     */
+    private readonly unsupportedSchemas: Set<string>;
+    /**
      * Tokens
      * @private
      */
@@ -81,6 +86,7 @@ export class ToolValidator {
         this.errors = [];
         this.permissions = ['NO_ROLE', 'ANY_ROLE', 'OWNER'];
         this.schemas = new Map();
+        this.unsupportedSchemas = new Set();
         this.tokens = [];
         this.topics = [];
         this.tokenTemplates = [];
@@ -106,13 +112,13 @@ export class ToolValidator {
                 }
             }
             await this.registerSchemas();
+            this.checkSchemas();
             return true;
         }
     }
 
     /**
      * Register schemas
-     * @param block
      */
     private async registerSchemas(): Promise<void> {
         const db = new DatabaseServer(null);
@@ -125,6 +131,25 @@ export class ToolValidator {
         const schemas = await DatabaseServer.getSchemas({ topicId: this.topicId });
         for (const schema of schemas) {
             this.schemas.set(schema.iri, schema);
+        }
+    }
+
+    /**
+     * Check schemas
+     */
+    private checkSchemas(): void {
+        for (const schema of this.schemas.values()) {
+            const defs = schema?.document?.$defs;
+            if (defs && Object.prototype.toString.call(defs) === '[object Object]') {
+                for (const iri of Object.keys(defs)) {
+                    if (!this.schemaExist(iri)) {
+                        this.schemas.delete(schema.iri);
+                        this.unsupportedSchemas.add(schema.iri);
+                        this.checkSchemas();
+                        return;
+                    }
+                }
+            }
         }
     }
 
@@ -202,6 +227,8 @@ export class ToolValidator {
                         break;
                     case 'Topic':
                         this.topics.push(variable.name);
+                        break;
+                    case 'String':
                         break;
                     default:
                         this.errors.push(`Type '${variable.type}' does not exist`);
@@ -377,12 +404,28 @@ export class ToolValidator {
      */
     public schemaExist(iri: string): boolean {
         if (this.schemas.has(iri)) {
-            return true;
+            return !!this.schemas.get(iri);
         }
         for (const item of this.tools.values()) {
             const exist = item.schemaExist(iri);
             if (exist) {
                 return exist;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Unsupported schema
+     * @param iri
+     */
+    public unsupportedSchema(iri: string): boolean {
+        if (this.unsupportedSchemas.has(iri)) {
+            return true;
+        }
+        for (const item of this.tools.values()) {
+            if (item.unsupportedSchema(iri)) {
+                return true;
             }
         }
         return false;

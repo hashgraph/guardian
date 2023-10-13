@@ -96,7 +96,7 @@
                             class="propRow subRow">
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">
-                                <span class="required-fields">*</span>
+                                <!-- <span class="required-fields">*</span> -->
                                 Base schema
                             </td>
                             <td *ngIf="!baseSchemaReadOnly(item.baseSchema)" class="propRowCell">
@@ -106,11 +106,14 @@
                                     [disabled]="readonly">
                                     <mat-option 
                                         *ngFor="let schema of baseSchemas" 
+                                        class="schema-variable"
+                                        [attr.status]="schema.status"
                                         matTooltipPosition="below" 
                                         matTooltipClass="guardian-tooltip small-guardian-tooltip" 
                                         matTooltipShowDelay="500"
                                         [matTooltip]="schema.tooltip"
                                         [value]="schema.value"
+                                        [attr.disable]="schema.disable"
                                     >{{schema.displayName}}</mat-option>
                                 </mat-select>
                             </td>

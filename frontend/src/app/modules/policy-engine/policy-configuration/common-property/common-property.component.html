@@ -119,6 +119,7 @@
                     matTooltipShowDelay="500"
                     [matTooltip]="schema.tooltip"
                     [value]="schema.value"
+                    [attr.disable]="schema.disable"
                 >{{schema.displayName}}</mat-option>
             </mat-select>
             <mat-select *ngSwitchCase="'Block'" multiple [(value)]="value" [disabled]="readonly"
@@ -176,6 +177,7 @@
                     matTooltipShowDelay="500"
                     [matTooltip]="schema.tooltip"
                     [value]="schema.value"
+                    [attr.disable]="schema.disable"
                 >{{schema.displayName}}</mat-option>
             </mat-select>
         </td>

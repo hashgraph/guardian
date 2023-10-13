@@ -83,6 +83,12 @@ export class PolicyModule extends BaseEntity {
     type?: string;
 
     /**
+     * Tools
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    tools?: any;
+
+    /**
      * Set policy defaults
      */
     @BeforeCreate()

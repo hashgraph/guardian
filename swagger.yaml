@@ -412,6 +412,51 @@ paths:
       tags: *ref_0
       security:
         - bearerAuth: []
+  /analytics/compare/tools:
+    post:
+      operationId: AnalyticsApi_compareTools
+      summary: Compare tools.
+      description: >-
+        Compare tools. Only users with the Standard Registry role are allowed to
+        make the request.
+      parameters: []
+      requestBody:
+        required: true
+        description: Filters.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FilterToolsDTO'
+            examples:
+              Filter1:
+                value:
+                  toolId1: '000000000000000000000001'
+                  toolId2: '000000000000000000000002'
+              Filter2:
+                value:
+                  toolIds:
+                    - '000000000000000000000001'
+                    - '000000000000000000000002'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompareToolsDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
+      security:
+        - bearerAuth: []
   /analytics/compare/policies/export:
     post:
       operationId: AnalyticsApi_comparePoliciesExport
@@ -594,6 +639,51 @@ paths:
       tags: *ref_0
       security:
         - bearerAuth: []
+  /analytics/compare/tools/export:
+    post:
+      operationId: AnalyticsApi_compareToolsExport
+      summary: Compare tools.
+      description: >-
+        Compare tools. Only users with the Standard Registry role are allowed to
+        make the request.
+      parameters: []
+      requestBody:
+        required: true
+        description: Filters.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FilterToolsDTO'
+            examples:
+              Filter1:
+                value:
+                  toolId1: '000000000000000000000001'
+                  toolId2: '000000000000000000000002'
+              Filter2:
+                value:
+                  toolIds:
+                    - '000000000000000000000001'
+                    - '000000000000000000000002'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: string
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
+      security:
+        - bearerAuth: []
   /artifacts:
     get:
       tags:
@@ -652,32 +742,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /artifacts/{policyId}:
+  /artifacts/{parentId}:
     post:
-      tags:
-        - artifacts
+      operationId: ArtifactApi_uploadArtifacts
+      summary: Upload artifact.
       description: Upload artifact. For users with the Standard Registry role only.
-      security:
-        - bearerAuth: []
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                artifacts:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
       parameters:
-        - in: path
-          name: policyId
+        - name: parentId
+          required: true
+          in: path
+          description: Parent ID
           schema:
             type: string
-          required: true
-          description: Policy identifier
-      summary: Upload Artifact.
       responses:
         '200':
           description: Successful operation.
@@ -686,7 +762,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Artifact'
+                  $ref: '#/components/schemas/ArtifactDTOItem'
         '401':
           description: Unauthorized.
         '403':
@@ -696,7 +772,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags:
+        - artifacts
+      security:
+        - bearerAuth: []
   /artifacts/{artifactId}:
     delete:
       tags:
@@ -4467,6 +4547,48 @@ paths:
       tags: *ref_5
       security:
         - bearerAuth: []
+  /schemas/list/sub:
+    get:
+      operationId: SchemaApi_getSub
+      summary: Returns a list of schemas.
+      description: >-
+        Returns a list of schemas. Only users with the Standard Registry role
+        are allowed to make the request.
+      parameters:
+        - name: category
+          required: false
+          in: query
+          description: Schema category
+          schema:
+            type: string
+        - name: topicId
+          required: false
+          in: query
+          description: Topic Id
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SchemaDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_5
+      security:
+        - bearerAuth: []
   /schemas/push/{topicId}:
     post:
       tags:
@@ -7444,6 +7566,51 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /artifacts/{policyId}:
+    post:
+      tags:
+        - artifacts
+      description: Upload artifact. For users with the Standard Registry role only.
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                artifacts:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      parameters:
+        - in: path
+          name: policyId
+          schema:
+            type: string
+          required: true
+          description: Policy identifier
+      summary: Upload Artifact.
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Artifact'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /artifact:
     get:
       deprecated: true
@@ -8056,6 +8223,44 @@ components:
         - documents
         - left
         - right
+        - total
+    FilterToolsDTO:
+      type: object
+      properties:
+        toolId1:
+          type: string
+        toolId2:
+          type: string
+        toolIds:
+          type: string
+      required:
+        - toolId1
+        - toolId2
+        - toolIds
+    CompareToolsDTO:
+      type: object
+      properties:
+        blocks:
+          type: object
+        left:
+          type: object
+        right:
+          type: object
+        inputEvents:
+          type: object
+        outputEvents:
+          type: object
+        variables:
+          type: object
+        total:
+          type: object
+      required:
+        - blocks
+        - left
+        - right
+        - inputEvents
+        - outputEvents
+        - variables
         - total
     ArtifactDTOItem:
       type: object

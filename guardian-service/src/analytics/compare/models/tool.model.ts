@@ -1,33 +1,45 @@
-import { PolicyModule } from '@guardian/common';
-import { BlockModel } from './block.model';
+import { PolicyTool } from '@guardian/common';
 import { ICompareOptions } from '../interfaces/compare-options.interface';
-import { IKeyMap } from '../interfaces/key-map.interface';
-import { PropertyModel } from './property.model';
-import { PropertyType } from '../types/property.type';
+import { BlockModel } from './block.model';
 import { VariableModel } from './variable.model';
 import { CompareUtils } from '../utils/utils';
+import { SchemaModel } from './schema.model';
+import { FileModel } from './file.model';
+import { IKeyMap } from '../interfaces/key-map.interface';
 
 /**
- * Policy Model
+ * Tool Model
  */
-export class ModuleModel {
+export class ToolModel {
     /**
-     * Policy id
+     * Tool id
      * @public
      */
     public readonly id: string;
 
     /**
-     * Policy description
+     * Tool name
+     * @public
+     */
+    public readonly name: string;
+
+    /**
+     * Tool description
      * @public
      */
     public readonly description: string;
 
     /**
-     * Policy name
+     * Tool hash
      * @public
      */
-    public readonly name: string;
+    public readonly hash: string;
+
+    /**
+     * Tool messageId
+     * @public
+     */
+    public readonly messageId: string;
 
     /**
      * Input Events
@@ -65,23 +77,37 @@ export class ModuleModel {
      */
     private readonly _list: BlockModel[];
 
-    constructor(policyModule: PolicyModule, options: ICompareOptions) {
+    /**
+     * All schemas
+     * @private
+     */
+    private _schemas: SchemaModel[];
+
+    /**
+     * All artifacts
+     * @private
+     */
+    private _artifacts: FileModel[];
+
+    constructor(tool: PolicyTool, options: ICompareOptions) {
         this.options = options;
 
-        this.id = policyModule.id;
-        this.name = policyModule.name;
-        this.description = policyModule.description;
+        this.id = tool.id;
+        this.name = tool.name;
+        this.description = tool.description;
+        this.hash = tool.hash;
+        this.messageId = tool.messageId;
 
-        if (!policyModule.config) {
-            throw new Error('Empty policy model');
+        if (!tool.config) {
+            throw new Error('Empty tool model');
         }
 
-        this.tree = CompareUtils.createBlockModel(policyModule.config, 0);
+        this.tree = CompareUtils.createToolModel(tool.config, 0);
         this._list = this.getAllBlocks(this.tree, []);
 
-        this.inputEvents = this.createInputEvents(policyModule.config.inputEvents, this.options);
-        this.outputEvents = this.createOutputEvents(policyModule.config.outputEvents, this.options);
-        this.variables = this.createVariables(policyModule.config.variables, this.options);
+        this.inputEvents = this.createInputEvents(tool.config.inputEvents, this.options);
+        this.outputEvents = this.createOutputEvents(tool.config.outputEvents, this.options);
+        this.variables = this.createVariables(tool.config.variables, this.options);
     }
 
     /**
@@ -96,19 +122,6 @@ export class ModuleModel {
             this.getAllBlocks(child, list);
         }
         return list;
-    }
-
-    /**
-     * Update all weight (all blocks)
-     * @param root
-     * @param options - comparison options
-     * @public
-     */
-    private updateAllBlocks(root: BlockModel, options: ICompareOptions): void {
-        for (const child of root.children) {
-            this.updateAllBlocks(child, options);
-        }
-        root.update(options);
     }
 
     /**
@@ -168,13 +181,55 @@ export class ModuleModel {
     }
 
     /**
+     * Set schema models
+     * @param schemas
+     * @public
+     */
+    public setSchemas(schemas: SchemaModel[]): ToolModel {
+        this._schemas = schemas;
+        return this;
+    }
+
+    /**
+     * Set artifact models
+     * @param artifacts
+     * @public
+     */
+    public setArtifacts(artifacts: FileModel[]): ToolModel {
+        this._artifacts = artifacts;
+        return this;
+    }
+
+    /**
+     * Update all weight (all blocks)
+     * @param root
+     * @param options - comparison options
+     * @public
+     */
+    private updateAllBlocks(root: BlockModel, options: ICompareOptions): void {
+        for (const child of root.children) {
+            this.updateAllBlocks(child, options);
+        }
+        root.update(options);
+    }
+
+    /**
      * Update all weight
      * @public
      */
-    public update(): ModuleModel {
+    public update(): ToolModel {
         const blockMap: IKeyMap<BlockModel> = {};
         for (const block of this._list) {
             blockMap[block.tag] = block;
+        }
+        const schemaMap: IKeyMap<SchemaModel> = {};
+        for (const schema of this._schemas) {
+            schemaMap[schema.iri] = schema;
+        }
+
+        for (const block of this._list) {
+            block.updateArtifacts(this._artifacts, this.options);
+            block.updateSchemas(schemaMap, this.options);
         }
 
         this.updateAllBlocks(this.tree, this.options);
@@ -194,20 +249,9 @@ export class ModuleModel {
         return {
             id: this.id,
             name: this.name,
-            description: this.description
+            description: this.description,
+            hash: this.hash,
+            messageId: this.messageId
         };
-    }
-
-    /**
-     * Get all properties (all blocks)
-     * @param type - filter by property type
-     * @public
-     */
-    public getAllProp<T>(type: PropertyType): PropertyModel<T>[] {
-        let prop = [];
-        for (const block of this._list) {
-            prop = [...prop, ...block.getPropList(type)];
-        }
-        return prop;
     }
 }

@@ -70,8 +70,14 @@
                     <mat-option value="hederaAccount">Account</mat-option>
                 </mat-optgroup>
                 <mat-optgroup *ngIf="schemaTypes && schemaTypes.length" label="Schema defined">
-                    <mat-option *ngFor="let type of schemaTypes" [value]="type.value" [title]="type.name">
-                        {{type.name}}
+                    <mat-option 
+                        *ngFor="let type of schemaTypes"
+                        class="sub-schema-opt sub-schema-type-{{type.type}}" 
+                        [value]="type.value" 
+                        [title]="type.title">
+                        <span *ngIf="type.component" class="sub-schema-component">{{type.component}}:</span>
+                        <span class="sub-schema-name">{{type.name}}</span>
+                        <span *ngIf="type.version" class="sub-schema-version">{{type.version}}</span>
                     </mat-option>
                 </mat-optgroup>
             </mat-select>

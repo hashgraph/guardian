@@ -100,11 +100,11 @@ export class SchemaConfigComponent implements OnInit {
     public type: SchemaType = SchemaType.System;
     public isConfirmed: boolean = false;
     public currentTopic: string = '';
-    public schemas: Schema[] = [];
-    public selectedAll: boolean = false;
+    public page: Schema[] = [];
     public pageIndex: number = 0;
     public pageSize: number = 25;
     public count: number = 0;
+    public selectedAll: boolean = false;
     public owner: string = '';
     public policyNameByTopic: { [x: string]: string } = {};
     public moduleNameByTopic: { [x: string]: string } = {};
@@ -118,9 +118,9 @@ export class SchemaConfigComponent implements OnInit {
     public modules: any[] = [];
     public tools: any[] = [];
     public draftTools: any[] = [];
-    public allSchemas: any[] = [];
     public columns: string[] = [];
-    private schemasMap: { [x: string]: ISchema[] } = {};
+    public compareList: any[] = [];
+    // private schemasMap: { [x: string]: ISchema[] } = {};
 
     constructor(
         public tagsService: TagsService,
@@ -271,7 +271,7 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     private loadError(error: any): void {
-        this.schemas = [];
+        this.page = [];
         this.count = 0;
         this.loading = false;
         console.error(error);
@@ -339,9 +339,14 @@ export class SchemaConfigComponent implements OnInit {
                         this.toolIdByTopic[tool.topicId] = tool.id;
                         this.toolNameByTopic[tool.topicId] = tool.name;
                         this.tools.push(tool);
-                        this.readonlyByTopic[tool.topicId] = tool.creator !== this.owner;
-                        if (tool.status !== 'PUBLISHED') {
+                        if (
+                            tool.creator === this.owner &&
+                            tool.status !== 'PUBLISHED'
+                        ) {
+                            this.readonlyByTopic[tool.topicId] = false;
                             this.draftTools.push(tool);
+                        } else {
+                            this.readonlyByTopic[tool.topicId] = true;
                         }
                     }
                 }
@@ -367,7 +372,7 @@ export class SchemaConfigComponent implements OnInit {
                         schema.fullName = name;
                     }
                 }
-                this.allSchemas = list;
+                this.compareList = list;
 
                 //LoadData
                 this.loadSchemas();
@@ -383,7 +388,7 @@ export class SchemaConfigComponent implements OnInit {
         this.loading = true;
         this.pageIndex = 0;
         this.pageSize = 25;
-        this.schemas = [];
+        this.page = [];
         this.columns = this.getColumns();
         this.currentTopic = this.getTopicId();
         let loader: Observable<HttpResponse<ISchema[]>>;
@@ -406,37 +411,19 @@ export class SchemaConfigComponent implements OnInit {
             }
         }
         loader.subscribe((schemasResponse: HttpResponse<ISchema[]>) => {
-            this.finishLoadSchemas(schemasResponse);
+            this.page = SchemaHelper.map(schemasResponse.body || []);
+            this.count = (schemasResponse.headers.get('X-Total-Count') || this.page.length) as number;
             this.loadTagsData();
         }, (e) => {
             this.loadError(e);
         });
     }
 
-    private finishLoadSchemas(schemasResponse: HttpResponse<ISchema[]>) {
-        this.schemas = SchemaHelper.map(schemasResponse.body || []);
-        this.count = (schemasResponse.headers.get('X-Total-Count') || this.schemas.length) as number;
-        this.schemaMapping(this.schemas);
-    }
-
-    private schemaMapping(schemas: ISchema[]) {
-        this.schemasMap = {};
-        for (let i = 0; i < schemas.length; i++) {
-            const schema: any = schemas[i];
-            schema.readonly = schema.readonly || this.readonlyByTopic[schema.topicId];
-            if (this.schemasMap[schema.topicId]) {
-                this.schemasMap[schema.topicId].push(schema);
-            } else {
-                this.schemasMap[schema.topicId] = [schema];
-            }
-        }
-    }
-
     private loadTagsData() {
         if (this.type === SchemaType.Policy) {
-            const ids = this.schemas.map(e => e.id);
+            const ids = this.page.map(e => e.id);
             this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
-                for (const schema of this.schemas) {
+                for (const schema of this.page) {
                     (schema as any)._tags = data[schema.id];
                 }
                 setTimeout(() => {
@@ -488,25 +475,25 @@ export class SchemaConfigComponent implements OnInit {
 
     public selectAll(selectedAll: boolean): void {
         this.selectedAll = selectedAll;
-        for (let i = 0; i < this.schemas.length; i++) {
-            const element: any = this.schemas[i];
+        for (let i = 0; i < this.page.length; i++) {
+            const element: any = this.page[i];
             if (element.messageId) {
                 element._selected = selectedAll;
             }
         }
-        this.schemas = this.schemas.slice();
+        this.page = this.page.slice();
     }
 
     public selectItem(): void {
         this.selectedAll = true;
-        for (let i = 0; i < this.schemas.length; i++) {
-            const element: any = this.schemas[i];
+        for (let i = 0; i < this.page.length; i++) {
+            const element: any = this.page[i];
             if (!element._selected) {
                 this.selectedAll = false;
                 break;
             }
         }
-        this.schemas = this.schemas.slice();
+        this.page = this.page.slice();
     }
 
     private createSchema(schema: Schema | null): void {
@@ -698,17 +685,6 @@ export class SchemaConfigComponent implements OnInit {
         }
     }
 
-    private unpublished(element: Schema): void {
-        this.loading = true;
-        this.schemaService.unpublished(element.id).subscribe((data: any) => {
-            const schemas = SchemaHelper.map(data);
-            this.schemaMapping(schemas);
-            this.loadSchemas();
-        }, (e) => {
-            this.loadError(e);
-        });
-    }
-
     private importByMessage(data: any, topicId: string): void {
         this.loading = true;
         switch (this.type) {
@@ -778,7 +754,6 @@ export class SchemaConfigComponent implements OnInit {
             data: {
                 type: 'new',
                 schemaType: this.type,
-                schemasMap: this.schemasMap,
                 topicId: this.currentTopic,
                 policies: this.policies,
                 modules: this.modules,
@@ -812,9 +787,10 @@ export class SchemaConfigComponent implements OnInit {
             data: {
                 type: 'edit',
                 schemaType: this.type,
-                schemasMap: this.schemasMap,
                 topicId: this.currentTopic,
                 policies: this.policies,
+                modules: this.modules,
+                tools: this.draftTools,
                 scheme: element
             }
         });
@@ -877,9 +853,11 @@ export class SchemaConfigComponent implements OnInit {
             disableClose: true,
             data: {
                 type: 'version',
-                schemasMap: this.schemasMap,
                 topicId: this.currentTopic,
+                schemaType: this.type,
                 policies: this.policies,
+                modules: this.modules,
+                tools: this.draftTools,
                 scheme: element
             }
         });
@@ -903,9 +881,11 @@ export class SchemaConfigComponent implements OnInit {
             disableClose: true,
             data: {
                 type: 'version',
-                schemasMap: this.schemasMap,
                 topicId: this.currentTopic,
+                schemaType: this.type,
                 policies: this.policies,
+                modules: this.modules,
+                tools: this.draftTools,
                 scheme: newDocument
             }
         });
@@ -917,10 +897,7 @@ export class SchemaConfigComponent implements OnInit {
     public onPublish(element: Schema): void {
         const dialogRef = this.dialog.open(SetVersionDialog, {
             width: '350px',
-            disableClose: true,
-            data: {
-                schemas: this.schemas
-            }
+            disableClose: true
         });
         dialogRef.afterClosed().subscribe(async (version) => {
             if (version) {
@@ -959,7 +936,10 @@ export class SchemaConfigComponent implements OnInit {
             data: {
                 schemas: schemas,
                 topicId: this.currentTopic,
+                schemaType: this.type,
                 policies: this.policies,
+                modules: this.modules,
+                tools: this.draftTools
             }
         });
         dialogRef.afterClosed().subscribe(async (result) => {
@@ -1013,7 +993,7 @@ export class SchemaConfigComponent implements OnInit {
             data: {
                 schema: element,
                 policies: this.policies,
-                schemas: this.allSchemas
+                schemas: this.compareList
             }
         });
         dialogRef.afterClosed().subscribe(async (result) => {

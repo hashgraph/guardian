@@ -8,12 +8,16 @@ export class SchemaVariables {
     public sourceVersion?: string;
     public status?: string;
     public data?: Schema;
+    public disable: boolean;
+    public defs: string[];
 
     constructor(
         schema?: Schema | ModuleVariable | string,
         value?: string,
         baseSchema?: Schema
     ) {
+        this.disable = false;
+        this.defs = [];
         if (typeof schema === 'string') {
             this.name = schema;
             this.value = schema;
@@ -30,6 +34,10 @@ export class SchemaVariables {
             this.status = schema.status;
             this.value = schema.iri || '';
             this.data = schema;
+            const defs = schema?.document?.$defs;
+            if (defs && Object.prototype.toString.call(defs) === '[object Object]') {
+                this.defs = Object.keys(defs);
+            }
         } else {
             this.name = '';
             this.value = '';

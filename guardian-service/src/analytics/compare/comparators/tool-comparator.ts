@@ -1,25 +1,23 @@
 import { DatabaseServer } from '@guardian/common';
-import { CSV } from '../../table/csv';
-import { ReportTable } from '../../table/report-table';
 import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { ToolModel } from '../models/tool.model';
+import { SchemaModel } from '../models/schema.model';
 import { ICompareResult } from '../interfaces/compare-result.interface';
 import { IMultiCompareResult } from '../interfaces/multi-compare-result.interface';
-import { IRate } from '../interfaces/rate.interface';
-import { IReportTable } from '../interfaces/report-table.interface';
 import { FileModel } from '../models/file.model';
-import { PolicyModel } from '../models/policy.model';
-import { SchemaModel } from '../models/schema.model';
-import { TokenModel } from '../models/token.model';
-import { BlocksRate } from '../rates/blocks-rate';
-import { PropertyType } from '../types/property.type';
+import { ReportTable } from '../../table/report-table';
 import { ComparePolicyUtils } from '../utils/compare-policy-utils';
-import { MultiCompareUtils } from '../utils/multi-compare-utils';
+import { BlocksRate } from '../rates/blocks-rate';
+import { IRate } from '../interfaces/rate.interface';
 import { CompareUtils } from '../utils/utils';
+import { CSV } from '../../table/csv';
+import { IReportTable } from '../interfaces/report-table.interface';
+import { MultiCompareUtils } from '../utils/multi-compare-utils';
 
 /**
- * Component for comparing two policies
+ * Component for comparing tools
  */
-export class PolicyComparator {
+export class ToolComparator {
     /**
      * Properties
      * 0 - Don't compare
@@ -81,28 +79,44 @@ export class PolicyComparator {
     }
 
     /**
-     * Compare two policies
-     * @param policy1 - left policy
-     * @param policy2 - right policy
+     * Compare tools
+     * @param tools
+     * @public
+     */
+    public compare(tools: ToolModel[]): ICompareResult<any>[] {
+        const left = tools[0];
+        const rights = tools.slice(1);
+        const results: ICompareResult<any>[] = [];
+        for (const right of rights) {
+            const result = this.compareTwoTools(left, right);
+            results.push(result);
+        }
+        return results;
+    }
+
+    /**
+     * Compare two tools
+     * @param tool1 - left tool
+     * @param tool2 - right tool
      * @private
      */
-    private compareTwoPolicies(policy1: PolicyModel, policy2: PolicyModel): ICompareResult<any> {
+    private compareTwoTools(tool1: ToolModel, tool2: ToolModel): ICompareResult<any> {
         const blockColumns = [
             { name: 'lvl', label: 'Offset', type: 'number' },
-            { name: 'type', label: '', type: 'string' },
-            { name: 'block_type', label: '', type: 'string' },
             { name: 'left_index', label: 'Index', type: 'number' },
             { name: 'left_type', label: 'Type', type: 'string' },
             { name: 'left_tag', label: 'Tag', type: 'string' },
             { name: 'right_index', label: 'Index', type: 'number' },
             { name: 'right_type', label: 'Type', type: 'string' },
             { name: 'right_tag', label: 'Tag', type: 'string' },
-            { name: 'index_rate', label: 'Index Rate', type: 'number', display: 'Rate' },
-            { name: 'permission_rate', label: 'Permission Rate', type: 'number', display: 'Rate' },
-            { name: 'prop_rate', label: 'Prop Rate', type: 'number', display: 'Rate' },
-            { name: 'event_rate', label: 'Event Rate', type: 'number', display: 'Rate' },
-            { name: 'artifacts_rate', label: 'Artifact Rate', type: 'number', display: 'Rate' },
-            { name: 'total_rate', label: 'Total Rate', type: 'number', display: 'Rate' },
+            { name: 'index_rate', label: 'Index Rate', type: 'number' },
+            { name: 'permission_rate', label: 'Permission Rate', type: 'number' },
+            { name: 'prop_rate', label: 'Prop Rate', type: 'number' },
+            { name: 'event_rate', label: 'Event Rate', type: 'number' },
+            { name: 'artifacts_rate', label: 'Artifact Rate', type: 'number' },
+            { name: 'total_rate', label: 'Total Rate', type: 'number' },
+            { name: 'type', label: '', type: 'string' },
+            { name: 'block_type', label: '', type: 'string' },
             { name: 'left', label: '', type: 'object' },
             { name: 'right', label: '', type: 'object' },
             { name: 'properties', label: '', type: 'object' },
@@ -110,41 +124,37 @@ export class PolicyComparator {
             { name: 'permissions', label: '', type: 'object' },
             { name: 'artifacts', label: '', type: 'object' }
         ];
-        const propColumns = [
+        const columnsVariables = [
             { name: 'left_name', label: 'Name', type: 'string' },
             { name: 'right_name', label: 'Name', type: 'string' },
-            { name: 'total_rate', label: 'Total Rate', type: 'number', display: 'Rate' },
+            { name: 'total_rate', label: 'Total Rate', type: 'number' },
             { name: 'left', label: '', type: 'object' },
             { name: 'right', label: '', type: 'object' },
             { name: 'type', label: '', type: 'string' },
             { name: 'properties', label: '', type: 'object' }
         ];
-        const treeTable = new ReportTable(blockColumns);
-        const rolesTable = new ReportTable(propColumns);
-        const groupsTable = new ReportTable(propColumns);
-        const topicsTable = new ReportTable(propColumns);
-        const tokensTable = new ReportTable(propColumns);
 
-        const tree = ComparePolicyUtils.compareBlocks(policy1.tree, policy2.tree, this.options);
-        const roles = ComparePolicyUtils.compareArray(policy1.roles, policy2.roles, this.options);
-        const groups = ComparePolicyUtils.compareArray(policy1.groups, policy2.groups, this.options);
-        const topics = ComparePolicyUtils.compareArray(policy1.topics, policy2.topics, this.options);
-        const tokens = ComparePolicyUtils.compareArray(policy1.tokens, policy2.tokens, this.options);
+        const treeTable = new ReportTable(blockColumns);
+        const inputEventsTable = new ReportTable(columnsVariables);
+        const outputEventsTable = new ReportTable(columnsVariables);
+        const variablesTable = new ReportTable(columnsVariables);
+
+        const tree = ComparePolicyUtils.compareBlocks(tool1.tree, tool2.tree, this.options);
+        const inputEvents = ComparePolicyUtils.compareArray(tool1.inputEvents, tool2.inputEvents, this.options);
+        const outputEvents = ComparePolicyUtils.compareArray(tool1.outputEvents, tool2.outputEvents, this.options);
+        const variables = ComparePolicyUtils.compareArray(tool1.variables, tool2.variables, this.options);
         const blocks = ComparePolicyUtils.treeToArray(tree, []);
 
         this.treeToTable(tree, treeTable, 1);
-        this.ratesToTable(roles, rolesTable);
-        this.ratesToTable(groups, groupsTable);
-        this.ratesToTable(topics, topicsTable);
-        this.ratesToTable(tokens, tokensTable);
+        this.ratesToTable(inputEvents, inputEventsTable);
+        this.ratesToTable(outputEvents, outputEventsTable);
+        this.ratesToTable(variables, variablesTable);
 
         const blockRate = CompareUtils.total(blocks);
-        const roleRate = CompareUtils.total(roles);
-        const groupRate = CompareUtils.total(groups);
-        const topicRate = CompareUtils.total(topics);
-        const tokenRate = CompareUtils.total(tokens);
+        const groupRate = CompareUtils.total(inputEvents);
+        const topicRate = CompareUtils.total(outputEvents);
+        const tokenRate = CompareUtils.total(variables);
         const otherRate = CompareUtils.calcTotalRate(
-            roleRate,
             groupRate,
             topicRate,
             tokenRate
@@ -152,80 +162,59 @@ export class PolicyComparator {
         const total = CompareUtils.calcTotalRate(otherRate, blockRate);
 
         const result: ICompareResult<any> = {
-            left: policy1.info(),
-            right: policy2.info(),
+            left: tool1.info(),
+            right: tool2.info(),
             total,
             blocks: {
                 columns: blockColumns,
                 report: treeTable.object(),
             },
-            roles: {
-                columns: propColumns,
-                report: rolesTable.object(),
+            inputEvents: {
+                columns: columnsVariables,
+                report: inputEventsTable.object(),
             },
-            groups: {
-                columns: propColumns,
-                report: groupsTable.object(),
+            outputEvents: {
+                columns: columnsVariables,
+                report: outputEventsTable.object(),
             },
-            topics: {
-                columns: propColumns,
-                report: topicsTable.object(),
-            },
-            tokens: {
-                columns: propColumns,
-                report: tokensTable.object(),
+            variables: {
+                columns: columnsVariables,
+                report: variablesTable.object(),
             }
         }
         return result;
     }
 
     /**
-     * Compare policies
-     * @param policies
-     * @public
-     */
-    public compare(policies: PolicyModel[]): ICompareResult<any>[] {
-        const left = policies[0];
-        const rights = policies.slice(1);
-        const results: ICompareResult<any>[] = [];
-        for (const right of rights) {
-            const result = this.compareTwoPolicies(left, right);
-            results.push(result);
-        }
-        return results;
-    }
-
-    /**
      * Merge compare results
-     * @param policies
+     * @param results
      * @public
      */
-    public mergeCompareResults(results: ICompareResult<any>[]): IMultiCompareResult<any> {
-        const blocksTable = this.mergeBlockTables(results.map(r => r.blocks));
-        const rolesTable = this.mergePropTables(results.map(r => r.roles));
-        const groupsTable = this.mergePropTables(results.map(r => r.groups));
-        const topicsTable = this.mergePropTables(results.map(r => r.topics));
-        const tokensTable = this.mergePropTables(results.map(r => r.tokens));
+    public static mergeCompareResults(results: ICompareResult<any>[]): IMultiCompareResult<any> {
+        const blocksTable = ToolComparator.mergeBlockTables(results.map(r => r.blocks));
+        const inputEventsTable = ToolComparator.mergePropTables(results.map(r => r.inputEvents));
+        const outputEventsTable = ToolComparator.mergePropTables(results.map(r => r.outputEvents));
+        const variablesTable = ToolComparator.mergePropTables(results.map(r => r.variables));
+
         const multiResult: IMultiCompareResult<any> = {
             size: results.length + 1,
             left: results[0].left,
             rights: results.map(r => r.right),
             totals: results.map(r => r.total),
             blocks: blocksTable,
-            roles: rolesTable,
-            groups: groupsTable,
-            topics: topicsTable,
-            tokens: tokensTable
+            inputEvents: inputEventsTable,
+            outputEvents: outputEventsTable,
+            variables: variablesTable
         };
         return multiResult;
     }
 
     /**
-     * Calculate total rate
-     * @param rates
+     * Merge table
+     * @param tables
      * @private
      */
-    private mergeBlockTables(tables: IReportTable[]): IReportTable {
+    private static mergeBlockTables(tables: IReportTable[]): IReportTable {
         const blockColumns: any[] = [
             { name: 'lvl', label: 'Offset', type: 'number' },
             { name: 'block_type', label: '', type: 'string' },
@@ -288,10 +277,10 @@ export class PolicyComparator {
                 }
             }
 
-            this.mergeRateTables(row, cols, 'properties');
-            this.mergeRateTables(row, cols, 'events');
-            this.mergeRateTables(row, cols, 'permissions');
-            this.mergeRateTables(row, cols, 'artifacts');
+            ToolComparator.mergeRateTables(row, cols, 'properties');
+            ToolComparator.mergeRateTables(row, cols, 'events');
+            ToolComparator.mergeRateTables(row, cols, 'permissions');
+            ToolComparator.mergeRateTables(row, cols, 'artifacts');
 
             table.push(row);
         }
@@ -306,7 +295,7 @@ export class PolicyComparator {
      * @param tables
      * @private
      */
-    private mergePropTables(tables: IReportTable[]): IReportTable {
+    private static mergePropTables(tables: IReportTable[]): IReportTable {
         const propColumns = [
             { name: 'left', label: '', type: 'object' },
             { name: 'left_name', label: 'Name', type: 'string' },
@@ -341,7 +330,7 @@ export class PolicyComparator {
                 }
             }
 
-            this.mergeRateTables(row, cols, 'properties');
+            ToolComparator.mergeRateTables(row, cols, 'properties');
 
             table.push(row);
         }
@@ -356,7 +345,7 @@ export class PolicyComparator {
      * @param rates
      * @private
      */
-    private mergeRateTables(row: any, cols: any[], propName: string): any {
+    private static mergeRateTables(row: any, cols: any[], propName: string): any {
         row[propName] = [];
         const data: any[] = [];
         for (const colData of cols) {
@@ -372,6 +361,74 @@ export class PolicyComparator {
             row[propName].push(propRow);
         }
         return row;
+    }
+
+    /**
+     * Convert result to CSV
+     * @param result
+     * @public
+     */
+    public static tableToCsv(results: ICompareResult<any>[]): string {
+        const csv = new CSV();
+
+        csv.add('Tool 1').addLine();
+        csv
+            .add('Tool ID')
+            .add('Tool Name')
+            .add('Tool Description')
+            .add('Tool Hash')
+            .add('Tool Message')
+            .addLine();
+        csv
+            .add(results[0].left.id)
+            .add(results[0].left.name)
+            .add(results[0].left.description)
+            .add(results[0].left.hash)
+            .add(results[0].left.messageId)
+            .addLine();
+
+        for (let i = 0; i < results.length; i++) {
+            const result = results[i];
+            csv.addLine();
+            csv.add(`Tool ${i + 2}`).addLine();
+            csv
+                .add('Tool ID')
+                .add('Tool Name')
+                .add('Tool Description')
+                .add('Tool Hash')
+                .add('Tool Message')
+                .addLine();
+            csv
+                .add(result.right.id)
+                .add(result.right.name)
+                .add(result.right.description)
+                .add(result.right.hash)
+                .add(result.right.messageId)
+                .addLine();
+            csv.addLine();
+
+            csv.add('Tool Input Events').addLine();
+            CompareUtils.tableToCsv(csv, result.inputEvents);
+            csv.addLine();
+
+            csv.add('Tool Output Events').addLine();
+            CompareUtils.tableToCsv(csv, result.outputEvents);
+            csv.addLine();
+
+            csv.add('Tool Variables').addLine();
+            CompareUtils.tableToCsv(csv, result.variables);
+            csv.addLine();
+
+            csv.add('Tool Blocks').addLine();
+            CompareUtils.tableToCsv(csv, result.blocks);
+            csv.addLine();
+
+            csv.add('Total')
+                .add(result.total + '%')
+                .addLine();
+        }
+
+        return csv.result();
     }
 
     /**
@@ -477,123 +534,36 @@ export class PolicyComparator {
     }
 
     /**
-     * Convert result to CSV
-     * @param result
-     * @public
-     */
-    public tableToCsv(results: ICompareResult<any>[]): string {
-        const csv = new CSV();
-
-        csv.add('Policy 1').addLine();
-        csv
-            .add('Policy ID')
-            .add('Policy Name')
-            .add('Policy Description')
-            .add('Policy Topic')
-            .add('Policy Version')
-            .addLine();
-        csv
-            .add(results[0].left.id)
-            .add(results[0].left.name)
-            .add(results[0].left.description)
-            .add(results[0].left.instanceTopicId)
-            .add(results[0].left.version)
-            .addLine();
-
-        for (let i = 0; i < results.length; i++) {
-            const result = results[i];
-            csv.addLine();
-            csv.add(`Policy ${i + 2}`).addLine();
-            csv
-                .add('Policy ID')
-                .add('Policy Name')
-                .add('Policy Description')
-                .add('Policy Topic')
-                .add('Policy Version')
-                .addLine();
-            csv
-                .add(result.right.id)
-                .add(result.right.name)
-                .add(result.right.description)
-                .add(result.right.instanceTopicId)
-                .add(result.right.version)
-                .addLine();
-            csv.addLine();
-
-            csv.add('Policy Roles').addLine();
-            CompareUtils.tableToCsv(csv, result.roles);
-            csv.addLine();
-
-            csv.add('Policy Groups').addLine();
-            CompareUtils.tableToCsv(csv, result.groups);
-            csv.addLine();
-
-            csv.add('Policy Topics').addLine();
-            CompareUtils.tableToCsv(csv, result.topics);
-            csv.addLine();
-
-            csv.add('Policy Tokens').addLine();
-            CompareUtils.tableToCsv(csv, result.tokens);
-            csv.addLine();
-
-            csv.add('Policy Blocks').addLine();
-            CompareUtils.tableToCsv(csv, result.blocks);
-            csv.addLine();
-
-            csv.add('Total')
-                .add(result.total + '%')
-                .addLine();
-        }
-
-        return csv.result();
-    }
-
-    /**
-     * Create policy model
-     * @param policyId
+     * Create tool model
+     * @param toolId
      * @param options
      * @public
      * @static
      */
-    public static async createModelById(policyId: string, options: ICompareOptions): Promise<PolicyModel> {
-        //Policy
-        const policy = await DatabaseServer.getPolicyById(policyId);
+    public static async createModelById(toolId: string, options: ICompareOptions): Promise<ToolModel> {
+        //Tool
+        const tool = await DatabaseServer.getToolById(toolId);
 
-        if (!policy) {
-            throw new Error('Unknown policy');
+        if (!tool) {
+            throw new Error('Unknown tool');
         }
 
-        const policyModel = new PolicyModel(policy, options);
+        const toolModel = new ToolModel(tool, options);
 
         //Schemas
-        const schemas = await DatabaseServer.getSchemas({ topicId: policy.topicId });
+        const schemas = await DatabaseServer.getSchemas({ topicId: tool.topicId });
 
         const schemaModels: SchemaModel[] = [];
         for (const schema of schemas) {
             const m = new SchemaModel(schema, options);
-            m.setPolicy(policy);
+            m.setTool(tool);
             m.update(options);
             schemaModels.push(m);
         }
-        policyModel.setSchemas(schemaModels);
-
-        //Tokens
-        const tokensIds = policyModel.getAllProp<string>(PropertyType.Token)
-            .filter(t => t.value)
-            .map(t => t.value);
-
-        const tokens = await DatabaseServer.getTokens({ where: { tokenId: { $in: tokensIds } } });
-
-        const tokenModels: TokenModel[] = [];
-        for (const token of tokens) {
-            const t = new TokenModel(token, options);
-            t.update(options);
-            tokenModels.push(t);
-        }
-        policyModel.setTokens(tokenModels);
+        toolModel.setSchemas(schemaModels);
 
         //Artifacts
-        const files = await DatabaseServer.getArtifacts({ policyId });
+        const files = await DatabaseServer.getArtifacts({ toolId });
         const artifactsModels: FileModel[] = [];
         for (const file of files) {
             const data = await DatabaseServer.getArtifactFileByUUID(file.uuid);
@@ -601,11 +571,11 @@ export class PolicyComparator {
             f.update(options);
             artifactsModels.push(f);
         }
-        policyModel.setArtifacts(artifactsModels);
+        toolModel.setArtifacts(artifactsModels);
 
         //Compare
-        policyModel.update();
+        toolModel.update();
 
-        return policyModel;
+        return toolModel;
     }
 }
