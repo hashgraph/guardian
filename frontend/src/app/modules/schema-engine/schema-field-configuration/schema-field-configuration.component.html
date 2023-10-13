@@ -118,7 +118,8 @@
             </mat-checkbox>
         </div>
         <div class="custom-field-required">
-            <mat-checkbox color="primary" [formControl]="field.controlRequired">
+            <mat-checkbox [disabled]="field.hidden.value === true" [formControl]="field.controlRequired"
+                          color="primary">
                 Required Field
             </mat-checkbox>
         </div>

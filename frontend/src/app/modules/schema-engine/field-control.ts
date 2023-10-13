@@ -58,7 +58,7 @@ export class FieldControl {
             this.controlRemoteLink = new FormControl(field.remoteLink);
             this.controlPrivate = new FormControl(field.isPrivate || false);
             this.controlEnum = new FormArray([]);
-            this.hidden = new FormControl(!!field.hidden)
+            this.hidden = new FormControl(!!field.hidden);
             field.enum?.forEach(item => {
                 this.controlEnum.push(new FormControl(item))
             });
@@ -95,6 +95,11 @@ export class FieldControl {
                 .pipe(takeUntil(destroyEvent))
                 .subscribe(() => this.controlKey.updateValueAndValidity());
         }
+        this.hidden.valueChanges.subscribe(value => {
+            if (value === true) {
+                this.controlRequired.setValue(false);
+            }
+        })
     }
 
     private trimFormControlValue(value: string) {
