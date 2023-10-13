@@ -407,7 +407,6 @@ export class DocumentsSourceBlockComponent implements OnInit {
             href.setAttribute('href', dataStr);
             href.setAttribute('download', `${row.document.id}.json`);
             href.click();
-            console.log('download', row, field);
         }
     }
 

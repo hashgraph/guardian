@@ -141,6 +141,10 @@ export class PolicyEngine extends NatsService {
         return await this.sendMessage(PolicyEngineEvents.DRAFT_POLICIES, { user, policyId });
     }
 
+    public async restartPolicyInstance(user: any, policyId: string) {
+        return await this.sendMessage(PolicyEngineEvents.RESTART_POLICY_INSTANCE, {user, policyId});
+    }
+
     /**
      * Validate policy
      * @param model

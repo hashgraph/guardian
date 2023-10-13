@@ -10,7 +10,6 @@ export class InboundMessageIdentityDeserializer implements ConsumerDeserializer 
      * @param options
      */
     deserialize(value: any, options?: Record<string, any>): IncomingRequest {
-        console.log('d', value, options);
         return value;
     }
 }
@@ -25,7 +24,6 @@ export class OutboundResponseIdentitySerializer implements ProducerSerializer {
      * @param options
      */
     serialize(value: any, options?: Record<string, any>): OutgoingResponse {
-        console.log('s', value, options);
         return value.data;
     }
 }

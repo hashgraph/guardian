@@ -82,6 +82,10 @@ export interface ISchemaDocument {
      */
     required?: string[];
     /**
+     * Hidden fields
+     */
+    hidden?: string[];
+    /**
      * Additional properties
      */
     additionalProperties?: boolean;
