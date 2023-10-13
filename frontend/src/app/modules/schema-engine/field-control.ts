@@ -95,11 +95,11 @@ export class FieldControl {
                 .pipe(takeUntil(destroyEvent))
                 .subscribe(() => this.controlKey.updateValueAndValidity());
         }
-        this.hidden.valueChanges.subscribe(value => {
-            if (value === true) {
-                this.controlRequired.setValue(false);
-            }
-        })
+        // this.hidden.valueChanges.subscribe(value => {
+        //     if (value === true) {
+        //         this.controlRequired.setValue(false);
+        //     }
+        // })
     }
 
     private trimFormControlValue(value: string) {
