@@ -1,7 +1,6 @@
-import { PolicyType, UserRole } from '@guardian/interfaces';
+import { UserRole } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
 import { Guardians } from '@helpers/guardians';
-import { PolicyEngine } from '@helpers/policy-engine';
 import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Req, Response } from '@nestjs/common';
 import { checkPermission } from '@auth/authorization-helper';
 import {
