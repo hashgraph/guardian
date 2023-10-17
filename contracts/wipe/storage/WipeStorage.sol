@@ -2,7 +2,7 @@
 pragma solidity ^0.8.11;
 pragma experimental ABIEncoderV2;
 
-import "../access/Access.sol";
+import "../../access/Access.sol";
 
 contract WipeStorage is Access {
     address[] requestStorage;

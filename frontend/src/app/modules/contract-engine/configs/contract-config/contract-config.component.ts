@@ -449,7 +449,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
         this.inputHederaIdentifier((result) => {
             this.loading = true;
             this.contractsService
-                .retireRemoveAdmin(result, contract.id)
+                .wipeAddManager(result, contract.id)
                 .subscribe(
                     (res) => {
                         this.loading = false;
@@ -491,7 +491,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
         this.inputHederaIdentifier((result) => {
             this.loading = true;
             this.contractsService
-                .wipeRemoveAdmin(result, contract.id)
+                .retireRemoveAdmin(result, contract.id)
                 .subscribe(
                     (res) => {
                         this.loading = false;

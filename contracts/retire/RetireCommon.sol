@@ -2,9 +2,9 @@
 pragma solidity ^0.8.11;
 pragma experimental ABIEncoderV2;
 
-import "./Wipe.sol";
-import "./safe-hts-precompile/SafeViewHTS.sol";
-import "./hts-precompile/IHederaTokenService.sol";
+import "../wipe/Wipe.sol";
+import "../safe-hts-precompile/SafeViewHTS.sol";
+import "../hts-precompile/IHederaTokenService.sol";
 import "./access/RetireAccess.sol";
 import "./storage/RetirePoolStorage.sol";
 import "./storage/RetireRequestStorage.sol";

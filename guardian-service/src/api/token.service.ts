@@ -88,11 +88,12 @@ export async function createHederaToken(token: any, user: IRootConfig) {
         enableAdmin: !!tokenData.adminKey,
         enableKYC: !!tokenData.kycKey,
         enableFreeze: !!tokenData.freezeKey,
-        enableWipe: !!tokenData.wipeKey,
+        enableWipe: !!tokenData.wipeKey || !!tokenData.wipeContractId,
         owner: user.did,
         policyId: null,
         draftToken: false,
-        topicId: topic.topicId
+        topicId: topic.topicId,
+        wipeContractId: tokenData.wipeContractId,
     };
 }
 

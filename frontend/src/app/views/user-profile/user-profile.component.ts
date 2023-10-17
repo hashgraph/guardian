@@ -458,7 +458,7 @@ export class UserProfileComponent implements OnInit {
                 id: document.id,
                 dryRun: !!document.dryRunId,
                 document: document.document,
-                title: 'View Retire Request Result',
+                title: 'View retire result',
                 type: 'VC',
                 viewDocument: true
             }

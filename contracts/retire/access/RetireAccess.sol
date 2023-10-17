@@ -2,7 +2,7 @@
 pragma solidity ^0.8.11;
 pragma experimental ABIEncoderV2;
 
-import "./Access.sol";
+import "../../access/Access.sol";
 
 abstract contract RetireAccess is Access {
     event AdminAdded(address);

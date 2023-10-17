@@ -2,8 +2,8 @@
 pragma solidity ^0.8.11;
 pragma experimental ABIEncoderV2;
 
-import "./access/Access.sol";
-import "./safe-hts-precompile/SafeHTS.sol";
+import "../access/Access.sol";
+import "../safe-hts-precompile/SafeHTS.sol";
 import "./storage/WipeStorageManager.sol";
 import "./storage/WipeStorage.sol";
 
