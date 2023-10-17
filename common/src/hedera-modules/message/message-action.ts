@@ -25,5 +25,6 @@ export enum MessageAction {
     PublishTag = 'publish-tag',
     DeleteTag = 'delete-tag',
     PublishTool = 'publish-tool',
-    CreateTool = 'create-tool'
+    CreateTool = 'create-tool',
+    CreateContract = 'create-contract'
 }

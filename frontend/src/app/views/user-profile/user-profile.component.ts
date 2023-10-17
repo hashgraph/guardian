@@ -18,8 +18,9 @@ import { TagsService } from '../../services/tag.service';
 import { ContractService } from '../../services/contract.service';
 //modules
 import { VCViewerDialog } from '../../modules/schema-engine/vc-dialog/vc-dialog.component';
-import { RetireTokenDialogComponent } from 'src/app/components/retire-token-dialog/retire-token-dialog.component';
 import { noWhitespaceValidator } from 'src/app/validators/no-whitespace-validator';
+import { UserRetirePoolsDialogComponent } from 'src/app/modules/contract-engine/dialogs/user-retire-pools-dialog/user-retire-pools-dialog.component';
+import { UserRetireRequestsDialogComponent } from 'src/app/modules/contract-engine/dialogs/user-retire-requests-dialog/user-retire-requests-dialog.component';
 
 enum OperationMode {
     None, Generate, Associate
@@ -77,11 +78,8 @@ export class UserProfileComponent implements OnInit {
 
     displayedColumnsContractRequests: string[] = [
         'contractId',
-        'baseTokenId',
-        'oppositeTokenId',
-        'baseTokenCount',
-        'oppositeTokenCount',
-        'cancel'
+        'date',
+        'operation'
     ];
 
     private interval: any;
@@ -208,9 +206,14 @@ export class UserProfileComponent implements OnInit {
     }
 
     private loadRetireData() {
+        this.contractRequests = [];
+            setTimeout(() => {
+                this.loading = false;
+                this.headerProps.setLoading(false);
+            }, 200)
         this.loading = true;
-        this.contractService.getRetireRequestsAll().subscribe((contracts) => {
-            this.contractRequests = contracts;
+        this.contractService.getRetireVCs().subscribe((contracts) => {
+            this.contractRequests = contracts.body;
             setTimeout(() => {
                 this.loading = false;
                 this.headerProps.setLoading(false);
@@ -411,79 +414,38 @@ export class UserProfileComponent implements OnInit {
         this.vcForm.updateValueAndValidity();
     }
 
-    cancelContractRequest(id: string) {
-        this.loading = true;
-        this.contractService.cancelContractRequest(id).subscribe(
-            () => {
-                setTimeout(this.loadDate.bind(this), 2000);
-            },
-            () => (this.loading = false)
-        );
+    getDate(date: string) {
+        return new Date(date).toLocaleString();
     }
 
-    createRetireRequest() {
-        this.loading = true;
-        this.tokenService
-            .getTokens()
-            .subscribe(this.openRetireDialog.bind(this), ({ message }) => {
-                console.error(message);
-                this.loading = false;
-            });
-    }
-
-    openRetireDialog(tokens: any) {
-        let dialogRef;
-        if (this.innerWidth <= 810) {
-            const bodyStyles = window.getComputedStyle(document.body);
-            const headerHeight: number = parseInt(bodyStyles.getPropertyValue('--header-height'));
-            dialogRef = this.dialog.open(RetireTokenDialogComponent, {
-                width: `${this.innerWidth.toString()}px`,
-                maxWidth: '100vw',
-                height: `${this.innerHeight - headerHeight}px`,
-                position: {
-                    'bottom': '0'
-                },
-                panelClass: 'g-dialog',
-                hasBackdrop: true, // Shadows beyond the dialog
-                closeOnNavigation: true,
-                autoFocus: false,
-                disableClose: true,
-                data: {
-                    tokens,
-                },
-            });
-        } else {
-            dialogRef = this.dialog.open(RetireTokenDialogComponent, {
-                width: '800px',
-                panelClass: 'g-dialog',
-                disableClose: true,
-                autoFocus: false,
-                data: {
-                    tokens,
-                },
-            });
-        }
-        dialogRef.afterOpened().subscribe(() => (this.loading = false));
-        dialogRef.afterClosed().subscribe(async (result) => {
-            if (result) {
-                this.loading = true;
-                this.contractService
-                    .createRetireRequest(
-                        result.contractId,
-                        result.baseTokenId,
-                        result.oppositeTokenId,
-                        result.baseTokenCount,
-                        result.oppositeTokenCount,
-                        result.baseTokenSerials,
-                        result.oppositeTokenSerials
-                    )
-                    .subscribe(
-                        () => {
-                            setTimeout(this.loadDate.bind(this), 2000);
-                        },
-                        () => (this.loading = false)
-                    );
+    openRetirePoolsDialog() {
+        const dialogRef = this.dialog.open(UserRetirePoolsDialogComponent, {
+            width: '800px',
+            panelClass: 'g-dialog',
+            disableClose: true,
+            autoFocus: false,
+        });
+        dialogRef.afterClosed().subscribe(result => {
+            if (!result) {
+                return;
             }
+            this.loading = true;
+            this.contractService.retire(result.poolId, result.retireForm).subscribe(
+                (result) => {
+                    this.loadRetireData();
+                },
+                () => {},
+                () => (this.loading = false)
+            );
+        })
+    }
+
+    openRetireRequestsDialog() {
+        this.dialog.open(UserRetireRequestsDialogComponent, {
+            width: '800px',
+            panelClass: 'g-dialog',
+            disableClose: true,
+            autoFocus: false,
         });
     }
 

@@ -902,4 +902,47 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
             return new MessageError(error);
         }
     })
+
+    /**
+     * Get token serials
+     */
+    ApiResponse(MessageAPI.GET_SERIALS, async (msg) => {
+        try {
+            const wallet = new Wallet();
+            const users = new Users();
+            const { did, tokenId } = msg;
+            if (!did) {
+                throw new Error('DID is required');
+            }
+            if (!tokenId) {
+                throw new Error('Token identifier is required');
+            }
+            const user = await users.getUserById(did);
+            const userID = user.hederaAccountId;
+            const userDID = user.did;
+            const userKey = await wallet.getKey(
+                user.walletToken,
+                KeyType.KEY,
+                userDID
+            );
+            const workers = new Workers();
+
+            const serials =
+                (await workers.addNonRetryableTask(
+                    {
+                        type: WorkerTaskType.GET_USER_NFTS_SERIALS,
+                        data: {
+                            operatorId: userID,
+                            operatorKey: userKey,
+                            tokenId
+                        },
+                    },
+                    20
+                ));
+            return new MessageResponse(serials[tokenId]);
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error, 400);
+        }
+    });
 }

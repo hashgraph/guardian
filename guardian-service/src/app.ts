@@ -24,6 +24,7 @@ import {
     Migration,
     OldSecretManager,
     Policy,
+    RetirePool,
     RetireRequest,
     Schema,
     SecretManager,
@@ -37,6 +38,7 @@ import {
     ValidateConfiguration,
     VcDocument,
     VpDocument,
+    WiperRequest,
     Workers
 } from '@guardian/common';
 import { ApplicationStates, WorkerTaskType } from '@guardian/interfaces';
@@ -44,7 +46,7 @@ import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
 import { ipfsAPI } from '@api/ipfs.service';
 import { artifactAPI } from '@api/artifact.service';
 import { sendKeysToVault } from '@helpers/send-keys-to-vault';
-import { contractAPI } from '@api/contract.service';
+import { contractAPI, syncRetireContracts, syncWipeContracts } from '@api/contract.service';
 import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels-container';
 import { PolicyEngine } from '@policy-engine/policy-engine';
 import { modulesAPI } from '@api/module.service';
@@ -65,6 +67,7 @@ import { AppModule } from './app.module';
 import { analyticsAPI } from '@api/analytics.service';
 import { GridFSBucket } from 'mongodb';
 import { suggestionsAPI } from '@api/suggestions.service';
+import { SynchronizationTask } from '@helpers/synchronization-task';
 
 export const obj = {};
 
@@ -142,6 +145,8 @@ Promise.all([
     const topicRepository = new DataBaseHelper(Topic);
     const policyRepository = new DataBaseHelper(Policy);
     const contractRepository = new DataBaseHelper(Contract);
+    const wipeRequestRepository = new DataBaseHelper(WiperRequest);
+    const retirePoolRepository = new DataBaseHelper(RetirePool);
     const retireRequestRepository = new DataBaseHelper(RetireRequest);
     const brandingRepository = new DataBaseHelper(Branding);
 
@@ -155,7 +160,12 @@ Promise.all([
         await demoAPI(settingsRepository);
         await trustChainAPI(didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
         await artifactAPI();
-        await contractAPI(contractRepository, retireRequestRepository);
+        await contractAPI(contractRepository,
+            wipeRequestRepository,
+            retirePoolRepository,
+            retireRequestRepository,
+            vcDocumentRepository
+        );
         await modulesAPI();
         await toolsAPI();
         await tagsAPI();
@@ -319,6 +329,33 @@ Promise.all([
         }, 1000)
     });
     await validator.validate();
+
+    SynchronizationTask.start(
+        'retire-sync',
+        syncRetireContracts.bind(
+            {},
+            contractRepository,
+            retirePoolRepository,
+            retireRequestRepository,
+            new Workers(),
+            new Users()
+        ),
+        '* * * * *',
+        channel
+    );
+    SynchronizationTask.start(
+        'wipe-sync',
+        syncWipeContracts.bind(
+            {},
+            contractRepository,
+            wipeRequestRepository,
+            retirePoolRepository,
+            new Workers(),
+            new Users()
+        ),
+        '* * * * *',
+        channel
+    );
 
     startMetricsServer();
 }, (reason) => {

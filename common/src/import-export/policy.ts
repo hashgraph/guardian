@@ -149,6 +149,7 @@ export class PolicyImportExport {
             delete item.id;
             delete item.adminId;
             delete item.owner;
+            delete item.wipeContractId;
             item.id = token.id.toString();
             zip.file(`tokens/${item.tokenName}.json`, JSON.stringify(item));
         }

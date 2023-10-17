@@ -13,7 +13,8 @@ export class SelectMenuButton {
         id: string,
         title: string,
         description: string,
-        color: string
+        color: string,
+        hidden?: boolean,
     }[];
     @Output('action') action = new EventEmitter<any>();
 

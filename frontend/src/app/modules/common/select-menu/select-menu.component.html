@@ -5,6 +5,7 @@
     </div>
     <mat-menu #publishMenu="matMenu">
         <div *ngFor="let item of options" class="select-menu-item" (click)="onAction(item)">
+            <ng-template [ngIf]="item.hidden"></ng-template>
             <div class="select-menu-item-title" [style.color]="item.color">{{item.title}}</div>
             <div class="select-menu-item-description">{{item.description}}</div>
         </div>
