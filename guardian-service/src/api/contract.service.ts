@@ -325,6 +325,7 @@ export async function syncWipeContracts(
     const contracts = await contractRepository.find(
         {
             type: ContractType.WIPE,
+            syncDisabled: { $ne: true }
         },
         {
             fields: ['contractId', 'lastSyncEventTimeStamp'],
@@ -503,6 +504,7 @@ export async function syncWipeContract(
     await contractRepository.update(
         contracts.map((contract) => {
             contract.lastSyncEventTimeStamp = lastTimeStamp;
+            contract.syncDisabled = false;
             return contract;
         })
     );
@@ -519,6 +521,7 @@ export async function syncRetireContracts(
     const contracts = await contractRepository.find(
         {
             type: ContractType.RETIRE,
+            syncDisabled: { $ne: true }
         },
         {
             fields: ['contractId', 'lastSyncEventTimeStamp'],
@@ -840,6 +843,7 @@ export async function syncRetireContract(
     await contractRepository.update(
         contracts.map((contract) => {
             contract.lastSyncEventTimeStamp = lastTimeStamp;
+            contract.syncDisabled = false;
             return contract;
         })
     );
@@ -1230,6 +1234,7 @@ export async function contractAPI(
                         existingContract?.lastSyncEventTimeStamp,
                     syncPoolsDate: existingContract?.syncPoolsDate,
                     syncRequestsDate: existingContract?.syncRequestsDate,
+                    syncDisabled: existingContract ? existingContract?.syncDisabled : true
                 },
                 {
                     contractId,
@@ -1353,6 +1358,18 @@ export async function contractAPI(
                 contractId,
                 owner,
             });
+
+            const existingContracts = await contractRepository.count({
+                contractId
+            });
+            if (existingContracts < 1) {
+                await retirePoolRepository.delete({
+                    contractId,
+                });
+                await retireRequestRepository.delete({
+                    contractId,
+                });
+            }
             return new MessageResponse(true);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);

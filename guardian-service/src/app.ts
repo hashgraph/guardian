@@ -340,7 +340,7 @@ Promise.all([
             new Workers(),
             new Users()
         ),
-        '* * * * *',
+        process.env.RETIRE_CONTRACT_SYNC_MASK || '* * * * *',
         channel
     );
     SynchronizationTask.start(
@@ -353,7 +353,7 @@ Promise.all([
             new Workers(),
             new Users()
         ),
-        '* * * * *',
+        process.env.WIPE_CONTRACT_SYNC_MASK || '* * * * *',
         channel
     );
 

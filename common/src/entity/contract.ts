@@ -66,4 +66,10 @@ export class Contract extends BaseEntity implements IContract {
      */
     @Property()
     wipeContractIds: string[] = [];
+
+    /**
+     * Sync disabled
+     */
+    @Property()
+    syncDisabled: boolean = false;
 }
