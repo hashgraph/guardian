@@ -935,7 +935,7 @@ async function saveRetireVC(
     hederaAccountId: string,
     hederaAccountKey: string,
     userHederaAccountId: string,
-    tokens: RetireTokenRequest[]
+    tokens: (RetireTokenRequest & { decimals: number })[]
 ) {
     const contract = await contractRepository.findOne({
         contractId,
@@ -989,7 +989,7 @@ async function saveRetireVC(
         contractId,
         tokens: tokens.map((token) => ({
             tokenId: token.token,
-            count: token.count,
+            count: Math.floor(token.count / Math.pow(10, token.decimals)),
             serials: token.serials,
         })),
     };
@@ -2538,13 +2538,15 @@ export async function contractAPI(
                 options.immediately
             );
 
-            return new MessageResponse(await setPool(
-                workers,
-                contractRepository,
-                retirePoolRepository,
-                contractId,
-                options
-            ));
+            return new MessageResponse(
+                await setPool(
+                    workers,
+                    contractRepository,
+                    retirePoolRepository,
+                    contractId,
+                    options
+                )
+            );
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
@@ -2695,8 +2697,10 @@ export async function contractAPI(
                 return new MessageError('Invalid add contract pair parameters');
             }
 
-            const {
+            let {
+                // tslint:disable-next-line:prefer-const
                 did,
+                // tslint:disable-next-line:prefer-const
                 poolId,
                 tokens,
             }: { did: string; poolId: string; tokens: RetireTokenRequest[] } =
@@ -2715,6 +2719,11 @@ export async function contractAPI(
             if (!pool) {
                 throw new Error('Pool is not found');
             }
+
+            tokens = tokens.map((token) => {
+                token.count = Math.floor(token.count);
+                return token;
+            });
 
             const users = new Users();
             const wallet = new Wallet();
@@ -2772,7 +2781,17 @@ export async function contractAPI(
                     sr.hederaAccountId,
                     srKey,
                     root.hederaAccountId,
-                    tokens
+                    tokens.map((token) => {
+                        const newToken: any = {
+                            ...token,
+                        };
+                        const poolToken = pool.tokens.find(
+                            // tslint:disable-next-line:no-shadowed-variable
+                            (poolToken) => (poolToken.token = token.token)
+                        );
+                        newToken.decimals = poolToken.decimals;
+                        return newToken;
+                    })
                 );
             }
 
