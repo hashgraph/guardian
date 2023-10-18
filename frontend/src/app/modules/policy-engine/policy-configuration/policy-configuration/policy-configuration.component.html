@@ -8,6 +8,7 @@
     </div>
 
     <policy-settings *ngIf="openSettings" (update)="onChangeSettings($event)"></policy-settings>
+    <search-blocks *ngIf="blockSearchData" [value]="blockSearchData" (action)="onSearchAction($event)"></search-blocks>
 
     <div *ngIf="isModuleValid" class="policy-configuration" [attr.readonly]="readonly">
         <div class="top-toolbar">
@@ -443,8 +444,11 @@
                                 <input placeholder="Search" [(ngModel)]="searchModule" (input)="onModuleSearch($event)">
                                 <mat-icon class="components-search-icon">search</mat-icon>
                             </div>
-                            <div *ngIf="modulesList.favorites.length" class="components-group"
-                                [attr.collapsed]="options.favoritesModulesGroup" [attr.readonly]="disableModuleMenu">
+                            <div 
+                                *ngIf="modulesList.favorites.length" 
+                                class="components-group"
+                                [attr.collapsed]="options.favoritesModulesGroup" 
+                                [attr.readonly]="disableModuleMenu">
                                 <div class="components-group-name" (click)="collapse('favoritesModulesGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
@@ -479,7 +483,9 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="components-group" [attr.collapsed]="options.defaultModulesGroup" [attr.readonly]="disableModuleMenu">
+                            <div class="components-group" 
+                                [attr.collapsed]="options.defaultModulesGroup" 
+                                [attr.readonly]="disableModuleMenu">
                                 <div class="components-group-name" (click)="collapse('defaultModulesGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
@@ -673,6 +679,7 @@
                             [nextBlock]="nextBlock" 
                             [nestedBlock]="nestedBlock" 
                             [(currentBlock)]="currentBlock"
+                            (search)="onBlockSearch($event)"
                             (nested)="addSuggestionsBlock($event, true)" 
                             (next)="addSuggestionsBlock($event)"
                             (open)="onOpenModule($event)" 

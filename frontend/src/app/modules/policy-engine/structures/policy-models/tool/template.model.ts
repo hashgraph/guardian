@@ -151,6 +151,10 @@ export class ToolTemplate {
         return json;
     }
 
+    public getConfig():any {
+        return this._config.getJSON();
+    }
+
     public emitUpdate() {
         this._changed = false;
         if (this._subscriber) {

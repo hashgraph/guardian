@@ -1911,4 +1911,18 @@ export class Guardians extends NatsService {
             { user }
         );
     }
+
+    /**
+     * Search same blocks
+     * @param config
+     * @param blockId
+     * @param user
+     */
+    public async searchBlocks(
+        config: any,
+        blockId: string,
+        user: any
+    ): Promise<any[]> {
+        return await this.sendMessage(MessageAPI.SEARCH_BLOCKS, { config, blockId, user });
+    }
 }

@@ -850,4 +850,62 @@ export class AnalyticsApi {
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+
+
+    /**
+     * Search same blocks
+     */
+    @Post('/search/blocks')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Search same blocks.',
+        description: 'Search same blocks.' + ONLY_SR,
+    })
+    @ApiBody({
+        description: 'Filters.',
+        required: true,
+        type: FilterSearchPoliciesDTO,
+        examples: {
+            Filter: {
+                value: {
+                    uuid: '',
+                    config: {}
+                }
+            }
+        }
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: SearchPoliciesDTO,
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @HttpCode(HttpStatus.OK)
+    async searchBlocks(@Body() body, @Req() req): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const guardians = new Guardians();
+        const id = body ? body.id : null;
+        const config = body ? body.config : null;
+        const user = req.user;
+        if (!user) {
+            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+        }
+        if (!id || !config) {
+            throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+        try {
+            return await guardians.searchBlocks(config, id, user);
+        } catch (error) {
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }

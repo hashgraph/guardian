@@ -70,4 +70,8 @@ export class AnalyticsService {
             responseType: 'text'
         });
     }
+
+    public searchBlocks(options: any): Observable<any> {
+        return this.http.post<any>(`${this.url}/search/blocks`, options);
+    }
 }

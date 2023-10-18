@@ -14,6 +14,7 @@ import { AppRoutingModule } from 'src/app/app-routing.module';
 import { CompareDocumentComponent } from './compare-document/compare-document.component';
 import { CompareComponent } from './compare/compare.component';
 import { CompareToolComponent } from './compare-tool/compare-tool.component';
+import { SearchBlocksComponent } from './search-blocks/search-blocks.component';
 
 @NgModule({
     declarations: [
@@ -25,7 +26,8 @@ import { CompareToolComponent } from './compare-tool/compare-tool.component';
         SearchPoliciesComponent,
         SearchPolicyDialog,
         CompareDocumentComponent,
-        CompareToolComponent
+        CompareToolComponent,
+        SearchBlocksComponent
     ],
     imports: [
         CommonModule,
@@ -44,7 +46,8 @@ import { CompareToolComponent } from './compare-tool/compare-tool.component';
         SearchPoliciesComponent,
         SearchPolicyDialog,
         CompareDocumentComponent,
-        CompareToolComponent
+        CompareToolComponent,
+        SearchBlocksComponent
     ]
 })
 export class CompareModule { }

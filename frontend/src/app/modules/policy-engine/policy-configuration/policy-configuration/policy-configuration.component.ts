@@ -33,6 +33,7 @@ import { WizardMode, WizardService } from 'src/app/modules/policy-engine/service
 import { SuggestionsService } from '../../../../services/suggestions.service';
 import { PolicyFolder, PolicyItem, PolicyRoot } from '../../structures/policy-models/interfaces/types';
 import { ToolsService } from 'src/app/services/tools.service';
+import { AnalyticsService } from 'src/app/services/analytics.service';
 
 /**
  * The page for editing the policy and blocks.
@@ -77,6 +78,7 @@ export class PolicyConfigurationComponent implements OnInit {
     public storage: PolicyStorage;
     public copyBlocksMode: boolean = false;
     public eventVisible: string = 'All';
+    public blockSearchData: any = null;
 
     public code!: string;
     public isSuggestionsEnabled = false;
@@ -197,7 +199,8 @@ export class PolicyConfigurationComponent implements OnInit {
         private tokenService: TokenService,
         private policyEngineService: PolicyEngineService,
         private modulesService: ModulesService,
-        private toolsService: ToolsService
+        private toolsService: ToolsService,
+        private analyticsService: AnalyticsService
     ) {
         this.options = new Options();
         this.storage = new PolicyStorage(localStorage);
@@ -1653,5 +1656,24 @@ export class PolicyConfigurationComponent implements OnInit {
             }
         }
         return [result, childConfig];
+    }
+
+    public onBlockSearch(block: any): void {
+        const option = {
+            config: this.rootTemplate.getConfig(),
+            id: block?.id
+        }
+        this.loading = true;
+        this.analyticsService.searchBlocks(option).subscribe((data: any) => {
+            this.blockSearchData = data;
+            this.loading = false;
+        }, (e) => {
+            this.blockSearchData = null;
+            this.loading = false;
+        });
+    }
+
+    public onSearchAction(event: any): void {
+        this.blockSearchData = null;
     }
 }

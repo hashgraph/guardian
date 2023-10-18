@@ -1,11 +1,25 @@
-import { DocumentComparator, HashComparator, ICompareOptions, ModuleComparator, ModuleModel, PolicyComparator, PolicyModel, SchemaComparator, SchemaModel, ToolComparator, ToolModel } from '@analytics';
+import {
+    DocumentComparator,
+    DocumentModel,
+    HashComparator,
+    ICompareOptions,
+    ModuleComparator,
+    ModuleModel,
+    PolicyComparator,
+    PolicyModel,
+    PolicySearchModel,
+    SchemaComparator,
+    SchemaModel,
+    ToolComparator,
+    ToolModel
+} from '@analytics';
 import { DatabaseServer, Logger, MessageError, MessageResponse, } from '@guardian/common';
 import { ApiResponse } from '@api/helpers/api-response';
-import { MessageAPI, UserRole } from '@guardian/interfaces';
+import { MessageAPI, PolicyType, UserRole } from '@guardian/interfaces';
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import process from 'process';
-import { DocumentModel } from 'analytics/compare/models/document.model';
+
 
 @Controller()
 export class AnalyticsController {
@@ -342,6 +356,57 @@ export async function analyticsAPI(): Promise<void> {
             } else {
                 return new MessageError('Invalid size');
             }
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    ApiResponse(MessageAPI.SEARCH_BLOCKS, async (msg) => {
+        try {
+            const {
+                config,
+                blockId
+            } = msg;
+
+            const filterPolicyModel = PolicySearchModel.fromConfig(config);
+            const filterBlock = filterPolicyModel.findBlock(blockId);
+            if (!filterBlock) {
+                return new MessageError('Unknown block');
+            }
+
+            const policyModels: PolicySearchModel[] = [];
+            const policies = await DatabaseServer.getPolicies({ status: PolicyType.PUBLISH });
+            for (const row of policies) {
+                try {
+                    const model = new PolicySearchModel(row);
+                    policyModels.push(model);
+                } catch (error) {
+                    new Logger().error(error, ['GUARDIAN_SERVICE']);
+                }
+            }
+
+            const result: any[] = [];
+            for (const policyModel of policyModels) {
+                const chains = policyModel
+                    .search(filterBlock)
+                    .map(item => item.toJson());
+                if (chains.length) {
+                    const max = chains[0].hash;
+                    result.push({
+                        name: policyModel.name,
+                        description: policyModel.description,
+                        version: policyModel.version,
+                        owner: policyModel.owner,
+                        topicId: policyModel.topicId,
+                        messageId: policyModel.messageId,
+                        hash: max,
+                        chains: chains
+                    })
+                }
+            }
+            result.sort((a, b) => a.hash > b.hash ? -1 : 1);
+            return new MessageResponse(result);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);

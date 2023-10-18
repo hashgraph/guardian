@@ -473,7 +473,12 @@ export class PolicyEngine extends NatsService {
      * @param root
      * @param notifier
      */
-    public async publishSchemas(model: Policy, owner: string, root: IRootConfig, notifier: INotifier): Promise<Policy> {
+    public async publishSchemas(
+        model: Policy, 
+        owner: string, 
+        root: IRootConfig, 
+        notifier: INotifier
+    ): Promise<Policy> {
         const schemas = await DatabaseServer.getSchemas({ topicId: model.topicId });
         notifier.info(`Found ${schemas.length} schemas`);
         const schemaIRIs = schemas.map(s => s.iri);

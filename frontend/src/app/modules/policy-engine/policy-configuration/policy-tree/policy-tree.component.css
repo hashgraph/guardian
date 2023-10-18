@@ -481,11 +481,11 @@
 }
 
 .block-container[selected="true"] .block-body {
-    grid-template-columns: auto 90px;
+    grid-template-columns: auto 125px;
 }
 
 .tree[move-actions="1"] .block-container[selected="true"] .block-body {
-    grid-template-columns: auto 173px;
+    grid-template-columns: auto 208px;
 }
 
 .tree[move-actions="0"] .actions-container {

@@ -495,6 +495,10 @@ export class PolicyTemplate {
         json.config = this._config.getJSON();
         return json;
     }
+    
+    public getConfig():any {
+        return this._config.getJSON();
+    }
 
     public emitUpdate() {
         this.updateVariables();

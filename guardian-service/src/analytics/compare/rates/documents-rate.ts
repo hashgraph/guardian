@@ -93,25 +93,25 @@ export class DocumentsRate extends Rate<DocumentModel> {
         const map: { [key: string]: IRateMap<PropertyModel<any>> } = {};
         if (document1) {
             for (const item of document1.getFieldsList()) {
-                map[item.path] = { left: item, right: null };
-                list.push(item.path);
+                map[item.key] = { left: item, right: null };
+                list.push(item.key);
             }
         }
         if (document2) {
             for (const item of document2.getFieldsList()) {
-                if (map[item.path]) {
-                    map[item.path].right = item;
+                if (map[item.key]) {
+                    map[item.key].right = item;
                 } else {
-                    map[item.path] = { left: null, right: item };
-                    list.push(item.path);
+                    map[item.key] = { left: null, right: item };
+                    list.push(item.key);
                 }
             }
         }
         list.sort();
 
         const rates: IRate<any>[] = [];
-        for (const path of list) {
-            const item = map[path];
+        for (const key of list) {
+            const item = map[key];
             const rate = new PropertiesRate(item.left, item.right);
             rate.calc(options);
             rates.push(rate);

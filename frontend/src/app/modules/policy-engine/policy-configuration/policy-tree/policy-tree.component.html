@@ -112,9 +112,11 @@
                                 </button>
                             </div>
                             <div class="actions-container">
-                                <button (click)="onVisibleMoreActions($event)" mat-icon-button
-                                    class="action-button more-action-button">
+                                <button (click)="onVisibleMoreActions($event)" mat-icon-button class="action-button more-action-button">
                                     <mat-icon>more_horiz</mat-icon>
+                                </button>
+                                <button (click)="onSearch($event)" mat-icon-button class="action-button">
+                                    <mat-icon>search</mat-icon>
                                 </button>
                                 <button (click)="onDelete($event)" mat-icon-button class="action-button delete-action">
                                     <mat-icon>delete</mat-icon>
