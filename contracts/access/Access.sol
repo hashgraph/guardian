@@ -2,7 +2,7 @@
 pragma solidity ^0.8.11;
 pragma experimental ABIEncoderV2;
 
-contract Access {
+abstract contract Access {
     event OwnerAdded(address);
 
     bytes32 constant OWNER = keccak256("OWNER");
