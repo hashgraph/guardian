@@ -940,7 +940,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
                     },
                     20
                 ));
-            return new MessageResponse(serials[tokenId]);
+            return new MessageResponse(serials[tokenId] || []);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error, 400);

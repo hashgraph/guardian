@@ -1542,11 +1542,14 @@ export class HederaSDKHelper {
         const client = this.client;
         let url = `${Environment.HEDERA_ACCOUNT_API}${client.operatorAccountId}/nfts`;
         const result = [];
+        const params = {
+            limit: Number.MAX_SAFE_INTEGER,
+        }
+        if (tokenId) {
+            params['token.id'] = tokenId;
+        }
         const p = {
-            params: {
-                limit: Number.MAX_SAFE_INTEGER,
-                tokenId,
-            },
+            params,
             responseType: 'json',
         };
         while (goNext) {
