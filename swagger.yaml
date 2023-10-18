@@ -684,6 +684,46 @@ paths:
       tags: *ref_0
       security:
         - bearerAuth: []
+  /analytics/search/blocks:
+    post:
+      operationId: AnalyticsApi_searchBlocks
+      summary: Search same blocks.
+      description: >-
+        Search same blocks. Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters: []
+      requestBody:
+        required: true
+        description: Filters.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FilterSearchPoliciesDTO'
+            examples:
+              Filter:
+                value:
+                  uuid: ''
+                  config: {}
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchPoliciesDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
+      security:
+        - bearerAuth: []
   /artifacts:
     get:
       tags:
