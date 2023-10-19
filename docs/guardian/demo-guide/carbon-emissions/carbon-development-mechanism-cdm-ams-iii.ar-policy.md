@@ -44,16 +44,14 @@ These roles are as follows:
 * **Designated National Authority (DNA)** - The DNA is a governmental body representing the country where the emission reduction project is being implemented. They review and approve the project's eligibility in accordance with national policies and regulations. The DNA's endorsement is essential for the project to proceed with the AMS-III.AR policy.
 * **Registry (UNFCCC)** - The United Nations Framework Convention on Climate Change (UNFCCC) serves as the registry for the CDM. They oversee the multiple workflow steps involved in the project's approval, including the verification and validation process by the VVB and the endorsement by the DNA. The UNFCCC's approval is necessary for the project's successful registration and issuance of CER tokens
 
-\\
-
 <figure><img src="../../../.gitbook/assets/0 (1).jpeg" alt=""><figcaption></figcaption></figure>
 
 ## **Policy Guide**
 
 \
-This policy is published to the Hedera network and can either be imported via Github(.policy file) or IPFS timestamp.
+This policy is published to the Hedera network and can either be imported via Github(.policy file) or IPFS timestamp. IPFS timestamp: 1695233862.252855821
 
-### **Important Documents & Schemas**
+## **Important Documents & Schemas**
 
 **Project Description -** Project Proponent information, standard project information, methodology information, etc.
 
@@ -61,7 +59,7 @@ This policy is published to the Hedera network and can either be imported via Gi
 
 **Default Values (Tool 33) -** Tool 33 is included as a module within the policy. This module is used to calculate default values for common parameters like emission factors for diesel generator systems.
 
-### **Minimum Requirements for the Design Specifications of Project Lamps –**
+## **Minimum Requirements for the Design Specifications of Project Lamps –**
 
 This schema is included in the policy as a form within the project information form, fields are included to collect the following information about the project:
 
