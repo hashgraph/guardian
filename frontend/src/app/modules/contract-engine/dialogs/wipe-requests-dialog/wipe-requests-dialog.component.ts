@@ -88,4 +88,8 @@ export class WipeRequestsDialogComponent implements OnInit {
                 () => (this.loading = false)
             );
     }
+
+    hasPermissions(permissions: number, index: number) {
+        return (permissions >> index) % 2 != 0;
+    }
 }

@@ -54,6 +54,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
             description: 'Add contract wiper.',
             color: '#e6bf00',
             callback: this.addWiper,
+            permissions: 2
         },
         {
             id: 'removeWiper',
@@ -61,6 +62,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
             description: 'Remove contract wiper.',
             color: '#e6bf00',
             callback: this.removeWiper,
+            permissions: 2
         },
         {
             id: 'addAdmin',
@@ -68,6 +70,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
             description: 'Add contract admin.',
             color: '#e6bf00',
             callback: this.addAdmin,
+            permissions: 0
         },
         {
             id: 'removeAdmin',
@@ -75,6 +78,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
             description: 'Remove contract admin.',
             color: '#e6bf00',
             callback: this.removeAdmin,
+            permissions: 0
         },
         {
             id: 'addManager',
@@ -82,6 +86,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
             description: 'Add contract manager.',
             color: '#e6bf00',
             callback: this.addManager,
+            permissions: 1
         },
         {
             id: 'removeManager',
@@ -89,6 +94,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
             description: 'Remove contract manager.',
             color: '#e6bf00',
             callback: this.removeManager,
+            permissions: 1
         },
         {
             id: 'enableRequests',
@@ -96,6 +102,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
             description: 'Enable contract requests.',
             color: '#e6bf00',
             callback: this.enableRequests,
+            permissions: 1
         },
         {
             id: 'disableRequests',
@@ -103,6 +110,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
             description: 'Disable contract requests.',
             color: '#e6bf00',
             callback: this.disableRequests,
+            permissions: 1
         },
         {
             id: 'clearRequests',
@@ -110,6 +118,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
             description: 'Clear contract requests.',
             color: '#a80f0f',
             callback: this.clearRequests,
+            permissions: 0
         },
         {
             id: 'remove',
@@ -141,6 +150,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
             description: 'Set contract pool.',
             color: '#e6bf00',
             callback: this.setPool,
+            permissions: 1
         },
         {
             id: 'addAdmin',
@@ -148,6 +158,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
             description: 'Add contract admin.',
             color: '#e6bf00',
             callback: this.addAdminRetire,
+            permissions: 0
         },
         {
             id: 'removeAdmin',
@@ -155,6 +166,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
             description: 'Remove contract admin.',
             color: '#e6bf00',
             callback: this.removeAdminRetire,
+            permissions: 0
         },
         {
             id: 'clearPools',
@@ -162,6 +174,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
             description: 'Clear contract pools.',
             color: '#a80f0f',
             callback: this.clearRetirePools,
+            permissions: 0
         },
         {
             id: 'clearRequests',
@@ -169,6 +182,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
             description: 'Clear contract requests.',
             color: '#a80f0f',
             callback: this.clearRetireRequests,
+            permissions: 0
         },
         {
             id: 'remove',

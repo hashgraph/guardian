@@ -94,8 +94,19 @@
     }
 }
 
+.btn {
+    &--remove {
+        color: red;
+    }
+    // [disabled="true"] {
+    //     filter: grayscale(1);
+    //     opacity: 0.5;
+    //     pointer-events: none;
+    // }
+}
+
 .btn--remove {
-    color: red;
+
 }
 
 // .action-buttons {

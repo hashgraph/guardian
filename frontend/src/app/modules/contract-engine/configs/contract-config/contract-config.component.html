@@ -70,7 +70,7 @@
                     <td mat-cell *matCellDef="let element">
                         <div class="contract-operations">
                             <select-menu-button class="btn-publish" (action)="onOperationAction($event, element)"
-                                [options]="type === 'WIPE' ? wipeOperations: retireOperations">
+                                [options]="type === 'WIPE' ? wipeOperations: retireOperations" [permissions]="element.permissions">
                                 Operations
                             </select-menu-button>
                         </div>
