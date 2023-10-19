@@ -9,6 +9,8 @@ interface IGroup {
 }
 
 interface IGroupItem {
+    collapsed: boolean;
+    rate: number;
     count: number;
     tree: IBlock[];
 }
@@ -22,6 +24,7 @@ interface IBlock {
     type: string;
     node: PolicyBlock;
     selected: boolean;
+    rate: number;
 }
 
 /**
@@ -88,12 +91,15 @@ export class SearchBlocksComponent implements OnInit {
 
     private createGroupItem(row: any): IGroupItem {
         const groupItem: IGroupItem = {
+            collapsed: false,
             count: 0,
+            rate: row.hash % 1000,
             tree: []
         }
         if (Array.isArray(row.pairs)) {
             for (const pair of row.pairs) {
                 const block = this.createBlock(pair.source);
+                block.rate = pair.hash;
                 groupItem.tree.push(block);
             }
         }
@@ -120,7 +126,8 @@ export class SearchBlocksComponent implements OnInit {
             icon: this.registeredService.getIcon(row.blockType),
             type: row.blockType,
             node: new PolicyBlock(row, null),
-            selected: false
+            selected: false,
+            rate: 0
         }
         return groupItem;
     }
@@ -139,6 +146,10 @@ export class SearchBlocksComponent implements OnInit {
 
     public blockStyle(block: IBlock): any {
         return this.themeService.getStyle(block.node);
+    }
+
+    public onCollapsed(item: any): void {
+        item.collapsed = !item.collapsed;
     }
 }
 

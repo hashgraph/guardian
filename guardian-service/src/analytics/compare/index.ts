@@ -55,3 +55,4 @@ export { DocumentComparator } from './comparators/document-comparator';
 export { ToolComparator } from './comparators/tool-comparator';
 export { ToolModel } from './models/tool.model';
 export { DocumentModel } from './models/document.model';
+export { RateMap, RateKeyMap } from './utils/rate-map';

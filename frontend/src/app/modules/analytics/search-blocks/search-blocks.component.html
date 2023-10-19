@@ -25,26 +25,43 @@
                 {{group.name}}
             </div>
             <div class="search-result-chains">
-                <div *ngFor="let groupItem of group.items" class="search-result-chain">
-                    <div  class="search-result-chain__details">
-                        {{groupItem.count}}
+                <div 
+                    *ngFor="let groupItem of group.items" 
+                    class="search-result-chain"
+                    [attr.collapsed]="groupItem.collapsed"
+                >
+                    <div class="search-result-chain__details">
+                        <div class="details-expand" (click)="onCollapsed(groupItem)">
+                            <mat-icon>arrow_drop_down</mat-icon>
+                        </div>
+                        <div class="details-delimiter"></div>
+                        <div class="details-name">Length:</div>
+                        <div class="details-value">{{groupItem.count}}</div>
+                        <div class="details-delimiter"></div>
+                        <div class="details-name">Rate:</div>
+                        <div class="details-value">{{groupItem.rate}}%</div>
+                        <div class="details-delimiter"></div>
                     </div>
-                    <div 
-                        *ngFor="let block of groupItem.tree" 
-                        class="search-result-pair"
-                        [style.padding-left.px]="block.offset"
-                    >
-                        <div 
-                            class="block-item" 
-                            [style]="blockStyle(block)" 
-                            [attr.selected]="block.selected"
-                            theme-all
+                    <div class="search-result-tree">
+                        <div *ngFor="let block of groupItem.tree" 
+                            class="search-result-pair"
+                            [style.padding-left.px]="block.offset"
                         >
-                            <div class="block-item-icon">
-                                <mat-icon theme-text>{{block.icon}}</mat-icon>
+                            <div 
+                                class="block-item" 
+                                [style]="blockStyle(block)" 
+                                [attr.selected]="block.selected" 
+                                theme-all
+                            >
+                                <div class="block-item-icon">
+                                    <mat-icon theme-text>{{block.icon}}</mat-icon>
+                                </div>
+                                <div class="block-item-name" theme-text>
+                                    {{block.name}}
+                                </div>
                             </div>
-                            <div class="block-item-name" theme-text>
-                                {{block.name}}
+                            <div class="search-result-pair__rate">
+                                {{block.rate}}%
                             </div>
                         </div>
                     </div>

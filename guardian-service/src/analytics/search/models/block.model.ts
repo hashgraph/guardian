@@ -1,5 +1,6 @@
 import { BlockType } from '@guardian/interfaces';
 import { ChainSearchModel } from './chain.model';
+import { ArtifactModel, BlockPropertiesModel, EventModel, PropertyModel } from '../../compare';
 
 export interface BlockSearchJson {
     /**
@@ -73,6 +74,24 @@ export class BlockSearchModel {
     private _path: number[];
 
     /**
+     * Properties
+     * @private
+     */
+    private readonly _prop: BlockPropertiesModel;
+
+    /**
+     * Events
+     * @private
+     */
+    private readonly _events: EventModel[];
+
+    /**
+     * Artifacts
+     * @private
+     */
+    private readonly _artifacts: ArtifactModel[];
+
+    /**
      * Children
      * @public
      */
@@ -105,14 +124,26 @@ export class BlockSearchModel {
     }
 
     constructor(json: any) {
+        this.id = json.id;
+        this.tag = json.tag;
+        this.type = json.blockType;
+
         this._children = [];
         this._parent = null;
         this._next = null;
         this._prev = null;
         this._path = [0];
-        this.type = json.blockType;
-        this.id = json.id;
-        this.tag = json.tag;
+        this._prop = new BlockPropertiesModel(json);
+        if (Array.isArray(json.events)) {
+            this._events = json.events.map((e: any) => new EventModel(e));
+        } else {
+            this._events = [];
+        }
+        if (Array.isArray(json.artifacts)) {
+            this._artifacts = json.artifacts.map((e: any) => new ArtifactModel(e));
+        } else {
+            this._artifacts = [];
+        }
     }
 
     /**
@@ -152,12 +183,44 @@ export class BlockSearchModel {
      * @public
      */
     public update(): void {
-        if(this._parent) {
+        if (this._parent) {
             const index = this._parent._children.indexOf(this);
             this._path = [...this._parent._path, index];
         } else {
             this._path = [0];
         }
+    }
+
+    /**
+     * Get properties
+     * @public
+     */
+    public getPropList(): PropertyModel<any>[] {
+        return this._prop.getPropList();
+    }
+
+    /**
+     * Get events
+     * @public
+     */
+    public getEventList(): EventModel[] {
+        return this._events;
+    }
+
+    /**
+     * Get permissions
+     * @public
+     */
+    public getPermissionsList(): string[] {
+        return this._prop.getPermissionsList();
+    }
+
+    /**
+     * Get artifacts
+     * @public
+     */
+    public getArtifactsList(): ArtifactModel[] {
+        return this._artifacts;
     }
 
     /**
