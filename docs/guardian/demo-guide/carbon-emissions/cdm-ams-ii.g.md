@@ -20,7 +20,7 @@
 
 [Step by Step](cdm-ams-ii.g.md#\_toc619173481)
 
-### Introduction <a href="#_toc975016542" id="_toc975016542"></a>
+## Introduction <a href="#_toc975016542" id="_toc975016542"></a>
 
 Access to clean cooking is a pressing global challenge, with billions of people still relying on traditional biomass fuels for their cooking needs, leading to immense human and environmental costs. In this context, the Clean Development Mechanism (CDM) offers a promising pathway to address this issue by introducing energy-efficient thermal energy generation units that utilize non-renewable biomass. AMS-II.G aims to promote sustainable development and mitigate greenhouse gas (GHG) emissions through the implementation of clean cookstove projects.
 
@@ -32,7 +32,7 @@ By providing an accessible and standardized framework for clean cooking initiati
 
 Currently, the AMS-II.G Guardian policy uses the Thermal Energy Output (TEO) testing method to estimate fuel consumption, which plays a crucial role in determining the energy efficiency of thermal applications and evaluating associated emissions. As the policy undergoes future iterations, additional testing methods such as the water boiling test (WBT), controlled cooking test (CCT), and kitchen performance test (KPT) will be integrated to further enhance the accuracy and effectiveness of fuel consumption estimation. Moreover, the policy includes modules like tool 30 and tool 33, which can be utilized for default values or to calculate fNRB (non-renewable biomass fraction), a parameter that is used in the emission reductions calculation.
 
-### Need and Use for the AMS-II.G Policy <a href="#_toc752136503" id="_toc752136503"></a>
+## Need and Use for the AMS-II.G Policy <a href="#_toc752136503" id="_toc752136503"></a>
 
 A methodology like AMS-II.G is needed to address the universal challenge of guaranteeing access to clean cooking. In developing countries, more than 3 billion people, representing a substantial portion of the global population, still rely on traditional biomass fuels for their primary cooking needs using open fires or traditional stoves. This reliance on solid-fuel cooking, such as wood, crop residues, and dung, leads to immense human costs in terms of health, environmental degradation, and economic burdens.
 
@@ -42,21 +42,19 @@ To combat these challenges and transition towards cleaner cooking practices, ini
 
 AMS-II.G provides a standardized and measurable framework for clean cooking projects, allowing for reliable estimation and verification of emission reductions. The Guardian AMS-II.G Policy offers a unique technical opportunity for companies to streamline, enhance robustness, and establish trust and transparency within their clean cookstove projects. The guidelines and equations provided in the methodology are incorporated into schemas featuring built-in auto-calculation blocks, emission factors, and data from modules like tool 33. The results of the data provided undergo immutable and transparent verification by third parties. Ultimately, the emissions are tokenized, elevating tracking, transparency, accounting, and reporting, with the data structured to comply with AMS-II.G reporting requirements.
 
-### Demo Video <a href="#_toc264453392" id="_toc264453392"></a>
+## Demo Video <a href="#_toc264453392" id="_toc264453392"></a>
 
 Coming Soon
 
-### Policy Workflow <a href="#_toc2070089206" id="_toc2070089206"></a>
-
-\\
+## Policy Workflow <a href="#_toc2070089206" id="_toc2070089206"></a>
 
 <figure><img src="../../../.gitbook/assets/0.jpeg" alt=""><figcaption></figcaption></figure>
 
-### Policy Guide <a href="#_toc93669646" id="_toc93669646"></a>
+## Policy Guide <a href="#_toc93669646" id="_toc93669646"></a>
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPSF timestamp.
 
-Latest Version - 1690462366.484472937
+Latest Version - 1695225791.622644989
 
 ### **Available Roles** <a href="#_toc21187385" id="_toc21187385"></a>
 

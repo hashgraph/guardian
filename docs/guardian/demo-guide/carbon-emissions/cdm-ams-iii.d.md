@@ -42,7 +42,7 @@ In the context of modern emission reduction projects, the necessity for transpar
 
 \[Link]
 
-Policy Workflow \\
+## Policy Workflow&#x20;
 
 <figure><img src="../../../.gitbook/assets/image (293).png" alt=""><figcaption></figcaption></figure>
 
@@ -50,7 +50,7 @@ Policy Workflow \\
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp.
 
-Latest Version - 1693223777.317635003
+Latest Version - 1695235455.560040612
 
 ## Available Roles
 

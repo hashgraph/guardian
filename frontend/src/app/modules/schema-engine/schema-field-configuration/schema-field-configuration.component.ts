@@ -1,23 +1,13 @@
-import {
-    Component,
-    Input,
-    OnInit,
-    SimpleChanges,
-    EventEmitter,
-    Output
-} from '@angular/core';
-import {
-    FormControl,
-    FormGroup,
-    Validators,
-} from '@angular/forms';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
+import { FormControl, FormGroup, Validators, } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { UnitSystem } from '@guardian/interfaces';
 import { ToastrService } from 'ngx-toastr';
 import { IPFS_SCHEMA } from 'src/app/services/api';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { EnumEditorDialog } from '../enum-editor-dialog/enum-editor-dialog.component';
-import { FieldControl } from "../field-control";
+import { FieldControl } from '../field-control';
+import { Subscription } from 'rxjs';
 
 /**
  * Schemas constructor
@@ -27,7 +17,7 @@ import { FieldControl } from "../field-control";
     templateUrl: './schema-field-configuration.component.html',
     styleUrls: ['./schema-field-configuration.component.css'],
 })
-export class SchemaFieldConfigurationComponent implements OnInit {
+export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     @Input('readonly') readonly!: boolean;
     @Input('form') form!: FormGroup;
     @Input('field') field!: FieldControl;
@@ -47,11 +37,16 @@ export class SchemaFieldConfigurationComponent implements OnInit {
     keywords: string[] = [];
     isString: boolean = false;
 
+    fieldType: FormControl;
+    fieldTypeSub: Subscription;
+
     constructor(
         public dialog: MatDialog,
         private ipfs: IPFSService,
         private toastr: ToastrService
-    ) { }
+    ) {
+        this.fieldType = new FormControl();
+    }
 
     ngOnInit(): void {
         if (this.field) {
@@ -66,6 +61,42 @@ export class SchemaFieldConfigurationComponent implements OnInit {
                 this.loadRemoteEnumData(remoteLinkValue);
             }
         }
+
+        if (this.field.controlRequired.value === true) {
+            this.fieldType.setValue('required')
+        } else if (this.field.hidden.value === true) {
+            this.fieldType.setValue('hidden')
+        } else {
+            this.fieldType.setValue('none')
+        }
+        this.fieldTypeSub = this.fieldType.valueChanges.subscribe(value => {
+            switch (value) {
+                case 'required':
+                    this.field.controlRequired.setValue(true);
+                    this.field.hidden.setValue(false);
+                    break;
+
+                case 'hidden':
+                    this.field.controlRequired.setValue(false);
+                    this.field.hidden.setValue(true);
+                    break;
+
+                case 'none':
+                    this.field.controlRequired.setValue(false);
+                    this.field.hidden.setValue(false);
+                    break;
+
+                default:
+                    this.field.controlRequired.setValue(false);
+                    this.field.hidden.setValue(false);
+                    break;
+            }
+        })
+
+    }
+
+    ngOnDestroy() {
+        this.fieldTypeSub.unsubscribe();
     }
 
     updateControlEnum(values: string[]) {
@@ -107,9 +138,6 @@ export class SchemaFieldConfigurationComponent implements OnInit {
             const type = this.field.controlType.value;
             this.onTypeChange(type);
         }
-    }
-
-    ngOnDestroy() {
     }
 
     onRemove(field: any) {

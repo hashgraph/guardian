@@ -134,6 +134,7 @@ export class Schema implements ISchema {
     /**
      * Schema constructor
      * @param schema
+     * @param includeSystemProperties
      * @constructor
      */
     constructor(schema?: ISchema, includeSystemProperties: boolean = false) {
