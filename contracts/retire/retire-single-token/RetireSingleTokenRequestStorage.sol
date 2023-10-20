@@ -2,10 +2,9 @@
 pragma solidity ^0.8.11;
 pragma experimental ABIEncoderV2;
 
-import "../../access/Access.sol";
 import "../storage/RetireRequestStorage.sol";
 
-contract RetireSingleTokenRequestStorage is RetireRequestStorage, Access {
+contract RetireSingleTokenRequestStorage is RetireRequestStorage {
     struct Request {
         address usr;
         address base;

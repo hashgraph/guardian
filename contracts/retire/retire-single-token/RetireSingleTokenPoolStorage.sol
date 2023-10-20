@@ -2,10 +2,9 @@
 pragma solidity ^0.8.11;
 pragma experimental ABIEncoderV2;
 
-import "../../access/Access.sol";
 import "../storage/RetirePoolStorage.sol";
 
-contract RetireSingleTokenPoolStorage is RetirePoolStorage, Access {
+contract RetireSingleTokenPoolStorage is RetirePoolStorage {
     struct Pool {
         address base;
         int64 baseCount;

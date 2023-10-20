@@ -11,8 +11,8 @@ contract Retire is RetireCommon {
     event PoolRemoved(address[]);
     event RetireRequestAdded(address, RetireTokenRequest[]);
     event RetireRequestRemoved(address, address[]);
-    event PoolsCleared(uint);
-    event RequestsCleared(uint);
+    event PoolsCleared(uint8);
+    event RequestsCleared(uint8);
 
     mapping(uint8 => RetireImplementation) implementations;
 
@@ -45,6 +45,14 @@ contract Retire is RetireCommon {
     function retire(RetireTokenRequest[] calldata tokens) public override {
         for (uint256 i = 0; i < tokens.length; i++) {
             require(tokenAvailable(tokens[i].token), "PAIR_NOT_AVAILABLE");
+            for (uint256 j = 0; i < tokens[i].serials.length; j++) {
+                for (uint256 k = j + 1; k < tokens[i].serials.length; k++) {
+                    require(
+                        tokens[i].serials[j] != tokens[i].serials[k],
+                        "NOT_UNIQUE_SERIALS"
+                    );
+                }
+            }
         }
         (bool success, ) = address(implementations[uint8(tokens.length)])
             .delegatecall(
