@@ -595,7 +595,7 @@ export class ContractsApi {
                 await guardians.rejectWipeRequest(
                     user.did,
                     req.params.requestId,
-                    req.query.ban
+                    req.query.ban?.toLowerCase() === 'true'
                 )
             );
         } catch (error) {
