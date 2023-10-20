@@ -336,7 +336,6 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
                         name: 'description',
                         label: 'Description',
                         placeholder: 'Description',
-                        validators: [Validators.required],
                     },
                 ],
                 title: 'Import Contract',
