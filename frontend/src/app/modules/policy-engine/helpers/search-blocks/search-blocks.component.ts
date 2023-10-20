@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ThemeService } from 'src/app/services/theme.service';
-import { PolicyBlock } from '../../policy-engine/structures';
-import { RegisteredService } from '../../policy-engine/services/registered.service';
+import { PolicyBlock, PolicyTemplate } from '../../structures';
+import { RegisteredService } from '../../services/registered.service';
 
 interface IGroup {
     name: string;
@@ -9,10 +9,13 @@ interface IGroup {
 }
 
 interface IGroupItem {
+    countColor: string;
+    rateColor: string;
     collapsed: boolean;
     rate: number;
     count: number;
     tree: IBlock[];
+    target?: PolicyBlock;
 }
 
 interface IBlock {
@@ -25,6 +28,7 @@ interface IBlock {
     node: PolicyBlock;
     selected: boolean;
     rate: number;
+    rateColor: string;
 }
 
 /**
@@ -46,11 +50,13 @@ export class SearchBlocksComponent implements OnInit {
     public save: boolean = false;
 
     public groups: IGroup[] = [];
+    public root: PolicyTemplate;
 
     constructor(
         private registeredService: RegisteredService,
         private themeService: ThemeService
     ) {
+        this.root = new PolicyTemplate();
     }
 
     ngOnInit(): void {
@@ -73,6 +79,23 @@ export class SearchBlocksComponent implements OnInit {
                 this.groups.push(group);
             }
         }
+
+        let collapsed = false;
+        let maxCount = 0;
+        for (const group of this.groups) {
+            for (const item of group.items) {
+                item.collapsed = collapsed;
+                collapsed = true;
+                maxCount = Math.max(maxCount, item.count);
+            }
+        }
+        for (const group of this.groups) {
+            for (const item of group.items) {
+                item.countColor = this.getColor(item.count, maxCount);
+                item.rateColor = this.getColor(item.rate, 100);
+            }
+        }
+
     }
 
     private createGroup(row: any): IGroup {
@@ -90,16 +113,20 @@ export class SearchBlocksComponent implements OnInit {
     }
 
     private createGroupItem(row: any): IGroupItem {
+        const rate = row.hash % 1000;
         const groupItem: IGroupItem = {
-            collapsed: false,
+            collapsed: true,
             count: 0,
-            rate: row.hash % 1000,
-            tree: []
+            rate,
+            tree: [],
+            countColor: '',
+            rateColor: ''
         }
         if (Array.isArray(row.pairs)) {
             for (const pair of row.pairs) {
                 const block = this.createBlock(pair.source);
                 block.rate = pair.hash;
+                block.rateColor = this.getColor(block.rate, 100);
                 groupItem.tree.push(block);
             }
         }
@@ -112,6 +139,9 @@ export class SearchBlocksComponent implements OnInit {
         for (const block of groupItem.tree) {
             block.offset = 20 * (block.lvl - min);
             block.selected = block.id === target.id;
+            if(block.selected) {
+                groupItem.target = block.node;
+            }
         }
         return groupItem;
     }
@@ -125,9 +155,10 @@ export class SearchBlocksComponent implements OnInit {
             name: row.tag || row.blockType,
             icon: this.registeredService.getIcon(row.blockType),
             type: row.blockType,
-            node: new PolicyBlock(row, null),
+            node: new PolicyBlock(row.config, null),
             selected: false,
-            rate: 0
+            rate: 0,
+            rateColor: ''
         }
         return groupItem;
     }
@@ -149,7 +180,23 @@ export class SearchBlocksComponent implements OnInit {
     }
 
     public onCollapsed(item: any): void {
-        item.collapsed = !item.collapsed;
+        const collapsed = !item.collapsed;
+        for (const group of this.groups) {
+            for (const item of group.items) {
+                item.collapsed = true;
+            }
+        }
+        item.collapsed = collapsed;
+    }
+
+    private getColor(value: number, max: number): string {
+        if (value < max * 0.7) {
+            return 'red';
+        }
+        // if (value < max * 0.7) {
+        //     return 'yellow';
+        // }
+        return 'green';
     }
 }
 

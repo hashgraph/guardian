@@ -155,7 +155,7 @@
         background: #fff;
         border: 2px solid #000;
         box-sizing: border-box;
-        cursor: pointer;
+        // cursor: pointer;
         -webkit-user-select: none;
         user-select: none;
         margin: 4px 8px 4px 0px;
@@ -163,15 +163,15 @@
         padding: 0px 12px;
         align-items: center;
         display: flex;
-        opacity: 0.8;
+        opacity: 0.7;
 
         * {
             pointer-events: none !important;
         }
 
-        &:hover {
-            filter: brightness(1.03);
-        }
+        // &:hover {
+        //     filter: brightness(1.03);
+        // }
 
         &[selected="true"] {
             border-color: #5161e1 !important;
@@ -204,7 +204,7 @@
     }
 
     .search-result-group {
-        padding: 18px 0px 0px 18px;
+        // padding: 18px 0px 0px 18px;
 
         .search-result-chain {
             border: 1px solid #ccc;
@@ -212,7 +212,7 @@
             margin: 18px 30px 0px 18px;
 
             &[collapsed="true"] {
-                .details-expand mat-icon{
+                .details-expand mat-icon {
                     transform: rotate(-90deg);
                 }
 
@@ -249,6 +249,7 @@
                 .details-value {
                     color: var(--pc-header-color);
                     padding: 6px 6px 6px 2px;
+                    min-width: 30px;
                 }
 
                 .details-delimiter {
@@ -265,6 +266,19 @@
                 background: #f5f5f5;
                 background-image: radial-gradient(circle, #bfbfbf 1px, #f5f5f5 1px);
                 background-size: 20px 20px;
+                position: relative;
+                min-height: 500px;
+            }
+
+            .search-result-props {
+                position: absolute;
+                right: 0;
+                top: 0;
+                bottom: 0;
+                width: 485px;
+                background: #fff;
+                border-left: 4px solid var(--pc-main-grid-border);
+                overflow: auto;
             }
 
             .search-result-pair {
@@ -279,5 +293,17 @@
                 box-sizing: border-box;
             }
         }
+    }
+
+    *[rate-color="red"] {
+        color: #e70000 !important;
+    }
+
+    *[rate-color="yellow"] {
+        color: #fff6ab;
+    }
+
+    *[rate-color="green"] {
+        color: #008d0c !important;
     }
 }

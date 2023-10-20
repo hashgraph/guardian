@@ -21,9 +21,9 @@
     <div class="search-result-body">
 
         <div *ngFor="let group of groups" class="search-result-group">
-            <div class="search-result-group__details">
+            <!-- <div class="search-result-group__details">
                 {{group.name}}
-            </div>
+            </div> -->
             <div class="search-result-chains">
                 <div 
                     *ngFor="let groupItem of group.items" 
@@ -36,11 +36,17 @@
                         </div>
                         <div class="details-delimiter"></div>
                         <div class="details-name">Length:</div>
-                        <div class="details-value">{{groupItem.count}}</div>
+                        <div class="details-value" [attr.rate-color]="groupItem.countColor">
+                            {{groupItem.count}}
+                        </div>
                         <div class="details-delimiter"></div>
                         <div class="details-name">Rate:</div>
-                        <div class="details-value">{{groupItem.rate}}%</div>
+                        <div class="details-value" [attr.rate-color]="groupItem.rateColor">
+                            {{groupItem.rate}}%
+                        </div>
                         <div class="details-delimiter"></div>
+                        <div class="details-name">Policy:</div>
+                        <div class="details-value">{{group.name}}</div>
                     </div>
                     <div class="search-result-tree">
                         <div *ngFor="let block of groupItem.tree" 
@@ -60,9 +66,17 @@
                                     {{block.name}}
                                 </div>
                             </div>
-                            <div class="search-result-pair__rate">
+                            <div class="search-result-pair__rate" [attr.rate-color]="block.rateColor">
                                 {{block.rate}}%
                             </div>
+                        </div>
+                        <div *ngIf="groupItem.target" class="search-result-props">
+                            <common-properties 
+                                class="readonly-status" 
+                                [module]="root" 
+                                [block]="groupItem.target"
+                                [readonly]="true" 
+                                type="Common"></common-properties>
                         </div>
                     </div>
                 </div>

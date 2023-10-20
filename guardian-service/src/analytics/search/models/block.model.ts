@@ -6,19 +6,23 @@ export interface BlockSearchJson {
     /**
      * Block id
      */
-    id: string,
+    id: string;
     /**
      * Block tag
      */
-    tag: string,
+    tag: string;
     /**
      * Block type
      */
-    blockType: string,
+    blockType: string;
     /**
      * Block path
      */
-    path: number[]
+    path: number[];
+    /**
+     * Block config
+     */
+    config: any;
 }
 
 /**
@@ -92,6 +96,12 @@ export class BlockSearchModel {
     private readonly _artifacts: ArtifactModel[];
 
     /**
+     * Block config
+     * @private
+     */
+    private readonly _config: any;
+
+    /**
      * Children
      * @public
      */
@@ -144,6 +154,7 @@ export class BlockSearchModel {
         } else {
             this._artifacts = [];
         }
+        this._config = { ...json, children: undefined };
     }
 
     /**
@@ -317,6 +328,7 @@ export class BlockSearchModel {
             id: this.id,
             tag: this.tag,
             blockType: this.type,
+            config: this._config,
             path: [...this._path]
         }
     }

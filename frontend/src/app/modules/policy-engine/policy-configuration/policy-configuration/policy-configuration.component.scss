@@ -1404,6 +1404,11 @@
         .label {
             display: flex;
         }
+
+        &[readonly="true"] {
+            pointer-events: none;
+            filter: grayscale(1);
+        }
     }
 }
 

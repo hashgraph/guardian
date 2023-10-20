@@ -8,7 +8,11 @@
     </div>
 
     <policy-settings *ngIf="openSettings" (update)="onChangeSettings($event)"></policy-settings>
-    <search-blocks *ngIf="blockSearchData" [value]="blockSearchData" (action)="onSearchAction($event)"></search-blocks>
+    <search-blocks 
+        *ngIf="blockSearchData" 
+        class="policy-configuration" 
+        [value]="blockSearchData" 
+        (action)="onSearchAction($event)"></search-blocks>
 
     <div *ngIf="isModuleValid" class="policy-configuration" [attr.readonly]="readonly">
         <div class="top-toolbar">

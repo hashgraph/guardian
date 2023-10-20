@@ -81,7 +81,7 @@
                                 Variable Type
                             </td>
                             <td class="propRowCell">
-                                <mat-select [(ngModel)]="item.type" [disabled]="readonly" (valueChange)="onEditVariable(item, true)">
+                                <mat-select [(ngModel)]="item.type" [disabled]="readonly" (valueChange)="onEditVariable(item)">
                                     <mat-option value="Schema">Schema</mat-option>
                                     <mat-option value="Token">Token</mat-option>
                                     <mat-option value="TokenTemplate">Token Template</mat-option>
@@ -100,22 +100,12 @@
                                 Base schema
                             </td>
                             <td *ngIf="!baseSchemaReadOnly(item.baseSchema)" class="propRowCell">
-                                <mat-select 
-                                    (valueChange)="onEditVariable(item, true)" 
-                                    [(ngModel)]="item.baseSchema" 
-                                    [disabled]="readonly">
-                                    <mat-option 
-                                        *ngFor="let schema of baseSchemas" 
-                                        class="schema-variable"
-                                        [attr.status]="schema.status"
-                                        matTooltipPosition="below" 
-                                        matTooltipClass="guardian-tooltip small-guardian-tooltip" 
-                                        matTooltipShowDelay="500"
-                                        [matTooltip]="schema.tooltip"
-                                        [value]="schema.value"
-                                        [attr.disable]="schema.disable"
-                                    >{{schema.displayName}}</mat-option>
-                                </mat-select>
+                                <select-schema
+                                    [schemas]="baseSchemas" 
+                                    [(value)]="item.baseSchema"
+                                    [disabled]="readonly"
+                                    (change)="onEditVariable(item)" 
+                                    ></select-schema>
                             </td>
                             <td *ngIf="baseSchemaReadOnly(item.baseSchema)" class="propRowCell">
                                 <span class="readonly-prop">{{item.baseSchema.name}}</span>
