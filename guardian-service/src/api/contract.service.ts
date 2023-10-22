@@ -3003,8 +3003,6 @@ export async function contractAPI(
                 owner
             );
 
-            console.log('add admin', hederaId);
-
             await workers.addNonRetryableTask(
                 {
                     type: WorkerTaskType.CONTRACT_CALL,

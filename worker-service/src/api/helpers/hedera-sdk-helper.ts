@@ -1449,23 +1449,18 @@ export class HederaSDKHelper {
         gas: number,
         parameters: Uint8Array,
     ): Promise<boolean> {
-        try {
-            const client = this.client;
-            const contractExecuteTx = await new ContractExecuteTransaction()
-                .setContractId(contractId)
-                .setGas(gas)
-                .setFunctionParameters(parameters)
-                .setMaxTransactionFee(MAX_FEE)
-                .freezeWith(client);
-            const contractExecuteSubmit = await contractExecuteTx.execute(client);
-            const contractExecuteRx = await contractExecuteSubmit.getReceipt(
-                client
-            );
-            return contractExecuteRx.status === Status.Success;
-        } catch (error) {
-            console.log(error)
-            throw error;
-        }
+        const client = this.client;
+        const contractExecuteTx = await new ContractExecuteTransaction()
+            .setContractId(contractId)
+            .setGas(gas)
+            .setFunctionParameters(parameters)
+            .setMaxTransactionFee(MAX_FEE)
+            .freezeWith(client);
+        const contractExecuteSubmit = await contractExecuteTx.execute(client);
+        const contractExecuteRx = await contractExecuteSubmit.getReceipt(
+            client
+        );
+        return contractExecuteRx.status === Status.Success;
     }
 
     /**

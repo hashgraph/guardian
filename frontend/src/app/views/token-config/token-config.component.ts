@@ -115,7 +115,6 @@ export class TokenConfigComponent implements OnInit {
             const data: any = value[0];
             const tagSchemas: any[] = value[1] || [];
 
-            console.log(value[2]);
             this.contracts = value[2] && value[2].body || [];
             this.tokens = data.map((e: any) => new Token(e));
             this.tagSchemas = SchemaHelper.map(tagSchemas);

@@ -789,7 +789,6 @@ export class Worker extends NatsService {
                         networkOptions
                     );
                     const dataParameters = Buffer.from((parameters as string).slice(2), `hex`);
-                    console.log(contractId);
                     result.data = await client.customContractCall(
                         contractId, gas,
                         dataParameters

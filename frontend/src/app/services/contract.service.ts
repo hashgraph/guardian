@@ -202,7 +202,6 @@ export class ContractService {
         pageSize?: number;
     }): Observable<HttpResponse<any[]>> {
         let url = `${this.url}/retire/pools`;
-        console.log(params);
         if (params) {
             url += `?${Object.entries(params)
                 .filter(
