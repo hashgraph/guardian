@@ -36,6 +36,7 @@ export class SynchronizationTask {
                     try {
                         if (!isTaskRunning) {
                             isTaskRunning = true;
+                            console.log(`${name} task started`);
                             await fn();
                             isTaskRunning = false;
                         }
