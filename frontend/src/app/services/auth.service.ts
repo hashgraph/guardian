@@ -28,10 +28,8 @@ export class AuthService {
     public updateAccessToken(): Observable<any> {
         return this.http.post<any>(`${this.url}/access-token`, {refreshToken: this.getRefreshToken()}).pipe(
             map(result => {
-                console.log(result);
                 const {accessToken} = result;
                 this.setAccessToken(accessToken);
-                console.log('update token');
                 return accessToken
             })
         );
