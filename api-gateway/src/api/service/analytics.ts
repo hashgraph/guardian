@@ -851,8 +851,6 @@ export class AnalyticsApi {
         }
     }
 
-
-
     /**
      * Search same blocks
      */

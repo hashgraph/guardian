@@ -86,8 +86,7 @@ export class PolicySearchModel {
         } else {
             const block = new BlockSearchModel(json);
             if (Array.isArray(json.children)) {
-                for (let i = 0; i < json.children.length; i++) {
-                    const childJSON = json.children[i];
+                for (const childJSON of json.children) {
                     const child = this.createBlockModel(childJSON);
                     block.addChildren(child);
                 }

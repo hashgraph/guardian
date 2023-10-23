@@ -1,11 +1,14 @@
-import { IRateMap } from "../interfaces/rate-map.interface";
-import { CompareUtils } from "./utils";
+import { IRateMap } from '../interfaces/rate-map.interface';
+import { CompareUtils } from './utils';
 
 /**
  * Mapping items
  */
 export class RateMap<T> {
-    private map: IRateMap<T>[];
+    /**
+     * List
+     */
+    private readonly map: IRateMap<T>[];
 
     constructor() {
         this.map = [];
@@ -63,8 +66,15 @@ export class RateMap<T> {
  * Mapping items
  */
 export class RateKeyMap<T> {
-    private keys: string[];
-    private map: { [key: string]: IRateMap<T> };
+    /**
+     * Item keys
+     */
+    private readonly keys: string[];
+
+    /**
+     * Items by key
+     */
+    private readonly map: { [key: string]: IRateMap<T> };
 
     constructor() {
         this.keys = [];

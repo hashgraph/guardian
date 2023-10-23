@@ -56,6 +56,10 @@ export class PairSearchModel {
         return this._hash;
     }
 
+    /**
+     * Compare options
+     * @private
+     */
     private readonly _options = {
         idLvl: 1,
         eventLvl: 2,
@@ -68,7 +72,6 @@ export class PairSearchModel {
         this.source = source;
         this.filter = filter;
     }
-
 
     /**
      * Compare properties

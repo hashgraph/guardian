@@ -245,10 +245,10 @@ export class BlockSearchModel {
     }
 
     /**
-      * Find chain
-      * @param block
-      * @private
-      */
+     * Find chain
+     * @param block
+     * @private
+     */
     private _findParent(
         thisBlock: BlockSearchModel,
         filterBlock: BlockSearchModel,
@@ -262,10 +262,10 @@ export class BlockSearchModel {
     }
 
     /**
-      * Find chain
-      * @param block
-      * @private
-      */
+     * Find chain
+     * @param block
+     * @private
+     */
     private _findPrev(
         thisBlock: BlockSearchModel,
         filterBlock: BlockSearchModel,
@@ -279,10 +279,10 @@ export class BlockSearchModel {
     }
 
     /**
-      * Find chain
-      * @param block
-      * @private
-      */
+     * Find chain
+     * @param block
+     * @private
+     */
     private _findNext(
         thisBlock: BlockSearchModel,
         filterBlock: BlockSearchModel,
@@ -296,10 +296,10 @@ export class BlockSearchModel {
     }
 
     /**
-      * Find chain
-      * @param block
-      * @private
-      */
+     * Find chain
+     * @param block
+     * @private
+     */
     private _findChildren(
         thisBlocks: BlockSearchModel[],
         filterBlocks: BlockSearchModel[],

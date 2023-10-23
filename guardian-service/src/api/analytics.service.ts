@@ -13,13 +13,12 @@ import {
     ToolComparator,
     ToolModel
 } from '@analytics';
-import { DatabaseServer, Logger, MessageError, MessageResponse, } from '@guardian/common';
+import { DatabaseServer, Logger, MessageError, MessageResponse } from '@guardian/common';
 import { ApiResponse } from '@api/helpers/api-response';
 import { MessageAPI, PolicyType, UserRole } from '@guardian/interfaces';
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import process from 'process';
-
 
 @Controller()
 export class AnalyticsController {
@@ -401,7 +400,7 @@ export async function analyticsAPI(): Promise<void> {
                         topicId: policyModel.topicId,
                         messageId: policyModel.messageId,
                         hash: max,
-                        chains: chains
+                        chains
                     })
                 }
             }
