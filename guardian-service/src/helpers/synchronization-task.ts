@@ -23,10 +23,10 @@ export class SynchronizationTask {
      * @param channel Channel
      */
     constructor(
-        private _name: string,
-        private _fn: () => void,
-        private _mask: string,
-        private _channel: MessageBrokerChannel
+        private readonly _name: string,
+        private readonly _fn: () => void,
+        private readonly _mask: string,
+        private readonly _channel: MessageBrokerChannel
     ) {}
 
     /**
