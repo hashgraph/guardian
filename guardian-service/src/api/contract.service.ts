@@ -629,7 +629,7 @@ export async function syncRetireContract(
                         TokenId.fromSolidityAddress(item[0]).toString()
                     );
                     const user = await users.getUserByAccount(retireUser);
-                    if (!sendNotifications) {
+                    if (!sendNotifications || !user?.id) {
                         break;
                     }
                     NotificationHelper.success(
