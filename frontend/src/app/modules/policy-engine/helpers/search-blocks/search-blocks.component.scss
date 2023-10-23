@@ -22,6 +22,47 @@
     z-index: 9;
     background: #fff;
 
+
+    .search-apply-button {
+        min-width: 120px;
+        cursor: pointer;
+        font-weight: 500;
+        user-select: none;
+        position: relative;
+        border-radius: 8px;
+        height: 44px;
+        margin-left: auto;
+        margin-right: 14px;
+        font-size: 18px;
+        padding: 10px 8px;
+        box-sizing: border-box;
+        text-align: center;
+        border: 1px solid var(--pc-active-icon-color);
+        display: inline-block;
+        position: relative;
+        background: var(--pc-active-icon-color);
+        color: #fff;
+        width: 125px;
+
+        &:hover {
+            filter: brightness(0.95);
+        }
+
+        &.icon {
+            padding-left: 44px;
+            padding-right: 16px;
+
+            mat-icon {
+                position: absolute;
+                left: 11px;
+                top: 9px;
+                font-size: 24px;
+                width: 24px;
+                height: 24px;
+            }
+        }
+    }
+
     .search-result-header {
         position: absolute;
         left: 0;
@@ -90,6 +131,11 @@
             &.save {
                 background: var(--pc-active-icon-color);
                 color: #fff;
+
+                &[disabled="true"] {
+                    background-color: #5a5a5a !important;
+                    pointer-events: none;
+                }
             }
 
             &.cancel {
@@ -146,6 +192,7 @@
         border: 4px solid var(--pc-main-grid-border);
         border-top: none;
         overflow: auto;
+        padding-bottom: 18px;
     }
 
     .block-item {
@@ -233,9 +280,18 @@
                 .details-expand {
                     position: relative;
                     cursor: pointer;
+                    width: 30px;
+                    height: 30px;
 
                     mat-icon {
                         margin: 3px;
+                        pointer-events: none;
+                    }
+
+                    input {
+                        top: 5px;
+                        left: 4px;
+                        position: absolute;
                         pointer-events: none;
                     }
                 }
@@ -250,6 +306,14 @@
                     color: var(--pc-header-color);
                     padding: 6px 6px 6px 2px;
                     min-width: 30px;
+
+                    &.max-size {
+                        flex: 1;
+                        padding: 6px 6px 6px 12px;
+                        font-size: 16px;
+                        font-weight: 500;
+                        color: #555555;
+                    }
                 }
 
                 .details-delimiter {
@@ -279,6 +343,8 @@
                 background: #fff;
                 border-left: 4px solid var(--pc-main-grid-border);
                 overflow: auto;
+                display: grid;
+                grid-template-rows: auto 60px;
             }
 
             .search-result-pair {

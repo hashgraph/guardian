@@ -1665,7 +1665,7 @@ export class PolicyConfigurationComponent implements OnInit {
         }
         this.loading = true;
         this.analyticsService.searchBlocks(option).subscribe((data: any) => {
-            this.blockSearchData = data;
+            this.blockSearchData = { source: block, data };
             this.loading = false;
         }, (e) => {
             this.blockSearchData = null;
@@ -1675,5 +1675,10 @@ export class PolicyConfigurationComponent implements OnInit {
 
     public onSearchAction(event: any): void {
         this.blockSearchData = null;
+        if (event?.type === 'replace') {
+            if (event.source && event.target) {
+                (event.source as PolicyBlock).replaceConfig(event.target as PolicyBlock);
+            }
+        }
     }
 }

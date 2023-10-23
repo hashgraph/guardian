@@ -495,8 +495,8 @@ export class PolicyTemplate {
         json.config = this._config.getJSON();
         return json;
     }
-    
-    public getConfig():any {
+
+    public getConfig(): any {
         return this._config.getJSON();
     }
 
@@ -737,5 +737,46 @@ export class PolicyTemplate {
             }
         }
         return map;
+    }
+
+    public static fromBlock(block: PolicyBlock): PolicyTemplate {
+        const policy = new PolicyTemplate();
+        if (block) {
+            if (block.permissions) {
+                policy._policyRoles = [];
+                for (const role of block.permissions) {
+                    if (role !== 'OWNER' && role !== 'NO_ROLE' && role !== 'ANY_ROLE') {
+                        policy._policyRoles.push(new PolicyRole(role, policy));
+                    }
+                }
+            }
+            if (block.properties) {
+                policy._tokens = [];
+                policy._schemas = [];
+                for (const [key, value] of Object.entries(block.properties)) {
+                    if (
+                        key === 'schema' ||
+                        key === 'inputSchema' ||
+                        key === 'outputSchema' ||
+                        key === 'presetSchema'
+                    ) {
+                        if (Array.isArray(value)) {
+                            policy._schemas = [...policy._schemas, ...value];
+                        } else {
+                            policy._schemas.push(value);
+                        }
+                    }
+                    if (key === 'tokenId') {
+                        if (Array.isArray(value)) {
+                            policy._tokens = [...policy._tokens, ...value];
+                        } else {
+                            policy._tokens.push(value);
+                        }
+                    }
+                }
+            }
+            policy.updateVariables();
+        }
+        return policy;
     }
 }

@@ -12,10 +12,12 @@ interface IGroupItem {
     countColor: string;
     rateColor: string;
     collapsed: boolean;
+    selected: boolean;
     rate: number;
     count: number;
     tree: IBlock[];
-    target?: PolicyBlock;
+    target: any;
+    root: any;
 }
 
 interface IBlock {
@@ -47,23 +49,21 @@ export class SearchBlocksComponent implements OnInit {
     public loading: boolean = false;
     public icon: string = 'search';
     public title: string = 'Result';
-    public save: boolean = false;
 
     public groups: IGroup[] = [];
-    public root: PolicyTemplate;
+
+    private source:any;
 
     constructor(
         private registeredService: RegisteredService,
         private themeService: ThemeService
     ) {
-        this.root = new PolicyTemplate();
     }
 
     ngOnInit(): void {
         if (this.config) {
             this.icon = this.config.icon || 'settings';
             this.title = this.config.title || 'Result';
-            this.save = !!this.config.save;
         }
     }
 
@@ -72,14 +72,15 @@ export class SearchBlocksComponent implements OnInit {
     }
 
     private update() {
+        const data = this.value?.data;
         this.groups = [];
-        if (Array.isArray(this.value)) {
-            for (const row of this.value) {
+        this.source = this.value?.source;
+        if (Array.isArray(data)) {
+            for (const row of data) {
                 const group = this.createGroup(row);
                 this.groups.push(group);
             }
         }
-
         let collapsed = false;
         let maxCount = 0;
         for (const group of this.groups) {
@@ -95,7 +96,6 @@ export class SearchBlocksComponent implements OnInit {
                 item.rateColor = this.getColor(item.rate, 100);
             }
         }
-
     }
 
     private createGroup(row: any): IGroup {
@@ -116,11 +116,14 @@ export class SearchBlocksComponent implements OnInit {
         const rate = row.hash % 1000;
         const groupItem: IGroupItem = {
             collapsed: true,
+            selected: false,
             count: 0,
             rate,
             tree: [],
             countColor: '',
-            rateColor: ''
+            rateColor: '',
+            target: null,
+            root: null
         }
         if (Array.isArray(row.pairs)) {
             for (const pair of row.pairs) {
@@ -139,9 +142,13 @@ export class SearchBlocksComponent implements OnInit {
         for (const block of groupItem.tree) {
             block.offset = 20 * (block.lvl - min);
             block.selected = block.id === target.id;
-            if(block.selected) {
+            if (block.selected) {
                 groupItem.target = block.node;
             }
+        }
+        if(groupItem.target) {
+            groupItem.root = PolicyTemplate.fromBlock(groupItem.target);
+            groupItem.target.setModule(groupItem.root);
         }
         return groupItem;
     }
@@ -169,9 +176,11 @@ export class SearchBlocksComponent implements OnInit {
         })
     }
 
-    public onSave() {
+    public onReplace(item: IGroupItem) {
         this.action.emit({
-            type: 'save'
+            type: 'replace',
+            source: this.source,
+            target: item.target
         })
     }
 
@@ -179,7 +188,7 @@ export class SearchBlocksComponent implements OnInit {
         return this.themeService.getStyle(block.node);
     }
 
-    public onCollapsed(item: any): void {
+    public onCollapse(item: IGroupItem): void {
         const collapsed = !item.collapsed;
         for (const group of this.groups) {
             for (const item of group.items) {
@@ -187,6 +196,16 @@ export class SearchBlocksComponent implements OnInit {
             }
         }
         item.collapsed = collapsed;
+    }
+
+    public onSelect(item: IGroupItem): void {
+        const selected = !item.selected;
+        for (const group of this.groups) {
+            for (const item of group.items) {
+                item.selected = false;
+            }
+        }
+        item.selected = selected;
     }
 
     private getColor(value: number, max: number): string {

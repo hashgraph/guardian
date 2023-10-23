@@ -13,9 +13,6 @@
             <div class="search-result-header__button cancel" (click)="onCancel()">
                 Cancel
             </div>
-            <div *ngIf="save" class="search-result-header__button save" (click)="onSave()">
-                Save
-            </div>
         </div>
     </div>
     <div class="search-result-body">
@@ -31,10 +28,12 @@
                     [attr.collapsed]="groupItem.collapsed"
                 >
                     <div class="search-result-chain__details">
-                        <div class="details-expand" (click)="onCollapsed(groupItem)">
+                        <div class="details-expand" (click)="onCollapse(groupItem)">
                             <mat-icon>arrow_drop_down</mat-icon>
                         </div>
                         <div class="details-delimiter"></div>
+                        <div class="details-value max-size">{{group.name}}</div>
+
                         <div class="details-name">Length:</div>
                         <div class="details-value" [attr.rate-color]="groupItem.countColor">
                             {{groupItem.count}}
@@ -44,9 +43,6 @@
                         <div class="details-value" [attr.rate-color]="groupItem.rateColor">
                             {{groupItem.rate}}%
                         </div>
-                        <div class="details-delimiter"></div>
-                        <div class="details-name">Policy:</div>
-                        <div class="details-value">{{group.name}}</div>
                     </div>
                     <div class="search-result-tree">
                         <div *ngFor="let block of groupItem.tree" 
@@ -73,10 +69,11 @@
                         <div *ngIf="groupItem.target" class="search-result-props">
                             <common-properties 
                                 class="readonly-status" 
-                                [module]="root" 
+                                [module]="groupItem.root" 
                                 [block]="groupItem.target"
                                 [readonly]="true" 
                                 type="Common"></common-properties>
+                            <div class="search-apply-button" (click)="onReplace(groupItem)">Apply</div>
                         </div>
                     </div>
                 </div>
