@@ -115,7 +115,7 @@ export class HandleErrorsService implements HttpInterceptor {
                             toastClass: 'ngx-toastr error-message-toastr',
                             enableHtml: true,
                         });
-                        if ((result as any).error.statusCode == 401) {
+                        if ((result as any).error?.statusCode == 401) {
                             this.authState.updateState(false);
 
                         }

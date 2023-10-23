@@ -16,7 +16,7 @@ export class AuthStateService {
     constructor(
         private authService: AuthService
     ) {
-        this.updateState(false);
+        this.updateState(false, true);
         this._value.subscribe(v => {
             if (v) {
                 this.refreshTokenTimer = setInterval(() => {
@@ -40,8 +40,8 @@ export class AuthStateService {
         return this._credentialRequests;
     }
 
-    public updateState(state: boolean): void {
-        if (!state) {
+    public updateState(state: boolean, noClearLocalStorage = false): void {
+        if (!noClearLocalStorage && !state) {
             localStorage.removeItem('accessToken');
             localStorage.removeItem('refreshToken');
         }
