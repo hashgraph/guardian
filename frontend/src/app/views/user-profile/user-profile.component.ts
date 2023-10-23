@@ -431,11 +431,12 @@ export class UserProfileComponent implements OnInit {
             }
             this.loading = true;
             this.contractService.retire(result.poolId, result.retireForm).subscribe(
-                (result) => {
+                () => {
                     this.loadRetireData();
                 },
-                () => {},
-                () => (this.loading = false)
+                () => {
+                    this.loading = false
+                }
             );
         })
     }
