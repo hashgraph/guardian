@@ -70,6 +70,7 @@ export class SynchronizationTask {
                             isTaskRunning = false;
                         }
                     } catch (error) {
+                        isTaskRunning = false;
                         new Logger().error(error, ['GUARDIAN_SERVICE']);
                     }
                 });
