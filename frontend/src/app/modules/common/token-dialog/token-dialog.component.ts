@@ -2,6 +2,7 @@ import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { noWhitespaceValidator } from 'src/app/validators/no-whitespace-validator';
+import { ContractService } from 'src/app/services/contract.service';
 
 /**
  * Dialog for creating tokens.
@@ -24,12 +25,14 @@ export class TokenDialog {
         changeSupply: new FormControl(true, [Validators.required]),
         enableFreeze: new FormControl(false, [Validators.required]),
         enableKYC: new FormControl(false, [Validators.required]),
-        enableWipe: new FormControl(true, [Validators.required])
+        enableWipe: new FormControl(true, [Validators.required]),
+        wipeContractId: new FormControl(''),
     });
     title: string = "New Token";
     description: string = "";
     token: any = null;
     readonly: boolean = false;
+    contracts: any[] = [];
 
     public innerWidth: any;
     public innerHeight: any;
@@ -38,6 +41,7 @@ export class TokenDialog {
     constructor(
         public dialogRef: MatDialogRef<TokenDialog>,
         private fb: FormBuilder,
+
         @Inject(MAT_DIALOG_DATA) public data: any) {
         if (data) {
             this.hideType = !!data.hideType;
@@ -61,6 +65,9 @@ export class TokenDialog {
                 } else {
                     this.readonly = true;
                 }
+            }
+            if (data.contracts) {
+                this.contracts = data.contracts;
             }
         }
     }

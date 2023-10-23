@@ -85,7 +85,12 @@ export class Token {
     /**
      * Can delete
      */
-    public canDelete: boolean
+    public canDelete: boolean;
+
+    /**
+     * Wipe contract identifier
+     */
+    public wipeContractId: string;
 
     /**
      * Token constructor
@@ -118,5 +123,6 @@ export class Token {
             this.kyc = 'n/a';
         }
         this.url = btoa(this.tokenId);
+        this.wipeContractId = data.wipeContractId;
     }
 }

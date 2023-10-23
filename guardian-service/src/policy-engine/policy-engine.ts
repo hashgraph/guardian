@@ -754,7 +754,6 @@ export class PolicyEngine extends NatsService {
         const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);
         message.setDocument(model, buffer);
         const result = await messageServer.sendMessage(message);
-        model.messageId = result.getId();
 
         await topicHelper.twoWayLink(rootTopic, topic, result.getId());
 

@@ -1,5 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { FormGroup } from '@angular/forms';
+import { ContractType } from '@guardian/interfaces';
+import { ContractService } from 'src/app/services/contract.service';
 
 @Component({
     selector: 'app-token-configuration',
@@ -11,7 +13,7 @@ export class TokenConfigurationComponent implements OnInit {
     @Input('dataForm') dataForm!: FormGroup;
     @Input('readonly') readonly?: any;
     @Input('hide-type') hideType: boolean = false;
-
+    @Input() contracts: any[];
     ft: any;
 
     constructor() { }
@@ -54,6 +56,10 @@ export class TokenConfigurationComponent implements OnInit {
 
     set enableKYC(value: any) {
         this.dataForm?.patchValue({ enableKYC: value });
+    }
+
+    get wipeContractId(): any {
+        return this.dataForm?.get('wipeContractId')?.value;
     }
 
     ngOnInit(): void {
