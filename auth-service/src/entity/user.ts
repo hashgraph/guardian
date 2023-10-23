@@ -72,8 +72,8 @@ export class User extends BaseEntity implements IUser {
     /**
      * Refresh token
      */
-    @Property()
-    refreshToken: string;
+    @Property({nullable: true})
+    refreshToken?: string;
 
     /**
      * Set defaults
