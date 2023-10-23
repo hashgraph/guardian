@@ -330,32 +330,36 @@ Promise.all([
     });
     await validator.validate();
 
-    SynchronizationTask.start(
+    const workers = new Workers();
+    const users = new Users();
+    const retireSync = new SynchronizationTask(
         'retire-sync',
         syncRetireContracts.bind(
             {},
             contractRepository,
             retirePoolRepository,
             retireRequestRepository,
-            new Workers(),
-            new Users()
+            workers,
+            users
         ),
         process.env.RETIRE_CONTRACT_SYNC_MASK || '* * * * *',
         channel
     );
-    SynchronizationTask.start(
+    retireSync.start();
+    const wipeSync = new SynchronizationTask(
         'wipe-sync',
         syncWipeContracts.bind(
             {},
             contractRepository,
             wipeRequestRepository,
             retirePoolRepository,
-            new Workers(),
-            new Users()
+            workers,
+            users
         ),
         process.env.WIPE_CONTRACT_SYNC_MASK || '* * * * *',
         channel
     );
+    wipeSync.start();
 
     startMetricsServer();
 }, (reason) => {

@@ -1,4 +1,4 @@
-import { Logger } from '@guardian/common';
+import { Logger, MessageBrokerChannel } from '@guardian/common';
 import { CronJob } from 'cron';
 
 /**
@@ -6,46 +6,86 @@ import { CronJob } from 'cron';
  */
 export class SynchronizationTask {
     /**
-     * Start synchronization task
+     * Cron job
+     */
+    private _job?: CronJob;
+
+    /**
+     * Subscription
+     */
+    private _subscriptions: { unsubscribe: Function }[] = [];
+
+    /**
+     * Create synchronization task
      * @param name Name
      * @param fn Function
-     * @param interval Interval
+     * @param mask Mask
      * @param channel Channel
      */
-    public static start(
-        name: string,
-        fn: () => void,
-        mask: string,
-        channel: any
-    ): void {
+    constructor(
+        private _name: string,
+        private _fn: () => void,
+        private _mask: string,
+        private _channel: MessageBrokerChannel
+    ) {}
+
+    /**
+     * Start synchronization task
+     */
+    public start() {
+        this.remove();
         let exists = false;
-        channel.subscribe(`synchronization-task-${name}-exists`, async () => {
-            exists = true;
-        });
-        channel.publish(`synchronization-task-${name}`, {});
+        this._subscriptions.push(
+            this._channel.subscribe(
+                `synchronization-task-${this._name}-exists`,
+                async () => {
+                    exists = true;
+                }
+            )
+        );
+        this._channel.publish(`synchronization-task-${this._name}`, {});
         setTimeout(() => {
             if (
                 !exists ||
                 process.env.PRIMARY_INSTANCE?.toLowerCase() === 'true'
             ) {
-                channel.subscribe(`synchronization-task-${name}`, async () => {
-                    channel.publish(`synchronization-task-${name}-exists`, {});
-                });
+                this._subscriptions.push(
+                    this._channel.subscribe(
+                        `synchronization-task-${this._name}`,
+                        async () => {
+                            this._channel.publish(
+                                `synchronization-task-${this._name}-exists`,
+                                {}
+                            );
+                        }
+                    )
+                );
                 let isTaskRunning = false;
-                const job = new CronJob(mask, async () => {
+                this._job = new CronJob(this._mask, async () => {
                     try {
                         if (!isTaskRunning) {
                             isTaskRunning = true;
-                            console.log(`${name} task started`);
-                            await fn();
+                            console.log(`${this._name} task started`);
+                            await this._fn();
                             isTaskRunning = false;
                         }
                     } catch (error) {
                         new Logger().error(error, ['GUARDIAN_SERVICE']);
                     }
                 });
-                job.start();
+                this._job.start();
+            } else {
+                this.remove();
             }
         }, 200);
+    }
+
+    public remove() {
+        this._job?.stop();
+        delete this._job;
+        this._subscriptions.forEach((subscription) => {
+            subscription.unsubscribe();
+        });
+        this._subscriptions = [];
     }
 }
