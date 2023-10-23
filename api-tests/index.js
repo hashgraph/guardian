@@ -39,7 +39,7 @@ describe('Tests', async function () {
                 })
             )
             console.info(`"${path.parse(p[0]).name}"`, 'was started');
-            await sleep(15000);
+            await sleep(20000);
         }
         await sleep(10000);
     })
