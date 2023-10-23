@@ -8,7 +8,7 @@ on:
 
 jobs:
   buildAndTest:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     #    services:
     #      hashicorpvault:
     #        image: vault
