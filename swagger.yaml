@@ -731,7 +731,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      tags: *ref_1
       security:
         - bearerAuth: []
   /artifacts:
