@@ -209,11 +209,11 @@ export async function importToolByFile(
     return item;
 }
 
-export function findSubTools(block: any, result: Set<string>) {
+export function findSubTools(block: any, result: Set<string>, isRoot: boolean = false) {
     if (!block) {
         return;
     }
-    if (block.blockType === BlockType.Tool) {
+    if (block.blockType === BlockType.Tool && !isRoot) {
         if (block.messageId && typeof block.messageId === 'string') {
             result.add(block.messageId);
         }
@@ -244,7 +244,7 @@ export async function updateToolConfig(tool: PolicyTool): Promise<PolicyTool> {
     tool.config.innerEvents = tool.config.innerEvents || [];
 
     const toolIds = new Set<string>()
-    findSubTools(tool.config, toolIds);
+    findSubTools(tool.config, toolIds, true);
     const tools = await DatabaseServer.getTools({
         status: ModuleStatus.PUBLISHED,
         messageId: { $in: Array.from(toolIds.values()) }
