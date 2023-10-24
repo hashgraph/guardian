@@ -1090,7 +1090,7 @@ __metadata:
     "@azure/keyvault-secrets": ^4.7.0
     "@google-cloud/secret-manager": ^4.2.2
     "@guardian/interfaces": ^2.18.0-prerelease
-    "@hashgraph/sdk": 2.34.1
+    "@hashgraph/sdk": 2.36.0
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
     "@mikro-orm/core": 5.7.12
@@ -1185,13 +1185,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@hashgraph/cryptography@npm:1.4.7":
-  version: 1.4.7
-  resolution: "@hashgraph/cryptography@npm:1.4.7"
+"@hashgraph/cryptography@npm:1.4.8-beta.2":
+  version: 1.4.8-beta.2
+  resolution: "@hashgraph/cryptography@npm:1.4.8-beta.2"
   dependencies:
     asn1js: ^3.0.5
     bignumber.js: ^9.1.1
-    bn.js: ^5.1.1
+    bn.js: ^5.2.1
     buffer: ^6.0.3
     crypto-js: ^4.1.1
     elliptic: ^6.5.4
@@ -1211,31 +1211,31 @@ __metadata:
       optional: true
     expo-random:
       optional: true
-  checksum: 187592d8c0386a88bc9056841bc162e2c469f67e497f36a8008a4a8810cc8aa10e30be04971c082eef7ff34788703e94a7dbbbceb27d0a50c8148cf20e882237
+  checksum: cb83c65537ef118bbc4c52ba6d615cada3e64e123615834a31114f963ebf6430b7197ff518e80fabdf44c5bc24ae167e0ae790968db7a8ededdec4d7eb05fd7e
   languageName: node
   linkType: hard
 
-"@hashgraph/proto@npm:2.13.0":
-  version: 2.13.0
-  resolution: "@hashgraph/proto@npm:2.13.0"
+"@hashgraph/proto@npm:2.14.0-beta.2":
+  version: 2.14.0-beta.2
+  resolution: "@hashgraph/proto@npm:2.14.0-beta.2"
   dependencies:
     long: ^4.0.0
-    protobufjs: ^7.1.2
-  checksum: 833a34d15af6b85fa1aaccd150833e51bb3da1c2332fa36e1c1eebe350627a0556b071630ac03c3532f8a2203e99524e9708e693efdf15bf2c35f61de7a79f5a
+    protobufjs: ^7.2.5
+  checksum: c6da0b27b1e09258ad069efe180677855b6c0d03dbad5a7b47fb17eda0017a5c453955d2634cde8000abc7424cf47c1d71f146c8b8cfca7c6a0cc16a2bf730e2
   languageName: node
   linkType: hard
 
-"@hashgraph/sdk@npm:2.34.1":
-  version: 2.34.1
-  resolution: "@hashgraph/sdk@npm:2.34.1"
+"@hashgraph/sdk@npm:2.36.0":
+  version: 2.36.0
+  resolution: "@hashgraph/sdk@npm:2.36.0"
   dependencies:
     "@ethersproject/abi": ^5.7.0
     "@ethersproject/bignumber": ^5.7.0
     "@ethersproject/bytes": ^5.7.0
     "@ethersproject/rlp": ^5.7.0
     "@grpc/grpc-js": 1.8.2
-    "@hashgraph/cryptography": 1.4.7
-    "@hashgraph/proto": 2.13.0
+    "@hashgraph/cryptography": 1.4.8-beta.2
+    "@hashgraph/proto": 2.14.0-beta.2
     axios: ^1.3.1
     bignumber.js: ^9.1.1
     bn.js: ^5.1.1
@@ -1244,14 +1244,14 @@ __metadata:
     long: ^4.0.0
     pino: ^8.14.1
     pino-pretty: ^10.0.0
-    protobufjs: ^7.1.2
+    protobufjs: ^7.2.5
     utf8: ^3.0.0
   peerDependencies:
     expo: ^49.0.10
   peerDependenciesMeta:
     expo:
       optional: true
-  checksum: 0c30dff9a29e2419b1bcdde79d8d0a151fd6f008b57e35ee23163e222c3b1371e3f6b8da0353c0a74d9f9d704c954ada23b5805a7b41335da93dd53700086a49
+  checksum: 70334394cb2d22fa49f4f85d8ece5bfd15329f4480ecfe931435ab5c18c68e70b8b979e70092609d983347b667ce7a237e1cfe70ee05d0e490195b048317e09c
   languageName: node
   linkType: hard
 
@@ -7874,7 +7874,7 @@ __metadata:
   dependencies:
     "@guardian/common": ^2.18.0-prerelease
     "@guardian/interfaces": ^2.18.0-prerelease
-    "@hashgraph/sdk": 2.34.1
+    "@hashgraph/sdk": 2.36.0
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
     "@mikro-orm/core": 5.7.12
@@ -12623,7 +12623,7 @@ __metadata:
   dependencies:
     "@guardian/common": 2.18.0-prerelease
     "@guardian/interfaces": 2.18.0-prerelease
-    "@hashgraph/sdk": 2.34.1
+    "@hashgraph/sdk": 2.36.0
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": 2.0.2
     "@mikro-orm/core": 5.7.12
@@ -12872,7 +12872,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"protobufjs@npm:^7.0.0, protobufjs@npm:^7.1.2, protobufjs@npm:^7.2.4":
+"protobufjs@npm:^7.0.0, protobufjs@npm:^7.2.4, protobufjs@npm:^7.2.5":
   version: 7.2.5
   resolution: "protobufjs@npm:7.2.5"
   dependencies:
@@ -15945,7 +15945,7 @@ __metadata:
   dependencies:
     "@guardian/common": ^2.18.0-prerelease
     "@guardian/interfaces": ^2.18.0-prerelease
-    "@hashgraph/sdk": 2.34.1
+    "@hashgraph/sdk": 2.36.0
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
     "@nestjs/microservices": ^9.4.1
