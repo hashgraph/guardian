@@ -8340,59 +8340,6 @@ export const SwaggerPaths = {
             }
         }
     },
-    '/wizard/policy/push': {
-        'post': {
-            'tags': [
-                'wizard'
-            ],
-            'description': 'Creates a new policy by wizard. Only users with the Standard Registry role are allowed to make the request.',
-            'security': [
-                {
-                    'bearerAuth': []
-                }
-            ],
-            'summary': 'Creates a new policy.',
-            'requestBody': {
-                'description': 'Object that contains wizard configuration.',
-                'required': true,
-                'content': {
-                    'application/json': {
-                        'schema': {
-                            '$ref': '#/components/schemas/WizardConfig'
-                        }
-                    }
-                }
-            },
-            'responses': {
-                '202': {
-                    'description': 'Successful operation.',
-                    'content': {
-                        'application/json': {
-                            'schema': {
-                                '$ref': '#/components/schemas/Task'
-                            }
-                        }
-                    }
-                },
-                '401': {
-                    'description': 'Unauthorized.'
-                },
-                '403': {
-                    'description': 'Forbidden.'
-                },
-                '500': {
-                    'description': 'Internal server error.',
-                    'content': {
-                        'application/json': {
-                            'schema': {
-                                '$ref': '#/components/schemas/Error'
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    },
     '/wizard/{policyId}/config': {
         'post': {
             'tags': [
