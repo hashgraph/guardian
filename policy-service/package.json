@@ -53,7 +53,7 @@
     },
     "description": "",
     "devDependencies": {
-        "@types/deep-equal": "^1.0.1",
+        "@types/deep-equal": "^1.0.3",
         "@types/express": "^4.17.13",
         "@types/fs-extra": "^9.0.12",
         "@types/gulp": "^4",
