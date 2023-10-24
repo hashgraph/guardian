@@ -292,7 +292,6 @@ a[disabled="true"] {
     margin-bottom: 20px;
 }
 
-.cancel-action-btn,
 .view-action-btn {
     color: #fff;
     border-radius: 6px;
@@ -317,12 +316,8 @@ a[disabled="true"] {
     background: #4caf50;
 }
 
-.cancel-action-btn {
-    background: darkred;
-}
-
-.approved-request {
-    background-color: #d1f1c8;
+.retire-table .mat-column-operation {
+    width: 300px;
 }
 
 .token-table .mat-column-tags {
@@ -560,7 +555,7 @@ a[disabled="true"] {
             height: 90px;
             flex-direction: column;
             justify-content: space-around;
-    
+
             .mat-button-base {
                 width: 100%;
                 margin: 0 0 0 20px;

@@ -1,0 +1,89 @@
+<div class="content">
+    <div *ngIf="loading" class="loading">
+        <mat-spinner></mat-spinner>
+    </div>
+
+    <ng-container *ngIf="!isConfirmed">
+        <div class="not-exist">
+            Before starting work you need to get DID <a [routerLink]="['/profile']">here</a>
+        </div>
+    </ng-container>
+
+    <ng-container *ngIf="isConfirmed && contracts">
+        <div class="actions">
+            <div style="padding: 6px 0px">
+                <mat-button-toggle-group [(ngModel)]="type" (change)="onChangeType($event)">
+                    <mat-button-toggle value="WIPE">Token wiping contracts</mat-button-toggle>
+                    <mat-button-toggle value="RETIRE">Token retirement contracts</mat-button-toggle>
+                </mat-button-toggle-group>
+            </div>
+            <div style="text-align: end">
+                <button mat-raised-button color="primary" class="toolbar-btn add" (click)="createContract()">
+                    <mat-icon>add</mat-icon>
+                    <span>Create Contract</span>
+                </button>
+                <button (click)="importContract()" class="toolbar-btn" color="primary"
+                        mat-raised-button>
+                    <mat-icon>file_open</mat-icon>
+                    <span>Import Contract</span>
+                </button>
+            </div>
+        </div>
+        <div class="table-container">
+            <table mat-table [dataSource]="contracts" class="table">
+                <ng-container matColumnDef="contractId">
+                    <th mat-header-cell *matHeaderCellDef> Hedera Contract Id </th>
+                    <td mat-cell *matCellDef="let element">
+                        <hedera-explorer type="contracts"
+                            [params]="element.contractId">{{element.contractId}}</hedera-explorer>
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="description">
+                    <th mat-header-cell *matHeaderCellDef> Description </th>
+                    <td mat-cell *matCellDef="let element">
+                        {{ element.description }}
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="tags">
+                    <th mat-header-cell *matHeaderCellDef> Tags </th>
+                    <td mat-cell *matCellDef="let element">
+                        <tags-explorer [data]="element._tags" [owner]="owner" [target]="element.id" [entity]="tagEntity"
+                            [schemas]="tagSchemas" [service]="tagsService"></tags-explorer>
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="permissions">
+                    <th mat-header-cell *matHeaderCellDef> Permissons </th>
+                    <td mat-cell *matCellDef="let element">
+                        <div class="permissions">
+                            <div class="permissions__roles">
+                                <span class="role" matTooltip="Owner" [attr.has]="hasPermissions(element.permissions, 0)">O</span>
+                                <span class="role" matTooltip="Admin" [attr.has]="hasPermissions(element.permissions, 1)">A</span>
+                                <span class="role" matTooltip="Manager" *ngIf="type == 'WIPE'" [attr.has]="hasPermissions(element.permissions, 2)">M</span>
+                                <span class="role" matTooltip="Wiper" *ngIf="type == 'WIPE'" [attr.has]="hasPermissions(element.permissions, 3)">W</span>
+                            </div>
+                            <app-refresh-btn (refresh)="checkStatus(element, $event)"></app-refresh-btn>
+                        </div>
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="operations">
+                    <th mat-header-cell *matHeaderCellDef>Operations</th>
+                    <td mat-cell *matCellDef="let element">
+                        <div class="contract-operations">
+                            <select-menu-button class="btn-publish" (action)="onOperationAction($event, element)"
+                                [options]="type === 'WIPE' ? wipeOperations: retireOperations" [permissions]="element.permissions">
+                                Operations
+                            </select-menu-button>
+                        </div>
+                    </td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="columns; sticky: true"></tr>
+                <tr mat-row *matRowDef="let row; columns: columns;"></tr>
+            </table>
+        </div>
+        <div class="table-paginator">
+            <mat-paginator [length]="contractsCount" [pageIndex]="pageIndex" [pageSize]="pageSize"
+                [pageSizeOptions]="[10, 25, 50, 100]" (page)="onPage($event)" aria-label="Select page">
+            </mat-paginator>
+        </div>
+    </ng-container>
+</div>

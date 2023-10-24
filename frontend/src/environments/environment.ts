@@ -19,7 +19,8 @@ export const environment = {
         'topics': 'topics',
         'accounts': 'accounts',
         'messages': 'messages',
-        'serials': 'nfts'
+        'serials': 'nfts',
+        'contracts': 'contracts',
     }
   }
 };

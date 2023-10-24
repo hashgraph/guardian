@@ -65,3 +65,8 @@ form {
         grid-column: 1 / span 2;
     }
 }
+
+.wipe-contract {
+    width: 180px;
+    transform: translateY(5px);
+}

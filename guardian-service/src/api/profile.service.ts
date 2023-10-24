@@ -228,6 +228,27 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
             }
         }
 
+        schema = await new DataBaseHelper(SchemaCollection).findOne({
+            entity: SchemaEntity.RETIRE_TOKEN,
+            readonly: true,
+            topicId: topicConfig.topicId,
+        });
+        if (!schema) {
+            schema = await new DataBaseHelper(SchemaCollection).findOne({
+                entity: SchemaEntity.RETIRE_TOKEN,
+                system: true,
+                active: true
+            });
+            if (schema) {
+                notifier.info('Publish System Schema (RETIRE)');
+                logger.info('Publish System Schema (RETIRE)', ['GUARDIAN_SERVICE']);
+                schema.creator = didMessage.did;
+                schema.owner = didMessage.did;
+                const item = await publishSystemSchema(schema, messageServer, MessageAction.PublishSystemSchema);
+                await new DataBaseHelper(SchemaCollection).save(item);
+            }
+        }
+
         if (entity) {
             schema = await new DataBaseHelper(SchemaCollection).findOne({
                 entity,

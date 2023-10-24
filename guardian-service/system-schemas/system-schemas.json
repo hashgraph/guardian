@@ -149,113 +149,86 @@
         }
     },
     {
-        "uuid": "RetireToken",
-        "name": "RetireToken",
-        "entity": "RETIRE_TOKEN",
+        "uuid": "Retire",
+        "name": "Retire",
+        "entity": "RETIRE",
         "document": {
-            "$id": "#RetireToken",
-            "$comment": "{ \"term\": \"RetireToken\", \"@id\": \"#RetireToken\" }",
-            "title": "RetireToken",
-            "description": "RetireToken",
+            "$id": "#Retire",
+            "$comment": "{ \"@id\": \"#Retire\", \"term\": \"Retire\" }",
+            "title": "Retire",
+            "description": "Retire",
             "type": "object",
             "properties": {
-                "@context": {
-                    "oneOf": [
-                        {
-                            "type": "string"
-                        },
-                        {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        }
-                    ],
-                    "readOnly": true
-                },
-                "type": {
-                    "oneOf": [
-                        {
-                            "type": "string"
-                        },
-                        {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        }
-                    ],
-                    "readOnly": true
-                },
-                "id": {
-                    "type": "string",
-                    "readOnly": true
-                },
-                "userId": {
-                    "$comment": "{\"term\": \"date\", \"@id\": \"https://www.schema.org/text\"}",
-                    "title": "userId",
-                    "description": "userId",
+                "user": {
+                    "$comment": "{\"term\": \"user\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "user",
+                    "description": "user",
                     "type": "string",
                     "readOnly": false
                 },
-                "baseTokenId": {
-                    "$comment": "{\"term\": \"date\", \"@id\": \"https://www.schema.org/text\"}",
-                    "title": "baseTokenId",
-                    "description": "baseTokenId",
+                "contractId": {
+                    "$comment": "{\"term\": \"user\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "user",
+                    "description": "user",
                     "type": "string",
                     "readOnly": false
                 },
-                "oppositeTokenId": {
-                    "$comment": "{\"term\": \"amount\", \"@id\": \"https://www.schema.org/text\"}",
-                    "title": "oppositeTokenId",
-                    "description": "oppositeTokenId",
-                    "type": "string",
-                    "readOnly": false
-                },
-                "baseTokenCount": {
-                    "$comment": "{\"term\": \"amount\", \"@id\": \"https://www.schema.org/text\"}",
-                    "title": "baseTokenCount",
-                    "description": "baseTokenCount",
-                    "type": "number",
-                    "readOnly": false
-                },
-                "baseTokenSerials": {
-                    "$comment": "{\"term\": \"amount\", \"@id\": \"https://www.schema.org/text\"}",
-                    "title": "baseTokenSerials",
-                    "description": "baseTokenSerials",
+                "tokens": {
+                    "title": "tokens",
+                    "description": "tokens",
+                    "readOnly": false,
                     "type": "array",
                     "items": {
-                        "type": "number"
+                        "$ref": "#Token"
                     },
-                    "readOnly": false
-                },
-                "oppositeTokenCount": {
-                    "$comment": "{\"term\": \"amount\", \"@id\": \"https://www.schema.org/text\"}",
-                    "title": "oppositeTokenCount",
-                    "description": "oppositeTokenCount",
-                    "type": "number",
-                    "readOnly": false
-                },
-                "oppositeTokenSerials": {
-                    "$comment": "{\"term\": \"amount\", \"@id\": \"https://www.schema.org/text\"}",
-                    "title": "oppositeTokenSerials",
-                    "description": "oppositeTokenSerials",
-                    "type": "array",
-                    "items": {
-                        "type": "number"
-                    },
-                    "readOnly": false
+                    "$comment": "{\"term\":\"tokens\",\"@id\":\"#Token\"}"
                 }
             },
             "required": [
-                "baseTokenId",
-                "oppositeTokenId",
-                "baseTokenCount",
-                "baseTokenSerials",
-                "oppositeTokenCount",
-                "oppositeTokenSerials"
+                "user", "contractId", "tokens"
             ],
-            "additionalProperties": false
+            "additionalProperties": false,
+            "$defs": {
+                "#Token": {
+                    "$id": "#Token",
+                    "$comment": "{ \"@id\": \"#Token\", \"term\": \"Token\" }",
+                    "title": "Token",
+                    "description": "Token",
+                    "type": "object",
+                    "properties": {
+                        "tokenId": {
+                            "$comment": "{\"term\": \"tokenId\", \"@id\": \"https://www.schema.org/text\"}",
+                            "title": "tokenId",
+                            "description": "tokenId",
+                            "type": "string",
+                            "readOnly": false
+                        },
+                        "count": {
+                            "$comment": "{\"term\": \"count\", \"@id\": \"https://www.schema.org/text\"}",
+                            "title": "count",
+                            "description": "count",
+                            "type": "number",
+                            "readOnly": false
+                        },
+                        "serials": {
+                            "$comment": "{\"term\": \"serials\", \"@id\": \"https://www.schema.org/text\"}",
+                            "title": "serials",
+                            "description": "serials",
+                            "type": "array",
+                            "items": {
+                                "type": "number"
+                            },
+                            "readOnly": false
+                        }
+                    },
+                    "required": [
+                        "tokenId",
+                        "count",
+                        "serials"
+                    ],
+                    "additionalProperties": false
+                }
+            }
         }
     },
     {

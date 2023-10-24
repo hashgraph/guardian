@@ -60,15 +60,17 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
             if (remoteLinkValue) {
                 this.loadRemoteEnumData(remoteLinkValue);
             }
+
+            if (this.field.controlRequired.value === true) {
+                this.fieldType.setValue('required')
+            } else if (this.field.hidden.value === true) {
+                this.fieldType.setValue('hidden')
+            } else {
+                this.fieldType.setValue('none')
+            }
         }
 
-        if (this.field.controlRequired.value === true) {
-            this.fieldType.setValue('required')
-        } else if (this.field.hidden.value === true) {
-            this.fieldType.setValue('hidden')
-        } else {
-            this.fieldType.setValue('none')
-        }
+
         this.fieldTypeSub = this.fieldType.valueChanges.subscribe(value => {
             switch (value) {
                 case 'required':

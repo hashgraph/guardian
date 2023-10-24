@@ -5,13 +5,14 @@ import { ProfileService } from "../../services/profile.service";
 import { TokenService } from '../../services/token.service';
 import { TokenDialog } from '../../modules/common/token-dialog/token-dialog.component';
 import { ActivatedRoute, Router } from '@angular/router';
-import { SchemaHelper, TagType, Token } from '@guardian/interfaces';
+import { ContractType, SchemaHelper, TagType, Token } from '@guardian/interfaces';
 import { InformService } from 'src/app/services/inform.service';
 import { TasksService } from 'src/app/services/tasks.service';
 import { forkJoin } from 'rxjs';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ConfirmationDialogComponent } from 'src/app/modules/common/confirmation-dialog/confirmation-dialog.component';
 import { TagsService } from 'src/app/services/tag.service';
+import { ContractService } from 'src/app/services/contract.service';
 
 enum OperationMode {
     None, Kyc, Freeze
@@ -59,6 +60,7 @@ export class TokenConfigComponent implements OnInit {
     tagEntity = TagType.Token;
     owner: any;
     tagSchemas: any[] = [];
+    contracts: any[] = [];
 
     public innerWidth: any;
     public innerHeight: any;
@@ -71,6 +73,7 @@ export class TokenConfigComponent implements OnInit {
         private informService: InformService,
         private taskService: TasksService,
         private policyEngineService: PolicyEngineService,
+        private contractService: ContractService,
         private route: ActivatedRoute,
         private router: Router,
         public dialog: MatDialog) {
@@ -104,11 +107,15 @@ export class TokenConfigComponent implements OnInit {
     loadTokens() {
         forkJoin([
             this.tokenService.getTokens(this.currentPolicy),
-            this.tagsService.getPublishedSchemas()
+            this.tagsService.getPublishedSchemas(),
+            this.contractService.getContracts({
+                type: ContractType.WIPE
+            })
         ]).subscribe((value) => {
             const data: any = value[0];
             const tagSchemas: any[] = value[1] || [];
 
+            this.contracts = value[2] && value[2].body || [];
             this.tokens = data.map((e: any) => new Token(e));
             this.tagSchemas = SchemaHelper.map(tagSchemas);
 
@@ -199,7 +206,10 @@ export class TokenConfigComponent implements OnInit {
             dialogRef = this.dialog.open(TokenDialog, {
                 width: '750px',
                 panelClass: 'g-dialog',
-                disableClose: true
+                disableClose: true,
+                data: {
+                    contracts: this.contracts
+                }
             });
         }
 
@@ -391,7 +401,8 @@ export class TokenConfigComponent implements OnInit {
                 autoFocus: false,
                 disableClose: true,
                 data: {
-                    token: element
+                    token: element,
+                    contracts: this.contracts
                 }
             });
         } else {
@@ -400,7 +411,8 @@ export class TokenConfigComponent implements OnInit {
                 panelClass: 'g-dialog',
                 disableClose: true,
                 data: {
-                    token: element
+                    token: element,
+                    contracts: this.contracts
                 }
             });
         }

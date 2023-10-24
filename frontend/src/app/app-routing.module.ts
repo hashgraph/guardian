@@ -19,8 +19,7 @@ import { SettingsViewComponent } from './views/admin/settings-view/settings-view
 import { ServiceStatusComponent } from './views/admin/service-status/service-status.component';
 import { InfoComponent } from './components/info/info/info.component';
 import { WebSocketService } from './services/web-socket.service';
-import { ContractConfigComponent } from './views/contract-config/contract-config.component';
-import { ContractRequestConfigComponent } from './views/contract-request-config/contract-request-config.component';
+import { ContractConfigComponent } from './modules/contract-engine/configs/contract-config/contract-config.component';
 import { BrandingComponent } from './views/branding/branding.component';
 import { SuggestionsConfigurationComponent } from './views/suggestions-configuration/suggestions-configuration.component';
 import { AsyncProgressComponent } from './modules/common/async-progress/async-progress.component';
@@ -163,7 +162,6 @@ const routes: Routes = [
     { path: 'config', component: RootConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
     { path: 'tokens', component: TokenConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
     { path: 'contracts', component: ContractConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
-    { path: 'contracts/pairs', component: ContractRequestConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
     { path: 'schemas', component: SchemaConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
     { path: 'artifacts', component: ArtifactConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
     {
