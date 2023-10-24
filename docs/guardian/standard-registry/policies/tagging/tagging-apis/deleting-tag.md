@@ -35,4 +35,3 @@ content:
 ```
 {% endswagger-response %}
 {% endswagger %}
-

@@ -95,7 +95,7 @@ Policy1: <HEDERA_NET> / <PATH_TO_SECRET>
 Policy2: <GUARDIAN_ENV> / <HEDERA_NET> / <PATH_TO_SECRET>
 ```
 
-## AWS Secret Manager&#x20;
+## AWS Secret Manager
 
 Change in the ecosystem environment the SECRET\_MANAGER variable to SECRET\_MANAGER="aws"
 

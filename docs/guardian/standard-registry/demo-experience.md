@@ -1,6 +1,6 @@
-# Demo Experience
+# 📹 Demo Experience
 
-Guardian now includes a "Demo Experience" feature which separates the production and demo versions by default. In order to access either the production or demo version, the user will need to build and deploy Guardian, defining on the ‘.env’ file present in the root directory the variable ‘DEMO=true’ if the demo is desired or not stating it at all if the production mode is intended.&#x20;
+Guardian now includes a "Demo Experience" feature which separates the production and demo versions by default. In order to access either the production or demo version, the user will need to build and deploy Guardian, defining on the ‘.env’ file present in the root directory the variable ‘DEMO=true’ if the demo is desired or not stating it at all if the production mode is intended.
 
 **It's important to note that if ‘DEMO’ is present with a value other than ‘DEMO=true’, the auth-service, api-gateway, guardian-service and web-proxy modules will still be built as if the demo is intended, so either use ‘DEMO=true’ or delete the variable altogether.**
 
@@ -81,4 +81,3 @@ Up until now it was possible to generate new accounts on the “Create New Accou
 <figure><img src="https://lh5.googleusercontent.com/6Bf2VGv10e31kfoVQqOzTn08xUgoGN2LXNVv7aFfe23O6SaKBuDKfQAadoxIT4nnaz2g9UeDlD1sFHIBRf2Q6cThA-2MipPfTzxzxZHVQZ0cTfi1Sq5_ptsVumF_IXGVoCulqHK0s4qYfCStkdVjbk8" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="https://lh3.googleusercontent.com/VBxCKipjGNLopz1gP-IJ80rsfoXJT5cnyXuFkfDLBDgZywYJMeurpauck8A8iK-Tqm8i_mm5ZtPiuJBSaAnqamsfF-Sb4t6IqvmODMmTmzozuIdm9mqpJXAaoQllAKPuXCF5d94xSf1TZ-5YxYLSgjs" alt=""><figcaption></figcaption></figure>
-

@@ -210,8 +210,9 @@ export class DocumentModel implements IWeightModel {
         let _document = '0';
         let _documentAndChildren = '0';
 
-        if (this._schemas) {
+        if (this._document && this._schemas) {
             this._document.updateSchemas(this._schemas, options);
+            this._document.update(options);
         }
 
         if (this._schemas) {

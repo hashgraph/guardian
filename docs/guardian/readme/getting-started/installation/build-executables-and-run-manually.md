@@ -13,34 +13,35 @@ If you want to manually build every component with debug information, then build
 
 Install, configure and start all the prerequisites, then build and start each component.
 
-#### Services Configuration: 
+#### Services Configuration:
 
--  for each of the services create the file `./<service_name>/.env` to do this copy, past and rename  the file `./<service_name>/.env.template` 
+*   for each of the services create the file `./<service_name>/.env` to do this copy, past and rename the file `./<service_name>/.env.template`
 
-   For example:
+    For example:
 
-   in `./guardian-service/.env`:
-   ```plaintext
-       GUARDIAN_ENV="develop"
-   ```
+    in `./guardian-service/.env`:
 
-   If need to configure OVERRIDE uncomment the variable in file `./guardian-service/.env`:
-   ```plaintext
-       OVERRIDE="false" 
-   ```
+    ```plaintext
+        GUARDIAN_ENV="develop"
+    ```
 
--  configure the file `./<service_name>/configs/.env.<service>.<GUARDIAN_ENV>` file: to do this copy, 
-   past and rename the file  `./<service_name>/.env.<service>.template` 
+    If need to configure OVERRIDE uncomment the variable in file `./guardian-service/.env`:
 
-   following previous example:
+    ```plaintext
+        OVERRIDE="false" 
+    ```
+*   configure the file `./<service_name>/configs/.env.<service>.<GUARDIAN_ENV>` file: to do this copy, past and rename the file `./<service_name>/.env.<service>.template`
 
-   in `./guardian-service/configs/.env.guardian.develop`:
-   ```plaintext
-   OPERATOR_ID="..."
-   OPERATOR_KEY="..."
-   ```
+    following previous example:
 
-> **_NOTE:_** Once you start each service, please wait for the initialization process to be completed.**
+    in `./guardian-service/configs/.env.guardian.develop`:
+
+    ```plaintext
+    OPERATOR_ID="..."
+    OPERATOR_KEY="..."
+    ```
+
+> _**NOTE:**_ Once you start each service, please wait for the initialization process to be completed.\*\*
 
 1. Clone the repo
 
@@ -66,7 +67,7 @@ yarn
 yarn workspace @guardian/common run build
 ```
 
-5. &#x20;Build and start _**logger-service**_ service
+5. Build and start _**logger-service**_ service
 
 To build the service:
 
@@ -114,13 +115,13 @@ To start the service:
 yarn workspace policy-service start
 ```
 
-8. Build and start _**worker-service**_ service
-To build the service:
+8. Build and start _**worker-service**_ service To build the service:
 
 ```
 yarn workspace worker-service run build
 ```
-   Configure the service as previously described. Update **IPFS_STORAGE_API_KEY** value in `./worker-service/configs/.env.worker` file.
+
+Configure the service as previously described. Update **IPFS\_STORAGE\_API\_KEY** value in `./worker-service/configs/.env.worker` file.
 
 To start the service:
 
@@ -136,7 +137,7 @@ To build the service:
 yarn workspace guardian-service run build
 ```
 
-Configure the service as previously described. Update **OPERATOR_ID** and **OPERATOR_KEY** values in `./guardian-service/configs/.env.worker` file as in the example above.
+Configure the service as previously described. Update **OPERATOR\_ID** and **OPERATOR\_KEY** values in `./guardian-service/configs/.env.worker` file as in the example above.
 
 To start the service (found on [http://localhost:3002](https://localhost:3002)):
 

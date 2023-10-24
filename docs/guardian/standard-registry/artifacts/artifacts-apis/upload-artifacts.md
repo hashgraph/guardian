@@ -51,8 +51,6 @@ Policy Identifier
 {% endswagger-response %}
 
 {% swagger-response status="422: Unprocessable Entity" description="Unprocessable Entity" %}
-
-
 ```
 There are no files to upload
 ```

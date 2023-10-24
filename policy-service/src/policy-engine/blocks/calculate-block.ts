@@ -4,11 +4,11 @@ import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 import { BlockActionError } from '@policy-engine/errors';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { VcDocumentDefinition as VcDocument, VcHelper } from '@guardian/common';
+import { VcDocumentDefinition, VcHelper } from '@guardian/common';
 // tslint:disable-next-line:no-duplicate-imports
 import { VcDocument as VcDocumentCollection } from '@guardian/common';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
+import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
@@ -34,7 +34,13 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-eng
             PolicyOutputEventType.RefreshEvent,
             PolicyOutputEventType.ErrorEvent
         ],
-        defaultEvent: true
+        defaultEvent: true,
+        properties: [{
+            name: 'unsigned',
+            label: 'Unsigned VC',
+            title: 'Unsigned document',
+            type: PropertyType.Checkbox
+        }]
     },
     variables: [
         { path: 'options.outputSchema', alias: 'schema', type: 'Schema' }
@@ -89,60 +95,125 @@ export class CalculateContainerBlock {
      * @param ref
      * @private
      */
-    private async process(documents: IPolicyDocument | IPolicyDocument[], ref: IPolicyCalculateBlock): Promise<any> {
+    private async process(
+        documents: IPolicyDocument | IPolicyDocument[],
+        ref: IPolicyCalculateBlock
+    ): Promise<IPolicyDocument> {
         const isArray = Array.isArray(documents);
         if (!documents || (isArray && !documents.length)) {
             throw new BlockActionError('Invalid VC', ref.blockType, ref.uuid);
         }
 
         // <-- aggregate
-        const relationships = [];
-        let accounts = {};
-        let tokens = {};
-        const owner = PolicyUtils.getDocumentOwner(ref, isArray ? documents[0] : documents);
-
-        let vcs: VcDocument | VcDocument[];
         let json: any | any[];
         if (isArray) {
-            vcs = [];
             json = [];
+            for (const doc of documents) {
+                const vc = VcDocumentDefinition.fromJsonTree(doc.document);
+                json.push(vc.getCredentialSubject(0).toJsonTree());
+
+            }
+        } else {
+            const vc = VcDocumentDefinition.fromJsonTree(documents.document);
+            json = vc.getCredentialSubject(0).toJsonTree();
+        }
+        // -->
+
+        const newJson = await this.calculate(json, ref);
+        if (ref.options.unsigned) {
+            return await this.createUnsignedDocument(newJson, ref);
+        } else {
+            const metadata = this.aggregateMetadata(documents, ref);
+            return await this.createDocument(newJson, metadata, ref);
+        }
+    }
+
+    /**
+     * Generate document metadata
+     * @param documents
+     * @param ref
+     */
+    private aggregateMetadata(
+        documents: IPolicyDocument | IPolicyDocument[],
+        ref: IPolicyCalculateBlock
+    ) {
+        const isArray = Array.isArray(documents);
+        const firstDocument = isArray ? documents[0] : documents;
+        const owner = PolicyUtils.getDocumentOwner(ref, firstDocument);
+        const relationships = [];
+        let accounts: any = {};
+        let tokens: any = {};
+        let id: string;
+        let reference: string;
+        if (isArray) {
+            const credentialSubject = documents[0].document?.credentialSubject;
+            if (credentialSubject) {
+                if (Array.isArray(credentialSubject)) {
+                    id = credentialSubject[0].id;
+                    reference = credentialSubject[0].ref;
+                } else if (credentialSubject) {
+                    id = credentialSubject.id;
+                    reference = credentialSubject.ref;
+                }
+            }
             for (const doc of documents) {
                 accounts = Object.assign(accounts, doc.accounts);
                 tokens = Object.assign(tokens, doc.tokens);
-                const vc = VcDocument.fromJsonTree(doc.document);
-                vcs.push(vc);
-                json.push(vc.getCredentialSubject(0).toJsonTree());
                 if (doc.messageId) {
                     relationships.push(doc.messageId);
                 }
             }
         } else {
+            const credentialSubject = documents.document?.credentialSubject;
+            if (credentialSubject) {
+                if (Array.isArray(credentialSubject)) {
+                    id = credentialSubject[0].id;
+                    reference = credentialSubject[0].ref;
+                } else if (credentialSubject) {
+                    id = credentialSubject.id;
+                    reference = credentialSubject.ref;
+                }
+            }
             accounts = Object.assign(accounts, documents.accounts);
             tokens = Object.assign(tokens, documents.tokens);
-            vcs = VcDocument.fromJsonTree(documents.document);
-            json = vcs.getCredentialSubject(0).toJsonTree();
             if (documents.messageId) {
                 relationships.push(documents.messageId);
             }
         }
-        const vcId = isArray ? json[0].id : json.id;
-        const vcReference = isArray ? json[0].ref : json.ref;
-        // -->
+        return { owner, id, reference, accounts, tokens, relationships };
+    }
 
-        const newJson = await this.calculate(json, ref);
-
+    /**
+     * Generate signed document
+     * @param json
+     * @param metadata
+     * @param ref
+     */
+    private async createDocument(
+        json: any,
+        metadata: any,
+        ref: IPolicyCalculateBlock
+    ): Promise<IPolicyDocument> {
+        const {
+            owner,
+            id,
+            reference,
+            accounts,
+            tokens,
+            relationships
+        } = metadata;
         // <-- new vc
         const VCHelper = new VcHelper();
 
         const outputSchema = await PolicyUtils.loadSchemaByID(ref, ref.options.outputSchema);
         const vcSubject: any = {
             ...SchemaHelper.getContext(outputSchema),
-            ...newJson
+            ...json
         }
         vcSubject.policyId = ref.policyId;
-        vcSubject.id = vcId;
-        if (vcReference) {
-            vcSubject.ref = vcReference;
+        vcSubject.id = id;
+        if (reference) {
+            vcSubject.ref = reference;
         }
         if (ref.dryRun) {
             VCHelper.addDryRunContext(vcSubject);
@@ -163,9 +234,20 @@ export class CalculateContainerBlock {
     }
 
     /**
-     * Run action callback
+     * Generate unsigned document
+     * @param json
+     * @param ref
      */
+    private async createUnsignedDocument(
+        json: any,
+        ref: IPolicyCalculateBlock
+    ): Promise<IPolicyDocument> {
+        const vc = PolicyUtils.createVcFromSubject(json);
+        return PolicyUtils.createUnsignedVC(ref, vc);
+    }
+
     /**
+     * Run action callback
      * @event PolicyEventType.Run
      * @param {IPolicyEvent} event
      */
@@ -182,7 +264,7 @@ export class CalculateContainerBlock {
 
         if (ref.options.inputDocuments === 'separate') {
             if (Array.isArray(event.data.data)) {
-                const result = [];
+                const result: IPolicyDocument[] = [];
                 for (const doc of event.data.data) {
                     const newVC = await this.process(doc, ref);
                     result.push(newVC)

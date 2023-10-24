@@ -5,11 +5,11 @@
 Returns all schema.
 {% endswagger-description %}
 
-{% swagger-parameter in="query" name="pageIndex" type="Integer" %}
+{% swagger-parameter in="query" name="pageIndex" type="Integer" required="false" %}
 The number of pages to skip before starting to collect the result set
 {% endswagger-parameter %}
 
-{% swagger-parameter in="query" name="pageSize" type="Integer" %}
+{% swagger-parameter in="query" name="pageSize" type="Integer" required="false" %}
 The numbers of items to return
 {% endswagger-parameter %}
 

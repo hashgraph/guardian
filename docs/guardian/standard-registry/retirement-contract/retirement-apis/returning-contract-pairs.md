@@ -5,11 +5,11 @@
 Returns all contracts pairs.
 {% endswagger-description %}
 
-{% swagger-parameter in="query" name="baseTokenId" type="String" %}
+{% swagger-parameter in="query" name="baseTokenId" type="String" required="false" %}
 Base Token Identifier
 {% endswagger-parameter %}
 
-{% swagger-parameter in="query" name="OppositeTokenId" type="String" %}
+{% swagger-parameter in="query" name="OppositeTokenId" type="String" required="false" %}
 Opposite Token Identifier
 {% endswagger-parameter %}
 

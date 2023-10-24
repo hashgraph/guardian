@@ -10,8 +10,8 @@ This block turn on history on interfaceDocumentsSourceBlock. This block should b
 | Permissions             | Which entity has rights to interact at this part of the workflow.                 | Registrant                                                |        |
 | Default Active          | Shows whether this block is active at this time and whether it needs to be shown. | Checked or Unchecked                                      |        |
 | Stop Propagation        | End processing here, don't pass control to the next block.                        | Checked or Unchecked                                      |        |
-| On Errors               | Called if the system error has occurs in the Block                                | <p> - No action<br> - Retry</p>                           |        |
+| On Errors               | Called if the system error has occurs in the Block                                | <p>- No action<br>- Retry</p>                             |        |
 | timelineLabelPath       | Label of timeline point                                                           | “option.status”. It is default value if setting is empty  |        |
 | timelineDescriptionPath | Description of timeline point                                                     | “option.comment”. It is default value if setting is empty |        |
 
-<figure><img src="../../../../.gitbook/assets/image (9) (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (9) (4) (1).png" alt=""><figcaption></figcaption></figure>

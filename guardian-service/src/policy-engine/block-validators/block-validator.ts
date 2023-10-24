@@ -50,6 +50,7 @@ import { NotificationBlock } from './blocks/notification.block';
 import { ISchema, SchemaField, SchemaHelper } from '@guardian/interfaces';
 import { ToolValidator } from './tool-validator';
 import { ToolBlock } from './blocks/tool';
+import { ExtractDataBlock } from './blocks/extract-data';
 
 export const validators = [
     InterfaceDocumentActionBlock,
@@ -96,7 +97,8 @@ export const validators = [
     ExternalTopicBlock,
     MessagesReportBlock,
     NotificationBlock,
-    ToolBlock
+    ToolBlock,
+    ExtractDataBlock
 ];
 
 /**
@@ -285,6 +287,85 @@ export class BlockValidator {
     }
 
     /**
+     * Validate schema
+     * @param iri
+     */
+    public validateSchema(iri: string): string | null {
+        if (this.validator.unsupportedSchema(iri)) {
+            return `Schema with id "${iri}" refers to non-existing schema`;
+        }
+        if (this.validator.schemaExist(iri)) {
+            return null;
+        } else {
+            return `Schema with id "${iri}" does not exist`;
+        }
+    }
+
+    /**
+     * Validate schema variable
+     * @param name
+     * @param value
+     * @param required
+     */
+    public validateSchemaVariable(
+        name: string,
+        value: any,
+        required: boolean = false
+    ): string | null {
+        if (!value) {
+            if (required) {
+                return `Option "${name}" is not set`;
+            } else {
+                return null;
+            }
+        }
+        if (typeof value !== 'string') {
+            return `Option "${name}" must be a string`;
+        }
+        return this.validateSchema(value);
+    }
+
+    /**
+     * Validate base schema
+     * @param iri
+     */
+    public validateBaseSchema(
+        baseSchema: ISchema | string,
+        schema: ISchema | string
+    ): string | null {
+        if (!baseSchema) {
+            return null;
+        }
+        let baseSchemaObject: ISchema;
+        if (typeof baseSchema === 'string') {
+            baseSchemaObject = this.getSchema(baseSchema);
+        } else {
+            baseSchemaObject = baseSchema;
+        }
+
+        let schemaObject: ISchema;
+        if (typeof schema === 'string') {
+            schemaObject = this.getSchema(schema);
+        } else {
+            schemaObject = schema;
+        }
+
+        if (!baseSchemaObject) {
+            return `Schema with id "${baseSchema}" does not exist`;
+        }
+
+        if (!schemaObject) {
+            return `Schema with id "${schema}" does not exist`;
+        }
+
+        if (!this.compareSchema(baseSchemaObject, schemaObject)) {
+            return `Schema is not supported`;
+        }
+
+        return null;
+    }
+
+    /**
      * Token not exist
      * @param templateName
      */
@@ -362,8 +443,8 @@ export class BlockValidator {
      * @param uuid
      * @param error
      */
-    public checkBlockError(error: string): void {
-        if (error !== null) {
+    public checkBlockError(error: string | null): void {
+        if (error) {
             this.addError(error);
         }
     }

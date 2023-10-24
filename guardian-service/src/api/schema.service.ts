@@ -12,6 +12,7 @@ import {
 import {
     ISchema,
     MessageAPI,
+    ModuleStatus,
     SchemaCategory,
     SchemaHelper,
     SchemaStatus,
@@ -29,7 +30,8 @@ import {
     createSchemaAndArtifacts,
     deleteSchema,
     incrementSchemaVersion,
-    updateSchemaDefs
+    updateSchemaDefs,
+    getSchemaCategory
 } from './helpers';
 
 @Controller()
@@ -189,51 +191,150 @@ export async function schemaAPI(): Promise<void> {
             if (!msg) {
                 return new MessageError('Invalid load schema parameter');
             }
+            const otherOptions: any = getPageOptions(msg);
             const filter: any = {
-                where: {
-                    readonly: false,
-                    system: false
-                }
+                readonly: false,
+                system: false
             }
             if (msg.owner) {
-                filter.where.owner = msg.owner;
+                filter.owner = msg.owner;
             }
-            if (msg.uuid) {
-                filter.where.uuid = msg.uuid;
+            if (Array.isArray(msg.category)) {
+                filter.category = { $in: msg.category };
+            } else if (typeof msg.category === 'string') {
+                filter.category = msg.category;
             }
             if (msg.policyId) {
-                filter.where.category = SchemaCategory.POLICY;
+                filter.category = SchemaCategory.POLICY;
                 const policy = await DatabaseServer.getPolicyById(msg.policyId);
-                if (policy) {
-                    filter.where.topicId = policy.topicId;
-                }
+                filter.topicId = policy?.topicId;
             } else if (msg.moduleId) {
-                filter.where.category = SchemaCategory.MODULE;
+                filter.category = SchemaCategory.MODULE;
                 const module = await DatabaseServer.getModuleById(msg.moduleId);
-                if (module) {
-                    filter.where.topicId = module.topicId;
-                }
+                filter.topicId = module?.topicId;
             } else if (msg.toolId) {
-                filter.where.category = SchemaCategory.TOOL;
+                filter.category = SchemaCategory.TOOL;
                 const tool = await DatabaseServer.getToolById(msg.toolId);
-                if (tool) {
-                    filter.where.topicId = tool.topicId;
+                filter.topicId = tool?.topicId;
+                if (tool && tool.status === ModuleStatus.PUBLISHED) {
+                    delete filter.owner;
+                }
+            }
+            if (msg.topicId) {
+                filter.topicId = msg.topicId;
+                if (filter.category === SchemaCategory.TOOL) {
+                    const tool = await DatabaseServer.getTool({ topicId: msg.topicId });
+                    if (tool && tool.status === ModuleStatus.PUBLISHED) {
+                        delete filter.owner;
+                    }
                 }
             } else {
-                if (msg.topicId) {
-                    filter.where.topicId = msg.topicId;
+                if (filter.category === SchemaCategory.TOOL) {
+                    const tools = await DatabaseServer.getTools({
+                        $or: [{
+                            owner: msg.owner
+                        }, {
+                            status: ModuleStatus.PUBLISHED
+                        }]
+                    }, {
+                        fields: ['topicId']
+                    });
+                    const ids = tools.map(t => t.topicId);
+                    delete filter.owner;
+                    filter.topicId = { $in: ids }
                 }
-                if (msg.category) {
-                    if (Array.isArray(msg.category)) {
-                        filter.where.category = { $in: msg.category };
-                    } else {
-                        filter.where.category = msg.category;
+            }
+            const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
+            return new MessageResponse({ items, count });
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    /**
+     * Return schemas
+     *
+     * @param {Object} [payload] - filters
+     *
+     * @returns {ISchema[]} - all schemas
+     */
+    ApiResponse(MessageAPI.GET_SCHEMAS_BY_UUID, async (msg) => {
+        try {
+            if (!msg) {
+                return new MessageError('Invalid load schema parameter');
+            }
+            const items = await DatabaseServer.getSchemas({
+                uuid: msg.uuid,
+                readonly: false,
+                system: false
+            });
+            return new MessageResponse(items);
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    /**
+     * Return schemas
+     *
+     * @param {Object} [payload] - filters
+     *
+     * @returns {any[]} - all schemas
+     */
+    ApiResponse(MessageAPI.GET_SUB_SCHEMAS, async (msg) => {
+        try {
+            const { topicId, owner, category } = msg;
+            if (!owner) {
+                return new MessageError('Invalid schema owner');
+            }
+
+            const topicMaps = new Set<string>();
+            const nameMaps = new Map<string, string>();
+            if (topicId) {
+                topicMaps.add(topicId);
+                nameMaps.set(topicId, 'Current');
+            }
+
+            let parents: any[];
+            const options = {
+                fields: [
+                    'name',
+                    'topicId',
+                    'tools'
+                ]
+            };
+            if (category === SchemaCategory.POLICY) {
+                parents = await DatabaseServer.getPolicies({ owner, topicId }, options);
+            } else if (category === SchemaCategory.TOOL) {
+                parents = await DatabaseServer.getTools({ owner, topicId }, options);
+            }
+            if (Array.isArray(parents)) {
+                for (const parent of parents) {
+                    if (Array.isArray(parent.tools)) {
+                        for (const tool of parent.tools) {
+                            if (tool.topicId) {
+                                topicMaps.add(tool.topicId);
+                                nameMaps.set(tool.topicId, tool.name);
+                            }
+                        }
                     }
                 }
             }
-            const otherOptions: any = getPageOptions(msg);
-            const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
-            return new MessageResponse({ items, count });
+            const topicIds = Array.from(topicMaps.values());
+
+            const schemas = await DatabaseServer.getSchemas({
+                owner,
+                system: false,
+                readonly: false,
+                topicId: { $in: topicIds }
+            });
+
+            for (const schema of schemas) {
+                (schema as any).__component = nameMaps.get(schema.topicId);
+            }
+            return new MessageResponse(schemas);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
@@ -367,7 +468,10 @@ export async function schemaAPI(): Promise<void> {
                 return new MessageError('Invalid import schema parameter');
             }
 
-            const schemasMap = await importSchemasByMessages(owner, messageIds, topicId, emptyNotifier());
+            const category = await getSchemaCategory(topicId);
+            const schemasMap = await importSchemasByMessages(
+                category, owner, messageIds, topicId, emptyNotifier()
+            );
             return new MessageResponse(schemasMap);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -387,7 +491,10 @@ export async function schemaAPI(): Promise<void> {
                 notifier.error('Invalid import schema parameter');
             }
 
-            const schemasMap = await importSchemasByMessages(owner, messageIds, topicId, notifier);
+            const category = await getSchemaCategory(topicId);
+            const schemasMap = await importSchemasByMessages(
+                category, owner, messageIds, topicId, notifier
+            );
             notifier.result(schemasMap);
         }, async (error) => {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -415,7 +522,10 @@ export async function schemaAPI(): Promise<void> {
             const { schemas, tags } = files;
             const notifier = emptyNotifier();
 
-            let result = await importSchemaByFiles(owner, schemas, topicId, notifier);
+            const category = await getSchemaCategory(topicId);
+            let result = await importSchemaByFiles(
+                category, owner, schemas, topicId, notifier
+            );
             result = await importTagsByFiles(result, tags, notifier);
 
             return new MessageResponse(result);
@@ -439,7 +549,10 @@ export async function schemaAPI(): Promise<void> {
                 notifier.error('Invalid import schema parameter');
             }
 
-            let result = await importSchemaByFiles(owner, schemas, topicId, notifier);
+            const category = await getSchemaCategory(topicId);
+            let result = await importSchemaByFiles(
+                category, owner, schemas, topicId, notifier
+            );
             result = await importTagsByFiles(result, tags, notifier);
 
             notifier.result(result);

@@ -94,10 +94,21 @@ export class DocumentFieldsModel {
             for (const schema of schemas) {
                 const field = schema.getField(path);
                 if (field) {
-                    data.setTitle(field.description);
+                    data.setDescription(field.description);
+                    data.setTitle(field.title);
                     continue;
                 }
             }
+        }
+    }
+
+    /**
+     * Update all weight
+     * @public
+     */
+    public update(options: ICompareOptions): void {
+        for (const data of this.fields) {
+            data.update(options);
         }
     }
 

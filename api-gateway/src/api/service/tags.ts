@@ -12,7 +12,7 @@ export class TagsApi {
     @Post('/')
     @HttpCode(HttpStatus.CREATED)
     async setTags(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         try {
             if (!req.headers.authorization || !req.user || !req.user.did) {
                 throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
@@ -34,7 +34,7 @@ export class TagsApi {
             if (!req.headers.authorization || !req.user || !req.user.did) {
                 throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
             }
-            const {entity, target, targets} = req.body;
+            const { entity, target, targets } = req.body;
             let _targets: string[];
             if (!entity) {
                 throw new HttpException('Invalid entity', HttpStatus.UNPROCESSABLE_ENTITY)
@@ -106,13 +106,13 @@ export class TagsApi {
     @Post('/synchronization')
     @HttpCode(HttpStatus.OK)
     async synchronizationTags(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         if (!req.headers.authorization || !req.user || !req.user.did) {
             throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
         }
         try {
             const guardians = new Guardians();
-            const {entity, target} = req.body;
+            const { entity, target } = req.body;
 
             if (!entity) {
                 throw new HttpException('Invalid entity', HttpStatus.UNPROCESSABLE_ENTITY)

@@ -6,17 +6,15 @@ The first adaptation relates to the redesign of the creation of new accounts. Th
 
 Here the images below to show the selection of account type and selection of username and password in order to create a new account.
 
+<figure><img src="../../../.gitbook/assets/2 (6).png" alt=""><figcaption></figcaption></figure>
 
-
-<figure><img src="../../../.gitbook/assets/2 (5).png" alt=""><figcaption></figcaption></figure>
-
-<figure><img src="../../../.gitbook/assets/1 (1) (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/1 (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 ### New header for mobile
 
 The header was also adapted for mobile for all types of users. The balance was maintained as one of the elements always present. The new header for mobile, these elements are always present.
 
-<figure><img src="../../../.gitbook/assets/3 (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/3 (3).png" alt=""><figcaption></figcaption></figure>
 
 The various menus and submenus (in case there are any) have been moved upon clicking on the hamburger menu, presenting the user with the following.
 
@@ -36,17 +34,17 @@ Among the adaptations for the Standard Registry, the creation / edition of a new
 
 Below are the images show the creation of a "New Token" form for the Standard Registry.
 
-![](<../../../.gitbook/assets/14 (1) (2).png>) ![](<../../../.gitbook/assets/15 (4).png>)
+![](<../../../.gitbook/assets/14 (1) (2).png>) ![](<../../../.gitbook/assets/15 (5).png>)
 
 Here below are the images to show the creation of a "Edit Token" form for the Standard Registry. On the left for a non published and on the right for a published token.
 
-![](<../../../.gitbook/assets/16 (1).png>) ![](<../../../.gitbook/assets/17 (1).png>)
+![](<../../../.gitbook/assets/16 (1) (1).png>) ![](<../../../.gitbook/assets/17 (6).png>)
 
 ### Standard Registry importing policies flow (from IPFS)
 
 The importing of policies was also adapted from the click on the "Import" button under the "Policies" menu, up until the preview of the policy the User is about to import.
 
-![](<../../../.gitbook/assets/18 (1) (3).png>) ![](<../../../.gitbook/assets/19 (1).png>)
+![](<../../../.gitbook/assets/18 (1) (3).png>) ![](<../../../.gitbook/assets/19 (5).png>)
 
 Below you can see the preview of the imported policy
 
@@ -58,7 +56,7 @@ Finally, the publishing of a draft policy, defining its version, was also adapte
 
 <figure><img src="../../../.gitbook/assets/21.png" alt="" width="284"><figcaption></figcaption></figure>
 
-### Branding&#x20;
+### Branding
 
 The branding page has been created exclusively for this purpose, that can be accessed only by Standard Registries clicking on the user icon as seen in the following images.
 
@@ -72,12 +70,11 @@ In this page, besides saving the configuration, it is possible to preview the ch
 
 <figure><img src="https://lh5.googleusercontent.com/eWTf7Os2okmMUx_Y1PT6IewSnXDOUxoTA5_wggDOJnI7jxNaucoeJ0hxw_sVomHVP2grtcgdx34NqXxeKKUjBl21p3XlWG9OdU6QTthFCRoqdu8s6DKiTMIIXe3NhWXvazaKX-3t-W-_pv0uVHSfOrA" alt="" width="563"><figcaption></figcaption></figure>
 
-Here is the "Preview" of the changes that would be made to the appearance.&#x20;
+Here is the "Preview" of the changes that would be made to the appearance.
 
 <figure><img src="https://lh4.googleusercontent.com/nzUP1J3zqWt09lexNOP7DCfnpcTT0kfrDvyjcW5kQEDDaB4ALB7teTDaSPNNITun7e7Hh8R-hMZe_A2IRc8-JWYCEAZLkk8xNrBrE96Y7MjO6jx9ZqbyqvJ1iJthVLhZK6vO7GAThUbxHTtnUYfsZ7c" alt="" width="563"><figcaption></figcaption></figure>
 
-\
-
+\\
 
 Upon saving, the changes should be persistent throughout the use of Guardian:
 
@@ -93,4 +90,4 @@ In order to reset the changes made to the branding features that came originally
 
 <figure><img src="https://lh6.googleusercontent.com/R0lN9zzpNYbYwXPj1gcTsuWMgdztkMsIikFX9eTCEy2AEb4UcPVgDnDp85Fwj9w-nWLvWD0uJ5UhBnmlbrJ2I-gRDUUzfkAP11ksUxJK_RWldZrzhKy_WKRAXQt5Rv3rcgAc3mj3D-KOEIZ8O_IQr6k" alt="" width="563"><figcaption></figcaption></figure>
 
-\
+\\

@@ -26,18 +26,15 @@ export enum WorkerTaskType {
     GET_TOPIC_MESSAGE_BY_INDEX = 'get-topic-message-by-index',
     GET_TOPIC_MESSAGE_CHUNKS = 'get-topic-message-chunks',
     CREATE_CONTRACT = 'create-contract',
-    ADD_CONTRACT_USER = 'add-contract-user',
-    CHECK_STATUS = 'check-status',
+    CONTRACT_CALL = 'contract-call',
+    CONTRACT_QUERY = 'contract-query',
+    CUSTOM_CONTRACT_CALL = 'custom-contract-call',
+    CUSTOM_CONTRACT_QUERY = 'custom-contract-query',
     GET_CONTRACT_INFO = 'get-contract-info',
-    ADD_CONTRACT_PAIR = 'add-contract-pair',
-    GET_CONTRACT_PAIR = 'get-contract-pair',
-    ADD_RETIRE_REQUEST = 'add-retire-request',
-    GET_RETIRE_REQUEST = 'get-retire-request',
-    RETIRE_TOKENS = 'retire-tokens',
-    CANCEL_RETIRE_REQUEST = 'cancel-retire-request',
     GET_USER_NFTS_SERIALS = 'get-user-nfts-serials',
     HTTP_REQUEST = 'http-request',
-    GET_TOKEN_INFO = 'get-token-info'
+    GET_TOKEN_INFO = 'get-token-info',
+    GET_CONTRACT_EVENTS = 'get-contract-events'
 }
 
 /**

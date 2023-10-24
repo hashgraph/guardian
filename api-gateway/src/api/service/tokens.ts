@@ -7,7 +7,18 @@ import { ServiceError } from '@helpers/service-requests-base';
 import { prepareValidationResponse } from '@middlewares/validation';
 import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response } from '@nestjs/common';
 import { checkPermission } from '@auth/authorization-helper';
-import { ApiTags } from '@nestjs/swagger';
+import {
+    ApiInternalServerErrorResponse,
+    ApiOkResponse,
+    ApiOperation,
+    ApiUnauthorizedResponse,
+    ApiExtraModels,
+    ApiForbiddenResponse,
+    ApiTags,
+    ApiBearerAuth,
+    ApiParam,
+} from '@nestjs/swagger';
+import { InternalServerErrorDTO } from '@middlewares/validation/schemas';
 
 /**
  * Token route
@@ -549,6 +560,56 @@ export class TokensApi {
             }
             const result = await guardians.getInfoToken(tokenId, username, userDid);
             return res.json(result as ITokenInfo);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            if (error?.message?.toLowerCase().includes('user not found')) {
+                throw new HttpException('User not registered', HttpStatus.NOT_FOUND);
+            }
+            if (error?.message?.toLowerCase().includes('token not found')) {
+                throw new HttpException('Token not registered', HttpStatus.NOT_FOUND);
+            }
+            throw error;
+        }
+    }
+
+    @Get('/:tokenId/serials')
+    @ApiBearerAuth()
+    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiOperation({
+        summary: 'Return token serials.',
+        description: 'Returns token serials of current user.',
+    })
+    @ApiParam({
+        name: 'tokenId',
+        type: 'string',
+        description: 'Token identifier',
+        required: true,
+        example: '0.0.1',
+    })
+    @ApiOkResponse({
+        description: 'Token serials.',
+        isArray: true,
+        type: Number,
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @HttpCode(HttpStatus.OK)
+    async getTokenSerials(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
+        try {
+            const guardians = new Guardians();
+            const tokenId = req.params.tokenId;
+            const userDid = req.user.did;
+            const result = await guardians.getTokenSerials(tokenId, userDid);
+            return res.json(result);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {

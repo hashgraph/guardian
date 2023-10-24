@@ -26,7 +26,7 @@ Roles in the below Workflow Diagram are represented as follows : Project Propone
 
 ## Policy Guide
 
-Typically, the way we start the demonstration is by logging in as a Standard Registry.&#x20;
+Typically, the way we start the demonstration is by logging in as a Standard Registry.
 
 Create a Standard Registry user if you haven't done so already.
 
@@ -34,13 +34,15 @@ You'll now be prompted to configure your Standard Registry account. Go through t
 
 <figure><img src="../../../.gitbook/assets/image (38) (2).png" alt=""><figcaption></figcaption></figure>
 
-Now we will be creating the Policy. Click on the "Policies" tab and select "Policies." We have two ways to create policies.&#x20;
+Now we will be creating the Policy. Click on the "Policies" tab and select "Policies." We have two ways to create policies.
 
 For this demo guide, we will use the "Import from Open Source" way. Click on that button and find the policy for this guide and click on the import button.
 
+Policy can also be imported by using IPFS timestamp: 1695247491.606164733
+
 Once the policy is imported successfully, you get two options: Publish and Dry Run mode. We select the Dry Run option and select Go.
 
-<figure><img src="../../../.gitbook/assets/image (24) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (24) (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 Create additional users by clicking the “Create User” button. Once the users have been created go to each one and assign the appropriate role (i.e. Project Proponent and VVB).
 
@@ -52,11 +54,11 @@ Go to the Standard Registry profile and approve the VVB in the “Approve VVB”
 
 Click on the Project Proponent profile and select “New Project”.
 
-<figure><img src="../../../.gitbook/assets/image (28) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (28) (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 Now, we can input all the project details and data associated with the project in the “New Project” form. In the schema Excel file, if the final CRU calculations do not result in a positive integer, selecting "Ok" after completing the form will trigger errors. In this demo guide, we have provided a link to an Excel file containing demo values that can be utilized to test the policy.
 
-<figure><img src="../../../.gitbook/assets/image (80).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (80) (1).png" alt=""><figcaption></figcaption></figure>
 
 To proceed with the flow, the next step is to access the Standard Registry profile and include the project in the project pipeline. This can be achieved by navigating to the "Project Pipeline" tab and selecting the "Add" option.
 
@@ -64,7 +66,7 @@ To proceed with the flow, the next step is to access the Standard Registry profi
 
 Next, proceed to the Project Proponent profile and locate the "Projects" section. Then, click on the downward arrow and assign the VVB to the project.
 
-<figure><img src="../../../.gitbook/assets/image (78).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (78) (1).png" alt=""><figcaption></figcaption></figure>
 
 After successfully assigning the VVB to the project, the next step is to access the VVB profile and click on the "validate" option located in the Projects tab.
 
@@ -76,7 +78,7 @@ Navigate back to the Project Proponent profile to complete the monitoring report
 
 Upon selecting "Add Report", a file will open containing the project details and schemas previously filled out. Here, you can update the information based on the relevant monitoring plan provided by the methodology. After updating the information and including a project area map, you may click on "Ok" to proceed. (For this demo, we utilized the same values from the provided Excel file.)
 
-<figure><img src="../../../.gitbook/assets/image (88).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (88) (1).png" alt=""><figcaption></figcaption></figure>
 
 Once you have completed the monitoring report, please access the VVB profile and go to the monitoring reports tab. Here, you will find a "Verify" button - select that to proceed.
 
@@ -88,7 +90,7 @@ This is the final step in the workflow. Access the Standard Registry profile and
 
 By accessing the "Token History" tab, you can view the number of tokens that have been minted. Additionally, clicking on the "View TrustChain" button will allow you to view the TrustChain.
 
-<figure><img src="../../../.gitbook/assets/image (98).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (98) (1).png" alt=""><figcaption></figcaption></figure>
 
 The Trust Chain view presents critical elements that are publicly available for discovery, such as token information, policy information, and all the necessary details concerning the Verifiable Credentials comprising the Verifiable Presentation. On the bottom of the screen, you will find "Cards" showcasing the Verifiable Credentials in chronological order.
 

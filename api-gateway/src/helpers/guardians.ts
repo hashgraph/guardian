@@ -13,7 +13,14 @@ import {
     IVCDocument,
     IVPDocument,
     MessageAPI,
-    SuggestionsOrderPriority
+    SuggestionsOrderPriority,
+    ContractAPI,
+    ContractType,
+    RetireTokenPool,
+    RetireTokenRequest,
+    IContract,
+    IRetireRequest,
+    IRetirePool
 } from '@guardian/interfaces';
 import { NatsService } from '@guardian/common';
 import { NewTask } from './task-manager';
@@ -386,6 +393,19 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Get token serials
+     * @param tokenId Token identifier
+     * @param did DID
+     * @returns Serials
+     */
+    public async getTokenSerials(tokenId: string, did: string): Promise<ITokenInfo> {
+        return await this.sendMessage(MessageAPI.GET_SERIALS, {
+            tokenId,
+            did
+        });
+    }
+
+    /**
      * Get associated tokens
      * @param did
      */
@@ -501,8 +521,7 @@ export class Guardians extends NatsService {
      * @returns {ISchema[]} - all schemas
      */
     public async getSchemasByUUID(uuid: string): Promise<ISchema[]> {
-        const { items } = await this.sendMessage<ResponseAndCount<ISchema>>(MessageAPI.GET_SCHEMAS, { uuid });
-        return items;
+        return await this.sendMessage(MessageAPI.GET_SCHEMAS_BY_UUID, { uuid });
     }
 
     /**
@@ -813,44 +832,44 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Return sub schemas
+     *
+     * @param {string} category - schemas category
+     * @param {string} topicId - topic id
+     * @param {string} owner - schemas owner
+     *
+     * @returns {ISchema[]} - schemas
+     */
+    public async getSubSchemas(category: string, topicId: string, owner: string): Promise<ISchema[]> {
+        return await this.sendMessage(MessageAPI.GET_SUB_SCHEMAS, { topicId, owner, category });
+    }
+
+    /**
      * Upload Policy Artifacts
      *
      * @param {any} artifact - Artifact
      * @param {string} owner - Owner
-     * @param {string} policyId - Policy Identifier
+     * @param {string} parentId - Policy Identifier
      *
      * @returns - Uploaded Artifacts
      */
-    public async uploadArtifact(artifact: any, owner: string, policyId: string): Promise<IArtifact[]> {
+    public async uploadArtifact(artifact: any, owner: string, parentId: string): Promise<IArtifact[]> {
         return await this.sendMessage(MessageAPI.UPLOAD_ARTIFACT, {
             owner,
             artifact,
-            policyId
+            parentId
         });
     }
 
     /**
      * Get Policy Artifacts
      *
-     * @param {string} owner - Owner
-     * @param {string} policyId - Policy Identifier
-     * @param {string} pageIndex - Page Index
-     * @param {string} pageSize - Page Size
+     * @param {any} options
      *
      * @returns - Artifact
      */
-    public async getArtifacts(
-        owner: string,
-        policyId: string,
-        pageIndex: string,
-        pageSize: string,
-    ): Promise<any> {
-        return await this.sendMessage(MessageAPI.GET_ARTIFACTS, {
-            owner,
-            policyId,
-            pageIndex,
-            pageSize
-        });
+    public async getArtifacts(options: any): Promise<any> {
+        return await this.sendMessage(MessageAPI.GET_ARTIFACTS, options);
     }
 
     /**
@@ -897,7 +916,7 @@ export class Guardians extends NatsService {
     }
 
     /**
-     * Compare two policies
+     * Compare documents
      * @param user
      * @param type
      * @param ids
@@ -916,6 +935,36 @@ export class Guardians extends NatsService {
         idLvl: any,
     ) {
         return await this.sendMessage(MessageAPI.COMPARE_DOCUMENTS, {
+            type,
+            user,
+            ids,
+            eventsLvl,
+            propLvl,
+            childrenLvl,
+            idLvl
+        });
+    }
+
+    /**
+     * Compare tools
+     * @param user
+     * @param type
+     * @param ids
+     * @param eventsLvl
+     * @param propLvl
+     * @param childrenLvl
+     * @param idLvl
+     */
+    public async compareTools(
+        user: any,
+        type: any,
+        ids: string[],
+        eventsLvl: any,
+        propLvl: any,
+        childrenLvl: any,
+        idLvl: any,
+    ) {
+        return await this.sendMessage(MessageAPI.COMPARE_TOOLS, {
             type,
             user,
             ids,
@@ -1025,35 +1074,62 @@ export class Guardians extends NatsService {
         });
     }
 
+    //#region Contracts
+
     /**
-     * Create Contract
-     * @param did
-     * @param description
-     * @returns Created Contract
+     * Get contracts
+     * @param owner
+     * @param type
+     * @param pageIndex
+     * @param pageSize
+     * @returns Contracts and count
      */
-    public async createContract(
-        did: string,
-        description: string
-    ): Promise<any> {
-        return await this.sendMessage(MessageAPI.CREATE_CONTRACT, {
-            did,
-            description,
+    public async getContracts(
+        owner: string,
+        type: ContractType = ContractType.RETIRE,
+        pageIndex?: any,
+        pageSize?: any
+    ): Promise<[IContract[], number]> {
+        return await this.sendMessage(ContractAPI.GET_CONTRACTS, {
+            owner,
+            pageIndex,
+            pageSize,
+            type,
         });
     }
 
     /**
-     * Import Contract
+     * Create contract
+     * @param did
+     * @param description
+     * @param type
+     * @returns Created contract
+     */
+    public async createContract(
+        did: string,
+        description: string,
+        type: ContractType
+    ): Promise<IContract> {
+        return await this.sendMessage(ContractAPI.CREATE_CONTRACT, {
+            did,
+            description,
+            type,
+        });
+    }
+
+    /**
+     * Import contract
      * @param did
      * @param contractId
      * @param description
-     * @returns Imported Contract
+     * @returns Imported contract
      */
     public async importContract(
         did: string,
         contractId: string,
         description: string
-    ): Promise<any> {
-        return await this.sendMessage(MessageAPI.IMPORT_CONTRACT, {
+    ): Promise<IContract> {
+        return await this.sendMessage(ContractAPI.IMPORT_CONTRACT, {
             did,
             contractId,
             description,
@@ -1061,178 +1137,50 @@ export class Guardians extends NatsService {
     }
 
     /**
-     * Create Contract
-     * @param owner
-     * @param pageIndex
-     * @param pageSize
-     * @returns Contracts And Count
+     * Get contract permissions
+     * @param did
+     * @param id
+     * @returns Permissions
      */
-    public async getContracts(
-        owner: string,
-        pageIndex?: any,
-        pageSize?: any
-    ): Promise<[any, number]> {
-        return await this.sendMessage(MessageAPI.GET_CONTRACT, {
+    public async checkContractPermissions(
+        did: string,
+        id: string
+    ): Promise<number> {
+        return await this.sendMessage(ContractAPI.CONTRACT_PERMISSIONS, {
+            id,
+            did,
+        });
+    }
+
+    /**
+     * Remove contract
+     * @param owner
+     * @param id
+     * @returns Successful operation
+     */
+    public async removeContract(owner: string, id: string): Promise<boolean> {
+        return await this.sendMessage(ContractAPI.REMOVE_CONTRACT, {
             owner,
-            pageIndex,
-            pageSize,
+            id,
         });
     }
 
     /**
-     * Add User To Contract
+     * Get wipe requests
      * @param did
-     * @param userId
-     * @param contractId
-     * @returns Operation Success
-     */
-    public async addUser(
-        did: string,
-        userId: string,
-        contractId: string
-    ): Promise<boolean> {
-        return await this.sendMessage(MessageAPI.ADD_CONTRACT_USER, {
-            did,
-            userId,
-            contractId,
-        });
-    }
-
-    /**
-     * Check Contract Status
-     * @param did
-     * @param contractId
-     * @returns Operation Success
-     */
-    public async updateStatus(
-        did: string,
-        contractId: string
-    ): Promise<boolean> {
-        return await this.sendMessage(MessageAPI.CHECK_CONTRACT_STATUS, {
-            contractId,
-            did,
-        });
-    }
-
-    /**
-     * Add Contract Pair
-     * @param did
-     * @param contractId
-     * @param baseTokenId
-     * @param oppositeTokenId
-     * @param baseTokenCount
-     * @param oppositeTokenCount
-     * @returns Operation Success
-     */
-    public async addContractPair(
-        did: string,
-        contractId: string,
-        baseTokenId: string,
-        oppositeTokenId: string,
-        baseTokenCount: number,
-        oppositeTokenCount: number
-    ): Promise<void> {
-        return await this.sendMessage(MessageAPI.ADD_CONTRACT_PAIR, {
-            did,
-            contractId,
-            baseTokenId,
-            oppositeTokenId,
-            baseTokenCount,
-            oppositeTokenCount,
-        });
-    }
-
-    /**
-     * Get Contracts Pairs
-     * @param did
-     * @param owner
-     * @param baseTokenId
-     * @param oppositeTokenId
-     * @returns Contracts And Pairs
-     */
-    public async getContractPair(
-        did: string,
-        owner: string,
-        baseTokenId: string,
-        oppositeTokenId: string
-    ): Promise<any> {
-        return await this.sendMessage(MessageAPI.GET_CONTRACT_PAIR, {
-            did,
-            baseTokenId,
-            oppositeTokenId,
-            owner,
-        });
-    }
-
-    /**
-     * Create Retire Request
-     * @param did
-     * @param contractId
-     * @param baseTokenId
-     * @param oppositeTokenId
-     * @param baseTokenCount
-     * @param oppositeTokenCount
-     * @param baseTokenSerials
-     * @param oppositeTokenSerials
-     * @returns Operation Success
-     */
-    public async retireRequest(
-        did: string,
-        contractId: string,
-        baseTokenId: string,
-        oppositeTokenId: string,
-        baseTokenCount: number,
-        oppositeTokenCount: number,
-        baseTokenSerials: number[],
-        oppositeTokenSerials: number[]
-    ): Promise<void> {
-        return await this.sendMessage(MessageAPI.ADD_RETIRE_REQUEST, {
-            did,
-            contractId,
-            baseTokenId,
-            oppositeTokenId,
-            baseTokenCount,
-            oppositeTokenCount,
-            baseTokenSerials,
-            oppositeTokenSerials,
-        });
-    }
-
-    /**
-     * Cancel Retire Request
-     * @param did
-     * @param requestId
-     * @returns Operation Success
-     */
-    public async cancelRetireRequest(
-        did: string,
-        requestId: string
-    ): Promise<void> {
-        return await this.sendMessage(MessageAPI.CANCEL_RETIRE_REQUEST, {
-            did,
-            requestId,
-        });
-    }
-
-    /**
-     * Get Retire Requests
-     * @param did
-     * @param owner
      * @param contractId
      * @param pageIndex
      * @param pageSize
-     * @returns Retire Requests And Count
+     * @returns Wipe requests and count
      */
-    public async getRetireRequests(
+    public async getWipeRequests(
         did: string,
-        owner?: string,
         contractId?: string,
         pageIndex?: any,
         pageSize?: any
-    ): Promise<[any, number]> {
-        return await this.sendMessage(MessageAPI.GET_RETIRE_REQUEST, {
+    ): Promise<[{ user: string }[], number]> {
+        return await this.sendMessage(ContractAPI.GET_WIPE_REQUESTS, {
             did,
-            owner,
             contractId,
             pageIndex,
             pageSize,
@@ -1240,17 +1188,451 @@ export class Guardians extends NatsService {
     }
 
     /**
-     * Retire Tokens
-     * @param did
-     * @param requestId
-     * @returns Operation Success
+     * Enable wipe requests
+     * @param owner
+     * @param id
+     * @returns Operation successful
      */
-    public async retire(did: string, requestId: string): Promise<void> {
-        return await this.sendMessage(MessageAPI.RETIRE_TOKENS, {
-            did,
+    public async enableWipeRequests(
+        owner: string,
+        id: string
+    ): Promise<boolean> {
+        return await this.sendMessage(ContractAPI.ENABLE_WIPE_REQUESTS, {
+            owner,
+            id,
+        });
+    }
+
+    /**
+     * Disable wipe requests
+     * @param owner
+     * @param id
+     * @returns Operation successful
+     */
+    public async disableWipeRequests(
+        owner: string,
+        id: string
+    ): Promise<boolean> {
+        return await this.sendMessage(ContractAPI.DISABLE_WIPE_REQUESTS, {
+            owner,
+            id,
+        });
+    }
+
+    /**
+     * Approve wipe request
+     * @param owner
+     * @param requestId
+     * @returns Operation successful
+     */
+    public async approveWipeRequest(
+        owner: string,
+        requestId: string
+    ): Promise<boolean> {
+        return await this.sendMessage(ContractAPI.APPROVE_WIPE_REQUEST, {
+            owner,
             requestId,
         });
     }
+
+    /**
+     * Reject wipe request
+     * @param owner
+     * @param requestId
+     * @param ban
+     * @returns Operation successful
+     */
+    public async rejectWipeRequest(
+        owner: string,
+        requestId: string,
+        ban: boolean = false
+    ): Promise<boolean> {
+        return await this.sendMessage(ContractAPI.REJECT_WIPE_REQUEST, {
+            owner,
+            requestId,
+            ban,
+        });
+    }
+
+    /**
+     * Clear wipe requests
+     * @param owner
+     * @param id
+     * @returns Operation successful
+     */
+    public async clearWipeRequests(
+        owner: string,
+        id: string
+    ): Promise<boolean> {
+        return await this.sendMessage(ContractAPI.CLEAR_WIPE_REQUESTS, {
+            owner,
+            id,
+        });
+    }
+
+    /**
+     * Add wipe admin
+     * @param owner
+     * @param id
+     * @param hederaId
+     * @returns Operation successful
+     */
+    public async addWipeAdmin(
+        owner: string,
+        id: string,
+        hederaId: string
+    ): Promise<boolean> {
+        return await this.sendMessage(ContractAPI.ADD_WIPE_ADMIN, {
+            owner,
+            id,
+            hederaId,
+        });
+    }
+
+    /**
+     * Remove wipe admin
+     * @param owner
+     * @param id
+     * @param hederaId
+     * @returns Operation successful
+     */
+    public async removeWipeAdmin(
+        owner: string,
+        id: string,
+        hederaId: string
+    ): Promise<boolean> {
+        return await this.sendMessage(ContractAPI.REMOVE_WIPE_ADMIN, {
+            owner,
+            id,
+            hederaId,
+        });
+    }
+
+    /**
+     * Add wipe manager
+     * @param owner
+     * @param id
+     * @param hederaId
+     * @returns Operation successful
+     */
+    public async addWipeManager(
+        owner: string,
+        id: string,
+        hederaId: string
+    ): Promise<boolean> {
+        return await this.sendMessage(ContractAPI.ADD_WIPE_MANAGER, {
+            owner,
+            id,
+            hederaId,
+        });
+    }
+
+    /**
+     * Remove wipe manager
+     * @param owner
+     * @param id
+     * @param hederaId
+     * @returns Operation successful
+     */
+    public async removeWipeManager(
+        owner: string,
+        id: string,
+        hederaId: string
+    ): Promise<boolean> {
+        return await this.sendMessage(ContractAPI.REMOVE_WIPE_MANAGER, {
+            owner,
+            id,
+            hederaId,
+        });
+    }
+
+    /**
+     * Add wipe wiper
+     * @param owner
+     * @param id
+     * @param hederaId
+     * @returns Operation successful
+     */
+    public async addWipeWiper(
+        owner: string,
+        id: string,
+        hederaId: string
+    ): Promise<boolean> {
+        return await this.sendMessage(ContractAPI.ADD_WIPE_WIPER, {
+            owner,
+            id,
+            hederaId,
+        });
+    }
+
+    /**
+     * Remove wipe wiper
+     * @param owner
+     * @param id
+     * @param hederaId
+     * @returns Operation successful
+     */
+    public async removeWipeWiper(
+        owner: string,
+        id: string,
+        hederaId: string
+    ): Promise<boolean> {
+        return await this.sendMessage(ContractAPI.REMOVE_WIPE_WIPER, {
+            owner,
+            id,
+            hederaId,
+        });
+    }
+
+    /**
+     * Sync retire pools
+     * @param owner
+     * @param id
+     * @returns Sync date
+     */
+    public async syncRetirePools(owner: string, id: string): Promise<string> {
+        return await this.sendMessage(ContractAPI.SYNC_RETIRE_POOLS, {
+            owner,
+            id,
+        });
+    }
+
+    /**
+     * Get retire requests
+     * @param did
+     * @param contractId
+     * @param pageIndex
+     * @param pageSize
+     * @returns Retire requests and count
+     */
+    public async getRetireRequests(
+        did: string,
+        contractId?: string,
+        pageIndex?: any,
+        pageSize?: any
+    ): Promise<[IRetireRequest, number]> {
+        return await this.sendMessage(ContractAPI.GET_RETIRE_REQUESTS, {
+            did,
+            contractId,
+            pageIndex,
+            pageSize,
+        });
+    }
+
+    /**
+     * Get retire pools
+     * @param owner
+     * @param tokens
+     * @param contractId
+     * @param pageIndex
+     * @param pageSize
+     * @returns Retire pools and count
+     */
+    public async getRetirePools(
+        owner: string,
+        tokens?: string[],
+        contractId?: string,
+        pageIndex?: any,
+        pageSize?: any
+    ): Promise<[IRetirePool, number]> {
+        return await this.sendMessage(ContractAPI.GET_RETIRE_POOLS, {
+            owner,
+            contractId,
+            pageIndex,
+            pageSize,
+            tokens,
+        });
+    }
+
+    /**
+     * Clear retire requests
+     * @param owner
+     * @param id
+     * @returns Operation successful
+     */
+    public async clearRetireRequests(
+        owner: string,
+        id: string
+    ): Promise<boolean> {
+        return await this.sendMessage(ContractAPI.CLEAR_RETIRE_REQUESTS, {
+            owner,
+            id,
+        });
+    }
+
+    /**
+     * Clear retire pools
+     * @param owner
+     * @param id
+     * @returns Operation successful
+     */
+    public async clearRetirePools(owner: string, id: string): Promise<boolean> {
+        return await this.sendMessage(ContractAPI.CLEAR_RETIRE_POOLS, {
+            owner,
+            id,
+        });
+    }
+
+    /**
+     * Set retire pool
+     * @param owner
+     * @param id
+     * @param options
+     * @returns Pool
+     */
+    public async setRetirePool(
+        owner: string,
+        id: string,
+        options: { tokens: RetireTokenPool[]; immediately: boolean }
+    ): Promise<IRetirePool> {
+        return await this.sendMessage(ContractAPI.SET_RETIRE_POOLS, {
+            owner,
+            id,
+            options,
+        });
+    }
+
+    /**
+     * Unset retire pool
+     * @param owner
+     * @param poolId
+     * @returns Operation successful
+     */
+    public async unsetRetirePool(
+        owner: string,
+        poolId: string
+    ): Promise<boolean> {
+        return await this.sendMessage(ContractAPI.UNSET_RETIRE_POOLS, {
+            owner,
+            poolId,
+        });
+    }
+
+    /**
+     * Unset retire request
+     * @param owner
+     * @param requestId
+     * @returns Operation successful
+     */
+    public async unsetRetireRequest(
+        owner: string,
+        requestId: string
+    ): Promise<boolean> {
+        return await this.sendMessage(ContractAPI.UNSET_RETIRE_REQUEST, {
+            owner,
+            requestId,
+        });
+    }
+
+    /**
+     * Retire tokens
+     * @param did
+     * @param poolId
+     * @param tokens
+     * @returns Tokens retired
+     */
+    public async retire(
+        did: string,
+        poolId: string,
+        tokens: RetireTokenRequest[]
+    ): Promise<boolean> {
+        return await this.sendMessage(ContractAPI.RETIRE, {
+            did,
+            poolId,
+            tokens,
+        });
+    }
+
+    /**
+     * Approve retire request
+     * @param owner
+     * @param requestId
+     * @returns Operation successful
+     */
+    public async approveRetire(
+        owner: string,
+        requestId: string
+    ): Promise<boolean> {
+        return await this.sendMessage(ContractAPI.APPROVE_RETIRE, {
+            owner,
+            requestId,
+        });
+    }
+
+    /**
+     * Cancel retire request
+     * @param owner
+     * @param requestId
+     * @returns Operation successful
+     */
+    public async cancelRetire(
+        owner: string,
+        requestId: string
+    ): Promise<boolean> {
+        return await this.sendMessage(ContractAPI.CANCEL_RETIRE, {
+            owner,
+            requestId,
+        });
+    }
+
+    /**
+     * Add retire admin
+     * @param owner
+     * @param id
+     * @param hederaId
+     * @returns Operation successful
+     */
+    public async addRetireAdmin(
+        owner: string,
+        id: string,
+        hederaId: string
+    ): Promise<boolean> {
+        return await this.sendMessage(ContractAPI.ADD_RETIRE_ADMIN, {
+            owner,
+            id,
+            hederaId,
+        });
+    }
+
+    /**
+     * Remove retire admin
+     * @param owner
+     * @param id
+     * @param hederaId
+     * @returns Operation successful
+     */
+    public async removeRetireAdmin(
+        owner: string,
+        id: string,
+        hederaId: string
+    ): Promise<boolean> {
+        return await this.sendMessage(ContractAPI.REMOVE_RETIRE_ADMIN, {
+            owner,
+            id,
+            hederaId,
+        });
+    }
+
+    /**
+     * Get retire VCs
+     * @param owner
+     * @param pageIndex
+     * @param pageSize
+     * @returns Retire VCs and count
+     */
+    public async getRetireVCs(
+        owner: string,
+        pageIndex?: any,
+        pageSize?: any
+    ): Promise<[IVCDocument, number]> {
+        return await this.sendMessage(ContractAPI.GET_RETIRE_VCS, {
+            owner,
+            pageIndex,
+            pageSize,
+        });
+    }
+
+    //#endregion
 
     /**
      * Create Module
@@ -1881,5 +2263,19 @@ export class Guardians extends NatsService {
             MessageAPI.GET_SUGGESTIONS_CONFIG,
             { user }
         );
+    }
+
+    /**
+     * Search same blocks
+     * @param config
+     * @param blockId
+     * @param user
+     */
+    public async searchBlocks(
+        config: any,
+        blockId: string,
+        user: any
+    ): Promise<any[]> {
+        return await this.sendMessage(MessageAPI.SEARCH_BLOCKS, { config, blockId, user });
     }
 }

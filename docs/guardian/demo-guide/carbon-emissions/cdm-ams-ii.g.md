@@ -20,7 +20,7 @@
 
 [Step by Step](cdm-ams-ii.g.md#\_toc619173481)
 
-### Introduction <a href="#_toc975016542" id="_toc975016542"></a>
+## Introduction <a href="#_toc975016542" id="_toc975016542"></a>
 
 Access to clean cooking is a pressing global challenge, with billions of people still relying on traditional biomass fuels for their cooking needs, leading to immense human and environmental costs. In this context, the Clean Development Mechanism (CDM) offers a promising pathway to address this issue by introducing energy-efficient thermal energy generation units that utilize non-renewable biomass. AMS-II.G aims to promote sustainable development and mitigate greenhouse gas (GHG) emissions through the implementation of clean cookstove projects.
 
@@ -32,7 +32,7 @@ By providing an accessible and standardized framework for clean cooking initiati
 
 Currently, the AMS-II.G Guardian policy uses the Thermal Energy Output (TEO) testing method to estimate fuel consumption, which plays a crucial role in determining the energy efficiency of thermal applications and evaluating associated emissions. As the policy undergoes future iterations, additional testing methods such as the water boiling test (WBT), controlled cooking test (CCT), and kitchen performance test (KPT) will be integrated to further enhance the accuracy and effectiveness of fuel consumption estimation. Moreover, the policy includes modules like tool 30 and tool 33, which can be utilized for default values or to calculate fNRB (non-renewable biomass fraction), a parameter that is used in the emission reductions calculation.
 
-### Need and Use for the AMS-II.G Policy <a href="#_toc752136503" id="_toc752136503"></a>
+## Need and Use for the AMS-II.G Policy <a href="#_toc752136503" id="_toc752136503"></a>
 
 A methodology like AMS-II.G is needed to address the universal challenge of guaranteeing access to clean cooking. In developing countries, more than 3 billion people, representing a substantial portion of the global population, still rely on traditional biomass fuels for their primary cooking needs using open fires or traditional stoves. This reliance on solid-fuel cooking, such as wood, crop residues, and dung, leads to immense human costs in terms of health, environmental degradation, and economic burdens.
 
@@ -42,22 +42,19 @@ To combat these challenges and transition towards cleaner cooking practices, ini
 
 AMS-II.G provides a standardized and measurable framework for clean cooking projects, allowing for reliable estimation and verification of emission reductions. The Guardian AMS-II.G Policy offers a unique technical opportunity for companies to streamline, enhance robustness, and establish trust and transparency within their clean cookstove projects. The guidelines and equations provided in the methodology are incorporated into schemas featuring built-in auto-calculation blocks, emission factors, and data from modules like tool 33. The results of the data provided undergo immutable and transparent verification by third parties. Ultimately, the emissions are tokenized, elevating tracking, transparency, accounting, and reporting, with the data structured to comply with AMS-II.G reporting requirements.
 
-### Demo Video <a href="#_toc264453392" id="_toc264453392"></a>
+## Demo Video <a href="#_toc264453392" id="_toc264453392"></a>
 
 Coming Soon
 
-### Policy Workflow <a href="#_toc2070089206" id="_toc2070089206"></a>
-
-\
-
+## Policy Workflow <a href="#_toc2070089206" id="_toc2070089206"></a>
 
 <figure><img src="../../../.gitbook/assets/0.jpeg" alt=""><figcaption></figcaption></figure>
 
-### Policy Guide <a href="#_toc93669646" id="_toc93669646"></a>
+## Policy Guide <a href="#_toc93669646" id="_toc93669646"></a>
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPSF timestamp.
 
-Latest Version - 1690462366.484472937
+Latest Version - 1695225791.622644989
 
 ### **Available Roles** <a href="#_toc21187385" id="_toc21187385"></a>
 
@@ -84,11 +81,11 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 1. The policy can be imported using IPFS timestamp 1690462366.484472937
 
-![](../../../.gitbook/assets/1.png)
+![](<../../../.gitbook/assets/1 (2).png>)
 
 2. Select “Import”.
 
-![](../../../.gitbook/assets/2.png)
+![](<../../../.gitbook/assets/2 (4).png>)
 
 3. Place status in “Dry Run” and select “Go”.
 
@@ -108,15 +105,15 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 7. Virtual User 1 will be assigned to the Project\_Proponent
 
-![](../../../.gitbook/assets/7.png)
+![](<../../../.gitbook/assets/7 (2).png>)
 
 8. Virtual User 2 will be assigned to the VVB
 
-![](../../../.gitbook/assets/8.png)
+![](<../../../.gitbook/assets/8 (8).png>)
 
 9. Add the VVBs name
 
-![](../../../.gitbook/assets/9.png)
+![](<../../../.gitbook/assets/9 (7).png>)
 
 10. The final role that will be assigned to Virtual User 3 is the Designated National Authority
 
@@ -124,7 +121,7 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 11. Click on the Users dropdown menu and select Virtual User 1 (Project Proponent) and select the “New Project” button.
 
-![](../../../.gitbook/assets/11.png)
+![](<../../../.gitbook/assets/11 (1).png>)
 
 12. Once the form is completed, go to Virtual User 3’s (Designated National Authority) profile. The Designated National Authority can now view the project information document by selecting “view document” and then they can select validate or reject.
 
@@ -132,7 +129,7 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 13. Go to the Administrator’s (Standard Registry) profile. The Standard Registry can now approve the VVB.
 
-![](../../../.gitbook/assets/13.png)
+![](<../../../.gitbook/assets/13 (6).png>)
 
 14. Stay on the Administrator’s (Standard Registry) profile. The Standard Registry now has access to the project information document by clicking “view document” once they have reviewed it they can select “Add” to add the project to the project pipeline.
 
@@ -160,21 +157,20 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 20. Navigate back to the Administrator’s profile and select the “Mint” button.
 
-![](../../../.gitbook/assets/20.png)
+![](<../../../.gitbook/assets/20 (3).png>)
 
 21. The status should now say “Minted”.
 
-<figure><img src="../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (195).png" alt=""><figcaption></figcaption></figure>
 
 22. By selecting the “Token History” tab you can see the number of tokens minted and then you can select “View TrustChain”
 
-<figure><img src="../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 23. The Verified Presentation should now be open. You can view information like the recipient's name, token amount, mint date, verified signature, etc.
 
-<figure><img src="../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2) (8).png" alt=""><figcaption></figcaption></figure>
 
 24. By scrolling to the bottom of the page you can view the TrustChain.
 
-<figure><img src="../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
-
+<figure><img src="../../../.gitbook/assets/image (3) (6).png" alt=""><figcaption></figcaption></figure>

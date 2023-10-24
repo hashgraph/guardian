@@ -1,8 +1,9 @@
 import { HttpClient, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { ISession, IUser, IStandardRegistryResponse } from '@guardian/interfaces';
+import { ISession, IStandardRegistryResponse, IUser } from '@guardian/interfaces';
 import { Observable, of, Subject, Subscription } from 'rxjs';
 import { API_BASE_URL } from './api';
+import { map } from 'rxjs/operators';
 
 /**
  * Services for working from accounts.
@@ -10,16 +11,28 @@ import { API_BASE_URL } from './api';
 @Injectable()
 export class AuthService {
     private accessTokenSubject: Subject<string | null>;
+    private refreshTokenSubject: Subject<string | null>
     private readonly url: string = `${API_BASE_URL}/accounts`;
 
     constructor(
         private http: HttpClient
     ) {
         this.accessTokenSubject = new Subject();
+        this.refreshTokenSubject = new Subject();
     }
 
     public login(username: string, password: string): Observable<any> {
         return this.http.post<string>(`${this.url}/login`, { username, password });
+    }
+
+    public updateAccessToken(): Observable<any> {
+        return this.http.post<any>(`${this.url}/access-token`, {refreshToken: this.getRefreshToken()}).pipe(
+            map(result => {
+                const {accessToken} = result;
+                this.setAccessToken(accessToken);
+                return accessToken
+            })
+        );
     }
 
     public createUser(username: string, password: string, confirmPassword: string, role: string): Observable<any> {
@@ -44,6 +57,11 @@ export class AuthService {
         this.accessTokenSubject.next(accessToken);
     }
 
+    public setRefreshToken(refreshToken: string) {
+        localStorage.setItem('refreshToken', refreshToken);
+        this.refreshTokenSubject.next(refreshToken);
+    }
+
     public removeAccessToken() {
         localStorage.removeItem('accessToken');
         this.accessTokenSubject.next(null);
@@ -63,6 +81,10 @@ export class AuthService {
 
     public getAccessToken() {
         return localStorage.getItem('accessToken');
+    }
+
+    public getRefreshToken() {
+        return localStorage.getItem('refreshToken');
     }
 
     public subscribe(

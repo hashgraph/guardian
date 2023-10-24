@@ -75,7 +75,6 @@ Promise.all([
             new LargePayloadContainer().runServer();
         }
         app.listen(PORT, async () => {
-            console.log(await app.getUrl());
             new Logger().info(`Started on ${PORT}`, ['API_GATEWAY']);
         });
     } catch (error) {

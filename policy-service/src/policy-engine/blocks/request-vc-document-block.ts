@@ -105,7 +105,10 @@ export class RequestVcDocumentBlock {
      * @param user
      * @param state
      */
-    protected async validateDocuments(user: IPolicyUser, state: any): Promise<string> {
+    protected async validateDocuments(
+        user: IPolicyUser,
+        state: IPolicyEventState
+    ): Promise<string> {
         const validators = this.getValidators();
         for (const validator of validators) {
             const error = await validator.run({
@@ -239,7 +242,8 @@ export class RequestVcDocumentBlock {
             item.schema = schemaIRI;
             item.accounts = accounts;
             item = PolicyUtils.setDocumentRef(item, documentRef);
-            const state = { data: item };
+
+            const state: IPolicyEventState = { data: item };
             const error = await this.validateDocuments(user, state);
             if (error) {
                 throw new BlockActionError(error, ref.blockType, ref.uuid);

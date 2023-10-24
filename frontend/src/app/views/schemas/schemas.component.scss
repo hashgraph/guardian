@@ -6,6 +6,7 @@
     top: 0;
     display: block;
 }
+
 .loading {
     background: #fff;
     position: absolute;
@@ -169,6 +170,7 @@ a {
     cursor: not-allowed;
 }
 
+.schemas-table .mat-column-tool,
 .schemas-table .mat-column-policy {
     padding-left: 20px;
 }

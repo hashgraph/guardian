@@ -120,7 +120,7 @@ export class AppModule {
         consumer.apply(authorizationHelper).forRoutes(TokensApi);
         consumer.apply(authorizationHelper).forRoutes(TrustChainsApi);
         consumer.apply(authorizationHelper).forRoutes(WizardApi);
-        consumer.apply(authorizationHelper).forRoutes(BrandingApi);
+        // consumer.apply(authorizationHelper).forRoutes(BrandingApi);
         consumer.apply(authorizationHelper).forRoutes(SuggestionsApi);
         consumer.apply(authorizationHelper).forRoutes(NotificationsApi);
         consumer.apply(authorizationHelper).forRoutes(TaskApi);

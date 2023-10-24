@@ -64,6 +64,11 @@ export class PolicyValidator {
      * @private
      */
     private readonly schemas: Map<string, ISchema>;
+    /**
+     * Unsupported Schemas
+     * @private
+     */
+    private readonly unsupportedSchemas: Set<string>;
 
     constructor(policy: Policy) {
         this.blocks = new Map();
@@ -77,6 +82,7 @@ export class PolicyValidator {
         this.policyTopics = policy.policyTopics || [];
         this.policyGroups = policy.policyGroups;
         this.schemas = new Map();
+        this.unsupportedSchemas = new Set();
     }
 
     /**
@@ -91,19 +97,38 @@ export class PolicyValidator {
             this.addPermissions(policy.policyRoles);
             await this.registerBlock(policy.config);
             await this.registerSchemas();
+            this.checkSchemas();
             return true;
         }
     }
 
     /**
      * Register schemas
-     * @param block
      */
     private async registerSchemas(): Promise<void> {
         const schemas = await DatabaseServer.getSchemas({ topicId: this.topicId });
         this.schemas.clear();
         for (const schema of schemas) {
             this.schemas.set(schema.iri, schema);
+        }
+    }
+
+    /**
+     * Check schemas
+     */
+    private checkSchemas(): void {
+        for (const schema of this.schemas.values()) {
+            const defs = schema?.document?.$defs;
+            if (defs && Object.prototype.toString.call(defs) === '[object Object]') {
+                for (const iri of Object.keys(defs)) {
+                    if (!this.schemaExist(iri)) {
+                        this.schemas.delete(schema.iri);
+                        this.unsupportedSchemas.add(schema.iri);
+                        this.checkSchemas();
+                        return;
+                    }
+                }
+            }
         }
     }
 
@@ -323,12 +348,27 @@ export class PolicyValidator {
      */
     public schemaExist(iri: string): boolean {
         if (this.schemas.has(iri)) {
+            return !!this.schemas.get(iri);
+        }
+        for (const item of this.tools.values()) {
+            if (item.schemaExist(iri)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Unsupported schema
+     * @param iri
+     */
+    public unsupportedSchema(iri: string): boolean {
+        if (this.unsupportedSchemas.has(iri)) {
             return true;
         }
         for (const item of this.tools.values()) {
-            const exist = item.schemaExist(iri);
-            if (exist) {
-                return exist;
+            if (item.unsupportedSchema(iri)) {
+                return true;
             }
         }
         return false;

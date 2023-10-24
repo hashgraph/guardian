@@ -55,20 +55,9 @@ export class InterfaceDocumentActionBlock {
                         if (!ref.options.targetUrl) {
                             validator.addError('Option "targetUrl" is not set');
                         }
-
-                        if (!ref.options.schema) {
-                            validator.addError('Option "schema" is not set');
-                            break;
-                        }
-                        if (typeof ref.options.schema !== 'string') {
-                            validator.addError('Option "schema" must be a string');
-                            break;
-                        }
-
-                        if (validator.schemaNotExist(ref.options.schema)) {
-                            validator.addError(`Schema with id "${ref.options.schema}" does not exist`);
-                            break;
-                        }
+                        validator.checkBlockError(
+                            validator.validateSchemaVariable('schema', ref.options.schema, true)
+                        );
                         break;
 
                     case 'dropdown':

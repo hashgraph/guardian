@@ -12,7 +12,7 @@ There are two roles: ‘**User**_**’**_ and _**‘**_**Approver**_**’**_. _U
 
 (See [example 1](creating-and-using-roles.md) for the more detailed description of how to work with roles)
 
-![Creating 2 roles](<../../../../.gitbook/assets/0 (4).png>)
+![Creating 2 roles](<../../../../.gitbook/assets/0 (6).png>)
 
 2. Create all needed document schemas:
 
@@ -34,7 +34,7 @@ In order to mint tokens into another account (not into the account of the mintin
 
 **Note:** it is important that DID of the user is used for ID of the documents as this value will be used further in the document for filtration
 
-![Adding DID as ID Type](<../../../../.gitbook/assets/2 (3) (2).png>)
+![Adding DID as ID Type](<../../../../.gitbook/assets/2 (3) (1).png>)
 
 4. Add simplified grids for displaying Projects, Reports and Tokens
 
@@ -50,31 +50,31 @@ In order to mint tokens into another account (not into the account of the mintin
 
 #### 1.1 Create a project
 
-![Creating project](<../../../../.gitbook/assets/5 (1) (3).png>)
+![Creating project](<../../../../.gitbook/assets/5 (3) (1).png>)
 
 ### 1.2 Save the project
 
-![Saving Project](<../../../../.gitbook/assets/6 (2) (2).png>)
+![Saving Project](<../../../../.gitbook/assets/6 (2) (1).png>)
 
 ### 1.3 Link to the token
 
 1.3.1 Since another (not current user) account is used for minted tokens ’**tokenActionBlock**’ cannot be used, instead we will use ‘**tokenConfirmationBlock**_**’**_
 
-![Adding tokenConfirmationBlock](<../../../../.gitbook/assets/7 (2) (1).png>)
+![Adding tokenConfirmationBlock](<../../../../.gitbook/assets/7 (3).png>)
 
 1.3.2 To configure the target account for mixed tokens select ‘_Custom_’ value for ‘_Type_’ and the filed in the document from which to take the value for the Account ID (this field must have type: ‘**Account**’)
 
-![Selecting Account Type and Id](<../../../../.gitbook/assets/8 (3).png>)
+![Selecting Account Type and Id](<../../../../.gitbook/assets/8 (3) (2).png>)
 
 1.3.3 By default ’**tokenConfirmationBlock**’ does not have a link to the next block, thus it needs to be manually added
 
-![Manually adding tokenConfirmationBlock to next Block](<../../../../.gitbook/assets/9 (1) (2).png>)
+![Manually adding tokenConfirmationBlock to next Block](<../../../../.gitbook/assets/9 (2).png>)
 
 1.4 Add an approver as after the creation the project is not assigned to anyone
 
 1.4.1 Add ’**interfaceActionBlock**’ wrapped into a container.
 
-![Adding interfaceActionBlock](<../../../../.gitbook/assets/10 (1) (2).png>)
+![Adding interfaceActionBlock](<../../../../.gitbook/assets/10 (2).png>)
 
 1.4.2 Select **Dropdown** _value_ _for_ **Type**
 
@@ -92,7 +92,7 @@ Record value from **assignedTo** _into_ **Field** (This field will be changing o
 
 1.4.5 Use ‘**documentsSourceAddon**’ for data for **Dropdown**_**.**_
 
-![adding documentSourceAddon](<../../../../.gitbook/assets/14 (1) (1).png>)
+![adding documentSourceAddon](<../../../../.gitbook/assets/14 (1) (1) (1).png>)
 
 1.4.6 Save the changed document
 
@@ -100,7 +100,7 @@ Record value from **assignedTo** _into_ **Field** (This field will be changing o
 
 1.4.7 As ‘**documentsSourceAddon**’ does not have default events, we need manually add them.
 
-![Adding events](<../../../../.gitbook/assets/16 (4).png>)
+![Adding events](<../../../../.gitbook/assets/16 (1).png>)
 
 1.4.8 Return to grid settings and add **Dropdown** into the target column.
 
@@ -116,11 +116,11 @@ Record value from **assignedTo** _into_ **Field** (This field will be changing o
 
 _(Please see_ [_example 2_](data-input-via-forms-using-roles-to-partition-user-activities..md) _for the more detailed description of this workflow)_
 
-![Adding document approval block](<../../../../.gitbook/assets/19 (5).png>)
+![Adding document approval block](<../../../../.gitbook/assets/19 (1).png>)
 
 1.5.3 Add Approve button into the grid
 
-![Adding Approve button to the grid](<../../../../.gitbook/assets/20 (1) (1) (1) (1).png>)
+![Adding Approve button to the grid](<../../../../.gitbook/assets/20 (1) (1).png>)
 
 1.5.4 After the Approve, setup the KYC for the account connected to the project
 
@@ -136,7 +136,7 @@ Use ‘**tokenActionBlock**’ with the appropriate settings
 
 <figure><img src="../../../../.gitbook/assets/Template_4_screenshot_24.png" alt=""><figcaption></figcaption></figure>
 
-### 2. Report.&#x20;
+### 2. Report.
 
 To enable report creation only for approved projects, add create button into the grid selectively for documents with ‘Approved’ status
 

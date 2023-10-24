@@ -356,6 +356,36 @@ a[hidden="true"] {
     display: none;
 }
 
+@media (max-width: 1400px) {
+    .sub-nav-list {
+        padding: 7px 120px;
+    }
+
+    .nav-list-item {
+        min-width: 140px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .sub-nav-list {
+        padding: 7px 20px;
+    }
+
+    .nav-list-item {
+        min-width: 130px;
+    }
+}
+
+@media (max-width: 1000px) {
+    .sub-nav-list {
+        padding: 7px 10px;
+    }
+
+    .nav-list-item {
+        min-width: 130px;
+    }
+}
+
 @media (max-width: 810px) {
     .nav-bar {
         width: 100% !important;

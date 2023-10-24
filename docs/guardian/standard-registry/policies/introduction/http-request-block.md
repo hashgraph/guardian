@@ -16,11 +16,11 @@ Block for retrieving information from outside (3rd party) services via HTTP requ
 | Body             | Body of the HTTP request                                                          | $(document)               |        |
 | Headers          | Additional HTTP headers (can be used for authentication purposes)                 | Bearer $(document).Source |        |
 
-<figure><img src="../../../../.gitbook/assets/image (1) (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (1) (4) (1).png" alt=""><figcaption></figcaption></figure>
 
 ## 2. Dynamic Variables
 
-The values of the URL, Body and Header parameters  can contain variables of the format ${variable}.
+The values of the URL, Body and Header parameters can contain variables of the format ${variable}.
 
 Possible values are as follows:
 

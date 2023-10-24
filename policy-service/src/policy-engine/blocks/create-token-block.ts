@@ -3,6 +3,7 @@ import { BlockActionError } from '@policy-engine/errors';
 import { ActionCallback, StateField } from '@policy-engine/helpers/decorators';
 import {
     IPolicyBlock,
+    IPolicyDocument,
     IPolicyEventState,
     IPolicyRequestBlock,
 } from '@policy-engine/policy-engine.interface';
@@ -51,25 +52,32 @@ export class CreateTokenBlock {
      * Block state
      */
     @StateField()
-    public readonly state: { [key: string]: any } = { active: true };
+    public readonly state: {
+        [key: string]: {
+            /**
+             * Is active
+             */
+            active: boolean,
+            /**
+             * Event data
+             */
+            data?: IPolicyEventState
+        }
+    } = {};
 
     /**
      * Change active state
      * @param user
      * @param active
      */
-    changeActive(user: IPolicyUser, active: boolean) {
+    private changeActive(user: IPolicyUser, active: boolean) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        let blockState: any;
-        if (!this.state.hasOwnProperty(user.id)) {
-            blockState = {};
-            this.state[user.id] = blockState;
+        if (this.state.hasOwnProperty(user.id)) {
+            this.state[user.id].active = active;
         } else {
-            blockState = this.state[user.id];
+            this.state[user.id] = { active };
         }
-        blockState.active = active;
-
-        ref.updateBlock(blockState, user);
+        ref.updateBlock(this.state[user.id], user);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
     }
 
@@ -77,18 +85,15 @@ export class CreateTokenBlock {
      * Get active state
      * @param user
      */
-    getActive(user: IPolicyUser) {
-        let blockState: any;
+    private getActive(user: IPolicyUser) {
         if (!this.state.hasOwnProperty(user.id)) {
-            blockState = {};
-            this.state[user.id] = blockState;
+            this.state[user.id] = { active: true };
         } else {
-            blockState = this.state[user.id];
+            if (this.state[user.id].active === undefined) {
+                this.state[user.id].active = true;
+            }
         }
-        if (blockState.active === undefined) {
-            blockState.active = true;
-        }
-        return blockState.active;
+        return this.state[user.id].active;
     }
 
     /**
@@ -153,7 +158,7 @@ export class CreateTokenBlock {
         }
 
         try {
-            await this.changeActive(user, false);
+            this.changeActive(user, false);
             const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
 
             if (
@@ -209,10 +214,8 @@ export class CreateTokenBlock {
             // #endregion
 
             // #region Set token in document
-            let stateData: any = {};
-
-            stateData = this.state[user.id].data;
-            const docs: any = stateData.data;
+            const stateData: IPolicyEventState = this.state[user.id].data;
+            const docs: IPolicyDocument | IPolicyDocument[] = stateData.data;
             if (Array.isArray(docs)) {
                 for (const doc of docs) {
                     if (!doc.tokens) {
@@ -231,7 +234,7 @@ export class CreateTokenBlock {
             await ref.saveState();
             // #endregion
 
-            await this.changeActive(user, true);
+            this.changeActive(user, true);
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, stateData);
             ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, stateData);
@@ -248,7 +251,7 @@ export class CreateTokenBlock {
             }));
         } catch (error) {
             ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
-            await this.changeActive(user, true);
+            this.changeActive(user, true);
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }
 
@@ -271,14 +274,14 @@ export class CreateTokenBlock {
         const user = event.user;
         const eventData = event.data;
 
-        let blockState: any;
         if (!this.state.hasOwnProperty(user.id)) {
-            blockState = {};
-            this.state[user.id] = blockState;
+            this.state[user.id] = {
+                active: true,
+                data: eventData
+            };
         } else {
-            blockState = this.state[user.id];
+            this.state[user.id].data = eventData;
         }
-        blockState.data = eventData;
         await ref.saveState();
 
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, null));

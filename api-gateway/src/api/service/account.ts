@@ -59,7 +59,8 @@ export class AccountApi {
             return await users.getUserByToken(token) as any;
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.UNAUTHORIZED);
+            return null;
+            // throw new HttpException(error.message, HttpStatus.UNAUTHORIZED);
         }
 
     }
@@ -165,6 +166,33 @@ export class AccountApi {
         } catch (error) {
             new Logger().warn(error.message, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.UNAUTHORIZED);
+        }
+    }
+
+    @ApiOperation({
+        summary: 'Returns access token.',
+        description: 'Returns access token.'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        // schema: {
+        //     $ref: getSchemaPath(AccountsResponseDTO),
+        // },
+    })
+    @Post('access-token')
+    async getAccessToken(@Body() body: any): Promise<any> {
+        try {
+            const {refreshToken} = body;
+            const users = new Users();
+            const {accessToken} = await users.generateNewAccessToken(refreshToken);
+            if (!accessToken) {
+                throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
+            }
+            return {
+                accessToken
+            }
+        } catch (e) {
+            throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
         }
     }
 

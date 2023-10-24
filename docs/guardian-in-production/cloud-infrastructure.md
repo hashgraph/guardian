@@ -15,7 +15,7 @@ This requirement is the main decision factor for the conclusions exposed in this
 
 ## Tools
 
-### &#x20;Container orchestration
+### Container orchestration
 
 A cloud agnostic architecture that is built on containerization and microservices can offer flexibility and portability across multiple cloud platforms. Containers provide a lightweight way to package and deploy software applications, while microservices architecture allows for the creation of independent and modular components that can be easily replaced or updated without affecting the entire system.
 
@@ -29,7 +29,7 @@ Apache Mesos is a distributed systems kernel that can manage both containers and
 
 #### Our recommendation
 
-**Kubernetes: it can also help to manage and automate container deployments across multiple cloud environments. In fact, Kubernetes has become the standard for services/microservices architecture and our best option for faster support on different cloud providers.**&#x20;
+**Kubernetes: it can also help to manage and automate container deployments across multiple cloud environments. In fact, Kubernetes has become the standard for services/microservices architecture and our best option for faster support on different cloud providers.**
 
 **Almost every cloud provider has its own implementation of managed kubernetes clusters, which eases the cluster creation and management, and withdrAWS the responsibility to the final user of maintaining the control plane and the worker nodes.**
 
@@ -63,9 +63,9 @@ $ helm install my-nginx prometheus-community/prometheus-stack
 $ helm install my-nginx guardian/guardian-stack
 ```
 
-### &#x20;Infrastructure as code - IaC
+### Infrastructure as code - IaC
 
-Infrastructure as Code (IaC) is a process of managing and provisioning infrastructure through code instead of manual processes.&#x20;
+Infrastructure as Code (IaC) is a process of managing and provisioning infrastructure through code instead of manual processes.
 
 IaC can help to improve infrastructure management by reducing manual work, improving consistency, enabling version control, enhancing scalability, and increasing portability. This can lead to better reliability, security, and cost-effectiveness for organizations that adopt IaC.
 
@@ -81,11 +81,11 @@ Chef Infra is a configuration management tool that allows users to write code to
 
 **Terraform. It is a popular choice for managing complex infrastructure deployments on multiple cloud providers, it has the biggest provider library, with great integration with Kubernetes.**
 
-**Is our best option  to build the cluster and the elements surrounding it. Including networks, permissions, configurations, secrets, initial deployments, connection credentials and so on.**
+**Is our best option to build the cluster and the elements surrounding it. Including networks, permissions, configurations, secrets, initial deployments, connection credentials and so on.**
 
 #### Alternative approach
 
-There are other tools out there that eases the creation of a kubernetes cluster and they work seamlessly on big cloud providers.&#x20;
+There are other tools out there that eases the creation of a kubernetes cluster and they work seamlessly on big cloud providers.
 
 Rancher is one of those powerful tools to create and maintain Kubernetes clusters on any infrastructure, including on-premises data centers, public cloud, and hybrid environments. These kinds of tools could be used by clients that require some setup not covered by our IaC and could be listed/detailed on the user guide before the actual IaC codebase milestone is reached.
 
@@ -112,10 +112,10 @@ Define and document the deployment pipeline: in this stage we should define the 
 1. Create helm manifests for each internal Guardian service in a /charts folder, with some basic set of configuration variables. We should take the current docker compose implementation as reference for the customization allowed at this stage.
 2. Host the Helm repository using free github pages (more details in this guide [https://medium.com/@gerkElznik/provision-a-free-personal-helm-chart-repo-using-github-583b668d9ba4](https://medium.com/@gerkElznik/provision-a-free-personal-helm-chart-repo-using-github-583b668d9ba4)).
 3. Create a “stack” chart to install all the services in a single command, this stack will include the global configuration settings and is a key piece for customization and independent package deployment.
-   * Stack charts (often named umbrella charts) are a common practice to group several charts into one. A great example of this could be Prometheus stack [https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack)&#x20;
+   * Stack charts (often named umbrella charts) are a common practice to group several charts into one. A great example of this could be Prometheus stack [https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack)
 4. Create a documentation page for the whole install process, starting detailing how to install all required third party services using also their helm charts provided by their communities. Add also links to their webpages for detailed tuning.
    * During the process we may find there is no helm chart for some of the packages, or the provider is not reliable enough (lack of maintenance, an individual instead of a company with only few likes, etc). Given that case we could write/host a chart for that package too.
-5. Modify CI scripts to update chart versions on each new release in a similar way new docker images are pushed to the registry. This github action can help on the process [https://helm.sh/docs/howto/chart\_releaser\_action/](https://helm.sh/docs/howto/chart\_releaser\_action/)&#x20;
+5. Modify CI scripts to update chart versions on each new release in a similar way new docker images are pushed to the registry. This github action can help on the process [https://helm.sh/docs/howto/chart\_releaser\_action/](https://helm.sh/docs/howto/chart\_releaser\_action/)
 6. Update project definition of done, to ensure, in the future, every new developed feature, includes chart update if needed. In other words, we don’t want someone in the future adding, for example, a required configuration item on one of the services, and breaking the deployment because they forgot to update the corresponding chart before creating the release.
 
 ### Improve deployment using Terraform
@@ -126,7 +126,7 @@ This milestone will consist of improving the deployment process using terraform.
 
 * Create a terraform project using the command below in /terraform/helm folder in the Guardian repository.
 
-&#x20;`$ terraform init;`
+`$ terraform init;`
 
 * Create the required manifests to, providing a kubeconfig file, orchestrate the install steps of the previous milestone outcome into a single command. This is a sample of how the main.tf file of this project would look like:
 
@@ -175,7 +175,7 @@ Add the fully automated workflow to deploy the infrastructure to AWS EKS using t
 
 #### **Considerations:**
 
-* AWS is  the cloud provider with more complexity when it comes to handling permissions to access the cluster. Roles and policies must be created and attached to the different resources.
+* AWS is the cloud provider with more complexity when it comes to handling permissions to access the cluster. Roles and policies must be created and attached to the different resources.
 
 1. AmazonEKSWorkerNodePolicy
 2. AmazonEC2ContainerRegistryReadOnly
@@ -211,7 +211,7 @@ Add the fully automated workflow to deploy the infrastructure to GCP GKE using t
 
 * Permissions model is simpler in GKE, but still needed to be integrated with their IAM permissions system.
 * Control plane and worker nodes are fully managed by GPC, but due to the direct VPC internal IPs allocation on each pod, it’s a bit trickier to set up. Bigger IP ranges must be available in the subnets to avoid running out of ips when scaling out the services.
-* GKE has a native Ingress controller that leverages Google Cloud Load Balancer.&#x20;
+* GKE has a native Ingress controller that leverages Google Cloud Load Balancer.
 * For workloads with attached storage, shall be considered implementing Pod Disruption Budgets (PDBs) to ensure a minimum number or percentage of pods with the same label selector are up and running at any given time.
 
 ### Add support to Azure AKS with terraform
@@ -242,13 +242,13 @@ Usage of kubenet CNI is the preferred choice at this stage because of its simpli
 
 ## Other considerations and caveats
 
-### &#x20;Migrations when the next milestone or provider is available
+### Migrations when the next milestone or provider is available
 
 We should consider the possibility of having to migrate the infrastructure to the next milestone. Let me put an example: if we have a client using the current deployment process, and we release the terraform support, we could consider to provide a way to migrate the infrastructure to the new deployment workflow. Same applies if the client decides to migrate to a different cloud provider.
 
 This is definitely not an easy task, and it would require a lot of work, but worth mentioning here.
 
-### &#x20;Time to spend on each milestone
+### Time to spend on each milestone
 
 Each milestone its a project on its own, we can spend months refining only a single cloud provider, including options to use as much as their services as we want: automated backups, external load balancers, hosted database, advanced monitoring and alerting, reporting, budgeting control, replication and resilience, improved security, etc.
 

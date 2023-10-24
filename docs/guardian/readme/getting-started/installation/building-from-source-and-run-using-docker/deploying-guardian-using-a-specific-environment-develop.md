@@ -2,7 +2,7 @@
 
 The following steps will describe on how to deploy Guardian using the default Environment (Develop):
 
-**Step 1:**&#x20;
+**Step 1:**
 
 Create the .env file Set the GUARDIAN\_ENV="develop" in the .env file ( Refer .env.template as example)
 
@@ -11,7 +11,7 @@ Create the .env file Set the GUARDIAN\_ENV="develop" in the .env file ( Refer .e
 
 <figure><img src="https://lh4.googleusercontent.com/MHvuUn6gwwK8_bObtcfKCc_rwXmN824pk6E5UFh0C6l9ynrjeQ51nlvsPlvN7Cd9MYip_jVWYFqI7QYtsmHLcYTQUC7tcfMfC04xmINKoN_tQ2nTlSQtGscdRPwg7JX-rOs8meEgAFUxLSYMoUUuIWQ" alt=""><figcaption></figcaption></figure>
 
-**Step 2:**&#x20;
+**Step 2:**
 
 Select the `.env.develop.guardian.system` file which is already provided as in example inside configs Directory at the root level.
 
@@ -29,9 +29,9 @@ Set **OPERATOR\_ID** , **OPERATOR\_KEY** and **IPFS\_STORAGE\_API\_KEY** in the 
 
 <figure><img src="https://lh5.googleusercontent.com/kewxChAWKmpdMTgDB59DEx_LdRq4IAaSIOzvbzlPtx75vR0MDMmpezHQCEFYT33i1d5yQu4U5niPYBRziDOZ27S5cqprVptQFOSx_J6g_e-lNZ5BX2_-aXPrvUxs3hEzJJZzdMKMvBw2g81ah_KDqns" alt=""><figcaption></figcaption></figure>
 
-**Step 4:**&#x20;
+**Step 4:**
 
-Run&#x20;
+Run
 
 ```
 docker-compose up -d --build
@@ -39,7 +39,7 @@ docker-compose up -d --build
 
 <figure><img src="https://lh4.googleusercontent.com/6-lcBW4JAy0khECbx4UVWfswAQou8KwVmawvMEBqSuFZp__NtTP6a2s6U_w6Q2mu4g-xZdUSvnNWPDAMkot1_BUfgwLLGJU2WN7hZZ2tG40kB7PT4tvUGZDLdg-G2yKe6GweZpcsJU3HrgkgBHiXPcc" alt=""><figcaption></figcaption></figure>
 
-Wait until all the services are started.&#x20;
+Wait until all the services are started.
 
 <figure><img src="https://lh5.googleusercontent.com/3zTg8RsJ1v5EDPdVIhGhCNRJLGRsoRYf_wKK9tP-pwvLBpaZRHUVw6lK_ZoLLyNQwXrBsXUmsGNwhcuQf2UCKKfVE2EemdYiEG6qc8nOfNLfyOc-W8xdy6BA3lU3cTLEhflgFfUUc98T6MT0BVX9ZZc" alt=""><figcaption></figcaption></figure>
 

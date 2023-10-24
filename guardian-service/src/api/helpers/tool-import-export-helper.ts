@@ -9,7 +9,7 @@ import {
     ToolImportExport,
     ToolMessage
 } from '@guardian/common';
-import { GenerateUUIDv4, IRootConfig, ModuleStatus, SchemaCategory, SchemaStatus, TagType } from '@guardian/interfaces';
+import { BlockType, GenerateUUIDv4, IRootConfig, ModuleStatus, SchemaCategory, SchemaStatus, TagType } from '@guardian/interfaces';
 import { INotifier } from '@helpers/notifier';
 import { importTag } from './tag-import-export-helper';
 
@@ -114,6 +114,7 @@ export async function importToolByMessage(
     components.tool.messageId = message.id;
     components.tool.status = ModuleStatus.PUBLISHED;
 
+    await updateToolConfig(components.tool);
     const result = await DatabaseServer.createTool(components.tool);
 
     if (Array.isArray(components.schemas)) {
@@ -189,6 +190,7 @@ export async function importToolByFile(
         tool.name = tool.name + '_' + Date.now();
     }
 
+    await updateToolConfig(tool);
     const item = await DatabaseServer.createTool(tool);
 
     if (Array.isArray(schemas)) {
@@ -205,4 +207,57 @@ export async function importToolByFile(
     }
 
     return item;
+}
+
+export function findSubTools(block: any, result: Set<string>, isRoot: boolean = false) {
+    if (!block) {
+        return;
+    }
+    if (block.blockType === BlockType.Tool && !isRoot) {
+        if (block.messageId && typeof block.messageId === 'string') {
+            result.add(block.messageId);
+        }
+    } else {
+        if (Array.isArray(block.children)) {
+            for (const child of block.children) {
+                findSubTools(child, result);
+            }
+        }
+    }
+}
+
+/**
+ * Check and update config file
+ * @param tool
+ *
+ * @returns tool
+ */
+export async function updateToolConfig(tool: PolicyTool): Promise<PolicyTool> {
+    tool.config = tool.config || {};
+    tool.config.permissions = tool.config.permissions || [];
+    tool.config.children = tool.config.children || [];
+    tool.config.events = tool.config.events || [];
+    tool.config.artifacts = tool.config.artifacts || [];
+    tool.config.variables = tool.config.variables || [];
+    tool.config.inputEvents = tool.config.inputEvents || [];
+    tool.config.outputEvents = tool.config.outputEvents || [];
+    tool.config.innerEvents = tool.config.innerEvents || [];
+
+    const toolIds = new Set<string>()
+    findSubTools(tool.config, toolIds, true);
+    const tools = await DatabaseServer.getTools({
+        status: ModuleStatus.PUBLISHED,
+        messageId: { $in: Array.from(toolIds.values()) }
+    }, {
+        fields: ['name', 'topicId', 'messageId']
+    });
+    tool.tools = tools.map((row) => {
+        return {
+            name: row.name,
+            topicId: row.topicId,
+            messageId: row.messageId
+        }
+    })
+
+    return tool;
 }

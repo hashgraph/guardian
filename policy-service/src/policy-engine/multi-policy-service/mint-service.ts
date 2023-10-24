@@ -1,5 +1,6 @@
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
 import {
+    ContractParamType,
     ExternalMessageEvents,
     GenerateUUIDv4,
     IRootConfig,
@@ -23,7 +24,7 @@ import {
     NotificationHelper,
     Users,
 } from '@guardian/common';
-import { PrivateKey } from '@hashgraph/sdk';
+import { AccountId, PrivateKey, TokenId } from '@hashgraph/sdk';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
 
@@ -520,24 +521,58 @@ export class MintService {
         uuid: string
     ): Promise<void> {
         const workers = new Workers();
-        const wipeKey = await MintService.wallet.getUserKey(
-            token.owner,
-            KeyType.TOKEN_WIPE_KEY,
-            token.tokenId
-        );
-        await workers.addRetryableTask({
-            type: WorkerTaskType.WIPE_TOKEN,
-            data: {
-                hederaAccountId: root.hederaAccountId,
-                hederaAccountKey: root.hederaAccountKey,
-                dryRun: ref.dryRun,
-                token,
-                wipeKey,
-                targetAccount,
-                tokenValue,
-                uuid
-            }
-        }, 10);
+        if (token.wipeContractId) {
+            await workers.addNonRetryableTask(
+                {
+                    type: WorkerTaskType.CONTRACT_CALL,
+                    data: {
+                        contractId: token.wipeContractId,
+                        hederaAccountId: root.hederaAccountId,
+                        hederaAccountKey: root.hederaAccountKey,
+                        functionName: 'wipe',
+                        gas: 1000000,
+                        parameters: [
+                            {
+                                type: ContractParamType.ADDRESS,
+                                value: TokenId.fromString(
+                                    token.tokenId
+                                ).toSolidityAddress(),
+                            },
+                            {
+                                type: ContractParamType.ADDRESS,
+                                value: AccountId.fromString(
+                                    targetAccount
+                                ).toSolidityAddress(),
+                            },
+                            {
+                                type: ContractParamType.INT64,
+                                value: tokenValue
+                            }
+                        ],
+                    },
+                },
+                20
+            );
+        } else {
+            const wipeKey = await MintService.wallet.getUserKey(
+                token.owner,
+                KeyType.TOKEN_WIPE_KEY,
+                token.tokenId
+            );
+            await workers.addRetryableTask({
+                type: WorkerTaskType.WIPE_TOKEN,
+                data: {
+                    hederaAccountId: root.hederaAccountId,
+                    hederaAccountKey: root.hederaAccountKey,
+                    dryRun: ref.dryRun,
+                    token,
+                    wipeKey,
+                    targetAccount,
+                    tokenValue,
+                    uuid
+                }
+            }, 10);
+        }
     }
 
     /**

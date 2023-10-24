@@ -4,7 +4,7 @@ The following steps will describe on how to deploy Guardian using the default En
 
 **Step 1:**
 
-&#x20;By default GUARDIAN\_ENV="" is Blank in the .env.template&#x20;
+By default GUARDIAN\_ENV="" is Blank in the .env.template
 
 Create .env file and leave the variable as Empty
 
@@ -15,7 +15,7 @@ Create .env file and leave the variable as Empty
 
 **Note : If you forget to create the .env file , the docker compose will evaluate the variable as Empty, giving a warning, but the end result will be the same.**
 
-**Step 2:**&#x20;
+**Step 2:**
 
 Select the `.env..guardian.system` file which is already provided as in example inside configs Directory at the root level.
 
@@ -27,7 +27,7 @@ Select the `.env..guardian.system` file which is already provided as in example 
 
 **Step 3:**
 
-Set **OPERATOR\_ID** , **OPERATOR\_KEY** and **IPFS\_STORAGE\_API\_KEY** in the `.env..guardian.system` file inside configs Directory at the root level.&#x20;
+Set **OPERATOR\_ID** , **OPERATOR\_KEY** and **IPFS\_STORAGE\_API\_KEY** in the `.env..guardian.system` file inside configs Directory at the root level.
 
 <figure><img src="https://lh6.googleusercontent.com/_q-coqUYOlkrz0W4o8jRpNGAiyrrjGoghQVPSmWeiyxAeThm_nvWZWA2BGIURIeai6ElSQE4xE3HmKTggph13rmrPl5T8xcXYkzk8DC-17DMrjnhjIQmt1aOFgm-SpWTB4tKll4qwJZPbtSJFO2lzfY" alt=""><figcaption></figcaption></figure>
 
@@ -43,13 +43,12 @@ docker-compose up -d --build
 
 <figure><img src="https://lh3.googleusercontent.com/ugoPsYDdHwBs2IKtryjI6Gt84Ax_r94cZHzo9CnkZcGDnJiCPAliPpfo5b7Qh7VfZHSaYez2YM7qwwPdliWgukCWJgMcZZW8wjAfUIsnPePYYqUYlcd2vyhj33A3OzAHNFHCdKnVg1wJ9lOMpRcOZVc" alt=""><figcaption></figcaption></figure>
 
-Wait until all the services are started.&#x20;
+Wait until all the services are started.
 
 <figure><img src="https://lh6.googleusercontent.com/WdapNk_pxZsQ-yD2rvgnwbMav8J41abPmzPwVhGMbzWEHslm5S8q63nLKZkOuHnRSDcSb8BpEU9BpffvIE-nwsvAHHLbMA0MjG45jTOHubq8WEktfN_lS3lJphhghIWHJW6_xsJKgKH60EUP26zEgoo" alt=""><figcaption></figcaption></figure>
 
 **Step 5:**
 
-&#x20;Launch localhost:3000
+Launch localhost:3000
 
 <figure><img src="https://lh3.googleusercontent.com/Wg9Qt4eo4PEpKhqEU7hnKNwoDo9o_Ui66yYulgnbUryrL473q-dHVBUMYJQlf0jkVTKVJWX5_WnXTWeAXbjV6VXXkDPyYIZVxaIEDiWrSnB8Zot9-1hO5tnhreQp4vqEUyraNrwLWNsK3ajHNvWBlUA" alt=""><figcaption></figcaption></figure>
-

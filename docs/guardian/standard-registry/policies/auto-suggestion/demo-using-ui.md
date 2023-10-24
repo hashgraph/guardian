@@ -1,6 +1,6 @@
 # 💻 Demo using UI
 
-“Suggestions” tab is added for Standard Registry (SR) section under Policies menu option.&#x20;
+“Suggestions” tab is added for Standard Registry (SR) section under Policies menu option.
 
 <figure><img src="../../../../.gitbook/assets/image (189) (2).png" alt=""><figcaption></figcaption></figure>
 

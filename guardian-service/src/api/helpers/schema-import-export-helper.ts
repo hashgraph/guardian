@@ -143,6 +143,16 @@ export async function exportSchemas(ids: string[]) {
     return relationships;
 }
 
+export async function getSchemaCategory(topicId: string): Promise<SchemaCategory> {
+    if (topicId) {
+        const item = await DatabaseServer.getTool({ topicId });
+        if (item) {
+            return SchemaCategory.TOOL;
+        }
+    }
+    return SchemaCategory.POLICY;
+}
+
 /**
  * Import schema by files
  * @param owner
@@ -150,6 +160,7 @@ export async function exportSchemas(ids: string[]) {
  * @param topicId
  */
 export async function importSchemaByFiles(
+    category: SchemaCategory,
     owner: string,
     files: ISchema[],
     topicId: string,
@@ -221,7 +232,7 @@ export async function importSchemaByFiles(
         const parsedSchema = updatedSchemasMap[schema.iri];
         schema.document = parsedSchema.document;
         const file = SchemaConverterUtils.SchemaConverter(schema);
-        file.category = SchemaCategory.POLICY;
+        file.category = category;
         file.readonly = false;
         file.system = false;
         const item = await createSchema(file, owner, emptyNotifier());
@@ -241,6 +252,7 @@ export async function importSchemaByFiles(
  * @param notifier
  */
 export async function importSchemasByMessages(
+    category: SchemaCategory,
     owner: string,
     messageIds: string[],
     topicId: string,
@@ -300,7 +312,9 @@ export async function importSchemasByMessages(
 
     notifier.completed();
 
-    let result = await importSchemaByFiles(owner, schemas, topicId, notifier);
+    let result = await importSchemaByFiles(
+        category, owner, schemas, topicId, notifier
+    );
     result = await importTagsByFiles(result, tags, notifier);
 
     return result;

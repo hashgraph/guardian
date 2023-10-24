@@ -9,11 +9,13 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 export class ComparePolicyDialog {
     loading = true;
 
-    policy!: any;
-    policies: any[];
+    type: string;
 
-    policyId1!: string;
-    policyId2!: string[];
+    item!: any;
+    items: any[];
+
+    itemID_1!: string;
+    itemID_2!: string[];
 
     list1: any[];
     list2: any[];
@@ -21,16 +23,27 @@ export class ComparePolicyDialog {
     constructor(
         public dialogRef: MatDialogRef<ComparePolicyDialog>,
         private changeDetector: ChangeDetectorRef,
-        @Inject(MAT_DIALOG_DATA) public data: any) {
-        this.policy = data.policy;
-        this.policies = data.policies || [];
-        this.policyId1 = this.policy?.id;
-        this.list1 = this.policies;
-        this.list2 = this.policies;
+        @Inject(MAT_DIALOG_DATA) public data: any
+    ) {
+        this.type = data.type || 'policy';
+        if (this.type === 'policy') {
+            this.item = data.policy;
+            this.items = data.policies || [];
+        } else if (this.type === 'tool') {
+            this.item = data.tool;
+            this.items = data.tools || [];
+        } else {
+            this.item = data.item;
+            this.items = data.items || [];
+        }
+        this.itemID_1 = this.item?.id;
+        this.list1 = this.items;
+        this.list2 = this.items;
+
     }
 
     public get disabled(): boolean {
-        return !(this.policyId1 && this.policyId2 && this.policyId2.length);
+        return !(this.itemID_1 && this.itemID_2 && this.itemID_2.length);
     }
 
     ngOnInit() {
@@ -51,20 +64,28 @@ export class ComparePolicyDialog {
         if (this.disabled) {
             return;
         }
-        const policyIds = [this.policyId1, ...this.policyId2];
-        this.dialogRef.close({ policyIds });
+        if (this.type === 'policy') {
+            const policyIds = [this.itemID_1, ...this.itemID_2];
+            this.dialogRef.close({ policyIds });
+        } else if (this.type === 'tool') {
+            const toolIds = [this.itemID_1, ...this.itemID_2];
+            this.dialogRef.close({ toolIds });
+        } else {
+            const ids = [this.itemID_1, ...this.itemID_2];
+            this.dialogRef.close({ ids });
+        }
     }
 
     onChange() {
-        if (this.policyId1) {
-            this.list2 = this.policies.filter(s => s.id !== this.policyId1);
+        if (this.itemID_1) {
+            this.list2 = this.items.filter(s => s.id !== this.itemID_1);
         } else {
-            this.list2 = this.policies;
+            this.list2 = this.items;
         }
-        if (this.policyId2 && this.policyId2.length) {
-            this.list1 = this.policies.filter(s => this.policyId2.indexOf(s.id) === -1);
+        if (this.itemID_2 && this.itemID_2.length) {
+            this.list1 = this.items.filter(s => this.itemID_2.indexOf(s.id) === -1);
         } else {
-            this.list1 = this.policies;
+            this.list1 = this.items;
         }
         this.changeDetector.detectChanges();
     }

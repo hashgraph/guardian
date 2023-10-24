@@ -4,15 +4,15 @@
 
 To compare the modules, click on Compare button in the Modules page as shown below:
 
-![image2.png](<../../../../../.gitbook/assets/0 (1) (3).png>)
+![image2.png](<../../../../../.gitbook/assets/0 (1) (3) (1).png>)
 
 Once, compare button is clicked, we need to select the first and second modules to compare:
 
-![image3.png](<../../../../../.gitbook/assets/1 (7).png>)
+![image3.png](<../../../../../.gitbook/assets/1 (7) (1).png>)
 
 ### 1.1 Result of comparison:
 
-<figure><img src="../../../../../.gitbook/assets/2 (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/2.png" alt=""><figcaption></figcaption></figure>
 
 #### **1.1.1 Params**
 
@@ -29,7 +29,7 @@ Once, compare button is clicked, we need to select the first and second modules 
    * “_**All children**_” – comparison results of all children in all layers are impactful on the results of the parent block comparison
 4. “_**UUID**_” – configures if/how UUID and Hedera ID impact the comparison of the blocks
    * “_**Don't compare**_” – differences in UUID and Hedera ID (of schemas, tokens, topics, etc) do not impact the comparison results of the blocks.
-   * “_**All UUID**_” – differences in UUID and Hedera ID are included in the comparison. When this option is enabled, for example, 2 tokens would be considered to be different even if their settings are absolutely the same. This is because their Hedera Token IDs would be different_._
+   * “_**All UUID**_” – differences in UUID and Hedera ID are included in the comparison. When this option is enabled, for example, 2 tokens would be considered to be different even if their settings are absolutely the same. This is because their Hedera Token IDs would be different\_.\_
 
 #### **1.2.2 Sections**
 
@@ -38,7 +38,7 @@ Once, compare button is clicked, we need to select the first and second modules 
 3. _**“Input Events”**_ – comparison results for the incoming events
 4. _**“Output Events”**_ – comparison results for the outgoing events
 
-**Color legend **_**–**_ the mapping of the meaning/description of available block colors with the ability to switch on/off types
+**Color legend \_–**\_ the mapping of the meaning/description of available block colors with the ability to switch on/off types
 
 1. “_**Green**_” – blocks are identical, including their child blocks
 2. “_**Green/Yellow**_” – blocks are identical, but the child blocks have differences
@@ -71,8 +71,7 @@ Input:
 
 "idLvl":"0" – depth (level) of uuid comparison (0/1)
 
-}\
-
+}\\
 
 Output:
 
@@ -104,8 +103,7 @@ Input:
 
 "idLvl":"0" – depth (level) of uuid comparision (0/1)
 
-}\
-
+}\\
 
 Output:
 

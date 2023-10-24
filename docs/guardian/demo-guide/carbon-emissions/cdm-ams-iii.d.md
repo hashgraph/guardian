@@ -42,9 +42,7 @@ In the context of modern emission reduction projects, the necessity for transpar
 
 \[Link]
 
-Policy Workflow \
-
-
+## Policy Workflow&#x20;
 
 <figure><img src="../../../.gitbook/assets/image (293).png" alt=""><figcaption></figcaption></figure>
 
@@ -52,7 +50,7 @@ Policy Workflow \
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp.
 
-Latest Version - 1693223777.317635003
+Latest Version - 1695235455.560040612
 
 ## Available Roles
 
@@ -78,102 +76,102 @@ Latest Version - 1693223777.317635003
 
 6\. Emissions Reduction – Schema included within the project information form; this is filled out by the project proponent to calculate annual emission reductions.
 
-7\. Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.&#x20;
+7\. Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.
 
 ## Token (Carbon Emission Reduction)
 
 Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
-## &#x20;Step by Step
+## Step by Step
 
-1\.     The policy can be imported using IPFS timestamp 1693223777.317635003
+1\. The policy can be imported using IPFS timestamp 1693223777.317635003
 
 <figure><img src="../../../.gitbook/assets/image (294).png" alt=""><figcaption></figcaption></figure>
 
-2\.     Select “Import”.&#x20;
+2\. Select “Import”.
 
 <figure><img src="../../../.gitbook/assets/image (295).png" alt=""><figcaption></figcaption></figure>
 
-3\.     Place status in “Dry Run” and select “Go”.&#x20;
+3\. Place status in “Dry Run” and select “Go”.
 
 <figure><img src="../../../.gitbook/assets/image (296).png" alt=""><figcaption></figcaption></figure>
 
-4\.     By selecting the edit button in the operations tab, you can access the policy configurator and view the workflow blocks.&#x20;
+4\. By selecting the edit button in the operations tab, you can access the policy configurator and view the workflow blocks.
 
 <figure><img src="../../../.gitbook/assets/image (297).png" alt=""><figcaption></figcaption></figure>
 
-5\.     Going back to the policy workflow, add users by selecting the “create user” button. Then select the dropdown user menu and select “Virtual User 1”.
+5\. Going back to the policy workflow, add users by selecting the “create user” button. Then select the dropdown user menu and select “Virtual User 1”.
 
 <figure><img src="../../../.gitbook/assets/image (298).png" alt=""><figcaption></figcaption></figure>
 
-6\.     Virtual User 1 will be assigned to the Project\_Proponent&#x20;
+6\. Virtual User 1 will be assigned to the Project\_Proponent
 
 <figure><img src="../../../.gitbook/assets/image (299).png" alt=""><figcaption></figcaption></figure>
 
-7\.     Virtual User 2 will be assigned to the VVB&#x20;
+7\. Virtual User 2 will be assigned to the VVB
 
 <figure><img src="../../../.gitbook/assets/image (300).png" alt=""><figcaption></figcaption></figure>
 
-8\.     Add the VVBs name&#x20;
+8\. Add the VVBs name
 
 <figure><img src="../../../.gitbook/assets/image (301).png" alt=""><figcaption></figcaption></figure>
 
-9\.     The final role that will be assigned to Virtual User 3 is the Designated National Authority.
+9\. The final role that will be assigned to Virtual User 3 is the Designated National Authority.
 
 <figure><img src="../../../.gitbook/assets/image (302).png" alt=""><figcaption></figcaption></figure>
 
-10\.  Go to the Administrator’s (Standard Registry) profile. The Standard Registry can now approve the VVB.
+10\. Go to the Administrator’s (Standard Registry) profile. The Standard Registry can now approve the VVB.
 
 <figure><img src="../../../.gitbook/assets/image (303).png" alt=""><figcaption></figcaption></figure>
 
-11\.  Click on the Users dropdown menu and select Virtual User 1 (Project Proponent) and select the “New Project” button.
+11\. Click on the Users dropdown menu and select Virtual User 1 (Project Proponent) and select the “New Project” button.
 
 <figure><img src="../../../.gitbook/assets/image (304).png" alt=""><figcaption></figcaption></figure>
 
-12\.  Once the form is completed, go to Virtual User 3’s (Designated National Authority) profile. The Designated National Authority can now view the project information document by selecting “view document” and then they can select validate or reject.&#x20;
+12\. Once the form is completed, go to Virtual User 3’s (Designated National Authority) profile. The Designated National Authority can now view the project information document by selecting “view document” and then they can select validate or reject.
 
 <figure><img src="../../../.gitbook/assets/image (305).png" alt=""><figcaption></figcaption></figure>
 
-13\.  Return to the Administrator’s (Standard Registry) profile. The Standard Registry now has access to the project information document by clicking “view document” once they have reviewed it they can select “Add” to add the project to the project pipeline.
+13\. Return to the Administrator’s (Standard Registry) profile. The Standard Registry now has access to the project information document by clicking “view document” once they have reviewed it they can select “Add” to add the project to the project pipeline.
 
 <figure><img src="../../../.gitbook/assets/image (306).png" alt=""><figcaption></figcaption></figure>
 
-14\.  Navigate back to Virtual User 1’s (Project Proponent) profile and assign the VVB.
+14\. Navigate back to Virtual User 1’s (Project Proponent) profile and assign the VVB.
 
 <figure><img src="../../../.gitbook/assets/image (307).png" alt=""><figcaption></figcaption></figure>
 
-15\.  Go to the VVB profile and select the “Project” tab. The VVB can now see all the information submitted by the Project Proponent. Once the document has been reviewed the VVB will select Approve or Reject.
+15\. Go to the VVB profile and select the “Project” tab. The VVB can now see all the information submitted by the Project Proponent. Once the document has been reviewed the VVB will select Approve or Reject.
 
 <figure><img src="../../../.gitbook/assets/image (308).png" alt=""><figcaption></figcaption></figure>
 
-16\.  Navigate back to the Administrator. For this workflow step the Standard Registry reviews the document and adds the project to the project pipeline. Select Add. &#x20;
+16\. Navigate back to the Administrator. For this workflow step the Standard Registry reviews the document and adds the project to the project pipeline. Select Add.
 
 <figure><img src="../../../.gitbook/assets/image (309).png" alt=""><figcaption></figcaption></figure>
 
-17\.  Navigate back to Virtual User 1’s (Project Proponent) profile and select “Add Report”.&#x20;
+17\. Navigate back to Virtual User 1’s (Project Proponent) profile and select “Add Report”.
 
 <figure><img src="../../../.gitbook/assets/image (310).png" alt=""><figcaption></figcaption></figure>
 
-18\.  Go to the Virtual User 2’s (VVB) profile. The VVB has access to the monitoring report form by selecting “View Document”. Then the VVB can select Verify or Reject. &#x20;
+18\. Go to the Virtual User 2’s (VVB) profile. The VVB has access to the monitoring report form by selecting “View Document”. Then the VVB can select Verify or Reject.
 
 <figure><img src="../../../.gitbook/assets/image (311).png" alt=""><figcaption></figcaption></figure>
 
-19\.  Navigate back to the Administrator’s profile and select the “Mint” button.
+19\. Navigate back to the Administrator’s profile and select the “Mint” button.
 
 <figure><img src="../../../.gitbook/assets/image (312).png" alt=""><figcaption></figcaption></figure>
 
-20\.  The status should now say “Minted”.
+20\. The status should now say “Minted”.
 
 <figure><img src="../../../.gitbook/assets/image (313).png" alt=""><figcaption></figcaption></figure>
 
-21\.  By selecting the “Token History” tab you can see the number of tokens minted and then you can select “View TrustChain”&#x20;
+21\. By selecting the “Token History” tab you can see the number of tokens minted and then you can select “View TrustChain”
 
 <figure><img src="../../../.gitbook/assets/image (314).png" alt=""><figcaption></figcaption></figure>
 
-22\.  The Verified Presentation should now be open. You can view information like the recipient's name, token amount, mint date, verified signature, etc. This example resulted in 0 tokens minted due to the demo values used.
+22\. The Verified Presentation should now be open. You can view information like the recipient's name, token amount, mint date, verified signature, etc. This example resulted in 0 tokens minted due to the demo values used.
 
 <figure><img src="../../../.gitbook/assets/image (315).png" alt=""><figcaption></figcaption></figure>
 
-23\.  By scrolling to the bottom of the page you can view the TrustChain.
+23\. By scrolling to the bottom of the page you can view the TrustChain.
 
 <figure><img src="../../../.gitbook/assets/image (316).png" alt=""><figcaption></figcaption></figure>

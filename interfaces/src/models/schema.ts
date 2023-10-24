@@ -123,6 +123,10 @@ export class Schema implements ISchema {
      */
     public category?: SchemaCategory;
     /**
+     * Parent component
+     */
+    public component?: string;
+    /**
      * User DID
      * @private
      */
@@ -130,6 +134,7 @@ export class Schema implements ISchema {
     /**
      * Schema constructor
      * @param schema
+     * @param includeSystemProperties
      * @constructor
      */
     constructor(schema?: ISchema, includeSystemProperties: boolean = false) {
@@ -184,6 +189,7 @@ export class Schema implements ISchema {
             } else {
                 this.context = null;
             }
+            this.component = (schema as any).component || (schema as any).__component;
         } else {
             this._id = undefined;
             this.id = undefined;

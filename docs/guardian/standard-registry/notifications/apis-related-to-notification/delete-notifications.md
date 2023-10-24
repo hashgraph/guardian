@@ -1,7 +1,5 @@
 # Delete Notifications
 
-
-
 {% swagger method="delete" path="" baseUrl="/notifications/delete/{notificationId}" summary="Delete notifications up to this point" %}
 {% swagger-description %}
 Returns deleted count.

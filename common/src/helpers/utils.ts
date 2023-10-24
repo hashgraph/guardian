@@ -13,7 +13,15 @@ export const SchemaFields = [
     'schema',
     'inputSchema',
     'outputSchema',
-    'presetSchema'
+    'presetSchema',
+    'baseSchema'
+];
+
+/**
+ * Token fields array
+ */
+export const TokenFields = [
+    'tokenId'
 ];
 
 /**
@@ -48,39 +56,6 @@ export function findAllEntities(obj: { [key: string]: any }, names: string[]): s
         map[item] = item;
     }
     return Object.values(map);
-}
-
-/**
- * Find all blocks by type
- * @param obj
- * @param type
- */
-export function findAllBlocks(
-    obj: { [key: string]: any },
-    type: string
-): { [key: string]: any } {
-    const finder = (blockConfig: any, blockType: string, results: any[]): any[] => {
-        if (blockConfig.blockType === blockType) {
-            results.push(blockConfig);
-        }
-        if (blockConfig.hasOwnProperty('children')) {
-            for (const child of blockConfig.children) {
-                finder(child, blockType, results);
-            }
-        }
-        return results;
-    }
-    return finder(obj, type, []);
-}
-
-/**
- * Find all blocks by type
- * @param obj
- * @param blockType
- */
-export function findAllTools(obj: { [key: string]: any }): string[] {
-    const tools = findAllBlocks(obj, 'tool');
-    return tools.map((tool: any) => tool.hash);
 }
 
 /**
@@ -127,6 +102,17 @@ export function replaceAllVariables(
     const finder = (blockConfig: any, type: string): void => {
         if (
             blockConfig.blockType === 'module' &&
+            blockConfig.hasOwnProperty('variables') &&
+            Array.isArray(blockConfig.variables)
+        ) {
+            for (const variable of blockConfig.variables) {
+                if (variable.type === type && blockConfig[variable.name] === oldValue) {
+                    blockConfig[variable.name] = newValue;
+                }
+            }
+        }
+        if (
+            blockConfig.blockType === 'tool' &&
             blockConfig.hasOwnProperty('variables') &&
             Array.isArray(blockConfig.variables)
         ) {

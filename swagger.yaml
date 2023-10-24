@@ -73,6 +73,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /accounts/access-token:
+    post:
+      operationId: AccountApi_getAccessToken
+      summary: Returns access token.
+      description: Returns access token.
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+      tags: &ref_0
+        - accounts
   /accounts:
     get:
       tags:
@@ -153,8 +164,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags:
-        - accounts
+      tags: *ref_0
       security:
         - bearerAuth: []
   /accounts/balance:
@@ -193,76 +203,537 @@ paths:
   /analytics/search/policies:
     post:
       operationId: AnalyticsApi_searchPolicies
+      summary: Search policies.
+      description: >-
+        Search policies. Only users with the Standard Registry role are allowed
+        to make the request.
       parameters: []
+      requestBody:
+        required: true
+        description: Filters.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FilterSearchPoliciesDTO'
+            examples:
+              Filter:
+                value:
+                  policyId: '000000000000000000000000'
       responses:
         '200':
-          description: ''
-      tags: &ref_0
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchPoliciesDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: &ref_1
         - analytics
+      security:
+        - bearerAuth: []
   /analytics/compare/policies:
     post:
       operationId: AnalyticsApi_comparePolicies
+      summary: Compare policies.
+      description: >-
+        Compare policies. Only users with the Standard Registry role are allowed
+        to make the request.
       parameters: []
+      requestBody:
+        required: true
+        description: Filters.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FilterPoliciesDTO'
+            examples:
+              Filter1:
+                value:
+                  policyId1: '000000000000000000000001'
+                  policyId2: '000000000000000000000002'
+                  eventsLvl: '0'
+                  propLvl: '0'
+                  childrenLvl: '0'
+                  idLvl: '0'
+              Filter2:
+                value:
+                  policyIds:
+                    - '000000000000000000000001'
+                    - '000000000000000000000002'
+                  eventsLvl: '0'
+                  propLvl: '0'
+                  childrenLvl: '0'
+                  idLvl: '0'
       responses:
         '200':
-          description: ''
-      tags: *ref_0
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComparePoliciesDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_1
+      security:
+        - bearerAuth: []
   /analytics/compare/modules:
     post:
       operationId: AnalyticsApi_compareModules
+      summary: Compare modules.
+      description: >-
+        Compare modules. Only users with the Standard Registry role are allowed
+        to make the request.
       parameters: []
+      requestBody:
+        required: true
+        description: Filters.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FilterModulesDTO'
+            examples:
+              Filter:
+                value:
+                  moduleId1: '000000000000000000000001'
+                  moduleId2: '000000000000000000000002'
+                  propLvl: '0'
+                  childrenLvl: '0'
+                  idLvl: '0'
       responses:
         '200':
-          description: ''
-      tags: *ref_0
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompareModulesDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_1
+      security:
+        - bearerAuth: []
   /analytics/compare/schemas:
     post:
       operationId: AnalyticsApi_compareSchemas
+      summary: Compare schemas.
+      description: >-
+        Compare schemas. Only users with the Standard Registry role are allowed
+        to make the request.
       parameters: []
+      requestBody:
+        required: true
+        description: Filters.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FilterSchemasDTO'
+            examples:
+              Filter:
+                value:
+                  schemaId1: '000000000000000000000001'
+                  schemaId2: '000000000000000000000002'
+                  idLvl: '0'
       responses:
         '200':
-          description: ''
-      tags: *ref_0
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompareSchemasDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_1
+      security:
+        - bearerAuth: []
   /analytics/compare/documents:
     post:
       operationId: AnalyticsApi_compareDocuments
+      summary: Compare documents.
+      description: >-
+        Compare documents. Only users with the Standard Registry role are
+        allowed to make the request.
       parameters: []
+      requestBody:
+        required: true
+        description: Filters.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FilterDocumentsDTO'
+            examples:
+              Filter1:
+                value:
+                  documentId1: '000000000000000000000001'
+                  documentId2: '000000000000000000000002'
+              Filter2:
+                value:
+                  documentIds:
+                    - '000000000000000000000001'
+                    - '000000000000000000000002'
       responses:
         '200':
-          description: ''
-      tags: *ref_0
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompareDocumentsDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_1
+      security:
+        - bearerAuth: []
+  /analytics/compare/tools:
+    post:
+      operationId: AnalyticsApi_compareTools
+      summary: Compare tools.
+      description: >-
+        Compare tools. Only users with the Standard Registry role are allowed to
+        make the request.
+      parameters: []
+      requestBody:
+        required: true
+        description: Filters.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FilterToolsDTO'
+            examples:
+              Filter1:
+                value:
+                  toolId1: '000000000000000000000001'
+                  toolId2: '000000000000000000000002'
+              Filter2:
+                value:
+                  toolIds:
+                    - '000000000000000000000001'
+                    - '000000000000000000000002'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompareToolsDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_1
+      security:
+        - bearerAuth: []
   /analytics/compare/policies/export:
     post:
       operationId: AnalyticsApi_comparePoliciesExport
+      summary: Compare policies.
+      description: >-
+        Compare policies. Only users with the Standard Registry role are allowed
+        to make the request.
       parameters: []
+      requestBody:
+        required: true
+        description: Filters.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FilterPoliciesDTO'
+            examples:
+              Filter1:
+                value:
+                  policyId1: '000000000000000000000001'
+                  policyId2: '000000000000000000000002'
+                  eventsLvl: '0'
+                  propLvl: '0'
+                  childrenLvl: '0'
+                  idLvl: '0'
+              Filter2:
+                value:
+                  policyIds:
+                    - '000000000000000000000001'
+                    - '000000000000000000000002'
+                  eventsLvl: '0'
+                  propLvl: '0'
+                  childrenLvl: '0'
+                  idLvl: '0'
       responses:
         '200':
-          description: ''
-      tags: *ref_0
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: string
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_1
+      security:
+        - bearerAuth: []
   /analytics/compare/modules/export:
     post:
       operationId: AnalyticsApi_compareModulesExport
+      summary: Compare modules.
+      description: >-
+        Compare modules. Only users with the Standard Registry role are allowed
+        to make the request.
       parameters: []
+      requestBody:
+        required: true
+        description: Filters.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FilterModulesDTO'
+            examples:
+              Filter:
+                value:
+                  moduleId1: '000000000000000000000001'
+                  moduleId2: '000000000000000000000002'
+                  propLvl: '0'
+                  childrenLvl: '0'
+                  idLvl: '0'
       responses:
         '200':
-          description: ''
-      tags: *ref_0
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: string
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_1
+      security:
+        - bearerAuth: []
   /analytics/compare/schemas/export:
     post:
       operationId: AnalyticsApi_compareSchemasExport
+      summary: Compare schemas.
+      description: >-
+        Compare schemas. Only users with the Standard Registry role are allowed
+        to make the request.
       parameters: []
+      requestBody:
+        required: true
+        description: Filters.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FilterSchemasDTO'
+            examples:
+              Filter:
+                value:
+                  schemaId1: '000000000000000000000001'
+                  schemaId2: '000000000000000000000002'
+                  idLvl: '0'
       responses:
         '200':
-          description: ''
-      tags: *ref_0
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: string
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_1
+      security:
+        - bearerAuth: []
   /analytics/compare/documents/export:
     post:
       operationId: AnalyticsApi_compareDocumentsExport
+      summary: Compare documents.
+      description: >-
+        Compare documents. Only users with the Standard Registry role are
+        allowed to make the request.
       parameters: []
+      requestBody:
+        required: true
+        description: Filters.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FilterDocumentsDTO'
+            examples:
+              Filter1:
+                value:
+                  documentId1: '000000000000000000000001'
+                  documentId2: '000000000000000000000002'
+              Filter2:
+                value:
+                  documentIds:
+                    - '000000000000000000000001'
+                    - '000000000000000000000002'
       responses:
         '200':
-          description: ''
-      tags: *ref_0
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: string
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_1
+      security:
+        - bearerAuth: []
+  /analytics/compare/tools/export:
+    post:
+      operationId: AnalyticsApi_compareToolsExport
+      summary: Compare tools.
+      description: >-
+        Compare tools. Only users with the Standard Registry role are allowed to
+        make the request.
+      parameters: []
+      requestBody:
+        required: true
+        description: Filters.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FilterToolsDTO'
+            examples:
+              Filter1:
+                value:
+                  toolId1: '000000000000000000000001'
+                  toolId2: '000000000000000000000002'
+              Filter2:
+                value:
+                  toolIds:
+                    - '000000000000000000000001'
+                    - '000000000000000000000002'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: string
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_1
+      security:
+        - bearerAuth: []
+  /analytics/search/blocks:
+    post:
+      operationId: AnalyticsApi_searchBlocks
+      summary: Search same blocks.
+      description: >-
+        Search same blocks. Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters: []
+      requestBody:
+        required: true
+        description: Filters.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FilterSearchPoliciesDTO'
+            examples:
+              Filter:
+                value:
+                  uuid: ''
+                  config: {}
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchPoliciesDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_1
+      security:
+        - bearerAuth: []
   /artifacts:
     get:
       tags:
@@ -321,32 +792,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /artifacts/{policyId}:
+  /artifacts/{parentId}:
     post:
-      tags:
-        - artifacts
+      operationId: ArtifactApi_uploadArtifacts
+      summary: Upload artifact.
       description: Upload artifact. For users with the Standard Registry role only.
-      security:
-        - bearerAuth: []
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                artifacts:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
       parameters:
-        - in: path
-          name: policyId
+        - name: parentId
+          required: true
+          in: path
+          description: Parent ID
           schema:
             type: string
-          required: true
-          description: Policy identifier
-      summary: Upload Artifact.
       responses:
         '200':
           description: Successful operation.
@@ -355,7 +812,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Artifact'
+                  $ref: '#/components/schemas/ArtifactDTOItem'
         '401':
           description: Unauthorized.
         '403':
@@ -365,7 +822,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags:
+        - artifacts
+      security:
+        - bearerAuth: []
   /artifacts/{artifactId}:
     delete:
       tags:
@@ -400,36 +861,39 @@ paths:
                 $ref: '#/components/schemas/Error'
   /contracts:
     get:
-      tags:
-        - contracts
+      operationId: ContractsApi_getContracts
+      summary: Return a list of all contracts.
       description: Returns all contracts.
-      security:
-        - bearerAuth: []
-      summary: Returns all contracts.
       parameters:
-        - in: query
-          name: pageIndex
+        - name: type
+          required: false
+          in: query
+          description: Contract type
+          example: RETIRE
           schema:
-            type: integer
+            enum:
+              - WIPE
+              - RETIRE
+            type: string
+        - name: pageSize
+          required: false
+          in: query
+          description: The numbers of items to return
+          example: 20
+          schema:
+            type: number
+        - name: pageIndex
+          required: false
+          in: query
           description: >-
             The number of pages to skip before starting to collect the result
-            set.
-          examples:
-            pageIndex:
-              summary: Example of a pageIndex.
-              value: 0
-        - in: query
-          name: pageSize
+            set
+          example: 0
           schema:
-            type: integer
-          description: The numbers of items to return.
-          examples:
-            pageSize:
-              summary: Example of a pageSize.
-              value: 100
+            type: number
       responses:
         '200':
-          description: Successful operation.
+          description: Contracts.
           headers:
             x-total-count:
               schema:
@@ -440,7 +904,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Contract'
+                  $ref: '#/components/schemas/ContractDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -450,18 +914,20 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-    post:
-      tags:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: &ref_2
         - contracts
-      description: >-
-        Creates new contract. Only users with the Standard Registry role are
-        allowed to make the request.
       security:
-        - bearerAuth: []
-      summary: Create new contract.
+        - bearer: []
+    post:
+      operationId: ContractsApi_createContract
+      summary: Create contract.
+      description: >-
+        Create smart-contract. Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters: []
       requestBody:
-        description: Request Object Parameters.
+        required: true
         content:
           application/json:
             schema:
@@ -469,39 +935,36 @@ paths:
               properties:
                 description:
                   type: string
-            example:
-              description: Smart Contract Description
       responses:
         '201':
-          description: Created.
+          description: Created contract.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Contract'
+                $ref: '#/components/schemas/ContractDTO'
         '401':
           description: Unauthorized.
         '403':
           description: Forbidden.
-        '422':
-          description: Unprocessable Entity.
         '500':
           description: Internal server error.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearer: []
   /contracts/import:
     post:
-      tags:
-        - contracts
+      operationId: ContractsApi_importContract
+      summary: Import contract.
       description: >-
-        Creates new contract. Only users with the Standard Registry role are
+        Import smart-contract. Only users with the Standard Registry role are
         allowed to make the request.
-      security:
-        - bearerAuth: []
-      summary: Import new contract.
+      parameters: []
       requestBody:
-        description: Request Object Parameters.
+        required: true
         content:
           application/json:
             schema:
@@ -509,18 +972,19 @@ paths:
               properties:
                 contractId:
                   type: string
+                  description: Hedera Identifier
+                  example: 0.0.1
                 description:
                   type: string
-            example:
-              contractId: 0.0.49176956
-              description: Smart Contract Description
+              required:
+                - contractId
       responses:
         '200':
-          description: Successful operation.
+          description: Imported contract.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Contract'
+                $ref: '#/components/schemas/ContractDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -530,134 +994,32 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-  /contracts/{contractId}/user:
-    post:
-      tags:
-        - contracts
-      description: >-
-        Add new contract user. Only users with the Standard Registry role are
-        allowed to make the request.
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
       security:
-        - bearerAuth: []
-      summary: Add new contract user.
-      parameters:
-        - in: path
-          name: contractId
-          schema:
-            type: string
-          description: Contract identifier
-          required: true
-          example: 0.0.49176956
-      requestBody:
-        description: Request Object Parameters.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                userId:
-                  type: string
-            example:
-              userId: 0.0.49176949
-      responses:
-        '200':
-          description: Successful operation.
-          content:
-            application/json:
-              schema:
-                type: boolean
-        '401':
-          description: Unauthorized.
-        '403':
-          description: Forbidden.
-        '500':
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  /contracts/{contractId}/status:
-    post:
-      tags:
-        - contracts
-      description: >-
-        Update contract status. Only users with the Standard Registry role are
-        allowed to make the request.
-      security:
-        - bearerAuth: []
-      summary: Update contract status.
-      parameters:
-        - in: path
-          name: contractId
-          schema:
-            type: string
-          description: Contract identifier
-          required: true
-          example: 0.0.49176956
-      responses:
-        '200':
-          description: >-
-            Successful operation. Returns true if you are added to contract else
-            false.
-          content:
-            application/json:
-              schema:
-                type: boolean
-        '401':
-          description: Unauthorized.
-        '403':
-          description: Forbidden.
-        '500':
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  /contracts/pair:
+        - bearer: []
+  /contracts/{contractId}/permissions:
     get:
-      tags:
-        - contracts
-      description: Returns all contracts pairs.
-      security:
-        - bearerAuth: []
-      summary: Returns all contracts pairs.
+      operationId: ContractsApi_contractPermissions
+      summary: Get contract permissions.
+      description: >-
+        Get smart-contract permissions. Only users with the Standard Registry
+        role are allowed to make the request.
       parameters:
-        - in: query
-          name: baseTokenId
+        - name: contractId
+          required: true
+          in: path
+          description: Contract Identifier
+          example: 652745597a7b53526de37c05
           schema:
             type: string
-          description: Base token identifier
-          example: 0.0.49179655
-        - in: query
-          name: oppositeTokenId
-          schema:
-            type: string
-          description: Opposite token identifier
-          example: 0.0.49179656
       responses:
         '200':
-          description: Successful operation.
-          headers:
-            x-total-count:
-              schema:
-                type: integer
-              description: Total items in the collection.
+          description: Contract permissions.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    baseTokenRate:
-                      type: integer
-                    oppositeTokenRate:
-                      type: integer
-                    contractId:
-                      type: string
-                    description:
-                      type: string
+                type: number
         '401':
           description: Unauthorized.
         '403':
@@ -667,97 +1029,76 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-  /contracts/{contractId}/pair:
-    post:
-      tags:
-        - contracts
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearer: []
+  /contracts/{contractId}:
+    delete:
+      operationId: ContractsApi_removeContract
+      summary: Remove contract.
       description: >-
-        Creates new contract pair. Only users with the Standard Registry role
+        Remove smart-contract. Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters:
+        - name: contractId
+          required: true
+          in: path
+          description: Contract Identifier
+          example: 652745597a7b53526de37c05
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearer: []
+  /contracts/wipe/requests:
+    get:
+      operationId: ContractsApi_getWipeRequests
+      summary: Return a list of all wipe requests.
+      description: >-
+        Returns all wipe requests. Only users with the Standard Registry role
         are allowed to make the request.
-      security:
-        - bearerAuth: []
-      summary: Creates new contract pair.
       parameters:
-        - in: path
-          name: contractId
-          schema:
-            type: string
+        - name: contractId
+          required: false
+          in: query
           description: Contract identifier
-          required: true
-          example: 0.0.49176956
-      requestBody:
-        description: Request Object Parameters.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                baseTokenId:
-                  type: string
-                oppositeTokenId:
-                  type: string
-                baseTokenCount:
-                  type: integer
-                oppositeTokenCount:
-                  type: integer
-            example:
-              baseTokenId: 0.0.49179655
-              oppositeTokenId: 0.0.49179656
-              baseTokenCount: 1
-              oppositeTokenCount: 3
-      responses:
-        '200':
-          description: Successful operation.
-          content:
-            application/json:
-              schema:
-                type: boolean
-        '401':
-          description: Unauthorized.
-        '403':
-          description: Forbidden.
-        '500':
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  /contracts/retire/request:
-    get:
-      tags:
-        - contracts
-      description: Returns all contract requests.
-      security:
-        - bearerAuth: []
-      summary: Returns all contract requests.
-      parameters:
-        - in: query
-          name: contractId
+          example: 0.0.1
           schema:
             type: string
-          description: Contract Identifier.
-          example: 0.0.49176956
-        - in: query
-          name: pageIndex
+        - name: pageSize
+          required: false
+          in: query
+          description: The numbers of items to return
+          example: 20
           schema:
-            type: integer
+            type: number
+        - name: pageIndex
+          required: false
+          in: query
           description: >-
             The number of pages to skip before starting to collect the result
-            set.
-          examples:
-            pageIndex:
-              summary: Example of a pageIndex.
-              value: 0
-        - in: query
-          name: pageSize
+            set
+          example: 0
           schema:
-            type: integer
-          description: The numbers of items to return.
-          examples:
-            pageSize:
-              summary: Example of a pageSize.
-              value: 100
+            type: number
       responses:
         '200':
           description: Successful operation.
@@ -771,7 +1112,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/RetireRequest'
+                  $ref: '#/components/schemas/WiperRequestDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -781,123 +1122,565 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-    delete:
-      tags:
-        - contracts
-      description: Cancel contract requests.
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
       security:
-        - bearerAuth: []
-      summary: Cancel contract requests.
-      parameters:
-        - in: query
-          name: requestId
-          schema:
-            type: string
-          description: Request Identifier.
-          required: true
-          example: 507f1f77bcf86cd799439011
-      responses:
-        '200':
-          description: Successful operation.
-          content:
-            application/json:
-              schema:
-                type: boolean
-        '401':
-          description: Unauthorized.
-        '403':
-          description: Forbidden.
-        '500':
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  /contracts/{contractId}/retire/request:
+        - bearer: []
+  /contracts/wipe/{contractId}/requests/enable:
     post:
-      tags:
-        - contracts
-      description: Creates new contract retire request.
-      security:
-        - bearerAuth: []
-      summary: Creates new contract retire request.
-      parameters:
-        - in: path
-          name: contractId
-          schema:
-            type: string
-          description: Contract identifier
-          required: true
-          example: 0.0.49176956
-      requestBody:
-        description: Request Object Parameters.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                baseTokenId:
-                  type: string
-                oppositeTokenId:
-                  type: string
-                baseTokenCount:
-                  type: integer
-                oppositeTokenCount:
-                  type: integer
-                baseTokenSerials:
-                  type: array
-                  items:
-                    type: integer
-                oppositeTokenSerials:
-                  type: array
-                  items:
-                    type: integer
-            example:
-              baseTokenId: 0.0.49179655
-              oppositeTokenId: 0.0.49179656
-              baseTokenCount: 2
-              oppositeTokenCount: 6
-              baseTokenSerials: []
-              oppositeTokenSerials: []
-      responses:
-        '200':
-          description: Successful operation.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RetireRequest'
-        '401':
-          description: Unauthorized.
-        '403':
-          description: Forbidden.
-        '500':
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  /contracts/retire:
-    post:
-      tags:
-        - contracts
+      operationId: ContractsApi_enableWipeRequests
+      summary: Enable wipe requests.
       description: >-
-        Retire tokens. Only users with the Standard Registry role are allowed to
-        make the request.
+        Enable wipe contract requests. Only users with the Standard Registry
+        role are allowed to make the request.
+      parameters:
+        - name: contractId
+          required: false
+          in: path
+          description: Contract identifier
+          example: 652745597a7b53526de37c05
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
       security:
-        - bearerAuth: []
-      summary: Retire tokens.
-      requestBody:
-        description: Request Object Parameters.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                requestId:
-                  type: string
-            example:
-              requestId: 507f1f77bcf86cd799439011
+        - bearer: []
+  /contracts/wipe/{contractId}/requests/disable:
+    post:
+      operationId: ContractsApi_disableWipeRequests
+      summary: Disable wipe requests.
+      description: >-
+        Disable wipe contract requests. Only users with the Standard Registry
+        role are allowed to make the request.
+      parameters:
+        - name: contractId
+          required: false
+          in: path
+          description: Contract identifier
+          example: 652745597a7b53526de37c05
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearer: []
+  /contracts/wipe/requests/{requestId}/approve:
+    post:
+      operationId: ContractsApi_approveWipeRequest
+      summary: Approve wipe request.
+      description: >-
+        Approve wipe contract request. Only users with the Standard Registry
+        role are allowed to make the request.
+      parameters:
+        - name: requestId
+          required: true
+          in: path
+          description: Request identifier
+          example: 652745597a7b53526de37c05
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearer: []
+  /contracts/wipe/requests/{requestId}/reject:
+    delete:
+      operationId: ContractsApi_rejectWipeRequest
+      summary: Reject wipe request.
+      description: >-
+        Reject wipe contract request. Only users with the Standard Registry role
+        are allowed to make the request.
+      parameters:
+        - name: ban
+          required: false
+          in: query
+          description: Reject and ban
+          schema:
+            type: boolean
+        - name: requestId
+          required: true
+          in: path
+          description: Request identifier
+          example: 652745597a7b53526de37c05
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearer: []
+  /contracts/wipe/{contractId}/requests:
+    delete:
+      operationId: ContractsApi_clearWipeRequests
+      summary: Clear wipe requests.
+      description: >-
+        Clear wipe contract requests. Only users with the Standard Registry role
+        are allowed to make the request.
+      parameters:
+        - name: contractId
+          required: true
+          in: path
+          description: Contract identifier
+          example: 652745597a7b53526de37c05
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearer: []
+  /contracts/wipe/{contractId}/admin/{hederaId}:
+    post:
+      operationId: ContractsApi_wipeAddAdmin
+      summary: Add wipe admin.
+      description: >-
+        Add wipe contract admin. Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters:
+        - name: hederaId
+          required: true
+          in: path
+          description: Hedera identifier
+          example: 0.0.1
+          schema:
+            type: string
+        - name: contractId
+          required: true
+          in: path
+          description: Contract identifier
+          example: 652745597a7b53526de37c05
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearer: []
+    delete:
+      operationId: ContractsApi_wipeRemoveAdmin
+      summary: Remove wipe admin.
+      description: >-
+        Remove wipe contract admin. Only users with the Standard Registry role
+        are allowed to make the request.
+      parameters:
+        - name: hederaId
+          required: true
+          in: path
+          description: Hedera identifier
+          example: 0.0.1
+          schema:
+            type: string
+        - name: contractId
+          required: true
+          in: path
+          description: Contract identifier
+          example: 652745597a7b53526de37c05
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearer: []
+  /contracts/wipe/{contractId}/manager/{hederaId}:
+    post:
+      operationId: ContractsApi_wipeAddManager
+      summary: Add wipe manager.
+      description: >-
+        Add wipe contract manager. Only users with the Standard Registry role
+        are allowed to make the request.
+      parameters:
+        - name: hederaId
+          required: true
+          in: path
+          description: Hedera identifier
+          example: 0.0.1
+          schema:
+            type: string
+        - name: contractId
+          required: true
+          in: path
+          description: Contract identifier
+          example: 652745597a7b53526de37c05
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearer: []
+    delete:
+      operationId: ContractsApi_wipeRemoveManager
+      summary: Remove wipe admin.
+      description: >-
+        Remove wipe contract admin. Only users with the Standard Registry role
+        are allowed to make the request.
+      parameters:
+        - name: hederaId
+          required: true
+          in: path
+          description: Hedera identifier
+          example: 0.0.1
+          schema:
+            type: string
+        - name: contractId
+          required: true
+          in: path
+          description: Contract identifier
+          example: 652745597a7b53526de37c05
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearer: []
+  /contracts/wipe/{contractId}/wiper/{hederaId}:
+    post:
+      operationId: ContractsApi_wipeAddWiper
+      summary: Add wipe wiper.
+      description: >-
+        Add wipe contract wiper. Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters:
+        - name: hederaId
+          required: true
+          in: path
+          description: Hedera identifier
+          example: 0.0.1
+          schema:
+            type: string
+        - name: contractId
+          required: true
+          in: path
+          description: Contract identifier
+          example: 652745597a7b53526de37c05
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearer: []
+    delete:
+      operationId: ContractsApi_wipeRemoveWiper
+      summary: Remove wipe admin.
+      description: >-
+        Remove wipe contract admin. Only users with the Standard Registry role
+        are allowed to make the request.
+      parameters:
+        - name: hederaId
+          required: true
+          in: path
+          description: Hedera identifier
+          example: 0.0.1
+          schema:
+            type: string
+        - name: contractId
+          required: true
+          in: path
+          description: Contract identifier
+          example: 652745597a7b53526de37c05
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearer: []
+  /contracts/retire/{contractId}/pools/sync:
+    post:
+      operationId: ContractsApi_retireSyncPools
+      summary: Sync retire pools.
+      description: >-
+        Sync retire contract pools. Only users with the Standard Registry role
+        are allowed to make the request.
+      parameters:
+        - name: contractId
+          required: false
+          in: path
+          description: Contract identifier
+          example: 652745597a7b53526de37c05
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Sync date.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Date'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearer: []
+  /contracts/retire/requests:
+    get:
+      operationId: ContractsApi_getRetireRequests
+      summary: Return a list of all retire requests.
+      description: Returns all retire requests.
+      parameters:
+        - name: contractId
+          required: false
+          in: query
+          description: Contract identifier
+          example: 0.0.1
+          schema:
+            type: string
+        - name: pageSize
+          required: false
+          in: query
+          description: The numbers of items to return
+          example: 20
+          schema:
+            type: number
+        - name: pageIndex
+          required: false
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          example: 0
+          schema:
+            type: number
+      responses:
+        '200':
+          description: Successful operation.
+          headers:
+            x-total-count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RetireRequestDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearer: []
+  /contracts/retire/pools:
+    get:
+      operationId: ContractsApi_getRetirePools
+      summary: Return a list of all retire pools.
+      description: Returns all retire pools.
+      parameters:
+        - name: tokens
+          required: false
+          in: query
+          description: Tokens
+          example: 0.0.1,0.0.2,0.0.3
+          schema:
+            type: string
+        - name: contractId
+          required: false
+          in: query
+          description: Contract identifier
+          example: 0.0.1
+          schema:
+            type: string
+        - name: pageSize
+          required: false
+          in: query
+          description: The numbers of items to return
+          example: 20
+          schema:
+            type: number
+        - name: pageIndex
+          required: false
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          example: 0
+          schema:
+            type: number
+      responses:
+        '200':
+          description: Successful operation.
+          headers:
+            x-total-count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RetirePoolDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearer: []
+  /contracts/retire/{contractId}/requests:
+    delete:
+      operationId: ContractsApi_clearRetireRequests
+      summary: Clear retire requests.
+      description: >-
+        Clear retire contract requests. Only users with the Standard Registry
+        role are allowed to make the request.
+      parameters:
+        - name: contractId
+          required: false
+          in: path
+          description: Contract identifier
+          example: 652745597a7b53526de37c05
+          schema:
+            type: string
       responses:
         '200':
           description: Successful operation.
@@ -914,7 +1697,378 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearer: []
+  /contracts/retire/{contractId}/pools:
+    delete:
+      operationId: ContractsApi_clearRetirePools
+      summary: Clear retire pools.
+      description: >-
+        Clear retire contract pools. Only users with the Standard Registry role
+        are allowed to make the request.
+      parameters:
+        - name: contractId
+          required: false
+          in: path
+          description: Contract identifier
+          example: 652745597a7b53526de37c05
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearer: []
+    post:
+      operationId: ContractsApi_setRetirePool
+      summary: Set retire pool.
+      description: >-
+        Set retire contract pool. Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters:
+        - name: contractId
+          required: false
+          in: path
+          description: Contract identifier
+          example: 652745597a7b53526de37c05
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RetirePoolTokenDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetirePoolDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearer: []
+  /contracts/retire/pools/{poolId}:
+    delete:
+      operationId: ContractsApi_unsetRetirePool
+      summary: Unset retire pool.
+      description: >-
+        Unset retire contract pool. Only users with the Standard Registry role
+        are allowed to make the request.
+      parameters:
+        - name: poolId
+          required: false
+          in: path
+          description: Pool Identifier
+          example: 652745597a7b53526de37c05
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearer: []
+  /contracts/retire/requests/{requestId}:
+    delete:
+      operationId: ContractsApi_unsetRetireRequest
+      summary: Unset retire request.
+      description: >-
+        Unset retire contract request. Only users with the Standard Registry
+        role are allowed to make the request.
+      parameters:
+        - name: requestId
+          required: false
+          in: path
+          description: Request Identifier
+          example: 652745597a7b53526de37c05
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearer: []
+  /contracts/retire/pools/{poolId}/retire:
+    post:
+      operationId: ContractsApi_retire
+      summary: Retire tokens.
+      description: Retire tokens.
+      parameters:
+        - name: poolId
+          required: false
+          in: path
+          description: Pool Identifier
+          example: 652745597a7b53526de37c05
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RetireRequestTokenDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearer: []
+  /contracts/retire/requests/{requestId}/approve:
+    post:
+      operationId: ContractsApi_approveRetire
+      summary: Approve retire request.
+      description: >-
+        Approve retire contract request. Only users with the Standard Registry
+        role are allowed to make the request.
+      parameters:
+        - name: requestId
+          required: true
+          in: path
+          description: Request identifier
+          example: 652745597a7b53526de37c05
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearer: []
+  /contracts/retire/requests/{requestId}/cancel:
+    delete:
+      operationId: ContractsApi_cancelRetireRequest
+      summary: Cancel retire request.
+      description: Cancel retire contract request.
+      parameters:
+        - name: requestId
+          required: true
+          in: path
+          description: Request identifier
+          example: 652745597a7b53526de37c05
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearer: []
+  /contracts/retire/{contractId}/admin/{hederaId}:
+    post:
+      operationId: ContractsApi_retireAddAdmin
+      summary: Add retire admin.
+      description: >-
+        Add retire contract admin. Only users with the Standard Registry role
+        are allowed to make the request.
+      parameters:
+        - name: hederaId
+          required: true
+          in: path
+          description: Hedera identifier
+          example: 0.0.1
+          schema:
+            type: string
+        - name: contractId
+          required: true
+          in: path
+          description: Contract identifier
+          example: 652745597a7b53526de37c05
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearer: []
+    delete:
+      operationId: ContractsApi_retireRemoveAdmin
+      summary: Remove wipe admin.
+      description: >-
+        Remove wipe contract admin. Only users with the Standard Registry role
+        are allowed to make the request.
+      parameters:
+        - name: hederaId
+          required: true
+          in: path
+          description: Hedera identifier
+          example: 0.0.1
+          schema:
+            type: string
+        - name: contractId
+          required: true
+          in: path
+          description: Contract identifier
+          example: 652745597a7b53526de37c05
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearer: []
+  /contracts/retire:
+    get:
+      operationId: ContractsApi_getRetireVCs
+      summary: Return a list of all retire vcs.
+      description: Returns all retire vcs.
+      parameters:
+        - name: pageSize
+          required: false
+          in: query
+          description: The numbers of items to return
+          example: 20
+          schema:
+            type: number
+        - name: pageIndex
+          required: false
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          example: 0
+          schema:
+            type: number
+      responses:
+        '200':
+          description: Successful operation.
+          headers:
+            x-total-count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+      security:
+        - bearer: []
   /demo/registered-users:
     get:
       operationId: DemoApi_registeredUsers2
@@ -1236,7 +2390,7 @@ paths:
       responses:
         '200':
           description: ''
-      tags: &ref_1
+      tags: &ref_3
         - modules
     post:
       operationId: ModulesApi_postSchemas
@@ -1244,7 +2398,7 @@ paths:
       responses:
         '201':
           description: ''
-      tags: *ref_1
+      tags: *ref_3
   /modules/{uuid}:
     get:
       tags:
@@ -1695,7 +2849,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_2
+      tags: &ref_4
         - tools
       security:
         - bearerAuth: []
@@ -1733,7 +2887,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_2
+      tags: *ref_4
       security:
         - bearerAuth: []
   /tools/push:
@@ -1757,7 +2911,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_2
+      tags: *ref_4
       security:
         - bearerAuth: []
   /tools/{id}:
@@ -1783,7 +2937,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_2
+      tags: *ref_4
       security:
         - bearerAuth: []
     get:
@@ -1816,7 +2970,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_2
+      tags: *ref_4
       security:
         - bearerAuth: []
     put:
@@ -1849,7 +3003,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_2
+      tags: *ref_4
       security:
         - bearerAuth: []
   /tools/{id}/publish:
@@ -1885,7 +3039,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_2
+      tags: *ref_4
       security:
         - bearerAuth: []
   /tools/{id}/push/publish:
@@ -1921,7 +3075,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_2
+      tags: *ref_4
       security:
         - bearerAuth: []
   /tools/validate:
@@ -1949,7 +3103,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_2
+      tags: *ref_4
       security:
         - bearerAuth: []
   /tools/{id}/export/file:
@@ -1982,7 +3136,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_2
+      tags: *ref_4
       security:
         - bearerAuth: []
   /tools/{id}/export/message:
@@ -2017,7 +3171,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_2
+      tags: *ref_4
       security:
         - bearerAuth: []
   /tools/import/message/preview:
@@ -2046,7 +3200,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_2
+      tags: *ref_4
       security:
         - bearerAuth: []
   /tools/import/message:
@@ -2075,7 +3229,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_2
+      tags: *ref_4
       security:
         - bearerAuth: []
   /tools/import/file/preview:
@@ -2104,7 +3258,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_2
+      tags: *ref_4
       security:
         - bearerAuth: []
   /tools/import/file:
@@ -2133,7 +3287,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_2
+      tags: *ref_4
       security:
         - bearerAuth: []
   /tools/push/import/file:
@@ -2162,7 +3316,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_2
+      tags: *ref_4
       security:
         - bearerAuth: []
   /tools/push/import/message:
@@ -2191,7 +3345,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_2
+      tags: *ref_4
       security:
         - bearerAuth: []
   /tools/menu/all:
@@ -2219,7 +3373,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_2
+      tags: *ref_4
       security:
         - bearerAuth: []
   /profiles/{username}:
@@ -2338,7 +3492,7 @@ paths:
       responses:
         '202':
           description: ''
-      tags: &ref_3
+      tags: &ref_5
         - profiles
   /profiles/restore/topics/{username}:
     put:
@@ -2347,7 +3501,7 @@ paths:
       responses:
         '202':
           description: ''
-      tags: *ref_3
+      tags: *ref_5
   /profiles/{username}/balance:
     get:
       tags:
@@ -2525,7 +3679,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_4
+      tags: &ref_6
         - policies
       security:
         - bearerAuth: []
@@ -2536,7 +3690,7 @@ paths:
       responses:
         '202':
           description: ''
-      tags: *ref_4
+      tags: *ref_6
       security:
         - bearerAuth: []
   /policies/{policyId}:
@@ -3037,7 +4191,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_6
       security:
         - bearerAuth: []
         - bearerAuth: []
@@ -3061,7 +4215,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_6
       security:
         - bearerAuth: []
         - bearerAuth: []
@@ -3086,7 +4240,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_6
       security:
         - bearerAuth: []
         - bearerAuth: []
@@ -3097,7 +4251,7 @@ paths:
       responses:
         '200':
           description: ''
-      tags: *ref_4
+      tags: *ref_6
   /policies/{policyId}/export/file:
     get:
       tags:
@@ -3477,7 +4631,7 @@ paths:
       responses:
         '200':
           description: ''
-      tags: *ref_4
+      tags: *ref_6
   /policies/{policyId}/dry-run/users:
     get:
       tags:
@@ -3900,7 +5054,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SchemaDTO'
+                type: array
+                items:
+                  $ref: '#/components/schemas/SchemaDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -4100,7 +5256,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_5
+      tags: &ref_7
         - schemas
       security:
         - bearerAuth: []
@@ -4118,7 +5274,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SchemaDTO'
+                type: array
+                items:
+                  $ref: '#/components/schemas/SchemaDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -4129,7 +5287,49 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_5
+      tags: *ref_7
+      security:
+        - bearerAuth: []
+  /schemas/list/sub:
+    get:
+      operationId: SchemaApi_getSub
+      summary: Returns a list of schemas.
+      description: >-
+        Returns a list of schemas. Only users with the Standard Registry role
+        are allowed to make the request.
+      parameters:
+        - name: category
+          required: false
+          in: query
+          description: Schema category
+          schema:
+            type: string
+        - name: topicId
+          required: false
+          in: query
+          description: Topic Id
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SchemaDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_7
       security:
         - bearerAuth: []
   /schemas/push/{topicId}:
@@ -5627,7 +6827,7 @@ paths:
       responses:
         '202':
           description: ''
-      tags:
+      tags: &ref_8
         - tokens
   /tokens/{tokenId}/associate:
     put:
@@ -6146,6 +7346,41 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /tokens/{tokenId}/serials:
+    get:
+      operationId: TokensApi_getTokenSerials
+      summary: Return token serials.
+      description: Returns token serials of current user.
+      parameters:
+        - name: tokenId
+          required: true
+          in: path
+          description: Token identifier
+          example: 0.0.1
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Token serials.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: number
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_8
+      security:
+        - bearer: []
   /themes:
     get:
       tags:
@@ -6469,43 +7704,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /wizard/policy/push:
-    post:
-      tags:
-        - wizard
-      description: >-
-        Creates a new policy by wizard. Only users with the Standard Registry
-        role are allowed to make the request.
-      security:
-        - bearerAuth: []
-      summary: Creates a new policy.
-      requestBody:
-        description: Object that contains wizard configuration.
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/WizardConfig'
-      responses:
-        '202':
-          description: Successful operation.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Task'
-        '401':
-          description: Unauthorized.
-        '403':
-          description: Forbidden.
-        '500':
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
   /wizard/push/policy:
     post:
-      operationId: WizardApi_setPolicyAsyncNew
+      operationId: WizardApi_setPolicyAsync
       summary: Creates a new policy.
       description: >-
         Creates a new policy by wizard. Only users with the Standard Registry
@@ -6670,7 +7871,7 @@ paths:
       responses:
         '204':
           description: ''
-      tags: &ref_6
+      tags: &ref_9
         - branding
     get:
       operationId: BrandingApi_getBranding
@@ -6678,7 +7879,7 @@ paths:
       responses:
         '200':
           description: ''
-      tags: *ref_6
+      tags: *ref_9
   /suggestions:
     post:
       operationId: SuggestionsApi_policySuggestions
@@ -6712,7 +7913,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_7
+      tags: &ref_10
         - suggestions
       security:
         - bearer: []
@@ -6746,7 +7947,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_7
+      tags: *ref_10
       security:
         - bearer: []
         - bearerAuth: []
@@ -6772,7 +7973,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_7
+      tags: *ref_10
       security:
         - bearer: []
         - bearerAuth: []
@@ -6802,7 +8003,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_8
+      tags: &ref_11
         - notifications
       security:
         - bearer: []
@@ -6830,7 +8031,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_8
+      tags: *ref_11
       security:
         - bearer: []
         - bearerAuth: []
@@ -6857,7 +8058,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_8
+      tags: *ref_11
       security:
         - bearer: []
         - bearerAuth: []
@@ -6884,7 +8085,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_8
+      tags: *ref_11
       security:
         - bearer: []
         - bearerAuth: []
@@ -6914,7 +8115,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_8
+      tags: *ref_11
       security:
         - bearer: []
         - bearerAuth: []
@@ -7109,6 +8310,51 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /artifacts/{policyId}:
+    post:
+      tags:
+        - artifacts
+      description: Upload artifact. For users with the Standard Registry role only.
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                artifacts:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      parameters:
+        - in: path
+          name: policyId
+          schema:
+            type: string
+          required: true
+          description: Policy identifier
+      summary: Upload Artifact.
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Artifact'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /artifact:
     get:
       deprecated: true
@@ -7293,7 +8539,7 @@ info:
     the heart of the Guardian solution is a sophisticated Policy Workflow Engine
     (PWE) that enables applications to offer a requirements-based tokenization
     implementation.
-  version: 2.17.0-prerelease
+  version: 2.18.0-prerelease
   contact:
     name: API developer
     url: https://envisionblockchain.com
@@ -7547,6 +8793,219 @@ components:
         - balance
         - unit
         - user
+    FilterSearchPoliciesDTO:
+      type: object
+      properties:
+        policyId:
+          type: string
+      required:
+        - policyId
+    SearchPoliciesDTO:
+      type: object
+      properties:
+        target:
+          type: object
+        result:
+          type: object
+      required:
+        - target
+        - result
+    FilterPoliciesDTO:
+      type: object
+      properties:
+        policyId1:
+          type: string
+        policyId2:
+          type: string
+        policyIds:
+          type: string
+        eventsLvl:
+          type: number
+        propLvl:
+          type: number
+        childrenLvl:
+          type: number
+        idLvl:
+          type: number
+      required:
+        - policyId1
+        - policyId2
+        - policyIds
+        - eventsLvl
+        - propLvl
+        - childrenLvl
+        - idLvl
+    ComparePoliciesDTO:
+      type: object
+      properties:
+        blocks:
+          type: object
+        groups:
+          type: object
+        left:
+          type: object
+        right:
+          type: object
+        roles:
+          type: object
+        tokens:
+          type: object
+        topics:
+          type: object
+        total:
+          type: object
+      required:
+        - blocks
+        - groups
+        - left
+        - right
+        - roles
+        - tokens
+        - topics
+        - total
+    FilterModulesDTO:
+      type: object
+      properties:
+        moduleId1:
+          type: string
+        moduleId2:
+          type: string
+        eventsLvl:
+          type: number
+        propLvl:
+          type: number
+        childrenLvl:
+          type: number
+        idLvl:
+          type: number
+      required:
+        - moduleId1
+        - moduleId2
+        - eventsLvl
+        - propLvl
+        - childrenLvl
+        - idLvl
+    CompareModulesDTO:
+      type: object
+      properties:
+        blocks:
+          type: object
+        left:
+          type: object
+        right:
+          type: object
+        inputEvents:
+          type: object
+        outputEvents:
+          type: object
+        variables:
+          type: object
+        total:
+          type: object
+      required:
+        - blocks
+        - left
+        - right
+        - inputEvents
+        - outputEvents
+        - variables
+        - total
+    FilterSchemasDTO:
+      type: object
+      properties:
+        schemaId1:
+          type: string
+        schemaId2:
+          type: string
+        idLvl:
+          type: number
+      required:
+        - schemaId1
+        - schemaId2
+        - idLvl
+    CompareSchemasDTO:
+      type: object
+      properties:
+        fields:
+          type: object
+        left:
+          type: object
+        right:
+          type: object
+        total:
+          type: object
+      required:
+        - fields
+        - left
+        - right
+        - total
+    FilterDocumentsDTO:
+      type: object
+      properties:
+        documentId1:
+          type: string
+        documentId2:
+          type: string
+        documentIds:
+          type: string
+      required:
+        - documentId1
+        - documentId2
+        - documentIds
+    CompareDocumentsDTO:
+      type: object
+      properties:
+        documents:
+          type: object
+        left:
+          type: object
+        right:
+          type: object
+        total:
+          type: object
+      required:
+        - documents
+        - left
+        - right
+        - total
+    FilterToolsDTO:
+      type: object
+      properties:
+        toolId1:
+          type: string
+        toolId2:
+          type: string
+        toolIds:
+          type: string
+      required:
+        - toolId1
+        - toolId2
+        - toolIds
+    CompareToolsDTO:
+      type: object
+      properties:
+        blocks:
+          type: object
+        left:
+          type: object
+        right:
+          type: object
+        inputEvents:
+          type: object
+        outputEvents:
+          type: object
+        variables:
+          type: object
+        total:
+          type: object
+      required:
+        - blocks
+        - left
+        - right
+        - inputEvents
+        - outputEvents
+        - variables
+        - total
     ArtifactDTOItem:
       type: object
       properties:
@@ -7566,13 +9025,168 @@ components:
         - uuid
         - extention
         - type
-    ImportContractDTO:
+    ContractDTO:
       type: object
       properties:
+        id:
+          type: string
         contractId:
           type: string
+        description:
+          type: string
+        owner:
+          type: string
+        permissions:
+          type: number
+        topicId:
+          type: string
+        type:
+          type: string
+          enum:
+            - WIPE
+            - RETIRE
+        syncRequestsDate:
+          format: date-time
+          type: string
+        syncPoolsDate:
+          format: date-time
+          type: string
+        lastSyncEventTimeStamp:
+          type: string
+        wipeContractIds:
+          type: array
+          items:
+            type: string
       required:
+        - id
         - contractId
+        - description
+        - owner
+        - permissions
+        - topicId
+        - type
+        - syncRequestsDate
+        - syncPoolsDate
+        - lastSyncEventTimeStamp
+        - wipeContractIds
+    WiperRequestDTO:
+      type: object
+      properties:
+        id:
+          type: string
+        contractId:
+          type: string
+        user:
+          type: string
+      required:
+        - id
+        - contractId
+        - user
+    RetireRequestDTO:
+      type: object
+      properties:
+        id:
+          type: string
+        contractId:
+          type: string
+        tokens:
+          type: object
+          properties:
+            token:
+              type: string
+            count:
+              type: number
+            serials:
+              type: array
+              items:
+                type: number
+            decimals:
+              type: number
+            type:
+              enum:
+                - non-fungible
+                - fungible
+            tokenSymbol:
+              type: string
+        tokenIds:
+          type: array
+          items:
+            type: string
+        user:
+          type: string
+      required:
+        - id
+        - contractId
+        - tokens
+        - tokenIds
+        - user
+    Date:
+      type: object
+      properties: {}
+    RetirePoolDTO:
+      type: object
+      properties:
+        id:
+          type: string
+        contractId:
+          type: string
+        tokens:
+          type: object
+          properties:
+            token:
+              type: string
+            contract:
+              type: string
+            count:
+              type: number
+            decimals:
+              type: number
+            type:
+              enum:
+                - non-fungible
+                - fungible
+            tokenSymbol:
+              type: string
+        tokenIds:
+          type: array
+          items:
+            type: string
+        immediately:
+          type: boolean
+        enabled:
+          type: boolean
+      required:
+        - id
+        - contractId
+        - tokens
+        - tokenIds
+        - immediately
+        - enabled
+    RetirePoolTokenDTO:
+      type: object
+      properties:
+        token:
+          type: string
+        count:
+          type: number
+      required:
+        - token
+        - count
+    RetireRequestTokenDTO:
+      type: object
+      properties:
+        token:
+          type: string
+        count:
+          type: number
+        serials:
+          type: array
+          items:
+            type: string
+      required:
+        - token
+        - count
+        - serials
     SchemaDTO:
       type: object
       properties:
@@ -7613,6 +9227,52 @@ components:
         - hash
         - status
         - topicId
+        - version
+        - owner
+        - messageId
+    TaskDTO:
+      type: object
+      properties:
+        taskId:
+          type: string
+        expectation:
+          type: number
+      required:
+        - taskId
+        - expectation
+    VersionSchemaDTO:
+      type: object
+      properties:
+        version:
+          type: string
+      required:
+        - version
+    MessageSchemaDTO:
+      type: object
+      properties:
+        messageId:
+          type: string
+      required:
+        - messageId
+    ExportSchemaDTO:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        version:
+          type: string
+        owner:
+          type: string
+        messageId:
+          type: string
+      required:
+        - id
+        - name
+        - description
         - version
         - owner
         - messageId

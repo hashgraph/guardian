@@ -8,6 +8,11 @@
     </div>
 
     <policy-settings *ngIf="openSettings" (update)="onChangeSettings($event)"></policy-settings>
+    <search-blocks 
+        *ngIf="blockSearchData" 
+        class="policy-configuration" 
+        [value]="blockSearchData" 
+        (action)="onSearchAction($event)"></search-blocks>
 
     <div *ngIf="isModuleValid" class="policy-configuration" [attr.readonly]="readonly">
         <div class="top-toolbar">
@@ -228,6 +233,15 @@
             <div class="delimiter"></div>
 
             <ng-container *ngIf="isTree">
+                <div class="top-toolbar-btn all-status" (click)="onSchemas()" title="Settings">
+                    <mat-icon>dataset</mat-icon>
+                    <span>Schemas</span>
+                </div>
+
+                <div class="delimiter"></div>
+            </ng-container>
+
+            <ng-container *ngIf="isTree">
                 <div class="top-toolbar-group all-status event-color" [matMenuTriggerFor]="eventMenu"
                     style="width: 60px">
                     <mat-icon *ngIf="eventVisible =='All'" class="event-color">flash_on</mat-icon>
@@ -434,8 +448,11 @@
                                 <input placeholder="Search" [(ngModel)]="searchModule" (input)="onModuleSearch($event)">
                                 <mat-icon class="components-search-icon">search</mat-icon>
                             </div>
-                            <div *ngIf="modulesList.favorites.length" class="components-group"
-                                [attr.collapsed]="options.favoritesModulesGroup" [attr.readonly]="disableModuleMenu">
+                            <div 
+                                *ngIf="modulesList.favorites.length" 
+                                class="components-group"
+                                [attr.collapsed]="options.favoritesModulesGroup" 
+                                [attr.readonly]="disableModuleMenu">
                                 <div class="components-group-name" (click)="collapse('favoritesModulesGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
@@ -470,7 +487,9 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="components-group" [attr.collapsed]="options.defaultModulesGroup" [attr.readonly]="disableModuleMenu">
+                            <div class="components-group" 
+                                [attr.collapsed]="options.defaultModulesGroup" 
+                                [attr.readonly]="disableModuleMenu">
                                 <div class="components-group-name" (click)="collapse('defaultModulesGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
@@ -664,6 +683,7 @@
                             [nextBlock]="nextBlock" 
                             [nestedBlock]="nestedBlock" 
                             [(currentBlock)]="currentBlock"
+                            (search)="onBlockSearch($event)"
                             (nested)="addSuggestionsBlock($event, true)" 
                             (next)="addSuggestionsBlock($event)"
                             (open)="onOpenModule($event)" 
@@ -849,7 +869,7 @@
                             <div class="prop-container" [hidden]="!options.artifacts">
                                 <artifact-properties class="readonly-status" 
                                     [readonly]="readonly" 
-                                    [policyId]="policyId"
+                                    [rootId]="rootId"
                                     [block]="currentBlock"></artifact-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.json">

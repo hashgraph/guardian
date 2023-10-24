@@ -59,18 +59,12 @@
                 {{item.name}}
             </td>
             <td *ngIf="item.type ==='Schema'" class="propRowCell">
-                <mat-select [(value)]="properties[item.key]" [disabled]="readonly" (change)="onSave()">
-                    <mat-option 
-                        *ngFor="let schema of schemas" 
-                        class="schema-variable"
-                        [attr.status]="schema.status"
-                        matTooltipPosition="below" 
-                        matTooltipClass="guardian-tooltip small-guardian-tooltip" 
-                        matTooltipShowDelay="500"
-                        [matTooltip]="schema.tooltip"
-                        [value]="schema.value"
-                    >{{schema.displayName}}</mat-option>
-                    </mat-select>
+                <select-schema
+                    [schemas]="schemas" 
+                    [(value)]="properties[item.key]"
+                    [disabled]="readonly" 
+                    (change)="onSave()"
+                    ></select-schema>
             </td>
             <td *ngIf="item.type ==='Token'" class="propRowCell">
                 <mat-select [(value)]="properties[item.key]" [disabled]="readonly" (change)="onSave()">

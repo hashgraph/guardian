@@ -6,7 +6,7 @@ import {
     DatabaseServer,
     Logger,
 } from '@guardian/common';
-import { IWizardConfig, MessageAPI } from '@guardian/interfaces';
+import { IWizardConfig, MessageAPI, SchemaCategory } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier } from '@helpers/notifier';
 import { PolicyEngine } from '@policy-engine/policy-engine';
 import {
@@ -38,6 +38,7 @@ async function createExistingPolicySchemas(
         schemasToCreate.map((schema) => schema.id)
     );
     const importResult = await importSchemaByFiles(
+        SchemaCategory.POLICY,
         owner,
         relationships,
         policyTopicId,

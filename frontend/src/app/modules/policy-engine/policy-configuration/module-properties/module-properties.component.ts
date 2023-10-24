@@ -53,7 +53,7 @@ export class ModulePropertiesComponent implements OnInit {
         this.module.createVariable();
     }
 
-    onEditVariable(variable: ModuleVariable, refresh = false) {
+    onEditVariable(variable: ModuleVariable) {
         variable.changed = true;
         variable.emitUpdate();
     }

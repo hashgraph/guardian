@@ -4,8 +4,9 @@
 
 export const environment = {
   production: false,
+    accessTokenUpdateInterval: 29 * 1000,
   displayDemoAccounts: true,
-  isMeecoConfigured: false,
+    isMeecoConfigured: true,
   explorerSettings: {
     url: 'https://explore.lworks.io/${network}/${type}/${value}/${subType}/${subValue}',
     networkMap: {
@@ -18,7 +19,8 @@ export const environment = {
         'topics': 'topics',
         'accounts': 'accounts',
         'messages': 'messages',
-        'serials': 'nfts'
+        'serials': 'nfts',
+        'contracts': 'contracts',
     }
   }
 };

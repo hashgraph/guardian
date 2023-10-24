@@ -26,7 +26,8 @@
                     <div class="delimiter"></div>
 
                     <div class="version-container">
-                        <div class="field">
+
+                        <div class="field" *ngIf="schemaType === 'policy'">
                             <div class="field-name">Policy</div>
                             <div>
                                 <mat-form-field appearance="outline" class="{{ topicId ? '' : 'mat-form-field-invalid'}}" style="min-width: 383px">
@@ -37,6 +38,18 @@
                                 </mat-form-field>
                             </div>
                         </div>
+                        <div class="field" *ngIf="schemaType === 'tool'">
+                            <div class="field-name">Tool</div>
+                            <div>
+                                <mat-form-field appearance="outline" class="{{ topicId ? '' : 'mat-form-field-invalid'}}" style="min-width: 383px">
+                                    <mat-label>* Tool</mat-label>
+                                    <mat-select [(value)]="topicId" class="{{ topicId ? '' : 'mat-select-invalid'}}" >
+                                        <mat-option *ngFor="let tool of tools" [value]="tool.topicId">{{tool.name}}</mat-option>
+                                    </mat-select>
+                                </mat-form-field>
+                            </div>
+                        </div>
+
                         <div class="version-container">
                             <div *ngIf="schema.version" class="field">
                                 <div class="field-name">Version</div>

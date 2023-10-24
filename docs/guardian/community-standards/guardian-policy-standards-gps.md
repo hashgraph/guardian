@@ -1,6 +1,6 @@
 # Guardian Policy Standards (GPS)
 
-## &#x20;Introduction
+## Introduction
 
 Guardian Policy Standards (GPS) are an essential part of the Guardian ecosystem. They provide the standards for creating, evaluating, and approving open-source policies that underpin the creation of tokenized sustainability assets like Renewable Energy Certificates (RECs) or carbon offsets. The overarching goal of the standards is to ensure that policies endorsed by the Guardian community represent science-based and verifiable claims on environmental impact.
 
@@ -26,7 +26,7 @@ The GPS proposal process involves several stages:
 
 **Final:** After successful development and community review, the policy is merged into the Methodology Library. The policy owner (as defined in the GPS proposal) is responsible for ongoing maintenance of the policy, and any updates to the policy will adhere to the above process.
 
-## &#x20;Requirements for GPS Proposals
+## Requirements for GPS Proposals
 
 When drafting a GPS proposal, proposers should ensure that their proposal includes:
 
@@ -42,11 +42,11 @@ When drafting a GPS proposal, proposers should ensure that their proposal includ
 
 **Maintenance and Support Details:** The proposal should provide clear information about the following:
 
-* **Policy Owner:** Proposers must provide clear contact information for the policy owner, enabling users to address any issues or questions directly to the policy owner.&#x20;
+* **Policy Owner:** Proposers must provide clear contact information for the policy owner, enabling users to address any issues or questions directly to the policy owner.
 * **Update Schedule:** Proposers should provide an anticipated schedule for reviewing and updating the policy. This schedule could be a regular update (e.g., every three months, annually, etc.), or based on other relevant factors. If no regular updates are planned, this should be clearly stated. The policy submission in the Methodology Library should contain a markdown file that states the date of the last policy update or review, and the subsequent scheduled review.
 * **Support Information:** Proposers should outline the level of support users can expect, ranging from community-based assistance to premium commercial support options.
 
-## &#x20;Policy Maintenance and Updates
+## Policy Maintenance and Updates
 
 Once a policy is approved and included in the Methodology Library, it may require updates or maintenance due to changes in scientific understanding, technological advancements, updates to the Guardian, or community feedback. Proposers should provide a clear plan for maintaining and updating their policy, and the following standards should be followed by the community and maintainers to enforce such plans.
 
@@ -60,7 +60,7 @@ Maintenance refers to the ongoing development and upkeep of the policy. It is a 
 
 Should a policy lapse beyond 3 months past its established update schedule without the required attestation or updates, or fail to address reported issues within the 1-month period, it will be considered non-maintained. Non-maintained policies are moved to an archived folder in the repository.
 
-When an update to an existing policy is being submitted, the proposal flows through the existing GPS process, starting at Draft stage, all required artifacts must be present in the proposal, and an additional set of release notes detailing changes must be submitted to streamline the review process and ensure users of the policy understand changes.&#x20;
+When an update to an existing policy is being submitted, the proposal flows through the existing GPS process, starting at Draft stage, all required artifacts must be present in the proposal, and an additional set of release notes detailing changes must be submitted to streamline the review process and ensure users of the policy understand changes.
 
 ### Support
 

@@ -9,6 +9,7 @@ on:
 jobs:
   buildAndTest:
     runs-on: ubuntu-latest
+    container: ubuntu
     #    services:
     #      hashicorpvault:
     #        image: vault

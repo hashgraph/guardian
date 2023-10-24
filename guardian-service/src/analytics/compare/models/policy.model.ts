@@ -11,6 +11,7 @@ import { TopicModel } from './topic.model';
 import { TemplateTokenModel } from './template-token.model';
 import { RoleModel } from './role.model';
 import { FileModel } from './file.model';
+import { CompareUtils } from '../utils/utils';
 
 /**
  * Policy Model
@@ -119,7 +120,7 @@ export class PolicyModel {
             throw new Error('Empty policy model');
         }
 
-        this.tree = this.createBlock(policy.config, 0);
+        this.tree = CompareUtils.createBlockModel(policy.config, 0);
         this._list = this.getAllBlocks(this.tree, []);
 
         this.roles = this.createRoles(policy.policyRoles, this.options);
@@ -140,23 +141,6 @@ export class PolicyModel {
             this.getAllBlocks(child, list);
         }
         return list;
-    }
-
-    /**
-     * Create Block by JSON
-     * @param json
-     * @param index
-     * @private
-     */
-    private createBlock(json: any, index: number): BlockModel {
-        const block = new BlockModel(json, index + 1);
-        if (Array.isArray(json.children)) {
-            for (let i = 0; i < json.children.length; i++) {
-                const child = json.children[i];
-                block.addChildren(this.createBlock(child, i));
-            }
-        }
-        return block;
     }
 
     /**

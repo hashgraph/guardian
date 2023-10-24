@@ -102,6 +102,8 @@ import { RegisteredService } from './services/registered.service';
 import { WizardService } from './services/wizard.service';
 //Policies Grid
 import { PoliciesComponent } from './policies/policies.component';
+import { SearchBlocksComponent } from './helpers/search-blocks/search-blocks.component';
+import { SelectSchema } from './helpers/select-schema/select-schema.component';
 
 @NgModule({
     declarations: [
@@ -168,6 +170,7 @@ import { PoliciesComponent } from './policies/policies.component';
         CommonPropertyComponent,
         MultiSignBlockComponent,
         SelectBlock,
+        SelectSchema,
         CreateTokenConfigComponent,
         CreateTokenBlockComponent,
         MultiPolicyDialogComponent,
@@ -188,7 +191,8 @@ import { PoliciesComponent } from './policies/policies.component';
         ExternalTopicBlockComponent,
         PolicyWizardDialogComponent,
         MessagesReportBlockComponent,
-        ViewerDialog
+        ViewerDialog,
+        SearchBlocksComponent
     ],
     imports: [
         CommonModule,

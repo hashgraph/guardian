@@ -14,7 +14,7 @@ Second step of policy execution is data input and document submission. To enable
 
 To enable document submission we will use document input block (**requestVcDocumentBlock**) and document persistence block (**sendToGuardianBlock**)
 
-![creating new\_user\_registration Block](<../../../../.gitbook/assets/0 (1) (1) (1).png>)
+![creating new\_user\_registration Block](<../../../../.gitbook/assets/0 (1) (1).png>)
 
 **Please see** [**example 2**](data-input-via-forms-using-roles-to-partition-user-activities..md) **for the more in-depth guide of working with documents in Guardian Policies.**
 
@@ -36,23 +36,23 @@ Switch to the ‘**Tokens**’ tab and create a new token
 
 2.1.2 Select token and action type
 
-![Selecting Token and Token Action Type](<../../../../.gitbook/assets/3 (1) (1) (1).png>)
+![Selecting Token and Token Action Type](<../../../../.gitbook/assets/3 (1) (3).png>)
 
 2.2 Set user KYC
 
 2.2.1 Add ‘_**tokenActionBlock’**_ immediately after ‘_token\_associate’_
 
-![Adding tokenActionBlock](<../../../../.gitbook/assets/4 (1) (1) (1).png>)
+![Adding tokenActionBlock](<../../../../.gitbook/assets/4 (1) (1) (3).png>)
 
 2.2.2 Select token and the action type
 
-![Selecting Token and Action Type](<../../../../.gitbook/assets/5 (1) (1).png>)
+![Selecting Token and Action Type](<../../../../.gitbook/assets/5 (1) (1) (1).png>)
 
 3. User ‘**tokenActionBlock**_**’**_ to mint tokens
 
 3.1 Add ‘**mintDocumentBlock**_**’**_ immediately after saving the new document (**save\_new\_documents**)
 
-![Adding mintDocumentBlock](<../../../../.gitbook/assets/6 (1) (2).png>)
+![Adding mintDocumentBlock](<../../../../.gitbook/assets/6 (7).png>)
 
 3.2 Select token which will be minted
 
@@ -60,11 +60,11 @@ Switch to the ‘**Tokens**’ tab and create a new token
 
 3.3 Configure the formula which would define the amount of tokens minted
 
-![Adding formula for tokens](<../../../../.gitbook/assets/8 (3) (1).png>)
+![Adding formula for tokens](<../../../../.gitbook/assets/8 (3) (1) (1).png>)
 
 3.4 Configure the account where tokens will be sent to upon minting
 
-![Configuring Account type](<../../../../.gitbook/assets/9 (2) (1).png>)
+![Configuring Account type](<../../../../.gitbook/assets/9 (2) (1) (1).png>)
 
 ### **Document Display**
 
@@ -72,7 +72,7 @@ Switch to the ‘**Tokens**’ tab and create a new token
 
 1.1 Add a new container in which the grid containing results would be placed
 
-![Adidng Container Block](<../../../../.gitbook/assets/10 (1) (1) (1).png>)
+![Adidng Container Block](<../../../../.gitbook/assets/10 (1) (1) (1) (1).png>)
 
 1.2 Ensure that ‘_documents’ and ‘tokens’ are displayed in separate tabs_
 

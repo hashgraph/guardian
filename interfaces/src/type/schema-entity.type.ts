@@ -9,7 +9,7 @@ export enum SchemaEntity {
     USER = 'USER',
     POLICY = 'POLICY',
     MINT_TOKEN = 'MINT_TOKEN',
-    RETIRE_TOKEN = 'RETIRE_TOKEN',
+    RETIRE_TOKEN = 'RETIRE',
     WIPE_TOKEN = 'WIPE_TOKEN',
     MINT_NFTOKEN = 'MINT_NFTOKEN',
     ISSUER = 'ISSUER',

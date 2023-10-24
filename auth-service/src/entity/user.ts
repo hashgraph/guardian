@@ -70,6 +70,12 @@ export class User extends BaseEntity implements IUser {
     providerId?: string;
 
     /**
+     * Refresh token
+     */
+    @Property({nullable: true})
+    refreshToken?: string;
+
+    /**
      * Set defaults
      */
     @BeforeCreate()

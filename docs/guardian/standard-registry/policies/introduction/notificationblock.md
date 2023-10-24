@@ -2,7 +2,7 @@
 
 This Block is used to generate Notifications.
 
-<figure><img src="../../../../.gitbook/assets/image (7).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (7) (4).png" alt=""><figcaption></figcaption></figure>
 
 ## 1.1 Properties
 

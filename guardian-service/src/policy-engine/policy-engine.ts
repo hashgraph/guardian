@@ -44,7 +44,6 @@ import { GuardiansService } from '@helpers/guardians';
 import { Inject } from '@helpers/decorators/inject';
 import { findAndDryRunSchema, findAndPublishSchema, publishSystemSchemas } from '@api/helpers/schema-publish-helper';
 import { deleteSchema, incrementSchemaVersion, sendSchemaMessage } from '@api/helpers/schema-helper';
-import { HashComparator } from '@analytics';
 
 /**
  * Result of publishing
@@ -335,7 +334,7 @@ export class PolicyEngine extends NatsService {
         }
 
         notifier.completedAndStart('Updating hash');
-        policy = await HashComparator.saveHashMap(policy);
+        policy = await PolicyImportExportHelper.updatePolicyComponents(policy);
 
         notifier.completed();
         return policy;
@@ -474,7 +473,12 @@ export class PolicyEngine extends NatsService {
      * @param root
      * @param notifier
      */
-    public async publishSchemas(model: Policy, owner: string, root: IRootConfig, notifier: INotifier): Promise<Policy> {
+    public async publishSchemas(
+        model: Policy,
+        owner: string,
+        root: IRootConfig,
+        notifier: INotifier
+    ): Promise<Policy> {
         const schemas = await DatabaseServer.getSchemas({ topicId: model.topicId });
         notifier.info(`Found ${schemas.length} schemas`);
         const schemaIRIs = schemas.map(s => s.iri);
@@ -701,7 +705,7 @@ export class PolicyEngine extends NatsService {
         let retVal = await DatabaseServer.updatePolicy(model);
 
         notifier.completedAndStart('Updating hash');
-        retVal = await HashComparator.saveHashMap(retVal);
+        retVal = await PolicyImportExportHelper.updatePolicyComponents(retVal);
 
         notifier.completed();
         return retVal
@@ -755,7 +759,6 @@ export class PolicyEngine extends NatsService {
         const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);
         message.setDocument(model, buffer);
         const result = await messageServer.sendMessage(message);
-        model.messageId = result.getId();
 
         await topicHelper.twoWayLink(rootTopic, topic, result.getId());
 
@@ -805,7 +808,7 @@ export class PolicyEngine extends NatsService {
         logger.info('Published Policy', ['GUARDIAN_SERVICE']);
 
         let retVal = await DatabaseServer.updatePolicy(model);
-        retVal = await HashComparator.saveHashMap(retVal);
+        retVal = await PolicyImportExportHelper.updatePolicyComponents(retVal);
 
         return retVal;
     }

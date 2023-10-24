@@ -51,10 +51,30 @@ export class PropertyModel<T> implements IProperties<T> {
     protected _weight: string;
 
     /**
+     * Description
+     * @protected
+     */
+    protected _description: string;
+
+    /**
      * Title
      * @protected
      */
     protected _title: string;
+
+    /**
+     * Key
+     * @protected
+     */
+    protected _key: string;
+
+    /**
+     * Model key
+     * @public
+     */
+    public get key(): string {
+        return this._key;
+    }
 
     constructor(
         name: string,
@@ -70,6 +90,7 @@ export class PropertyModel<T> implements IProperties<T> {
         this.path = path === undefined ? name : path;
         this._subProp = [];
         this._weight = String(this.value);
+        this._key = this.path;
     }
 
     /**
@@ -93,6 +114,9 @@ export class PropertyModel<T> implements IProperties<T> {
             path: this.path,
             type: this.type,
             value: this.value
+        }
+        if (this._description) {
+            item.description = this._description;
         }
         if (this._title) {
             item.title = this._title;
@@ -126,11 +150,36 @@ export class PropertyModel<T> implements IProperties<T> {
     }
 
     /**
+     * Set description
+     * @public
+     */
+    public setDescription(description: string): void {
+        this._description = description;
+    }
+
+    /**
      * Set title
      * @public
      */
     public setTitle(title: string): void {
         this._title = title;
+    }
+
+    /**
+     * Update all weight
+     * @public
+     */
+    public update(options: ICompareOptions): void {
+        if (options.idLvl === 2) {
+            this._key = this._description;
+        } else if (options.idLvl === 3) {
+            this._key = this._title;
+        } else {
+            this._key = this.path;
+        }
+        if (!this._key) {
+            this._key = this.path;
+        }
     }
 }
 

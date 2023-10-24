@@ -4,7 +4,7 @@ There are two ways to open Policy Wizard:
 
 1. Click on Policy Wizard button from Policies Tab as shown below:
 
-<figure><img src="../../../../.gitbook/assets/image (13) (6).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (13) (6) (1).png" alt=""><figcaption></figcaption></figure>
 
 2. Open from the Policy Configurator page:
 
@@ -26,7 +26,7 @@ This step provides facilities to manage policy roles. Created Roles can be delet
 **Note:** Owner is the default policy role (Policy Owner) and cannot be deleted.
 {% endhint %}
 
-<figure><img src="../../../../.gitbook/assets/image (43).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (43) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 3. Policy Schemas
 
@@ -34,7 +34,7 @@ This step allows facilities to manage schemas in the policy by selecting schemas
 
 #### 3.1 {schema} configuration
 
-<figure><img src="../../../../.gitbook/assets/image (14) (6).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (14) (6) (1).png" alt=""><figcaption></figcaption></figure>
 
 At this stage users set roles which are able to view the document grid. Additionally they can set the _produced schema_ to configure _produced schema_ creation based on the current schema.
 
@@ -48,11 +48,11 @@ If **Approve and Reject** and **Minting tokens** are set to _enable_ the corresp
 Note: We can select multiple schemas by entering the schemas names separated by a delimiter: ",".
 {% endhint %}
 
-<figure><img src="../../../../.gitbook/assets/image (17) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (17).png" alt=""><figcaption></figcaption></figure>
 
 #### 3.1.1 {role} configuration
 
-<figure><img src="../../../../.gitbook/assets/image (3) (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (14) (2).png" alt=""><figcaption></figcaption></figure>
 
 This step allows:
 
@@ -62,13 +62,13 @@ This step allows:
 
 ### 4. TrustChain
 
-<figure><img src="../../../../.gitbook/assets/image (2) (1) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (2) (1) (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 This step allows to set up users which are able to view grids with VPs and the grid with the trust chain.
 
 #### 4.1. {role} configuration
 
-<figure><img src="../../../../.gitbook/assets/image (11) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (11) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 In this step, Users can choose a minting schema which will be displayed on the trust chain. Additionally, visibility for VPs can be configured to ‘only own ‘ (recommended for the roles other than OWNER) or to ‘all’.
 
@@ -76,7 +76,7 @@ In this step, Users can choose a minting schema which will be displayed on the t
 
 After the policy in the wizard is configured, users can click on ‘Create’ and thereby save the progress of the wizard configuration to be able to restore it later.
 
-<figure><img src="../../../../.gitbook/assets/image (16).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (16) (7).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 **Note:**

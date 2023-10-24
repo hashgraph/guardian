@@ -62,4 +62,3 @@ The numbers of items to return
 ```
 {% endswagger-response %}
 {% endswagger %}
-

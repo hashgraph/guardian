@@ -87,21 +87,21 @@ export class PolicyBlock {
     }
 
     public get canAddBlocks(): boolean {
-        if(this._module) {
+        if (this._module) {
             return this._module.canAddBlocks;
         }
         return true;
     }
 
     public get canAddModules(): boolean {
-        if(this._module) {
+        if (this._module) {
             return this._module.canAddModules;
         }
         return true;
     }
 
     public get canAddTools(): boolean {
-        if(this._module) {
+        if (this._module) {
             return this._module.canAddTools;
         }
         return true;
@@ -466,6 +466,14 @@ export class PolicyBlock {
         return false;
     }
 
+    public replaceConfig(newConfig: PolicyBlock): boolean {
+        if (this.blockType === newConfig?.blockType) {
+            Object.assign(this.properties, newConfig.properties);
+            return true;
+        }
+        return false;
+    }
+
     public append(parent: PolicyBlock) {
         parent._addChild(this);
         parent.refresh();
@@ -535,7 +543,7 @@ export class PolicyBlock {
     }
 
     public setAbout(about: any): void {
-        if(about) {
+        if (about) {
             this._post = about.post;
             this._get = about.get;
         }

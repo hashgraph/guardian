@@ -10,7 +10,7 @@ This level of extensibility is critical in ensuring that customers can tailor th
 
 ## Dependency tree
 
-An important step for Guardian project to work as a deployable modular solution out of the box is to catalog its services and determine:&#x20;
+An important step for Guardian project to work as a deployable modular solution out of the box is to catalog its services and determine:
 
 * which ones are more likely to be replaced by others with exactly the same functionality but deployed using different infrastructure. An example of this could be an external mongodb DBaaS.
 * which ones could be replaced with others with some compatibility (these are the ones that require more effort from a development perspective). An example of this could be to replace Vault with AWS secrets manager.
@@ -24,53 +24,53 @@ Furthermore, the services are grouped into external and internal ones. External 
 
 #### with dependants
 
-* &#x20; mongo:6.0.3
-* &#x20; mongo-express:1.0.0-alpha.4
-  * &#x20; mongo
-* &#x20; ipfs/kubo:v0.22.0
-* &#x20; message-broker:2.9.8
-* &#x20; vault:1.12.2
+* mongo:6.0.3
+* mongo-express:1.0.0-alpha.4
+  * mongo
+* ipfs/kubo:v0.22.0
+* message-broker:2.9.8
+* vault:1.12.2
 
-### Internal ( Guardian services )&#x20;
+### Internal ( Guardian services )
 
 #### without dependencies but with dependants
 
-* &#x20; api-docs
-* &#x20; mrv-sender
-* &#x20; topic-viewer
+* api-docs
+* mrv-sender
+* topic-viewer
 
 #### with dependencies and dependants
 
-* &#x20; logger-service
-  * &#x20; message-broker
-* &#x20; auth-service
-  * &#x20; mongo
-  * &#x20; vault
-  * &#x20; logger-service
+* logger-service
+  * message-broker
+* auth-service
+  * mongo
+  * vault
+  * logger-service
 * policy-service
-  * &#x20; auth-service
+  * auth-service
 * worker-service-1
-  * &#x20; ipfs-node
-  * &#x20; auth-service
-* &#x20; worker-service-2
-  * &#x20; ipfs-node
-  * &#x20; auth-service
+  * ipfs-node
+  * auth-service
+* worker-service-2
+  * ipfs-node
+  * auth-service
 * guardian-service
-  * &#x20; worker-service-1
-  * &#x20; worker-service-2
-  * &#x20; policy-service
-* &#x20; api-gateway
-  * &#x20; guardian-service
+  * worker-service-1
+  * worker-service-2
+  * policy-service
+* api-gateway
+  * guardian-service
 
-#### with dependencies but without dependants&#x20;
+#### with dependencies but without dependants
 
-* &#x20; application-events
-  * &#x20; guardian-service
-* &#x20; web-proxy
-  * &#x20; mongo-express (optional)
-  * &#x20; api-docs (optional)
-  * &#x20; mrv-sender (optional)
-  * &#x20; api-gateway (optional)
+* application-events
+  * guardian-service
+* web-proxy
+  * mongo-express (optional)
+  * api-docs (optional)
+  * mrv-sender (optional)
+  * api-gateway (optional)
 
 ## Roadmap Proposal
 
@@ -94,7 +94,7 @@ internal_services:
 	web_proxy: false
 ```
 
-#### Direct replacement of external services&#x20;
+#### Direct replacement of external services
 
 Using configuration items, the user will be able to replace external services.
 
@@ -120,7 +120,7 @@ Dependency on 1 click deployment on different cloud providers, Cloud Infrastruct
 
 Using the IaC codebase settings, the user will be able to replace some external services with the managed equivalents provided by the cloud provider.
 
-Those replacements will be deployed and configured  as part of the Guardian 1 click deployment.
+Those replacements will be deployed and configured as part of the Guardian 1 click deployment.
 
 Find below a couple examples of the use case for this milestone, for better understanding of it.
 

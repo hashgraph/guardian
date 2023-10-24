@@ -5,6 +5,7 @@ import { IKeyMap } from '../interfaces/key-map.interface';
 import { PropertyModel } from './property.model';
 import { PropertyType } from '../types/property.type';
 import { VariableModel } from './variable.model';
+import { CompareUtils } from '../utils/utils';
 
 /**
  * Policy Model
@@ -75,7 +76,7 @@ export class ModuleModel {
             throw new Error('Empty policy model');
         }
 
-        this.tree = this.createBlock(policyModule.config, 0);
+        this.tree = CompareUtils.createBlockModel(policyModule.config, 0);
         this._list = this.getAllBlocks(this.tree, []);
 
         this.inputEvents = this.createInputEvents(policyModule.config.inputEvents, this.options);
@@ -95,23 +96,6 @@ export class ModuleModel {
             this.getAllBlocks(child, list);
         }
         return list;
-    }
-
-    /**
-     * Create Block by JSON
-     * @param json
-     * @param index
-     * @private
-     */
-    private createBlock(json: any, index: number): BlockModel {
-        const block = new BlockModel(json, index + 1);
-        if (Array.isArray(json.children)) {
-            for (let i = 0; i < json.children.length; i++) {
-                const child = json.children[i];
-                block.addChildren(this.createBlock(child, i));
-            }
-        }
-        return block;
     }
 
     /**

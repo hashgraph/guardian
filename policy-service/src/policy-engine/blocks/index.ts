@@ -46,3 +46,4 @@ export { UploadVcDocumentBlock } from './upload-vc-document-block';
 export { MessagesReportBlock } from './messages-report-block';
 export { NotificationBlock } from './notification.block';
 export { ToolBlock } from './tool';
+export { ExtractDataBlock } from './extract-data-block';

@@ -1,4 +1,4 @@
-import { DatabaseServer, Logger, Policy } from '@guardian/common';
+import { Logger, Policy } from '@guardian/common';
 import { PolicyModel } from '../models/policy.model';
 import { SchemaModel } from '../models/schema.model';
 import { TokenModel } from '../models/token.model';
@@ -168,7 +168,6 @@ export class HashComparator {
             const hash = CompareUtils.sha256(JSON.stringify(tree));
             policy.hash = hash;
             policy.hashMap = tree;
-            policy = await DatabaseServer.updatePolicy(policy);
             return policy;
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE, HASH']);

@@ -17,4 +17,5 @@ export enum MessageType {
     Tag = 'Tag',
     RoleDocument = 'Role-Document',
     Tool = 'Tool',
+    Contract = 'Contract'
 }

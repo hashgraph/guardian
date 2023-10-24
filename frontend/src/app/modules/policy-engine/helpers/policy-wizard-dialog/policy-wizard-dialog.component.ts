@@ -22,7 +22,6 @@ import {
     Token,
 } from '@guardian/interfaces';
 import { Subject } from 'rxjs';
-import { RetireTokenDialogComponent } from 'src/app/components/retire-token-dialog/retire-token-dialog.component';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { takeUntil } from 'rxjs/operators';
 import { SeparateStepperComponent } from 'src/app/modules/common/separate-stepper/separate-stepper.component';
@@ -81,7 +80,7 @@ export class PolicyWizardDialogComponent implements OnInit {
     preset: any;
 
     constructor(
-        public dialogRef: MatDialogRef<RetireTokenDialogComponent>,
+        public dialogRef: MatDialogRef<PolicyWizardDialogComponent>,
         private fb: FormBuilder,
         private cdRef: ChangeDetectorRef,
         @Inject(GET_SCHEMA_NAME)

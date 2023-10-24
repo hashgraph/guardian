@@ -246,8 +246,8 @@ export class NotificationBlock {
                 const user = await PolicyUtils.getUser(
                     ref,
                     Array.isArray(event.data.data)
-                        ? event.data.data[0].issuer
-                        : event.data.data.issuer
+                        ? event.data.data[0].document?.issuer
+                        : event.data.data.document?.issuer
                 );
                 await notify(ref.options.title, ref.options.message, user.id);
                 break;
@@ -270,14 +270,14 @@ export class NotificationBlock {
             case UserOption.ROLE: {
                 const users = ref.options.grouped
                     ? await ref.databaseServer.getAllUsersByRole(
-                          ref.policyId,
-                          event.user.group,
-                          ref.options.role
-                      )
+                        ref.policyId,
+                        event.user.group,
+                        ref.options.role
+                    )
                     : await ref.databaseServer.getUsersByRole(
-                          ref.policyId,
-                          ref.options.role
-                      );
+                        ref.policyId,
+                        ref.options.role
+                    );
                 for (const user of users) {
                     await notify(
                         ref.options.title,

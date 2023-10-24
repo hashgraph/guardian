@@ -116,4 +116,9 @@ export interface SchemaField {
      * Is field private
      */
     isPrivate?: boolean;
+
+    /**
+     * Is hidden field
+     */
+    hidden?: boolean;
 }

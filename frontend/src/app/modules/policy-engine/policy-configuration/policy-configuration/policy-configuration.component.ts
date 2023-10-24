@@ -33,6 +33,7 @@ import { WizardMode, WizardService } from 'src/app/modules/policy-engine/service
 import { SuggestionsService } from '../../../../services/suggestions.service';
 import { PolicyFolder, PolicyItem, PolicyRoot } from '../../structures/policy-models/interfaces/types';
 import { ToolsService } from 'src/app/services/tools.service';
+import { AnalyticsService } from 'src/app/services/analytics.service';
 
 /**
  * The page for editing the policy and blocks.
@@ -51,6 +52,7 @@ export class PolicyConfigurationComponent implements OnInit {
     public policyId!: string;
     public moduleId!: string;
     public toolId!: string;
+    public rootId!: string;
 
     public policyTemplate!: PolicyTemplate;
     public moduleTemplate!: ModuleTemplate;
@@ -76,6 +78,7 @@ export class PolicyConfigurationComponent implements OnInit {
     public storage: PolicyStorage;
     public copyBlocksMode: boolean = false;
     public eventVisible: string = 'All';
+    public blockSearchData: any = null;
 
     public code!: string;
     public isSuggestionsEnabled = false;
@@ -196,7 +199,8 @@ export class PolicyConfigurationComponent implements OnInit {
         private tokenService: TokenService,
         private policyEngineService: PolicyEngineService,
         private modulesService: ModulesService,
-        private toolsService: ToolsService
+        private toolsService: ToolsService,
+        private analyticsService: AnalyticsService
     ) {
         this.options = new Options();
         this.storage = new PolicyStorage(localStorage);
@@ -253,6 +257,7 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     private loadPolicy(): void {
+        this.rootId = this.policyId;
         this.policyEngineService.policy(this.policyId).subscribe((policy: any) => {
             if (!policy) {
                 this.policyTemplate = new PolicyTemplate();
@@ -302,6 +307,7 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     private loadModule(): void {
+        this.rootId = this.moduleId;
         this.modulesService.getById(this.moduleId).subscribe((module: any) => {
             if (!module) {
                 this.moduleTemplate = new ModuleTemplate();
@@ -348,6 +354,7 @@ export class PolicyConfigurationComponent implements OnInit {
 
 
     private loadTool(): void {
+        this.rootId = this.toolId;
         this.toolsService.getById(this.toolId).subscribe((tool: any) => {
             if (!tool) {
                 this.toolTemplate = new ToolTemplate();
@@ -1116,6 +1123,37 @@ export class PolicyConfigurationComponent implements OnInit {
         this.openSettings = true;
     }
 
+    public onSchemas() {
+        switch (this.rootType) {
+            case 'Policy': {
+                this.router.navigate(['/schemas'], {
+                    queryParams: {
+                        type: 'policy',
+                        topic: this.policyTemplate?.topicId
+                    }
+                });
+                break;
+            }
+            case 'Module': {
+                this.router.navigate(['/schemas'], {
+                    queryParams: {
+                        type: 'module'
+                    }
+                });
+                break;
+            }
+            case 'Tool': {
+                this.router.navigate(['/schemas'], {
+                    queryParams: {
+                        type: 'tool',
+                        topic: this.toolTemplate?.topicId
+                    }
+                });
+                break;
+            }
+        }
+    }
+
     public setTheme(theme: Theme) {
         this.themeService.setCurrent(theme);
         this.themeService.saveTheme();
@@ -1505,8 +1543,13 @@ export class PolicyConfigurationComponent implements OnInit {
 
     public tryPublishTool() {
         this.loading = true;
-        this.toolsService.publish(this.toolId).subscribe((result) => {
-            this.loadData();
+        this.toolsService.pushPublish(this.toolId).subscribe((result) => {
+            const { taskId, expectation } = result;
+            this.router.navigate(['task', taskId], {
+                queryParams: {
+                    last: btoa(location.href)
+                }
+            });
         }, (e) => {
             console.error(e.error);
             this.loading = false;
@@ -1613,5 +1656,29 @@ export class PolicyConfigurationComponent implements OnInit {
             }
         }
         return [result, childConfig];
+    }
+
+    public onBlockSearch(block: any): void {
+        const option = {
+            config: this.rootTemplate.getConfig(),
+            id: block?.id
+        }
+        this.loading = true;
+        this.analyticsService.searchBlocks(option).subscribe((data: any) => {
+            this.blockSearchData = { source: block, data };
+            this.loading = false;
+        }, (e) => {
+            this.blockSearchData = null;
+            this.loading = false;
+        });
+    }
+
+    public onSearchAction(event: any): void {
+        this.blockSearchData = null;
+        if (event?.type === 'replace') {
+            if (event.source && event.target) {
+                (event.source as PolicyBlock).replaceConfig(event.target as PolicyBlock);
+            }
+        }
     }
 }

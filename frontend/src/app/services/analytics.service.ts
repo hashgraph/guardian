@@ -60,4 +60,18 @@ export class AnalyticsService {
             responseType: 'text'
         });
     }
+
+    public compareTools(options: any): Observable<any> {
+        return this.http.post<any>(`${this.url}/compare/tools`, options);
+    }
+
+    public compareToolsFile(options: any, type: string): Observable<any> {
+        return this.http.post(`${this.url}/compare/tools/export?type=${type}`, options, {
+            responseType: 'text'
+        });
+    }
+
+    public searchBlocks(options: any): Observable<any> {
+        return this.http.post<any>(`${this.url}/search/blocks`, options);
+    }
 }

@@ -167,7 +167,6 @@ export class LogsViewComponent implements OnInit {
         this.loading = true;
         this.logService.getLogs(this.filters)
             .subscribe(data => {
-                console.log(this);
                 const logs = data.logs?.map((log: any) => {
                     let attributes = "";
                     if (log.attributes &&  log.attributes.length !== 0) {
