@@ -8,6 +8,7 @@ import {
     PolicyComparator,
     PolicyModel,
     PolicySearchModel,
+    RootSearchModel,
     SchemaComparator,
     SchemaModel,
     ToolComparator,
@@ -368,7 +369,7 @@ export async function analyticsAPI(): Promise<void> {
                 blockId
             } = msg;
 
-            const filterPolicyModel = PolicySearchModel.fromConfig(config);
+            const filterPolicyModel = RootSearchModel.fromConfig(config);
             const filterBlock = filterPolicyModel.findBlock(blockId);
             if (!filterBlock) {
                 return new MessageError('Unknown block');
