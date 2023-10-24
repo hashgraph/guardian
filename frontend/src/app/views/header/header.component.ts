@@ -149,7 +149,7 @@ export class HeaderComponent implements OnInit {
             const role = user ? user.role : null;
             const username = user ? user.username : null;
             this.setStatus(isLogin, role, username);
-            this.authState.updateState(isLogin);
+            this.authState.updateState(isLogin, true);
             if (!this.balanceInit) {
                 this.getBallance();
             }

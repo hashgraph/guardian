@@ -17,7 +17,8 @@ function Accounts() {
                 }
             }
         );
-        SaveToken(result.data.username, result.data.accessToken);
+        // SaveToken(result.data.username, result.data.accessToken);
+        delete result.data.refreshToken;
         delete result.data.accessToken;
         delete result.data.did;
         assert.deepEqual(result.data, {
@@ -36,7 +37,8 @@ function Accounts() {
                 }
             }
         );
-        SaveToken(result.data.username, result.data.accessToken);
+        // SaveToken(result.data.username, result.data.accessToken);
+        delete result.data.refreshToken;
         delete result.data.accessToken;
         delete result.data.did;
         assert.deepEqual(result.data, {
@@ -55,7 +57,8 @@ function Accounts() {
                 }
             }
         );
-        SaveToken(result.data.username, result.data.accessToken);
+        // SaveToken(result.data.username, result.data.accessToken);
+        delete result.data.refreshToken;
         delete result.data.accessToken;
         delete result.data.did;
         assert.deepEqual(result.data, {
@@ -122,6 +125,7 @@ function Accounts() {
         delete result.data.walletToken;
         delete result.data.createDate;
         delete result.data.updateDate;
+        delete result.data.refreshToken;
         assert.deepEqual(result.data, {
             role: 'STANDARD_REGISTRY',
             username: 'StandardRegistry',
@@ -137,6 +141,7 @@ function Accounts() {
             }
         );
         delete result.data.did;
+        delete result.data.refreshToken;
         delete result.data.iat;
         delete result.data._id;
         delete result.data.hederaAccountId;

@@ -98,7 +98,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy() {
-        this.fieldTypeSub.unsubscribe();
+        this.fieldTypeSub?.unsubscribe();
     }
 
     updateControlEnum(values: string[]) {

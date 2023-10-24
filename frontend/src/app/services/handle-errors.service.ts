@@ -5,6 +5,7 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
 import { MessageTranslationService } from './message-translation-service/message-translation-service';
+import { AuthStateService } from './auth-state.service';
 
 /**
  * Error interceptor.
@@ -14,7 +15,8 @@ export class HandleErrorsService implements HttpInterceptor {
     constructor(
         public router: Router,
         private toastr: ToastrService,
-        private messageTranslator: MessageTranslationService
+        private messageTranslator: MessageTranslationService,
+        private authState: AuthStateService
     ) {
     }
 
@@ -113,6 +115,10 @@ export class HandleErrorsService implements HttpInterceptor {
                             toastClass: 'ngx-toastr error-message-toastr',
                             enableHtml: true,
                         });
+                        if ((result as any).error?.statusCode == 401) {
+                            this.authState.updateState(false);
+
+                        }
                     }
                 })
                 return throwError(error);
