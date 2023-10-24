@@ -59,7 +59,8 @@ export class AccountApi {
             return await users.getUserByToken(token) as any;
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.UNAUTHORIZED);
+            return null;
+            // throw new HttpException(error.message, HttpStatus.UNAUTHORIZED);
         }
 
     }
