@@ -3687,7 +3687,7 @@ __metadata:
     chai: ^4.3.4
     class-transformer: ^0.5.1
     class-validator: ^0.14.0
-    cron: ^2.0.0
+    cron: ^3.1.4
     cross-env: ^7.0.3
     dotenv: ^16.0.0
     excel4node: ^1.8.2
@@ -5583,13 +5583,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cron@npm:^2.0.0":
-  version: 2.4.3
-  resolution: "cron@npm:2.4.3"
+"cron@npm:^3.1.4":
+  version: 3.1.4
+  resolution: "cron@npm:3.1.4"
   dependencies:
     "@types/luxon": ~3.3.0
-    luxon: ~3.3.0
-  checksum: cb0ad49653b37ba125f8670ca92150ce515493512b1b8a5e08086d22bec9c54dc6d8926fcdb49ea5783f6699862ca5fdc532a440ce33c3228f9b3d565010db2f
+    luxon: ~3.4.0
+  checksum: e95136158ded3946b06932d9c7de77922fba0982507b4959ab5d700aec49c03041fa5afaf14a43345d176f0957be87baf4a9d8ee7ba8f14e8b839e569feb1572
   languageName: node
   linkType: hard
 
@@ -7903,7 +7903,7 @@ __metadata:
     bson: ^5.3.0
     chai: 4.3.4
     cors: ^2.8.5
-    cron: ^2.0.0
+    cron: ^3.1.4
     deep-equal: ^2.0.5
     dotenv: ^16.0.0
     ethers: ^6.7.1
@@ -10546,10 +10546,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"luxon@npm:~3.3.0":
-  version: 3.3.0
-  resolution: "luxon@npm:3.3.0"
-  checksum: 50cf17a0dc155c3dcacbeae8c0b7e80db425e0ba97b9cbdf12a7fc142d841ff1ab1560919f033af46240ed44e2f70c49f76e3422524c7fc8bb8d81ca47c66187
+"luxon@npm:~3.4.0":
+  version: 3.4.3
+  resolution: "luxon@npm:3.4.3"
+  checksum: 3eade81506224d038ed24035a0cd0dd4887848d7eba9361dce9ad8ef81380596a68153240be3988721f9690c624fb449fcf8fd8c3fc0681a6a8496faf48e92a3
   languageName: node
   linkType: hard
 
@@ -12651,7 +12651,7 @@ __metadata:
     bson: ~5.3.0
     chai: 4.3.4
     cors: ^2.8.5
-    cron: ^2.0.0
+    cron: ^3.1.4
     deep-equal: ^2.0.5
     dotenv: ^16.0.0
     express: ^4.17.1
