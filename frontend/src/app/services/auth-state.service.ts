@@ -18,7 +18,7 @@ export class AuthStateService {
     ) {
         this.updateState(false, true);
         this._value.subscribe(v => {
-            if (v) {
+            if (v && !this.refreshTokenTimer) {
                 this.refreshTokenTimer = setInterval(() => {
                     this.authService.updateAccessToken().subscribe();
                 }, environment.accessTokenUpdateInterval || 29 * 1000)
