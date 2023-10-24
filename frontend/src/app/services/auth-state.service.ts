@@ -17,13 +17,16 @@ export class AuthStateService {
         private authService: AuthService
     ) {
         this.updateState(false, true);
-        this._value.subscribe(v => {
-            if (v && !this.refreshTokenTimer) {
-                this.refreshTokenTimer = setInterval(() => {
-                    this.authService.updateAccessToken().subscribe();
-                }, environment.accessTokenUpdateInterval || 29 * 1000)
+        this._value.subscribe((isLogin) => {
+            if (isLogin) {
+                if (!this.refreshTokenTimer) {
+                    this.refreshTokenTimer = setInterval(() => {
+                        this.authService.updateAccessToken().subscribe();
+                    }, environment.accessTokenUpdateInterval || 29 * 1000)
+                }
             } else {
                 clearInterval(this.refreshTokenTimer);
+                this.refreshTokenTimer = null;
             }
         })
     }
