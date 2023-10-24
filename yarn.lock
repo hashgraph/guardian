@@ -3049,13 +3049,14 @@ __metadata:
   linkType: hard
 
 "@types/gulp@npm:^4":
-  version: 4.0.13
-  resolution: "@types/gulp@npm:4.0.13"
+  version: 4.0.16
+  resolution: "@types/gulp@npm:4.0.16"
   dependencies:
+    "@types/node": "*"
     "@types/undertaker": ">=1.2.6"
     "@types/vinyl-fs": "*"
     chokidar: ^3.3.1
-  checksum: e1996a2414ceba9f10e363fa6dfd55f06d99571144992adf45f74f71eb4a6c2914458dbaa28f4bab7323c8914c373e8ad0d3769c8280e7c224a254c95964f411
+  checksum: d3586f955a43746e9e7ef2061c12a2a4d8a7d461b09c681a4b09f75a037a9778336033a31e17a88585b1e77fe9b3005dbe7ea5c32d00e46b6cc8ac10a87281c1
   languageName: node
   linkType: hard
 
