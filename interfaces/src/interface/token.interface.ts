@@ -74,6 +74,11 @@ export interface IToken {
      * Can delete
      */
     canDelete?: boolean;
+
+    /**
+     * Wipe contract identifier
+     */
+    wipeContractId?: string;
 }
 
 /**

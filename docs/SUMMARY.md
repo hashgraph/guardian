@@ -458,6 +458,7 @@
     * [🏨 CDM AMS II.G](guardian/demo-guide/carbon-emissions/cdm-ams-ii.g.md)
     * [🏭 CDM AMS III.D](guardian/demo-guide/carbon-emissions/cdm-ams-iii.d.md)
     * [🏭 GHGP Corporate Standard V2](guardian/demo-guide/carbon-emissions/ghgp-corporate-standard-v2.md)
+    * [🏭 CDM AMS III.BB](guardian/demo-guide/carbon-emissions/cdm-ams-iii.bb.md)
 * [❓ FAQs](guardian/faqs.md)
 * [👬 Community Standards](guardian/community-standards/README.md)
   * [Guardian Policy Standards (GPS)](guardian/community-standards/guardian-policy-standards-gps.md)

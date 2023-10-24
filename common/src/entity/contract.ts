@@ -1,17 +1,17 @@
-import { BeforeCreate, Entity, Property } from '@mikro-orm/core';
+import { Entity, Enum, Property } from '@mikro-orm/core';
 import { BaseEntity } from '../models';
-import { ContractStatus } from '@guardian/interfaces';
+import { ContractType, IContract } from '@guardian/interfaces';
 
 /**
  * Contract collection
  */
 @Entity()
-export class Contract extends BaseEntity {
+export class Contract extends BaseEntity implements IContract {
     /**
      * Hedera Contract Id
      */
-    @Property({ nullable: true })
-    contractId?: string;
+    @Property()
+    contractId: string;
 
     /**
      * Description
@@ -22,32 +22,54 @@ export class Contract extends BaseEntity {
     /**
      * Owner
      */
-    @Property({ nullable: true })
-    owner?: string;
+    @Property()
+    owner: string;
 
     /**
-     * Creator
+     * Contract permissions
      */
-    @Property({ default: false })
-    isOwnerCreator: boolean = false;
-
-    /**
-     * Contract status
-     */
-    @Property({ nullable: true })
-    status?: ContractStatus;
+    @Property()
+    permissions: number = 0;
 
     /**
      * Topic id
      */
-    @Property({ nullable: true })
-    topicId?: string;
+    @Property()
+    topicId: string;
 
     /**
-     * Contract defaults
+     * Type
      */
-    @BeforeCreate()
-    setDefaults() {
-        this.status = this.status || ContractStatus.WAIT;
-    }
+    @Enum(() => ContractType)
+    type: ContractType;
+
+    /**
+     * Sync requests date
+     */
+    @Property({ nullable: true })
+    syncRequestsDate?: Date;
+
+    /**
+     * Sync pools date
+     */
+    @Property({ nullable: true })
+    syncPoolsDate?: Date;
+
+    /**
+     * Sync event timestamp
+     */
+    @Property({ nullable: true })
+    lastSyncEventTimeStamp?: string;
+
+    /**
+     * Wipe contract ids
+     */
+    @Property()
+    wipeContractIds: string[] = [];
+
+    /**
+     * Sync disabled
+     */
+    @Property()
+    syncDisabled: boolean = false;
 }

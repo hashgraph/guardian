@@ -282,7 +282,7 @@ export class MessageBrokerChannel {
      * @param subj
      * @param callback
      */
-    public subscribe(subj: string, callback: (data: unknown) => void | Promise<void>): void {
+    public subscribe(subj: string, callback: (data: unknown) => void | Promise<void>): Subscription {
         const sub = this.channel.subscribe(subj, { queue: process.env.SERVICE_CHANNEL });
         const fn = async (_sub: Subscription) => {
             for await (const m of _sub) {
@@ -295,6 +295,7 @@ export class MessageBrokerChannel {
             }
         }
         fn(sub);
+        return sub;
     }
 
     /**

@@ -300,7 +300,9 @@ export class WebSocketService {
     }
 
     private getUrl(accessToken: string | null = null) {
-        return `${this.getBaseUrl()}/ws/?token=${accessToken}`;
+        return accessToken
+            ? `${this.getBaseUrl()}/ws/?token=${accessToken}`
+            : `${this.getBaseUrl()}/ws/`;
     }
 
     public blockSubscribe(

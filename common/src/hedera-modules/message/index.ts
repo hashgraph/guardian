@@ -16,3 +16,4 @@ export { ModuleMessage } from './module-message';
 export { TagMessage } from './tag-message';
 export { RoleMessage } from './role-message';
 export { ToolMessage } from './tool-message';
+export { ContractMessage } from './contract-message';

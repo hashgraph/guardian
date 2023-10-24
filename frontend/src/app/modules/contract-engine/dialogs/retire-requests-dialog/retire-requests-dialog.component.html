@@ -1,0 +1,46 @@
+<app-dialog-wrapper (cancel)="onNoClick()" [confirmVisible]="false" [loading]="loading" [title]="'Retire requests'"
+    [length]="length" [pageSize]="pageSize" (page)="onPage($event)">
+
+    <div *ngIf="requests?.length; else noRequests">
+        <div *ngFor="let request of requests" class="request">
+            <div class="profile">
+                <mat-icon class="profile__icon">person</mat-icon>
+                <span class="profile__id">{{request.user}}</span>
+            </div>
+            <div class="tokens">
+                <div class="token-card" *ngFor="let token of request.tokens">
+                    <span class="token-card__token">
+                        <mat-icon>abc</mat-icon>
+                        <span>{{token.tokenSymbol}}</span>
+                    </span>
+                    <span class="token-card__token">
+                        <mat-icon>generating_tokens</mat-icon>
+                        <span>{{token.token}}</span>
+                    </span>
+                    <span class="token-card__count" *ngIf="token.count > 0">
+                        <mat-icon>calculate</mat-icon>
+                        <span>{{token.count | tokenCount: token.decimals }}</span>
+                    </span>
+                    <span class="token-card__serials" *ngIf="token.serials?.length > 0"
+                        [title]="token.serials?.join(', ')">
+                        <mat-icon>123</mat-icon>
+                        <span>{{token.serials?.join(', ')}}</span>
+                    </span>
+                </div>
+            </div>
+            <div class="request__actions">
+                <button (click)="approveRequest(request.id)" mat-flat-button class="btn btn--approve"
+                    [disabled]="!hasPermissions(contract.permissions, 1)" matTooltip="You are not admin"
+                    matTooltipClass="guardian-tooltip"
+                    [matTooltipDisabled]="hasPermissions(contract.permissions, 1)">Approve</button>
+                <button (click)="unsetRetire(request.id)" mat-flat-button class="btn btn--reject"
+                    [disabled]="!hasPermissions(contract.permissions, 1)" matTooltip="You are not admin"
+                    matTooltipClass="guardian-tooltip"
+                    [matTooltipDisabled]="hasPermissions(contract.permissions, 1)">Reject</button>
+            </div>
+        </div>
+    </div>
+</app-dialog-wrapper>
+<ng-template #noRequests>
+    <div class="no-requests">Contract has no requests, try to sync.</div>
+</ng-template>

@@ -1,0 +1,92 @@
+.tokens {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 5px;
+    gap: 30px;
+    .token-card {
+        width: 130px;
+        display: flex;
+        flex-direction: column;
+        // border: 1px solid black;
+        box-shadow: 0px 0px 3px 2px rgb(0 144 255 / 20%);
+        border-radius: 5px;
+        padding: 10px;
+        gap: 5px;
+
+        color: rgb(71, 71, 71);
+
+        mat-icon {
+            color: #3f51b5;
+        }
+
+        &__token,
+        &__count {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            height: 50px;
+
+            mat-icon {
+                font-size: 30px;
+                width: 30px;
+                height: 30px;
+            }
+        }
+
+        &__count {
+            mat-icon {
+                transform: translateX(-2px);
+            }
+        }
+
+        &__remove {
+            width: 100%;
+        }
+    }
+
+    .token-add-card {
+        width: 150px;
+        height: 166px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0px 0px 3px 2px rgb(0 144 255 / 20%);
+        border-radius: 5px;
+        color: var(--primary-color);
+        cursor: pointer;
+
+        mat-icon {
+            font-size: 50px;
+            height: 50px;
+            width: 50px;
+        }
+
+        &:hover {
+            opacity: 0.5;
+        }
+
+        &:active {
+            transform: scale(0.95);
+        }
+    }
+}
+
+.approval {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.content {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+
+    &__delimiter {
+        height: 100px;
+        width: 2px;
+        background-color: gray;
+    }
+}
