@@ -386,8 +386,6 @@ export class SchemaConfigComponent implements OnInit {
 
     private loadSchemas() {
         this.loading = true;
-        this.pageIndex = 0;
-        this.pageSize = 25;
         this.page = [];
         this.columns = this.getColumns();
         this.currentTopic = this.getTopicId();
