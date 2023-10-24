@@ -168,6 +168,33 @@ export class AccountApi {
         }
     }
 
+    @ApiOperation({
+        summary: 'Returns access token.',
+        description: 'Returns access token.'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        // schema: {
+        //     $ref: getSchemaPath(AccountsResponseDTO),
+        // },
+    })
+    @Post('access-token')
+    async getAccessToken(@Body() body: any): Promise<any> {
+        try {
+            const {refreshToken} = body;
+            const users = new Users();
+            const {accessToken} = await users.generateNewAccessToken(refreshToken);
+            if (!accessToken) {
+                throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
+            }
+            return {
+                accessToken
+            }
+        } catch (e) {
+            throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
+        }
+    }
+
     /**
      * Accounts
      */

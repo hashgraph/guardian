@@ -148,6 +148,10 @@ export class Users extends NatsService {
         return await this.sendMessage(AuthEvents.GENERATE_NEW_TOKEN, { username, password });
     }
 
+    public async generateNewAccessToken(refreshToken: string): Promise<any> {
+        return await this.sendMessage(AuthEvents.GENERATE_NEW_ACCESS_TOKEN, {refreshToken});
+    }
+
     /**
      * Get all user accounts
      */

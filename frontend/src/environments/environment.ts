@@ -4,6 +4,7 @@
 
 export const environment = {
   production: false,
+    accessTokenUpdateInterval: 29 * 1000,
   displayDemoAccounts: true,
     isMeecoConfigured: true,
   explorerSettings: {
