@@ -40,6 +40,8 @@ export class HeaderComponent implements OnInit {
     subMenuOpen: any = {};
     userInfoVisible: boolean = false;
 
+    oldUserName: string | null;
+
     constructor(
         public authState: AuthStateService,
         public auth: AuthService,
@@ -89,8 +91,10 @@ export class HeaderComponent implements OnInit {
         });
 
         this.authSubscription = this.auth.subscribe((token) => {
-            if (token) {
+            const username = this.auth.getUsername();
+            if (token && (username !== this.oldUserName)) {
                 this.getBallance();
+                this.oldUserName = username;
             }
         })
     }
