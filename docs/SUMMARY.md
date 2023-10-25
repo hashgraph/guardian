@@ -435,6 +435,7 @@
       * [Revoke KYC of the user](guardian/tokens/token-operations/token-apis/revoke-kyc-of-the-user.md)
       * [Freeze Tokens of a user](guardian/tokens/token-operations/token-apis/freeze-tokens-of-a-user.md)
       * [UnFreeze Tokens of a user](guardian/tokens/token-operations/token-apis/unfreeze-tokens-of-a-user.md)
+      * [Returns Token Serials](guardian/tokens/token-operations/token-apis/returns-token-serials.md)
     * [⚙ APIs for Asynchronous Execution](guardian/tokens/token-operations/apis-for-asynchronous-execution/README.md)
       * [Token Creation](guardian/tokens/token-operations/apis-for-asynchronous-execution/token-creation.md)
       * [Associating User with the Hedera Token](guardian/tokens/token-operations/apis-for-asynchronous-execution/associating-user-with-the-hedera-token.md)
