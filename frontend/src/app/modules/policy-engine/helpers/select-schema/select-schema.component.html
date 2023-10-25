@@ -1,17 +1,17 @@
 
 
-<mat-select 
-    [(value)]="value" 
-    [disabled]="disabled" 
+<mat-select
+    [(value)]="value"
+    [disabled]="disabled"
     placeholder="{{value}}"
-    (change)="onChange()"
+    (selectionChange)="onChange()"
 >
-    <mat-option 
-        *ngFor="let schema of schemas" 
+    <mat-option
+        *ngFor="let schema of schemas"
         class="schema-variable"
         [attr.status]="schema.status"
-        matTooltipPosition="below" 
-        matTooltipClass="guardian-tooltip small-guardian-tooltip" 
+        matTooltipPosition="below"
+        matTooltipClass="guardian-tooltip small-guardian-tooltip"
         matTooltipShowDelay="500"
         [matTooltip]="schema.tooltip"
         [value]="schema.value"
