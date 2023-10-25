@@ -1,49 +1,37 @@
-# Creating new Contract
+# Deleting Retire Requests
 
-{% swagger method="post" path="" baseUrl="/contracts" summary="Creates new contract" %}
+{% swagger method="delete" path="" baseUrl="/contracts/retire/{contractId}/requests" summary="Clear retire requests." %}
 {% swagger-description %}
-Creates new contract. Only users with the Standard Registry role are allowed to make the request.
+Clear retire contract requests. Only users with the Standard Registry role are allowed to make the request.
 {% endswagger-description %}
 
-{% swagger-parameter in="body" type="String" required="true" %}
-Request Object Parameters.
+{% swagger-parameter in="path" name="contractId" type="String" %}
+Contract Identifier
 {% endswagger-parameter %}
 
-{% swagger-response status="201: Created" description="Created Contract" %}
-```javascript
-{
-    content:
+{% swagger-response status="200: OK" description="Successful Operation" %}
+```
+content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ContractDTO'
-}
+                type: boolean
 ```
 {% endswagger-response %}
 
 {% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
+
 {% endswagger-response %}
 
 {% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
+
 {% endswagger-response %}
 
 {% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
+```
+content:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-}
 ```
 {% endswagger-response %}
 {% endswagger %}

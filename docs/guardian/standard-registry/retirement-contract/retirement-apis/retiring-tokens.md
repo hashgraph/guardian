@@ -1,49 +1,37 @@
 # Retiring Tokens
 
-{% swagger method="post" path="" baseUrl="/contracts/retire" summary="Retire tokens" %}
+{% swagger method="post" path="" baseUrl="/contracts/retire/pools/{poolId}/retire" summary="Retire tokens." %}
 {% swagger-description %}
-Retire tokens. Only users with the Standard Registry role are allowed to make the request.
+Retire tokens.
 {% endswagger-description %}
 
-{% swagger-parameter in="body" name="requestId" type="String" required="false" %}
-
+{% swagger-parameter in="path" name="poolId" type="String" %}
+Pool Identifier
 {% endswagger-parameter %}
 
 {% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
-{
-    content:
-          application/json:
-            schema:
-              type: boolean
-}
+```
+content:
+            application/json:
+              schema:
+                type: boolean
 ```
 {% endswagger-response %}
 
 {% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
+
 {% endswagger-response %}
 
 {% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
+
 {% endswagger-response %}
 
 {% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-     content:
+```
+ content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-}
+                $ref: '#/components/schemas/InternalServerErrorDTO'
 ```
 {% endswagger-response %}
 {% endswagger %}

@@ -1,26 +1,29 @@
-# Returning all contracts
+# Returning list of all Retire Pools
 
-{% swagger method="get" path="" baseUrl="/contracts" summary="Returns all contracts." %}
+{% swagger method="get" path="" baseUrl="/contracts/retire/pools" summary="Return a list of all retire pools." %}
 {% swagger-description %}
-Returns all contracts.
+Returns all retire pools.
 {% endswagger-description %}
 
-{% swagger-parameter in="query" name="type" type="String" %}
-Contract type
+{% swagger-parameter in="query" name="tokens" type="String" %}
+Tokens
 {% endswagger-parameter %}
 
-{% swagger-parameter in="query" name="pageIndex" type="Integer" required="true" %}
-The number of pages to skip before starting to collect the result set
+{% swagger-parameter in="query" name="contractId" type="String" %}
+Contract Identifier
 {% endswagger-parameter %}
 
-{% swagger-parameter in="query" name="pageSize" type="Integer" required="true" %}
+{% swagger-parameter in="query" name="pageSize" type="number" %}
 The numbers of items to return
 {% endswagger-parameter %}
 
+{% swagger-parameter in="query" name="pageIndex" type="number" %}
+The number of pages to skip before starting to collect the result set
+{% endswagger-parameter %}
+
 {% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
-{
-    headers:
+```
+headers:
             x-total-count:
               schema:
                 type: integer
@@ -30,35 +33,24 @@ The numbers of items to return
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Contract'
-}
+                  $ref: '#/components/schemas/RetirePoolDTO'
 ```
 {% endswagger-response %}
 
 {% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
+
 {% endswagger-response %}
 
 {% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
+
 {% endswagger-response %}
 
 {% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-   content:
+```
+content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-}
+                $ref: '#/components/schemas/InternalServerErrorDTO'
 ```
 {% endswagger-response %}
 {% endswagger %}

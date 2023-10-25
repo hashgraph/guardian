@@ -1,49 +1,37 @@
-# Deleting Contract Requests
+# Syncing Retire Pools
 
-{% swagger method="delete" path="" baseUrl="/contracts/retire/request" summary="Cancel contract requests" %}
+{% swagger method="post" path="" baseUrl="/contracts/retire/{contractId}/pools/sync" summary="Sync retire pools." %}
 {% swagger-description %}
-Cancel contract requests
+Sync retire contract pools. Only users with the Standard Registry role are allowed to make the request.
 {% endswagger-description %}
 
-{% swagger-parameter in="query" name="requestId" type="String" required="true" %}
-Request Identifier
+{% swagger-parameter in="path" name="contractId" type="String" required="false" %}
+Contract Identifier
 {% endswagger-parameter %}
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
-{
-    content:
+{% swagger-response status="200: OK" description="Sync Date" %}
+```
+content:
             application/json:
               schema:
-                type: boolean
-}
+                $ref: '#/components/schemas/Date'
 ```
 {% endswagger-response %}
 
 {% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
+
 {% endswagger-response %}
 
 {% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
+
 {% endswagger-response %}
 
 {% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
+```
+content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-}
+                $ref: '#/components/schemas/InternalServerErrorDTO'
 ```
 {% endswagger-response %}
 {% endswagger %}
