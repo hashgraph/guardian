@@ -1,26 +1,25 @@
-# Returning all contracts
+# Returns a list of all Wipe requests
 
-{% swagger method="get" path="" baseUrl="/contracts" summary="Returns all contracts." %}
+{% swagger method="get" path="" baseUrl="/contracts/wipe/requests" summary="Return a list of all wipe requests" %}
 {% swagger-description %}
-Returns all contracts.
+Returns all wipe requests. Only users with the Standard Registry role are allowed to make the request.
 {% endswagger-description %}
 
-{% swagger-parameter in="query" name="type" type="String" %}
-Contract type
+{% swagger-parameter in="query" name="contractId" type="String" %}
+Contract Identifier
 {% endswagger-parameter %}
 
-{% swagger-parameter in="query" name="pageIndex" type="Integer" required="true" %}
-The number of pages to skip before starting to collect the result set
-{% endswagger-parameter %}
-
-{% swagger-parameter in="query" name="pageSize" type="Integer" required="true" %}
+{% swagger-parameter in="query" name="pageSize" type="number" %}
 The numbers of items to return
 {% endswagger-parameter %}
 
+{% swagger-parameter in="query" name="pageIndex" type="number" %}
+The number of pages to skip before starting to collect the result
+{% endswagger-parameter %}
+
 {% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
-{
-    headers:
+```
+          headers:
             x-total-count:
               schema:
                 type: integer
@@ -30,35 +29,25 @@ The numbers of items to return
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Contract'
-}
+                  $ref: '#/components/schemas/WiperRequestDTO'
+
 ```
 {% endswagger-response %}
 
 {% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
+
 {% endswagger-response %}
 
 {% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
+
 {% endswagger-response %}
 
 {% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-   content:
+```
+content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-}
+                $ref: '#/components/schemas/InternalServerErrorDTO'
 ```
 {% endswagger-response %}
 {% endswagger %}
