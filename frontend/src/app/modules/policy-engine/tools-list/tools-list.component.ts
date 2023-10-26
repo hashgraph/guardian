@@ -154,17 +154,27 @@ export class ToolsListComponent implements OnInit, OnDestroy {
             if (result) {
                 if (type === 'message') {
                     this.loading = true;
-                    this.toolsService.importByMessage(data).subscribe(
+                    this.toolsService.pushImportByMessage(data).subscribe(
                         (result) => {
-                            this.loadAllTools();
+                            const { taskId, expectation } = result;
+                            this.router.navigate(['task', taskId], {
+                                queryParams: {
+                                    last: btoa(location.href)
+                                }
+                            });
                         }, (e) => {
                             this.loading = false;
                         });
                 } else if (type === 'file') {
                     this.loading = true;
-                    this.toolsService.importByFile(data).subscribe(
+                    this.toolsService.pushImportByFile(data).subscribe(
                         (result) => {
-                            this.loadAllTools();
+                            const { taskId, expectation } = result;
+                            this.router.navigate(['task', taskId], {
+                                queryParams: {
+                                    last: btoa(location.href)
+                                }
+                            });
                         }, (e) => {
                             this.loading = false;
                         });

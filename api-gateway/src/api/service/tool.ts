@@ -742,11 +742,13 @@ export class ToolsApi {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
+            const owner = req.user.did;
+            const zip = req.body;
             const guardian = new Guardians();
             const taskManager = new TaskManager();
-            const task = taskManager.start(TaskAction.CREATE_TOOL, user.id);
+            const task = taskManager.start(TaskAction.IMPORT_TOOL_FILE, user.id);
             RunFunctionAsync<ServiceError>(async () => {
-                await guardian.importToolFile(req.body, req.user.did);
+                await guardian.importToolFileAsync(zip, owner, task);
             }, async (error) => {
                 new Logger().error(error, ['API_GATEWAY']);
                 taskManager.addError(task.taskId, { code: 500, message: error.message });
@@ -790,11 +792,13 @@ export class ToolsApi {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
+            const owner = req.user.did;
+            const messageId = req.body.messageId;
             const guardian = new Guardians();
             const taskManager = new TaskManager();
-            const task = taskManager.start(TaskAction.CREATE_TOOL, user.id);
+            const task = taskManager.start(TaskAction.IMPORT_TOOL_MESSAGE, user.id);
             RunFunctionAsync<ServiceError>(async () => {
-                await guardian.importToolMessage(req.body.messageId, req.user.did);
+                await guardian.importToolMessageAsync(messageId, owner, task);
             }, async (error) => {
                 new Logger().error(error, ['API_GATEWAY']);
                 taskManager.addError(task.taskId, { code: 500, message: error.message });

@@ -26,5 +26,7 @@ export enum TaskAction {
     RESTORE_USER_PROFILE = 'Restore user profile',
     GET_USER_TOPICS = 'Get user topics',
     CREATE_TOOL = 'Create tool',
-    PUBLISH_TOOL = 'Publish tool'
+    PUBLISH_TOOL = 'Publish tool',
+    IMPORT_TOOL_FILE = 'Import policy file',
+    IMPORT_TOOL_MESSAGE = 'Import policy message',
 }

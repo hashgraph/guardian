@@ -43,12 +43,12 @@ export interface INotifier {
 
 const empty: INotifier = {
     /* tslint:disable:no-empty */
-    start: (step: string) => {},
-    completed: () => {},
-    completedAndStart: (nextStep: string) => {},
-    info: (message: string) => {},
-    error: (error: string | Error, code?: string) => {},
-    result: (result: any) => {},
+    start: (step: string) => { },
+    completed: () => { },
+    completedAndStart: (nextStep: string) => { },
+    info: (message: string) => { },
+    error: (error: string | Error, code?: string) => { },
+    result: (result: any) => { },
     /* tslint:enable:no-empty */
 };
 
@@ -66,6 +66,8 @@ const notificationActionMap = new Map<TaskAction, NotificationAction>([
     [TaskAction.PUBLISH_POLICY, NotificationAction.POLICY_CONFIGURATION],
     [TaskAction.IMPORT_POLICY_FILE, NotificationAction.POLICY_CONFIGURATION],
     [TaskAction.IMPORT_POLICY_MESSAGE, NotificationAction.POLICY_CONFIGURATION],
+    [TaskAction.IMPORT_TOOL_FILE, NotificationAction.POLICY_CONFIGURATION],
+    [TaskAction.IMPORT_TOOL_MESSAGE, NotificationAction.POLICY_CONFIGURATION],
     [TaskAction.PUBLISH_SCHEMA, NotificationAction.SCHEMAS_PAGE],
     [TaskAction.IMPORT_SCHEMA_FILE, NotificationAction.SCHEMAS_PAGE],
     [TaskAction.IMPORT_SCHEMA_MESSAGE, NotificationAction.SCHEMAS_PAGE],
@@ -78,10 +80,13 @@ const notificationActionMap = new Map<TaskAction, NotificationAction>([
 ]);
 const taskResultTitleMap = new Map<TaskAction, string>([
     [TaskAction.CREATE_POLICY, 'Policy created'],
+    [TaskAction.CREATE_TOOL, 'Tool created'],
     [TaskAction.WIZARD_CREATE_POLICY, 'Policy created'],
     [TaskAction.PUBLISH_POLICY, 'Policy published'],
     [TaskAction.IMPORT_POLICY_FILE, 'Policy imported'],
     [TaskAction.IMPORT_POLICY_MESSAGE, 'Policy imported'],
+    [TaskAction.IMPORT_TOOL_FILE, 'Tool imported'],
+    [TaskAction.IMPORT_TOOL_MESSAGE, 'Tool imported'],
     [TaskAction.PUBLISH_SCHEMA, 'Schema published'],
     [TaskAction.IMPORT_SCHEMA_FILE, 'Schema imported'],
     [TaskAction.IMPORT_SCHEMA_MESSAGE, 'Schema imported'],
@@ -111,6 +116,9 @@ function getNotificationResultMessage(action: TaskAction, result: any) {
         case TaskAction.IMPORT_POLICY_FILE:
         case TaskAction.IMPORT_POLICY_MESSAGE:
             return `Policy ${result.policyId} imported`;
+        case TaskAction.IMPORT_TOOL_FILE:
+        case TaskAction.IMPORT_TOOL_MESSAGE:
+            return `Tool ${result.toolId} imported`;
         case TaskAction.CREATE_SCHEMA:
             return `Schema ${result} created`;
         case TaskAction.ASSOCIATE_TOKEN:
@@ -147,6 +155,7 @@ function getNotificationResultTitle(action: TaskAction, result: any) {
 
 function getNotificationResult(action: TaskAction, result: any) {
     switch (action) {
+        case TaskAction.CREATE_TOOL:
         case TaskAction.CREATE_POLICY:
         case TaskAction.CLONE_POLICY:
             return result;
@@ -155,13 +164,16 @@ function getNotificationResult(action: TaskAction, result: any) {
         case TaskAction.IMPORT_POLICY_MESSAGE:
         case TaskAction.PUBLISH_POLICY:
             return result.policyId;
+        case TaskAction.IMPORT_TOOL_FILE:
+        case TaskAction.IMPORT_TOOL_MESSAGE:
+            return result.toolId;
         default:
             return result;
     }
 }
 
 function getTaskResult(action: TaskAction, result: any) {
-    switch(action) {
+    switch (action) {
         case TaskAction.ASSOCIATE_TOKEN:
         case TaskAction.DISSOCIATE_TOKEN:
             return result.status;
@@ -271,14 +283,14 @@ export async function initNotifier({
                 notify.finish(
                     resultTitle
                         ? {
-                              title: resultTitle,
-                              action: notificationActionMap.get(action),
-                              message: getNotificationResultMessage(
-                                  action,
-                                  result
-                              ),
-                              result: getNotificationResult(action, result),
-                          }
+                            title: resultTitle,
+                            action: notificationActionMap.get(action),
+                            message: getNotificationResultMessage(
+                                action,
+                                result
+                            ),
+                            result: getNotificationResult(action, result),
+                        }
                         : null
                 );
                 new GuardiansService().publish(chanelEvent, {
