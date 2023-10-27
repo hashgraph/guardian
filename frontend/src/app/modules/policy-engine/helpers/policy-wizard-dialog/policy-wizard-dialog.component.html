@@ -55,7 +55,7 @@
     <div class="policy-roles-add-container">
         <mat-form-field class="full-width" appearance="outline">
             <mat-label>* NAME:</mat-label>
-            <input #nameInput matInput type="text" placeholder="Policy name">
+            <input #nameInput matInput type="text" placeholder="Role name">
         </mat-form-field>
         <button style="transform: translateY(-8px);" mat-icon-button color="primary"
             (click)="onAddRole(control, nameInput.value)">
@@ -70,11 +70,11 @@
         <mat-label>Which schemas will be used in policy?</mat-label>
         <mat-select [value]="selectedSchemas" (selectionChange)="onSelectedSchemasChange($event.value)" multiple>
             <mat-optgroup *ngFor="let group of groupedSchemas" [label]="group.name">
-                <mat-option 
-                    *ngFor="let schema of group.schemas" 
+                <mat-option
+                    *ngFor="let schema of group.schemas"
                     [matTooltip]="getSchemaName(schema.name, schema.version || schema.sourceVersion, schema.status)"
-                    matTooltipPosition="below" 
-                    matTooltipClass="guardian-tooltip" 
+                    matTooltipPosition="below"
+                    matTooltipClass="guardian-tooltip"
                     matTooltipShowDelay="500"
                     [value]="schema">{{getSchemaName(schema.name, schema.version || schema.sourceVersion, schema.status)}}</mat-option>
             </mat-optgroup>
