@@ -91,14 +91,16 @@ export async function importSubTools(
         return { tools: [], errors: [] };
     }
 
-    notifier.completedAndStart('Import sub-tools');
-
     const errors: any[] = [];
     const tools: any[] = [];
     for (const message of messages) {
         try {
-            notifier.start(`Import tool: ${message.name}`);
-            const importResult = await importToolByMessage(hederaAccount, message.messageId, notifier);
+            notifier.completedAndStart(`Import tool: ${message.name}`);
+            const importResult = await importToolByMessage(
+                hederaAccount,
+                message.messageId,
+                notifier
+            );
             if (importResult.tool) {
                 tools.push(importResult.tool);
             }
@@ -116,8 +118,6 @@ export async function importSubTools(
             });
         }
     }
-
-    notifier.completed();
 
     return {
         tools,
@@ -195,7 +195,7 @@ export async function importToolByMessage(
     await updateToolConfig(components.tool);
     const result = await DatabaseServer.createTool(components.tool);
 
-    notifier.completedAndStart('Import Tool Schemas');
+    notifier.completedAndStart('Import tool schemas');
 
     if (Array.isArray(components.schemas)) {
         for (const schema of components.schemas) {
@@ -236,7 +236,7 @@ export async function importToolByMessage(
             }
         }
     }
-    notifier.completedAndStart('Import Tool Tags');
+    notifier.completedAndStart('Import tool tags');
 
     await importTag(toolTags, result.id.toString());
 
@@ -246,8 +246,6 @@ export async function importToolByMessage(
             errors.push(error);
         }
     }
-
-    notifier.completed();
 
     return {
         tool: result,
@@ -357,7 +355,10 @@ export async function importToolByFile(
     }
 
     // Import Tools
+    notifier.completedAndStart('Import sub-tools');
+    notifier.sub(true);
     const toolsResult = await importSubTools(root, tools, notifier);
+    notifier.sub(true);
 
     // Import Schemas
     const schemasResult = await importSchemaByFiles(

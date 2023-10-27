@@ -181,7 +181,10 @@ export class PolicyImportExportHelper {
         notifier.completed();
 
         // Import Tools
+        notifier.completedAndStart('Import tools');
+        notifier.sub(true);
         const toolsResult = await importSubTools(root, tools, notifier);
+        notifier.sub(false);
 
         // Import Tokens
         const tokensResult = await importTokensByFiles(policyOwner, tokens, notifier);

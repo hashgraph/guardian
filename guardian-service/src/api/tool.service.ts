@@ -677,6 +677,7 @@ export async function toolsAPI(): Promise<void> {
             const users = new Users();
             const root = await users.getHederaAccount(owner);
             const item = await importToolByMessage(root, id, notifier);
+            notifier.completed();
             return new MessageResponse(item);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -724,6 +725,7 @@ export async function toolsAPI(): Promise<void> {
             const users = new Users();
             const root = await users.getHederaAccount(owner);
             const { tool, errors } = await importToolByMessage(root, id, notifier);
+            notifier.completed();
             if (errors?.length) {
                 const message = importToolErrors(errors);
                 notifier.error(message);

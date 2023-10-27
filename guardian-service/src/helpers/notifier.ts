@@ -16,10 +16,12 @@ export interface INotifier {
      * Notify about starting of new part of process
      */
     start: (step: string) => void;
+
     /**
      * Notify about compliteing of started part of process
      */
     completed: () => void;
+
     /**
      * Notify about compliteing of started part of process and starting of new one
      */
@@ -39,6 +41,11 @@ export interface INotifier {
      * Notify about result
      */
     result: (result: any) => void;
+
+    /**
+     * Set sub lvl
+     */
+    sub: (value: boolean) => void;
 }
 
 const empty: INotifier = {
@@ -49,6 +56,7 @@ const empty: INotifier = {
     info: (message: string) => { },
     error: (error: string | Error, code?: string) => { },
     result: (result: any) => { },
+    sub: (value: boolean) => { },
     /* tslint:enable:no-empty */
 };
 
@@ -202,6 +210,7 @@ export async function initNotifier({
     expectation: number;
 }): Promise<INotifier> {
     if (taskId) {
+        let currentLvl: number = 0;
         let currentStep: string;
         let currentStepIndex = 0;
         const notificationHelper = NotificationHelper.init([userId]);
@@ -238,16 +247,20 @@ export async function initNotifier({
                 });
             },
             completedAndStart: (nextStep: string) => {
-                const oldStep = currentStep;
-                currentStepIndex++;
-                if (oldStep) {
-                    currentStep = nextStep;
-                    sendStatuses(
-                        { message: oldStep, type: StatusType.COMPLETED },
-                        { message: currentStep, type: StatusType.PROCESSING }
-                    );
+                if (currentLvl) {
+                    sendStatuses({ message: nextStep, type: StatusType.INFO });
                 } else {
-                    notifier.start(nextStep);
+                    const oldStep = currentStep;
+                    currentStepIndex++;
+                    if (oldStep) {
+                        currentStep = nextStep;
+                        sendStatuses(
+                            { message: oldStep, type: StatusType.COMPLETED },
+                            { message: currentStep, type: StatusType.PROCESSING }
+                        );
+                    } else {
+                        notifier.start(nextStep);
+                    }
                 }
             },
             info: (message: string) => {
@@ -297,6 +310,13 @@ export async function initNotifier({
                     taskId,
                     result: getTaskResult(action, result),
                 });
+            },
+            sub: (value: boolean) => {
+                if (value) {
+                    currentLvl = 1;
+                } else {
+                    currentLvl = 0;
+                }
             },
         };
         return notifier;
