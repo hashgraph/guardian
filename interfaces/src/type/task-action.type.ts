@@ -27,6 +27,6 @@ export enum TaskAction {
     GET_USER_TOPICS = 'Get user topics',
     CREATE_TOOL = 'Create tool',
     PUBLISH_TOOL = 'Publish tool',
-    IMPORT_TOOL_FILE = 'Import policy file',
-    IMPORT_TOOL_MESSAGE = 'Import policy message',
+    IMPORT_TOOL_FILE = 'Import tool file',
+    IMPORT_TOOL_MESSAGE = 'Import tool message',
 }
