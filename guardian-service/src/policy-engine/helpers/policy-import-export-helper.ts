@@ -1,5 +1,15 @@
 
-import { BlockType, ConfigType, GenerateUUIDv4, ISchema, ModuleStatus, PolicyType, SchemaCategory, SchemaEntity, TagType, TopicType, } from '@guardian/interfaces';
+import {
+    BlockType,
+    ConfigType,
+    GenerateUUIDv4,
+    ModuleStatus,
+    PolicyType,
+    SchemaCategory,
+    SchemaEntity,
+    TagType,
+    TopicType
+} from '@guardian/interfaces';
 import { publishSystemSchemas } from '@api/helpers/schema-publish-helper';
 import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
 import { INotifier } from '@helpers/notifier';
