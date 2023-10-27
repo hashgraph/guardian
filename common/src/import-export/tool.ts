@@ -2,6 +2,7 @@ import JSZip from 'jszip';
 import { PolicyTool, Schema, Tag } from '../entity';
 import { DataBaseHelper } from '../helpers';
 import { DatabaseServer } from '../database-modules';
+import { ImportExportUtils } from './utils';
 
 /**
  * Tool components
@@ -10,6 +11,7 @@ export interface IToolComponents {
     tool: PolicyTool;
     schemas: Schema[];
     tags: Tag[];
+    tools: PolicyTool[];
 }
 
 /**
@@ -36,8 +38,9 @@ export class ToolImportExport {
             tagTargets.push(schema.id.toString());
         }
         const tags = await DatabaseServer.getTags({ localTarget: { $in: tagTargets } });
-
-        return { tool, schemas, tags };
+        const toolIds = ImportExportUtils.findAllTools(tool.config);
+        const tools = await new DataBaseHelper(PolicyTool).find({ messageId: { $in: toolIds } });
+        return { tool, schemas, tags, tools };
     }
 
     /**
@@ -95,6 +98,18 @@ export class ToolImportExport {
             zip.file(`schemas/${item.iri}.json`, JSON.stringify(item));
         }
 
+        zip.folder('tools');
+        for (const tool of components.tools) {
+            const item = {
+                name: tool.name,
+                description: tool.description,
+                messageId: tool.messageId,
+                owner: tool.creator,
+                hash: tool.hash
+            };
+            zip.file(`tools/${tool.hash}.json`, JSON.stringify(item));
+        }
+
         return zip;
     }
 
@@ -118,11 +133,15 @@ export class ToolImportExport {
             .filter(file => !file[1].dir)
             .filter(file => /^schemas\/.+/.test(file[0]))
             .map(file => file[1].async('string')));
+        const toolsStringArray = await Promise.all(Object.entries(content.files)
+            .filter(file => !file[1].dir)
+            .filter(file => /^tools\/.+/.test(file[0]))
+            .map(file => file[1].async('string')));
 
         const tool = JSON.parse(toolString);
         const tags = tagsStringArray.map(item => JSON.parse(item)) || [];
         const schemas = schemasStringArray.map(item => JSON.parse(item));
-
-        return { tool, tags, schemas };
+        const tools = toolsStringArray.map(item => JSON.parse(item));
+        return { tool, tags, schemas, tools };
     }
 }

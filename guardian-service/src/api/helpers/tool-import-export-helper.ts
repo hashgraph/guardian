@@ -15,7 +15,16 @@ import {
     replaceAllEntities,
     replaceAllVariables
 } from '@guardian/common';
-import { BlockType, GenerateUUIDv4, IRootConfig, ModuleStatus, SchemaCategory, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
+import {
+    BlockType,
+    GenerateUUIDv4,
+    IRootConfig,
+    ModuleStatus,
+    SchemaCategory,
+    SchemaStatus,
+    TagType,
+    TopicType
+} from '@guardian/interfaces';
 import { INotifier } from '@helpers/notifier';
 import { importTag } from './tag-import-export-helper';
 import { importSchemaByFiles } from './schema-import-export-helper';
@@ -24,6 +33,24 @@ import { importSchemaByFiles } from './schema-import-export-helper';
  * Import Result
  */
 interface ImportResult {
+    /**
+     * Tool
+     */
+    tool: PolicyTool;
+    /**
+     * Errors
+     */
+    errors: any[];
+}
+
+/**
+ * Import Results
+ */
+interface ImportResults {
+    /**
+     * Tool
+     */
+    tools: PolicyTool[];
     /**
      * Errors
      */
@@ -55,18 +82,31 @@ export async function replaceConfig(
  * @param messages
  * @param notifier
  */
-export async function importToolsByPolicy(
+export async function importSubTools(
     hederaAccount: IRootConfig,
     messages: PolicyTool[] = [],
-    notifier: INotifier
-): Promise<ImportResult> {
-    const errors: any[] = [];
-    notifier.start('Import tools');
+    notifier: INotifier,
+): Promise<ImportResults> {
+    if (!messages.length) {
+        return { tools: [], errors: [] };
+    }
 
+    notifier.completedAndStart('Import sub-tools');
+
+    const errors: any[] = [];
+    const tools: any[] = [];
     for (const message of messages) {
         try {
             notifier.start(`Import tool: ${message.name}`);
-            await importToolByMessage(hederaAccount, message.messageId, notifier);
+            const importResult = await importToolByMessage(hederaAccount, message.messageId, notifier);
+            if (importResult.tool) {
+                tools.push(importResult.tool);
+            }
+            if (importResult.errors) {
+                for (const error of importResult.errors) {
+                    errors.push(error);
+                }
+            }
         } catch (error) {
             errors.push({
                 type: 'tool',
@@ -78,7 +118,11 @@ export async function importToolsByPolicy(
     }
 
     notifier.completed();
-    return { errors };
+
+    return {
+        tools,
+        errors
+    };
 }
 
 /**
@@ -91,8 +135,9 @@ export async function importToolByMessage(
     hederaAccount: IRootConfig,
     messageId: string,
     notifier: INotifier
-): Promise<PolicyTool> {
-    notifier.start('Load from IPFS');
+): Promise<ImportResult> {
+    notifier.completedAndStart('Load tool file');
+
     const messageServer = new MessageServer(
         hederaAccount.hederaAccountId,
         hederaAccount.hederaAccountKey
@@ -120,14 +165,21 @@ export async function importToolByMessage(
             oldTool.hash === message.hash &&
             oldTool.owner === message.owner
         ) {
-            return oldTool;
+            return {
+                tool: oldTool,
+                errors: []
+            };
         } else {
             throw new Error('Incorrect file hash');
         }
     }
 
-    notifier.completedAndStart('File parsing');
+    notifier.completedAndStart('Parse tool file');
+
     const components = await ToolImportExport.parseZipFile(message.document);
+
+    // Import Tools
+    const toolsResults = await importSubTools(hederaAccount, components.tools, notifier);
 
     delete components.tool._id;
     delete components.tool.id;
@@ -142,6 +194,8 @@ export async function importToolByMessage(
 
     await updateToolConfig(components.tool);
     const result = await DatabaseServer.createTool(components.tool);
+
+    notifier.completedAndStart('Import Tool Schemas');
 
     if (Array.isArray(components.schemas)) {
         for (const schema of components.schemas) {
@@ -182,11 +236,23 @@ export async function importToolByMessage(
             }
         }
     }
+    notifier.completedAndStart('Import Tool Tags');
+
     await importTag(toolTags, result.id.toString());
+
+    const errors: any[] = [];
+    if (toolsResults.errors) {
+        for (const error of toolsResults.errors) {
+            errors.push(error);
+        }
+    }
 
     notifier.completed();
 
-    return result;
+    return {
+        tool: result,
+        errors
+    };
 }
 
 /**
@@ -227,12 +293,13 @@ export async function importToolByFile(
     owner: string,
     components: IToolComponents,
     notifier: INotifier
-): Promise<any> {
+): Promise<ImportResult> {
     notifier.start('Import tool');
 
     const {
         tool,
         tags,
+        tools,
         schemas
     } = components;
 
@@ -289,6 +356,9 @@ export async function importToolByFile(
         }
     }
 
+    // Import Tools
+    const toolsResult = await importSubTools(root, tools, notifier);
+
     // Import Schemas
     const schemasResult = await importSchemaByFiles(
         SchemaCategory.TOOL,
@@ -322,9 +392,18 @@ export async function importToolByFile(
             errors.push(error);
         }
     }
+    if (toolsResult.errors) {
+        for (const error of toolsResult.errors) {
+            errors.push(error);
+        }
+    }
+
     notifier.completed();
 
-    return { tool: item, errors };
+    return {
+        tool: item,
+        errors
+    };
 }
 
 export function findSubTools(block: any, result: Set<string>, isRoot: boolean = false) {

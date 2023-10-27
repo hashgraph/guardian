@@ -723,11 +723,17 @@ export async function toolsAPI(): Promise<void> {
             }
             const users = new Users();
             const root = await users.getHederaAccount(owner);
-            const item = await importToolByMessage(root, id, notifier);
-            notifier.result({
-                toolId: item.id,
-                errors: []
-            });
+            const { tool, errors } = await importToolByMessage(root, id, notifier);
+            if (errors?.length) {
+                const message = importToolErrors(errors);
+                notifier.error(message);
+                new Logger().warn(message, ['GUARDIAN_SERVICE']);
+            } else {
+                notifier.result({
+                    toolId: tool.id,
+                    errors: []
+                });
+            }
         }, async (error) => {
             notifier.error(error);
         });

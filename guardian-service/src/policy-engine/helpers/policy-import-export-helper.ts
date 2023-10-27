@@ -37,7 +37,7 @@ import { importTag } from '@api/helpers/tag-import-export-helper';
 import { SchemaImportResult } from '@api/helpers/schema-helper';
 import { HashComparator } from '@analytics';
 import {
-    importToolsByPolicy,
+    importSubTools,
     importSchemaByFiles,
     importTokensByFiles,
     importArtifactsByFiles
@@ -181,7 +181,7 @@ export class PolicyImportExportHelper {
         notifier.completed();
 
         // Import Tools
-        const toolsResult = await importToolsByPolicy(root, tools, notifier);
+        const toolsResult = await importSubTools(root, tools, notifier);
 
         // Import Tokens
         const tokensResult = await importTokensByFiles(policyOwner, tokens, notifier);
