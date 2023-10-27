@@ -1,5 +1,28 @@
-import { GenerateUUIDv4, ISchema, ModelHelper, Schema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
-import { DatabaseServer, Logger, MessageAction, MessageServer, MessageType, replaceValueRecursive, Schema as SchemaCollection, SchemaConverterUtils, SchemaMessage, Tag, TagMessage, UrlType } from '@guardian/common';
+import {
+    GenerateUUIDv4,
+    ISchema,
+    ModelHelper,
+    ModuleStatus,
+    Schema,
+    SchemaCategory,
+    SchemaEntity,
+    SchemaHelper,
+    SchemaStatus
+} from '@guardian/interfaces';
+import {
+    DatabaseServer,
+    Logger,
+    MessageAction,
+    MessageServer,
+    MessageType,
+    replaceValueRecursive,
+    Schema as SchemaCollection,
+    SchemaConverterUtils,
+    SchemaMessage,
+    Tag,
+    TagMessage,
+    UrlType
+} from '@guardian/common';
 import { emptyNotifier, INotifier } from '@helpers/notifier';
 import { importTag } from '@api/helpers/tag-import-export-helper';
 import { createSchema, fixSchemaDefsOnImport, getDefs, ImportResult, onlyUnique, SchemaImportResult } from './schema-helper';
@@ -210,10 +233,19 @@ export async function importSchemaByFiles(
         SchemaHelper.setVersion(file, '', '');
     }
 
-    const parsedSchemas = files.map(item => new Schema(item, true));
+    const tools = await DatabaseServer.getTools({ status: ModuleStatus.PUBLISHED }, { fields: ['topicId'] });
+    const toolSchemas = await DatabaseServer.getSchemas({ topicId: { $in: tools.map(t => t.topicId) } });
     const updatedSchemasMap = {
         '#GeoJSON': geoJson
     };
+    const parsedSchemas: Schema[] = [];
+    for (const item of files) {
+        parsedSchemas.push(new Schema(item, true));
+    }
+    for (const item of toolSchemas) {
+        parsedSchemas.push(new Schema(item, true));
+    }
+
     const errors: any[] = [];
     for (const file of files) {
         const valid = fixSchemaDefsOnImport(file.iri, parsedSchemas, updatedSchemasMap);
@@ -313,7 +345,11 @@ export async function importSchemasByMessages(
     notifier.completed();
 
     let result = await importSchemaByFiles(
-        category, owner, schemas, topicId, notifier
+        category,
+        owner,
+        schemas,
+        topicId,
+        notifier
     );
     result = await importTagsByFiles(result, tags, notifier);
 
