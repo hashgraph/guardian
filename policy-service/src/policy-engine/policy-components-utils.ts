@@ -12,71 +12,6 @@ import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
 import { ComponentsService } from './helpers/components-service';
 
 /**
- * Policy tag helper
- */
-export class TagHelper {
-    /**
-     * Parent tag
-     */
-    private readonly parent: string;
-
-    /**
-     * Root tag
-     */
-    private readonly root: string;
-
-    constructor(parent?: string, root?: string) {
-        this.parent = parent;
-        this.root = root;
-    }
-
-    /**
-     * Get new tag
-     * @param oldTag
-     */
-    public getTag(oldTag: string): string {
-        if (!this.parent || !oldTag) {
-            return oldTag;
-        }
-        if (oldTag === this.root) {
-            return this.parent;
-        }
-        return `${this.parent}:${oldTag}`;
-    }
-}
-
-/**
- * Policy id helper
- */
-export class IdHelper {
-    /**
-     * Ids
-     */
-    private readonly list: Set<string>;
-
-    constructor() {
-        this.list = new Set<string>();
-    }
-
-    /**
-     * Get new id
-     * @param oldId
-     */
-    public getId(oldId: string): string {
-        if (oldId && !this.list.has(oldId)) {
-            this.list.add(oldId);
-            return oldId;
-        }
-        let uuid: string;
-        do {
-            uuid = GenerateUUIDv4();
-        } while (this.list.has(uuid));
-        this.list.add(uuid);
-        return uuid;
-    }
-}
-
-/**
  * Policy action map type
  */
 export type PolicyActionMap = Map<string, Map<PolicyInputEventType, EventCallback<any>>>
@@ -605,14 +540,7 @@ export class PolicyComponentsUtils {
     ) {
         const configObject = policy.config as ISerializedBlock;
         const tools: PolicyTool[] = [];
-        const tagHelper = new TagHelper();
-        const idHelper = new IdHelper();
-        await PolicyComponentsUtils.RegeneratePolicyComponents(
-            configObject,
-            tools,
-            tagHelper,
-            idHelper
-        );
+        await PolicyComponentsUtils.RegeneratePolicyComponents(configObject, '', tools);
         policy.config = configObject;
         return { policy, tools };
     }
@@ -625,14 +553,14 @@ export class PolicyComponentsUtils {
      */
     public static async RegeneratePolicyComponents(
         block: any,
-        tools: PolicyTool[],
-        tagHelper: TagHelper,
-        idHelper: IdHelper
+        parentTag: string,
+        tools: PolicyTool[]
     ): Promise<void> {
-        block.id = idHelper.getId(block.id);
-        PolicyComponentsUtils.RegenerateTags(block, tagHelper);
-        if (block.blockType === BlockType.Tool) {
-            block.children = [];
+        if (parentTag && block.tag) {
+            block.tag = `${parentTag}:${block.tag}`;
+        }
+        if (block.blockType === 'tool') {
+            parentTag = block.tag;
             const tool = await DatabaseServer.getTool({
                 status: ModuleStatus.PUBLISHED,
                 messageId: block.messageId,
@@ -662,27 +590,7 @@ export class PolicyComponentsUtils {
         }
         if (Array.isArray(block.children)) {
             for (const child of block.children) {
-                await PolicyComponentsUtils.RegeneratePolicyComponents(
-                    child,
-                    tools,
-                    tagHelper,
-                    idHelper
-                );
-            }
-        }
-    }
-
-    /**
-     * Regenerate tags
-     * @param block
-     * @param tagHelper
-     */
-    public static RegenerateTags(block: any, tagHelper: TagHelper): void {
-        block.tag = tagHelper.getTag(block.tag);
-        if (Array.isArray(block.events)) {
-            for (const event of block.events) {
-                event.target = tagHelper.getTag(event.target);
-                event.source = tagHelper.getTag(event.source);
+                await PolicyComponentsUtils.RegeneratePolicyComponents(child, parentTag, tools);
             }
         }
         if (Array.isArray(block.uiMetaData?.fields)) {

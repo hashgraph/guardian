@@ -6,7 +6,8 @@ import {
     Schema,
     TopicType,
     IRootConfig,
-    SchemaCategory
+    SchemaCategory,
+    ModuleStatus
 } from '@guardian/interfaces';
 import path from 'path';
 import { readJSON } from 'fs-extra';
@@ -259,7 +260,21 @@ export async function updateSchemaDocument(schema: SchemaCollection): Promise<vo
     if (!schema) {
         throw new Error(`There is no schema to update document`);
     }
-    const allSchemasInTopic = await DatabaseServer.getSchemas({ topicId: schema.topicId });
+    const publishedToolsTopics = await DatabaseServer.getTools(
+        {
+            status: ModuleStatus.PUBLISHED,
+        },
+        {
+            fields: ['topicId'],
+        }
+    );
+    const allSchemasInTopic = await DatabaseServer.getSchemas({
+        topicId: {
+            $in: [schema.topicId].concat(
+                publishedToolsTopics.map((tool) => tool.topicId)
+            ),
+        },
+    });
     const allParsedSchemas = allSchemasInTopic.map(item => new Schema(item));
     const parsedSchema = new Schema(schema, true);
     parsedSchema.update(parsedSchema.fields, parsedSchema.conditions);
