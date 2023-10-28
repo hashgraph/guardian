@@ -6,7 +6,12 @@ This folder contains sub folders for each Methodology and their authors (with ma
 
 1. IREC - Envision
 2. Verra Methodology - Verra Redd - Envision
-3. DOVU Template Methodologies (10) - DOVU
+   - VM0007
+   - VM0017
+   - VM0042
+   - VM0044
+   - VerraARR
+4. DOVU Template Methodologies (10) - DOVU
    - Agrecalc
    - Cool Farm Tool
    - Carbon Space
@@ -17,27 +22,27 @@ This folder contains sub folders for each Methodology and their authors (with ma
    - RothC
    - Microbial-Mineral Carbon Stabilization (MIMICS)
    - Agricultural soils of Western Australia
-4. Tolam Earth - OCI
-5. Improved Cookstove - OCI
-6. GCC - KrypC
-7. Gold Standard Afforestation / Reforestation - Envision
-8. CDM AMS-II.G - Envision
-9. CDM AMS-III.AR - Envision
-10. CDM AMS-III.BB - Envision
-11. CDM AMS-III.D - Envision
-12. CDM AR-ACM0003 - Envision
-13. CDM AMS-I.C (Coming Soon)
-14. CDM ACM0001 (Coming Soon)
-15. CDM ACM0002 (Coming Soon)
-16. CDM AMS-III.F (Coming Soon)
-17. CDM ACM0006 (Coming Soon)
-18. CDM ACM0018 (Coming Soon)
-19. CDM AMS-III.AV (Coming Soon)
-20. CDM AMS-III.H (Coming Soon)
-21. CDM AMS-I.F (Coming Soon)
-22. CDM ACM0007 (Coming Soon)
-23. CDM AMS-I.A (Coming Soon)
-24. CDM AMS-II.J (Coming Soon)
+5. Tolam Earth - OCI
+6. Improved Cookstove - OCI
+7. GCC - KrypC
+8. Gold Standard Afforestation / Reforestation - Envision
+9. CDM AMS-II.G - Envision
+10. CDM AMS-III.AR - Envision
+11. CDM AMS-III.BB - Envision
+12. CDM AMS-III.D - Envision
+13. CDM AR-ACM0003 - Envision
+14. CDM AMS-I.C (Coming Soon)
+15. CDM ACM0001 (Coming Soon)
+16. CDM ACM0002 (Coming Soon)
+17. CDM AMS-III.F (Coming Soon)
+18. CDM ACM0006 (Coming Soon)
+19. CDM ACM0018 (Coming Soon)
+20. CDM AMS-III.AV (Coming Soon)
+21. CDM AMS-III.H (Coming Soon)
+22. CDM AMS-I.F (Coming Soon)
+23. CDM ACM0007 (Coming Soon)
+24. CDM AMS-I.A (Coming Soon)
+25. CDM AMS-II.J (Coming Soon)
 
 ### Emission Policies
 
