@@ -464,6 +464,7 @@
     * [♨ Improved Cookstove](guardian/demo-guide/carbon-offsets/improved-cookstove.md)
     * [♨ GoldStandard - Metered Energy Cooking](guardian/demo-guide/carbon-offsets/goldstandard-metered-energy-cooking.md)
     * [🍀 Carbon Reduction Measurement - GHG Corporate Standard Policy Guid](guardian/demo-guide/carbon-offsets/carbon-reduction-measurement-ghg-corporate-standard-policy-guide.md)
+    * [🏢 Verra VM0044](guardian/demo-guide/carbon-offsets/verra-vm0044.md)
   * [🏭 Carbon Emissions](guardian/demo-guide/carbon-emissions/README.md)
     * [🏡 Remote Work GHG Policy](guardian/demo-guide/carbon-emissions/remote-work-ghg-policy/README.md)
       * [📖 Introduction to Remote Work GHG](guardian/demo-guide/carbon-emissions/remote-work-ghg-policy/introduction-to-remote-work-ghg.md)
