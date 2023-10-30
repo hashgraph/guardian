@@ -1131,7 +1131,7 @@ __metadata:
     lodash.set: ^4.3.2
     mocha-junit-reporter: ^2.0.2
     moment: ^2.29.2
-    mongodb: 5.6.0
+    mongodb: 6.2.0
     nats: ^2.6.1
     node-vault: ^0.9.22
     reflect-metadata: ^0.1.13
@@ -1564,6 +1564,15 @@ __metadata:
     "@mikro-orm/seeder":
       optional: true
   checksum: 3faf9cb2c652459bdf04f99819120466ec7ea4a783398a09155073f21f8a905c424a0aa8e178a9081fda838bc83e91647588587a944690bdf229f6c481f4fd00
+  languageName: node
+  linkType: hard
+
+"@mongodb-js/saslprep@npm:^1.1.0":
+  version: 1.1.1
+  resolution: "@mongodb-js/saslprep@npm:1.1.1"
+  dependencies:
+    sparse-bitfield: ^3.0.3
+  checksum: 0b263aef5e42a2b296c205a4afcc06c3e59817427dfdf4b5d6f49c4e5c000aa90f652006b95f726e0eac7e888031a82393a964e390d5689a2de61e945f8238d3
   languageName: node
   linkType: hard
 
@@ -4758,6 +4767,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"bson@npm:^6.2.0":
+  version: 6.2.0
+  resolution: "bson@npm:6.2.0"
+  checksum: 950fccd2abd0ff5a1bd3637f4697631298f1538314994ab8c9e13f1c9851d0fd042b54fe8340e00151c2acee43917ea40e64b800ceeea811b00f2de3e900c77e
+  languageName: node
+  linkType: hard
+
 "bson@npm:~5.3.0":
   version: 5.3.0
   resolution: "bson@npm:5.3.0"
@@ -7922,7 +7938,7 @@ __metadata:
     mocha-junit-reporter: ^2.0.2
     module-alias: ^2.2.2
     moment: ^2.29.2
-    mongodb: 5.6.0
+    mongodb: 6.2.0
     nodemon: ^2.0.12
     prom-client: ^14.1.1
     prometheus-api-metrics: 3.2.2
@@ -11222,6 +11238,40 @@ __metadata:
   languageName: node
   linkType: hard
 
+"mongodb@npm:6.2.0":
+  version: 6.2.0
+  resolution: "mongodb@npm:6.2.0"
+  dependencies:
+    "@mongodb-js/saslprep": ^1.1.0
+    bson: ^6.2.0
+    mongodb-connection-string-url: ^2.6.0
+  peerDependencies:
+    "@aws-sdk/credential-providers": ^3.188.0
+    "@mongodb-js/zstd": ^1.1.0
+    gcp-metadata: ^5.2.0
+    kerberos: ^2.0.1
+    mongodb-client-encryption: ">=6.0.0 <7"
+    snappy: ^7.2.2
+    socks: ^2.7.1
+  peerDependenciesMeta:
+    "@aws-sdk/credential-providers":
+      optional: true
+    "@mongodb-js/zstd":
+      optional: true
+    gcp-metadata:
+      optional: true
+    kerberos:
+      optional: true
+    mongodb-client-encryption:
+      optional: true
+    snappy:
+      optional: true
+    socks:
+      optional: true
+  checksum: dca058e497e4d70f84509b863db33a1126f182757bc389893b31086c49ff429257e62de06f7099aba8cef8790a497f50c98fdcead6e66c451c057ed1453b2049
+  languageName: node
+  linkType: hard
+
 "move-file@npm:^2.1.0":
   version: 2.1.0
   resolution: "move-file@npm:2.1.0"
@@ -12670,7 +12720,7 @@ __metadata:
     mocha-junit-reporter: ^2.0.2
     module-alias: ^2.2.2
     moment: ^2.29.2
-    mongodb: 5.6.0
+    mongodb: 6.2.0
     nodemon: ^2.0.12
     prom-client: ^14.1.1
     prometheus-api-metrics: 3.2.2
