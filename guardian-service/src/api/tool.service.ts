@@ -475,7 +475,8 @@ export async function toolsAPI(): Promise<void> {
                     'messageId',
                     'owner',
                     'config',
-                    'configFileId'
+                    'configFileId',
+                    'tools'
                 ]
             });
             const ids = tools.map(t => t.topicId);
@@ -493,6 +494,7 @@ export async function toolsAPI(): Promise<void> {
             );
             const map = new Map<string, any>();
             for (const tool of tools) {
+                delete tool.configFileId;
                 if (tool.config) {
                     tool.config = {
                         inputEvents: tool.config.inputEvents,

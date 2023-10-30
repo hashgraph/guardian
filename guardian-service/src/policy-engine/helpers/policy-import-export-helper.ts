@@ -370,17 +370,23 @@ export class PolicyImportExportHelper {
         const tools = await DatabaseServer.getTools({
             status: ModuleStatus.PUBLISHED,
             messageId: { $in: Array.from(toolIds.values()) }
-        }, {
-            fields: ['name', 'topicId', 'messageId']
-        });
-        policy.tools = tools.map((row) => {
-            return {
+        }, { fields: ['name', 'topicId', 'messageId', 'tools'] });
+        const list = [];
+        for (const row of tools) {
+            list.push({
                 name: row.name,
                 topicId: row.topicId,
                 messageId: row.messageId
+            })
+            if (row.tools) {
+                for (const subTool of row.tools) {
+                    list.push(subTool);
+                }
             }
-        })
+        }
+        policy.tools = list;
         policy = await DatabaseServer.updatePolicy(policy);
+
         return policy;
     }
 }
