@@ -4387,13 +4387,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios-retry@npm:^3.2.4":
-  version: 3.7.0
-  resolution: "axios-retry@npm:3.7.0"
+"axios-retry@npm:^3.8.1":
+  version: 3.8.1
+  resolution: "axios-retry@npm:3.8.1"
   dependencies:
     "@babel/runtime": ^7.15.4
     is-retry-allowed: ^2.2.0
-  checksum: ef34b50a86b5cd65ce2bf933aaed422ffb1a17b8fe11a53e444437fb42be400b48271d1ff9fd23a051627b7f3b33bebdeb1d66556aae04d5d6bfbe57fecdfb64
+  checksum: 9233523d34987838504b1ea9d5f90025bf9d1210e10c3851c28d1e97be9f0c2dd401ddc9f0568759c79426533795de9c54bb8429720ace641032c51fef71cb0f
   languageName: node
   linkType: hard
 
@@ -15960,7 +15960,7 @@ __metadata:
     "@types/gulp-rename": ^2
     "@types/node": ^18.16.0
     axios: ^1.3.6
-    axios-retry: ^3.2.4
+    axios-retry: ^3.8.1
     chai: 4.3.4
     cross-blob: ^2.0.1
     dotenv: ^16.0.0
