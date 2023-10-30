@@ -831,7 +831,7 @@ export class ContractsApi {
     @ApiBearerAuth()
     @ApiExtraModels(InternalServerErrorDTO)
     @ApiOperation({
-        summary: 'Remove wipe admin.',
+        summary: 'Remove wipe manager.',
         description:
             'Remove wipe contract admin. Only users with the Standard Registry role are allowed to make the request.',
     })
@@ -945,7 +945,7 @@ export class ContractsApi {
     @ApiBearerAuth()
     @ApiExtraModels(InternalServerErrorDTO)
     @ApiOperation({
-        summary: 'Remove wipe admin.',
+        summary: 'Remove wipe wiper.',
         description:
             'Remove wipe contract admin. Only users with the Standard Registry role are allowed to make the request.',
     })
