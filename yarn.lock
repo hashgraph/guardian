@@ -1119,7 +1119,7 @@ __metadata:
     bson: ^5.3.0
     dotenv: ^16.0.0
     express: ^4.17.1
-    fast-xml-parser: ^4.2.6
+    fast-xml-parser: ^4.3.2
     gulp: ^4.0.2
     gulp-copy: ^4.0.1
     gulp-rename: ^2.0.0
@@ -6946,14 +6946,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-xml-parser@npm:^4.2.6":
-  version: 4.2.7
-  resolution: "fast-xml-parser@npm:4.2.7"
+"fast-xml-parser@npm:^4.3.2":
+  version: 4.3.2
+  resolution: "fast-xml-parser@npm:4.3.2"
   dependencies:
     strnum: ^1.0.5
   bin:
     fxparser: src/cli/cli.js
-  checksum: d8b0c9e04756f6c43fa0399428f30149acadae21350e42e26e8fe98e24e6afa6b9b00aa554453795036b00e9fee974a1b556fe2ba18be391d51a9bf1ab790e7c
+  checksum: d507ce2efa5fd13d0a5ba28bd76dd68f2fc30ad8748357c37b70f360d19417866d79e35a688af067d5bceaaa796033fa985206aef9692f7a421e1326b6e73309
   languageName: node
   linkType: hard
 
@@ -12655,7 +12655,7 @@ __metadata:
     deep-equal: ^2.0.5
     dotenv: ^16.0.0
     express: ^4.17.1
-    fast-xml-parser: ^4.2.6
+    fast-xml-parser: ^4.3.2
     fs-extra: ^10.0.0
     gulp: ^4.0.2
     gulp-copy: ^4.0.1
