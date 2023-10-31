@@ -41,7 +41,7 @@ Coming Soon
 
 ## Policy Workflow
 
-<img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/a80aa7f3-01bb-47fb-8327-6f58b2dd0632">
+![image](https://github.com/hashgraph/guardian/assets/79293833/39075f78-6eba-4d9f-83df-4d7015d7921c)
 
 
 ## Policy Guide
