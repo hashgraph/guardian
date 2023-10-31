@@ -11,6 +11,7 @@
 - Token (Carbon Emissions)
 - Step By Step
   - Organization Flow
+  - VVB Flow
   - Administrator (Registry) Flow
 - Future Proofing (Automated GHG Inventories)
 - TODO
@@ -137,13 +138,37 @@ The Organization is allowed to publish and edit policy config, schemas, tokens a
 
 <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/ac0b1856-8bc2-47da-a7d9-4d9ca40a1a0a">
 
+**VVB Flow**
+
+1. Assign role as VVB and add VVB name
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/b8431bb5-78ac-48a7-97c0-73f36ef236ac)
+
+2. All the GHG resources once viewed can be verified.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/e42a02fa-838b-4b1b-aa2c-a54f0b29a3ea)
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/6ea6cb4c-b1c0-4ebe-ae8d-762d6776e570)
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/80fbed65-9f7e-460c-84a3-9467da7d2ffd)
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/df2105cc-9889-4851-bf1f-0e0ac1dde342)
+
+3. After verification of GHG resources, VVB reviews reporting metrics and approve/reject.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/43197dbb-2e1c-492b-81b1-d737b8806cad)
+
+
 **Administrator (Registry) Flow**
 
 1. Following step 8 of the Organizational Flow, the Administrator (Registry) will approve or reject each source.
 
-<img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/c7dd7532-0b2c-4704-a23f-71876629644f">
+![image](https://github.com/hashgraph/guardian/assets/79293833/ae1f2694-733b-4029-81c6-73209a10ef8a)
 
-<img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/70bb1958-92b5-472f-b926-529091d94c6e">
+2. Once it is approved, tokens are minted as shown:
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/38a164dd-f0d6-44cc-9c99-3ba6475523da)
+
 
 ### Futureproofing (Automated GHG Inventories)
 
