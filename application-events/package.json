@@ -21,7 +21,7 @@
         "@guardian/interfaces": "^2.13.0",
         "@mikro-orm/core": "5.7.12",
         "@mikro-orm/mongodb": "5.7.12",
-        "@mikro-orm/reflection": "5.7.12",
+        "@mikro-orm/reflection": "5.8.7",
         "@types/express": "^4.17.17",
         "@types/mongoose": "^5.11.97",
         "@types/morgan": "^1.9.4",
