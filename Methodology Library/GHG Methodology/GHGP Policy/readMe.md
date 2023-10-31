@@ -48,13 +48,13 @@ Coming Soon
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPSF timestamp.
 
-Latest Version - 1690818069.183828783
+Latest Version - 1698402201.827872003
 
 ### Available Roles 
  
 - Registry – The role responsible for publishing policies, creating tokens, and approving/rejecting GHG sources added by the organization
 - Organization – Company or other organization generating, quantifying, and reporting GHG emissions.
-- VVB (Validation & Verification Body) – Independent third party who audits organization’s critical documentation, MRV data, and GHG emission calculations. Verification is optional for this policy as it is optional under the GHGP Corporate Standard.
+- VVB (Validation & Verification Body) – Independent third party who audits organization’s critical documentation, MRV data and sources, and GHG inventories. Verification is optional for this policy as it is optional under the GHGP Corporate Standard. The workflow steps involving the VVBs will not block the subsequent steps or the minting of CETs, therefore they can be 1) executed according to the workflow above, 2) skipped, or 3) executed later in the workflow.
   
 ### Important Documents & Schemas 
   
