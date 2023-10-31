@@ -409,8 +409,6 @@
       * [Unsetting KYC for the User](guardian/tokens/token-operations/apis-for-asynchronous-execution/unsetting-kyc-for-the-user.md)
   * [📔 Token Retirement Contract](guardian/tokens/retirement-contract/README.md)
     * [💻 Creating Contract using UI](guardian/tokens/retirement-contract/creating-contract-using-ui.md)
-    * [💻 Creating Token Pair UI](guardian/tokens/retirement-contract/creating-token-pair-ui.md)
-    * [⚒ Creating Retire Request](guardian/tokens/retirement-contract/creating-retire-request.md)
     * [⚙ Retirement APIs](guardian/tokens/retirement-contract/retirement-apis/README.md)
       * [Returning all contracts](guardian/tokens/retirement-contract/retirement-apis/returns-all-contracts.md)
       * [Creating new Contract](guardian/tokens/retirement-contract/retirement-apis/creating-new-contract.md)
