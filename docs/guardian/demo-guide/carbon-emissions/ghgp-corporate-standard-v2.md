@@ -149,11 +149,35 @@ The Organization is responsible for inputting key data and information and assig
 
 ### VVB Flow \[Add Screenshots Below] <a href="#_toc146717957" id="_toc146717957"></a>
 
-1. Following step 8 of the Organizational Flow (assigning data sources to GHG sources), the VVB will be able to approve or reject MRV data and sources. The VVB will also be able to approve or reject the GHG inventory after it’s calculated by the Guardian. These steps are optional and can be skipped or executed later in the workflow.
+1. Assign role as VVB and add VVB name
 
-### Administrator (Registry) Flow \[Add Screenshots Below] <a href="#_toc146717958" id="_toc146717958"></a>
+<figure><img src="../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+
+2. All the GHG resources once viewed can be verified.
+
+<figure><img src="../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
+
+3. After verification of GHG resources, VVB reviews reporting metrics and approve/reject.
+
+<figure><img src="../../../.gitbook/assets/image (7).png" alt=""><figcaption></figcaption></figure>
+
+### Administrator (Registry) <a href="#_toc146717958" id="_toc146717958"></a>
 
 1. After the organizational emissions have been calculated, the Registry will approve or reject the CET issuance request, and consequently issue CETs if approved.
+
+<figure><img src="../../../.gitbook/assets/image (8).png" alt=""><figcaption></figcaption></figure>
+
+2. Once it is approved, tokens are minted as shown:
+
+<figure><img src="../../../.gitbook/assets/image (9).png" alt=""><figcaption></figcaption></figure>
 
 ### Futureproofing (Automated GHG Inventories) <a href="#_toc146717959" id="_toc146717959"></a>
 
