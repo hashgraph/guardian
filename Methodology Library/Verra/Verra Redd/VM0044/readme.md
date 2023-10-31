@@ -31,7 +31,7 @@ Within this digital methodology, users will use a collection of Clean Developmen
 
 ## Demo Video
 
-Coming Soon
+[Youtube](https://youtu.be/LN5vDNgevlM)
 
 ## Policy Workflow
 
@@ -41,7 +41,7 @@ Coming Soon
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPSF timestamp. 
 
-Policy: 
+Policy: 1698670386.926112366
 
 ### Available Roles 
  
@@ -70,6 +70,88 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 ### Step By Step 
 
-Coming Soon
+1. Create a new user and assign role as Project Proponent.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/93474fe1-cd75-4474-b383-60d2de66bf3b)
+
+2. Create a New project by clicking on "New Project" button and enter all the required details.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/2a7a0fa2-b486-4755-8580-377f09c5084a)
+
+3. Once project details are submitted, Verra waits for its approval
+   
+![image](https://github.com/hashgraph/guardian/assets/79293833/b38a0d3e-6743-42d9-b7be-3f132999027a)
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/9dfe4b7b-5f5d-40db-8665-290360b9d90e)
+
+4. Once project details are submitted, Verra waits for its approval
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/e249f84b-6229-46ab-a0ec-599d2aa4904d)
+
+5. Now, we create a new user and assign its role as VVB
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/d734902b-2eea-43a4-afd7-388ad6fb0e14)
+
+6. We need to set VVB name
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/d5528b99-1698-43c5-a574-dff8ba5b7ac3)
+
+7. Once VVB name is set, it waits for SR to approve it.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/bc487619-e604-4e75-85ae-5bc382fccebf)
+
+8. Now we login as SR and approve VVB.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/8f75af52-4571-4f26-ba9c-8cd80a66fd84)
+
+9. Once VVB is approved, SR goes to Project Pipeline tab and click on Add button
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/7d036b6f-9740-4e1e-8beb-15d2daebcc35)
+
+10. Once Project is added, it waits for validation from Verra
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/4091e687-079b-4cb2-ac4e-e4fbbb53729c)
+
+11. Now we login as Verra and assign project to VVB
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/6d583b98-61e4-43f8-83ad-fe5f192a0149)
+
+12. Now we login as VVB and validate the project by viewing project document details. Once validated, VVB clicks on Validate button.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/767d4914-3723-4ab0-ace9-55d2560839f4)
+
+13. Once validated, we login as Project Proponent and Add Monitoring Report.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/873e181d-6956-4178-86dd-95de88c6783d)
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/8d1fb8a6-464e-4d48-9c7a-bbc3d80a3c83)
+
+14. Once report is submitted, we now login as VVB and validate the monitoring report by clicking on Verify button.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/caa44f2a-dc56-4756-bcd6-5305fc26b995)
+
+15. Once monitoring report is validated, we login as SR and click on Mint to mint the tokens.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/a480438a-7e30-4025-b6b9-089633869873)
+
+16. Once minting is completed, we can view tokens in Token History tab
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/45268864-1913-45af-baee-69050697bf15)
+
+17. Trustchain can also be viewed by clicking on View TrustChain button:
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/fb4ad543-1111-41a9-9b43-f7ad550923bc)
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/bd0c787f-4b22-4002-89b5-1d2e948b5837)
+
+
+
+
+
+
+
+
+
+
 
 
