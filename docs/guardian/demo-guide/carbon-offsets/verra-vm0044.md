@@ -41,7 +41,7 @@ Within this digital methodology, users will use a collection of Clean Developmen
 
 ### Demo Video   <a href="#_toc149219504" id="_toc149219504"></a>
 
-\[Link]&#x20;
+[Youtube Link](https://youtu.be/LN5vDNgevlM)
 
 ### Policy Workflow  <a href="#_toc149219505" id="_toc149219505"></a>
 
@@ -74,3 +74,77 @@ Registry (Verra) – With Verra as the registry they take on responsibilities th
 Verified Carbon Unit (VCU) credits, each equivalent to one tonne of CO2.&#x20;
 
 ### Step by Step   <a href="#_toc149219509" id="_toc149219509"></a>
+
+1. Login as a standard registry and you will be able to see tabs as shown below:
+
+<figure><img src="../../../.gitbook/assets/image (328).png" alt=""><figcaption></figcaption></figure>
+
+2. Create a new user and assign role as Project Proponent.
+
+<figure><img src="../../../.gitbook/assets/image (329).png" alt=""><figcaption></figcaption></figure>
+
+3. Create a New project by clicking on "New Project" button and enter all the required details.
+
+<figure><img src="../../../.gitbook/assets/image (330).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (331).png" alt=""><figcaption></figcaption></figure>
+
+4. Once project details are submitted, Verra waits for its approval
+
+<figure><img src="../../../.gitbook/assets/image (332).png" alt=""><figcaption></figcaption></figure>
+
+5. Now, we create a new user and assign its role as VVB
+
+<figure><img src="../../../.gitbook/assets/image (333).png" alt=""><figcaption></figcaption></figure>
+
+6. We need to set VVB name
+
+<figure><img src="../../../.gitbook/assets/image (334).png" alt=""><figcaption></figcaption></figure>
+
+7. Once VVB name is set, it waits for SR to approve it.
+
+<figure><img src="../../../.gitbook/assets/image (335).png" alt=""><figcaption></figcaption></figure>
+
+8. Now we login as SR and approve VVB.
+
+<figure><img src="../../../.gitbook/assets/image (336).png" alt=""><figcaption></figcaption></figure>
+
+9. Once VVB is approved, SR goes to Project Pipeline tab and click on Add button
+
+<figure><img src="../../../.gitbook/assets/image (337).png" alt=""><figcaption></figcaption></figure>
+
+10. Once Project is added, it waits for validation from Verra
+
+<figure><img src="../../../.gitbook/assets/image (338).png" alt=""><figcaption></figcaption></figure>
+
+11. Now we login as Verra and assign project to VVB
+
+<figure><img src="../../../.gitbook/assets/image (339).png" alt=""><figcaption></figcaption></figure>
+
+12. Now we login as VVB and validate the project by viewing project document details. Once validated, VVB clicks on Validate button.
+
+<figure><img src="../../../.gitbook/assets/image (340).png" alt=""><figcaption></figcaption></figure>
+
+13. Once validated, we login as Project Proponent and Add Monitoring Report.
+
+<figure><img src="../../../.gitbook/assets/image (341).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (342).png" alt=""><figcaption></figcaption></figure>
+
+14. Once report is submitted, we now login as VVB and validate the monitoring report by clicking on Verify button.
+
+<figure><img src="../../../.gitbook/assets/image (343).png" alt=""><figcaption></figcaption></figure>
+
+15. Once monitoring report is validated, we login as SR and click on Mint to mint the tokens.
+
+<figure><img src="../../../.gitbook/assets/image (344).png" alt=""><figcaption></figcaption></figure>
+
+16. Once minting is completed, we can view tokens in Token History tab
+
+<figure><img src="../../../.gitbook/assets/image (345).png" alt=""><figcaption></figcaption></figure>
+
+17. Trustchain can also be viewed by clicking on View TrustChain button:
+
+<figure><img src="../../../.gitbook/assets/image (346).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (347).png" alt=""><figcaption></figcaption></figure>
