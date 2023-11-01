@@ -44,3 +44,4 @@ export { FlatBlockNode } from './tree-model/block-node';
 export { BlockRect } from './tree-model/block-rect';
 export { EventCanvas } from './tree-model/event-canvas';
 export { BlocLine } from './tree-model/event-line';
+export { ToolMenu, ToolMenuItem } from './menu/tool';

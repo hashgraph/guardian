@@ -403,6 +403,9 @@ export class ToolValidator {
      * @param iri
      */
     public schemaExist(iri: string): boolean {
+        if (iri === '#GeoJSON') {
+            return true;
+        }
         if (this.schemas.has(iri)) {
             return !!this.schemas.get(iri);
         }

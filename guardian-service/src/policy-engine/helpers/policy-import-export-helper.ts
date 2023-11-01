@@ -1,5 +1,15 @@
 
-import { BlockType, ConfigType, GenerateUUIDv4, ModuleStatus, PolicyType, SchemaCategory, SchemaEntity, TagType, TopicType, } from '@guardian/interfaces';
+import {
+    BlockType,
+    ConfigType,
+    GenerateUUIDv4,
+    ModuleStatus,
+    PolicyType,
+    SchemaCategory,
+    SchemaEntity,
+    TagType,
+    TopicType
+} from '@guardian/interfaces';
 import { publishSystemSchemas } from '@api/helpers/schema-publish-helper';
 import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
 import { INotifier } from '@helpers/notifier';
@@ -27,7 +37,7 @@ import { importTag } from '@api/helpers/tag-import-export-helper';
 import { SchemaImportResult } from '@api/helpers/schema-helper';
 import { HashComparator } from '@analytics';
 import {
-    importToolsByPolicy,
+    importSubTools,
     importSchemaByFiles,
     importTokensByFiles,
     importArtifactsByFiles
@@ -170,18 +180,25 @@ export class PolicyImportExportHelper {
 
         notifier.completed();
 
+        // Import Tools
+        notifier.completedAndStart('Import tools');
+        notifier.sub(true);
+        const toolsResult = await importSubTools(root, tools, notifier);
+        notifier.sub(false);
+
         // Import Tokens
         const tokensResult = await importTokensByFiles(policyOwner, tokens, notifier);
         const tokenMap = tokensResult.tokenMap;
 
         // Import Schemas
         const schemasResult = await importSchemaByFiles(
-            SchemaCategory.POLICY, policyOwner, schemas, topicRow.topicId, notifier
+            SchemaCategory.POLICY,
+            policyOwner,
+            schemas,
+            topicRow.topicId,
+            notifier
         );
         const schemasMap = schemasResult.schemasMap;
-
-        // Import Tools
-        const toolsResult = await importToolsByPolicy(root, tools, notifier);
 
         // Import Artifacts
         const artifactsResult = await importArtifactsByFiles(policyOwner, artifacts, notifier);
@@ -353,17 +370,23 @@ export class PolicyImportExportHelper {
         const tools = await DatabaseServer.getTools({
             status: ModuleStatus.PUBLISHED,
             messageId: { $in: Array.from(toolIds.values()) }
-        }, {
-            fields: ['name', 'topicId', 'messageId']
-        });
-        policy.tools = tools.map((row) => {
-            return {
+        }, { fields: ['name', 'topicId', 'messageId', 'tools'] });
+        const list = [];
+        for (const row of tools) {
+            list.push({
                 name: row.name,
                 topicId: row.topicId,
                 messageId: row.messageId
+            })
+            if (row.tools) {
+                for (const subTool of row.tools) {
+                    list.push(subTool);
+                }
             }
-        })
+        }
+        policy.tools = list;
         policy = await DatabaseServer.updatePolicy(policy);
+
         return policy;
     }
 }

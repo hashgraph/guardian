@@ -11,6 +11,7 @@
 - Token (Carbon Emissions)
 - Step By Step
   - Organization Flow
+  - VVB Flow
   - Administrator (Registry) Flow
 - Future Proofing (Automated GHG Inventories)
 - TODO
@@ -40,20 +41,20 @@ Coming Soon
 
 ## Policy Workflow
 
-<img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/a80aa7f3-01bb-47fb-8327-6f58b2dd0632">
+![image](https://github.com/hashgraph/guardian/assets/79293833/39075f78-6eba-4d9f-83df-4d7015d7921c)
 
 
 ## Policy Guide
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPSF timestamp.
 
-Latest Version - 1690818069.183828783
+Latest Version - 1698402201.827872003
 
 ### Available Roles 
  
 - Registry – The role responsible for publishing policies, creating tokens, and approving/rejecting GHG sources added by the organization
 - Organization – Company or other organization generating, quantifying, and reporting GHG emissions.
-- VVB (Validation & Verification Body) – Independent third party who audits organization’s critical documentation, MRV data, and GHG emission calculations. Verification is optional for this policy as it is optional under the GHGP Corporate Standard.
+- VVB (Validation & Verification Body) – Independent third party who audits organization’s critical documentation, MRV data and sources, and GHG inventories. Verification is optional for this policy as it is optional under the GHGP Corporate Standard. The workflow steps involving the VVBs will not block the subsequent steps or the minting of CETs, therefore they can be 1) executed according to the workflow above, 2) skipped, or 3) executed later in the workflow.
   
 ### Important Documents & Schemas 
   
@@ -137,13 +138,37 @@ The Organization is allowed to publish and edit policy config, schemas, tokens a
 
 <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/ac0b1856-8bc2-47da-a7d9-4d9ca40a1a0a">
 
+**VVB Flow**
+
+1. Assign role as VVB and add VVB name
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/b8431bb5-78ac-48a7-97c0-73f36ef236ac)
+
+2. All the GHG resources once viewed can be verified.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/e42a02fa-838b-4b1b-aa2c-a54f0b29a3ea)
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/6ea6cb4c-b1c0-4ebe-ae8d-762d6776e570)
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/80fbed65-9f7e-460c-84a3-9467da7d2ffd)
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/df2105cc-9889-4851-bf1f-0e0ac1dde342)
+
+3. After verification of GHG resources, VVB reviews reporting metrics and approve/reject.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/43197dbb-2e1c-492b-81b1-d737b8806cad)
+
+
 **Administrator (Registry) Flow**
 
 1. Following step 8 of the Organizational Flow, the Administrator (Registry) will approve or reject each source.
 
-<img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/c7dd7532-0b2c-4704-a23f-71876629644f">
+![image](https://github.com/hashgraph/guardian/assets/79293833/ae1f2694-733b-4029-81c6-73209a10ef8a)
 
-<img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/70bb1958-92b5-472f-b926-529091d94c6e">
+2. Once it is approved, tokens are minted as shown:
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/38a164dd-f0d6-44cc-9c99-3ba6475523da)
+
 
 ### Futureproofing (Automated GHG Inventories)
 

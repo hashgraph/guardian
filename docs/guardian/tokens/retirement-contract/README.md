@@ -1,0 +1,15 @@
+# 📔 Token Retirement Contract
+
+The implementation of token retirement in Guardian relies on the capability of Hedera HCS allowing ‘wipe’ rights for a given token to be assigned to a contract identifier instead of an account key (the account key is commonly referred to as ‘wipe key’). Thus in Guardian for each token a corresponding ‘wiping contract’ is created, which controls the lifecycle of the token instances. These contracts implement a dynamic access control logic/list (ACL) managed by the Standard Registries (SRs) which issued the corresponding tokens. The contracts provide methods to add/remove ‘retirement contract’ identifiers to ACLs, thus giving/retracting their permissions to call ‘wipe’ methods of wiping contracts, which actually execute the wiping of token instances.
+
+The ‘retirement contracts’ are responsible for the mechanics of matching ‘credit’ and ‘debit’ tokens, and atomic retirement operations on these matched ‘plus’ and ‘minus’ pools (executed via the wiping contracts as per above). The retirement contracts that come out of the box in Guardian implement functionality allowing providers of retirement services to setup configuration of retirements pools, and request the ‘wipe’ permissions from the token ‘wiping contracts’. Guardian UI provides facilities to easily setup these contracts and configure such pools, however the architecture from the start is designed to be decentralised and scalable, such contracts and token pool configurations can be created, deployed and operated by stand-alone entities independently of Standard Registries and/or Guardian instances. It is expected that there would appear multiple ‘exchange-like’ services, which would implement their own retirement contracts (based on ‘canonical’ Guardian implementations) with enhanced and expanded rule sets, which would provide automatic ‘match-making’ services for token owners. The architecture allows anyone to attempt to become such a token retirement ‘exchange’, however the token issuers maintain control over which of these they ‘approve’ to operate on their tokens via the ACL in the corresponding wiping contracts.
+
+The high-level flow of the actions which configure token retirement is illustrated on the sequence diagram below:
+
+<figure><img src="../../../.gitbook/assets/image (3) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+
+Guardian contains a full production retirement system implementation which allows the configuration of arbitrary pools of tokens (two-sided, one-sides, with arbitrary ‘exchange rates’ etc), issued by different SRs, operating on different Guardian instances, to be configured for retirement with arbitrary additional rules further controlling their lifecycle.&#x20;
+
+A simplified architecture diagram of the retirement contracts implementation is shown on the diagram below.
+
+<figure><img src="../../../.gitbook/assets/image (6) (1) (1).png" alt=""><figcaption></figcaption></figure>

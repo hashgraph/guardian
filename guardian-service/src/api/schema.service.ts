@@ -323,14 +323,20 @@ export async function schemaAPI(): Promise<void> {
                 }
             }
             const topicIds = Array.from(topicMaps.values());
-
             const schemas = await DatabaseServer.getSchemas({
-                owner,
-                system: false,
-                readonly: false,
-                topicId: { $in: topicIds }
+                $or: [{
+                    owner,
+                    system: false,
+                    readonly: false,
+                    topicId
+                }, {
+                    system: false,
+                    readonly: false,
+                    topicId: { $in: topicIds },
+                    category: SchemaCategory.TOOL,
+                    status: SchemaStatus.PUBLISHED
+                }]
             });
-
             for (const schema of schemas) {
                 (schema as any).__component = nameMaps.get(schema.topicId);
             }
@@ -524,7 +530,11 @@ export async function schemaAPI(): Promise<void> {
 
             const category = await getSchemaCategory(topicId);
             let result = await importSchemaByFiles(
-                category, owner, schemas, topicId, notifier
+                category,
+                owner,
+                schemas,
+                topicId,
+                notifier
             );
             result = await importTagsByFiles(result, tags, notifier);
 
@@ -551,7 +561,11 @@ export async function schemaAPI(): Promise<void> {
 
             const category = await getSchemaCategory(topicId);
             let result = await importSchemaByFiles(
-                category, owner, schemas, topicId, notifier
+                category,
+                owner,
+                schemas,
+                topicId,
+                notifier
             );
             result = await importTagsByFiles(result, tags, notifier);
 

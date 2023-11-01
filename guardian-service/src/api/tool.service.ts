@@ -33,7 +33,7 @@ import { incrementSchemaVersion } from '@api/helpers/schema-helper';
 import { ISerializedErrors } from '@policy-engine/policy-validation-results-container';
 import { ToolValidator } from '@policy-engine/block-validators/tool-validator';
 import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
-import { importToolByFile, importToolByMessage, updateToolConfig } from './helpers';
+import { importToolByFile, importToolByMessage, importToolErrors, updateToolConfig } from './helpers';
 import * as crypto from 'crypto';
 import { publishToolTags } from './tag.service';
 
@@ -475,7 +475,8 @@ export async function toolsAPI(): Promise<void> {
                     'messageId',
                     'owner',
                     'config',
-                    'configFileId'
+                    'configFileId',
+                    'tools'
                 ]
             });
             const ids = tools.map(t => t.topicId);
@@ -493,6 +494,7 @@ export async function toolsAPI(): Promise<void> {
             );
             const map = new Map<string, any>();
             for (const tool of tools) {
+                delete tool.configFileId;
                 if (tool.config) {
                     tool.config = {
                         inputEvents: tool.config.inputEvents,
@@ -648,8 +650,14 @@ export async function toolsAPI(): Promise<void> {
                 throw new Error('file in body is empty');
             }
             const preview = await ToolImportExport.parseZipFile(Buffer.from(zip.data));
-            const item = await importToolByFile(owner, preview);
-            return new MessageResponse(item);
+            const { tool, errors } = await importToolByFile(owner, preview, emptyNotifier());
+            if (errors?.length) {
+                const message = importToolErrors(errors);
+                new Logger().warn(message, ['GUARDIAN_SERVICE']);
+                return new MessageError(message);
+            } else {
+                return new MessageResponse(tool);
+            }
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
@@ -671,6 +679,7 @@ export async function toolsAPI(): Promise<void> {
             const users = new Users();
             const root = await users.getHederaAccount(owner);
             const item = await importToolByMessage(root, id, notifier);
+            notifier.completed();
             return new MessageResponse(item);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -686,11 +695,17 @@ export async function toolsAPI(): Promise<void> {
                 throw new Error('file in body is empty');
             }
             const preview = await ToolImportExport.parseZipFile(Buffer.from(zip.data));
-            const item = await importToolByFile(owner, preview);
-            notifier.result({
-                policyId: item.id,
-                errors: []
-            });
+            const { tool, errors } = await importToolByFile(owner, preview, notifier);
+            if (errors?.length) {
+                const message = importToolErrors(errors);
+                notifier.error(message);
+                new Logger().warn(message, ['GUARDIAN_SERVICE']);
+            } else {
+                notifier.result({
+                    toolId: tool.id,
+                    errors: []
+                });
+            }
         }, async (error) => {
             notifier.error(error);
         });
@@ -711,11 +726,18 @@ export async function toolsAPI(): Promise<void> {
             }
             const users = new Users();
             const root = await users.getHederaAccount(owner);
-            const item = await importToolByMessage(root, id, notifier);
-            notifier.result({
-                policyId: item.id,
-                errors: []
-            });
+            const { tool, errors } = await importToolByMessage(root, id, notifier);
+            notifier.completed();
+            if (errors?.length) {
+                const message = importToolErrors(errors);
+                notifier.error(message);
+                new Logger().warn(message, ['GUARDIAN_SERVICE']);
+            } else {
+                notifier.result({
+                    toolId: tool.id,
+                    errors: []
+                });
+            }
         }, async (error) => {
             notifier.error(error);
         });

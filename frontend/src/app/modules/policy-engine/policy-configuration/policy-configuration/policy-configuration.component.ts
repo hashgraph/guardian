@@ -25,15 +25,19 @@ import {
     ModuleTemplate,
     Theme,
     ThemeRule,
-    ToolTemplate
+    ToolTemplate,
+    ToolMenuItem,
+    PolicyFolder,
+    PolicyItem,
+    PolicyRoot,
+    ToolMenu
 } from '../../structures';
 import { PolicyTreeComponent } from '../policy-tree/policy-tree.component';
 import { ThemeService } from '../../../../services/theme.service';
-import { WizardMode, WizardService } from 'src/app/modules/policy-engine/services/wizard.service';
 import { SuggestionsService } from '../../../../services/suggestions.service';
-import { PolicyFolder, PolicyItem, PolicyRoot } from '../../structures/policy-models/interfaces/types';
-import { ToolsService } from 'src/app/services/tools.service';
-import { AnalyticsService } from 'src/app/services/analytics.service';
+import { ToolsService } from '../../../../services/tools.service';
+import { AnalyticsService } from '../../../../services/analytics.service';
+import { WizardMode, WizardService } from 'src/app/modules/policy-engine/services/wizard.service';
 
 /**
  * The page for editing the policy and blocks.
@@ -65,7 +69,7 @@ export class PolicyConfigurationComponent implements OnInit {
     public schemas: Schema[] = [];
     public tokens: Token[] = [];
     public modules: any[] = [];
-    public tools: any[] = [];
+    public tools: ToolMenu;
 
     public selectType: 'Block' | 'Module' = 'Block';
 
@@ -208,6 +212,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.policyTemplate = new PolicyTemplate();
         this.openFolder = this.policyTemplate;
         this.rootTemplate = this.policyTemplate;
+        this.tools = new ToolMenu();
     }
 
     public ngOnInit() {
@@ -290,11 +295,11 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.tokens = tokens.map((e: any) => new Token(e));
                 this.schemas = SchemaHelper.map(schemas) || [];
                 this.modules = modules;
-                this.tools = tools;
+                this.tools.setItems(tools);
 
                 this.policyTemplate.setTokens(this.tokens);
                 this.policyTemplate.setSchemas(this.schemas);
-                this.policyTemplate.setTools(this.tools);
+                this.policyTemplate.setTools(this.tools.items);
                 this.finishedLoad(this.policyTemplate);
             }, ({ message }) => {
                 this.loading = false;
@@ -337,10 +342,10 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.registeredService.registerConfig(blockInformation);
                 this.schemas = SchemaHelper.map(schemas) || [];
                 this.modules = modules;
-                this.tools = tools;
+                this.tools.setItems(tools);
 
                 this.moduleTemplate.setSchemas(this.schemas);
-                this.moduleTemplate.setTools(this.tools);
+                this.moduleTemplate.setTools(this.tools.items);
                 this.finishedLoad(this.moduleTemplate);
             }, ({ message }) => {
                 this.loading = false;
@@ -387,11 +392,11 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.tokens = tokens.map((e: any) => new Token(e));
                 this.schemas = SchemaHelper.map(schemas) || [];
                 this.modules = modules;
-                this.tools = tools;
+                this.tools.setItems(tools);
 
                 this.toolTemplate.setTokens(this.tokens);
                 this.toolTemplate.setSchemas(this.schemas);
-                this.toolTemplate.setTools(this.tools);
+                this.toolTemplate.setTools(this.tools.items);
 
                 this.finishedLoad(this.toolTemplate);
             }, ({ message }) => {
@@ -808,10 +813,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.modulesList.customTools = [];
 
         const search = this.searchModule ? this.searchModule.toLowerCase() : null;
-        for (const tool of this.tools) {
-            tool.data = `tool:${tool.messageId}`;
-            tool.search = (tool.name || '').toLowerCase();
-
+        for (const tool of this.tools.items) {
             if (search && tool.search.indexOf(search) === -1) {
                 continue;
             }
@@ -820,21 +822,15 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     private updateTemporarySchemas(): void {
-        if (this.tools) {
-            const temporarySchemas: any[] = [];
-            const toolIds = this.rootTemplate.getAllTools();
-            for (const messageId of toolIds) {
-                const menu = this.tools.find(f => f.messageId === messageId);
-                if (menu) {
-                    for (const schema of menu.schemas) {
-                        temporarySchemas.push({ ...schema, status: 'TOOL' });
-                    }
-                }
+        const temporarySchemas: any[] = [];
+        const toolIds = this.rootTemplate.getTools();
+        const tools = this.tools.filter(toolIds);
+        for (const tool of tools) {
+            for (const schema of tool.schemas) {
+                temporarySchemas.push(schema);
             }
-            this.openFolder.setTemporarySchemas(temporarySchemas);
-        } else {
-            this.openFolder.setTemporarySchemas([]);
         }
+        this.openFolder.setTemporarySchemas(temporarySchemas);
     }
 
     public addSuggestionsBlock(type: any, nested: boolean = false) {
@@ -871,7 +867,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 event.data.parent?.addChild(module, event.data.index);
             }
             if (event.data.operation === 'tool') {
-                const config = this.tools.find(e => e.messageId === event.data.name);
+                const config = this.tools.find(event.data.name);
                 const tool = this.rootTemplate.newTool(config);
                 event.data.parent?.addChild(tool, event.data.index);
             }
@@ -1371,7 +1367,7 @@ export class PolicyConfigurationComponent implements OnInit {
                         this.policyTemplate = new PolicyTemplate();
                         this.policyTemplate.setTokens(this.tokens);
                         this.policyTemplate.setSchemas(this.schemas);
-                        this.policyTemplate.setTools(this.tools);
+                        this.policyTemplate.setTools(this.tools.items);
                     }
                     setTimeout(() => { this.loading = false; }, 500);
                     subscriber.next();
@@ -1387,7 +1383,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.policyTemplate = new PolicyTemplate(policy);
         this.policyTemplate.setTokens(this.tokens);
         this.policyTemplate.setSchemas(this.schemas);
-        this.policyTemplate.setTools(this.tools);
+        this.policyTemplate.setTools(this.tools.items);
 
         this.currentView = 'blocks';
         this.errors = [];

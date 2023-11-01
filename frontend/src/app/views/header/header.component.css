@@ -356,7 +356,7 @@ a[hidden="true"] {
     display: none;
 }
 
-@media (max-width: 1400px) {
+@media (max-width: 1500px) {
     .sub-nav-list {
         padding: 7px 120px;
     }
@@ -366,7 +366,7 @@ a[hidden="true"] {
     }
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1300px) {
     .sub-nav-list {
         padding: 7px 20px;
     }
@@ -376,13 +376,19 @@ a[hidden="true"] {
     }
 }
 
-@media (max-width: 1000px) {
+@media (max-width: 1100px) {
     .sub-nav-list {
         padding: 7px 10px;
     }
 
     .nav-list-item {
         min-width: 130px;
+    }
+}
+
+@media (max-width: 1000px) {
+    .nav-list-item {
+        min-width: 80px;
     }
 }
 

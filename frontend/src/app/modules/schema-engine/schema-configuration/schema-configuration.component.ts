@@ -932,12 +932,7 @@ export class SchemaConfigurationComponent implements OnInit {
     }
 
     public getFieldsForCondition(): FieldControl[] {
-        return this.fields.filter(item =>
-            !item.controlArray.value &&
-            item.controlDescription.value &&
-            !this.schemaTypeMap[item.controlType.value].isRef &&
-            (this.schemaTypeMap[item.controlType.value].type === 'boolean' ? item.controlRequired.value : true)
-        );
+        return this.fields.filter(item => item.isCondition(this.schemaTypeMap));
     }
 
     public isValid(): boolean {

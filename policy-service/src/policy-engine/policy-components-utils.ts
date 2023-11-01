@@ -1,5 +1,5 @@
 import { EventActor, EventCallback, PolicyBlockFullArgumentList, PolicyBlockMap, PolicyInputEventType, PolicyLink, PolicyOutputEventType, PolicyTagMap } from '@policy-engine/interfaces';
-import { GenerateUUIDv4, ModuleStatus, PolicyEvents, PolicyType } from '@guardian/interfaces';
+import { BlockType, GenerateUUIDv4, ModuleStatus, PolicyEvents, PolicyType } from '@guardian/interfaces';
 import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock, IPolicyInstance, IPolicyInterfaceBlock, ISerializedBlock, ISerializedBlockExtend } from './policy-engine.interface';
 import { DatabaseServer, Policy, PolicyTool } from '@guardian/common';
 import { STATE_KEY } from '@policy-engine/helpers/constants';
@@ -10,6 +10,71 @@ import { IPolicyUser } from './policy-user';
 import { ExternalEvent } from './interfaces/external-event';
 import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
 import { ComponentsService } from './helpers/components-service';
+
+/**
+ * Policy tag helper
+ */
+export class TagHelper {
+    /**
+     * Parent tag
+     */
+    private readonly parent: string;
+
+    /**
+     * Root tag
+     */
+    private readonly root: string;
+
+    constructor(parent?: string, root?: string) {
+        this.parent = parent;
+        this.root = root;
+    }
+
+    /**
+     * Get new tag
+     * @param oldTag
+     */
+    public getTag(oldTag: string): string {
+        if (!this.parent || !oldTag) {
+            return oldTag;
+        }
+        if (oldTag === this.root) {
+            return this.parent;
+        }
+        return `${this.parent}:${oldTag}`;
+    }
+}
+
+/**
+ * Policy id helper
+ */
+export class IdHelper {
+    /**
+     * Ids
+     */
+    private readonly list: Set<string>;
+
+    constructor() {
+        this.list = new Set<string>();
+    }
+
+    /**
+     * Get new id
+     * @param oldId
+     */
+    public getId(oldId: string): string {
+        if (oldId && !this.list.has(oldId)) {
+            this.list.add(oldId);
+            return oldId;
+        }
+        let uuid: string;
+        do {
+            uuid = GenerateUUIDv4();
+        } while (this.list.has(uuid));
+        this.list.add(uuid);
+        return uuid;
+    }
+}
 
 /**
  * Policy action map type
@@ -540,39 +605,101 @@ export class PolicyComponentsUtils {
     ) {
         const configObject = policy.config as ISerializedBlock;
         const tools: PolicyTool[] = [];
-        await PolicyComponentsUtils.RegeneratePolicyComponents(configObject, '', tools);
+        const tagHelper = new TagHelper();
+        const idHelper = new IdHelper();
+        await PolicyComponentsUtils.RegeneratePolicyComponents(
+            configObject,
+            tools,
+            tagHelper,
+            idHelper
+        );
         policy.config = configObject;
         return { policy, tools };
     }
 
     /**
-     * Build block instances tree
-     * @param policy
-     * @param policyId
-     * @param allInstances
+     * Regenerate policy components
+     * @param block
+     * @param tools
+     * @param tagHelper
      */
     public static async RegeneratePolicyComponents(
         block: any,
-        parentTag: string,
-        tools: PolicyTool[]
+        tools: PolicyTool[],
+        tagHelper: TagHelper,
+        idHelper: IdHelper
     ): Promise<void> {
-        if (parentTag && block.tag) {
-            block.tag = `${parentTag}:${block.tag}`;
-        }
-        if (block.blockType === 'tool') {
-            parentTag = block.tag;
+        block.id = idHelper.getId(block.id);
+        PolicyComponentsUtils.RegenerateTags(block, tagHelper);
+        if (block.blockType === BlockType.Tool) {
+            block.children = [];
             const tool = await DatabaseServer.getTool({
                 status: ModuleStatus.PUBLISHED,
                 messageId: block.messageId,
                 hash: block.hash
             });
-            block.children = tool?.config?.children || [];
-            tools.push(tool);
+            if (tool && tool.config) {
+                tagHelper = new TagHelper(block.tag, tool.config.tag);
+
+                block.variables = tool.config.variables || [];
+                block.inputEvents = tool.config.inputEvents || [];
+                block.outputEvents = tool.config.outputEvents || [];
+                block.children = tool.config.children || [];
+
+                const events = block.events || [];
+                const innerEvents = tool.config.events || [];
+                for (const event of innerEvents) {
+                    event.target = tagHelper.getTag(event.target);
+                    event.source = tagHelper.getTag(event.source);
+                }
+                block.events = [
+                    ...events,
+                    ...innerEvents
+                ];
+
+                tools.push(tool);
+            }
         }
         if (Array.isArray(block.children)) {
             for (const child of block.children) {
-                await PolicyComponentsUtils.RegeneratePolicyComponents(child, parentTag, tools);
+                await PolicyComponentsUtils.RegeneratePolicyComponents(
+                    child,
+                    tools,
+                    tagHelper,
+                    idHelper
+                );
             }
+        }
+    }
+
+    /**
+     * Regenerate tags
+     * @param block
+     * @param tagHelper
+     */
+    public static RegenerateTags(block: any, tagHelper: TagHelper): void {
+        block.tag = tagHelper.getTag(block.tag);
+        if (Array.isArray(block.events)) {
+            for (const event of block.events) {
+                event.target = tagHelper.getTag(event.target);
+                event.source = tagHelper.getTag(event.source);
+            }
+        }
+        if (Array.isArray(block.uiMetaData?.fields)) {
+            for (const field of block.uiMetaData.fields) {
+                if (field.bindGroup) {
+                    field.bindGroup = tagHelper.getTag(field.bindGroup);
+                }
+                if (field.bindBlock) {
+                    field.bindBlock = tagHelper.getTag(field.bindBlock);
+                }
+            }
+        }
+        if (block.finalBlocks) {
+            block.finalBlocks = tagHelper.getTag(block.finalBlocks);
+        }
+        if (block.errorFallbackTag) {
+            block.errorFallbackTag = tagHelper.getTag(block.errorFallbackTag);
         }
     }
 

@@ -264,7 +264,7 @@ export class ModuleTemplate {
         return this._config.newTool(template);
     }
 
-    public getAllTools(): Set<string> {
-        return this._config.getAllTools();
+    public getTools(): Set<string> {
+        return this._config.getTools();
     }
 }

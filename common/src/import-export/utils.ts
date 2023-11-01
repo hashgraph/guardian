@@ -19,23 +19,21 @@ export class ImportExportUtils {
     public static findAllTools(obj: IBlockConfig): string[] {
         const finder = (
             blockConfig: IBlockConfig,
+            isRoot: boolean,
             results: Set<string>
         ): Set<string> => {
-            if (blockConfig.blockType === BlockType.Tool) {
-                if (
-                    blockConfig.messageId &&
-                    typeof blockConfig.messageId === 'string'
-                ) {
+            if (blockConfig.blockType === BlockType.Tool && !isRoot) {
+                if (blockConfig.messageId && typeof blockConfig.messageId === 'string') {
                     results.add(blockConfig.messageId);
                 }
             } else if (Array.isArray(blockConfig.children)) {
                 for (const child of blockConfig.children) {
-                    finder(child, results);
+                    finder(child, false, results);
                 }
             }
             return results;
         }
-        const map = finder(obj, new Set<string>());
+        const map = finder(obj, true, new Set<string>());
         return Array.from(map);
     }
 

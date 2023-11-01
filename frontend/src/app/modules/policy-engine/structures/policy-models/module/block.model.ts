@@ -633,7 +633,7 @@ export class PolicyModule extends PolicyBlock {
         }
     }
 
-    public getAllTools(): Set<string> {
+    public getTools(): Set<string> {
         const map = new Set<string>();
         if (this._allTools) {
             for (const tool of this._allTools) {

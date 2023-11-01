@@ -48,7 +48,7 @@ Coming Soon
 
 ## Policy Workflow <a href="#_toc2070089206" id="_toc2070089206"></a>
 
-<figure><img src="../../../.gitbook/assets/0.jpeg" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/0 (1).jpeg" alt=""><figcaption></figcaption></figure>
 
 ## Policy Guide <a href="#_toc93669646" id="_toc93669646"></a>
 

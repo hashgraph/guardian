@@ -38,7 +38,9 @@ export class TemplateUtils {
     }
 
     public static checkSchemaVariables(variables: SchemaVariables[]): void {
-        const map = new Set<string>();
+        const map = new Set<string>([
+            '#GeoJSON'
+        ]);
         for (const variable of variables) {
             variable.disable = false;
             map.add(variable.value);

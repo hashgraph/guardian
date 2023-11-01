@@ -716,7 +716,7 @@ export class PolicyTemplate {
         }
     }
 
-    public getAllTools(): Set<string> {
+    public getTools(): Set<string> {
         const map = new Set<string>();
         if (this.allTools) {
             for (const tool of this.allTools) {

@@ -4,7 +4,7 @@ description: >-
   2 steps: Standard Registries and Hedera Credentials
 ---
 
-# User Profile Setup
+# 🛠 User Profile Setup
 
 ## Standard Registries step
 
