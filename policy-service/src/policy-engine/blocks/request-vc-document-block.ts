@@ -65,8 +65,7 @@ export class RequestVcDocumentBlock {
      * Before init callback
      */
     public async beforeInit(): Promise<void> {
-        const ref =
-            PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
         const schemaIRI = ref.options.schema;
         if (!schemaIRI) {
             throw new BlockActionError(
@@ -184,7 +183,7 @@ export class RequestVcDocumentBlock {
         }
 
         if (!user.did) {
-            throw new BlockActionError('User have no any did', ref.blockType, ref.uuid);
+            throw new BlockActionError('User have no any did.', ref.blockType, ref.uuid);
         }
 
         try {
@@ -205,7 +204,10 @@ export class RequestVcDocumentBlock {
             const idType = ref.options.idType;
             const hederaAccount = await PolicyUtils.getHederaAccount(ref, user.did);
             const id = await this.generateId(
-                idType, user, hederaAccount.hederaAccountId, hederaAccount.hederaAccountKey
+                idType,
+                user,
+                hederaAccount.hederaAccountId,
+                hederaAccount.hederaAccountKey
             );
             const credentialSubject = document;
             credentialSubject.policyId = ref.policyId;
@@ -214,6 +216,9 @@ export class RequestVcDocumentBlock {
             }
             if (documentRef) {
                 credentialSubject.ref = PolicyUtils.getSubjectId(documentRef);
+                if (!credentialSubject.ref) {
+                    throw new BlockActionError('Reference document not found.', ref.blockType, ref.uuid);
+                }
             }
             if (ref.dryRun) {
                 _vcHelper.addDryRunContext(credentialSubject);
