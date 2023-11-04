@@ -140,3 +140,70 @@ Registry (UNFCCC) - The United Nations Framework Convention on Climate Change (U
 Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 ### Step by Step <a href="#_toc146642057" id="_toc146642057"></a>
+
+1. Login as Standard Registry and import the policy either by file or through IPFS timestamp, which is mentioned above.
+2. Once policy is imported, we need to open the policy and see all the steps involved in it:
+
+<figure><img src="../../../.gitbook/assets/image (348).png" alt=""><figcaption></figcaption></figure>
+
+3. Now, we need to create new user and assign role as Project Participant.
+
+<figure><img src="../../../.gitbook/assets/image (349).png" alt=""><figcaption></figcaption></figure>
+
+4. Name new Project Participant:
+
+<figure><img src="../../../.gitbook/assets/image (350).png" alt=""><figcaption></figcaption></figure>
+
+5. Now, the project participant waits for its name's approval
+
+<figure><img src="../../../.gitbook/assets/image (351).png" alt=""><figcaption></figcaption></figure>
+
+6. Now we create a new user and assign its role as VVB
+
+<figure><img src="../../../.gitbook/assets/image (352).png" alt=""><figcaption></figcaption></figure>
+
+7. Once role is assigned, we need to give a name to VVB:
+
+<figure><img src="../../../.gitbook/assets/image (353).png" alt=""><figcaption></figcaption></figure>
+
+8. Once name is assigned, VVB waits for its name to be approved by Standard Registry:
+
+<figure><img src="../../../.gitbook/assets/image (354).png" alt=""><figcaption></figcaption></figure>
+
+9. Now we login as SR and view the documents submitted by VVB and Project Participant and approve their requests by clicking on Approve button:
+
+<figure><img src="../../../.gitbook/assets/image (355).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (356).png" alt=""><figcaption></figcaption></figure>
+
+10. Once approved, we login back as Project Participant and create new project by clicking on New Project and entering complete details of the project:
+
+<figure><img src="../../../.gitbook/assets/image (357).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (358).png" alt=""><figcaption></figcaption></figure>
+
+11. Once project details are submitted, it waits for SR to approve it:
+
+<figure><img src="../../../.gitbook/assets/image (359).png" alt=""><figcaption></figcaption></figure>
+
+12. Login back as SR and after reviewing the document, it approved the project submitted by Project Participant
+
+<figure><img src="../../../.gitbook/assets/image (360).png" alt=""><figcaption></figcaption></figure>
+
+13. Now Project Participant creates monitoring report by clicking on Add Report and fills out the monitoring report form.
+
+<figure><img src="../../../.gitbook/assets/image (361).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (362).png" alt=""><figcaption></figcaption></figure>
+
+14. After creating monitoring report, project participant assigns VVB to approve it:
+
+<figure><img src="../../../.gitbook/assets/image (363).png" alt=""><figcaption></figcaption></figure>
+
+15. Now, we login as VVB and after reviewing the monitoring report, VVB approves it:
+
+<figure><img src="../../../.gitbook/assets/image (364).png" alt=""><figcaption></figcaption></figure>
+
+16. Now we login as SR and once it is reviewed, SR approves the Monitoring report
+
+<figure><img src="../../../.gitbook/assets/image (365).png" alt=""><figcaption></figcaption></figure>
