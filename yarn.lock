@@ -1106,7 +1106,7 @@ __metadata:
     "@transmute/jsonld-schema": 0.7.0-unstable.80
     "@transmute/security-context": 0.7.0-unstable.80
     "@transmute/vc.js": 0.7.0-unstable.80
-    "@types/express": ^4.17.13
+    "@types/express": ^4.17.20
     "@types/gulp": ^4
     "@types/gulp-rename": ^2
     "@types/jszip": ^3.4.1
@@ -3008,6 +3008,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/express@npm:^4.17.20":
+  version: 4.17.20
+  resolution: "@types/express@npm:4.17.20"
+  dependencies:
+    "@types/body-parser": "*"
+    "@types/express-serve-static-core": ^4.17.33
+    "@types/qs": "*"
+    "@types/serve-static": "*"
+  checksum: bf8a97d283128e5129f9ccabbeef728ff3f0484465e0ae74a304bd0588fa6cb715ae68845650caba9a641944b7791ba125d02ddbd47a7e62aaefdd036570c6c5
+  languageName: node
+  linkType: hard
+
 "@types/fs-extra@npm:^9.0.12":
   version: 9.0.13
   resolution: "@types/fs-extra@npm:9.0.13"
@@ -3677,7 +3689,7 @@ __metadata:
     "@nestjs/microservices": ^9.4.1
     "@nestjs/platform-express": ^9.4.2
     "@nestjs/swagger": ^6.3.0
-    "@types/express": ^4.17.13
+    "@types/express": ^4.17.20
     "@types/express-fileupload": ^1.4.1
     "@types/gulp": ^4
     "@types/gulp-rename": ^2
@@ -3879,7 +3891,7 @@ __metadata:
     "@nestjs/microservices": ^9.4.1
     "@nestjs/platform-express": ^9.4.2
     "@nestjs/swagger": ^6.3.0
-    "@types/express": ^4.17.13
+    "@types/express": ^4.17.20
     "@types/express-fileupload": ^1.4.1
     "@types/gulp": ^4
     "@types/gulp-rename": ^2
@@ -7890,7 +7902,7 @@ __metadata:
     "@transmute/security-context": 0.7.0-unstable.80
     "@transmute/vc.js": 0.7.0-unstable.80
     "@types/deep-equal": ^1.0.1
-    "@types/express": ^4.17.13
+    "@types/express": ^4.17.20
     "@types/fs-extra": ^9.0.12
     "@types/gulp": ^4
     "@types/gulp-rename": ^2
@@ -11243,7 +11255,7 @@ __metadata:
     "@transmute/jsonld-schema": 0.7.0-unstable.80
     "@transmute/security-context": 0.7.0-unstable.80
     "@transmute/vc.js": 0.7.0-unstable.80
-    "@types/express": ^4.17.13
+    "@types/express": ^4.17.20
     "@types/gulp": ^4
     "@types/gulp-rename": ^2
     axios: ^1.3.6
@@ -12639,7 +12651,7 @@ __metadata:
     "@transmute/security-context": 0.7.0-unstable.80
     "@transmute/vc.js": 0.7.0-unstable.80
     "@types/deep-equal": ^1.0.1
-    "@types/express": ^4.17.13
+    "@types/express": ^4.17.20
     "@types/fs-extra": ^9.0.12
     "@types/gulp": ^4
     "@types/gulp-rename": ^2
@@ -14888,7 +14900,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "topic-viewer@workspace:topic-viewer"
   dependencies:
-    "@types/express": ^4.17.13
+    "@types/express": ^4.17.20
     "@types/gulp": ^4
     "@types/gulp-rename": ^2
     express: ^4.17.3
@@ -14971,7 +14983,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "tree-viewer@workspace:tree-viewer"
   dependencies:
-    "@types/express": ^4.17.13
+    "@types/express": ^4.17.20
     "@types/gulp": ^4
     "@types/gulp-rename": ^2
     express: ^4.17.3
