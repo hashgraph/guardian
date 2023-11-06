@@ -9697,10 +9697,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jose@npm:4.14.1":
-  version: 4.14.1
-  resolution: "jose@npm:4.14.1"
-  checksum: 08e1a2b7d1e5c546fe3e6ac1a4037e5da2fc9df85f4681cada9c1723d748d53f4580330a01a8bc595fd649dab954719e17756312662b69231ef4ce67e31d1dd4
+"jose@npm:5.1.0":
+  version: 5.1.0
+  resolution: "jose@npm:5.1.0"
+  checksum: 62e907e953fd83f869cf4ce2e08359f5678bf99a6a4cc50faf7997b4694bc5cd32f43b79c3ff86f0e5385346b465a408166ccd1bf4237ae8c705ee82c733acc0
   languageName: node
   linkType: hard
 
@@ -11253,7 +11253,7 @@ __metadata:
     gulp-rename: ^2.0.0
     gulp-sourcemaps: ^3.0.0
     gulp-typescript: ^6.0.0-alpha.1
-    jose: 4.14.1
+    jose: 5.1.0
     nodemon: ^2.0.12
     prom-client: ^14.1.1
     prometheus-api-metrics: 3.2.2
