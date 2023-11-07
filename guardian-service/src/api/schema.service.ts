@@ -1,38 +1,9 @@
 import { ApiResponse } from '@api/helpers/api-response';
 import { emptyNotifier, initNotifier } from '@helpers/notifier';
 import { Controller } from '@nestjs/common';
-import {
-    DatabaseServer,
-    Logger,
-    MessageError,
-    MessageResponse,
-    RunFunctionAsync,
-    Users
-} from '@guardian/common';
-import {
-    ISchema,
-    MessageAPI,
-    ModuleStatus,
-    SchemaCategory,
-    SchemaHelper,
-    SchemaStatus,
-    TopicType
-} from '@guardian/interfaces';
-import {
-    getPageOptions,
-    findAndPublishSchema,
-    exportSchemas,
-    importSchemaByFiles,
-    importSchemasByMessages,
-    importTagsByFiles,
-    prepareSchemaPreview,
-    checkForCircularDependency,
-    createSchemaAndArtifacts,
-    deleteSchema,
-    incrementSchemaVersion,
-    updateSchemaDefs,
-    getSchemaCategory
-} from './helpers';
+import { DatabaseServer, Logger, MessageError, MessageResponse, RunFunctionAsync, Users } from '@guardian/common';
+import { ISchema, MessageAPI, ModuleStatus, SchemaCategory, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
+import { checkForCircularDependency, copySchemaAsync, createSchemaAndArtifacts, deleteSchema, exportSchemas, findAndPublishSchema, getPageOptions, getSchemaCategory, importSchemaByFiles, importSchemasByMessages, importTagsByFiles, incrementSchemaVersion, prepareSchemaPreview, updateSchemaDefs } from './helpers';
 
 @Controller()
 export class SchemaService { }
@@ -65,6 +36,19 @@ export async function schemaAPI(): Promise<void> {
         RunFunctionAsync(async () => {
             const schema = await createSchemaAndArtifacts(item.category, item, item.owner, notifier);
             notifier.result(schema.id);
+        }, async (error) => {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            notifier.error(error);
+        });
+        return new MessageResponse(task);
+    });
+
+    ApiResponse(MessageAPI.COPY_SCHEMA_ASYNC, async (msg) => {
+        const {iri, topicId, name, owner, task} = msg;
+        const notifier = await initNotifier(task);
+        RunFunctionAsync(async () => {
+            const schema = await copySchemaAsync(iri, topicId, name, owner);
+            notifier.result(schema.iri);
         }, async (error) => {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             notifier.error(error);

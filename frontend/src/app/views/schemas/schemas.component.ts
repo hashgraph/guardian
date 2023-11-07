@@ -21,6 +21,7 @@ import { CompareSchemaDialog } from '../../modules/schema-engine/compare-schema-
 import { ModulesService } from '../../services/modules.service';
 import { ToolsService } from 'src/app/services/tools.service';
 import { AlertComponent, AlertType } from 'src/app/modules/common/alert/alert.component';
+import { CopySchemaDialog } from '../../modules/schema-engine/copy-schema-dialog/copy-schema-dialog';
 
 enum SchemaType {
     System = 'system',
@@ -41,6 +42,7 @@ const policySchemaColumns: string[] = [
     'operation',
     'export',
     'edit',
+    'clone-schema',
     'delete',
     'document',
 ];
@@ -889,6 +891,46 @@ export class SchemaConfigComponent implements OnInit {
         });
         dialogRef.afterClosed().subscribe(async (schema: Schema | null) => {
             this.createSchema(schema);
+        });
+    }
+
+    public onCopySchema(element: Schema): void {
+        const newDocument: any = {...element};
+        delete newDocument._id;
+        delete newDocument.id;
+        delete newDocument.uuid;
+        delete newDocument.creator;
+        delete newDocument.owner;
+        delete newDocument.version;
+        delete newDocument.previousVersion;
+        const dialogRef = this.dialog.open(CopySchemaDialog, {
+            width: '950px',
+            panelClass: 'g-dialog',
+            disableClose: true,
+            data: {
+                type: 'new',
+                topicId: this.currentTopic,
+                schemaType: this.type,
+                policies: this.policies,
+                modules: this.modules,
+                tools: this.draftTools,
+                scheme: newDocument
+            }
+        });
+        dialogRef.afterClosed().subscribe(async (copyInfo: any | null) => {
+            if (copyInfo) {
+                this.schemaService.copySchema(copyInfo).subscribe((result) => {
+                    const {taskId} = result;
+                    this.router.navigate(['task', taskId], {
+                        queryParams: {
+                            last: btoa(location.href)
+                        }
+                    });
+                }, (e) => {
+                    this.loadError(e);
+                });
+            }
+            // this.createSchema(schema);
         });
     }
 

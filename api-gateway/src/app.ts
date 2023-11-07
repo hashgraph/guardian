@@ -16,6 +16,7 @@ import { SwaggerModule } from '@nestjs/swagger';
 import { SwaggerConfig } from '@helpers/swagger-config';
 import { SwaggerModels, SwaggerPaths } from './old-descriptions';
 import { MeecoAuth } from '@helpers/meeco';
+import * as extraModels from './middlewares/validation/schemas'
 
 const PORT = process.env.PORT || 3002;
 
@@ -65,7 +66,17 @@ Promise.all([
 
         new TaskManager().setDependecies(wsService, cn);
 
-        const document = SwaggerModule.createDocument(app, SwaggerConfig);
+        const document = SwaggerModule.createDocument(app, SwaggerConfig, {
+            extraModels: Object.values(extraModels).filter((constructor: new (...args: any[]) => any) => {
+                try {
+                    // tslint:disable-next-line:no-unused-expression
+                    new constructor();
+                    return true
+                } catch {
+                    return false;
+                }
+            })
+        });
         Object.assign(document.paths, SwaggerPaths)
         Object.assign(document.components.schemas, SwaggerModels.schemas);
         SwaggerModule.setup('api-docs', app, document);
