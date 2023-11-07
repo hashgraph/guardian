@@ -13,7 +13,7 @@ import { MetricsApi } from '@api/service/metrics';
 import { ModulesApi } from '@api/service/module';
 import { ToolsApi } from '@api/service/tool';
 import { ProfileApi } from '@api/service/profile';
-import { AuthGuard, authorizationHelper } from '@auth/authorization-helper';
+import { authorizationHelper } from '@auth/authorization-helper';
 import { PolicyApi } from '@api/service/policy';
 import { SchemaApi, SingleSchemaApi } from '@api/service/schema';
 import { SettingsApi } from '@api/service/settings';
@@ -33,6 +33,9 @@ import { MatchConstraint } from '@helpers/decorators/match.validator';
 import { NotificationService } from '@guardian/common';
 import { NotificationsApi } from '@api/service/notifications';
 import { ApplicationEnvironment } from './environment';
+import { AuthGuard } from '@auth/auth-guard';
+import { UsersService } from '@helpers/users';
+import { RolesGuard } from '@auth/roles-guard';
 
 const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
 const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
@@ -95,9 +98,11 @@ const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
     ],
     providers: [
         LoggerService,
-        AuthGuard,
         MatchConstraint,
         NotificationService,
+        AuthGuard,
+        RolesGuard,
+        UsersService
     ]
 })
 export class AppModule {

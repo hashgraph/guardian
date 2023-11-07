@@ -1,14 +1,4 @@
-import {
-    ISchema,
-    SchemaEntity,
-    SchemaStatus,
-    SchemaHelper,
-    Schema,
-    TopicType,
-    IRootConfig,
-    SchemaCategory,
-    ModuleStatus
-} from '@guardian/interfaces';
+import { GenerateUUIDv4, IRootConfig, ISchema, ModuleStatus, Schema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
 import path from 'path';
 import { readJSON } from 'fs-extra';
 import { DatabaseServer, MessageAction, MessageServer, Schema as SchemaCollection, SchemaConverterUtils, SchemaMessage, TopicConfig, TopicHelper, Users, } from '@guardian/common';
@@ -334,6 +324,66 @@ export async function sendSchemaMessage(
     await messageServer
         .setTopicObject(topic)
         .sendMessage(message);
+}
+
+export async function copyDefsSchemas(defs: any, owner: string, topicId: string, root: any) {
+    if (!defs) {
+        return;
+    }
+    const schemasIdsInDocument = Object.keys(defs);
+    for (const schemaId of schemasIdsInDocument) {
+        await copySchemaAsync(schemaId, topicId, null, owner);
+    }
+}
+
+export async function copySchemaAsync(iri: string, topicId: string, name: string, owner: string) {
+    const users = new Users();
+    const root = await users.getHederaAccount(owner);
+
+    let item = await DatabaseServer.getSchema({iri});
+
+    const oldSchemaIri = item.iri;
+    await copyDefsSchemas(item.document?.$defs, owner, topicId, root);
+    item = await DatabaseServer.getSchema({iri});
+
+    // Clean document
+    delete item._id;
+    delete item.id;
+    delete item.documentURL;
+    delete item.documentFileId;
+    delete item.contextURL;
+    delete item.contextFileId;
+    delete item.messageId;
+    delete item.createDate;
+    delete item.updateDate;
+
+    if (name) {
+        item.name = name;
+    }
+    item.uuid = GenerateUUIDv4();
+    item.status = SchemaStatus.DRAFT;
+    item.topicId = topicId;
+
+    SchemaHelper.setVersion(item, null, null);
+    SchemaHelper.updateIRI(item);
+    item.iri = item.iri || item.uuid;
+
+    await DatabaseServer.saveSchema(item)
+
+    await updateSchemaDocument(item);
+    await updateSchemaDefs(item.iri, oldSchemaIri);
+
+    const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true);
+
+    if (topic) {
+        await sendSchemaMessage(
+            root,
+            topic,
+            MessageAction.CreateSchema,
+            item
+        );
+    }
+    return item;
 }
 
 /**
