@@ -6,6 +6,7 @@ import { Schema, SchemaField, UnitSystem } from '@guardian/interfaces';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { DATETIME_FORMATS } from '../schema-form/schema-form.component';
 import moment from 'moment-timezone';
+import { MAT_DATE_LOCALE } from '@angular/material/core';
 
 /**
  * Form view by schema
@@ -15,6 +16,7 @@ import moment from 'moment-timezone';
     templateUrl: './schema-form-view.component.html',
     styleUrls: ['./schema-form-view.component.css'],
     providers: [
+        {provide: MAT_DATE_LOCALE, useValue: ''},
         { provide: NgxMatDateAdapter, useClass: NgxMatMomentAdapter },
         { provide: NGX_MAT_DATE_FORMATS, useValue: DATETIME_FORMATS }
     ],
@@ -32,8 +34,8 @@ export class SchemaFormViewComponent implements OnInit {
 
     constructor(private ipfs: IPFSService, private changeDetector: ChangeDetectorRef) { }
 
-    formatDate(date: string): Date | string {
-        return moment(date, 'YYYY-MM-DD').local(true).toDate();
+    formatDate(date: string): Date {
+        return moment(date, 'YYYY-MM-DD').tz(Intl.DateTimeFormat().resolvedOptions().timeZone, true).toDate();
     }
 
     ngOnInit(): void {
