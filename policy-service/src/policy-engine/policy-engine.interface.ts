@@ -1,9 +1,10 @@
-import { DocumentStatus, PolicyRole } from '@guardian/interfaces';
-import { PolicyOutputEventType } from '@policy-engine/interfaces';
+import { PolicyRole } from '@guardian/interfaces';
+import { BlockCacheType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { EventConfig, IPolicyEvent } from './interfaces';
 import { DatabaseServer } from '@guardian/common';
 import { IPolicyUser } from './policy-user';
 import { IHederaAccount } from './helpers/utils';
+import { ComponentsService } from './helpers/components-service';
 
 /**
  * Policy roles interface
@@ -112,7 +113,14 @@ export interface IPolicyBlock {
      * Block about
      */
     about?: string;
-
+    /**
+     * Block permissions
+     */
+    readonly permissions: string[];
+    /**
+     * Block variables
+     */
+    readonly variables: any[];
     /**
      * Block actions
      */
@@ -137,14 +145,14 @@ export interface IPolicyBlock {
     readonly databaseServer: DatabaseServer;
 
     /**
+     * Database Server
+     */
+    readonly components: ComponentsService;
+
+    /**
      * Dry-run
      */
     readonly dryRun: string;
-
-    /**
-     * If policy contain multiple groups
-     */
-    readonly isMultipleGroups: boolean;
 
     /**
      * Set policy owner
@@ -158,11 +166,6 @@ export interface IPolicyBlock {
      * @param policy
      */
     setPolicyInstance(policyId: string, policy: any): void;
-
-    /**
-     * Register Variables
-     */
-    registerVariables(): void;
 
     /**
      * Set topic id
@@ -268,7 +271,11 @@ export interface IPolicyBlock {
      * @param user
      * @param data
      */
-    triggerEvents(eventType: PolicyOutputEventType, user?: IPolicyUser, data?: any): void;
+    triggerEvents<T>(
+        eventType: PolicyOutputEventType,
+        user: IPolicyUser,
+        data: T
+    ): void;
 
     /**
      * Trigger event
@@ -276,7 +283,11 @@ export interface IPolicyBlock {
      * @param user
      * @param data
      */
-    triggerEvent(event: any, user?: IPolicyUser, data?: any): void;
+    triggerEvent<T>(
+        event: IPolicyEvent<T>,
+        user: IPolicyUser,
+        data: T
+    ): void;
 
     /**
      * Save block state
@@ -325,7 +336,9 @@ export interface IPolicyBlock {
      * @param {AnyBlockType} parent
      */
     joinData<T extends IPolicyDocument | IPolicyDocument[]>(
-        data: T, user: IPolicyUser, parent: AnyBlockType
+        data: T,
+        user: IPolicyUser,
+        parent: AnyBlockType
     ): Promise<T>;
 
     /**
@@ -340,6 +353,54 @@ export interface IPolicyBlock {
      * @param data
      */
     triggerInternalEvent(type: string, data: any): void;
+
+    /**
+     * Get Cache
+     * @param {string} name - variable name
+     * @param {IPolicyUser | string} [user] - user DID
+     * @returns {T} - variable value
+     */
+    getCache<T>(name: string, user?: IPolicyUser | string): Promise<T>;
+
+    /**
+     * Set Cache
+     * @param {BlockCacheType} type - variable size
+     * @param {string} name - variable name
+     * @param {T} value - variable value
+     * @param {IPolicyUser | string} [user] - user DID
+     */
+    setCache<T>(
+        type: BlockCacheType,
+        name: string,
+        value: T,
+        user?: IPolicyUser | string
+    ): Promise<void>;
+
+    /**
+     * Set Cache
+     * @param {string} name - variable name
+     * @param {T} value - variable value
+     * @param {IPolicyUser | string} [user] - user DID
+     * @protected
+     */
+    setShortCache<T>(
+        name: string,
+        value: T,
+        user?: IPolicyUser | string
+    ): Promise<void>;
+
+    /**
+     * Set Cache (Big value)
+     * @param {string} name - variable name
+     * @param {T} value - variable value
+     * @param {IPolicyUser | string} [user] - user DID
+     * @protected
+     */
+    setLongCache<T>(
+        name: string,
+        value: T,
+        user?: IPolicyUser | string
+    ): Promise<void>;
 }
 
 /**
@@ -688,7 +749,19 @@ export type AnyBlockType =
 /**
  * Policy document
  */
-export interface IPolicyDocument {
+export interface IPolicyDBDocument<T> {
+    /**
+     * id
+     */
+    id?: string;
+    /**
+     * id
+     */
+    _id?: any;
+    /**
+     * DID
+     */
+    did?: string;
     /**
      * Policy id
      */
@@ -697,10 +770,6 @@ export interface IPolicyDocument {
      * Block Tag
      */
     tag?: string;
-    /**
-     * Document instance
-     */
-    document?: any;
     /**
      * Document owner
      */
@@ -732,7 +801,11 @@ export interface IPolicyDocument {
     /**
      * Hedera Status
      */
-    hederaStatus?: DocumentStatus;
+    hederaStatus?: any;
+    /**
+     * status
+     */
+    status?: any;
     /**
      * Hash
      */
@@ -750,38 +823,79 @@ export interface IPolicyDocument {
      */
     type?: string;
     /**
-     * Other fields
+     * Schema
      */
-    [x: string]: any;
-}
-
-/**
- * Policy document
- */
-export interface IPolicyState<T> {
+    schema?: string;
     /**
-     * Data
+     * Accounts
      */
-    data: T;
+    accounts?: any;
+    /**
+     * Options
+     */
+    option?: any;
+    /**
+     * Signature
+     */
+    signature?: any;
+    /**
+     * Ref
+     */
+    documentFields?: string[];
+    /**
+     * Tokens
+     */
+    tokens?: any;
+    /**
+     * comment
+     */
+    comment?: string;
+    /**
+     * Document instance
+     */
+    document?: T;
 }
 
 /**
  * Policy document
  */
-export type IPolicyEventState = IPolicyState<IPolicyDocument | IPolicyDocument[]>;
+export interface IPolicyDocument extends IPolicyDBDocument<any> {
+    /**
+     * Ref
+     */
+    ref?: any;
+    /**
+     * blocks
+     */
+    blocks?: any;
+    /**
+     * blocks
+     */
+    target?: any;
+    /**
+     * sourceTag
+     */
+    __sourceTag__?: string;
+}
 
 /**
- * Policy document
+ * Policy event
  */
-export interface IPolicyMintEventState {
+export interface IPolicyEventState {
     /**
      * Data
      */
     data: IPolicyDocument | IPolicyDocument[];
+
     /**
-     * Data
+     * Result
      */
-    result: IPolicyDocument | IPolicyDocument[];
+    result?: IPolicyDocument | IPolicyDocument[];
+
+    /**
+     * Source
+     */
+    source?: IPolicyDocument | IPolicyDocument[];
 }
 
 /**

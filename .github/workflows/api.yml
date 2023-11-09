@@ -9,18 +9,19 @@ on:
 jobs:
   buildAndTest:
     runs-on: ubuntu-latest
-    services:
-      hashicorpvault:
-        image: vault
-        env:
-          VAULT_SERVER: "http://0.0.0.0:8200"
-          VAULT_DEV_ROOT_TOKEN_ID: "1234"
-        ports:
-          - 8200/tcp
+    container: ubuntu
+    #    services:
+    #      hashicorpvault:
+    #        image: vault
+    #        env:
+    #          VAULT_SERVER: "https://0.0.0.0:8200"
+    #          VAULT_DEV_ROOT_TOKEN_ID: "1234"
+    #        ports:
+    #          - 8200/tcp
     strategy:
       matrix:
-        node-version: [16.x]
-        mongodb-version: [4.4]
+        node-version: [ 16.x ]
+        mongodb-version: [ 4.4 ]
     steps:
       - uses: actions/checkout@v1
       - name: Use Node.js ${{ matrix.node-version }}
@@ -37,37 +38,33 @@ jobs:
           port: "4222"
       - name: Build
         run: |
+          yarn
           pushd interfaces
-          npm install
-          npm run build
+          yarn run build
           popd
           pushd common
-          npm install
-          npm run build
+          yarn run build
+          popd
+          pushd notification-service
+          yarn run build
           popd
           pushd logger-service
-          npm install
-          npm run build
+          yarn run build
           popd
           pushd auth-service
-          npm install
-          npm run build
+          yarn run build
           popd
           pushd guardian-service
-          npm install
-          npm run build
+          yarn run build
           popd
           pushd policy-service
-          npm install
-          npm run build
+          yarn run build
           popd
           pushd worker-service
-          npm install
-          npm run build
+          yarn run build
           popd
           pushd api-gateway
-          npm install
-          npm run build
+          yarn run build
           popd
         env:
           CI: true

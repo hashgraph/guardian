@@ -1,6 +1,5 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 
 /**
  * Dialog for export/import policy.
@@ -11,36 +10,35 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
     styleUrls: ['./preview-policy-dialog.component.css']
 })
 export class PreviewPolicyDialog {
-    loading = true;
-    policy!: any;
-    schemas!: string;
-    tokens!: string;
-    policyGroups!: string;
-    newVersions: any[] = [];
-    versionOfTopicId: any;
-    policies!: any[];
-
-    module!: any;
-
-    public innerWidth: any;
-    public innerHeight: any;
+    public loading = true;
+    public policy!: any;
+    public schemas!: string;
+    public tokens!: string;
+    public policyGroups!: string;
+    public newVersions: any[] = [];
+    public versionOfTopicId: any;
+    public policies!: any[];
+    public similar!: any[];
+    public module!: any;
+    public tool!: any;
 
     constructor(
         public dialogRef: MatDialogRef<PreviewPolicyDialog>,
-        private policyEngineService: PolicyEngineService,
         @Inject(MAT_DIALOG_DATA) public data: any
     ) {
         if (data.policy) {
-            this.newVersions = data.policy.newVersions || [];
-            this.policy = data.policy.policy;
+            const importFile = data.policy;
+
+            this.newVersions = importFile.newVersions || [];
+            this.policy = importFile.policy;
 
             this.policyGroups = '';
             if (this.policy.policyRoles) {
                 this.policyGroups += this.policy.policyRoles.join(', ');
             }
 
-            const schemas = data.policy.schemas || [];
-            const tokens = data.policy.tokens || [];
+            const schemas = importFile.schemas || [];
+            const tokens = importFile.tokens || [];
 
             this.schemas = schemas.map((s: any) => {
                 if (s.version) {
@@ -50,17 +48,27 @@ export class PreviewPolicyDialog {
             }).join(', ');
             this.tokens = tokens.map((s: any) => s.tokenName).join(', ');
 
-            this.policies = this.data.policies || [];
+            const similar = importFile.similar || [];
+            this.similar = similar.map((s: any) => {
+                if (s.version) {
+                    return `${s.name} (${s.version})`;
+                }
+                return s.name;
+            }).join(', ');
         }
 
         if (data.module) {
-            this.module = data.module.module;
+            this.module = data.module?.module;
         }
+
+        if (data.tool) {
+            this.tool = data.tool?.tool;
+        }
+
+        this.policies = data.policies || [];
     }
 
     ngOnInit() {
-        this.innerWidth = window.innerWidth;
-        this.innerHeight = window.innerHeight;
         this.loading = false;
     }
 

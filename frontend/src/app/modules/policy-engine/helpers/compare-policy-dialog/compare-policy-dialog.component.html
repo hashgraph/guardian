@@ -5,11 +5,14 @@
                 <mat-icon>close</mat-icon>
             </div>
         </div>
-        <div class="g-dialog-title">
-            Compare Policy
+        <div *ngIf="type === 'policy'" class="g-dialog-title">
+            Compare Policies
+        </div>
+        <div *ngIf="type === 'tool'" class="g-dialog-title">
+            Compare Tools
         </div>
         <div class="g-dialog-actions">
-            <div class="g-dialog-actions-btn" (click)="onCompare()" [attr.disabled]="!policyId1 || !policyId2">
+            <div class="g-dialog-actions-btn" (click)="onCompare()" [attr.disabled]="disabled">
                 Compare
             </div>
         </div>
@@ -21,18 +24,19 @@
             </div>
 
             <mat-form-field appearance="outline" style="width: 100%">
-                <mat-label>First policy:</mat-label>
-                <mat-select [(value)]="policyId1" (valueChange)="onChange()">
+                <mat-label *ngIf="type === 'policy'">First policy:</mat-label>
+                <mat-label *ngIf="type === 'tool'">First tool:</mat-label>
+                <mat-select [(value)]="itemID_1" (valueChange)="onChange()">
                     <mat-option>None</mat-option>
-                    <mat-option *ngFor="let policy of list1" [value]="policy.id">{{policy.name}}</mat-option>
+                    <mat-option *ngFor="let row of list1" [value]="row.id">{{row.name}}</mat-option>
                 </mat-select>
             </mat-form-field>
 
             <mat-form-field appearance="outline" style="width: 100%">
-                <mat-label>Secondary policy</mat-label>
-                <mat-select [(value)]="policyId2" (valueChange)="onChange()">
-                    <mat-option>None</mat-option>
-                    <mat-option *ngFor="let policy of list2" [value]="policy.id">{{policy.name}}</mat-option>
+                <mat-label *ngIf="type === 'policy'">Secondary policies:</mat-label>
+                <mat-label *ngIf="type === 'tool'">Secondary tools:</mat-label>
+                <mat-select multiple [(value)]="itemID_2" (valueChange)="onChange()">
+                    <mat-option *ngFor="let row of list2" [value]="row.id">{{row.name}}</mat-option>
                 </mat-select>
             </mat-form-field>
         </div>

@@ -1,11 +1,24 @@
-import { ApplicationState, COMMON_CONNECTION_CONFIG, DataBaseHelper, MessageBrokerChannel, Migration } from '@guardian/common';
+import { ApplicationState, COMMON_CONNECTION_CONFIG, DataBaseHelper, LargePayloadContainer, MessageBrokerChannel, Migration } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { NestFactory } from '@nestjs/core';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { Deserializer, IncomingRequest, MicroserviceOptions, Serializer, Transport } from '@nestjs/microservices';
 import process from 'process';
 import { AppModule } from './app.module';
+
+export class LoggerSerializer implements Serializer {
+    serialize(value: any, options?: Record<string, any>): any {
+        value.data = Buffer.from(JSON.stringify(value), 'utf-8')
+        return value
+    }
+}
+
+export class LoggerDeserializer implements Deserializer {
+    deserialize(value: any, options?: Record<string, any>): IncomingRequest {
+        return JSON.parse(value.toString())
+    }
+}
 
 Promise.all([
     Migration({
@@ -26,10 +39,13 @@ Promise.all([
     NestFactory.createMicroservice<MicroserviceOptions>(AppModule,{
         transport: Transport.NATS,
         options: {
+            queue: 'logger-service',
             name: `${process.env.SERVICE_CHANNEL}`,
             servers: [
                 `nats://${process.env.MQ_ADDRESS}:4222`
-            ]
+            ],
+            // serializer: new LoggerSerializer(),
+            // deserializer: new LoggerDeserializer(),
         },
     }),
 ]).then(async values => {
@@ -43,6 +59,10 @@ Promise.all([
     state.updateState(ApplicationStates.STARTED);
 
     state.updateState(ApplicationStates.INITIALIZING);
+    const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
+    if (Number.isInteger(maxPayload)) {
+        new LargePayloadContainer().runServer();
+    }
 
     state.updateState(ApplicationStates.READY);
     // const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);

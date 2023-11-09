@@ -489,10 +489,28 @@ export class VCJS {
      * @param {any} subject - subject
      * @returns {any} - subject
      */
-    public addDryRunContext(subject: any): any {
-        if (subject.type) {
-            subject['@context'] = [`schema#${subject.type}`];
+    public addDryRunContext(subject: any, context?: string[]): any {
+        if (!subject || typeof subject !== 'object') {
+            return subject;
         }
+
+        if (Array.isArray(subject)) {
+            for (const subjectItem of subject) {
+                this.addDryRunContext(subjectItem, context);
+            }
+            return subject;
+        }
+
+        if (!subject.type) {
+            return subject;
+        }
+
+        subject['@context'] = context || [`schema#${subject.type}`];
+
+        for (const value of Object.values(subject)) {
+            this.addDryRunContext(value, subject['@context']);
+        }
+
         return subject;
     }
 

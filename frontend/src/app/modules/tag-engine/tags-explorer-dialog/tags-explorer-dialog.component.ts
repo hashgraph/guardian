@@ -31,6 +31,7 @@ export class TagsExplorerDialog {
     public tab: number = 1;
     public tagsService: TagsService;
     public schemas: any[] = [];
+    public hasChanges: boolean = false;
 
     constructor(
         public dialogRef: MatDialogRef<TagsExplorerDialog>,
@@ -52,7 +53,7 @@ export class TagsExplorerDialog {
     }
 
     onNoClick(): void {
-        this.dialogRef.close(null);
+        this.dialogRef.close(this.hasChanges);
     }
 
     public onSelect(item: TagMapItem) {
@@ -95,10 +96,12 @@ export class TagsExplorerDialog {
             }
             setTimeout(() => {
                 this.loading = false;
+                this.hasChanges = true;
             }, 500);
         }, (e) => {
             console.error(e.error);
             this.loading = false;
+            this.hasChanges = false;
         });
     }
 
@@ -113,10 +116,12 @@ export class TagsExplorerDialog {
             }
             setTimeout(() => {
                 this.loading = false;
+                this.hasChanges = true;
             }, 500);
         }, (e) => {
             console.error(e.error);
             this.loading = false;
+            this.hasChanges = false;
         });
     }
 
@@ -166,16 +171,20 @@ export class TagsExplorerDialog {
         return JSON.stringify(doc, null, 2);
     }
 
-    public openVCDocument(document: any, title: string) {
+    public openVCDocument(item: any, title: string) {
         const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
+            panelClass: 'g-dialog',
             data: {
-                document: document,
+                id: item.id,
+                dryRun: !!item.dryRunId,
+                document: item.document,
                 title: title,
                 type: 'Document',
                 viewDocument: false,
                 toggle: false
-            }
+            },
+            disableClose: true,
         });
         dialogRef.afterClosed().subscribe(async (result) => {
         });

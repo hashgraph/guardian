@@ -23,5 +23,8 @@ export enum MessageAction {
     Mint = 'mint',
     PublishModule = 'publish-module',
     PublishTag = 'publish-tag',
-    DeleteTag = 'delete-tag'
+    DeleteTag = 'delete-tag',
+    PublishTool = 'publish-tool',
+    CreateTool = 'create-tool',
+    CreateContract = 'create-contract'
 }

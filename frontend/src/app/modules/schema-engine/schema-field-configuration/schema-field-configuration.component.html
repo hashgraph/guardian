@@ -58,7 +58,7 @@
             <mat-label>Field type</mat-label>
             <mat-select [formControl]="field.controlType" #controlType (valueChange)="onTypeChange($event)">
                 <mat-optgroup label="Simple Types">
-                    <mat-option *ngFor="let type of types" [value]="type.value">
+                    <mat-option *ngFor="let type of types" [value]="type.value" [title]="type.name">
                         {{type.name}}
                     </mat-option>
                 </mat-optgroup>
@@ -69,9 +69,15 @@
                 <mat-optgroup label="Hedera">
                     <mat-option value="hederaAccount">Account</mat-option>
                 </mat-optgroup>
-                <mat-optgroup *ngIf="schemaTypes" label="Schema defined">
-                    <mat-option *ngFor="let type of schemaTypes" [value]="type.value">
-                        {{type.name}}
+                <mat-optgroup *ngIf="schemaTypes && schemaTypes.length" label="Schema defined">
+                    <mat-option
+                        *ngFor="let type of schemaTypes"
+                        [value]="type.value"
+                        class="sub-schema-opt sub-schema-type-{{type.type}}"
+                        [title]="type.title">
+                        <span *ngIf="type.component" class="sub-schema-component">{{type.component}}:</span>
+                        <span class="sub-schema-name">{{type.name}}</span>
+                        <span *ngIf="type.version" class="sub-schema-version">{{type.version}}</span>
                     </mat-option>
                 </mat-optgroup>
             </mat-select>
@@ -112,11 +118,14 @@
         </div>
     </ng-container>
     <ng-template #notHelpText>
-        <div class="custom-field-required">
-            <mat-checkbox color="primary" [formControl]="field.controlRequired">
-                Required Field
-            </mat-checkbox>
-        </div>
+        <mat-form-field appearance="outline">
+            <mat-label>Field type</mat-label>
+            <mat-select [formControl]="fieldType">
+                <mat-option value="none">None</mat-option>
+                <mat-option value="required">Required</mat-option>
+                <mat-option value="hidden">Hidden</mat-option>
+            </mat-select>
+        </mat-form-field>
         <div class="custom-field-isArray">
             <mat-checkbox color="primary" [formControl]="field.controlArray">
                 Allow multiple answers

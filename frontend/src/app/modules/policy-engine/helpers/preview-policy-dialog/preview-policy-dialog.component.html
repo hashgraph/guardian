@@ -26,7 +26,7 @@
                 <div class="delimiter"></div>
 
                 <div *ngIf="policies.length" class="field">
-                    <div class="field-name">Verison of</div>
+                    <div class="field-name">Version of</div>
                     <div>
                         <mat-form-field appearance="outline" style="width: 100%">
                             <mat-label>Policy</mat-label>
@@ -42,19 +42,15 @@
                 <div class="delimiter"></div>
 
                 <div class="version-container">
-                    <div *ngIf="policy.version" class="field field-version">
+                    <div *ngIf="policy.version" class="field">
                         <div class="field-name">Version</div>
-                        <div class="field-value">{{policy.version}}</div>
+                        <div class="field-value">{{ policy.version }}</div>
                     </div>
-                    <div class="new-versions-container" *ngIf="newVersions && newVersions.length > 0">
-                        <div class="info-container field-name"><mat-icon class="info-label">info</mat-icon> <b>New
-                                versions of policy exist</b></div>
-                        <div class="new-versions-links">
-                            <a class="field-version-value" *ngFor="let newVersion of newVersions"
-                                [title]="newVersion.messageId"
-                                (click)="onNewVersionClick(newVersion.messageId)">{{newVersion.version}}</a>
-                        </div>
-                    </div>
+                    <app-new-versions 
+                        class="version-container__new-versions" 
+                        type="policy" 
+                        [newVersions]="newVersions"
+                        (onClick)="onNewVersionClick($event)"></app-new-versions>
                 </div>
 
                 <div class="field">
@@ -92,6 +88,13 @@
                     <div class="field-name">Tokens</div>
                     <div class="field-value">{{tokens}}</div>
                 </div>
+
+                <div *ngIf="similar" class="delimiter"></div>
+
+                <div *ngIf="similar" class="field-last">
+                    <div class="field-name">Similar Policies</div>
+                    <div class="field-value">{{similar}}</div>
+                </div>
             </div>
 
             <div *ngIf="module" class="policy">
@@ -109,8 +112,25 @@
                     <div class="field-value" [title]="module.owner">{{module.owner}}</div>
                 </div>
             </div>
+
+            <div *ngIf="tool" class="policy">
+                <div class="policy-header">{{tool.name}}</div>
+
+                <div class="delimiter"></div>
+
+                <div class="field">
+                    <div class="field-name">Description</div>
+                    <div class="field-value">{{tool.description}}</div>
+                </div>
+
+                <div class="field">
+                    <div class="field-name">Creator</div>
+                    <div class="field-value" [title]="tool.owner">{{tool.owner}}</div>
+                </div>
+            </div>
+
             <div class="page-btns">
-                <button *ngIf="innerWidth <= 810" mat-raised-button color="primary" id="create-btn" (click)="onImport()">Import</button>
+                <button mat-raised-button color="primary" id="create-btn" (click)="onImport()">Import</button>
             </div>
         </div>
     </div>

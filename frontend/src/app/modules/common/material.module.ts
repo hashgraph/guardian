@@ -32,6 +32,7 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { CdkTableModule } from '@angular/cdk/table';
 import { MatSliderModule } from '@angular/material/slider';
+import { MatBadgeModule } from '@angular/material/badge';
 
 @NgModule({
     declarations: [],
@@ -64,7 +65,8 @@ import { MatSliderModule } from '@angular/material/slider';
         MatButtonToggleModule,
         DragDropModule,
         MatSliderModule,
-        CdkTableModule
+        CdkTableModule,
+        MatBadgeModule
     ],
     exports: [
         MatTabsModule,
@@ -98,7 +100,8 @@ import { MatSliderModule } from '@angular/material/slider';
         MatButtonToggleModule,
         DragDropModule,
         MatSliderModule,
-        CdkTableModule
+        CdkTableModule,
+        MatBadgeModule
     ]
 })
 export class MaterialModule { }

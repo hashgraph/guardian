@@ -1,51 +1,115 @@
-import { GenerateUUIDv4, ISchema, ModelHelper, Schema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
-import { DatabaseServer, Logger, MessageAction, MessageServer, MessageType, replaceValueRecursive, SchemaConverterUtils, SchemaMessage, UrlType } from '@guardian/common';
+import {
+    GenerateUUIDv4,
+    ISchema,
+    ModelHelper,
+    ModuleStatus,
+    Schema,
+    SchemaCategory,
+    SchemaEntity,
+    SchemaHelper,
+    SchemaStatus
+} from '@guardian/interfaces';
+import {
+    DatabaseServer,
+    Logger,
+    MessageAction,
+    MessageServer,
+    MessageType,
+    replaceValueRecursive,
+    Schema as SchemaCollection,
+    SchemaConverterUtils,
+    SchemaMessage,
+    Tag,
+    TagMessage,
+    UrlType
+} from '@guardian/common';
 import { emptyNotifier, INotifier } from '@helpers/notifier';
-import { importTag } from './../tag.service';
-import { createSchema, fixSchemaDefsOnImport, getDefs, ImportResult, onlyUnique } from './schema-helper';
+import { importTag } from '@api/helpers/tag-import-export-helper';
+import { createSchema, fixSchemaDefsOnImport, getDefs, ImportResult, onlyUnique, SchemaImportResult } from './schema-helper';
+import geoJson from '@guardian/interfaces/dist/helpers/geojson-schema/geo-json';
 
-export const schemaCache = {};
+export class SchemaCache {
+    /**
+     * Schema Cache
+     */
+    private static readonly map = new Map<string, string>();
+
+    /**
+     * Check
+     * @param id
+     */
+    public static hasSchema(id: string) {
+        return SchemaCache.map.has(id);
+    }
+
+    /**
+     * Get schema
+     * @param id
+     */
+    public static getSchema(id: string): any | null {
+        try {
+            const value = SchemaCache.map.get(id);
+            return JSON.parse(value);
+        } catch (error) {
+            return null;
+        }
+    }
+
+    /**
+     * Set schema
+     * @param id
+     * @param schema
+     */
+    public static setSchema(id: string, schema: any): void {
+        try {
+            const value = JSON.stringify(schema);
+            SchemaCache.map.set(id, value)
+        } catch (error) {
+            return;
+        }
+    }
+};
 
 /**
  * Load schema
  * @param messageId
  * @param owner
  */
-export async function loadSchema(messageId: string, owner: string) {
+export async function loadSchema(messageId: string): Promise<any> {
     const log = new Logger();
     try {
-        if (schemaCache[messageId]) {
-            return schemaCache[messageId];
+        let schemaToImport = SchemaCache.getSchema(messageId);
+        if (!schemaToImport) {
+            const messageServer = new MessageServer(null, null);
+            log.info(`loadSchema: ${messageId}`, ['GUARDIAN_SERVICE']);
+            const message = await messageServer.getMessage<SchemaMessage>(messageId, MessageType.Schema);
+            log.info(`loadedSchema: ${messageId}`, ['GUARDIAN_SERVICE']);
+            schemaToImport = {
+                iri: null,
+                uuid: message.uuid,
+                hash: '',
+                owner: null,
+                messageId,
+                name: message.name,
+                description: message.description,
+                entity: message.entity as SchemaEntity,
+                version: message.version,
+                creator: message.owner,
+                topicId: message.getTopicId(),
+                codeVersion: message.codeVersion,
+                relationships: message.relationships || [],
+                status: SchemaStatus.PUBLISHED,
+                readonly: false,
+                system: false,
+                active: false,
+                document: message.getDocument(),
+                context: message.getContext(),
+                documentURL: message.getDocumentUrl(UrlType.url),
+                contextURL: message.getContextUrl(UrlType.url)
+            }
+            schemaToImport = SchemaHelper.updateIRI(schemaToImport);
+            SchemaCache.setSchema(messageId, schemaToImport);
         }
-        const messageServer = new MessageServer(null, null);
-        log.info(`loadSchema: ${messageId}`, ['GUARDIAN_SERVICE']);
-        const message = await messageServer.getMessage<SchemaMessage>(messageId, MessageType.Schema);
-        log.info(`loadedSchema: ${messageId}`, ['GUARDIAN_SERVICE']);
-        const schemaToImport: any = {
-            uuid: message.uuid,
-            hash: '',
-            name: message.name,
-            description: message.description,
-            entity: message.entity as SchemaEntity,
-            status: SchemaStatus.PUBLISHED,
-            readonly: false,
-            system: false,
-            active: false,
-            document: message.getDocument(),
-            context: message.getContext(),
-            version: message.version,
-            creator: message.owner,
-            owner,
-            topicId: message.getTopicId(),
-            messageId,
-            documentURL: message.getDocumentUrl(UrlType.url),
-            contextURL: message.getContextUrl(UrlType.url),
-            iri: null,
-            codeVersion: message.codeVersion
-        }
-        SchemaHelper.updateIRI(schemaToImport);
-        log.info(`loadSchema end: ${messageId}`, ['GUARDIAN_SERVICE']);
-        schemaCache[messageId] = { ...schemaToImport };
         return schemaToImport;
     } catch (error) {
         log.error(error, ['GUARDIAN_SERVICE']);
@@ -61,13 +125,14 @@ export async function loadSchema(messageId: string, owner: string) {
  */
 export async function importTagsByFiles(
     result: ImportResult,
-    files: any[],
+    files: Tag[],
     notifier: INotifier
 ): Promise<ImportResult> {
     const { schemasMap } = result;
     const idMap: Map<string, string> = new Map();
     for (const item of schemasMap) {
         idMap.set(item.oldID, item.newID);
+        idMap.set(item.oldMessageID, item.newID);
     }
     await importTag(files, idMap);
     return result;
@@ -81,7 +146,7 @@ export async function importTagsByFiles(
 export async function exportSchemas(ids: string[]) {
     const schemas = await DatabaseServer.getSchemasByIds(ids);
     const map: any = {};
-    const relationships: ISchema[] = [];
+    const relationships: SchemaCollection[] = [];
     for (const schema of schemas) {
         if (!map[schema.iri]) {
             map[schema.iri] = schema;
@@ -101,6 +166,16 @@ export async function exportSchemas(ids: string[]) {
     return relationships;
 }
 
+export async function getSchemaCategory(topicId: string): Promise<SchemaCategory> {
+    if (topicId) {
+        const item = await DatabaseServer.getTool({ topicId });
+        if (item) {
+            return SchemaCategory.TOOL;
+        }
+    }
+    return SchemaCategory.POLICY;
+}
+
 /**
  * Import schema by files
  * @param owner
@@ -108,6 +183,7 @@ export async function exportSchemas(ids: string[]) {
  * @param topicId
  */
 export async function importSchemaByFiles(
+    category: SchemaCategory,
     owner: string,
     files: ISchema[],
     topicId: string,
@@ -115,7 +191,7 @@ export async function importSchemaByFiles(
 ): Promise<ImportResult> {
     notifier.start('Import schemas');
 
-    const schemasMap: any[] = [];
+    const schemasMap: SchemaImportResult[] = [];
     const uuidMap: Map<string, string> = new Map();
 
     for (const file of files) {
@@ -127,7 +203,9 @@ export async function importSchemaByFiles(
             oldUUID,
             newUUID,
             oldIRI: `#${oldUUID}`,
-            newIRI: `#${newUUID}`
+            newIRI: `#${newUUID}`,
+            oldMessageID: file.messageId,
+            newMessageID: null,
         })
         if (oldUUID) {
             uuidMap.set(oldUUID, newUUID);
@@ -151,16 +229,29 @@ export async function importSchemaByFiles(
         if (file.context) {
             file.context = replaceValueRecursive(file.context, uuidMap);
         }
+        file.sourceVersion = file.version;
         SchemaHelper.setVersion(file, '', '');
     }
 
-    const parsedSchemas = files.map(item => new Schema(item, true));
-    const updatedSchemasMap = {};
+    const tools = await DatabaseServer.getTools({ status: ModuleStatus.PUBLISHED }, { fields: ['topicId'] });
+    const toolSchemas = await DatabaseServer.getSchemas({ topicId: { $in: tools.map(t => t.topicId) } });
+    const updatedSchemasMap = {
+        '#GeoJSON': geoJson
+    };
+    const parsedSchemas: Schema[] = [];
+    for (const item of files) {
+        parsedSchemas.push(new Schema(item, true));
+    }
+    for (const item of toolSchemas) {
+        parsedSchemas.push(new Schema(item, true));
+    }
+
     const errors: any[] = [];
     for (const file of files) {
         const valid = fixSchemaDefsOnImport(file.iri, parsedSchemas, updatedSchemasMap);
         if (!valid) {
             errors.push({
+                type: 'schema',
                 uuid: file.uuid,
                 name: file.name,
                 error: 'invalid defs'
@@ -173,7 +264,7 @@ export async function importSchemaByFiles(
         const parsedSchema = updatedSchemasMap[schema.iri];
         schema.document = parsedSchema.document;
         const file = SchemaConverterUtils.SchemaConverter(schema);
-        file.category = SchemaCategory.POLICY;
+        file.category = category;
         file.readonly = false;
         file.system = false;
         const item = await createSchema(file, owner, emptyNotifier());
@@ -193,6 +284,7 @@ export async function importSchemaByFiles(
  * @param notifier
  */
 export async function importSchemasByMessages(
+    category: SchemaCategory,
     owner: string,
     messageIds: string[],
     topicId: string,
@@ -200,17 +292,65 @@ export async function importSchemasByMessages(
 ): Promise<ImportResult> {
     notifier.start('Load schema files');
     const schemas: ISchema[] = [];
+
+    const relationships = new Set<string>();
     for (const messageId of messageIds) {
-        const newSchema = await loadSchema(messageId, null);
+        const newSchema = await loadSchema(messageId);
+        schemas.push(newSchema);
+        for (const id of newSchema.relationships) {
+            relationships.add(id);
+        }
+    }
+    for (const messageId of messageIds) {
+        relationships.delete(messageId);
+    }
+    for (const messageId of relationships) {
+        const newSchema = await loadSchema(messageId);
         schemas.push(newSchema);
     }
 
     notifier.start('Load tags');
+    const topics = new Set<string>();
+    for (const schema of schemas) {
+        topics.add(schema.topicId);
+    }
+
     const tags: any[] = [];
+    const messageServer = new MessageServer(null, null);
+    for (const id of topics) {
+        const tagMessages = await messageServer.getMessages<TagMessage>(
+            id,
+            MessageType.Tag,
+            MessageAction.PublishTag
+        );
+        for (const tag of tagMessages) {
+            tags.push({
+                uuid: tag.uuid,
+                name: tag.name,
+                description: tag.description,
+                owner: tag.owner,
+                entity: tag.entity,
+                target: tag.target,
+                status: 'History',
+                topicId: tag.topicId,
+                messageId: tag.id,
+                document: null,
+                uri: null,
+                date: tag.date,
+                id: null
+            });
+        }
+    }
 
     notifier.completed();
 
-    let result = await importSchemaByFiles(owner, schemas, topicId, notifier);
+    let result = await importSchemaByFiles(
+        category,
+        owner,
+        schemas,
+        topicId,
+        notifier
+    );
     result = await importTagsByFiles(result, tags, notifier);
 
     return result;
@@ -228,7 +368,7 @@ export async function prepareSchemaPreview(
     notifier.start('Load schema file');
     const schemas = [];
     for (const messageId of messageIds) {
-        const schema = await loadSchema(messageId, null);
+        const schema = await loadSchema(messageId);
         schemas.push(schema);
     }
 
@@ -238,7 +378,9 @@ export async function prepareSchemaPreview(
     const anotherSchemas: SchemaMessage[] = [];
     for (const topicId of uniqueTopics) {
         const anotherVersions = await messageServer.getMessages<SchemaMessage>(
-            topicId, MessageType.Schema, MessageAction.PublishSchema
+            topicId,
+            MessageType.Schema,
+            MessageAction.PublishSchema
         );
         for (const ver of anotherVersions) {
             anotherSchemas.push(ver);
@@ -253,8 +395,10 @@ export async function prepareSchemaPreview(
         const newVersions = [];
         const topicMessages = anotherSchemas.filter(item => item.uuid === schema.uuid);
         for (const topicMessage of topicMessages) {
-            if (topicMessage.version &&
-                ModelHelper.versionCompare(topicMessage.version, schema.version) === 1) {
+            if (
+                topicMessage.version &&
+                ModelHelper.versionCompare(topicMessage.version, schema.version) === 1
+            ) {
                 newVersions.push({
                     messageId: topicMessage.getId(),
                     version: topicMessage.version

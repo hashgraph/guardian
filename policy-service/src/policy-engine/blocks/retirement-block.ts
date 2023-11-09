@@ -50,7 +50,7 @@ export class RetirementBlock {
      */
     private async createWipeVC(root: IRootConfig, token: any, data: any, ref: AnyBlockType): Promise<VcDocument> {
         const vcHelper = new VcHelper();
-        const policySchema = await ref.databaseServer.getSchemaByType(ref.topicId, SchemaEntity.WIPE_TOKEN);
+        const policySchema = await PolicyUtils.loadSchemaByType(ref, SchemaEntity.WIPE_TOKEN);
         const amount = data as string;
         const vcSubject = {
             ...SchemaHelper.getContext(policySchema),
@@ -114,6 +114,7 @@ export class RetirementBlock {
         const vcMessage = new VCMessage(MessageAction.CreateVC);
         vcMessage.setDocument(wipeVC);
         vcMessage.setRelationships(relationships);
+        vcMessage.setUser(null);
         const vcMessageResult = await messageServer
             .setTopicObject(topic)
             .sendMessage(vcMessage);
@@ -131,6 +132,7 @@ export class RetirementBlock {
         const vpMessage = new VPMessage(MessageAction.CreateVP);
         vpMessage.setDocument(vp);
         vpMessage.setRelationships(relationships);
+        vpMessage.setUser(null);
 
         const vpMessageResult = await messageServer
             .setTopicObject(topic)
@@ -140,7 +142,7 @@ export class RetirementBlock {
         vpDocument.type = DataTypes.RETIREMENT;
         vpDocument.messageId = vpMessageResult.getId();
         vpDocument.topicId = vpMessageResult.getTopicId();
-
+        vpDocument.relationships = relationships;
         await ref.databaseServer.saveVP(vpDocument);
 
         await MintService.wipe(ref, token, tokenValue, root, targetAccountId, vpMessageResult.getId());

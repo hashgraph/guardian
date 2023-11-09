@@ -1,9 +1,6 @@
-// import util from 'util';
 import express from 'express'
-// import { lookup } from 'dns';
 import { hostname } from 'os';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { Logger } from '../helpers';
 import { Singleton } from '../decorators/singleton';
 
 /**
@@ -11,6 +8,12 @@ import { Singleton } from '../decorators/singleton';
  */
 @Singleton
 export class LargePayloadContainer {
+
+    /**
+     * Is port random generated
+     * @private
+     */
+    private readonly _portGenerated: boolean = false;
 
     /**
      * Server was started
@@ -24,12 +27,6 @@ export class LargePayloadContainer {
     public get started(): boolean {
         return this._started;
     }
-
-    /**
-     * Logger
-     * @private
-     */
-    private readonly logger: Logger;
 
     /**
      * Objects map
@@ -47,7 +44,7 @@ export class LargePayloadContainer {
      * Server port
      * @private
      */
-    private readonly PORT: number;
+    private PORT: number;
 
     /**
      * Domain
@@ -55,12 +52,17 @@ export class LargePayloadContainer {
     private readonly DOMAIN: string;
 
     constructor() {
-        this.PORT = (process.env.DIRECT_MESSAGE_PORT) ? parseInt(process.env.DIRECT_MESSAGE_PORT, 10) : this.generateRandom(50000, 59999);
+        if (process.env.DIRECT_MESSAGE_PORT) {
+            this.PORT = parseInt(process.env.DIRECT_MESSAGE_PORT, 10);
+            this._portGenerated = false;
+        } else {
+            this._portGenerated = true;
+            this.PORT = this.generateRandom(50000, 59999);
+        }
         this.DOMAIN = (process.env.DIRECT_MESSAGE_HOST) ? process.env.DIRECT_MESSAGE_HOST : hostname();
         this.PROTOCOL = (process.env.DIRECT_MESSAGE_PROTOCOL) ? process.env.DIRECT_MESSAGE_PROTOCOL as any : 'http';
 
         this.objectsMap = new Map();
-        this.logger = new Logger();
         this._started = false;
     }
 
@@ -83,10 +85,24 @@ export class LargePayloadContainer {
             res.send(buf);
         })
 
-        app.listen(this.PORT, () => {
-            this.logger.info(`Large objects server starts on ${this.PORT} port`, [process.env.SERVICE_CHANNEL?.toUpperCase()]);
+        const server = app.listen(this.PORT, () => {
+            this._started = true;
+            try {
+                // this.logger.info(`Large objects server starts on ${this.PORT} port`, [process.env.SERVICE_CHANNEL?.toUpperCase()]);
+                console.info(`Large objects server starts on ${this.PORT} port`);
+            } catch (e) {
+                console.warn(e.message)
+            }
         });
-        this._started = true;
+        server.on('error', (error) => {
+            if (!this._portGenerated) {
+                throw error;
+            } else {
+                console.error(`Port ${this.PORT} already in use, regenerating...`);
+                this.PORT = this.generateRandom(50000, 59999);
+                this.runServer();
+            }
+        });
     }
 
     /**

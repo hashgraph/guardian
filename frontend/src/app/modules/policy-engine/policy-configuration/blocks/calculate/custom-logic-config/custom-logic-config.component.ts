@@ -1,7 +1,8 @@
-import { Component, EventEmitter, Input, OnInit, Output, ViewEncapsulation } from '@angular/core';
+import { Component, EventEmitter, Inject, Input, OnInit, Output, ViewEncapsulation } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { CodeEditorDialogComponent } from '../../../../helpers/code-editor-dialog/code-editor-dialog.component';
-import { IModuleVariables, PolicyBlockModel, SchemaVariables } from '../../../../structures';
+import { IModuleVariables, PolicyBlock, SchemaVariables } from '../../../../structures';
+import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
 
 @Component({
     selector: 'app-custom-logic-config',
@@ -10,13 +11,13 @@ import { IModuleVariables, PolicyBlockModel, SchemaVariables } from '../../../..
     encapsulation: ViewEncapsulation.Emulated
 })
 export class CustomLogicConfigComponent implements OnInit {
-    @Input('block') currentBlock!: PolicyBlockModel;
+    @Input('block') currentBlock!: PolicyBlock;
     @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();
 
     private moduleVariables!: IModuleVariables | null;
-    private item!: PolicyBlockModel;
-    
+    private item!: PolicyBlock;
+
     properties!: any;
     propHidden: any = {
         outputSchemaGroup: false
@@ -25,7 +26,9 @@ export class CustomLogicConfigComponent implements OnInit {
 
     constructor(
         private dialog: MatDialog
-    ) { }
+    ) { 
+        
+    }
 
     ngOnInit(): void {
         this.schemas = [];
@@ -33,7 +36,7 @@ export class CustomLogicConfigComponent implements OnInit {
         this.load(this.currentBlock);
     }
 
-    load(block: PolicyBlockModel) {
+    load(block: PolicyBlock) {
         this.moduleVariables = block.moduleVariables;
         this.item = block;
         this.properties = block.properties;
@@ -61,7 +64,7 @@ export class CustomLogicConfigComponent implements OnInit {
             }
         })
     }
-    
+
     onSave() {
         this.item.changed = true;
     }

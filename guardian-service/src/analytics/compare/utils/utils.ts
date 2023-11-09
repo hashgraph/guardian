@@ -3,6 +3,12 @@ import { IReportTable } from '../interfaces/report-table.interface';
 import { IRateMap } from '../interfaces/rate-map.interface';
 import { IRate } from '../interfaces/rate.interface';
 import MurmurHash3 from 'imurmurhash';
+import * as crypto from 'crypto';
+import { Hashing } from '@guardian/common';
+import { SchemaModel } from '../models/schema.model';
+import { BlockModel } from '../models/block.model';
+import { BlockType } from '@guardian/interfaces';
+import { BlockToolModel } from '../models/block-tool.model';
 
 /**
  * Compare Utils
@@ -79,7 +85,7 @@ export class CompareUtils {
      * @static
      */
     public static calcTotalRates(rates: number[]): number {
-        if(!rates.length) {
+        if (!rates.length) {
             return 100;
         }
         let total = 0;
@@ -126,4 +132,136 @@ export class CompareUtils {
         }
         return String(hashState.result());
     }
+
+    /**
+     * Sha256
+     * @param data
+     * @public
+     * @static
+     */
+    public static sha256(data: string): string {
+        try {
+            const sha256 = crypto
+                .createHash('sha256')
+                .update(data)
+                .digest();
+            return Hashing.base58.encode(sha256);
+        } catch (error) {
+            return '';
+        }
+    }
+
+    /**
+     * Compare schemas
+     * @param schemas1
+     * @param schemas2
+     * @public
+     * @static
+     */
+    public static compareSchemas(schemas1: SchemaModel[], schemas2: SchemaModel[]): number {
+        if (!schemas1 || !schemas2 || !schemas1.length || !schemas2.length) {
+            return 0;
+        }
+
+        if (schemas1.length === 1 && schemas2.length === 1) {
+            return schemas1[0].compare(schemas2[0]);
+        }
+
+        let result: number;
+        let max: number;
+        let min: number;
+
+        min = 104;
+        for (const schema1 of schemas1) {
+            max = 0;
+            for (const schema2 of schemas2) {
+                result = schema1.compare(schema2);
+                if (result < 0) {
+                    result = result + 104;
+                }
+                max = Math.max(max, result);
+            }
+            min = Math.min(min, max);
+        }
+
+        if (min >= 103) {
+            return -1;
+        } else if (min >= 102) {
+            return -2;
+        } else if (min > 100) {
+            return -3;
+        } else {
+            return min;
+        }
+    }
+
+    /**
+     * Create Block by JSON
+     * @param json
+     * @param index
+     * @public
+     * @static
+     */
+    public static createBlockModel(json: any, index: number): BlockModel {
+        if (json.blockType === BlockType.Tool) {
+            return new BlockToolModel(json, index + 1);
+        } else {
+            const block = new BlockModel(json, index + 1);
+            if (Array.isArray(json.children)) {
+                for (let i = 0; i < json.children.length; i++) {
+                    const childJSON = json.children[i];
+                    const child = CompareUtils.createBlockModel(childJSON, i);
+                    block.addChildren(child);
+                }
+            }
+            return block;
+        }
+    }
+
+    /**
+     * Create Block by JSON
+     * @param json
+     * @param index
+     * @public
+     * @static
+     */
+    public static createToolModel(json: any, index: number): BlockModel {
+        const block = new BlockModel(json, index + 1);
+        if (Array.isArray(json.children)) {
+            for (let i = 0; i < json.children.length; i++) {
+                const childJSON = json.children[i];
+                const child = CompareUtils.createBlockModel(childJSON, i);
+                block.addChildren(child);
+            }
+        }
+        return block;
+    }
+
+    /**
+     * Calculate total rate
+     * @param rates
+     * @private
+     */
+    public static total(rates: IRate<any>[]): number {
+        let total = 0;
+        let count = 0;
+
+        for (const child of rates) {
+            if (child.totalRate > 99) {
+                total += 100;
+            } else if (child.totalRate > 50) {
+                total += 50;
+            } else {
+                total += 0;
+            }
+            count++;
+        }
+
+        if (count) {
+            return Math.floor(total / count);
+        }
+
+        return 100;
+    }
+
 }

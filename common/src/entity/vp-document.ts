@@ -10,7 +10,7 @@ import ObjSet from 'lodash.set';
  * VP documents collection
  */
 @Entity()
-@Unique({ properties: ['hash'], options: { partialFilterExpression: { hash: { $type: 'string' }}}})
+@Unique({ properties: ['hash'], options: { partialFilterExpression: { hash: { $type: 'string' } } } })
 export class VpDocument extends BaseEntity implements IVPDocument {
     /**
      * Document owner
@@ -124,6 +124,24 @@ export class VpDocument extends BaseEntity implements IVPDocument {
     messageIds?: string[];
 
     /**
+     * Token amount
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    amount?: any;
+
+    /**
+     * Token serials
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    serials?: any;
+
+    /**
+     * Token Id
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    tokenId?: any;
+
+    /**
      * Document defaults
      */
     @BeforeCreate()
@@ -152,9 +170,9 @@ export class VpDocument extends BaseEntity implements IVPDocument {
                             if (
                                 (typeof fieldValue === 'string' &&
                                     fieldValue.length <
-                                        (+process.env
-                                            .DOCUMENT_CACHE_FIELD_LIMIT ||
-                                            100)) ||
+                                    (+process.env
+                                        .DOCUMENT_CACHE_FIELD_LIMIT ||
+                                        100)) ||
                                 typeof fieldValue === 'number'
                             ) {
                                 ObjSet(newDocument, field, fieldValue);

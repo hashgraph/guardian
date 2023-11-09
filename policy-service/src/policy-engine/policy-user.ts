@@ -59,6 +59,10 @@ export class PolicyUser implements IPolicyUser {
      * username
      */
     public username?: string;
+    /**
+     * Role message
+     */
+    public roleMessage?: string;
 
     constructor(did: string, virtual: boolean = false) {
         this.id = did;
@@ -66,6 +70,7 @@ export class PolicyUser implements IPolicyUser {
         this.role = null;
         this.group = null;
         this.virtual = virtual;
+        this.roleMessage = null;
     }
 
     /**
@@ -81,10 +86,15 @@ export class PolicyUser implements IPolicyUser {
          * Group ID
          */
         uuid?: string
+        /**
+         * Message ID
+         */
+        messageId?: string
     } | null): PolicyUser {
         if (group) {
             this.role = group.role;
             this.group = group.uuid || null;
+            this.roleMessage = group.messageId || null;
             if (this.group) {
                 this.id = `${this.group}:${this.did}`;
             } else {
@@ -119,28 +129,7 @@ export class PolicyUser implements IPolicyUser {
      */
     public static create(group: PolicyRoles, virtual: boolean = false): PolicyUser {
         const user = new PolicyUser(group.did, virtual);
-        return user.setGroup({ role: group.role, uuid: group.uuid });
-    }
-
-    /**
-     * Create User by Id
-     * @param userId
-     * @param role
-     * @param virtual
-     */
-    public static fromUserId(userId: string, role?: string, virtual: boolean = false): PolicyUser {
-        const parsedUserId = userId.split(':');
-        let did;
-        let group;
-        if (parsedUserId[0] === 'did') {
-            group = null;
-            did = userId;
-        } else {
-            group = parsedUserId.splice(0, 1)[0];
-            did = parsedUserId.join(':');
-        }
-        const user = new PolicyUser(did, virtual);
-        return user.setGroup({ role, uuid: group });
+        return user.setGroup(group);
     }
 
     /**

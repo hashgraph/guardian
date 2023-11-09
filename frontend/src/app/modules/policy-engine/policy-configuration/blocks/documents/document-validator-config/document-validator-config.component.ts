@@ -1,5 +1,6 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { IModuleVariables, PolicyBlockModel, SchemaVariables } from '../../../../structures';
+import { Component, EventEmitter, Inject, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
+import { IModuleVariables, PolicyBlock, SchemaVariables } from '../../../../structures';
+import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
 
 /**
  * Settings for block of 'sendToGuardian' type.
@@ -11,13 +12,13 @@ import { IModuleVariables, PolicyBlockModel, SchemaVariables } from '../../../..
     encapsulation: ViewEncapsulation.Emulated
 })
 export class DocumentValidatorConfigComponent implements OnInit {
-    @Input('block') currentBlock!: PolicyBlockModel;
+    @Input('block') currentBlock!: PolicyBlock;
     @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();
 
     private moduleVariables!: IModuleVariables | null;
-    private item!: PolicyBlockModel;
-    
+    private item!: PolicyBlock;
+
     propHidden: any = {
         main: false,
         conditionsGroup: false,
@@ -26,8 +27,10 @@ export class DocumentValidatorConfigComponent implements OnInit {
 
     properties!: any;
     schemas!: SchemaVariables[];
-    
-    constructor() {
+
+    constructor(
+    ) {
+        
     }
 
     ngOnInit(): void {
@@ -40,7 +43,7 @@ export class DocumentValidatorConfigComponent implements OnInit {
         this.load(this.currentBlock);
     }
 
-    load(block: PolicyBlockModel) {
+    load(block: PolicyBlock) {
         this.moduleVariables = block.moduleVariables;
         this.item = block;
         this.properties = block.properties;
@@ -59,7 +62,7 @@ export class DocumentValidatorConfigComponent implements OnInit {
             type: 'equal',
         })
     }
-    
+
     onSave() {
         this.item.changed = true;
     }

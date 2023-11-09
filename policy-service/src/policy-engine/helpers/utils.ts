@@ -25,6 +25,8 @@ import {
     KeyType, Wallet,
     Users,
     Workers,
+    NotificationHelper,
+    VcSubject
 } from '@guardian/common';
 import { TokenId, TopicId } from '@hashgraph/sdk';
 import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
@@ -156,6 +158,17 @@ export class PolicyUtils {
      */
     public static getVCScope(item: VcDocument) {
         return item.getCredentialSubject(0).getFields();
+    }
+
+    /**
+     * Get VC scope
+     * @param item
+     */
+    public static createVcFromSubject(subject: any): VcDocument {
+        const vc = new VcDocument();
+        const credentialSubject = VcSubject.create(subject);
+        vc.addCredentialSubject(credentialSubject);
+        return vc;
     }
 
     /**
@@ -494,7 +507,7 @@ export class PolicyUtils {
             return await ref.databaseServer.virtualAssociate(user.hederaAccountId, token);
         } else {
             const workers = new Workers();
-            return await workers.addNonRetryableTask({
+            const result = await workers.addNonRetryableTask({
                 type: WorkerTaskType.ASSOCIATE_TOKEN,
                 data: {
                     tokenId: token.tokenId,
@@ -504,6 +517,15 @@ export class PolicyUtils {
                     dryRun: ref.dryRun
                 }
             }, 20);
+            const userProfile = await new Users().getUserByAccount(
+                user.hederaAccountId
+            );
+            await NotificationHelper.info(
+                `Associate token`,
+                `${token.tokenName} associated`,
+                userProfile?.id
+            );
+            return result;
         }
     }
 
@@ -517,7 +539,7 @@ export class PolicyUtils {
             return await ref.databaseServer.virtualDissociate(user.hederaAccountId, token.tokenId);
         } else {
             const workers = new Workers();
-            return await workers.addNonRetryableTask({
+            const result = await workers.addNonRetryableTask({
                 type: WorkerTaskType.ASSOCIATE_TOKEN,
                 data: {
                     tokenId: token.tokenId,
@@ -527,6 +549,15 @@ export class PolicyUtils {
                     dryRun: ref.dryRun
                 }
             }, 20);
+            const userProfile = await new Users().getUserByAccount(
+                user.hederaAccountId
+            );
+            await NotificationHelper.info(
+                `Dissociate token`,
+                `${token.tokenName} dissociated`,
+                userProfile?.id
+            );
+            return result
         }
     }
 
@@ -553,7 +584,7 @@ export class PolicyUtils {
                     hederaAccountId: root.hederaAccountId,
                     hederaAccountKey: root.hederaAccountKey,
                     freezeKey,
-                    tokenId: token.tokenId,
+                    token,
                     freeze: true,
                     dryRun: ref.dryRun
                 }
@@ -584,7 +615,7 @@ export class PolicyUtils {
                     hederaAccountId: root.hederaAccountId,
                     hederaAccountKey: root.hederaAccountKey,
                     freezeKey,
-                    tokenId: token.tokenId,
+                    token,
                     freeze: false,
                     dryRun: ref.dryRun
                 }
@@ -615,7 +646,7 @@ export class PolicyUtils {
                     hederaAccountId: root.hederaAccountId,
                     hederaAccountKey: root.hederaAccountKey,
                     userHederaAccountId: user.hederaAccountId,
-                    tokenId: token.tokenId,
+                    token,
                     kycKey,
                     grant: true,
                     dryRun: ref.dryRun
@@ -647,7 +678,7 @@ export class PolicyUtils {
                     hederaAccountId: root.hederaAccountId,
                     hederaAccountKey: root.hederaAccountKey,
                     userHederaAccountId: user.hederaAccountId,
-                    tokenId: token.tokenId,
+                    token,
                     kycKey,
                     grant: false,
                     dryRun: ref.dryRun
@@ -874,7 +905,10 @@ export class PolicyUtils {
      */
     public static getPolicyUser(ref: AnyBlockType, did: string, uuid: string): IPolicyUser {
         const user = new PolicyUser(did, !!ref.dryRun);
-        return user.setGroup({ role: null, uuid });
+        if (uuid) {
+            return user.setGroup({ role: null, uuid });
+        }
+        return user;
     }
 
     /**
@@ -883,7 +917,13 @@ export class PolicyUtils {
      * @param userId
      */
     public static getPolicyUserById(ref: AnyBlockType, userId: string): IPolicyUser {
-        return PolicyUser.fromUserId(userId, null, !!ref.dryRun);
+        if (userId.startsWith('did:')) {
+            const did = userId;
+            return (new PolicyUser(did, !!ref.dryRun));
+        } else {
+            const [uuid, did] = userId.split(/:(.*)/s, 2);
+            return (new PolicyUser(did, !!ref.dryRun)).setGroup({ role: null, uuid });
+        }
     }
 
     /**
@@ -893,7 +933,30 @@ export class PolicyUtils {
      */
     public static getDocumentOwner(ref: AnyBlockType, document: IPolicyDocument): IPolicyUser {
         const user = new PolicyUser(document.owner, !!ref.dryRun);
-        return user.setGroup({ role: null, uuid: document.group });
+        if (document.group) {
+            return user.setGroup({ role: null, uuid: document.group });
+        }
+        return user;
+    }
+
+    /**
+     * Get Policy User
+     * @param ref
+     * @param document
+     */
+    public static async getUserByIssuer(ref: AnyBlockType, document: IPolicyDocument): Promise<PolicyUser> {
+        const did = PolicyUtils.getDocumentIssuer(document.document) || document.owner;
+        const user = new PolicyUser(did, !!ref.dryRun);
+        if (document.group) {
+            const group = await ref.databaseServer.getUserInGroup(ref.policyId, did, document.group);
+            return user.setGroup(group);
+        } else {
+            if (did !== ref.policyOwner) {
+                const group = await ref.databaseServer.getActiveGroupByUser(ref.policyId, did);
+                return user.setGroup(group);
+            }
+        }
+        return user;
     }
 
     /**
@@ -1159,6 +1222,20 @@ export class PolicyUtils {
      * @param owner
      * @param document
      */
+    public static createUnsignedVC(ref: AnyBlockType, document: VcDocument): IPolicyDocument {
+        return {
+            policyId: ref.policyId,
+            tag: ref.tag,
+            document: document.toJsonTree()
+        };
+    }
+
+    /**
+     * Create VC Document
+     * @param ref
+     * @param owner
+     * @param document
+     */
     public static createVC(ref: AnyBlockType, owner: IPolicyUser, document: VcDocument): IPolicyDocument {
         return {
             policyId: ref.policyId,
@@ -1218,12 +1295,13 @@ export class PolicyUtils {
      * @param user
      */
     public static async getGroupContext(ref: AnyBlockType, user: IPolicyUser): Promise<any> {
-        if (!ref.isMultipleGroups) {
+        const policyGroups = PolicyUtils.getGroupTemplates<any>(ref);
+        if (policyGroups.length === 0) {
             return null;
         }
         const group = await ref.databaseServer.getUserInGroup(ref.policyId, user.did, user.group);
         if (group && group.messageId) {
-            const groupSchema = await ref.databaseServer.getSchemaByType(ref.topicId, SchemaEntity.ISSUER);
+            const groupSchema = await PolicyUtils.loadSchemaByType(ref, SchemaEntity.ISSUER);
             return {
                 groupId: group.messageId,
                 context: groupSchema.contextURL,
@@ -1238,7 +1316,7 @@ export class PolicyUtils {
      * @param document
      */
     public static getDocumentIssuer(document: any): string {
-        if (document) {
+        if (document && document.issuer) {
             if (typeof document.issuer === 'string') {
                 return document.issuer;
             } else {
@@ -1247,5 +1325,76 @@ export class PolicyUtils {
         } else {
             return null
         }
+    }
+
+    /**
+     * Load schema by type
+     * @param ref
+     * @param type
+     */
+    public static async loadSchemaByType(ref: AnyBlockType, type: SchemaEntity): Promise<SchemaCollection> {
+        return await ref.components.loadSchemaByType(type);
+    }
+
+    /**
+     * Load schema by id
+     * @param ref
+     * @param type
+     */
+    public static async loadSchemaByID(ref: AnyBlockType, id: SchemaEntity): Promise<SchemaCollection> {
+        return await ref.components.loadSchemaByID(id);
+    }
+
+    /**
+     * Load schema by id
+     * @param ref
+     * @param uuid
+     */
+    public static async getArtifactFile(ref: AnyBlockType, uuid: string): Promise<string> {
+        if (!uuid) {
+            throw new Error(`File does not exist`);
+        }
+        const file = await ref.components.loadArtifactByID(uuid);
+        if (typeof file === 'string') {
+            return file;
+        } else {
+            throw new Error(`File does not exist`);
+        }
+    }
+
+    /**
+     * Load token template by name
+     * @param ref
+     * @param name
+     */
+    public static getTokenTemplate<T>(ref: AnyBlockType, name: any): T {
+        return ref.components.getTokenTemplate<T>(name);
+    }
+
+    /**
+     * Find Group Template
+     * @param ref
+     * @param name
+     */
+    public static getGroupTemplate<T>(ref: AnyBlockType, name: string): T {
+        return ref.components.getGroupTemplate<T>(name);
+    }
+
+    /**
+     * Get Group Templates
+     * @param ref
+     * @param name
+     */
+    public static getGroupTemplates<T>(ref: AnyBlockType): T[] {
+        return ref.components.getGroupTemplates<T>();
+    }
+
+    /**
+     * Find Role Template
+     * @param ref
+     * @param name
+     */
+    public static getRoleTemplate<T>(ref: AnyBlockType, name: string): T {
+        return ref.components.getRoleTemplate<T>(name);
     }
 }

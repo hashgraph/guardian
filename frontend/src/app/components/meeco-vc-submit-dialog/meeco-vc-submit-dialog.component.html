@@ -1,0 +1,32 @@
+<h1 mat-dialog-title class="dialog-title">VC Subject Submission</h1>
+
+<div mat-dialog-content class="dialog-content">
+    <span class="dialog-content__note">
+        Please approve or reject your VC data <span *ngIf="!userRole">and select Guardian role</span>
+    </span>
+
+    <div class="content">
+        <ul class="document">
+            <li *ngFor="let keyValue of vcSubject" class="document-item">
+                <label class="document-item__label">{{ keyValue[0] }}:</label>
+                <span class="document-item__value">{{ keyValue[1] || 'N/A' }}</span>
+            </li>
+        </ul>
+
+        <mat-form-field *ngIf="!userRole" class="content__role-select">
+            <mat-label>Role</mat-label>
+            <mat-select [(value)]="selectedRole" [required]="true">
+                <mat-option *ngFor="let role of roles" [value]="role.value">
+                    {{ role.displayName }}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+    </div>
+</div>
+
+<div mat-dialog-actions class="dialog-actions">
+    <button mat-button (click)="onReject()">Reject</button>
+    <button mat-raised-button color="primary" (click)="onApprove()" [disabled]="isApproveBtnDisabled">
+        Approve
+    </button>
+</div>

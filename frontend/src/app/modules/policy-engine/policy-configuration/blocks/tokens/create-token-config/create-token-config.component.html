@@ -28,16 +28,16 @@
         <td class="propHeaderCell"></td>
     </tr>
 
-    <tr class="propRow" [attr.collapse]="propHidden.main">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Type</td>
-        <td class="propRowCell">
-            <mat-select [(value)]="properties.uiMetaData.type" [disabled]="readonly" (change)="onSave()">
-                <mat-option value="page">PAGE</mat-option>
-                <mat-option value="dialog">DIALOG</mat-option>
-            </mat-select>
-        </td>
-    </tr>
+    <!--    <tr class="propRow" [attr.collapse]="propHidden.main">-->
+    <!--        <td class="propRowCol"></td>-->
+    <!--        <td class="propRowCell cellName">Type</td>-->
+    <!--        <td class="propRowCell">-->
+    <!--            <mat-select [(value)]="properties.uiMetaData.type" [disabled]="readonly" (change)="onSave()">-->
+    <!--                <mat-option value="page">PAGE</mat-option>-->
+    <!--                <mat-option value="dialog">DIALOG</mat-option>-->
+    <!--            </mat-select>-->
+    <!--        </td>-->
+    <!--    </tr>-->
 
     <ng-container *ngIf="properties.uiMetaData.type == 'page'">
         <tr class="propRow" [attr.collapse]="propHidden.main">

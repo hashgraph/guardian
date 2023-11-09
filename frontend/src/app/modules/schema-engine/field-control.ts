@@ -1,8 +1,4 @@
-import {
-    FormArray,
-    FormControl,
-    FormGroup, ValidationErrors, ValidatorFn, Validators
-} from '@angular/forms';
+import { FormArray, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { SchemaField } from '@guardian/interfaces';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -16,6 +12,7 @@ export class FieldControl {
     public readonly name: string;
 
     public controlKey: FormControl;
+    public hidden: FormControl;
     public controlTitle: FormControl;
     public controlDescription: FormControl;
     public controlType: FormControl;
@@ -61,6 +58,7 @@ export class FieldControl {
             this.controlRemoteLink = new FormControl(field.remoteLink);
             this.controlPrivate = new FormControl(field.isPrivate || false);
             this.controlEnum = new FormArray([]);
+            this.hidden = new FormControl(!!field.hidden);
             field.enum?.forEach(item => {
                 this.controlEnum.push(new FormControl(item))
             });
@@ -90,12 +88,18 @@ export class FieldControl {
             this.controlBold = new FormControl(false);
             this.controlPrivate = new FormControl(false);
             this.controlPattern = new FormControl('');
+            this.hidden = new FormControl(false);
         }
         if (this._entityType) {
             this._entityType.valueChanges
                 .pipe(takeUntil(destroyEvent))
                 .subscribe(() => this.controlKey.updateValueAndValidity());
         }
+        // this.hidden.valueChanges.subscribe(value => {
+        //     if (value === true) {
+        //         this.controlRequired.setValue(false);
+        //     }
+        // })
     }
 
     private trimFormControlValue(value: string) {
@@ -168,6 +172,7 @@ export class FieldControl {
             controlBold: this.controlBold,
             controlPrivate: this.controlPrivate,
             controlPattern: this.controlPattern,
+            hidden: this.hidden
         });
     }
 
@@ -190,6 +195,7 @@ export class FieldControl {
             const textBold = group.controlBold;
             const isPrivate = group.controlPrivate;
             const pattern = group.controlPattern;
+            const hidden = group.hidden;
             return {
                 key,
                 title,
@@ -205,6 +211,7 @@ export class FieldControl {
                 textBold,
                 isPrivate,
                 pattern,
+                hidden
             };
         } else {
             return null;
@@ -245,5 +252,24 @@ export class FieldControl {
             }
             return null;
         };
+    }
+
+    public isCondition(types: any): boolean {
+        if (!this.controlType || !types[this.controlType.value]) {
+            return false;
+        }
+        if (this.controlArray && this.controlArray.value) {
+            return false;
+        }
+        if (!this.controlDescription || !this.controlDescription.value) {
+            return false;
+        }
+        if (types[this.controlType.value].isRef) {
+            return false;
+        }
+        if (types[this.controlType.value].type === 'boolean' && !this.controlRequired.value) {
+            return false;
+        }
+        return true;
     }
 }

@@ -26,7 +26,7 @@ export class WizardService {
         config: any
     ): Observable<{ taskId: string; expectation: number }> {
         return this.http.post<{ taskId: string; expectation: number }>(
-            `${this.url}/policy/push`,
+            `${this.url}/push/policy`,
             config
         );
     }
@@ -86,6 +86,7 @@ export class WizardService {
                 dialogTitle: 'Save progress',
                 dialogText: 'Do you want to save progress?',
             },
+            disableClose: true,
         });
         dialogRef.afterClosed().subscribe((saveState) => {
             callback(Object.assign(value, { saveState }));
@@ -196,6 +197,7 @@ export class WizardService {
                         },
                     ].concat(options),
                 },
+                disableClose: true,
             });
             selectorDialog.afterClosed().subscribe((value) => {
                 if (!value?.ok) {

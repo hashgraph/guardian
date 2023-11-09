@@ -1,4 +1,5 @@
 import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
+import { CommonBlock } from './common';
 
 /**
  * Document action clock with UI
@@ -16,6 +17,7 @@ export class InterfaceDocumentActionBlock {
      */
     public static async validate(validator: BlockValidator, ref: IBlockProp): Promise<void> {
         try {
+            await CommonBlock.validate(validator, ref);
             if (!ref.options.type) {
                 validator.addError('Option "type" is not set');
             } else {
@@ -53,20 +55,9 @@ export class InterfaceDocumentActionBlock {
                         if (!ref.options.targetUrl) {
                             validator.addError('Option "targetUrl" is not set');
                         }
-
-                        if (!ref.options.schema) {
-                            validator.addError('Option "schema" is not set');
-                            break;
-                        }
-                        if (typeof ref.options.schema !== 'string') {
-                            validator.addError('Option "schema" must be a string');
-                            break;
-                        }
-
-                        if (await validator.schemaNotExist(ref.options.schema)) {
-                            validator.addError(`Schema with id "${ref.options.schema}" does not exist`);
-                            break;
-                        }
+                        validator.checkBlockError(
+                            validator.validateSchemaVariable('schema', ref.options.schema, true)
+                        );
                         break;
 
                     case 'dropdown':

@@ -6,30 +6,36 @@ import { PolicyType } from '@guardian/interfaces';
  * Import Artifacts Dialog.
  */
 @Component({
-  selector: 'artifact-import-dialog',
-  templateUrl: './artifact-import-dialog.component.html',
-  styleUrls: ['./artifact-import-dialog.component.css']
+    selector: 'artifact-import-dialog',
+    templateUrl: './artifact-import-dialog.component.html',
+    styleUrls: ['./artifact-import-dialog.component.css']
 })
 export class ArtifactImportDialog {
-  policyId = this.fb.control('', [Validators.required]);
-  policies: any = [];
+    public parentId = this.fb.control('', [Validators.required]);
+    public policies: any = [];
+    public tools: any = [];
+    public currentId: string = '';
+    public type: string = 'policy';
 
-  constructor(
-    public dialogRef: MatDialogRef<ArtifactImportDialog>,
-    private fb: FormBuilder,
-    @Inject(MAT_DIALOG_DATA) public data: any) {
-    if (data) {
-      this.policyId.patchValue(data.policyId || '');
-      this.policies = data.policies?.filter((policy: any) => policy.status === PolicyType.DRAFT) || [];
+    constructor(
+        public dialogRef: MatDialogRef<ArtifactImportDialog>,
+        private fb: FormBuilder,
+        @Inject(MAT_DIALOG_DATA) public data: any) {
+        if (data) {
+            this.type = data.type || 'policy';
+            this.currentId = data.currentId || '';
+            this.policies = data.policies || [];
+            this.tools = data.tools || [];
+            this.parentId.patchValue(this.currentId);
+        }
     }
-  }
 
-  importFiles(event: any) {
-    if (this.policyId.valid) {
-      this.dialogRef.close({
-        files: event,
-        policyId: this.policyId.value
-      });
+    importFiles(event: any) {
+        if (this.parentId.valid) {
+            this.dialogRef.close({
+                files: event,
+                currentId: this.parentId.value
+            });
+        }
     }
-  }
 }

@@ -9,14 +9,11 @@ services:
         ports:
             - 27017:27017
     ipfs-node:
-        image: ipfs/kubo:v0.18.1
+        image: ipfs/kubo:v0.22.0
         ports:
             - "5001:5001"
-            - "5002:5002"
             - "4001:4001"
-            - "4002:4002"
             - "8080:8080"
-            - "8081:8081"
         volumes:
             - ./runtime-data/ipfs/staging:/export:rw
             - ./runtime-data/ipfs/data:/data/ipfs:rw
@@ -38,17 +35,6 @@ services:
         restart: "no"
         command: 'node dev.js'
 
-    api-docs:
-        image: guardian-development
-        volumes:
-            - ./:/app
-        expose:
-            - 3001
-        ports:
-            - 3001:3001
-        depends_on:
-            - dev-tools
-        command: npm run dev:docker --prefix /app/api-docs
     logger-service:
         image: guardian-development
         depends_on:
@@ -58,6 +44,19 @@ services:
             - ./:/app
         restart: always
         command: npm run dev:docker --prefix /app/logger-service
+        environment:
+            - MQ_ADDRESS=message-broker
+            - DB_HOST=mongo
+
+    notification-service:
+        image: guardian-development
+        depends_on:
+            - dev-tools
+            - message-broker
+        volumes:
+            - ./:/app
+        restart: always
+        command: npm run dev:docker --prefix /app/notification-service
         environment:
             - MQ_ADDRESS=message-broker
             - DB_HOST=mongo
@@ -169,7 +168,6 @@ services:
             - guardian-service
             - auth-service
             - api-gateway
-            - api-docs
             - mrv-sender
             - front-end
         volumes:

@@ -430,6 +430,7 @@ export class SendToGuardianBlock {
             if (!topicOwner) {
                 throw new Error(`Topic owner not found`);
             }
+
             const topic = await PolicyUtils.getOrCreateTopic(ref, ref.options.topic, root, topicOwner, document);
 
             const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, ref.dryRun);
@@ -441,6 +442,7 @@ export class SendToGuardianBlock {
             document.hederaStatus = DocumentStatus.ISSUE;
             document.messageId = vcMessageResult.getId();
             document.topicId = vcMessageResult.getTopicId();
+
             return document;
         } catch (error) {
             throw new BlockActionError(PolicyUtils.getErrorMessage(error), ref.blockType, ref.uuid)
@@ -469,18 +471,22 @@ export class SendToGuardianBlock {
             message = didMessage;
             docObject = did;
         } else if (type === DocumentType.VerifiableCredential) {
+            const owner = await PolicyUtils.getUserByIssuer(ref, document);
             const vc = VcDocument.fromJsonTree(document.document);
             const vcMessage = new VCMessage(MessageAction.CreateVC);
             vcMessage.setDocument(vc);
             vcMessage.setDocumentStatus(document.option?.status || DocumentStatus.NEW);
             vcMessage.setRelationships(document.relationships);
+            vcMessage.setUser(owner.roleMessage);
             message = vcMessage;
             docObject = vc;
         } else if (type === DocumentType.VerifiablePresentation) {
+            const owner = await PolicyUtils.getUserByIssuer(ref, document);
             const vp = VpDocument.fromJsonTree(document.document);
             const vpMessage = new VPMessage(MessageAction.CreateVP);
             vpMessage.setDocument(vp);
             vpMessage.setRelationships(document.relationships);
+            vpMessage.setUser(owner.roleMessage);
             message = vpMessage;
             docObject = vp;
         }

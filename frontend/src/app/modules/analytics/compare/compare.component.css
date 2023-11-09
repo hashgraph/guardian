@@ -23,21 +23,28 @@
 }
 
 .content-result {
+    min-width: 1130px;
     position: absolute;
     left: 0;
     top: 80px;
     right: 0;
     bottom: 0;
+    overflow: auto;
+}
+
+.content-result[headers='true'] {
+    padding-top: 22px;
 }
 
 .merge-options {
+    min-width: 1130px;
     width: 100%;
     height: 75px;
     background: #ffffff;
     border-bottom: 1px solid #c9c9c9;
     margin-bottom: 10px;
     display: grid;
-    grid-template-columns: min-content min-content auto 130px 180px;
+    grid-template-columns: min-content min-content auto 130px 130px;
     padding: 10px;
     box-sizing: border-box;
     box-shadow: 0px 3px 1px -2px rgb(0 0 0 / 8%), 0px 2px 2px 0px rgb(0 0 0 / 8%), 0px 1px 5px 0px rgb(0 0 0 / 6%);
@@ -52,7 +59,7 @@
 }
 
 .merge-lvl-btn {
-    width: 125px;
+    width: 120px;
     cursor: pointer;
     font-weight: 500;
     user-select: none;
@@ -70,10 +77,17 @@
     display: flex;
     border: 1px solid #fdfdfd;
     margin-top: 5px;
+    margin-right: 8px;
+}
+
+.merge-lvl-btn[need-apple='true'] {
+    color: #ffffff;
+    background-color: #0c77ff;
+    border: 1px solid #0c77ff;
 }
 
 .f1 {
-    width: 160px;
+    width: 145px;
     display: flex;
     height: 50px;
     box-sizing: border-box;
@@ -81,6 +95,7 @@
     flex-direction: column;
     overflow: hidden;
 }
+
 
 .f2 {
     width: 225px;
@@ -123,7 +138,7 @@
 }
 
 
-.merge-back > div {
+.merge-back>div {
     width: 105px;
     height: 38px;
     margin: 6px;
@@ -131,7 +146,7 @@
     cursor: pointer;
 }
 
-.merge-back > div  span {
+.merge-back>div span {
     color: #707070;
     position: absolute;
     top: 9px;
@@ -141,11 +156,74 @@
     pointer-events: none;
 }
 
-.merge-back > div  mat-icon {
+.merge-back>div mat-icon {
     color: #707070;
     position: absolute;
     top: 3px;
     left: -4px;
     font-size: 30px;
     pointer-events: none;
+}
+
+@media screen and (max-width: 1130px) {
+    .merge-options {
+        min-width: 670px;
+        grid-template-columns: min-content min-content auto 60px 80px;
+    }
+
+    .content-result {
+        min-width: 670px;
+    }
+
+    .f1 {
+        width: 80px;
+    }
+
+    .merge-lvl-btn {
+        width: 70px;
+    }
+
+    .export-btn {
+        width: 44px;
+        overflow: hidden;
+        padding-left: 44px;
+    }
+}
+
+@media screen and (max-width: 830px) {
+    .merge-options {
+        min-width: 520px;
+        grid-template-columns: min-content min-content auto 52px 70px;
+    }
+
+    .content-result {
+        min-width: 520px;
+    }
+
+    .f1 {
+        width: 68px;
+        margin-right: 8px;
+    }
+
+    .merge-lvl-btn {
+        width: 70px;
+    }
+
+    .export-btn {
+        width: 44px;
+        overflow: hidden;
+        padding-left: 44px;
+    }
+}
+
+@media screen and (max-width: 520px) {
+    .merge-options {
+        min-width: 0px;
+        overflow-y: hidden;
+        overflow-x: auto;
+    }
+
+    .content-result {
+        min-width: 0px;
+    }
 }

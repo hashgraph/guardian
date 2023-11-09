@@ -1,0 +1,47 @@
+<div class="content">
+    <div class="table-container">
+        <table mat-table [dataSource]="notifications" class="notifications-table">
+            <ng-container matColumnDef="type">
+                <th mat-header-cell *matHeaderCellDef> Type </th>
+                <td mat-cell *matCellDef="let element">{{element.type}}</td>
+            </ng-container>
+            <ng-container matColumnDef="title">
+                <th mat-header-cell *matHeaderCellDef> Title </th>
+                <td mat-cell *matCellDef="let element">
+                    {{element.title}}
+                </td>
+            </ng-container>
+            <ng-container matColumnDef="message">
+                <th mat-header-cell *matHeaderCellDef> Message </th>
+                <td mat-cell *matCellDef="let element">
+                    {{element.message}}
+                </td>
+            </ng-container>
+            <ng-container matColumnDef="operations">
+                <th mat-header-cell *matHeaderCellDef>Operations</th>
+                <td mat-cell *matCellDef="let element">
+                    <div class="operations">
+                        <div (click)="deleteUpToThis(element.id)" class="operations__delete"
+                            matTooltip="Delete up to this point" matTooltipClass="guardian-tooltip"
+                            matTooltipPosition="above"><mat-icon>vertical_align_top</mat-icon></div>
+                        <div (click)="viewDetails(element)" *ngIf="element.action" class="operations__view" matTooltip="Open"
+                            matTooltipClass="guardian-tooltip" matTooltipPosition="above">
+                            <mat-icon>open_in_new</mat-icon>
+                        </div>
+                    </div>
+                </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="notitifcationColumns; sticky: true"></tr>
+            <tr mat-row *matRowDef="let row; columns: notitifcationColumns;"></tr>
+        </table>
+    </div>
+    <div class="table-paginator">
+        <mat-paginator [length]="notificationsCount" [pageIndex]="pageIndex" [pageSize]="pageSize"
+            [pageSizeOptions]="[5, 10, 25, 100]" (page)="onPage($event)" aria-label="Select page">
+        </mat-paginator>
+    </div>
+
+    <div *ngIf="loading" class="loading">
+        <mat-spinner></mat-spinner>
+    </div>
+</div>

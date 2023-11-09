@@ -66,6 +66,7 @@ export class SchemaHelper {
      * @param name
      * @param property
      * @param required
+     * @param hidden
      * @param url
      */
     public static parseField(name: string, property: any, required: boolean, url: string): [SchemaField, number] {
@@ -79,6 +80,7 @@ export class SchemaHelper {
             textBold,
             orderPosition,
             isPrivate,
+            hidden,
         } = SchemaHelper.parseFieldComment(field.comment);
         if (field.isRef) {
             const { type } = SchemaHelper.parseRef(field.type);
@@ -96,6 +98,7 @@ export class SchemaHelper {
         field.customType = customType ? String(customType) : null;
         field.isPrivate = isPrivate;
         field.required = required;
+        field.hidden = !!hidden;
         return [field, orderPosition];
     }
 
@@ -104,6 +107,7 @@ export class SchemaHelper {
      * @param field
      * @param name
      * @param contextURL
+     * @param orderPosition
      */
     public static buildField(field: SchemaField, name: string, contextURL: string, orderPosition?: number): any {
         let item: any;
@@ -246,6 +250,7 @@ export class SchemaHelper {
      * @param document
      * @param contextURL
      * @param defs
+     * @param includeSystemProperties
      */
     public static parseFields(document: ISchemaDocument, contextURL: string, defs?: any, includeSystemProperties: boolean = false): SchemaField[] {
         const fields: SchemaField[] = [];
@@ -404,29 +409,46 @@ export class SchemaHelper {
     }
 
     /**
-     * Get fields from object
-     * @param fields
-     * @param required
-     * @param properties
-     * @param contextURL
-     * @param condition
-     * @private
+     * Build Field comment
+     * @param field
+     * @param name
+     * @param url
+     * @param orderPosition
      */
-    private static getFieldsFromObject(fields: SchemaField[], required: string[], properties: any, contextURL: string) {
-        const fieldsWithoutSystemFields = fields.filter(item => !item.readOnly);
-        for (const field of fields) {
-            const property = SchemaHelper.buildField(field, field.name, contextURL, fieldsWithoutSystemFields.indexOf(field));
-            if (/\s/.test(field.name)) {
-                throw new Error(`Field key '${field.name}' must not contain spaces`);
-            }
-            if (properties[field.name]) {
-                continue;
-            }
-            if (field.required) {
-                required.push(field.name);
-            }
-            properties[field.name] = property;
+    public static buildFieldComment(field: SchemaField, name: string, url: string, orderPosition?: number): string {
+        const comment: any = {};
+        comment.term = name;
+        comment['@id'] = field.isRef ?
+            SchemaHelper.buildUrl(url, field.type) :
+            'https://www.schema.org/text';
+        if (![null, undefined].includes(field.isPrivate)) {
+            comment.isPrivate = field.isPrivate;
         }
+        if (field.unit) {
+            comment.unit = field.unit;
+        }
+        if (field.unitSystem) {
+            comment.unitSystem = field.unitSystem;
+        }
+        if (field.customType) {
+            comment.customType = field.customType;
+        }
+        if (field.textColor) {
+            comment.textColor = field.textColor;
+        }
+        if (field.textSize) {
+            comment.textSize = field.textSize;
+        }
+        if (field.textBold) {
+            comment.textBold = field.textBold;
+        }
+        if (Number.isInteger(orderPosition) && orderPosition >= 0) {
+            comment.orderPosition = orderPosition;
+        }
+        if (field.hidden) {
+            comment.hidden = !!field.hidden;
+        }
+        return JSON.stringify(comment);
     }
 
     /**
@@ -738,42 +760,52 @@ export class SchemaHelper {
     }
 
     /**
-     * Clear fields context
-     * @param json
-     * @private
-     */
-    private static _clearFieldsContext(json: any): any {
-        delete json.type;
-        delete json['@context'];
-
-        const keys = Object.keys(json);
-        for (const key of keys) {
-            if (Object.prototype.toString.call(json[key]) === '[object Object]') {
-                json[key] = SchemaHelper._clearFieldsContext(json[key]);
-            }
-        }
-
-        return json;
-    }
-
-    /**
      * Update fields context
      * @param fields
      * @param json
+     * @param parent
      * @private
      */
-    private static _updateFieldsContext(fields: SchemaField[], json: any): any {
+    private static _updateFieldsContext(
+        fields: SchemaField[],
+        json: any,
+        parent?: SchemaField
+    ): any {
+        if (Object.prototype.toString.call(json) === '[object Array]') {
+            for (const item of json) {
+                SchemaHelper._updateFieldsContext(fields, item, parent);
+            }
+            return json;
+        }
+
         if (Object.prototype.toString.call(json) !== '[object Object]') {
             return json;
         }
+
+        if (parent) {
+            if (parent.context.type === 'GeoJSON') {
+                json['@context'] = parent.context.context;
+            } else {
+                json.type = parent.context.type;
+                json['@context'] = parent.context.context;
+            }
+        } else {
+            delete json.type;
+            delete json['@context'];
+        }
+
         for (const field of fields) {
             const value = json[field.name];
             if (field.isRef && value) {
-                SchemaHelper._updateFieldsContext(field.fields, value);
-                value.type = field.context.type;
-                value['@context'] = field.context.context;
+                SchemaHelper._updateFieldsContext(field.fields, value, field);
+            } else if (
+                Object.prototype.toString.call(value) === '[object Object]'
+            ) {
+                delete value.type;
+                delete value['@context'];
             }
         }
+
         return json;
     }
 
@@ -783,7 +815,6 @@ export class SchemaHelper {
      * @param json
      */
     public static updateObjectContext(schema: Schema, json: any): any {
-        json = SchemaHelper._clearFieldsContext(json);
         json = SchemaHelper._updateFieldsContext(schema.fields, json);
         json.type = schema.type;
         json['@context'] = [schema.contextURL];
@@ -791,42 +822,29 @@ export class SchemaHelper {
     }
 
     /**
-     * Build Field comment
-     * @param field
-     * @param name
-     * @param url
+     * Get fields from object
+     * @param fields
+     * @param required
+     * @param hidden
+     * @param properties
+     * @param contextURL
+     * @private
      */
-    public static buildFieldComment(field: SchemaField, name: string, url: string, orderPosition?: number): string {
-        const comment: any = {};
-        comment.term = name;
-        comment['@id'] = field.isRef ?
-            SchemaHelper.buildUrl(url, field.type) :
-            'https://www.schema.org/text';
-        if (![null, undefined].includes(field.isPrivate)) {
-            comment.isPrivate = field.isPrivate;
+    private static getFieldsFromObject(fields: SchemaField[], required: string[], properties: any, contextURL: string) {
+        const fieldsWithoutSystemFields = fields.filter(item => !item.readOnly);
+        for (const field of fields) {
+            const property = SchemaHelper.buildField(field, field.name, contextURL, fieldsWithoutSystemFields.indexOf(field));
+            if (/\s/.test(field.name)) {
+                throw new Error(`Field key '${field.name}' must not contain spaces`);
+            }
+            if (properties[field.name]) {
+                continue;
+            }
+            if (field.required) {
+                required.push(field.name);
+            }
+            properties[field.name] = property;
         }
-        if (field.unit) {
-            comment.unit = field.unit;
-        }
-        if (field.unitSystem) {
-            comment.unitSystem = field.unitSystem;
-        }
-        if (field.customType) {
-            comment.customType = field.customType;
-        }
-        if (field.textColor) {
-            comment.textColor = field.textColor;
-        }
-        if (field.textSize) {
-            comment.textSize = field.textSize;
-        }
-        if (field.textBold) {
-            comment.textBold = field.textBold;
-        }
-        if (Number.isInteger(orderPosition) && orderPosition >= 0) {
-            comment.orderPosition = orderPosition;
-        }
-        return JSON.stringify(comment);
     }
 
     /**
@@ -882,5 +900,27 @@ export class SchemaHelper {
             }
         }
         return true;
+    }
+
+    /**
+     * Get schema name with detailed information
+     * @param name Name
+     * @param version Version
+     * @param status Status
+     * @returns Name
+     */
+    public static getSchemaName(
+        name?: string,
+        version?: string,
+        status?: string
+    ) {
+        let result = name || '';
+        if (version) {
+            result += ` (${version})`;
+        }
+        if (status) {
+            result += ` (${status})`;
+        }
+        return result;
     }
 }

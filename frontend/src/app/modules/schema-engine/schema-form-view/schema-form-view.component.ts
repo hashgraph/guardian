@@ -1,10 +1,12 @@
-import { NgxMatDateAdapter, NGX_MAT_DATE_FORMATS } from '@angular-material-components/datetime-picker';
+import { NGX_MAT_DATE_FORMATS, NgxMatDateAdapter } from '@angular-material-components/datetime-picker';
 import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
 import { Schema, SchemaField, UnitSystem } from '@guardian/interfaces';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { DATETIME_FORMATS } from '../schema-form/schema-form.component';
+import moment from 'moment-timezone';
+import { MAT_DATE_LOCALE } from '@angular/material/core';
 
 /**
  * Form view by schema
@@ -14,6 +16,7 @@ import { DATETIME_FORMATS } from '../schema-form/schema-form.component';
     templateUrl: './schema-form-view.component.html',
     styleUrls: ['./schema-form-view.component.css'],
     providers: [
+        {provide: MAT_DATE_LOCALE, useValue: ''},
         { provide: NgxMatDateAdapter, useClass: NgxMatMomentAdapter },
         { provide: NGX_MAT_DATE_FORMATS, useValue: DATETIME_FORMATS }
     ],
@@ -31,6 +34,9 @@ export class SchemaFormViewComponent implements OnInit {
 
     constructor(private ipfs: IPFSService, private changeDetector: ChangeDetectorRef) { }
 
+    formatDate(date: string): Date {
+        return moment(date, 'YYYY-MM-DD').tz(Intl.DateTimeFormat().resolvedOptions().timeZone, true).toDate();
+    }
 
     ngOnInit(): void {
     }
@@ -167,6 +173,7 @@ export class SchemaFormViewComponent implements OnInit {
     }
 
     isDate(item: SchemaField): boolean {
+        console.log(item);
         return item.type === 'string' && item.format === 'date';
     }
 

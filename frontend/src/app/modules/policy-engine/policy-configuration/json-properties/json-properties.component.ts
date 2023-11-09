@@ -9,7 +9,7 @@ import {
     ViewChild,
     ViewContainerRef
 } from '@angular/core';
-import { PolicyBlockModel } from "../../structures/";
+import { PolicyBlock } from "../../structures/";
 
 /**
  * Settings for all blocks.
@@ -22,20 +22,18 @@ import { PolicyBlockModel } from "../../structures/";
 export class JsonPropertiesComponent implements OnInit {
     @ViewChild("configContainer", { read: ViewContainerRef }) configContainer!: ViewContainerRef;
 
-    @Input('block') currentBlock!: PolicyBlockModel;
+    @Input('block') currentBlock!: PolicyBlock;
     @Input('readonly') readonly!: boolean;
-
-    @Output() onInit = new EventEmitter();
 
     propHidden: any = {
         metaData: false,
     };
 
-    block!: PolicyBlockModel;
+    block!: PolicyBlock;
 
     codeMirrorOptions: any = {
         theme: 'default',
-        mode: 'application/ld+json',
+        mode: 'policy-json-lang',
         styleActiveLine: true,
         lineNumbers: true,
         lineWrapping: true,
@@ -59,15 +57,14 @@ export class JsonPropertiesComponent implements OnInit {
     constructor(
         private componentFactoryResolver: ComponentFactoryResolver
     ) {
-        this.codeMirrorOptions.mode = 'application/ld+json';
+        this.codeMirrorOptions.mode = 'policy-json-lang';
     }
 
     ngOnInit(): void {
-        this.onInit.emit(this);
-        this.load(this.currentBlock);
     }
 
     ngOnChanges(changes: SimpleChanges) {
+        this.codeMirrorOptions.readOnly = !!this.readonly;
         this.load(this.currentBlock);
     }
 
@@ -75,7 +72,7 @@ export class JsonPropertiesComponent implements OnInit {
         item[prop] = !item[prop];
     }
 
-    load(block: PolicyBlockModel) {
+    load(block: PolicyBlock) {
         this.loading = false;
         this.errors = [];
         this.block = block;

@@ -37,7 +37,23 @@ export interface ICompareResult<T> {
      */
     tokens?: IReportTable;
     /**
+     * InputEvents rates (Module)
+     */
+    inputEvents?: IReportTable;
+    /**
+     * OutputEvents rates (Module)
+     */
+    outputEvents?: IReportTable;
+    /**
+     * Variables rates (Module)
+     */
+    variables?: IReportTable;
+    /**
      * Field rates (Schema)
      */
     fields?: IReportTable;
+    /**
+     * Documents rates (Document)
+     */
+    documents?: IReportTable;
 }

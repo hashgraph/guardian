@@ -44,6 +44,11 @@ export class SchemaMessage extends Message {
      */
     public documents: any[];
 
+    /**
+     * Relationships
+     */
+    public relationships: string[];
+
     constructor(action: MessageAction) {
         super(action, MessageType.Schema);
     }
@@ -63,6 +68,15 @@ export class SchemaMessage extends Message {
         const document = schema.document;
         const context = schema.context;
         this.documents = [document, context];
+    }
+
+    public setRelationships(relationships: Schema[]): void {
+        this.relationships = [];
+        for (const relationship of relationships) {
+            if (relationship.messageId) {
+                this.relationships.push(relationship.messageId);
+            }
+        }
     }
 
     /**
@@ -95,6 +109,7 @@ export class SchemaMessage extends Message {
             owner: this.owner,
             uuid: this.uuid,
             version: this.version,
+            relationships: this.relationships,
             document_cid: this.getDocumentUrl(UrlType.cid),
             document_uri: this.getDocumentUrl(UrlType.url),
             context_cid: this.getContextUrl(UrlType.cid),
@@ -164,6 +179,7 @@ export class SchemaMessage extends Message {
         message.uuid = json.uuid;
         message.version = json.version;
         message.codeVersion = json.code_version;
+        message.relationships = json.relationships;
         const urls = [{
             cid: json.document_cid,
             url: json.document_url || json.document_uri
@@ -204,5 +220,34 @@ export class SchemaMessage extends Message {
      */
     public override validate(): boolean {
         return true;
+    }
+
+    /**
+     * To JSON
+     */
+    public override toJson(): any {
+        const result = super.toJson();
+        result.name = this.name;
+        result.description = this.description;
+        result.entity = this.entity;
+        result.owner = this.owner;
+        result.uuid = this.uuid;
+        result.version = this.version;
+        result.codeVersion = this.codeVersion;
+        result.relationships = this.relationships;
+        result.documentUrl = this.getDocumentUrl(UrlType.url);
+        result.contextUrl = this.getContextUrl(UrlType.url);
+        if (this.documents) {
+            result.document = this.documents[0];
+            result.context = this.documents[1];
+        }
+        return result;
+    }
+
+    /**
+     * Get User DID
+     */
+    public override getOwner(): string {
+        return this.owner;
     }
 }

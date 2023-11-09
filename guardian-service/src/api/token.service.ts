@@ -88,11 +88,12 @@ export async function createHederaToken(token: any, user: IRootConfig) {
         enableAdmin: !!tokenData.adminKey,
         enableKYC: !!tokenData.kycKey,
         enableFreeze: !!tokenData.freezeKey,
-        enableWipe: !!tokenData.wipeKey,
+        enableWipe: !!tokenData.wipeKey || !!tokenData.wipeContractId,
         owner: user.did,
         policyId: null,
         draftToken: false,
-        topicId: topic.topicId
+        topicId: topic.topicId,
+        wipeContractId: tokenData.wipeContractId,
     };
 }
 
@@ -372,7 +373,13 @@ async function deleteToken(token: Token, tokenRepository: DataBaseHelper<Token>,
  * @param tokenRepository
  * @param notifier
  */
-async function associateToken(tokenId: any, did: any, associate: any, tokenRepository: DataBaseHelper<Token>, notifier: INotifier): Promise<boolean> {
+async function associateToken(
+    tokenId: any,
+    did: any,
+    associate: any,
+    tokenRepository: DataBaseHelper<Token>,
+    notifier: INotifier
+): Promise<{ tokenName: string; status: boolean }> {
     notifier.start('Find token data');
     const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
     if (!token) {
@@ -408,7 +415,7 @@ async function associateToken(tokenId: any, did: any, associate: any, tokenRepos
     }, 20);
 
     notifier.completed();
-    return status;
+    return { tokenName: token.tokenName, status };
 }
 
 /**
@@ -459,7 +466,7 @@ async function grantKycToken(
             hederaAccountId: root.hederaAccountId,
             hederaAccountKey: root.hederaAccountKey,
             userHederaAccountId: user.hederaAccountId,
-            tokenId,
+            token,
             kycKey,
             grant
         }
@@ -528,7 +535,7 @@ async function freezeToken(
             hederaAccountKey: root.hederaAccountKey,
             userHederaAccountId: user.hederaAccountId,
             freezeKey,
-            tokenId,
+            token,
             freeze
         }
     }, 20);
@@ -579,8 +586,8 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
     });
 
     ApiResponse(MessageAPI.SET_TOKEN_ASYNC, async (msg) => {
-        const { token, owner, taskId } = msg;
-        const notifier = initNotifier(taskId);
+        const { token, owner, task } = msg;
+        const notifier = await initNotifier(task);
 
         RunFunctionAsync(async () => {
             if (!msg) {
@@ -593,12 +600,12 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
             notifier.error(error);
         });
 
-        return new MessageResponse({ taskId });
+        return new MessageResponse(task);
     });
 
     ApiResponse(MessageAPI.UPDATE_TOKEN_ASYNC, async (msg) => {
-        const { token, taskId } = msg;
-        const notifier = initNotifier(taskId);
+        const { token, task } = msg;
+        const notifier = await initNotifier(task);
         RunFunctionAsync(async () => {
             if (!msg) {
                 throw new Error('Invalid Params');
@@ -614,12 +621,12 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
             notifier.error(error);
         });
 
-        return new MessageResponse({ taskId });
+        return new MessageResponse(task);
     });
 
     ApiResponse(MessageAPI.DELETE_TOKEN_ASYNC, async (msg) => {
-        const { tokenId, taskId } = msg;
-        const notifier = initNotifier(taskId);
+        const { tokenId, task } = msg;
+        const notifier = await initNotifier(task);
         RunFunctionAsync(async () => {
             if (!msg) {
                 throw new Error('Invalid Params');
@@ -634,7 +641,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             notifier.error(error);
         });
-        return new MessageResponse({ taskId });
+        return new MessageResponse(task);
     });
 
     ApiResponse(MessageAPI.FREEZE_TOKEN, async (msg) => {
@@ -649,8 +656,8 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
     });
 
     ApiResponse(MessageAPI.FREEZE_TOKEN_ASYNC, async (msg) => {
-        const { tokenId, username, owner, freeze, taskId } = msg;
-        const notifier = initNotifier(taskId);
+        const { tokenId, username, owner, freeze, task } = msg;
+        const notifier = await initNotifier(task);
 
         RunFunctionAsync(async () => {
             const result = await freezeToken(tokenId, username, owner, freeze, tokenRepository, notifier);
@@ -660,7 +667,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
             notifier.error(error);
         });
 
-        return new MessageResponse({ taskId });
+        return new MessageResponse(task);
     });
 
     ApiResponse(MessageAPI.KYC_TOKEN, async (msg) => {
@@ -675,8 +682,8 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
     });
 
     ApiResponse(MessageAPI.KYC_TOKEN_ASYNC, async (msg) => {
-        const { tokenId, username, owner, grant, taskId } = msg;
-        const notifier = initNotifier(taskId);
+        const { tokenId, username, owner, grant, task } = msg;
+        const notifier = await initNotifier(task);
 
         RunFunctionAsync(async () => {
             const result = await grantKycToken(tokenId, username, owner, grant, tokenRepository, notifier);
@@ -686,14 +693,14 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
             notifier.error(error);
         });
 
-        return new MessageResponse({ taskId });
+        return new MessageResponse(task);
     });
 
     ApiResponse(MessageAPI.ASSOCIATE_TOKEN, async (msg) => {
         try {
             const { tokenId, did, associate } = msg;
-            const status = await associateToken(tokenId, did, associate, tokenRepository, emptyNotifier());
-            return new MessageResponse(status);
+            const result = await associateToken(tokenId, did, associate, tokenRepository, emptyNotifier());
+            return new MessageResponse(result);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error, 400);
@@ -701,18 +708,18 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
     })
 
     ApiResponse(MessageAPI.ASSOCIATE_TOKEN_ASYNC, async (msg) => {
-        const { tokenId, did, associate, taskId } = msg;
-        const notifier = initNotifier(taskId);
+        const { tokenId, did, associate, task } = msg;
+        const notifier = await initNotifier(task);
 
         RunFunctionAsync(async () => {
-            const status = await associateToken(tokenId, did, associate, tokenRepository, notifier);
-            notifier.result(status);
+            const result = await associateToken(tokenId, did, associate, tokenRepository, notifier);
+            notifier.result(result);
         }, async (error) => {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             notifier.error(error);
         });
 
-        return new MessageResponse({ taskId });
+        return new MessageResponse(task);
     })
 
     ApiResponse(MessageAPI.GET_INFO_TOKEN, async (msg) => {
@@ -896,4 +903,47 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
             return new MessageError(error);
         }
     })
+
+    /**
+     * Get token serials
+     */
+    ApiResponse(MessageAPI.GET_SERIALS, async (msg) => {
+        try {
+            const wallet = new Wallet();
+            const users = new Users();
+            const { did, tokenId } = msg;
+            if (!did) {
+                throw new Error('DID is required');
+            }
+            if (!tokenId) {
+                throw new Error('Token identifier is required');
+            }
+            const user = await users.getUserById(did);
+            const userID = user.hederaAccountId;
+            const userDID = user.did;
+            const userKey = await wallet.getKey(
+                user.walletToken,
+                KeyType.KEY,
+                userDID
+            );
+            const workers = new Workers();
+
+            const serials =
+                (await workers.addNonRetryableTask(
+                    {
+                        type: WorkerTaskType.GET_USER_NFTS_SERIALS,
+                        data: {
+                            operatorId: userID,
+                            operatorKey: userKey,
+                            tokenId
+                        },
+                    },
+                    20
+                ));
+            return new MessageResponse(serials[tokenId] || []);
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error, 400);
+        }
+    });
 }

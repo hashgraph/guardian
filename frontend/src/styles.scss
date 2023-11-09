@@ -18,6 +18,11 @@ body {
     font-weight: 300;
 }
 
+body > .leader-line,
+body > .leader-line-areaAnchor {
+    display: none !important;
+}
+
 .mat-subheading-1,
 .mat-typography h4 {
     font-size: 20px;
@@ -35,6 +40,7 @@ body {
 
         .btn-home {
             color: #fff;
+            cursor: pointer;
         }
 
         .example-icon mat-icon {
@@ -50,10 +56,6 @@ body {
     color: #fff !important;
     position: relative;
     top: -6px;
-}
-
-.user-profile .list {
-    margin: 20px auto !important;
 }
 
 .list {
@@ -104,6 +106,10 @@ body {
 
 .guardian-tooltip {
     font-size: 16px;
+    overflow-wrap: break-word !important;
+    &.small-guardian-tooltip {
+        font-size: 12px;
+    }
 }
 
 button.mat-raised-button,
@@ -308,4 +314,8 @@ button.mat-button {
         right: 16px;
         bottom: -8px;
     }
+}
+
+.notification-menu-panel {
+    border-radius: 15px !important;
 }

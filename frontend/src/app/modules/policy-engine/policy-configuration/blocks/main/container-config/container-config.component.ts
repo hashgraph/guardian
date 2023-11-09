@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { IModuleVariables, PolicyBlockModel } from '../../../../structures';
+import { IModuleVariables, PolicyBlock } from '../../../../structures';
 
 /**
  * Settings for block of 'interfaceContainerBlock' and 'interfaceStepBlock' types.
@@ -11,12 +11,12 @@ import { IModuleVariables, PolicyBlockModel } from '../../../../structures';
     encapsulation: ViewEncapsulation.Emulated
 })
 export class ContainerConfigComponent implements OnInit {
-    @Input('block') currentBlock!: PolicyBlockModel;
+    @Input('block') currentBlock!: PolicyBlock;
     @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();
 
     private moduleVariables!: IModuleVariables | null;
-    private item!: PolicyBlockModel;
+    private item!: PolicyBlock;
     
     propHidden: any = {
         main: false,
@@ -36,7 +36,7 @@ export class ContainerConfigComponent implements OnInit {
         this.load(this.currentBlock);
     }
 
-    load(block: PolicyBlockModel) {
+    load(block: PolicyBlock) {
         this.moduleVariables = block.moduleVariables;
         this.item = block;
         this.properties = block.properties;

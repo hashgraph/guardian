@@ -3,6 +3,8 @@ import { Logger } from '@guardian/common';
 import { Controller, Get, HttpCode, HttpStatus, Inject, Injectable, Post, Req, Response } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { checkPermission } from '@auth/authorization-helper';
+import { ApiTags } from '@nestjs/swagger';
+import axios from 'axios';
 
 @Injectable()
 export class LoggerService {
@@ -25,6 +27,7 @@ export class LoggerService {
 }
 
 @Controller('logs')
+@ApiTags('logs')
 export class LoggerApi {
     constructor(private readonly loggerService: LoggerService) {
     }
@@ -63,7 +66,12 @@ export class LoggerApi {
                 pageParameters.limit = req.body.pageSize;
             }
             const logsObj = await this.loggerService.getLogs(filters, pageParameters, req.body.sortDirection);
-            return res.send(logsObj);
+            const logs = await axios.get(logsObj.directLink);
+
+            return res.send({
+                totalCount: logsObj.totalCount,
+                logs: logs.data
+            });
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error;

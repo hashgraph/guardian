@@ -4,11 +4,11 @@ Guardian Vault is intended to provide supports in securely storing sensitive dat
 
 Although Cloud infrastructures like Google, Azure and AWS offer secure Secret Manager Service to make the configuration very simple without the burden of deployment process, there are on-premise native technologies such as Hashicorp Vault that provide Cloud Agnostic solutions. Currently, Guardian supports **AWS Secrets Manager** and **Hashicorp Vault** as its core secrets manager.
 
-<figure><img src="../../.gitbook/assets/image (2) (9).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (3) (4) (1).png" alt=""><figcaption></figcaption></figure>
 
 In the current Architecture, each service has permission to read/write/update secrets directly instead of handling operations through a central service like Auth Service. Secrets are considered as resources and categorized into different divisions and according to categories and subcategories Policies are created and consequently based on need-to-know basis principal roles per services with essential policies are generated in order that each service is assigned permissions that it requires to access the secrets. As an example, Auth Service does not need to know anything about the user wallets, but only requires access to auth secret key.
 
-<figure><img src="../../.gitbook/assets/image (1) (10).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (1) (12).png" alt=""><figcaption></figcaption></figure>
 
 As expected in production all connections between vault and services are secured by TLS communication. Communication with AWS Secrets Manager is handled within a private network.
 
@@ -58,3 +58,36 @@ _Note_: Before running the scripts it is necessary to login into AWS service by 
 
 1. **Create Roles and Policies**: `aws_iam_init.sh` script in `aws/scripts` directory initiates a role with a specific name configured by `GUARDIAN_SECRETS_ROLE_NAME` in .env file, creates policies that are stored in `aws/configs/policies` path and attach the policy to the role.
 2. **Push Secrets**: The initial secrets such as IPFS\_API\_KEY, AUTH\_SECRET\_KEY, OPERATOR\_KEY is stored to vault secret manager. A template secret file is created in `aws/configs/secrets` that must be coned and customized into `secret.json` file. The `push_secrets.sh` script in `aws/secripts` folder will push all secrets into their specified secret path.
+
+### Azure Key Vault
+
+Azure Vault provides a centralised service to manage sensitive data safe and secure. It provides three services to manage Secrets, Keys and Certificates:
+
+* Secrets Manager: Azure Key Vault enables secure storage of secrets such as Passwords, API Keys, etc. Secrets can be easily managed, rotated, and accessed programmatically.
+* Key Manager: Cryptographic keys can be generated and managed within Azure Key Vault. These keys can be used for encryption, decryption, signing, and verification purposes. Azure Key Vault supports a variety of key types and algorithms.
+* Certificate Manager: Azure Key Vault allows you to store and manage SSL/TLS certificates. You can import certificates or generate new ones within the Key Vault. Key Vault can also automate the renewal and deployment of certificates.
+
+Guardian is supporting Azure Vault Secrets Manager to handle securely the secrets, keys and wallets. At the moment Default Azure Credential is used for authenticating to Azure Key Vault that requires following steps to enable any machine to access Secrets:
+
+1. **Create a Key Vault**: From the Azure Portal navigate to **Key Vaults**, choose a Resource Group has been created before from the list, insert a name for the Vault instance, select the region and carefully prepare other configurations and follow to the Next page.
+2. Choose **Vault Access Policy** as Permission model and **Azure Virtual Machines for deployment** as Resource Access. Under Access Policies, click on **Create** and in the prompt window choose all necessary permissions required to grant to a User. For Guardian at least **Get** and **Set** of **Secrets** are required. Next find the registered User to grant access. In the last step choose a registered application if has been created in Azure Active Directory before; otherwise select Next and finalize the process.
+3. Configure Networking, Add Tags and create the Vault.
+4. Now in the directory of auth-service, guardian-service, policy-service and worker-service set **AZURE\_VAULT\_NAME** environment variable by the name chosen as Vault previously.\
+   \\
+
+### **Google Cloud Platform (GCP) Secrets Manager**
+
+Google Cloud Platform (GCP) Secrets Manager is a managed service that helps you securely store and manage secrets, such as API keys, database credentials, and other sensitive information. It provides a central repository for storing secrets, with built-in security features and integration with other GCP services. It enables secure storage of secrets, secrets versioning and rotation, integration with other Google Cloud services like Cloud Run, VMs, App Engine, etc, supports Access Control, so on.
+
+Guardian now supports GCP Secrets Manager to store its secrets. In order to access GCP Secrets Manager it is required to set the identifier of the project created in google cloud platform that the GCP Secrets Manager is supposed to reside, as GCP\_PROJECT\_ID in the .env file in the configs of auth service.
+
+Here is the steps to create secrets manager in google cloud platform. It is assumed that the project has been created in prior.
+
+1. From Google Cloud Platform, navigate to underlying project
+2. From the Navigation Menu, select Security and then click on Secret Manager
+3. In the Secret Manager page, click on Create Secret
+
+Configure Secret manager by adding Name, Replication policy, Rotation, Expiration, etc according to security policies and click on Create Secret button
+
+<mark style="color:red;">**NOTE:**</mark>\
+<mark style="color:red;">**According to the tests of read/write operations of secrets to the GCP Secrets manager, each secret R/W operation take around 1 second which is too slow to be used constantly in the Guardian Application. The reason is, Guardian generates lots of wallets and requires to retrieve them from the Vault in order to sign transactions. The late response from GCP leads to make Guardian functioning too slowly. Consequently, it is not recommended to use GCP for constant R/W of secrets.**</mark>

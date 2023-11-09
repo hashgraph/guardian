@@ -1,7 +1,7 @@
 import MurmurHash3 from 'imurmurhash';
 import { ICompareOptions } from '../interfaces/compare-options.interface';
 import { EventModel } from './event.model';
-import { BlockPropertiesModel } from './block-properties-model';
+import { BlockPropertiesModel } from './block-properties.model';
 import { WeightType } from '../types/weight.type';
 import { ArtifactModel } from './artifact.model';
 import { IArtifacts } from '../interfaces/artifacts.interface';
@@ -12,6 +12,7 @@ import { IKeyMap } from '../interfaces/key-map.interface';
 import { TokenModel } from './token.model';
 import { IWeightModel } from '../interfaces/weight-model.interface';
 import { CompareUtils } from '../utils/utils';
+import { IWeightBlock } from '../interfaces/weight-block.interface';
 
 /**
  * Block Model
@@ -150,7 +151,7 @@ export class BlockModel implements IWeightModel {
 
         if (this._children) {
             _hashState = MurmurHash3();
-            _hashState.hash(this.blockType);
+            _hashState.hash(this.key);
             for (const child of this._children) {
                 _hashState.hash(String(child._hash));
             }
@@ -159,14 +160,14 @@ export class BlockModel implements IWeightModel {
 
         if (this._children && this._children.length) {
             _hashState = MurmurHash3();
-            _hashState.hash(this.blockType);
+            _hashState.hash(this.key);
             for (const child of this._children) {
-                _hashState.hash(child.blockType);
+                _hashState.hash(child.key);
             }
             _children1 = String(_hashState.result());
 
             _hashState = MurmurHash3();
-            _hashState.hash(this.blockType);
+            _hashState.hash(this.key);
             for (const child of this._children) {
                 _hashState.hash(child.getWeight(WeightType.CHILD_LVL_2));
             }
@@ -183,14 +184,14 @@ export class BlockModel implements IWeightModel {
 
         if (this._prop) {
             _hashState = MurmurHash3();
-            _hashState.hash(this.blockType)
+            _hashState.hash(this.key)
             _hashState.hash(this._prop.hash(options));
             _prop = String(_hashState.result());
         }
 
         if (this.tag) {
             _hashState = MurmurHash3();
-            _hashState.hash(this.blockType)
+            _hashState.hash(this.key)
             _hashState.hash(this.tag);
             _tag = String(_hashState.result());
         }
@@ -338,11 +339,11 @@ export class BlockModel implements IWeightModel {
      * @public
      */
     public equal(block: BlockModel, index?: number): boolean {
-        if (this.blockType !== block.blockType) {
+        if (this.key !== block.key) {
             return false;
         }
         if (!this._weight.length) {
-            return this.blockType === block.blockType;
+            return this.key === block.key;
         }
         if (Number.isFinite(index)) {
             if (this._weight[index] === '0' && block._weight[index] === '0') {
@@ -353,6 +354,15 @@ export class BlockModel implements IWeightModel {
         } else {
             return this._hash === block._hash;
         }
+    }
+
+    /**
+     * Comparison of models using key
+     * @param item - model
+     * @public
+     */
+    public equalKey(item: BlockModel): boolean {
+        return this.key === item.key;
     }
 
     /**
@@ -411,5 +421,53 @@ export class BlockModel implements IWeightModel {
      */
     public addChildren(child: BlockModel): void {
         this._children.push(child);
+    }
+
+    /**
+     * Get weight object
+     * @public
+     */
+    public toWeight(options: ICompareOptions): IWeightBlock {
+        const children: IWeightBlock[] = [];
+        let length = 0;
+        for (const child of this._children) {
+            const w = child.toWeight(options);
+            length = length + w.length + 1;
+            children.push(w);
+        }
+        const _index = String(this.index);
+        const _prop = this._weightMap[WeightType.PROP_LVL_3];
+        const _type = this.key;
+
+        let _fullProp = '|';
+        for (const event of this._events) {
+            const w = event.toWeight(options);
+            _fullProp += w.weight;
+        }
+        _fullProp += '|';
+        for (const artifact of this._artifacts) {
+            const w = artifact.toWeight(options);
+            _fullProp += w.weight;
+        }
+        _fullProp += '|';
+        for (const permission of this._prop.getPermissionsList()) {
+            _fullProp += permission;
+        }
+        let _children = '';
+        for (const child of children) {
+            _children += child.weights[0];
+        }
+        const weights = [
+            CompareUtils.sha256(_type + _prop + _fullProp + _children + _index),
+            CompareUtils.sha256(_type + _prop + _fullProp + _children),
+            CompareUtils.sha256(_type + _prop + _fullProp),
+            CompareUtils.sha256(_type + _prop),
+            CompareUtils.sha256(_type)
+        ];
+        return {
+            weights,
+            children,
+            length
+        }
     }
 }

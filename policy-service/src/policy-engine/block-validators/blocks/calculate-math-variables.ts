@@ -1,4 +1,5 @@
 import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
+import { CommonBlock } from './common';
 
 /**
  * Calculate math Variables
@@ -16,6 +17,7 @@ export class CalculateMathVariables {
      */
     public static async validate(validator: BlockValidator, ref: IBlockProp): Promise<void> {
         try {
+            await CommonBlock.validate(validator, ref);
             if (ref.options.selectors) {
                 for (const filter of ref.options.selectors) {
                     if (!filter.sourceField) {
@@ -36,16 +38,9 @@ export class CalculateMathVariables {
                     }
                 }
             }
-            if (ref.options.sourceSchema) {
-                if (typeof ref.options.sourceSchema !== 'string') {
-                    validator.addError('Option "sourceSchema" must be a string');
-                    return;
-                }
-                if (await validator.schemaNotExist(ref.options.sourceSchema)) {
-                    validator.addError(`Schema with id "${ref.options.sourceSchema}" does not exist`);
-                    return;
-                }
-            }
+            validator.checkBlockError(
+                validator.validateSchemaVariable('sourceSchema', ref.options.sourceSchema, false)
+            );
         } catch (error) {
             validator.addError(`Unhandled exception ${validator.getErrorMessage(error)}`);
         }

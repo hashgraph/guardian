@@ -45,6 +45,12 @@ import { ModuleValidator } from './module-validator';
 import { ModuleBlock } from './blocks/module';
 import { TagsManagerBlock } from './blocks/tag-manager';
 import { ExternalTopicBlock } from './blocks/external-topic-block';
+import { MessagesReportBlock } from './blocks/messages-report-block';
+import { NotificationBlock } from './blocks/notification.block';
+import { ISchema, SchemaField, SchemaHelper } from '@guardian/interfaces';
+import { ToolValidator } from './tool-validator';
+import { ToolBlock } from './blocks/tool';
+import { ExtractDataBlock } from './blocks/extract-data';
 
 export const validators = [
     InterfaceDocumentActionBlock,
@@ -88,7 +94,11 @@ export const validators = [
     TokenConfirmationBlock,
     ModuleBlock,
     TagsManagerBlock,
-    ExternalTopicBlock
+    ExternalTopicBlock,
+    MessagesReportBlock,
+    NotificationBlock,
+    ToolBlock,
+    ExtractDataBlock
 ];
 
 /**
@@ -104,7 +114,7 @@ export class BlockValidator {
      * Errors
      * @private
      */
-    private readonly validator: PolicyValidator | ModuleValidator;
+    private readonly validator: PolicyValidator | ModuleValidator | ToolValidator;
     /**
      * UUID
      * @private
@@ -138,7 +148,7 @@ export class BlockValidator {
 
     constructor(
         config: any,
-        validator: PolicyValidator | ModuleValidator
+        validator: PolicyValidator | ModuleValidator | ToolValidator
     ) {
         this.errors = [];
         this.validator = validator;
@@ -248,8 +258,8 @@ export class BlockValidator {
      * Get Schema
      * @param iri
      */
-    public async getSchema(iri: string): Promise<any> {
-        return await this.validator.getSchema(iri);
+    public getSchema(iri: string): ISchema {
+        return this.validator.getSchema(iri);
     }
 
     /**
@@ -264,8 +274,95 @@ export class BlockValidator {
      * Schema not exist
      * @param iri
      */
-    public async schemaNotExist(iri: string): Promise<boolean> {
-        return !await this.validator.getSchema(iri);
+    public schemaNotExist(iri: string): boolean {
+        return !this.validator.schemaExist(iri);
+    }
+
+    /**
+     * Schema exist
+     * @param iri
+     */
+    public schemaExist(iri: string): boolean {
+        return this.validator.schemaExist(iri);
+    }
+
+    /**
+     * Validate schema
+     * @param iri
+     */
+    public validateSchema(iri: string): string | null {
+        if (this.validator.unsupportedSchema(iri)) {
+            return `Schema with id "${iri}" refers to non-existing schema`;
+        }
+        if (this.validator.schemaExist(iri)) {
+            return null;
+        } else {
+            return `Schema with id "${iri}" does not exist`;
+        }
+    }
+
+    /**
+     * Validate schema variable
+     * @param name
+     * @param value
+     * @param required
+     */
+    public validateSchemaVariable(
+        name: string,
+        value: any,
+        required: boolean = false
+    ): string | null {
+        if (!value) {
+            if (required) {
+                return `Option "${name}" is not set`;
+            } else {
+                return null;
+            }
+        }
+        if (typeof value !== 'string') {
+            return `Option "${name}" must be a string`;
+        }
+        return this.validateSchema(value);
+    }
+
+    /**
+     * Validate base schema
+     * @param iri
+     */
+    public validateBaseSchema(
+        baseSchema: ISchema | string,
+        schema: ISchema | string
+    ): string | null {
+        if (!baseSchema) {
+            return null;
+        }
+        let baseSchemaObject: ISchema;
+        if (typeof baseSchema === 'string') {
+            baseSchemaObject = this.getSchema(baseSchema);
+        } else {
+            baseSchemaObject = baseSchema;
+        }
+
+        let schemaObject: ISchema;
+        if (typeof schema === 'string') {
+            schemaObject = this.getSchema(schema);
+        } else {
+            schemaObject = schema;
+        }
+
+        if (!baseSchemaObject) {
+            return `Schema with id "${baseSchema}" does not exist`;
+        }
+
+        if (!schemaObject) {
+            return `Schema with id "${schema}" does not exist`;
+        }
+
+        if (!this.compareSchema(baseSchemaObject, schemaObject)) {
+            return `Schema is not supported`;
+        }
+
+        return null;
     }
 
     /**
@@ -298,6 +395,14 @@ export class BlockValidator {
      */
     public groupNotExist(group: string) {
         return !this.validator.getGroup(group);
+    }
+
+    /**
+     * Get artifact
+     * @param uuid
+     */
+    public async getArtifact(uuid: string) {
+        return await this.validator.getArtifact(uuid);
     }
 
     /**
@@ -338,8 +443,8 @@ export class BlockValidator {
      * @param uuid
      * @param error
      */
-    public checkBlockError(error: string): void {
-        if (error !== null) {
+    public checkBlockError(error: string | null): void {
+        if (error) {
             this.addError(error);
         }
     }
@@ -360,6 +465,99 @@ export class BlockValidator {
         } else {
             console.error(error);
             return 'Unidentified error';
+        }
+    }
+
+    public compareSchema(baseSchema: ISchema, schema: ISchema): boolean {
+        if (!baseSchema) {
+            return true
+        }
+        const baseFields = this.getSchemaFields(baseSchema.document);
+        const schemaFields = this.getSchemaFields(schema.document);
+        return this.ifExtendFields(schemaFields, baseFields);
+    }
+
+    /**
+     * Compare Schema Fields
+     * @param f1
+     * @param f2
+     * @private
+     */
+    private compareFields(f1: SchemaField, f2: SchemaField): boolean {
+        if (
+            f1.name !== f2.name ||
+            f1.title !== f2.title ||
+            f1.description !== f2.description ||
+            f1.required !== f2.required ||
+            f1.isArray !== f2.isArray ||
+            f1.isRef !== f2.isRef
+        ) {
+            return false;
+        }
+        if (f1.isRef) {
+            return true;
+        } else {
+            return (
+                f1.type === f2.type &&
+                f1.format === f2.format &&
+                f1.pattern === f2.pattern &&
+                f1.unit === f2.unit &&
+                f1.unitSystem === f2.unitSystem &&
+                f1.customType === f2.customType
+            );
+        }
+        // remoteLink?: string;
+        // enum?: string[];
+    }
+
+    /**
+     * Compare Schemas
+     * @param extension
+     * @param base
+     * @private
+     */
+    private ifExtendFields(extension: SchemaField[], base: SchemaField[]): boolean {
+        try {
+            if (!extension || !base) {
+                return false;
+            }
+            const map = new Map<string, SchemaField>();
+            for (const f of extension) {
+                map.set(f.name, f);
+            }
+            for (const baseField of base) {
+                const extensionField = map.get(baseField.name)
+                if (!extensionField) {
+                    return false;
+                }
+                if (!this.compareFields(baseField, extensionField)) {
+                    return false;
+                }
+                if (baseField.isRef) {
+                    if (!this.ifExtendFields(extensionField.fields, baseField.fields)) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        } catch (error) {
+            return false;
+        }
+    }
+
+    /**
+     * Get Schema Fields
+     * @param document
+     * @private
+     */
+    private getSchemaFields(document: any): SchemaField[] {
+        try {
+            if (typeof document === 'string') {
+                document = JSON.parse(document);
+            }
+            return SchemaHelper.parseFields(document, null, null, false);
+        } catch (error) {
+            return null;
         }
     }
 }

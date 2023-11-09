@@ -63,6 +63,10 @@ export class Schema implements ISchema {
      */
     public version?: string;
     /**
+     * Source version
+     */
+    public sourceVersion?: string;
+    /**
      * Creator
      */
     public creator?: string;
@@ -119,6 +123,10 @@ export class Schema implements ISchema {
      */
     public category?: SchemaCategory;
     /**
+     * Parent component
+     */
+    public component?: string;
+    /**
      * User DID
      * @private
      */
@@ -126,6 +134,7 @@ export class Schema implements ISchema {
     /**
      * Schema constructor
      * @param schema
+     * @param includeSystemProperties
      * @constructor
      */
     constructor(schema?: ISchema, includeSystemProperties: boolean = false) {
@@ -143,6 +152,7 @@ export class Schema implements ISchema {
             this.system = schema.system || false;
             this.active = schema.active || false;
             this.version = schema.version || '';
+            this.sourceVersion = schema.sourceVersion || '';
             this.creator = schema.creator || '';
             this.owner = schema.owner || '';
             this.topicId = schema.topicId || '';
@@ -179,6 +189,7 @@ export class Schema implements ISchema {
             } else {
                 this.context = null;
             }
+            this.component = (schema as any).component || (schema as any).__component;
         } else {
             this._id = undefined;
             this.id = undefined;
@@ -194,6 +205,7 @@ export class Schema implements ISchema {
             this.document = null;
             this.context = null;
             this.version = '';
+            this.sourceVersion = '';
             this.creator = '';
             this.owner = '';
             this.topicId = '';
@@ -342,9 +354,9 @@ export class Schema implements ISchema {
             f.path = path + f.name;
             if (filter(f)) {
                 result.push(f);
-                if (f.fields) {
-                    this._searchFields(f.fields, filter, result, f.path + '.');
-                }
+            }
+            if (Array.isArray(f.fields)) {
+                this._searchFields(f.fields, filter, result, f.path + '.');
             }
         }
     }

@@ -12,29 +12,32 @@ import { ArtifactService } from 'src/app/services/artifact.service';
     styleUrls: ['./artifact-properties.component.css']
 })
 export class ArtifactPropertiesComponent implements OnInit {
-    policyArtifacts!: IArtifact[]
+    public policyArtifacts: IArtifact[];
 
-    @Input('policyId') policyId!: string;
+    @Input('rootId') rootId!: string;
     @Input('block') currentBlock!: any;
     @Input('readonly') readonly!: boolean;
 
     constructor(
         public artifact: ArtifactService,
     ) {
+        this.policyArtifacts = [];
     }
 
     ngOnInit(): void {
-        this.artifact.getArtifacts(this.policyId)
+        this.artifact.getArtifacts(this.rootId)
             .subscribe(result => {
                 const artifacts = result.body as IArtifact[];
-                this.policyArtifacts = artifacts.filter(artifact => artifact.type).map(artifact => {
-                    return {
-                        name: artifact.name,
-                        uuid: artifact.uuid,
-                        type: artifact.type,
-                        extention: artifact.extention
-                    } as any
-                })
+                this.policyArtifacts = artifacts
+                    .filter(artifact => artifact.type)
+                    .map(artifact => {
+                        return {
+                            name: artifact.name,
+                            uuid: artifact.uuid,
+                            type: artifact.type,
+                            extention: artifact.extention
+                        } as any
+                    })
             });
     }
 

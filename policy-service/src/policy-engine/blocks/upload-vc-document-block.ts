@@ -2,15 +2,14 @@ import { DocumentSignature, Schema } from '@guardian/interfaces';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { BlockActionError } from '@policy-engine/errors';
 import { ActionCallback } from '@policy-engine/helpers/decorators';
-import { IPolicyDocument, IPolicyRequestBlock } from '@policy-engine/policy-engine.interface';
+import { IPolicyEventState, IPolicyRequestBlock } from '@policy-engine/policy-engine.interface';
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
 import { EventBlock } from '@policy-engine/helpers/decorators/event-block';
-import { VcHelper, } from '@guardian/common';
+import { VcHelper, VcDocumentDefinition as VcDocument } from '@guardian/common';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
-import { VcDocumentDefinition as VcDocument } from '@guardian/common/dist/hedera-modules';
 
 /**
  * Request VC document block
@@ -122,7 +121,7 @@ export class UploadVcDocumentBlock {
     async getSchema(): Promise<Schema> {
         if (!this.schema) {
             const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
-            const schema = await ref.databaseServer.getSchemaByIRI(ref.options.schema, ref.topicId);
+            const schema = await PolicyUtils.loadSchemaByID(ref, ref.options.schema);
             this.schema = schema ? new Schema(schema) : null;
             if (!this.schema) {
                 throw new BlockActionError('Waiting for schema', ref.blockType, ref.uuid);
@@ -154,7 +153,7 @@ export class UploadVcDocumentBlock {
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
-    async setData(user: IPolicyUser, data: IPolicyDocument): Promise<any> {
+    async setData(user: IPolicyUser, data: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
 
         if (!user.did) {
@@ -162,7 +161,7 @@ export class UploadVcDocumentBlock {
         }
 
         const retArray: unknown[] = [];
-        const badArray: unknown[] =  [];
+        const badArray: unknown[] = [];
 
         try {
             for (const document of data.documents) {
@@ -179,7 +178,8 @@ export class UploadVcDocumentBlock {
                     verify = false;
                 }
 
-                if (verify) {;
+                if (verify) {
+                    ;
                     const vc = VcDocument.fromJsonTree(document);
 
                     const doc = PolicyUtils.createVC(ref, user, vc);
@@ -194,9 +194,10 @@ export class UploadVcDocumentBlock {
                 }
             }
 
-            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, {data: retArray});
+            const state: IPolicyEventState = { data: retArray };
+            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
             ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, {data: retArray});
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
             PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
                 documents: ExternalDocuments(retArray)
             }));
@@ -209,7 +210,5 @@ export class UploadVcDocumentBlock {
             ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }
-
-        return {};
     }
 }

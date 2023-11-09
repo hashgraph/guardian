@@ -1,10 +1,10 @@
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import {
-    PolicyModel,
-    PolicyTokenModel,
-    PolicyGroupModel,
-    PolicyRoleModel,
-    PolicyTopicModel
+    PolicyTemplate,
+    PolicyToken,
+    PolicyGroup,
+    PolicyRole,
+    PolicyTopic
 } from '../../structures';
 
 /**
@@ -16,7 +16,7 @@ import {
     styleUrls: ['./policy-properties.component.css']
 })
 export class PolicyPropertiesComponent implements OnInit {
-    @Input('policy') policy!: PolicyModel;
+    @Input('policy') policy!: PolicyTemplate;
     @Input('readonly') readonly!: boolean;
     @Input('type') type!: string;
 
@@ -31,9 +31,9 @@ export class PolicyPropertiesComponent implements OnInit {
         topicsGroup: {},
         tokensGroup: {}
     };
-    policyGroups: PolicyGroupModel[] = [];
-    topics: PolicyTopicModel[] = [];
-    tokens: PolicyTokenModel[] = [];
+    policyGroups: PolicyGroup[] = [];
+    topics: PolicyTopic[] = [];
+    tokens: PolicyToken[] = [];
     roles: any[] = [];
 
     constructor() {
@@ -63,11 +63,11 @@ export class PolicyPropertiesComponent implements OnInit {
         });
     }
 
-    onEditGroup(group: PolicyGroupModel) {
+    onEditGroup(group: PolicyGroup) {
         group.emitUpdate();
     }
 
-    onRemoveGroup(group: PolicyGroupModel) {
+    onRemoveGroup(group: PolicyGroup) {
         this.policy.removeGroup(group)
     }
 
@@ -80,11 +80,11 @@ export class PolicyPropertiesComponent implements OnInit {
         });
     }
 
-    onEditRole(role: PolicyRoleModel) {
+    onEditRole(role: PolicyRole) {
         role.emitUpdate();
     }
 
-    onRemoveRole(role: PolicyRoleModel) {
+    onRemoveRole(role: PolicyRole) {
         this.policy.removeRole(role)
     }
 
@@ -97,7 +97,7 @@ export class PolicyPropertiesComponent implements OnInit {
         });
     }
 
-    onRemoveTopic(topic: PolicyTopicModel) {
+    onRemoveTopic(topic: PolicyTopic) {
         this.policy.removeTopic(topic)
     }
 
@@ -110,7 +110,7 @@ export class PolicyPropertiesComponent implements OnInit {
         });
     }
 
-    onRemoveToken(topic: PolicyTokenModel) {
+    onRemoveToken(topic: PolicyToken) {
         this.policy.removeToken(topic)
     }
 

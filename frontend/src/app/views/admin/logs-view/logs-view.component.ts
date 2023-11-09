@@ -1,6 +1,6 @@
 import { Component, EventEmitter, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
-import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+import { MatAutocompleteSelectedEvent, MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
@@ -47,6 +47,7 @@ export class LogsViewComponent implements OnInit {
 
     @ViewChild(MatPaginator) paginator!: MatPaginator;
     @ViewChild(MatSort) sort!: MatSort;
+    @ViewChild(MatAutocompleteTrigger) autocomplete: MatAutocompleteTrigger;
     onSearch: EventEmitter<any> = new EventEmitter();
 
     constructor(
@@ -125,17 +126,29 @@ export class LogsViewComponent implements OnInit {
         if (index >= 0) {
             attributes.splice(index, 1);
         }
+        this.onApply();
     }
 
-    add(event: MatChipInputEvent): void {
+    add(event: MatChipInputEvent, auto: any): void {
         const value = (event.value || '').trim();
         const attributes = this.searchForm.get('attributes')!.value;
 
         if (value) {
-            attributes.push(value);
+            const attrList = this.logService.getAttributes(value, this.searchForm?.get('attributes')?.value).subscribe(attrs => {
+                const firstAttr = attrs[0];
+                if (firstAttr) {
+                    attributes.push(firstAttr);
+                }
+                event.chipInput!.clear();
+                this.autocomplete.closePanel();
+                this.autoCompleteControl.patchValue('');
+                this.onApply();
+                attrList.unsubscribe();
+            })
+        } else {
+            event.chipInput!.clear();
+            this.onApply();
         }
-
-        event.chipInput!.clear();
     }
 
     onApply() {
@@ -182,6 +195,7 @@ export class LogsViewComponent implements OnInit {
             attributes.push(value);
         }
         this.autoCompleteControl.patchValue('');
+        this.onApply();
     }
 
     clearValues() {
@@ -196,7 +210,8 @@ export class LogsViewComponent implements OnInit {
 
     openDetails(element: any) {
         this.dialog.open(DetailsLogDialog, {
-            data: element
+            data: element,
+            disableClose: true,
         });
     }
 }

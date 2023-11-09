@@ -1,19 +1,5 @@
 import '../config'
-import {
-    COMMON_CONNECTION_CONFIG,
-    DataBaseHelper,
-    ExternalEventChannel,
-    Logger,
-    MessageBrokerChannel,
-    entities,
-    Environment,
-    MessageServer,
-    Users,
-    Workers,
-    IPFS,
-    DatabaseServer, LargePayloadContainer,
-    OldSecretManager
-} from '@guardian/common';
+import { COMMON_CONNECTION_CONFIG, DataBaseHelper, DatabaseServer, entities, Environment, ExternalEventChannel, IPFS, LargePayloadContainer, Logger, MessageBrokerChannel, MessageServer, NotificationService, OldSecretManager, Users, Workers } from '@guardian/common';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
@@ -23,9 +9,18 @@ import { CommonVariables } from '@helpers/common-variables';
 import { PolicyEvents } from '@guardian/interfaces';
 import { GridFSBucket } from 'mongodb';
 import { SynchronizationService } from '@policy-engine/multi-policy-service';
+import { Module } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+
+@Module({
+    providers: [
+        NotificationService,
+    ]
+})
+class AppModule {}
 
 const {
-    policy,
     policyId,
     policyServiceName,
     skipRegistration
@@ -42,16 +37,28 @@ Promise.all([
         ensureIndexes: true,
         entities
     }),
-    MessageBrokerChannel.connect(policyServiceName)
+    MessageBrokerChannel.connect(policyServiceName),
+    NestFactory.createMicroservice<MicroserviceOptions>(AppModule,{
+        transport: Transport.NATS,
+        options: {
+            name: `${process.env.SERVICE_CHANNEL}`,
+            servers: [
+                `nats://${process.env.MQ_ADDRESS}:4222`
+            ]
+        },
+    })
 ]).then(async values => {
-    const [db, cn] = values;
+    const [db, cn, app] = values;
+    app.listen();
     DataBaseHelper.orm = db;
-    DataBaseHelper.gridFS = new GridFSBucket(
-        db.em.getDriver().getConnection().getDb()
-    );
+    // @ts-ignore
+    DataBaseHelper.gridFS = new GridFSBucket(db.em.getDriver().getConnection().getDb());
     Environment.setLocalNodeProtocol(process.env.LOCALNODE_PROTOCOL);
     Environment.setLocalNodeAddress(process.env.LOCALNODE_ADDRESS);
     Environment.setNetwork(process.env.HEDERA_NET);
+
+    const policyConfig = await DatabaseServer.getPolicyById(policyId);
+
     if (process.env.HEDERA_CUSTOM_NODES) {
         try {
             const nodes = JSON.parse(process.env.HEDERA_CUSTOM_NODES);
@@ -59,7 +66,7 @@ Promise.all([
         } catch (error) {
             await new Logger().warn(
                 'HEDERA_CUSTOM_NODES field in settings: ' + error.message,
-                ['POLICY', policy.name, policyId.toString()]
+                ['POLICY', policyConfig.name, policyId.toString()]
             );
             console.warn(error);
         }
@@ -74,7 +81,7 @@ Promise.all([
             await new Logger().warn(
                 'HEDERA_CUSTOM_MIRROR_NODES field in settings: ' +
                 error.message,
-                ['POLICY', policy.name, policyId.toString()]
+                ['POLICY', policyConfig.name, policyId.toString()]
             );
             console.warn(error);
         }
@@ -94,13 +101,21 @@ Promise.all([
     await workersHelper.setConnection(cn).init();;
     workersHelper.initListeners();
 
+    // try {
     new Logger().info(`Process for with id ${policyId} was started started PID: ${process.pid}`, ['POLICY', policyId]);
 
-    const policyConfig = await DatabaseServer.getPolicyById(policyId);
     const generator = new BlockTreeGenerator();
     const policyValidator = new PolicyValidator(policyConfig);
 
-    await generator.generate(policyConfig, skipRegistration, policyValidator);
+    const policyModel = await generator.generate(policyConfig, skipRegistration, policyValidator);
+    if ((policyModel as { type: 'error', message: string }).type === 'error') {
+        generator.publish(PolicyEvents.POLICY_READY, {
+            policyId: policyId.toString(),
+            error: (policyModel as { type: 'error', message: string }).message
+        });
+        return;
+        // throw new Error((policyModel as {type: 'error', message: string}).message);
+    }
 
     const synchronizationService = new SynchronizationService(policyConfig);
     synchronizationService.start();
@@ -120,5 +135,8 @@ Promise.all([
         new LargePayloadContainer().runServer();
     }
 
-    new Logger().info('Start policy', ['POLICY', policy.name, policyId.toString()]);
+    new Logger().info('Start policy', ['POLICY', policyConfig.name, policyId.toString()]);
+    // } catch (e) {
+    //     process.exit(500);
+    // }
 });

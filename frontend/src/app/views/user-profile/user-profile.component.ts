@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { forkJoin, Subscription } from 'rxjs';
-import { IUser, Token, SchemaEntity, Schema, TagType, SchemaHelper } from '@guardian/interfaces';
+import { IUser, Token, SchemaEntity, Schema, TagType, SchemaHelper, IStandardRegistryResponse, IPolicy } from '@guardian/interfaces';
 import { ActivatedRoute, Router } from '@angular/router';
 //services
 import { AuthService } from '../../services/auth.service';
@@ -18,17 +18,12 @@ import { TagsService } from '../../services/tag.service';
 import { ContractService } from '../../services/contract.service';
 //modules
 import { VCViewerDialog } from '../../modules/schema-engine/vc-dialog/vc-dialog.component';
-import { RetireTokenDialogComponent } from 'src/app/components/retire-token-dialog/retire-token-dialog.component';
+import { noWhitespaceValidator } from 'src/app/validators/no-whitespace-validator';
+import { UserRetirePoolsDialogComponent } from 'src/app/modules/contract-engine/dialogs/user-retire-pools-dialog/user-retire-pools-dialog.component';
+import { UserRetireRequestsDialogComponent } from 'src/app/modules/contract-engine/dialogs/user-retire-requests-dialog/user-retire-requests-dialog.component';
 
 enum OperationMode {
-    None, Generate, SetProfile, Associate
-}
-
-interface IHederaForm {
-    id: string,
-    key: string,
-    standardRegistry: string,
-    vc?: any
+    None, Generate, Associate
 }
 
 /**
@@ -37,20 +32,22 @@ interface IHederaForm {
 @Component({
     selector: 'app-user-profile',
     templateUrl: './user-profile.component.html',
-    styleUrls: ['./user-profile.component.css']
+    styleUrls: ['./user-profile.component.scss']
 })
 export class UserProfileComponent implements OnInit {
     loading: boolean = true;
     isConfirmed: boolean = false;
     isFailed: boolean = false;
     isNewAccount: boolean = false;
+    noFilterResults: boolean = false;
     profile?: IUser | null;
     balance?: string | null;
     tokens?: Token[] | null;
     contractRequests?: any[];
     didDocument?: any;
     vcDocument?: any;
-    standardRegistries?: IUser[];
+    standardRegistries: IStandardRegistryResponse[] = [];
+    filteredRegistries: IStandardRegistryResponse[] = [];
     selectedIndex: number = 0;
     tagEntity = TagType.Token;
     owner: any;
@@ -58,12 +55,16 @@ export class UserProfileComponent implements OnInit {
     public innerWidth: any;
     public innerHeight: any;
 
-    hederaForm = this.fb.group({
-        standardRegistry: ['', Validators.required],
-        id: ['', Validators.required],
-        key: ['', Validators.required],
+    hederaForm = new FormGroup({
+        standardRegistry: new FormControl('', [Validators.required]),
+        id: new FormControl('', [Validators.required, noWhitespaceValidator()]),
+        key: new FormControl('', [Validators.required, noWhitespaceValidator()]),
     });
 
+    filtersForm = new FormGroup({
+        policyName: new FormControl(''),
+        geography: new FormControl(''),
+    });
 
     displayedColumns: string[] = [
         'name',
@@ -77,11 +78,8 @@ export class UserProfileComponent implements OnInit {
 
     displayedColumnsContractRequests: string[] = [
         'contractId',
-        'baseTokenId',
-        'oppositeTokenId',
-        'baseTokenCount',
-        'oppositeTokenCount',
-        'cancel'
+        'date',
+        'operation'
     ];
 
     private interval: any;
@@ -112,11 +110,9 @@ export class UserProfileComponent implements OnInit {
         private contractService: ContractService,
         private route: ActivatedRoute,
         private router: Router,
-        private fb: FormBuilder,
         public dialog: MatDialog,
         private headerProps: HeaderPropsService
     ) {
-        this.standardRegistries = [];
         this.hideVC = {
             id: true
         }
@@ -130,7 +126,7 @@ export class UserProfileComponent implements OnInit {
         this.loadDate();
         this.update();
         this.subscription.add(
-            this.route.queryParams.subscribe(params => {
+            this.route.queryParams.subscribe((params) => {
                 const tab = this.route.snapshot.queryParams['tab'] || '';
                 this.selectedIndex = 0;
                 for (let index = 0; index < this.tabs.length; index++) {
@@ -202,25 +198,30 @@ export class UserProfileComponent implements OnInit {
                 this.loading = false;
                 this.headerProps.setLoading(false);
             }, 200)
-        }, (error) => {
+        }, ({ message }) => {
             this.loading = false;
             this.headerProps.setLoading(false);
-            console.error(error);
+            console.error(message);
         });
     }
 
     private loadRetireData() {
-        this.loading = true;
-        this.contractService.getRetireRequestsAll().subscribe((contracts) => {
-            this.contractRequests = contracts;
+        this.contractRequests = [];
             setTimeout(() => {
                 this.loading = false;
                 this.headerProps.setLoading(false);
             }, 200)
-        }, (error) => {
+        this.loading = true;
+        this.contractService.getRetireVCs().subscribe((contracts) => {
+            this.contractRequests = contracts.body;
+            setTimeout(() => {
+                this.loading = false;
+                this.headerProps.setLoading(false);
+            }, 200)
+        }, ({ message }) => {
             this.loading = false;
             this.headerProps.setLoading(false);
-            console.error(error);
+            console.error(message);
         });
     }
 
@@ -232,7 +233,7 @@ export class UserProfileComponent implements OnInit {
         forkJoin([
             this.profileService.getProfile(),
             this.profileService.getBalance(),
-            this.auth.getStandardRegistries(),
+            this.auth.getAggregatedStandardRegistries(),
             this.schemaService.getSystemSchemasByEntity(SchemaEntity.USER),
         ]).subscribe((value) => {
             this.profile = value[0] as IUser;
@@ -269,26 +270,27 @@ export class UserProfileComponent implements OnInit {
                     this.headerProps.setLoading(false);
                 }, 200);
             }
-        }, (error) => {
+        }, ({ message }) => {
             this.loading = false;
             this.headerProps.setLoading(false);
-            console.error(error);
+            console.error(message);
         });
     }
 
     onHederaSubmit() {
         if (this.hederaForm.valid) {
-            this.createDID(this.hederaForm.value);
+            this.createDID();
         }
     }
 
-    createDID(data: IHederaForm) {
+    createDID() {
         this.loading = true;
         this.headerProps.setLoading(true);
+        const data = this.hederaForm.value;
         const vcDocument = data.vc;
         const profile: any = {
-            hederaAccountId: data.id,
-            hederaAccountKey: data.key,
+            hederaAccountId: data.id?.trim(),
+            hederaAccountKey: data.key?.trim(),
             parent: data.standardRegistry,
         }
         if (vcDocument) {
@@ -298,12 +300,15 @@ export class UserProfileComponent implements OnInit {
         this.profileService.pushSetProfile(profile).subscribe((result) => {
             const { taskId, expectation } = result;
             this.taskId = taskId;
-            this.expectedTaskMessages = expectation;
-            this.operationMode = OperationMode.SetProfile;
-        }, (error) => {
+            this.router.navigate(['task', taskId], {
+                queryParams: {
+                    last: btoa(location.href)
+                }
+            });
+        }, ({ message }) => {
             this.loading = false;
             this.headerProps.setLoading(false);
-            console.error(error);
+            console.error(message);
         });
     }
 
@@ -338,20 +343,29 @@ export class UserProfileComponent implements OnInit {
 
     associate(token: Token) {
         this.loading = true;
-        this.tokenService.pushAssociate(token.tokenId, token.associated != 'Yes').subscribe((result) => {
-            const { taskId, expectation } = result;
-            this.taskId = taskId;
-            this.expectedTaskMessages = expectation;
-            this.operationMode = OperationMode.Associate;
-        }, (error) => {
-            this.loading = false;
-        });
+        this.tokenService
+            .pushAssociate(token.tokenId, token.associated != 'Yes')
+            .subscribe(
+                (result) => {
+                    const { taskId, expectation } = result;
+                    this.taskId = taskId;
+                    this.expectedTaskMessages = expectation;
+                    this.operationMode = OperationMode.Associate;
+                },
+                (error) => {
+                    this.loading = false;
+                }
+            );
     }
 
     openVCDocument(document: any, title: string) {
         const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
+            panelClass: 'g-dialog',
+            disableClose: true,
             data: {
+                id: document.id,
+                dryRun: !!document.dryRunId,
                 document: document.document,
                 title: title,
                 type: 'VC',
@@ -365,7 +379,11 @@ export class UserProfileComponent implements OnInit {
     openDIDDocument(document: any, title: string) {
         const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
+            panelClass: 'g-dialog',
+            disableClose: true,
             data: {
+                id: document.id,
+                dryRun: !!document.dryRunId,
                 document: document.document,
                 title: title,
                 type: 'JSON',
@@ -396,87 +414,52 @@ export class UserProfileComponent implements OnInit {
         this.vcForm.updateValueAndValidity();
     }
 
-    cancelContractRequest(id: string) {
-        this.loading = true;
-        this.contractService.cancelContractRequest(id).subscribe(
-            () => {
-                setTimeout(this.loadDate.bind(this), 2000);
-            },
-            () => (this.loading = false)
-        );
+    getDate(date: string) {
+        return new Date(date).toLocaleString();
     }
 
-    createRetireRequest() {
-        this.loading = true;
-        this.tokenService
-            .getTokens()
-            .subscribe(this.openRetireDialog.bind(this), (error) => {
-                console.error(error);
-                this.loading = false;
-            });
-    }
-
-    openRetireDialog(tokens: any) {
-        let dialogRef;
-        if (this.innerWidth <= 810) {
-            const bodyStyles = window.getComputedStyle(document.body);
-            const headerHeight: number = parseInt(bodyStyles.getPropertyValue('--header-height'));
-            dialogRef = this.dialog.open(RetireTokenDialogComponent, {
-                width: `${this.innerWidth.toString()}px`,
-                maxWidth: '100vw',
-                height: `${this.innerHeight - headerHeight}px`,
-                position: {
-                    'bottom': '0'
-                },
-                panelClass: 'g-dialog',
-                hasBackdrop: true, // Shadows beyond the dialog
-                closeOnNavigation: true,
-                autoFocus: false,
-                data: {
-                    tokens,
-                },
-            });
-        } else {
-            dialogRef = this.dialog.open(RetireTokenDialogComponent, {
-                width: '800px',
-                panelClass: 'g-dialog',
-                disableClose: true,
-                autoFocus: false,
-                data: {
-                    tokens,
-                },
-            });
-        }
-        dialogRef.afterOpened().subscribe(() => (this.loading = false));
-        dialogRef.afterClosed().subscribe(async (result) => {
-            if (result) {
-                this.loading = true;
-                this.contractService
-                    .createRetireRequest(
-                        result.contractId,
-                        result.baseTokenId,
-                        result.oppositeTokenId,
-                        result.baseTokenCount,
-                        result.oppositeTokenCount,
-                        result.baseTokenSerials,
-                        result.oppositeTokenSerials
-                    )
-                    .subscribe(
-                        () => {
-                            setTimeout(this.loadDate.bind(this), 2000);
-                        },
-                        () => (this.loading = false)
-                    );
+    openRetirePoolsDialog() {
+        const dialogRef = this.dialog.open(UserRetirePoolsDialogComponent, {
+            width: '800px',
+            panelClass: 'g-dialog',
+            disableClose: true,
+            autoFocus: false,
+        });
+        dialogRef.afterClosed().subscribe(result => {
+            if (!result) {
+                return;
             }
+            this.loading = true;
+            this.contractService.retire(result.poolId, result.retireForm).subscribe(
+                () => {
+                    this.loadRetireData();
+                },
+                () => {
+                    this.loading = false
+                }
+            );
+        })
+    }
+
+    openRetireRequestsDialog() {
+        this.dialog.open(UserRetireRequestsDialogComponent, {
+            width: '800px',
+            panelClass: 'g-dialog',
+            disableClose: true,
+            autoFocus: false,
         });
     }
 
     viewRetireRequest(document: any) {
         this.dialog.open(VCViewerDialog, {
-            width: '600px',
+            width: '850px',
+            panelClass: 'g-dialog',
+            disableClose: true,
             data: {
+                id: document.id,
+                dryRun: !!document.dryRunId,
                 document: document.document,
-                title: 'View Retire Request Result',
+                title: 'View retire result',
                 type: 'VC',
                 viewDocument: true
             }
@@ -507,10 +490,6 @@ export class UserProfileComponent implements OnInit {
                         this.loading = false;
                     });
                     break;
-                case OperationMode.SetProfile:
-                    this.webSocketService.updateProfile();
-                    this.loadDate();
-                    break;
                 case OperationMode.Associate:
                     this.loadDate();
                     break;
@@ -538,5 +517,116 @@ export class UserProfileComponent implements OnInit {
                 this.headerProps.setLoading(false);
             }, 200);
         }
+    }
+
+    trackByDid(index: number, registry: IStandardRegistryResponse): string {
+        return registry.did;
+    }
+
+    applyFilters(): void {
+        if (this.filters.policyName && this.filters.geography) {
+            this.filterByPolicyNameAndGeography();
+            this.handleFiltering();
+            return;
+        }
+
+        this.filters.policyName
+            ? this.filterByPolicyName()
+            : this.filterByGeography();
+        this.handleFiltering();
+    }
+
+    clearFilters(): void {
+        this.filtersForm.reset({ policyName: '', geography: '' });
+        this.filteredRegistries = [];
+        this.noFilterResults = false;
+        this.selectStandardRegistry('');
+    }
+
+    selectStandardRegistry(did: string): void {
+        this.standardRegistryControl.setValue(did);
+    }
+
+    isRegistrySelected(did: string): boolean {
+        return this.standardRegistryControl.value === did;
+    }
+
+    private filterByPolicyName(): void {
+        this.filteredRegistries = this.standardRegistries.filter(
+            (registry: IStandardRegistryResponse) =>
+                this.isRegistryContainPolicy(registry)
+        );
+    }
+
+    private filterByGeography(): void {
+        this.filteredRegistries = this.standardRegistries.filter(
+            (registry: IStandardRegistryResponse) =>
+                this.isGeographyEqualToFilter(registry)
+        );
+    }
+
+    private filterByPolicyNameAndGeography(): void {
+        this.filteredRegistries = this.standardRegistries.filter(
+            (registry: IStandardRegistryResponse) =>
+                this.isGeographyEqualToFilter(registry) &&
+                this.isRegistryContainPolicy(registry)
+        );
+    }
+
+    private isRegistryContainPolicy(
+        registry: IStandardRegistryResponse
+    ): boolean {
+        return (
+            registry.policies.filter((policy: IPolicy) =>
+                policy.name
+                    .toLowerCase()
+                    .includes(this.filters.policyName.toLowerCase())
+            ).length > 0
+        );
+    }
+
+    private isGeographyEqualToFilter(
+        registry: IStandardRegistryResponse
+    ): boolean | undefined {
+        return registry.vcDocument.document?.credentialSubject[0]?.geography
+            ?.toLowerCase()
+            .includes(this.filters.geography.toLowerCase());
+    }
+
+    private handleFiltering(): void {
+        this.noFilterResults = this.filteredRegistries.length === 0;
+        this.selectStandardRegistry('');
+    }
+
+    private get filters(): { policyName: string; geography: string } {
+        return {
+            policyName: this.filtersForm.value?.policyName?.trim(),
+            geography: this.filtersForm.value?.geography?.trim(),
+        };
+    }
+
+    private get standardRegistryControl(): AbstractControl {
+        return this.hederaForm.get('standardRegistry') as AbstractControl;
+    }
+
+    get standardRegistriesList(): IStandardRegistryResponse[] {
+        return this.filteredRegistries.length > 0
+            ? this.filteredRegistries
+            : this.standardRegistries;
+    }
+
+    get hasRegistries(): boolean {
+        return this.standardRegistriesList.length > 0;
+    }
+
+    get isStandardRegistrySelected(): boolean {
+        return !!this.standardRegistryControl.valid;
+    }
+
+    get isFilterButtonDisabled(): boolean {
+        return (
+            this.filters.policyName.length === 0 &&
+            this.filters.geography.length === 0
+        );
     }
 }

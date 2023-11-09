@@ -1,4 +1,3 @@
-import { fixtures } from '@helpers/fixtures';
 import { AccountService } from '@api/account-service';
 import { WalletService } from '@api/wallet-service';
 import { ApplicationState, COMMON_CONNECTION_CONFIG, DataBaseHelper, LargePayloadContainer, Logger, MessageBrokerChannel, Migration, OldSecretManager, SecretManager } from '@guardian/common';
@@ -11,6 +10,8 @@ import process from 'process';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { MeecoAuthService } from '@api/meeco-service';
+import { ApplicationEnvironment } from './environment';
 
 Promise.all([
     Migration({
@@ -18,7 +19,7 @@ Promise.all([
         migrations: {
             path: 'dist/migrations',
             transactional: false
-        }
+        },
     }),
     MikroORM.init<MongoDriver>({
         ...COMMON_CONNECTION_CONFIG,
@@ -31,10 +32,11 @@ Promise.all([
     NestFactory.createMicroservice<MicroserviceOptions>(AppModule,{
         transport: Transport.NATS,
         options: {
+            queue: 'auth-service',
             name: `${process.env.SERVICE_CHANNEL}`,
             servers: [
-                `nats://${process.env.MQ_ADDRESS}:4222`
-            ]
+                `nats://${process.env.MQ_ADDRESS}:4222`,
+            ],
         },
     }),
     InitializeVault(process.env.VAULT_PROVIDER)
@@ -44,9 +46,18 @@ Promise.all([
     await state.setServiceName('AUTH_SERVICE').setConnection(cn).init();
     state.updateState(ApplicationStates.INITIALIZING);
     try {
-        await fixtures();
+        if (!ApplicationEnvironment.demoMode) {
+            import('./helpers/fixtures').then(async (module) => {
+                await module.fixtures();
+            });
+        }
 
-        console.log(app);
+        // Include accounts for demo builds only
+        if (ApplicationEnvironment.demoMode) {
+            import('./helpers/fixtures.demo').then(async (module) => {
+                await module.fixtures();
+            });
+        }
 
         app.listen();
 
@@ -57,16 +68,20 @@ Promise.all([
         new WalletService().registerVault(vault);
         new WalletService().registerListeners();
 
+        if (parseInt(process.env.MEECO_AUTH_PROVIDER_ACTIVE, 10)) {
+            await new MeecoAuthService().setConnection(cn).init();
+            new MeecoAuthService().registerListeners();
+        }
+
         if (process.env.IMPORT_KEYS_FROM_DB) {
             await ImportKeysFromDatabase(vault);
         }
 
         await new OldSecretManager().setConnection(cn).init();
-
         const secretManager = SecretManager.New();
         let {ACCESS_TOKEN_SECRET } = await secretManager.getSecrets('secretkey/auth');
         if (!ACCESS_TOKEN_SECRET) {
-            ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET
+            ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
             await secretManager.setSecrets('secretkey/auth', { ACCESS_TOKEN_SECRET  });
         }
 

@@ -4,7 +4,7 @@ import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { AnyBlockType, IPolicyDocument, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
+import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
 import { BlockActionError } from '@policy-engine/errors';
 import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
@@ -122,7 +122,7 @@ export class ExternalDataBlock {
             return null;
         }
         if (!this.schema) {
-            const schema = await ref.databaseServer.getSchemaByIRI(ref.options.schema, ref.topicId);
+            const schema = await PolicyUtils.loadSchemaByID(ref, ref.options.schema);
             this.schema = schema ? new Schema(schema) : null;
             if (!this.schema) {
                 throw new BlockActionError('Waiting for schema', ref.blockType, ref.uuid);
@@ -165,12 +165,8 @@ export class ExternalDataBlock {
                 const group = await ref.databaseServer.getUserInGroup(ref.policyId, data.owner, data.group);
                 user.setGroup(group);
             } else {
-                const groups = await ref.databaseServer.getGroupsByUser(ref.policyId, data.owner);
-                for (const group of groups) {
-                    if (group.active !== false) {
-                        user.setGroup(group);
-                    }
-                }
+                const group = await ref.databaseServer.getActiveGroupByUser(ref.policyId, data.owner);
+                user.setGroup(group);
             }
         }
 
@@ -189,7 +185,7 @@ export class ExternalDataBlock {
             DocumentSignature.INVALID);
         doc = PolicyUtils.setDocumentRef(doc, documentRef);
 
-        const state = { data: doc };
+        const state: IPolicyEventState = { data: doc };
 
         const error = await this.validateDocuments(user, state);
         if (error) {

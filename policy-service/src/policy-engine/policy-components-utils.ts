@@ -1,16 +1,7 @@
-import {
-    PolicyBlockFullArgumentList,
-    PolicyBlockMap,
-    PolicyTagMap,
-    EventActor,
-    PolicyLink,
-    PolicyInputEventType,
-    EventCallback,
-    PolicyOutputEventType
-} from '@policy-engine/interfaces';
-import { GenerateUUIDv4, PolicyEvents, PolicyType } from '@guardian/interfaces';
+import { EventActor, EventCallback, PolicyBlockFullArgumentList, PolicyBlockMap, PolicyInputEventType, PolicyLink, PolicyOutputEventType, PolicyTagMap } from '@policy-engine/interfaces';
+import { BlockType, GenerateUUIDv4, ModuleStatus, PolicyEvents, PolicyType } from '@guardian/interfaces';
 import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock, IPolicyInstance, IPolicyInterfaceBlock, ISerializedBlock, ISerializedBlockExtend } from './policy-engine.interface';
-import { Policy, DatabaseServer } from '@guardian/common';
+import { DatabaseServer, Policy, PolicyTool } from '@guardian/common';
 import { STATE_KEY } from '@policy-engine/helpers/constants';
 import { GetBlockByType } from '@policy-engine/blocks/get-block-by-type';
 import { GetOtherOptions } from '@policy-engine/helpers/get-other-options';
@@ -18,6 +9,72 @@ import { GetBlockAbout } from '@policy-engine/blocks';
 import { IPolicyUser } from './policy-user';
 import { ExternalEvent } from './interfaces/external-event';
 import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
+import { ComponentsService } from './helpers/components-service';
+
+/**
+ * Policy tag helper
+ */
+export class TagHelper {
+    /**
+     * Parent tag
+     */
+    private readonly parent: string;
+
+    /**
+     * Root tag
+     */
+    private readonly root: string;
+
+    constructor(parent?: string, root?: string) {
+        this.parent = parent;
+        this.root = root;
+    }
+
+    /**
+     * Get new tag
+     * @param oldTag
+     */
+    public getTag(oldTag: string): string {
+        if (!this.parent || !oldTag) {
+            return oldTag;
+        }
+        if (oldTag === this.root) {
+            return this.parent;
+        }
+        return `${this.parent}:${oldTag}`;
+    }
+}
+
+/**
+ * Policy id helper
+ */
+export class IdHelper {
+    /**
+     * Ids
+     */
+    private readonly list: Set<string>;
+
+    constructor() {
+        this.list = new Set<string>();
+    }
+
+    /**
+     * Get new id
+     * @param oldId
+     */
+    public getId(oldId: string): string {
+        if (oldId && !this.list.has(oldId)) {
+            this.list.add(oldId);
+            return oldId;
+        }
+        let uuid: string;
+        do {
+            uuid = GenerateUUIDv4();
+        } while (this.list.has(uuid));
+        this.list.add(uuid);
+        return uuid;
+    }
+}
 
 /**
  * Policy action map type
@@ -119,7 +176,7 @@ export class PolicyComponentsUtils {
         message: any,
         user: IPolicyUser
     ) => Promise<void> = async (...args) => {
-        blockUpdate('error', args);
+        blockUpdate('error', ...args);
     };
     /**
      * Update user info function
@@ -128,7 +185,7 @@ export class PolicyComponentsUtils {
         user: IPolicyUser,
         policy: Policy
     ) => Promise<void> = async (...args) => {
-        blockUpdate('update-user', args);
+        blockUpdate('update-user', ...args);
     };
     /**
      * External Event function
@@ -136,7 +193,7 @@ export class PolicyComponentsUtils {
     public static ExternalEventFn: (
         event: ExternalEvent<any>
     ) => Promise<void> = async (...args) => {
-        blockUpdate('external', args);
+        blockUpdate('external', ...args);
     };
 
     /**
@@ -230,7 +287,6 @@ export class PolicyComponentsUtils {
      * @param target
      * @param eventType
      * @param fn
-     * @constructor
      */
     public static RegisterAction(
         target: IPolicyBlock,
@@ -266,7 +322,6 @@ export class PolicyComponentsUtils {
      * @param targetBlock
      * @param inputName
      * @param actor
-     * @constructor
      */
     public static CreateLink<T>(
         sourceBlock: IPolicyBlock,
@@ -281,37 +336,51 @@ export class PolicyComponentsUtils {
         if (
             PolicyComponentsUtils.ActionMapByPolicyId.has(targetBlock.policyId)
         ) {
-            const policyMap = PolicyComponentsUtils.ActionMapByPolicyId.get(
-                targetBlock.policyId
-            );
+            const policyMap = PolicyComponentsUtils.ActionMapByPolicyId.get(targetBlock.policyId);
             if (policyMap.has(targetBlock.uuid)) {
                 const blockMap = policyMap.get(targetBlock.uuid);
-
-                if (targetBlock.blockType === 'module') {
-                    if (blockMap.has(PolicyInputEventType.ModuleEvent)) {
-                        const fn = blockMap.get(
-                            PolicyInputEventType.ModuleEvent
-                        );
-                        return new PolicyLink(
-                            inputName,
-                            outputName,
-                            sourceBlock,
-                            targetBlock,
-                            actor,
-                            fn
-                        );
+                switch (targetBlock.blockType) {
+                    case 'module': {
+                        if (blockMap.has(PolicyInputEventType.ModuleEvent)) {
+                            const fn = blockMap.get(PolicyInputEventType.ModuleEvent);
+                            return new PolicyLink(
+                                inputName,
+                                outputName,
+                                sourceBlock,
+                                targetBlock,
+                                actor,
+                                fn
+                            );
+                        }
+                        break;
                     }
-                } else {
-                    if (blockMap.has(inputName)) {
-                        const fn = blockMap.get(inputName);
-                        return new PolicyLink(
-                            inputName,
-                            outputName,
-                            sourceBlock,
-                            targetBlock,
-                            actor,
-                            fn
-                        );
+                    case 'tool': {
+                        if (blockMap.has(PolicyInputEventType.ToolEvent)) {
+                            const fn = blockMap.get(PolicyInputEventType.ToolEvent);
+                            return new PolicyLink(
+                                inputName,
+                                outputName,
+                                sourceBlock,
+                                targetBlock,
+                                actor,
+                                fn
+                            );
+                        }
+                        break;
+                    }
+                    default: {
+                        if (blockMap.has(inputName)) {
+                            const fn = blockMap.get(inputName);
+                            return new PolicyLink(
+                                inputName,
+                                outputName,
+                                sourceBlock,
+                                targetBlock,
+                                actor,
+                                fn
+                            );
+                        }
+                        break;
                     }
                 }
             }
@@ -326,7 +395,6 @@ export class PolicyComponentsUtils {
      * @param target
      * @param input
      * @param actor
-     * @constructor
      */
     public static RegisterLink(
         source: IPolicyBlock,
@@ -376,7 +444,6 @@ export class PolicyComponentsUtils {
      * Register new block instance in policy
      * @param policyId
      * @param component
-     * @constructor
      */
     private static RegisterComponent(
         policyId: string,
@@ -426,50 +493,49 @@ export class PolicyComponentsUtils {
      * @param policyId
      * @param block
      * @param parent
+     * @param components
      * @param allInstances
-     * @constructor
      */
-    public static BuildInstance(
+    public static async BuildInstance(
         policy: Policy,
         policyId: string,
         block: ISerializedBlock,
         parent: IPolicyBlock,
+        components: ComponentsService,
         allInstances: IPolicyBlock[]
-    ): IPolicyBlock {
-        const { blockType, children, ...params }: ISerializedBlockExtend =
-            block;
-
-        if (parent) {
-            params._parent = parent;
-        }
-
-        let options = params as any;
-        if (options.options) {
-            options = Object.assign(options, options.options);
-        }
+    ): Promise<IPolicyBlock> {
+        const {
+            blockType,
+            options,
+            children,
+            otherOptions
+        } = await PolicyComponentsUtils.GetInstanceParams(block, parent);
         const blockConstructor = GetBlockByType(blockType) as any;
         const blockInstance = new blockConstructor(
-            options.id || PolicyComponentsUtils.GenerateNewUUID(),
+            options.id,
             options.defaultActive,
             options.tag,
             options.permissions,
             options._parent,
-            GetOtherOptions(options as PolicyBlockFullArgumentList)
+            otherOptions,
+            components
         );
         blockInstance.setPolicyInstance(policyId, policy);
         blockInstance.setPolicyOwner(policy.owner);
         blockInstance.setTopicId(policy.topicId);
-        blockInstance.registerVariables();
+
+        PolicyComponentsUtils.RegisterVariables(blockInstance);
 
         allInstances.push(blockInstance);
 
-        if (children && children.length) {
+        if (Array.isArray(children)) {
             for (const child of children) {
-                PolicyComponentsUtils.BuildInstance(
+                await PolicyComponentsUtils.BuildInstance(
                     policy,
                     policyId,
                     child,
                     blockInstance,
+                    components,
                     allInstances
                 );
             }
@@ -479,27 +545,162 @@ export class PolicyComponentsUtils {
     }
 
     /**
+     * Get block instance options
+     * @param block
+     * @param parent
+     */
+    public static async GetInstanceParams(
+        block: ISerializedBlock,
+        parent: IPolicyBlock
+    ) {
+        const { blockType, children, ...params }: ISerializedBlockExtend = block;
+        if (parent) {
+            params._parent = parent;
+        }
+        let options = params as any;
+        if (options.options) {
+            options = Object.assign(options, options.options);
+        }
+        if (!options.id) {
+            options.id = PolicyComponentsUtils.GenerateNewUUID();
+        }
+
+        const otherOptions = GetOtherOptions(options as PolicyBlockFullArgumentList);
+
+        return { blockType, options, children, otherOptions };
+    }
+
+    /**
      * Build block instances tree
      * @param policy
      * @param policyId
      * @param allInstances
-     * @constructor
      */
-    public static BuildBlockTree(
+    public static async BuildBlockTree(
         policy: Policy,
         policyId: string,
-        allInstances: IPolicyBlock[]
-    ): IPolicyInterfaceBlock {
+        components: ComponentsService,
+    ) {
+        const allInstances: IPolicyBlock[] = [];
         const configObject = policy.config as ISerializedBlock;
-        const model = PolicyComponentsUtils.BuildInstance(
+        const rootInstance = await PolicyComponentsUtils.BuildInstance(
             policy,
             policyId,
             configObject,
             null,
+            components,
             allInstances
-        );
+        ) as IPolicyInterfaceBlock;
+        return { rootInstance, allInstances };
+    }
 
-        return model as any;
+    /**
+     * Build block instances tree
+     * @param policy
+     * @param policyId
+     * @param allInstances
+     */
+    public static async RegeneratePolicy(
+        policy: Policy
+    ) {
+        const configObject = policy.config as ISerializedBlock;
+        const tools: PolicyTool[] = [];
+        const tagHelper = new TagHelper();
+        const idHelper = new IdHelper();
+        await PolicyComponentsUtils.RegeneratePolicyComponents(
+            configObject,
+            tools,
+            tagHelper,
+            idHelper
+        );
+        policy.config = configObject;
+        return { policy, tools };
+    }
+
+    /**
+     * Regenerate policy components
+     * @param block
+     * @param tools
+     * @param tagHelper
+     */
+    public static async RegeneratePolicyComponents(
+        block: any,
+        tools: PolicyTool[],
+        tagHelper: TagHelper,
+        idHelper: IdHelper
+    ): Promise<void> {
+        block.id = idHelper.getId(block.id);
+        PolicyComponentsUtils.RegenerateTags(block, tagHelper);
+        if (block.blockType === BlockType.Tool) {
+            block.children = [];
+            const tool = await DatabaseServer.getTool({
+                status: ModuleStatus.PUBLISHED,
+                messageId: block.messageId,
+                hash: block.hash
+            });
+            if (tool && tool.config) {
+                tagHelper = new TagHelper(block.tag, tool.config.tag);
+
+                block.variables = tool.config.variables || [];
+                block.inputEvents = tool.config.inputEvents || [];
+                block.outputEvents = tool.config.outputEvents || [];
+                block.children = tool.config.children || [];
+
+                const events = block.events || [];
+                const innerEvents = tool.config.events || [];
+                for (const event of innerEvents) {
+                    event.target = tagHelper.getTag(event.target);
+                    event.source = tagHelper.getTag(event.source);
+                }
+                block.events = [
+                    ...events,
+                    ...innerEvents
+                ];
+
+                tools.push(tool);
+            }
+        }
+        if (Array.isArray(block.children)) {
+            for (const child of block.children) {
+                await PolicyComponentsUtils.RegeneratePolicyComponents(
+                    child,
+                    tools,
+                    tagHelper,
+                    idHelper
+                );
+            }
+        }
+    }
+
+    /**
+     * Regenerate tags
+     * @param block
+     * @param tagHelper
+     */
+    public static RegenerateTags(block: any, tagHelper: TagHelper): void {
+        block.tag = tagHelper.getTag(block.tag);
+        if (Array.isArray(block.events)) {
+            for (const event of block.events) {
+                event.target = tagHelper.getTag(event.target);
+                event.source = tagHelper.getTag(event.source);
+            }
+        }
+        if (Array.isArray(block.uiMetaData?.fields)) {
+            for (const field of block.uiMetaData.fields) {
+                if (field.bindGroup) {
+                    field.bindGroup = tagHelper.getTag(field.bindGroup);
+                }
+                if (field.bindBlock) {
+                    field.bindBlock = tagHelper.getTag(field.bindBlock);
+                }
+            }
+        }
+        if (block.finalBlocks) {
+            block.finalBlocks = tagHelper.getTag(block.finalBlocks);
+        }
+        if (block.errorFallbackTag) {
+            block.errorFallbackTag = tagHelper.getTag(block.errorFallbackTag);
+        }
     }
 
     /**
@@ -507,7 +708,6 @@ export class PolicyComponentsUtils {
      *
      * @param policyId
      * @param policy
-     * @constructor
      */
     public static async RegisterPolicyInstance(
         policyId: string,
@@ -530,7 +730,6 @@ export class PolicyComponentsUtils {
     /**
      * Register block instances tree
      * @param allInstances
-     * @constructor
      */
     public static async RegisterBlockTree(allInstances: IPolicyBlock[]) {
         for (const instance of allInstances) {
@@ -560,7 +759,6 @@ export class PolicyComponentsUtils {
     /**
      * Unregister blocks
      * @param policyId
-     * @constructor
      */
     public static async UnregisterBlocks(policyId: string) {
         const blockList =
@@ -581,7 +779,6 @@ export class PolicyComponentsUtils {
     /**
      * Unregister blocks
      * @param policyId
-     * @constructor
      */
     public static async UnregisterPolicy(policyId: string) {
         PolicyComponentsUtils.PolicyById.delete(policyId);
@@ -590,7 +787,6 @@ export class PolicyComponentsUtils {
     /**
      * Register default events
      * @param instance
-     * @constructor
      * @private
      */
     private static async RegisterDefaultEvent(instance: IPolicyBlock) {
@@ -604,11 +800,10 @@ export class PolicyComponentsUtils {
             );
         }
         if (instance.parent?.blockClassName === 'ContainerBlock') {
-            const parent = instance.parent as IPolicyContainerBlock;
             PolicyComponentsUtils.RegisterLink(
                 instance,
                 PolicyOutputEventType.RefreshEvent,
-                parent,
+                instance.parent as IPolicyContainerBlock,
                 PolicyInputEventType.RefreshEvent,
                 EventActor.EventInitiator
             );
@@ -617,7 +812,7 @@ export class PolicyComponentsUtils {
             PolicyComponentsUtils.RegisterLink(
                 instance,
                 PolicyOutputEventType.ReleaseEvent,
-                instance.parent,
+                instance.parent as IPolicyContainerBlock,
                 PolicyInputEventType.ReleaseEvent,
                 EventActor.EventInitiator
             );
@@ -627,7 +822,6 @@ export class PolicyComponentsUtils {
     /**
      * Register custom events
      * @param instance
-     * @constructor
      * @private
      */
     private static async RegisterCustomEvent(instance: IPolicyBlock) {
@@ -782,7 +976,7 @@ export class PolicyComponentsUtils {
      * @param user
      */
     public static async GetGroups(
-        policy: IPolicyInstance,
+        policy: IPolicyInstance | IPolicyInterfaceBlock,
         user: IPolicyUser
     ): Promise<any[]> {
         return await policy.databaseServer.getGroupsByUser(
@@ -801,7 +995,7 @@ export class PolicyComponentsUtils {
      * @param uuid
      */
     public static async SelectGroup(
-        policy: IPolicyInstance,
+        policy: IPolicyInstance | IPolicyInterfaceBlock,
         user: IPolicyUser,
         uuid: string
     ): Promise<void> {
@@ -927,14 +1121,17 @@ export class PolicyComponentsUtils {
      * Get Parent Module
      * @param block
      */
-    public static GetModule<T>(block: any): T {
-        if (!block || !block._parent) {
+    public static GetModule<T>(block: AnyBlockType): T {
+        if (!block || !block.parent) {
             return null;
         }
-        if (block._parent.blockType === 'module') {
-            return block._parent;
+        if (block.parent.blockType === 'module') {
+            return block.parent as T;
         }
-        return PolicyComponentsUtils.GetModule(block._parent);
+        if (block.parent.blockType === 'tool') {
+            return block.parent as T;
+        }
+        return PolicyComponentsUtils.GetModule(block.parent);
     }
 
     /**
@@ -965,6 +1162,31 @@ export class PolicyComponentsUtils {
             }
         } catch (error) {
             return;
+        }
+    }
+
+    /**
+     * Register Variables
+     * @param block
+     */
+    public static RegisterVariables(block: AnyBlockType): void {
+        const modules = PolicyComponentsUtils.GetModule<any>(block);
+        if (!modules) {
+            return;
+        }
+
+        for (let index = 0; index < block.permissions.length; index++) {
+            block.permissions[index] = modules.getVariables(block.permissions[index], 'Role');
+        }
+
+        for (const variable of block.variables) {
+            PolicyComponentsUtils.ReplaceObjectValue(
+                block,
+                variable.path,
+                (value: any) => {
+                    return modules.getVariables(value, variable.type);
+                }
+            );
         }
     }
 }

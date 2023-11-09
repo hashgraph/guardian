@@ -286,6 +286,16 @@
             overflow: hidden;
         }
 
+        .rule-color-syntax {
+            display: grid;
+            grid-template-columns: 100px auto;
+            margin-top: 8px;
+            min-height: 48px;
+            width: 100%;
+            padding: 4px 0px;
+            align-items: center;
+        }
+
         .rule-description {
             margin-top: 8px;
             height: 50px;
@@ -355,6 +365,12 @@
             font-weight: 500;
             width: 100px;
             padding-top: 12px;
+        }
+
+        .rule-color-syntax-label {
+            color: var(--pc-active-icon-color);
+            font-weight: 500;
+            width: 100px;
         }
 
         .block-color-prev {
@@ -476,7 +492,7 @@
         border-bottom: 1px solid #000;
         height: 51px;
         overflow: hidden;
-        align-items: end;
+        align-items: flex-end;
         display: flex;
         padding-bottom: 20px;
     }
@@ -650,4 +666,9 @@
         display: grid !important;
         padding-right: 38px !important;
     }
+}
+
+.switch-btn {
+    width: 180px;
+    height: 32px;
 }

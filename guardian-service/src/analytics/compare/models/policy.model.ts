@@ -1,7 +1,6 @@
 import { Policy } from '@guardian/common';
 import { BlockModel } from './block.model';
 import { ICompareOptions } from '../interfaces/compare-options.interface';
-import { IArtifacts } from '../interfaces/artifacts.interface';
 import { SchemaModel } from './schema.model';
 import { IKeyMap } from '../interfaces/key-map.interface';
 import { PropertyModel } from './property.model';
@@ -11,6 +10,8 @@ import { GroupModel } from './group.model';
 import { TopicModel } from './topic.model';
 import { TemplateTokenModel } from './template-token.model';
 import { RoleModel } from './role.model';
+import { FileModel } from './file.model';
+import { CompareUtils } from '../utils/utils';
 
 /**
  * Policy Model
@@ -80,7 +81,7 @@ export class PolicyModel {
      * Compare Options
      * @private
      */
-    private readonly options: ICompareOptions;
+    public readonly options: ICompareOptions;
 
     /**
      * All Blocks
@@ -92,7 +93,7 @@ export class PolicyModel {
      * All artifacts
      * @private
      */
-    private _artifacts: IArtifacts[];
+    private _artifacts: FileModel[];
 
     /**
      * All schemas
@@ -119,7 +120,7 @@ export class PolicyModel {
             throw new Error('Empty policy model');
         }
 
-        this.tree = this.createBlock(policy.config, 0);
+        this.tree = CompareUtils.createBlockModel(policy.config, 0);
         this._list = this.getAllBlocks(this.tree, []);
 
         this.roles = this.createRoles(policy.policyRoles, this.options);
@@ -140,23 +141,6 @@ export class PolicyModel {
             this.getAllBlocks(child, list);
         }
         return list;
-    }
-
-    /**
-     * Create Block by JSON
-     * @param json
-     * @param index
-     * @private
-     */
-    private createBlock(json: any, index: number): BlockModel {
-        const block = new BlockModel(json, index + 1);
-        if (Array.isArray(json.children)) {
-            for (let i = 0; i < json.children.length; i++) {
-                const child = json.children[i];
-                block.addChildren(this.createBlock(child, i));
-            }
-        }
-        return block;
     }
 
     /**
@@ -249,7 +233,7 @@ export class PolicyModel {
      * @param artifacts
      * @public
      */
-    public setArtifacts(artifacts: IArtifacts[]): PolicyModel {
+    public setArtifacts(artifacts: FileModel[]): PolicyModel {
         this._artifacts = artifacts;
         return this;
     }

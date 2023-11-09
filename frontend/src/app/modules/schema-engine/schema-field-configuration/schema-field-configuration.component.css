@@ -86,9 +86,7 @@
     box-sizing: border-box;
 }
 
-.custom-field-remove {
-
-}
+.custom-field-remove {}
 
 .custom-fields-remove {
     width: 24px;
@@ -224,7 +222,8 @@
     padding: 15px 27px;
 }
 
-.enum-edit-button, .reset-btn {
+.enum-edit-button,
+.reset-btn {
     color: var(--primary-color);
     padding: 18px 27px;
     border: 1px solid #e9e9e9;
@@ -269,7 +268,8 @@
     justify-content: center;
 }
 
-.enum-edit-button-label, .reset-btn-label {
+.enum-edit-button-label,
+.reset-btn-label {
     white-space: nowrap;
 }
 
@@ -341,4 +341,35 @@
 
 .custom-field-help-text {
     height: auto;
+}
+
+.sub-schema-component {
+    color: #c37a29;
+    font-weight: bold;
+    padding-right: 5px;
+}
+
+.sub-schema-name {
+    color: #3f51b5;
+}
+
+.sub-schema-version {
+    font-size: 12px;
+    background: #e0e0e0;
+    padding: 2px 9px;
+    border-radius: 10px;
+    position: relative;
+    top: -1px;
+    margin-left: 5px;
+}
+
+.sub-schema-type-main .sub-schema-component {
+    display: none;
+}
+
+.sub-schema-opt {
+    height: unset !important;
+    white-space: normal !important;
+    line-height: 27px !important;
+    padding: 10px 16px 10px 32px !important;
 }

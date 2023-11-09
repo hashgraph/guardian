@@ -1,7 +1,7 @@
 import { EventBlock } from '@policy-engine/helpers/decorators';
 import { UserType, Schema } from '@guardian/interfaces';
 import { findOptions } from '@policy-engine/helpers/find-options';
-import { IPolicyAddonBlock, IPolicyDocument, IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
+import { IPolicyAddonBlock, IPolicyDocument, IPolicyEventState, IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
 import { PrivateKey } from '@hashgraph/sdk';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
@@ -78,7 +78,7 @@ export class InterfaceDocumentActionBlock {
     async setData(user: IPolicyUser, document: IPolicyDocument): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
 
-        const state: any = { data: document };
+        const state: IPolicyEventState = { data: document };
 
         let result: any = null;
         if (ref.options.type === 'selector') {
@@ -107,7 +107,7 @@ export class InterfaceDocumentActionBlock {
             const sensorKey = await PolicyUtils.getAccountKey(ref, userDID, KeyType.KEY, sensorDid);
             const hederaAccountId = hederaAccount.hederaAccountId;
             const hederaAccountKey = hederaAccount.hederaAccountKey;
-            const schemaObject = await ref.databaseServer.getSchemaByIRI(ref.options.schema);
+            const schemaObject = await PolicyUtils.loadSchemaByID(ref, ref.options.schema);
             const schema = new Schema(schemaObject);
             const didDocument = await DidDocumentBase.createByPrivateKey(sensorDid, PrivateKey.fromString(sensorKey));
             result = {

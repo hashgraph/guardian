@@ -1,0 +1,86 @@
+.new-versions {
+    display: grid;
+    grid-template-columns: 30px 1fr;
+    grid-template-areas:
+        'new-versions__info-icon new-versions__info-label'
+        'new-versions__links new-versions__links';
+}
+
+.new-versions__info-icon {
+    grid-area: new-versions__info-icon;
+}
+
+.new-versions__info-label {
+    grid-area: new-versions__info-label;
+}
+
+.new-versions__info-icon,
+.new-versions__info-label {
+    color: #2f96b4;
+    align-self: center;
+}
+
+.new-versions__link {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    position: relative;
+}
+
+.new-versions__link-label {
+    font-size: 20px;
+    color: #0c77ff;
+    font-weight: bold;
+    line-height: 25px;
+}
+
+.new-versions__link-label,
+.new-versions__link-copy {
+    cursor: pointer;
+}
+
+.new-versions__links {
+    grid-area: new-versions__links;
+    display: flex;
+    gap: 20px;
+    padding: 8px 0;
+    overflow-x: auto;
+}
+
+@keyframes out {
+    0% {
+        opacity: 1;
+        transform: rotate(0deg) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: rotate(360deg) scale(0.3);
+    }
+}
+
+@keyframes in {
+    0% {
+        opacity: 0;
+        transform: scale(0);
+    }
+    70% {
+        transform: scale(1.2);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.new-versions__link-copy--hidden {
+    animation: out 0.3s linear, in 0.3s linear 1.4s;
+    animation-fill-mode: forwards;
+}
+
+.new-versions__copy-done {
+    animation: in 0.3s linear, out 0.3s linear 1.4s;
+    animation-fill-mode: forwards;
+    color: green;
+    position: absolute;
+    right: 0;
+}

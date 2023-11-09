@@ -53,6 +53,22 @@
                 The key which can wipe the token balance of an account. If empty, wipe is not possible.
             </div>
         </div>
+        <div class="key-value" *ngIf="enableWipe">
+            <mat-form-field appearance="outline" class="wipe-contract">
+                <mat-label>Wipe Contract</mat-label>
+                <mat-select formControlName="wipeContractId" (selectionChange)="onChangeType()">
+                    <mat-option></mat-option>
+                    <mat-option *ngFor="let contract of contracts" [value]="contract.contractId">{{contract.contractId}}</mat-option>
+                    <mat-option *ngIf="readonly" [value]="wipeContractId">{{wipeContractId}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+            <div class="key-name">
+                Wipe<br />Contract
+            </div>
+            <div class="key-description">
+                The contract which can call wipe for token. If empty, wipe key will be used.
+            </div>
+        </div>
         <div class="key-value">
             <div class="switch-btn">
                 <switch-button [on-label]="'Enabled'" [off-label]="'Disabled'" [(value)]="enableFreeze"></switch-button>

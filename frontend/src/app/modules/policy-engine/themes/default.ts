@@ -1,3 +1,5 @@
+import { DEFAULT_SYNTAX_GROUPS } from "./default-syntax-groups";
+
 export const defaultTheme = {
     id: 1,
     uuid: '00000000-0000-0000-0000-000000000001',
@@ -28,7 +30,8 @@ export const defaultTheme = {
                 'interfaceStepBlock',
                 'tagsManager',
                 'tokenConfirmationBlock',
-                'externalTopicBlock'
+                'externalTopicBlock',
+                'messagesReportBlock'
             ]
         },
         {
@@ -54,7 +57,9 @@ export const defaultTheme = {
                 'splitBlock',
                 'switchBlock',
                 'tokenActionBlock',
-                'retirementDocumentBlock'
+                'retirementDocumentBlock',
+                'notificationBlock',
+                'extractDataBlock'
             ]
         },
         {
@@ -79,5 +84,6 @@ export const defaultTheme = {
                 'documentValidatorBlock'
             ]
         }
-    ]
+    ],
+    'syntaxGroups': DEFAULT_SYNTAX_GROUPS,
 }

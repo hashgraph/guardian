@@ -19,24 +19,14 @@ services:
       - mongo
 
   ipfs-node:
-    image: ipfs/kubo:v0.18.1
+    image: ipfs/kubo:v0.22.0
     ports:
       - "5001:5001"
-      - "5002:5002"
       - "4001:4001"
-      - "4002:4002"
       - "8080:8080"
-      - "8081:8081"
     volumes:
       - ./runtime-data/ipfs/staging:/export:rw
       - ./runtime-data/ipfs/data:/data/ipfs:rw
-
-  api-docs:
-    build:
-      context: .
-      dockerfile: ./api-docs/Dockerfile
-    expose:
-      - 3001
 
   message-broker:
     image: nats:2.9.8
@@ -80,6 +70,19 @@ services:
       - SERVICE_CHANNEL=${LOGGER_SERVICE_CHANNEL}
       - DB_DATABASE=${LOGGER_DB_DATABASE}
 
+  notification-service:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
+    build:
+      context: .
+      dockerfile: ./notification-service/Dockerfile
+    depends_on:
+      - message-broker
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+      - SERVICE_CHANNEL=${NOTIFICATION_SERVICE_CHANNEL}
+      - DB_DATABASE=${NOTIFICATION_DB_DATABASE}
+
   auth-service:
     env_file:
       - ./.env.${GUARDIAN_ENV}.guardian.system
@@ -94,7 +97,7 @@ services:
     environment:
       - GUARDIAN_ENV=${GUARDIAN_ENV}
       - SERVICE_CHANNEL=${AUTH_SERVICE_CHANNEL}
-      - DB_DATABASE=${AUTH_DB_DATABASE} 
+      - DB_DATABASE=${AUTH_DB_DATABASE}
 
   worker-service-1:
     env_file:
@@ -103,11 +106,13 @@ services:
       context: .
       dockerfile: ./worker-service/Dockerfile
     depends_on:
-      - ipfs-node
-      - auth-service
+      ipfs-node:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
     environment:
       - GUARDIAN_ENV=${GUARDIAN_ENV}
-      - SERVICE_CHANNEL=${WORKER_1_SERVICE_CHANNEL}      
+      - SERVICE_CHANNEL=${WORKER_1_SERVICE_CHANNEL}
 
   worker-service-2:
     env_file:
@@ -116,11 +121,13 @@ services:
       context: .
       dockerfile: ./worker-service/Dockerfile
     depends_on:
-      - ipfs-node
-      - auth-service
+      ipfs-node:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
     environment:
       - GUARDIAN_ENV=${GUARDIAN_ENV}
-      - SERVICE_CHANNEL=${WORKER_2_SERVICE_CHANNEL}          
+      - SERVICE_CHANNEL=${WORKER_2_SERVICE_CHANNEL}
 
   api-gateway:
     env_file:
@@ -139,7 +146,7 @@ services:
     environment:
       - GUARDIAN_ENV=${GUARDIAN_ENV}
       - SERVICE_CHANNEL=${API_SERVICE_CHANNEL}
-      
+
 
   policy-service:
     env_file:
@@ -179,7 +186,7 @@ services:
       - SERVICE_CHANNEL=${GUARDIAN_SERVICE_CHANNEL}
       - DB_DATABASE=${GUARDIAN_DB_DATABASE}
       - LOG_LEVEL=${GUARDIAN_LOG_LEVEL}
-      - MULTI_POLICY_SCHEDULER=${GUARDIAN_MULTI_POLICY_SCHEDULER}     
+      - MULTI_POLICY_SCHEDULER=${GUARDIAN_MULTI_POLICY_SCHEDULER}
 
   mrv-sender:
     build:
@@ -205,7 +212,6 @@ services:
       - guardian-service
       - auth-service
       - api-gateway
-      - api-docs
       - mrv-sender
       - mongo-express
 volumes:

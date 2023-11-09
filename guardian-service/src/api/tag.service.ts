@@ -1,6 +1,34 @@
 import { ApiResponse } from '@api/helpers/api-response';
-import { DatabaseServer, Logger, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, Policy as PolicyCollection, PolicyModule as ModuleCollection, Schema as SchemaCollection, Tag, TagMessage, Token as TokenCollection, TopicConfig, UrlType, Users, VcHelper, } from '@guardian/common';
-import { GenerateUUIDv4, IRootConfig, MessageAPI, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TagType } from '@guardian/interfaces';
+import {
+    DatabaseServer,
+    Logger,
+    MessageAction,
+    MessageError,
+    MessageResponse,
+    MessageServer,
+    MessageType,
+    PolicyModule as ModuleCollection,
+    Policy as PolicyCollection,
+    PolicyTool as PolicyToolCollection,
+    Schema as SchemaCollection,
+    Token as TokenCollection,
+    Tag,
+    TagMessage,
+    TopicConfig,
+    UrlType,
+    Users,
+    VcHelper,
+} from '@guardian/common';
+import {
+    GenerateUUIDv4,
+    IRootConfig,
+    MessageAPI,
+    Schema,
+    SchemaCategory,
+    SchemaHelper,
+    SchemaStatus,
+    TagType
+} from '@guardian/interfaces';
 
 /**
  * Publish schema tags
@@ -81,6 +109,32 @@ export async function publishTokenTags(
 
     for (const tag of tags) {
         tag.target = token.tokenId;
+        await publishTag(tag, messageServer);
+        await DatabaseServer.updateTag(tag);
+    }
+}
+
+/**
+ * Publish tool tags
+ * @param tool
+ * @param messageServer
+ */
+export async function publishToolTags(
+    tool: PolicyToolCollection,
+    user: IRootConfig
+): Promise<void> {
+    const filter: any = {
+        localTarget: tool.id,
+        entity: TagType.Tool,
+        status: 'Draft'
+    }
+    const tags = await DatabaseServer.getTags(filter);
+    const topic = await DatabaseServer.getTopicById(tool.tagsTopicId);
+    const topicConfig = await TopicConfig.fromObject(topic, true);
+    const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey)
+        .setTopicObject(topicConfig);
+    for (const tag of tags) {
+        tag.target = tool.tagsTopicId;
         await publishTag(tag, messageServer);
         await DatabaseServer.updateTag(tag);
     }
@@ -185,45 +239,6 @@ export async function exportTag(targets: string[], entity?: TagType): Promise<an
 }
 
 /**
- * Import tags
- * @param tags
- * @param map - Map<OldLocalId, NewLocalId> | NewLocalId
- */
-export async function importTag(
-    tags: any[],
-    newIds?: Map<string, string> | string
-): Promise<any> {
-    const uuidMap: Map<string, string> = new Map();
-    if (newIds) {
-        if (typeof newIds === 'string') {
-            for (const tag of tags) {
-                tag.localTarget = newIds;
-            }
-        } else {
-            tags = tags.filter(tag => newIds.has(tag.localTarget));
-            for (const tag of tags) {
-                tag.localTarget = newIds.get(tag.localTarget);
-            }
-        }
-    }
-    for (const tag of tags) {
-        if (tag.uuid) {
-            if (uuidMap.has(tag.uuid)) {
-                tag.uuid = uuidMap.get(tag.uuid);
-            } else {
-                uuidMap.set(tag.uuid, GenerateUUIDv4());
-                tag.uuid = uuidMap.get(tag.uuid);
-            }
-        } else {
-            tag.uuid = GenerateUUIDv4();
-        }
-        tag.status = 'History';
-        tag.date = tag.date || (new Date()).toISOString();
-        await DatabaseServer.createTag(tag);
-    }
-}
-
-/**
  * Get target
  * @param tag
  */
@@ -302,6 +317,18 @@ export async function getTarget(entity: TagType, id: string): Promise<{
                 return null;
             }
         }
+        case TagType.Tool: {
+            const item = await DatabaseServer.getToolById(id);
+            if (item) {
+                return {
+                    id: item.id.toString(),
+                    target: item.messageId,
+                    topicId: item.tagsTopicId
+                };
+            } else {
+                return null;
+            }
+        }
         default:
             return null;
     }
@@ -339,7 +366,7 @@ export async function tagsAPI(): Promise<void> {
                     const vcHelper = new VcHelper();
                     let credentialSubject: any = { ...tag.document } || {};
                     credentialSubject.id = owner;
-                    const tagSchema = await DatabaseServer.getSchema({ iri: `#${credentialSubject.type}` });
+                    const tagSchema = await DatabaseServer.getSchema({ iri: tag.schema });
                     if (
                         tagSchema &&
                         tagSchema.category === SchemaCategory.TAG &&

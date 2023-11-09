@@ -1,0 +1,61 @@
+<div>
+    <button class="notification-btn" mat-mini-fab [matBadge]="unreadNotifications"
+        [matBadgeHidden]="unreadNotifications < 1" matBadgePosition="after" matBadgeColor="warn"
+        (menuOpened)="onMenuOpened()" (menuClosed)="menuOpened = false" [matMenuTriggerFor]="notificationMenu">
+        <mat-icon>notifications</mat-icon>
+    </button>
+
+    <mat-menu #notificationMenu="matMenu" yPosition="below" xPosition="before" class="notification-menu-panel">
+        <div class="notification-menu" (click)="$event.stopPropagation()">
+            <div class="notification-menu-header">
+                <b class="notification-menu-header__title">Notifications</b>
+                <div class="link-btn" (click)="readAll()">Mark all as read</div>
+            </div>
+            <div class="notification-list" *ngIf="progressNotifications?.length">
+                <div class="progress" *ngFor="let progress of progressNotifications">
+                    <b class="progress__action" [matTooltip]="progress.action" matTooltipPosition="below"
+                        matTooltipClass="guardian-tooltip small-guardian-tooltip" [matTooltipShowDelay]="1000">{{
+                        progress.action }}</b>
+                    <div *ngIf="progress.taskId" class="progress__details link-btn"
+                        (click)="viewProgress(progress.taskId)">
+                        View details
+                    </div>
+                    <div class="progress__message" [matTooltip]="progress.message" matTooltipPosition="below"
+                        matTooltipClass="guardian-tooltip small-guardian-tooltip" [matTooltipShowDelay]="1000">{{
+                        progress.message }}</div>
+                    <div class="progress-bar">
+                        <mat-progress-bar class="progress-bar__line" [value]="progress.progress"></mat-progress-bar>
+                        <span class="progress-bar__value">{{ progress.progress }}%</span>
+                    </div>
+                </div>
+            </div>
+            <div class="notification-menu__delimiter" *ngIf="progressNotifications.length && notifications.length">
+            </div>
+            <div class="notification-list" *ngIf="notifications.length"
+                (scroll)="onScrollNotifications($event)">
+                <div class="notification" [attr.type]="notification.type" [attr.notificationId]="notification.id"
+                    [attr.unread]="!notification.read" *ngFor="let notification of notifications">
+                    <mat-icon class="notification__icon">{{
+                        getNotificationIcon(notification.type)
+                        }}</mat-icon>
+                    <b class="notification__title" [matTooltip]="notification.title" matTooltipPosition="below"
+                        matTooltipClass="guardian-tooltip small-guardian-tooltip" [matTooltipShowDelay]="1000">{{
+                        notification.title }}</b>
+                    <div class="notification__message" [matTooltip]="notification.message" matTooltipPosition="below"
+                        matTooltipClass="guardian-tooltip small-guardian-tooltip" [matTooltipShowDelay]="1000">
+                        {{ notification.message }}
+                    </div>
+                    <div *ngIf="notification.action" class="notification__details link-btn"
+                        (click)="viewDetails(notification)">
+                        View
+                    </div>
+                </div>
+            </div>
+            <div *ngIf="!progressNotifications.length && !notifications.length" class="no-new-notifications">No new
+                notifications</div>
+            <div class="notification-menu__view-all link-btn" (click)="viewAllNotifications()">
+                View all notifications
+            </div>
+        </div>
+    </mat-menu>
+</div>

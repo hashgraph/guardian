@@ -81,7 +81,7 @@
                                 Variable Type
                             </td>
                             <td class="propRowCell">
-                                <mat-select [(ngModel)]="item.type" [disabled]="readonly" (valueChange)="onEditVariable(item, true)">
+                                <mat-select [(ngModel)]="item.type" [disabled]="readonly" (valueChange)="onEditVariable(item)">
                                     <mat-option value="Schema">Schema</mat-option>
                                     <mat-option value="Token">Token</mat-option>
                                     <mat-option value="TokenTemplate">Token Template</mat-option>
@@ -90,6 +90,25 @@
                                     <mat-option value="Topic">Topic</mat-option>
                                     <mat-option value="String">String</mat-option>
                                 </mat-select>
+                            </td>
+                        </tr>
+                        <tr *ngIf="item.type === 'Schema'" [attr.collapse]="propHidden.variables[i]"
+                            class="propRow subRow">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">
+                                <!-- <span class="required-fields">*</span> -->
+                                Base schema
+                            </td>
+                            <td *ngIf="!baseSchemaReadOnly(item.baseSchema)" class="propRowCell">
+                                <select-schema
+                                    [schemas]="baseSchemas" 
+                                    [(value)]="item.baseSchema"
+                                    [disabled]="readonly"
+                                    (change)="onEditVariable(item)" 
+                                    ></select-schema>
+                            </td>
+                            <td *ngIf="baseSchemaReadOnly(item.baseSchema)" class="propRowCell">
+                                <span class="readonly-prop">{{item.baseSchema.name}}</span>
                             </td>
                         </tr>
                     </ng-container>

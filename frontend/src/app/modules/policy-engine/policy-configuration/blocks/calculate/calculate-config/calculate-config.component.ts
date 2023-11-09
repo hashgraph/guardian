@@ -1,5 +1,6 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { IModuleVariables, PolicyBlockModel, SchemaVariables } from '../../../../structures';
+import { Component, EventEmitter, Inject, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
+import { IModuleVariables, PolicyBlock, SchemaVariables } from '../../../../structures';
+import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
 
 /**
  * Settings for block of 'policyRolesBlock' type.
@@ -11,13 +12,13 @@ import { IModuleVariables, PolicyBlockModel, SchemaVariables } from '../../../..
     encapsulation: ViewEncapsulation.Emulated
 })
 export class CalculateConfigComponent implements OnInit {
-    @Input('block') currentBlock!: PolicyBlockModel;
+    @Input('block') currentBlock!: PolicyBlock;
     @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();
 
     private moduleVariables!: IModuleVariables | null;
-    private item!: PolicyBlockModel;
-    
+    private item!: PolicyBlock;
+
     propHidden: any = {
         inputSchemaGroup: false,
         outputSchemaGroup: false
@@ -27,6 +28,7 @@ export class CalculateConfigComponent implements OnInit {
     schemas!: SchemaVariables[];
 
     constructor() {
+        
     }
 
     ngOnInit(): void {
@@ -39,7 +41,7 @@ export class CalculateConfigComponent implements OnInit {
         this.load(this.currentBlock);
     }
 
-    load(block: PolicyBlockModel) {
+    load(block: PolicyBlock) {
         this.moduleVariables = block.moduleVariables;
         this.item = block;
         this.properties = block.properties;
@@ -86,7 +88,7 @@ export class CalculateConfigComponent implements OnInit {
             }
         }
     }
-    
+
     onSave() {
         this.item.changed = true;
     }

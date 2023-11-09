@@ -7,6 +7,7 @@ import { forkJoin } from 'rxjs';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
+import { ViewerDialog } from '../../../helpers/viewer-dialog/viewer-dialog.component';
 
 /**
  * Component for display block of 'interfaceDocumentsSource' types.
@@ -212,12 +213,16 @@ export class DocumentsSourceBlockComponent implements OnInit {
         } else {
             const dialogRef = this.dialog.open(VCViewerDialog, {
                 width: '850px',
+                panelClass: 'g-dialog',
                 data: {
+                    id: row.id,
+                    dryRun: !!row.dryRunId,
                     document: document,
                     title: field.dialogContent,
                     type: 'VC',
                     viewDocument: true
-                }
+                },
+                disableClose: true,
             });
             dialogRef.afterClosed().subscribe(async (result) => { });
         }
@@ -293,6 +298,26 @@ export class DocumentsSourceBlockComponent implements OnInit {
         return null;
     }
 
+    getSerials(row: any, field: any) {
+        try {
+            if (field.content) {
+                return field.content;
+            }
+            const result = [];
+            if (row.serials) {
+                if (Array.isArray(row.serials)) {
+                    for (const serial of row.serials) {
+                        result.push()
+                    }
+                }
+            }
+
+        } catch (error) {
+            return [];
+        }
+    }
+
+
     getObjectValue(data: any, value: any) {
         let result: any = null;
         if (data && value) {
@@ -322,6 +347,51 @@ export class DocumentsSourceBlockComponent implements OnInit {
         }
     }
 
+    onArray(event: MouseEvent, row: any, field: any) {
+        event.preventDefault();
+        event.stopPropagation();
+        const text = this.getText(row, field);
+        const dialogRef = this.dialog.open(VCViewerDialog, {
+            width: '850px',
+            panelClass: 'g-dialog',
+            data: {
+                id: row.id,
+                dryRun: !!row.dryRunId,
+                document: text,
+                title: field.title,
+                type: 'TEXT',
+                viewDocument: false
+            }
+        });
+        dialogRef.afterClosed().subscribe(async (result) => { });
+    }
+
+    onSerials(event: MouseEvent, row: any, field: any) {
+        event.preventDefault();
+        event.stopPropagation();
+        const links = [];
+        if (row.serials) {
+            for (const serial of row.serials) {
+                links.push({
+                    type: "tokens",
+                    params: row.tokenId,
+                    subType: "serials",
+                    subParams: serial,
+                    value: `${row.tokenId} / ${serial}`
+                })
+            }
+        }
+        const dialogRef = this.dialog.open(ViewerDialog, {
+            width: '850px',
+            data: {
+                title: field.title,
+                type: 'LINK',
+                value: links,
+            }
+        });
+        dialogRef.afterClosed().subscribe(async (result) => { });
+    }
+
     onButton(event: MouseEvent, row: any, field: any) {
         event.preventDefault();
         event.stopPropagation();
@@ -337,7 +407,6 @@ export class DocumentsSourceBlockComponent implements OnInit {
             href.setAttribute('href', dataStr);
             href.setAttribute('download', `${row.document.id}.json`);
             href.click();
-            console.log('download', row, field);
         }
     }
 
@@ -380,7 +449,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
         }).subscribe();
     }
 
-    parseArrayValue(value: string | string[]) : string {
+    parseArrayValue(value: string | string[]): string {
         return Array.isArray(value) ? value.join(', ') : value;
     }
 }

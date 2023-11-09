@@ -1,4 +1,5 @@
 import {
+    BlockCache,
     BlockState,
     VcDocument as VcDocumentCollection,
     VpDocument as VpDocumentCollection,
@@ -23,7 +24,8 @@ import {
     Tag,
     TagCache,
     Contract as ContractCollection,
-    ExternalDocument
+    ExternalDocument,
+    SuggestionsConfig
 } from '../entity';
 import { Binary } from 'bson';
 import {
@@ -35,6 +37,7 @@ import {
 import { BaseEntity } from '../models';
 import { DataBaseHelper } from '../helpers';
 import { Theme } from '../entity/theme';
+import { PolicyTool } from '../entity/tool';
 
 /**
  * Database server
@@ -60,6 +63,7 @@ export class DatabaseServer {
     constructor(dryRun: string = null) {
         this.dryRun = dryRun || null;
 
+        this.classMap.set(BlockCache, 'BlockCache');
         this.classMap.set(BlockState, 'BlockState');
         this.classMap.set(VcDocumentCollection, 'VcDocumentCollection');
         this.classMap.set(VpDocumentCollection, 'VpDocumentCollection');
@@ -547,6 +551,69 @@ export class DatabaseServer {
         return await this.findOne(BlockState, {
             policyId,
             blockId: uuid
+        });
+    }
+
+    /**
+     * Save Block State
+     * @param {string} policyId - policy ID
+     * @param {string} blockId - block UUID
+     * @param {string} did - user DID
+     * @param {string} name - variable name
+     * @param {any} value - variable value
+     * @param {boolean} isLongValue - if long value
+     * @virtual
+     */
+    public async saveBlockCache(
+        policyId: string,
+        blockId: string,
+        did: string,
+        name: string,
+        value: any,
+        isLongValue: boolean
+    ): Promise<void> {
+        let stateEntity = await this.findOne(BlockCache, {
+            policyId,
+            blockId,
+            did,
+            name
+        });
+        if (stateEntity) {
+            stateEntity.value = value;
+            stateEntity.isLongValue = isLongValue;
+        } else {
+            stateEntity = this.create(BlockCache, {
+                policyId,
+                blockId,
+                did,
+                name,
+                value,
+                isLongValue
+            })
+        }
+        await this.save(BlockCache, stateEntity);
+    }
+
+    /**
+     * Get Block State
+     * @param {string} policyId - policy ID
+     * @param {string} blockId - block UUID
+     * @param {string} did - user DID
+     * @param {string} name - variable name
+     * @returns {any} - variable value
+     * @virtual
+     */
+    public async getBlockCache(
+        policyId: string,
+        blockId: string,
+        did: string,
+        name: string
+    ): Promise<any> {
+        return await this.findOne(BlockCache, {
+            policyId,
+            blockId,
+            did,
+            name
         });
     }
 
@@ -1132,6 +1199,28 @@ export class DatabaseServer {
      */
     public async getAllUsersByRole(policyId: string, uuid: string, role: string): Promise<PolicyRolesCollection[]> {
         return await this.find(PolicyRolesCollection, { policyId, uuid, role });
+    }
+
+    /**
+     * Get all policy users by role
+     * @param policyId
+     *
+     * @virtual
+     */
+    public async getUsersByRole(policyId: string, role: string): Promise<PolicyRolesCollection[]> {
+        return await this.find(PolicyRolesCollection, { policyId, role });
+    }
+
+    /**
+     * Get user roles
+     * @param policyId
+     * @param did
+     * @returns
+     *
+     * @virtual
+     */
+    public async getUserRoles(policyId: string, did: string): Promise<PolicyRolesCollection[]> {
+        return await this.find(PolicyRolesCollection, { policyId, did });
     }
 
     /**
@@ -1804,6 +1893,56 @@ export class DatabaseServer {
     }
 
     /**
+     * Get VC
+     * @param id
+     */
+    public static async getVCById(id: string): Promise<VcDocumentCollection> {
+        return await new DataBaseHelper(VcDocumentCollection).findOne(id);
+    }
+
+    /**
+     * Get VC
+     * @param id
+     */
+    public static async getVC(filters?: any, options?: any): Promise<VcDocumentCollection> {
+        return await new DataBaseHelper(VcDocumentCollection).findOne(filters, options);
+    }
+
+    /**
+     * Get VCs
+     * @param filters
+     * @param options
+     */
+    public static async getVCs(filters?: any, options?: any): Promise<VcDocumentCollection[]> {
+        return await new DataBaseHelper(VcDocumentCollection).find(filters, options);
+    }
+
+    /**
+     * Get VC
+     * @param id
+     */
+    public static async getVPById(id: string): Promise<VpDocumentCollection> {
+        return await new DataBaseHelper(VpDocumentCollection).findOne(id);
+    }
+
+    /**
+     * Get VC
+     * @param id
+     */
+    public static async getVP(filters?: any, options?: any): Promise<VpDocumentCollection> {
+        return await new DataBaseHelper(VpDocumentCollection).findOne(filters, options);
+    }
+
+    /**
+     * Get VCs
+     * @param filters
+     * @param options
+     */
+    public static async getVPs(filters?: any, options?: any): Promise<VpDocumentCollection[]> {
+        return await new DataBaseHelper(VpDocumentCollection).find(filters, options);
+    }
+
+    /**
      * Update policy
      * @param policyId
      * @param data
@@ -2320,6 +2459,73 @@ export class DatabaseServer {
     }
 
     /**
+     * Create Tool
+     * @param tool
+     */
+    public static async createTool(tool: any): Promise<PolicyTool> {
+        const item = new DataBaseHelper(PolicyTool).create(tool);
+        return await new DataBaseHelper(PolicyTool).save(item);
+    }
+
+    /**
+     * Get Tools
+     * @param filters
+     * @param options
+     */
+    public static async getToolsAndCount(filters?: any, options?: any): Promise<[PolicyTool[], number]> {
+        return await new DataBaseHelper(PolicyTool).findAndCount(filters, options);
+    }
+
+    /**
+     * Get Tool By UUID
+     * @param uuid
+     */
+    public static async getToolByUUID(uuid: string): Promise<PolicyTool> {
+        return await new DataBaseHelper(PolicyTool).findOne({ uuid });
+    }
+
+    /**
+     * Get Tool By ID
+     * @param uuid
+     */
+    public static async getToolById(id: string): Promise<PolicyTool> {
+        return await new DataBaseHelper(PolicyTool).findOne(id);
+    }
+
+    /**
+     * Get Tool
+     * @param filters
+     */
+    public static async getTool(filters: any): Promise<PolicyTool> {
+        return await new DataBaseHelper(PolicyTool).findOne(filters);
+    }
+
+    /**
+     * Delete Tool
+     * @param tool
+     */
+    public static async removeTool(tool: PolicyTool): Promise<void> {
+        return await new DataBaseHelper(PolicyTool).remove(tool);
+    }
+
+    /**
+     * Get Tools
+     * @param filters
+     * @param options
+     */
+    public static async getTools(filters?: any, options?: any): Promise<PolicyTool[]> {
+        return await new DataBaseHelper(PolicyTool).find(filters, options);
+    }
+
+    /**
+     * Update Tool
+     * @param row
+     */
+    public static async updateTool(row: PolicyTool): Promise<PolicyTool> {
+        return await new DataBaseHelper(PolicyTool).update(row);
+    }
+
+    /**
      * Create tag
      * @param tag
      */
@@ -2426,5 +2632,66 @@ export class DatabaseServer {
      */
     public static async updateTheme(row: Theme): Promise<Theme> {
         return await new DataBaseHelper(Theme).update(row);
+    }
+
+    /**
+     * Save suggestions config
+     * @param config
+     * @returns config
+     */
+    public static async setSuggestionsConfig(
+        config: Partial<SuggestionsConfig>
+    ): Promise<SuggestionsConfig> {
+        const existingConfig = await DatabaseServer.getSuggestionsConfig(
+            config.user
+        );
+        if (existingConfig) {
+            existingConfig.items = config.items;
+        }
+        return await new DataBaseHelper(SuggestionsConfig).save(
+            existingConfig || config
+        );
+    }
+
+    /**
+     * Get suggestions config
+     * @param did
+     * @returns config
+     */
+    public static async getSuggestionsConfig(
+        did: string
+    ): Promise<SuggestionsConfig> {
+        return await new DataBaseHelper(SuggestionsConfig).findOne({
+            user: did,
+        });
+    }
+
+    /**
+     * Update VP DOcuments
+     * @param value
+     * @param filters
+     * @param dryRun
+     */
+    public static async updateVpDocuments(value: any, filters: any, dryRun?: string): Promise<void> {
+        if (dryRun) {
+            if (filters.where) {
+                filters.where.dryRunId = dryRun;
+                filters.where.dryRunClass = 'VpDocumentCollection';
+            } else {
+                filters.dryRunId = dryRun;
+                filters.dryRunClass = 'VpDocumentCollection';
+            }
+            const items = await new DataBaseHelper(DryRun).find(filters);
+            for (const item of items) {
+                Object.assign(item, value);
+            }
+            await new DataBaseHelper(DryRun).update(items);
+        } else {
+            const items = await new DataBaseHelper(VpDocumentCollection).find(filters);
+            for (const item of items) {
+                Object.assign(item, value);
+            }
+            await new DataBaseHelper(VpDocumentCollection).update(items);
+        }
     }
 }

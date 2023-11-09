@@ -1,9 +1,22 @@
-import { Component, ComponentFactoryResolver, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core';
+import { Component, ComponentFactoryResolver, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, SimpleChanges, ViewChild, Inject } from '@angular/core';
 import { FlatBlockNode } from '../../structures/tree-model/block-node';
 import { CdkDropList } from '@angular/cdk/drag-drop';
-import { PolicyBlockModel, BlocLine, BlockRect, EventCanvas, PolicyModel, PolicyModuleModel } from '../../structures';
+import { PolicyBlock, BlocLine, BlockRect, EventCanvas, PolicyFolder, PolicyItem } from '../../structures';
 import { RegisteredService } from '../../services/registered.service';
 import { ThemeService } from '../../../../services/theme.service';
+import { BLOCK_TYPE_TIPS } from 'src/app/injectors/block-type-tips.injector';
+import { DomSanitizer } from '@angular/platform-browser';
+import { MatIconRegistry } from '@angular/material/icon';
+
+enum BlockStyle {
+    None = 'None',
+    Block = 'Block',
+    Module = 'Module',
+    Tool = 'Tool',
+    RootBlock = 'RootBlock',
+    RootModule = 'RootModule',
+    RootTool = 'RootTool'
+}
 
 /**
  * Settings for all blocks.
@@ -14,18 +27,26 @@ import { ThemeService } from '../../../../services/theme.service';
     styleUrls: ['./policy-tree.component.css']
 })
 export class PolicyTreeComponent implements OnInit {
-    @Input('module') module!: PolicyModel | PolicyModuleModel;
-    @Input('blocks') blocks!: PolicyBlockModel[];
+    @Input('module') module!: PolicyFolder;
+    @Input('blocks') blocks!: PolicyBlock[];
     @Input('errors') errors!: any;
     @Input('readonly') readonly!: boolean;
     @Input('active') active!: string;
     @Input('connector') dropListConnector!: any;
+    @Input('suggestions') isSuggenstionEnabled: boolean = false;
+    @Input('nextBlock') nextBlock?: any;
+    @Input('nestedBlock') nestedBlock?: any;
+    @Input('currentBlock') currentBlock?: any;
 
     @Output('delete') delete = new EventEmitter();
     @Output('select') select = new EventEmitter();
     @Output('reorder') reorder = new EventEmitter();
     @Output('open') open = new EventEmitter();
     @Output('init') init = new EventEmitter();
+    @Output('next') next = new EventEmitter();
+    @Output('nested') nested = new EventEmitter();
+    @Output('currentBlockChange') currentBlockChange = new EventEmitter();
+    @Output('search') search = new EventEmitter();
 
     @ViewChild('parent') parentRef!: ElementRef<HTMLCanvasElement>;
     @ViewChild('canvas') canvasRef!: ElementRef<HTMLCanvasElement>;
@@ -53,9 +74,9 @@ export class PolicyTreeComponent implements OnInit {
     }
 
     public data!: FlatBlockNode[];
+    public selectedNode?: FlatBlockNode;
     private errorsTree!: any;
-    private root!: PolicyBlockModel;
-    private currentBlock!: PolicyBlockModel;
+    private root!: PolicyBlock;
     private collapsedMap: Map<string, boolean> = new Map<string, boolean>();
     private eventsDisabled = false;
     private paddingLeft = 40;
@@ -72,8 +93,8 @@ export class PolicyTreeComponent implements OnInit {
     constructor(
         private registeredService: RegisteredService,
         private element: ElementRef,
-        private componentFactoryResolver: ComponentFactoryResolver,
-        private themeService: ThemeService
+        private themeService: ThemeService,
+        @Inject(BLOCK_TYPE_TIPS) public blockTypeTips: any
     ) {
         this.actorMap = {};
         this.actorMap[''] = 'Event Initiator';
@@ -136,6 +157,12 @@ export class PolicyTreeComponent implements OnInit {
     }
 
     ngOnChanges(changes: SimpleChanges) {
+        if (changes.currentBlock && Object.keys(changes).length === 1) {
+            this.selectedNode = this.data.find(
+                (item) => item.node === changes.currentBlock.currentValue
+            );
+            return;
+        }
         this.errorsTree = {};
         if (changes.errors && this.errors) {
             this.searchErrors(this.blocks);
@@ -143,6 +170,11 @@ export class PolicyTreeComponent implements OnInit {
         this.rebuildTree(this.blocks);
         this.scroll();
         this.errorsTree = {};
+        if (changes.currentBlock) {
+            this.selectedNode = this.data.find(
+                (item) => item.node === changes.currentBlock.currentValue
+            );
+        }
     }
 
     private scroll() {
@@ -164,9 +196,14 @@ export class PolicyTreeComponent implements OnInit {
         }
     }
 
-    private rebuildTree(data: PolicyBlockModel[]) {
+    private rebuildTree(data: PolicyBlock[]) {
         this.root = data[0];
         this.data = this.convertToArray([], data, 0, null);
+        if (this.currentBlock) {
+            this.selectedNode = this.data.find(
+                (item) => item.node === this.currentBlock
+            );
+        }
         this.render(true);
     }
 
@@ -183,7 +220,7 @@ export class PolicyTreeComponent implements OnInit {
         return false;
     }
 
-    private searchErrors(blocks: PolicyBlockModel[]): boolean {
+    private searchErrors(blocks: PolicyBlock[]): boolean {
         if (!blocks) {
             return false;
         }
@@ -203,17 +240,18 @@ export class PolicyTreeComponent implements OnInit {
 
     private convertToArray(
         result: FlatBlockNode[],
-        blocks: PolicyBlockModel[],
+        blocks: PolicyBlock[],
         level: number,
         parent: FlatBlockNode | null
     ): FlatBlockNode[] {
         if (!blocks) {
             return result;
         }
+        let prevNode: any = undefined;
         for (let i = 0; i < blocks.length; i++) {
             const block = blocks[i];
-            const next = blocks[i - 1];
-            const prev = blocks[i + 1];
+            const next = blocks[i + 1];
+            const prev = blocks[i - 1];
             const node = new FlatBlockNode(block);
             node.prev = prev;
             node.next = next;
@@ -230,7 +268,33 @@ export class PolicyTreeComponent implements OnInit {
                 node.parent = parent.node;
                 node.parentNode = parent;
             }
+            node.prevNode = prevNode;
+            node.canAddModules = this.canAddModules(node, block);
+            node.canAddTools = this.canAddTools(node, block);
+            node.canAddBlocks = this.canAddBlocks(node, block);
+            node.canUp = this.canUp(node, block);
+            node.canDown = this.canDown(node, block);
+            node.canLeft = this.canLeft(node, block);
+            node.canRight = this.canRight(node, block);
             node.offset = `${this.paddingLeft * level}px`;
+            if (node.root) {
+                if (node.isModule) {
+                    node.style = BlockStyle.RootModule;
+                } else if (node.isTool) {
+                    node.style = BlockStyle.RootTool;
+                } else {
+                    node.style = BlockStyle.RootBlock;
+                }
+            } else {
+                if (node.isModule) {
+                    node.style = BlockStyle.Module;
+                } else if (node.isTool) {
+                    node.style = BlockStyle.Tool;
+                } else {
+                    node.style = BlockStyle.Block;
+                }
+            }
+            prevNode = node;
             block.setAbout(node.about);
 
             result.push(node);
@@ -241,15 +305,158 @@ export class PolicyTreeComponent implements OnInit {
                 this.collapsedMap.set(node.id, node.collapsed);
             }
 
-            if (!node.collapsed && (!block.isModule || node.root)) {
+            if (this.ifCanHaveChildren(node, block)) {
                 result = this.convertToArray(result, block.children, level + 1, node);
             }
         }
         return result;
     }
 
+    private canAddModules(node: FlatBlockNode, block: PolicyItem): boolean {
+        if (node.root) {
+            if (block.isModule) {
+                return false;
+            }
+            if (block.isTool) {
+                return false;
+            }
+            return true;
+        } else {
+            if (block.isModule) {
+                return false;
+            }
+            if (block.isTool) {
+                return false;
+            }
+            return true;
+        }
+    }
+
+    private canAddTools(node: FlatBlockNode, block: PolicyItem): boolean {
+        if (node.root) {
+            if (block.isModule) {
+                return true;
+            }
+            if (block.isTool) {
+                return true;
+            }
+            return true;
+        } else {
+            if (block.isModule) {
+                return false;
+            }
+            if (block.isTool) {
+                return false;
+            }
+            return true;
+        }
+    }
+
+    private canAddBlocks(node: FlatBlockNode, block: PolicyItem): boolean {
+        if (node.root) {
+            if (block.isModule) {
+                return true;
+            }
+            if (block.isTool) {
+                return true;
+            }
+            return true;
+        } else {
+            if (block.isModule) {
+                return false;
+            }
+            if (block.isTool) {
+                return false;
+            }
+            return true;
+        }
+    }
+
+    private ifCanHaveChildren(node: FlatBlockNode, block: PolicyItem): boolean {
+        if (node.root) {
+            return true;
+        }
+        if (node.collapsed) {
+            return false;
+        }
+        if (block.isModule || block.isTool) {
+            return false;
+        }
+        return true;
+    }
+
+    private canUp(node: FlatBlockNode, block: PolicyItem): boolean {
+        if (node.root) {
+            return false;
+        }
+        if (node.prevNode) {
+            return true;
+        }
+        return false;
+    }
+
+    private canDown(node: FlatBlockNode, block: PolicyItem): boolean {
+        if (node.root) {
+            return false;
+        }
+        if (node.next) {
+            return true;
+        }
+        return false;
+    }
+
+    private canLeft(node: FlatBlockNode, block: PolicyItem): boolean {
+        if (node.root) {
+            return false;
+        }
+        if (node.parentNode && !node.parentNode.root) {
+            return true;
+        }
+        return false;
+    }
+
+    private canRight(node: FlatBlockNode, block: PolicyItem): boolean {
+        if (node.root) {
+            return false;
+        }
+        if (node.prevNode) {
+            if (block.isModule) {
+                return node.prevNode.canAddModules;
+            }
+            if (block.isTool) {
+                return node.prevNode.canAddTools;
+            }
+            return node.prevNode.canAddBlocks;
+        }
+        return false;
+    }
+
+    public isRootModuleStyle(node: FlatBlockNode): boolean {
+        return node.style === BlockStyle.RootModule;
+    }
+
+    public isRootToolStyle(node: FlatBlockNode): boolean {
+        return node.style === BlockStyle.RootTool;
+    }
+
+    public isRootBlockStyle(node: FlatBlockNode): boolean {
+        return node.style === BlockStyle.RootBlock;
+    }
+
+    public isModuleStyle(node: FlatBlockNode): boolean {
+        return node.style === BlockStyle.Module;
+    }
+
+    public isToolStyle(node: FlatBlockNode): boolean {
+        return node.style === BlockStyle.Tool;
+    }
+
+    public isBlockStyle(node: FlatBlockNode): boolean {
+        return node.style === BlockStyle.Block;
+    }
+
     public isSelect(node: FlatBlockNode) {
-        return this.currentBlock == node.node;
+        return this.currentBlock === node?.node;
     }
 
     public isFinal(node: FlatBlockNode) {
@@ -263,10 +470,16 @@ export class PolicyTreeComponent implements OnInit {
         return false;
     }
 
+    public blockStyle(node: FlatBlockNode): any {
+        return this.themeService.getStyle(node.node);
+    }
+
     public onSelect(event: MouseEvent, node: FlatBlockNode) {
+        this.selectedNode = node;
         this.currentBlock = node.node;
         this.render();
         this.select.emit(this.currentBlock);
+        this.currentBlockChange.emit(this.currentBlock);
         return false;
     }
 
@@ -468,6 +681,13 @@ export class PolicyTreeComponent implements OnInit {
         return false;
     }
 
+    public onSearch(event: any) {
+        event.preventDefault();
+        event.stopPropagation();
+        this.search.emit(this.currentBlock);
+        return false;
+    }
+
     public onVisibleMoreActions(event: any) {
         if (this.visibleMoveActions === '1') {
             this.visibleMoveActions = '0';
@@ -537,7 +757,9 @@ export class PolicyTreeComponent implements OnInit {
     public drop(event: any) {
         const data = event.item.data;
         if (typeof data === 'string' && (
-            data.startsWith('new:') || data.startsWith('module:')
+            data.startsWith('new:') ||
+            data.startsWith('module:') ||
+            data.startsWith('tool:')
         )) {
             const [operation, name] = data.split(':');
             const prev = this.data[event.currentIndex - 1];
@@ -607,13 +829,9 @@ export class PolicyTreeComponent implements OnInit {
         return { type, data };
     }
 
-    public blockStyle(node: FlatBlockNode): any {
-        return this.themeService.getStyle(node.node);
-    }
-
     @HostListener('window:resize', ['$event'])
-    public onResize(event:any) {
-        if(this._resizeTimer) {
+    public onResize(event: any) {
+        if (this._resizeTimer) {
             clearTimeout(this._resizeTimer);
             this._resizeTimer = null;
         }
@@ -621,5 +839,28 @@ export class PolicyTreeComponent implements OnInit {
             this._resizeTimer = null;
             this.render();
         }, 200);
+    }
+
+    public isLatestBlockInSelect(block: any) {
+        if (!this.selectedNode) {
+            return false;
+        }
+        let current: any = this.selectedNode;
+        for (
+            let i = this.data.indexOf(current);
+            i < this.data.length;
+            i++
+        ) {
+            const next = this.data[i + 1];
+            if (!next || next.level < this.selectedNode!.level) {
+                break;
+            }
+            current = next;
+        }
+        return current === block;
+    }
+
+    public getNestedOffset(nodeLevel: number) {
+        return `${this.paddingLeft * nodeLevel}px`;
     }
 }

@@ -6,14 +6,12 @@ import {
     DIDDocument,
     DIDMessage,
     IAuthUser,
-    InboundMessageIdentityDeserializer,
     KeyType,
     Logger,
     MessageAction,
     MessageError,
     MessageResponse,
     MessageServer,
-    OutboundResponseIdentitySerializer,
     RegistrationMessage,
     RunFunctionAsync,
     Schema as SchemaCollection,
@@ -149,6 +147,14 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
     logger.info('Create DID Document', ['GUARDIAN_SERVICE']);
     const didObject = await DIDDocument.create(hederaAccountKey, topicConfig.topicId);
     const userDID = didObject.getDid();
+
+    const existingUser = await new DataBaseHelper(DidDocumentCollection).findOne({did: userDID});
+    if (existingUser) {
+        notifier.completedAndStart('User restored');
+        notifier.completed();
+        return userDID;
+    }
+
     const didMessage = new DIDMessage(MessageAction.CreateDID);
     didMessage.setDocument(didObject);
     const didDoc = await new DataBaseHelper(DidDocumentCollection).save({
@@ -215,6 +221,27 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
             if (schema) {
                 notifier.info('Publish System Schema (USER)');
                 logger.info('Publish System Schema (USER)', ['GUARDIAN_SERVICE']);
+                schema.creator = didMessage.did;
+                schema.owner = didMessage.did;
+                const item = await publishSystemSchema(schema, messageServer, MessageAction.PublishSystemSchema);
+                await new DataBaseHelper(SchemaCollection).save(item);
+            }
+        }
+
+        schema = await new DataBaseHelper(SchemaCollection).findOne({
+            entity: SchemaEntity.RETIRE_TOKEN,
+            readonly: true,
+            topicId: topicConfig.topicId,
+        });
+        if (!schema) {
+            schema = await new DataBaseHelper(SchemaCollection).findOne({
+                entity: SchemaEntity.RETIRE_TOKEN,
+                system: true,
+                active: true
+            });
+            if (schema) {
+                notifier.info('Publish System Schema (RETIRE)');
+                logger.info('Publish System Schema (RETIRE)', ['GUARDIAN_SERVICE']);
                 schema.creator = didMessage.did;
                 schema.owner = didMessage.did;
                 const item = await publishSystemSchema(schema, messageServer, MessageAction.PublishSystemSchema);
@@ -472,8 +499,8 @@ export function profileAPI() {
     });
 
     ApiResponse(MessageAPI.CREATE_USER_PROFILE_COMMON_ASYNC, async (msg) => {
-        const { username, profile, taskId } = msg;
-        const notifier = initNotifier(taskId);
+        const { username, profile, task } = msg;
+        const notifier = await initNotifier(task);
 
         RunFunctionAsync(async () => {
             if (!profile.hederaAccountId) {
@@ -492,12 +519,12 @@ export function profileAPI() {
             notifier.error(error);
         });
 
-        return new MessageResponse({ taskId });
+        return new MessageResponse(task);
     });
 
     ApiResponse(MessageAPI.RESTORE_USER_PROFILE_COMMON_ASYNC, async (msg) => {
-        const { username, profile, taskId } = msg;
-        const notifier = initNotifier(taskId);
+        const { username, profile, task } = msg;
+        const notifier = await initNotifier(task);
 
         RunFunctionAsync(async () => {
             if (!profile.hederaAccountId) {
@@ -509,21 +536,22 @@ export function profileAPI() {
                 return;
             }
 
+            notifier.start('Restore user profile');
             const restore = new RestoreDataFromHedera();
             await restore.restoreRootAuthority(username, profile.hederaAccountId, profile.hederaAccountKey, profile.topicId)
-
+            notifier.completed();
             notifier.result('did');
         }, async (error) => {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             notifier.error(error);
         });
 
-        return new MessageResponse({ taskId });
+        return new MessageResponse(task);
     });
 
     ApiResponse(MessageAPI.GET_ALL_USER_TOPICS_ASYNC, async (msg) => {
-        const { username, profile, taskId } = msg;
-        const notifier = initNotifier(taskId);
+        const { username, profile, task } = msg;
+        const notifier = await initNotifier(task);
 
         RunFunctionAsync(async () => {
             if (!profile.hederaAccountId) {
@@ -535,16 +563,17 @@ export function profileAPI() {
                 return;
             }
 
+            notifier.start('Finding all user topics');
             const restore = new RestoreDataFromHedera();
             const result = await restore.findAllUserTopics(username, profile.hederaAccountId, profile.hederaAccountKey)
-
+            notifier.completed();
             notifier.result(result);
         }, async (error) => {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             notifier.error(error);
         });
 
-        return new MessageResponse({ taskId });
+        return new MessageResponse(task);
     });
 }
 
@@ -558,8 +587,8 @@ export function profileAPI() {
                     `nats://${process.env.MQ_ADDRESS}:4222`
                 ],
                 queue: 'profile-service',
-                serializer: new OutboundResponseIdentitySerializer(),
-                deserializer: new InboundMessageIdentityDeserializer(),
+                // serializer: new OutboundResponseIdentitySerializer(),
+                // deserializer: new InboundMessageIdentityDeserializer(),
             }
         }]),
     ],

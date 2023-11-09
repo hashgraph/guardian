@@ -1,14 +1,5 @@
-import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
-import {
-    PolicyModel,
-    PolicyTokenModel,
-    PolicyGroupModel,
-    PolicyRoleModel,
-    PolicyTopicModel,
-    PolicyModuleModel,
-    ModuleEventModel,
-    ModuleVariableModel
-} from '../../structures';
+import { ChangeDetectorRef, Component, ElementRef, Input, OnInit, SimpleChanges, ViewChild } from '@angular/core';
+import { ModuleEvent, ModuleVariable, PolicyModule, SchemaVariables } from '../../structures';
 
 /**
  * Settings for module.
@@ -26,28 +17,31 @@ export class ModulePropertiesComponent implements OnInit {
 
     @ViewChild('body') body?: ElementRef;
 
-    propHidden: any = {
+    public propHidden: any = {
         main: false,
         variables: {},
         inputs: {},
         outputs: {},
     };
 
-    variables: ModuleVariableModel[] = [];
-    inputs: ModuleEventModel[] = [];
-    outputs: ModuleEventModel[] = [];
+    public baseSchemas: SchemaVariables[];
 
-    constructor(private changeDetector: ChangeDetectorRef) {
+    public variables: ModuleVariable[] = [];
+    public inputs: ModuleEvent[] = [];
+    public outputs: ModuleEvent[] = [];
+
+    constructor() {
     }
 
     ngOnInit(): void {
-
     }
 
     ngOnChanges(changes: SimpleChanges) {
         this.inputs = this.module.inputEvents;
         this.outputs = this.module.outputEvents;
         this.variables = this.module.variables;
+        const baseSchemas: any[] = this.module.getSchemas() || [];
+        this.baseSchemas = baseSchemas.map(s => new SchemaVariables(s));
     }
 
     onHide(item: any, prop: any) {
@@ -59,12 +53,12 @@ export class ModulePropertiesComponent implements OnInit {
         this.module.createVariable();
     }
 
-    onEditVariable(variable: ModuleVariableModel, refresh = false) {
+    onEditVariable(variable: ModuleVariable) {
         variable.changed = true;
         variable.emitUpdate();
     }
 
-    onRemoveVariable(variable: ModuleVariableModel) {
+    onRemoveVariable(variable: ModuleVariable) {
         this.module.removeVariable(variable)
     }
 
@@ -72,12 +66,12 @@ export class ModulePropertiesComponent implements OnInit {
         this.module.createInputEvent();
     }
 
-    onEditInput(input: ModuleEventModel) {
+    onEditInput(input: ModuleEvent) {
         input.changed = true;
         input.emitUpdate();
     }
 
-    onRemoveInput(input: ModuleEventModel) {
+    onRemoveInput(input: ModuleEvent) {
         this.module.removeInputEvent(input)
     }
 
@@ -85,12 +79,16 @@ export class ModulePropertiesComponent implements OnInit {
         this.module.createOutputEvent();
     }
 
-    onEditOutput(output: ModuleEventModel) {
+    onEditOutput(output: ModuleEvent) {
         output.changed = true;
         output.emitUpdate();
     }
 
-    onRemoveOutput(output: ModuleEventModel) {
+    onRemoveOutput(output: ModuleEvent) {
         this.module.removeOutputEvent(output)
+    }
+
+    baseSchemaReadOnly(baseSchema: string | unknown): boolean {
+        return typeof baseSchema === 'object';
     }
 }

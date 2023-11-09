@@ -52,7 +52,6 @@ export class WalletService extends NatsService {
         });
 
         this.getMessages<ISetKeyMessage, null>(WalletEvents.SET_KEY, async (msg) => {
-            console.log(msg);
             const { token, type, key, value } = msg;
 
             try {

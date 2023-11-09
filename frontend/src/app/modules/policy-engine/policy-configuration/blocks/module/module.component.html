@@ -15,13 +15,12 @@
                 {{item.name}}
             </td>
             <td *ngIf="item.type ==='Schema'" class="propRowCell">
-                <mat-select [(value)]="properties[item.key]" [disabled]="readonly" (change)="onSave()">
-                    <mat-option *ngFor="let schema of schemas" [value]="schema.value">
-                        {{schema.name}}
-                        <span *ngIf="schema.version"> ({{schema.version}})</span>
-                        <span *ngIf="schema.status"> ({{schema.status}})</span>
-                    </mat-option>
-                </mat-select>
+                <select-schema
+                    [schemas]="schemas" 
+                    [(value)]="properties[item.key]"
+                    [disabled]="readonly" 
+                    (change)="onSave()"
+                    ></select-schema>
             </td>
             <td *ngIf="item.type ==='Token'" class="propRowCell">
                 <mat-select [(value)]="properties[item.key]" [disabled]="readonly" (change)="onSave()">
@@ -51,7 +50,7 @@
                 <mat-select [(value)]="properties[item.key]" [disabled]="readonly"
                     (selectionChange)="selectTopic($event, item)">
                     <mat-option *ngFor="let topic of topics" [value]="topic.name" [matTooltip]="topic.description"
-                        matTooltipPosition="above" matTooltipClass="guardian-tooltip">
+                        matTooltipPosition="above" matTooltipClass="guardian-tooltip small-guardian-tooltip">
                         {{topic.name}}
                     </mat-option>
                     <mat-option value="root">Policy Instance</mat-option>

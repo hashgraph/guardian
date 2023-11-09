@@ -1,6 +1,7 @@
 <form *ngIf="options" [formGroup]="options" [attr.dialogForm]="comesFromDialog" [attr.childSchema]="isChildSchema" [attr.showButtons]="showButtons">
     <ng-container *ngFor="let item of fields; let i = index">
-        <div *ngIf="!item.hide" class="form-field-container" [attr.showMobileField]="isShown[i] || isChildSchema">
+        <div *ngIf="!item.hide && !item.hidden" [attr.showMobileField]="isShown[i] || isChildSchema"
+             class="form-field-container">
             <!-- simple field -->
             <div *ngIf="!item.isArray && !item.isRef" class="form-field">
                 <div class="invalid-field-label"
@@ -71,7 +72,7 @@
 
                     <mat-form-field *ngIf="isEnum(item)" class="required-form-field" appearance="outline">
                         <mat-select [formControlName]="item.name">
-                            <mat-option *ngFor="let enumValue of item.enumValues" [value]="enumValue">
+                            <mat-option *ngFor="let enumValue of item.enumValues" [value]="enumValue" [title]="enumValue">
                                 {{enumValue}}
                             </mat-option>
                             <mat-option *ngIf="item.fileUploading">
@@ -83,7 +84,7 @@
                     <div class="form-field-postfix" *ngIf="isPostfix(item)">{{item.unit}}</div>
                 </div>
             </div>
-            
+
             <!-- sub schema -->
             <div *ngIf="!item.isArray && item.isRef" class="form-field-group sub-schema">
                 <div class="invalid-field-label" *ngIf="item.control && !item.control.valid && !item.control.disabled">
@@ -105,9 +106,8 @@
                             <app-geojson-type *ngSwitchCase="'geo'" [formGroup]="item.control" [preset]="item.preset"
                                 [disabled]="item.control?.disabled">
                             </app-geojson-type>
-                            <app-schema-form *ngSwitchDefault [formGroup]="item.control" [fields]="item.fields"
-                                [context]="item.context" [private-fields]="hide" [delimiter-hide]="true"
-                                [conditions]="item.conditions" [preset]="item.preset" [isChildSchema]="true">
+                            <app-schema-form *ngSwitchDefault [formGroup]="item.control" [fields]="item.fields" [private-fields]="hide"
+                                [delimiter-hide]="true" [conditions]="item.conditions" [preset]="item.preset" [isChildSchema]="true">
                             </app-schema-form>
                         </ng-container>
                     </div>
@@ -124,7 +124,7 @@
                     </span>
                 </div>
             </div>
-            
+
             <!-- array of simple fields -->
             <div *ngIf="item.isArray && !item.isRef" class="form-field-array">
                 <div class="invalid-field-label" *ngIf="item.control && !item.control.valid && !item.control.disabled">
@@ -202,7 +202,7 @@
 
                             <mat-form-field *ngIf="isEnum(item)" class="required-form-field" appearance="outline">
                                 <mat-select [formControl]="listItem.control">
-                                    <mat-option *ngFor="let enumValue of item.enumValues" [value]="enumValue">
+                                    <mat-option *ngFor="let enumValue of item.enumValues" [value]="enumValue" [title]="enumValue">
                                         {{enumValue}}
                                     </mat-option>
                                     <mat-option *ngIf="item.fileUploading">
@@ -224,7 +224,7 @@
                     </span>
                 </div>
             </div>
-            
+
             <!-- array of sub schemas -->
             <div *ngIf="item.isArray && item.isRef" class="form-field-group schema-form-field-array-group sub-schemas">
                 <div class="invalid-field-label" *ngIf="!item.control.valid && !item.control.disabled">
@@ -247,9 +247,8 @@
                             <app-geojson-type *ngSwitchCase="'geo'" [formGroup]="listItem.control"
                                 [disabled]="item.control?.disabled" [preset]="listItem.preset">
                             </app-geojson-type>
-                            <app-schema-form *ngSwitchDefault [formGroup]="listItem.control" [fields]="item.fields"
-                                [context]="item.context" [private-fields]="hide" [delimiter-hide]="true"
-                                [conditions]="item.conditions" [preset]="listItem.preset" [isChildSchema]="true">
+                            <app-schema-form *ngSwitchDefault [formGroup]="listItem.control" [fields]="item.fields" [private-fields]="hide"
+                                [delimiter-hide]="true" [conditions]="item.conditions" [preset]="listItem.preset" [isChildSchema]="true">
                             </app-schema-form>
                         </ng-container>
 
@@ -299,7 +298,7 @@
             (click)="onCancelBtnClick()">{{cancelText}}</button>
         <button *ngIf="currentIndex !== 0" mat-raised-button color="primary" id="previous-btn"
             (click)="getPrevShownFields(fields)">Previous</button>
-        <button *ngIf="!isShown[fields.length - 1]" mat-raised-button color="primary" id="next-btn"
+        <button *ngIf="!isShown[fields.length - 1]" mat-raised-button color="primary"
             (click)="getNextShownFields(fields)">Next</button>
         <button *ngIf="isShown[fields.length - 1] && !submitHidden" mat-raised-button [disabled]="!group.valid"
             color="primary" id="submit-btn" (click)="onSubmitBtnClick(fields)">{{submitText}}</button>

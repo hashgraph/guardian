@@ -16,6 +16,8 @@ POLICY_CONFIG_DIR=$BASE_DIR/configs/vault/policies/policy_configs.json
 APPROLE_CONFIG_DIR=$BASE_DIR/configs/vault/approle/approle.json
 SECRETS_DIR=$BASE_DIR/configs/vault/secrets/secrets.json
 
+TOKENS_DIR=$BASE_DIR/configs/vault/secrets/tokens
+
 # Executes a vault read command using curl
 # $1: URI vault path to be executed
 # $2: optional VAULT_TOKEN for authentication
@@ -146,9 +148,24 @@ get_approle_credentials() {
     SECRET_ID=$(write "{\"num_uses\":$VAULT_SECRET_ID_TTL, \"ttl\": \"$VAULT_SECRET_NUM_USES\"}" v1/auth/approle/role/$ROLE_NAME/secret-id $VAULT_TOKEN | jq -r ".data.secret_id")
 
     ENV_PATHS=$(echo $ROLE | jq -r '.env_path[]')
+    ENV_NAMES=$(echo $ROLE | jq -r '.env_name[]')
+
+    # destination for tokens in vault tree for reading back
+    TOKEN_FILE_DIR=$TOKENS_DIR/$ENV_NAMES/
+    TOKEN_FILE_NAME=.env.secrets
+
+    COUNTER=0
     for ENV_PATH in ${ENV_PATHS[@]}; do
 
-      ENV_FILE=$PWD/$ENV_PATH
+    if [ -z "$GUARDIAN_ENV" ]
+        then
+              ENV_FILE=$PWD/$ENV_PATH/configs/.env.${ENV_NAMES[COUNTER]}
+        else
+              ENV_FILE=$PWD/$ENV_PATH/configs/.env.${ENV_NAMES[COUNTER]}.${GUARDIAN_ENV}
+        fi
+      
+      echo "file to write: $ENV_FILE"
+
       if grep -q "^VAULT_APPROLE_ROLE_ID=" "$ENV_FILE"; then
         # replace the value of the key if it exists
         sed -i "s/^VAULT_APPROLE_ROLE_ID=.*/VAULT_APPROLE_ROLE_ID=$ROLE_ID/" $ENV_FILE
@@ -157,6 +174,10 @@ get_approle_credentials() {
         echo -e "\nVAULT_APPROLE_ROLE_ID=$ROLE_ID" >> "$ENV_FILE"
       fi
 
+      # create and update file for multi-env subsequent configuration
+      mkdir -p $TOKEN_FILE_DIR && touch $TOKEN_FILE_NAME
+      echo -e "\nVAULT_APPROLE_ROLE_ID=$ROLE_ID" >> "$TOKEN_FILE_DIR/$TOKEN_FILE_NAME"
+
       if grep -q "^VAULT_APPROLE_SECRET_ID=" "$ENV_FILE"; then
         # replace the value of the key if it exists
         sed -i "s/^VAULT_APPROLE_SECRET_ID=.*/VAULT_APPROLE_SECRET_ID=$SECRET_ID/" $ENV_FILE
@@ -164,8 +185,11 @@ get_approle_credentials() {
         # add the key and its value if it doesn't exist
         echo "VAULT_APPROLE_SECRET_ID=$SECRET_ID" >> "$ENV_FILE"
       fi
-    done
+      #  update file for multi-env subsequent configuration
+      echo "VAULT_APPROLE_SECRET_ID=$SECRET_ID" >> "$TOKEN_FILE_DIR/$TOKEN_FILE_NAME"
 
+      let COUNTER++
+    done
     
   done
 }
@@ -175,6 +199,13 @@ push_secrets() {
   SECRETS=$(cat "$SECRETS_DIR" | jq -c -r '.[]')
   for SECRET in ${SECRETS[@]}; do
     SECRET_PATH=$(echo $SECRET | jq -r .path )
+    if [ -z "$GUARDIAN_ENV" ]
+        then
+              SECRET_PATH="$HEDERA_NET"/"$SECRET_PATH"
+        else
+              SECRET_PATH="$GUARDIAN_ENV"/"$HEDERA_NET"/"$SECRET_PATH"
+        fi
+        echo $SECRET_PATH
     SECRET_DATA=$(echo $SECRET | jq -r .data )
     write "{\"data\": $SECRET_DATA}" v1/secret/data/$SECRET_PATH $VAULT_TOKEN
   done

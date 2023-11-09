@@ -1,3 +1,5 @@
+import { DEFAULT_SYNTAX_GROUPS } from "./default-syntax-groups";
+
 export const byApiTheme = {
     'id': 2,
     'uuid': '00000000-0000-0000-0000-000000000002',
@@ -34,5 +36,6 @@ export const byApiTheme = {
             'filterType': 'api',
             'filterValue': ''
         }
-    ]
+    ],
+    'syntaxGroups': DEFAULT_SYNTAX_GROUPS,
 }

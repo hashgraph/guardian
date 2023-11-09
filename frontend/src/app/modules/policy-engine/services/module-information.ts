@@ -5,13 +5,14 @@ import {
     BlockGroup,
     BlockHeaders,
     IBlockAbout,
-    PolicyBlockModel,
+    PolicyBlock,
     IBlockSetting,
     ChildrenType,
     ControlType,
-    PolicyModuleModel,
-    PolicyModel
+    PolicyModule,
+    PolicyTemplate
 } from "../structures";
+import { PolicyFolder } from "../structures/policy-models/interfaces/types";
 
 const Module: IBlockSetting = {
     type: BlockType.Module,
@@ -51,18 +52,22 @@ const Module: IBlockSetting = {
         { type: BlockType.DocumentValidatorBlock },
         { type: BlockType.MultiSignBlock },
         { type: BlockType.CreateToken },
-        { type: BlockType.SplitBlock }
+        { type: BlockType.SplitBlock },
+        { type: BlockType.ExternalTopic },
+        { type: BlockType.MessagesReportBlock },
+        { type: BlockType.NotificationBlock },
+        { type: BlockType.ExtractDataBlock },
     ],
     about: {
         post: false,
         get: false,
-        input: (value: any, block: PolicyModuleModel, module?: PolicyModel | PolicyModuleModel): string[] => {
+        input: (value: any, block: PolicyModule, module?: PolicyFolder): string[] => {
             if(block === module) {
                 return block.outputEvents.map(e => e.name);
             }
             return block.inputEvents.map(e => e.name);
         },
-        output: (value: any, block: PolicyModuleModel, module?: PolicyModel | PolicyModuleModel): string[] => {
+        output: (value: any, block: PolicyModule, module?: PolicyFolder): string[] => {
             if(block === module) {
                 return block.inputEvents.map(e => e.name);
             }

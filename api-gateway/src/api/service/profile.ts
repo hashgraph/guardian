@@ -1,26 +1,31 @@
 import { Guardians } from '@helpers/guardians';
 import { Users } from '@helpers/users';
-import { DidDocumentStatus, IUser, SchemaEntity, TopicType, UserRole } from '@guardian/interfaces';
-import { Logger, RunFunctionAsync } from '@guardian/common';
+import { DidDocumentStatus, SchemaEntity, TaskAction, TopicType, UserRole } from '@guardian/interfaces';
+import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
 import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
 import { Controller, Get, HttpCode, HttpException, HttpStatus, Put, Req, Response } from '@nestjs/common';
-import { checkPermission } from '@auth/authorization-helper';
+import { AuthUser, checkPermission } from '@auth/authorization-helper';
+import { ApiTags } from '@nestjs/swagger';
+import { Auth } from '@auth/auth.decorator';
 
 @Controller('profiles')
+@ApiTags('profiles')
 export class ProfileApi {
   @Get('/:username/')
+  @Auth(
+      UserRole.STANDARD_REGISTRY,
+      UserRole.USER,
+      UserRole.AUDITOR
+  )
   @HttpCode(HttpStatus.OK)
-  async getProfile(@Req() req, @Response() res): Promise<any> {
+  async getProfile(@AuthUser() user): Promise<any> {
+    const guardians = new Guardians();
+
     try {
-      const guardians = new Guardians();
-      const users = new Users();
-
-      const user = await users.getUser(req.user.username);
-
       let didDocument: any = null;
       if (user.did) {
-        const didDocuments = await guardians.getDidDocuments({ did: user.did });
+        const didDocuments = await guardians.getDidDocuments({did: user.did});
         if (didDocuments) {
           didDocument = didDocuments[didDocuments.length - 1];
         }
@@ -59,7 +64,7 @@ export class ProfileApi {
         });
       }
 
-      const result: IUser = {
+      return {
         username: user.username,
         role: user.role,
         did: user.did,
@@ -73,28 +78,40 @@ export class ProfileApi {
         didDocument,
         vcDocument
       };
-      return res.json(result);
     } catch (error) {
       new Logger().error(error, ['API_GATEWAY']);
-      throw error;
+      throw new HttpException(error.message, HttpStatus.UNPROCESSABLE_ENTITY);
     }
   }
 
   @Put('/:username')
   @HttpCode(HttpStatus.NO_CONTENT)
   async setUserProfile(@Req() req, @Response() res): Promise<any> {
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.split(' ')[1];
+    const users = new Users();
+    const guardians = new Guardians();
+    let user;
     try {
-      const guardians = new Guardians();
+      user = await users.getUserByToken(token) as IAuthUser;
+    } catch (e) {
+      user = null;
+    }
+
+    if (!user) {
+      throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+    }
+    try {
 
       const profile: any = req.body;
-      const username: string = req.user.username;
+      const username: string = user.username;
 
       await guardians.createUserProfileCommon(username, profile);
 
       return res.status(204).send();
     } catch (error) {
       new Logger().error(error, ['API_GATEWAY']);
-      throw error;
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -102,19 +119,19 @@ export class ProfileApi {
   @HttpCode(HttpStatus.ACCEPTED)
   async setUserProfileAsync(@Req() req, @Response() res): Promise<any> {
     const taskManager = new TaskManager();
-    const {taskId, expectation} = taskManager.start('Connect user');
+    const task = taskManager.start(TaskAction.CONNECT_USER, req.user.id);
 
     const profile: any = req.body;
     const username: string = req.user.username;
     RunFunctionAsync<ServiceError>(async () => {
       const guardians = new Guardians();
-      await guardians.createUserProfileCommonAsync(username, profile, taskId);
+      await guardians.createUserProfileCommonAsync(username, profile, task);
     }, async (error) => {
       new Logger().error(error, ['API_GATEWAY']);
-      taskManager.addError(taskId, {code: error.code || 500, message: error.message});
+      taskManager.addError(task.taskId, {code: error.code || 500, message: error.message});
     });
 
-    return res.status(202).send({taskId, expectation});
+    return res.status(202).send(task);
   }
 
   @Put('/restore/:username')
@@ -122,20 +139,19 @@ export class ProfileApi {
   async resoreUserProfile(@Req() req, @Response() res): Promise<any> {
     await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
     const taskManager = new TaskManager();
-    const {taskId, expectation} = taskManager.start('Restore user profile');
+    const task = taskManager.start(TaskAction.RESTORE_USER_PROFILE, req.user.id);
 
     const profile: any = req.body;
     const username: string = req.user.username;
-
     RunFunctionAsync<ServiceError>(async () => {
       const guardians = new Guardians();
-      await guardians.restoreUserProfileCommonAsync(username, profile, taskId);
+      await guardians.restoreUserProfileCommonAsync(username, profile, task);
     }, async (error) => {
       new Logger().error(error, ['API_GATEWAY']);
-      taskManager.addError(taskId, {code: error.code || 500, message: error.message});
+      taskManager.addError(task.taskId, {code: error.code || 500, message: error.message});
     })
 
-    return res.status(202).send({taskId, expectation});
+    return res.status(202).send(task);
   }
 
   @Put('/restore/topics/:username')
@@ -143,30 +159,35 @@ export class ProfileApi {
   async restoreTopic(@Req() req, @Response() res): Promise<any> {
     await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
     const taskManager = new TaskManager();
-    const {taskId, expectation} = taskManager.start('Get user topics');
+    const task = taskManager.start(TaskAction.GET_USER_TOPICS, req.user.id);
 
     const profile: any = req.body;
     const username: string = req.user.username;
-
     RunFunctionAsync<ServiceError>(async () => {
       const guardians = new Guardians();
-      await guardians.getAllUserTopicsAsync(username, profile, taskId);
+      await guardians.getAllUserTopicsAsync(username, profile, task);
     }, async (error) => {
       new Logger().error(error, ['API_GATEWAY']);
-      taskManager.addError(taskId, {code: error.code || 500, message: error.message});
+      taskManager.addError(task.taskId, {code: error.code || 500, message: error.message});
     })
 
-    return res.status(202).send({taskId, expectation});
+    return res.status(202).send(task);
   }
 
   @Get('/:username/balance')
   @HttpCode(HttpStatus.OK)
   async getUserBalance(@Req() req, @Response() res): Promise<any> {
+    if (!req.headers.authorization || !req.user) {
+      throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
+    }
     try {
       const guardians = new Guardians();
       const balance = await guardians.getUserBalance(req.params.username);
-      if (balance.toLowerCase().includes('invalid account')) {
-        throw new HttpException('Account not found', HttpStatus.NOT_FOUND)
+      if (!req.user.did) {
+        return res.json(null);
+      }
+      if (isNaN(parseFloat(balance))) {
+        throw new HttpException(balance, HttpStatus.UNPROCESSABLE_ENTITY)
       }
       return res.json(balance);
     } catch (error) {

@@ -1,63 +1,51 @@
-import { Entity, Property } from '@mikro-orm/core';
+import { BeforeCreate, BeforeUpdate, Entity, Property } from '@mikro-orm/core';
 import { BaseEntity } from '../models';
-import { ObjectId } from 'mongodb';
+import {
+    IRetireRequest,
+    RetireTokenRequest,
+    TokenType,
+} from '@guardian/interfaces';
 
 /**
- * Retire Request
+ * Retire request
  */
 @Entity()
-export class RetireRequest extends BaseEntity {
+export class RetireRequest extends BaseEntity implements IRetireRequest {
     /**
      * Hedera Contract Id
      */
-    @Property({ default: '' })
-    contractId: string = '';
+    @Property()
+    contractId: string;
 
     /**
-     * Base Token Id
+     * Tokens
      */
-    @Property({ default: '' })
-    baseTokenId: string = '';
+    @Property({ type: 'unknown' })
+    tokens: (RetireTokenRequest & {
+        tokenSymbol: string;
+        decimals: number;
+        type: TokenType;
+    })[];
 
     /**
-     * Owner
+     * Token identifiers
      */
-    @Property({ default: '' })
-    owner: string = '';
+    @Property()
+    tokenIds: string[];
 
     /**
-     * Opposite Token Id
+     * User
      */
-    @Property({ default: '' })
-    oppositeTokenId: string = '';
+    @Property()
+    user: string;
 
-    /**
-     * Base Token Count
-     */
-    @Property({ default: 0 })
-    baseTokenCount: number = 0;
-
-    /**
-     * Opposite Token Count
-     */
-    @Property({ default: 0 })
-    oppositeTokenCount: number = 0;
-
-    /**
-     * Base Token Count
-     */
-    @Property({ default: [] })
-    baseTokenSerials: number[] = [];
-
-    /**
-     * Opposite Token Count
-     */
-    @Property({ default: [] })
-    oppositeTokenSerials: number[] = [];
-
-    /**
-     * Vc Document Hash
-     */
-    @Property({ nullable: true })
-    documentId?: ObjectId;
+    @BeforeCreate()
+    @BeforeUpdate()
+    setTokens() {
+        const tokenIds = new Set<string>();
+        this.tokens.forEach((item) => {
+            tokenIds.add(item.token);
+        });
+        this.tokenIds = Array.from(tokenIds);
+    }
 }

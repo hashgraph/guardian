@@ -73,7 +73,7 @@ export class SplitBlock {
     async getSchema(): Promise<SchemaCollection> {
         if (!this.schema) {
             const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
-            this.schema = await ref.databaseServer.getSchemaByType(ref.topicId, SchemaEntity.CHUNK);
+            this.schema = await PolicyUtils.loadSchemaByType(ref, SchemaEntity.CHUNK);
             if (!this.schema) {
                 throw new BlockActionError('Waiting for schema', ref.blockType, ref.uuid);
             }
@@ -250,7 +250,7 @@ export class SplitBlock {
         await ref.databaseServer.setResidue(current);
 
         for (const chunk of data) {
-            const state = {
+            const state: IPolicyEventState = {
                 data: chunk.map(c => {
                     delete c.document.id;
                     delete c.document._id;

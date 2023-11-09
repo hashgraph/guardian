@@ -1,4 +1,4 @@
-import { GenerateUUIDv4, IRootConfig, ModelHelper, PolicyEvents, PolicyType, Schema, SchemaEntity, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
+import { GenerateUUIDv4, IRootConfig, ModelHelper, NotificationAction, PolicyEvents, PolicyType, Schema, SchemaEntity, SchemaHelper, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
 import {
     Artifact,
     DataBaseHelper,
@@ -12,7 +12,9 @@ import {
     MessageType,
     MultiPolicy,
     NatsService,
+    NotificationHelper,
     Policy,
+    PolicyImportExport,
     PolicyMessage,
     replaceAllEntities,
     replaceAllVariables,
@@ -20,6 +22,7 @@ import {
     SchemaFields,
     Singleton,
     SynchronizationMessage,
+    TagMessage,
     Token,
     TokenMessage,
     Topic,
@@ -35,6 +38,7 @@ import { ISerializedErrors } from './policy-validation-results-container';
 import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels-container';
 import { PolicyValidator } from '@policy-engine/block-validators';
 import { publishPolicyTags } from '@api/tag.service';
+import { importTag } from '@api/helpers/tag-import-export-helper';
 import { createHederaToken } from '@api/token.service';
 import { GuardiansService } from '@helpers/guardians';
 import { Inject } from '@helpers/decorators/inject';
@@ -98,6 +102,12 @@ export class PolicyEngine extends NatsService {
      * @private
      */
     private readonly policyReadyCallbacks: Map<string, (data: any, error?: any) => void> = new Map();
+
+    /**
+     * Policy initialization errors container
+     * @private
+     */
+    private readonly policyInitializationErrors: Map<string, string> = new Map();
 
     /**
      * Initialization
@@ -197,37 +207,49 @@ export class PolicyEngine extends NatsService {
      * @param notifier
      */
     // tslint:disable-next-line:completed-docs
-    public async createPolicy(data: Policy & { policySchemas?: string[] }, owner: string, notifier: INotifier): Promise<Policy> {
+    public async createPolicy(
+        data: Policy & { policySchemas?: string[] },
+        owner: string,
+        notifier: INotifier
+    ): Promise<Policy> {
         const logger = new Logger();
         logger.info('Create Policy', ['GUARDIAN_SERVICE']);
         notifier.start('Save in DB');
         if (data) {
+            delete data._id;
+            delete data.id;
             delete data.status;
+            delete data.owner;
+            delete data.version;
+            delete data.messageId;
         }
         const model = DatabaseServer.createPolicy(data);
+        model.creator = owner;
+        model.owner = owner;
+        model.codeVersion = PolicyConverterUtils.VERSION;
+
         let artifacts = [];
+        let tags = [];
         if (model.uuid) {
-            const old = await DatabaseServer.getPolicyByUUID(model.uuid);
-            if (model.creator !== owner) {
+            const old = await DatabaseServer.getPolicy({
+                uuid: model.uuid,
+                version: model.previousVersion
+            });
+            if (!old) {
+                throw new Error('Previous version not found');
+            }
+            if (old.owner !== owner || old.creator !== owner) {
                 throw new Error('Invalid owner');
             }
-            if (old.creator !== owner) {
-                throw new Error('Invalid owner');
-            }
-            model.creator = owner;
-            model.owner = owner;
-            delete model.version;
-            delete model.messageId;
             artifacts = await DatabaseServer.getArtifacts({
                 policyId: old.id
             });
+            tags = await DatabaseServer.getTags({
+                localTarget: old.id
+            });
         } else {
-            model.creator = owner;
-            model.owner = owner;
             delete model.previousVersion;
             delete model.topicId;
-            delete model.version;
-            delete model.messageId;
         }
 
         let newTopic: Topic;
@@ -293,9 +315,12 @@ export class PolicyEngine extends NatsService {
         }
         replaceArtifactProperties(model.config, 'uuid', artifactsMap);
 
+        notifier.start('Create tags');
+
+        await importTag(tags, model.id.toString());
+
         notifier.completedAndStart('Saving in DB');
-        model.codeVersion = PolicyConverterUtils.VERSION;
-        const policy = await DatabaseServer.updatePolicy(model);
+        let policy = await DatabaseServer.updatePolicy(model);
 
         if (newTopic) {
             newTopic.policyId = policy.id.toString();
@@ -307,6 +332,9 @@ export class PolicyEngine extends NatsService {
             addedArtifact.policyId = policy.id;
             await DatabaseServer.saveArtifact(addedArtifact);
         }
+
+        notifier.completedAndStart('Updating hash');
+        policy = await PolicyImportExportHelper.updatePolicyComponents(policy);
 
         notifier.completed();
         return policy;
@@ -363,8 +391,25 @@ export class PolicyEngine extends NatsService {
             artifact.data = await DatabaseServer.getArtifactFileByUUID(artifact.uuid);
         }
 
-        const dataToCreate = { policy, schemas, tokens, artifacts, tags: [] };
-        return await PolicyImportExportHelper.importPolicy(dataToCreate, owner, null, notifier, data);
+        const tags = await DatabaseServer.getTags({ localTarget: policyId });
+
+        const tools = [];
+
+        const dataToCreate = {
+            policy,
+            schemas,
+            tokens,
+            artifacts,
+            tools,
+            tags
+        };
+        return await PolicyImportExportHelper.importPolicy(
+            dataToCreate,
+            owner,
+            null,
+            notifier,
+            data
+        );
     }
 
     /**
@@ -428,7 +473,12 @@ export class PolicyEngine extends NatsService {
      * @param root
      * @param notifier
      */
-    public async publishSchemas(model: Policy, owner: string, root: IRootConfig, notifier: INotifier): Promise<Policy> {
+    public async publishSchemas(
+        model: Policy,
+        owner: string,
+        root: IRootConfig,
+        notifier: INotifier
+    ): Promise<Policy> {
         const schemas = await DatabaseServer.getSchemas({ topicId: model.topicId });
         notifier.info(`Found ${schemas.length} schemas`);
         const schemaIRIs = schemas.map(s => s.iri);
@@ -503,6 +553,7 @@ export class PolicyEngine extends NatsService {
         } catch (error) {
             model.status = PolicyType.PUBLISH_ERROR;
             model.version = '';
+            model.hash = '';
             await DatabaseServer.updatePolicy(model);
             throw error;
         }
@@ -583,7 +634,7 @@ export class PolicyEngine extends NatsService {
                 await createSynchronizationTopic();
             }
 
-            const zip = await PolicyImportExportHelper.generateZipFile(model);
+            const zip = await PolicyImportExport.generate(model);
             const buffer = await zip.generateAsync({
                 type: 'arraybuffer',
                 compression: 'DEFLATE',
@@ -637,6 +688,7 @@ export class PolicyEngine extends NatsService {
         } catch (error) {
             model.status = PolicyType.PUBLISH_ERROR;
             model.version = '';
+            model.hash = '';
             await DatabaseServer.updatePolicy(model);
             throw error
         }
@@ -650,7 +702,11 @@ export class PolicyEngine extends NatsService {
 
         notifier.completedAndStart('Saving in DB');
         model.status = PolicyType.PUBLISH;
-        const retVal = await DatabaseServer.updatePolicy(model);
+        let retVal = await DatabaseServer.updatePolicy(model);
+
+        notifier.completedAndStart('Updating hash');
+        retVal = await PolicyImportExportHelper.updatePolicyComponents(retVal);
+
         notifier.completed();
         return retVal
     }
@@ -691,7 +747,7 @@ export class PolicyEngine extends NatsService {
         await databaseServer.saveTopic(rootTopic.toObject());
         model.instanceTopicId = rootTopic.topicId;
 
-        const zip = await PolicyImportExportHelper.generateZipFile(model);
+        const zip = await PolicyImportExport.generate(model);
         const buffer = await zip.generateAsync({
             type: 'arraybuffer',
             compression: 'DEFLATE',
@@ -703,7 +759,6 @@ export class PolicyEngine extends NatsService {
         const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);
         message.setDocument(model, buffer);
         const result = await messageServer.sendMessage(message);
-        model.messageId = result.getId();
 
         await topicHelper.twoWayLink(rootTopic, topic, result.getId());
 
@@ -752,7 +807,10 @@ export class PolicyEngine extends NatsService {
 
         logger.info('Published Policy', ['GUARDIAN_SERVICE']);
 
-        return await DatabaseServer.updatePolicy(model);
+        let retVal = await DatabaseServer.updatePolicy(model);
+        retVal = await PolicyImportExportHelper.updatePolicyComponents(retVal);
+
+        return retVal;
     }
 
     /**
@@ -801,6 +859,21 @@ export class PolicyEngine extends NatsService {
             }
             const newPolicy = await this.publishPolicy(policy, owner, version, notifier);
             await this.generateModel(newPolicy.id.toString());
+            const users = await new Users().getUsersBySrId(owner);
+
+            await Promise.all(
+                users.map(
+                    async (user) =>
+                        await NotificationHelper.info(
+                            'Policy published',
+                            'New policy published',
+                            user.id,
+                            NotificationAction.POLICY_VIEW,
+                            newPolicy.id.toString()
+                        )
+                )
+            );
+
             return {
                 policyId: newPolicy.id.toString(),
                 isValid,
@@ -855,11 +928,14 @@ export class PolicyEngine extends NatsService {
                         version: element.version
                     });
                 }
-            };
+            }
+            ;
         }
 
+        // const tagMessages = await messageServer.getMessages<TagMessage>(message.policyTopicId, MessageType.Tag, MessageAction.PublishTag);
+
         notifier.completedAndStart('Parse policy files');
-        const policyToImport = await PolicyImportExportHelper.parseZipFile(message.document);
+        const policyToImport: any = await PolicyImportExport.parseZipFile(message.document, true);
         if (newVersions.length !== 0) {
             policyToImport.newVersions = newVersions.reverse();
         }
@@ -902,8 +978,34 @@ export class PolicyEngine extends NatsService {
             throw new Error('File in body is empty');
         }
 
+        const tagMessages = await messageServer.getMessages<TagMessage>(message.policyTopicId, MessageType.Tag, MessageAction.PublishTag);
+
         notifier.completedAndStart('File parsing');
-        const policyToImport = await PolicyImportExportHelper.parseZipFile(message.document, true);
+        const policyToImport = await PolicyImportExport.parseZipFile(message.document, true);
+
+        if (!Array.isArray(policyToImport.tags)) {
+            policyToImport.tags = [];
+        }
+        for (const tag of tagMessages) {
+            if (tag.entity === TagType.Policy && tag.target !== messageId) {
+                continue;
+            }
+            policyToImport.tags.push({
+                uuid: tag.uuid,
+                name: tag.name,
+                description: tag.description,
+                owner: tag.owner,
+                entity: tag.entity,
+                target: tag.target,
+                status: 'History',
+                topicId: tag.topicId,
+                messageId: tag.id,
+                date: tag.date,
+                document: null,
+                uri: null,
+                id: null
+            } as any);
+        }
         notifier.completed();
         return await PolicyImportExportHelper.importPolicy(policyToImport, owner, versionOfTopicId, notifier);
     }
@@ -934,7 +1036,6 @@ export class PolicyEngine extends NatsService {
 
             try {
                 const r = await this.sendMessageWithTimeout<any>(PolicyEvents.GENERATE_POLICY, 1000, {
-                    policy,
                     policyId,
                     skipRegistration: false
                 });
@@ -948,6 +1049,7 @@ export class PolicyEngine extends NatsService {
                 return new Promise((resolve, reject) => {
                     this.policyReadyCallbacks.set(policyId, (data, error) => {
                         if (error) {
+                            this.policyInitializationErrors.set(policyId, error);
                             reject(new Error(error));
                         }
                         resolve(data);
@@ -980,8 +1082,7 @@ export class PolicyEngine extends NatsService {
             policyId = policy.id.toString();
         }
         const policyValidator = new PolicyValidator(policy);
-        policyValidator.registerBlock(policy.config);
-        policyValidator.addPermissions(policy.policyRoles);
+        await policyValidator.build(policy);
         await policyValidator.validate();
         return policyValidator.getSerializedErrors();
     }
@@ -1032,5 +1133,16 @@ export class PolicyEngine extends NatsService {
                 this.regenerateIds(child);
             }
         }
+    }
+
+    /**
+     * Get policy errors
+     * @param policyId
+     */
+    public getPolicyError(policyId: string): string | null {
+        if (this.policyInitializationErrors.has(policyId)) {
+            return this.policyInitializationErrors.get(policyId)
+        }
+        return null;
     }
 }

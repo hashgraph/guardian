@@ -1,9 +1,8 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
-import { IUser, UserRole } from '@guardian/interfaces';
-import { Observable, Subscription } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { NavigationEnd, Router } from '@angular/router';
+import { IUser } from '@guardian/interfaces';
+import { Observable } from 'rxjs';
 import { AuthStateService } from 'src/app/services/auth-state.service';
 import { DemoService } from 'src/app/services/demo.service';
 import { HeaderPropsService } from 'src/app/services/header-props.service';
@@ -37,9 +36,11 @@ export class HeaderComponent implements OnInit {
     displayDemoAccounts: boolean = environment.displayDemoAccounts;
     hederaAccountID: string | undefined;
     profileData: IUser | null = null;
+    mobileMenuOpen: boolean = false;
+    subMenuOpen: any = {};
+    userInfoVisible: boolean = false;
 
-    public innerWidth: any;
-    public innerHeight: any;
+    oldUserName: string | null;
 
     constructor(
         public authState: AuthStateService,
@@ -63,12 +64,9 @@ export class HeaderComponent implements OnInit {
     }
 
     ngOnInit() {
-        this.innerWidth = window.innerWidth;
-        this.innerHeight = window.innerHeight;
-        if (this.innerWidth <= 810) {
-            document.documentElement.style.setProperty('--header-height', '75px');
-        }
-        this.activeLink = "";
+        // this.innerWidth = window.innerWidth;
+        // this.innerHeight = window.innerHeight;
+        this.activeLink = '';
         this.update();
         this.ws = this.webSocketService.profileSubscribe((event) => {
             if (event.type === 'PROFILE_BALANCE') {
@@ -93,8 +91,10 @@ export class HeaderComponent implements OnInit {
         });
 
         this.authSubscription = this.auth.subscribe((token) => {
-            if (token) {
+            const username = this.auth.getUsername();
+            if (token && (username !== this.oldUserName)) {
                 this.getBallance();
+                this.oldUserName = username;
             }
         })
     }
@@ -111,18 +111,18 @@ export class HeaderComponent implements OnInit {
     }
 
     getBallance() {
-        if(!this.isLogin) {
+        if (!this.isLogin) {
             return;
         }
         this.balanceInit = true;
         this.auth.balance().subscribe((balance: any) => {
             if (balance && balance.balance) {
                 const b = parseFloat(balance.balance);
-                if(b > 999) {
+                if (b > 999) {
                     this.balance = `${b.toFixed(0)} ${balance.unit}`;
-                } else if(b > 99) {
+                } else if (b > 99) {
                     this.balance = `${b.toFixed(2)} ${balance.unit}`;
-                } else if(b > 9) {
+                } else if (b > 9) {
                     this.balance = `${b.toFixed(3)} ${balance.unit}`;
                 }
                 if (b > 100) {
@@ -143,7 +143,7 @@ export class HeaderComponent implements OnInit {
     }
 
     async update() {
-        if (this.activeLink == this.router.url) {
+        if (this.activeLink === this.router.url) {
             return;
         }
         this.activeLink = this.router.url;
@@ -153,8 +153,8 @@ export class HeaderComponent implements OnInit {
             const role = user ? user.role : null;
             const username = user ? user.username : null;
             this.setStatus(isLogin, role, username);
-            this.authState.updateState(isLogin);
-            if(!this.balanceInit) {
+            this.authState.updateState(isLogin, true);
+            if (!this.balanceInit) {
                 this.getBallance();
             }
         }, () => {
@@ -163,7 +163,7 @@ export class HeaderComponent implements OnInit {
     }
 
     setStatus(isLogin: boolean, role: any, username: any) {
-        if (this.isLogin != isLogin || this.role != role) {
+        if (this.isLogin !== isLogin || this.role !== role) {
             this.isLogin = isLogin;
             this.role = role;
             this.username = username;
@@ -219,9 +219,12 @@ export class HeaderComponent implements OnInit {
                     this.activeLinkRoot === '/schemas' ||
                     this.activeLinkRoot === '/artifacts' ||
                     this.activeLinkRoot === '/modules' ||
+                    this.activeLinkRoot === '/tools' ||
+                    this.activeLinkRoot === '/suggestions' ||
                     this.activeLinkRoot === '/policy-viewer' ||
                     this.activeLinkRoot === '/policy-configuration' ||
                     this.activeLinkRoot === '/compare' ||
+                    this.activeLinkRoot === '/search' ||
                     /^\/policy-configuration\/\w+/.test(this.activeLinkRoot) ||
                     this.activeLinkRoot === 'policy-configuration'
                 );
@@ -243,6 +246,10 @@ export class HeaderComponent implements OnInit {
                 return this.activeLinkRoot === '/artifacts';
             case 'SR_MODULES':
                 return this.activeLinkRoot === '/modules';
+            case 'SR_TOOLS':
+                return this.activeLinkRoot === '/tools';
+            case 'SR_SUGGESTIONS':
+                return this.activeLinkRoot === '/suggestions';
             case 'SR_POLICIES_LIST':
                 return this.activeLinkRoot === '/policy-viewer';
             case 'SR_VIEWER':
@@ -251,13 +258,16 @@ export class HeaderComponent implements OnInit {
                 return this.activeLinkRoot === '/policy-configuration';
             case 'SR_COMPARE':
                 return this.activeLinkRoot === '/compare';
+            case 'SR_SEARCH':
+                return this.activeLinkRoot === '/search';
             case 'SR_SETTINGS':
                 return this.activeLinkRoot === '/admin/settings';
             case 'SR_LOGS':
                 return this.activeLinkRoot === '/admin/logs';
             case 'SR_STATUS':
                 return this.activeLinkRoot === '/admin/status';
-
+            case 'SR_ABOUT':
+                return this.activeLinkRoot === '/admin/about';
             case 'USER_TOKENS':
                 return this.activeLink === '/user-profile?tab=tokens';
             case 'USER_RETIRE':
@@ -274,17 +284,17 @@ export class HeaderComponent implements OnInit {
                 return this.activeLinkRoot === '/audit';
             case 'AUDITOR_TRUST_CHAIN':
                 return this.activeLinkRoot === '/trust-chain';
-
-
-
         }
         return false;
     }
 
+
+    public mobileRoutActive(type: string): boolean {
+        this.closeNav();
+        return this.routActive(type);
+    }
+
     public routActive(type: string): boolean {
-        if (this.innerWidth <= 810) {
-            this.closeNav()
-        }
         switch (type) {
             case 'SR_UP':
                 this.router.navigate(['/config']);
@@ -312,14 +322,22 @@ export class HeaderComponent implements OnInit {
             case 'SR_MODULES':
                 this.router.navigate(['/modules']);
                 return true;
+            case 'SR_TOOLS':
+                this.router.navigate(['/tools']);
+                return true;
             case 'SR_POLICIES_LIST':
                 this.router.navigate(['/policy-viewer']);
+                return true;
+            case 'SR_SUGGESTIONS':
+                this.router.navigate(['/suggestions']);
                 return true;
             case 'SR_VIEWER':
                 return false;
             case 'SR_EDITOR':
                 return false;
             case 'SR_COMPARE':
+                return false;
+            case 'SR_SEARCH':
                 return false;
             case 'SR_SETTINGS':
                 this.router.navigate(['/admin/settings']);
@@ -329,6 +347,9 @@ export class HeaderComponent implements OnInit {
                 return true;
             case 'SR_STATUS':
                 this.router.navigate(['/admin/status']);
+                return true;
+            case 'SR_ABOUT':
+                this.router.navigate(['/admin/about']);
                 return true;
 
             case 'USER_TOKENS':
@@ -358,67 +379,37 @@ export class HeaderComponent implements OnInit {
         return false;
     }
 
-    openNav() {
-        document.getElementById("menu-backdrop")!.style.display = "flex";
-        document.getElementById("menu-backdrop")!.style.zIndex = "1000";
-        document.getElementById("nav-items")!.style.width = "250px";
-        document.getElementById("nav-items")!.style.zIndex = "1001";
-        document.getElementById("footer")!.style.display = "block";
-        document.getElementById("footer")!.style.width = "210px";
-        document.getElementById("footer")!.style.zIndex = "1001";
+    doBranding() {
+        this.router.navigate(['/branding']);
+    }
 
+    openNav() {
+        this.mobileMenuOpen = true;
         this.profileService.getProfile().subscribe(
             (profile: IUser) => {
-              this.profileData = profile;
-              this.hederaAccountID = this.profileData.hederaAccountId;
+                this.profileData = profile;
+                this.hederaAccountID = this.profileData.hederaAccountId;
             },
-            (error) => {
-              console.error('Failed to get profile data:', error);
+            ({ message }) => {
+                console.error('Failed to get profile data:', message);
             }
         );
     }
 
     closeNav() {
-        document.getElementById("menu-backdrop")!.style.display = "none";
-        document.getElementById("nav-items")!.style.width = "0";
-        document.getElementById("footer")!.style.display = "none";
+        this.mobileMenuOpen = false;
     }
 
     openSubMenu(subMenuID: string) {
-        let content = document.getElementById('subMenu' + subMenuID)!;
-        let userInfo = document.getElementById("user-info");
-        for (let i = 1; i < 4; i++) {
-            if (i == parseInt(subMenuID)) {
-                continue
-            } else {
-                let dialog = document.getElementById('subMenu' + i)!;
-                dialog.style.maxHeight = '';
-                setTimeout(function () {
-                    dialog.style.margin = "0";
-                }, 200);
-                dialog.style.overflow = "hidden";
+        this.userInfoVisible = true;
+        this.subMenuOpen[subMenuID] = !this.subMenuOpen[subMenuID];
+        for (const index of Object.keys(this.subMenuOpen)) {
+            if (index !== subMenuID) {
+                this.subMenuOpen[index] = false;
+            }
+            if (this.subMenuOpen[index]) {
+                this.userInfoVisible = false;
             }
         }
-        if (content.style.maxHeight) {
-            // Submenu is open
-            content.style.maxHeight = '';
-            setTimeout(function () {
-                content.style.margin = "0";
-            }, 200);
-            content.style.overflow = "hidden";
-            if (userInfo) {
-                userInfo.style.display = "block";
-                userInfo.style.maxHeight = '';
-            }
-        } else {
-            // Submenu is closed
-            content.style.maxHeight = content.scrollHeight + "px";
-            content.style.margin = "0 auto 20px 35px";
-            content.style.overflow = "visible";
-            if (userInfo) {
-                userInfo.style.display = "none";
-                userInfo.style.maxHeight = content.scrollHeight + "px";
-            }
-        } 
     }
 }

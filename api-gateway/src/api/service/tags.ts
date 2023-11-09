@@ -4,19 +4,25 @@ import { SchemaCategory, SchemaHelper, UserRole } from '@guardian/interfaces';
 import { SchemaUtils } from '@helpers/schema-utils';
 import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response } from '@nestjs/common';
 import { checkPermission } from '@auth/authorization-helper';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('tags')
+@ApiTags('tags')
 export class TagsApi {
     @Post('/')
     @HttpCode(HttpStatus.CREATED)
     async setTags(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         try {
+            if (!req.headers.authorization || !req.user || !req.user.did) {
+                throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
+            }
             const guardian = new Guardians();
             const item = await guardian.createTag(req.body, req.user.did);
             return res.status(201).json(item);
         } catch (error) {
             await (new Logger()).error(error, ['API_GATEWAY']);
-            throw error
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -25,6 +31,9 @@ export class TagsApi {
     async searchTags(@Req() req, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();
+            if (!req.headers.authorization || !req.user || !req.user.did) {
+                throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
+            }
             const { entity, target, targets } = req.body;
             let _targets: string[];
             if (!entity) {
@@ -77,6 +86,9 @@ export class TagsApi {
     @Delete('/:uuid')
     @HttpCode(HttpStatus.OK)
     async deleteTag(@Req() req, @Response() res): Promise<any> {
+        if (!req.user) {
+            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
+        }
         try {
             const guardian = new Guardians();
             if (!req.params.uuid) {
@@ -86,7 +98,7 @@ export class TagsApi {
             return res.json(result);
         } catch (error) {
             await (new Logger()).error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
             // return next(error);
         }
     }
@@ -94,6 +106,10 @@ export class TagsApi {
     @Post('/synchronization')
     @HttpCode(HttpStatus.OK)
     async synchronizationTags(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
+        if (!req.headers.authorization || !req.user || !req.user.did) {
+            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
+        }
         try {
             const guardians = new Guardians();
             const { entity, target } = req.body;
@@ -117,7 +133,7 @@ export class TagsApi {
             return res.json(result);
         } catch (error) {
             await (new Logger()).error(error, ['API_GATEWAY']);
-            throw error
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -189,9 +205,9 @@ export class TagsApi {
             const schema = await guardians.getSchemaById(schemaId);
             const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.TAG);
             if (error) {
-                throw new HttpException('error', HttpStatus.FORBIDDEN)
+                throw new HttpException(error, HttpStatus.FORBIDDEN)
             }
-            await guardians.deleteSchema(schemaId);
+            await guardians.deleteSchema(schemaId, user?.did);
             return res.json(true);
         } catch (error) {
             await (new Logger()).error(error, ['API_GATEWAY']);
@@ -211,7 +227,7 @@ export class TagsApi {
             const schema = await guardians.getSchemaById(newSchema.id);
             const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.TAG);
             if (error) {
-                throw new HttpException('error', HttpStatus.FORBIDDEN)
+                throw new HttpException(error, HttpStatus.FORBIDDEN)
             }
             SchemaUtils.fromOld(newSchema);
             SchemaHelper.checkSchemaKey(newSchema);
@@ -220,7 +236,6 @@ export class TagsApi {
             return res.json(newSchema);
         } catch (error) {
             await (new Logger()).error(error, ['API_GATEWAY']);
-            // return next(error);
             throw error;
         }
     }
@@ -229,34 +244,41 @@ export class TagsApi {
     @HttpCode(HttpStatus.OK)
     async publishTag(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const user = req.user;
+        const guardians = new Guardians();
+        const schemaId = req.params.schemaId;
+        let schema;
         try {
-            const user = req.user;
-            const guardians = new Guardians();
-            const schemaId = req.params.schemaId;
-            const schema = await guardians.getSchemaById(schemaId);
-            const version = '1.0.0';
-            const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.TAG);
-            if (error) {
-                throw new HttpException('error', HttpStatus.FORBIDDEN)
-            }
+            schema = await guardians.getSchemaById(schemaId);
+        } catch (error) {
+            await (new Logger()).error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        const version = '1.0.0';
+        const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.TAG);
+        if (error) {
+            throw new HttpException(error, HttpStatus.FORBIDDEN)
+        }
+        try {
             const result = await guardians.publishTagSchema(schemaId, version, user.did);
             return res.json(result);
         } catch (error) {
             await (new Logger()).error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Get('/schemas/published')
     @HttpCode(HttpStatus.OK)
     async getPublished(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         try {
             const guardians = new Guardians();
             const schemas = await guardians.getPublishedTagSchemas();
             return res.send(schemas);
         } catch (error) {
             await (new Logger()).error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

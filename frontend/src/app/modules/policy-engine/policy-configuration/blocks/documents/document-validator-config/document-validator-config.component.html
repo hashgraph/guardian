@@ -16,13 +16,12 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Check Schema</td>
         <td class="propRowCell">
-            <mat-select [(value)]="properties.schema" [disabled]="readonly" (change)="onSave()">
-                <mat-option *ngFor="let schema of schemas" [value]="schema.value">
-                    {{schema.name}}
-                    <span *ngIf="schema.version"> ({{schema.version}})</span>
-                    <span *ngIf="schema.status"> ({{schema.status}})</span>
-                </mat-option>
-            </mat-select>
+            <select-schema
+                [schemas]="schemas" 
+                [(value)]="properties.schema"
+                [disabled]="readonly" 
+                (change)="onSave()"
+                ></select-schema>
         </td>
     </tr>
     <tr class="propRow">

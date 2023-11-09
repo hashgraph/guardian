@@ -4,6 +4,7 @@ import { checkForCircularDependency, incrementSchemaVersion, updateSchemaDefs, u
 import { DatabaseServer, MessageAction, MessageServer, Schema as SchemaCollection, SchemaMessage, schemasToContext, TopicConfig, UrlType } from '@guardian/common';
 import { emptyNotifier, INotifier } from '@helpers/notifier';
 import { publishSchemaTags } from './../tag.service';
+import { exportSchemas } from './schema-import-export-helper';
 
 /**
  * Publish schema
@@ -42,8 +43,11 @@ export async function publishSchema(
 
     item.context = schemasToContext([...defsArray, itemDocument], additionalContexts);
 
+    const relationships = await exportSchemas([item.id]);
+
     const message = new SchemaMessage(type || MessageAction.PublishSchema);
     message.setDocument(item);
+    message.setRelationships(relationships);
     const result = await messageServer
         .sendMessage(message);
 
@@ -57,6 +61,7 @@ export async function publishSchema(
     item.contextURL = contextUrl;
     item.messageId = messageId;
     item.topicId = topicId;
+    item.sourceVersion = '';
 
     SchemaHelper.updateIRI(item);
 

@@ -1,4 +1,5 @@
 import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
+import { CommonBlock } from './common';
 
 /**
  * External data block
@@ -16,16 +17,10 @@ export class ExternalDataBlock {
      */
     public static async validate(validator: BlockValidator, ref: IBlockProp): Promise<void> {
         try {
-            if (ref.options.schema) {
-                if (typeof ref.options.schema !== 'string') {
-                    validator.addError('Option "schema" must be a string');
-                    return;
-                }
-                if (await validator.schemaNotExist(ref.options.schema)) {
-                    validator.addError(`Schema with id "${ref.options.schema}" does not exist`);
-                    return;
-                }
-            }
+            await CommonBlock.validate(validator, ref);
+            validator.checkBlockError(
+                validator.validateSchemaVariable('schema', ref.options.schema, false)
+            );
         } catch (error) {
             validator.addError(`Unhandled exception ${validator.getErrorMessage(error)}`);
         }

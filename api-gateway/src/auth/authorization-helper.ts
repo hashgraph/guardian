@@ -1,36 +1,13 @@
 import { NextFunction, Response } from 'express';
 import { Users } from '@helpers/users';
 import { AuthenticatedRequest, IAuthUser, Logger } from '@guardian/common';
-import { HttpException, HttpStatus, Injectable, NestMiddleware } from '@nestjs/common';
+import { createParamDecorator, ExecutionContext, HttpException, HttpStatus, Injectable, NestMiddleware } from '@nestjs/common';
 
-/**
- * Auth middleware
- */
-@Injectable()
-export class AuthMiddleware implements NestMiddleware {
-
-    /**
-     * Use
-     * @param req
-     * @param res
-     * @param next
-     */
-    async use(req: AuthenticatedRequest, res: Response, next: NextFunction) {
-        const authHeader = req.headers.authorization;
-        const users = new Users();
-        if (authHeader) {
-            const token = authHeader.split(' ')[1];
-            try {
-                req.user = await users.getUserByToken(token) as IAuthUser;
-                next();
-                return;
-            } catch (error) {
-                new Logger().error(error, ['API_GATEWAY']);
-            }
-        }
-        res.sendStatus(401);
-    }
-}
+export const AuthUser = createParamDecorator((data: string = 'user', ctx: ExecutionContext) => {
+    console.log(data);
+    const req = ctx.switchToHttp().getRequest();
+    return req.user
+})
 
 /**
  * Permission middleware
@@ -62,14 +39,14 @@ export async function authorizationHelper(req: AuthenticatedRequest, res: Respon
         return;
     }
     const users = new Users();
+    const token = authHeader.split(' ')[1];
     if (authHeader) {
-        const token = authHeader.split(' ')[1];
         try {
             req.user = await users.getUserByToken(token) as IAuthUser;
             next();
             return;
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
+            new Logger().warn(error.message, ['API_GATEWAY']);
         }
     }
     res.sendStatus(401);

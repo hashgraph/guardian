@@ -1,22 +1,26 @@
-# 💻 Policy Differentiation using UI
+# 💻 Multi Policy Differentiation using UI
 
-We can now perform a detailed comparison between two policies.
+We can now perform a detailed comparison between more than two policies.
 
 ## 1. Start Comparison and choose policies:
 
 To compare the policies, we need to click on **Compare** button in the policies tab as shown below:
 
-<figure><img src="../../../../.gitbook/assets/image (2) (3) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (2) (3).png" alt=""><figcaption></figcaption></figure>
 
 When Compare button is clicked, we get a pop up to select policies, which we want to perform comparison off.
 
-<figure><img src="../../../../.gitbook/assets/image (5) (1) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (5) (4).png" alt=""><figcaption></figcaption></figure>
 
 ## 2. Comparison Result
 
 We have several different sections in our comparison screen including filter parameters:
 
-<figure><img src="../../../../.gitbook/assets/image (4) (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (4) (6).png" alt=""><figcaption></figcaption></figure>
+
+Selected Policies are compared to the first Policy (displayed in the section on the left-hand side), the rest of the sections show the results of the ‘diffs’.
+
+<figure><img src="../../../../.gitbook/assets/image (200).png" alt=""><figcaption></figcaption></figure>
 
 ### 2.1 Comparison Parameters
 
@@ -27,7 +31,7 @@ We have several different sections in our comparison screen including filter par
 | Don't compare | event differences are not reflected in the results of comparing blocks |
 | All events    | event differences are reflected in the block comparison results        |
 
-2\.  **Properties :** configures how differences in Properties are reflected in the results of comparing blocks
+2\. **Properties :** configures how differences in Properties are reflected in the results of comparing blocks
 
 | Parameter              | Definition                                                                                                            |
 | ---------------------- | --------------------------------------------------------------------------------------------------------------------- |
@@ -52,7 +56,7 @@ We have several different sections in our comparison screen including filter par
 
 ## 2. Sections:
 
-There are different sections in the comparison such as&#x20;
+There are different sections in the comparison such as
 
 1. **Main** – shows results of comparison of the main fields of the Policies
 2. **Policy Roles** – shows results of comparison of the roles of Policies
@@ -63,9 +67,9 @@ There are different sections in the comparison such as&#x20;
 
 We have several Display settings in Policy Blocks section:
 
-<figure><img src="../../../../.gitbook/assets/image (12) (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (12) (4) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../.gitbook/assets/image (18) (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (18) (2).png" alt=""><figcaption></figcaption></figure>
 
 **Display Settings:** description and show/hide settings for each color/type of difference:
 
@@ -78,4 +82,4 @@ We have several Display settings in Policy Blocks section:
 
 Block comparison displays can be unfolded to display a detailed view of the block Properties.
 
-<figure><img src="../../../../.gitbook/assets/image (9) (1) (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (5) (3).png" alt=""><figcaption></figcaption></figure>

@@ -1,4 +1,5 @@
-import { PolicyBlockModel, PolicyModel, PolicyModuleModel } from '..';
+import { PolicyBlock } from '../policy-models/block/block.model';
+import { PolicyFolder } from '../policy-models/interfaces/types';
 import { Theme } from './theme';
 
 export class ThemeRule {
@@ -18,7 +19,7 @@ export class ThemeRule {
     private _filterOperation: any;
     private _default: boolean;
     private _legend: string;
-    private _model: PolicyModel | PolicyModuleModel | null;
+    private _model: PolicyFolder | null;
 
     constructor(theme: Theme) {
         this.theme = theme;
@@ -163,7 +164,7 @@ export class ThemeRule {
         return this._legend;
     }
 
-    public updateLegend(model: PolicyModel | PolicyModuleModel) {
+    public updateLegend(model: PolicyFolder) {
         this._model = model;
         if (this.type === 'role') {
             let names = '';
@@ -317,7 +318,7 @@ export class ThemeRule {
         this.theme.update();
     }
 
-    public check(item: PolicyBlockModel): boolean {
+    public check(item: PolicyBlock): boolean {
         if (this._type === 'type') {
             if (this._filterOperation === 'in') {
                 return this._filterValue[item.blockType] === true;

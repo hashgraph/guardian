@@ -174,7 +174,7 @@ export class AggregateBlock {
     private async sendCronDocuments(ref: AnyBlockType, userId: string, documents: AggregateVC[]) {
         documents = await this.removeDocuments(ref, documents);
         if (documents.length || ref.options.emptyData) {
-            const state = { data: documents };
+            const state: IPolicyEventState = { data: documents };
             const user = PolicyUtils.getPolicyUserById(ref, userId);
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
@@ -277,7 +277,7 @@ export class AggregateBlock {
         if (result === true) {
             const user = PolicyUtils.getPolicyUser(ref, document.owner, document.group);
             rawEntities = await this.removeDocuments(ref, rawEntities);
-            const state = { data: rawEntities };
+            const state: IPolicyEventState = { data: rawEntities };
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
             PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.TickAggregate, ref, user, {

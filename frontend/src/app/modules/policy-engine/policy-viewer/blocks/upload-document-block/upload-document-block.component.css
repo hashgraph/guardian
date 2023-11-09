@@ -64,8 +64,8 @@
 .body-dialog-template {
     margin: 0;
     padding: 0;
-    padding-bottom: 70px;
-    max-height: calc(70 * var(--vh)) !important;
+    padding-bottom: 20px;
+    max-height: calc(65vh + 40px) !important;
     position: relative;
     overflow: visible;
 }

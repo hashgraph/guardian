@@ -1,16 +1,47 @@
-import {
-    ISchema,
-    SchemaEntity,
-    SchemaStatus,
-    SchemaHelper,
-    Schema,
-    TopicType,
-    IRootConfig
-} from '@guardian/interfaces';
+import { GenerateUUIDv4, IRootConfig, ISchema, ModuleStatus, Schema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
 import path from 'path';
 import { readJSON } from 'fs-extra';
 import { DatabaseServer, MessageAction, MessageServer, Schema as SchemaCollection, SchemaConverterUtils, SchemaMessage, TopicConfig, TopicHelper, Users, } from '@guardian/common';
 import { INotifier } from '@helpers/notifier';
+import { importTag } from '@api/helpers/tag-import-export-helper';
+
+/**
+ * Import Result
+ */
+export interface SchemaImportResult {
+    /**
+     * Old schema id
+     */
+    oldID: string,
+    /**
+     * New schema id
+     */
+    newID: string,
+    /**
+     * Old schema uuid
+     */
+    oldUUID: string,
+    /**
+     * New schema uuid
+     */
+    newUUID: string,
+    /**
+     * Old schema iri
+     */
+    oldIRI: string,
+    /**
+     * New schema iri
+     */
+    newIRI: string,
+    /**
+     * Old schema message id
+     */
+    oldMessageID: string
+    /**
+     * Old schema message id
+     */
+    newMessageID: string
+}
 
 /**
  * Import Result
@@ -19,32 +50,7 @@ export interface ImportResult {
     /**
      * New schema uuid
      */
-    schemasMap: {
-        /**
-         * Old schema id
-         */
-        oldID: string,
-        /**
-         * New schema id
-         */
-        newID: string,
-        /**
-         * Old schema uuid
-         */
-        oldUUID: string,
-        /**
-         * New schema uuid
-         */
-        newUUID: string,
-        /**
-         * Old schema iri
-         */
-        oldIRI: string,
-        /**
-         * New schema iri
-         */
-        newIRI: string,
-    }[];
+    schemasMap: SchemaImportResult[];
     /**
      * Errors
      */
@@ -244,7 +250,21 @@ export async function updateSchemaDocument(schema: SchemaCollection): Promise<vo
     if (!schema) {
         throw new Error(`There is no schema to update document`);
     }
-    const allSchemasInTopic = await DatabaseServer.getSchemas({ topicId: schema.topicId });
+    const publishedToolsTopics = await DatabaseServer.getTools(
+        {
+            status: ModuleStatus.PUBLISHED,
+        },
+        {
+            fields: ['topicId'],
+        }
+    );
+    const allSchemasInTopic = await DatabaseServer.getSchemas({
+        topicId: {
+            $in: [schema.topicId].concat(
+                publishedToolsTopics.map((tool) => tool.topicId)
+            ),
+        },
+    });
     const allParsedSchemas = allSchemasInTopic.map(item => new Schema(item));
     const parsedSchema = new Schema(schema, true);
     parsedSchema.update(parsedSchema.fields, parsedSchema.conditions);
@@ -301,7 +321,115 @@ export async function sendSchemaMessage(
     );
     const message = new SchemaMessage(action);
     message.setDocument(schema);
-    await messageServer.setTopicObject(topic).sendMessage(message);
+    await messageServer
+        .setTopicObject(topic)
+        .sendMessage(message);
+}
+
+export async function copyDefsSchemas(defs: any, owner: string, topicId: string, root: any) {
+    if (!defs) {
+        return;
+    }
+    const schemasIdsInDocument = Object.keys(defs);
+    for (const schemaId of schemasIdsInDocument) {
+        await copySchemaAsync(schemaId, topicId, null, owner);
+    }
+}
+
+export async function copySchemaAsync(iri: string, topicId: string, name: string, owner: string) {
+    const users = new Users();
+    const root = await users.getHederaAccount(owner);
+
+    let item = await DatabaseServer.getSchema({iri});
+
+    const oldSchemaIri = item.iri;
+    await copyDefsSchemas(item.document?.$defs, owner, topicId, root);
+    item = await DatabaseServer.getSchema({iri});
+
+    // Clean document
+    delete item._id;
+    delete item.id;
+    delete item.documentURL;
+    delete item.documentFileId;
+    delete item.contextURL;
+    delete item.contextFileId;
+    delete item.messageId;
+    delete item.createDate;
+    delete item.updateDate;
+
+    if (name) {
+        item.name = name;
+    }
+    item.uuid = GenerateUUIDv4();
+    item.status = SchemaStatus.DRAFT;
+    item.topicId = topicId;
+
+    SchemaHelper.setVersion(item, null, null);
+    SchemaHelper.updateIRI(item);
+    item.iri = item.iri || item.uuid;
+
+    await DatabaseServer.saveSchema(item)
+
+    await updateSchemaDocument(item);
+    await updateSchemaDefs(item.iri, oldSchemaIri);
+
+    const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true);
+
+    if (topic) {
+        await sendSchemaMessage(
+            root,
+            topic,
+            MessageAction.CreateSchema,
+            item
+        );
+    }
+    return item;
+}
+
+/**
+ * Check parent schema and create new with tags
+ * @param category
+ * @param newSchema
+ * @param guardians
+ * @param owner
+ */
+export async function createSchemaAndArtifacts(
+    category: SchemaCategory,
+    newSchema: any,
+    owner: string,
+    notifier: INotifier
+) {
+    let old: SchemaCollection;
+    let previousVersion = '';
+    if (newSchema.id) {
+        old = await DatabaseServer.getSchemaById(newSchema.id);
+        if (!old) {
+            throw new Error('Schema does not exist.');
+        }
+        if (old.creator !== owner) {
+            throw new Error('Invalid creator.');
+        }
+        previousVersion = old.version;
+    }
+
+    delete newSchema._id;
+    delete newSchema.id;
+    delete newSchema.status;
+    newSchema.category = category || SchemaCategory.POLICY;
+    newSchema.readonly = false;
+    newSchema.system = false;
+
+    SchemaHelper.setVersion(newSchema, null, previousVersion);
+    const row = await createSchema(newSchema, newSchema.owner, notifier);
+
+    if (old) {
+        const tags = await DatabaseServer.getTags({
+            localTarget: old.id
+        });
+        await importTag(tags, row.id.toString());
+    }
+
+    return row;
 }
 
 /**
@@ -317,6 +445,7 @@ export async function createSchema(
     if (checkForCircularDependency(newSchema)) {
         throw new Error(`There is circular dependency in schema: ${newSchema.iri}`);
     }
+
     delete newSchema.id;
     delete newSchema._id;
     const users = new Users();

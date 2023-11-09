@@ -39,6 +39,14 @@ export class TopicConfig {
      */
     public policyUUID: string;
     /**
+     * Target Id
+     */
+    public targetId: string;
+    /**
+     * Target Id
+     */
+    public targetUUID: string;
+    /**
      * Admin Key
      */
     public adminKey: string;
@@ -76,6 +84,14 @@ export class TopicConfig {
          * Policy UUID
          */
         policyUUID?: string,
+        /**
+         * Target ID
+         */
+        targetId?: string,
+        /**
+         * Target UUID
+         */
+        targetUUID?: string,
     }, adminKey?: string, submitKey?: string) {
         this.topicId = topic.topicId;
         this.name = topic.name;
@@ -84,6 +100,8 @@ export class TopicConfig {
         this.type = topic.type;
         this.policyId = topic.policyId;
         this.policyUUID = topic.policyUUID;
+        this.targetId = topic.targetId;
+        this.targetUUID = topic.targetUUID;
         this.submitKey = submitKey;
         this.adminKey = adminKey;
     }
@@ -123,6 +141,8 @@ export class TopicConfig {
             parent: this.parent,
             policyId: this.policyId,
             policyUUID: this.policyUUID,
+            targetId: this.targetId,
+            targetUUID: this.targetUUID,
         }
     }
 

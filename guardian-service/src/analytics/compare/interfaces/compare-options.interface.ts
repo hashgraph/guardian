@@ -28,4 +28,10 @@ export interface ICompareOptions {
      * 1 - All UUID
      */
     idLvl: number;
+    /**
+     * Permissions
+     * 0 - User
+     * 1 - Standard Registry
+     */
+    owner?: string;
 }

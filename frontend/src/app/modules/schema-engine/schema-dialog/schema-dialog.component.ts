@@ -1,6 +1,5 @@
 import { ChangeDetectorRef, Component, Inject, ViewChild } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { FormBuilder } from '@angular/forms';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { SchemaConfigurationComponent } from '../schema-configuration/schema-configuration.component';
 import { Schema } from '@guardian/interfaces';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
@@ -16,28 +15,32 @@ import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 export class SchemaDialog {
     @ViewChild('document') schemaControl!: SchemaConfigurationComponent;
 
-    scheme: Schema;
-    schemasMap: any;
-    started: boolean = false;
-    type: 'new' | 'edit' | 'version' = 'new';
-    topicId: any;
-    policies: any[];
-    schemaType: string = 'policy';
-    valid: boolean = true;
-    extended: boolean = false;
-    fields: any[] = [];
-    restoreData: any = null;
+    public scheme: Schema;
+    public started: boolean = false;
+    public type: 'new' | 'edit' | 'version' = 'new';
+    public topicId: any;
+    public schemaType: any;
+    public valid: boolean = true;
+    public extended: boolean = false;
+    public fields: any[] = [];
+    public restoreData: any = null;
+
+    public policies: any[];
+    public modules: any[];
+    public tools: any[];
+
     constructor(
         public dialogRef: MatDialogRef<SchemaDialog>,
-        private fb: FormBuilder,
         private cdr: ChangeDetectorRef,
-        @Inject(MAT_DIALOG_DATA) public data: any) {
-        this.schemasMap = data.schemasMap || {};
+        @Inject(MAT_DIALOG_DATA) public data: any
+    ) {
         this.scheme = data.scheme || null;
         this.type = data.type || null;
         this.topicId = data.topicId || null;
-        this.policies = data.policies || [];
         this.schemaType = data.schemaType || 'policy';
+        this.policies = data.policies || [];
+        this.modules = data.modules || [];
+        this.tools = data.tools || [];
     }
 
     ngOnInit(): void {
@@ -64,7 +67,11 @@ export class SchemaDialog {
 
     onCreate() {
         const schema = this.schemaControl?.getSchema();
-        localStorage.setItem('restoreSchemaData', JSON.stringify(schema));
+        try {
+            localStorage.setItem('restoreSchemaData', JSON.stringify(schema));
+        } catch (error) {
+            console.error(error);
+        }
         this.dialogRef.close(schema);
     }
 

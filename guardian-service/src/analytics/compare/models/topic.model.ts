@@ -6,6 +6,7 @@ import { PropertyType } from '../types/property.type';
 import { WeightType } from '../types/weight.type';
 import { PropertiesModel } from './properties.model';
 import { PropertyModel } from './property.model';
+import { IWeightItem } from '../interfaces/weight-item.interface';
 
 /**
  * Topic Model
@@ -158,5 +159,30 @@ export class TopicModel implements IWeightModel {
      */
     public getPropList(type?: PropertyType): PropertyModel<any>[] {
         return this._prop.getPropList(type);
+    }
+
+    /**
+     * Get weight object
+     * @public
+     */
+    public toWeight(options: ICompareOptions): IWeightItem {
+        if (!this._weight.length) {
+            return {
+                weight: this.name
+            }
+        } else {
+            return {
+                weight: this._weight[0]
+            }
+        }
+    }
+
+    /**
+     * Comparison of models using key
+     * @param item - model
+     * @public
+     */
+    public equalKey(doc: TopicModel): boolean {
+        return this.key === doc.key;
     }
 }

@@ -6,7 +6,7 @@ Guardian will publish number of events to NATS server to hook into those events 
 
 ### Hooks to external event
 
-To hooks into Guardian events, we need to have a client, that is connected to same NATS instance with Guardian and implement the response function for a specific event.&#x20;
+To hooks into Guardian events, we need to have a client, that is connected to same NATS instance with Guardian and implement the response function for a specific event.
 
 Below is the sample for .NodeJs and in case of other language please refer to [Nats.io](https://nats.io/) for complete documentation.
 
@@ -36,7 +36,7 @@ To get more information please click [https://github.com/nats-io/nats.js#publish
 
 #### request/reply events
 
-Some event has type=`request` for which we need to subscribe and respond to the event.&#x20;
+Some event has type=`request` for which we need to subscribe and respond to the event.
 
 #### Example:
 

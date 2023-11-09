@@ -2,7 +2,7 @@
 description: Policy developed by Envision Blockchain
 ---
 
-# 🧑🌾 🧑🌾 Verra VM0042 REDD+ Methodology
+# 🎍 Verra VM0042 REDD+ Methodology
 
 * [Policy Description](verra-vm0042-redd+-methodology.md#policy-description)
 * [Workflow Description](verra-vm0042-redd+-methodology.md#workflow-description)
@@ -22,7 +22,7 @@ In future iterations, the workflow will begin with the Project Proponent complet
 
 Roles in the below Workflow Diagram are represented as follows : Project Proponent (Blue), Verra (Orange), VVB (Green)
 
-<figure><img src="../../../.gitbook/assets/image (103).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (97).png" alt=""><figcaption></figcaption></figure>
 
 ## Policy Guide
 
@@ -32,7 +32,7 @@ Create a Standard Registry user if you haven't done so already.
 
 You'll now be prompted to configure your Standard Registry account. Go through the user profile setup screen. At the last step of the user profile screen, Standard Registry users will need to fill out the Standard Registry attribute form (see screenshot below). Press Connect when finished. This will now initialize the Guardian instance on the correct Hedera Consensus Service Topics, create a DID document, create a Verifiable Credential, etc.
 
-<figure><img src="../../../.gitbook/assets/image (101) (1) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (38) (2).png" alt=""><figcaption></figcaption></figure>
 
 Now we will be creating the Policy. Click on the "Policies" tab and select "Policies." We have two ways to create policies.
 
@@ -56,11 +56,11 @@ Go to the Standard Registry profile and approve the VVB in the “Approve VVB”
 
 Click on the Project Proponent profile and select “New Project”.
 
-<figure><img src="../../../.gitbook/assets/image (109).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (84).png" alt=""><figcaption></figcaption></figure>
 
 Now, we can input all the project details and data associated with the project in the “New Project” form. In the schema Excel file, if the final CRU calculations do not result in a positive integer, selecting "Ok" after completing the form will trigger errors.
 
-<figure><img src="../../../.gitbook/assets/image (73).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (73) (1).png" alt=""><figcaption></figcaption></figure>
 
 To proceed with the flow, the next step is to access the Standard Registry profile and include the project in the project pipeline. This can be achieved by navigating to the "Project Pipeline" tab and selecting the "Add" option.
 
@@ -68,7 +68,7 @@ To proceed with the flow, the next step is to access the Standard Registry profi
 
 Next, proceed to the Project Proponent profile and locate the "Projects" section. Then, click on the downward arrow and assign the VVB to the project.
 
-<figure><img src="../../../.gitbook/assets/image (72).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (72) (1).png" alt=""><figcaption></figcaption></figure>
 
 After successfully assigning the VVB to the project, the next step is to access the VVB profile and click on the "validate" option located in the Projects tab.
 

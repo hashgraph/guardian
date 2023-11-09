@@ -7,6 +7,10 @@ import { UserRole } from '@guardian/interfaces';
  */
 export interface IAuthUser {
     /**
+     * User id
+     */
+    id: string
+    /**
      * User account name
      */
     username: string;
@@ -50,3 +54,30 @@ export type AuthenticatedRequest = Request & AdditionalFields;
  * Authenticated websocket
  */
 export type AuthenticatedWebSocket = WebSocket & AdditionalFields;
+
+/**
+ * Provider auth user interface
+ * Useful for external providers such as Google, Facebook, etc.
+ */
+export interface ProviderAuthUser {
+
+    /**
+     * Username
+     */
+    username: string;
+
+    /**
+     * Provider name
+     */
+    provider: string;
+
+    /**
+     * External user id (from provider)
+     */
+    providerId: string;
+
+    /**
+     * User role
+     */
+    role: UserRole;
+}

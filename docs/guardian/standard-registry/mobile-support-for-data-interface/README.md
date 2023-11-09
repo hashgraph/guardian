@@ -9,3 +9,12 @@ The introduction of this feature aims to be the first step to allow a more user 
 * Standard Registry publishing a draft of a policy;
 * Standard Registry importing policies;
 * Standard Registry editing tokens.
+
+The Standard Registry will have the ability to configure the appearance of the Guardian. The inputs allowed to be changed are the following:
+
+* Header color;
+* Primary color;
+* Company name;
+* Company Logo;
+* Login banner;
+* Website favicon

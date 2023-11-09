@@ -21,24 +21,14 @@ services:
       - mongo
 
   ipfs-node:
-    image: ipfs/kubo:v0.18.1
+    image: ipfs/kubo:v0.22.0
     ports:
       - "5001:5001"
-      - "5002:5002"
       - "4001:4001"
-      - "4002:4002"
       - "8080:8080"
-      - "8081:8081"
     volumes:
       - ./runtime-data/ipfs/staging:/export:rw
       - ./runtime-data/ipfs/data:/data/ipfs:rw
-
-  api-docs:
-    build:
-      context: .
-      dockerfile: ./api-docs/Dockerfile
-    expose:
-      - 3001
 
   message-broker:
     image: nats:2.9.8
@@ -79,6 +69,17 @@ services:
     environment:
       - GUARDIAN_ENV=${GUARDIAN_ENV}
 
+  notification-service:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
+    build:
+      context: .
+      dockerfile: ./notification-service/Dockerfile
+    depends_on:
+      - message-broker
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+
   worker-service-1:
     env_file:
       - ./configs/.env.${GUARDIAN_ENV}.guardian.system
@@ -86,8 +87,10 @@ services:
       context: .
       dockerfile: ./worker-service/Dockerfile
     depends_on:
-      - ipfs-node
-      - auth-service
+      ipfs-node:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
     environment:
       - GUARDIAN_ENV=${GUARDIAN_ENV}
       - SERVICE_CHANNEL:"worker.1"
@@ -101,8 +104,10 @@ services:
       context: .
       dockerfile: ./worker-service/Dockerfile
     depends_on:
-      - ipfs-node
-      - auth-service
+      ipfs-node:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
     environment:
       - GUARDIAN_ENV=${GUARDIAN_ENV}
       - SERVICE_CHANNEL="worker.2"
@@ -194,7 +199,7 @@ services:
   #     - auth-service
   #     - logger-service
 
-      
+
   mrv-sender:
     build:
       context: .
@@ -219,7 +224,6 @@ services:
       - guardian-service
       - auth-service
       - api-gateway
-      - api-docs
       - mrv-sender
       - mongo-express
 volumes:

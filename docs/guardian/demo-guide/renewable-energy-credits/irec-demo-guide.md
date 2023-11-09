@@ -18,7 +18,7 @@ This folder contains a sample file that is referenced in the Demo Guide
 
 3\. You will now be prompted to configure your Standard Registry account. Press the Generate button to generate a Hedera Operator ID and an Operator Key and enter the details of your Standard Registry. Press Connect when finished. This will now create Hedera Consensus Service Topics, fill the account with test hBar, create a DID document, create a Verifiable Credential, etc.
 
-![](../../../.gitbook/assets/Verra\_2.2.png)
+![](../../../.gitbook/assets/iREC\_4.2.png)
 
 4\. This could be one of the most interesting parts of the reference implementation. Now we will be creating the Policy. We have two ways to "create policies." The first way is to import an existing policy. This is the easiest way to get started. When you import a policy, all schemas and tokens that are required in the policy are automatically populated. To do this, you can use the sample policy that we have already uploaded to IPFS by entering the Hedera Message IDs.
 
@@ -55,7 +55,7 @@ Let's click on Publish button to publish the Policy to Hedera network.
 
 <figure><img src="../../../.gitbook/assets/iREC_5.6.png" alt=""><figcaption></figcaption></figure>
 
-7\. Now, we create a group by selecting Registrant in the Dropdown. or we enter an invite link of the group received to join that particular group in the Accept invitation option.&#x20;
+7\. Now, we create a group by selecting Registrant in the Dropdown. or we enter an invite link of the group received to join that particular group in the Accept invitation option.
 
 <figure><img src="../../../.gitbook/assets/iREC_5.7.png" alt=""><figcaption></figcaption></figure>
 
@@ -135,7 +135,7 @@ Once details are submitted, Registrant waits for the approval.
 
 <figure><img src="../../../.gitbook/assets/iREC_5.20.png" alt=""><figcaption></figcaption></figure>
 
-26\. Once the Issue Request is submitted, the request status can be checked by clicking on Issue Requests tab. &#x20;
+26\. Once the Issue Request is submitted, the request status can be checked by clicking on Issue Requests tab.
 
 <figure><img src="../../../.gitbook/assets/iREC_5.21.png" alt=""><figcaption></figcaption></figure>
 

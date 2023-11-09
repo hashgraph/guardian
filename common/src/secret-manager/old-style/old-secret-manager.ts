@@ -81,7 +81,6 @@ export class OldSecretManager extends NatsService implements SecretManagerBase {
                 return;
 
             default:
-                console.log(data);
                 await this.sendMessage<any>(WalletEvents.SET_KEY, addition);
                 return;
         }

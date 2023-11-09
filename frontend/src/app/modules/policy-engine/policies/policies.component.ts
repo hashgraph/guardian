@@ -1,6 +1,6 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
+import { Router } from '@angular/router';
 import { IUser, Schema, SchemaHelper, TagType, Token, UserRole } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -9,27 +9,20 @@ import { ExportPolicyDialog } from '../helpers/export-policy-dialog/export-polic
 import { NewPolicyDialog } from '../helpers/new-policy-dialog/new-policy-dialog.component';
 import { ImportPolicyDialog } from '../helpers/import-policy-dialog/import-policy-dialog.component';
 import { PreviewPolicyDialog } from '../helpers/preview-policy-dialog/preview-policy-dialog.component';
-import { WebSocketService } from 'src/app/services/web-socket.service';
 import { TasksService } from 'src/app/services/tasks.service';
 import { InformService } from 'src/app/services/inform.service';
 import { ConfirmationDialogComponent } from 'src/app/modules/common/confirmation-dialog/confirmation-dialog.component';
 import { MultiPolicyDialogComponent } from '../helpers/multi-policy-dialog/multi-policy-dialog.component';
-import { ToastrService } from 'ngx-toastr';
 import { ComparePolicyDialog } from '../helpers/compare-policy-dialog/compare-policy-dialog.component';
 import { TagsService } from 'src/app/services/tag.service';
 import { SetVersionDialog } from '../../schema-engine/set-version-dialog/set-version-dialog.component';
 import { forkJoin } from 'rxjs';
 import { SchemaService } from 'src/app/services/schema.service';
 import { WizardMode, WizardService } from 'src/app/modules/policy-engine/services/wizard.service';
-
-enum OperationMode {
-    None,
-    Create,
-    Import,
-    Publish,
-    Delete,
-    WizardCreate
-}
+import { FormControl, FormGroup } from '@angular/forms';
+import { AnalyticsService } from 'src/app/services/analytics.service';
+import { SearchPolicyDialog } from '../../analytics/search-policy-dialog/search-policy-dialog.component';
+import { mobileDialog } from 'src/app/utils/mobile-utils';
 
 /**
  * Component for choosing a policy and
@@ -38,9 +31,9 @@ enum OperationMode {
 @Component({
     selector: 'app-policies',
     templateUrl: './policies.component.html',
-    styleUrls: ['./policies.component.css']
+    styleUrls: ['./policies.component.scss']
 })
-export class PoliciesComponent implements OnInit, OnDestroy {
+export class PoliciesComponent implements OnInit {
     policies: any[] | null;
     columns: string[] = [];
     columnsRole: any = {};
@@ -53,12 +46,6 @@ export class PoliciesComponent implements OnInit, OnDestroy {
     owner: any;
     tagEntity = TagType.Policy;
     tagSchemas: any[] = [];
-
-    saveWizardState: boolean = false;
-
-    mode: OperationMode = OperationMode.None;
-    taskId: string | undefined = undefined;
-    expectedTaskMessages: number = 0;
 
     publishMenuOption = [{
         id: 'Publish',
@@ -99,23 +86,26 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         }
     ];
 
-    public innerWidth: any;
-    public innerHeight: any;
+    tagOptions: string[] = [];
+    filteredPolicies: any[] = [];
+    filtersForm = new FormGroup({
+        policyName: new FormControl(''),
+        tag: new FormControl(''),
+    });
+    noFilterResults: boolean = false;
 
     constructor(
         public tagsService: TagsService,
         private profileService: ProfileService,
         private policyEngineService: PolicyEngineService,
-        private wsService: WebSocketService,
-        private tokenService: TokenService,
-        private route: ActivatedRoute,
         private router: Router,
         private dialog: MatDialog,
         private taskService: TasksService,
         private informService: InformService,
-        private toastr: ToastrService,
         private schemaService: SchemaService,
         private wizardService: WizardService,
+        private tokenService: TokenService,
+        private analyticsService: AnalyticsService
     ) {
         this.policies = null;
         this.pageIndex = 0;
@@ -147,13 +137,8 @@ export class PoliciesComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.loading = true;
-        this.innerWidth = window.innerWidth;
-        this.innerHeight = window.innerHeight;
         this.loadPolicy();
-    }
-
-    ngOnDestroy() {
-
+        this.handleTagsUpdate();
     }
 
     loadPolicy() {
@@ -191,6 +176,7 @@ export class PoliciesComponent implements OnInit, OnDestroy {
 
     loadAllPolicy() {
         this.loading = true;
+        this.tagOptions = [];
         this.policyEngineService.page(this.pageIndex, this.pageSize).subscribe((policiesResponse) => {
             this.policies = policiesResponse.body || [];
             this.policyCount = policiesResponse.headers.get('X-Total-Count') || this.policies.length;
@@ -199,6 +185,10 @@ export class PoliciesComponent implements OnInit, OnDestroy {
                 if (this.policies) {
                     for (const policy of this.policies) {
                         (policy as any)._tags = data[policy.id];
+                        data[policy.id]?.tags.forEach((tag: any) => {
+                            const totalTagOptions = [...this.tagOptions, tag.name];
+                            this.tagOptions = [...new Set(totalTagOptions)];
+                        });
                     }
                 }
                 setTimeout(() => {
@@ -222,46 +212,6 @@ export class PoliciesComponent implements OnInit, OnDestroy {
             this.pageSize = event.pageSize;
         }
         this.loadAllPolicy();
-    }
-
-    onAsyncError(error: any) {
-        this.informService.processAsyncError(error);
-        this.taskId = undefined;
-        this.mode = OperationMode.None;
-        this.loadAllPolicy();
-    }
-
-    onAsyncCompleted() {
-        switch (this.mode) {
-            case OperationMode.Delete:
-            case OperationMode.Create:
-            case OperationMode.Import:
-                this.taskId = undefined;
-                this.mode = OperationMode.None;
-                this.loadAllPolicy();
-                break;
-            case OperationMode.Publish:
-                if (this.taskId) {
-                    const taskId = this.taskId;
-                    this.taskId = undefined;
-                    this.processPublishResult(taskId);
-                }
-                break;
-            case OperationMode.WizardCreate:
-                if (this.taskId) {
-                    const taskId = this.taskId;
-                    this.taskId = undefined;
-                    this.processCreateWizardResult(taskId);
-                    this.mode = OperationMode.None;
-                    this.loadAllPolicy();
-                }
-                break;
-            default:
-                console.log(`Not allowed mode ${this.mode}`);
-                break;
-        }
-
-        this.mode = OperationMode.None;
     }
 
     dryRun(element: any) {
@@ -304,6 +254,7 @@ export class PoliciesComponent implements OnInit, OnDestroy {
     setVersion(element: any) {
         const dialogRef = this.dialog.open(SetVersionDialog, {
             width: '350px',
+            disableClose: true,
             data: {}
         });
         dialogRef.afterClosed().subscribe((version) => {
@@ -317,22 +268,25 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         this.loading = true;
         this.policyEngineService.pushPublish(element.id, version).subscribe((result) => {
             const { taskId, expectation } = result;
-            this.taskId = taskId;
-            this.expectedTaskMessages = expectation;
-            this.mode = OperationMode.Publish;
+            this.router.navigate(['task', taskId], {
+                queryParams: {
+                    last: btoa(location.href)
+                }
+            });
         }, (e) => {
             this.loading = false;
         });
     }
 
-    deletePolicy(element: any) {
+    deletePolicy(policyId: any, previousVersion: any) {
         const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
             data: {
                 dialogTitle: 'Delete policy',
-                dialogText: !element.previousVersion
+                dialogText: !previousVersion
                     ? 'Are you sure to delete policy with related schemas?'
                     : 'Are you sure to delete policy?'
             },
+            disableClose: true,
             autoFocus: false
         });
         dialogRef.afterClosed().subscribe((result) => {
@@ -341,25 +295,28 @@ export class PoliciesComponent implements OnInit, OnDestroy {
             }
 
             this.loading = true;
-            this.policyEngineService.pushDelete(element.id).subscribe((result) => {
+            this.policyEngineService.pushDelete(policyId).subscribe((result) => {
                 const { taskId, expectation } = result;
-                this.taskId = taskId;
-                this.expectedTaskMessages = expectation;
-                this.mode = OperationMode.Delete;
+                this.router.navigate(['task', taskId], {
+                    queryParams: {
+                        last: btoa(location.href)
+                    }
+                });
             }, (e) => {
                 this.loading = false;
             });
         });
     }
 
-    exportPolicy(element: any) {
-        this.policyEngineService.exportInMessage(element.id)
+    exportPolicy(policyId: any) {
+        this.policyEngineService.exportInMessage(policyId)
             .subscribe(exportedPolicy => this.dialog.open(ExportPolicyDialog, {
                 width: '700px',
                 panelClass: 'g-dialog',
                 data: {
                     policy: exportedPolicy
                 },
+                disableClose: true,
                 autoFocus: false
             }));
     }
@@ -368,6 +325,7 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         const dialogRef = this.dialog.open(ImportPolicyDialog, {
             width: '500px',
             autoFocus: false,
+            disableClose: true,
             data: {
                 timeStamp: messageId
             }
@@ -382,36 +340,15 @@ export class PoliciesComponent implements OnInit, OnDestroy {
     importPolicyDetails(result: any) {
         const { type, data, policy } = result;
         const distinctPolicies = this.getDistinctPolicy();
-        let dialogRef;
-        if (this.innerWidth <= 810) {
-            const bodyStyles = window.getComputedStyle(document.body);
-            const headerHeight: number = parseInt(bodyStyles.getPropertyValue('--header-height'));
-            dialogRef = this.dialog.open(PreviewPolicyDialog, {
-                width: `${this.innerWidth.toString()}px`,
-                maxWidth: '100vw',
-                height: `${this.innerHeight - headerHeight}px`,
-                position: {
-                    'bottom': '0'
-                },
-                panelClass: 'g-dialog',
-                hasBackdrop: true, // Shadows beyond the dialog
-                closeOnNavigation: true,
-                autoFocus: false,
-                data: {
-                    policy: policy,
-                    policies: distinctPolicies
-                }
-            });
-        } else {
-            dialogRef = this.dialog.open(PreviewPolicyDialog, {
-                width: '950px',
-                panelClass: 'g-dialog',
-                data: {
-                    policy: policy,
-                    policies: distinctPolicies
-                }
-            });
-        }
+        let dialogRef = this.dialog.open(PreviewPolicyDialog, mobileDialog({
+            width: '950px',
+            panelClass: 'g-dialog',
+            disableClose: true,
+            data: {
+                policy: policy,
+                policies: distinctPolicies
+            }
+        }));
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
                 if (result.messageId) {
@@ -425,9 +362,11 @@ export class PoliciesComponent implements OnInit, OnDestroy {
                     this.policyEngineService.pushImportByMessage(data, versionOfTopicId).subscribe(
                         (result) => {
                             const { taskId, expectation } = result;
-                            this.taskId = taskId;
-                            this.expectedTaskMessages = expectation;
-                            this.mode = OperationMode.Import;
+                            this.router.navigate(['task', taskId], {
+                                queryParams: {
+                                    last: btoa(location.href)
+                                }
+                            });
                         }, (e) => {
                             this.loading = false;
                         });
@@ -435,9 +374,11 @@ export class PoliciesComponent implements OnInit, OnDestroy {
                     this.policyEngineService.pushImportByFile(data, versionOfTopicId).subscribe(
                         (result) => {
                             const { taskId, expectation } = result;
-                            this.taskId = taskId;
-                            this.expectedTaskMessages = expectation;
-                            this.mode = OperationMode.Import;
+                            this.router.navigate(['task', taskId], {
+                                queryParams: {
+                                    last: btoa(location.href)
+                                }
+                            });
                         }, (e) => {
                             this.loading = false;
                         });
@@ -488,18 +429,6 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         // }
     }
 
-    private processCreateWizardResult(taskId: string): void {
-        this.taskService.get(taskId).subscribe((task: any) => {
-            const { result } = task;
-            if (this.saveWizardState) {
-                this.wizardService.setWizardPreset(result.policyId, {
-                    data: result.wizardConfig,
-                });
-                this.saveWizardState = false;
-            }
-        });
-    }
-
     private processPublishResult(taskId: string): void {
         this.taskService.get(taskId).subscribe((task: any) => {
             const { result } = task;
@@ -536,36 +465,15 @@ export class PoliciesComponent implements OnInit, OnDestroy {
     }
 
     createMultiPolicy(element: any) {
-        let dialogRef;
-        const bodyStyles = window.getComputedStyle(document.body);
-        const headerHeight: number = parseInt(bodyStyles.getPropertyValue('--header-height'));
-        if (this.innerWidth <= 810) {
-            dialogRef = this.dialog.open(MultiPolicyDialogComponent, {
-                width: `${this.innerWidth.toString()}px`,
-                maxWidth: '100vw',
-                height: `${this.innerHeight - headerHeight}px`,
-                position: {
-                    'bottom': '0'
-                },
-                panelClass: 'g-dialog',
-                hasBackdrop: true, // Shadows beyond the dialog
-                closeOnNavigation: true,
-                autoFocus: false,
-                data: {
-                    policyId: element.id
-                }
-            });
-        } else {
-            dialogRef = this.dialog.open(MultiPolicyDialogComponent, {
-                width: '650px',
-                panelClass: 'g-dialog',
-                disableClose: true,
-                autoFocus: false,
-                data: {
-                    policyId: element.id
-                }
-            });
-        }
+        const dialogRef = this.dialog.open(MultiPolicyDialogComponent, mobileDialog({
+            width: '650px',
+            panelClass: 'g-dialog',
+            disableClose: true,
+            autoFocus: false,
+            data: {
+                policyId: element.id
+            }
+        }));
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
                 this.importPolicyDetails(result);
@@ -573,26 +481,37 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         });
     }
 
-    comparePolicy(element?: any) {
+    comparePolicy(policyId?: any) {
+        const item = this.policies?.find(e => e.id === policyId);
         const dialogRef = this.dialog.open(ComparePolicyDialog, {
             width: '650px',
             panelClass: 'g-dialog',
             disableClose: true,
             autoFocus: false,
             data: {
-                policy: element,
+                policy: item,
                 policies: this.policies
             }
         });
         dialogRef.afterClosed().subscribe(async (result) => {
-            if (result) {
-                this.router.navigate(['/compare'], {
-                    queryParams: {
-                        type: 'policy',
-                        policyId1: result.policyId1,
-                        policyId2: result.policyId2
-                    }
-                });
+            if (result && result.policyIds) {
+                const policyIds: string[] = result.policyIds;
+                if (policyIds.length === 2) {
+                    this.router.navigate(['/compare'], {
+                        queryParams: {
+                            type: 'policy',
+                            policyId1: policyIds[0],
+                            policyId2: policyIds[1]
+                        }
+                    });
+                } else {
+                    this.router.navigate(['/compare'], {
+                        queryParams: {
+                            type: 'multi-policy',
+                            policyIds: policyIds,
+                        }
+                    });
+                }
             }
         });
     }
@@ -611,9 +530,7 @@ export class PoliciesComponent implements OnInit, OnDestroy {
                 this.loading = true;
                 this.policyEngineService.pushCreate(result).subscribe((result) => {
                     const { taskId, expectation } = result;
-                    this.taskId = taskId;
-                    this.expectedTaskMessages = expectation;
-                    this.mode = OperationMode.Create;
+                    this.router.navigate(['/task', taskId]);
                 }, (e) => {
                     this.loading = false;
                 });
@@ -634,16 +551,20 @@ export class PoliciesComponent implements OnInit, OnDestroy {
             this.wizardService.openPolicyWizardDialog(
                 WizardMode.CREATE,
                 (value) => {
-                    this.saveWizardState = value.saveState;
                     this.loading = true;
                     this.wizardService
-                        .createPolicyAsync(value.config)
+                        .createPolicyAsync({
+                            wizardConfig: value.config,
+                            saveState: value.saveState
+                        })
                         .subscribe(
                             (result) => {
                                 const { taskId, expectation } = result;
-                                this.taskId = taskId;
-                                this.expectedTaskMessages = expectation;
-                                this.mode = OperationMode.WizardCreate;
+                                this.router.navigate(['task', taskId], {
+                                    queryParams: {
+                                        last: btoa(location.href)
+                                    }
+                                });
                             },
                             (e) => {
                                 this.loading = false;
@@ -655,5 +576,122 @@ export class PoliciesComponent implements OnInit, OnDestroy {
                 policies
             );
         }, () => undefined, () => this.loading = false);
+    }
+
+    applyFilters(): void {
+        if (this.filters.policyName && this.filters.tag) {
+            this.filterByNameAndTag();
+            this.noFilterResults = this.filteredPolicies.length === 0;
+            return;
+        }
+
+        this.filters.policyName
+            ? this.filterByPolicyName()
+            : this.filterByTag();
+        this.noFilterResults = this.filteredPolicies.length === 0;
+    }
+
+    clearFilters(): void {
+        this.filtersForm.reset({ policyName: '', tag: '' });
+        this.filteredPolicies = [];
+        this.noFilterResults = false;
+    }
+
+    private filterByPolicyName(): void {
+        this.filteredPolicies =
+            this.policies?.filter((policy) =>
+                this.isPolicyNameEqualToFilter(policy)
+            ) || [];
+    }
+
+    private filterByTag(): void {
+        this.filteredPolicies =
+            this.policies?.filter((policy) =>
+                this.isTagAssignedToPolicy(policy._tags)
+            ) || [];
+    }
+
+    private filterByNameAndTag(): void {
+        this.filteredPolicies =
+            this.policies?.filter(
+                (policy) =>
+                    this.isPolicyNameEqualToFilter(policy) &&
+                    this.isTagAssignedToPolicy(policy._tags)
+            ) || [];
+    }
+
+    private handleTagsUpdate(): void {
+        this.tagsService.tagsUpdated$.subscribe({
+            next: () => this.loadAllPolicy(),
+        });
+    }
+
+    private isPolicyNameEqualToFilter(policy: any): boolean {
+        return policy.name
+            .toLowerCase()
+            .includes(this.filters.policyName.toLowerCase());
+    }
+
+    private isTagAssignedToPolicy(_tags: any): boolean {
+        return (
+            _tags?.tags.filter((tag: any) =>
+                tag.name.toLowerCase().includes(this.filters.tag.toLowerCase())
+            ).length > 0
+        );
+    }
+
+    private get filters(): { policyName: string; tag: string } {
+        return {
+            policyName: this.filtersForm.value?.policyName?.trim(),
+            tag: this.filtersForm.value?.tag,
+        };
+    }
+
+    get isFilterButtonDisabled(): boolean {
+        return (
+            this.filters.policyName.length === 0 &&
+            !this.filters.tag
+        );
+    }
+
+    get policiesList(): any[] {
+        return this.filteredPolicies.length > 0
+            ? this.filteredPolicies
+            : this.policies || [];
+    }
+
+    get hasPolicies(): boolean {
+        return this.policiesList.length > 0;
+    }
+
+    get hasTagOptions(): boolean {
+        return this.tagOptions.length > 0;
+    }
+
+    public searchPolicy(policyId: any) {
+        this.loading = true;
+        this.analyticsService.searchPolicies({ policyId }).subscribe((data) => {
+            this.loading = false;
+            if (!data || !data.result) {
+                return;
+            }
+            const { target, result } = data;
+            const list = result.sort((a: any, b: any) => a.rate > b.rate ? -1 : 1);
+            const policy = target;
+            this.dialog.open(SearchPolicyDialog, {
+                panelClass: 'g-dialog',
+                disableClose: true,
+                autoFocus: false,
+                data: {
+                    header: 'Result',
+                    policy,
+                    policyId,
+                    list
+                }
+            });
+        }, ({ message }) => {
+            this.loading = false;
+            console.error(message);
+        });
     }
 }

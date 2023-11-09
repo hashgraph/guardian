@@ -1,0 +1,70 @@
+name: Generate Documentation
+on:
+  workflow_dispatch:
+    description: 'Manual run'
+  push:
+    branches-ignore:
+      - 'dependabot/**'
+      - 'main'
+
+jobs:
+  runService:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        mongodb-version: [ 4.4 ]
+    steps:
+      - uses: actions/checkout@v1
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Start NatsMQ
+        uses: onichandame/nats-action@master
+        with:
+          port: "4222"
+      - name: Config Repo
+        run: |
+          git config --global user.name "envision-ci-agent"
+          git config --global user.email "envision-ci-agent@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.DOC_UPDATE_API_KEY }}@github.com/$GITHUB_REPOSITORY
+          git checkout "${GITHUB_REF:11}"
+      - name: Start MongoDB
+        uses: supercharge/mongodb-github-action@1.7.0
+        with:
+          mongodb-version: ${{ matrix.mongodb-version }}
+      - name: Build
+        run: |
+          yarn
+          pushd interfaces
+          yarn run build
+          popd
+          pushd common
+          yarn run build
+          popd
+          pushd api-gateway
+          yarn run build
+          popd
+          pushd analytics-service
+          yarn run build
+          popd
+        env:
+          CI: true
+      - name: Run service
+        run: |
+          pushd api-gateway
+          yarn start &
+          popd
+          pushd analytics-service
+          yarn start &
+          popd
+          sleep 30
+      - name: Download file
+        run: |
+          rm -fv swagger.yaml
+          rm -fv swagger-analytics.yaml
+          curl -o swagger.yaml http://localhost:3002/api-docs-yaml
+          curl -o swagger-analytics.yaml http://localhost:3020/api-docs-yaml
+          git add swagger.yaml
+          git add swagger-analytics.yaml
+          git commit -m "[skip ci] Add swagger.yaml" && git push || exit 0

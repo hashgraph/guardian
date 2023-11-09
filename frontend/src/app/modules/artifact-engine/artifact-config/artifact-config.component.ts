@@ -9,6 +9,7 @@ import { ProfileService } from 'src/app/services/profile.service';
 import { ConfirmationDialogComponent } from 'src/app/modules/common/confirmation-dialog/confirmation-dialog.component';
 import { ArtifactService } from 'src/app/services/artifact.service';
 import { ArtifactImportDialog } from '../artifact-import-dialog/artifact-import-dialog.component';
+import { ToolsService } from 'src/app/services/tools.service';
 
 /**
  * Page for creating, editing, importing and exporting schemas.
@@ -19,12 +20,12 @@ import { ArtifactImportDialog } from '../artifact-import-dialog/artifact-import-
     styleUrls: ['./artifact-config.component.css']
 })
 export class ArtifactConfigComponent implements OnInit {
-    loading: boolean = true;
-    isConfirmed: boolean = false;
-    artifacts: any[] = [];
-    artifactsCount: any;
-    columns: string[] = [];
-    policyArtifactColumns: string[] = [
+    public loading: boolean = true;
+    public isConfirmed: boolean = false;
+    public artifacts: any[] = [];
+    public artifactsCount: any;
+    public columns: string[] = [];
+    public policyArtifactColumns: string[] = [
         'uuid',
         'policy',
         'name',
@@ -32,64 +33,126 @@ export class ArtifactConfigComponent implements OnInit {
         'extention',
         'delete'
     ];
-    policies: any[] | null;
-    currentPolicyId: any = '';
-    pageIndex: number;
-    pageSize: number;
-    policyNameById: any = {};
+    public policies: any[] | null;
+    public tools: any[] | null;
+    public draftPolicies: any[] | null;
+    public draftTools: any[] | null;
+    public policyNameById: any = {};
+    public toolNameById: any = {};
+    public readonlyById: any = {};
+
+    public currentId: any = '';
+    public pageIndex: number;
+    public pageSize: number;
+    public type: string = 'policy';
+
+    public owner: string = '';
+
+    public get isPolicy(): boolean {
+        return this.type === 'policy';
+    }
+
+    public get isTool(): boolean {
+        return this.type === 'tool';
+    }
+
+    public get readonly(): boolean {
+        return this.readonlyById[this.currentId];
+    }
 
     constructor(
         private profileService: ProfileService,
         private policyEngineService: PolicyEngineService,
+        private toolService: ToolsService,
         private route: ActivatedRoute,
         private router: Router,
         public dialog: MatDialog,
         private artifact: ArtifactService) {
         this.policies = null;
+        this.tools = null;
+        this.draftPolicies = null;
+        this.draftTools = null;
         this.pageIndex = 0;
         this.pageSize = 100;
     }
 
     ngOnInit() {
+        const type = this.route.snapshot.queryParams['type'];
+        const toolId = this.route.snapshot.queryParams['toolId'];
         const policyId = this.route.snapshot.queryParams['policyId'];
-        this.currentPolicyId = policyId && policyId != 'all' ? policyId : '';
+        if (policyId) {
+            this.type = 'policy';
+            this.currentId = policyId != 'all' ? policyId : '';
+        } else if (toolId) {
+            this.type = 'tool';
+            this.currentId = toolId != 'all' ? toolId : '';
+        } else {
+            this.type = type || 'policy';
+            this.currentId = '';
+        }
         this.loadProfile()
     }
 
-    loadProfile() {
+    private loadProfile() {
         this.loading = true;
         forkJoin([
             this.profileService.getProfile(),
             this.policyEngineService.all(),
+            this.toolService.page()
         ]).subscribe((value) => {
             this.loading = false;
 
             const profile: IUser | null = value[0];
             const policies: any[] = value[1] || [];
+            const tools: any[] = value[2]?.body || [];
 
             this.isConfirmed = !!(profile && profile.confirmed);
+            this.owner = profile?.did || '';
+
             this.policies = [];
-            for (let i = 0; i < policies.length; i++) {
-                const policy = policies[i];
+            this.draftPolicies = [];
+            for (const policy of policies) {
                 this.policyNameById[policy.id] = policy.name;
                 this.policies.push(policy);
+                if (policy.status === PolicyType.DRAFT) {
+                    this.draftPolicies.push(policy);
+                }
+            }
+            this.tools = [];
+            this.draftTools = [];
+            for (const tool of tools) {
+                this.toolNameById[tool.id] = tool.name;
+                this.tools.push(tool);
+                if (
+                    tool.creator === this.owner &&
+                    tool.status !== 'PUBLISHED'
+                ) {
+                    this.readonlyById[tool.id] = false;
+                    this.draftTools.push(tool);
+                } else {
+                    this.readonlyById[tool.id] = true;
+                }
             }
 
             this.pageIndex = 0;
             this.pageSize = 100;
             this.loadArtifacts();
-        }, (error) => {
+        }, ({ message }) => {
             this.loading = false;
-            console.error(error);
+            console.error(message);
         });
     }
 
-    loadArtifacts() {
+    private loadArtifacts() {
         this.loading = true;
-        const request =
-            this.artifact.getArtifacts(this.currentPolicyId, this.pageIndex, this.pageSize);
+
         this.columns = this.policyArtifactColumns;
-        request.subscribe((artifactResponse: HttpResponse<any[]>) => {
+        this.artifact.getArtifacts(
+            this.currentId,
+            this.type,
+            this.pageIndex,
+            this.pageSize
+        ).subscribe((artifactResponse: HttpResponse<any[]>) => {
             this.artifacts = artifactResponse.body?.map(item => {
                 const policy = this.policies?.find(policy => policy.id === item.policyId)
                 return Object.assign(item, {
@@ -106,17 +169,59 @@ export class ArtifactConfigComponent implements OnInit {
         });
     }
 
-    onFilter() {
+    public onChangeType(event: any): void {
         this.pageIndex = 0;
-        this.router.navigate(['/artifacts'], {
-            queryParams: {
-                policyId: this.currentPolicyId ? this.currentPolicyId : 'all'
-            }
-        });
+        if (this.type === 'policy') {
+            this.router.navigate(['/artifacts'], {
+                queryParams: {
+                    type: this.type,
+                    policyId: 'all'
+                }
+            });
+        } else if (this.type === 'tool') {
+            this.router.navigate(['/artifacts'], {
+                queryParams: {
+                    type: 'tool',
+                    toolId: 'all'
+                }
+            });
+        } else {
+            this.router.navigate(['/artifacts'], {
+                queryParams: {
+                    policyId: 'all'
+                }
+            });
+        }
         this.loadArtifacts();
     }
 
-    onPage(event: any) {
+    public onFilter() {
+        this.pageIndex = 0;
+        if (this.type === 'policy') {
+            this.router.navigate(['/artifacts'], {
+                queryParams: {
+                    type: 'policy',
+                    policyId: this.currentId ? this.currentId : 'all'
+                }
+            });
+        } else if (this.type === 'tool') {
+            this.router.navigate(['/artifacts'], {
+                queryParams: {
+                    type: 'tool',
+                    toolId: this.currentId ? this.currentId : 'all'
+                }
+            });
+        } else {
+            this.router.navigate(['/artifacts'], {
+                queryParams: {
+                    policyId: this.currentId ? this.currentId : 'all'
+                }
+            });
+        }
+        this.loadArtifacts();
+    }
+
+    public onPage(event: any) {
         if (this.pageSize != event.pageSize) {
             this.pageIndex = 0;
             this.pageSize = event.pageSize;
@@ -127,12 +232,13 @@ export class ArtifactConfigComponent implements OnInit {
         this.loadArtifacts();
     }
 
-    deleteArtifact(element: any) {
+    public deleteArtifact(element: any) {
         const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
             data: {
                 dialogTitle: 'Delete artifact',
                 dialogText: 'Are you sure to delete artifact?'
             },
+            disableClose: true,
             autoFocus: false
         });
         dialogRef.afterClosed().subscribe((result) => {
@@ -141,10 +247,7 @@ export class ArtifactConfigComponent implements OnInit {
             }
 
             this.loading = true;
-            const request =
-                this.artifact.deleteArtifact(element.id);
-
-            request.subscribe((data: any) => {
+            this.artifact.deleteArtifact(element.id).subscribe((data: any) => {
                 this.loadArtifacts();
             }, (e) => {
                 this.loading = false;
@@ -152,20 +255,22 @@ export class ArtifactConfigComponent implements OnInit {
         });
     }
 
-    importArtifacts() {
+    public importArtifacts() {
         const dialogRef = this.dialog.open(ArtifactImportDialog, {
             data: {
-                policyId: this.currentPolicyId,
-                policies: this.policies
-            }
+                type: this.type,
+                currentId: this.currentId,
+                policies: this.draftPolicies,
+                tools: this.draftTools
+            },
+            disableClose: true,
         });
-
         dialogRef.afterClosed().subscribe((result) => {
             if (!result) {
                 return;
             }
             this.loading = true;
-            this.artifact.addArtifacts(result.files, result.policyId)
+            this.artifact.addArtifacts(result.files, result.currentId)
                 .subscribe((res) => this.loadArtifacts(), (err) => this.loading = false);
         });
     }

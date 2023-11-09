@@ -13,7 +13,15 @@ export const SchemaFields = [
     'schema',
     'inputSchema',
     'outputSchema',
-    'presetSchema'
+    'presetSchema',
+    'baseSchema'
+];
+
+/**
+ * Token fields array
+ */
+export const TokenFields = [
+    'tokenId'
 ];
 
 /**
@@ -103,6 +111,17 @@ export function replaceAllVariables(
                 }
             }
         }
+        if (
+            blockConfig.blockType === 'tool' &&
+            blockConfig.hasOwnProperty('variables') &&
+            Array.isArray(blockConfig.variables)
+        ) {
+            for (const variable of blockConfig.variables) {
+                if (variable.type === type && blockConfig[variable.name] === oldValue) {
+                    blockConfig[variable.name] = newValue;
+                }
+            }
+        }
         if (blockConfig.hasOwnProperty('children')) {
             for (const child of blockConfig.children) {
                 finder(child, type);
@@ -145,7 +164,7 @@ export function getVCField(vcDocument: IVC, name: string): any {
  * Get VC issuer
  * @param vcDocument
  */
-export function getVCIssuer(vcDocument: IVCDocument | IVCDocument): string {
+export function getVCIssuer(vcDocument: IVCDocument): string {
     if (vcDocument && vcDocument.document) {
         if (typeof vcDocument.document.issuer === 'string') {
             return vcDocument.document.issuer;
@@ -270,4 +289,16 @@ export function replaceArtifactProperties(obj: any, property: any, artifactsMapp
             replaceArtifactProperties(child, property, artifactsMapping);
         }
     }
+}
+
+export const generateNumberFromString = (inputString) => {
+    const base = 31; // Prime number for better distribution (you can use other primes)
+    let hash = 0;
+
+    for (let i = 0; i < inputString.length; i++) {
+        const char = inputString.charCodeAt(i);
+        hash = (hash * base + char) % Number.MAX_SAFE_INTEGER;
+    }
+
+    return hash;
 }

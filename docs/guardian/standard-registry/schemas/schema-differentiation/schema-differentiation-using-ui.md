@@ -6,7 +6,7 @@ We can compare two schemas by following some steps as follows:
 
 We click on **Compare** button present in Schemas tab as shown below:
 
-<figure><img src="../../../../.gitbook/assets/image (10) (1) (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (10) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ## 2. Comparison View
 
@@ -25,17 +25,17 @@ We click on **Compare** button present in Schemas tab as shown below:
 
 2\. **Schema Fields** – comparison results of the schema fields.
 
-<figure><img src="../../../../.gitbook/assets/image (1) (1) (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (1) (8).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../.gitbook/assets/image (24) (2) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (24) (1).png" alt=""><figcaption></figcaption></figure>
 
 **Display settings** _–_ description and show/hide settings for each color/type of difference
 
-| Color          | Purpose                                                                                                                                      |
-| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| Green          | fields are identical                                                                                                                         |
-| Green -  Amber | when fields are embedded schemas, and these schemas are identical. The fields themselves are not different because their UUIDs are different |
-| Amber          | fields are partially equal                                                                                                                   |
-| Red            | fields are absent in the other Policy                                                                                                        |
+| Color         | Purpose                                                                                                                                      |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Green         | fields are identical                                                                                                                         |
+| Green - Amber | when fields are embedded schemas, and these schemas are identical. The fields themselves are not different because their UUIDs are different |
+| Amber         | fields are partially equal                                                                                                                   |
+| Red           | fields are absent in the other Policy                                                                                                        |
 
 Field comparison displays can be unfolded to display a detailed view of the block Properties.

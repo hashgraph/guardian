@@ -11,6 +11,7 @@ moduleAlias.addAliases({
   "@policy-engine": process.cwd() + '/dist' +  "/policy-engine",
   "@hedera-modules": process.cwd() + '/dist' +  "/hedera-modules/index",
   "@document-loader": process.cwd() + '/dist' +  "/document-loader",
+  "@analytics": process.cwd() + '/dist' +  "/analytics",
   "@database-modules": process.cwd() + '/dist' + "/database-modules"
 });
 const rewire = require("rewire");

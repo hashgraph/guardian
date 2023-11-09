@@ -1,3 +1,4 @@
+import { ContractType } from '@guardian/interfaces';
 import { MessageStatus } from './message';
 import { MessageAction } from './message-action';
 import { MessageType } from './message-type';
@@ -157,6 +158,10 @@ export interface SchemaMessageBody extends MessageBody {
      */
     code_version: string;
     /**
+     * Relationships
+     */
+    relationships: string[];
+    /**
      * Document CID
      */
     document_cid: string;
@@ -240,6 +245,10 @@ export interface VcMessageBody extends MessageBody {
      * Document status
      */
     documentStatus: string;
+    /**
+     * Encoded Data
+     */
+    encodedData: boolean;
 }
 
 /**
@@ -388,6 +397,10 @@ export interface ModuleMessageBody extends MessageBody {
      */
     owner: string;
     /**
+     * Topic id
+     */
+    topicId: string;
+    /**
      * CID
      */
     cid: string;
@@ -433,4 +446,85 @@ export interface TagMessageBody extends MessageBody {
      * Date
      */
     date: string;
+}
+
+/**
+ * Role message body
+ */
+export interface RoleMessageBody extends VcMessageBody {
+    /**
+     * Role
+     */
+    role?: string;
+    /**
+     * Group
+     */
+    group?: string;
+}
+
+/**
+ * Tool message body
+ */
+export interface ToolMessageBody extends MessageBody {
+    /**
+     * UUID
+     */
+    uuid: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description: string;
+    /**
+     * Owner
+     */
+    owner: string;
+    /**
+     * Hash
+     */
+    hash: string;
+    /**
+     * Topic id
+     */
+    topicId: string;
+    /**
+     * CID
+     */
+    cid: string;
+    /**
+     * URI
+     */
+    uri: string;
+    /**
+     * Tags topic ID
+     */
+    tagsTopicId: string;
+}
+
+/**
+ * Contract message body
+ */
+export interface ContractMessageBody extends MessageBody {
+    /**
+     * Contract id
+     */
+    contractId: string;
+
+    /**
+     * Contract description
+     */
+    description: string;
+
+    /**
+     * Contract type
+     */
+    contractType: ContractType;
+
+    /**
+     * Owner
+     */
+    owner: string;
 }

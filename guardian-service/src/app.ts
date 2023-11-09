@@ -8,6 +8,7 @@ import { trustChainAPI } from '@api/trust-chain.service';
 import { PolicyEngineService } from '@policy-engine/policy-engine.service';
 import {
     ApplicationState,
+    Branding,
     COMMON_CONNECTION_CONFIG,
     Contract,
     DataBaseHelper,
@@ -23,6 +24,7 @@ import {
     Migration,
     OldSecretManager,
     Policy,
+    RetirePool,
     RetireRequest,
     Schema,
     SecretManager,
@@ -36,6 +38,7 @@ import {
     ValidateConfiguration,
     VcDocument,
     VpDocument,
+    WiperRequest,
     Workers
 } from '@guardian/common';
 import { ApplicationStates, WorkerTaskType } from '@guardian/interfaces';
@@ -43,18 +46,18 @@ import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
 import { ipfsAPI } from '@api/ipfs.service';
 import { artifactAPI } from '@api/artifact.service';
 import { sendKeysToVault } from '@helpers/send-keys-to-vault';
-import { contractAPI } from '@api/contract.service';
-// import { analyticsAPI } from '@api/analytics.service';
+import { contractAPI, syncRetireContracts, syncWipeContracts } from '@api/contract.service';
 import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels-container';
 import { PolicyEngine } from '@policy-engine/policy-engine';
 import { modulesAPI } from '@api/module.service';
+import { toolsAPI } from '@api/tool.service';
 import { GuardiansService } from '@helpers/guardians';
 import { mapAPI } from '@api/map.service';
-import { GridFSBucket } from 'mongodb';
 import { tagsAPI } from '@api/tag.service';
 import { setDefaultSchema } from '@api/helpers/schema-helper';
 import { demoAPI } from '@api/demo.service';
 import { themeAPI } from '@api/theme.service';
+import { brandingAPI } from '@api/branding.service';
 import { wizardAPI } from '@api/wizard.service';
 import { startMetricsServer } from './utils/metrics';
 import { NestFactory } from '@nestjs/core';
@@ -62,6 +65,9 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import process from 'process';
 import { AppModule } from './app.module';
 import { analyticsAPI } from '@api/analytics.service';
+import { GridFSBucket } from 'mongodb';
+import { suggestionsAPI } from '@api/suggestions.service';
+import { SynchronizationTask } from '@helpers/synchronization-task';
 
 export const obj = {};
 
@@ -82,28 +88,28 @@ Promise.all([
         'v2-7-0',
         'v2-9-0',
         'v2-11-0',
-        'v2-12-0'
+        'v2-12-0',
+        'v2-13-0',
+        'v2-16-0'
     ]),
     MessageBrokerChannel.connect('GUARDIANS_SERVICE'),
-    NestFactory.createMicroservice<MicroserviceOptions>(AppModule,{
+    NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
         transport: Transport.NATS,
         options: {
+            queue: 'guardian-service',
             name: `${process.env.SERVICE_CHANNEL}`,
             servers: [
                 `nats://${process.env.MQ_ADDRESS}:4222`
             ]
         },
-    }),
-    MessageBrokerChannel.connect('GUARDIANS_SERVICE')
+    })
 ]).then(async values => {
     const [db, cn, app] = values;
 
     app.listen();
 
     DataBaseHelper.orm = db;
-    DataBaseHelper.gridFS = new GridFSBucket(
-        db.em.getDriver().getConnection().getDb()
-    );
+    DataBaseHelper.gridFS = new GridFSBucket(db.em.getDriver().getConnection().getDb());
     new PolicyServiceChannelsContainer().setConnection(cn);
     new TransactionLogger().initialization(
         cn,
@@ -139,7 +145,10 @@ Promise.all([
     const topicRepository = new DataBaseHelper(Topic);
     const policyRepository = new DataBaseHelper(Policy);
     const contractRepository = new DataBaseHelper(Contract);
+    const wipeRequestRepository = new DataBaseHelper(WiperRequest);
+    const retirePoolRepository = new DataBaseHelper(RetirePool);
     const retireRequestRepository = new DataBaseHelper(RetireRequest);
+    const brandingRepository = new DataBaseHelper(Branding);
 
     try {
         await configAPI(settingsRepository, topicRepository);
@@ -151,13 +160,21 @@ Promise.all([
         await demoAPI(settingsRepository);
         await trustChainAPI(didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
         await artifactAPI();
-        await contractAPI(contractRepository, retireRequestRepository);
+        await contractAPI(contractRepository,
+            wipeRequestRepository,
+            retirePoolRepository,
+            retireRequestRepository,
+            vcDocumentRepository
+        );
         await modulesAPI();
+        await toolsAPI();
         await tagsAPI();
         await analyticsAPI();
         await mapAPI();
         await themeAPI();
         await wizardAPI();
+        await brandingAPI(brandingRepository);
+        await suggestionsAPI()
     } catch (error) {
         console.error(error.message);
         process.exit(0);
@@ -166,7 +183,6 @@ Promise.all([
     Environment.setLocalNodeProtocol(process.env.LOCALNODE_PROTOCOL);
     Environment.setLocalNodeAddress(process.env.LOCALNODE_ADDRESS);
     Environment.setNetwork(process.env.HEDERA_NET);
-    console.log(Environment);
     if (process.env.HEDERA_CUSTOM_NODES) {
         try {
             const nodes = JSON.parse(process.env.HEDERA_CUSTOM_NODES);
@@ -313,6 +329,37 @@ Promise.all([
         }, 1000)
     });
     await validator.validate();
+
+    const workers = new Workers();
+    const users = new Users();
+    const retireSync = new SynchronizationTask(
+        'retire-sync',
+        syncRetireContracts.bind(
+            {},
+            contractRepository,
+            retirePoolRepository,
+            retireRequestRepository,
+            workers,
+            users
+        ),
+        process.env.RETIRE_CONTRACT_SYNC_MASK || '* * * * *',
+        channel
+    );
+    retireSync.start();
+    const wipeSync = new SynchronizationTask(
+        'wipe-sync',
+        syncWipeContracts.bind(
+            {},
+            contractRepository,
+            wipeRequestRepository,
+            retirePoolRepository,
+            workers,
+            users
+        ),
+        process.env.WIPE_CONTRACT_SYNC_MASK || '* * * * *',
+        channel
+    );
+    wipeSync.start();
 
     startMetricsServer();
 }, (reason) => {

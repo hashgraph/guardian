@@ -31,6 +31,11 @@ export class ModuleMessage extends Message {
      * Owner
      */
     public owner: string;
+    /**
+     * Module topic ID
+     * @private
+     */
+    public moduleTopicId: string;
 
     constructor(type: MessageType.Module, action: MessageAction) {
         super(action, type);
@@ -49,6 +54,7 @@ export class ModuleMessage extends Message {
         this.description = model.description;
         this.owner = model.owner;
         this.document = zip;
+        this.moduleTopicId = model.topicId;
     }
 
     /**
@@ -72,6 +78,7 @@ export class ModuleMessage extends Message {
             name: this.name,
             description: this.description,
             owner: this.owner,
+            topicId: this.moduleTopicId?.toString(),
             cid: this.getDocumentUrl(UrlType.cid),
             uri: this.getDocumentUrl(UrlType.url)
         }
@@ -131,6 +138,8 @@ export class ModuleMessage extends Message {
         message.uuid = json.uuid;
         message.name = json.name;
         message.description = json.description;
+        message.owner = json.owner;
+        message.moduleTopicId = json.topicId;
 
         if (json.cid) {
             const urls = [{
@@ -165,5 +174,26 @@ export class ModuleMessage extends Message {
      */
     public getDocumentUrl(type: UrlType): string | null {
         return this.getUrlValue(0, type);
+    }
+
+    /**
+     * To JSON
+     */
+    public override toJson(): any {
+        const result = super.toJson();
+        result.uuid = this.uuid;
+        result.name = this.name;
+        result.description = this.description;
+        result.owner = this.owner;
+        result.document = this.document;
+        result.moduleTopicId = this.moduleTopicId;
+        return result;
+    }
+
+    /**
+     * Get User DID
+     */
+    public override getOwner(): string {
+        return this.owner;
     }
 }

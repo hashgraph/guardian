@@ -19,21 +19,14 @@ services:
       - mongo
 
   ipfs-node:
-    image: ipfs/kubo:v0.17.0
+    image: ipfs/kubo:v0.22.0
     ports:
       - "5001:5001"
-      - "5002:5002"
       - "4001:4001"
-      - "4002:4002"
       - "8080:8080"
-      - "8081:8081"
-
-  api-docs:
-    build:
-      context: .
-      dockerfile: ./api-docs/Dockerfile
-    expose:
-      - 3001
+    volumes:
+      - ./runtime-data/ipfs/staging:/export:rw
+      - ./runtime-data/ipfs/data:/data/ipfs:rw
 
   message-broker:
     image: nats:2.9.8
@@ -52,13 +45,24 @@ services:
     depends_on:
       - message-broker
 
+  notification-service:
+    build:
+      context: .
+      dockerfile: ./notification-service/Dockerfile
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
+    depends_on:
+      - message-broker
+
   worker-service-1:
     build:
       context: .
       dockerfile: ./worker-service/Dockerfile
     depends_on:
-      - ipfs-node
-      - auth-service
+      ipfs-node:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
     env_file:
       - ./worker-service/.env.docker
     environment:
@@ -72,8 +76,10 @@ services:
       context: .
       dockerfile: ./worker-service/Dockerfile
     depends_on:
-      - ipfs-node
-      - auth-service
+      ipfs-node:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
     env_file:
       - ./worker-service/.env.docker
     environment:
@@ -171,7 +177,6 @@ services:
       - guardian-service
       - auth-service
       - api-gateway
-      - api-docs
       - mrv-sender
       - mongo-express
 volumes:

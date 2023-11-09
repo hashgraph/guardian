@@ -2,16 +2,17 @@
     <div *ngIf="loading" class="loading">
         <mat-spinner></mat-spinner>
     </div>
-    <div *ngIf="loading && taskId" class="loading">
-        <async-progress class="loading-progress" [taskId]="taskId" [expected]="expectedTaskMessages"
-            (error)="onAsyncError($event)" (completed)="onAsyncCompleted()"></async-progress>
-    </div>
 
     <div *ngIf="!isModuleValid" class="not-exist">
-        Policy doesn't exist
+        Component doesn't exist
     </div>
 
     <policy-settings *ngIf="openSettings" (update)="onChangeSettings($event)"></policy-settings>
+    <search-blocks 
+        *ngIf="blockSearchData" 
+        class="policy-configuration" 
+        [value]="blockSearchData" 
+        (action)="onSearchAction($event)"></search-blocks>
 
     <div *ngIf="isModuleValid" class="policy-configuration" [attr.readonly]="readonly">
         <div class="top-toolbar">
@@ -33,7 +34,7 @@
 
                 <div class="delimiter"></div>
 
-                <div *ngIf="policyModel.isDraft" class="top-toolbar-group all-status" [matMenuTriggerFor]="publishMenu">
+                <div *ngIf="policyTemplate.isDraft" class="top-toolbar-group all-status" [matMenuTriggerFor]="publishMenu">
                     <mat-icon class="edit-color">edit</mat-icon>
                     <span class="edit-color">Draft</span>
                     <div class="expand-group">
@@ -41,7 +42,7 @@
                     </div>
                 </div>
 
-                <div *ngIf="policyModel.isDryRun" class="top-toolbar-group all-status" style="width: 60px"
+                <div *ngIf="policyTemplate.isDryRun" class="top-toolbar-group all-status" style="width: 60px"
                     [matMenuTriggerFor]="dryRunMenu">
                     <mat-icon class="dry-run-color">build</mat-icon>
                     <span class="dry-run-color">
@@ -52,21 +53,21 @@
                     </div>
                 </div>
 
-                <div *ngIf="policyModel.isPublished" class="top-toolbar-btn top-toolbar-label">
+                <div *ngIf="policyTemplate.isPublished" class="top-toolbar-btn top-toolbar-label">
                     <mat-icon class="publish-color">public</mat-icon>
                     <span class="publish-color">Published</span>
                 </div>
 
                 <div class="delimiter"></div>
 
-                <div *ngIf="policyModel.isDraft" class="top-toolbar-btn all-status" (click)="validationPolicy()"
+                <div *ngIf="policyTemplate.isDraft" class="top-toolbar-btn all-status" (click)="validationPolicy()"
                     title="Validation Policy" [attr.errors-count]="errorsCount" [attr.readonly]="!isTree">
                     <mat-icon>task_alt</mat-icon>
                     <span>Validation</span>
                     <div *ngIf="errorsCount>0" class="error-count">{{errorsCount}}</div>
                 </div>
 
-                <div *ngIf="policyModel.isDryRun || policyModel.isPublished" class="top-toolbar-btn all-status"
+                <div *ngIf="policyTemplate.isDryRun || policyTemplate.isPublished" class="top-toolbar-btn all-status"
                     [routerLink]="['/policy-viewer', policyId]">
                     <mat-icon>double_arrow</mat-icon>
                     <span>Go</span>
@@ -88,7 +89,7 @@
 
                 <div class="delimiter"></div>
 
-                <div *ngIf="templateModel.isDraft" class="top-toolbar-group all-status"
+                <div *ngIf="moduleTemplate.isDraft" class="top-toolbar-group all-status"
                     [matMenuTriggerFor]="publishMenu2">
                     <mat-icon class="edit-color">edit</mat-icon>
                     <span class="edit-color">Draft</span>
@@ -97,12 +98,49 @@
                     </div>
                 </div>
 
-                <div *ngIf="templateModel.isPublished" class="top-toolbar-btn top-toolbar-label">
+                <div *ngIf="moduleTemplate.isPublished" class="top-toolbar-btn top-toolbar-label">
                     <mat-icon class="publish-color">public</mat-icon>
                     <span class="publish-color">Published</span>
                 </div>
 
-                <div *ngIf="templateModel.isDraft" class="top-toolbar-btn all-status" (click)="validationModule()"
+                <div *ngIf="moduleTemplate.isDraft" class="top-toolbar-btn all-status" (click)="validationModule()"
+                    title="Validation Module" [attr.errors-count]="errorsCount" [attr.readonly]="!isTree">
+                    <mat-icon>task_alt</mat-icon>
+                    <span>Validation</span>
+                    <div *ngIf="errorsCount>0" class="error-count">{{errorsCount}}</div>
+                </div>
+
+                <div class="delimiter"></div>
+            </ng-container>
+
+            <ng-container *ngIf="rootType === 'Tool'">
+                <div class="top-toolbar-btn readonly-status" (click)="updateTool()" title="Save Tool">
+                    <mat-icon>save</mat-icon>
+                    <span>Save</span>
+                </div>
+
+                <div class="top-toolbar-btn readonly-status" (click)="saveAsTool()" title="Save Tool">
+                    <mat-icon>save</mat-icon>
+                    <span>Save As</span>
+                </div>
+
+                <div class="delimiter"></div>
+
+                <div *ngIf="toolTemplate.isDraft" class="top-toolbar-group all-status"
+                    [matMenuTriggerFor]="publishMenu3">
+                    <mat-icon class="edit-color">edit</mat-icon>
+                    <span class="edit-color">Draft</span>
+                    <div class="expand-group">
+                        <mat-icon>arrow_drop_down</mat-icon>
+                    </div>
+                </div>
+
+                <div *ngIf="toolTemplate.isPublished" class="top-toolbar-btn top-toolbar-label">
+                    <mat-icon class="publish-color">public</mat-icon>
+                    <span class="publish-color">Published</span>
+                </div>
+
+                <div *ngIf="toolTemplate.isDraft" class="top-toolbar-btn all-status" (click)="validationTool()"
                     title="Validation Module" [attr.errors-count]="errorsCount" [attr.readonly]="!isTree">
                     <mat-icon>task_alt</mat-icon>
                     <span>Validation</span>
@@ -125,14 +163,18 @@
                         <mat-icon>redo</mat-icon>
                         <span>Redo</span>
                     </div>
-
-                    <div class="top-toolbar-btn all-status copy-blocks-mode" (click)="copyBlocksMode=!copyBlocksMode"
-                        title="Copy Mode" [ngClass]="{'copy-blocks-mode-active': copyBlocksMode}" style="width: 68px">
+                    <div class="top-toolbar-btn" (click)="onSuggestionsClick()"
+                        title="Suggestions" [ngClass]="{'btn-mode-active': isSuggestionsEnabled}">
+                        <mat-icon>assistant</mat-icon>
+                        <span>Suggestions</span>
+                    </div>
+                    <div class="top-toolbar-btn" (click)="copyBlocksMode=!copyBlocksMode"
+                        title="Copy Mode" [ngClass]="{'btn-mode-active': copyBlocksMode}">
                         <mat-icon>content_copy</mat-icon>
                         <span>Copy Mode</span>
                     </div>
 
-                    <div *ngIf="policyModel.isPublishError" class="btn-new-block btn-label">
+                    <div *ngIf="rootTemplate.isPublishError" class="btn-new-block btn-label">
                         <mat-icon style="color: #572424">close</mat-icon>
                         <span style="color: #572424">Not published</span>
                     </div>
@@ -191,6 +233,15 @@
             <div class="delimiter"></div>
 
             <ng-container *ngIf="isTree">
+                <div class="top-toolbar-btn all-status" (click)="onSchemas()" title="Settings">
+                    <mat-icon>dataset</mat-icon>
+                    <span>Schemas</span>
+                </div>
+
+                <div class="delimiter"></div>
+            </ng-container>
+
+            <ng-container *ngIf="isTree">
                 <div class="top-toolbar-group all-status event-color" [matMenuTriggerFor]="eventMenu"
                     style="width: 60px">
                     <mat-icon *ngIf="eventVisible =='All'" class="event-color">flash_on</mat-icon>
@@ -232,29 +283,40 @@
 
         <div class="main-container">
             <div class="left-toolbar">
-
-
                 <div class="pc-tabs">
                     <div class="pc-tabs-headers">
-                        <div class="tab-header" [attr.selected]="options.components" (click)="select('components')">
-                            Components
+                        <div class="tab-header tab-header-min" [attr.selected]="options.components" (click)="select('components')">
+                            <mat-icon class="action-color">article</mat-icon>
+                            <span>Blocks</span>
                         </div>
-                        <div class="tab-header" [attr.selected]="options.library" (click)="select('library')">
-                            Modules
+                        <div class="tab-header tab-header-min" [attr.selected]="options.moduleLibrary" (click)="select('moduleLibrary')">
+                            <mat-icon class="action-color" svgIcon="policy-module"></mat-icon>
+                            <span>Modules</span>
+                        </div>
+                        <div class="tab-header tab-header-min" [attr.selected]="options.toolLibrary" (click)="select('toolLibrary')">
+                            <mat-icon class="action-color tool-icon">handyman</mat-icon>
+                            <span>Tools</span>
                         </div>
                     </div>
 
-                    <div class="pc-tabs-content components-menu" cdkDropList #menuList="cdkDropList"
-                        [cdkDropListConnectedTo]="[dropListConnector.body]" cdkDropListSortingDisabled
-                        [cdkDropListEnterPredicate]="noReturnPredicate" (cdkDropListDropped)="drop($event)">
+                    <div class="pc-tabs-content components-menu" 
+                        cdkDropList 
+                        #menuList="cdkDropList"
+                        [cdkDropListConnectedTo]="[dropListConnector.body]" 
+                        cdkDropListSortingDisabled
+                        [cdkDropListEnterPredicate]="noReturnPredicate" 
+                        (cdkDropListDropped)="drop($event)">
 
-                        <div class="components-container" [attr.readonly]="disableComponentMenu"
-                            [hidden]="!options.components">
+                        <div class="components-container" [hidden]="!options.components">
+                            
                             <div class="components-search">
                                 <input placeholder="Search" [(ngModel)]="search" (input)="onSearch($event)">
                                 <mat-icon class="components-search-icon">search</mat-icon>
                             </div>
-                            <div *ngIf="componentsList.favorites.length" class="components-group"
+                            <div 
+                                *ngIf="componentsList.favorites.length" 
+                                class="components-group"
+                                [attr.readonly]="disableComponentMenu"
                                 [attr.collapsed]="options.favoritesGroup">
                                 <div class="components-group-name" (click)="collapse('favoritesGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
@@ -281,7 +343,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="components-group" [attr.collapsed]="options.uiGroup">
+                            <div class="components-group" [attr.readonly]="disableComponentMenu" [attr.collapsed]="options.uiGroup">
                                 <div class="components-group-name" (click)="collapse('uiGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
@@ -305,7 +367,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="components-group" [attr.collapsed]="options.serverGroup">
+                            <div class="components-group" [attr.readonly]="disableComponentMenu" [attr.collapsed]="options.serverGroup">
                                 <div class="components-group-name" (click)="collapse('serverGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
@@ -329,7 +391,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="components-group" [attr.collapsed]="options.addonsGroup">
+                            <div class="components-group" [attr.readonly]="disableComponentMenu" [attr.collapsed]="options.addonsGroup">
                                 <div class="components-group-name" (click)="collapse('addonsGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
@@ -354,7 +416,7 @@
                                 </div>
                             </div>
                             <div *ngIf="componentsList.unGrouped.length" class="components-group"
-                                [attr.collapsed]="options.unGroup">
+                                [attr.readonly]="disableComponentMenu" [attr.collapsed]="options.unGroup">
                                 <div class="components-group-name" (click)="collapse('unGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
@@ -381,14 +443,16 @@
                             </div>
                         </div>
 
-                        <div class="components-container" [attr.readonly]="disableModuleMenu"
-                            [hidden]="!options.library">
+                        <div class="components-container" [hidden]="!options.moduleLibrary">
                             <div class="components-search">
                                 <input placeholder="Search" [(ngModel)]="searchModule" (input)="onModuleSearch($event)">
                                 <mat-icon class="components-search-icon">search</mat-icon>
                             </div>
-                            <div *ngIf="modulesList.favorites.length" class="components-group"
-                                [attr.collapsed]="options.favoritesModulesGroup">
+                            <div 
+                                *ngIf="modulesList.favorites.length" 
+                                class="components-group"
+                                [attr.collapsed]="options.favoritesModulesGroup" 
+                                [attr.readonly]="disableModuleMenu">
                                 <div class="components-group-name" (click)="collapse('favoritesModulesGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
@@ -423,7 +487,9 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="components-group" [attr.collapsed]="options.defaultModulesGroup">
+                            <div class="components-group" 
+                                [attr.collapsed]="options.defaultModulesGroup" 
+                                [attr.readonly]="disableModuleMenu">
                                 <div class="components-group-name" (click)="collapse('defaultModulesGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
@@ -453,7 +519,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="components-group" [attr.collapsed]="options.customModulesGroup">
+                            <div class="components-group" [attr.collapsed]="options.customModulesGroup" [attr.readonly]="disableModuleMenu">
                                 <div class="components-group-name" (click)="collapse('customModulesGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
@@ -478,8 +544,43 @@
                                             <span class="component-btn-toolbar">
                                                 <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
                                                     (click)="setModuleFavorite($event, item)">star</mat-icon>
-                                                <!-- <mat-icon class="component-btn-delete" [attr.favorite]="item.favorite"
-                                                    (click)="onDeleteModule(item)">delete</mat-icon> -->
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="components-container" [hidden]="!options.toolLibrary">
+                            <div class="components-search">
+                                <input placeholder="Search" [(ngModel)]="searchModule" (input)="onModuleSearch($event)">
+                                <mat-icon class="components-search-icon">search</mat-icon>
+                            </div>
+                            <div class="components-group" [attr.collapsed]="options.customToolsGroup" [attr.readonly]="disableToolMenu">
+                                <div class="components-group-name" (click)="collapse('customToolsGroup')">
+                                    <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
+                                    <mat-icon class="components-group-open">arrow_right</mat-icon>
+                                    <span>Tools ({{modulesList.customTools.length}})</span>
+                                </div>
+                                <div class="components-group-body readonly-status">
+                                    <div class="components-group-item" *ngFor="let item of modulesList.customTools">
+                                        <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
+                                            [attr.block-type]="item.header" (click)="onAddTool(item)">
+                                            <div class="drag-component drag-module">
+                                                <div class="drag-component-icon">
+                                                    <mat-icon class="tool-icon">handyman</mat-icon>
+                                                </div>
+                                                <span class="drag-component-name">{{item.name}}</span>
+                                            </div>
+                                        </div>
+                                        <div class="component-btn" (click)="onAddTool(item)">
+                                            <div class="component-btn-icon">
+                                                <mat-icon class="tool-icon">handyman</mat-icon>
+                                            </div>
+                                            <span>{{item.name}}</span>
+                                            <span class="component-btn-toolbar">
+                                                <!-- <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
+                                                    (click)="setModuleFavorite($event, item)">star</mat-icon> -->
                                             </span>
                                         </div>
                                     </div>
@@ -488,36 +589,48 @@
                         </div>
                     </div>
                 </div>
-
             </div>
             <div class="center-container">
 
-                <div *ngIf="!isTree" class="textarea-code">
-                    <ngx-codemirror [(ngModel)]="code" [options]="codeMirrorOptions" (ngModelChange)="saveState()">
-                    </ngx-codemirror>
-                </div>
                 <div *ngIf="!isTree && errors?.length" class="json-errors">
                     <div *ngFor="let item of errors" class="errors-property">
                         <span>{{item}}</span>
                     </div>
                 </div>
 
-                <div *ngIf="isTree" class="pc-tabs minimized-tabs">
+                <div class="pc-tabs minimized-tabs">
                     <div class="pc-tabs-headers right-menu">
-                        <div *ngIf="rootType ==='Policy'" class="tab-header tab-header-icon"
-                            [attr.selected]="openModule===policyModel" (click)="onOpenRoot(policyModel)"
+                        <div 
+                            *ngIf="rootType ==='Policy'" 
+                            class="tab-header tab-header-icon"
+                            [attr.selected]="openFolder===policyTemplate" 
+                            (click)="onOpenRoot(policyTemplate)"
                             style="width: 100px;margin-right: 6px">
                             <mat-icon class="action-color">article</mat-icon>
                             Policy
                         </div>
-                        <div *ngIf="rootType ==='Module'" class="tab-header tab-header-icon" [attr.selected]="true"
-                            (click)="onOpenRoot(policyModel)" style="width: 100px;margin-right: 6px">
+                        <div 
+                            *ngIf="rootType ==='Module'" 
+                            class="tab-header tab-header-icon" 
+                            [attr.selected]="true"
+                            (click)="onOpenRoot(moduleTemplate)" 
+                            style="width: 100px;margin-right: 6px">
                             <mat-icon class="module-root-icon action-color" svgIcon="policy-module"></mat-icon>
                             Module
                         </div>
+                        <div 
+                            *ngIf="rootType ==='Tool'" 
+                            class="tab-header tab-header-icon" 
+                            [attr.selected]="true"
+                            (click)="onOpenRoot(toolTemplate)" 
+                            style="width: 100px;margin-right: 6px">
+                            <mat-icon class="module-root-icon action-color tool-icon">handyman</mat-icon>
+                            Tool
+                        </div>
+
                         <ng-container *ngIf="allSubModule">
                             <div class="tab-header tab-header-icon" *ngFor="let item of allSubModule"
-                                [attr.selected]="openModule===item" (click)="onOpenModule(item)">
+                                [attr.selected]="openFolder===item" (click)="onOpenModule(item)">
                                 <mat-icon class="module-root-icon edit-color" svgIcon="policy-module"></mat-icon>
                                 {{item.localTag}}
                             </div>
@@ -526,7 +639,7 @@
                             <div class="theme-legends-icon" (click)="change('legendActive')">
                                 <mat-icon>palette</mat-icon>
                             </div>
-                            <div class="theme-legends-container">
+                            <div *ngIf="isTree" class="theme-legends-container">
                                 <div *ngFor="let rule of theme.rules" class="theme-rule">
                                     <div class="theme-rule-prev" [style]="blockStyle(rule)" theme-block theme-all></div>
                                     <div class="theme-rule-description">
@@ -539,13 +652,45 @@
                                     <div class="theme-rule-description">{{theme.default.description || '-'}}</div>
                                 </div>
                             </div>
+                            <div *ngIf="!isTree" class="theme-legends-container">
+                                <div *ngFor="let syntaxGroup of theme.syntaxGroups" class="theme-rule">
+                                    <div class="theme-rule-syntax-prev" style="padding: 5px 10px;">
+                                        <div style="width: 100%; height: 100%;" [ngStyle]="{ 'background-color': syntaxGroup.color}"></div>
+                                    </div>
+                                    <div class="theme-rule-description">
+                                        {{syntaxGroup.name}}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="pc-tabs-content tree-container">
-                        <policy-tree [module]="openModule" [blocks]="openModule.dataSource" [errors]="errorsMap"
-                            [readonly]="readonly" [active]="eventVisible" [connector]="dropListConnector"
-                            (open)="onOpenModule($event)" (delete)="onDelete($event)" (select)="onSelect($event)"
-                            (reorder)="onReorder($event)" (init)="onInitViewer($event)">
+                    <div class="pc-tabs-content" [ngClass]="{
+                        'tree-container': isTree
+                    }">
+                        <div *ngIf="!isTree" class="textarea-code">
+                            <ngx-codemirror [(ngModel)]="code" [options]="codeMirrorOptions" (ngModelChange)="saveState()">
+                            </ngx-codemirror>
+                        </div>
+                        <policy-tree 
+                            *ngIf="isTree" 
+                            [module]="openFolder" 
+                            [blocks]="openFolder.dataSource" 
+                            [errors]="errorsMap"
+                            [readonly]="readonly" 
+                            [active]="eventVisible" 
+                            [connector]="dropListConnector" 
+                            [suggestions]="isSuggestionsEnabled"
+                            [nextBlock]="nextBlock" 
+                            [nestedBlock]="nestedBlock" 
+                            [(currentBlock)]="currentBlock"
+                            (search)="onBlockSearch($event)"
+                            (nested)="addSuggestionsBlock($event, true)" 
+                            (next)="addSuggestionsBlock($event)"
+                            (open)="onOpenModule($event)" 
+                            (delete)="onDelete($event)" 
+                            (select)="onSelect($event)"
+                            (reorder)="onReorder($event)" 
+                            (init)="onInitViewer($event)">
                         </policy-tree>
                     </div>
                 </div>
@@ -556,7 +701,7 @@
                 <div class="right-top-toolbar" [attr.collapse-top]="options.rightTopMenu"
                     [attr.collapse-bottom]="options.rightBottomMenu">
 
-                    <div *ngIf="openType === 'Root' && rootType ==='Policy'" class="pc-tabs">
+                    <div *ngIf="policyDescription" class="pc-tabs">
                         <div class="pc-tabs-headers">
                             <div class="tab-header" [attr.selected]="options.description"
                                 (click)="select('description')">
@@ -582,29 +727,44 @@
                         </div>
                         <div class="pc-tabs-content" [attr.readonly]="!isTree">
                             <div class="prop-container" [hidden]="!options.description">
-                                <policy-properties class="readonly-status" [policy]="policyModel" [readonly]="readonly"
-                                    type="Main"></policy-properties>
+                                <policy-properties 
+                                    class="readonly-status"
+                                    type="Main" 
+                                    [policy]="policyTemplate" 
+                                    [readonly]="readonly"></policy-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.roles">
-                                <policy-properties class="readonly-status" [policy]="policyModel" [readonly]="readonly"
-                                    type="Role"></policy-properties>
+                                <policy-properties 
+                                    class="readonly-status"
+                                    type="Role" 
+                                    [policy]="policyTemplate" 
+                                    [readonly]="readonly"></policy-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.groups">
-                                <policy-properties class="readonly-status" [policy]="policyModel" [readonly]="readonly"
-                                    type="Groups"></policy-properties>
+                                <policy-properties 
+                                    class="readonly-status" 
+                                    type="Groups"
+                                    [policy]="policyTemplate" 
+                                    [readonly]="readonly"></policy-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.topics">
-                                <policy-properties class="readonly-status" [policy]="policyModel" [readonly]="readonly"
-                                    type="Topics"></policy-properties>
+                                <policy-properties 
+                                    class="readonly-status"
+                                    type="Topics" 
+                                    [policy]="policyTemplate" 
+                                    [readonly]="readonly"></policy-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.tokens">
-                                <policy-properties class="readonly-status" [policy]="policyModel" [readonly]="readonly"
-                                    type="Tokens"></policy-properties>
+                                <policy-properties 
+                                    class="readonly-status"
+                                    type="Tokens" 
+                                    [policy]="policyTemplate" 
+                                    [readonly]="readonly"></policy-properties>
                             </div>
                         </div>
                     </div>
 
-                    <div *ngIf="openType === 'Sub' || rootType ==='Module'" class="pc-tabs">
+                    <div *ngIf="moduleDescription" class="pc-tabs">
                         <div class="pc-tabs-headers">
                             <div class="tab-header" [attr.selected]="options.descriptionModule"
                                 (click)="select('descriptionModule')">
@@ -630,27 +790,41 @@
                         </div>
                         <div class="pc-tabs-content" [attr.readonly]="!isTree">
                             <div class="prop-container" [hidden]="!options.descriptionModule">
-                                <module-properties class="readonly-status" [module]="openModule" [readonly]="readonly"
-                                    type="Main" [errors]="errorsMap[openModule.id]"></module-properties>
+                                <module-properties class="readonly-status" 
+                                    type="Main"
+                                    [module]="openFolder" 
+                                    [readonly]="readonly"
+                                    [errors]="errorsMap[openFolder.id]"></module-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.inputsModule">
-                                <module-properties class="readonly-status" [module]="openModule" [readonly]="readonly"
-                                    type="Inputs" [errors]="errorsMap[openModule.id]"></module-properties>
+                                <module-properties class="readonly-status" 
+                                    type="Inputs" 
+                                    [module]="openFolder" 
+                                    [readonly]="readonly"
+                                    [errors]="errorsMap[openFolder.id]"></module-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.outputsModule">
-                                <module-properties class="readonly-status" [module]="openModule" [readonly]="readonly"
-                                    type="Outputs" [errors]="errorsMap[openModule.id]"></module-properties>
+                                <module-properties class="readonly-status" 
+                                    type="Outputs"
+                                    [module]="openFolder" 
+                                    [readonly]="readonly"
+                                    [errors]="errorsMap[openFolder.id]"></module-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.variablesModule">
-                                <module-properties class="readonly-status" [module]="openModule" [readonly]="readonly"
-                                    type="Variables" [errors]="errorsMap[openModule.id]"></module-properties>
+                                <module-properties class="readonly-status" 
+                                    type="Variables" 
+                                    [module]="openFolder" 
+                                    [readonly]="readonly"
+                                    [errors]="errorsMap[openFolder.id]"></module-properties>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="right-bottom-toolbar" *ngIf="currentBlock && !isRootModule"
-                    [attr.collapse-top]="options.rightTopMenu" [attr.collapse-bottom]="options.rightBottomMenu">
+                <div class="right-bottom-toolbar" 
+                    *ngIf="currentBlock && !isRootModule"
+                    [attr.collapse-top]="options.rightTopMenu" 
+                    [attr.collapse-bottom]="options.rightBottomMenu">
 
                     <div class="pc-tabs">
                         <div class="pc-tabs-headers">
@@ -679,27 +853,39 @@
                                         <span>{{item}}</span>
                                     </div>
                                 </div>
-                                <common-properties class="readonly-status" [module]="openModule" [block]="currentBlock"
-                                    [readonly]="readonly" type="Common"></common-properties>
+                                <common-properties class="readonly-status" 
+                                    [module]="openFolder" 
+                                    [block]="currentBlock"
+                                    [readonly]="readonly" 
+                                    type="Common"></common-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.events">
-                                <common-properties class="readonly-status" [module]="openModule" [block]="currentBlock"
-                                    [readonly]="readonly" type="Events"></common-properties>
+                                <common-properties class="readonly-status" 
+                                    [module]="openFolder" 
+                                    [block]="currentBlock"
+                                    [readonly]="readonly" 
+                                    type="Events"></common-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.artifacts">
-                                <artifact-properties class="readonly-status" [readonly]="readonly" [policyId]="policyId"
+                                <artifact-properties class="readonly-status" 
+                                    [readonly]="readonly" 
+                                    [rootId]="rootId"
                                     [block]="currentBlock"></artifact-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.json">
-                                <json-properties class="readonly-status" *ngIf="options.json" [block]="currentBlock"
+                                <json-properties 
+                                    *ngIf="options.json" 
+                                    [block]="currentBlock"
                                     [readonly]="readonly"></json-properties>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="right-bottom-toolbar" *ngIf="currentBlock && isRootModule"
-                    [attr.collapse-top]="options.rightTopMenu" [attr.collapse-bottom]="options.rightBottomMenu">
+                <div class="right-bottom-toolbar" 
+                    *ngIf="currentBlock && isRootModule"
+                    [attr.collapse-top]="options.rightTopMenu" 
+                    [attr.collapse-bottom]="options.rightBottomMenu">
 
                     <div class="pc-tabs">
                         <div class="pc-tabs-headers">
@@ -714,7 +900,10 @@
                         </div>
                         <div class="pc-tabs-content">
                             <div class="prop-container readonly-status">
-                                <common-properties [module]="openModule" [block]="currentBlock" [readonly]="readonly"
+                                <common-properties 
+                                    [module]="openFolder" 
+                                    [block]="currentBlock" 
+                                    [readonly]="readonly"
                                     type="Events"></common-properties>
                             </div>
                         </div>
@@ -742,6 +931,14 @@
 
 <mat-menu #publishMenu2="matMenu">
     <div class="toolbar-menu all-status publish-color" (click)="tryPublishModule()"
+        title="Release version into public domain.">
+        <mat-icon class="publish-color">public</mat-icon>
+        <span class="publish-color">Publish</span>
+    </div>
+</mat-menu>
+
+<mat-menu #publishMenu3="matMenu">
+    <div class="toolbar-menu all-status publish-color" (click)="tryPublishTool()"
         title="Release version into public domain.">
         <mat-icon class="publish-color">public</mat-icon>
         <span class="publish-color">Publish</span>

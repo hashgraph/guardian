@@ -74,18 +74,18 @@ export async function demoAPI(
     });
 
     ApiResponse(MessageAPI.GENERATE_DEMO_KEY_ASYNC, async (msg) => {
-        const { role, taskId } = msg;
-        const notifier = initNotifier(taskId);
+        const { role, task } = msg;
+        const notifier = await initNotifier(task);
 
         RunFunctionAsync(async () => {
-            const result = await generateDemoKey(role, settingsRepository, emptyNotifier());
+            const result = await generateDemoKey(role, settingsRepository, notifier);
             notifier.result(result);
         }, async (error) => {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             notifier.error(error);
         });
 
-        return new MessageResponse({ taskId });
+        return new MessageResponse(task);
     });
 
     ApiResponse(MessageAPI.GET_USER_ROLES, async (msg) => {

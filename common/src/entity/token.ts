@@ -103,4 +103,10 @@ export class Token extends BaseEntity implements IToken {
      */
     @Property({ nullable: true })
     topicId?: string;
+
+    /**
+     * Wipe contract id
+     */
+    @Property({ nullable: true })
+    wipeContractId?: string;
 }

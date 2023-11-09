@@ -1,4 +1,4 @@
-import { GenerateUUIDv4, Schema } from '@guardian/interfaces';
+import { CheckResult, GenerateUUIDv4, Schema, SchemaHelper, removeObjectProperties } from '@guardian/interfaces';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { BlockActionError } from '@policy-engine/errors';
 import { ActionCallback, StateField } from '@policy-engine/helpers/decorators';
@@ -59,7 +59,31 @@ export class RequestVcDocumentBlock {
      * Schema
      * @private
      */
-    private schema: Schema | null;
+    private _schema: Schema;
+
+    /**
+     * Before init callback
+     */
+    public async beforeInit(): Promise<void> {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
+        const schemaIRI = ref.options.schema;
+        if (!schemaIRI) {
+            throw new BlockActionError(
+                `Schema IRI is empty`,
+                ref.blockType,
+                ref.uuid
+            );
+        }
+        const schema = await PolicyUtils.loadSchemaByID(ref, schemaIRI);
+        if (!schema) {
+            throw new BlockActionError(
+                `Can not find schema with IRI: ${schemaIRI}`,
+                ref.blockType,
+                ref.uuid
+            );
+        }
+        this._schema = new Schema(schema);
+    }
 
     /**
      * Get Validators
@@ -80,7 +104,10 @@ export class RequestVcDocumentBlock {
      * @param user
      * @param state
      */
-    protected async validateDocuments(user: IPolicyUser, state: any): Promise<string> {
+    protected async validateDocuments(
+        user: IPolicyUser,
+        state: IPolicyEventState
+    ): Promise<string> {
         const validators = this.getValidators();
         for (const validator of validators) {
             const error = await validator.run({
@@ -103,36 +130,19 @@ export class RequestVcDocumentBlock {
     }
 
     /**
-     * Get Schema
-     */
-    async getSchema(): Promise<Schema> {
-        if (!this.schema) {
-            const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
-            const schema = await ref.databaseServer.getSchemaByIRI(ref.options.schema, ref.topicId);
-            this.schema = schema ? new Schema(schema) : null;
-            if (!this.schema) {
-                throw new BlockActionError('Waiting for schema', ref.blockType, ref.uuid);
-            }
-        }
-        return this.schema;
-    }
-
-    /**
      * Get block data
      * @param user
      */
     async getData(user: IPolicyUser): Promise<any> {
         const options = PolicyComponentsUtils.GetBlockUniqueOptionsObject(this);
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
-
-        const schema = await this.getSchema();
         const sources = await ref.getSources(user);
         const restoreData = this.state[user.id] && this.state[user.id].restoreData;
 
         return {
             id: ref.uuid,
             blockType: ref.blockType,
-            schema,
+            schema: this._schema,
             presetSchema: options.presetSchema,
             presetFields: options.presetFields,
             uiMetaData: options.uiMetaData || {},
@@ -173,43 +183,48 @@ export class RequestVcDocumentBlock {
         }
 
         if (!user.did) {
-            throw new BlockActionError('User have no any did', ref.blockType, ref.uuid);
+            throw new BlockActionError('User have no any did.', ref.blockType, ref.uuid);
         }
 
         try {
-            const hederaAccount = await PolicyUtils.getHederaAccount(ref, user.did);
-
             const document = _data.document;
             const documentRef = await this.getRelationships(ref, _data.ref);
-            await this.checkPreset(ref, document, documentRef);
+            const presetCheck = await this.checkPreset(ref, document, documentRef)
+            if (!presetCheck.valid) {
+                throw new BlockActionError(
+                    JSON.stringify(presetCheck.error),
+                    ref.blockType,
+                    ref.uuid
+                );
+            }
 
-            const credentialSubject = document;
-            const schemaIRI = ref.options.schema;
-            const idType = ref.options.idType;
+            SchemaHelper.updateObjectContext(this._schema, document);
 
-            const schema = await this.getSchema();
-
-            const id = await this.generateId(
-                idType, user, hederaAccount.hederaAccountId, hederaAccount.hederaAccountKey
-            );
             const _vcHelper = new VcHelper();
-
+            const idType = ref.options.idType;
+            const hederaAccount = await PolicyUtils.getHederaAccount(ref, user.did);
+            const id = await this.generateId(
+                idType,
+                user,
+                hederaAccount.hederaAccountId,
+                hederaAccount.hederaAccountKey
+            );
+            const credentialSubject = document;
+            credentialSubject.policyId = ref.policyId;
             if (id) {
                 credentialSubject.id = id;
             }
-
             if (documentRef) {
                 credentialSubject.ref = PolicyUtils.getSubjectId(documentRef);
+                if (!credentialSubject.ref) {
+                    throw new BlockActionError('Reference document not found.', ref.blockType, ref.uuid);
+                }
             }
-
-            credentialSubject.policyId = ref.policyId;
-
             if (ref.dryRun) {
                 _vcHelper.addDryRunContext(credentialSubject);
             }
 
             const res = await _vcHelper.verifySubject(credentialSubject);
-
             if (!res.ok) {
                 throw new BlockActionError(JSON.stringify(res.error), ref.blockType, ref.uuid);
             }
@@ -221,20 +236,24 @@ export class RequestVcDocumentBlock {
                 credentialSubject,
                 groupContext
             );
-            const accounts = PolicyUtils.getHederaAccounts(vc, hederaAccount.hederaAccountId, schema);
-
             let item = PolicyUtils.createVC(ref, user, vc);
+            const accounts = PolicyUtils.getHederaAccounts(
+                vc,
+                hederaAccount.hederaAccountId,
+                this._schema
+            );
+            const schemaIRI = ref.options.schema;
             item.type = schemaIRI;
             item.schema = schemaIRI;
             item.accounts = accounts;
             item = PolicyUtils.setDocumentRef(item, documentRef);
 
-            const state = { data: item };
-
+            const state: IPolicyEventState = { data: item };
             const error = await this.validateDocuments(user, state);
             if (error) {
                 throw new BlockActionError(error, ref.blockType, ref.uuid);
             }
+
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
             ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
@@ -327,20 +346,51 @@ export class RequestVcDocumentBlock {
      * @param document Current document
      * @param documentRef Preset document
      */
-    private async checkPreset(ref: AnyBlockType, document: any, documentRef: VcDocumentCollection) {
-        if (ref.options.presetFields && ref.options.presetFields.length && ref.options.presetSchema) {
-            const readonly = ref.options.presetFields.filter((item: any) => item.readonly && item.value);
-            if (readonly.length && document && documentRef) {
-                const presetDocument = PolicyUtils.getCredentialSubject(documentRef);
-                if (!presetDocument) {
-                    throw new BlockActionError(`Readonly preset fields can not be verified.`, ref.blockType, ref.uuid);
-                }
-                for (const field of readonly) {
-                    if (!deepEqual(presetDocument[field.value], document[field.name])) {
-                        throw new BlockActionError(`Readonly preset field (${field.name}) can not be modified.`, ref.blockType, ref.uuid);
-                    }
+    private async checkPreset(
+        ref: AnyBlockType,
+        document: any,
+        documentRef: VcDocumentCollection
+    ): Promise<CheckResult> {
+        if (
+            ref.options.presetFields &&
+            ref.options.presetFields.length &&
+            ref.options.presetSchema
+        ) {
+            const readonly = ref.options.presetFields.filter(
+                (item: any) => item.readonly && item.value
+            );
+            if (!readonly.length || !document || !documentRef) {
+                return { valid: true };
+            }
+
+            const presetDocument =
+                PolicyUtils.getCredentialSubject(documentRef);
+            if (!presetDocument) {
+                return {
+                    error: 'Readonly preset fields can not be verified.',
+                    valid: false,
+                };
+            }
+
+            const presetDocumentCopy = removeObjectProperties(
+                ['@context'],
+                JSON.parse(JSON.stringify(presetDocument))
+            );
+            for (const field of readonly) {
+                if (
+                    !deepEqual(
+                        document[field.name],
+                        presetDocumentCopy[field.value]
+                    )
+                ) {
+                    return {
+                        error: `Readonly preset field (${field.name}) can not be modified.`,
+                        valid: false,
+                    };
                 }
             }
         }
+
+        return { valid: true };
     }
 }

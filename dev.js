@@ -35,10 +35,12 @@ const fs = require('fs');
         "interfaces",
         "common",
         "logger-service",
+        "notification-service",
         "frontend",
         "auth-service",
         "guardian-service",
         "api-gateway",
+        "analytics-service",
         "mrv-sender",
         "ipfs-client",
         "topic-viewer"

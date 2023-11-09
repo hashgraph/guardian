@@ -16,13 +16,12 @@
         </td>
         <td class="propRowCell cellName">Input Schema</td>
         <td class="propRowCell">
-            <mat-select [(value)]="properties.inputSchema" [disabled]="readonly" (selectionChange)="onSelectInput()">
-                <mat-option *ngFor="let schema of schemas" [value]="schema.value">
-                    {{schema.name}}
-                    <span *ngIf="schema.version"> ({{schema.version}})</span>
-                    <span *ngIf="schema.status"> ({{schema.status}})</span>
-                </mat-option>
-            </mat-select>
+            <select-schema
+                [schemas]="schemas" 
+                [(value)]="properties.inputSchema"
+                [disabled]="readonly" 
+                (change)="onSelectInput()"
+                ></select-schema>
         </td>
     </tr>
     <ng-container *ngIf="properties.inputSchema">
@@ -51,13 +50,12 @@
         </td>
         <td class="propRowCell cellName">Output Schema</td>
         <td class="propRowCell">
-            <mat-select [(value)]="properties.outputSchema" [disabled]="readonly" (selectionChange)="onSelectOutput()">
-                <mat-option *ngFor="let schema of schemas" [value]="schema.value">
-                    {{schema.name}}
-                    <span *ngIf="schema.version"> ({{schema.version}})</span>
-                    <span *ngIf="schema.status"> ({{schema.status}})</span>
-                </mat-option>
-            </mat-select>
+            <select-schema
+                [schemas]="schemas" 
+                [(value)]="properties.outputSchema"
+                [disabled]="readonly" 
+                (change)="onSelectOutput()"
+                ></select-schema>
         </td>
     </tr>
     <ng-container *ngIf="properties.outputSchema">

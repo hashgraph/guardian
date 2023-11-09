@@ -10,11 +10,6 @@ import { POLICY_PROCESS_PATH } from '@api/policy-process-path';
  */
 export interface IPolicyStartOptions {
     /**
-     * Config
-     */
-    policy: unknown;
-
-    /**
      * Service name
      */
     policyServiceName: string;
@@ -203,6 +198,7 @@ export class PolicyContainer extends NatsService {
      * @param config
      */
     public addPolicy(config: IPolicyStartOptions): boolean {
+        console.log(JSON.stringify(config, null, 4))
         if (this.processCount >= this.maxPolicyInstances) {
             this.unsubscribeFromModelGeneration();
             return false
@@ -303,7 +299,6 @@ export class PolicyContainer extends NatsService {
         }
 
         const {
-            policy,
             policyId,
             policyServiceName,
             skipRegistration
@@ -311,7 +306,6 @@ export class PolicyContainer extends NatsService {
 
         const childEnvironment = Object.assign(process.env, {
             POLICY_START_OPTIONS: JSON.stringify({
-                policy,
                 policyId,
                 policyServiceName,
                 skipRegistration

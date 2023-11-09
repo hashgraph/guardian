@@ -18,7 +18,7 @@ import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialo
 @Component({
     selector: 'app-policy-viewer',
     templateUrl: './policy-viewer.component.html',
-    styleUrls: ['./policy-viewer.component.css']
+    styleUrls: ['./policy-viewer.component.scss']
 })
 export class PolicyViewerComponent implements OnInit, OnDestroy {
     policyId!: string;
@@ -63,6 +63,11 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
     public innerWidth: any;
     public innerHeight: any;
+
+
+    public get isDryRun(): boolean {
+        return this.policyInfo && this.policyInfo.status === 'DRY-RUN';
+    }
 
     constructor(
         private profileService: ProfileService,
@@ -248,7 +253,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
     openDocument(element: any) {
         let dialogRef;
-        
+
         if (this.innerWidth <= 810) {
             const bodyStyles = window.getComputedStyle(document.body);
             const headerHeight: number = parseInt(bodyStyles.getPropertyValue('--header-height'));
@@ -262,17 +267,20 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 panelClass: 'g-dialog',
                 hasBackdrop: true, // Shadows beyond the dialog
                 closeOnNavigation: true,
+                disableClose: true,
                 autoFocus: false,
                 data: this
             });
         } else {
             dialogRef = this.dialog.open(VCViewerDialog, {
                 width: '900px',
+                panelClass: 'g-dialog',
                 data: {
                     document: element,
                     title: 'Document',
                     type: 'JSON',
-                }
+                },
+                disableClose: true,
             });
         }
         dialogRef.afterClosed().subscribe(async (result) => { });

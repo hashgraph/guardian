@@ -1,0 +1,595 @@
+<div class="content" [style.min-width.px]="minWidth">
+    <div *ngIf="headers && type==='tree'" class="item-headers" [style.grid-template-columns]="_gridStyle">
+        <div *ngFor="let item of headers" [style.grid-column-start]="item.column" class="item-header">
+            <span class="item-header-name">
+                {{item.name}}
+            </span>
+            <span class="item-header-rate item-header-color-{{item.color}}">
+                {{item.rate}}
+            </span>
+        </div>
+    </div>
+
+    <div *ngIf="policies && policies.length>2" class="list">
+
+        <!-- <div class="total-info" [attr.total]="total">
+            Policies are <span>{{total}}%</span> the same.
+        </div> -->
+
+        <mat-accordion multi>
+            <mat-expansion-panel expanded>
+                <mat-expansion-panel-header>
+                    <mat-panel-title>
+                        <div class="header">Description</div>
+                    </mat-panel-title>
+                </mat-expansion-panel-header>
+                <div class="info-container" [style.grid-template-columns]="_gridStyle">
+                    
+                    <ng-container *ngFor="let context of policies">
+                        <div *ngIf="context.left" class="left-compare-result compare-result" [attr.open]="true">
+                            <ng-container *ngTemplateOutlet="policyInfo; context: context"></ng-container>
+                        </div>
+                        <div class="middle-compare-result compare-result"
+                            *ngIf="context.right" 
+                            [style.grid-column-start]="2 * context.index" 
+                            [attr.open]="true">
+                        </div>
+                        <div class="right-compare-result compare-result"
+                            *ngIf="context.right"
+                            [style.grid-column-start]="2 * context.index + 1"   
+                            [attr.open]="true">
+                            <ng-container *ngTemplateOutlet="policyInfo; context: context"></ng-container>
+                        </div>
+                    </ng-container>
+
+                </div>
+            </mat-expansion-panel>
+
+            <mat-expansion-panel *ngIf="roles?.length">
+                <mat-expansion-panel-header>
+                    <mat-panel-title>
+                        <div class="header">Policy Roles</div>
+                    </mat-panel-title>
+                </mat-expansion-panel-header>
+                <div class="merge-tree">
+                    <div *ngFor="let item of roles" 
+                        class="report-item report-item-small" 
+                        [attr.type]="item.type"
+                        [attr.rate]="item.total_rate"
+                        [style.grid-template-columns]="_gridStyle">
+
+                        <ng-container *ngFor="let context of item.contexts">
+                            <div 
+                                [style.grid-column-start]="2 * context.index + 1"   
+                                [attr.open]="true"
+                                [ngClass]="{
+                                    'left-compare-result': context.left,
+                                    'right-compare-result': context.right,
+                                    'fantom-block': context.fantom,
+                                    'compare-result': true
+                                }">
+                                <ng-container *ngTemplateOutlet="propInfo; context: context"></ng-container>
+                            </div>
+                            <div class="middle-compare-result compare-result"
+                                *ngIf="context.right" 
+                                [style.grid-column-start]="2 * context.index" 
+                                [attr.open]="true">
+                            </div>
+                        </ng-container>
+
+                    </div>
+                </div>
+            </mat-expansion-panel>
+
+            <mat-expansion-panel *ngIf="groups?.length">
+                <mat-expansion-panel-header>
+                    <mat-panel-title>
+                        <div class="header">Policy Groups</div>
+                    </mat-panel-title>
+                </mat-expansion-panel-header>
+                <div class="merge-tree">
+                    <div *ngFor="let item of groups" class="report-item report-item-small" 
+                        [attr.type]="item.type"
+                        [attr.rate]="item.total_rate"
+                        [style.grid-template-columns]="_gridStyle">
+
+                        <ng-container *ngFor="let context of item.contexts">
+                            <div 
+                                [style.grid-column-start]="2 * context.index + 1"   
+                                [attr.open]="true"
+                                [ngClass]="{
+                                    'left-compare-result': context.left,
+                                    'right-compare-result': context.right,
+                                    'fantom-block': context.fantom,
+                                    'compare-result': true
+                                }">
+                                <ng-container *ngTemplateOutlet="propInfo; context: context"></ng-container>
+                            </div>
+                            <div class="middle-compare-result compare-result"
+                                *ngIf="context.right" 
+                                [style.grid-column-start]="2 * context.index" 
+                                [attr.open]="true">
+                            </div>
+                        </ng-container>
+
+                    </div>
+                </div>
+            </mat-expansion-panel>
+
+            <mat-expansion-panel *ngIf="topics?.length">
+                <mat-expansion-panel-header>
+                    <mat-panel-title>
+                        <div class="header">Policy Topics</div>
+                    </mat-panel-title>
+                </mat-expansion-panel-header>
+                <div class="merge-tree">
+                    <div *ngFor="let item of topics" class="report-item report-item-small" 
+                        [attr.type]="item.type"
+                        [attr.rate]="item.total_rate"
+                        [style.grid-template-columns]="_gridStyle">
+
+                        <ng-container *ngFor="let context of item.contexts">
+                            <div 
+                                [style.grid-column-start]="2 * context.index + 1"   
+                                [attr.open]="true"
+                                [ngClass]="{
+                                    'left-compare-result': context.left,
+                                    'right-compare-result': context.right,
+                                    'fantom-block': context.fantom,
+                                    'compare-result': true
+                                }">
+                                <ng-container *ngTemplateOutlet="propInfo; context: context"></ng-container>
+                            </div>
+                            <div class="middle-compare-result compare-result"
+                                *ngIf="context.right" 
+                                [style.grid-column-start]="2 * context.index" 
+                                [attr.open]="true">
+                            </div>
+                        </ng-container>
+
+                    </div>
+                </div>
+            </mat-expansion-panel>
+
+            <mat-expansion-panel *ngIf="tokens?.length">
+                <mat-expansion-panel-header>
+                    <mat-panel-title>
+                        <div class="header">Policy Tokens</div>
+                    </mat-panel-title>
+                </mat-expansion-panel-header>
+                <div class="merge-tree">
+                    <div *ngFor="let item of tokens" class="report-item report-item-small" 
+                        [attr.type]="item.type"
+                        [attr.rate]="item.total_rate"
+                        [style.grid-template-columns]="_gridStyle">
+
+                        <ng-container *ngFor="let context of item.contexts">
+                            <div *ngIf="context.left" class="left-compare-result compare-result" [attr.open]="true">
+                                <ng-container *ngTemplateOutlet="propInfo; context: context"></ng-container>
+                            </div>
+                            <div class="middle-compare-result compare-result"
+                                *ngIf="context.right" 
+                                [style.grid-column-start]="2 * context.index" 
+                                [attr.open]="true">
+                            </div>
+                            <div class="right-compare-result compare-result"
+                                *ngIf="context.right"
+                                [style.grid-column-start]="2 * context.index + 1"   
+                                [attr.open]="true">
+                                <ng-container *ngTemplateOutlet="propInfo; context: context"></ng-container>
+                            </div>
+                        </ng-container>
+
+                    </div>
+                </div>
+            </mat-expansion-panel>
+
+
+            <mat-expansion-panel expanded>
+                <mat-expansion-panel-header>
+                    <div class="header">Policy Blocks</div>
+                </mat-expansion-panel-header>
+
+                <div class="merge-container">
+                    <div class="legend" [attr.type-1]="type1" [attr.type-2]="type2" [attr.type-3]="type3"
+                        [attr.type-4]="type4">
+                        <div class="legend-item" (click)="type1=!type1">
+                            <div class="legend-icon legend-l1"></div>
+                            <div class="legend-text">
+                                Blocks are equal, including their child blocks.
+                            </div>
+                        </div>
+                        <div class="legend-item" (click)="type2=!type2">
+                            <div class="legend-icon legend-l2"></div>
+                            <div class="legend-text">
+                                blocks are equal, but their child blocks are different.
+                            </div>
+                        </div>
+                        <div class="legend-item" (click)="type3=!type3">
+                            <div class="legend-icon legend-l3"></div>
+                            <div class="legend-text">
+                                blocks are of the same type and are partially equal.
+                            </div>
+                        </div>
+                        <div class="legend-item" (click)="type4=!type4">
+                            <div class="legend-icon legend-l4"></div>
+                            <div class="legend-text">
+                                Blocks are absent in the other Policy.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div *ngIf="type==='tree'" class="merge-tree" 
+                        [attr.open]="panelOpenState" 
+                        [attr.type-1]="type1"
+                        [attr.type-2]="type2" 
+                        [attr.type-3]="type3" 
+                        [attr.type-4]="type4">
+
+                        <div *ngFor="let row of blocks" class="report-item report-item-number" [attr.hidden]="row.hidden"
+                            [style.grid-template-columns]="_gridStyle">
+
+                            <div class="report-number">{{row.number}}</div>
+                            <div class="report-collapse" [attr.collapse]="row.collapse" (click)="onCollapse(row)">
+                                <mat-icon class="open-icon">remove</mat-icon>
+                                <mat-icon class="collapse-icon">add</mat-icon>
+                            </div>
+
+                            <ng-container *ngFor="let context of row.contexts">
+                                <div 
+                                    [attr.offset]="row.lvl" 
+                                    [attr.rate]="context.totalRate"
+                                    [attr.type]="context.type"
+                                    [style.padding-left.px]="row.offset"
+                                    [style.grid-column-start]="2 * context.index + 1"
+                                    [ngClass]="{
+                                        'left-tree': context.left,
+                                        'right-tree': context.right,
+                                        'hidden-item': true,
+                                        'fantom-tree': context.fantom
+                                    }">
+                                    <div class="block-tree" (click)="row.open = !row.open">
+                                        <div class="block-index" [attr.index-rate]="context.indexRate">
+                                            {{context.blockIndex}}
+                                        </div>
+                                        <div class="block-icon">
+                                            <mat-icon>{{context.blockIcon}}</mat-icon>
+                                        </div>
+                                        <div class="block-type">{{context.blockName}}</div>
+                                    </div>
+                                </div>
+
+                                <div *ngIf="context.right" class="middle-tree" 
+                                    [style.grid-column-start]="2 * context.index">
+                                    <div class="compare-btn" (click)="row.open = !row.open">
+                                        <mat-icon *ngIf="!row.open">unfold_more</mat-icon>
+                                        <mat-icon *ngIf="row.open">unfold_less</mat-icon>
+                                    </div>
+                                </div>
+                            </ng-container>
+
+                            <ng-container *ngIf="row.open">
+                                <ng-container *ngFor="let context of row.info">
+                                    <div
+                                        [attr.open]="row.open"
+                                        [style.padding-left.px]="row.offset"
+                                        [style.grid-column-start]="2 * context.index + 1"
+                                        [ngClass]="{
+                                            'left-compare-result': context.left,
+                                            'right-compare-result': context.right,
+                                            'fantom-block': context.fantom,
+                                            'hidden-item': true,
+                                            'compare-result': true
+                                        }">
+                                        <ng-container *ngTemplateOutlet="blockInfo; context: context"></ng-container>
+                                    </div>
+                                    <div class="middle-compare-result compare-result" 
+                                        *ngIf="context.right"
+                                        [style.grid-column-start]="2 * context.index"
+                                        [attr.open]="row.open"></div>
+                                </ng-container>
+                            </ng-container>
+                        </div>
+                    </div>
+
+                    <div *ngIf="type==='table'" class="merge-table" [attr.open]="panelOpenState">
+                        <div class="merge-table-content">
+                            <mat-table *ngIf="blocks" [dataSource]="blocks" class="table">
+                                <ng-container *ngFor="let column of columns" [cdkColumnDef]="column.name">
+                                    <mat-header-cell *cdkHeaderCellDef>
+                                        {{ column.label }}
+                                    </mat-header-cell>
+                                    <mat-cell *cdkCellDef="let row">
+                                        <span class="table-value" 
+                                            [title]="row.data[column.name]"
+                                            [attr.value]="row.data[column.name]"
+                                            [attr.display-type]="column.display">
+                                            {{ row.data[column.name] }}
+                                        </span>
+                                    </mat-cell>
+                                </ng-container>
+                                <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+                                <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+                            </mat-table>
+                        </div>
+                    </div>
+
+                </div>
+            </mat-expansion-panel>
+        </mat-accordion>
+    </div>
+</div>
+
+<ng-template #policyInfo let-policy="policy">
+    <div class="policy-info">
+        <div class="policy-info-field">
+            <div class="policy-info-field-name">ID</div>
+            <div class="policy-info-field-value">{{policy.id}}</div>
+        </div>
+        <div class="policy-info-field">
+            <div class="policy-info-field-name">Name</div>
+            <div class="policy-info-field-value">{{policy.name}}</div>
+        </div>
+        <div class="policy-info-field">
+            <div class="policy-info-field-name">Description</div>
+            <div class="policy-info-field-value">{{policy.description}}</div>
+        </div>
+        <div class="policy-info-field">
+            <div class="policy-info-field-name">Topic</div>
+            <div class="policy-info-field-value">{{policy.instanceTopicId}}</div>
+        </div>
+        <div class="policy-info-field">
+            <div class="policy-info-field-name">Version</div>
+            <div class="policy-info-field-value">{{policy.version}}</div>
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #blockInfo let-data="data">
+    <div class="prop">
+        <div class="prop-name">Permission Rate: </div>
+        <div class="prop-value" [attr.rate]="data.permissionRate">{{data.permissionRate}}</div>
+    </div>
+    <div class="prop">
+        <div class="prop-name">Properties Rate: </div>
+        <div class="prop-value" [attr.rate]="data.propRate">{{data.propRate}}</div>
+    </div>
+    <div class="prop">
+        <div class="prop-name">Events Rate: </div>
+        <div class="prop-value" [attr.rate]="data.eventRate">{{data.eventRate}}</div>
+    </div>
+    <div class="prop">
+        <div class="prop-name">Artifacts Rate: </div>
+        <div class="prop-value" [attr.rate]="data.artifactsRate">{{data.artifactsRate}}</div>
+    </div>
+    <div class="prop">
+        <div class="prop-name">Total Rate: </div>
+        <div class="prop-value" [attr.rate]="data.totalRate">{{data.totalRate}}</div>
+    </div>
+
+    <div class="prop-delimiter"></div>
+
+    <div class="prop">
+        <div class="prop-name">Block Type: </div>
+        <div class="prop-value">{{data.blockType}}</div>
+    </div>
+
+    <div class="prop-delimiter"></div>
+
+    <div class="prop-table">
+        <div class="prop-table-header">Permissions: </div>
+        <div class="prop-table-body">
+            <div *ngFor="let perm of data.permissions" 
+                class="prop-table-row" 
+                [attr.fantom]="perm.fantom"
+                [attr.type]="perm.type"
+                [attr.index]="data.index">
+                <div class="prop-table-name" [style.padding-left.px]="10">
+                    {{perm.name}}:
+                </div>
+                <div class="prop-table-value">
+                    <span *ngIf="perm.value">
+                        {{perm.value}}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="prop-delimiter"></div>
+
+    <div class="prop-table">
+        <div class="prop-table-header">Properties: </div>
+        <div class="prop-table-body">
+            <div *ngFor="let prop of data.properties" 
+                class="prop-table-row" 
+                [attr.fantom]="prop.fantom"
+                [attr.type]="prop.type"
+                [attr.offset]="prop.lvl" 
+                [attr.index]="data.index">
+                <div class="prop-table-name" [style.padding-left.px]="prop.offset">
+                    {{prop.name}}:
+                </div>
+                <div class="prop-table-value" [attr.prop-type]="prop.propType">
+                    <div class="compare-btn" (click)="compareSchema(prop)">
+                        <mat-icon>search</mat-icon>
+                    </div>
+                    <span *ngIf="prop.propType" [title]="prop.value">
+                        {{prop.value}}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="prop-delimiter"></div>
+
+    <div class="prop-table">
+        <div class="prop-table-header">Events: </div>
+        <div class="prop-table-body">
+            <ng-container *ngFor="let event of data.events">
+
+                <div class="prop-table-row" 
+                    [attr.fantom]="event.fantom"
+                    [attr.type]="event.type" 
+                    [attr.index]="data.index">
+                    <div class="prop-table-name" [style.padding-left.px]="10">Event:</div>
+                    <div class="prop-table-value"><span></span></div>
+                </div>
+
+                <div class="prop-table-row" 
+                    [attr.fantom]="event.fantom"
+                    [attr.type]="event.type" 
+                    [attr.index]="data.index">
+                    <div class="prop-table-name" [style.padding-left.px]="20">source:</div>
+                    <div class="prop-table-value">
+                        <span *ngIf="event.value">
+                            {{event.source}}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="prop-table-row" 
+                    [attr.fantom]="event.fantom"
+                    [attr.type]="event.type" 
+                    [attr.index]="data.index">
+                    <div class="prop-table-name" [style.padding-left.px]="20">output:</div>
+                    <div class="prop-table-value">
+                        <span *ngIf="event.value">
+                            {{event.output}}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="prop-table-row" 
+                    [attr.fantom]="event.fantom"
+                    [attr.type]="event.type" 
+                    [attr.index]="data.index">
+                    <div class="prop-table-name" [style.padding-left.px]="20">target:</div>
+                    <div class="prop-table-value">
+                        <span *ngIf="event.value">
+                            {{event.target}}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="prop-table-row" 
+                    [attr.fantom]="event.fantom"
+                    [attr.type]="event.type" 
+                    [attr.index]="data.index">
+                    <div class="prop-table-name" [style.padding-left.px]="20">input:</div>
+                    <div class="prop-table-value">
+                        <span *ngIf="event.value">
+                            {{event.input}}
+                        </span>
+                    </div>
+                </div>
+
+               <div class="prop-table-row" 
+                    [attr.fantom]="event.fantom"
+                    [attr.type]="event.type" 
+                    [attr.index]="data.index">
+                    <div class="prop-table-name" [style.padding-left.px]="20">actor:</div>
+                    <div class="prop-table-value">
+                        <span *ngIf="event.value">
+                            {{event.actor}}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="prop-table-row" 
+                    [attr.fantom]="event.fantom"
+                    [attr.type]="event.type" 
+                    [attr.index]="data.index">
+                    <div class="prop-table-name" [style.padding-left.px]="20">disabled:</div>
+                    <div class="prop-table-value">
+                        <span *ngIf="event.value">
+                            {{event.disabled}}
+                        </span>
+                    </div>
+                </div>
+
+            </ng-container>
+        </div>
+    </div>
+
+    <div class="prop-delimiter"></div>
+
+    <div class="prop-table">
+        <div class="prop-table-header">Artifacts: </div>
+        <div class="prop-table-body">
+            <ng-container *ngFor="let artifact of data.artifacts">
+                <div class="prop-table-row" 
+                    [attr.fantom]="artifact.fantom"
+                    [attr.type]="artifact.type" 
+                    [attr.index]="data.index">
+                    <div class="prop-table-name" [style.padding-left.px]="10">Artifact:</div>
+                    <div class="prop-table-value"><span></span></div>
+                </div>
+                <div class="prop-table-row" 
+                    [attr.fantom]="artifact.fantom"
+                    [attr.type]="artifact.type" 
+                    [attr.index]="data.index">
+                    <div class="prop-table-name" [style.padding-left.px]="20">name:</div>
+                    <div class="prop-table-value">
+                        <span *ngIf="artifact.value">{{artifact.fileName}}</span>
+                    </div>
+                </div>
+                <div class="prop-table-row" 
+                    [attr.fantom]="artifact.fantom"
+                    [attr.type]="artifact.type" 
+                    [attr.index]="data.index">
+                    <div class="prop-table-name" [style.padding-left.px]="20">extension:</div>
+                    <div class="prop-table-value">
+                        <span *ngIf="artifact.value">{{artifact.fileExtension}}</span>
+                    </div>
+                </div>
+                <div class="prop-table-row" 
+                    [attr.fantom]="artifact.fantom"
+                    [attr.type]="artifact.type" 
+                    [attr.index]="data.index">
+                    <div class="prop-table-name" [style.padding-left.px]="20">type:</div>
+                    <div class="prop-table-value">
+                        <span *ngIf="artifact.value">{{artifact.fileType}}</span>
+                    </div>
+                </div>
+                <div class="prop-table-row" 
+                    [attr.fantom]="artifact.fantom"
+                    [attr.type]="artifact.type" 
+                    [attr.index]="data.index">
+                    <div class="prop-table-name" [style.padding-left.px]="20">hash:</div>
+                    <div class="prop-table-value">
+                        <span *ngIf="artifact.value">{{artifact.fileHash}}</span>
+                    </div>
+                </div>
+            </ng-container>
+        </div>
+    </div>
+
+    <div class="prop-delimiter"></div>
+</ng-template>
+
+<ng-template #propInfo let-data="data">
+    <div class="prop-table">
+        <div class="prop-table-body">
+            <div *ngFor="let prop of data.properties" 
+                class="prop-table-row"
+                [attr.fantom]="prop.fantom"
+                [attr.type]="prop.type"
+                [attr.offset]="prop.lvl" 
+                [attr.index]="data.index">
+                <div class="prop-table-name" [style.padding-left.px]="prop.offset">
+                    {{prop.name}}:
+                </div>
+                <div class="prop-table-value" [attr.prop-type]="prop.propType">
+                    <div class="compare-btn" (click)="compareSchema(prop)">
+                        <mat-icon>search</mat-icon>
+                    </div>
+                    <span *ngIf="prop.propType" [title]="prop.value">
+                        {{prop.value}}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</ng-template>

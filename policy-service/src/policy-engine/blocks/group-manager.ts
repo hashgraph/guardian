@@ -126,23 +126,13 @@ export class GroupManagerBlock {
     }
 
     /**
-     * Find Group Config
-     * @param ref
-     * @param groupName
-     */
-    private getGroupConfig(ref: IPolicyInterfaceBlock, groupName: string): any {
-        const policyGroups: any[] = ref.policyInstance.policyGroups || [];
-        return policyGroups.find(e => e.name === groupName);
-    }
-
-    /**
      * Get Group data
      * @param ref
      * @param user
      * @param group
      */
     private async groupMapping(ref: IPolicyInterfaceBlock, user: IPolicyUser, group: PolicyRoles): Promise<any> {
-        const config = this.getGroupConfig(ref, group.groupName);
+        const config = PolicyUtils.getGroupTemplate<any>(ref, group.groupName);
         const members = (await ref.databaseServer.getAllMembersByGroup(group)).map(member => {
             return {
                 did: member.did,

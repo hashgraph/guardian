@@ -1,4 +1,5 @@
 import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { IRateTable } from '../interfaces/rate-table.interface';
 import { IRate } from '../interfaces/rate.interface';
 import { Status } from '../types/status.type';
 
@@ -41,6 +42,14 @@ export class PermissionsRate implements IRate<string> {
     }
 
     /**
+     * Set children rates
+     * @public
+     */
+    public setChildren<U extends IRate<any>>(children: U[]): void {
+        return;
+    }
+
+    /**
      * Get Children Rates
      * @public
      */
@@ -70,7 +79,7 @@ export class PermissionsRate implements IRate<string> {
      * Convert class to object
      * @public
      */
-    public toObject(): any {
+    public toObject(): IRateTable<string> {
         return {
             type: this.type,
             totalRate: this.totalRate,

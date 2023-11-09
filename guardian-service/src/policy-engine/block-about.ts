@@ -20,70 +20,70 @@ export const BlockAbout = {
             'RefreshEvent'
         ],
         'defaultEvent': true,
-        properties: [
+        'properties': [
             {
-                name: 'uiMetaData',
-                label: 'UI',
-                title: 'UI Properties',
-                type: 'Group',
-                properties: [
+                'name': 'uiMetaData',
+                'label': 'UI',
+                'title': 'UI Properties',
+                'type': 'Group',
+                'properties': [
                     {
-                        name: 'type',
-                        label: 'Type',
-                        title: 'Type',
-                        type: 'Select',
-                        items: [
+                        'name': 'type',
+                        'label': 'Type',
+                        'title': 'Type',
+                        'type': 'Select',
+                        'items': [
                             {
-                                label: 'Page',
-                                value: 'page'
+                                'label': 'Page',
+                                'value': 'page'
                             },
                             {
-                                label: 'dialog',
-                                value: 'dialog'
+                                'label': 'dialog',
+                                'value': 'dialog'
                             }
                         ]
                     },
                     {
-                        name: 'buttonClass',
-                        label: 'Dialog button class',
-                        title: 'Dialog button class',
-                        type: 'Input'
+                        'name': 'buttonClass',
+                        'label': 'Dialog button class',
+                        'title': 'Dialog button class',
+                        'type': 'Input'
                     },
                     {
-                        name: 'buttonText',
-                        label: 'Dialog button text',
-                        title: 'Dialog button text',
-                        type: 'Input'
+                        'name': 'buttonText',
+                        'label': 'Dialog button text',
+                        'title': 'Dialog button text',
+                        'type': 'Input'
                     },
                     {
-                        name: 'dialogTitle',
-                        label: 'Dialog title',
-                        title: 'Dialog title',
-                        type: 'Input'
+                        'name': 'dialogTitle',
+                        'label': 'Dialog title',
+                        'title': 'Dialog title',
+                        'type': 'Input'
                     },
                     {
-                        name: 'dialogClass',
-                        label: 'Dialog class',
-                        title: 'Dialog class',
-                        type: 'Input'
+                        'name': 'dialogClass',
+                        'label': 'Dialog class',
+                        'title': 'Dialog class',
+                        'type': 'Input'
                     },
                     {
-                        name: 'dialogDescription',
-                        label: 'Dialog description',
-                        title: 'Dialog description',
-                        type: 'Input'
+                        'name': 'dialogDescription',
+                        'label': 'Dialog description',
+                        'title': 'Dialog description',
+                        'type': 'Input'
                     },
                     {
-                        name: 'pageTitle',
-                        label: 'Page title',
-                        title: 'Page title',
-                        type: 'Input'
+                        'name': 'pageTitle',
+                        'label': 'Page title',
+                        'title': 'Page title',
+                        'type': 'Input'
                     },
                     {
-                        name: 'pageDescription',
-                        label: 'Page description',
-                        title: 'Page description',
-                        type: 'Input'
+                        'name': 'pageDescription',
+                        'label': 'Page description',
+                        'title': 'Page description',
+                        'type': 'Input'
                     }
                 ]
             }
@@ -149,7 +149,13 @@ export const BlockAbout = {
             'RefreshEvent',
             'ErrorEvent'
         ],
-        'defaultEvent': true
+        'defaultEvent': true,
+        'properties': [{
+            'name': 'unsigned',
+            'label': 'Unsigned VC',
+            'title': 'Unsigned document',
+            'type': 'Checkbox'
+        }]
     },
     'calculateMathAddon': {
         'label': 'Math Addon',
@@ -177,7 +183,13 @@ export const BlockAbout = {
             'RefreshEvent',
             'ErrorEvent'
         ],
-        'defaultEvent': true
+        'defaultEvent': true,
+        'properties': [{
+            'name': 'unsigned',
+            'label': 'Unsigned VC',
+            'title': 'Unsigned document',
+            'type': 'Checkbox'
+        }]
     },
     'documentsSourceAddon': {
         'label': 'Source',
@@ -386,6 +398,20 @@ export const BlockAbout = {
         'post': true,
         'get': true,
         'children': 'Special',
+        'control': 'UI',
+        'input': [
+            'RunEvent',
+            'RefreshEvent'
+        ],
+        'output': null,
+        'defaultEvent': false
+    },
+    'messagesReportBlock': {
+        'label': 'Messages Report',
+        'title': 'Add \'Messages Report\' Block',
+        'post': true,
+        'get': true,
+        'children': 'None',
         'control': 'UI',
         'input': [
             'RunEvent',
@@ -1028,7 +1054,164 @@ export const BlockAbout = {
                 'type': 'Schemas'
             },
         ]
-    }
+    },
+    'notificationBlock': {
+        'label': 'Notification',
+        'title': 'Add \'Notification\' Block',
+        'post': false,
+        'get': false,
+        'children': 'None',
+        'control': 'Server',
+        'input': [
+            'RunEvent'
+        ],
+        'output': [
+            'RunEvent'
+        ],
+        'defaultEvent': true,
+        'properties': [
+            {
+                'name': 'title',
+                'label': 'Title',
+                'title': 'Title',
+                'type': 'Input',
+                'required': true
+            },
+            {
+                'name': 'message',
+                'label': 'Message',
+                'title': 'Message',
+                'type': 'Input',
+                'required': true
+            },
+            {
+                'name': 'type',
+                'label': 'Type',
+                'title': 'Type',
+                'type': 'Select',
+                'items': [
+                    {
+                        'label': 'Info',
+                        'value': 'INFO'
+                    },
+                    {
+                        'label': 'Success',
+                        'value': 'SUCCESS'
+                    },
+                    {
+                        'label': 'Warn',
+                        'value': 'WARN'
+                    },
+                    {
+                        'label': 'Error',
+                        'value': 'ERROR'
+                    }
+                ],
+                'default': 'info'
+            },
+            {
+                'name': 'link',
+                'label': 'Link notification to policy',
+                'title': 'Link notification to policy',
+                'type': 'Checkbox',
+            },
+            {
+                'name': 'user',
+                'label': 'User',
+                'title': 'User',
+                'type': 'Select',
+                'items': [
+                    {
+                        'label': 'All',
+                        'value': 'ALL'
+                    },
+                    {
+                        'label': 'Current user',
+                        'value': 'CURRENT'
+                    },
+                    {
+                        'label': 'Policy owner',
+                        'value': 'OWNER'
+                    },
+                    {
+                        'label': 'Document owner',
+                        'value': 'DOCUMENT_OWNER'
+                    },
+                    {
+                        'label': 'Document issuer',
+                        'value': 'DOCUMENT_ISSUER'
+                    },
+                    {
+                        'label': 'Group owner',
+                        'value': 'GROUP_OWNER'
+                    },
+                    {
+                        'label': 'Role',
+                        'value': 'ROLE'
+                    }
+                ],
+                'default': 'current'
+            },
+            {
+                'name': 'role',
+                'label': 'Role',
+                'title': 'Role',
+                'type': 'Select',
+                'items': 'Roles',
+                'visible': 'user === "ROLE"',
+                'required': true
+            },
+            {
+                'name': 'grouped',
+                'label': 'Only for current user group',
+                'title': 'Only for current user group',
+                'type': 'Checkbox',
+                'visible': 'user === "ROLE"'
+            }
+        ]
+    },
+    'extractDataBlock': {
+        'label': 'Extract Data',
+        'title': 'Add \'Extract Data\' Block',
+        'post': false,
+        'get': false,
+        'children': 'None',
+        'control': 'Server',
+        'input': [
+            'RunEvent'
+        ],
+        'output': [
+            'RunEvent',
+            'RefreshEvent',
+            'ErrorEvent'
+        ],
+        'defaultEvent': true,
+        'properties': [
+            {
+                'name': 'action',
+                'label': 'Action',
+                'title': 'Action',
+                'type': 'Select',
+                'items': [
+                    {
+                        'label': 'Get',
+                        'value': 'get'
+                    },
+                    {
+                        'label': 'Set',
+                        'value': 'set'
+                    }
+                ],
+                'default': 'get'
+            },
+            {
+                'name': 'schema',
+                'label': 'Schema',
+                'title': 'Schema',
+                'type': 'Schemas'
+            }
+        ]
+    },
 }
 
 /**

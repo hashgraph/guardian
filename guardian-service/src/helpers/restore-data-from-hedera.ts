@@ -20,10 +20,19 @@ import {
     VpDocumentDefinition as VpDocument,
     VPMessage,
     Wallet,
-    Workers
+    Workers,
+    PolicyImportExport
 } from '@guardian/common';
-import { DidDocumentStatus, ISchema, PolicyType, SchemaCategory, SchemaStatus, TopicType, UserRole, WorkerTaskType, } from '@guardian/interfaces';
-import { PolicyImportExportHelper } from '@policy-engine/helpers/policy-import-export-helper';
+import {
+    DidDocumentStatus,
+    ISchema,
+    PolicyType,
+    SchemaCategory,
+    SchemaStatus,
+    TopicType,
+    UserRole,
+    WorkerTaskType
+} from '@guardian/interfaces';
 import { PolicyEngine } from '@policy-engine/policy-engine';
 
 /**
@@ -331,10 +340,7 @@ export class RestoreDataFromHedera {
                 (m) => m._action === 'publish-policy'
             );
             for (const policy of publishedPolicies) {
-                const parsedPolicyFile =
-                    await PolicyImportExportHelper.parseZipFile(
-                        policy.document
-                    );
+                const parsedPolicyFile = await PolicyImportExport.parseZipFile(policy.document);
                 const policyObject = parsedPolicyFile.policy;
 
                 policyObject.instanceTopicId = policy.instanceTopicId;
@@ -561,6 +567,8 @@ export class RestoreDataFromHedera {
             hederaAccountId: hederaAccountID,
         });
 
+        await this.restoreUsers(RAMessages);
+
         await this.restoreTopic(
             {
                 topicId: currentRAMessage.registrantTopicId,
@@ -570,6 +578,7 @@ export class RestoreDataFromHedera {
                 type: TopicType.UserTopic,
                 policyId: null,
                 policyUUID: null,
+                parent: currentRAMessage.topicId
             },
             user,
             hederaAccountKey,
@@ -595,6 +604,23 @@ export class RestoreDataFromHedera {
                 hederaAccountID,
                 hederaAccountKey
             );
+        }
+    }
+
+    private async restoreUsers(messages: any[]) {
+        const userDIDs = this.findMessagesByType(MessageType.DIDDocument, messages);
+        if (!userDIDs) {
+            return;
+        }
+        userDIDs.shift();
+        for (const message of userDIDs) {
+            await new DataBaseHelper(DidDocumentCollection).save({
+                did: message.document.id,
+                document: message.document,
+                status: DidDocumentStatus.CREATE,
+                messageId: message.id,
+                topicId: message.topicId,
+            });
         }
     }
 }

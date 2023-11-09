@@ -1,8 +1,8 @@
 import { ICompareOptions } from '../interfaces/compare-options.interface';
 import { FieldModel } from './field.model';
-import { SubSchemaModel } from './sub-schema-model';
-import MurmurHash3 from 'imurmurhash';
-import { Policy, Schema as SchemaCollection } from '@guardian/common';
+import { SchemaDocumentModel } from './schema-document.model';
+import { Policy, PolicyTool, Schema as SchemaCollection } from '@guardian/common';
+import { HashUtils } from '../utils/hash-utils';
 
 /**
  * Schema Model
@@ -60,15 +60,15 @@ export class SchemaModel {
      * Schema Model
      * @private
      */
-    private readonly subSchema: SubSchemaModel;
+    private readonly document: SchemaDocumentModel;
 
     /**
      * Fields
      * @public
      */
     public get fields(): FieldModel[] {
-        if (this.subSchema) {
-            return this.subSchema.fields;
+        if (this.document) {
+            return this.document.fields;
         }
         return [];
     }
@@ -80,10 +80,28 @@ export class SchemaModel {
     private _weight: string;
 
     /**
+     * Weights
+     * @private
+     */
+    private _weightDocument: string;
+
+    /**
      * Policy name
      * @private
      */
     private _policyName: string;
+
+    /**
+     * Tool name
+     * @private
+     */
+    private _toolName: string;
+
+    /**
+     * Compare Map
+     * @private
+     */
+    private readonly _compareMap: Map<string, number>;
 
     constructor(
         schema: SchemaCollection,
@@ -98,20 +116,22 @@ export class SchemaModel {
         this.version = '';
         this.iri = '';
         this._weight = '';
+        this._weightDocument = '';
+        this._compareMap = new Map<string, number>();
         if (schema) {
             this.id = schema.id;
             this.name = schema.name;
             this.uuid = schema.uuid
             this.description = schema.description;
             this.topicId = schema.topicId;
-            this.version = schema.version;
+            this.version = schema.version || schema.sourceVersion;
             this.iri = schema.iri;
             if (schema.document) {
                 const document = (typeof schema.document === 'string') ?
                     JSON.parse(schema.document) :
                     schema.document;
-                this.subSchema = new SubSchemaModel(document, 0, document?.$defs);
-                this.subSchema.update(this.options);
+                this.document = new SchemaDocumentModel(document, 0, document?.$defs);
+                this.document.update(this.options);
             }
         }
     }
@@ -129,7 +149,8 @@ export class SchemaModel {
             topicId: this.topicId,
             version: this.version,
             iri: this.iri,
-            policy: this._policyName
+            policy: this._policyName,
+            tool: this._toolName
         };
     }
 
@@ -139,18 +160,26 @@ export class SchemaModel {
      * @public
      */
     public update(options: ICompareOptions): void {
-        const hashState = MurmurHash3();
-        hashState.hash(this.name || '');
-        hashState.hash(this.description || '');
+        const hashUtils: HashUtils = new HashUtils();
+
+        hashUtils.reset();
+        hashUtils.add(this.name || '');
+        hashUtils.add(this.description || '');
         if (options.idLvl > 0) {
-            hashState.hash(this.version || '');
-            hashState.hash(this.uuid || '');
-            hashState.hash(this.iri || '');
+            hashUtils.add(this.version || '');
+            hashUtils.add(this.uuid || '');
+            hashUtils.add(this.iri || '');
         }
-        if (this.subSchema) {
-            hashState.hash(this.subSchema.hash(options));
+        if (this.document) {
+            hashUtils.add(this.document.hash(options));
         }
-        this._weight = String(hashState.result());
+        this._weight = hashUtils.result();
+
+        hashUtils.reset();
+        if (this.document) {
+            hashUtils.add(this.document.hash(options));
+        }
+        this._weightDocument = hashUtils.result();
     }
 
     /**
@@ -170,5 +199,59 @@ export class SchemaModel {
     public setPolicy(policy: Policy): SchemaModel {
         this._policyName = policy?.name;
         return this;
+    }
+
+    /**
+     * Set tool
+     * @param tool
+     * @public
+     */
+    public setTool(tool: PolicyTool): SchemaModel {
+        this._toolName = tool?.name;
+        return this;
+    }
+
+    /**
+     * Get field
+     * @param path
+     * @public
+     */
+    public getField(path: string): FieldModel {
+        if (this.document && path) {
+            return this.document.getField(path);
+        }
+        return null;
+    }
+
+    /**
+     * Compare
+     * @param schema
+     * @public
+     */
+    public compare(schema: SchemaModel): number {
+        if (this._compareMap.has(schema.iri)) {
+            return this._compareMap.get(schema.iri);
+        }
+
+        if (this._weight === schema._weight) {
+            this._compareMap.set(schema.iri, -1);
+            return -1;
+        }
+        if (this._weightDocument === schema._weightDocument) {
+            this._compareMap.set(schema.iri, -2);
+            return -2;
+        }
+        if (this.document) {
+            const result = this.document.compare(schema.document);
+            if (result < 0) {
+                this._compareMap.set(schema.iri, -3);
+                return -3;
+            } else {
+                this._compareMap.set(schema.iri, result);
+                return result;
+            }
+        }
+        this._compareMap.set(schema.iri, 0);
+        return 0;
     }
 }

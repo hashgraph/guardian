@@ -33,11 +33,43 @@ export class ServiceStatusComponent implements OnInit {
     }
 
     getLoadingServices() {
-        return this.servicesStates.filter(item => [ApplicationStates.INITIALIZING, ApplicationStates.STARTED].includes(item.state));
+        return this.servicesStates.filter(item => {
+            for (const state of item.states) {
+                if ([ApplicationStates.INITIALIZING, ApplicationStates.STARTED].includes(state)) {
+                    return true;
+                }
+            }
+            return false;
+        });
     }
 
     getStoppedServices() {
-        return this.servicesStates.filter(item => [ApplicationStates.STOPPED, ApplicationStates.BAD_CONFIGURATION].includes(item.state));
+        return this.servicesStates.filter(item => {
+            if (item.states.length === 0) {
+                return true;
+            }
+            for (const state of item.states) {
+                if ([ApplicationStates.STOPPED, ApplicationStates.BAD_CONFIGURATION].includes(state)) {
+                    return true;
+                }
+            }
+            return false;
+        });
+    }
+
+    getIfAllServicesAreRunning() {
+        const notActiveService = this.servicesStates.find(item => {
+            if (item.states.length === 0) {
+                return true;
+            }
+            for (const state of item.states) {
+                if (state !== ApplicationStates.READY) {
+                    return true;
+                }
+            }
+            return false;
+        });
+        return !notActiveService;
     }
 
     getServiceNames(serviceStates: any) {

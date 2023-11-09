@@ -21,6 +21,11 @@ import { SelectorDialogComponent } from './selector-dialog/selector-dialog.compo
 import { StepTreeComponent } from './step-tree/step-tree.component';
 import { SeparateStepperComponent } from './separate-stepper/separate-stepper.component';
 import { NgxMaskModule } from 'ngx-mask';
+import { NewVersionsComponent } from './new-versions/new-versions.component';
+import { DataInputDialogComponent } from './data-input-dialog/data-input-dialog.component';
+import { CompareBtnComponent } from './compare-btn/compare-btn.component';
+import { CompareViewerComponent } from './compare-viewer/compare-viewer.component';
+import { AlertComponent } from './alert/alert.component';
 
 @NgModule({
     declarations: [
@@ -38,7 +43,12 @@ import { NgxMaskModule } from 'ngx-mask';
         ConfirmDialog,
         SelectorDialogComponent,
         StepTreeComponent,
-        SeparateStepperComponent
+        SeparateStepperComponent,
+        NewVersionsComponent,
+        DataInputDialogComponent,
+        CompareBtnComponent,
+        CompareViewerComponent,
+        AlertComponent
     ],
     imports: [
         CommonModule,
@@ -65,7 +75,10 @@ import { NgxMaskModule } from 'ngx-mask';
         NgxColorsModule,
         SelectorDialogComponent,
         SeparateStepperComponent,
-        NgxMaskModule
+        NgxMaskModule,
+        NewVersionsComponent,
+        CompareBtnComponent,
+        CompareViewerComponent
     ]
 })
 export class CommonComponentsModule { }

@@ -1,10 +1,11 @@
-import { Injectable } from "@angular/core";
-import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from "@angular/common/http";
-import { Router } from "@angular/router";
-import { Observable, throwError } from "rxjs";
-import { catchError } from "rxjs/operators";
-import { ToastrService } from "ngx-toastr";
+import { Injectable } from '@angular/core';
+import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { ToastrService } from 'ngx-toastr';
 import { MessageTranslationService } from './message-translation-service/message-translation-service';
+import { AuthStateService } from './auth-state.service';
 
 /**
  * Error interceptor.
@@ -14,7 +15,8 @@ export class HandleErrorsService implements HttpInterceptor {
     constructor(
         public router: Router,
         private toastr: ToastrService,
-        private messageTranslator: MessageTranslationService
+        private messageTranslator: MessageTranslationService,
+        private authState: AuthStateService
     ) {
     }
 
@@ -46,7 +48,7 @@ export class HandleErrorsService implements HttpInterceptor {
             return { warning, text, header };
         }
 
-        warning = errorObject.code === 0;
+        warning = errorObject.statusCode === 0;
 
         if (typeof errorObject === 'object') {
             if (typeof errorObject.text == 'function') {
@@ -54,7 +56,7 @@ export class HandleErrorsService implements HttpInterceptor {
                     const e = await errorObject.text();
                     const _error = JSON.parse(e);
                     const translatedMessage = this.messageTranslator.translateMessage(this.messageToText(_error.message));
-                    const header = `${_error.code} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : 'Other Error'}`;
+                    const header = `${_error.statusCode} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : 'Other Error'}`;
                     let text;
                     if (_error.message) {
                         text = `<div>${translatedMessage.text}</div><div>${this.messageToText(_error.error)}</div>`;
@@ -73,16 +75,16 @@ export class HandleErrorsService implements HttpInterceptor {
                     text = `${this.messageToText(translatedMessage.text)}`;
                 }
                 if (errorObject.type) {
-                    header = `${errorObject.code} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : errorObject.type}`;
+                    header = `${errorObject.statusCode} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : errorObject.type}`;
                 } else {
-                    header = `${errorObject.code} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : 'Other Error'}`;
+                    header = `${errorObject.statusCode} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : 'Other Error'}`;
                 }
                 return { warning, text, header };
             }
         }
 
         const translatedMessage = this.messageTranslator.translateMessage(this.messageToText(error.message));
-        header = `${error.code || 500} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : 'Other Error'}`;
+        header = `${error.statusCode || 500} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : 'Other Error'}`;
         text = `${translatedMessage.text}`;
 
         return { warning, text, header };
@@ -113,9 +115,12 @@ export class HandleErrorsService implements HttpInterceptor {
                             toastClass: 'ngx-toastr error-message-toastr',
                             enableHtml: true,
                         });
+                        // if ((result as any).error?.statusCode == 401) {
+                        //     this.authState.updateState(false);
+                        // }
                     }
                 })
-                return throwError(error.message);
+                return throwError(error);
             })
         );
     }

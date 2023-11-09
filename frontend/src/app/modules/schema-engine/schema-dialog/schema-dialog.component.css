@@ -1,6 +1,14 @@
+.context {
+    padding: 0px 50px 30px 55px;
+    max-height: inherit;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
 .mat-button-base:not([started]) {
     background-color: rgba(0,0,0,.12);
 }
+
 form {
     display: flex;
     flex-direction: column;
@@ -40,4 +48,9 @@ textarea {
 
 :host .restore-data button mat-icon {
     margin-left: 5px;
+}
+
+.g-dialog-body {
+    position: relative;
+    padding: 8px 0px 0px 0px;
 }

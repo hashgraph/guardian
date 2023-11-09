@@ -1,4 +1,5 @@
 import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
+import { CommonBlock } from './common';
 
 /**
  * Send to guardian
@@ -16,6 +17,7 @@ export class SendToGuardianBlock {
      */
     public static async validate(validator: BlockValidator, ref: IBlockProp): Promise<void> {
         try {
+            await CommonBlock.validate(validator, ref);
             if (ref.options.dataType) {
                 const t = ['vc-documents', 'did-documents', 'approve', 'hedera'];
                 if (t.indexOf(ref.options.dataType) === -1) {

@@ -1,6 +1,6 @@
-import { NgxMatDateAdapter, NGX_MAT_DATE_FORMATS } from '@angular-material-components/datetime-picker';
+import { NGX_MAT_DATE_FORMATS, NgxMatDateAdapter } from '@angular-material-components/datetime-picker';
 import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { AbstractControl, FormArray, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { GenerateUUIDv4, Schema, SchemaField, UnitSystem } from '@guardian/interfaces';
 import { fullFormats } from 'ajv-formats/dist/formats';
@@ -75,7 +75,6 @@ export class SchemaFormComponent implements OnInit {
     @Input('readonly-fields') readonly?: any;
     @Input('schema') schema!: Schema;
     @Input('fields') schemaFields!: SchemaField[];
-    @Input('context') context!: { type: any; context: any };
     @Input('formGroup') group!: FormGroup;
     @Input('delimiter-hide') delimiterHide: boolean = false;
     @Input('conditions') conditions: any = null;
@@ -97,7 +96,7 @@ export class SchemaFormComponent implements OnInit {
     public options: FormGroup | undefined;
     public fields: any[] | undefined = [];
     public conditionFields: SchemaField[] = [];
-    public isShown: boolean[] = [true, true];
+    public isShown: boolean[] = [true];
     public currentIndex: number = 0;
 
     private _patternByNumberType: any = {
@@ -118,11 +117,6 @@ export class SchemaFormComponent implements OnInit {
         let schemaFields: SchemaField[] | undefined = undefined;
 
         if (this.schema) {
-            this.context = {
-                type: this.schema.type,
-                context: [this.schema.contextURL]
-            };
-
             schemaFields = this.schema.fields;
 
             if (!this.conditions) {
@@ -193,12 +187,6 @@ export class SchemaFormComponent implements OnInit {
             const key = keys[i];
             this.options.removeControl(key);
             this.options.addControl(key, group[key]);
-        }
-        if (this.context) {
-            this.options.removeControl("type");
-            this.options.removeControl("@context");
-            this.options.addControl("type", new FormControl(this.context.type));
-            this.options.addControl("@context", new FormControl(this.context.context));
         }
 
         if (this.fields) {
@@ -687,6 +675,10 @@ export class SchemaFormComponent implements OnInit {
                     initialDivision = 1;
                     this.currentIndex = i;
                     this.isShown = new Array(fields.length).fill(false);
+                    if (fields[this.currentIndex].isRef && fields[this.currentIndex - 1].isRef) {
+                        this.isShown[this.currentIndex] = true;
+                        break;
+                    }
                     continue;
                 }
                 break;
@@ -703,22 +695,21 @@ export class SchemaFormComponent implements OnInit {
             this.currentIndex = nextRefIndex;
         }
         const contentElement = document.querySelector('#main-content');
-        const formElement = document.querySelector('.form-dialog');
+        const formElement = document.querySelector('.schema-form');
         setTimeout(() => {
-            contentElement!.scrollTo({
-                top: -1,
-                behavior: 'smooth'
-            });
-            if (formElement) {
-                formElement.scrollTo({
+            if (window.innerWidth <= 810) {
+                contentElement!.scrollTo({
                     top: -1,
                     behavior: 'smooth'
                 });
+            } else {
+                if (formElement) {
+                    formElement.scrollTo({
+                        top: -1,
+                        behavior: 'smooth'
+                    });
+                }
             }
-            window.scrollTo({
-                top: -1,
-                behavior: 'smooth'
-            });
         }, 100)
 
         return this.isShown;
@@ -759,22 +750,21 @@ export class SchemaFormComponent implements OnInit {
             }
         }
         const contentElement = document.querySelector('#main-content');
-        const formElement = document.querySelector('.form-dialog');
+        const formElement = document.querySelector('.schema-form');
         setTimeout(() => {
-            contentElement!.scrollTo({
-                top: -1,
-                behavior: 'smooth'
-            });
-            if (formElement) {
-                formElement.scrollTo({
+            if (window.innerWidth <= 810) {
+                contentElement!.scrollTo({
                     top: -1,
                     behavior: 'smooth'
                 });
+            } else {
+                if (formElement) {
+                    formElement.scrollTo({
+                        top: -1,
+                        behavior: 'smooth'
+                    });
+                }
             }
-            window.scrollTo({
-                top: -1,
-                behavior: 'smooth'
-            });
         }, 100)
 
 

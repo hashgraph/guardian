@@ -11,18 +11,17 @@ On this page you'll find:
   * [For Organizations to create an Employer User (Employer Admin User)](carbon-emissions-measurement-ghg-corporate-standard-policy-guide.md#for-organizations-to-create-an-employer-employer-admin-user)
   * [For Employees to create an Employee User and join an organization](carbon-emissions-measurement-ghg-corporate-standard-policy-guide.md#for-employees-to-create-an-employee-user-and-join-an-organization-employee-users)
 
-**For more Carbon Emissions Measurement - GHG Corporate Standard information, please visit the TYMLEZ-contributed open-source Guardian policy page** [**here**](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CET%20%26%20CRU/Tymlez/policies/Tymlez-CET.policy)
+**For more Carbon Emissions Measurement - GHG Corporate Standard information, please visit the TYMLEZ-contributed open-source Guardian policy page** [**here**](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CET%20&%20CRU/Tymlez/policies/Tymlez-CET.policy)
 
 ## Methodologies
 
 TYMLEZ aims to provide the capability to quantify and tokenize carbon. To do this, we have designed a universal schema that can be used as the basis for both insetting and avoidance claims made against any GHG Protocol compatible project. Whilst these schemas will not be able to be used verbatim for all carbon registries, they form an important base for digital measurement, reporting, and verification (dMRV) recording against a particular project. A core focus at TYMLEZ is the accurate reading of MRV data from source devices. As such, this schema is not designed for use in scenarios requiring the manual entry of carbon data – we have however included UI screens to support manual entry in this public version.
 
-We have included a full schema for the CET policy [here](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CET%20%26%20CRU/Tymlez/methodologies/CET\_CRU\_TYMLEZ.pdf)[ ](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CET%20%26%20CRU/Tymlez/methodologies/CET\_CRU\_TYMLEZ.pdf)that can be used to record Scope 1 & 2 emissions data
+We have included a full schema for the CET policy [here](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CET%20&%20CRU/Tymlez/methodologies/CET\_CRU\_TYMLEZ.pdf)[ ](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CET%20&%20CRU/Tymlez/methodologies/CET\_CRU\_TYMLEZ.pdf)that can be used to record Scope 1 & 2 emissions data
 
-\
+\\
 
-
-<figure><img src="../../../.gitbook/assets/image (57).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (57) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Scope 3 data
 
@@ -34,9 +33,9 @@ Typically, the way we start the demonstration is by logging in as a Standard Reg
 
 You'll now be prompted to configure your Standard Registry account. Enter the details and then press the Generate button to generate a Hedera Operator ID and an Operator Key and enter the name of your Standard Registry. Press Connect when finished. This will now create Hedera Consensus Service Topics, fill the account with test hBar, create a DID document, create a Verifiable Credential, etc.
 
-<figure><img src="../../../.gitbook/assets/image (55).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (55) (1).png" alt=""><figcaption></figcaption></figure>
 
-Now we will be creating the Policy. We have three ways to "create policies." The first way is to actually create the policy from scratch. The second way is to import an existing policy; either the policy file itself or from IPFS. When you import a policy, all schemas and tokens that are required in the policy are automatically populated. To do this, you can find the policy file and the IPFS timestamp on the open-source Guardian policy page [here](https://github.com/hashgraph/guardian/tree/main/Methodology%20Library/CET%20%26%20CRU/Tymlez/policies). For this demo guide, we will be using the 3rd way to create a policy, which is through the preloaded drop-down list.&#x20;
+Now we will be creating the Policy. We have three ways to "create policies." The first way is to actually create the policy from scratch. The second way is to import an existing policy; either the policy file itself or from IPFS. When you import a policy, all schemas and tokens that are required in the policy are automatically populated. To do this, you can find the policy file and the IPFS timestamp on the open-source Guardian policy page [here](https://github.com/hashgraph/guardian/tree/main/Methodology%20Library/CET%20%26%20CRU/Tymlez/policies). For this demo guide, we will be using the 3rd way to create a policy, which is through the preloaded drop-down list.
 
 Once it is selected, we can also preview the policy before importing it. After the policy is imported, we can either run the policy in Dry run mode or we can publish it by clicking on publish button from the dropdown. For testing purposes, we will publish the policy.
 
@@ -44,23 +43,23 @@ Open the policy operations by clicking the "Go" button and add the new site info
 
 ## Project Owner
 
-Register another new user called the "Project Owner" if it doesn't exist yet.&#x20;
+Register another new user called the "Project Owner" if it doesn't exist yet.
 
 Select the corresponding standard registry for the new Project Owner.
 
 Login as the new owner user
 
-Associate owner with CET (Click on tokens from the nav link and click on the associate button on the table, see picture below)&#x20;
+Associate owner with CET (Click on tokens from the nav link and click on the associate button on the table, see picture below)
 
 <figure><img src="../../../.gitbook/assets/image (59) (1).png" alt=""><figcaption></figcaption></figure>
 
-&#x20;Open policy `Tymlez CET` and fill in the owner information when the screen has loaded and select role as `TOKEN_OWNER`
+Open policy `Tymlez CET` and fill in the owner information when the screen has loaded and select role as `TOKEN_OWNER`
 
-<figure><img src="../../../.gitbook/assets/image (32) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (32) (1).png" alt=""><figcaption></figcaption></figure>
 
 After confirming the roles, enter the Project Owner information in the dialog.
 
-<figure><img src="../../../.gitbook/assets/image (63) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (63).png" alt=""><figcaption></figcaption></figure>
 
 ## Installer
 
@@ -70,27 +69,27 @@ Login as the new Installer and finish the setup steps.
 
 Associate owner with CET (Click on tokens from the nav link and click on the associating button on the table, see picture below).
 
-<figure><img src="../../../.gitbook/assets/image (59) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (61).png" alt=""><figcaption></figcaption></figure>
 
 Open the policy and fill in the installer information when the screen loads.
 
 Select role as `INSTALLER.`
 
-<figure><img src="../../../.gitbook/assets/image (54).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (54) (1).png" alt=""><figcaption></figcaption></figure>
 
 After confirming the roles, enter the owner information in the dialog
 
-<figure><img src="../../../.gitbook/assets/image (66).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (66) (1).png" alt=""><figcaption></figcaption></figure>
 
 Download the device config from the list.
 
 The installer can add a new device (meter, sensor, IoT... from devices tabs)
 
-<figure><img src="../../../.gitbook/assets/image (60).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (60) (1).png" alt=""><figcaption></figcaption></figure>
 
 Click on `New Sensor` and fill in information for the device. Note that the site-ID is the DID of the Site that was created in the StandardRegistry step earlier in the workflow.
 
-After this step, log in as the StandardRegistry and go to the Sites tab. You can associate the Site to other Sites or check if it is not entered correctly.&#x20;
+After this step, log in as the StandardRegistry and go to the Sites tab. You can associate the Site to other Sites or check if it is not entered correctly.
 
 ## Sending MRV
 
@@ -168,14 +167,14 @@ Open MRV tabs
 
 Click on `Add MRV` and fill up all the values for your MRV
 
-<figure><img src="../../../.gitbook/assets/image (62).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (62) (1).png" alt=""><figcaption></figcaption></figure>
 
 Submit MRV then the new MRV will display in the list, Aggregation will run in the background and respect the token mint rule same with realtime data ingression.
 
-<figure><img src="../../../.gitbook/assets/image (58) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (58).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
-Note:&#x20;
+Note:
 
 * OwnerAccountId: needs to be set to the Hedera Account ID of the Token Owner user. This value can be copied from the profile page
 * DeviceID: should be set to Device DID
@@ -191,4 +190,4 @@ VP data looks like this:
 
 Trustchain viewer looks like this:
 
-<figure><img src="../../../.gitbook/assets/image (65).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (65) (1).png" alt=""><figcaption></figcaption></figure>

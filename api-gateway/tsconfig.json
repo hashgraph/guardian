@@ -19,8 +19,8 @@
       "@api/*": [
         "api/*"
       ],
-      "@entity/*": [
-        "entity/*"
+      "@entities/*": [
+        "entities/*"
       ],
       "@helpers/*": [
         "helpers/*"

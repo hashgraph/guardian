@@ -3,15 +3,56 @@
         <mat-form-field class="example-full-width" appearance="outline">
             <mat-label>Username</mat-label>
             <input matInput formControlName="login">
+            <span *ngIf="showLoginRequiredError" class="field-error">
+                Value is required
+            </span>
         </mat-form-field>
 
-        <mat-form-field class="example-full-width" appearance="outline">
-            <mat-label>Password</mat-label>
-            <input matInput formControlName="password">
-        </mat-form-field>
-        <p *ngIf="errorMessage">{{errorMessage}}</p>
+        <div class="password-control">
+            <mat-form-field class="example-full-width" appearance="outline">
+                <mat-label>Password</mat-label>
+                <input matInput formControlName="password" [type]="passFieldType">
+                <span *ngIf="showPasswordRequiredError" class="field-error">
+                    Value is required
+                </span>
+            </mat-form-field>
 
-        <button mat-raised-button type="submit" color="primary" [disabled]="!loginForm.valid">Log In</button>
+            <mat-icon
+                *ngIf="showPasswordValue; else hidePassBtn"
+                class="eye-icon"
+                (click)="togglePasswordShow()"
+            >
+                 visibility_on
+            </mat-icon>
+
+            <ng-template #hidePassBtn>
+                <mat-icon class="eye-icon" (click)="togglePasswordShow()">visibility_off</mat-icon>
+            </ng-template>
+        </div>
+
+        <div class="login__footer">
+            <button mat-raised-button type="submit" color="primary" [disabled]="!loginForm.valid">
+                Log In
+            </button>
+
+            <div *ngIf="isMeecoLoginAllowed" class="login-btns__separator">
+                <div class="separator-line"></div>
+                <span>OR</span>
+                <div class="separator-line"></div>
+            </div>
+
+            <button
+                mat-button
+                *ngIf="isMeecoLoginAllowed"
+                type="button"
+                class="meeco-button"
+                (click)="onMeecoLogin()"
+                [disabled]="shouldDisableMeecoBtn"
+            >
+                <img src="/assets/meeco.svg" class="meeco-button__logo" />
+                {{ meecoBtnTitle }}
+            </button>
+        </div>
 
         <a [routerLink]="['/register']" class="create-link">Create new <mat-icon>chevron_right</mat-icon></a>
     </form>

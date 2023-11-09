@@ -6,8 +6,6 @@ services:
     restart: always
     expose:
       - 27017
-    ports:
-      - "27017:27017"
 
   mongo-express:
     image: mongo-express:1.0.0-alpha.4
@@ -21,24 +19,14 @@ services:
       - mongo
 
   ipfs-node:
-    image: ipfs/kubo:v0.18.1
+    image: ipfs/kubo:v0.22.0
     ports:
       - "5001:5001"
-      - "5002:5002"
       - "4001:4001"
-      - "4002:4002"
       - "8080:8080"
-      - "8081:8081"
     volumes:
       - ./runtime-data/ipfs/staging:/export:rw
       - ./runtime-data/ipfs/data:/data/ipfs:rw
-
-  api-docs:
-    build:
-      context: .
-      dockerfile: ./api-docs/Dockerfile
-    expose:
-      - 3001
 
   message-broker:
     image: nats:2.9.8
@@ -68,6 +56,19 @@ services:
 # ecosystem variables defined in the "env_file" .env.${GUARDIAN_ENV}.guardian.system
 # specific service variables defined by "environment" can override what is defined in the ecosystem file
 
+  notification-service:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
+    build:
+      context: .
+      dockerfile: ./notification-service/Dockerfile
+    depends_on:
+      - message-broker
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+    volumes:
+      - ./notification-service/configs:/usr/local/notification-service/configs:ro
+
   logger-service:
     env_file:
       - ./configs/.env.${GUARDIAN_ENV}.guardian.system
@@ -78,6 +79,10 @@ services:
       - message-broker
     environment:
       - GUARDIAN_ENV=${GUARDIAN_ENV}
+    expose:
+      - 6555
+    volumes:
+      - ./logger-service/configs:/usr/local/logger-service/configs:ro
 
   worker-service-1:
     env_file:
@@ -86,13 +91,18 @@ services:
       context: .
       dockerfile: ./worker-service/Dockerfile
     depends_on:
-      - ipfs-node
-      - auth-service
+      ipfs-node:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
     environment:
       - GUARDIAN_ENV=${GUARDIAN_ENV}
       - SERVICE_CHANNEL:"worker.1"
     expose:
       - 6555
+    volumes:
+      - ./worker-service/tls:/usr/local/worker-service/tls:ro
+      - ./worker-service/configs:/usr/local/worker-service/configs:ro
 
   worker-service-2:
     env_file:
@@ -101,22 +111,30 @@ services:
       context: .
       dockerfile: ./worker-service/Dockerfile
     depends_on:
-      - ipfs-node
-      - auth-service
+      ipfs-node:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
     environment:
       - GUARDIAN_ENV=${GUARDIAN_ENV}
       - SERVICE_CHANNEL="worker.2"
     expose:
       - 6555
+    volumes:
+      - ./worker-service/tls:/usr/local/worker-service/tls:ro
+      - ./worker-service/configs:/usr/local/worker-service/configs:ro
 
   auth-service:
     env_file:
       - ./configs/.env.${GUARDIAN_ENV}.guardian.system
     build:
       context: .
-      dockerfile: ./auth-service/Dockerfile
+      dockerfile: ./auth-service/Dockerfile.demo
     ports:
       - '5005:5005'
+    volumes:
+      - ./auth-service/tls:/usr/local/auth-service/tls:ro
+      - ./auth-service/configs:/usr/local/auth-service/configs:ro
     depends_on:
       - mongo
       - vault
@@ -133,7 +151,7 @@ services:
       - ./configs/.env.${GUARDIAN_ENV}.guardian.system
     build:
       context: .
-      dockerfile: ./api-gateway/Dockerfile
+      dockerfile: ./api-gateway/Dockerfile.demo
     expose:
       - 3002
       - 6555
@@ -145,6 +163,8 @@ services:
       - logger-service
     environment:
       - GUARDIAN_ENV=${GUARDIAN_ENV}
+    volumes:
+      - ./api-gateway/configs:/usr/local/api-gateway/configs:ro
 
   policy-service:
     env_file:
@@ -164,6 +184,9 @@ services:
     expose:
       - 50000-60000
       - 5006
+    volumes:
+      - ./policy-service/tls:/usr/local/policy-service/tls:ro
+      - ./policy-service/configs:/usr/local/policy-service/configs:ro
 
 
   guardian-service:
@@ -174,6 +197,9 @@ services:
       dockerfile: ./guardian-service/Dockerfile
     ports:
       - "5007:5007"
+    volumes:
+      - ./guardian-service/tls:/usr/local/guardian-service/tls:ro
+      - ./guardian-service/configs:/usr/local/guardian-service/configs:ro
     depends_on:
       - mongo
       - message-broker
@@ -203,7 +229,7 @@ services:
       - auth-service
       - logger-service
 
-      
+
   mrv-sender:
     build:
       context: .
@@ -234,12 +260,11 @@ services:
       - guardian-service
       - auth-service
       - api-gateway
-      - api-docs
       - mrv-sender
       - mongo-express
 
   prometheus:
-    image: prom/prometheus:latest
+    image: prom/prometheus:v2.44.0
     container_name: prometheus
     restart: unless-stopped
     volumes:
@@ -255,9 +280,9 @@ services:
       - "9090:9090"
     networks:
       - monitoring
-    
+
   grafana:
-    image: grafana/grafana
+    image: grafana/grafana:10.0.0
     container_name: grafana
     volumes:
       - grafana_data:/var/lib/grafana
@@ -273,11 +298,12 @@ services:
       - "9080:9080"
     networks:
       - monitoring
-      
+
 volumes:
   mongo:
   prometheus_data: {}
   grafana_data: {}
+  branding_data:
   # volume-guardian-service:
   # volume-ui-service:
   # volume-mrv-sender:

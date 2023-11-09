@@ -1,0 +1,40 @@
+<div class="g-dialog-content">
+    <div class="g-dialog-header">
+        <div class="g-dialog-cancel">
+            <div (click)="onClose()" class="g-dialog-cancel-btn">
+                <mat-icon>close</mat-icon>
+            </div>
+        </div>
+        <div class="g-dialog-title">
+            Compare Module
+        </div>
+        <div class="g-dialog-actions">
+            <div (click)="onCompare()" [attr.disabled]="!moduleId1 || !moduleId2" class="g-dialog-actions-btn">
+                Compare
+            </div>
+        </div>
+    </div>
+    <div class="g-dialog-body">
+        <div class="context">
+            <div *ngIf="loading" class="loading">
+                <mat-spinner></mat-spinner>
+            </div>
+
+            <mat-form-field appearance="outline" style="width: 100%">
+                <mat-label>First module:</mat-label>
+                <mat-select (valueChange)="onChange()" [(value)]="moduleId1">
+                    <mat-option>None</mat-option>
+                    <mat-option *ngFor="let module of list1" [value]="module.id">{{module.name}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" style="width: 100%">
+                <mat-label>Secondary module</mat-label>
+                <mat-select (valueChange)="onChange()" [(value)]="moduleId2">
+                    <mat-option>None</mat-option>
+                    <mat-option *ngFor="let module of list2" [value]="module.id">{{module.name}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+        </div>
+    </div>
+</div>

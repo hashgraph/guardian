@@ -109,6 +109,7 @@ export class ReportItemBlock {
             }
         }
         filtersToVc.policyId = { $eq: ref.policyId };
+        filtersToVc.schema = { $ne: '#UserRole' };
 
         const item: any = {
             type: 'VC',
@@ -123,42 +124,42 @@ export class ReportItemBlock {
         }
         resultFields.push(item);
 
-        const vcDocuments: any[] = multiple
+        const _documents: any[] = multiple
             ? await ref.databaseServer.getVcDocuments(filtersToVc)
             : [await ref.databaseServer.getVcDocument(filtersToVc)];
-        const notFoundDocuments = vcDocuments.filter((vc) => vc).length < 1;
+
+        const vcDocuments: any[] = _documents.filter((vc) => vc);
+        const notFoundDocuments = vcDocuments.length < 1;
         item.notFoundDocuments = notFoundDocuments;
 
         for (const vcDocument of vcDocuments) {
-            if (vcDocument) {
-                if (multiple) {
-                    item.document = item.document || [];
-                    item.document.push({
-                        tag: vcDocument.tag,
-                        issuer: getVCIssuer(vcDocument),
-                        username: getVCIssuer(vcDocument),
-                        document: vcDocument
-                    });
-                } else {
-                    item.tag = vcDocument.tag;
-                    item.issuer = getVCIssuer(vcDocument);
-                    item.username = getVCIssuer(vcDocument);
-                    item.document = vcDocument;
-                }
+            if (multiple) {
+                item.document = item.document || [];
+                item.document.push({
+                    tag: vcDocument.tag,
+                    issuer: getVCIssuer(vcDocument),
+                    username: getVCIssuer(vcDocument),
+                    document: vcDocument
+                });
+            } else {
+                item.tag = vcDocument.tag;
+                item.issuer = getVCIssuer(vcDocument);
+                item.username = getVCIssuer(vcDocument);
+                item.document = vcDocument;
+            }
 
-                if (ref.options.variables) {
-                    for (const variable of ref.options.variables) {
-                        const findOptionsResult = findOptions(vcDocument, variable.value);
-                        if (multiple) {
-                            variables[variable.name] = variables[variable.name] || []
-                            if (Array.isArray(findOptionsResult)) {
-                                variables[variable.name].push(...findOptionsResult);
-                            } else {
-                                variables[variable.name].push(findOptionsResult);
-                            }
+            if (ref.options.variables) {
+                for (const variable of ref.options.variables) {
+                    const findOptionsResult = findOptions(vcDocument, variable.value);
+                    if (multiple) {
+                        variables[variable.name] = variables[variable.name] || []
+                        if (Array.isArray(findOptionsResult)) {
+                            variables[variable.name].push(...findOptionsResult);
                         } else {
-                            variables[variable.name] = findOptionsResult;
+                            variables[variable.name].push(findOptionsResult);
                         }
+                    } else {
+                        variables[variable.name] = findOptionsResult;
                     }
                 }
             }

@@ -1,4 +1,5 @@
 import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
+import { CommonBlock } from './common';
 
 /**
  * Switch block
@@ -16,6 +17,7 @@ export class SwitchBlock {
      */
     public static async validate(validator: BlockValidator, ref: IBlockProp): Promise<void> {
         try {
+            await CommonBlock.validate(validator, ref);
             if (!['firstTrue', 'allTrue'].find(item => item === ref.options.executionFlow)) {
                 validator.addError('Option "executionFlow" must be one of firstTrue, allTrue');
             }

@@ -6,6 +6,7 @@ import { PropertyType } from '../types/property.type';
 import { WeightType } from '../types/weight.type';
 import { PropertiesModel } from './properties.model';
 import { PropertyModel } from './property.model';
+import { IWeightItem } from '../interfaces/weight-item.interface';
 
 /**
  * Group Model
@@ -152,11 +153,36 @@ export class GroupModel implements IWeightModel {
     }
 
     /**
+     * Comparison of models using key
+     * @param item - model
+     * @public
+     */
+    public equalKey(item: GroupModel): boolean {
+        return this.key === item.key;
+    }
+
+    /**
      * Get properties
      * @param type - filter by property type
      * @public
      */
     public getPropList(type?: PropertyType): PropertyModel<any>[] {
         return this._prop.getPropList(type);
+    }
+
+    /**
+     * Get weight object
+     * @public
+     */
+    public toWeight(options: ICompareOptions): IWeightItem {
+        if (!this._weight.length) {
+            return {
+                weight: this.name
+            }
+        } else {
+            return {
+                weight: this._weight[0]
+            }
+        }
     }
 }

@@ -1,5 +1,6 @@
 import MurmurHash3 from 'imurmurhash';
 import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { IWeightItem } from '../interfaces/weight-item.interface';
 
 /**
  * Artifact Model
@@ -94,5 +95,24 @@ export class ArtifactModel {
      */
     public equal(item: ArtifactModel, index?: number): boolean {
         return this._hash === item._hash;
+    }
+
+    /**
+     * Comparison of models using key
+     * @param item - model
+     * @public
+     */
+    public equalKey(doc: ArtifactModel): boolean {
+        return this.key === doc.key;
+    }
+
+    /**
+     * Get weight object
+     * @public
+     */
+    public toWeight(options: ICompareOptions): IWeightItem {
+        return {
+            weight: this._hash
+        }
     }
 }

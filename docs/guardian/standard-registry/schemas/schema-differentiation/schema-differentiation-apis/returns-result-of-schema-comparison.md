@@ -5,15 +5,15 @@
 Returns the result of comparing two schemas. Only users with the Standard Registry role are allowed to make the request.
 {% endswagger-description %}
 
-{% swagger-parameter in="body" name="schemaId1" type="String" %}
+{% swagger-parameter in="body" name="schemaId1" type="String" required="false" %}
 Schema Identifier 1
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="schemaId2" type="String" %}
+{% swagger-parameter in="body" name="schemaId2" type="String" required="false" %}
 Schema Identifier 2
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="idLvl" type="String" %}
+{% swagger-parameter in="body" name="idLvl" type="String" required="false" %}
 UUID comparison setting (0/1)
 {% endswagger-parameter %}
 

@@ -1,4 +1,5 @@
 import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
+import { CommonBlock } from './common';
 
 /**
  * Information block
@@ -16,6 +17,7 @@ export class TokenActionBlock {
      */
     public static async validate(validator: BlockValidator, ref: IBlockProp): Promise<void> {
         try {
+            await CommonBlock.validate(validator, ref);
             const accountType = ['default', 'custom'];
             if (accountType.indexOf(ref.options.accountType) === -1) {
                 validator.addError('Option "accountType" must be one of ' + accountType.join(','));

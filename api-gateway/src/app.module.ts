@@ -11,6 +11,7 @@ import { MapApi } from '@api/service/map';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { MetricsApi } from '@api/service/metrics';
 import { ModulesApi } from '@api/service/module';
+import { ToolsApi } from '@api/service/tool';
 import { ProfileApi } from '@api/service/profile';
 import { authorizationHelper } from '@auth/authorization-helper';
 import { PolicyApi } from '@api/service/policy';
@@ -26,10 +27,31 @@ import express from 'express';
 import fileUpload from 'express-fileupload';
 import hpp from 'hpp';
 import { ThemesApi } from '@api/service/themes';
-import { TrustChainsOldApi } from '@api/service/trustchains';
+import { BrandingApi } from '@api/service/branding';
+import { SuggestionsApi } from '@api/service/suggestions';
+import { MatchConstraint } from '@helpers/decorators/match.validator';
+import { NotificationService } from '@guardian/common';
+import { NotificationsApi } from '@api/service/notifications';
+import { ApplicationEnvironment } from './environment';
+import { AuthGuard } from '@auth/auth-guard';
+import { UsersService } from '@helpers/users';
+import { RolesGuard } from '@auth/roles-guard';
 
 const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
 const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
+
+// class LogClientSerializer implements Serializer {
+//     serialize(value: any, options?: Record<string, any>): any {
+//         value.data = Buffer.from(JSON.stringify(value), 'utf-8')
+//         return value;
+//     }
+// }
+//
+// class LogClientDeserializer implements Deserializer {
+//     deserialize(value: any, options?: Record<string, any>): any {
+//         return JSON.parse(value.toString())
+//     }
+// }
 
 @Module({
     imports: [
@@ -40,22 +62,25 @@ const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
                 name: `${process.env.SERVICE_CHANNEL}`,
                 servers: [
                     `nats://${process.env.MQ_ADDRESS}:4222`
-                ]
+                ],
+                // serializer: new LogClientSerializer(),
+                // deserializer: new LogClientDeserializer()
             }
-        }]),
+        }])
     ],
     controllers: [
         AccountApi,
         AnalyticsApi,
         ArtifactApi,
         ContractsApi,
-        DemoApi,
+        ...(ApplicationEnvironment.demoMode ? [DemoApi] : []),
         ExternalApi,
         IpfsApi,
         LoggerApi,
         MapApi,
         MetricsApi,
         ModulesApi,
+        ToolsApi,
         ProfileApi,
         PolicyApi,
         SingleSchemaApi,
@@ -66,16 +91,23 @@ const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
         TokensApi,
         ThemesApi,
         TrustChainsApi,
-        TrustChainsOldApi,
-        WizardApi
+        WizardApi,
+        BrandingApi,
+        SuggestionsApi,
+        NotificationsApi,
     ],
     providers: [
-        LoggerService
+        LoggerService,
+        MatchConstraint,
+        NotificationService,
+        AuthGuard,
+        RolesGuard,
+        UsersService
     ]
 })
 export class AppModule {
     configure(consumer: MiddlewareConsumer) {
-        consumer.apply(authorizationHelper).forRoutes(AccountApi);
+        // consumer.apply(authorizationHelper).forRoutes(AccountApi);
         consumer.apply(authorizationHelper).forRoutes(ProfileApi);
         consumer.apply(authorizationHelper).forRoutes(PolicyApi);
         consumer.apply(authorizationHelper).forRoutes(SettingsApi);
@@ -87,11 +119,16 @@ export class AppModule {
         consumer.apply(authorizationHelper).forRoutes(AnalyticsApi);
         consumer.apply(authorizationHelper).forRoutes(ContractsApi);
         consumer.apply(authorizationHelper).forRoutes(ModulesApi);
+        consumer.apply(authorizationHelper).forRoutes(ToolsApi);
         consumer.apply(authorizationHelper).forRoutes(TagsApi);
         consumer.apply(authorizationHelper).forRoutes(ThemesApi);
         consumer.apply(authorizationHelper).forRoutes(TokensApi);
         consumer.apply(authorizationHelper).forRoutes(TrustChainsApi);
         consumer.apply(authorizationHelper).forRoutes(WizardApi);
+        // consumer.apply(authorizationHelper).forRoutes(BrandingApi);
+        consumer.apply(authorizationHelper).forRoutes(SuggestionsApi);
+        consumer.apply(authorizationHelper).forRoutes(NotificationsApi);
+        consumer.apply(authorizationHelper).forRoutes(TaskApi);
 
         consumer.apply(express.json({
             limit: JSON_REQUEST_LIMIT

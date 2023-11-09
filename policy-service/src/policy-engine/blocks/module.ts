@@ -5,6 +5,7 @@ import { IPolicyUser } from '@policy-engine/policy-user';
 import { ActionCallback } from '@policy-engine/helpers/decorators';
 import { IPolicyEvent } from '@policy-engine/interfaces';
 import { PolicyInputEventType } from '@policy-engine/interfaces/policy-event-type';
+import { IPolicyEventState } from '@policy-engine/policy-engine.interface';
 
 /**
  * Container block with UI
@@ -60,7 +61,7 @@ export class ModuleBlock {
     @ActionCallback({
         type: PolicyInputEventType.ModuleEvent
     })
-    async onAction(event: IPolicyEvent<any>) {
+    async onAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         for (const e of this.inputEvents) {
             if (e.name === event.inputType) {
@@ -77,40 +78,42 @@ export class ModuleBlock {
     }
 
     /**
-     * Get Variable
-     * @param user
+     * Get variables
+     * @param names variable name
+     * @param type variable type
      */
-    getModuleVariable(value: any[] | any, type: string): any {
-        if(Array.isArray(value)) {
+    public getVariables(names: any[] | any, type: string): any {
+        if (Array.isArray(names)) {
             const result = [];
-            for (const v of value) {
-                result.push(this.getVariable(v, type));
+            for (const name of names) {
+                result.push(this._getVariable(name, type));
             }
             return result;
         } else {
-            return this.getVariable(value, type);
+            return this._getVariable(names, type);
         }
     }
 
     /**
-     * Get Variable
-     * @param user
+     * Get variable
+     * @param name variable name
+     * @param type variable type
      */
-    private getVariable(value: any, type: string): any {
+    private _getVariable(name: any, type: string): any {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         if (Array.isArray(ref.options.variables)) {
             for (const variable of ref.options.variables) {
                 if (type) {
-                    if (value === variable.name && variable.type === type) {
+                    if (name === variable.name && variable.type === type) {
                         return ref.options[variable.name];
                     }
                 } else {
-                    if (value === variable.name) {
+                    if (name === variable.name) {
                         return variable.value;
                     }
                 }
             }
         }
-        return value;
+        return name;
     }
 }

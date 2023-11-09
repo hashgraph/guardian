@@ -17,6 +17,7 @@ import {
     SynchronizationMessage,
     TopicConfig,
     Workers,
+    NotificationHelper,
 } from '@guardian/common';
 
 /**
@@ -231,9 +232,13 @@ export class SynchronizationService {
         const transactions = await DatabaseServer.getMultiPolicyTransactions(policy.id, user);
         for (const transaction of transactions) {
             if (transaction.amount <= min) {
+                const users = new Users();
+                const userAccount = await users.getUserById(user);
+                const policyOwner = await users.getUserById(policy.owner);
+                const notifier = NotificationHelper.init([userAccount?.id, policyOwner?.id]);
                 const token = await DatabaseServer.getToken(transaction.tokenId);
                 const status = await this.completeTransaction(
-                    messageServer, root, token, transaction, policies, vpMap
+                    messageServer, root, token, transaction, policies, vpMap, notifier
                 );
                 if (status) {
                     min -= transaction.amount;
@@ -258,7 +263,8 @@ export class SynchronizationService {
         token: Token,
         transaction: MultiPolicyTransaction,
         policies: SynchronizationMessage[],
-        vpMap: { [x: string]: SynchronizationMessage[] }
+        vpMap: { [x: string]: SynchronizationMessage[] },
+        notifier?: NotificationHelper,
     ): Promise<boolean> {
         try {
             if (!token) {
@@ -294,7 +300,9 @@ export class SynchronizationService {
                 token,
                 transaction.amount,
                 transaction.target,
-                messagesIDs
+                messagesIDs,
+                notifier,
+
             );
             transaction.status = 'Completed';
             await DatabaseServer.updateMultiPolicyTransactions(transaction);

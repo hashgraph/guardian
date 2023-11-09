@@ -1,6 +1,5 @@
 import { Stack, PolicyStorageItem } from "./storage";
 
-
 export class PolicyStorage {
     private readonly STORAGE_NAME = 'POLICY_STORAGE';
 
@@ -22,6 +21,10 @@ export class PolicyStorage {
         if (item) {
             this._policyStorage.push(item);
         }
+    }
+
+    public destroy(): void {
+
     }
 
     public get current(): PolicyStorageItem | null {

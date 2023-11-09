@@ -4,9 +4,11 @@
 
 export const environment = {
   production: false,
+    accessTokenUpdateInterval: 29 * 1000,
   displayDemoAccounts: true,
+    isMeecoConfigured: true,
   explorerSettings: {
-    url: 'https://explore.lworks.io/${network}/${type}/${value}',
+    url: 'https://explore.lworks.io/${network}/${type}/${value}/${subType}/${subValue}',
     networkMap: {
         'mainnet': 'mainnet',
         'testnet': 'testnet',
@@ -15,7 +17,10 @@ export const environment = {
     typeMap: {
         'tokens': 'tokens',
         'topics': 'topics',
-        'accounts': 'accounts'
+        'accounts': 'accounts',
+        'messages': 'messages',
+        'serials': 'nfts',
+        'contracts': 'contracts',
     }
   }
 };

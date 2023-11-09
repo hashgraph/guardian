@@ -8,11 +8,11 @@ You'll now be prompted to configure your GHG Remote Work account. Enter the deta
 
 <figure><img src="../../../../.gitbook/assets/Screen Shot 2022-12-14 at 1.22.01 PM.png" alt=""><figcaption></figcaption></figure>
 
-Now we will be creating the Policy. We have three ways to "create policies." The first way is to actually create the policy from scratch. The second way is to import an existing policy; either the policy file itself or from IPFS. When you import a policy, all schemas and tokens that are required in the policy are automatically populated. To do this, you can find the policy file and the IPFS timestamp on the open-source Guardian policy page [here](https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts/iREC). For this demo guide, we will be using the 3rd way to create a policy, which is through the preloaded drop-down list.&#x20;
+Now we will be creating the Policy. We have three ways to "create policies." The first way is to actually create the policy from scratch. The second way is to import an existing policy; either the policy file itself or from IPFS. When you import a policy, all schemas and tokens that are required in the policy are automatically populated. To do this, you can find the policy file and the IPFS timestamp on the open-source Guardian policy page [here](https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts/iREC). For this demo guide, we will be using the 3rd way to create a policy, which is through the preloaded drop-down list.
 
 Once it is selected, we can also preview the policy before importing it. After the policy is imported, we can either run the policy in Dry run mode or we can publish it by clicking on publish button from the dropdown. For testing purposes, we will publish the policy.
 
-Once the policy is published, we will log out and create a new user called, "Employer".&#x20;
+Once the policy is published, we will log out and create a new user called, "Employer".
 
 In the Profile screen, select “GHG Remote Work” and then click the “Generate” button.
 
@@ -66,8 +66,8 @@ Note:
 1. The timers in the GHG policy on MGS are set to intervals of hours, so you need to wait \~1.5 hours for minting tokens
 2. You can make changes to this time period by changing time\_tracking\_timer and report\_timer blocks as shown below.
 
-**For example** : \
-**report\_timer:** 0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58 \* \* \* \*&#x20;
+**For example** :\
+**report\_timer:** 0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58 \* \* \* \*
 
 **time\_tracking\_timer:** 1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,57,59 \* \* \* \*
 {% endhint %}
@@ -78,7 +78,7 @@ You can view the number of tokens minted in the Policy Screen under the sub-tabl
 
 ### For Employees to Create an Employee User and Join an Organization (Employee Users)
 
-Log in and create a user with the name of your choice. For the demo, we are using the name Employee.&#x20;
+Log in and create a user with the name of your choice. For the demo, we are using the name Employee.
 
 On the Profile screen, select “GHG Remote Work” and then “Generate” the Operator ID and Operator Key information. When the Operator ID and Operator Key generates, click the submit button.
 

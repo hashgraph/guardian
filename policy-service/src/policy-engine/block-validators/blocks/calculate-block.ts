@@ -2,6 +2,7 @@ import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
 import { CalculateMathAddon } from './calculate-math-addon';
 import { CalculateMathVariables } from './calculate-math-variables';
 import { Schema } from '@guardian/interfaces';
+import { CommonBlock } from './common';
 
 /**
  * Calculate block
@@ -19,32 +20,17 @@ export class CalculateContainerBlock {
      */
     public static async validate(validator: BlockValidator, ref: IBlockProp): Promise<void> {
         try {
-            // Test schema options
-            if (!ref.options.inputSchema) {
-                validator.addError('Option "inputSchema" is not set');
-                return;
-            }
-            if (typeof ref.options.inputSchema !== 'string') {
-                validator.addError('Option "inputSchema" must be a string');
-                return;
-            }
-            if (await validator.schemaNotExist(ref.options.inputSchema)) {
-                validator.addError(`Schema with id "${ref.options.inputSchema}" does not exist`);
+            await CommonBlock.validate(validator, ref);
+
+            const inputSchemaError = validator.validateSchemaVariable('inputSchema', ref.options.inputSchema, true);
+            if (inputSchemaError) {
+                validator.addError(inputSchemaError);
                 return;
             }
 
-            // Test schema options
-            if (!ref.options.outputSchema) {
-                validator.addError('Option "outputSchema" is not set');
-                return;
-            }
-            if (typeof ref.options.outputSchema !== 'string') {
-                validator.addError('Option "outputSchema" must be a string');
-                return;
-            }
-
-            if (await validator.schemaNotExist(ref.options.outputSchema)) {
-                validator.addError(`Schema with id "${ref.options.outputSchema}" does not exist`);
+            const outputSchemaError = validator.validateSchemaVariable('outputSchema', ref.options.outputSchema, true);
+            if (outputSchemaError) {
+                validator.addError(outputSchemaError);
                 return;
             }
 
@@ -78,7 +64,11 @@ export class CalculateContainerBlock {
                 }
             }
 
-            const outputSchema = await validator.getSchema(ref.options.outputSchema);
+            const outputSchema = validator.getSchema(ref.options.outputSchema);
+            if (!outputSchema) {
+                validator.addError(`Schema with id "${ref.options.outputSchema}" does not exist`);
+                return;
+            }
             const schema = new Schema(outputSchema);
             for (const field of schema.fields) {
                 if (field.required && !map[field.name]) {

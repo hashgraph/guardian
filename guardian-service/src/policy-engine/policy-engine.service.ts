@@ -1,5 +1,28 @@
-import { ExternalMessageEvents, GenerateUUIDv4, PolicyEngineEvents, PolicyEvents, PolicyType, TopicType } from '@guardian/interfaces';
-import { BinaryMessageResponse, DatabaseServer, DIDDocument, findAllEntities, IAuthUser, Logger, MessageError, MessageResponse, NatsService, Policy, RunFunctionAsync, Singleton, TopicConfig, Users } from '@guardian/common';
+import {
+    ExternalMessageEvents,
+    GenerateUUIDv4,
+    PolicyEngineEvents,
+    PolicyEvents,
+    PolicyType,
+    TopicType
+} from '@guardian/interfaces';
+import {
+    BinaryMessageResponse,
+    DatabaseServer,
+    DIDDocument,
+    findAllEntities,
+    IAuthUser,
+    Logger,
+    MessageError,
+    MessageResponse,
+    NatsService,
+    Policy,
+    PolicyImportExport,
+    RunFunctionAsync,
+    Singleton,
+    TopicConfig,
+    Users
+} from '@guardian/common';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 import { PolicyComponentsUtils } from './policy-components-utils';
 import { IPolicyUser } from './policy-user';
@@ -10,6 +33,7 @@ import { NatsConnection } from 'nats';
 import { GuardiansService } from '@helpers/guardians';
 import { Inject } from '@helpers/decorators/inject';
 import { BlockAboutString } from './block-about';
+import { HashComparator } from '@analytics';
 
 /**
  * PolicyEngineChannel
@@ -243,7 +267,8 @@ export class PolicyEngineService {
                         tokenIds,
                         name: policyObject.name,
                         version: policyObject.version,
-                        id: policyObject.id
+                        id: policyObject.id,
+                        status: policyObject.status
                     });
                 }
                 return new MessageResponse(map);
@@ -273,7 +298,8 @@ export class PolicyEngineService {
                         'messageId',
                         'codeVersion',
                         'createDate',
-                        'instanceTopicId'
+                        'instanceTopicId',
+                        'tools'
                     ]
                 };
                 const _pageSize = parseInt(pageSize, 10);
@@ -302,8 +328,8 @@ export class PolicyEngineService {
             try {
                 const user = msg.user;
                 const did = await this.getUserDid(user.username);
-                await this.policyEngine.createPolicy(msg.model, did, emptyNotifier());
-
+                let policy = await this.policyEngine.createPolicy(msg.model, did, emptyNotifier());
+                policy = await PolicyImportExportHelper.updatePolicyComponents(policy);
                 const policies = await DatabaseServer.getListOfPolicies({ owner: did });
                 return new MessageResponse(policies);
             } catch (error) {
@@ -312,21 +338,22 @@ export class PolicyEngineService {
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.CREATE_POLICIES_ASYNC, async (msg) => {
-            const { model, user, taskId } = msg;
-            const notifier = initNotifier(taskId);
+            const { model, user, task } = msg;
+            const notifier = await initNotifier(task);
             RunFunctionAsync(async () => {
                 const did = await this.getUserDid(user.username);
-                const policy = await this.policyEngine.createPolicy(model, did, notifier);
+                let policy = await this.policyEngine.createPolicy(model, did, notifier);
+                policy = await PolicyImportExportHelper.updatePolicyComponents(policy);
                 notifier.result(policy.id);
             }, async (error) => {
                 notifier.error(error);
             });
-            return new MessageResponse({ taskId });
+            return new MessageResponse(task);
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.CLONE_POLICY_ASYNC, async (msg) => {
-            const { policyId, model, user, taskId } = msg;
-            const notifier = initNotifier(taskId);
+            const { policyId, model, user, task } = msg;
+            const notifier = await initNotifier(task);
             RunFunctionAsync(async () => {
                 const result = await this.policyEngine.clonePolicy(policyId, model, user.did, notifier);
                 if (result?.errors?.length) {
@@ -339,23 +366,35 @@ export class PolicyEngineService {
             }, async (error) => {
                 notifier.error(error);
             });
-            return new MessageResponse({ taskId });
+            return new MessageResponse(task);
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.DELETE_POLICY_ASYNC, async (msg) => {
-            const { policyId, user, taskId } = msg;
-            const notifier = initNotifier(taskId);
+            const { policyId, user, task } = msg;
+            const notifier = await initNotifier(task);
             RunFunctionAsync(async () => {
                 notifier.result(await this.policyEngine.deletePolicy(policyId, user, notifier));
             }, async (error) => {
                 notifier.error(error);
             });
-            return new MessageResponse({ taskId });
+            return new MessageResponse(task);
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.SAVE_POLICIES, async (msg) => {
             try {
-                const result = await DatabaseServer.updatePolicyConfig(msg.policyId, msg.model);
+                const { policyId, model, user } = msg;
+                const policy = await DatabaseServer.getPolicyById(policyId);
+                if (!policy) {
+                    throw new Error('Policy does not exist.');
+                }
+                if (policy.owner !== user.did) {
+                    throw new Error('Insufficient permissions to update the policy.');
+                }
+                if (policy.status !== PolicyType.DRAFT) {
+                    throw new Error('Policy is not in draft status.');
+                }
+                let result = await DatabaseServer.updatePolicyConfig(policyId, model);
+                result = await PolicyImportExportHelper.updatePolicyComponents(result);
                 return new MessageResponse(result);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -387,8 +426,8 @@ export class PolicyEngineService {
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.PUBLISH_POLICIES_ASYNC, async (msg) => {
-            const { model, policyId, user, taskId } = msg;
-            const notifier = initNotifier(taskId);
+            const { model, policyId, user, task } = msg;
+            const notifier = await initNotifier(task);
 
             RunFunctionAsync(async () => {
                 if (!model || !model.policyVersion) {
@@ -405,7 +444,7 @@ export class PolicyEngineService {
                 notifier.error(error);
             });
 
-            return new MessageResponse({ taskId });
+            return new MessageResponse(task);
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.DRY_RUN_POLICIES, async (msg) => {
@@ -477,7 +516,8 @@ export class PolicyEngineService {
                 model.status = PolicyType.DRAFT;
                 model.version = '';
 
-                await DatabaseServer.updatePolicy(model);
+                let retVal = await DatabaseServer.updatePolicy(model);
+                retVal = await PolicyImportExportHelper.updatePolicyComponents(retVal);
 
                 await this.policyEngine.destroyModel(model.id.toString());
 
@@ -512,6 +552,11 @@ export class PolicyEngineService {
         this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_BLOCKS, async (msg) => {
             try {
                 const { user, policyId } = msg;
+
+                const error = new PolicyEngine().getPolicyError(policyId);
+                if (error) {
+                    throw new Error(error);
+                }
 
                 const blockData = await new GuardiansService().sendPolicyMessage(PolicyEvents.GET_ROOT_BLOCK_DATA, policyId, {
                     user,
@@ -659,7 +704,7 @@ export class PolicyEngineService {
                 if (!policy) {
                     throw new Error(`Cannot export policy ${policyId}`);
                 }
-                const zip = await PolicyImportExportHelper.generateZipFile(policy);
+                const zip = await PolicyImportExport.generate(policy);
                 const file = await zip.generateAsync({
                     type: 'arraybuffer',
                     compression: 'DEFLATE',
@@ -699,11 +744,16 @@ export class PolicyEngineService {
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_FILE_PREVIEW, async (msg) => {
             try {
-                const { zip } = msg;
+                const { zip, user } = msg;
                 if (!zip) {
                     throw new Error('file in body is empty');
                 }
-                const policyToImport = await PolicyImportExportHelper.parseZipFile(Buffer.from(zip.data));
+                const owner = await this.getUserDid(user.username);
+                const policyToImport: any = await PolicyImportExport.parseZipFile(Buffer.from(zip.data), true);
+                const compareModel = await HashComparator.createModelByFile(policyToImport);
+                const hash = HashComparator.createHash(compareModel);
+                const similarPolicies = await DatabaseServer.getListOfPolicies({ owner, hash });
+                policyToImport.similar = similarPolicies;
                 return new MessageResponse(policyToImport);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -719,10 +769,10 @@ export class PolicyEngineService {
                 }
                 new Logger().info(`Import policy by file`, ['GUARDIAN_SERVICE']);
                 const did = await this.getUserDid(user.username);
-                const policyToImport = await PolicyImportExportHelper.parseZipFile(Buffer.from(zip.data), true);
+                const policyToImport = await PolicyImportExport.parseZipFile(Buffer.from(zip.data), true);
                 const result = await PolicyImportExportHelper.importPolicy(policyToImport, did, versionOfTopicId, emptyNotifier());
                 if (result?.errors?.length) {
-                    const message = `Failed to import schemas: ${JSON.stringify(result.errors.map(e => e.name))}`;
+                    const message = PolicyImportExportHelper.errorsMessage(result.errors);
                     new Logger().warn(message, ['GUARDIAN_SERVICE']);
                     return new MessageError(message);
                 }
@@ -735,8 +785,8 @@ export class PolicyEngineService {
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_FILE_ASYNC, async (msg) => {
-            const { zip, user, versionOfTopicId, taskId } = msg;
-            const notifier = initNotifier(taskId);
+            const { zip, user, versionOfTopicId, task } = msg;
+            const notifier = await initNotifier(task);
 
             RunFunctionAsync(async () => {
                 if (!zip) {
@@ -745,11 +795,11 @@ export class PolicyEngineService {
                 new Logger().info(`Import policy by file`, ['GUARDIAN_SERVICE']);
                 const did = await this.getUserDid(user.username);
                 notifier.start('File parsing');
-                const policyToImport = await PolicyImportExportHelper.parseZipFile(Buffer.from(zip.data), true);
+                const policyToImport = await PolicyImportExport.parseZipFile(Buffer.from(zip.data), true);
                 notifier.completed();
                 const result = await PolicyImportExportHelper.importPolicy(policyToImport, did, versionOfTopicId, notifier);
                 if (result?.errors?.length) {
-                    const message = `Failed to import schemas: ${JSON.stringify(result.errors.map(e => e.name))}`
+                    const message = PolicyImportExportHelper.errorsMessage(result.errors);
                     notifier.error(message);
                     new Logger().warn(message, ['GUARDIAN_SERVICE']);
                     return;
@@ -763,13 +813,18 @@ export class PolicyEngineService {
                 notifier.error(error);
             });
 
-            return new MessageResponse({ taskId });
+            return new MessageResponse(task);
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW, async (msg) => {
             try {
                 const { messageId, user } = msg;
+                const owner = await this.getUserDid(user.username);
                 const policyToImport = await this.policyEngine.preparePolicyPreviewMessage(messageId, user, emptyNotifier());
+                const compareModel = await HashComparator.createModelByFile(policyToImport);
+                const hash = HashComparator.createHash(compareModel);
+                const similarPolicies = await DatabaseServer.getListOfPolicies({ owner, hash });
+                policyToImport.similar = similarPolicies;
                 return new MessageResponse(policyToImport);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -778,18 +833,23 @@ export class PolicyEngineService {
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW_ASYNC, async (msg) => {
-            const { messageId, user, taskId } = msg;
-            const notifier = initNotifier(taskId);
+            const { messageId, user, task } = msg;
+            const notifier = await initNotifier(task);
 
             RunFunctionAsync(async () => {
+                const owner = await this.getUserDid(user.username);
                 const policyToImport = await this.policyEngine.preparePolicyPreviewMessage(messageId, user, notifier);
+                const compareModel = await HashComparator.createModelByFile(policyToImport);
+                const hash = HashComparator.createHash(compareModel);
+                const similarPolicies = await DatabaseServer.getListOfPolicies({ owner, hash });
+                policyToImport.similar = similarPolicies;
                 notifier.result(policyToImport);
             }, async (error) => {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 notifier.error(error);
             });
 
-            return new MessageResponse({ taskId });
+            return new MessageResponse(task);
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE, async (msg) => {
@@ -804,7 +864,7 @@ export class PolicyEngineService {
 
                 const result = await this.policyEngine.importPolicyMessage(messageId, did, root, versionOfTopicId, emptyNotifier());
                 if (result?.errors?.length) {
-                    const message = `Failed to import schemas: ${JSON.stringify(result.errors.map(e => e.name))}`
+                    const message = PolicyImportExportHelper.errorsMessage(result.errors);
                     new Logger().warn(message, ['GUARDIAN_SERVICE']);
                     return new MessageError(message);
                 }
@@ -818,8 +878,8 @@ export class PolicyEngineService {
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_ASYNC, async (msg) => {
-            const { messageId, user, versionOfTopicId, taskId } = msg;
-            const notifier = initNotifier(taskId);
+            const { messageId, user, versionOfTopicId, task } = msg;
+            const notifier = await initNotifier(task);
 
             RunFunctionAsync(async () => {
                 try {
@@ -832,7 +892,7 @@ export class PolicyEngineService {
                     notifier.completed();
                     const result = await this.policyEngine.importPolicyMessage(messageId, did, root, versionOfTopicId, notifier);
                     if (result?.errors?.length) {
-                        const message = `Failed to import schemas: ${JSON.stringify(result.errors.map(e => e.name))}`
+                        const message = PolicyImportExportHelper.errorsMessage(result.errors);
                         notifier.error(message);
                         new Logger().warn(message, ['GUARDIAN_SERVICE']);
                         return;
@@ -847,7 +907,7 @@ export class PolicyEngineService {
                 }
             });
 
-            return new MessageResponse({ taskId });
+            return new MessageResponse(task);
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA, async (msg) => {

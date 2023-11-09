@@ -1,64 +1,51 @@
 import { ApiResponse } from '@api/helpers/api-response';
-import { BinaryMessageResponse, DatabaseServer, Logger, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, ModuleMessage, PolicyModule, TopicConfig, TopicHelper, Users, } from '@guardian/common';
-import { GenerateUUIDv4, MessageAPI, ModuleStatus, TagType, TopicType } from '@guardian/interfaces';
-import JSZip from 'jszip';
+import {
+    BinaryMessageResponse,
+    DatabaseServer,
+    Logger,
+    MessageAction,
+    MessageError,
+    MessageResponse,
+    MessageServer,
+    MessageType,
+    ModuleImportExport,
+    ModuleMessage,
+    PolicyModule,
+    TagMessage,
+    TopicConfig,
+    TopicHelper,
+    Users
+} from '@guardian/common';
+import {
+    GenerateUUIDv4,
+    MessageAPI,
+    ModuleStatus,
+    SchemaCategory,
+    TagType,
+    TopicType
+} from '@guardian/interfaces';
 import { emptyNotifier, INotifier } from '@helpers/notifier';
 import { ISerializedErrors } from '@policy-engine/policy-validation-results-container';
 import { ModuleValidator } from '@policy-engine/block-validators/module-validator';
-import { exportTag, importTag } from './tag.service';
+import { importTag } from './helpers/tag-import-export-helper';
 
 /**
- * Generate Zip File
- * @param module module to pack
+ * Check and update config file
+ * @param module module
  *
- * @returns Zip file
+ * @returns module
  */
-export async function generateZipFile(module: PolicyModule): Promise<JSZip> {
-    const tagTargets: string[] = [];
-    tagTargets.push(module.id.toString());
-
-    const moduleObject = { ...module };
-    delete moduleObject._id;
-    delete moduleObject.id;
-    delete moduleObject.uuid;
-    delete moduleObject.messageId;
-    delete moduleObject.status;
-    delete moduleObject.topicId;
-    delete moduleObject.createDate;
-    const zip = new JSZip();
-    zip.file('module.json', JSON.stringify(moduleObject));
-
-    zip.folder('tags');
-    const tags = await exportTag(tagTargets)
-    for (let index = 0; index < tags.length; index++) {
-        const tag = tags[index];
-        zip.file(`tags/${index}.json`, JSON.stringify(tag));
-    }
-
-    return zip;
-}
-
-/**
- * Parse zip module file
- * @param zipFile Zip file
- * @returns Parsed module
- */
-export async function parseZipFile(zipFile: any): Promise<any> {
-    const zip = new JSZip();
-    const content = await zip.loadAsync(zipFile);
-    if (!content.files['module.json'] || content.files['module.json'].dir) {
-        throw new Error('Zip file is not a module');
-    }
-    const moduleString = await content.files['module.json'].async('string');
-    const tagsStringArray = await Promise.all(Object.entries(content.files)
-        .filter(file => !file[1].dir)
-        .filter(file => /^tags\/.+/.test(file[0]))
-        .map(file => file[1].async('string')));
-
-    const module = JSON.parse(moduleString);
-    const tags = tagsStringArray.map(item => JSON.parse(item));
-
-    return { module, tags };
+export function updateModuleConfig(module: any): any {
+    module.config = module.config || {};
+    module.config.permissions = module.config.permissions || [];
+    module.config.children = module.config.children || [];
+    module.config.events = module.config.events || [];
+    module.config.artifacts = module.config.artifacts || [];
+    module.config.variables = module.config.variables || [];
+    module.config.inputEvents = module.config.inputEvents || [];
+    module.config.outputEvents = module.config.outputEvents || [];
+    module.config.innerEvents = module.config.innerEvents || [];
+    return module;
 }
 
 /**
@@ -86,7 +73,9 @@ export async function preparePreviewMessage(messageId: string, owner: string, no
     }
 
     notifier.completedAndStart('Parse module files');
-    const result = await parseZipFile(message.document);
+    const result: any = await ModuleImportExport.parseZipFile(message.document);
+    result.messageId = messageId;
+    result.moduleTopicId = message.moduleTopicId;
 
     notifier.completed();
     return result;
@@ -129,6 +118,7 @@ export async function validateAndPublish(uuid: string, owner: string, notifier: 
  */
 export async function validateModel(module: PolicyModule): Promise<ISerializedErrors> {
     const moduleValidator = new ModuleValidator(module.config);
+    await moduleValidator.build(module.config);
     await moduleValidator.validate();
     return moduleValidator.getSerializedErrors();
 }
@@ -167,11 +157,11 @@ export async function publishModule(model: PolicyModule, owner: string, notifier
     await DatabaseServer.saveTopic(rootTopic.toObject());
 
     model.topicId = rootTopic.topicId;
-    model.status = ModuleStatus.PUBLISHED;
 
     notifier.completedAndStart('Generate file');
 
-    const zip = await generateZipFile(model);
+    model = updateModuleConfig(model);
+    const zip = await ModuleImportExport.generate(model);
     const buffer = await zip.generateAsync({
         type: 'arraybuffer',
         compression: 'DEFLATE',
@@ -186,6 +176,7 @@ export async function publishModule(model: PolicyModule, owner: string, notifier
     const result = await messageServer
         .sendMessage(message);
     model.messageId = result.getId();
+    model.status = ModuleStatus.PUBLISHED;
 
     notifier.completedAndStart('Link topic and module');
     await topicHelper.twoWayLink(rootTopic, userTopic, result.getId());
@@ -219,6 +210,9 @@ export async function modulesAPI(): Promise<void> {
             module.creator = owner;
             module.owner = owner;
             module.type = 'CUSTOM';
+            module.status = ModuleStatus.DRAFT;
+            updateModuleConfig(module);
+
             const item = await DatabaseServer.createModules(module);
             return new MessageResponse(item);
         } catch (error) {
@@ -285,6 +279,15 @@ export async function modulesAPI(): Promise<void> {
             const items = await DatabaseServer.getModules({
                 owner: msg.owner
             });
+            for (const item of items) {
+                if (item.config?.variables) {
+                    for (const variable of item.config.variables) {
+                        if (variable.baseSchema) {
+                            variable.baseSchema = await DatabaseServer.getSchema({ iri: variable.baseSchema });
+                        }
+                    }
+                }
+            }
             return new MessageResponse(items);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -309,6 +312,7 @@ export async function modulesAPI(): Promise<void> {
             item.config = module.config;
             item.name = module.name;
             item.description = module.description;
+            updateModuleConfig(item);
 
             const result = await DatabaseServer.updateModule(item);
             return new MessageResponse(result);
@@ -345,7 +349,8 @@ export async function modulesAPI(): Promise<void> {
                 throw new Error('Invalid module');
             }
 
-            const zip = await generateZipFile(item);
+            updateModuleConfig(item);
+            const zip = await ModuleImportExport.generate(item);
             const file = await zip.generateAsync({
                 type: 'arraybuffer',
                 compression: 'DEFLATE',
@@ -390,7 +395,7 @@ export async function modulesAPI(): Promise<void> {
             if (!zip) {
                 throw new Error('file in body is empty');
             }
-            const preview = await parseZipFile(Buffer.from(zip.data));
+            const preview = await ModuleImportExport.parseZipFile(Buffer.from(zip.data));
             return new MessageResponse(preview);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -416,9 +421,9 @@ export async function modulesAPI(): Promise<void> {
                 throw new Error('file in body is empty');
             }
 
-            const preview = await parseZipFile(Buffer.from(zip.data));
+            const preview = await ModuleImportExport.parseZipFile(Buffer.from(zip.data));
 
-            const { module, tags } = preview;
+            const { module, tags, schemas } = preview;
             delete module._id;
             delete module.id;
             delete module.messageId;
@@ -426,7 +431,7 @@ export async function modulesAPI(): Promise<void> {
             module.uuid = GenerateUUIDv4();
             module.creator = owner;
             module.owner = owner;
-            module.status = 'DRAFT';
+            module.status = ModuleStatus.DRAFT;
             module.type = 'CUSTOM';
             if (await DatabaseServer.getModule({ name: module.name })) {
                 module.name = module.name + '_' + Date.now();
@@ -436,6 +441,14 @@ export async function modulesAPI(): Promise<void> {
             if (Array.isArray(tags)) {
                 const moduleTags = tags.filter((t: any) => t.entity === TagType.Module);
                 await importTag(moduleTags, item.id.toString());
+            }
+
+            if (Array.isArray(schemas)) {
+                for (const schema of schemas) {
+                    const schemaObject = DatabaseServer.createSchema(schema);
+                    schemaObject.category = SchemaCategory.MODULE;
+                    await DatabaseServer.saveSchema(schemaObject);
+                }
             }
 
             return new MessageResponse(item);
@@ -455,7 +468,7 @@ export async function modulesAPI(): Promise<void> {
             const notifier = emptyNotifier();
             const preview = await preparePreviewMessage(messageId, owner, notifier);
 
-            const { module, tags } = preview;
+            const { module, tags, moduleTopicId } = preview;
             delete module._id;
             delete module.id;
             delete module.messageId;
@@ -470,11 +483,37 @@ export async function modulesAPI(): Promise<void> {
             }
             const item = await DatabaseServer.createModules(module);
 
-            if (Array.isArray(tags)) {
+            if (moduleTopicId) {
+                const messageServer = new MessageServer(null, null);
+                const tagMessages = await messageServer.getMessages<TagMessage>(
+                    moduleTopicId,
+                    MessageType.Tag,
+                    MessageAction.PublishTag
+                );
+                for (const tag of tagMessages) {
+                    if (tag.entity === TagType.Module && tag.target === messageId) {
+                        tags.push({
+                            uuid: tag.uuid,
+                            name: tag.name,
+                            description: tag.description,
+                            owner: tag.owner,
+                            entity: tag.entity,
+                            target: tag.target,
+                            status: 'History',
+                            topicId: tag.topicId,
+                            messageId: tag.id,
+                            date: tag.date,
+                            document: null,
+                            uri: null,
+                            id: null
+                        });
+                    }
+                }
+            }
+            if (tags.length) {
                 const moduleTags = tags.filter((t: any) => t.entity === TagType.Module);
                 await importTag(moduleTags, item.id.toString());
             }
-
             return new MessageResponse(item);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
