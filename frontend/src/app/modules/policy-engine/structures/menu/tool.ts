@@ -51,6 +51,7 @@ export class ToolMenuItem {
     public readonly owner: string;
     public readonly topicId: string;
     public readonly schemas: any[];
+    public readonly config: any;
 
     private readonly parent: ToolMenu;
     private readonly _toolIds: string[];
@@ -81,6 +82,11 @@ export class ToolMenuItem {
         }
         this.data = `tool:${tool.messageId}`;
         this.search = this.name.toLowerCase();
+        this.config = {
+            inputEvents: tool.config?.inputEvents,
+            outputEvents: tool.config?.outputEvents,
+            variables: tool.config?.variables
+        }
         this._children = [];
         this._all = [];
     }
