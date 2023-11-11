@@ -1114,7 +1114,7 @@ __metadata:
     "@types/winston": ^2.4.4
     ajv: ^8.10.0
     ajv-formats: ^2.1.1
-    axios: ^1.3.6
+    axios: ^1.6.0
     bs58: ^4.0.1
     bson: ^5.3.0
     dotenv: ^16.0.0
@@ -3887,7 +3887,7 @@ __metadata:
     "@types/node": ^18.16.0
     "@types/ws": ^8.2.2
     async-mutex: ^0.4.0
-    axios: ^1.3.6
+    axios: ^1.6.0
     chai: ^4.3.4
     class-transformer: ^0.5.1
     class-validator: ^0.14.0
@@ -3927,7 +3927,7 @@ __metadata:
   dependencies:
     "@types/gulp": ^4
     "@types/gulp-rename": ^2
-    axios: ^1.3.6
+    axios: ^1.6.0
     chai: ^4.3.5
     dotenv: ^16.0.1
     gulp: ^4.0.2
@@ -4336,7 +4336,7 @@ __metadata:
     "@types/jsonwebtoken": ^8.5.4
     "@types/node": ^18.16.0
     "@types/node-vault": ^0
-    axios: ^1.4.0
+    axios: ^1.6.0
     base-x: ^4.0.0
     base64url: ^3.0.1
     base64url-universal: ^2.0.0
@@ -4397,7 +4397,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^1.3.1, axios@npm:^1.3.6, axios@npm:^1.4.0":
+"axios@npm:^1.3.1":
   version: 1.5.0
   resolution: "axios@npm:1.5.0"
   dependencies:
@@ -4405,6 +4405,17 @@ __metadata:
     form-data: ^4.0.0
     proxy-from-env: ^1.1.0
   checksum: e7405a5dbbea97760d0e6cd58fecba311b0401ddb4a8efbc4108f5537da9b3f278bde566deb777935a960beec4fa18e7b8353881f2f465e4f2c0e949fead35be
+  languageName: node
+  linkType: hard
+
+"axios@npm:^1.6.0":
+  version: 1.6.1
+  resolution: "axios@npm:1.6.1"
+  dependencies:
+    follow-redirects: ^1.15.0
+    form-data: ^4.0.0
+    proxy-from-env: ^1.1.0
+  checksum: 573f03f59b7487d54551b16f5e155d1d130ad4864ed32d1da93d522b78a57123b34e3bde37f822a65ee297e79f1db840f9ad6514addff50d3cbf5caeed39e8dc
   languageName: node
   linkType: hard
 
@@ -7898,7 +7909,7 @@ __metadata:
     "@types/node": ^18.16.0
     ajv: ^8.10.0
     ajv-formats: ^2.1.1
-    axios: ^1.3.6
+    axios: ^1.6.0
     bs58: ^4.0.1
     bson: ^5.3.0
     chai: 4.3.4
@@ -10453,7 +10464,7 @@ __metadata:
     "@types/gulp-rename": ^2
     "@types/node": ^18.16.0
     "@web-std/fetch": 3.0.0
-    axios: ^1.3.6
+    axios: ^1.6.0
     chai: 4.3.6
     cors: ^2.8.5
     dotenv: ^16.0.0
@@ -11246,7 +11257,7 @@ __metadata:
     "@types/express": ^4.17.13
     "@types/gulp": ^4
     "@types/gulp-rename": ^2
-    axios: ^1.3.6
+    axios: ^1.6.0
     express: ^4.17.3
     gulp: ^4.0.2
     gulp-copy: ^4.0.1
@@ -12646,7 +12657,7 @@ __metadata:
     "@types/node": ^18.16.0
     ajv: ^8.10.0
     ajv-formats: ^2.1.1
-    axios: ^1.3.6
+    axios: ^1.6.0
     bs58: ^4.0.1
     bson: ~5.3.0
     chai: 4.3.4
@@ -15959,7 +15970,7 @@ __metadata:
     "@types/gulp": ^4
     "@types/gulp-rename": ^2
     "@types/node": ^18.16.0
-    axios: ^1.3.6
+    axios: ^1.6.0
     axios-retry: ^3.2.4
     chai: 4.3.4
     cross-blob: ^2.0.1
