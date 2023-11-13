@@ -3713,7 +3713,7 @@ __metadata:
     tslint: ^6.1.3
     typescript: ^4.5.5
     ws: ^8.2.1
-    yaml: ^2.3.1
+    yaml: ^2.3.4
     yup: ^1.1.1
   languageName: unknown
   linkType: soft
@@ -3916,7 +3916,7 @@ __metadata:
     tslint: ^6.1.3
     typescript: ^4.5.5
     ws: ^8.2.1
-    yaml: ^2.3.1
+    yaml: ^2.3.4
     yup: ^1.1.1
   languageName: unknown
   linkType: soft
@@ -16137,10 +16137,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yaml@npm:^2.3.1":
-  version: 2.3.2
-  resolution: "yaml@npm:2.3.2"
-  checksum: acd80cc24df12c808c6dec8a0176d404ef9e6f08ad8786f746ecc9d8974968c53c6e8a67fdfabcc5f99f3dc59b6bb0994b95646ff03d18e9b1dcd59eccc02146
+"yaml@npm:^2.3.4":
+  version: 2.3.4
+  resolution: "yaml@npm:2.3.4"
+  checksum: e6d1dae1c6383bcc8ba11796eef3b8c02d5082911c6723efeeb5ba50fc8e881df18d645e64de68e421b577296000bea9c75d6d9097c2f6699da3ae0406c030d8
   languageName: node
   linkType: hard
 
