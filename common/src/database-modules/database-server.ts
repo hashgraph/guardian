@@ -25,7 +25,8 @@ import {
     TagCache,
     Contract as ContractCollection,
     ExternalDocument,
-    SuggestionsConfig
+    SuggestionsConfig,
+    Record
 } from '../entity';
 import { Binary } from 'bson';
 import {
@@ -2693,5 +2694,25 @@ export class DatabaseServer {
             }
             await new DataBaseHelper(VpDocumentCollection).update(items);
         }
+    }
+
+    /**
+     * Create Record
+     * @param record
+     */
+    public static async createRecord(record: any): Promise<Record> {
+        const item = new DataBaseHelper(Record).create(record);
+        return await new DataBaseHelper(Record).save(item);
+    }
+
+
+    /**
+     * Get Record
+     * @param filters Filters
+     * @param options Options
+     * @returns Record
+     */
+    public static async getRecord(filters?: any, options?: any): Promise<Record[]> {
+        return await new DataBaseHelper(Record).find(filters, options);
     }
 }

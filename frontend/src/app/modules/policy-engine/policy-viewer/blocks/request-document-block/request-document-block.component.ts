@@ -5,7 +5,6 @@ import { DocumentGenerator, IUser } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { ProfileService } from 'src/app/services/profile.service';
-import { global } from '@angular/compiler/src/util';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { Router } from '@angular/router';
 
@@ -309,7 +308,6 @@ export class RequestDocumentBlockComponent implements OnInit {
     }
 
     onDryRun() {
-        debugger;
         const presetDocument = DocumentGenerator.generateDocument(this.schema);
         this.preset(presetDocument);
     }

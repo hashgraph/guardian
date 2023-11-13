@@ -1,6 +1,23 @@
-import { EventActor, EventCallback, PolicyBlockFullArgumentList, PolicyBlockMap, PolicyInputEventType, PolicyLink, PolicyOutputEventType, PolicyTagMap } from '@policy-engine/interfaces';
+import {
+    EventActor,
+    EventCallback,
+    PolicyBlockFullArgumentList,
+    PolicyBlockMap,
+    PolicyInputEventType,
+    PolicyLink,
+    PolicyOutputEventType,
+    PolicyTagMap
+} from '@policy-engine/interfaces';
 import { BlockType, GenerateUUIDv4, ModuleStatus, PolicyEvents, PolicyType } from '@guardian/interfaces';
-import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock, IPolicyInstance, IPolicyInterfaceBlock, ISerializedBlock, ISerializedBlockExtend } from './policy-engine.interface';
+import {
+    AnyBlockType,
+    IPolicyBlock,
+    IPolicyContainerBlock,
+    IPolicyInstance,
+    IPolicyInterfaceBlock,
+    ISerializedBlock,
+    ISerializedBlockExtend
+} from './policy-engine.interface';
 import { DatabaseServer, Policy, PolicyTool } from '@guardian/common';
 import { STATE_KEY } from '@policy-engine/helpers/constants';
 import { GetBlockByType } from '@policy-engine/blocks/get-block-by-type';
@@ -10,6 +27,8 @@ import { IPolicyUser } from './policy-user';
 import { ExternalEvent } from './interfaces/external-event';
 import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
 import { ComponentsService } from './helpers/components-service';
+import { Recording } from './record/recording';
+import { Running } from './record';
 
 /**
  * Policy tag helper
@@ -711,14 +730,14 @@ export class PolicyComponentsUtils {
      */
     public static async RegisterPolicyInstance(
         policyId: string,
-        policy: Policy
+        policy: Policy,
+        components: ComponentsService
     ) {
         const dryRun = policy.status === PolicyType.DRY_RUN ? policyId : null;
-        const databaseServer = new DatabaseServer(dryRun);
         const policyInstance: IPolicyInstance = {
             policyId,
             dryRun,
-            databaseServer,
+            components,
             isMultipleGroup: !!policy.policyGroups?.length,
             instanceTopicId: policy.instanceTopicId,
             synchronizationTopicId: policy.synchronizationTopicId,
@@ -979,30 +998,12 @@ export class PolicyComponentsUtils {
         policy: IPolicyInstance | IPolicyInterfaceBlock,
         user: IPolicyUser
     ): Promise<any[]> {
-        return await policy.databaseServer.getGroupsByUser(
+        return await policy.components.databaseServer.getGroupsByUser(
             policy.policyId,
             user.did,
             {
                 fields: ['uuid', 'role', 'groupLabel', 'groupName', 'active'],
             }
-        );
-    }
-
-    /**
-     * Select Policy Group
-     * @param policy
-     * @param user
-     * @param uuid
-     */
-    public static async SelectGroup(
-        policy: IPolicyInstance | IPolicyInterfaceBlock,
-        user: IPolicyUser,
-        uuid: string
-    ): Promise<void> {
-        await policy.databaseServer.setActiveGroup(
-            policy.policyId,
-            user.did,
-            uuid
         );
     }
 
@@ -1187,6 +1188,184 @@ export class PolicyComponentsUtils {
                     return modules.getVariables(value, variable.type);
                 }
             );
+        }
+    }
+
+    /**
+     * Get record controller
+     * @param policyId
+     */
+    public static GetRecordingController(policyId: string): Recording | null {
+        if (PolicyComponentsUtils.PolicyById.has(policyId)) {
+            return PolicyComponentsUtils.PolicyById.get(policyId)
+                .components
+                .recordingController;
+        }
+        return null;
+    }
+
+    /**
+     * Get record controller
+     * @param policyId
+     */
+    public static GetRunAndRecordController(policyId: string): Recording | Running | null {
+        if (PolicyComponentsUtils.PolicyById.has(policyId)) {
+            return PolicyComponentsUtils.PolicyById.get(policyId)
+                .components
+                .runAndRecordController;
+        }
+        return null;
+    }
+
+    /**
+     * Record policy
+     * @param policyId
+     */
+    public static async StartRecord(policyId: string): Promise<boolean> {
+        const policy = PolicyComponentsUtils.PolicyById.get(policyId);
+        if (!policy) {
+            return false;
+        }
+        return await policy.components.startRecord();
+    }
+
+    /**
+     * Record policy
+     * @param policyId
+     * @param actions
+     * @param options
+     */
+    public static async RunRecord(
+        policyId: string,
+        actions: any[],
+        options: any
+    ): Promise<boolean> {
+        const policy = PolicyComponentsUtils.PolicyById.get(policyId);
+        if (!policy) {
+            return false;
+        }
+        return await policy.components.runRecord(actions, options);
+    }
+
+    /**
+     * Record policy
+     * @param policyId
+     */
+    public static async StopRecord(policyId: string): Promise<boolean> {
+        const policy = PolicyComponentsUtils.PolicyById.get(policyId);
+        if (!policy) {
+            return false;
+        }
+        return await policy.components.stopRecord();
+    }
+
+    /**
+     * Record SelectGroup
+     * @param policyId
+     * @param user
+     * @param uuid
+     */
+    public static async RecordSelectGroup(
+        policyId: string,
+        user: IPolicyUser,
+        uuid: string
+    ): Promise<void> {
+        const record = PolicyComponentsUtils.GetRecordingController(policyId);
+        if (record) {
+            await record.selectGroup(user, uuid);
+        }
+    }
+
+    /**
+     * Record SetBlockData
+     * @param policyId
+     * @param user
+     * @param uuid
+     */
+    public static async RecordSetBlockData(
+        policyId: string,
+        user: IPolicyUser,
+        block: AnyBlockType,
+        data: any
+    ): Promise<void> {
+        const record = PolicyComponentsUtils.GetRecordingController(policyId);
+        if (record) {
+            await record.setBlockData(user, block, data);
+        }
+    }
+
+    /**
+     * Record ExternalData
+     * @param policyId
+     * @param data
+     */
+    public static async RecordExternalData(
+        policyId: string,
+        data: any
+    ): Promise<void> {
+        const record = PolicyComponentsUtils.GetRecordingController(policyId);
+        if (record) {
+            await record.externalData(data);
+        }
+    }
+
+    /**
+     * Record CreateUser
+     * @param policyId
+     * @param data
+     * @param data
+     */
+    public static async RecordCreateUser(
+        policyId: string,
+        did: string,
+        data: any
+    ): Promise<void> {
+        const record = PolicyComponentsUtils.GetRecordingController(policyId);
+        if (record) {
+            await record.createUser(did, data);
+        }
+    }
+
+    /**
+     * Record SetUser
+     * @param policyId
+     * @param did
+     */
+    public static async RecordSetUser(
+        policyId: string,
+        did: string,
+    ): Promise<void> {
+        const record = PolicyComponentsUtils.GetRecordingController(policyId);
+        if (record) {
+            await record.setUser(did);
+        }
+    }
+
+    /**
+     * Record ExternalData
+     * @param policyId
+     * @param data
+     */
+    public static async GetRecordActions(policyId: string): Promise<any[] | null> {
+        const record = PolicyComponentsUtils.GetRunAndRecordController(policyId);
+        if (record) {
+            return await record.getActions();
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Record ExternalData
+     * @param policyId
+     * @param data
+     */
+    public static GetRecordStatus(policyId: string): any {
+        const record = PolicyComponentsUtils.GetRunAndRecordController(policyId);
+        if (record) {
+            return record.getStatus();
+        } else {
+            return { policyId };
         }
     }
 }

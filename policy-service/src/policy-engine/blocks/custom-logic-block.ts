@@ -331,7 +331,7 @@ export class CustomLogicBlock {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {
             if (idType === 'UUID') {
-                return GenerateUUIDv4();
+                return ref.components.generateUUID();
             }
             if (idType === 'DID') {
                 const topic = await PolicyUtils.getOrCreateTopic(ref, 'root', null, null);

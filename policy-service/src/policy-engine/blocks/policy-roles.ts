@@ -193,6 +193,7 @@ export class PolicyRolesBlock {
         user: IAuthUser,
         groupConfig: IGroupConfig
     ): Promise<IUserGroup> {
+        const uuid = ref.components.generateUUID();
         if (groupConfig.groupRelationshipType === GroupRelationshipType.Multiple) {
             if (groupConfig.groupAccessType === GroupAccessType.Global) {
                 const result = await ref.databaseServer.getGlobalGroup(ref.policyId, groupConfig.name);
@@ -218,7 +219,7 @@ export class PolicyRolesBlock {
                         did: user.did,
                         username: user.username,
                         owner: ref.policyOwner,
-                        uuid: GenerateUUIDv4(),
+                        uuid,
                         role: groupConfig.creator,
                         groupName: groupConfig.name,
                         groupLabel: groupConfig.label,
@@ -234,7 +235,7 @@ export class PolicyRolesBlock {
                     did: user.did,
                     username: user.username,
                     owner: user.did,
-                    uuid: GenerateUUIDv4(),
+                    uuid,
                     role: groupConfig.creator,
                     groupName: groupConfig.name,
                     groupLabel: groupConfig.label,
@@ -250,7 +251,7 @@ export class PolicyRolesBlock {
                 did: user.did,
                 username: user.username,
                 owner: user.did,
-                uuid: GenerateUUIDv4(),
+                uuid,
                 role: groupConfig.creator,
                 groupName: groupConfig.name,
                 groupLabel: groupConfig.label,
@@ -315,11 +316,12 @@ export class PolicyRolesBlock {
             return null;
         }
 
+        const uuid = ref.components.generateUUID();
         const groupOwner = await PolicyUtils.getHederaAccount(ref, group.owner);
         const vcHelper = new VcHelper();
         const vcSubject: any = {
             ...SchemaHelper.getContext(policySchema),
-            id: GenerateUUIDv4(),
+            id: uuid,
             role: group.role,
             userId: group.did,
             policyId: ref.policyId

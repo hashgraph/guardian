@@ -913,11 +913,6 @@ export interface IPolicyInstance {
     readonly dryRun: string;
 
     /**
-     * Database Server
-     */
-    readonly databaseServer: DatabaseServer;
-
-    /**
      * Is Multiple Group
      */
     readonly isMultipleGroup: boolean;
@@ -936,4 +931,9 @@ export interface IPolicyInstance {
      * Policy Owner
      */
     readonly owner: string;
+
+    /**
+     * Policy Owner
+     */
+    readonly components: ComponentsService
 }

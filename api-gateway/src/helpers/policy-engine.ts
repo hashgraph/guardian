@@ -142,7 +142,7 @@ export class PolicyEngine extends NatsService {
     }
 
     public async restartPolicyInstance(user: any, policyId: string) {
-        return await this.sendMessage(PolicyEngineEvents.RESTART_POLICY_INSTANCE, {user, policyId});
+        return await this.sendMessage(PolicyEngineEvents.RESTART_POLICY_INSTANCE, { user, policyId });
     }
 
     /**
@@ -340,10 +340,10 @@ export class PolicyEngine extends NatsService {
     /**
      * Create new Virtual User
      * @param policyId
-     * @param did
+     * @param owner
      */
-    public async createVirtualUser(policyId: string, did: string) {
-        return await this.sendMessage(PolicyEngineEvents.CREATE_VIRTUAL_USER, { policyId, did });
+    public async createVirtualUser(policyId: string, owner: string) {
+        return await this.sendMessage(PolicyEngineEvents.CREATE_VIRTUAL_USER, { policyId, owner });
     }
 
     /**
@@ -363,6 +363,75 @@ export class PolicyEngine extends NatsService {
      */
     public async restartDryRun(model: any, user: any, policyId: string) {
         return await this.sendMessage(PolicyEngineEvents.RESTART_DRY_RUN, { model, user, policyId });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /**
+     * Start record
+     * @param policyId
+     * @param owner
+     * @param options
+     */
+    public async startRecord(policyId: string, owner: string, options: any) {
+        return await this.sendMessage(PolicyEngineEvents.START_RECORD, { options, owner, policyId });
+    }
+
+    /**
+     * Stop record
+     * @param policyId
+     * @param owner
+     * @param options
+     */
+    public async stopRecord(policyId: string, owner: string, options: any) {
+        return await this.sendMessage(PolicyEngineEvents.STOP_RECORD, { options, owner, policyId });
+    }
+
+    /**
+     * Stop record
+     * @param policyId
+     * @param owner
+     * @param options
+     */
+    public async runRecord(policyId: string, owner: string, options: any) {
+        return await this.sendMessage(PolicyEngineEvents.RUN_RECORD, { options, owner, policyId });
+    }
+
+    /**
+     * Stop record
+     * @param policyId
+     * @param uuid
+     */
+    public async getRecord(policyId: string, uuid: string) {
+        return await this.sendMessage(PolicyEngineEvents.GET_RECORD, { policyId, uuid });
+    }
+
+    /**
+     * Stop record
+     * @param policyId
+     * @param uuid
+     */
+    public async getRecordStatus(policyId: string) {
+        return await this.sendMessage(PolicyEngineEvents.GET_RECORD_STATUS, { policyId });
+    }
+
+    /**
+     * Stop record
+     * @param policyId
+     * @param uuid
+     */
+    public async getRecordActions(policyId: string) {
+        return await this.sendMessage(PolicyEngineEvents.GET_RECORD_ACTIONS, { policyId });
     }
 
     /**

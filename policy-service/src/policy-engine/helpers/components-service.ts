@@ -4,8 +4,10 @@ import {
     PolicyTool as PolicyToolCollection,
     Schema as SchemaCollection
 } from '@guardian/common';
-import { PolicyType, SchemaEntity } from '@guardian/interfaces';
-import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
+import { GenerateUUIDv4, PolicyType, SchemaEntity } from '@guardian/interfaces';
+import { IPolicyBlock, IPolicyInstance, IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
+import { IPolicyUser } from '@policy-engine/policy-user';
+import { Recording, Running } from '@policy-engine/record';
 
 export class ComponentsService {
     public readonly topicId: string;
@@ -17,6 +19,7 @@ export class ComponentsService {
     private policyRoles: string[];
     private readonly schemasByID: Map<string, SchemaCollection>;
     private readonly schemasByType: Map<string, SchemaCollection>;
+    private root: IPolicyBlock;
 
     /**
      * Database instance
@@ -38,6 +41,8 @@ export class ComponentsService {
         this.policyRoles = [];
         this.schemasByID = new Map();
         this.schemasByType = new Map();
+        this._recordingController = null;
+        this._runningController = null;
     }
 
     /**
@@ -62,7 +67,7 @@ export class ComponentsService {
      */
     public async loadArtifactByID(uuid: string): Promise<string> {
         const artifactFile = await DatabaseServer.getArtifactFileByUUID(uuid);
-        if(artifactFile) {
+        if (artifactFile) {
             return artifactFile.toString();
         }
         return null;
@@ -136,10 +141,93 @@ export class ComponentsService {
     }
 
     /**
-     * Register Instance
+     * Register root
      * @param name
      */
-    public async registerInstance(blockInstance: IPolicyBlock): Promise<void> {
-        return;
+    public async registerRoot(blockInstance: IPolicyBlock): Promise<void> {
+        this.root = blockInstance;
+    }
+
+    /**
+     * Select Policy Group
+     * @param policy
+     * @param user
+     * @param uuid
+     */
+    public async selectGroup(
+        user: IPolicyUser,
+        uuid: string
+    ): Promise<boolean> {
+        const templates = this.getGroupTemplates<any>();
+        if (templates.length === 0) {
+            return false;
+        }
+        await this.databaseServer.setActiveGroup(
+            this.policyId,
+            user.did,
+            uuid
+        );
+        return true;
+    }
+
+    public generateUUID(): string {
+        return GenerateUUIDv4();
+    }
+
+
+
+
+    private _recordingController: Recording;
+    private _runningController: Running;
+
+    public get recordingController(): Recording | null {
+        return this._recordingController;
+    }
+
+    public get runningController(): Running | null {
+        return this._runningController;
+    }
+
+    public get runAndRecordController(): Recording | Running | null {
+        return this._recordingController || this._runningController;
+    }
+
+    public async startRecord(): Promise<boolean> {
+        if (this._runningController) {
+            return false;
+        }
+        if (!this._recordingController) {
+            this._recordingController = new Recording(this.policyId);
+        }
+        return await this._recordingController.start();
+    }
+
+    public async runRecord(actions: any[], options: any): Promise<boolean> {
+        if (this._recordingController) {
+            return false;
+        }
+        if (!this._runningController) {
+            this._runningController = new Running(
+                this.root,
+                this.policyId,
+                actions,
+                options
+            );
+        }
+        return this._runningController.start();
+    }
+
+    public async stopRecord(): Promise<boolean> {
+        if (this._runningController) {
+            const old = this._runningController;
+            this._runningController = null;
+            return old.stop();
+        }
+        if (this._recordingController) {
+            const old = this._recordingController;
+            this._recordingController = null;
+            return await old.stop();
+        }
+        return false;
     }
 }

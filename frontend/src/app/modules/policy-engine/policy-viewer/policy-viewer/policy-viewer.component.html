@@ -1,4 +1,9 @@
-<div class="content" [attr.status]='policyInfo?.status'>
+<div class="content" 
+    [attr.status]='policyInfo?.status' 
+    [attr.recording]="recording"
+    [attr.running]="running"
+    [attr.instance]="!!policy"
+    >
     <div *ngIf="loading" class="loading">
         <mat-spinner></mat-spinner>
     </div>
@@ -17,7 +22,10 @@
 
     <ng-container *ngIf="isConfirmed && policyId && policy">
         <div *ngIf="isDryRun" class="dry-run-content">
-            <div class="dry-run-action-btn" [routerLink]="['/policy-configuration']" [queryParams]="{ policyId }"
+            <div 
+                class="dry-run-action-btn" 
+                [routerLink]="['/policy-configuration']" 
+                [queryParams]="{ policyId }"
                 title="Edit Policy">
                 <mat-icon>edit</mat-icon>
                 <span>View Config</span>
@@ -45,6 +53,35 @@
 
             <div class="delimiter"></div>
 
+            <div 
+                class="dry-run-action-btn record-btn" 
+                (click)="startRecord()" 
+                title="Start Record"
+                [attr.disabled]="recording || running">
+                <mat-icon>radio_button_checked</mat-icon>
+                <span>Record</span>
+            </div>
+
+            <div 
+                class="dry-run-action-btn run-btn" 
+                (click)="startRun()" 
+                title="Run Record"
+                [attr.disabled]="recording || running">
+                <mat-icon>play_arrow</mat-icon>
+                <span>Run</span>
+            </div>
+
+            <div 
+                class="dry-run-action-btn" 
+                (click)="stopRecord()" 
+                title="Stop Record"
+                [attr.disabled]="!(recording || running)">
+                <mat-icon class="material-icons-outlined">stop_circle</mat-icon>
+                <span>Stop</span>
+            </div>
+
+            <div class="delimiter"></div>
+
             <div class="dry-run-btn" (click)="onView('policy')" [attr.action]="view === 'policy'">
                 Policy View
             </div>
@@ -64,12 +101,12 @@
         <div class="policy-header" [attr.policy-status]="policyInfo.status">
             <a routerLink="/policy-viewer" class="go-back-link">
                 <mat-icon>chevron_left</mat-icon>
-                <span *ngIf="policyInfo && policyInfo.name">{{policyInfo.name}}</span>
-                <span *ngIf="policyInfo && policyInfo.description && innerWidth > 810">: {{policyInfo.description}}</span>
-                <span *ngIf="policyInfo && policyInfo.version && innerWidth > 810">({{policyInfo.version}})</span>
+                <span *ngIf="policyInfo && policyInfo.name" class="heder-policy-name">{{policyInfo.name}}</span>
+                <span *ngIf="policyInfo && policyInfo.description" class="heder-policy-description">: {{policyInfo.description}}</span>
+                <span *ngIf="policyInfo && policyInfo.version" class="heder-policy-version">({{policyInfo.version}})</span>
             </a>
             <ng-container *ngIf="policyInfo">
-                <span *ngIf="!groups.length && innerWidth > 810" class="current-user-role">
+                <span *ngIf="!groups.length" class="current-user-role">
                     Role: {{policyInfo.userRoles.join(', ')}}
                 </span>
                 <span *ngIf="isMultipleGroups" class="current-user-group" [matMenuTriggerFor]="group">
@@ -84,7 +121,8 @@
             </ng-container>
         </div>
 
-        <div class="policy-container" [attr.policy-status]="policyInfo.status"
+        <div class="policy-container" 
+            [attr.policy-status]="policyInfo.status"
             [attr.hidden-container]="view !== 'policy'">
             <render-block [block]="policy" [policyId]="policyId"></render-block>
         </div>
@@ -138,6 +176,22 @@
             </div>
         </div>
 
+    </ng-container>
+
+    <ng-container *ngIf="recording || running">
+        <div class="record-logs"     
+            [attr.recording]="recording"
+            [attr.running]="running">
+            <div class="record-animation">
+                <div class="record-circle"></div>
+                <div class="record-text">Recording</div>
+            </div>
+            <div *ngFor="let item of recordItems; let i = index" class="record-item" [attr.selected]="recordIndex === i">
+                <div class="record-item-index">{{i}}</div>
+                <div class="record-item-method">{{item.action || item.method}}</div>
+                <div class="record-item-time">{{item._time}}</div>
+            </div>
+        </div>
     </ng-container>
 </div>
 

@@ -216,11 +216,12 @@ export class MultiSignBlock {
             const documentOwnerAccount = await PolicyUtils.getHederaAccount(ref, docOwner.did);
 
             const vcs = data.map(e => VcDocument.fromJsonTree(e.document));
+            const uuid = ref.components.generateUUID();
             const vp = await this.vcHelper.createVP(
                 policyOwnerAccount.did,
                 policyOwnerAccount.hederaAccountKey,
                 vcs,
-                GenerateUUIDv4()
+                uuid
             );
 
             const vpMessage = new VPMessage(MessageAction.CreateVP);

@@ -222,6 +222,14 @@ export class PolicyEngineService {
             }
         })
 
+        this.channel.getMessages(PolicyEvents.RECORD_UPDATE_BROADCAST, async (msg: any) => {
+            const policy = await DatabaseServer.getPolicyById(msg?.policyId);
+            if (policy) {
+                msg.user = { did: policy.owner };
+                this.channel.publish('update-record', msg);
+            }
+        })
+
         this.channel.getMessages<any, any>('mrv-data', async (msg) => {
             // await PolicyComponentsUtils.ReceiveExternalData(msg);
 
@@ -957,7 +965,7 @@ export class PolicyEngineService {
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.CREATE_VIRTUAL_USER, async (msg) => {
             try {
-                const { policyId, did } = msg;
+                const { policyId, owner } = msg;
 
                 const model = await DatabaseServer.getPolicyById(policyId);
                 if (!model) {
@@ -967,34 +975,35 @@ export class PolicyEngineService {
                     throw new Error(`Policy is not in Dry Run`);
                 }
 
-                const topic = await TopicConfig.fromObject(
-                    await DatabaseServer.getTopicByType(did, TopicType.UserTopic), false
-                );
-
+                const topic = await DatabaseServer.getTopicByType(owner, TopicType.UserTopic);
                 const newPrivateKey = PrivateKey.generate();
                 const newAccountId = new AccountId(Date.now());
-                const treasury = {
-                    id: newAccountId,
-                    key: newPrivateKey
-                };
+                const didObject = await DIDDocument.create(newPrivateKey, topic.topicId);
+                const did = didObject.getDid();
+                const document = didObject.getDocument();
 
-                const didObject = await DIDDocument.create(treasury.key, topic.topicId);
-                const userDID = didObject.getDid();
-
-                const u = await DatabaseServer.getVirtualUsers(policyId);
+                const count = await DatabaseServer.getVirtualUsers(policyId);
+                const username = `Virtual User ${count.length}`;
                 await DatabaseServer.createVirtualUser(
                     policyId,
-                    `Virtual User ${u.length}`,
-                    userDID,
-                    treasury.id.toString(),
-                    treasury.key.toString()
+                    username,
+                    did,
+                    newAccountId.toString(),
+                    newPrivateKey.toString()
                 );
 
                 const db = new DatabaseServer(policyId);
-                await db.saveDid({
-                    did: didObject.getDid(),
-                    document: didObject.getDocument()
-                })
+                await db.saveDid({ did, document });
+
+                await (new GuardiansService())
+                    .sendPolicyMessage(PolicyEvents.CREATE_VIRTUAL_USER, policyId, {
+                        did,
+                        data: {
+                            accountId: newAccountId.toString(),
+                            privateKey: newPrivateKey.toString(),
+                            document
+                        }
+                    });
 
                 const users = await DatabaseServer.getVirtualUsers(policyId);
                 return new MessageResponse(users);
@@ -1017,6 +1026,10 @@ export class PolicyEngineService {
 
                 await DatabaseServer.setVirtualUser(policyId, did)
                 const users = await DatabaseServer.getVirtualUsers(policyId);
+
+                await (new GuardiansService())
+                    .sendPolicyMessage(PolicyEvents.SET_VIRTUAL_USER, policyId, { did });
+
                 return new MessageResponse(users);
             } catch (error) {
                 return new MessageError(error);
@@ -1025,10 +1038,6 @@ export class PolicyEngineService {
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.RESTART_DRY_RUN, async (msg) => {
             try {
-                if (!msg.model) {
-                    throw new Error('Policy is empty');
-                }
-
                 const policyId = msg.policyId;
                 const user = msg.user;
                 const owner = await this.getUserDid(user.username);
@@ -1060,6 +1069,136 @@ export class PolicyEngineService {
                 return new MessageError(error);
             }
         });
+
+
+
+
+
+
+
+
+
+
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.START_RECORD, async (msg) => {
+            try {
+                const { policyId, owner, options } = msg;
+                const model = await DatabaseServer.getPolicyById(policyId);
+                if (!model) {
+                    throw new Error('Unknown policy');
+                }
+                if (model.owner !== owner) {
+                    throw new Error('Invalid owner.');
+                }
+                if (model.status !== PolicyType.DRY_RUN) {
+                    throw new Error(`Policy is not in Dry Run`);
+                }
+                const result = await new GuardiansService()
+                    .sendPolicyMessage(PolicyEvents.START_RECORD, policyId, options) as any;
+                return new MessageResponse(result);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.STOP_RECORD, async (msg) => {
+            try {
+                const { policyId, owner, options } = msg;
+                const model = await DatabaseServer.getPolicyById(policyId);
+                if (!model) {
+                    throw new Error('Unknown policy');
+                }
+                if (model.owner !== owner) {
+                    throw new Error('Invalid owner.');
+                }
+                if (model.status !== PolicyType.DRY_RUN) {
+                    throw new Error(`Policy is not in Dry Run`);
+                }
+                const result = await new GuardiansService()
+                    .sendPolicyMessage(PolicyEvents.STOP_RECORD, policyId, options) as any;
+                return new MessageResponse(result);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_RECORD, async (msg) => {
+            try {
+                const { policyId, uuid } = msg;
+                const actions = await DatabaseServer.getRecord({ policyId, uuid });
+                return new MessageResponse(actions);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_RECORD_STATUS, async (msg) => {
+            try {
+                const { policyId } = msg;
+                const result = await new GuardiansService()
+                    .sendPolicyMessage(PolicyEvents.GET_RECORD_STATUS, policyId, {}) as any;
+                return new MessageResponse(result);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_RECORD_ACTIONS, async (msg) => {
+            try {
+                const { policyId } = msg;
+                const result = await new GuardiansService()
+                    .sendPolicyMessage(PolicyEvents.GET_RECORD_ACTIONS, policyId, {}) as any;
+                console.debug('!---', result);
+                return new MessageResponse(result);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.RUN_RECORD, async (msg) => {
+            try {
+                const { policyId, owner, options } = msg;
+                const model = await DatabaseServer.getPolicyById(policyId);
+                if (!model) {
+                    throw new Error('Unknown policy');
+                }
+                if (model.owner !== owner) {
+                    throw new Error('Invalid owner.');
+                }
+                if (model.status !== PolicyType.DRY_RUN) {
+                    throw new Error(`Policy is not in Dry Run`);
+                }
+
+                const items = await DatabaseServer.getRecord({ policyId, method: 'STOP' });
+                const uuid = items[items.length - 1]?.uuid;
+                const records = await DatabaseServer.getRecord({ uuid }, { orderBy: { time: 'ASC' } });
+                const result = await new GuardiansService()
+                    .sendPolicyMessage(PolicyEvents.RUN_RECORD, policyId, {
+                        options,
+                        records
+                    }) as any;
+                return new MessageResponse(result);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+
+
+
+
+
+
+
+
+
+
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.GET_VIRTUAL_DOCUMENTS, async (msg) => {
             try {

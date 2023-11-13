@@ -23,5 +23,14 @@ export enum PolicyEvents {
     BLOCK_UPDATE_BROADCAST = 'policy-event-block-update-broadcast',
     MRV_DATA = 'policy-event-mrv-data',
     GET_BLOCK_ABOUT = 'policy-event-get-block-about',
-    CHECK_IF_ALIVE = 'check-if-alive'
+    CHECK_IF_ALIVE = 'check-if-alive',
+    START_RECORD = 'policy-event-start-record',
+    STOP_RECORD = 'policy-event-stop-record',
+    RUN_RECORD = 'policy-event-run-record',
+    GET_RECORD = 'policy-event-get-record',
+    RECORD_UPDATE_BROADCAST = 'policy-event-record-update-broadcast',
+    GET_RECORD_STATUS = 'policy-event-get-record-status',
+    GET_RECORD_ACTIONS = 'policy-event-get-record-actions',
+    CREATE_VIRTUAL_USER = 'policy-event-create-virtual-user',
+    SET_VIRTUAL_USER = 'policy-event-login-virtual-user',
 }

@@ -212,7 +212,9 @@
             <mat-icon>import_export</mat-icon>
             <span>Export policy</span>
         </button>
+
         <div class="policy-menu-delimiter"></div>
+
         <button mat-menu-item (click)="searchPolicy(id)" class="policy-menu-btn">
             <mat-icon>search</mat-icon>
             <span>Search policies</span>
@@ -225,7 +227,9 @@
             <mat-icon>compare</mat-icon>
             <span>Compare policies</span>
         </button>
+
         <div class="policy-menu-delimiter"></div>
+
         <button *ngIf="status == 'DRAFT'" mat-menu-item (click)="deletePolicy(id, version)" class="policy-menu-btn-del">
             <mat-icon>delete</mat-icon>
             <span>Delete policy</span>

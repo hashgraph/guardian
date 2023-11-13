@@ -285,7 +285,7 @@ export class PolicyApi {
         const engineService = new PolicyEngine();
         let model: any;
         try {
-            model = await engineService.getPolicy({filters: req.params.policyId}) as any;
+            model = await engineService.getPolicy({ filters: req.params.policyId }) as any;
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1073,6 +1073,9 @@ export class PolicyApi {
         if (policy.owner !== req.user.did) {
             throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
         }
+        if (policy.status !== PolicyType.DRY_RUN) {
+            throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN)
+        }
         try {
             return res.send(await engineService.getVirtualUsers(req.params.policyId));
         } catch (error) {
@@ -1098,6 +1101,9 @@ export class PolicyApi {
         }
         if (policy.owner !== req.user.did) {
             throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
+        }
+        if (policy.status !== PolicyType.DRY_RUN) {
+            throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN)
         }
         try {
             return res.status(201).send(await engineService.createVirtualUser(req.params.policyId, req.user.did));
@@ -1125,6 +1131,9 @@ export class PolicyApi {
         if (policy.owner !== req.user.did) {
             throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
         }
+        if (policy.status !== PolicyType.DRY_RUN) {
+            throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN)
+        }
         try {
             return res.send(await engineService.loginVirtualUser(req.params.policyId, req.body.did));
         } catch (error) {
@@ -1150,6 +1159,9 @@ export class PolicyApi {
         }
         if (policy.owner !== req.user.did) {
             throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
+        }
+        if (policy.status !== PolicyType.DRY_RUN) {
+            throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN)
         }
         try {
             return res.json(await engineService.restartDryRun(req.body, req.user, req.params.policyId));
@@ -1284,4 +1296,229 @@ export class PolicyApi {
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+
+
+
+
+
+    @Post('/:policyId/record/start')
+    @HttpCode(HttpStatus.OK)
+    async startRecord(@Req() req, @Response() res) {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const engineService = new PolicyEngine();
+        let policy: any;
+        try {
+            policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (!policy) {
+            throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
+        }
+        if (policy.owner !== req.user.did) {
+            throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
+        }
+        if (policy.status !== PolicyType.DRY_RUN) {
+            throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN)
+        }
+        try {
+            const result = await engineService.startRecord(
+                req.params.policyId,
+                req.user.did,
+                req.body
+            )
+            return res.json(result);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Post('/:policyId/record/stop')
+    @HttpCode(HttpStatus.OK)
+    async stopRecord(@Req() req, @Response() res) {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const engineService = new PolicyEngine();
+        let policy: any;
+        try {
+            policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (!policy) {
+            throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
+        }
+        if (policy.owner !== req.user.did) {
+            throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
+        }
+        if (policy.status !== PolicyType.DRY_RUN) {
+            throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN)
+        }
+        try {
+            const result = await engineService.stopRecord(
+                req.params.policyId,
+                req.user.did,
+                req.body
+            )
+            return res.json(result);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Post('/:policyId/record/run')
+    @HttpCode(HttpStatus.OK)
+    async runRecord(@Req() req, @Response() res) {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const engineService = new PolicyEngine();
+        let policy: any;
+        try {
+            policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (!policy) {
+            throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
+        }
+        if (policy.owner !== req.user.did) {
+            throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
+        }
+        if (policy.status !== PolicyType.DRY_RUN) {
+            throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN)
+        }
+        try {
+            const result = await engineService.runRecord(
+                req.params.policyId,
+                req.user.did,
+                req.body
+            )
+            return res.json(result);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Get('/:policyId/record/actions')
+    @HttpCode(HttpStatus.OK)
+    async getRecordActions(@Req() req, @Response() res) {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const engineService = new PolicyEngine();
+        let policy: any;
+        try {
+            policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (!policy) {
+            throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
+        }
+        if (policy.owner !== req.user.did) {
+            throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
+        }
+        if (policy.status !== PolicyType.DRY_RUN) {
+            throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN)
+        }
+        try {
+            const result = await engineService.getRecordActions(req.params.policyId);
+            console.debug('!---', result);
+            return res.json(result);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Get('/:policyId/record/status')
+    @HttpCode(HttpStatus.OK)
+    async getRecordStatus(@Req() req, @Response() res) {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const engineService = new PolicyEngine();
+        let policy: any;
+        try {
+            policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (!policy) {
+            throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
+        }
+        if (policy.owner !== req.user.did) {
+            throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
+        }
+        if (policy.status !== PolicyType.DRY_RUN) {
+            throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN)
+        }
+        try {
+            const result = await engineService.getRecordStatus(req.params.policyId);
+            return res.json(result);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // @Get('/:policyId/record')
+    // @HttpCode(HttpStatus.OK)
+    // async getRecordStatus(@Req() req, @Response() res) {
+    //     await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    //     const engineService = new PolicyEngine();
+    //     let policy: any;
+    //     try {
+    //         policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
+    //     } catch (error) {
+    //         new Logger().error(error, ['API_GATEWAY']);
+    //         throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    //     }
+    //     if (!policy) {
+    //         throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
+    //     }
+    //     if (policy.owner !== req.user.did) {
+    //         throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
+    //     }
+    //     try {
+    //         const result = await engineService.getRecordStatus(req.params.policyId);
+    //         return res.json(result);
+    //     } catch (error) {
+    //         new Logger().error(error, ['API_GATEWAY']);
+    //         throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    //     }
+    // }
+
+    // @Get('/:policyId/record/:recordId')
+    // @HttpCode(HttpStatus.OK)
+    // async getRecord(@Req() req, @Response() res) {
+    //     await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    //     const engineService = new PolicyEngine();
+    //     let policy: any;
+    //     try {
+    //         policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
+    //     } catch (error) {
+    //         new Logger().error(error, ['API_GATEWAY']);
+    //         throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    //     }
+    //     if (!policy) {
+    //         throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
+    //     }
+    //     if (policy.owner !== req.user.did) {
+    //         throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
+    //     }
+    //     try {
+    //         const result = await engineService.getRecord(
+    //             req.params.policyId,
+    //             req.params.recordId
+    //         );
+    //         return res.json(result);
+    //     } catch (error) {
+    //         new Logger().error(error, ['API_GATEWAY']);
+    //         throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    //     }
+    // }
 }

@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IUser, PolicyType } from '@guardian/interfaces';
@@ -21,17 +21,17 @@ import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialo
     styleUrls: ['./policy-viewer.component.scss']
 })
 export class PolicyViewerComponent implements OnInit, OnDestroy {
-    policyId!: string;
-    policy: any | null;
-    policyInfo: any | null;
-    role!: any;
-    loading: boolean = true;
-    isConfirmed: boolean = false;
-    virtualUsers: any[] = []
-    view: string = 'policy';
-    documents: any[] = [];
-    columns: string[] = [];
-    columnsMap: any = {
+    public policyId!: string;
+    public policy: any | null;
+    public policyInfo: any | null;
+    public role!: any;
+    public loading: boolean = true;
+    public isConfirmed: boolean = false;
+    public virtualUsers: any[] = []
+    public view: string = 'policy';
+    public documents: any[] = [];
+    public columns: string[] = [];
+    public columnsMap: any = {
         transactions: [
             'createDate',
             'type',
@@ -51,19 +51,22 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             'document'
         ]
     };
-    pageIndex: number;
-    pageSize: number;
-    documentCount: any;
-    groups: any[] = [];
-    isMultipleGroups: boolean = false;
-    userRole!: string;
-    userGroup!: string;
+    public pageIndex: number;
+    public pageSize: number;
+    public documentCount: any;
+    public groups: any[] = [];
+    public isMultipleGroups: boolean = false;
+    public userRole!: string;
+    public userGroup!: string;
+    public recording: boolean = false;
+    public running: boolean = false;
+    public recordId: any;
+    public recordItems: any[] = [];
+    public recordLoading: boolean = true;
+    public recordIndex: any;
+    public recordStatus: string;
 
     private subscription = new Subscription();
-
-    public innerWidth: any;
-    public innerHeight: any;
-
 
     public get isDryRun(): boolean {
         return this.policyInfo && this.policyInfo.status === 'DRY-RUN';
@@ -77,7 +80,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private router: Router,
         private dialog: MatDialog,
-        private toastr: ToastrService
+        private toastr: ToastrService,
+        private cdRef: ChangeDetectorRef
     ) {
         this.policy = null;
         this.pageIndex = 0;
@@ -86,8 +90,6 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        this.innerWidth = window.innerWidth;
-        this.innerHeight = window.innerHeight;
         this.loading = true;
         this.subscription.add(
             this.route.queryParams.subscribe(queryParams => {
@@ -101,6 +103,11 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.userRole = userRole;
                 this.userGroup = userGroup?.groupLabel || userGroup?.uuid;
                 this.groups = userGroups;
+            }))
+        );
+        this.subscription.add(
+            this.wsService.recordSubscribe((message => {
+                this.updateRecordLogs(message);
             }))
         );
     }
@@ -146,33 +153,42 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
     loadPolicyById(policyId: string) {
         forkJoin([
-            this.policyEngineService.policyBlock(policyId),
             this.policyEngineService.policy(policyId),
-            this.policyEngineService.getGroups(policyId),
+            this.policyEngineService.policyBlock(policyId),
+            this.policyEngineService.getGroups(policyId)
         ]).subscribe((value) => {
-            this.policy = value[0];
-            this.policyInfo = value[1];
+            this.policyInfo = value[0];
+            this.policy = value[1];
             this.groups = value[2] || [];
+
             this.virtualUsers = [];
             this.isMultipleGroups = !!(this.policyInfo?.policyGroups && this.groups?.length);
-
             this.userRole = this.policyInfo.userRole;
             this.userGroup = this.policyInfo.userGroup?.groupLabel || this.policyInfo.userGroup?.uuid;
 
             if (this.policyInfo?.status === PolicyType.DRY_RUN) {
-                this.policyEngineService.getVirtualUsers(this.policyInfo.id).subscribe((users) => {
-                    this.virtualUsers = users;
-                    setTimeout(() => {
-                        this.loading = false;
-                    }, 500);
-                }, (e) => {
-                    this.loading = false;
-                });
+                this.loadDryRunOptions();
             } else {
                 setTimeout(() => {
                     this.loading = false;
                 }, 500);
             }
+        }, (e) => {
+            this.loading = false;
+        });
+    }
+
+    loadDryRunOptions() {
+        forkJoin([
+            this.policyEngineService.getVirtualUsers(this.policyInfo.id),
+            this.policyEngineService.getRecordStatus(this.policyInfo.id)
+        ]).subscribe((value) => {
+            this.virtualUsers = value[0];
+            const record = value[1];
+            this.updateRecordLogs(record);
+            setTimeout(() => {
+                this.loading = false;
+            }, 500);
         }, (e) => {
             this.loading = false;
         });
@@ -254,13 +270,13 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     openDocument(element: any) {
         let dialogRef;
 
-        if (this.innerWidth <= 810) {
+        if (window.innerWidth <= 810) {
             const bodyStyles = window.getComputedStyle(document.body);
             const headerHeight: number = parseInt(bodyStyles.getPropertyValue('--header-height'));
             dialogRef = this.dialog.open(VCViewerDialog, {
-                width: `${this.innerWidth.toString()}px`,
+                width: `${window.innerWidth.toString()}px`,
                 maxWidth: '100vw',
-                height: `${this.innerHeight - headerHeight}px`,
+                height: `${window.innerHeight - headerHeight}px`,
                 position: {
                     'bottom': '0'
                 },
@@ -334,5 +350,119 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             document.__type = '';
         }
         return document;
+    }
+
+    public startRecord() {
+        this.loading = true;
+        this.recordItems = [];
+        this.policyEngineService.startRecord(this.policyId).subscribe((result) => {
+            this.recording = !!result;
+            this.loading = false;
+        }, (e) => {
+            this.recording = true;
+            this.loading = false;
+        });
+    }
+
+    public startRun() {
+        this.loading = true;
+        this.recordItems = [];
+        this.policyEngineService.startRun(this.policyId).subscribe((result) => {
+            this.running = !!result;
+            this.loading = false;
+        }, (e) => {
+            this.recording = true;
+            this.loading = false;
+        });
+    }
+
+    public stopRecord() {
+        this.loading = true;
+        this.recordItems = [];
+        this.policyEngineService.stopRecord(this.policyId).subscribe((users) => {
+            this.recording = false;
+            this.running = false;
+            this.loading = false;
+        }, (e) => {
+            this.recording = false;
+            this.running = false;
+            this.loading = false;
+        });
+    }
+
+    public updateRecordLogs(data: any) {
+        this.recording = false;
+        this.running = false;
+        this.recordId = null;
+        if (data) {
+            if (data.type === 'Running') {
+                this.recordId = data.id;
+                this.recordIndex = data.index;
+                this.recordStatus = data.status;
+                this.running = data.status === 'Running';
+            }
+            if (data.type === 'Recording') {
+                this.recordId = data.uuid;
+                this.recordIndex = -1;
+                this.recordStatus = data.status;
+                this.recording = data.status === 'Recording';
+            }
+        }
+        console.log(this.running, this.recordStatus, this.recordIndex);
+        if (this.recording || this.running) {
+            this.recordLoading = true;
+            this.policyEngineService.getRecordActions(this.policyId).subscribe((items) => {
+                this.recordItems = items || [];
+                const start = this.recordItems[0];
+                const startTime = start?.time;
+                for (const item of this.recordItems) {
+                    item._time = this.convertMsToTime(item.time - startTime);
+                }
+                this.recordLoading = false;
+            }, (e) => {
+                this.recordLoading = false;
+            });
+        }
+        if(this.running) {
+            this.updatePolicy();
+        }
+    }
+
+    updatePolicy() {
+        forkJoin([
+            this.policyEngineService.getVirtualUsers(this.policyId),
+            this.policyEngineService.policyBlock(this.policyId),
+            this.policyEngineService.policy(this.policyId),
+        ]).subscribe((value) => {
+            this.policy = null;
+            this.cdRef.detectChanges();
+            this.virtualUsers = value[0];
+            this.policy = value[1];
+            this.policyInfo = value[2];
+            this.isMultipleGroups = !!(this.policyInfo?.policyGroups && this.groups?.length);
+            this.userRole = this.policyInfo.userRole;
+            this.userGroup = this.policyInfo.userGroup?.groupLabel || this.policyInfo.userGroup?.uuid;
+            this.cdRef.detectChanges();
+        }, (e) => {
+            this.loading = false;
+        });
+    }
+
+    private padTo2Digits(num: number): string {
+        return num.toString().padStart(2, '0');
+    }
+
+    private convertMsToTime(milliseconds: number): string {
+        if (Number.isNaN(milliseconds)) {
+            return ''
+        }
+        let seconds = Math.floor(milliseconds / 1000);
+        let minutes = Math.floor(seconds / 60);
+        let hours = Math.floor(minutes / 60);
+
+        seconds = seconds % 60;
+        minutes = minutes % 60;
+
+        return `${hours}:${this.padTo2Digits(minutes)}:${this.padTo2Digits(seconds)}`;
     }
 }
