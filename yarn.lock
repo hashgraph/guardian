@@ -3039,12 +3039,12 @@ __metadata:
   linkType: hard
 
 "@types/gulp-rename@npm:^2":
-  version: 2.0.2
-  resolution: "@types/gulp-rename@npm:2.0.2"
+  version: 2.0.5
+  resolution: "@types/gulp-rename@npm:2.0.5"
   dependencies:
     "@types/node": "*"
     "@types/vinyl": "*"
-  checksum: 957eee1d73bd354b85b8af83ff56e403c871e8eba01c4546077e0dd0185e6862242eb3f4824544554138f4a476d229a299aff9dd3f80e8cbd9f9c260d90701bf
+  checksum: c4808e5759d0c0d5c5c2717612e426be5cb9af21c0baa6e36153f61b0ebc46c942b69f1a985834c576b101dd9cbda85d4471efc81d8627936c38ea4a686efcbf
   languageName: node
   linkType: hard
 
