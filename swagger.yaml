@@ -5004,6 +5004,46 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /policies/{policyId}/record/start:
+    post:
+      operationId: PolicyApi_startRecord
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_6
+  /policies/{policyId}/record/stop:
+    post:
+      operationId: PolicyApi_stopRecord
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_6
+  /policies/{policyId}/record/run:
+    post:
+      operationId: PolicyApi_runRecord
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_6
+  /policies/{policyId}/record/actions:
+    get:
+      operationId: PolicyApi_getRecordActions
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_6
+  /policies/{policyId}/record/status:
+    get:
+      operationId: PolicyApi_getRecordStatus
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_6
   /schema/{schemaId}:
     get:
       tags:
