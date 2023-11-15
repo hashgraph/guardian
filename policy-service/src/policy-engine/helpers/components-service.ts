@@ -170,11 +170,17 @@ export class ComponentsService {
         return true;
     }
 
-    public generateUUID(): string {
+    public async generateUUID(): Promise<string> {
+        if (this._runningController) {
+            return await this._runningController.nextUUID();
+        }
+        if (this._recordingController) {
+            const uuid = GenerateUUIDv4();
+            await this._recordingController.generateUUID(uuid);
+            return uuid;
+        }
         return GenerateUUIDv4();
     }
-
-
 
 
     private _recordingController: Recording;

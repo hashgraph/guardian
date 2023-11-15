@@ -1,4 +1,4 @@
-import { PolicyEvents } from "@guardian/interfaces";
+import { GenerateUUIDv4, PolicyEvents } from "@guardian/interfaces";
 import { RunningStatus } from "./status.type";
 import { BlockTreeGenerator } from "@policy-engine/block-tree-generator";
 import { RecordAction } from "./action.type";
@@ -6,7 +6,9 @@ import { RecordMethod } from "./method.type";
 import { IPolicyBlock } from "@policy-engine/policy-engine.interface";
 import { IPolicyUser, PolicyUser } from "@policy-engine/policy-user";
 import { PolicyComponentsUtils } from "@policy-engine/policy-components-utils";
-import { DatabaseServer } from "@guardian/common";
+import { DatabaseServer, replaceAllEntities } from "@guardian/common";
+import { RecordItem } from "./record-item";
+import e from "express";
 
 export class Running {
     public readonly type: string = 'Running';
@@ -15,9 +17,12 @@ export class Running {
     public readonly options: any;
     private readonly tree: BlockTreeGenerator;
     private _status: RunningStatus;
-    private _actions: any[];
-    private _index: number;
+    private _actions: RecordItem[];
+    private _generate: RecordItem[];
+    private _actionIndex: number;
+    private _generateIndex: number;
     private _id: number;
+    private _lastError: string;
 
     constructor(
         policyInstance: IPolicyBlock,
@@ -30,14 +35,24 @@ export class Running {
         this.options = options;
         this.tree = new BlockTreeGenerator();
         this._status = RunningStatus.New;
-        this._actions = actions || [];
-        this._index = 0;
+        this._lastError = null;
+        this._actionIndex = 0;
+        this._generateIndex = 0;
         this._id = -1;
+        if (actions) {
+            this._actions = actions.filter(item => item.method !== RecordMethod.Generate);
+            this._generate = actions.filter(item => item.method === RecordMethod.Generate);
+        } else {
+            this._actions = [];
+            this._generate = [];
+        }
     }
 
     public start(): boolean {
-        this._index = 0;
+        this._actionIndex = 0;
+        this._generateIndex = 0;
         this._status = RunningStatus.Running;
+        this._lastError = null;
         this._id = Date.now();
         this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
         this.run(this._id).then();
@@ -47,34 +62,35 @@ export class Running {
     public stop(): boolean {
         this._id = -1;
         this._status = RunningStatus.Stopped;
+        this._lastError = null;
         this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
         return true;
     }
 
-    public error(): boolean {
+    public error(message: string): boolean {
         this._id = -1;
         this._status = RunningStatus.Error;
+        this._lastError = message;
         this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
         return true;
     }
 
     private async run(id: number): Promise<void> {
         while (this.isRunning(id)) {
-            const delay = await this.next();
+            const result = await this.next();
             if (!this.isRunning(id)) {
                 return;
             }
-            if (delay < 0) {
-                if (delay === -1) {
-                    this.stop();
-                } else {
-                    this.error();
-                }
+            if (result.code === 0) {
+                this.stop();
                 return;
-            } else {
-                this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
             }
-            await this.delay(delay);
+            if (result.code < 0) {
+                this.error(result.error);
+                return;
+            }
+            this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
+            await this.delay(result.delay);
         }
     }
 
@@ -106,29 +122,29 @@ export class Running {
         return userFull;
     }
 
-    private async runAction(action: any): Promise<boolean> {
+    private async runAction(action: RecordItem): Promise<string> {
         if (action.method === RecordMethod.Start) {
-            return true;
+            return null;
         }
         if (action.method === RecordMethod.Stop) {
-            return true;
+            return null;
         }
         if (action.method === RecordMethod.Action) {
             const userFull = await this.getUser(action.user);
             switch (action.action) {
                 case RecordAction.SelectGroup: {
                     this.policyInstance.components.selectGroup(userFull, action.document?.uuid);
-                    return true;
+                    return null;
                 }
                 case RecordAction.SetBlockData: {
                     const block = PolicyComponentsUtils.GetBlockByTag<any>(this.policyId, action.target);
                     if (block && (await block.isAvailable(userFull))) {
                         if (typeof block.setData === 'function') {
                             await block.setData(userFull, action.document);
-                            return true;
+                            return null;
                         }
                     }
-                    return false;
+                    return `Block (${action.target}) not available.`;
                 }
                 case RecordAction.SetExternalData: {
                     for (const block of PolicyComponentsUtils.ExternalDataBlocks.values()) {
@@ -136,7 +152,7 @@ export class Running {
                             await (block as any).receiveData(action.document);
                         }
                     }
-                    return true;
+                    return null;
                 }
                 case RecordAction.CreateUser: {
                     const count = await DatabaseServer.getVirtualUsers(this.policyId);
@@ -153,44 +169,131 @@ export class Running {
                         did: action.user,
                         document: action.document?.document
                     });
-                    return true;
+                    return null;
                 }
                 case RecordAction.SetUser: {
                     await DatabaseServer.setVirtualUser(this.policyId, action.user);
-                    return true;
+                    return null;
                 }
                 default: {
-                    return false;
+                    return `Action (${action.method}: ${action.action}) not defined.`;
                 }
             }
         }
-        return false;
+        return `Action (${action.method}: ${action.action}) not defined.`;
     }
 
-    public async next(): Promise<number> {
-        try {
-            const action = this._actions[this._index];
-            if (!action) {
-                return -1;
-            }
-            this._index++;
-            const next = this._actions[this._index];
 
-            const result = await this.runAction(action);
-            if (!result) {
-                return -2;
+    /**
+     * Replace all values
+     * @param obj
+     * @param names
+     * @param oldValue
+     * @param newValue
+     */
+    private replaceAllValues(
+        obj: any,
+        oldValue: string,
+        newValue: string
+    ): any {
+        if (typeof obj === 'string') {
+            if (obj === oldValue) {
+                return newValue;
+            } else {
+                return obj;
+            }
+        }
+        if (typeof obj === 'object') {
+            if (Array.isArray(obj)) {
+                for (let i = 0; i < obj.length; i++) {
+                    obj[i] = this.replaceAllValues(obj[i], oldValue, newValue);
+                }
+            } else {
+                const keys = Object.keys(obj);
+                for (const key of keys) {
+                    obj[key] = this.replaceAllValues(obj[key], oldValue, newValue);
+                }
+            }
+        }
+        return obj;
+    }
+
+    private async runGenerate(action: RecordItem): Promise<string> {
+        const uuid = GenerateUUIDv4();
+        try {
+            const old = action?.document?.uuid;
+            if (old) {
+                for (const row of this._actions) {
+                    if (row.document) {
+                        row.document = this.replaceAllValues(row.document, old, uuid);
+                    }
+                }
+            }
+            return uuid;
+        } catch (error) {
+            return uuid;
+        }
+    }
+
+    public async next() {
+        const result = { delay: -1, code: 0, error: null };
+        try {
+            const action = this._actions[this._actionIndex];
+            if (!action) {
+                return result;
+            }
+            this._actionIndex++;
+            const next = this._actions[this._actionIndex];
+
+            const error = await this.runAction(action);
+            if (error) {
+                result.delay = -1;
+                result.code = -1;
+                result.error = error;
+                return result;
             }
 
             if (next) {
+                result.code = 1;
                 const delay = (next.time - action.time);
-                if (Number.isFinite(delay) && delay >= 0) {
-                    return delay;
+                if (Number.isFinite(delay) && delay > 0) {
+                    result.delay = delay;
+                } else {
+                    result.delay = 0;
                 }
+                return result;
             }
-            return -1;
+
+            return result;
         } catch (error) {
-            return -2;
+            result.delay = -1;
+            result.code = -1;
+            result.error = this.getErrorMessage(error);
+            return result;
         }
+    }
+
+    /**
+     * Get error message
+     */
+    private getErrorMessage(error: string | Error | any): string {
+        if (typeof error === 'string') {
+            return error;
+        } else if (error.message) {
+            return error.message;
+        } else if (error.error) {
+            return error.error;
+        } else if (error.name) {
+            return error.name;
+        } else {
+            return 'Unidentified error';
+        }
+    }
+
+    public async nextUUID(): Promise<string> {
+        const action = this._generate[this._generateIndex];
+        this._generateIndex++;
+        return await this.runGenerate(action);
     }
 
     public getStatus() {
@@ -199,7 +302,8 @@ export class Running {
             type: this.type,
             policyId: this.policyId,
             status: this._status,
-            index: this._index
+            index: this._actionIndex,
+            error: this._lastError
         }
     }
 

@@ -354,7 +354,19 @@
         }
     }
 
-    .record-animation {
+    .record-error {
+        border-radius: 3px;
+        border: 1px solid #dd0a0a;
+        padding: 5px;
+        color: #dd0a0a;
+        background: #fff2f2;
+        position: relative;
+        padding-left: 10px;
+        margin: 5px 5px 5px 5px;
+        box-sizing: border-box;
+    }
+
+    .running-animation {
         display: flex;
         flex-direction: row;
         align-items: center;
@@ -363,7 +375,39 @@
         padding: 18px 8px 15px 8px;
         border-bottom: 1px solid #aaa;
 
-        .record-circle {
+        .running-circle {
+            width: 0;
+            height: 0;
+            margin-right: 8px;
+            position: relative;
+            top: -1px;
+            left: 4px;
+            border: 12px solid #07b907;
+            border-top-color: transparent;
+            border-right-color: transparent;
+            border-bottom-color: transparent;
+            border-top-width: 8px;
+            border-bottom-width: 8px;
+            border-right-width: 6px;
+        }
+
+        .running-text {
+            color: #646464;
+            font-weight: 500;
+            font-size: 14px;
+        }
+    }
+
+    .recording-animation {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        background-color: #ffffff;
+        width: 100%;
+        padding: 18px 8px 15px 8px;
+        border-bottom: 1px solid #aaa;
+
+        .recording-circle {
             background-color: red;
             width: 1em;
             height: 1em;
@@ -374,7 +418,7 @@
             top: -1px;
         }
 
-        .record-text {
+        .recording-text {
             color: #646464;
             font-weight: 500;
             font-size: 14px;
@@ -393,6 +437,14 @@
                 background-color: red;
             }
         }
+    }
+
+    &[record-status="Error"] .record-item[selected="true"] {
+        background: #ffe6e6 !important;
+    }
+
+    &[record-status="Stopped"] .record-item[selected="true"] {
+        background: #f6f7b3 !important;
     }
 }
 

@@ -6,6 +6,7 @@ import { IPolicyUser } from '@policy-engine/policy-user';
 import { RecordingStatus } from './status.type';
 import { RecordAction } from './action.type';
 import { RecordMethod } from './method.type';
+import { RecordItem } from './record-item';
 
 export class Recording {
     public readonly type: string = 'Recording';
@@ -85,7 +86,7 @@ export class Recording {
             user: null,
             target: null,
             document: null
-        })
+        });
         this._status = RecordingStatus.Stopped;
         this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
         return true;
@@ -105,7 +106,6 @@ export class Recording {
         await this.record(RecordAction.SetExternalData, null, null, data);
     }
 
-
     public async createUser(did: string, data: any): Promise<void> {
         await this.record(RecordAction.CreateUser, null, did, data);
     }
@@ -114,11 +114,25 @@ export class Recording {
         await this.record(RecordAction.SetUser, null, did, null);
     }
 
-    public async getActions(): Promise<any[]> {
+    public async generateUUID(uuid: string): Promise<void> {
+        await DatabaseServer.createRecord({
+            uuid: this.uuid,
+            policyId: this.policyId,
+            method: RecordMethod.Generate,
+            action: RecordAction.GenerateUUID,
+            time: Date.now(),
+            user: null,
+            target: null,
+            document: { uuid }
+        });
+    }
+
+    public async getActions(): Promise<RecordItem[]> {
         return await DatabaseServer.getRecord(
             {
                 uuid: this.uuid,
                 policyId: this.policyId,
+                method: RecordMethod.Action
             },
             {
                 fields: [
@@ -131,7 +145,7 @@ export class Recording {
                     'target'
                 ]
             }
-        );
+        ) as any;
     }
 
     public get status(): RecordingStatus {

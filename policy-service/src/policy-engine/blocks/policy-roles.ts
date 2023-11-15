@@ -193,7 +193,7 @@ export class PolicyRolesBlock {
         user: IAuthUser,
         groupConfig: IGroupConfig
     ): Promise<IUserGroup> {
-        const uuid = ref.components.generateUUID();
+        const uuid: string = await ref.components.generateUUID();
         if (groupConfig.groupRelationshipType === GroupRelationshipType.Multiple) {
             if (groupConfig.groupAccessType === GroupAccessType.Global) {
                 const result = await ref.databaseServer.getGlobalGroup(ref.policyId, groupConfig.name);
@@ -316,7 +316,7 @@ export class PolicyRolesBlock {
             return null;
         }
 
-        const uuid = ref.components.generateUUID();
+        const uuid: string = await ref.components.generateUUID();
         const groupOwner = await PolicyUtils.getHederaAccount(ref, group.owner);
         const vcHelper = new VcHelper();
         const vcSubject: any = {

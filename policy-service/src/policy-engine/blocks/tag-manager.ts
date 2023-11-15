@@ -170,7 +170,7 @@ export class TagsManagerBlock {
 
                 const target = await this.getTarget(TagType.PolicyDocument, tag.localTarget || tag.target);
                 if (target) {
-                    const uuid = ref.components.generateUUID();
+                    const uuid: string = await ref.components.generateUUID();
                     tag.uuid = tag.uuid || uuid;
                     tag.operation = 'Create';
                     tag.entity = TagType.PolicyDocument;

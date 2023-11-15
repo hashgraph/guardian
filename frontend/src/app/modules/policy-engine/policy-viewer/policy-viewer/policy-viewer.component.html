@@ -179,12 +179,20 @@
     </ng-container>
 
     <ng-container *ngIf="recording || running">
-        <div class="record-logs"     
+        <div class="record-logs"
+            [attr.record-status]="recordStatus"
             [attr.recording]="recording"
             [attr.running]="running">
-            <div class="record-animation">
-                <div class="record-circle"></div>
-                <div class="record-text">Recording</div>
+            <div *ngIf="recording" class="recording-animation">
+                <div class="recording-circle"></div>
+                <div class="recording-text">Recording</div>
+            </div>
+            <div *ngIf="running" class="running-animation">
+                <div class="running-circle"></div>
+                <div class="running-text">Running</div>
+            </div>
+            <div *ngIf="this.recordError" class="record-error">
+                {{this.recordError}}
             </div>
             <div *ngFor="let item of recordItems; let i = index" class="record-item" [attr.selected]="recordIndex === i">
                 <div class="record-item-index">{{i}}</div>

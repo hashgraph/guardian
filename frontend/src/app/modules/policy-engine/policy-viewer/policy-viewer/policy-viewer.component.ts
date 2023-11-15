@@ -65,6 +65,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public recordLoading: boolean = true;
     public recordIndex: any;
     public recordStatus: string;
+    public recordError: string;
 
     private subscription = new Subscription();
 
@@ -396,19 +397,21 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         this.recordId = null;
         if (data) {
             if (data.type === 'Running') {
+                this.running = true;
                 this.recordId = data.id;
-                this.recordIndex = data.index;
+                this.recordIndex = data.index - 1;
                 this.recordStatus = data.status;
-                this.running = data.status === 'Running';
+                this.recordError = data.error;
             }
             if (data.type === 'Recording') {
+                this.recording = true;
                 this.recordId = data.uuid;
                 this.recordIndex = -1;
                 this.recordStatus = data.status;
-                this.recording = data.status === 'Recording';
+                this.recordError = data.error;
             }
         }
-        console.log(this.running, this.recordStatus, this.recordIndex);
+        console.log(this.running, this.recordStatus, this.recordIndex, this.recordError);
         if (this.recording || this.running) {
             this.recordLoading = true;
             this.policyEngineService.getRecordActions(this.policyId).subscribe((items) => {
@@ -423,7 +426,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.recordLoading = false;
             });
         }
-        if(this.running) {
+        if (this.running) {
             this.updatePolicy();
         }
     }

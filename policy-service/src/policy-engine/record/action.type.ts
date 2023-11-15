@@ -3,5 +3,6 @@ export enum RecordAction {
     SetBlockData = 'SET_BLOCK_DATA',
     SetExternalData = 'SET_EXTERNAL_DATA',
     CreateUser = 'CREATE_USER',
-    SetUser = 'SET_USER'
+    SetUser = 'SET_USER',
+    GenerateUUID = 'GENERATE_UUID',
 }
