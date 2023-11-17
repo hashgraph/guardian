@@ -49,7 +49,7 @@ These roles are as follows:
 ## **Policy Guide**
 
 \
-This policy is published to the Hedera network and can either be imported via Github(.policy file) or IPFS timestamp. IPFS timestamp: 1695233862.252855821
+This policy is published to the Hedera network and can either be imported via Github(.policy file) or IPFS timestamp. IPFS timestamp: 1698756576.572245003
 
 ## **Important Documents & Schemas**
 
@@ -86,7 +86,7 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 ## **Step By Step**
 
-1.  The policy can be imported using IPFS timestamp 1687813769.029473000
+1.  The policy can be imported using IPFS timestamp 1698756576.572245003
 
     <figure><img src="../../../.gitbook/assets/image (7) (6) (1).png" alt=""><figcaption></figcaption></figure>
 2. Enter the IPFS timestamp and select OK.

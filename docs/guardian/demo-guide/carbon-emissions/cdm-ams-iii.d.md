@@ -50,7 +50,7 @@ In the context of modern emission reduction projects, the necessity for transpar
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp.
 
-Latest Version - 1695235455.560040612
+Latest Version - 1698756329.359347003
 
 ## Available Roles
 
@@ -84,7 +84,7 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 ## Step by Step
 
-1\. The policy can be imported using IPFS timestamp 1693223777.317635003
+1\. The policy can be imported using IPFS timestamp 1698756329.359347003
 
 <figure><img src="../../../.gitbook/assets/image (294).png" alt=""><figcaption></figcaption></figure>
 
