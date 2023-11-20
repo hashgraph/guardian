@@ -35,9 +35,11 @@ In the modern landscape of emission reduction initiatives, transparency and cred
 
 ## Demo Video
 
+Coming Soon
 
 ## Policy Workflow
 
+![image](https://github.com/hashgraph/guardian/assets/79293833/19a09f5f-ce25-4c8e-972d-62a757fc757e)
 
 ## Policy Guide
 
@@ -70,3 +72,4 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 ### Step By Step 
 
+Coming Soon
