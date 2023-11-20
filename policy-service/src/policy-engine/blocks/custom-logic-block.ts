@@ -291,7 +291,12 @@ export class CustomLogicBlock {
             throw new Error(JSON.stringify(res.error));
         }
 
-        const newVC = await VCHelper.createVC(root.did, root.hederaAccountKey, vcSubject);
+        const uuid = await ref.components.generateUUID();
+        const newVC = await VCHelper.createVcDocument(
+            vcSubject,
+            { did: root.did, key: root.hederaAccountKey },
+            { uuid }
+        );
 
         const item = PolicyUtils.createVC(ref, owner, newVC);
         item.type = outputSchema.iri;

@@ -182,7 +182,6 @@ export class ComponentsService {
         return GenerateUUIDv4();
     }
 
-
     private _recordingController: Recording;
     private _runningController: Running;
 

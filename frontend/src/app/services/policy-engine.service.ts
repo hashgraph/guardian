@@ -204,7 +204,7 @@ export class PolicyEngineService {
     public startRun(policyId: string): Observable<any> {
         return this.http.post<any>(`${this.url}/${policyId}/record/run`, null);
     }
-    
+
     public stopRecord(policyId: string): Observable<any> {
         return this.http.post<any>(`${this.url}/${policyId}/record/stop`, null);
     }
@@ -219,5 +219,11 @@ export class PolicyEngineService {
 
     public getRecordStatus(policyId: string): Observable<any> {
         return this.http.get<any>(`${this.url}/${policyId}/record/status`);
+    }
+
+    public exportRecord(policyId: string, recordId?: string): Observable<ArrayBuffer> {
+        return this.http.get(`${this.url}/${policyId}/record/export/${recordId || 'last'}`, {
+            responseType: 'arraybuffer'
+        });
     }
 }

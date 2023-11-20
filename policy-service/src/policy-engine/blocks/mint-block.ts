@@ -170,7 +170,12 @@ export class MintBlock {
             tokenId: token.tokenId,
             amount: amount.toString()
         }
-        const mintVC = await vcHelper.createVC(root.did, root.hederaAccountKey, vcSubject);
+        const uuid = await ref.components.generateUUID();
+        const mintVC = await vcHelper.createVcDocument(
+            vcSubject,
+            { did: root.did, key: root.hederaAccountKey },
+            { uuid }
+        );
         return mintVC;
     }
 
@@ -207,7 +212,12 @@ export class MintBlock {
             if (additionalMessages) {
                 vcSubject.relationships = additionalMessages.slice();
             }
-            const vc = await vcHelper.createVC(root.did, root.hederaAccountKey, vcSubject);
+            const uuid = await ref.components.generateUUID();
+            const vc = await vcHelper.createVcDocument(
+                vcSubject,
+                { did: root.did, key: root.hederaAccountKey },
+                { uuid }
+            );
             result.push(vc);
         }
         if (addons && addons.length) {
@@ -228,11 +238,10 @@ export class MintBlock {
      */
     private async createVP(root: IHederaAccount, uuid: string, vcs: VcDocument[]) {
         const vcHelper = new VcHelper();
-        const vp = await vcHelper.createVP(
-            root.did,
-            root.hederaAccountKey,
+        const vp = await vcHelper.createVpDocument(
             vcs,
-            uuid
+            { did: root.did, key: root.hederaAccountKey },
+            { uuid }
         );
         return vp;
     }

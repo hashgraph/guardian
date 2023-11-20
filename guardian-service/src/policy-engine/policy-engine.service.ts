@@ -18,6 +18,7 @@ import {
     NatsService,
     Policy,
     PolicyImportExport,
+    RecordImportExport,
     RunFunctionAsync,
     Singleton,
     TopicConfig,
@@ -1152,7 +1153,6 @@ export class PolicyEngineService {
                 const { policyId } = msg;
                 const result = await new GuardiansService()
                     .sendPolicyMessage(PolicyEvents.GET_RECORD_ACTIONS, policyId, {}) as any;
-                console.debug('!---', result);
                 return new MessageResponse(result);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -1188,6 +1188,44 @@ export class PolicyEngineService {
                 return new MessageError(error);
             }
         });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.RECORD_EXPORT_FILE, async (msg) => {
+            try {
+                const { policyId, owner } = msg;
+                const policy = await DatabaseServer.getPolicyById(policyId);
+                if (!policy) {
+                    throw new Error(`Cannot export policy ${policyId}`);
+                }
+                if (policy.owner !== owner) {
+                    throw new Error('Invalid owner.');
+                }
+
+                let uuid = msg.uuid;
+                if (!uuid || uuid === 'last') {
+                    const items = await DatabaseServer.getRecord({ policyId, method: 'STOP' });
+                    uuid = items[items.length - 1]?.uuid;
+                }
+                
+                const zip = await RecordImportExport.generate(uuid);
+                const file = await zip.generateAsync({
+                    type: 'arraybuffer',
+                    compression: 'DEFLATE',
+                    compressionOptions: {
+                        level: 3,
+                    },
+                });
+                console.log('File size: ' + file.byteLength);
+                return new BinaryMessageResponse(file);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                console.error(error);
+                return new MessageError(error);
+            }
+        });
+
+
+
+
 
 
 

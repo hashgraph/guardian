@@ -80,6 +80,13 @@
                 <span>Stop</span>
             </div>
 
+            <div 
+                class="dry-run-action-btn" 
+                (click)="loadRecord()" >
+                <mat-icon class="material-icons-outlined">file</mat-icon>
+                <span>File</span>
+            </div>
+
             <div class="delimiter"></div>
 
             <div class="dry-run-btn" (click)="onView('policy')" [attr.action]="view === 'policy'">

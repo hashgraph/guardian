@@ -158,10 +158,11 @@ export class TagsManagerBlock {
                     if (ref.dryRun) {
                         vcHelper.addDryRunContext(credentialSubject);
                     }
-                    const vcObject = await vcHelper.createVC(
-                        user.did,
-                        hederaAccount.hederaAccountKey,
-                        credentialSubject
+                    const uuid = await ref.components.generateUUID();
+                    const vcObject = await vcHelper.createVcDocument(
+                        credentialSubject,
+                        { did: user.did, key: hederaAccount.hederaAccountKey },
+                        { uuid }
                     );
                     tag.document = vcObject.getDocument();
                 } else {

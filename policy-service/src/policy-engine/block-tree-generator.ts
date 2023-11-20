@@ -265,7 +265,6 @@ export class BlockTreeGenerator extends NatsService {
     
         this.getPolicyMessages(PolicyEvents.GET_RECORD_ACTIONS, policyId, async (msg: any) => {
             const result = await PolicyComponentsUtils.GetRecordActions(policyId);
-            console.debug('!---', result);
             return new MessageResponse(result);
         });
         

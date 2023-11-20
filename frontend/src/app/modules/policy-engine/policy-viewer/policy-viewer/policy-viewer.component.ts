@@ -468,4 +468,25 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
         return `${hours}:${this.padTo2Digits(minutes)}:${this.padTo2Digits(seconds)}`;
     }
+
+    public loadRecord() {
+        this.loading = true;
+        this.policyEngineService.exportRecord(this.policyId, this.recordId)
+            .subscribe(fileBuffer => {
+                let downloadLink = document.createElement('a');
+                downloadLink.href = window.URL.createObjectURL(
+                    new Blob([new Uint8Array(fileBuffer)], {
+                        type: 'application/guardian-policy-record'
+                    })
+                );
+                downloadLink.setAttribute('download', `record_${Date.now()}.record`);
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, error => {
+                this.loading = false;
+            });
+    }
 }

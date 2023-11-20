@@ -50,4 +50,5 @@ export enum PolicyEngineEvents {
     GET_RECORD = 'policy-engine-event-get-record',
     GET_RECORD_STATUS = 'policy-engine-event-get-record-status',
     GET_RECORD_ACTIONS = 'policy-engine-event-get-record-actions',
+    RECORD_EXPORT_FILE = 'policy-engine-event-record-export-file'
 }

@@ -435,6 +435,29 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
+     * Get policy export file
+     * @param policyId
+     * @param uuid
+     * @param owner
+     */
+    public async exportRecord(policyId: string, uuid: string, owner: string) {
+        const file = await this.sendMessage(PolicyEngineEvents.RECORD_EXPORT_FILE, { policyId, uuid, owner }) as any;
+        return Buffer.from(file, 'base64');
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /**
      * Get Virtual Documents
      * @param policyId
      * @param type

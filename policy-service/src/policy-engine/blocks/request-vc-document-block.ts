@@ -230,11 +230,11 @@ export class RequestVcDocumentBlock {
             }
 
             const groupContext = await PolicyUtils.getGroupContext(ref, user);
-            const vc = await _vcHelper.createVC(
-                user.did,
-                hederaAccount.hederaAccountKey,
+            const uuid = await ref.components.generateUUID();
+            const vc = await _vcHelper.createVcDocument(
                 credentialSubject,
-                groupContext
+                { did: user.did, key: hederaAccount.hederaAccountKey },
+                { uuid, group: groupContext }
             );
             let item = PolicyUtils.createVC(ref, user, vc);
             const accounts = PolicyUtils.getHederaAccounts(

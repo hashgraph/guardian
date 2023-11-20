@@ -155,11 +155,11 @@ export class MultiSignBlock {
         const groupContext = await PolicyUtils.getGroupContext(ref, user);
         const vcDocument = sourceDoc.document;
         const credentialSubject = vcDocument.credentialSubject[0];
-        const newVC = await this.vcHelper.createVC(
-            root.did,
-            root.hederaAccountKey,
+        const uuid = await ref.components.generateUUID();
+        const newVC = await this.vcHelper.createVcDocument(
             credentialSubject,
-            groupContext
+            { did: root.did, key: root.hederaAccountKey },
+            { uuid, group: groupContext }
         );
 
         await ref.databaseServer.setMultiSigDocument(
@@ -217,11 +217,10 @@ export class MultiSignBlock {
 
             const vcs = data.map(e => VcDocument.fromJsonTree(e.document));
             const uuid: string = await ref.components.generateUUID();
-            const vp = await this.vcHelper.createVP(
-                policyOwnerAccount.did,
-                policyOwnerAccount.hederaAccountKey,
+            const vp = await this.vcHelper.createVpDocument(
                 vcs,
-                uuid
+                { did: policyOwnerAccount.did, key: policyOwnerAccount.hederaAccountKey },
+                { uuid }
             );
 
             const vpMessage = new VPMessage(MessageAction.CreateVP);

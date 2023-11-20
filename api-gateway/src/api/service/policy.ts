@@ -1427,7 +1427,6 @@ export class PolicyApi {
         }
         try {
             const result = await engineService.getRecordActions(req.params.policyId);
-            console.debug('!---', result);
             return res.json(result);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
@@ -1462,6 +1461,45 @@ export class PolicyApi {
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @ApiOperation({
+        summary: 'Return policy and its artifacts in a zip file format for the specified policy.',
+        description: 'Returns a zip file containing the published policy and all associated artifacts, i.e. schemas and VCs. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
+    @Get('/:policyId/record/export/:uuid')
+    @HttpCode(HttpStatus.OK)
+    async exportRecord(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const engineService = new PolicyEngine();
+        try {
+            const policyFile: any = await engineService.exportRecord(
+                req.params.policyId, 
+                req.params.uuid, 
+                req.user.did
+            );
+            const name = req.params.uuid || 'last';
+            res.setHeader('Content-disposition', `attachment; filename=${name}`);
+            res.setHeader('Content-type', 'application/zip');
+            return res.send(policyFile);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw error
         }
     }
 

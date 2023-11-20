@@ -58,7 +58,11 @@ export class RetirementBlock {
             tokenId: token.tokenId,
             amount: amount.toString()
         }
-        const wipeVC = await vcHelper.createVC(root.did, root.hederaAccountKey, vcSubject);
+        const uuid = await ref.components.generateUUID();
+        const wipeVC = await vcHelper.createVcDocument(
+            vcSubject,
+            { did: root.did, key: root.hederaAccountKey },
+            { uuid });
         return wipeVC;
     }
 
@@ -71,11 +75,10 @@ export class RetirementBlock {
      */
     private async createVP(root: IRootConfig, uuid: string, vcs: VcDocument[]) {
         const vcHelper = new VcHelper();
-        const vp = await vcHelper.createVP(
-            root.did,
-            root.hederaAccountKey,
+        const vp = await vcHelper.createVpDocument(
             vcs,
-            uuid
+            { did: root.did, key: root.hederaAccountKey },
+            { uuid }
         );
         return vp;
     }

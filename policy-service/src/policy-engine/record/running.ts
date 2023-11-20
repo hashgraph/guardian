@@ -6,9 +6,9 @@ import { RecordMethod } from "./method.type";
 import { IPolicyBlock } from "@policy-engine/policy-engine.interface";
 import { IPolicyUser, PolicyUser } from "@policy-engine/policy-user";
 import { PolicyComponentsUtils } from "@policy-engine/policy-components-utils";
-import { DatabaseServer, replaceAllEntities } from "@guardian/common";
+import { DatabaseServer } from "@guardian/common";
 import { RecordItem } from "./record-item";
-import e from "express";
+import { GenerateUUID, Utils } from "./utils";
 
 export class Running {
     public readonly type: string = 'Running';
@@ -23,6 +23,7 @@ export class Running {
     private _generateIndex: number;
     private _id: number;
     private _lastError: string;
+    private _ids: GenerateUUID[];
 
     constructor(
         policyInstance: IPolicyBlock,
@@ -46,6 +47,7 @@ export class Running {
             this._actions = [];
             this._generate = [];
         }
+        this._ids = [];
     }
 
     public start(): boolean {
@@ -54,6 +56,7 @@ export class Running {
         this._status = RunningStatus.Running;
         this._lastError = null;
         this._id = Date.now();
+        this._ids = [];
         this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
         this.run(this._id).then();
         return true;
@@ -133,28 +136,32 @@ export class Running {
             const userFull = await this.getUser(action.user);
             switch (action.action) {
                 case RecordAction.SelectGroup: {
-                    this.policyInstance.components.selectGroup(userFull, action.document?.uuid);
+                    const doc = await this.getActionDocument(action);
+                    this.policyInstance.components.selectGroup(userFull, doc);
                     return null;
                 }
                 case RecordAction.SetBlockData: {
+                    const doc = await this.getActionDocument(action);
                     const block = PolicyComponentsUtils.GetBlockByTag<any>(this.policyId, action.target);
                     if (block && (await block.isAvailable(userFull))) {
                         if (typeof block.setData === 'function') {
-                            await block.setData(userFull, action.document);
+                            await block.setData(userFull, doc);
                             return null;
                         }
                     }
                     return `Block (${action.target}) not available.`;
                 }
                 case RecordAction.SetExternalData: {
+                    const doc = await this.getActionDocument(action);
                     for (const block of PolicyComponentsUtils.ExternalDataBlocks.values()) {
                         if (block.policyId === this.policyId) {
-                            await (block as any).receiveData(action.document);
+                            await (block as any).receiveData(doc);
                         }
                     }
                     return null;
                 }
                 case RecordAction.CreateUser: {
+                    const doc = await this.getActionDocument(action);
                     const count = await DatabaseServer.getVirtualUsers(this.policyId);
                     const username = `Virtual User ${count.length}`;
 
@@ -167,7 +174,7 @@ export class Running {
                     );
                     await this.policyInstance.components.databaseServer.saveDid({
                         did: action.user,
-                        document: action.document?.document
+                        document: doc
                     });
                     return null;
                 }
@@ -183,56 +190,51 @@ export class Running {
         return `Action (${action.method}: ${action.action}) not defined.`;
     }
 
-
-    /**
-     * Replace all values
-     * @param obj
-     * @param names
-     * @param oldValue
-     * @param newValue
-     */
-    private replaceAllValues(
-        obj: any,
-        oldValue: string,
-        newValue: string
-    ): any {
-        if (typeof obj === 'string') {
-            if (obj === oldValue) {
-                return newValue;
-            } else {
-                return obj;
+    private async getActionDocument(action: RecordItem): Promise<any> {
+        try {
+            let document = action.document;
+            if (document) {
+                document = await this.replaceId(document);
+                document = await this.replaceRow(document);
             }
+            switch (action.action) {
+                case RecordAction.SelectGroup: {
+                    return document?.uuid;
+                }
+                case RecordAction.SetBlockData:
+                case RecordAction.SetExternalData: {
+                    return document;
+                }
+                case RecordAction.CreateUser: {
+                    return document?.document;
+                }
+            }
+        } catch (error) {
+            console.debug(' Error: ', error)
+            return action.document;
         }
-        if (typeof obj === 'object') {
-            if (Array.isArray(obj)) {
-                for (let i = 0; i < obj.length; i++) {
-                    obj[i] = this.replaceAllValues(obj[i], oldValue, newValue);
-                }
-            } else {
-                const keys = Object.keys(obj);
-                for (const key of keys) {
-                    obj[key] = this.replaceAllValues(obj[key], oldValue, newValue);
-                }
-            }
+    }
+
+    private async replaceId(obj: any): Promise<any> {
+        for (const value of this._ids) {
+            obj = Utils.replaceAllValues(obj, value);
         }
         return obj;
     }
 
-    private async runGenerate(action: RecordItem): Promise<string> {
-        const uuid = GenerateUUIDv4();
-        try {
-            const old = action?.document?.uuid;
-            if (old) {
-                for (const row of this._actions) {
-                    if (row.document) {
-                        row.document = this.replaceAllValues(row.document, old, uuid);
-                    }
-                }
+    private async replaceRow(obj: any): Promise<any> {
+        const result = Utils.findAllDocuments(obj);
+        for (const row of result) {
+            if (row.type === 'vc') {
+                const item = await this.policyInstance.databaseServer.getVcDocument(row.filters);
+                obj = row.replace(obj, item);
             }
-            return uuid;
-        } catch (error) {
-            return uuid;
+            if (row.type === 'vp') {
+                const item = await this.policyInstance.databaseServer.getVpDocument(row.filters);
+                obj = row.replace(obj, item);
+            }
         }
+        return obj;
     }
 
     public async next() {
@@ -291,9 +293,12 @@ export class Running {
     }
 
     public async nextUUID(): Promise<string> {
+        const uuid = GenerateUUIDv4();
         const action = this._generate[this._generateIndex];
+        const old = action?.document?.uuid;
         this._generateIndex++;
-        return await this.runGenerate(action);
+        this._ids.push(new GenerateUUID(old, uuid));
+        return uuid;
     }
 
     public getStatus() {

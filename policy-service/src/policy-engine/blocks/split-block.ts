@@ -130,7 +130,12 @@ export class SplitBlock {
                 maxChunks
             });
         }
-        vc = await this.vcHelper.issueVC(root.did, root.hederaAccountKey, vc);
+        const uuid = await ref.components.generateUUID();
+        vc = await this.vcHelper.issueVcDocument(
+            vc,
+            { did: root.did, key: root.hederaAccountKey },
+            { uuid }
+        );
         clone.document = vc.toJsonTree();
         clone.hash = vc.toCredentialHash();
         clone = PolicyUtils.setDocumentRef(clone, document) as any;

@@ -339,20 +339,24 @@ export class PolicyRolesBlock {
             vcSubject.groupLabel = group.groupLabel;
         }
 
-        const mintVC = await vcHelper.createVC(groupOwner.did, groupOwner.hederaAccountKey, vcSubject);
+        const userVC = await vcHelper.createVcDocument(
+            vcSubject,
+            { did: groupOwner.did, key: groupOwner.hederaAccountKey },
+            { uuid }
+        );
 
         const rootTopic = await PolicyUtils.getInstancePolicyTopic(ref);
         const messageServer = new MessageServer(groupOwner.hederaAccountId, groupOwner.hederaAccountKey, ref.dryRun);
         const vcMessage = new RoleMessage(MessageAction.CreateVC);
-        vcMessage.setDocument(mintVC);
+        vcMessage.setDocument(userVC);
         vcMessage.setRole(group);
         const vcMessageResult = await messageServer
             .setTopicObject(rootTopic)
             .sendMessage(vcMessage);
 
-        const vcDocument = PolicyUtils.createVC(ref, user, mintVC);
+        const vcDocument = PolicyUtils.createVC(ref, user, userVC);
         vcDocument.type = DataTypes.USER_ROLE;
-        vcDocument.schema = `#${mintVC.getSubjectType()}`;
+        vcDocument.schema = `#${userVC.getSubjectType()}`;
         vcDocument.messageId = vcMessageResult.getId();
         vcDocument.topicId = vcMessageResult.getTopicId();
         vcDocument.relationships = null;
