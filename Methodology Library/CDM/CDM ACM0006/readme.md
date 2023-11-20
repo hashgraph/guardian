@@ -4,7 +4,6 @@
 - [Table of contents](#table-of-contents)
 - [Introduction](#introduction)
 - [Need and Use for the ACM0006 Policy](#need-and-use-for-the-ACM0006-policy)
-- [Demo Video](#demo-video)
 - [Policy Workflow](#policy-workflow)
 - [Policy Guide](#policy-guide)
   - [Available Roles](#available-roles)
@@ -33,15 +32,14 @@ Power and heat generation industries are significant sources of greenhouse gas e
 
 In the modern landscape of emission reduction initiatives, the value of transparency and credibility can't be overstated. Guardian, built on Hedera's Hashgraph DLT, ensures immutable and transparent record-keeping, thereby enhancing the accountability of such initiatives. By streamlining processes, enhancing accuracy, and fostering trust within renewable energy projects, ACM0006 bolsters its environmental impact, showcasing how innovation can drive us towards a cleaner, more sustainable future.
 
-## Demo Video
-
-
 ## Policy Workflow
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/199fa44a-cbf2-474f-8bb4-dd1fb7e20f70)
 
 
 ## Policy Guide
 
-This policy is published to Hedera network and can either be imported via Github (.policy file) or IPSF timestamp.
+This policy is published to Hedera network and can either be imported via Github (.policy file) or IPSF timestamp.IPFS timestamp is coming soon.
 
 ### Available Roles 
  
