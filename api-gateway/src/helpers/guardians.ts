@@ -1,27 +1,5 @@
 import { Singleton } from '@helpers/decorators/singleton';
-import {
-    ApplicationStates,
-    CommonSettings,
-    GenerateUUIDv4,
-    IArtifact,
-    IChainItem,
-    IDidObject,
-    ISchema,
-    IToken,
-    ITokenInfo,
-    IUser,
-    IVCDocument,
-    IVPDocument,
-    MessageAPI,
-    SuggestionsOrderPriority,
-    ContractAPI,
-    ContractType,
-    RetireTokenPool,
-    RetireTokenRequest,
-    IContract,
-    IRetireRequest,
-    IRetirePool
-} from '@guardian/interfaces';
+import { ApplicationStates, CommonSettings, ContractAPI, ContractType, GenerateUUIDv4, IArtifact, IChainItem, IContract, IDidObject, IRetirePool, IRetireRequest, ISchema, IToken, ITokenInfo, IUser, IVCDocument, IVPDocument, MessageAPI, RetireTokenPool, RetireTokenRequest, SuggestionsOrderPriority } from '@guardian/interfaces';
 import { NatsService } from '@guardian/common';
 import { NewTask } from './task-manager';
 
@@ -672,6 +650,18 @@ export class Guardians extends NatsService {
      */
     public async createSchemaAsync(item: ISchema | any, task: NewTask): Promise<NewTask> {
         return await this.sendMessage(MessageAPI.CREATE_SCHEMA_ASYNC, { item, task });
+    }
+
+    /**
+     * Copy schema
+     * @param iri
+     * @param topicId
+     * @param name
+     * @param owner
+     * @param task
+     */
+    public async copySchemaAsync(iri: string, topicId: string, name: string, owner: string, task: NewTask): Promise<NewTask> {
+        return await this.sendMessage(MessageAPI.COPY_SCHEMA_ASYNC, {iri, topicId, name, task, owner});
     }
 
     /**

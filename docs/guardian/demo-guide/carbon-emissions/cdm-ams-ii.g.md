@@ -54,7 +54,7 @@ Coming Soon
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPSF timestamp.
 
-Latest Version - 1695225791.622644989
+Latest Version - 1698751171.908275443
 
 ### **Available Roles** <a href="#_toc21187385" id="_toc21187385"></a>
 
@@ -79,7 +79,7 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 ### Step by Step <a href="#_toc619173481" id="_toc619173481"></a>
 
-1. The policy can be imported using IPFS timestamp 1690462366.484472937
+1. The policy can be imported using IPFS timestamp 1698751171.908275443
 
 ![](<../../../.gitbook/assets/1 (2).png>)
 

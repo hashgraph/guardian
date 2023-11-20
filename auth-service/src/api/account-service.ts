@@ -147,13 +147,13 @@ export class AccountService extends NatsService {
 
                 const user = await new DataBaseHelper(User).findOne({ username });
                 if (user && passwordDigest === user.password) {
+                    const tokenId = GenerateUUIDv4();
                     const refreshToken = sign({
-                        username: user.username,
-                        did: user.did,
-                        role: user.role,
+                        id: tokenId,
+                        name: user.username,
                         expireAt: Date.now() + parseInt(REFRESH_TOKEN_UPDATE_INTERVAL, 10)
                     }, ACCESS_TOKEN_SECRET);
-                    user.refreshToken = refreshToken;
+                    user.refreshToken = tokenId;
                     await new DataBaseHelper(User).save(user);
                     return new MessageResponse({
                         username: user.username,
@@ -177,17 +177,17 @@ export class AccountService extends NatsService {
 
             const {ACCESS_TOKEN_SECRET} = await secretManager.getSecrets('secretkey/auth')
 
-            const decryptedToken = await util.promisify<string, any, Object, IAuthUser>(verify)(refreshToken, ACCESS_TOKEN_SECRET, {});
+            const decryptedToken = await util.promisify<string, any, Object, any>(verify)(refreshToken, ACCESS_TOKEN_SECRET, {});
             if (Date.now() > decryptedToken.expireAt) {
                 return new MessageResponse({})
             }
 
-            const user = await new DataBaseHelper(User).findOne({refreshToken});
+            const user = await new DataBaseHelper(User).findOne({refreshToken: decryptedToken.id, username: decryptedToken.name});
             if (!user) {
                 return new MessageResponse({})
             }
 
-            const ACCESS_TOKEN_UPDATE_INTERVAL = process.env.ACCESS_TOKEN_UPDATE_INTERVAL || '30000'
+            const ACCESS_TOKEN_UPDATE_INTERVAL = process.env.ACCESS_TOKEN_UPDATE_INTERVAL || '60000'
 
             const accessToken = sign({
                 username: user.username,

@@ -1,4 +1,4 @@
-import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ISchema, SchemaCategory, SchemaEntity } from '@guardian/interfaces';
 import { Observable } from 'rxjs';
@@ -182,5 +182,9 @@ export class SchemaService {
 
     public getSchemaParents(id: string): Observable<ISchema[]> {
         return this.http.get<ISchema[]>(`${this.singleSchemaUrl}/${id}/parents`);
+    }
+
+    copySchema(copyInfo: any) {
+        return this.http.post<ITask>(`${this.url}/push/copy`, copyInfo);
     }
 }

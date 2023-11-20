@@ -2,77 +2,78 @@ openapi: 3.0.0
 paths:
   /accounts/session:
     get:
-      tags:
-        - accounts
-      description: Returns current user session.
-      security:
-        - bearerAuth: []
+      operationId: AccountApi_getSession
       summary: Returns current session of the user.
+      description: Returns current user session.
+      parameters: []
       responses:
         '200':
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Session'
-        '401':
-          description: Unauthorized.
+                $ref: '#/components/schemas/AccountsSessionResponseDTO'
         '500':
           description: Internal server error.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: &ref_0
+        - accounts
+      security:
+        - bearer: []
   /accounts/register:
     post:
-      tags:
-        - accounts
+      operationId: AccountApi_register
       summary: Registers a new user account.
+      description: Object that contain username, password and role (optional) fields.
+      parameters: []
       requestBody:
-        description: Object that contain username, password and role (optional) fields.
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Credentials'
-      responses:
-        '201':
-          description: Created.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Account'
-        '500':
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  /accounts/login:
-    post:
-      tags:
-        - accounts
-      summary: Logs user into the system.
-      requestBody:
-        description: Object that contains username and password fields.
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Credentials'
+              $ref: '#/components/schemas/RegisterUserDTO'
       responses:
         '200':
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Session'
+                $ref: '#/components/schemas/AccountsResponseDTO'
         '500':
           description: Internal server error.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
+  /accounts/login:
+    post:
+      operationId: AccountApi_login
+      summary: Logs user into the system.
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginUserDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountsSessionResponseDTO'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
   /accounts/access-token:
     post:
       operationId: AccountApi_getAccessToken
@@ -82,28 +83,23 @@ paths:
       responses:
         '200':
           description: Successful operation.
-      tags: &ref_0
-        - accounts
+      tags: *ref_0
   /accounts:
     get:
-      tags:
-        - accounts
+      operationId: AccountApi_getAllAccounts
+      summary: Returns a list of users, excluding Standard Registry and Auditors.
       description: >-
         Returns all users except those with roles Standard Registry and Auditor.
         Only users with the Standard Registry role are allowed to make the
         request.
-      security:
-        - bearerAuth: []
-      summary: Returns a list of users, excluding Standard Registry and Auditors.
+      parameters: []
       responses:
         '200':
           description: Successful operation.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Account'
+                $ref: '#/components/schemas/AccountsResponseDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -113,32 +109,36 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-  /accounts/standard-registries:
-    get:
-      tags:
-        - accounts
-      description: Returns all Standard Registries.
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
       security:
         - bearerAuth: []
+  /accounts/standard-registries:
+    get:
+      operationId: AccountApi_getStandatdRegistries
       summary: Returns all Standard Registries.
+      description: Returns all Standard Registries.
+      parameters: []
       responses:
         '200':
           description: Successful operation.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Account'
+                $ref: '#/components/schemas/AccountsResponseDTO'
         '401':
           description: Unauthorized.
+        '403':
+          description: Forbidden.
         '500':
           description: Internal server error.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
+      security:
+        - bearerAuth: []
   /accounts/standard-registries/aggregated:
     get:
       operationId: AccountApi_getAggregatedStandardRegistries
@@ -169,37 +169,30 @@ paths:
         - bearerAuth: []
   /accounts/balance:
     get:
-      tags:
-        - accounts
-      description: Requests current Hedera account balance.
-      security:
-        - bearerAuth: []
+      operationId: AccountApi_getBalance
       summary: Returns user's Hedera account balance.
+      description: Requests current Hedera account balance.
+      parameters: []
       responses:
         '200':
           description: Successful operation.
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  balance:
-                    type: number
-                  unit:
-                    type: string
-                  user:
-                    type: object
-                    properties:
-                      username:
-                        type: string
-                      did:
-                        type: string
+                $ref: '#/components/schemas/BalanceResponseDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
         '500':
           description: Internal server error.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
+      security:
+        - bearerAuth: []
   /analytics/search/policies:
     post:
       operationId: AnalyticsApi_searchPolicies
@@ -2071,11 +2064,17 @@ paths:
         - bearer: []
   /demo/registered-users:
     get:
-      operationId: DemoApi_registeredUsers2
+      operationId: DemoApi_registeredUsers
+      summary: Returns list of registered users.
+      description: Returns list of registered users.
       parameters: []
       responses:
         '200':
-          description: ''
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisteredUsersDTO'
       tags:
         - demo
   /demo/random-key:
@@ -5372,6 +5371,42 @@ paths:
       tags: *ref_7
       security:
         - bearerAuth: []
+  /schemas/push/copy:
+    post:
+      operationId: SchemaApi_copySchemaAsync
+      summary: Copy schema.
+      description: >-
+        Copy schema. Only users with the Standard Registry role are allowed to
+        make the request.
+      parameters: []
+      requestBody:
+        required: true
+        description: Object that contains a valid schema.
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_7
+      security:
+        - bearer: []
+        - bearerAuth: []
   /schemas/push/{topicId}:
     post:
       tags:
@@ -8598,29 +8633,6 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
-    AccountsSessionResponseDTO:
-      type: object
-      properties:
-        username:
-          type: string
-        role:
-          type: string
-        accessToken:
-          type: string
-      required:
-        - username
-        - role
-        - accessToken
-    InternalServerErrorDTO:
-      type: object
-      properties:
-        code:
-          type: number
-        message:
-          type: string
-      required:
-        - code
-        - message
     AccountsResponseDTO:
       type: object
       properties:
@@ -8634,6 +8646,16 @@ components:
         - username
         - role
         - did
+    InternalServerErrorDTO:
+      type: object
+      properties:
+        code:
+          type: number
+        message:
+          type: string
+      required:
+        - code
+        - message
     RegisterUserDTO:
       type: object
       properties:
@@ -8650,6 +8672,19 @@ components:
         - password
         - password_confirmation
         - role
+    AccountsSessionResponseDTO:
+      type: object
+      properties:
+        username:
+          type: string
+        role:
+          type: string
+        accessToken:
+          type: string
+      required:
+        - username
+        - role
+        - accessToken
     LoginUserDTO:
       type: object
       properties:
@@ -9446,6 +9481,67 @@ components:
         - progress
         - type
         - taskId
+    ToolDTO:
+      type: object
+      properties:
+        id:
+          type: string
+        uuid:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        config:
+          type: object
+        status:
+          type: string
+        creator:
+          type: string
+        owner:
+          type: string
+        topicId:
+          type: string
+        messageId:
+          type: string
+        codeVersion:
+          type: string
+        createDate:
+          type: string
+      required:
+        - id
+        - uuid
+        - name
+        - description
+        - config
+        - status
+        - creator
+        - owner
+        - topicId
+        - messageId
+        - codeVersion
+        - createDate
+    RegisteredUsersDTO:
+      type: object
+      properties:
+        username:
+          type: string
+        did:
+          type: string
+        parent:
+          type: string
+        role:
+          type: string
+        policyRoles:
+          type: array
+          items:
+            type: string
+      required:
+        - username
+        - did
+        - parent
+        - role
+        - policyRoles
     Credentials:
       type: object
       required:

@@ -10,7 +10,7 @@ Blocks of similar configuration can be searched by clicking on search icon with 
 
 Search result displays all the policies and its blocks, which have same flow with respect to the base block search.
 
-<figure><img src="../../../../.gitbook/assets/image (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 2.1 Context
 

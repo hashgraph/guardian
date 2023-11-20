@@ -3,16 +3,30 @@ import { Users } from '@helpers/users';
 import { Logger, RunFunctionAsync } from '@guardian/common';
 import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
-import { Controller, Get, HttpCode, HttpStatus, Req, Response } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
-import { TaskAction } from '@guardian/interfaces';
+import { Controller, Get, HttpCode, HttpException, HttpStatus } from '@nestjs/common';
+import { ApiOkResponse, ApiOperation, ApiTags, getSchemaPath } from '@nestjs/swagger';
+import { TaskAction, UserRole } from '@guardian/interfaces';
+import { RegisteredUsersDTO } from '@middlewares/validation/schemas';
+import { AuthUser } from '@auth/authorization-helper';
+import { Auth } from '@auth/auth.decorator';
 
 @Controller('demo')
 @ApiTags('demo')
 export class DemoApi {
+    @ApiOperation({
+        summary: 'Returns list of registered users.',
+        description: 'Returns list of registered users.',
+    })
+    // @ApiExtraModels(AccountsSessionResponseDTO, InternalServerErrorDTO)
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            $ref: getSchemaPath(RegisteredUsersDTO),
+        },
+    })
     @Get('/registered-users')
     @HttpCode(HttpStatus.OK)
-    async registeredUsers2(@Req() req, @Response() res): Promise<any> {
+    async registeredUsers(): Promise<RegisteredUsersDTO> {
         const users = new Users();
         const guardians = new Guardians();
         try {
@@ -26,7 +40,7 @@ export class DemoApi {
                 }
             }
 
-            return res.json(demoUsers);
+            return demoUsers
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error;
@@ -34,45 +48,52 @@ export class DemoApi {
     }
 
     @Get('/random-key')
+    @Auth(
+        UserRole.STANDARD_REGISTRY,
+        UserRole.USER,
+        UserRole.AUDITOR
+    )
     @HttpCode(HttpStatus.OK)
-    async randomKey2(@Req() req): Promise<any> {
+    async randomKey(@AuthUser() user: any): Promise<any> {
         try {
             const guardians = new Guardians();
-            let role = null;
-            try {
-                const authHeader = req?.headers?.authorization;
-                if (authHeader) {
-                    const users = new Users();
-                    const token = authHeader.split(' ')[1];
-                    const user = await users.getUserByToken(token) as any;
-                    role = user?.role;
-                }
-            } catch (error) {
-                role = null;
-            }
-            const demoKey = await guardians.generateDemoKey(role);
-            return demoKey;
+            const role = user?.role;
+
+            return await guardians.generateDemoKey(role);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
         }
+        // try {
+        //     const guardians = new Guardians();
+        //     let role = null;
+        //     try {
+        //         const authHeader = req?.headers?.authorization;
+        //         if (authHeader) {
+        //             const users = new Users();
+        //             const token = authHeader.split(' ')[1];
+        //             const user = await users.getUserByToken(token) as any;
+        //             role = user?.role;
+        //         }
+        //     } catch (error) {
+        //         role = null;
+        //     }
+        //     const demoKey = await guardians.generateDemoKey(role);
+        //     return demoKey;
+        // } catch (error) {
+        //     new Logger().error(error, ['API_GATEWAY']);
+        //     throw error;
+        // }
     }
 
     @Get('/push/random-key')
+    @Auth(
+        UserRole.STANDARD_REGISTRY,
+        UserRole.USER,
+        UserRole.AUDITOR
+    )
     @HttpCode(HttpStatus.ACCEPTED)
-    async pushRandomKey2(@Req() req, @Response() res): Promise<any> {
+    async pushRandomKey(@AuthUser() user: any): Promise<any> {
         const taskManager = new TaskManager();
-        const authHeader = req?.headers?.authorization;
-        let user = null;
-        if (authHeader) {
-            try {
-                const users = new Users();
-                const token = authHeader.split(' ')[1];
-                user = await users.getUserByToken(token) as any;
-            } catch (error) {
-                user = null;
-            }
-        }
         const task = taskManager.start(TaskAction.CREATE_RANDOM_KEY, user?.id);
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
@@ -82,7 +103,7 @@ export class DemoApi {
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
 
-        return res.status(202).send(task);
+        return task;
     }
 
 }

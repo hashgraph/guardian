@@ -480,6 +480,7 @@
     * [🏭 CDM AMS III.D](guardian/demo-guide/carbon-emissions/cdm-ams-iii.d.md)
     * [🏭 GHGP Corporate Standard V2](guardian/demo-guide/carbon-emissions/ghgp-corporate-standard-v2.md)
     * [🏭 CDM AMS III.BB](guardian/demo-guide/carbon-emissions/cdm-ams-iii.bb.md)
+    * [🏭 CDM AR-ACM0003: Methodology for Afforestation and Reforestation of Lands Except Wetlands](guardian/demo-guide/carbon-emissions/cdm-ar-acm0003-methodology-for-afforestation-and-reforestation-of-lands-except-wetlands.md)
 * [❓ FAQs](guardian/faqs.md)
 * [👬 Community Standards](guardian/community-standards/README.md)
   * [Guardian Policy Standards (GPS)](guardian/community-standards/guardian-policy-standards-gps.md)

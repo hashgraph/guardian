@@ -1,0 +1,69 @@
+<div class="g-dialog-content">
+    <div class="g-dialog-header">
+        <div class="g-dialog-cancel">
+            <div (click)="onClose()" class="g-dialog-cancel-btn">
+                <mat-icon>close</mat-icon>
+            </div>
+        </div>
+        <div *ngIf="type=='new'" class="g-dialog-title">
+            Copy Schema
+        </div>
+        <div class="g-dialog-actions">
+            <div
+                    (click)="onCreate()"
+                    [attr.disabled]="!dataForm.valid"
+                    class="g-dialog-actions-btn">
+                Copy schema
+            </div>
+        </div>
+    </div>
+    <div class="g-dialog-body">
+        <div class="context">
+            <form [formGroup]="dataForm">
+                <mat-form-field appearance="outline">
+                    <mat-label>* Schema Name</mat-label>
+                    <input formControlName="name" matInput placeholder="Schema Name" type="text">
+                </mat-form-field>
+
+                <!--                <mat-form-field appearance="outline">-->
+                <!--                    <mat-label>Schema type</mat-label>-->
+                <!--                    <mat-select tabindex='-1' formControlName="schemaType" (selectionChange)="onChangeType($event)">-->
+                <!--                        <mat-option [value]="'system'">System</mat-option>-->
+                <!--                        <mat-option [value]="'policy'">Policy</mat-option>-->
+                <!--                        <mat-option [value]="'tag'">Tag</mat-option>-->
+                <!--                        <mat-option [value]="'tool'">Tool</mat-option>-->
+                <!--                    </mat-select>-->
+                <!--                </mat-form-field>-->
+
+                <mat-form-field *ngIf="isPolicy" appearance="outline">
+                    <mat-label>* Policy</mat-label>
+                    <mat-select (selectionChange)="onFilter($event)" formControlName="topicId" tabindex='-1'>
+                        <mat-option [value]="'draft'" class="draft-topic-option">No binding</mat-option>
+                        <mat-option *ngFor="let policy of policies" [value]="policy.topicId">
+                            {{policy.name}}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+
+                <mat-form-field *ngIf="isTool" appearance="outline">
+                    <mat-label>* Tool</mat-label>
+                    <mat-select (selectionChange)="onFilter($event)" formControlName="topicId" tabindex='-1'>
+                        <mat-option [value]="'draft'" class="draft-topic-option">No binding</mat-option>
+                        <mat-option *ngFor="let tool of tools" [value]="tool.topicId">
+                            {{tool.name}}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+
+                <mat-form-field *ngIf="isSystem" appearance="outline">
+                    <mat-label>For (Entity)</mat-label>
+                    <mat-select formControlName="entity" tabindex='-1'>
+                        <mat-option value="STANDARD_REGISTRY">STANDARD REGISTRY</mat-option>
+                        <mat-option value="USER">USER</mat-option>
+                    </mat-select>
+                </mat-form-field>
+
+            </form>
+        </div>
+    </div>
+</div>

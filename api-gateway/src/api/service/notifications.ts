@@ -1,33 +1,9 @@
-import { AuthGuard } from '@auth/authorization-helper';
+import { AuthGuard } from '@auth/auth-guard';
 import { Logger, NotificationService } from '@guardian/common';
 import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
-import {
-    NotificationDTO,
-    ProgressDTO,
-} from '@middlewares/validation/schemas/notifications';
-import {
-    Controller,
-    Delete,
-    Get,
-    HttpCode,
-    HttpStatus,
-    Post,
-    Req,
-    Response,
-    UseGuards,
-} from '@nestjs/common';
-import {
-    ApiBearerAuth,
-    ApiExtraModels,
-    ApiInternalServerErrorResponse,
-    ApiOkResponse,
-    ApiOperation,
-    ApiParam,
-    ApiSecurity,
-    ApiTags,
-    ApiUnauthorizedResponse,
-    getSchemaPath,
-} from '@nestjs/swagger';
+import { NotificationDTO, ProgressDTO, } from '@middlewares/validation/schemas/notifications';
+import { Controller, Delete, Get, HttpCode, HttpStatus, Post, Req, Response, UseGuards, } from '@nestjs/common';
+import { ApiBearerAuth, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath, } from '@nestjs/swagger';
 
 @Controller('notifications')
 @ApiTags('notifications')

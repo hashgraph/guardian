@@ -16,7 +16,7 @@ description: >-
 
 You will need to run the installation commands, open a tab on your browser and navigate to [http://localhost:3000/](http://localhost:3000/).
 
-In this demo we will import the Verra REDD Policy = 1695248864.688529003
+In this demo we will import the Verra REDD Policy = 1698754217.516521003
 
 ### Verra REDD\_3 for the Standard Registry
 
@@ -59,7 +59,7 @@ Once you have decided that you want to import a specific Verra Policy, you will 
 
 For this demo we will use the Verra REDD 3,
 
-**Verra REDD Policy 3 groups = 1690819293.839911342**
+**Verra REDD Policy 3 groups = 1698754217.516521003**
 
 Once you have chosen one, you will add this to the ‘Hedera message Timestamp’ pop up which will then allow you to preview the policy. If you intend to import this policy as a new version of another that you have already been using, just select which policy you wish to refer to under the **“Version of”**. Once you have done your preview you can click on **“Import”**.
 

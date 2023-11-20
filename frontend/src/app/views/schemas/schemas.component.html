@@ -299,11 +299,17 @@
 
 <mat-menu #schemaMenu="matMenu">
     <ng-template matMenuContent let-element="element">
+        <button *ngIf="ifCanCopy(element)" mat-menu-item (click)="onCopySchema(element)" class="schema-menu-btn">
+            <mat-icon>content_copy</mat-icon>
+            <span>Copy</span>
+        </button>
+
         <button *ngIf="ifCanExport(element)" mat-menu-item (click)="onExport(element)" class="schema-menu-btn">
             <mat-icon>import_export</mat-icon>
             <span>Export</span>
         </button>
-        <div *ngIf="ifCanExport(element)" class="schema-menu-delimiter"></div>
+
+        <div *ngIf="ifCanExport(element) || ifCanCopy(element)" class="schema-menu-delimiter"></div>
 
         <button mat-menu-item (click)="onOpenConfig(element)" class="schema-menu-btn">
             <mat-icon>settings</mat-icon>

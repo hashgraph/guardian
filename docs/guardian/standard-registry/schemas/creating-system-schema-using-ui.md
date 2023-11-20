@@ -6,7 +6,7 @@ To create a new Schemas, click on the **New** button at the top right corner.
 
 After clicking on the New button, you will be asked to enter Schema details such as Schema Name, Policy Dropdown, Entity : VC/MRV/NONE, Schema Description and any other required fields.
 
-![](<../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1).png>)
+![](<../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png>)
 
 In addition to the basic Schema details we also have an option to add Field and Condition to each field.
 

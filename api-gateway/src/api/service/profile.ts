@@ -1,33 +1,26 @@
 import { Guardians } from '@helpers/guardians';
 import { Users } from '@helpers/users';
-import { DidDocumentStatus, IUser, SchemaEntity, TaskAction, TopicType, UserRole } from '@guardian/interfaces';
+import { DidDocumentStatus, SchemaEntity, TaskAction, TopicType, UserRole } from '@guardian/interfaces';
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
 import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
 import { Controller, Get, HttpCode, HttpException, HttpStatus, Put, Req, Response } from '@nestjs/common';
-import { checkPermission } from '@auth/authorization-helper';
+import { AuthUser, checkPermission } from '@auth/authorization-helper';
 import { ApiTags } from '@nestjs/swagger';
+import { Auth } from '@auth/auth.decorator';
 
 @Controller('profiles')
 @ApiTags('profiles')
 export class ProfileApi {
   @Get('/:username/')
+  @Auth(
+      UserRole.STANDARD_REGISTRY,
+      UserRole.USER,
+      UserRole.AUDITOR
+  )
   @HttpCode(HttpStatus.OK)
-  async getProfile(@Req() req, @Response() res): Promise<any> {
-    const authHeader = req.headers.authorization;
-    const token = authHeader?.split(' ')[1];
-    const users = new Users();
+  async getProfile(@AuthUser() user): Promise<any> {
     const guardians = new Guardians();
-    let user;
-    try {
-      user = await users.getUserByToken(token) as IAuthUser;
-    } catch (e) {
-      user = null;
-    }
-
-    if (!user) {
-      throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
-    }
 
     try {
       let didDocument: any = null;
@@ -71,7 +64,7 @@ export class ProfileApi {
         });
       }
 
-      const result: IUser = {
+      return {
         username: user.username,
         role: user.role,
         did: user.did,
@@ -85,10 +78,9 @@ export class ProfileApi {
         didDocument,
         vcDocument
       };
-      return res.json(result);
     } catch (error) {
       new Logger().error(error, ['API_GATEWAY']);
-      throw error;
+      throw new HttpException(error.message, HttpStatus.UNPROCESSABLE_ENTITY);
     }
   }
 
