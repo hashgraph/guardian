@@ -44,11 +44,11 @@ AMS-II.G provides a standardized and measurable framework for clean cooking proj
 
 ## Demo Video <a href="#_toc264453392" id="_toc264453392"></a>
 
-Coming Soon
+[Youtube](https://youtu.be/jfl72\_fL6iU?si=M5MbBFlVH2SCReRf)
 
 ## Policy Workflow <a href="#_toc2070089206" id="_toc2070089206"></a>
 
-<figure><img src="../../../.gitbook/assets/0 (1).jpeg" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (372).png" alt=""><figcaption></figcaption></figure>
 
 ## Policy Guide <a href="#_toc93669646" id="_toc93669646"></a>
 

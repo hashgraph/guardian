@@ -489,7 +489,6 @@
     * [🏭 CDM AMS-I.A.: Electricity Generation by the User](guardian/demo-guide/carbon-emissions/cdm-ams-i.a.-electricity-generation-by-the-user.md)
     * [🏭 CDM AMS-I.C.: Thermal Energy Production with or Without Electricity](guardian/demo-guide/carbon-emissions/cdm-ams-i.c.-thermal-energy-production-with-or-without-electricity.md)
     * [🏨 CDM AMS-I.F.: Renewable Electricity Generation for Captive Use and Mini-Grid](guardian/demo-guide/carbon-emissions/cdm-ams-i.f.-renewable-electricity-generation-for-captive-use-and-mini-grid.md)
-    * [🏫 CDM AMS-II.G.: Energy Efficiency Measures in Thermal Applications of Non-Renewable Biomass](guardian/demo-guide/carbon-emissions/cdm-ams-ii.g.-energy-efficiency-measures-in-thermal-applications-of-non-renewable-biomass.md)
     * [🏭 CDM AMS-II.J.: Demand-Side Activities for Efficient Lighting Technologies](guardian/demo-guide/carbon-emissions/cdm-ams-ii.j.-demand-side-activities-for-efficient-lighting-technologies.md)
     * [🏨 CDM AMS-III.AV.: Low Greenhouse Gas Emitting Safe Drinking Water Production Systems](guardian/demo-guide/carbon-emissions/cdm-ams-iii.av.-low-greenhouse-gas-emitting-safe-drinking-water-production-systems.md)
     * [🏭 CDM AMS-III.F.: Avoidance of Methane Emissions Through Composting](guardian/demo-guide/carbon-emissions/cdm-ams-iii.f.-avoidance-of-methane-emissions-through-composting.md)

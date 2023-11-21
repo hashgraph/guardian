@@ -10,23 +10,23 @@
 
 [Methodology Overview](cdm-acm0002-grid-connected-electricity-generation-from-renewable-sources.md#methodology-overview)
 
-Typical Projects&#x20;
+[Typical Projects ](cdm-acm0002-grid-connected-electricity-generation-from-renewable-sources.md#typical-projects)
 
-Integration of Battery Energy Storage System (BESS)&#x20;
+[Integration of Battery Energy Storage System (BESS) ](cdm-acm0002-grid-connected-electricity-generation-from-renewable-sources.md#integration-of-battery-energy-storage-system-bess)
 
-Available Roles&#x20;
+[Available Roles ](cdm-acm0002-grid-connected-electricity-generation-from-renewable-sources.md#available-roles)
 
-Key Documents and Schemas&#x20;
+[Key Documents and Schemas ](cdm-acm0002-grid-connected-electricity-generation-from-renewable-sources.md#key-documents-and-schemas)
 
-Token (Carbon Emission Reduction)
+[Token (Carbon Emission Reduction)](cdm-acm0002-grid-connected-electricity-generation-from-renewable-sources.md#token-carbon-emission-reduction)
 
-Workflow
+[Workflow](cdm-acm0002-grid-connected-electricity-generation-from-renewable-sources.md#workflow)
 
-IPFS Timestamp
+[IPFS Timestamp](cdm-acm0002-grid-connected-electricity-generation-from-renewable-sources.md#ipfs-timestamp)
 
-Step-by-Step
+[Step-by-Step](cdm-acm0002-grid-connected-electricity-generation-from-renewable-sources.md#step-by-step)
 
-Introduction to ACM0002&#x20;
+### Introduction to ACM0002&#x20;
 
 With mounting concerns about greenhouse gas emissions and the imperative to mitigate climate change, ACM0002 has been developed within the framework of the Clean Development Mechanism (CDM) under the United Nations Framework Convention on Climate Change (UNFCCC). At its essence, ACM0002 centers on grid-connected electricity generation sourced from renewable and environmentally responsible sources, ushering in a transformative era of clean, sustainable energy production.&#x20;
 
