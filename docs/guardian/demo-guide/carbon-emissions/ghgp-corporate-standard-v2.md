@@ -6,8 +6,6 @@
 
 [Need and Use for the GHGP Corporate Standard Policy](ghgp-corporate-standard-v2.md#\_toc146717948)
 
-[Demo Video](ghgp-corporate-standard-v2.md#\_toc146717949)
-
 [Policy Workflow](ghgp-corporate-standard-v2.md#\_toc146717950)
 
 [Policy Guide](ghgp-corporate-standard-v2.md#\_toc146717951)
@@ -47,10 +45,6 @@ The increase in corporate and organizational commitments to measure, disclose, a
 Despite a growing interest in measuring, disclosing, and reducing GHG emissions from corporations, regulators, and investors alike, companies are struggling to accurately measure and report emissions. In general, current quantification methodologies are flawed, GHG accounting standards leave significant room for error, access to quality data is low, and there is a prevailing lack of GHG accounting expertise. As a result, high-profile companies have been exposed for incorrect GHG inventories and worse, misleading claims on carbon performance. According to an article by Bloomberg, ‘Corporate Greenhouse Gas Data Doesn’t Always Add Up,’ “As companies rush to set climate goals, some aren’t even getting the basics quite right when it comes to accounting for greenhouse-gas emissions. According to researchers in Ireland, the U.K. and Germany, based on decade’s worth of corporate emissions data, “when the numbers were tallied, many didn’t add up. They found instances of errors, omissions and rounding issues (often down rather than up).” &#x20;
 
 The Guardian GHGP Corporate Policy offers a unique technical opportunity for companies to streamline, add robustness, and build trust and transparency into their GHG inventories. The policy allows user to dynamically add entities and EGOs to organizations and GHG sources to EGOs to build their inventories in alignment with their specific corporate structures. MRV data can then be sourced by the Guardian automatically (e.g., via API, IoT-enabled devices, etc.) or provided manually depending on the user’s level of digitization. The inventory is further streamlined through Guardian policies with built in auto-calculation blocks, emission factors, and GWPs. The results of the inventory can be immutably and transparently verified by third parties. Finally, the emissions are tokenized to allow for enhanced tracking, transparency, accounting, and reporting, with the results and data structured in accordance with GHGP reporting requirements.
-
-### Demo Video <a href="#_toc146717949" id="_toc146717949"></a>
-
-(Coming Soon)
 
 ### Policy Workflow <a href="#_toc146717950" id="_toc146717950"></a>
 
@@ -147,7 +141,7 @@ The Organization is responsible for inputting key data and information and assig
 
 <figure><img src="../../../.gitbook/assets/image (245).png" alt="" width="563"><figcaption></figcaption></figure>
 
-### VVB Flow \[Add Screenshots Below] <a href="#_toc146717957" id="_toc146717957"></a>
+### VVB Flow <a href="#_toc146717957" id="_toc146717957"></a>
 
 1. Assign role as VVB and add VVB name
 
