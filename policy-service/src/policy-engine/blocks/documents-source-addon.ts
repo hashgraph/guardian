@@ -171,6 +171,7 @@ export class DocumentsSourceAddon {
                 break;
             case 'vp-documents':
                 filters.policyId = ref.policyId;
+                console.debug(' <--- VP (addon): ', JSON.stringify(filters, null, 4));
                 data = await ref.databaseServer.getVpDocuments(filters, otherOptions, countResult);
                 break;
             case 'standard-registries':

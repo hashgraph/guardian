@@ -83,6 +83,8 @@ export class InterfaceDocumentsSource {
     async getData(user: IPolicyUser, uuid: string, queryParams: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicySourceBlock>(this);
 
+        console.debug(' <--- GRID: ', ref.tag);
+
         const filters = ref.getFiltersAddons().map(addon => {
             return {
                 id: addon.uuid,
@@ -278,6 +280,7 @@ export class InterfaceDocumentsSource {
                         policyId: { $eq: ref.policyId }
                     }
                 });
+                console.debug(' <--- VP: ', JSON.stringify(aggregation, null, 4));
                 return await ref.databaseServer.getVpDocumentsByAggregation(aggregation);
             case 'approve':
                 aggregation.unshift({

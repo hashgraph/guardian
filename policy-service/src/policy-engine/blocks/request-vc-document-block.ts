@@ -300,7 +300,12 @@ export class RequestVcDocumentBlock {
      * @param userHederaAccount
      * @param userHederaKey
      */
-    async generateId(idType: string, user: IPolicyUser, userHederaAccount: string, userHederaKey: string): Promise<string | undefined> {
+    async generateId(
+        idType: string,
+        user: IPolicyUser,
+        userHederaAccount: string,
+        userHederaKey: string
+    ): Promise<string | undefined> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {
             if (idType === 'UUID') {
@@ -309,7 +314,7 @@ export class RequestVcDocumentBlock {
             if (idType === 'DID') {
                 const topic = await PolicyUtils.getOrCreateTopic(ref, 'root', null, null);
 
-                const didObject = await DIDDocument.create(null, topic.topicId);
+                const didObject = await ref.components.generateDID(topic.topicId);
                 const did = didObject.getDid();
                 const key = didObject.getPrivateKeyString();
 

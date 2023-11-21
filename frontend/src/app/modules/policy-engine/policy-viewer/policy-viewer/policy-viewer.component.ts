@@ -410,6 +410,11 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.recordStatus = data.status;
                 this.recordError = data.error;
             }
+            if(this.recordStatus === 'Stopped') {
+                this.recording = false;
+                this.running = false;
+                this.recordId = null;
+            }
         }
         console.log(this.running, this.recordStatus, this.recordIndex, this.recordError);
         if (this.recording || this.running) {

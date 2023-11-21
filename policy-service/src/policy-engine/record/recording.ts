@@ -1,4 +1,4 @@
-import { DatabaseServer } from '@guardian/common';
+import { DIDDocument, DatabaseServer } from '@guardian/common';
 import { GenerateUUIDv4, PolicyEvents } from '@guardian/interfaces';
 import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
@@ -96,11 +96,9 @@ export class Recording {
         await this.record(RecordAction.SelectGroup, null, user?.did, { uuid });
     }
 
-
     public async setBlockData(user: IPolicyUser, block: AnyBlockType, data: any): Promise<void> {
         await this.record(RecordAction.SetBlockData, block?.tag, user?.did, data);
     }
-
 
     public async externalData(data: any): Promise<void> {
         await this.record(RecordAction.SetExternalData, null, null, data);
@@ -124,6 +122,20 @@ export class Recording {
             user: null,
             target: null,
             document: { uuid }
+        });
+    }
+
+    public async generateDidDocument(didDocument: DIDDocument): Promise<void> {
+        const did = didDocument.getDid();
+        await DatabaseServer.createRecord({
+            uuid: this.uuid,
+            policyId: this.policyId,
+            method: RecordMethod.Generate,
+            action: RecordAction.GenerateDID,
+            time: Date.now(),
+            user: null,
+            target: null,
+            document: { did }
         });
     }
 

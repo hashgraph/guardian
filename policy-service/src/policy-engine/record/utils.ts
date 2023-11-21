@@ -1,3 +1,5 @@
+import { RecordItem } from "./record-item";
+
 export interface IGenerateValue<T> {
     readonly oldValue: T;
     readonly newValue: T;
@@ -21,6 +23,24 @@ export class GenerateUUID implements IGenerateValue<string> {
     public replace<U>(value: U): U {
         if (typeof value === 'string' && this._map.has(value)) {
             return this._map.get(value) as U;
+        }
+        return value;
+    }
+}
+
+export class GenerateDID implements IGenerateValue<string> {
+    public readonly oldValue: string;
+    public readonly newValue: string;
+
+    constructor(oldValue: string, newValue: string) {
+        console.debug(' <--- GenerateDID: ', oldValue, newValue);
+        this.oldValue = oldValue;
+        this.newValue = newValue;
+    }
+
+    public replace<U>(value: U): U {
+        if (typeof value === 'string' && value === this.oldValue) {
+            return this.newValue as U;
         }
         return value;
     }
@@ -136,5 +156,44 @@ export class Utils {
             Utils._findAllDocuments(obj, results, null, null);
         }
         return results;
+    }
+}
+
+export class RecordItemStack {
+    private _items: RecordItem[];
+    private _index: number;
+
+    constructor() {
+        this._items = [];
+        this._index = 0;
+    }
+
+    public setItems(items: RecordItem[]): void {
+        this._items = items || [];
+        this._index = 0;
+    }
+
+    public clearIndex(): void {
+        this._index = 0;
+    }
+
+    public nextIndex(): void {
+        this._index++;
+    }
+    public next(): RecordItem | undefined {
+        this._index++;
+        return this._items[this._index];
+    }
+
+    public get current(): RecordItem | undefined {
+        return this._items[this._index];
+    }
+
+    public get index(): number {
+        return this._index;
+    }
+
+    public get items(): RecordItem[] {
+        return this._items;
     }
 }

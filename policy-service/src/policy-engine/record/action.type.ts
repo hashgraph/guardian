@@ -5,4 +5,5 @@ export enum RecordAction {
     CreateUser = 'CREATE_USER',
     SetUser = 'SET_USER',
     GenerateUUID = 'GENERATE_UUID',
+    GenerateDID = 'GENERATE_DID'
 }

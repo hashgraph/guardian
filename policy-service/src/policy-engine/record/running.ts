@@ -6,9 +6,9 @@ import { RecordMethod } from "./method.type";
 import { IPolicyBlock } from "@policy-engine/policy-engine.interface";
 import { IPolicyUser, PolicyUser } from "@policy-engine/policy-user";
 import { PolicyComponentsUtils } from "@policy-engine/policy-components-utils";
-import { DatabaseServer } from "@guardian/common";
+import { DIDDocument, DatabaseServer } from "@guardian/common";
 import { RecordItem } from "./record-item";
-import { GenerateUUID, Utils } from "./utils";
+import { GenerateDID, GenerateUUID, IGenerateValue, RecordItemStack, Utils } from "./utils";
 
 export class Running {
     public readonly type: string = 'Running';
@@ -17,18 +17,18 @@ export class Running {
     public readonly options: any;
     private readonly tree: BlockTreeGenerator;
     private _status: RunningStatus;
-    private _actions: RecordItem[];
-    private _generate: RecordItem[];
-    private _actionIndex: number;
-    private _generateIndex: number;
+
+    private _actions: RecordItemStack;
+    private _generateUUID: RecordItemStack;
+    private _generateDID: RecordItemStack;
     private _id: number;
     private _lastError: string;
-    private _ids: GenerateUUID[];
+    private _generatedItems: IGenerateValue<any>[];
 
     constructor(
         policyInstance: IPolicyBlock,
         policyId: string,
-        actions: any[],
+        actions: RecordItem[],
         options: any
     ) {
         this.policyInstance = policyInstance;
@@ -37,26 +37,34 @@ export class Running {
         this.tree = new BlockTreeGenerator();
         this._status = RunningStatus.New;
         this._lastError = null;
-        this._actionIndex = 0;
-        this._generateIndex = 0;
         this._id = -1;
+        this._actions = new RecordItemStack();
+        this._generateUUID = new RecordItemStack();
+        this._generateDID = new RecordItemStack();
         if (actions) {
-            this._actions = actions.filter(item => item.method !== RecordMethod.Generate);
-            this._generate = actions.filter(item => item.method === RecordMethod.Generate);
-        } else {
-            this._actions = [];
-            this._generate = [];
+            this._actions.setItems(actions.filter(item =>
+                item.method !== RecordMethod.Generate
+            ));
+            this._generateUUID.setItems(actions.filter(item =>
+                item.method === RecordMethod.Generate &&
+                item.action === RecordAction.GenerateUUID
+            ));
+            this._generateDID.setItems(actions.filter(item =>
+                item.method === RecordMethod.Generate &&
+                item.action === RecordAction.GenerateDID
+            ));
         }
-        this._ids = [];
+        this._generatedItems = [];
     }
 
     public start(): boolean {
-        this._actionIndex = 0;
-        this._generateIndex = 0;
         this._status = RunningStatus.Running;
         this._lastError = null;
         this._id = Date.now();
-        this._ids = [];
+        this._generatedItems = [];
+        this._actions.clearIndex();
+        this._generateUUID.clearIndex();
+        this._generateDID.clearIndex();
         this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
         this.run(this._id).then();
         return true;
@@ -216,7 +224,7 @@ export class Running {
     }
 
     private async replaceId(obj: any): Promise<any> {
-        for (const value of this._ids) {
+        for (const value of this._generatedItems) {
             obj = Utils.replaceAllValues(obj, value);
         }
         return obj;
@@ -240,12 +248,11 @@ export class Running {
     public async next() {
         const result = { delay: -1, code: 0, error: null };
         try {
-            const action = this._actions[this._actionIndex];
+            const action = this._actions.current;
             if (!action) {
                 return result;
             }
-            this._actionIndex++;
-            const next = this._actions[this._actionIndex];
+            const next = this._actions.next();
 
             const error = await this.runAction(action);
             if (error) {
@@ -294,11 +301,21 @@ export class Running {
 
     public async nextUUID(): Promise<string> {
         const uuid = GenerateUUIDv4();
-        const action = this._generate[this._generateIndex];
+        const action = this._generateUUID.current;
         const old = action?.document?.uuid;
-        this._generateIndex++;
-        this._ids.push(new GenerateUUID(old, uuid));
+        this._generateUUID.nextIndex();
+        this._generatedItems.push(new GenerateUUID(old, uuid));
         return uuid;
+    }
+
+    public async nextDID(topicId: string): Promise<DIDDocument> {
+        const didDocument = await DIDDocument.create(null, topicId);
+        const did = didDocument.getDid();
+        const action = this._generateDID.current;
+        const old = action?.document?.did;
+        this._generateDID.nextIndex();
+        this._generatedItems.push(new GenerateDID(old, did));
+        return didDocument;
     }
 
     public getStatus() {
@@ -307,12 +324,12 @@ export class Running {
             type: this.type,
             policyId: this.policyId,
             status: this._status,
-            index: this._actionIndex,
+            index: this._actions.index,
             error: this._lastError
         }
     }
 
-    public async getActions(): Promise<any[]> {
-        return this._actions;
+    public async getActions(): Promise<RecordItem[]> {
+        return this._actions.items;
     }
 }
