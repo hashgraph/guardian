@@ -17,8 +17,72 @@ Step By Step
 1. Import the policy by entering the IPFS timestamp mentioned above.
 2. Once, policy is imported, we create Project Proponent role:
 
-<figure><img src="../../../.gitbook/assets/image (366).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (377).png" alt=""><figcaption></figcaption></figure>
 
-The primary objective of AMS-I.A. is to provide a structured and standardized approach for small-scale renewable electricity generation projects by the user. It aims to facilitate the displacement of GHG-intensive, non-renewable electricity applications by enabling the production of electricity using various renewable energy technologies.&#x20;
+3. Once Project Proponent role is created, we need to create new project by clicking on "New Project" button and fill all the required details:
 
-The scope of this methodology includes renewable electricity generation units like solar photovoltaic, hydro, wind, and renewable biomass that supply electricity to individual households/users or groups of households/users. It is applicable to various situations, including new installations (greenfield) or replacements of existing onsite fossil-fuel-fired generation, ensuring versatility and adaptability to different project needs and conditions. &#x20;
+<figure><img src="../../../.gitbook/assets/image (378).png" alt=""><figcaption></figcaption></figure>
+
+4. Once details are submitted, PP waits for approval
+
+<figure><img src="../../../.gitbook/assets/image (379).png" alt=""><figcaption></figcaption></figure>
+
+5. Now, we create new role as Designated\_National\_Authority, who will review project description and approves it by clicking on Validate button:
+
+<figure><img src="../../../.gitbook/assets/image (380).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (382).png" alt=""><figcaption></figcaption></figure>
+
+6. Now, we create a VVB role and assign VVB name:
+
+<figure><img src="../../../.gitbook/assets/image (383).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (384).png" alt=""><figcaption></figcaption></figure>
+
+7. Once VVB name is assigned, it waits for the approval
+
+<figure><img src="../../../.gitbook/assets/image (385).png" alt=""><figcaption></figcaption></figure>
+
+8. Now, we login back as SR and approve VVB by clicking on Approve:
+
+<figure><img src="../../../.gitbook/assets/image (386).png" alt=""><figcaption></figcaption></figure>
+
+9. We click on Project Pipeline tab and click on Add to add Project to the pipeline:
+
+<figure><img src="../../../.gitbook/assets/image (387).png" alt=""><figcaption></figcaption></figure>
+
+10. Now we login as PP and assign VVB to validate the project
+
+<figure><img src="../../../.gitbook/assets/image (388).png" alt=""><figcaption></figcaption></figure>
+
+11. We login back as VVB and validate the project by clicking on Validate button.
+
+<figure><img src="../../../.gitbook/assets/image (389).png" alt=""><figcaption></figcaption></figure>
+
+12. &#x20;We login as SR and click on Add
+
+<figure><img src="../../../.gitbook/assets/image (390).png" alt=""><figcaption></figcaption></figure>
+
+13. Now we login as PP and click on Add Report to create Monitoring report by filling out the details:
+
+<figure><img src="../../../.gitbook/assets/image (391).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (392).png" alt=""><figcaption></figcaption></figure>
+
+14. &#x20;Once monitoring report is submitted, it waits for verification from VVB.
+
+<figure><img src="../../../.gitbook/assets/image (393).png" alt=""><figcaption></figcaption></figure>
+
+15. Now, we login as VVB and verify the monitoring report:
+
+<figure><img src="../../../.gitbook/assets/image (394).png" alt=""><figcaption></figcaption></figure>
+
+16. Once, monitoring report is verified, we login as SR and click on Mint to mint the tokens:
+
+<figure><img src="../../../.gitbook/assets/image (395).png" alt=""><figcaption></figcaption></figure>
+
+17. Once minting is completed, you will be able to view complete process flow using Trustchain by clicking on View Trustchain:
+
+<figure><img src="../../../.gitbook/assets/image (396).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (397).png" alt=""><figcaption></figcaption></figure>
