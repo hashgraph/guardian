@@ -5738,7 +5738,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"debug@npm:4, debug@npm:^4.0.1, debug@npm:^4.1.0, debug@npm:^4.1.1, debug@npm:^4.2.0, debug@npm:^4.3.1, debug@npm:^4.3.3, debug@npm:^4.3.4":
+"debug@npm:4, debug@npm:^4.0.1, debug@npm:^4.1.1, debug@npm:^4.2.0, debug@npm:^4.3.1, debug@npm:^4.3.3, debug@npm:^4.3.4":
   version: 4.3.4
   resolution: "debug@npm:4.3.4"
   dependencies:
@@ -5981,18 +5981,6 @@ __metadata:
   version: 2.1.0
   resolution: "detect-newline@npm:2.1.0"
   checksum: c55146fd5b97a9ce914f17f85a01466c9e8679289e2d390588b027a58f2e090dbc38457923072369c603b8904f982f87b78fee17e48d5706f35571642f4599f8
-  languageName: node
-  linkType: hard
-
-"detect-secrets@npm:^1.0.6":
-  version: 1.0.6
-  resolution: "detect-secrets@npm:1.0.6"
-  dependencies:
-    debug: ^4.1.0
-    which: ^1.3.1
-  bin:
-    detect-secrets-launcher: ./bin/detect-secrets-launcher.js
-  checksum: 2a35d4f011b2952599a8904ab491b9aed63b7e3296284a3f40bf01d316db9b5f80132f0cd07b38fcf6048e64feaf88d91bb150056a431076ae4c5542dd4f7982
   languageName: node
   linkType: hard
 
@@ -7948,8 +7936,6 @@ __metadata:
 "guardian@workspace:.":
   version: 0.0.0-use.local
   resolution: "guardian@workspace:."
-  dependencies:
-    detect-secrets: ^1.0.6
   languageName: unknown
   linkType: soft
 
@@ -15879,7 +15865,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"which@npm:^1.2.14, which@npm:^1.3.1":
+"which@npm:^1.2.14":
   version: 1.3.1
   resolution: "which@npm:1.3.1"
   dependencies:
