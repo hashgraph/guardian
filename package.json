@@ -19,7 +19,7 @@
     "notification-service"
   ],
   "version": "2.18.0",
-  "devDependencies": {
+  "dependencies": {
     "detect-secrets": "^1.0.6"
   },
   "scripts": {
