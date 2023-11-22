@@ -55,6 +55,11 @@ jobs:
           popd
         env:
           CI: true
+      - name: Detect secrets
+        run: |
+          yarn run detect-secrets
+        env:
+          CI: true
       - name: Lint
         run: |
           pushd interfaces
