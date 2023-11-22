@@ -57,7 +57,8 @@ jobs:
           CI: true
       - name: Detect secrets
         run: |
-          yarn run detect-secrets
+          yarn global add detect-secrets
+          detect-secrets-launcher --word-list exclude-secrets.txt k8s-manifests/**/* */src/**.ts **/.env*
         env:
           CI: true
       - name: Lint
