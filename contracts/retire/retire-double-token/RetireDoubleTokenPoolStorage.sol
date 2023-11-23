@@ -37,9 +37,9 @@ contract RetireDoubleTokenPoolStorage is RetirePoolStorage {
         poolPos[last.opposite][last.base] = poolPos[pool.opposite][
             pool.base
         ];
+        pools[poolPos[base][opposite] - 1] = pools[pools.length - 1];
         delete poolPos[pool.base][pool.opposite];
         delete poolPos[pool.opposite][pool.base];
-        pool = last;
         pools.pop();
     }
 
@@ -79,7 +79,7 @@ contract RetireDoubleTokenPoolStorage is RetirePoolStorage {
     {
         address base = tokens[0];
         address opposite = tokens[1];
-        Pool memory pool = pools[poolPos[base][opposite] - 1];
+        Pool storage pool = pools[poolPos[base][opposite] - 1];
         RetireTokenPool[]
             memory tokenOptions = new RetireTokenPool[](2);
         bool inverted = base == pool.opposite;

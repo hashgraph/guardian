@@ -37,7 +37,7 @@ contract RetireDoubleTokenRequestStorage is RetireRequestStorage {
         address base = tokens[0];
         address opposite = tokens[1];
 
-        Request memory request = requests[
+        Request storage request = requests[
             requestPos[account][base][opposite] - 1
         ];
         bool inverted = base == request.opposite;
@@ -81,15 +81,18 @@ contract RetireDoubleTokenRequestStorage is RetireRequestStorage {
             requestPos[account][base][opposite] - 1
         ];
         Request storage last = requests[requests.length - 1];
-        requestPos[account][last.base][last.opposite] = requestPos[account][
+        requestPos[last.usr][last.base][last.opposite] = requestPos[account][
             req.base
         ][req.opposite];
-        requestPos[account][last.opposite][last.base] = requestPos[account][
+        requestPos[last.usr][last.opposite][last.base] = requestPos[account][
             req.opposite
         ][req.base];
+        requests[
+            requestPos[account][base][opposite] - 1
+        ] = requests[requests.length - 1];
         delete requestPos[account][req.base][req.opposite];
         delete requestPos[account][req.opposite][req.base];
-        req = last;
+        
         requests.pop();
     }
 
