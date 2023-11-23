@@ -26,11 +26,10 @@ contract RetireSingleTokenPoolStorage is RetirePoolStorage {
     function unsetPool(address[] memory tokens) public override role(OWNER) {
         address base = tokens[0];
         require(poolPos[base] > 0, "NO_POOL");
-        Pool storage pool = pools[poolPos[base] - 1];
         Pool storage last = pools[pools.length - 1];
-        poolPos[last.base] = poolPos[pool.base];
+        poolPos[last.base] = poolPos[base];
         pools[poolPos[base] - 1] = pools[pools.length - 1];
-        delete poolPos[pool.base];
+        delete poolPos[base];
         pools.pop();
     }
 
