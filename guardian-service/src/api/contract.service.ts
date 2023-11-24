@@ -2780,17 +2780,7 @@ export async function contractAPI(
                 20
             );
 
-            // Add token info
-
-            if (!pool.immediately) {
-                await setRetireRequest(
-                    workers,
-                    retireRequestRepository,
-                    pool.contractId,
-                    root.hederaAccountId,
-                    tokens
-                );
-            } else {
+            if (pool.immediately) {
                 await saveRetireVC(
                     contractRepository,
                     pool.contractId,
