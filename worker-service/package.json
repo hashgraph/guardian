@@ -28,7 +28,7 @@
   "devDependencies": {
     "@types/gulp": "^4",
     "@types/gulp-rename": "^2",
-    "@types/node": "^18.16.0",
+    "@types/node": "^20.10.0",
     "chai": "4.3.4",
     "gulp": "^4.0.2",
     "gulp-copy": "^4.0.1",
