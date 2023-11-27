@@ -25,21 +25,17 @@ export class AccountApi {
 
     /**
      * getSession
-     * @param user
+     * @param headers
      */
     @ApiOperation({
         summary: 'Returns current session of the user.',
         description: 'Returns current user session.',
     })
-    @ApiExtraModels(AccountsSessionResponseDTO, InternalServerErrorDTO)
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
             $ref: getSchemaPath(AccountsSessionResponseDTO),
         },
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -48,10 +44,9 @@ export class AccountApi {
         }
     })
     @ApiBearerAuth()
-    // @UseGuards(AuthGuard)
     @HttpCode(HttpStatus.OK)
     @Get('/session')
-    async getSession(@Headers() headers): Promise<AccountsSessionResponseDTO> {
+    async getSession(@Headers() headers: { [key: string]: string }): Promise<AccountsSessionResponseDTO> {
         const users = new Users();
         try {
             const authHeader = headers.authorization;

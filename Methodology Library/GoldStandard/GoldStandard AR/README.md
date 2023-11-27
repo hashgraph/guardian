@@ -20,4 +20,4 @@ The Gold Standard AR methodology promotes sustainable land use practices that co
 
 | Version | IPFS Timestamp | Policy File Link | Version Differences |
 |---|---|---|---:|
-| GoldStandard AR | 1695251826.459491276 | [Link](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/GoldStandard/GoldStandard%20AR/Gold%20Standard%20AR.policy) | GoldStandard AR |
+| GoldStandard AR | 1698755331.068409570 | [Link](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/GoldStandard/GoldStandard%20AR/Gold%20Standard%20AR.policy) | GoldStandard AR |

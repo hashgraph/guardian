@@ -46,7 +46,7 @@ AMS-II.G provides a standardized and measurable framework for clean cooking proj
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPSF timestamp. 
 
-Policy: 1695225791.622644989
+Policy: 1698751171.908275443
 Tool 30: 1690820465.670044734
 Tool 33: 1690820484.707441003 
 
@@ -74,7 +74,7 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 ### Step By Step 
 
-1. The policy can be imported using IPFS timestamp 1695225791.622644989
+1. The policy can be imported using IPFS timestamp 1698751171.908275443
 
 <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/f7ce2959-83e2-42fc-a593-04be5b7571ca">
     

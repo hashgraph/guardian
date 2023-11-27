@@ -33,7 +33,7 @@ contract RetireSingleTokenRequestStorage is RetireRequestStorage {
         address account = usr;
         address base = tokens[0];
 
-        Request memory request = requests[requestPos[account][base] - 1];
+        Request storage request = requests[requestPos[account][base] - 1];
         RetireTokenRequest[]
             memory tokenOptions = new RetireTokenRequest[](1);
         tokenOptions[0] = RetireTokenRequest(
@@ -52,11 +52,10 @@ contract RetireSingleTokenRequestStorage is RetireRequestStorage {
         address account = usr;
         address base = tokens[0];
         require(requestPos[account][base] > 0, "NO_REQUEST");
-        Request storage req = requests[requestPos[account][base] - 1];
         Request storage last = requests[requests.length - 1];
-        requestPos[account][last.base] = requestPos[account][req.base];
-        delete requestPos[account][req.base];
-        req = last;
+        requestPos[last.usr][last.base] = requestPos[account][base];
+        requests[requestPos[account][base] - 1] = requests[requests.length - 1];
+        delete requestPos[account][base];
         requests.pop();
     }
 

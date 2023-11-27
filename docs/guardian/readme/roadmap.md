@@ -42,15 +42,35 @@ Referral Link : [https://github.com/hashgraph/guardian/issues/2306](https://gith
 
     Referral Link : [https://github.com/hashgraph/guardian/issues/1793](https://github.com/hashgraph/guardian/issues/1793)
 
-### AMS-III.BB. Webinar
+## GHGP Corporate Standard Policy V2
 
-* Design schemas for AMS-III.BB. methodology, create PowerPoint presentation, and conduct webinar.
-* Schemas will also be designed for the following tools:
-  * Tool 07 - Tool to calculate the emission factor for an electricity system
-  * Tool 21 - Demonstration of additionality of small-scale project activities
-  * Tool 33 - Default values for common parameters
+The VVB role and corresponding workflow steps should be incorporated in the current version of GHGP policy as an optional role and optional workflow blocks. The workflow steps to be included (as optional) are the VVB verifying data sources and/or the VVB verifying the GHG inventory/calculations. The organization should be able to choose either or both the steps. The process step for Registry approving/rejecting GHG sources should be removed and a process step for Registry to approve the issuance of tokens should be added.
 
-Referral Link : [https://github.com/hashgraph/guardian/issues/2308](https://github.com/hashgraph/guardian/issues/2308)
+Referral Link : [https://github.com/hashgraph/guardian/issues/](https://github.com/hashgraph/guardian/issues/1666)[2571](https://github.com/hashgraph/guardian/issues/2571)
+
+## UNFCCC 'Tools' as a high-level abstraction/component in Guardian policies
+
+Introduce 'Tools' concept as a 'first-class' citizen of Guardian policies such that policy authors can 'just' re-use Tools (without any modification), linking them together and mixing with custom policy blocks etc in a policy to deliver a seamless onboarding experience for environment projects managed by non-technical individuals.
+
+'Tools' should have the following properties:
+
+* contain schemas for VCs, logic (including especially calculation block and if-then-else capability) and be able to 'consume' and 'produce' multiple VC documents
+* be shareable and re-useable across instances and within an instace
+* be signed and immutable in the sense that they don't requite any modification to be included/used in a policy
+* should be able to 'include' other Tools, i.e. Tools can be nested into other tools to reflect e.g. the relationship between [Tool 14](https://cdm.unfccc.int/methodologies/PAmethodologies/tools/am-tool-14-v2.pdf) (a container) and [Tool 3](https://cdm.unfccc.int/methodologies/PAmethodologies/tools/am-tool-03-v3.pdf) (embedded in T14)
+
+Referral Link : [https://github.com/hashgraph/guardian/issues/2630](https://github.com/hashgraph/guardian/issues/2630)
+
+## Project data comparison as produced/captured by policies
+
+Introduce the capability to compare artefacts of the same or different policies:
+
+* VC and VP documents produced by the policy individually and as part of the trust chain comparison
+* tokens and their entire trust chains
+
+The comparison should result in a simple numeric indicator on the similarity of the compared items (i.e. 75% compatible), and other indicators such as 'trust chain A has 15% more elements than trust chain B' helping users to draw conclusion on the relative standing or 'quality' of the corresponding compared items.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/2375](https://github.com/hashgraph/guardian/issues/2375)
 
 ## ---- October 2023----
 
@@ -66,23 +86,15 @@ Implement an enhancement for the token creation and retirement operation essenti
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/2011](https://github.com/hashgraph/guardian/issues/2011)
 
-### Post-minting data enrichment for issued tokens
+### AMS-III.BB. Webinar
 
-Projects should have ability to enrich the trust-chain of tokens with additional data in the form of VC/VP after the tokens have been created through editable metadata. Diagrammatically this should look like this:
+* Design schemas for AMS-III.BB. methodology, create PowerPoint presentation, and conduct webinar.
+* Schemas will also be designed for the following tools:
+  * Tool 07 - Tool to calculate the emission factor for an electricity system
+  * Tool 21 - Demonstration of additionality of small-scale project activities
+  * Tool 33 - Default values for common parameters
 
-```scss
-VP1(VC1, VC2) <---- Token
-                  /
-VP2(VC3) <-------/ (edited) 
-```
-
-Where VP2 (VC3) have been linked to the token after the token have been minted.
-
-It should be possible to specify, at minting time, that a particular token instance prohibits adding and/or removing of any information after the creation.
-
-Probably depends on [https://github.com/hashgraph/hedera-improvement-proposal/discussions/607](https://github.com/hashgraph/hedera-improvement-proposal/discussions/607), also visible here: [https://hips.hedera.com/hip/hip-657](https://hips.hedera.com/hip/hip-657)
-
-Referral Link : [https://github.com/hashgraph/guardian/issues/1896](https://github.com/hashgraph/guardian/issues/1896)
+Referral Link : [https://github.com/hashgraph/guardian/issues/2308](https://github.com/hashgraph/guardian/issues/2308)
 
 ### Block and policy discoverability/search
 
@@ -100,27 +112,61 @@ Referral Link : [https://github.com/hashgraph/guardian/issues/1896](https://gith
 
 ### Verra VM0044 Webinar
 
-Design schemas for the VM0044 methodology, create a PowerPoint presentation, and conduct webinar.
+Design and develop schemas for the VM0044 methodology, create a PowerPoint presentation, and conduct webinar.
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/2309](https://github.com/hashgraph/guardian/issues/2309)
 
 ## ---- November 2023----
 
-### Conforming to Hedera DID, VC, VP, Standards
+## Enhancement by adding new features
 
-Update to memo field VP/DID structure to normalize DID spec with the rest of Hedera DID method work (which will also be updated)
+1. Improving Guardian UI by adding more UI elements and also adding more colorful headers which can be customized.
+2. Creating a static landing page which will have capability of performing project comparison within same instance using different parameters such as scale size, sectoral scopes, etc.
+3. Implementing AI search for allowing Project developers to search policies as per the information entered.
+4. Implementing Guider Search for allowing project developers to search policies using different parameters within same instance.
+5. Implementation of property field when schema is created, which will be used for standardizing as per IWA specification.
 
-Referral Link : [https://github.com/hashgraph/guardian/issues/2211](https://github.com/hashgraph/guardian/issues/2211)
+Referral Link : [https://github.com/hashgraph/guardian/issues/2850](https://github.com/hashgraph/guardian/issues/2850)
 
-### FireBlocks/ Meetaco Integration
+## Development of CDM AMS-III - AR policy with Tools
 
-We need to integrate FireBlocks , a Key management tool to manage the Keys and secure Guardian. To get complete info on Fireblocks, please look at [https://www.fireblocks.com/](https://www.fireblocks.com/)
+Development of the policy with all details mentioned in the design schema.\
+Tools involved in this policy also needs to be developed. The tools are listed below:
 
-Referral Link : [https://github.com/hashgraph/guardian/issues/1314](https://github.com/hashgraph/guardian/issues/1314)
+1. Tool 07- Tool to calculate the emission factor for an electricity system
+2. Tool 19- Demonstration of additionality of microscale project activities
+3. Tool 21- Demonstration of additionality of small-scale project activities 
+4. Tool 33- Default values for common parameters
 
-### Gold Standard’s Reduced Emissions from Cooking and Heating – TPDDTEC Webinar
+Referral Link : [https://github.com/hashgraph/guardian/issues/2765](https://github.com/hashgraph/guardian/issues/2765)
 
-Design schemas for the TPDDTEC methodology, create a PowerPoint presentation, and conduct webinar.
+## Development of AMS-II.G with Tools
+
+Development of the policy with all details mentioned in the design schema.\
+Tools involved in this policy also needs to be developed. The tools are listed below:
+
+1. Tool 30- Calculation of the fraction of non-renewable biomass
+2. Tool 19- Demonstration of additionality of microscale project activities
+3. Tool 21- Demonstration of additionality of small-scale project activities 
+4. Tool 33- Default values for common parameters
+
+Referral Link : [https://github.com/hashgraph/guardian/issues/2766](https://github.com/hashgraph/guardian/issues/2766)
+
+## Development of CDM's AMS-III.D. with Tools
+
+Development of the policy with all details mentioned in the design schema.\
+Tools involved in this policy also needs to be developed. The tools are listed below:
+
+1. Tool 03- Tool to calculate project or leakage CO2 emissions from fossil fuel combustion
+2. Tool 05- Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation
+3. Tool 06- Project emissions from flaring
+4. Tool 14- Project and leakage emissions from anaerobic digesters
+
+Referral Link : [https://github.com/hashgraph/guardian/issues/2767](https://github.com/hashgraph/guardian/issues/2767)
+
+## PWRM0001 Plastic Waste Collection Methodology, v1.1 - Webinar
+
+Design and develop schemas for the Plastic Waste Collection methodology, create a PowerPoint presentation, and conduct webinar.
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/2311](https://github.com/hashgraph/guardian/issues/2311)
 
@@ -196,3 +242,33 @@ Create a Guardian policy that quantifies and reports GHG emissions from HBAR, us
 {% embed url="https://ghgprotocol.org/sites/default/files/standards/Product-Life-Cycle-Accounting-Reporting-Standard_041613.pdfhttps://ghgprotocol.org/sites/default/files/GHGP-ICTSG%20-%20ALL%20Chapters.pdf" %}
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/1667](https://github.com/hashgraph/guardian/issues/1667)
+
+### Post-minting data enrichment for issued tokens
+
+Projects should have ability to enrich the trust-chain of tokens with additional data in the form of VC/VP after the tokens have been created through editable metadata. Diagrammatically this should look like this:
+
+```scss
+VP1(VC1, VC2) <---- Token
+                  /
+VP2(VC3) <-------/ (edited) 
+```
+
+Where VP2 (VC3) have been linked to the token after the token have been minted.
+
+It should be possible to specify, at minting time, that a particular token instance prohibits adding and/or removing of any information after the creation.
+
+Probably depends on [https://github.com/hashgraph/hedera-improvement-proposal/discussions/607](https://github.com/hashgraph/hedera-improvement-proposal/discussions/607), also visible here: [https://hips.hedera.com/hip/hip-657](https://hips.hedera.com/hip/hip-657)
+
+Referral Link : [https://github.com/hashgraph/guardian/issues/1896](https://github.com/hashgraph/guardian/issues/1896)
+
+### FireBlocks/ Meetaco Integration
+
+We need to integrate FireBlocks , a Key management tool to manage the Keys and secure Guardian. To get complete info on Fireblocks, please look at [https://www.fireblocks.com/](https://www.fireblocks.com/)
+
+Referral Link : [https://github.com/hashgraph/guardian/issues/1314](https://github.com/hashgraph/guardian/issues/1314)
+
+### Conforming to Hedera DID, VC, VP, Standards
+
+Update to memo field VP/DID structure to normalize DID spec with the rest of Hedera DID method work (which will also be updated)
+
+Referral Link : [https://github.com/hashgraph/guardian/issues/2211](https://github.com/hashgraph/guardian/issues/2211)

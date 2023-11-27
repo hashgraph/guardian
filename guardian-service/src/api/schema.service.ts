@@ -1,38 +1,9 @@
 import { ApiResponse } from '@api/helpers/api-response';
 import { emptyNotifier, initNotifier } from '@helpers/notifier';
 import { Controller } from '@nestjs/common';
-import {
-    DatabaseServer,
-    Logger,
-    MessageError,
-    MessageResponse,
-    RunFunctionAsync,
-    Users
-} from '@guardian/common';
-import {
-    ISchema,
-    MessageAPI,
-    ModuleStatus,
-    SchemaCategory,
-    SchemaHelper,
-    SchemaStatus,
-    TopicType
-} from '@guardian/interfaces';
-import {
-    getPageOptions,
-    findAndPublishSchema,
-    exportSchemas,
-    importSchemaByFiles,
-    importSchemasByMessages,
-    importTagsByFiles,
-    prepareSchemaPreview,
-    checkForCircularDependency,
-    createSchemaAndArtifacts,
-    deleteSchema,
-    incrementSchemaVersion,
-    updateSchemaDefs,
-    getSchemaCategory
-} from './helpers';
+import { DatabaseServer, Logger, MessageError, MessageResponse, RunFunctionAsync, Users } from '@guardian/common';
+import { ISchema, MessageAPI, ModuleStatus, SchemaCategory, SchemaHelper, SchemaStatus, TopicType, Schema, SchemaNode } from '@guardian/interfaces';
+import { checkForCircularDependency, copySchemaAsync, createSchemaAndArtifacts, deleteSchema, exportSchemas, findAndPublishSchema, getPageOptions, getSchemaCategory, importSchemaByFiles, importSchemasByMessages, importTagsByFiles, incrementSchemaVersion, prepareSchemaPreview, updateSchemaDefs } from './helpers';
 
 @Controller()
 export class SchemaService { }
@@ -65,6 +36,19 @@ export async function schemaAPI(): Promise<void> {
         RunFunctionAsync(async () => {
             const schema = await createSchemaAndArtifacts(item.category, item, item.owner, notifier);
             notifier.result(schema.id);
+        }, async (error) => {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            notifier.error(error);
+        });
+        return new MessageResponse(task);
+    });
+
+    ApiResponse(MessageAPI.COPY_SCHEMA_ASYNC, async (msg) => {
+        const {iri, topicId, name, owner, task} = msg;
+        const notifier = await initNotifier(task);
+        RunFunctionAsync(async () => {
+            const schema = await copySchemaAsync(iri, topicId, name, owner);
+            notifier.result(schema.iri);
         }, async (error) => {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             notifier.error(error);
@@ -173,6 +157,69 @@ export async function schemaAPI(): Promise<void> {
                     'status'
                 ]
             }));
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    /**
+     * Return schema tree
+     *
+     * @param {Object} [msg] - payload
+     *
+     * @returns {any} - Schema tree
+     */
+    ApiResponse(MessageAPI.GET_SCHEMA_TREE, async (msg) => {
+        try {
+            if (!msg) {
+                return new MessageError('Invalid load schema parameter');
+            }
+
+            const { id, owner } = msg;
+            if (!id) {
+                return new MessageError('Invalid schema id');
+            }
+            if (!owner) {
+                return new MessageError('Invalid schema owner');
+            }
+
+            const schema = await DatabaseServer.getSchemaById(id);
+            if (!schema) {
+                return new MessageError('Schema is not found');
+            }
+
+            // tslint:disable-next-line:no-shadowed-variable
+            const getChildrenTypes = (schema: any) => {
+                return (new Schema(schema)).fields.filter(field => field.isRef && field.type !== '#GeoJSON').map(field => field.type);
+            }
+            // tslint:disable-next-line:no-shadowed-variable
+            const createNode = async (schema: any) => {
+                const nestedSchemas = getChildrenTypes(schema);
+                const node: SchemaNode = {
+                    name: schema.name,
+                    type: schema.iri,
+                    children: await getNestedSchemas(nestedSchemas)
+                };
+                return node;
+            }
+            const getNestedSchemas = async (types: string[]) => {
+                const result = [];
+                if (!Array.isArray(types)) {
+                    return result;
+                }
+                for (const type of types) {
+                    // tslint:disable-next-line:no-shadowed-variable
+                    const schema = await DatabaseServer.getSchema({
+                        iri: type
+                    });
+                    if (result.findIndex(item => item.type === schema.iri) === -1) {
+                        result.push(await createNode(schema));
+                    }
+                }
+                return result;
+            }
+            return new MessageResponse(await createNode(schema));
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);

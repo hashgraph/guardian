@@ -38,7 +38,7 @@
                     </mat-form-field>
 
                     <mat-form-field *ngIf="isDate(item)" class="example-full-width" appearance="outline">
-                        <input readonly [value]="item.value" matInput [matDatepicker]="dateItem">
+                        <input [matDatepicker]="dateItem" [value]="formatDate(item.value)" matInput readonly>
                         <mat-datepicker-toggle matSuffix [for]="dateItem"></mat-datepicker-toggle>
                         <mat-datepicker [disabled]="true" #dateItem></mat-datepicker>
                     </mat-form-field>

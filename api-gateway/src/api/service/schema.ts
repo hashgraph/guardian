@@ -1,56 +1,18 @@
 import { Guardians } from '@helpers/guardians';
-import {
-    ISchema,
-    SchemaCategory,
-    SchemaEntity,
-    SchemaHelper,
-    SchemaStatus,
-    StatusType,
-    TaskAction,
-    UserRole
-} from '@guardian/interfaces';
+import { ISchema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus, StatusType, TaskAction, UserRole } from '@guardian/interfaces';
 import { Logger, RunFunctionAsync, SchemaImportExport } from '@guardian/common';
-import {
-    ApiInternalServerErrorResponse,
-    ApiUnauthorizedResponse,
-    ApiForbiddenResponse,
-    ApiOkResponse,
-    ApiOperation,
-    ApiSecurity,
-    ApiBody,
-    ApiTags,
-    ApiExtraModels
-} from '@nestjs/swagger';
-import {
-    Body,
-    Controller,
-    Delete,
-    Get,
-    HttpCode,
-    HttpException,
-    HttpStatus,
-    Post,
-    Put,
-    Req,
-    Response
-} from '@nestjs/common';
+import { ApiBody, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response } from '@nestjs/common';
 import process from 'process';
-import { checkPermission } from '@auth/authorization-helper';
+import { AuthUser, checkPermission } from '@auth/authorization-helper';
 import { Client, ClientProxy, Transport } from '@nestjs/microservices';
 import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
 import { SchemaUtils } from '@helpers/schema-utils';
 import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator';
 import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator';
-import {
-    InternalServerErrorDTO,
-    TaskDTO,
-    SystemSchemaDTO,
-    SchemaDTO,
-    ExportSchemaDTO,
-    MessageSchemaDTO,
-    VersionSchemaDTO
-} from '@middlewares/validation/schemas';
+import { ExportSchemaDTO, InternalServerErrorDTO, MessageSchemaDTO, SchemaDTO, SystemSchemaDTO, TaskDTO, VersionSchemaDTO } from '@middlewares/validation/schemas';
+import { Auth } from '@auth/auth.decorator';
 
 const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
 
@@ -120,6 +82,21 @@ export async function createSchemaAsync(newSchema: ISchema, owner: string, topic
     SchemaHelper.checkSchemaKey(newSchema);
     SchemaHelper.updateOwner(newSchema, owner);
     await guardians.createSchemaAsync(newSchema, task);
+}
+
+/**
+ * Copy schema
+ * @param iri
+ * @param topicId
+ * @param name
+ * @param owner
+ * @param task
+ */
+export async function copySchemaAsync(iri: string, topicId: string, name: string, owner: string, task: any): Promise<any> {
+    const taskManager = new TaskManager();
+    const guardians = new Guardians();
+    taskManager.addStatus(task.taskId, 'Check schema version', StatusType.PROCESSING);
+    await guardians.copySchemaAsync(iri, topicId, name, owner, task);
 }
 
 /**
@@ -217,6 +194,64 @@ export class SingleSchemaApi {
             const guardians = new Guardians();
             const schemas = await guardians.getSchemaParents(schemaId, user?.did);
             return SchemaUtils.toOld(schemas);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw error
+        }
+    }
+
+    @Get('/:schemaId/tree')
+    @HttpCode(HttpStatus.OK)
+    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Returns schema tree.',
+        description: 'Returns schema tree.',
+    })
+    @ApiImplicitParam({
+        name: 'schemaId',
+        type: String,
+        description: 'Schema identifier',
+        required: true
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            type: 'object',
+            properties: {
+                name: {
+                    type: 'string'
+                },
+                type: {
+                    type: 'string'
+                },
+                children: {
+                    type: 'array',
+                    items: {
+                        type: 'object'
+                    }
+                }
+            }
+        }
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    async getSchemaTree(@Req() req): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)(req.user);
+        try {
+            const user = req.user;
+            const schemaId = req.params.schemaId;
+            const guardians = new Guardians();
+            const tree = await guardians.getSchemaTree(schemaId, user?.did);
+            return tree;
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error
@@ -628,6 +663,49 @@ export class SchemaApi {
         }
     }
 
+    /**
+     * Create Schema (Async)
+     */
+    @Post('/push/copy')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Copy schema.',
+        description: 'Copy schema.' + ONLY_SR,
+    })
+    @ApiBody({
+        description: 'Object that contains a valid schema.'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: TaskDTO
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @Auth(
+        UserRole.STANDARD_REGISTRY,
+    )
+    @HttpCode(HttpStatus.ACCEPTED)
+    async copySchemaAsync(@Body() body: any, @AuthUser() user: any): Promise<any> {
+        const taskManager = new TaskManager();
+        const task = taskManager.start(TaskAction.CREATE_SCHEMA, user.id);
+        RunFunctionAsync<ServiceError>(async () => {
+            const {iri, topicId, name} = body;
+            await copySchemaAsync(iri, topicId, name, user.did, task);
+        }, async (error) => {
+            new Logger().error(error, ['API_GATEWAY']);
+            taskManager.addError(task.taskId, {code: 500, message: error.message});
+        });
+
+        return task;
+    }
     /**
      * Create Schema (Async)
      */

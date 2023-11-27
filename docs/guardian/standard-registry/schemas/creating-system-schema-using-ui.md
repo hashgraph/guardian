@@ -6,7 +6,7 @@ To create a new Schemas, click on the **New** button at the top right corner.
 
 After clicking on the New button, you will be asked to enter Schema details such as Schema Name, Policy Dropdown, Entity : VC/MRV/NONE, Schema Description and any other required fields.
 
-![](<../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1).png>)
+![](<../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png>)
 
 In addition to the basic Schema details we also have an option to add Field and Condition to each field.
 
@@ -14,7 +14,7 @@ In addition to the basic Schema details we also have an option to add Field and 
 
 We can also customize the Field keys and Field Title by clicking on Advanced Tab.
 
-![](<../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (1).png>)
+![](<../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (1) (1).png>)
 
 Instead of creating a new Schema from scratch, there is also an option to import it via File or via IPFS.
 

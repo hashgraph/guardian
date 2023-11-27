@@ -61,29 +61,29 @@
             </ng-container>
         </div>
         <div style="text-align: end">
-            <button 
-                *ngIf="canCreate" 
+            <button
+                    *ngIf="canCreate"
                 [attr.readonly]="readonly"
-                mat-raised-button color="primary" 
-                class="toolbar-btn add" 
+                    class="toolbar-btn add" color="primary"
+                    mat-raised-button
                 (click)="onCreateSchemas()">
                 <mat-icon>add</mat-icon>
                 <span>Create New</span>
             </button>
-            <button 
+            <button
                 *ngIf="canImport"
                 [attr.readonly]="readonly"
-                (click)="onImportSchemas()" 
-                class="toolbar-btn" 
+                (click)="onImportSchemas()"
+                class="toolbar-btn"
                 color="primary"
                 mat-raised-button>
                 <mat-icon>file_open</mat-icon>
                 <span>Import</span>
             </button>
-            <button 
+            <button
                 *ngIf="isPolicy || isModule || isTool"
-                (click)="onCompare()" 
-                class="toolbar-btn" 
+                (click)="onCompare()"
+                class="toolbar-btn"
                 color="primary"
                 mat-raised-button>
                 <mat-icon>compare</mat-icon>
@@ -113,9 +113,9 @@
             <ng-container matColumnDef="policy">
                 <th *matHeaderCellDef mat-header-cell>Policy</th>
                 <td mat-cell *matCellDef="let element">
-                    <a [routerLink]="['/policy-configuration']" [queryParams]="{ 
+                    <a [queryParams]="{
                         policyId: policyIdByTopic[element.topicId]
-                    }">{{policyNameByTopic[element.topicId]}}</a>
+                    }" [routerLink]="['/policy-configuration']">{{policyNameByTopic[element.topicId]}}</a>
                 </td>
             </ng-container>
             <ng-container matColumnDef="module">
@@ -125,10 +125,10 @@
             <ng-container matColumnDef="tool">
                 <th *matHeaderCellDef mat-header-cell>Tool</th>
                 <td *matCellDef="let element" mat-cell>
-                    <a [routerLink]="['/policy-configuration']" [queryParams]="{ 
+                    <a [queryParams]="{
                         toolId: toolIdByTopic[element.topicId]
-                    }">{{toolNameByTopic[element.topicId]}}</a>
-                    
+                    }" [routerLink]="['/policy-configuration']">{{toolNameByTopic[element.topicId]}}</a>
+
                 </td>
             </ng-container>
             <ng-container matColumnDef="type">
@@ -161,12 +161,12 @@
             <ng-container matColumnDef="tags">
                 <th mat-header-cell *matHeaderCellDef> Tags </th>
                 <td mat-cell *matCellDef="let element">
-                    <tags-explorer 
-                        [data]="element._tags" 
-                        [owner]="owner" 
-                        [target]="element.id" 
+                    <tags-explorer
+                            [data]="element._tags"
+                            [owner]="owner"
+                            [schemas]="tagSchemas"
                         [entity]="tagEntity"
-                        [schemas]="tagSchemas" 
+                            [target]="element.id"
                         [service]="tagsService"></tags-explorer>
                 </td>
             </ng-container>
@@ -205,17 +205,17 @@
             <ng-container matColumnDef="operation">
                 <th mat-header-cell *matHeaderCellDef> Operations </th>
                 <td mat-cell *matCellDef="let element">
-                    <div 
-                        *ngIf="element.status === 'DRAFT'" 
+                    <div
+                            *ngIf="element.status === 'DRAFT'"
                         [attr.disabled]="element.topicId === 'draft'"
-                        class="btn-approve" 
+                            class="btn-approve"
                         (click)="onPublish(element)">
                         Publish
                     </div>
-                    <div 
-                        *ngIf="element.status === 'UNPUBLISHED'" 
+                    <div
+                            *ngIf="element.status === 'UNPUBLISHED'"
                         [attr.disabled]="element.topicId === 'draft'"
-                        class="btn-approve" 
+                            class="btn-approve"
                         (click)="onPublish(element)">
                         Publish
                     </div>
@@ -225,17 +225,17 @@
             <ng-container matColumnDef="tagOperation">
                 <th mat-header-cell *matHeaderCellDef> Operations </th>
                 <td mat-cell *matCellDef="let element">
-                    <div 
-                        *ngIf="element.status === 'DRAFT'" 
+                    <div
+                            *ngIf="element.status === 'DRAFT'"
                         [attr.disabled]="element.topicId === 'draft'"
-                        class="btn-approve" 
+                            class="btn-approve"
                         (click)="onPublishTagSchema(element)">
                         Publish
                     </div>
-                    <div 
-                        *ngIf="element.status === 'UNPUBLISHED'" 
+                    <div
+                            *ngIf="element.status === 'UNPUBLISHED'"
                         [attr.disabled]="element.topicId === 'draft'"
-                        class="btn-approve" 
+                            class="btn-approve"
                         (click)="onPublishTagSchema(element)">
                         Publish
                     </div>
@@ -252,22 +252,34 @@
             <ng-container matColumnDef="export">
                 <th mat-header-cell *matHeaderCellDef></th>
                 <td mat-cell *matCellDef="let element">
-                    <div class="btn-settings" 
-                        (click)="onExport(element)" 
-                        matTooltip="Export" 
+                    <div (click)="onExport(element)"
+                         class="btn-settings"
+                         matTooltip="Export"
                         matTooltipPosition="above"
                         matTooltipClass="guardian-tooltip">
                         <mat-icon>import_export</mat-icon>
                     </div>
                 </td>
             </ng-container>
+            <ng-container matColumnDef="tree">
+                <th mat-header-cell *matHeaderCellDef></th>
+                <td mat-cell *matCellDef="let element">
+                    <div class="btn-settings"
+                        (click)="onViewSchemaTree(element)"
+                        matTooltip="Tree"
+                        matTooltipPosition="above"
+                        matTooltipClass="guardian-tooltip">
+                        <mat-icon>account_tree</mat-icon>
+                    </div>
+                </td>
+            </ng-container>
             <ng-container matColumnDef="document">
                 <th mat-header-cell *matHeaderCellDef></th>
                 <td mat-cell *matCellDef="let element">
-                    <div class="btn-settings" 
-                        (click)="onOpenDocument(element)" 
+                    <div (click)="onOpenDocument(element)"
+                         class="btn-settings"
                         matTooltip="Document"
-                        matTooltipPosition="above" 
+                         matTooltipPosition="above"
                         matTooltipClass="guardian-tooltip">
                         <mat-icon>segment</mat-icon>
                     </div>
@@ -276,42 +288,55 @@
             <ng-container matColumnDef="edit">
                 <th mat-header-cell *matHeaderCellDef> </th>
                 <td mat-cell *matCellDef="let element">
-                    <div 
-                        *ngIf="element.status === 'DRAFT'" 
-                        class="btn-settings" 
+                    <div
+                            *ngIf="element.status === 'DRAFT'"
+                            class="btn-settings"
                         (click)="onEditDocument(element)"
-                        matTooltip="Edit" 
-                        matTooltipPosition="above" 
+                            matTooltip="Edit"
+                            matTooltipPosition="above"
                         matTooltipClass="guardian-tooltip">
                         <mat-icon>edit</mat-icon>
                     </div>
-                    <div 
-                        *ngIf="element.status !== 'DRAFT' && element.isCreator && !readonly" 
+                    <div
+                            (click)="onNewVersion(element)"
                         class="btn-settings"
-                        (click)="onNewVersion(element)" 
-                        matTooltip="New Version" 
+                            *ngIf="element.status !== 'DRAFT' && element.isCreator && !readonly"
+                            matTooltip="New Version"
                         matTooltipPosition="above"
                         matTooltipClass="guardian-tooltip">
                         <mat-icon>add</mat-icon>
                     </div>
-                    <div 
-                        *ngIf="element.status !== 'DRAFT' && !element.isCreator && !readonly" 
+                    <div
+                            (click)="onCloneSchema(element)"
                         class="btn-settings"
-                        (click)="onCloneSchema(element)" 
-                        matTooltip="Copy Schema" 
+                            *ngIf="element.status !== 'DRAFT' && !element.isCreator && !readonly"
+                            matTooltip="Copy Schema"
                         matTooltipPosition="above"
                         matTooltipClass="guardian-tooltip">
                         <mat-icon>add</mat-icon>
                     </div>
                 </td>
             </ng-container>
+            <ng-container matColumnDef="clone-schema">
+                <th *matHeaderCellDef mat-header-cell></th>
+                <td *matCellDef="let element" mat-cell>
+                    <div
+                            (click)="onCopySchema(element)"
+                            class="btn-settings"
+                            matTooltip="Copy Schema"
+                            matTooltipClass="guardian-tooltip"
+                            matTooltipPosition="above">
+                        <mat-icon>content_copy</mat-icon>
+                    </div>
+                </td>
+            </ng-container>
             <ng-container matColumnDef="delete">
                 <th mat-header-cell *matHeaderCellDef> </th>
                 <td mat-cell *matCellDef="let element">
-                    <div *ngIf="element.status == 'DRAFT'" 
+                    <div (click)="onCheckDeleteSchema(element)"
                         class="btn-settings btn-delete"
-                        (click)="onCheckDeleteSchema(element)" 
-                        matTooltip="Delete" 
+                         *ngIf="element.status == 'DRAFT'"
+                         matTooltip="Delete"
                         matTooltipPosition="above"
                         matTooltipClass="guardian-tooltip">
                         <mat-icon>delete</mat-icon>
@@ -324,10 +349,10 @@
             <ng-container matColumnDef="editSystem">
                 <th mat-header-cell *matHeaderCellDef> </th>
                 <td mat-cell *matCellDef="let element">
-                    <div *ngIf="!element.readonly && !element.active" 
+                    <div (click)="onEditDocument(element)"
                         class="btn-settings"
-                        (click)="onEditDocument(element)" 
-                        matTooltip="Edit" 
+                         *ngIf="!element.readonly && !element.active"
+                         matTooltip="Edit"
                         matTooltipPosition="above"
                         matTooltipClass="guardian-tooltip">
                         <mat-icon>edit</mat-icon>
@@ -340,10 +365,10 @@
             <ng-container matColumnDef="deleteSystem">
                 <th mat-header-cell *matHeaderCellDef> </th>
                 <td mat-cell *matCellDef="let element">
-                    <div *ngIf="!element.readonly && !element.active" 
+                    <div (click)="onCheckDeleteSchema(element)"
                         class="btn-settings btn-delete"
-                        (click)="onCheckDeleteSchema(element)" 
-                        matTooltip="Delete" 
+                         *ngIf="!element.readonly && !element.active"
+                         matTooltip="Delete"
                         matTooltipPosition="above"
                         matTooltipClass="guardian-tooltip">
                         <mat-icon>delete</mat-icon>
@@ -356,10 +381,10 @@
             <ng-container matColumnDef="editTag">
                 <th mat-header-cell *matHeaderCellDef> </th>
                 <td mat-cell *matCellDef="let element">
-                    <div *ngIf="element.status === 'DRAFT'" 
-                        class="btn-settings" 
+                    <div *ngIf="element.status === 'DRAFT'"
+                         class="btn-settings"
                         (click)="onEditDocument(element)"
-                        matTooltip="Edit" 
+                         matTooltip="Edit"
                         matTooltipPosition="above"
                         matTooltipClass="guardian-tooltip">
                         <mat-icon>edit</mat-icon>
@@ -372,10 +397,10 @@
             <ng-container matColumnDef="deleteTag">
                 <th mat-header-cell *matHeaderCellDef> </th>
                 <td mat-cell *matCellDef="let element">
-                    <div *ngIf="element.status === 'DRAFT'" 
+                    <div (click)="onCheckDeleteSchema(element)"
                         class="btn-settings btn-delete"
-                        (click)="onCheckDeleteSchema(element)" 
-                        matTooltip="Delete" 
+                         *ngIf="element.status === 'DRAFT'"
+                         matTooltip="Delete"
                         matTooltipPosition="above"
                         matTooltipClass="guardian-tooltip">
                         <mat-icon>delete</mat-icon>
@@ -392,12 +417,12 @@
     </div>
 
     <div *ngIf="isAny" class="table-paginator">
-        <mat-paginator 
-            [length]="count" 
-            [pageIndex]="pageIndex" 
+        <mat-paginator
+                (page)="onPage($event)"
+                [length]="count"
             [pageSize]="pageSize"
-            [pageSizeOptions]="[10, 25, 50, 100]" 
-            (page)="onPage($event)" 
+                [pageIndex]="pageIndex"
+                [pageSizeOptions]="[10, 25, 50, 100]"
             aria-label="Select page">
         </mat-paginator>
     </div>

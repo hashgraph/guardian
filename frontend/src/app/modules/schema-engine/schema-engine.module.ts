@@ -1,11 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import {
-    NgxMatDatetimePickerModule,
-    NgxMatNativeDateModule,
-    NgxMatTimepickerModule,
-} from '@angular-material-components/datetime-picker';
+import { NgxMatDatetimePickerModule, NgxMatNativeDateModule, NgxMatTimepickerModule, } from '@angular-material-components/datetime-picker';
 import { ClipboardModule } from '@angular/cdk/clipboard';
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 import { GoogleMapsModule } from '@angular/google-maps';
@@ -28,11 +24,14 @@ import { ExportSchemaDialog } from './export-schema-dialog/export-schema-dialog.
 import { SchemaFieldConfigurationComponent } from './schema-field-configuration/schema-field-configuration.component';
 import { EnumEditorDialog } from './enum-editor-dialog/enum-editor-dialog.component';
 import { CompareSchemaDialog } from './compare-schema-dialog/compare-schema-dialog.component';
+import { SchemaTreeComponent } from './schema-tree/schema-tree.component';
+import { CopySchemaDialog } from './copy-schema-dialog/copy-schema-dialog';
 
 @NgModule({
     declarations: [
         SchemaDialog,
         SchemaFormComponent,
+        CopySchemaDialog,
         SchemaConfigurationComponent,
         ImportSchemaDialog,
         SchemaFormViewComponent,
@@ -45,6 +44,7 @@ import { CompareSchemaDialog } from './compare-schema-dialog/compare-schema-dial
         EnumEditorDialog,
         CompareSchemaDialog,
         GeojsonTypeComponent,
+        SchemaTreeComponent,
     ],
     imports: [
         CommonModule,

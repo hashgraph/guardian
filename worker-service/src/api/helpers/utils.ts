@@ -3,14 +3,15 @@ import { PrivateKey } from '@hashgraph/sdk';
 /**
  * Timeout decorator
  * @param timeoutValue
+ * @param messageError
  */
-export function timeout(timeoutValue: number) {
+export function timeout(timeoutValue: number, messageError?: string) {
     return (target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<(...params: any[]) => Promise<any>>) => {
         const oldFunc = descriptor.value;
         descriptor.value = async function () {
             const timeoutPromise = new Promise((resolve, reject) => {
                 setTimeout(() => {
-                    reject(new Error('Transaction timeout exceeded'));
+                    reject(new Error(messageError || 'Transaction timeout exceeded'));
                 }, timeoutValue);
             })
             return Promise.race([oldFunc.apply(this, arguments), timeoutPromise]);

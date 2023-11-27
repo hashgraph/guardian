@@ -269,7 +269,7 @@ export class HederaSDKHelper {
      *
      * @returns {string} - Token id
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Token create transaction timeout exceeded')
     public async newToken(
         name: string,
         symbol: string,
@@ -339,7 +339,7 @@ export class HederaSDKHelper {
      *
      * @returns {boolean} - status
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Token update transaction timeout exceeded')
     public async updateToken(
         tokenId: TokenId,
         adminKey: PrivateKey,
@@ -383,7 +383,7 @@ export class HederaSDKHelper {
      *
      * @returns {boolean} - status
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Token delete transaction timeout exceeded')
     public async deleteToken(
         tokenId: TokenId,
         adminKey: PrivateKey
@@ -411,7 +411,7 @@ export class HederaSDKHelper {
      *
      * @returns {string} - balance
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Balance query timeout exceeded')
     public async balance(accountId: string | AccountId): Promise<string> {
         const client = this.client;
         const query = new AccountBalanceQuery()
@@ -427,7 +427,7 @@ export class HederaSDKHelper {
      *
      * @returns {any} - associate tokens and balance
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Account info query timeout exceeded')
     public async accountInfo(accountId?: string | AccountId): Promise<any> {
         const client = this.client;
         const info = await new AccountInfoQuery()
@@ -458,7 +458,7 @@ export class HederaSDKHelper {
      *
      * @returns {boolean} - Status
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Token associate transaction timeout exceeded')
     public async associate(tokenId: string | TokenId, id: string, key: string): Promise<boolean> {
         const client = this.client;
 
@@ -485,7 +485,7 @@ export class HederaSDKHelper {
      *
      * @returns {boolean} - Status
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Token dissociate transaction timeout exceeded')
     public async dissociate(tokenId: string | TokenId, id: string, key: string): Promise<boolean> {
         const client = this.client;
 
@@ -512,7 +512,7 @@ export class HederaSDKHelper {
      *
      * @returns {boolean} - Status
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Token freeze transaction timeout exceeded')
     public async freeze(tokenId: string | TokenId, accountId: string, freezeKey: string): Promise<boolean> {
         const client = this.client;
 
@@ -538,7 +538,7 @@ export class HederaSDKHelper {
      *
      * @returns {boolean} - Status
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Token unfreeze transaction timeout exceeded')
     public async unfreeze(tokenId: string | TokenId, accountId: string, freezeKey: string): Promise<boolean> {
         const client = this.client;
 
@@ -564,7 +564,7 @@ export class HederaSDKHelper {
      *
      * @returns {boolean} - Status
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Token grant KYC transaction timeout exceeded')
     public async grantKyc(tokenId: string | TokenId, accountId: string, kycKey: string): Promise<boolean> {
         const client = this.client;
 
@@ -590,7 +590,7 @@ export class HederaSDKHelper {
      *
      * @returns {boolean} - Status
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Token revoke KYC transaction timeout exceeded')
     public async revokeKyc(tokenId: string | TokenId, accountId: string, kycKey: string): Promise<boolean> {
         const client = this.client;
 
@@ -617,7 +617,7 @@ export class HederaSDKHelper {
      *
      * @returns {boolean} - Status
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Token(FT) mint transaction timeout exceeded')
     public async mint(
         tokenId: string | TokenId,
         supplyKey: string | PrivateKey,
@@ -651,7 +651,7 @@ export class HederaSDKHelper {
      *
      * @returns {number[]} - serials
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Token(NFT) mint transaction timeout exceeded')
     public async mintNFT(
         tokenId: string | TokenId,
         supplyKey: string | PrivateKey,
@@ -689,7 +689,7 @@ export class HederaSDKHelper {
      *
      * @returns {boolean} - Status
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Token(FT) wipe transaction timeout exceeded')
     public async wipe(
         tokenId: string | TokenId,
         targetId: string | AccountId,
@@ -726,7 +726,7 @@ export class HederaSDKHelper {
      *
      * @returns {boolean} - Status
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Transfer transaction timeout exceeded')
     public async transfer(
         tokenId: string | TokenId,
         targetId: string | AccountId,
@@ -763,7 +763,7 @@ export class HederaSDKHelper {
      *
      * @returns {boolean} - Status
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Transfer NFT transaction timeout exceeded')
     public async transferNFT(
         tokenId: string | TokenId,
         targetId: string | AccountId,
@@ -799,7 +799,7 @@ export class HederaSDKHelper {
      *
      * @returns {any} - Account Id and Account Private Key
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Account create transaction timeout exceeded')
     public async newAccount(initialBalance: number): Promise<{
         /**
          * Account ID
@@ -840,12 +840,12 @@ export class HederaSDKHelper {
 
     /**
      * Create new Topic (TopicCreateTransaction)
-     *
-     * @param {PrivateKey | string} [key] - Topic Admin Key
-     *
+     * @param {PrivateKey | string} [adminKey] - Topic Admin Key
+     * @param {PrivateKey | string} [submitKey] - Topic Submit Key
+     * @param {string} [topicMemo] - Topic Memo
      * @returns {string} - Topic Id
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Topic create transaction timeout exceeded')
     public async newTopic(
         adminKey?: PrivateKey | string,
         submitKey?: PrivateKey | string,
@@ -893,7 +893,7 @@ export class HederaSDKHelper {
      * @param transactionMemo
      * @returns Message timestamp
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Topic message submit transaction timeout exceeded')
     public async submitMessage(
         topicId: string | TopicId,
         message: string,
@@ -929,7 +929,7 @@ export class HederaSDKHelper {
      * @param tokenId token id
      * @returns info
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get token info request timeout exceeded')
     public static async getTokenInfo(tokenId: string): Promise<any> {
         const res = await axios.get(
             `${Environment.HEDERA_TOKENS_API}/${tokenId}`,
@@ -946,7 +946,7 @@ export class HederaSDKHelper {
      * @param timeStamp Message identifier
      * @returns Message
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get topic message request timeout exceeded')
     public static async getTopicMessage(timeStamp: string): Promise<any> {
         const res = await axios.get(
             `${Environment.HEDERA_MESSAGE_API}/${timeStamp}`,
@@ -971,7 +971,7 @@ export class HederaSDKHelper {
      * @param startTimestamp start timestamp
      * @returns Messages
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get topic messages request timeout exceeded')
     public static async getTopicMessages(
         topicId: string,
         startTimestamp?: string
@@ -1026,7 +1026,7 @@ export class HederaSDKHelper {
      * @param index message index
      * @returns Message
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get topic message request (by index) timeout exceeded')
     public static async getTopicMessageByIndex(topicId: string, index: number): Promise<any> {
         const url = `${Environment.HEDERA_TOPIC_API}${topicId}/messages/${index}`;
         const res = await axios.get(url, { responseType: 'json' });
@@ -1275,7 +1275,7 @@ export class HederaSDKHelper {
      *
      * @returns {string} - balance
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Account balance query timeout exceeded')
     public static async balance(client: Client, accountId: string | AccountId): Promise<number> {
         const query = new AccountBalanceQuery()
             .setAccountId(accountId);
@@ -1295,7 +1295,7 @@ export class HederaSDKHelper {
      *
      * @returns {string} - Contract Id
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Contract create transaction timeout exceeded')
     public async createContract(
         bytecodeFileId: string | FileId,
         parameters: ContractFunctionParameters,
@@ -1362,7 +1362,7 @@ export class HederaSDKHelper {
      *
      * @returns {ContractFunctionResult} - Contract Query Result
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Contract call query timeout exceeded')
     public async contractQuery(
         contractId: string | ContractId,
         gas: number,
@@ -1387,7 +1387,7 @@ export class HederaSDKHelper {
      *
      * @returns {ContractFunctionResult} - Contract Query Result
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Contract call query timeout exceeded')
     public async customContractQuery(
         contractId: string | ContractId,
         gas: number,
@@ -1412,7 +1412,7 @@ export class HederaSDKHelper {
      *
      * @returns {boolean} - Status
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Contract execute transaction timeout exceeded')
     public async contractCall(
         contractId: string | ContractId,
         gas: number,
@@ -1443,7 +1443,7 @@ export class HederaSDKHelper {
      *
      * @returns {boolean} - Status
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Contract execute transaction timeout exceeded')
     public async customContractCall(
         contractId: string | ContractId,
         gas: number,
@@ -1470,7 +1470,7 @@ export class HederaSDKHelper {
      *
      * @returns {any} - Contract Info
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Contract info query timeout exceeded')
     public async getContractInfo(
         contractId: string | ContractId,
     ): Promise<ContractInfo> {
@@ -1479,7 +1479,7 @@ export class HederaSDKHelper {
         return await query.execute(client);
     }
 
-    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get contract events request timeout exceeded')
     public static async getContractEvents(
         contractId: string,
         timestamp?: string,
@@ -1531,7 +1531,7 @@ export class HederaSDKHelper {
      * @param tokenId Token identifier
      * @returns Serials Info
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get serials request timeout exceeded')
     public async getSerialsNFT(tokenId?: string): Promise<any[]> {
         let goNext = true;
         const client = this.client;
@@ -1615,7 +1615,7 @@ export class HederaSDKHelper {
      *
      * @returns {any} - Contract Info
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get contract info request timeout exceeded')
     public async getContractInfoRest(contractId: string): Promise<any> {
         const res = await axios.get(
             `${Environment.HEDERA_CONTRACT_API}/${contractId}`,
@@ -1641,7 +1641,7 @@ export class HederaSDKHelper {
      *
      * @returns {string} - balance
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get balance request timeout exceeded')
     public static async balanceRest(accountId: string): Promise<string> {
         const res = await axios.get(
             `${Environment.HEDERA_BALANCES_API}?account.id=${accountId}`,
@@ -1662,7 +1662,7 @@ export class HederaSDKHelper {
      * @param next next chunk
      * @returns Messages
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get messages request timeout exceeded')
     public static async getTopicMessageChunks(
         topicId: string,
         startTimestamp?: string,

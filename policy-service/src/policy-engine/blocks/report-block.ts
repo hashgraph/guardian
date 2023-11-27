@@ -1,21 +1,14 @@
 import { Report } from '@policy-engine/helpers/decorators';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyReportBlock } from '@policy-engine/policy-engine.interface';
-import {
-    IImpactReport,
-    IPolicyReport,
-    IReport,
-    IReportItem,
-    IVCReport,
-    SchemaEntity,
-} from '@guardian/interfaces';
+import { IImpactReport, IPolicyReport, IReport, IReportItem, IVCReport, SchemaEntity, } from '@guardian/interfaces';
 import { BlockActionError } from '@policy-engine/errors';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
+import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
 import { PolicyInputEventType } from '@policy-engine/interfaces';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
-import { VpDocument, VcDocument, getVCField } from '@guardian/common';
+import { getVCField, VcDocument, VpDocument } from '@guardian/common';
 
 /**
  * Report block
@@ -35,9 +28,23 @@ import { VpDocument, VcDocument, getVCField } from '@guardian/common';
             PolicyInputEventType.RefreshEvent,
         ],
         output: null,
-        defaultEvent: false
+        defaultEvent: false,
+        properties: [
+            {
+                name: 'uiMetaData',
+                label: 'UI',
+                title: 'UI Properties',
+                type: PropertyType.Group,
+                properties: [{
+                    name: 'vpSectionHeader',
+                    label: 'VP section header',
+                    title: 'VP section header',
+                    type: PropertyType.Input
+                }
+                ]
+            }]
     },
-    variables: []
+    variables: [],
 })
 export class ReportBlock {
     /**

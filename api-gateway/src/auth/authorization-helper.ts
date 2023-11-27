@@ -1,39 +1,13 @@
-import { NextFunction, Request, Response } from 'express';
+import { NextFunction, Response } from 'express';
 import { Users } from '@helpers/users';
 import { AuthenticatedRequest, IAuthUser, Logger } from '@guardian/common';
-import { CanActivate, ExecutionContext, HttpException, HttpStatus, Injectable, NestMiddleware } from '@nestjs/common';
+import { createParamDecorator, ExecutionContext, HttpException, HttpStatus, Injectable, NestMiddleware } from '@nestjs/common';
 
-/**
- * Auth middleware
- */
-@Injectable()
-export class AuthGuard implements CanActivate {
-
-    /**
-     * Use
-     * @param req
-     * @param res
-     * @param next
-     */
-    async canActivate(context: ExecutionContext): Promise<boolean> {
-        const request = context.switchToHttp().getRequest();
-        const token = this.extractTokenFromHeader(request);
-        const users = new Users();
-        if (token) {
-            try {
-                request.user = await users.getUserByToken(token) as IAuthUser;
-                return true;
-            } catch (error) {
-                return false
-            }
-        }
-    }
-
-    private extractTokenFromHeader(request: Request): string | undefined {
-        const [type, token] = request.headers.authorization?.split(' ') ?? [];
-        return type === 'Bearer' ? token : undefined;
-    }
-}
+export const AuthUser = createParamDecorator((data: string = 'user', ctx: ExecutionContext) => {
+    console.log(data);
+    const req = ctx.switchToHttp().getRequest();
+    return req.user
+})
 
 /**
  * Permission middleware

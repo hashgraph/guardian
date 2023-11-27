@@ -1,7 +1,7 @@
 {
   "name": "guardian",
   "private": true,
-  "packageManager": "yarn@3.2.1",
+  "packageManager": "yarn@1.22.21",
   "workspaces": [
     "interfaces",
     "common",
@@ -18,5 +18,12 @@
     "api-tests",
     "notification-service"
   ],
-    "version": "2.18.0"
+  "version": "2.19.0-prerelease",
+  "devDependencies": {
+    "detect-secrets": "^1.0.6"
+  },
+  "scripts": {
+    "detect-secrets": "detect-secrets-launcher --word-list exclude-secrets.txt k8s-manifests/**/* */src/**.ts **/.env*"
+  },
+  "stableVersion": "2.18.0"
 }
