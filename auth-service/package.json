@@ -14,7 +14,7 @@
     "@nestjs/common": "^9.4.1",
     "@nestjs/core": "^9.4.1",
     "@nestjs/microservices": "^9.4.1",
-    "axios": "^1.4.0",
+    "axios": "^1.6.2",
     "base-x": "^4.0.0",
     "base64url": "^3.0.1",
     "base64url-universal": "^2.0.0",
