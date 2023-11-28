@@ -46,7 +46,6 @@ async function test_secretkey() {
 
   secretManager = SecretManager.New()
   const data = await secretManager.getSecrets('secretkey/auth')
-  console.log(data)
 }
 
 /**

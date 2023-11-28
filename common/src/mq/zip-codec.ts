@@ -21,7 +21,6 @@ export function ZipCodec() {
                 const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
                 if (Number.isInteger(maxPayload) && maxPayload <= zipped.length) {
                     const directLink = new LargePayloadContainer().addObject(Buffer.from(zipped));
-                    console.log(directLink.toString(), zipped.length);
                     return JSONCodec().encode({
                         directLink
                     })

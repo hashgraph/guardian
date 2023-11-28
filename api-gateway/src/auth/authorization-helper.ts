@@ -4,7 +4,6 @@ import { AuthenticatedRequest, IAuthUser, Logger } from '@guardian/common';
 import { createParamDecorator, ExecutionContext, HttpException, HttpStatus, Injectable, NestMiddleware } from '@nestjs/common';
 
 export const AuthUser = createParamDecorator((data: string = 'user', ctx: ExecutionContext) => {
-    console.log(data);
     const req = ctx.switchToHttp().getRequest();
     return req.user
 })
