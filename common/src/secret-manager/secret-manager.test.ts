@@ -45,7 +45,7 @@ async function test_secretkey() {
   setCertsPath(authCertsPath)
 
   secretManager = SecretManager.New()
-  const data = await secretManager.getSecrets('secretkey/auth')
+  await secretManager.getSecrets('secretkey/auth')
 }
 
 /**
