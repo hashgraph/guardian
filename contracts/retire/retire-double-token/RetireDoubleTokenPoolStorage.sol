@@ -16,12 +16,7 @@ contract RetireDoubleTokenPoolStorage is RetirePoolStorage {
     Pool[] pools;
     mapping(address => mapping(address => uint256)) poolPos;
 
-    function getPools(uint8)
-        public
-        view
-        override
-        returns (bytes memory)
-    {
+    function getPools(uint8) public view override returns (bytes memory) {
         return abi.encode(pools);
     }
 
@@ -29,17 +24,12 @@ contract RetireDoubleTokenPoolStorage is RetirePoolStorage {
         address base = tokens[0];
         address opposite = tokens[1];
         require(poolPos[base][opposite] > 0, "NO_POOL");
-        Pool storage pool = pools[poolPos[base][opposite] - 1];
         Pool storage last = pools[pools.length - 1];
-        poolPos[last.base][last.opposite] = poolPos[pool.base][
-            pool.opposite
-        ];
-        poolPos[last.opposite][last.base] = poolPos[pool.opposite][
-            pool.base
-        ];
-        delete poolPos[pool.base][pool.opposite];
-        delete poolPos[pool.opposite][pool.base];
-        pool = last;
+        poolPos[last.base][last.opposite] = poolPos[base][opposite];
+        poolPos[last.opposite][last.base] = poolPos[opposite][base];
+        pools[poolPos[base][opposite] - 1] = pools[pools.length - 1];
+        delete poolPos[base][opposite];
+        delete poolPos[opposite][base];
         pools.pop();
     }
 
@@ -79,9 +69,8 @@ contract RetireDoubleTokenPoolStorage is RetirePoolStorage {
     {
         address base = tokens[0];
         address opposite = tokens[1];
-        Pool memory pool = pools[poolPos[base][opposite] - 1];
-        RetireTokenPool[]
-            memory tokenOptions = new RetireTokenPool[](2);
+        Pool storage pool = pools[poolPos[base][opposite] - 1];
+        RetireTokenPool[] memory tokenOptions = new RetireTokenPool[](2);
         bool inverted = base == pool.opposite;
         tokenOptions[0] = inverted
             ? RetireTokenPool(pool.opposite, pool.oppositeCount)

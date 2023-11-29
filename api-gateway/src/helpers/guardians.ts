@@ -1,5 +1,5 @@
 import { Singleton } from '@helpers/decorators/singleton';
-import { ApplicationStates, CommonSettings, ContractAPI, ContractType, GenerateUUIDv4, IArtifact, IChainItem, IContract, IDidObject, IRetirePool, IRetireRequest, ISchema, IToken, ITokenInfo, IUser, IVCDocument, IVPDocument, MessageAPI, RetireTokenPool, RetireTokenRequest, SuggestionsOrderPriority } from '@guardian/interfaces';
+import { ApplicationStates, CommonSettings, ContractAPI, ContractType, GenerateUUIDv4, IArtifact, IChainItem, IContract, IDidObject, IRetirePool, IRetireRequest, ISchema, IToken, ITokenInfo, IUser, IVCDocument, IVPDocument, MessageAPI, RetireTokenPool, RetireTokenRequest, SchemaNode, SuggestionsOrderPriority } from '@guardian/interfaces';
 import { NatsService } from '@guardian/common';
 import { NewTask } from './task-manager';
 
@@ -531,6 +531,16 @@ export class Guardians extends NatsService {
      */
     public async getSchemaParents(id: string, owner: string): Promise<ISchema[]> {
         return await this.sendMessage(MessageAPI.GET_SCHEMA_PARENTS, { id, owner });
+    }
+
+    /**
+     * Get schema tree
+     * @param id Id
+     * @param owner Owner
+     * @returns Schema tree
+     */
+    public async getSchemaTree(id: string, owner: string): Promise<SchemaNode> {
+        return await this.sendMessage(MessageAPI.GET_SCHEMA_TREE, { id, owner });
     }
 
     /**

@@ -74,7 +74,7 @@ Now, the Project Developer must go into their screen and "Submit a PDD" and fill
 
 <figure><img src="../../../.gitbook/assets/image (25).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Now, the Project Developer must go into their screen and "Submit a PDD" and fill out the Project Design Document form.
 

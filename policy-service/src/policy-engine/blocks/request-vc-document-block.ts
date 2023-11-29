@@ -1,4 +1,4 @@
-import { CheckResult, GenerateUUIDv4, Schema, SchemaHelper, removeObjectProperties } from '@guardian/interfaces';
+import { CheckResult, GenerateUUIDv4, removeObjectProperties, Schema, SchemaHelper } from '@guardian/interfaces';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { BlockActionError } from '@policy-engine/errors';
 import { ActionCallback, StateField } from '@policy-engine/helpers/decorators';
@@ -6,15 +6,7 @@ import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyRequestBlock, 
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { EventBlock } from '@policy-engine/helpers/decorators/event-block';
-import {
-    VcDocument as VcDocumentCollection,
-    DIDDocument,
-    DIDMessage,
-    MessageAction,
-    MessageServer,
-    KeyType,
-    VcHelper,
-} from '@guardian/common';
+import { DIDDocument, DIDMessage, KeyType, MessageAction, MessageServer, VcDocument as VcDocumentCollection, VcHelper, } from '@guardian/common';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
@@ -176,7 +168,6 @@ export class RequestVcDocumentBlock {
     })
     async setData(user: IPolicyUser, _data: IPolicyDocument): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
-        ref.log(`setData`);
 
         if (this.state.hasOwnProperty(user.id)) {
             delete this.state[user.id].restoreData;

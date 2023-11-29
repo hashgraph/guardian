@@ -207,3 +207,9 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 16. Now we login as SR and once it is reviewed, SR approves the Monitoring report
 
 <figure><img src="../../../.gitbook/assets/image (365).png" alt=""><figcaption></figcaption></figure>
+
+17. Once minting is completed after clicking on Mint, we can view Trustchain by clikcing on "View Trustchain"
+
+<figure><img src="../../../.gitbook/assets/image (398).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (399).png" alt=""><figcaption></figcaption></figure>

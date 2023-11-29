@@ -3,16 +3,7 @@ import { FormBuilder, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
-import {
-    IImpactReport,
-    IconType,
-    IPolicyReport,
-    IReport,
-    IReportItem,
-    ITokenReport,
-    IVCReport,
-    IVPReport
-} from '@guardian/interfaces';
+import { IconType, IImpactReport, IPolicyReport, IReport, IReportItem, ITokenReport, IVCReport, IVPReport } from '@guardian/interfaces';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
@@ -52,6 +43,7 @@ export class ReportBlockComponent implements OnInit {
     searchForm = this.fb.group({
         value: ['', Validators.required],
     });
+    uiMetaData: { [key: string]: string };
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -123,7 +115,7 @@ export class ReportBlockComponent implements OnInit {
     }
 
     loadTrustChainData(data: any) {
-        const uiMetaData = data.uiMetaData || {};
+        this.uiMetaData = data.uiMetaData || {};
         const report = data.data as IReport;
         this.hash = data.hash;
         this.searchForm.patchValue({
@@ -203,7 +195,7 @@ export class ReportBlockComponent implements OnInit {
     }
 
     openVCDocument(
-        item: any, 
+        item: any,
         document?: any
     ) {
         const dialogRef = this.dialog.open(VCViewerDialog, {

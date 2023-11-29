@@ -6,8 +6,6 @@
 
 [Need and Use for the GHGP Corporate Standard Policy](ghgp-corporate-standard-v2.md#\_toc146717948)
 
-[Demo Video](ghgp-corporate-standard-v2.md#\_toc146717949)
-
 [Policy Workflow](ghgp-corporate-standard-v2.md#\_toc146717950)
 
 [Policy Guide](ghgp-corporate-standard-v2.md#\_toc146717951)
@@ -48,13 +46,9 @@ Despite a growing interest in measuring, disclosing, and reducing GHG emissions 
 
 The Guardian GHGP Corporate Policy offers a unique technical opportunity for companies to streamline, add robustness, and build trust and transparency into their GHG inventories. The policy allows user to dynamically add entities and EGOs to organizations and GHG sources to EGOs to build their inventories in alignment with their specific corporate structures. MRV data can then be sourced by the Guardian automatically (e.g., via API, IoT-enabled devices, etc.) or provided manually depending on the user’s level of digitization. The inventory is further streamlined through Guardian policies with built in auto-calculation blocks, emission factors, and GWPs. The results of the inventory can be immutably and transparently verified by third parties. Finally, the emissions are tokenized to allow for enhanced tracking, transparency, accounting, and reporting, with the results and data structured in accordance with GHGP reporting requirements.
 
-### Demo Video <a href="#_toc146717949" id="_toc146717949"></a>
-
-(Coming Soon)
-
 ### Policy Workflow <a href="#_toc146717950" id="_toc146717950"></a>
 
-<figure><img src="../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
 
 ### Policy Guide <a href="#_toc146717951" id="_toc146717951"></a>
 
@@ -147,19 +141,19 @@ The Organization is responsible for inputting key data and information and assig
 
 <figure><img src="../../../.gitbook/assets/image (245).png" alt="" width="563"><figcaption></figcaption></figure>
 
-### VVB Flow \[Add Screenshots Below] <a href="#_toc146717957" id="_toc146717957"></a>
+### VVB Flow <a href="#_toc146717957" id="_toc146717957"></a>
 
 1. Assign role as VVB and add VVB name
 
-<figure><img src="../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
-
 <figure><img src="../../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 2. All the GHG resources once viewed can be verified.
 
-<figure><img src="../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>
 

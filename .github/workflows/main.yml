@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [16.x]
+        node-version: [ 16.12.0 ]
     steps:
       - uses: actions/checkout@v1
       - name: Use Node.js ${{ matrix.node-version }}
@@ -53,6 +53,11 @@ jobs:
           pushd api-gateway
           yarn run build
           popd
+        env:
+          CI: true
+      - name: Detect secrets
+        run: |
+          yarn run detect-secrets
         env:
           CI: true
       - name: Lint

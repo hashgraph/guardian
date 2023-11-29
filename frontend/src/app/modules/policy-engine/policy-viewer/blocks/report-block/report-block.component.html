@@ -137,7 +137,7 @@
 
                 <div class="vp-section" [attr.vp-section-offset]="mainDocuments.length>1">
                     <div class="vp-section-header">
-                        This Carbon Offset Claim has met all the requirements as issued in the policy secured to this token.
+                        {{uiMetaData.vpSectionHeader || 'This Carbon Offset Claim has met all the requirements as issued in the policy secured to this token.'}}
                     </div>
                     <div class="vp-table">
                         <div *ngIf="item.vpDocument" class="vp-signature">

@@ -1105,4 +1105,11 @@ export class SchemaConfigComponent implements OnInit {
             }
         });
     }
+
+    public onViewSchemaTree(element: Schema): void {
+        this.dialog.open(SchemaTreeComponent, {
+            data: element,
+            autoFocus: false
+        })
+    }
 }
