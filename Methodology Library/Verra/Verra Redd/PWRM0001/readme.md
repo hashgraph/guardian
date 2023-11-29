@@ -65,5 +65,69 @@ Coming Soon
 
 ### Step By Step 
 
-Coming Soon
+1. Import policy using IPFS or Policy File.
 
+<img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/0fb14183-df5d-4468-a2d2-54052a0c75a9">
+
+2. Create a new user and assign role as Project Proponent.
+
+<img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/05c91bd5-8168-495c-95c2-cf4300480eaf">
+
+<img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/cda784ca-7c79-483c-b249-c82ffa3c7e74">
+
+
+3. Create a New project by clicking on "New Project" button and enter all the required details.
+
+<img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/cfe4473d-4766-491c-8aab-a4b8480e125e">
+
+4. Once project details are submitted, Verra waits for its approval
+
+<img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/5880e21e-31f3-4fe3-86fd-6f2252e70450">
+
+5.	Now, we create a new user and assign its role as VVB
+
+<img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/cf0604b5-f287-4582-b155-26dc0dd2d4cb">
+
+6.	We need to set VVB name
+
+<img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/31fef5f6-7317-4266-9b16-8eb88747d18c">
+
+7.	Once VVB name is set, it waits for SR to approve it.
+
+<img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/8fa78dbe-cabf-42a9-98c0-4061fd856bbf">
+
+8.	Now we login as SR and approve VVB.
+
+<img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/72ac38c3-ab53-4d3a-be3c-009af033bc99">
+
+9.	Once VVB is approved, SR goes to Project Pipeline tab and click on Add button
+
+<img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/8327ce82-3731-412d-a5e5-b286be092717">
+
+10.	Once Project is added, it waits for validation from VVB
+
+<img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/aca65d3c-581e-49a1-a123-fef601d99c12">
+
+11.	Now we login as the Project Proponent and assign project to VVB
+
+<img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/97acf3ef-de46-4298-99fb-3f12a13890c4">
+
+12.	Now we login as VVB and validate the project by viewing project document details. Once validated, VVB clicks on Validate button.
+
+<img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/7857ef48-d265-4d40-9bde-7b9bf6587f19">
+
+13.	Once validated, we login as Project Proponent and Add Monitoring Report.
+
+<img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/bd9b213b-41f9-4759-b9a1-83bfd408184a">
+
+14.	Once report is submitted, we now login as VVB and validate the monitoring report by clicking on Verify button.
+
+<img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/8bec1608-e933-4553-b8de-e239a2d032eb">
+
+<img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/fe3d4a91-1162-4306-a45e-c8c09d50a83b">
+
+15.	Once monitoring report is validated, we login as SR and click on Mint to mint the tokens.
+
+16.	Once minting is completed, we can view tokens in Token History tab
+
+17.	Trustchain can also be viewed by clicking on View TrustChain button
