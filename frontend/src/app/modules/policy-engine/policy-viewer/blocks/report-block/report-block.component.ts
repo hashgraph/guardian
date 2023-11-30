@@ -61,7 +61,6 @@ export class ReportBlockComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        console.log(this);
         if (!this.static) {
             this.socket = this.wsService.blockSubscribe(this.onUpdate.bind(this));
         }

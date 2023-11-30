@@ -1081,7 +1081,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@guardian/common@2.19.0-prerelease, @guardian/common@^2.19.0-prerelease, @guardian/common@workspace:common":
+"@guardian/common@2.19.0, @guardian/common@^2.19.0, @guardian/common@workspace:common":
   version: 0.0.0-use.local
   resolution: "@guardian/common@workspace:common"
   dependencies:
@@ -1089,7 +1089,7 @@ __metadata:
     "@azure/identity": ^3.2.2
     "@azure/keyvault-secrets": ^4.7.0
     "@google-cloud/secret-manager": ^4.2.2
-    "@guardian/interfaces": ^2.19.0-prerelease
+    "@guardian/interfaces": ^2.19.0
     "@hashgraph/sdk": 2.34.1
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
@@ -1143,7 +1143,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@guardian/interfaces@2.19.0-prerelease, @guardian/interfaces@^2.19.0-prerelease, @guardian/interfaces@workspace:interfaces":
+"@guardian/interfaces@2.19.0, @guardian/interfaces@^2.19.0, @guardian/interfaces@workspace:interfaces":
   version: 0.0.0-use.local
   resolution: "@guardian/interfaces@workspace:interfaces"
   dependencies:
@@ -3669,8 +3669,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "analytics-service@workspace:analytics-service"
   dependencies:
-    "@guardian/common": ^2.19.0-prerelease
-    "@guardian/interfaces": ^2.19.0-prerelease
+    "@guardian/common": ^2.19.0
+    "@guardian/interfaces": ^2.19.0
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
     "@nestjs/jwt": ^10.0.3
@@ -3871,8 +3871,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "api-gateway@workspace:api-gateway"
   dependencies:
-    "@guardian/common": ^2.19.0-prerelease
-    "@guardian/interfaces": ^2.19.0-prerelease
+    "@guardian/common": ^2.19.0
+    "@guardian/interfaces": ^2.19.0
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
     "@nestjs/jwt": ^10.0.3
@@ -4323,8 +4323,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "auth-service@workspace:auth-service"
   dependencies:
-    "@guardian/common": ^2.19.0-prerelease
-    "@guardian/interfaces": ^2.19.0-prerelease
+    "@guardian/common": ^2.19.0
+    "@guardian/interfaces": ^2.19.0
     "@meeco/cryppo": ^2.0.2
     "@mikro-orm/core": 5.7.12
     "@mikro-orm/mongodb": 5.7.12
@@ -7884,8 +7884,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "guardian-service@workspace:guardian-service"
   dependencies:
-    "@guardian/common": ^2.19.0-prerelease
-    "@guardian/interfaces": ^2.19.0-prerelease
+    "@guardian/common": ^2.19.0
+    "@guardian/interfaces": ^2.19.0
     "@hashgraph/sdk": 2.34.1
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
@@ -10455,8 +10455,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "logger-service@workspace:logger-service"
   dependencies:
-    "@guardian/common": ^2.19.0-prerelease
-    "@guardian/interfaces": ^2.19.0-prerelease
+    "@guardian/common": ^2.19.0
+    "@guardian/interfaces": ^2.19.0
     "@mikro-orm/core": 5.7.12
     "@mikro-orm/mongodb": 5.7.12
     "@nestjs/common": ^9.4.1
@@ -11249,7 +11249,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "mrv-sender@workspace:mrv-sender"
   dependencies:
-    "@guardian/common": ^2.19.0-prerelease
+    "@guardian/common": ^2.19.0
     "@transmute/credentials-context": 0.7.0-unstable.80
     "@transmute/did-context": 0.7.0-unstable.80
     "@transmute/ed25519-signature-2018": 0.7.0-unstable.80
@@ -11800,8 +11800,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "notification-service@workspace:notification-service"
   dependencies:
-    "@guardian/common": ^2.19.0-prerelease
-    "@guardian/interfaces": ^2.19.0-prerelease
+    "@guardian/common": ^2.19.0
+    "@guardian/interfaces": ^2.19.0
     "@mikro-orm/core": 5.7.12
     "@mikro-orm/mongodb": 5.7.12
     "@nestjs/common": ^9.4.1
@@ -12635,8 +12635,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "policy-service@workspace:policy-service"
   dependencies:
-    "@guardian/common": 2.19.0-prerelease
-    "@guardian/interfaces": 2.19.0-prerelease
+    "@guardian/common": 2.19.0
+    "@guardian/interfaces": 2.19.0
     "@hashgraph/sdk": 2.34.1
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": 2.0.2
@@ -15957,8 +15957,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "worker-service@workspace:worker-service"
   dependencies:
-    "@guardian/common": ^2.19.0-prerelease
-    "@guardian/interfaces": ^2.19.0-prerelease
+    "@guardian/common": ^2.19.0
+    "@guardian/interfaces": ^2.19.0
     "@hashgraph/sdk": 2.34.1
     "@nestjs/common": ^9.4.1
     "@nestjs/core": ^9.4.1
