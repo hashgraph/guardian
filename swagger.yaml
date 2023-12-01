@@ -5043,6 +5043,34 @@ paths:
         '200':
           description: ''
       tags: *ref_6
+  /policies/{policyId}/record/export/{uuid}:
+    get:
+      operationId: PolicyApi_exportRecord
+      summary: >-
+        Return policy and its artifacts in a zip file format for the specified
+        policy.
+      description: >-
+        Returns a zip file containing the published policy and all associated
+        artifacts, i.e. schemas and VCs. Only users with the Standard Registry
+        role are allowed to make the request.
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_6
+      security:
+        - bearerAuth: []
+        - bearerAuth: []
   /schema/{schemaId}:
     get:
       tags:
