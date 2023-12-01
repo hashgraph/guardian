@@ -17,9 +17,9 @@
         <td class="propRowCell cellName">Schema</td>
         <td class="propRowCell">
             <select-schema
-                [schemas]="schemas" 
+                [schemas]="schemas"
                 [(value)]="properties.schema"
-                [disabled]="readonly" 
+                [disabled]="readonly"
                 (change)="onSave()"
                 ></select-schema>
         </td>
@@ -95,8 +95,11 @@
             </td>
             <td class="propRowCell cellName">Field {{i}}</td>
             <td class="propRowCell">
-                <span *ngIf="field.field&&field.type&&field.value" class="not-editable-text">
+                <span *ngIf="field.field&&field.type&&field.value" [title]="field.field + ' ' + field.type + ' ' + field.value"  class="not-editable-text">
                     {{field.field}} {{field.type}} {{field.value}}
+                </span>
+                <span class="remove-prop" [attr.readonly]="readonly" (click)="removeField(i)">
+                    <mat-icon>delete</mat-icon>
                 </span>
             </td>
         </tr>

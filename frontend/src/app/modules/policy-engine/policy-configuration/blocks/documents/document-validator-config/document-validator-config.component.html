@@ -17,9 +17,9 @@
         <td class="propRowCell cellName">Check Schema</td>
         <td class="propRowCell">
             <select-schema
-                [schemas]="schemas" 
+                [schemas]="schemas"
                 [(value)]="properties.schema"
-                [disabled]="readonly" 
+                [disabled]="readonly"
                 (change)="onSave()"
                 ></select-schema>
         </td>
@@ -77,8 +77,11 @@
             </td>
             <td class="propRowCell cellName">Condition {{i}}</td>
             <td class="propRowCell">
-                <span *ngIf="condition.field && condition.type && condition.value">
+                <span *ngIf="condition.field && condition.type && condition.value" [title]="condition.field + ' ' + condition.type + ' ' + condition.value">
                     {{condition.field}} {{condition.type}} {{condition.value}}
+                </span>
+                <span class="remove-prop" [attr.readonly]="readonly" (click)="removeCondition(i)">
+                    <mat-icon>delete</mat-icon>
                 </span>
             </td>
         </tr>
