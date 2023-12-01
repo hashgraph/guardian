@@ -23,6 +23,7 @@ import { ModulesService } from '../../services/modules.service';
 import { ToolsService } from 'src/app/services/tools.service';
 import { AlertComponent, AlertType } from 'src/app/modules/common/alert/alert.component';
 import { CopySchemaDialog } from '../../modules/schema-engine/copy-schema-dialog/copy-schema-dialog';
+import { SchemaTreeComponent } from 'src/app/modules/schema-engine/schema-tree/schema-tree.component';
 
 enum SchemaType {
     System = 'system',
