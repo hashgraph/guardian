@@ -270,7 +270,7 @@
             </div>
         </div>
 
-        <div *ngIf="!delimiterHide" class="delimiter"></div>
+        <div *ngIf="!delimiterHide && !item.hidden" class="delimiter"></div>
 
         <ng-template [ngIf]="getConditions(item).length > 0">
             <div *ngFor="let condition of getConditions(item)">
