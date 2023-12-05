@@ -86,7 +86,7 @@
             </div>
 
             <!-- sub schema -->
-            <div *ngIf="!item.isArray && item.isRef" class="form-field-group sub-schema">
+            <div *ngIf="!item.isArray && item.isRef" [style.display]="item.isAllFieldsHidden ? 'none' : 'block'" class="form-field-group sub-schema">
                 <div class="invalid-field-label" *ngIf="item.control && !item.control.valid && !item.control.disabled">
                     <mat-icon class="invalid-arrow-circle">arrow_circle_right</mat-icon>
                     <span>
@@ -226,7 +226,7 @@
             </div>
 
             <!-- array of sub schemas -->
-            <div *ngIf="item.isArray && item.isRef" class="form-field-group schema-form-field-array-group sub-schemas">
+            <div *ngIf="item.isArray && item.isRef" [style.display]="item.isAllFieldsHidden ? 'none' : 'block'" class="form-field-group schema-form-field-array-group sub-schemas">
                 <div class="invalid-field-label" *ngIf="!item.control.valid && !item.control.disabled">
                     <mat-icon class="invalid-arrow-circle">arrow_circle_right</mat-icon>
                     <span>
