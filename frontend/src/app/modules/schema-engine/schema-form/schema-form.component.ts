@@ -203,12 +203,25 @@ export class SchemaFormComponent implements OnInit {
         this.changeDetectorRef.detectChanges();
     }
 
+    private checkFieldIsHidden(field: SchemaField): boolean {
+        return (
+            field.hidden ||
+            (
+                field.isRef &&
+                !!field.fields?.every((field: any) =>
+                    this.checkFieldIsHidden(field)
+                )
+            )
+        );
+    }
+
     private createFieldControl(field: SchemaField): any {
         const item: any = {
             ...field,
             hide: false,
             id: GenerateUUIDv4()
         }
+        item.hidden = this.checkFieldIsHidden(item);
 
         if (this.presetDocument) {
             item.preset = this.presetDocument[field.name];
@@ -238,7 +251,6 @@ export class SchemaFormComponent implements OnInit {
         if (!field.isArray && field.isRef) {
             item.fields = field.fields;
             item.displayRequired = item.fields.some((refField: any) => refField.required);
-            item.hidden |= item.fields.every((field: any) => field.hidden);
             if (field.required || item.preset) {
                 item.control =
                     item.customType === 'geo'

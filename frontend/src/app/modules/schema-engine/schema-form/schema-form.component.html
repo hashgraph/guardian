@@ -272,7 +272,7 @@
 
         <div *ngIf="!delimiterHide && !item.hidden" class="delimiter"></div>
 
-        <ng-template [ngIf]="getConditions(item).length > 0">
+        <ng-template [ngIf]="(getConditions(item).length > 0) && !item.hidden">
             <div *ngFor="let condition of getConditions(item)">
                 <app-schema-form
                     *ngIf="condition.ifCondition.fieldValue === options.controls[item.name]?.value; else elseCondition"
