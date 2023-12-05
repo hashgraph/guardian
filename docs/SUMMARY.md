@@ -52,6 +52,7 @@
 * [🗄 Standard Registry](guardian/standard-registry/README.md)
   * [🛠 Schemas](guardian/standard-registry/schemas/README.md)
     * [📂 Available Schema Types](guardian/standard-registry/schemas/available-schema-types.md)
+    * [📂 Property Glossary](guardian/standard-registry/schemas/property-glossary.md)
     * [ℹ System/Policy Schemas](guardian/standard-registry/schemas/system-policy-schemas.md)
     * [💻 Creating Schema using UI](guardian/standard-registry/schemas/creating-system-schema-using-ui.md)
     * [⚙ Schema APIs](guardian/standard-registry/schemas/schema-creation-using-apis/README.md)
