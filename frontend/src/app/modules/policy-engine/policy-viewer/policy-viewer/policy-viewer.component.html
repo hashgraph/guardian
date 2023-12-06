@@ -1,7 +1,5 @@
 <div class="content" 
     [attr.status]='policyInfo?.status' 
-    [attr.recording]="recording"
-    [attr.running]="running"
     [attr.instance]="!!policy"
     >
     <div *ngIf="loading" class="loading">
@@ -57,34 +55,18 @@
                 class="dry-run-action-btn record-btn" 
                 (click)="startRecord()" 
                 title="Start Record"
-                [attr.disabled]="recording || running">
+                [attr.disabled]="recordingActive">
                 <mat-icon>radio_button_checked</mat-icon>
                 <span>Record</span>
             </div>
 
             <div 
                 class="dry-run-action-btn run-btn" 
-                (click)="startRun()" 
+                (click)="runRecord()" 
                 title="Run Record"
-                [attr.disabled]="recording || running">
+                [attr.disabled]="recordingActive">
                 <mat-icon>play_arrow</mat-icon>
                 <span>Run</span>
-            </div>
-
-            <div 
-                class="dry-run-action-btn" 
-                (click)="stopRecord()" 
-                title="Stop Record"
-                [attr.disabled]="!(recording || running)">
-                <mat-icon class="material-icons-outlined">stop_circle</mat-icon>
-                <span>Stop</span>
-            </div>
-
-            <div 
-                class="dry-run-action-btn" 
-                (click)="loadRecord()" >
-                <mat-icon class="material-icons-outlined">file</mat-icon>
-                <span>File</span>
             </div>
 
             <div class="delimiter"></div>
@@ -185,29 +167,13 @@
 
     </ng-container>
 
-    <ng-container *ngIf="recording || running">
-        <div class="record-logs"
-            [attr.record-status]="recordStatus"
-            [attr.recording]="recording"
-            [attr.running]="running">
-            <div *ngIf="recording" class="recording-animation">
-                <div class="recording-circle"></div>
-                <div class="recording-text">Recording</div>
-            </div>
-            <div *ngIf="running" class="running-animation">
-                <div class="running-circle"></div>
-                <div class="running-text">Running</div>
-            </div>
-            <div *ngIf="this.recordError" class="record-error">
-                {{this.recordError}}
-            </div>
-            <div *ngFor="let item of recordItems; let i = index" class="record-item" [attr.selected]="recordIndex === i">
-                <div class="record-item-index">{{i}}</div>
-                <div class="record-item-method">{{item.action || item.method}}</div>
-                <div class="record-item-time">{{item._time}}</div>
-            </div>
-        </div>
-    </ng-container>
+    <app-record-controller
+        *ngIf="isDryRun"
+        #recordController
+        [policyId]="policyId"
+        (update)="updatePolicy"
+        [(active)]="recordingActive"
+        ></app-record-controller>
 </div>
 
 <mat-menu #menu="matMenu">

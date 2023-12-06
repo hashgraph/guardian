@@ -9,4 +9,5 @@ export enum RunningStatus {
     Running = 'Running',
     Stopped = 'Stopped',
     Error = 'Error',
+    Finished = 'Finished',
 }

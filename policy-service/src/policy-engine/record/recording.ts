@@ -144,7 +144,13 @@ export class Recording {
             {
                 uuid: this.uuid,
                 policyId: this.policyId,
-                method: RecordMethod.Action
+                method: {
+                    $in: [
+                        RecordMethod.Start,
+                        RecordMethod.Action,
+                        RecordMethod.Stop
+                    ]
+                }
             },
             {
                 fields: [

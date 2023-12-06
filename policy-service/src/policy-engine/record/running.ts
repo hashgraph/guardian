@@ -24,11 +24,15 @@ export class Running {
     private _id: number;
     private _lastError: string;
     private _generatedItems: IGenerateValue<any>[];
+    private _startTime: number;
+    private _endTime: number;
+    private _results: any[];
 
     constructor(
         policyInstance: IPolicyBlock,
         policyId: string,
         actions: RecordItem[],
+        results: any[],
         options: any
     ) {
         this.policyInstance = policyInstance;
@@ -55,6 +59,7 @@ export class Running {
             ));
         }
         this._generatedItems = [];
+        this._results = results;
     }
 
     public start(): boolean {
@@ -65,28 +70,87 @@ export class Running {
         this._actions.clearIndex();
         this._generateUUID.clearIndex();
         this._generateDID.clearIndex();
+        this._startTime = Date.now();
         this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
-        this.run(this._id).then();
+        this._run(this._id).then();
         return true;
     }
 
     public stop(): boolean {
-        this._id = -1;
         this._status = RunningStatus.Stopped;
         this._lastError = null;
+        this._endTime = Date.now();
+        this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
+        return true;
+    }
+
+    public finished(): boolean {
+        this._id = -1;
+        this._status = RunningStatus.Finished;
+        this._lastError = null;
+        this._endTime = Date.now();
         this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
         return true;
     }
 
     public error(message: string): boolean {
-        this._id = -1;
         this._status = RunningStatus.Error;
         this._lastError = message;
+        this._endTime = Date.now();
         this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
         return true;
     }
 
-    private async run(id: number): Promise<void> {
+    public async run(): Promise<any[]> {
+        this._status = RunningStatus.Running;
+        this._lastError = null;
+        this._id = Date.now();
+        this._generatedItems = [];
+        this._actions.clearIndex();
+        this._generateUUID.clearIndex();
+        this._generateDID.clearIndex();
+        this._startTime = Date.now();
+        this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
+        await this._run(this._id);
+        return await this.results();
+    }
+
+    public async results(): Promise<any[]> {
+        if (this._status !== RunningStatus.Stopped) {
+            return null;
+        }
+        const results: any[] = [];
+        const db = new DatabaseServer(this.policyId);
+        const vcs = await db.getVcDocuments<any[]>({
+            updateDate: {
+                $gte: new Date(this._startTime),
+                $lt: new Date(this._endTime)
+            }
+        });
+        for (const vc of vcs) {
+            results.push({
+                id: vc.document.id,
+                type: 'vc',
+                document: vc.document
+            });
+        }
+        const vps = await db.getVpDocuments<any[]>({
+            updateDate: {
+                $gte: new Date(this._startTime),
+                $lt: new Date(this._endTime)
+            }
+        });
+        for (const vp of vps) {
+            results.push({
+                id: vp.document.id,
+                type: 'vp',
+                document: vp.document
+            });
+        }
+        return results;
+    }
+
+    private async _run(id: number): Promise<void> {
         while (this.isRunning(id)) {
             const result = await this.next();
             if (!this.isRunning(id)) {
@@ -106,7 +170,7 @@ export class Running {
     }
 
     private isRunning(id: number): boolean {
-        return this._id === id;
+        return this._id === id && this._status === RunningStatus.Running;
     }
 
     private async delay(time: number): Promise<void> {
@@ -218,7 +282,6 @@ export class Running {
                 }
             }
         } catch (error) {
-            console.debug(' Error: ', error)
             return action.document;
         }
     }
@@ -325,7 +388,8 @@ export class Running {
             policyId: this.policyId,
             status: this._status,
             index: this._actions.index,
-            error: this._lastError
+            error: this._lastError,
+            count: this._actions.count
         }
     }
 

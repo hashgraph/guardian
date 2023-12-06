@@ -248,32 +248,6 @@ export class BlockTreeGenerator extends NatsService {
             return new MessageResponse({});
         });
 
-        this.getPolicyMessages(PolicyEvents.START_RECORD, policyId, async (msg: any) => {
-            const result = await PolicyComponentsUtils.StartRecord(policyId);
-            return new MessageResponse(result);
-        });
-
-        this.getPolicyMessages(PolicyEvents.STOP_RECORD, policyId, async (msg: any) => {
-            const result = await PolicyComponentsUtils.StopRecord(policyId);
-            return new MessageResponse(result);
-        });
-
-        this.getPolicyMessages(PolicyEvents.GET_RECORD_STATUS, policyId, async (msg: any) => {
-            const result = PolicyComponentsUtils.GetRecordStatus(policyId);
-            return new MessageResponse(result);
-        });
-    
-        this.getPolicyMessages(PolicyEvents.GET_RECORD_ACTIONS, policyId, async (msg: any) => {
-            const result = await PolicyComponentsUtils.GetRecordActions(policyId);
-            return new MessageResponse(result);
-        });
-        
-        this.getPolicyMessages(PolicyEvents.RUN_RECORD, policyId, async (msg: any) => {
-            const { records, options } = msg;
-            const result = await PolicyComponentsUtils.RunRecord(policyId, records, options);
-            return new MessageResponse(result);
-        });
-
         this.getPolicyMessages(PolicyEvents.CREATE_VIRTUAL_USER, policyId, async (msg: any) => {
             const { did, data } = msg;
             await PolicyComponentsUtils.RecordCreateUser(policyId, did, data);
@@ -285,6 +259,44 @@ export class BlockTreeGenerator extends NatsService {
             await PolicyComponentsUtils.RecordSetUser(policyId, did);
             return new MessageResponse({});
         });
+    }
+
+    /**
+     * Init record events
+     */
+    async initRecordEvents(policyId: string): Promise<void> {
+        this.getPolicyMessages(PolicyEvents.START_RECORDING, policyId, async (msg: any) => {
+            const result = await PolicyComponentsUtils.StartRecording(policyId);
+            return new MessageResponse(result);
+        });
+
+        this.getPolicyMessages(PolicyEvents.STOP_RECORDING, policyId, async (msg: any) => {
+            const result = await PolicyComponentsUtils.StopRecording(policyId);
+            return new MessageResponse(result);
+        });
+
+        this.getPolicyMessages(PolicyEvents.GET_RECORD_STATUS, policyId, async (msg: any) => {
+            const result = PolicyComponentsUtils.GetRecordStatus(policyId);
+            return new MessageResponse(result);
+        });
+
+        this.getPolicyMessages(PolicyEvents.GET_RECORDED_ACTIONS, policyId, async (msg: any) => {
+            const result = await PolicyComponentsUtils.GetRecordedActions(policyId);
+            return new MessageResponse(result);
+        });
+
+        this.getPolicyMessages(PolicyEvents.RUN_RECORD, policyId, async (msg: any) => {
+            const { records, results, options } = msg;
+            const result = await PolicyComponentsUtils.RunRecord(policyId, records, results, options);
+            return new MessageResponse(result);
+        });
+
+        this.getPolicyMessages(PolicyEvents.STOP_RUNNING, policyId, async (msg: any) => {
+            const result = await PolicyComponentsUtils.StopRunning(policyId);
+            return new MessageResponse(result);
+        });
+
+        
     }
 
     /**
@@ -329,7 +341,7 @@ export class BlockTreeGenerator extends NatsService {
                 this.models.set(policyId, rootInstance);
             }
             await this.initPolicyEvents(policyId, rootInstance);
-
+            await this.initRecordEvents(policyId);
             return rootInstance;
         } catch (error) {
             new Logger().error(`Error build policy ${error}`, ['POLICY', policy.name, policyId.toString()]);

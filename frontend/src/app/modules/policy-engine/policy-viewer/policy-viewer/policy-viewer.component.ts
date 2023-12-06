@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IUser, PolicyType } from '@guardian/interfaces';
@@ -10,6 +10,8 @@ import { ProfileService } from 'src/app/services/profile.service';
 import { TokenService } from 'src/app/services/token.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
+import { RecordService } from 'src/app/services/record.service';
+import { RecordControllerComponent } from '../../record-controller/record-controller.component';
 
 /**
  * Component for choosing a policy and
@@ -58,14 +60,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public isMultipleGroups: boolean = false;
     public userRole!: string;
     public userGroup!: string;
-    public recording: boolean = false;
-    public running: boolean = false;
-    public recordId: any;
-    public recordItems: any[] = [];
-    public recordLoading: boolean = true;
-    public recordIndex: any;
-    public recordStatus: string;
-    public recordError: string;
+    public recordingActive: boolean = false;
 
     private subscription = new Subscription();
 
@@ -73,15 +68,18 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         return this.policyInfo && this.policyInfo.status === 'DRY-RUN';
     }
 
+    @ViewChild('recordController')
+    public set recordController(value: RecordControllerComponent | undefined) {
+        this._recordController = value;
+    }
+    private _recordController!: RecordControllerComponent | undefined;
+
     constructor(
         private profileService: ProfileService,
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
-        private tokenService: TokenService,
         private route: ActivatedRoute,
-        private router: Router,
         private dialog: MatDialog,
-        private toastr: ToastrService,
         private cdRef: ChangeDetectorRef
     ) {
         this.policy = null;
@@ -104,11 +102,6 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.userRole = userRole;
                 this.userGroup = userGroup?.groupLabel || userGroup?.uuid;
                 this.groups = userGroups;
-            }))
-        );
-        this.subscription.add(
-            this.wsService.recordSubscribe((message => {
-                this.updateRecordLogs(message);
             }))
         );
     }
@@ -137,6 +130,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         this.policyInfo = null;
         this.isConfirmed = false;
         this.loading = true;
+        this.recordingActive = false;
         this.profileService.getProfile().subscribe((profile: IUser | null) => {
             this.isConfirmed = !!(profile && profile.confirmed);
             this.role = profile ? profile.role : null;
@@ -180,13 +174,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     }
 
     loadDryRunOptions() {
-        forkJoin([
-            this.policyEngineService.getVirtualUsers(this.policyInfo.id),
-            this.policyEngineService.getRecordStatus(this.policyInfo.id)
-        ]).subscribe((value) => {
-            this.virtualUsers = value[0];
-            const record = value[1];
-            this.updateRecordLogs(record);
+        this.policyEngineService.getVirtualUsers(this.policyInfo.id).subscribe((value) => {
+            this.virtualUsers = value;
             setTimeout(() => {
                 this.loading = false;
             }, 500);
@@ -353,90 +342,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         return document;
     }
 
-    public startRecord() {
-        this.loading = true;
-        this.recordItems = [];
-        this.policyEngineService.startRecord(this.policyId).subscribe((result) => {
-            this.recording = !!result;
-            this.loading = false;
-        }, (e) => {
-            this.recording = true;
-            this.loading = false;
-        });
-    }
-
-    public startRun() {
-        this.loading = true;
-        this.recordItems = [];
-        this.policyEngineService.startRun(this.policyId).subscribe((result) => {
-            this.running = !!result;
-            this.loading = false;
-        }, (e) => {
-            this.recording = true;
-            this.loading = false;
-        });
-    }
-
-    public stopRecord() {
-        this.loading = true;
-        this.recordItems = [];
-        this.policyEngineService.stopRecord(this.policyId).subscribe((users) => {
-            this.recording = false;
-            this.running = false;
-            this.loading = false;
-        }, (e) => {
-            this.recording = false;
-            this.running = false;
-            this.loading = false;
-        });
-    }
-
-    public updateRecordLogs(data: any) {
-        this.recording = false;
-        this.running = false;
-        this.recordId = null;
-        if (data) {
-            if (data.type === 'Running') {
-                this.running = true;
-                this.recordId = data.id;
-                this.recordIndex = data.index - 1;
-                this.recordStatus = data.status;
-                this.recordError = data.error;
-            }
-            if (data.type === 'Recording') {
-                this.recording = true;
-                this.recordId = data.uuid;
-                this.recordIndex = -1;
-                this.recordStatus = data.status;
-                this.recordError = data.error;
-            }
-            if(this.recordStatus === 'Stopped') {
-                this.recording = false;
-                this.running = false;
-                this.recordId = null;
-            }
-        }
-        console.log(this.running, this.recordStatus, this.recordIndex, this.recordError);
-        if (this.recording || this.running) {
-            this.recordLoading = true;
-            this.policyEngineService.getRecordActions(this.policyId).subscribe((items) => {
-                this.recordItems = items || [];
-                const start = this.recordItems[0];
-                const startTime = start?.time;
-                for (const item of this.recordItems) {
-                    item._time = this.convertMsToTime(item.time - startTime);
-                }
-                this.recordLoading = false;
-            }, (e) => {
-                this.recordLoading = false;
-            });
-        }
-        if (this.running) {
-            this.updatePolicy();
-        }
-    }
-
-    updatePolicy() {
+    public updatePolicy() {
         forkJoin([
             this.policyEngineService.getVirtualUsers(this.policyId),
             this.policyEngineService.policyBlock(this.policyId),
@@ -456,42 +362,13 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         });
     }
 
-    private padTo2Digits(num: number): string {
-        return num.toString().padStart(2, '0');
+    public startRecord() {
+        this.recordingActive = true;
+        this._recordController?.startRecording();
     }
 
-    private convertMsToTime(milliseconds: number): string {
-        if (Number.isNaN(milliseconds)) {
-            return ''
-        }
-        let seconds = Math.floor(milliseconds / 1000);
-        let minutes = Math.floor(seconds / 60);
-        let hours = Math.floor(minutes / 60);
-
-        seconds = seconds % 60;
-        minutes = minutes % 60;
-
-        return `${hours}:${this.padTo2Digits(minutes)}:${this.padTo2Digits(seconds)}`;
-    }
-
-    public loadRecord() {
-        this.loading = true;
-        this.policyEngineService.exportRecord(this.policyId, this.recordId)
-            .subscribe(fileBuffer => {
-                let downloadLink = document.createElement('a');
-                downloadLink.href = window.URL.createObjectURL(
-                    new Blob([new Uint8Array(fileBuffer)], {
-                        type: 'application/guardian-policy-record'
-                    })
-                );
-                downloadLink.setAttribute('download', `record_${Date.now()}.record`);
-                document.body.appendChild(downloadLink);
-                downloadLink.click();
-                setTimeout(() => {
-                    this.loading = false;
-                }, 500);
-            }, error => {
-                this.loading = false;
-            });
+    public runRecord() {
+        this.recordingActive = true;
+        this._recordController?.runRecord();
     }
 }

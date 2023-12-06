@@ -213,7 +213,7 @@ export class ComponentsService {
         return this._recordingController || this._runningController;
     }
 
-    public async startRecord(): Promise<boolean> {
+    public async startRecording(): Promise<boolean> {
         if (this._runningController) {
             return false;
         }
@@ -223,7 +223,39 @@ export class ComponentsService {
         return await this._recordingController.start();
     }
 
-    public async runRecord(actions: any[], options: any): Promise<boolean> {
+    public async stopRecording(): Promise<boolean> {
+        if (this._recordingController) {
+            const old = this._recordingController;
+            this._recordingController = null;
+            return await old.stop();
+        }
+        if (this._runningController) {
+            const old = this._runningController;
+            this._runningController = null;
+            return old.finished();
+        }
+        return false;
+    }
+
+    public async stopRunning(): Promise<boolean> {
+        if (this._recordingController) {
+            const old = this._recordingController;
+            this._recordingController = null;
+            return await old.stop();
+        }
+        if (this._runningController) {
+            const old = this._runningController;
+            this._runningController = null;
+            return old.finished();
+        }
+        return false;
+    }
+
+    public async runRecord(
+        actions: any[],
+        results: any[],
+        options: any
+    ): Promise<boolean> {
         if (this._recordingController) {
             return false;
         }
@@ -232,23 +264,10 @@ export class ComponentsService {
                 this.root,
                 this.policyId,
                 actions,
+                results,
                 options
             );
         }
         return this._runningController.start();
-    }
-
-    public async stopRecord(): Promise<boolean> {
-        if (this._runningController) {
-            const old = this._runningController;
-            this._runningController = null;
-            return old.stop();
-        }
-        if (this._recordingController) {
-            const old = this._recordingController;
-            this._recordingController = null;
-            return await old.stop();
-        }
-        return false;
     }
 }

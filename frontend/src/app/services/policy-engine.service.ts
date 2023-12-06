@@ -196,34 +196,4 @@ export class PolicyEngineService {
     public setMultiPolicy(policyId: string, data: any): Observable<any> {
         return this.http.post<void>(`${this.url}/${policyId}/multiple`, data);
     }
-
-    public startRecord(policyId: string): Observable<any> {
-        return this.http.post<any>(`${this.url}/${policyId}/record/start`, null);
-    }
-
-    public startRun(policyId: string): Observable<any> {
-        return this.http.post<any>(`${this.url}/${policyId}/record/run`, null);
-    }
-
-    public stopRecord(policyId: string): Observable<any> {
-        return this.http.post<any>(`${this.url}/${policyId}/record/stop`, null);
-    }
-
-    // public getRecord(policyId: string, uuid: string): Observable<any> {
-    //     return this.http.get<any>(`${this.url}/${policyId}/record/${uuid}`);
-    // }
-
-    public getRecordActions(policyId: string): Observable<any> {
-        return this.http.get<any>(`${this.url}/${policyId}/record/actions`);
-    }
-
-    public getRecordStatus(policyId: string): Observable<any> {
-        return this.http.get<any>(`${this.url}/${policyId}/record/status`);
-    }
-
-    public exportRecord(policyId: string, recordId?: string): Observable<ArrayBuffer> {
-        return this.http.get(`${this.url}/${policyId}/record/export/${recordId || 'last'}`, {
-            responseType: 'arraybuffer'
-        });
-    }
 }

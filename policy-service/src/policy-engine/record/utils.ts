@@ -33,7 +33,6 @@ export class GenerateDID implements IGenerateValue<string> {
     public readonly newValue: string;
 
     constructor(oldValue: string, newValue: string) {
-        console.debug(' <--- GenerateDID: ', oldValue, newValue);
         this.oldValue = oldValue;
         this.newValue = newValue;
     }
@@ -169,7 +168,11 @@ export class RecordItemStack {
     }
 
     public setItems(items: RecordItem[]): void {
-        this._items = items || [];
+        if (Array.isArray(items)) {
+            this._items = items;
+        } else {
+            this._items = [];
+        }
         this._index = 0;
     }
 
@@ -195,5 +198,9 @@ export class RecordItemStack {
 
     public get items(): RecordItem[] {
         return this._items;
+    }
+
+    public get count(): number {
+        return this._items.length;
     }
 }

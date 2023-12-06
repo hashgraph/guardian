@@ -10,19 +10,28 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
     styleUrls: ['./import-file-dialog.component.css']
 })
 export class ImportFileDialog {
-    loading: boolean = false;
+    public loading: boolean = false;
+    public fileExtension: string;
+    public label: string;
 
     constructor(
         public dialogRef: MatDialogRef<ImportFileDialog>,
         @Inject(MAT_DIALOG_DATA) public data: any
     ) {
+        if (data) {
+            this.fileExtension = data.fileExtension || 'theme';
+            this.label = data.label || 'Import Theme .theme file';
+        } else {
+            this.fileExtension = 'theme';
+            this.label = 'Import Theme .theme file';
+        }
     }
 
-    onNoClick(): void {
+    public onNoClick(): void {
         this.dialogRef.close(null);
     }
 
-    importFromFile(file: any) {
+    public importFromFile(file: any) {
         const reader = new FileReader()
         reader.readAsArrayBuffer(file);
         reader.addEventListener('load', (e: any) => {

@@ -1218,15 +1218,66 @@ export class PolicyComponentsUtils {
     }
 
     /**
-     * Record policy
+     * Start recording
      * @param policyId
      */
-    public static async StartRecord(policyId: string): Promise<boolean> {
+    public static async StartRecording(policyId: string): Promise<boolean> {
         const policy = PolicyComponentsUtils.PolicyById.get(policyId);
         if (!policy) {
             return false;
         }
-        return await policy.components.startRecord();
+        return await policy.components.startRecording();
+    }
+
+    /**
+     * Stop recording
+     * @param policyId
+     */
+    public static async StopRecording(policyId: string): Promise<boolean> {
+        const policy = PolicyComponentsUtils.PolicyById.get(policyId);
+        if (!policy) {
+            return false;
+        }
+        return await policy.components.stopRecording();
+    }
+
+    /**
+     * Stop running
+     * @param policyId
+     */
+    public static async StopRunning(policyId: string): Promise<boolean> {
+        const policy = PolicyComponentsUtils.PolicyById.get(policyId);
+        if (!policy) {
+            return false;
+        }
+        return await policy.components.stopRunning();
+    }
+
+    /**
+     * Get recording or running status
+     * @param policyId
+     */
+    public static GetRecordStatus(policyId: string): any {
+        const record = PolicyComponentsUtils.GetRunAndRecordController(policyId);
+        if (record) {
+            return record.getStatus();
+        } else {
+            return { policyId };
+        }
+    }
+
+    /**
+     * Get recorded actions
+     * @param policyId
+     * @param data
+     */
+    public static async GetRecordedActions(policyId: string): Promise<any[] | null> {
+        const record = PolicyComponentsUtils.GetRunAndRecordController(policyId);
+        if (record) {
+            return await record.getActions();
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -1238,25 +1289,14 @@ export class PolicyComponentsUtils {
     public static async RunRecord(
         policyId: string,
         actions: any[],
+        results: any[],
         options: any
     ): Promise<boolean> {
         const policy = PolicyComponentsUtils.PolicyById.get(policyId);
         if (!policy) {
             return false;
         }
-        return await policy.components.runRecord(actions, options);
-    }
-
-    /**
-     * Record policy
-     * @param policyId
-     */
-    public static async StopRecord(policyId: string): Promise<boolean> {
-        const policy = PolicyComponentsUtils.PolicyById.get(policyId);
-        if (!policy) {
-            return false;
-        }
-        return await policy.components.stopRecord();
+        return await policy.components.runRecord(actions, results, options);
     }
 
     /**
@@ -1338,34 +1378,6 @@ export class PolicyComponentsUtils {
         const record = PolicyComponentsUtils.GetRecordingController(policyId);
         if (record) {
             await record.setUser(did);
-        }
-    }
-
-    /**
-     * Record ExternalData
-     * @param policyId
-     * @param data
-     */
-    public static async GetRecordActions(policyId: string): Promise<any[] | null> {
-        const record = PolicyComponentsUtils.GetRunAndRecordController(policyId);
-        if (record) {
-            return await record.getActions();
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Record ExternalData
-     * @param policyId
-     * @param data
-     */
-    public static GetRecordStatus(policyId: string): any {
-        const record = PolicyComponentsUtils.GetRunAndRecordController(policyId);
-        if (record) {
-            return record.getStatus();
-        } else {
-            return { policyId };
         }
     }
 }

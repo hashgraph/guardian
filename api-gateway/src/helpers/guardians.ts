@@ -671,7 +671,7 @@ export class Guardians extends NatsService {
      * @param task
      */
     public async copySchemaAsync(iri: string, topicId: string, name: string, owner: string, task: NewTask): Promise<NewTask> {
-        return await this.sendMessage(MessageAPI.COPY_SCHEMA_ASYNC, {iri, topicId, name, task, owner});
+        return await this.sendMessage(MessageAPI.COPY_SCHEMA_ASYNC, { iri, topicId, name, task, owner });
     }
 
     /**
@@ -2278,4 +2278,103 @@ export class Guardians extends NatsService {
     ): Promise<any[]> {
         return await this.sendMessage(MessageAPI.SEARCH_BLOCKS, { config, blockId, user });
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /**
+     * Start recording
+     * @param policyId
+     * @param owner
+     * @param options
+     * @returns {any}
+     */
+    public async startRecording(policyId: string, owner: string, options: any): Promise<any> {
+        return await this.sendMessage<any>(MessageAPI.START_RECORDING, { policyId, owner, options });
+    }
+
+    /**
+     * Stop recording
+     * @param policyId
+     * @param owner
+     * @param options
+     * @returns {any}
+     */
+    public async stopRecording(policyId: string, owner: string, options: any): Promise<any> {
+        const file = await this.sendMessage<any>(MessageAPI.STOP_RECORDING, { policyId, owner, options });
+        return Buffer.from(file, 'base64');
+    }
+
+    /**
+     * Get recorded actions
+     * @param policyId
+     * @param owner
+     * @returns {any}
+     */
+    public async getRecordedActions(policyId: string, owner: string): Promise<any> {
+        return await this.sendMessage<any>(MessageAPI.GET_RECORDED_ACTIONS, { policyId, owner });
+    }
+
+    /**
+     * Get recording or running status
+     * @param policyId
+     * @param owner
+     * @returns {any}
+     */
+    public async getRecordStatus(policyId: string, owner: string): Promise<any> {
+        return await this.sendMessage<any>(MessageAPI.GET_RECORD_STATUS, { policyId, owner });
+    }
+
+    /**
+     * Run record
+     * @param policyId
+     * @param owner
+     * @param options
+     * @returns {any}
+     */
+    public async runRecord(policyId: string, owner: string, options: any): Promise<any> {
+        return await this.sendMessage<any>(MessageAPI.RUN_RECORD, { policyId, owner, options });
+    }
+
+    /**
+     * Stop running
+     * @param policyId
+     * @param owner
+     * @param options
+     * @returns {any}
+     */
+    public async stopRunning(policyId: string, owner: string, options: any): Promise<any> {
+        return await this.sendMessage<any>(MessageAPI.STOP_RUNNING, { policyId, owner, options });
+    }
 }
+
+
+
+// /**
+//  * Get record
+//  * @param policyId
+//  * @param uuid
+//  */
+// public async getRecord(policyId: string, uuid: string) {
+//     return await this.sendMessage(PolicyEngineEvents.GET_RECORD, { policyId, uuid });
+// }
+
+// /**
+//  * Get record export file
+//  * @param policyId
+//  * @param uuid
+//  * @param owner
+//  */
+// public async exportRecord(policyId: string, uuid: string, owner: string) {
+//     const file = await this.sendMessage(PolicyEngineEvents.RECORD_EXPORT_FILE, { policyId, uuid, owner }) as any;
+//     return Buffer.from(file, 'base64');
+// }

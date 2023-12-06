@@ -44,11 +44,4 @@ export enum PolicyEngineEvents {
     GET_TOKENS_MAP = 'policy-engine-event-get-tokens-map',
     SET_MULTI_POLICY = 'policy-engine-event-set-multi-policy',
     GET_MULTI_POLICY = 'policy-engine-event-get-multi-policy',
-    START_RECORD = 'policy-engine-event-start-record',
-    STOP_RECORD = 'policy-engine-event-stop-record',
-    RUN_RECORD = 'policy-engine-event-run-record',
-    GET_RECORD = 'policy-engine-event-get-record',
-    GET_RECORD_STATUS = 'policy-engine-event-get-record-status',
-    GET_RECORD_ACTIONS = 'policy-engine-event-get-record-actions',
-    RECORD_EXPORT_FILE = 'policy-engine-event-record-export-file'
 }

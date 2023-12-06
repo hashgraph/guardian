@@ -104,6 +104,8 @@ import { WizardService } from './services/wizard.service';
 import { PoliciesComponent } from './policies/policies.component';
 import { SearchBlocksComponent } from './helpers/search-blocks/search-blocks.component';
 import { SelectSchema } from './helpers/select-schema/select-schema.component';
+import { RecordControllerComponent } from './record-controller/record-controller.component';
+import { RecordResultDialog } from './helpers/record-result-dialog/record-result-dialog.component';
 
 @NgModule({
     declarations: [
@@ -192,7 +194,9 @@ import { SelectSchema } from './helpers/select-schema/select-schema.component';
         PolicyWizardDialogComponent,
         MessagesReportBlockComponent,
         ViewerDialog,
-        SearchBlocksComponent
+        SearchBlocksComponent,
+        RecordControllerComponent,
+        RecordResultDialog
     ],
     imports: [
         CommonModule,
