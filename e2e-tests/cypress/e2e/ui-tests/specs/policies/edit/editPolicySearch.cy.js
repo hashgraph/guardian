@@ -15,6 +15,7 @@ describe("Edit Policy. Search flow", {tags: '@ui'}, () => {
         policies.openPoliciesTab();
         policies.createPolicyButton();
         policies.fillNewPolicyForm(name);
+        policies.openPoliciesTab();
         policies.checkStatus(name, "Draft");
         policies.clickEditPolicy(name);
         policies.waitForEditPage();
@@ -32,7 +33,7 @@ describe("Edit Policy. Search flow", {tags: '@ui'}, () => {
     });
 
     it("Verify if it possible to search by Modules", () => {
-        policies.clickOnButtonByText(" Modules ");
+        policies.clickOnDivByText(" Modules ");
         policies.fillSearchField("testModule");
         policies.verifyIfSearchResultIsEmpty();
     });

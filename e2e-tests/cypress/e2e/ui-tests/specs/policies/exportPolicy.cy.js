@@ -15,6 +15,7 @@ describe("Export Policy", {tags: '@ui'}, () => {
         policies.openPoliciesTab();
         policies.createPolicyButton();
         policies.fillNewPolicyForm(name);
+        policies.openPoliciesTab();
     })
 
     it("Verify if it impossible to Export draft policy using message identifier", () => {
@@ -25,7 +26,6 @@ describe("Export Policy", {tags: '@ui'}, () => {
 
     it("Verify if it possible to Export dry run policy using message identifier", () => {
         policies.startDryRun(name);
-        PoliciesPage.waitForPolicyList();
         policies.checkStatus(name, " In Dry Run ");
         policies.clickOnExportButton(name);
         policies.checkButtonInModalIsActive("Copy message identifier");
@@ -33,7 +33,8 @@ describe("Export Policy", {tags: '@ui'}, () => {
 
     it("Verify if it possible to Export published policy using message identifier", () => {
         policies.publishDraftPolicy(name);
-        PoliciesPage.waitForPolicyList()
+        policies.openPoliciesTab();
+        PoliciesPage.waitForPolicyList();
         policies.checkStatus(name, " Published ");
         policies.clickOnExportButton(name);
         policies.checkButtonInModalIsActive("Copy message identifier");
@@ -58,6 +59,7 @@ describe("Export Policy", {tags: '@ui'}, () => {
 
     it("Verify if it possible to Export published policy using file", () => {
         policies.publishDraftPolicy(name);
+        policies.openPoliciesTab();
         policies.checkStatus(name, " Published ");
         policies.clickOnExportButton(name);
         policies.clickOnButtonByTextInModal("Save to file");

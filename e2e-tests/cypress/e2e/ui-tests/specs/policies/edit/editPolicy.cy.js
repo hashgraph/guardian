@@ -15,6 +15,7 @@ describe("Edit Policy", {tags: '@ui'}, () => {
         policies.openPoliciesTab();
         policies.createPolicyButton();
         policies.fillNewPolicyForm(name);
+        policies.openPoliciesTab();
     })
 
     it("Verify if it possible to edit draft policy", () => {
@@ -30,7 +31,6 @@ describe("Edit Policy", {tags: '@ui'}, () => {
 
     it("Verify if it impossible to edit In Dry Run policy", () => {
         policies.startDryRun(name);
-        PoliciesPage.waitForPolicyList();
         policies.checkStatus(name, " In Dry Run ");
         policies.clickEditPolicy(name);
         policies.checkFieldInEditPolicyIsNotEditable("Name");
@@ -41,6 +41,7 @@ describe("Edit Policy", {tags: '@ui'}, () => {
 
     it("Verify if it impossible to edit Published policy", () => {
         policies.publishDraftPolicy(name);
+        policies.openPoliciesTab();
         policies.checkStatus(name, " Published ");
         policies.clickEditPolicy(name);
         policies.checkFieldInEditPolicyIsNotEditable("Name");
@@ -62,6 +63,7 @@ describe("Edit Policy", {tags: '@ui'}, () => {
     });
 
     it("Verify if a modal window appears after returning to editing", () => {
+        policies.openPoliciesTab();
         policies.checkStatus(name, "Draft");
         policies.clickEditPolicy(name);
         policies.fillFieldInEditPolicyPage("Tag", "Tag Edited");

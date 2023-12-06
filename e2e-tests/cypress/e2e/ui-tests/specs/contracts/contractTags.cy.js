@@ -13,13 +13,13 @@ describe("Workflow Contract Operations", {tags: '@ui'}, () => {
     })
 
     it("add contract tag", () => {
-        home.login("StandardRegistryForSI");
+        home.login("StandardRegistryForSI14");
         contracts.openContractsTab();
         contracts.addTag(tagName);
     });
 
     it("delete contract tag", () => {
-        home.login("StandardRegistryForSI");
+        home.login("StandardRegistryForSI14");
         contracts.openContractsTab();
         contracts.deleteTag(tagName);
     });

@@ -1,11 +1,21 @@
 import URL from "../../../support/GuardianUrls";
+import { METHOD} from "../../../support/api/api-const";
+import API from "../../../support/ApiUrls";
 
 const AuthPageLocators = {
     usernameInput: '[formcontrolname="login"]',
     passInput: '[formcontrolname="password"]',
     submitBtn: '[type="submit"]',
     logoutBtn: "Log out",
+    did: 'did:hedera:testnet',
+    nextBtn: " Next ",
     generateBtn: "Generate",
+    geographyInput: '[ng-reflect-name="geography"]',
+    lawInput: '[ng-reflect-name="law"]',
+    standardregistryList: 'api/v1/schemas/system/entity/STANDARD_REGISTRY',
+    connectBtn: "Connect",
+    tagsInput: '[ng-reflect-name="tags"]',
+    isicInput: '[ng-reflect-name="ISIC"]',
     createNewBtn: "*[class^='create-link']",
     roleName: "*[class^='role-name']",
     role: '[role="combobox"]',
@@ -28,6 +38,7 @@ export class AuthenticationPage {
       
 
     login(username) {
+        cy.reload()
         const inputName = cy.get(AuthPageLocators.usernameInput);
         inputName.type(username);
         const inputPass = cy.get(AuthPageLocators.passInput);
@@ -82,4 +93,25 @@ export class AuthenticationPage {
             cy.wait(12000);
         });
     }
+
+    createNewSR(login) {
+        cy.get(AuthPageLocators.createNewBtn).click();
+        cy.contains(AuthPageLocators.roleName, "Standard Registry").click();
+        cy.wait(8000);
+        cy.get(AuthPageLocators.usernameInput).clear().type(login);
+        cy.contains("*[type^='submit']", "Create").click();
+        cy.contains(AuthPageLocators.generateBtn).click();
+        AuthenticationPage.waitForTask();
+        cy.wait(4000);
+        cy.contains(AuthPageLocators.nextBtn).click();
+        cy.get(AuthPageLocators.geographyInput).type("test");
+        cy.get(AuthPageLocators.lawInput).type("law");
+        cy.get(AuthPageLocators.tagsInput).type("tag");
+        cy.get(AuthPageLocators.isicInput).type("version1");
+        cy.contains(AuthPageLocators.connectBtn).click();
+        cy.intercept(AuthPageLocators.standardregistryList).as('waitForSetup')
+        cy.wait('@waitForSetup', { timeout: 200000 });
+        cy.contains(AuthPageLocators.did).should('not.be.null')
+    }
+
 }

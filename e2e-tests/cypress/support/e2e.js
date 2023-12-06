@@ -50,9 +50,9 @@ before(() => {
                     authorization: authorization,
                 },
                 body: {
-                    hederaAccountId: "0.0.3763210",
+                    hederaAccountId: "0.0.469260",
                     hederaAccountKey:
-                        "302e020100300506032b657004220420a11e17f31581cecd57858121865fa51c965a3f8491f29f523f6161188e6a8921",
+                        "3030020100300706052b8104000a04220420fba8a85fb4ed475ab068397da424eb9e2875603c8563d631635733768849a410",
                     vcDocument: {
                         geography: "testGeography",
                         law: "testLaw",

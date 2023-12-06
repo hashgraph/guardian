@@ -7,7 +7,9 @@ const RegistrantPageLocators = {
     policiesList: "/api/v1/policies?pageIndex=0&pageSize=100",
     passInput: '[formcontrolname="password"]',
     submitBtn: '[type="submit"]',
-    appRegistrantDetails: "/api/v1/profiles/Registrant",
+    applicationRegBtns: 'div.page-btns',
+    createBtn: 'Create',
+    appRegistrantDetails: "/api/v1/profiles/Registranttt",
     tokensWaiter: "/api/v1/tokens",
     registrantRole: "Registrant",
     inputGroupLabel: '[formcontrolname="groupLabel"]',
@@ -19,9 +21,10 @@ const RegistrantPageLocators = {
     enterNumInput: '[placeholder="123"]',
     requiredFillDateLabel: "Please make sure the field contain a valid date value",
     requiredFillNumberLabel: "Please make sure the field contain a valid number value",
-    hederaId: "HEDERA ID:",
-    profileValue: "div.profile-item-value",
+    hederaId: "HEDERA ID",
+    profileValue: "div.account-item-value",
     profilePage: '/api/v1/schemas/system/entity/USER',
+    balance: '/api/v1/profiles/Registrant/balance',
     approvalLabel: 'app-information-block',
     tokenId: 'hedera-explorer > a',
     tokenIdByHistory: 'td.cdk-column-1',
@@ -41,17 +44,17 @@ export class RegistrantPage {
 
     createGroup(role) {
         cy.contains("Policies").click({force: true});
-        RegistrantPage.waitForPolicyList();
+        cy.wait(1000)
         cy.get("td").first().parent().get("td").eq("5").click();
         cy.wait(1000)
         cy.get(RegistrantPageLocators.roleSelect).click().get("mat-option").contains(role).click();
         cy.get(RegistrantPageLocators.submitBtn).click({force: true});
-        cy.intercept(RegistrantPageLocators.appRegistrantDetails).as(
-            "waitForAppDetails"
-        );
-        cy.wait("@waitForAppDetails", {timeout: 200000})
-        cy.get(RegistrantPageLocators.submitBtn).click();
-        cy.wait(20000);
+        cy.intercept("/api/v1/profiles/" + role).as("waitForRegister" + role);
+        cy.wait("@waitForRegister" + role, { timeout: 180000 });
+        cy.get(RegistrantPageLocators.applicationRegBtns).contains("Next").click();
+        cy.get(RegistrantPageLocators.applicationRegBtns).contains("Next").click();
+        cy.get(RegistrantPageLocators.applicationRegBtns).contains("Create").click();
+        cy.wait(90000);
         cy.contains("Submitted for Approval").should("exist");
     }
 
@@ -61,6 +64,14 @@ export class RegistrantPage {
             "waitForPoliciesList"
         );
         cy.wait("@waitForPoliciesList", {timeout: 100000})
+    }
+
+
+    static waitForBalance() {
+        cy.intercept(RegistrantPageLocators.balance).as(
+            "waitForBalance"
+        );
+        cy.wait(['@waitForBalance', '@waitForBalance'], {timeout: 100000})
     }
 
 
@@ -90,13 +101,11 @@ export class RegistrantPage {
         RegistrantPage.waitForPolicyList();
         cy.get("td").first().parent().get("td").eq("5").click();
         cy.contains("Devices").click({force: true});
-        cy.intercept(RegistrantPageLocators.appRegistrantDetails).as(
-            "waitForAppDetails"
-        );
-        cy.wait("@waitForAppDetails", {timeout: 200000})
+        cy.intercept("/api/v1/profiles/Registrant").as("waitForRegisterRegistrant");
+        cy.wait("@waitForRegisterRegistrant", { timeout: 180000 });
         cy.contains(RegistrantPageLocators.createDeviceBtn).click();
         cy.get(RegistrantPageLocators.submitBtn).click();
-        cy.wait(20000);
+        cy.wait(60000);
         cy.contains("Waiting for approval").should("exist");
     }
 
@@ -106,22 +115,20 @@ export class RegistrantPage {
         cy.contains("Policies").click({force: true});
         cy.get("td").first().parent().get("td").eq("5").click();
         cy.contains("Devices").click({force: true});
-        cy.intercept(RegistrantPageLocators.appRegistrantDetails).as(
-            "waitForAppDetails"
-        );
-        cy.wait("@waitForAppDetails", {timeout: 200000})
+        cy.intercept("/api/v1/profiles/Registrant").as("waitForRegisterRegistrant");
+        cy.wait("@waitForRegisterRegistrant", { timeout: 180000 });
         cy.contains(RegistrantPageLocators.createIsssueRequestBtn).click();
         cy.contains(RegistrantPageLocators.requiredFillDateLabel).parent().parent().parent().find('input').type('3/1/2023')
         cy.contains(RegistrantPageLocators.requiredFillDateLabel).parent().parent().parent().find('input').type('3/1/2023')
         cy.contains(RegistrantPageLocators.requiredFillNumberLabel).parent().parent().parent().find('input').type('123')
         cy.get(RegistrantPageLocators.submitBtn).click();
-        cy.wait(20000);
+        cy.wait(60000);
         cy.contains("Issue Requests").click({force: true});
         cy.contains("Waiting for approval").should("exist");
     }
 
     getId() {
-        RegistrantPage.waitForRegistrant();
+        RegistrantPage.waitForBalance();
         cy.contains(RegistrantPageLocators.hederaId).parent().find(RegistrantPageLocators.profileValue).find("a")
             .then(($div) => {
                 cy.writeFile('cypress/fixtures/regId.txt', $div.get(0).innerText);
@@ -132,8 +139,8 @@ export class RegistrantPage {
         cy.intercept(RegistrantPageLocators.tokensWaiter).as(
             "waitForTokens"
         );
-        cy.wait("@waitForTokens", {timeout: 20000})
-        cy.get("td").first().parent().get("td").eq("2").should('have.text', " 123 ");
+        cy.wait("@waitForTokens", {timeout: 60000})
+        cy.get("td").last().parent().find("td").eq("2").should('have.text', " 123 ");
         let tokenId;
         cy.readFile('cypress/fixtures/tokenId.txt').then(file => {
             tokenId = file;

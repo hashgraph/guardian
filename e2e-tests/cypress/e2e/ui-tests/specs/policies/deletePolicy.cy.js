@@ -18,6 +18,7 @@ describe("Workflow Policy Deletion", {tags: '@ui'}, () => {
         policies.openPoliciesTab();
         policies.createPolicyButton();
         policies.fillNewPolicyForm(name);
+        policies.openPoliciesTab();
         policies.checkStatus(name, "Draft");
         policies.deletePolicy(name);
         policies.checkPolicyTableNotContains(name);
@@ -28,6 +29,7 @@ describe("Workflow Policy Deletion", {tags: '@ui'}, () => {
         policies.openPoliciesTab();
         policies.createPolicyButton();
         policies.fillNewPolicyForm(name);
+        policies.openPoliciesTab();
         policies.checkStatus(name, "Draft");
         policies.startDryRun(name);
         policies.checkButtonIsNotActive(name, "delete");

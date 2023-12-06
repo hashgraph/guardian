@@ -15,6 +15,7 @@ describe("Edit Policy. Validation flow", {tags: '@ui'}, () => {
         policies.openPoliciesTab();
         policies.createPolicyButton();
         policies.fillNewPolicyForm(name);
+        policies.openPoliciesTab();
         policies.checkStatus(name, "Draft");
         policies.clickEditPolicy(name);
         policies.waitForEditPage();

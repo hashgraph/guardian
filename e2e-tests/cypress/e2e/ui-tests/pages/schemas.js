@@ -34,19 +34,20 @@ const SchemasPageLocators = {
 
 
     //Requests
+    getTagSchemasList: '/api/v1/tags/schemas?pageIndex=0&pageSize=25',
     getSchemasList: '/api/v1/schemas?pageIndex=0&pageSize=25',
     getTaskInfo: '/api/v1/tasks/*',
     tagsListRequest: "/api/v1/tags/",
     tagsDeleteRequest: "/api/v1/tags/*",
     tagSchemasList: '/api/v1/tags/schemas?pageIndex=0&pageSize=100',
-    systemSchemasList: '/api/v1/schemas/system/StandardRegistry?pageIndex=0&pageSize=100',
+    systemSchemasList: '/api/v1/schemas/system/StandardRegistry?pageIndex=0&pageSize=25',
 
     //Other elements
     policyComboboxItem: "span.mat-option-text",
     dialogContainer: "mat-dialog-container",
     schemaName: "Energy Sources",
-    documentHeader: "h1.mat-dialog-title",
-    documentContent: "div.mat-dialog-content",
+    documentHeader: "div.g-dialog-title",
+    documentContent: "div.g-dialog-body",
     activeStatus: "Active",
     userEntity: 'mat-option[value="USER"]',
     dialogActions: 'mat-dialog-actions',
@@ -129,9 +130,8 @@ export class SchemasPage {
 
     documentView() {
         cy.get(SchemasPageLocators.documentSchemaButton).first().click();
-        cy.get(SchemasPageLocators.documentHeader).should("have.text", "Schema");
-        cy.get(SchemasPageLocators.documentHeader).should("exist");
-        cy.contains("Cancel").should("exist");
+        cy.get(SchemasPageLocators.documentHeader).should("have.text", " Schema ");
+        cy.get(SchemasPageLocators.documentContent).should("exist");
     }
 
     addTag(tagName) {
@@ -158,9 +158,10 @@ export class SchemasPage {
     }
 
     createTagSchema(schemaName) {
-        cy.intercept(SchemasPageLocators.getSchemasList).as(
+        cy.intercept(SchemasPageLocators.getTagSchemasList).as(
             "waitForSchemaList"
         );
+        cy.contains('mat-label', 'Type').parent().parent().parent().click()
         cy.contains(SchemasPageLocators.tagSchemaTabButton).click();
         cy.contains(SchemasPageLocators.schemaCreateButton).click();
         cy.get(SchemasPageLocators.schemaNameInput).click().type(schemaName);
@@ -174,8 +175,9 @@ export class SchemasPage {
             "waitForSchemaList"
         );
         cy.contains(SchemasPageLocators.publishButton.trim()).first().click();
+        cy.wait(10000)
         cy.wait("@waitForSchemaList", { timeout: 100000 });
-        cy.contains(schemaName).first().parent()
+        cy.contains(schemaName).should("be.visible").first().parent()
             .contains("Published").should("exist");
     }
 
@@ -185,19 +187,21 @@ export class SchemasPage {
             "waitForSchemaList"
         );
         cy.contains(SchemasPageLocators.bigOkButton).click();
+        cy.wait(10000)
         cy.wait("@waitForSchemaList", { timeout: 100000 });
         cy.contains(schemaNameForDeletion).should("not.exist");
     }
 
     createSystemSchema(schemaName) {
+        cy.intercept(SchemasPageLocators.systemSchemasList).as(
+            "waitForSchemaList"
+        );
+        cy.contains('mat-label', 'Type').parent().parent().parent().click()
         cy.contains(SchemasPageLocators.systemSchemaTabButton).click();
         cy.contains(SchemasPageLocators.schemaCreateButton).click();
         cy.get(SchemasPageLocators.schemaNameInput).click().type(schemaName);
         cy.get(SchemasPageLocators.entityChoosing).click();
         cy.get(SchemasPageLocators.userEntity).click();
-        cy.intercept(SchemasPageLocators.systemSchemasList).as(
-            "waitForSchemaList"
-        );
         cy.get(SchemasPageLocators.dialogButton).click();
         cy.wait("@waitForSchemaList", { timeout: 10000 });
         cy.contains(schemaName).should("exist");

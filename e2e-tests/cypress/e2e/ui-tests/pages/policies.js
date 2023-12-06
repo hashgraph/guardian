@@ -15,6 +15,7 @@ const PoliciesPageLocators = {
     publishBtn: "Publish",
     versionInput: '[data-placeholder="1.0.0"]',
     publishPolicyBtn: ".mat-button-wrapper",
+    actionsMore: "div.btn-icon-import",
     publishedStatus: "Published",
     dropDawnPublishBtn: "Release version into public domain.",
     submitBtn: 'button[type="submit"]',
@@ -25,6 +26,7 @@ const PoliciesPageLocators = {
     draftBtn: 'ng-reflect-menu="[object Object]"',
     approveBtn: 'div.btn-approve',
     taskReq: '/api/v1/tasks/**',
+    disabledBtn: 'button.policy-menu-btn-des',
     modalWindow: 'app-confirmation-dialog',
     componentsBlock: '[class^="components-group-item"] span',
     policyBlock: '[class^="block-item-name"]',
@@ -36,10 +38,8 @@ const PoliciesPageLocators = {
     deleteTagBtn: '.delete-tag',
     closeModalBtn: '.g-dialog-cancel-btn',
     uploadFileInput: 'input[type="file"]',
-    importFileBtn: '.g-dialog-actions-btn',
     okModalBtn: '#ok-btn',
     inputText: 'input[type="text"]',
-    taskReq: '/api/v1/tasks/**',
     tagCreationModal: 'tags-create-dialog',
     createTagButton: ' Create Tag ',
     closeWindowButton: 'div.g-dialog-cancel-btn',
@@ -52,7 +52,7 @@ const PoliciesPageLocators = {
     usersIconButton: 'div[mattooltip="Users"]',
     registrantLabel: 'Registrant ',
     tokenBalance: 'td.mat-column-tokenBalance',
-    policyDeleteButton: "div.btn-icon-delete",
+    policyDeleteButton: "button.policy-menu-btn-del",
     errorCountElement: ".error-count",
     successValidationElement: "[title='Validation Policy']",
     loadingProgress: ".loading-progress",
@@ -61,6 +61,8 @@ const PoliciesPageLocators = {
     componentBtn: ".component-btn",
     containerJson: ".textarea-code",
     treeContainer: ".tree-container",
+    policyEditView: "/api/v1/schemas/**",
+    moreButton: "div.btn-icon-more",
 };
 
 export class PoliciesPage {
@@ -79,19 +81,19 @@ export class PoliciesPage {
     approveUser() {
         cy.contains("Go").first().click();
         cy.get(PoliciesPageLocators.approveBtn).click();
-        cy.wait(20000);
+        cy.wait(60000);
     }
     approveDevice() {
         cy.contains("Go").first().click();
         cy.contains("Devices").click({ force: true });
         cy.contains("Approve").click({ force: true });
-        cy.wait(20000);
+        cy.wait(60000);
     }
     approveRequest() {
         cy.contains("Go").first().click();
         cy.contains("Issue Requests").click({ force: true });
         cy.contains("Approve").click({ force: true });
-        cy.wait(20000);
+        cy.wait(180000);
     }
 
     static waitForPolicyList(){
@@ -101,11 +103,19 @@ export class PoliciesPage {
         cy.wait("@waitForPoliciesList", { timeout: 300000 })
     }
 
+    static waitForPolicyEdit(){
+        cy.intercept(PoliciesPageLocators.policyEditView).as(
+            "waitForPolicyEdit"
+        );
+        cy.wait("@waitForPolicyEdit", { timeout: 300000 })
+    }
+
     fillNewPolicyForm(name) {
         const inputName = cy.get(PoliciesPageLocators.inputName);
         inputName.type(name);
         cy.get(PoliciesPageLocators.createBtn).click();
-        PoliciesPage.waitForPolicyList();
+        //PoliciesPage.waitForPolicyList();
+        PoliciesPage.waitForPolicyEdit();
     }
 
     checkStatus(name, status) {
@@ -123,11 +133,10 @@ export class PoliciesPage {
             .then(() => {
                 cy.get('.cdk-overlay-pane').contains("div","Dry Run").click({ force: true });
             });
-            PoliciesPage.waitForPolicyList();
+        PoliciesPage.waitForPolicyList();
     }
 
     stopDryRun(name) {
-        PoliciesPage.waitForPolicyList()
         cy.contains("td", name)
             .siblings()
             .contains("div", "In Dry Run")
@@ -152,15 +161,12 @@ export class PoliciesPage {
             "waitForPolicyImport"
         );
         cy.get(PoliciesPageLocators.submitBtn).click();
-        cy.wait("@waitForPolicyImport", { timeout: 100000 })
+        cy.wait(['@waitForPolicyImport', '@waitForPolicyImport'], { timeout: 100000 })
         cy.get(PoliciesPageLocators.continueImportBtn).click();
+        PoliciesPage.waitForPolicyEdit();
     }
 
     publishPolicy() {
-        cy.intercept(PoliciesPageLocators.policiesList).as(
-            "waitForPoliciesList"
-        );
-        cy.wait("@waitForPoliciesList", {timeout: 300000})
         cy.get("tbody>tr").eq("0").find("td").eq("0").within((firstCell) => {
             cy.wrap(firstCell.text()).as("policyName").then(() => {
                 cy.get("@policyName").then((policyName) => {
@@ -170,8 +176,12 @@ export class PoliciesPage {
         })
         cy.contains(PoliciesPageLocators.dropDawnPublishBtn).click({force: true})
         cy.get(PoliciesPageLocators.versionInput).type("0.0.1")
+        cy.intercept(PoliciesPageLocators.policyEditView).as(
+            "waitForPolicyEditView"
+        );
         cy.contains(PoliciesPageLocators.publishPolicyBtn, "Publish").click()
-        cy.wait("@waitForPoliciesList", {timeout: 600000,})
+        cy.wait("@waitForPolicyEditView", { timeout: 300000 })
+        cy.visit(URL.Root + URL.Policies);
         cy.get("@policyName").then((policyName) => {
             cy.contains(policyName).parent().find("td").eq("7")
             cy.contains(PoliciesPageLocators.publishedStatus);
@@ -250,8 +260,9 @@ export class PoliciesPage {
             .click();
         cy.contains(new RegExp("^Publish$", "g")).click({ force: true });
         cy.get(PoliciesPageLocators.versionInput).type("0.0.1")
-        cy.contains(PoliciesPageLocators.publishPolicyBtn, "Publish").click()
-        PoliciesPage.waitForPolicyList();
+        cy.contains(PoliciesPageLocators.publishPolicyBtn, "Publish").click();
+        PoliciesPage.waitForPolicyEdit();
+        //PoliciesPage.waitForPolicyList();
     }
 
     checkModalWindowIsVisible(name) {
@@ -305,7 +316,8 @@ export class PoliciesPage {
     }
 
     deletePolicy(policyName) {
-        cy.contains(policyName).parent().find(PoliciesPageLocators.policyDeleteButton).click();
+        cy.contains(policyName).parent().find(PoliciesPageLocators.actionsMore).click();
+        cy.get(PoliciesPageLocators.policyDeleteButton).click();
         cy.contains("OK").click({ force: true });
         cy.contains(policyName).should("not.exist")
     }
@@ -339,6 +351,10 @@ export class PoliciesPage {
         cy.contains(new RegExp("^" + text + "$", "g")).click({ force: true });
     }
 
+    clickOnDivByText(text) {
+        cy.contains('div.tab-header', text).click({ force: true });
+    }
+
     clickOnButtonByTextInModal(text) {
         cy.get(PoliciesPageLocators.dialogContainer).contains(text).click({ force: true });
     }
@@ -358,34 +374,31 @@ export class PoliciesPage {
     uploadFile(fileName) {
         cy.fixture(fileName, { encoding: null }).as("myFixture");
         cy.get(PoliciesPageLocators.uploadFileInput).selectFile("@myFixture", { force: true });
-        cy.get(PoliciesPageLocators.importFileBtn).click({ force: true });
+        cy.intercept(PoliciesPageLocators.policyEditView).as(
+            "waitForPolicyEditView"
+        );
+        cy.get(PoliciesPageLocators.continueImportBtn).click({ force: true });
+        cy.wait("@waitForPolicyEditView", { timeout: 300000 })
     }
 
     fillImportIPFSForm(text) {
         cy.get(PoliciesPageLocators.inputText).type(text);
         cy.get(PoliciesPageLocators.okModalBtn).click({ force: true });
-        cy.get(PoliciesPageLocators.importFileBtn).click({ force: true });
-    }
-
-    deletePolicy(name) {
-        cy.contains("td", name)
-            .siblings()
-            .contains("div", "delete")
-            .click({ force: true });
-            cy.get(PoliciesPageLocators.dialogContainer).contains(new RegExp("^OK$", "g")).click({ force: true });
+        cy.intercept(PoliciesPageLocators.policyEditView).as(
+            "waitForPolicyEditView"
+        );
+        cy.get(PoliciesPageLocators.continueImportBtn).click({ force: true });
+        cy.wait("@waitForPolicyEditView", { timeout: 300000 })
     }
 
     checkButtonIsNotActive(name, text) {
-        cy.contains("td", name)
-            .siblings()
-            .contains("div", text)
-            .should('have.css', 'cursor', 'not-allowed');
+        cy.contains(name).parent().find(PoliciesPageLocators.actionsMore).click();
+        cy.contains('mat-icon', text).parent().should('have.css', 'cursor', 'not-allowed');
     }
 
     clickOnExportButton(name) {
-        cy.contains("td", name)
-            .siblings()
-            .contains("div", "import_export")
+        cy.contains(name).parent().find(PoliciesPageLocators.moreButton).click();
+        cy.contains("mat-icon", "import_export")
             .click({ force: true });
     }
 

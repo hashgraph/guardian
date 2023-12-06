@@ -29,18 +29,18 @@ const ConfigPageLocators = {
 }
 export class ConfigPage {
 
-static waitForTask(){
+static waitForTask(task){
   cy.intercept(ConfigPageLocators.taskReq).as(
-    "waitForTastToComplete"
+    "waitFor" + task + "ToComplete"
 );
-cy.wait("@waitForTastToComplete", { timeout: 100000 })
+cy.wait("@waitFor" + task + "ToComplete", { timeout: 100000 })
 }
 
 
   finishsetupSD(Option,ID,KEY) {
     if (Option =='GENERATE'){
     cy.contains(ConfigPageLocators.generateBtn).click();
-    ConfigPage.waitForTask();
+    ConfigPage.waitForTask("SetupSD");
     cy.wait(4000);
     cy.get(ConfigPageLocators.hederaIDInput).should('not.be.null')
     cy.get(ConfigPageLocators.hederaKeyInput).should('not.be.null')
@@ -99,7 +99,8 @@ cy.wait("@waitForTastToComplete", { timeout: 100000 })
         cy.wait(2000);
         if (Option =='GENERATE'){
           cy.contains(ConfigPageLocators.generateBtn).click();
-          ConfigPage.waitForTask();
+          ConfigPage.waitForTask("SetupUser");
+            cy.wait(4000);
         }
         if (Option =='NOGENERATE')
         {

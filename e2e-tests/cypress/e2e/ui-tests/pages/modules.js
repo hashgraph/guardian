@@ -69,12 +69,12 @@ export class ModulesPage {
     }
 
     importNewModuleIPFS(messageId){
-        cy.contains(ModulesPageLocators.importButton).click();
-        cy.contains(ModulesPageLocators.importIPFSButton).click();
-        cy.get(ModulesPageLocators.timestampInput).type(messageId);
         cy.intercept(ModulesPageLocators.postPreviewIPFS).as(
             "waitForPreviewAfterIPFS"
         );
+        cy.contains(ModulesPageLocators.importButton).click();
+        cy.contains(ModulesPageLocators.importIPFSButton).click();
+        cy.get(ModulesPageLocators.timestampInput).type(messageId);
         cy.contains(ModulesPageLocators.okButton).click();
         cy.wait("@waitForPreviewAfterIPFS", { timeout: 40000 })
         cy.contains(ModulesPageLocators.finalImportButton).click();

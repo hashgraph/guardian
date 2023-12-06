@@ -18,6 +18,7 @@ describe("Dry run Policy", {tags: '@ui'}, () => {
         policies.openPoliciesTab();
         policies.createPolicyButton();
         policies.fillNewPolicyForm(name);
+        policies.openPoliciesTab();
         policies.checkStatus(name, "Draft");
         policies.startDryRun(name);
         policies.stopDryRun(name);

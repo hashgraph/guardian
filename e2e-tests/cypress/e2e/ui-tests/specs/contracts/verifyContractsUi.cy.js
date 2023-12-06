@@ -14,9 +14,9 @@ describe("Workflow Contract Creation", {tags: '@ui'}, () => {
     })
 
     it("verify ui", () => {
-        home.createNewSR("StandardRegistryForSI");
+        home.login("StandardRegistryForSI14");
         contracts.openContractsTab();
-        contracts.importContract(importedContract);
+        contracts.createContract(importedContract);
         contracts.verifyButtonsAndHeaders();
         contracts.verifyContractDataAndActions(importedContract);
     });

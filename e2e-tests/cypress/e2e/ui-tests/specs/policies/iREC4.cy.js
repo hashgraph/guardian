@@ -20,7 +20,8 @@ describe("Workflow iREC 4 Policy", {tags: '@ui'}, () => {
         home.login("StandardRegistry");
         policies.openPoliciesTab();
         policies.importPolicyButton();
-        policies.importPolicyMessage("1684839116.679965315");  //iRec4
+        policies.importPolicyMessage("1690484516.927729003");  //iRec4
+        policies.openPoliciesTab();
         policies.publishPolicy();
         home.logOut("StandardRegistry");
 

@@ -36,7 +36,8 @@ describe("Error Validation on schema fields", () => {
         home.login("StandardRegistry");
         policies.openPoliciesTab();
         policies.importPolicyButton();
-        policies.importPolicyMessage("1688062484.609595734");  //required field validation  dummy policy
+        policies.importPolicyMessage("1695121364.871181003");  //required field validation  dummy policy
+        policies.openPoliciesTab();
         policies.publishPolicy();
         home.logOut("StandardRegistry")
     });

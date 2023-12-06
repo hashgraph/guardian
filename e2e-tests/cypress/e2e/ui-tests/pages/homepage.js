@@ -146,7 +146,7 @@ export class HomePage {
 
 
     createStandartRegistryAccount(username) {
-      cy.get(HomePageLocators.createLnk).click();
+        cy.get(HomePageLocators.createLnk).click();
      cy.contains(HomePageLocators.standardregistryBtn).click();
      const inputName = cy.get(HomePageLocators.usernameInput);
      inputName.click().clear();
@@ -158,9 +158,6 @@ export class HomePage {
      confirminputPass.click().clear();
      confirminputPass.type('test123');
      cy.get(HomePageLocators.submitBtn).click();
-   
-  
-
   }
 
   verifyAlert()
@@ -273,4 +270,3 @@ cy.get(HomePageLocators.confirmpassinput).parent().children('span.field-error').
  
 
   }
-  

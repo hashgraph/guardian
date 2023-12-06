@@ -18,9 +18,9 @@ describe("Create User Accounts",  { tags: '@ui' }, () => {
     })
     
     it("Create Standard Registry by generating Hedera ID and KEY", () => {
-  
-       
-       homepage.createStandartRegistryAccount(admin);
+
+
+        homepage.createStandartRegistryAccount(admin);
         cy.wait(3000);
         var option = "GENERATE";
         configpage.finishsetupSD(option);

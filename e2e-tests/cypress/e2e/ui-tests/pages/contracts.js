@@ -94,7 +94,7 @@ export class ContractsPage {
 
     importContract(importedContract) {
         cy.contains(ContractsPageLocators.importContractBtn).click();
-        cy.get(ContractsPageLocators.importedContractIdInput).type("0.0.3886183");
+        cy.get(ContractsPageLocators.importedContractIdInput).type("0.0.4537888");
         cy.get(ContractsPageLocators.importedContractDescInput).type(importedContract);
         cy.contains(ContractsPageLocators.okBtn).click();
         ContractsPage.waitForContracts();

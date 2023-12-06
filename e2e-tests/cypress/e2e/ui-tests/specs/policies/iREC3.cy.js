@@ -17,7 +17,8 @@ describe("Workflow iREC 3 Policy", {tags: '@ui'}, () => {
         home.login("StandardRegistry");
         policies.openPoliciesTab();
         policies.importPolicyButton();
-        policies.importPolicyMessage("1675253928.926888003");  //iRec3
+        policies.importPolicyMessage("1695373248.043259783");  //iRec3
+        policies.openPoliciesTab();
         policies.publishPolicy();
         home.logOut("StandardRegistry");
 

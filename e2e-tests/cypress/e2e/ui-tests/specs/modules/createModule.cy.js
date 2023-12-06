@@ -22,7 +22,7 @@ describe("Workflow Modules Creation", {tags: '@ui'}, () => {
     it("module ipfs import", () => {
         home.login("StandardRegistry");
         modules.openModulesTab();
-        modules.importNewModuleIPFS("1683120560.537293649");
+        modules.importNewModuleIPFS("1697112270.960241844");
     });
 
     it("module file import", () => {
