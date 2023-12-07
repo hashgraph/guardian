@@ -1,29 +1,6 @@
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
-import {
-    ContractParamType,
-    ExternalMessageEvents,
-    GenerateUUIDv4,
-    IRootConfig,
-    NotificationAction,
-    WorkerTaskType
-} from '@guardian/interfaces';
-import {
-    ExternalEventChannel,
-    Logger,
-    Token,
-    MultiPolicy,
-    KeyType,
-    Wallet,
-    DatabaseServer,
-    MessageAction,
-    MessageServer,
-    SynchronizationMessage,
-    TopicConfig,
-    VcDocumentDefinition as VcDocument,
-    Workers,
-    NotificationHelper,
-    Users,
-} from '@guardian/common';
+import { ContractParamType, ExternalMessageEvents, GenerateUUIDv4, IRootConfig, NotificationAction, WorkerTaskType } from '@guardian/interfaces';
+import { DatabaseServer, ExternalEventChannel, KeyType, Logger, MessageAction, MessageServer, MultiPolicy, NotificationHelper, SynchronizationMessage, Token, TopicConfig, Users, VcDocumentDefinition as VcDocument, Wallet, Workers, } from '@guardian/common';
 import { AccountId, PrivateKey, TokenId } from '@hashgraph/sdk';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
@@ -134,8 +111,13 @@ export class MintService {
                 1, 10
             );
         };
-        const mintAndTransferNFT = (metaData: string[]) =>
-            mintNFT(metaData).then(transferNFT);
+        const mintAndTransferNFT = async (metaData: string[]) => {
+            try {
+                return await transferNFT(await mintNFT(metaData));
+            } catch (e) {
+                throw new Error('Mint and transfer failed: ' + e.message);
+            }
+        }
         const mintId = Date.now();
         MintService.log(`Mint(${mintId}): Start (Count: ${tokenValue})`, ref);
 
