@@ -2396,8 +2396,17 @@ export class DatabaseServer {
      * @param module
      */
     public static async createModules(module: any): Promise<PolicyModule> {
-        const item = new DataBaseHelper(PolicyModule).create(module);
-        return await new DataBaseHelper(PolicyModule).save(item);
+        const dbHelper = new DataBaseHelper(PolicyModule);
+        const item = dbHelper.create(module);
+        if (
+            (await dbHelper.count({
+                name: item.name,
+                owner: item.owner,
+            })) > 0
+        ) {
+            throw new Error(`Tool with name ${item.name} is already exists`);
+        }
+        return await dbHelper.save(item);
     }
 
     /**
@@ -2455,7 +2464,17 @@ export class DatabaseServer {
      * @param row
      */
     public static async updateModule(row: PolicyModule): Promise<PolicyModule> {
-        return await new DataBaseHelper(PolicyModule).update(row);
+        const dbHelper = new DataBaseHelper(PolicyModule);
+        if (
+            (await dbHelper.count({
+                id: { $ne: row.id },
+                name: row.name,
+                owner: row.owner,
+            })) > 0
+        ) {
+            throw new Error(`Tool with name ${row.name} is already exists`);
+        }
+        return await dbHelper.update(row);
     }
 
     /**
