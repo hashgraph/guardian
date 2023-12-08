@@ -364,8 +364,109 @@ export class RecordApi {
         }
     }
 
+    /**
+     * Get running results
+     */
+    @Get('/:policyId/running/results')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Get running results.',
+        description: 'Get running results.' + ONLY_SR,
+    })
+    @ApiImplicitParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
+    })
+    @ApiBody({
+        description: 'Object that contains options',
+        required: true
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        }
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @HttpCode(HttpStatus.OK)
+    async getRecordResults(@Req() req, @Response() res) {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const owner = req.user.did;
+        const policyId = req.params.policyId;
+        await checkPolicy(policyId, owner);
+        try {
+            const guardians = new Guardians();
+            const result = await guardians.getRecordResults(policyId, owner);
+            return res.json(result);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
-
+    /**
+     * Get running details
+     */
+    @Get('/:policyId/running/details')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Get running details.',
+        description: 'Get running details.' + ONLY_SR,
+    })
+    @ApiImplicitParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
+    })
+    @ApiBody({
+        description: 'Object that contains options',
+        required: true
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        }
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @HttpCode(HttpStatus.OK)
+    async getRecordDetails(@Req() req, @Response() res) {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const owner = req.user.did;
+        const policyId = req.params.policyId;
+        await checkPolicy(policyId, owner);
+        try {
+            const guardians = new Guardians();
+            const result = await guardians.getRecordDetails(policyId, owner);
+            return res.json(result);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
 
 

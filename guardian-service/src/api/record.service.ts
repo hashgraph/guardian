@@ -1,7 +1,9 @@
+import { DocumentComparator, ICompareOptions, RecordComparator } from '@analytics';
 import { ApiResponse } from '@api/helpers/api-response';
 import {
     BinaryMessageResponse,
     DatabaseServer,
+    IRecordResult,
     Logger,
     MessageError,
     MessageResponse,
@@ -94,16 +96,16 @@ export async function recordAPI(): Promise<void> {
             if (!msg) {
                 throw new Error('Invalid parameters');
             }
-            const { policyId, owner, options} = msg;
+            const { policyId, owner, options } = msg;
             await checkPolicy(policyId, owner);
             const guardiansService = new GuardiansService();
             const result = await guardiansService
                 .sendPolicyMessage(PolicyEvents.STOP_RECORDING, policyId, options);
 
-            if(!result) {
+            if (!result) {
                 throw new Error('Invalid record');
             }
-   
+
             const items = await DatabaseServer.getRecord({ policyId: policyId, method: 'STOP' });
             const uuid = items[items.length - 1]?.uuid;
 
@@ -134,7 +136,7 @@ export async function recordAPI(): Promise<void> {
             if (!msg) {
                 throw new Error('Invalid parameters');
             }
-            const { policyId, owner} = msg;
+            const { policyId, owner } = msg;
             await checkPolicy(policyId, owner);
             const guardiansService = new GuardiansService();
             const result = await guardiansService
@@ -206,51 +208,75 @@ export async function recordAPI(): Promise<void> {
             return new MessageError(error);
         }
     });
+
+    /**
+     * Get record results
+     *
+     * @param payload - options
+     *
+     * @returns {any} result
+     */
+    ApiResponse(MessageAPI.GET_RECORD_RESULTS, async (msg) => {
+        try {
+            if (!msg) {
+                throw new Error('Invalid parameters');
+            }
+
+            const { policyId, owner } = msg;
+            await checkPolicy(policyId, owner);
+
+            const guardiansService = new GuardiansService();
+            const result = await guardiansService
+                .sendPolicyMessage(PolicyEvents.GET_RECORD_RESULTS, policyId, null);
+            return new MessageResponse(result);
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    /**
+     * Get record results
+     *
+     * @param payload - options
+     *
+     * @returns {any} result
+     */
+    ApiResponse(MessageAPI.GET_RECORD_DETAILS, async (msg) => {
+        try {
+            if (!msg) {
+                throw new Error('Invalid parameters');
+            }
+
+            const { policyId, owner } = msg;
+            await checkPolicy(policyId, owner);
+
+            const guardiansService = new GuardiansService();
+            const details: any = await guardiansService
+                .sendPolicyMessage(PolicyEvents.GET_RECORD_RESULTS, policyId, null);
+
+            if (details) {
+                const options: ICompareOptions = {
+                    owner: null,
+                    propLvl: 2,
+                    childLvl: 2,
+                    eventLvl: 2,
+                    idLvl: 2
+                };
+                const documents: IRecordResult[] = details.documents;
+                const recorded: IRecordResult[] = details.recorded;
+                const comparator = new RecordComparator();
+                const recordedModel = await RecordComparator.createModel(recorded, options);
+                const documentsModel = await RecordComparator.createModel(documents, options);
+                const results = comparator.compare([recordedModel, documentsModel]);
+                const result = results[0];
+                return new MessageResponse(result);
+            } else {
+                return new MessageResponse(null);
+            }
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
 }
-
-
-
-// this.channel.getMessages<any, any>(PolicyEngineEvents.GET_RECORD, async (msg) => {
-//     try {
-//         const { policyId, uuid } = msg;
-//         const actions = await DatabaseServer.getRecord({ policyId, uuid });
-//         return new MessageResponse(actions);
-//     } catch (error) {
-//         new Logger().error(error, ['GUARDIAN_SERVICE']);
-//         return new MessageError(error);
-//     }
-// });
-
-// this.channel.getMessages<any, any>(PolicyEngineEvents.RECORD_EXPORT_FILE, async (msg) => {
-//     try {
-//         const { policyId, owner } = msg;
-//         const policy = await DatabaseServer.getPolicyById(policyId);
-//         if (!policy) {
-//             throw new Error(`Cannot export policy ${policyId}`);
-//         }
-//         if (policy.owner !== owner) {
-//             throw new Error('Invalid owner.');
-//         }
-
-//         let uuid = msg.uuid;
-//         if (!uuid || uuid === 'last') {
-//             const items = await DatabaseServer.getRecord({ policyId, method: 'STOP' });
-//             uuid = items[items.length - 1]?.uuid;
-//         }
-        
-//         const zip = await RecordImportExport.generate(uuid);
-//         const file = await zip.generateAsync({
-//             type: 'arraybuffer',
-//             compression: 'DEFLATE',
-//             compressionOptions: {
-//                 level: 3,
-//             },
-//         });
-//         console.log('File size: ' + file.byteLength);
-//         return new BinaryMessageResponse(file);
-//     } catch (error) {
-//         new Logger().error(error, ['GUARDIAN_SERVICE']);
-//         console.error(error);
-//         return new MessageError(error);
-//     }
-// });

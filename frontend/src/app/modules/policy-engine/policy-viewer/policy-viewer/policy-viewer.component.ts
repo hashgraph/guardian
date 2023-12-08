@@ -11,7 +11,7 @@ import { TokenService } from 'src/app/services/token.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 import { RecordService } from 'src/app/services/record.service';
-import { RecordControllerComponent } from '../../record-controller/record-controller.component';
+import { RecordControllerComponent } from '../../record/record-controller/record-controller.component';
 
 /**
  * Component for choosing a policy and

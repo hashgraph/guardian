@@ -2355,6 +2355,27 @@ export class Guardians extends NatsService {
     public async stopRunning(policyId: string, owner: string, options: any): Promise<any> {
         return await this.sendMessage<any>(MessageAPI.STOP_RUNNING, { policyId, owner, options });
     }
+
+    /**
+     * Get running results
+     * @param policyId
+     * @param owner
+     * @returns {any}
+     */
+    public async getRecordResults(policyId: string, owner: string): Promise<any> {
+        return await this.sendMessage<any>(MessageAPI.GET_RECORD_RESULTS, { policyId, owner });
+    }
+
+    /**
+     * Get record details
+     * @param policyId
+     * @param owner
+     * @returns {any}
+     */
+    public async getRecordDetails(policyId: string, owner: string): Promise<any> {
+        return await this.sendMessage<any>(MessageAPI.GET_RECORD_DETAILS, { policyId, owner });
+    }
+    
 }
 
 

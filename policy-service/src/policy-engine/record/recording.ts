@@ -178,4 +178,8 @@ export class Recording {
             status: this._status
         }
     }
+
+    public async getResults(): Promise<any> {
+        return null;
+    }
 }

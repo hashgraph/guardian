@@ -1,0 +1,67 @@
+.context {
+    min-height: 200px;
+    position: relative;
+}
+
+.loading {
+    background: #fff;
+    position: absolute;
+    z-index: 101;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
+}
+
+.results-header {
+    height: 46px;
+    padding: 14px 0px;
+    box-sizing: border-box;
+    color: #646464;
+    font-weight: 500;
+    font-size: 16px;
+}
+
+.results-item {
+    display: flex;
+    padding: 4px 0px;
+}
+
+.document-type {
+    flex: auto;
+    text-transform: uppercase;
+}
+
+.document-view {
+    width: 110px;
+
+    a {
+        color: #2C78F6;
+        cursor: pointer;
+        text-decoration: underline;
+    }
+}
+
+.results-body {
+    padding: 0px 0px 14px 0px;
+    max-height: 200px;
+    overflow: auto;
+}
+
+.dialog-actions {
+    padding: 8px 0;
+    display: flex;
+    flex-wrap: wrap;
+    min-height: 52px;
+    align-items: center;
+    box-sizing: content-box;
+
+    button {
+        margin-right: 8px;
+    }
+}

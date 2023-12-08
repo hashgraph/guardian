@@ -34,6 +34,7 @@ import { ModulesListComponent } from './modules/policy-engine/modules-list/modul
 import { ToolsListComponent } from './modules/policy-engine/tools-list/tools-list.component';
 import { SearchPoliciesComponent } from './modules/analytics/search-policies/search-policies.component';
 import { AboutViewComponent } from './views/admin/about-view/about-view.component';
+import { RecordResultsComponent } from './modules/policy-engine/record/record-results/record-results.component';
 
 const USER_IS_NOT_RA = "Page is avaliable for admin only";
 
@@ -187,6 +188,7 @@ const routes: Routes = [
 
     { path: 'compare', component: CompareComponent, canActivate: [ServicesStatusGuard] },
     { path: 'search', component: SearchPoliciesComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
+    { path: 'record-results', component: RecordResultsComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
 
     { path: 'branding', component: BrandingComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
 

@@ -6,7 +6,7 @@ import { RecordMethod } from "./method.type";
 import { IPolicyBlock } from "@policy-engine/policy-engine.interface";
 import { IPolicyUser, PolicyUser } from "@policy-engine/policy-user";
 import { PolicyComponentsUtils } from "@policy-engine/policy-components-utils";
-import { DIDDocument, DatabaseServer } from "@guardian/common";
+import { DIDDocument, DatabaseServer, IRecordResult } from "@guardian/common";
 import { RecordItem } from "./record-item";
 import { GenerateDID, GenerateUUID, IGenerateValue, RecordItemStack, Utils } from "./utils";
 
@@ -395,5 +395,44 @@ export class Running {
 
     public async getActions(): Promise<RecordItem[]> {
         return this._actions.items;
+    }
+
+    public async getResults(): Promise<any> {
+        if (this._id) {
+            const results: IRecordResult[] = [];
+            const db = new DatabaseServer(this.policyId);
+            const vcs = await db.getVcDocuments<any[]>({
+                updateDate: {
+                    $gte: new Date(this._startTime),
+                    $lt: new Date(this._endTime)
+                }
+            });
+            for (const vc of vcs) {
+                results.push({
+                    id: vc.document.id,
+                    type: 'vc',
+                    document: vc.document
+                });
+            }
+            const vps = await db.getVpDocuments<any[]>({
+                updateDate: {
+                    $gte: new Date(this._startTime),
+                    $lt: new Date(this._endTime)
+                }
+            });
+            for (const vp of vps) {
+                results.push({
+                    id: vp.document.id,
+                    type: 'vp',
+                    document: vp.document
+                });
+            }
+            return {
+                documents: results,
+                recorded: this._results
+            };
+        } else {
+            return null;
+        }
     }
 }

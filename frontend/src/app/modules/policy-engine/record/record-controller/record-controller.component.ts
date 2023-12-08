@@ -2,9 +2,10 @@ import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@
 import { Subscription } from 'rxjs';
 import { RecordService } from 'src/app/services/record.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
-import { ImportFileDialog } from '../helpers/import-file-dialog/import-file-dialog.component';
+import { ImportFileDialog } from '../../helpers/import-file-dialog/import-file-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
-import { RecordResultDialog } from '../helpers/record-result-dialog/record-result-dialog.component';
+import { RecordResultDialog } from '../record-result-dialog/record-result-dialog.component';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'app-record-controller',
@@ -36,6 +37,7 @@ export class RecordControllerComponent implements OnInit {
     constructor(
         private wsService: WebSocketService,
         private recordService: RecordService,
+        private router: Router,
         private dialog: MatDialog
     ) {
         this._showActions = (localStorage.getItem('SHOW_RECORD_ACTIONS') || 'true') === 'true';
@@ -146,6 +148,7 @@ export class RecordControllerComponent implements OnInit {
     public stopRunning() {
         this.loading = true;
         this.recordItems = [];
+        this.running = false;
         this.recordService.stopRunning(this.policyId).subscribe((result) => {
             this.running = false;
             this.recordId = null;
@@ -302,19 +305,27 @@ export class RecordControllerComponent implements OnInit {
 
     public showResult() {
         this._resultDialog = this.dialog.open(RecordResultDialog, {
-            width: '500px',
+            width: '600px',
             panelClass: 'g-dialog',
             autoFocus: false,
             disableClose: true,
             data: {
-                recordId: this.recordId
+                recordId: this.recordId,
+                policyId: this.policyId
             }
         });
         this._resultDialog.afterClosed().subscribe(async (result: any) => {
-            if (result) {
-
-            } else {
+            if (result === 'Details') {
+                this.router.navigate(['/record-results'], {
+                    queryParams: {
+                        type: 'policy',
+                        policyId: this.policyId,
+                    }
+                });
+            } else if (result === 'Finish') {
                 this.stopRunning()
+            } else {
+                return;
             }
         });
     }

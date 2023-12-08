@@ -52,6 +52,7 @@ export { ModuleComparator } from './comparators/module-comparator';
 export { HashComparator } from './comparators/hash-comparator';
 export { FileModel } from './models/file.model';
 export { DocumentComparator } from './comparators/document-comparator';
+export { RecordComparator } from './comparators/record-comparator';
 export { ToolComparator } from './comparators/tool-comparator';
 export { ToolModel } from './models/tool.model';
 export { DocumentModel } from './models/document.model';

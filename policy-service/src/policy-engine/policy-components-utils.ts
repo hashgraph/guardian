@@ -1281,6 +1281,20 @@ export class PolicyComponentsUtils {
     }
 
     /**
+     * Get recorded actions
+     * @param policyId
+     * @param data
+     */
+    public static async GetRecordResults(policyId: string): Promise<any[] | null> {
+        const record = PolicyComponentsUtils.GetRunAndRecordController(policyId);
+        if (record) {
+            return await record.getResults();
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Record policy
      * @param policyId
      * @param actions
