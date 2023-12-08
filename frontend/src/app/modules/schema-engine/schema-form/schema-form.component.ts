@@ -208,6 +208,7 @@ export class SchemaFormComponent implements OnInit {
             field.hidden ||
             (
                 field.isRef &&
+                field.type !== '#GeoJSON' &&
                 !!field.fields?.every((field: any) =>
                     this.isAllFieldsHidden(field)
                 )
