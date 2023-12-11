@@ -1,7 +1,7 @@
 import { DatabaseServer } from '@guardian/common';
 import { CSV } from '../../table/csv';
 import { ReportTable } from '../../table/report-table';
-import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { CompareOptions } from '../interfaces/compare-options.interface';
 import { ICompareResult } from '../interfaces/compare-result.interface';
 import { IMultiCompareResult } from '../interfaces/multi-compare-result.interface';
 import { IReportTable } from '../interfaces/report-table.interface';
@@ -21,15 +21,10 @@ export class DocumentComparator {
      * Compare Options
      * @private
      */
-    private readonly options: ICompareOptions;
+    private readonly options: CompareOptions;
 
-    constructor(options?: ICompareOptions) {
-        this.options = {
-            propLvl: 2,
-            childLvl: 2,
-            eventLvl: 2,
-            idLvl: 2
-        }
+    constructor(options?: CompareOptions) {
+        this.options = options || CompareOptions.default;
     }
 
     /**
@@ -353,7 +348,7 @@ export class DocumentComparator {
      * @private
      * @static
      */
-    private static async loadDocument(id: string, options: ICompareOptions): Promise<DocumentModel> {
+    private static async loadDocument(id: string, options: CompareOptions): Promise<DocumentModel> {
         let document: any;
 
         document = await DatabaseServer.getVCById(id);
@@ -412,7 +407,7 @@ export class DocumentComparator {
         cacheDocuments: Map<string, DocumentModel>,
         cacheSchemas: Map<string, SchemaModel>,
         id: string,
-        options: ICompareOptions
+        options: CompareOptions
     ): Promise<DocumentModel> {
         if (cacheDocuments.has(id)) {
             return cacheDocuments.get(id);
@@ -463,7 +458,7 @@ export class DocumentComparator {
      * @public
      * @static
      */
-    public static async createModelById(id: string, options: ICompareOptions): Promise<DocumentModel> {
+    public static async createModelById(id: string, options: CompareOptions): Promise<DocumentModel> {
         const cacheDocuments = new Map<string, DocumentModel>();
         const cacheSchemas = new Map<string, SchemaModel>();
         const documentModel = await DocumentComparator.createDocument(

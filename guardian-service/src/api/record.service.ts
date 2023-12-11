@@ -1,4 +1,4 @@
-import { DocumentComparator, ICompareOptions, RecordComparator } from '@analytics';
+import { CompareOptions, DocumentComparator, IChildrenLvl, ICompareOptions, IEventsLvl, IIdLvl, IKeyLvl, IPropertiesLvl, RecordComparator } from '@analytics';
 import { ApiResponse } from '@api/helpers/api-response';
 import {
     BinaryMessageResponse,
@@ -256,13 +256,14 @@ export async function recordAPI(): Promise<void> {
                 .sendPolicyMessage(PolicyEvents.GET_RECORD_RESULTS, policyId, null);
 
             if (details) {
-                const options: ICompareOptions = {
-                    owner: null,
-                    propLvl: 2,
-                    childLvl: 2,
-                    eventLvl: 2,
-                    idLvl: 2
-                };
+                const options = new CompareOptions(
+                    IPropertiesLvl.All,
+                    IChildrenLvl.None,
+                    IEventsLvl.None,
+                    IIdLvl.None,
+                    IKeyLvl.Default,
+                    null
+                );
                 const documents: IRecordResult[] = details.documents;
                 const recorded: IRecordResult[] = details.recorded;
                 const comparator = new RecordComparator();

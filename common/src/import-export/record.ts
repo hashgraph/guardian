@@ -42,6 +42,59 @@ export class RecordImportExport {
     }
 
     /**
+     * Load record results
+     * @param uuid record
+     *
+     * @returns results
+     */
+    public static async loadRecordResults(
+        policyId: string,
+        startTime: any,
+        endTime: any
+    ): Promise<IRecordResult[]> {
+        const results: IRecordResult[] = [];
+        const db = new DatabaseServer(policyId);
+        const vcs = await db.getVcDocuments<any[]>({
+            updateDate: {
+                $gte: new Date(startTime),
+                $lt: new Date(endTime)
+            }
+        });
+        for (const vc of vcs) {
+            results.push({
+                id: vc.document.id,
+                type: 'vc',
+                document: vc.document
+            });
+        }
+        const vps = await db.getVpDocuments<any[]>({
+            updateDate: {
+                $gte: new Date(startTime),
+                $lt: new Date(endTime)
+            }
+        });
+        for (const vp of vps) {
+            results.push({
+                id: vp.document.id,
+                type: 'vp',
+                document: vp.document
+            });
+        }
+        const policy = await DatabaseServer.getPolicyById(policyId);
+        if (policy) {
+            const schemas = await DatabaseServer.getSchemas({ topicId: policy.topicId });
+            for (const schema of schemas) {
+                results.push({
+                    id: schema.contextURL || schema.iri,
+                    type: 'schema',
+                    document: schema.document
+                });
+            }
+        }
+        return results;
+    }
+
+    /**
      * Load record components
      * @param uuid record
      *
@@ -52,37 +105,12 @@ export class RecordImportExport {
         const first = records[0];
         const last = records[records.length - 1];
         const time: any = first ? first.time : null;
-        const results: IRecordResult[] = [];
         if (first && last) {
-            const db = new DatabaseServer(first.policyId);
-            const vcs = await db.getVcDocuments<any[]>({
-                updateDate: {
-                    $gte: new Date(first.time),
-                    $lt: new Date(last.time)
-                }
-            });
-            for (const vc of vcs) {
-                results.push({
-                    id: vc.document.id,
-                    type: 'vc',
-                    document: vc.document
-                });
-            }
-            const vps = await db.getVpDocuments<any[]>({
-                updateDate: {
-                    $gte: new Date(first.time),
-                    $lt: new Date(last.time)
-                }
-            });
-            for (const vp of vps) {
-                results.push({
-                    id: vp.document.id,
-                    type: 'vp',
-                    document: vp.document
-                });
-            }
+            const results = await RecordImportExport.loadRecordResults(first.policyId, first.time, last.time);
+            return { records, time, results };
+        } else {
+            return { records, time, results: [] };
         }
-        return { records, time, results };
     }
 
     /**

@@ -1,4 +1,4 @@
-import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { CompareOptions } from '../interfaces/compare-options.interface';
 import { IRate } from '../interfaces/rate.interface';
 import { Rate } from './rate';
 import { DocumentModel } from '../models/document.model';
@@ -28,7 +28,7 @@ export class RecordRate extends Rate<RecordModel> {
      * @param options - comparison options
      * @public
      */
-    public override calc(options: ICompareOptions): void {
+    public override calc(options: CompareOptions): void {
         this.totalRate = 100;
     }
 

@@ -1,5 +1,5 @@
 import { VcDocument, VpDocument } from '@guardian/common';
-import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { CompareOptions } from '../interfaces/compare-options.interface';
 import { IWeightModel } from '../interfaces/weight-model.interface';
 import { IKeyMap } from '../interfaces/key-map.interface';
 import { WeightType } from '../types/weight.type';
@@ -19,7 +19,7 @@ export class RecordModel implements IWeightModel {
      * Compare Options
      * @public
      */
-    public readonly options: ICompareOptions;
+    public readonly options: CompareOptions;
 
     /**
      * All children
@@ -69,7 +69,7 @@ export class RecordModel implements IWeightModel {
 
 
     constructor(
-        options: ICompareOptions
+        options: CompareOptions
     ) {
         this.options = options;
 
@@ -96,7 +96,7 @@ export class RecordModel implements IWeightModel {
      * Update all weight
      * @public
      */
-    public update(options: ICompareOptions): RecordModel {
+    public update(options: CompareOptions): RecordModel {
         const weights = [];
         const weightMap = {};
         this._hash = ''

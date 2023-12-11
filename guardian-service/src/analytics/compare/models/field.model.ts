@@ -1,5 +1,5 @@
 import MurmurHash3 from 'imurmurhash';
-import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { CompareOptions, IIdLvl, IPropertiesLvl } from '../interfaces/compare-options.interface';
 import { IKeyMap } from '../interfaces/key-map.interface';
 import { IWeightModel } from '../interfaces/weight-model.interface';
 import { PropertyType } from '../types/property.type';
@@ -247,21 +247,20 @@ export class FieldModel implements IWeightModel {
      * @param options - comparison options
      * @public
      */
-    public calcBaseWeight(options: ICompareOptions): void {
+    public calcBaseWeight(options: CompareOptions): void {
         const weights = [];
         const weightMap = {};
 
         let hashState: any;
 
-        if (options.propLvl > -1) {
-            hashState = MurmurHash3();
-            hashState.hash(this.name);
-            const weight = String(hashState.result());
-            weights.push(weight);
-            weightMap[WeightType.SCHEMA_LVL_0] = weight;
-        }
+        // if (options.propLvl > -1) {
+        hashState = MurmurHash3();
+        hashState.hash(this.name);
+        const weight = String(hashState.result());
+        weights.push(weight);
+        weightMap[WeightType.SCHEMA_LVL_0] = weight;
 
-        if (options.propLvl > 0) {
+        if (options.propLvl !== IPropertiesLvl.None) {
             hashState = MurmurHash3();
             hashState.hash(this.description);
             const weight = String(hashState.result());
@@ -269,10 +268,10 @@ export class FieldModel implements IWeightModel {
             weightMap[WeightType.SCHEMA_LVL_1] = weight;
         }
 
-        if (options.propLvl > 0) {
+        if (options.propLvl !== IPropertiesLvl.None) {
             hashState = MurmurHash3();
             hashState.hash(this.description);
-            if (!this.isRef && options.idLvl > 0) {
+            if (!this.isRef && options.idLvl === IIdLvl.All) {
                 hashState.hash(this.type);
             }
             const weight = String(hashState.result());
@@ -280,7 +279,7 @@ export class FieldModel implements IWeightModel {
             weightMap[WeightType.SCHEMA_LVL_2] = weight;
         }
 
-        if (options.propLvl > 0 && options.idLvl > 0) {
+        if (options.propLvl !== IPropertiesLvl.None && options.idLvl === IIdLvl.All) {
             hashState = MurmurHash3();
             hashState.hash(this.name + this.description);
             if (!this.isRef) {
@@ -291,7 +290,7 @@ export class FieldModel implements IWeightModel {
             weightMap[WeightType.SCHEMA_LVL_3] = weight;
         }
 
-        if (options.propLvl > 0) {
+        if (options.propLvl !== IPropertiesLvl.None) {
             hashState = MurmurHash3();
             hashState.hash(
                 this.name +
@@ -309,7 +308,7 @@ export class FieldModel implements IWeightModel {
                 this.remoteLink +
                 this.condition
             );
-            if (!this.isRef && options.idLvl > 0) {
+            if (!this.isRef && options.idLvl === IIdLvl.All) {
                 hashState.hash(this.type);
             }
             if (Array.isArray(this.enum)) {
@@ -506,7 +505,7 @@ export class FieldModel implements IWeightModel {
      * @param options - comparison options
      * @public
      */
-    public update(options: ICompareOptions): void {
+    public update(options: CompareOptions): void {
         if (this._subSchema) {
             this._subSchema.update(options);
         }
@@ -518,7 +517,7 @@ export class FieldModel implements IWeightModel {
      * @param options - comparison options
      * @public
      */
-    public hash(options: ICompareOptions): string {
+    public hash(options: CompareOptions): string {
         return this._weight[0];
     }
 

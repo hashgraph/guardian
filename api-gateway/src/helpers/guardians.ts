@@ -933,6 +933,7 @@ export class Guardians extends NatsService {
         propLvl: any,
         childrenLvl: any,
         idLvl: any,
+        keyLvl: any,
     ) {
         return await this.sendMessage(MessageAPI.COMPARE_DOCUMENTS, {
             type,
@@ -941,7 +942,8 @@ export class Guardians extends NatsService {
             eventsLvl,
             propLvl,
             childrenLvl,
-            idLvl
+            idLvl,
+            keyLvl
         });
     }
 
@@ -2375,7 +2377,7 @@ export class Guardians extends NatsService {
     public async getRecordDetails(policyId: string, owner: string): Promise<any> {
         return await this.sendMessage<any>(MessageAPI.GET_RECORD_DETAILS, { policyId, owner });
     }
-    
+
 }
 
 

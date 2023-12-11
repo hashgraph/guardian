@@ -1,4 +1,4 @@
-import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { CompareOptions } from '../interfaces/compare-options.interface';
 import { AnyPropertyModel, ArrayPropertyModel, ObjectPropertyModel, PropertyModel } from './property.model';
 import { SchemaModel } from './schema.model';
 
@@ -71,7 +71,7 @@ export class DocumentFieldsModel {
      * @param options - comparison options
      * @public
      */
-    public hash(options: ICompareOptions): string {
+    public hash(options: CompareOptions): string {
         const result: string[] = [];
         for (const item of this.fields) {
             const hash = item.hash(options);
@@ -88,7 +88,7 @@ export class DocumentFieldsModel {
      * @param options - comparison options
      * @public
      */
-    public updateSchemas(schemas: SchemaModel[], options: ICompareOptions): void {
+    public updateSchemas(schemas: SchemaModel[], options: CompareOptions): void {
         for (const data of this.fields) {
             const path = this.getRelativePath(data);
             for (const schema of schemas) {
@@ -106,7 +106,7 @@ export class DocumentFieldsModel {
      * Update all weight
      * @public
      */
-    public update(options: ICompareOptions): void {
+    public update(options: CompareOptions): void {
         for (const data of this.fields) {
             data.update(options);
         }

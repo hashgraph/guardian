@@ -1,5 +1,5 @@
 import { VcDocument, VpDocument } from '@guardian/common';
-import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { CompareOptions, IChildrenLvl } from '../interfaces/compare-options.interface';
 import { IWeightModel } from '../interfaces/weight-model.interface';
 import { IKeyMap } from '../interfaces/key-map.interface';
 import { WeightType } from '../types/weight.type';
@@ -38,7 +38,7 @@ export class DocumentModel implements IWeightModel {
      * Compare Options
      * @public
      */
-    public readonly options: ICompareOptions;
+    public readonly options: CompareOptions;
 
     /**
      * Document
@@ -151,7 +151,7 @@ export class DocumentModel implements IWeightModel {
     constructor(
         type: DocumentType,
         document: VcDocument | VpDocument,
-        options: ICompareOptions
+        options: CompareOptions
     ) {
         this.type = type;
         this.options = options;
@@ -197,7 +197,7 @@ export class DocumentModel implements IWeightModel {
      * Update all weight
      * @public
      */
-    public update(options: ICompareOptions): DocumentModel {
+    public update(options: CompareOptions): DocumentModel {
         const weights = [];
         const weightMap = {};
         const hashUtils: HashUtils = new HashUtils();
@@ -252,9 +252,9 @@ export class DocumentModel implements IWeightModel {
             _document = hashUtils.result();
         }
 
-        if (options.childLvl > 1) {
+        if (options.childLvl === IChildrenLvl.All) {
             _children = _children2;
-        } else if (options.childLvl > 0) {
+        } else if (options.childLvl === IChildrenLvl.First) {
             _children = _children1;
         } else {
             _children = '0';
@@ -463,7 +463,7 @@ export class DocumentModel implements IWeightModel {
  * VC Document Model
  */
 export class VcDocumentModel extends DocumentModel {
-    constructor(vc: VcDocument, options: ICompareOptions) {
+    constructor(vc: VcDocument, options: CompareOptions) {
         super(DocumentType.VC, vc, options);
 
         this._relationshipIds = [];
@@ -482,7 +482,7 @@ export class VcDocumentModel extends DocumentModel {
  * VP Document Model
  */
 export class VpDocumentModel extends DocumentModel {
-    constructor(vp: VpDocument, options: ICompareOptions) {
+    constructor(vp: VpDocument, options: CompareOptions) {
         super(DocumentType.VP, vp, options);
 
         this._relationshipIds = [];

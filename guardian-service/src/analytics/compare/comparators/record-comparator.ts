@@ -1,7 +1,7 @@
 import { DatabaseServer, IRecordResult } from '@guardian/common';
 import { CSV } from '../../table/csv';
 import { ReportTable } from '../../table/report-table';
-import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { CompareOptions } from '../interfaces/compare-options.interface';
 import { ICompareResult } from '../interfaces/compare-result.interface';
 import { IMultiCompareResult } from '../interfaces/multi-compare-result.interface';
 import { IReportTable } from '../interfaces/report-table.interface';
@@ -23,15 +23,10 @@ export class RecordComparator {
      * Compare Options
      * @private
      */
-    private readonly options: ICompareOptions;
+    private readonly options: CompareOptions;
 
-    constructor(options?: ICompareOptions) {
-        this.options = {
-            propLvl: 2,
-            childLvl: 2,
-            eventLvl: 2,
-            idLvl: 2
-        }
+    constructor(options?: CompareOptions) {
+        this.options = options || CompareOptions.default;
     }
 
     /**
@@ -379,6 +374,53 @@ export class RecordComparator {
         return 100;
     }
 
+
+    /**
+     * Create document model
+     * @param cacheDocuments
+     * @param cacheSchemas
+     * @param id
+     * @param options
+     * @private
+     * @static
+     */
+    private static async loadSchemas(
+        document: DocumentModel,
+        cacheSchemas: Map<string, SchemaModel>,
+        options: CompareOptions
+    ): Promise<SchemaModel[]> {
+        const schemaModels: SchemaModel[] = [];
+        const schemasIds = document.getSchemas();
+        for (const schemasId of schemasIds) {
+            const iri = schemasId?.replace('schema#', '#');
+            if (cacheSchemas.has(schemasId)) {
+                const schemaModel = cacheSchemas.get(schemasId);
+                if (schemaModel) {
+                    schemaModels.push(schemaModel);
+                }
+            } else if (cacheSchemas.has(iri)) {
+                const schemaModel = cacheSchemas.get(iri);
+                if (schemaModel) {
+                    schemaModels.push(schemaModel);
+                }
+            } else {
+                console.debug('----')
+                const schema = schemasId.startsWith('schema#') ?
+                    await DatabaseServer.getSchema({ iri }) :
+                    await DatabaseServer.getSchema({ contextURL: schemasId });
+                if (schema) {
+                    const schemaModel = new SchemaModel(schema, options);
+                    schemaModel.update(options);
+                    schemaModels.push(schemaModel);
+                    cacheSchemas.set(schemasId, schemaModel);
+                } else {
+                    cacheSchemas.set(schemasId, null);
+                }
+            }
+        }
+        return schemaModels;
+    }
+
     /**
      * Create policy model
      * @param documents
@@ -386,19 +428,32 @@ export class RecordComparator {
      * @public
      * @static
      */
-    public static async createModel(documents: IRecordResult[], options: ICompareOptions): Promise<RecordModel> {
+    public static async createModel(documents: IRecordResult[], options: CompareOptions): Promise<RecordModel> {
         const model = new RecordModel(options);
         const children: DocumentModel[] = [];
+        const cacheSchemas = new Map<string, SchemaModel>();
+        for (const document of documents) {
+            if (document.type === 'schema') {
+                console.debug(' ++++ ', document.id);
+                const schemaModel = new SchemaModel(document.document, options);
+                schemaModel.update(options);
+                cacheSchemas.set(document.id, schemaModel);
+            }
+        }
         for (const document of documents) {
             if (document.type === 'vc') {
                 const child = new VcDocumentModel(document as any, options);
+                const schemaModels = await RecordComparator.loadSchemas(child, cacheSchemas, options);
                 child.setRelationships([]);
+                child.setSchemas(schemaModels);
                 child.update(options);
                 children.push(child);
             }
             if (document.type === 'vp') {
                 const child = new VpDocumentModel(document as any, options);
+                const schemaModels = await RecordComparator.loadSchemas(child, cacheSchemas, options);
                 child.setRelationships([]);
+                child.setSchemas(schemaModels);
                 child.update(options);
                 children.push(child);
             }

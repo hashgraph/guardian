@@ -45,11 +45,11 @@ interface IFieldContext {
 }
 
 @Component({
-    selector: 'app-compare-document',
-    templateUrl: './compare-document.component.html',
-    styleUrls: ['./compare-document.component.scss']
+    selector: 'app-compare-record',
+    templateUrl: './compare-record.component.html',
+    styleUrls: ['./compare-record.component.scss']
 })
-export class CompareDocumentComponent implements OnInit {
+export class CompareRecordComponent implements OnInit {
     @Input('value') value!: any;
     @Input() type: string = 'tree';
     @Input() eventsLvl: string = '1';
@@ -89,7 +89,6 @@ export class CompareDocumentComponent implements OnInit {
     }
 
     ngOnInit() {
-
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -196,14 +195,14 @@ export class CompareDocumentComponent implements OnInit {
         let max = 0;
         const results: ITreeContext<IDocumentContext, IDocumentDetailsContext>[] = [];
 
-        for (let i = 0; i < documents.length; i++) {
+        for (let i = 1; i < documents.length; i++) {
             const currentDoc = documents[i];
             const nextDoc = documents[i + 1];
             const contexts = this.createTreeItemContext(currentDoc);
             const detailContexts = this.createTreeDetailsContext(currentDoc);
             const item: ITreeContext<IDocumentContext, IDocumentDetailsContext> = {
-                index: i,
-                number: i + 1,
+                index: i - 1,
+                number: i,
                 lvl: currentDoc.lvl,
                 hidden: false,
                 collapse: (currentDoc && nextDoc && nextDoc.lvl > currentDoc.lvl) ? 1 : 0,

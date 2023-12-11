@@ -1,8 +1,12 @@
 import {
+    CompareOptions,
     DocumentComparator,
     DocumentModel,
     HashComparator,
+    IChildrenLvl,
     ICompareOptions,
+    IEventsLvl,
+    IPropertiesLvl,
     ModuleComparator,
     ModuleModel,
     PolicyComparator,
@@ -40,12 +44,7 @@ export async function analyticsAPI(): Promise<void> {
                 childrenLvl,
                 idLvl
             } = msg;
-            const options = {
-                propLvl: parseInt(propLvl, 10),
-                childLvl: parseInt(childrenLvl, 10),
-                eventLvl: parseInt(eventsLvl, 10),
-                idLvl: parseInt(idLvl, 10),
-            };
+            const options = new CompareOptions(propLvl, childrenLvl, eventsLvl, idLvl, null, null);
 
             const compareModels: PolicyModel[] = [];
             for (const policyId of ids) {
@@ -91,12 +90,7 @@ export async function analyticsAPI(): Promise<void> {
                 childrenLvl,
                 idLvl
             } = msg;
-            const options = {
-                propLvl: parseInt(propLvl, 10),
-                childLvl: parseInt(childrenLvl, 10),
-                eventLvl: parseInt(eventsLvl, 10),
-                idLvl: parseInt(idLvl, 10),
-            };
+            const options = new CompareOptions(propLvl, childrenLvl, eventsLvl, idLvl, null, null);
 
             //Policy
             const module1 = await DatabaseServer.getModuleById(moduleId1);
@@ -135,15 +129,17 @@ export async function analyticsAPI(): Promise<void> {
                 schemaId2,
                 idLvl
             } = msg;
+            const options = new CompareOptions(
+                IPropertiesLvl.All,
+                IChildrenLvl.None,
+                IEventsLvl.None,
+                idLvl,
+                null,
+                null
+            );
 
             const schema1 = await DatabaseServer.getSchemaById(schemaId1);
             const schema2 = await DatabaseServer.getSchemaById(schemaId2);
-            const options = {
-                propLvl: 2,
-                childLvl: 0,
-                eventLvl: 0,
-                idLvl: parseInt(idLvl, 10)
-            }
 
             const policy1 = await DatabaseServer.getPolicy({ topicId: schema1?.topicId });
             const policy2 = await DatabaseServer.getPolicy({ topicId: schema2?.topicId });
@@ -255,18 +251,17 @@ export async function analyticsAPI(): Promise<void> {
                 eventsLvl,
                 propLvl,
                 childrenLvl,
-                idLvl
+                idLvl,
+                keyLvl
             } = msg;
-            const options: ICompareOptions = {
-                owner: null,
-                propLvl: parseInt(propLvl, 10),
-                childLvl: parseInt(childrenLvl, 10),
-                eventLvl: parseInt(eventsLvl, 10),
-                idLvl: parseInt(idLvl, 10),
-            };
-            if (user?.role === UserRole.STANDARD_REGISTRY) {
-                options.owner = user.did;
-            }
+            const options = new CompareOptions(
+                propLvl,
+                childrenLvl,
+                eventsLvl,
+                idLvl,
+                keyLvl,
+                user?.role === UserRole.STANDARD_REGISTRY ? user.did : null
+            );
 
             const compareModels: DocumentModel[] = [];
             for (const documentsId of ids) {
@@ -315,16 +310,14 @@ export async function analyticsAPI(): Promise<void> {
                 childrenLvl,
                 idLvl
             } = msg;
-            const options: ICompareOptions = {
-                owner: null,
-                propLvl: parseInt(propLvl, 10),
-                childLvl: parseInt(childrenLvl, 10),
-                eventLvl: parseInt(eventsLvl, 10),
-                idLvl: parseInt(idLvl, 10),
-            };
-            if (user?.role === UserRole.STANDARD_REGISTRY) {
-                options.owner = user.did;
-            }
+            const options = new CompareOptions(
+                propLvl,
+                childrenLvl,
+                eventsLvl,
+                idLvl,
+                null,
+                user?.role === UserRole.STANDARD_REGISTRY ? user.did : null
+            );
 
             const compareModels: ToolModel[] = [];
             for (const toolId of ids) {

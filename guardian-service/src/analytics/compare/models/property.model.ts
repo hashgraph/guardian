@@ -1,4 +1,4 @@
-import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { CompareOptions, IIdLvl, IKeyLvl, IPropertiesLvl } from '../interfaces/compare-options.interface';
 import { IProperties } from '../interfaces/properties.interface';
 import { PropertyType } from '../types/property.type';
 import { SchemaModel } from './schema.model';
@@ -99,7 +99,7 @@ export class PropertyModel<T> implements IProperties<T> {
      * @param options - comparison options
      * @public
      */
-    public equal(item: PropertyModel<any>, options: ICompareOptions): boolean {
+    public equal(item: PropertyModel<any>, options: CompareOptions): boolean {
         return this.type === item.type && this._weight === item._weight;
     }
 
@@ -129,8 +129,8 @@ export class PropertyModel<T> implements IProperties<T> {
      * @param options - comparison options
      * @public
      */
-    public hash(options: ICompareOptions): string {
-        if (options.propLvl === 1) {
+    public hash(options: CompareOptions): string {
+        if (options.propLvl === IPropertiesLvl.Simple) {
             if (this.lvl === 1) {
                 return `${this.path}:${this.value}`;
             } else {
@@ -169,10 +169,10 @@ export class PropertyModel<T> implements IProperties<T> {
      * Update all weight
      * @public
      */
-    public update(options: ICompareOptions): void {
-        if (options.idLvl === 2) {
+    public update(options: CompareOptions): void {
+        if (options.keyLvl === IKeyLvl.Description) {
             this._key = this._description;
-        } else if (options.idLvl === 3) {
+        } else if (options.keyLvl === IKeyLvl.Title) {
             this._key = this._title;
         } else {
             this._key = this.path;
@@ -201,8 +201,8 @@ export class UUIDPropertyModel extends PropertyModel<any> {
      * @param options - comparison options
      * @public
      */
-    public hash(options: ICompareOptions): string {
-        if (options.idLvl === 0) {
+    public hash(options: CompareOptions): string {
+        if (options.idLvl === IIdLvl.None) {
             return null;
         }
         return super.hash(options);
@@ -213,8 +213,8 @@ export class UUIDPropertyModel extends PropertyModel<any> {
      * @param item - model
      * @public
      */
-    public override equal(item: PropertyModel<any>, options: ICompareOptions): boolean {
-        if (options.idLvl === 0) {
+    public override equal(item: PropertyModel<any>, options: CompareOptions): boolean {
+        if (options.idLvl === IIdLvl.None) {
             return true;
         } else {
             return this.type === item.type && this.value === item.value;
@@ -331,8 +331,8 @@ export class TokenPropertyModel extends PropertyModel<string> {
      * @param options - comparison options
      * @public
      */
-    public hash(options: ICompareOptions): string {
-        if (options.idLvl === 0 && this.token) {
+    public hash(options: CompareOptions): string {
+        if (options.idLvl === IIdLvl.None && this.token) {
             return `${this.path}:${this.token.hash(options)}`;
         }
         return super.hash(options);
@@ -343,8 +343,8 @@ export class TokenPropertyModel extends PropertyModel<string> {
      * @param item - model
      * @public
      */
-    public override equal(item: PropertyModel<any>, options: ICompareOptions): boolean {
-        if (options.idLvl === 0) {
+    public override equal(item: PropertyModel<any>, options: CompareOptions): boolean {
+        if (options.idLvl === IIdLvl.None) {
             return super.equal(item, options);
         } else {
             return this.type === item.type && this.value === item.value;
@@ -400,8 +400,8 @@ export class SchemaPropertyModel extends PropertyModel<string> {
      * @param options - comparison options
      * @public
      */
-    public hash(options: ICompareOptions): string {
-        if (options.idLvl === 0 && this.schema) {
+    public hash(options: CompareOptions): string {
+        if (options.idLvl === IIdLvl.None && this.schema) {
             return `${this.path}:${this.schema.hash(options)}`;
         }
         return super.hash(options);
@@ -412,8 +412,8 @@ export class SchemaPropertyModel extends PropertyModel<string> {
      * @param item - model
      * @public
      */
-    public override equal(item: PropertyModel<any>, options: ICompareOptions): boolean {
-        if (options.idLvl === 0) {
+    public override equal(item: PropertyModel<any>, options: CompareOptions): boolean {
+        if (options.idLvl === IIdLvl.None) {
             return super.equal(item, options);
         } else {
             return this.type === item.type && this.value === item.value;
