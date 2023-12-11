@@ -8442,6 +8442,88 @@ paths:
       tags: *ref_13
       security:
         - bearerAuth: []
+  /record/{policyId}/running/results:
+    get:
+      operationId: RecordApi_getRecordResults
+      summary: Get running results.
+      description: >-
+        Get running results. Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Object that contains options
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_13
+      security:
+        - bearerAuth: []
+  /record/{policyId}/running/details:
+    get:
+      operationId: RecordApi_getRecordDetails
+      summary: Get running details.
+      description: >-
+        Get running details. Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Object that contains options
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_13
+      security:
+        - bearerAuth: []
   /schemas/type/{type}:
     get:
       tags:
