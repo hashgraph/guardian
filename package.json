@@ -18,7 +18,7 @@
     "api-tests",
     "notification-service"
   ],
-    "version": "2.19.0",
+  "version": "2.19.0",
   "devDependencies": {
     "detect-secrets": "^1.0.6"
   },
