@@ -363,4 +363,8 @@ export class ReportBlockComponent implements OnInit {
         const secondDocumentIndex = (indexDocument - 1) < 0 ? itemDocuments.length + (indexDocument - 1) : (indexDocument - 1);
         this.onMultipleDocumentClick(itemDocuments[secondDocumentIndex], item);
     }
+
+    mintAmount(item: any) {
+        return (item.amount === item.expected) ? item.amount : 'Mint error'
+    }
 }

@@ -71,7 +71,7 @@ export class MintService {
         notifier?: NotificationHelper,
     ): Promise<any[]> {
         const mintNFT = (metaData: string[]): Promise<number[]> =>
-            workers.addNonRetryableTask(
+            workers.addRetryableTask(
                 {
                     type: WorkerTaskType.MINT_NFT,
                     data: {
@@ -84,14 +84,14 @@ export class MintService {
                         transactionMemo,
                     },
                 },
-                1,
+                1, 10
             );
         const transferNFT = (serials: number[]): Promise<number[] | null> => {
             MintService.logger.debug(
                 `Transfer ${token?.tokenId} serials: ${JSON.stringify(serials)}`,
                 ['POLICY_SERVICE', mintId.toString()]
             );
-            return workers.addNonRetryableTask(
+            return workers.addRetryableTask(
                 {
                     type: WorkerTaskType.TRANSFER_NFT,
                     data: {
@@ -108,14 +108,14 @@ export class MintService {
                         transactionMemo,
                     },
                 },
-                1
+                1, 10
             );
         };
         const mintAndTransferNFT = async (metaData: string[]) => {
             try {
                 return await transferNFT(await mintNFT(metaData));
             } catch (e) {
-                throw new Error('Mint and transfer failed: ' + e.message);
+                return null;
             }
         }
         const mintId = Date.now();
@@ -148,7 +148,7 @@ export class MintService {
             try {
                 const results = await Promise.all(dataChunk.map(mintAndTransferNFT));
                 for (const serials of results) {
-                    if (serials) {
+                    if (Array.isArray(serials)) {
                         for (const n of serials) {
                             result.push(n);
                         }
