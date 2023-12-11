@@ -7,6 +7,9 @@
         "@interfaces": "dist/interfaces",
         "@middlewares": "dist/middlewares"
     },
+    "resolutions": {
+        "@azure/core-rest-pipeline": "1.12.1"
+    },
     "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
     "dependencies": {
         "@guardian/common": "^2.19.0",

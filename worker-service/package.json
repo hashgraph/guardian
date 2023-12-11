@@ -1,8 +1,11 @@
 {
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
+  "resolutions": {
+    "@azure/core-rest-pipeline": "1.12.1"
+  },
   "dependencies": {
-      "@guardian/common": "^2.19.0",
-      "@guardian/interfaces": "^2.19.0",
+    "@guardian/common": "^2.19.0",
+    "@guardian/interfaces": "^2.19.0",
     "@hashgraph/sdk": "2.34.1",
     "@nestjs/common": "^9.4.1",
     "@nestjs/core": "^9.4.1",
@@ -59,5 +62,5 @@
     "start": "node dist/index.js",
     "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/worker-service.xml --exit"
   },
-    "version": "2.19.0"
+  "version": "2.19.0"
 }
