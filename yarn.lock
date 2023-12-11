@@ -566,8 +566,8 @@ __metadata:
   linkType: hard
 
 "@azure/core-rest-pipeline@npm:^1.1.0, @azure/core-rest-pipeline@npm:^1.3.0, @azure/core-rest-pipeline@npm:^1.8.0, @azure/core-rest-pipeline@npm:^1.9.1":
-  version: 1.12.0
-  resolution: "@azure/core-rest-pipeline@npm:1.12.0"
+  version: 1.12.1
+  resolution: "@azure/core-rest-pipeline@npm:1.12.1"
   dependencies:
     "@azure/abort-controller": ^1.0.0
     "@azure/core-auth": ^1.4.0
@@ -578,7 +578,7 @@ __metadata:
     http-proxy-agent: ^5.0.0
     https-proxy-agent: ^5.0.0
     tslib: ^2.2.0
-  checksum: f0cb072cfc7b2e6a41f5d048490794f9d8cf16666e1b1f481d6d29523fc3f4e006e40eb1c98950d669f2f637116b61b7a47432cec250b32b43118cecc93d2099
+  checksum: 21ffe73d6a3cef125be313d9259d2752902a065bd59ffcaaae79a99d2851959a8aa01c416a80c21e74240176bedc24e11a30390af3e11b5cad541893188c958e
   languageName: node
   linkType: hard
 

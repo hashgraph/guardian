@@ -6,6 +6,9 @@
     "@auth": "dist/auth",
     "@subscribers": "dist/subscribers"
   },
+  "resolutions": {
+    "@azure/core-rest-pipeline": "1.12.1"
+  },
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
     "@guardian/common": "^2.19.0",
