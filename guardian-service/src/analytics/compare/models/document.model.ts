@@ -476,6 +476,12 @@ export class VcDocumentModel extends DocumentModel {
         this._key = vc.schema;
     }
 
+    public static from(data: any, options: CompareOptions): VcDocumentModel {
+        return new VcDocumentModel({
+            schema: null,
+            document: data
+        } as any, options);
+    }
 }
 
 /**
@@ -493,5 +499,12 @@ export class VpDocumentModel extends DocumentModel {
         }
 
         this._key = vp.type;
+    }
+
+    public static from(data: any, options: CompareOptions): VpDocumentModel {
+        return new VpDocumentModel({
+            type: null,
+            document: data
+        } as any, options);
     }
 }

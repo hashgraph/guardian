@@ -84,80 +84,111 @@ export class CompareOptions {
         owner?: string | null | undefined,
     ) {
         switch (propLvl) {
+            case IPropertiesLvl.None:
             case '0':
             case 0: {
                 this.propLvl = IPropertiesLvl.None;
+                break;
             }
+            case IPropertiesLvl.Simple:
             case '1':
             case 1: {
                 this.propLvl = IPropertiesLvl.Simple;
+                break;
             }
+            case IPropertiesLvl.All:
             case '2':
             case 2: {
                 this.propLvl = IPropertiesLvl.All;
+                break;
             }
             default: {
                 this.propLvl = IPropertiesLvl.All;
+                break;
             }
         }
         switch (childLvl) {
+            case IChildrenLvl.None:
             case '0':
             case 0: {
                 this.childLvl = IChildrenLvl.None;
+                break;
             }
+            case IChildrenLvl.First:
             case '1':
             case 1: {
                 this.childLvl = IChildrenLvl.First;
+                break;
             }
+            case IChildrenLvl.All:
             case '2':
             case 2: {
                 this.childLvl = IChildrenLvl.All;
+                break;
             }
             default: {
                 this.childLvl = IChildrenLvl.All;
+                break;
             }
         }
         switch (eventLvl) {
+            case IEventsLvl.None:
             case '0':
             case 0: {
                 this.eventLvl = IEventsLvl.None;
+                break;
             }
+            case IEventsLvl.All:
             case '1':
             case 1: {
                 this.eventLvl = IEventsLvl.All;
+                break;
             }
             default: {
                 this.eventLvl = IEventsLvl.All;
+                break;
             }
         }
         switch (idLvl) {
+            case IIdLvl.None:
             case '0':
             case 0: {
                 this.idLvl = IIdLvl.None;
+                break;
             }
+            case IIdLvl.All:
             case '1':
             case 1: {
                 this.idLvl = IIdLvl.All;
+                break;
             }
             default: {
                 this.idLvl = IIdLvl.All;
+                break;
             }
         }
         switch (keyLvl) {
+            case IKeyLvl.Default:
             case '0':
             case 0: {
                 this.keyLvl = IKeyLvl.Default;
+                break;
             }
+            case IKeyLvl.Description:
             case '1':
             case 1: {
                 this.keyLvl = IKeyLvl.Description;
+                break;
             }
+            case IKeyLvl.Title:
             case '2':
             case 2: {
                 this.keyLvl = IKeyLvl.Title;
+                break;
             }
             default: {
                 this.keyLvl = IKeyLvl.Default;
+                break;
             }
         }
         this.owner = owner;

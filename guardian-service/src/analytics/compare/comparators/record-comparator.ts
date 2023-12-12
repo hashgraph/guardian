@@ -404,7 +404,6 @@ export class RecordComparator {
                     schemaModels.push(schemaModel);
                 }
             } else {
-                console.debug('----')
                 const schema = schemasId.startsWith('schema#') ?
                     await DatabaseServer.getSchema({ iri }) :
                     await DatabaseServer.getSchema({ contextURL: schemasId });
@@ -434,15 +433,14 @@ export class RecordComparator {
         const cacheSchemas = new Map<string, SchemaModel>();
         for (const document of documents) {
             if (document.type === 'schema') {
-                console.debug(' ++++ ', document.id);
-                const schemaModel = new SchemaModel(document.document, options);
+                const schemaModel = SchemaModel.from(document.document, options);
                 schemaModel.update(options);
                 cacheSchemas.set(document.id, schemaModel);
             }
         }
         for (const document of documents) {
             if (document.type === 'vc') {
-                const child = new VcDocumentModel(document as any, options);
+                const child = VcDocumentModel.from(document.document, options);
                 const schemaModels = await RecordComparator.loadSchemas(child, cacheSchemas, options);
                 child.setRelationships([]);
                 child.setSchemas(schemaModels);
@@ -450,7 +448,7 @@ export class RecordComparator {
                 children.push(child);
             }
             if (document.type === 'vp') {
-                const child = new VpDocumentModel(document as any, options);
+                const child = VpDocumentModel.from(document.document, options);
                 const schemaModels = await RecordComparator.loadSchemas(child, cacheSchemas, options);
                 child.setRelationships([]);
                 child.setSchemas(schemaModels);

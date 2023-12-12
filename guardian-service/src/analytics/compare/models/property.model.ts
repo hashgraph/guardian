@@ -94,6 +94,15 @@ export class PropertyModel<T> implements IProperties<T> {
     }
 
     /**
+     * Ignore comparison
+     * @param options - comparison options
+     * @public
+     */
+    public ignore(options: CompareOptions): boolean {
+        return false;
+    }
+
+    /**
      * Comparison of models using weight
      * @param item - model
      * @param options - comparison options
@@ -418,5 +427,46 @@ export class SchemaPropertyModel extends PropertyModel<string> {
         } else {
             return this.type === item.type && this.value === item.value;
         }
+    }
+}
+
+/**
+ * Document Property
+ */
+export class DocumentPropertyModel extends PropertyModel<any> {
+    /**
+     * Is system fields
+     * @public
+     */
+    private isSystem: boolean;
+
+    constructor(
+        name: string,
+        value: any,
+        lvl?: number,
+        path?: string
+    ) {
+        super(name, PropertyType.Property, value, lvl, path);
+        this.isSystem = (
+            name === '@context' ||
+            name === 'type' ||
+            name === 'policyId' ||
+            name === 'id' ||
+            path === 'proof' ||
+            path === 'issuanceDate' ||
+            path === 'issuer' ||
+            path.includes('@context') ||
+            path.startsWith('proof.') ||
+            path.startsWith('type.')
+        );
+    }
+
+    /**
+     * Ignore comparison
+     * @param options - comparison options
+     * @public
+     */
+    public override ignore(options: CompareOptions): boolean {
+        return this.isSystem && options.idLvl === IIdLvl.None;
     }
 }

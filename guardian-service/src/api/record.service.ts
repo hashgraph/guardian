@@ -266,7 +266,7 @@ export async function recordAPI(): Promise<void> {
                 );
                 const documents: IRecordResult[] = details.documents;
                 const recorded: IRecordResult[] = details.recorded;
-                const comparator = new RecordComparator();
+                const comparator = new RecordComparator(options);
                 const recordedModel = await RecordComparator.createModel(recorded, options);
                 const documentsModel = await RecordComparator.createModel(documents, options);
                 const results = comparator.compare([recordedModel, documentsModel]);

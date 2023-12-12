@@ -1,5 +1,5 @@
 import { CompareOptions } from '../interfaces/compare-options.interface';
-import { AnyPropertyModel, ArrayPropertyModel, ObjectPropertyModel, PropertyModel } from './property.model';
+import { AnyPropertyModel, ArrayPropertyModel, DocumentPropertyModel, ObjectPropertyModel, PropertyModel } from './property.model';
 import { SchemaModel } from './schema.model';
 
 /**
@@ -194,7 +194,7 @@ export class DocumentFieldsModel {
                 return fields;
             }
         } else {
-            fields.push(new AnyPropertyModel(name, value, lvl, path));
+            fields.push(new DocumentPropertyModel(name, value, lvl, path));
             return fields;
         }
     }

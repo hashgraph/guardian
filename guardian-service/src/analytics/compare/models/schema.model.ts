@@ -136,6 +136,16 @@ export class SchemaModel {
         }
     }
 
+    public static from(data: any, options: CompareOptions): SchemaModel {
+        return new SchemaModel({
+            id: data.$id,
+            name: data.title,
+            description: data.description,
+            iri: data.$id,
+            document: data
+        } as any, options);
+    }
+
     /**
      * Convert class to object
      * @public

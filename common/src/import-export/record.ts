@@ -7,7 +7,7 @@ import { DatabaseServer } from '../database-modules';
  */
 export interface IRecordResult {
     id: string;
-    type: string;
+    type: 'vc' | 'vp' | 'schema';
     document: any;
 }
 
@@ -18,6 +18,51 @@ export interface IRecordComponents {
     records: Record[];
     results: IRecordResult[];
     time: number;
+}
+
+/**
+ * Record result
+ */
+export class RecordResult implements IRecordResult {
+    public id: string;
+    public type: 'vc' | 'vp' | 'schema';
+    public document: any;
+
+    constructor(
+        type: 'vc' | 'vp' | 'schema',
+        id: string,
+        document: any
+    ) {
+        this.type = type;
+        this.id = id;
+        this.document = document;
+    }
+
+    public get name(): string {
+        return btoa(`${this.type}|${this.id}`);
+    }
+
+    public get file(): string {
+        return JSON.stringify(this.document);
+    }
+
+    public static from(name: string, json: string): RecordResult {
+        const [type, id] = atob(name).split('|') as any[];
+        const document = JSON.parse(json);
+        return new RecordResult(type, id, document);
+    }
+
+    public static fromObject(item: IRecordResult): RecordResult {
+        return new RecordResult(item.type, item.id, item.document);
+    }
+
+    public toObject(): IRecordResult {
+        return {
+            id: this.id,
+            type: this.type,
+            document: this.document
+        };
+    }
 }
 
 /**
@@ -158,8 +203,9 @@ export class RecordImportExport {
             json += row.join(',') + '\r\n';
         }
 
-        for (const item of components.results) {
-            zip.file(`results/${item.type}|${item.id}`, JSON.stringify(item.document));
+        for (const result of components.results) {
+            const item = RecordResult.fromObject(result)
+            zip.file(`results/${item.name}`, item.file);
         }
 
         zip.file(RecordImportExport.recordFileName, json);
@@ -195,10 +241,8 @@ export class RecordImportExport {
             .filter(file => /^results\/.+/.test(file[0]));
         for (const file of resultFiles) {
             const name = file[0].split('/')[1];
-            const [type, id] = name.split('|');
             const json = await file[1].async('string');
-            const document = JSON.parse(json);
-            results.push({ id, type, document });
+            results.push(RecordResult.from(name, json).toObject());
         }
 
         const records: any[] = [];
