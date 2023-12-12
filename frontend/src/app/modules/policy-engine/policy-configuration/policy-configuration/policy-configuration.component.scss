@@ -1090,6 +1090,10 @@
                 font-size: 12px;
             }
 
+            .propRowCell:has(.remove-prop) {
+                padding-right: 30px;
+            }
+
             .required-fields {
                 position: relative !important;
                 width: 8px !important;

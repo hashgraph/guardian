@@ -12,6 +12,14 @@ In addition to the basic Schema details we also have an option to add Field and 
 
 ![](<../../../.gitbook/assets/image (9) (1) (2) (1).png>)
 
+We can also add Property dropdown field to each field in Schema. these properties are defined by IWA and are in standardized format.
+
+<figure><img src="../../../.gitbook/assets/image (404).png" alt=""><figcaption></figcaption></figure>
+
+We can select respective property for that specific field by searching by entering starting alphabet:
+
+<figure><img src="../../../.gitbook/assets/image (405).png" alt=""><figcaption></figcaption></figure>
+
 We can also customize the Field keys and Field Title by clicking on Advanced Tab.
 
 ![](<../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (1) (1).png>)

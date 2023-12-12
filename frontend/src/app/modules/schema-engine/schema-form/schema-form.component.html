@@ -86,7 +86,7 @@
             </div>
 
             <!-- sub schema -->
-            <div *ngIf="!item.isArray && item.isRef" class="form-field-group sub-schema">
+            <div *ngIf="!item.isArray && item.isRef" [style.display]="item.isAllFieldsHidden ? 'none' : 'block'" class="form-field-group sub-schema">
                 <div class="invalid-field-label" *ngIf="item.control && !item.control.valid && !item.control.disabled">
                     <mat-icon class="invalid-arrow-circle">arrow_circle_right</mat-icon>
                     <span>
@@ -226,7 +226,7 @@
             </div>
 
             <!-- array of sub schemas -->
-            <div *ngIf="item.isArray && item.isRef" class="form-field-group schema-form-field-array-group sub-schemas">
+            <div *ngIf="item.isArray && item.isRef" [style.display]="item.isAllFieldsHidden ? 'none' : 'block'" class="form-field-group schema-form-field-array-group sub-schemas">
                 <div class="invalid-field-label" *ngIf="!item.control.valid && !item.control.disabled">
                     <mat-icon class="invalid-arrow-circle">arrow_circle_right</mat-icon>
                     <span>
@@ -270,9 +270,9 @@
             </div>
         </div>
 
-        <div *ngIf="!delimiterHide" class="delimiter"></div>
+        <div *ngIf="!delimiterHide && !item.hidden" class="delimiter"></div>
 
-        <ng-template [ngIf]="getConditions(item).length > 0">
+        <ng-template [ngIf]="(getConditions(item).length > 0) && !item.hidden">
             <div *ngFor="let condition of getConditions(item)">
                 <app-schema-form
                     *ngIf="condition.ifCondition.fieldValue === options.controls[item.name]?.value; else elseCondition"
