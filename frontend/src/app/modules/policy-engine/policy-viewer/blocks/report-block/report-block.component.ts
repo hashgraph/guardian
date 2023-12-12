@@ -365,6 +365,10 @@ export class ReportBlockComponent implements OnInit {
     }
 
     mintAmount(item: any) {
-        return (item.amount === item.expected) ? item.amount : 'Mint error'
+        let ret = (item.amount === item.expected) ? item.amount : 'Mint error'
+        if (item.amount !== '-1') {
+            ret += ` (${item.amount} of ${item.expected} was complete)`
+        }
+        return ret;
     }
 }

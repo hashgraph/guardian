@@ -392,7 +392,7 @@ export class MintService {
             multipleConfig ? `Multi mint` : `Mint completed`,
             multipleConfig
                 ? `Request to mint is submitted`
-                : `All ${token.tokenName} tokens have been minted and transferred`,
+                : `${token.tokenName} tokens have been minted and transferred`,
             NotificationAction.POLICY_VIEW,
             ref.policyId
         );
@@ -473,7 +473,7 @@ export class MintService {
 
         notifier?.success(
             `Mint completed`,
-            `All ${token.tokenName} tokens have been minted and transferred`
+            `${token.tokenName} tokens have been minted and transferred`
         );
 
         new ExternalEventChannel().publishMessage(
