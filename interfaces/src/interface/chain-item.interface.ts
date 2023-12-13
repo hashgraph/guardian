@@ -173,9 +173,13 @@ export interface ITokenReport {
      */
     date: string;
     /**
+     * Token expected
+     */
+    expected?: string;
+    /**
      * Token amount
      */
-    amount: string;
+    amount?: string;
     /**
      * Report tag
      */
