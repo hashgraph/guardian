@@ -14,6 +14,34 @@ import { MessageAPI, PolicyEvents, PolicyType } from '@guardian/interfaces';
 import { GuardiansService } from '@helpers/guardians';
 
 /**
+ * Compare results
+ * @param policyId
+ * @param owner
+ */
+export async function compareResults(details: any): Promise<any> {
+    if (details) {
+        const options = new CompareOptions(
+            IPropertiesLvl.All,
+            IChildrenLvl.None,
+            IEventsLvl.None,
+            IIdLvl.None,
+            IKeyLvl.Default,
+            null
+        );
+        const documents: IRecordResult[] = details.documents;
+        const recorded: IRecordResult[] = details.recorded;
+        const comparator = new RecordComparator(options);
+        const recordedModel = await RecordComparator.createModel(recorded, options);
+        const documentsModel = await RecordComparator.createModel(documents, options);
+        const results = comparator.compare([recordedModel, documentsModel]);
+        const result = results[0];
+        return result;
+    } else {
+        return null;
+    }
+}
+
+/**
  * Check policy
  * @param policyId
  * @param owner
@@ -226,9 +254,35 @@ export async function recordAPI(): Promise<void> {
             await checkPolicy(policyId, owner);
 
             const guardiansService = new GuardiansService();
-            const result = await guardiansService
+            const details: any = await guardiansService
                 .sendPolicyMessage(PolicyEvents.GET_RECORD_RESULTS, policyId, null);
-            return new MessageResponse(result);
+
+            const report = await compareResults(details);
+            const total = report?.total;
+            const info = report?.right;
+            const table = report?.documents?.report || [];
+
+            const documents = [];
+            for (let i = 1; i < table.length; i++) {
+                const row = table[i];
+                if (row.right) {
+                    const index = row.right.attributes;
+                    const document = details?.documents?.[index];
+                    documents.push({
+                        type: row.document_type,
+                        rate: row.total_rate,
+                        schema: row.right_schema,
+                        document
+                    })
+                }
+            }
+
+            return new MessageResponse({
+                info,
+                total,
+                details,
+                documents
+            });
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
@@ -255,26 +309,8 @@ export async function recordAPI(): Promise<void> {
             const details: any = await guardiansService
                 .sendPolicyMessage(PolicyEvents.GET_RECORD_RESULTS, policyId, null);
 
-            if (details) {
-                const options = new CompareOptions(
-                    IPropertiesLvl.All,
-                    IChildrenLvl.None,
-                    IEventsLvl.None,
-                    IIdLvl.None,
-                    IKeyLvl.Default,
-                    null
-                );
-                const documents: IRecordResult[] = details.documents;
-                const recorded: IRecordResult[] = details.recorded;
-                const comparator = new RecordComparator(options);
-                const recordedModel = await RecordComparator.createModel(recorded, options);
-                const documentsModel = await RecordComparator.createModel(documents, options);
-                const results = comparator.compare([recordedModel, documentsModel]);
-                const result = results[0];
-                return new MessageResponse(result);
-            } else {
-                return new MessageResponse(null);
-            }
+            const result = await compareResults(details);
+            return new MessageResponse(result);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);

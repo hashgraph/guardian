@@ -1,4 +1,4 @@
-import { VcDocument, VpDocument } from '@guardian/common';
+import { IRecordResult, VcDocument, VpDocument } from '@guardian/common';
 import { CompareOptions } from '../interfaces/compare-options.interface';
 import { IWeightModel } from '../interfaces/weight-model.interface';
 import { IKeyMap } from '../interfaces/key-map.interface';
@@ -52,6 +52,18 @@ export class RecordModel implements IWeightModel {
     private _hash: string;
 
     /**
+     * Count
+     * @private
+     */
+    private _count: number;
+
+    /**
+     * Tokens
+     * @private
+     */
+    private _tokens: number;
+
+    /**
      * Children
      * @public
      */
@@ -76,6 +88,48 @@ export class RecordModel implements IWeightModel {
         this._weight = [];
         this._weightMap = {};
         this._hash = '';
+    }
+
+    private findToken(document: IRecordResult): number {
+        try {
+            const vp = document?.document;
+            const vcs = vp?.verifiableCredential || [];
+            const mintIndex = Math.max(1, vcs.length - 1);
+            const mint = vcs[mintIndex];
+            if (mint && mint.credentialSubject) {
+                if (Array.isArray(mint.credentialSubject)) {
+                    return mint.credentialSubject[0].amount;
+                } else {
+                    return mint.credentialSubject.amount;
+                }
+            } else {
+                return 0;
+            }
+        } catch (error) {
+            return 0;
+        }
+    }
+
+    /**
+     * Set documents
+     * @param children
+     * @public
+     */
+    public setDocuments(documents: IRecordResult[]): RecordModel {
+        this._count = 0;
+        this._tokens = 0;
+        if (Array.isArray(documents)) {
+            for (const document of documents) {
+                if (document.type === 'vc') {
+                    this._count++;
+                }
+                if (document.type === 'vp') {
+                    this._count++;
+                    this._tokens += this.findToken(document);
+                }
+            }
+        }
+        return this;
     }
 
     /**
@@ -187,6 +241,8 @@ export class RecordModel implements IWeightModel {
      */
     public toObject(): any {
         return {
+            documents: this._count,
+            tokens: this._tokens,
         }
     }
 
@@ -196,6 +252,8 @@ export class RecordModel implements IWeightModel {
      */
     public info(): any {
         return {
-        };
+            documents: this._count,
+            tokens: this._tokens,
+        }
     }
 }

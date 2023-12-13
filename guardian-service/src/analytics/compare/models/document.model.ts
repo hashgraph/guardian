@@ -125,6 +125,12 @@ export class DocumentModel implements IWeightModel {
     private readonly _options: PropertiesModel;
 
     /**
+     * Attributes
+     * @private
+     */
+    private _attributes: any;
+
+    /**
      * Children
      * @public
      */
@@ -148,6 +154,14 @@ export class DocumentModel implements IWeightModel {
         return this._relationshipIds;
     }
 
+    /**
+     * Attributes
+     * @public
+     */
+    public get attributes(): any {
+        return this._attributes;
+    }
+
     constructor(
         type: DocumentType,
         document: VcDocument | VpDocument,
@@ -167,6 +181,16 @@ export class DocumentModel implements IWeightModel {
         this._weight = [];
         this._weightMap = {};
         this._hash = '';
+    }
+
+    /**
+     * Set attributes
+     * @param schemas
+     * @public
+     */
+    public setAttributes(attributes: any): DocumentModel {
+        this._attributes = attributes;
+        return this;
     }
 
     /**
@@ -420,6 +444,7 @@ export class DocumentModel implements IWeightModel {
             key: this.key,
             owner: this.owner,
             policy: this.policy,
+            attributes: this.attributes,
             document,
             options
         }

@@ -5,10 +5,8 @@ import { ITableColumns } from '../interfaces/table-columns.interface';
 import { ITreeItemContext } from '../interfaces/tree-item-context.interface';
 
 interface IInfoContext {
-    id: string;
-    type: string;
-    owner: string;
-    policy: string;
+    documents: string;
+    tokens: string;
 }
 
 interface IDocumentContext {
@@ -66,6 +64,8 @@ export class CompareRecordComponent implements OnInit {
     public totals: number[];
     public resultContext: IResultContext<IInfoContext>[] | null;
     public treeContext: ITreeContext<IDocumentContext, IDocumentDetailsContext>[] | null;
+    public totalRate: number;
+
 
     public columns: ITableColumns[] = [];
     public displayedColumns: string[] = [];
@@ -108,6 +108,7 @@ export class CompareRecordComponent implements OnInit {
             this._gridStyle += ` 35px max(calc(${k}vw - 45px), 720px)`;
         }
 
+        this.totalRate = this.value?.total;
         this.createHeaders(this.value);
         this.resultContext = this.createResultContext(this.value);
         this.treeContext = this.createTreeContext(this.value.documents?.report);

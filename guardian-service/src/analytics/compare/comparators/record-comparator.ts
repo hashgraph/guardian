@@ -429,6 +429,8 @@ export class RecordComparator {
      */
     public static async createModel(documents: IRecordResult[], options: CompareOptions): Promise<RecordModel> {
         const model = new RecordModel(options);
+        model.setDocuments(documents);
+
         const children: DocumentModel[] = [];
         const cacheSchemas = new Map<string, SchemaModel>();
         for (const document of documents) {
@@ -438,10 +440,12 @@ export class RecordComparator {
                 cacheSchemas.set(document.id, schemaModel);
             }
         }
-        for (const document of documents) {
+        for (let index = 0; index < documents.length; index++) {
+            const document = documents[index];
             if (document.type === 'vc') {
                 const child = VcDocumentModel.from(document.document, options);
                 const schemaModels = await RecordComparator.loadSchemas(child, cacheSchemas, options);
+                child.setAttributes(index);
                 child.setRelationships([]);
                 child.setSchemas(schemaModels);
                 child.update(options);
@@ -450,6 +454,7 @@ export class RecordComparator {
             if (document.type === 'vp') {
                 const child = VpDocumentModel.from(document.document, options);
                 const schemaModels = await RecordComparator.loadSchemas(child, cacheSchemas, options);
+                child.setAttributes(index);
                 child.setRelationships([]);
                 child.setSchemas(schemaModels);
                 child.update(options);

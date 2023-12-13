@@ -1,4 +1,8 @@
 <div class="content" [style.min-width.px]="minWidth">
+    <div *ngIf="!headers.length && type==='tree'" class="total-info" [attr.total]="totalRate">
+        Documents are <span>{{totalRate}}%</span> the same.
+    </div>
+   
     <div *ngIf="headers.length && type==='tree'" class="item-headers" [style.grid-template-columns]="_gridStyle">
         <div *ngFor="let item of headers" [style.grid-column-start]="item.column" class="item-header">
             <span class="item-header-name">
@@ -180,15 +184,15 @@
 
 <ng-template #resultInfo let-data="data">
     <div *ngIf="_toInfoContext(data); let data" class="result-info">
+        <div class="result-info-field">
+            <div class="result-info-field-name">Documents</div>
+            <div class="result-info-field-value">{{data.documents}}</div>
+        </div>
+        <div class="result-info-field">
+            <div class="result-info-field-name">Tokens</div>
+            <div class="result-info-field-value">{{data.tokens}}</div>
+        </div>
         <!-- <div class="result-info-field">
-            <div class="result-info-field-name">ID</div>
-            <div class="result-info-field-value">{{data.id}}</div>
-        </div>
-        <div class="result-info-field">
-            <div class="result-info-field-name">Type</div>
-            <div class="result-info-field-value">{{data.type}}</div>
-        </div>
-        <div class="result-info-field">
             <div class="result-info-field-name">Owner</div>
             <div class="result-info-field-value">{{data.owner}}</div>
         </div>
@@ -201,10 +205,10 @@
 
 <ng-template #resultDetails let-data="data">
     <div *ngIf="_toDetailsContext(data); let data" class="prop-container">
-        <div class="prop">
+        <!-- <div class="prop">
             <div class="prop-name">Options Rate: </div>
             <div class="prop-value" [attr.rate]="data.optionsRate">{{data.optionsRate}}</div>
-        </div>
+        </div> -->
         <div class="prop">
             <div class="prop-name">Document Rate: </div>
             <div class="prop-value" [attr.rate]="data.documentRate">{{data.documentRate}}</div>
@@ -273,7 +277,7 @@
 
         <div class="prop-delimiter"></div>
 
-        <div class="prop-table">
+        <!-- <div class="prop-table">
             <div class="prop-table-header">Attributes: </div>
             <div class="prop-table-body">
                 <div *ngFor="let attribute of data.attributes" class="prop-table-row" 
@@ -295,6 +299,6 @@
             </div>
         </div>  
 
-        <div class="prop-delimiter"></div>
+        <div class="prop-delimiter"></div> -->
     </div>
 </ng-template>

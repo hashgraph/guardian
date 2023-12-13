@@ -9,6 +9,22 @@
     padding-left: 30px;
 }
 
+.total-info {
+    padding: 10px 22px;
+    font-weight: bold;
+    font-size: 20px;
+    margin-bottom: 5px;
+    color: #686868;
+
+    span {
+        color: #e70000;
+    }
+    
+    &[total="100"] span {
+        color: #008d0c;
+    }
+}
+
 .header {
     font-weight: bold;
     color: #3f51b5;

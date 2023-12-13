@@ -14,14 +14,33 @@
             <div *ngIf="loading" class="loading">
                 <mat-spinner></mat-spinner>
             </div>
-            <div class="header">{{text}}</div>
+            <!-- <div class="header">{{text}}</div> -->
             <div *ngIf="results" class="results">
                 <div class="results-header">
-                    Created documents.
+                    Common
+                </div>
+
+                <div class="results-info">
+                    <div class="results-info-header">Created documents:</div>
+                    <div>{{info.documents}}</div>
+                </div>
+                <div class="results-info">
+                    <div class="results-info-header">Minted tokens:</div>
+                    <div>{{info.tokens}}</div>
+                </div>
+                <div class="results-info">
+                    <div class="results-info-header">Total rate:</div>
+                    <div [attr.rate-color]="total">{{total}}%</div>
+                </div>
+
+                <div class="results-header">
+                    Documents
                 </div>
                 <div class="results-body">
-                    <div *ngFor="let item of results.documents; let i=index" class="results-item">
+                    <div *ngFor="let item of results; let i=index" class="results-item">
                         <div class="document-type">{{item.type}}</div>
+                        <div class="document-schema">{{item.schema}}</div>
+                        <div class="document-rate" [attr.rate-color]="item.rate">{{item.rate}}</div>
                         <div class="document-view">
                             <a (click)="openDocument(item)">View Document</a>
                         </div>

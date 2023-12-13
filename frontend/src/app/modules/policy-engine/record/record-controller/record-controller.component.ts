@@ -305,7 +305,7 @@ export class RecordControllerComponent implements OnInit {
 
     public showResult() {
         this._resultDialog = this.dialog.open(RecordResultDialog, {
-            width: '600px',
+            width: '700px',
             panelClass: 'g-dialog',
             autoFocus: false,
             disableClose: true,
