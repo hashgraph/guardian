@@ -364,14 +364,6 @@ export class ReportBlockComponent implements OnInit {
         this.onMultipleDocumentClick(itemDocuments[secondDocumentIndex], item);
     }
 
-    mintAmount(item: any) {
-        let ret = (item.amount === item.expected) ? item.amount : 'Mint error'
-        if (item.amount !== '-1') {
-            ret += ` (${item.amount} of ${item.expected} were successfully minted)`
-        }
-        return ret;
-    }
-
     mintError(item: any): boolean {
         return item.amount !== item.expected
     }

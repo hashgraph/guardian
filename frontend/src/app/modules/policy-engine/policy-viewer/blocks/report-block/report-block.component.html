@@ -56,7 +56,11 @@
                         <div class="vp-field">
                             <div class="vp-field-label">Token amount</div>
                             <div [ngClass]="{'mint-error': mintError(item.mintDocument)}"
-                                 class="vp-field-value">{{ mintAmount(item.mintDocument) }}
+                                 class="vp-field-value">
+                                <span class="mint-amount">{{ item.mintDocument.amount }}</span>
+                                <span>/</span>
+                                <span class="mint-expected">{{ item.mintDocument.expected }}</span>
+                                <span> minted</span>
                             </div>
                         </div>
                         <div class="vp-field">

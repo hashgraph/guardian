@@ -106,7 +106,11 @@ a[disabled="true"] {
     color: #f44336;
 }
 
-.mint-error {
+.mint-amount {
+    color: #00a100;
+}
+
+.mint-error .mint-amount {
     color: #f44336;
 }
 
