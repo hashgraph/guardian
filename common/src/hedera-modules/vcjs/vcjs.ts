@@ -458,14 +458,12 @@ export class VCJS {
             id = this.generateUUID();
         }
 
-        let hasBBSSignature: boolean = false;
+        const hasBBSSignature: boolean = suiteOptions.signatureType === SignatureType.BbsBlsSignature2020;
         let suite: Ed25519Signature2018 | BbsBlsSignature2020;
-        if (suiteOptions.signatureType === SignatureType.BbsBlsSignature2020) {
-            hasBBSSignature = true;
+        if (hasBBSSignature) {
             const keyDocument = await BBSDidRootKey.createByPrivateKey(suiteOptions.did, suiteOptions.key);
             suite = await this.createSuite(keyDocument);
         } else {
-            hasBBSSignature = false;
             const keyDocument = DidRootKey.createByPrivateKey(suiteOptions.did, suiteOptions.key);
             suite = await this.createSuite(keyDocument);
         }
@@ -518,14 +516,12 @@ export class VCJS {
             id = this.generateUUID();
         }
 
-        let hasBBSSignature: boolean = false;
+        const hasBBSSignature: boolean = vc.getContext().includes(VcDocument.BBS_SIGNATURE_CONTEXT);
         let suite: Ed25519Signature2018 | BbsBlsSignature2020;
-        if (vc.getContext().includes(VcDocument.BBS_SIGNATURE_CONTEXT)) {
-            hasBBSSignature = true;
+        if (hasBBSSignature) {
             const keyDocument = await BBSDidRootKey.createByPrivateKey(suiteOptions.did, suiteOptions.key);
             suite = await this.createSuite(keyDocument);
         } else {
-            hasBBSSignature = false;
             const keyDocument = DidRootKey.createByPrivateKey(suiteOptions.did, suiteOptions.key);
             suite = await this.createSuite(keyDocument);
         }
@@ -535,6 +531,7 @@ export class VCJS {
         vc.setProof(null);
         vc = await this.issue(vc, suite, this.loader);
         return vc;
+
     }
 
     /**

@@ -1,4 +1,4 @@
-import { CompareOptions, DocumentComparator, IChildrenLvl, ICompareOptions, IEventsLvl, IIdLvl, IKeyLvl, IPropertiesLvl, RecordComparator } from '@analytics';
+import { CompareOptions, IChildrenLvl, IEventsLvl, IIdLvl, IKeyLvl, IPropertiesLvl, RecordComparator } from '@analytics';
 import { ApiResponse } from '@api/helpers/api-response';
 import {
     BinaryMessageResponse,
@@ -134,7 +134,7 @@ export async function recordAPI(): Promise<void> {
                 throw new Error('Invalid record');
             }
 
-            const items = await DatabaseServer.getRecord({ policyId: policyId, method: 'STOP' });
+            const items = await DatabaseServer.getRecord({ policyId, method: 'STOP' });
             const uuid = items[items.length - 1]?.uuid;
 
             const zip = await RecordImportExport.generate(uuid);
@@ -209,7 +209,6 @@ export async function recordAPI(): Promise<void> {
             return new MessageError(error);
         }
     });
-
 
     /**
      * Stop running

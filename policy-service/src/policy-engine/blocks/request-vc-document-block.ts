@@ -1,4 +1,4 @@
-import { CheckResult, GenerateUUIDv4, removeObjectProperties, Schema, SchemaHelper } from '@guardian/interfaces';
+import { CheckResult, removeObjectProperties, Schema, SchemaHelper } from '@guardian/interfaces';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { BlockActionError } from '@policy-engine/errors';
 import { ActionCallback, StateField } from '@policy-engine/helpers/decorators';
@@ -6,7 +6,7 @@ import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyRequestBlock, 
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { EventBlock } from '@policy-engine/helpers/decorators/event-block';
-import { DIDDocument, DIDMessage, KeyType, MessageAction, MessageServer, VcDocument as VcDocumentCollection, VcHelper, } from '@guardian/common';
+import { DIDMessage, KeyType, MessageAction, MessageServer, VcDocument as VcDocumentCollection, VcHelper, } from '@guardian/common';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';

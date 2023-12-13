@@ -21,4 +21,3 @@ export function GenerateID() {
         return v.toString(16);
     });
 }
-

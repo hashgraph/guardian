@@ -1,5 +1,5 @@
 import { CompareOptions } from '../interfaces/compare-options.interface';
-import { AnyPropertyModel, ArrayPropertyModel, DocumentPropertyModel, ObjectPropertyModel, PropertyModel } from './property.model';
+import { ArrayPropertyModel, DocumentPropertyModel, ObjectPropertyModel, PropertyModel } from './property.model';
 import { SchemaModel } from './schema.model';
 
 /**

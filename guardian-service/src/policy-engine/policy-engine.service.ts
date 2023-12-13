@@ -18,10 +18,8 @@ import {
     NatsService,
     Policy,
     PolicyImportExport,
-    RecordImportExport,
     RunFunctionAsync,
     Singleton,
-    TopicConfig,
     Users
 } from '@guardian/common';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';

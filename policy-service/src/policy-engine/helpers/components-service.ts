@@ -1,19 +1,14 @@
 import {
     DIDDocument,
-    DIDMessage,
     DatabaseServer,
-    KeyType,
-    MessageAction,
-    MessageServer,
     Policy as PolicyCollection,
     PolicyTool as PolicyToolCollection,
     Schema as SchemaCollection
 } from '@guardian/common';
 import { GenerateUUIDv4, PolicyType, SchemaEntity } from '@guardian/interfaces';
-import { IPolicyBlock, IPolicyInstance, IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
+import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { Recording, Running } from '@policy-engine/record';
-import { PolicyUtils } from './utils';
 
 export class ComponentsService {
     public readonly topicId: string;

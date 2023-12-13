@@ -438,7 +438,7 @@ export class DocumentPropertyModel extends PropertyModel<any> {
      * Is system fields
      * @public
      */
-    private isSystem: boolean;
+    private readonly isSystem: boolean;
 
     constructor(
         name: string,

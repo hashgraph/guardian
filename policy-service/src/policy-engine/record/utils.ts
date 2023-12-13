@@ -1,4 +1,4 @@
-import { RecordItem } from "./record-item";
+import { RecordItem } from './record-item';
 
 export interface IGenerateValue<T> {
     readonly oldValue: T;
@@ -125,7 +125,7 @@ export class Utils {
      * @param obj
      * @param results
      */
-    public static _findAllDocuments(obj: any, results: RowDocument[], parent: any, key: any): void {
+    public static _findAllDocuments(obj: any, results: RowDocument[], parent: any, parentKey: any): void {
         if (obj && typeof obj === 'object') {
             if (Array.isArray(obj)) {
                 for (let i = 0; i < obj.length; i++) {
@@ -133,7 +133,7 @@ export class Utils {
                 }
             } else {
                 if (RowDocument.check(obj)) {
-                    results.push(new RowDocument(obj, parent, key));
+                    results.push(new RowDocument(obj, parent, parentKey));
                 } else {
                     const keys = Object.keys(obj);
                     for (const key of keys) {

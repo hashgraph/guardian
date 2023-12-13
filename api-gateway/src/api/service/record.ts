@@ -1,14 +1,10 @@
-import { PolicyType, TaskAction, UserRole } from '@guardian/interfaces';
+import { PolicyType, UserRole } from '@guardian/interfaces';
 import { PolicyEngine } from '@helpers/policy-engine';
-import { Users } from '@helpers/users';
-import { AuthenticatedRequest, Logger, RunFunctionAsync } from '@guardian/common';
-import { TaskManager } from '@helpers/task-manager';
-import { ServiceError } from '@helpers/service-requests-base';
-import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, RawBodyRequest, Req, Response } from '@nestjs/common';
+import { Logger } from '@guardian/common';
+import { Controller, Get, HttpCode, HttpException, HttpStatus, Post, Req, Response } from '@nestjs/common';
 import { checkPermission } from '@auth/authorization-helper';
-import { ApiBody, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath } from '@nestjs/swagger';
+import { ApiBody, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
-import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator';
 import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator';
 import { Guardians } from '@helpers/guardians';
 
@@ -309,8 +305,6 @@ export class RecordApi {
         }
     }
 
-
-
     /**
      * Stop running
      */
@@ -467,141 +461,4 @@ export class RecordApi {
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // @ApiOperation({
-    //     summary: 'Return policy and its artifacts in a zip file format for the specified policy.',
-    //     description: 'Returns a zip file containing the published policy and all associated artifacts, i.e. schemas and VCs. Only users with the Standard Registry role are allowed to make the request.',
-    // })
-    // @ApiSecurity('bearerAuth')
-    // @ApiOkResponse({
-    //     description: 'Successful operation.',
-    //     schema: {
-    //         'type': 'object'
-    //     },
-    // })
-    // @ApiInternalServerErrorResponse({
-    //     description: 'Internal server error.',
-    //     schema: {
-    //         $ref: getSchemaPath(InternalServerErrorDTO)
-    //     }
-    // })
-    // @ApiSecurity('bearerAuth')
-    // @Get('/:policyId/record/export/:uuid')
-    // @HttpCode(HttpStatus.OK)
-    // async exportRecord(@Req() req, @Response() res): Promise<any> {
-    //     await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-    //     const engineService = new PolicyEngine();
-    //     try {
-    //         const policyFile: any = await engineService.exportRecord(
-    //             req.params.policyId,
-    //             req.params.uuid,
-    //             req.user.did
-    //         );
-    //         const name = req.params.uuid || 'last';
-    //         res.setHeader('Content-disposition', `attachment; filename=${name}`);
-    //         res.setHeader('Content-type', 'application/zip');
-    //         return res.send(policyFile);
-    //     } catch (error) {
-    //         new Logger().error(error, ['API_GATEWAY']);
-    //         throw error
-    //     }
-    // }
-
-    // @Get('/:policyId/record')
-    // @HttpCode(HttpStatus.OK)
-    // async getRecordStatus(@Req() req, @Response() res) {
-    //     await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-    //     const engineService = new PolicyEngine();
-    //     let policy: any;
-    //     try {
-    //         policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
-    //     } catch (error) {
-    //         new Logger().error(error, ['API_GATEWAY']);
-    //         throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-    //     }
-    //     if (!policy) {
-    //         throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
-    //     }
-    //     if (policy.owner !== req.user.did) {
-    //         throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
-    //     }
-    //     try {
-    //         const result = await engineService.getRecordStatus(req.params.policyId);
-    //         return res.json(result);
-    //     } catch (error) {
-    //         new Logger().error(error, ['API_GATEWAY']);
-    //         throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-    //     }
-    // }
-
-    // @Get('/:policyId/record/:recordId')
-    // @HttpCode(HttpStatus.OK)
-    // async getRecord(@Req() req, @Response() res) {
-    //     await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-    //     const engineService = new PolicyEngine();
-    //     let policy: any;
-    //     try {
-    //         policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
-    //     } catch (error) {
-    //         new Logger().error(error, ['API_GATEWAY']);
-    //         throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-    //     }
-    //     if (!policy) {
-    //         throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
-    //     }
-    //     if (policy.owner !== req.user.did) {
-    //         throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
-    //     }
-    //     try {
-    //         const result = await engineService.getRecord(
-    //             req.params.policyId,
-    //             req.params.recordId
-    //         );
-    //         return res.json(result);
-    //     } catch (error) {
-    //         new Logger().error(error, ['API_GATEWAY']);
-    //         throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-    //     }
-    // }
-
-
-    //recording/start   :policyId
-    //recording/stop    :policyId
-    //recording/status  :policyId
-    //recording/actions :policyId
-
-    //recording/start
-    //recording/stop
-    //recording/status
-    //recording/actions
-
 }

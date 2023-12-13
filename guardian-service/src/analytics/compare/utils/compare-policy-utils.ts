@@ -155,9 +155,9 @@ export class ComparePolicyUtils {
         rate.calc(options);
 
         const createRate = (document1: DocumentModel, document2: DocumentModel) => {
-            const rate = new DocumentsRate(document1, document2);
-            rate.calc(options);
-            return rate;
+            const _rate = new DocumentsRate(document1, document2);
+            _rate.calc(options);
+            return _rate;
         }
         if (tree1.equal(tree2)) {
             rate.type = Status.FULL;

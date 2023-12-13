@@ -6,7 +6,6 @@ import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfac
 import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { BlockActionError } from '@policy-engine/errors';
-import { GenerateUUIDv4 } from '@guardian/interfaces';
 import {
     PolicyRoles,
     VcDocument as VcDocumentCollection,

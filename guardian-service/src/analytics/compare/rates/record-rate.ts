@@ -1,12 +1,6 @@
 import { CompareOptions } from '../interfaces/compare-options.interface';
 import { IRate } from '../interfaces/rate.interface';
 import { Rate } from './rate';
-import { DocumentModel } from '../models/document.model';
-import { CompareUtils } from '../utils/utils';
-import { IRateMap } from '../interfaces/rate-map.interface';
-import { Status } from '../types/status.type';
-import { PropertyModel } from '../models/property.model';
-import { PropertiesRate } from './properties-rate';
 import { DocumentsRate } from './documents-rate';
 import { RecordModel } from '../models/record.model';
 

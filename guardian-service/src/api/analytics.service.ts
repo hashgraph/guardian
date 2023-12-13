@@ -4,7 +4,6 @@ import {
     DocumentModel,
     HashComparator,
     IChildrenLvl,
-    ICompareOptions,
     IEventsLvl,
     IPropertiesLvl,
     ModuleComparator,

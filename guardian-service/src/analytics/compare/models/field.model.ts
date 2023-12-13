@@ -253,12 +253,13 @@ export class FieldModel implements IWeightModel {
 
         let hashState: any;
 
-        // if (options.propLvl > -1) {
-        hashState = MurmurHash3();
-        hashState.hash(this.name);
-        const weight = String(hashState.result());
-        weights.push(weight);
-        weightMap[WeightType.SCHEMA_LVL_0] = weight;
+        if (options.propLvl) {
+            hashState = MurmurHash3();
+            hashState.hash(this.name);
+            const weight = String(hashState.result());
+            weights.push(weight);
+            weightMap[WeightType.SCHEMA_LVL_0] = weight;
+        }
 
         if (options.propLvl !== IPropertiesLvl.None) {
             hashState = MurmurHash3();

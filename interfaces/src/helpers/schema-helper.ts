@@ -1,4 +1,4 @@
-import { ISchema, ISchemaDocument, SchemaCondition, SchemaField, SchemaStatus } from '..';
+import { ISchema, ISchemaDocument, SchemaCondition, SchemaField } from '..';
 import { SchemaDataTypes } from '../interface/schema-document.interface';
 import { Schema } from '../models/schema';
 import geoJson from './geojson-schema/geo-json';
@@ -922,18 +922,5 @@ export class SchemaHelper {
             result += ` (${status})`;
         }
         return result;
-    }
-
-    /**
-     * Generate new document
-     * @param schema schema
-     * @returns document
-     */
-    public static generateDocument(schema: Schema): any {
-        const type = schema.type;
-        const context = [schema.iri];
-        const draft = schema.status !== SchemaStatus.PUBLISHED;
-
-        
     }
 }

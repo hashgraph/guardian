@@ -4,7 +4,7 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
 import { AnyBlockType, IPolicyDocument } from '@policy-engine/policy-engine.interface';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { BlockActionError } from '@policy-engine/errors';
-import { GenerateUUIDv4, SchemaCategory, SchemaHelper, SchemaStatus, TagType } from '@guardian/interfaces';
+import { SchemaCategory, SchemaHelper, SchemaStatus, TagType } from '@guardian/interfaces';
 import {
     Tag,
     MessageAction,

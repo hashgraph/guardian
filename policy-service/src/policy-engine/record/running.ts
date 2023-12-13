@@ -1,14 +1,14 @@
-import { GenerateUUIDv4, PolicyEvents } from "@guardian/interfaces";
-import { RunningStatus } from "./status.type";
-import { BlockTreeGenerator } from "@policy-engine/block-tree-generator";
-import { RecordAction } from "./action.type";
-import { RecordMethod } from "./method.type";
-import { IPolicyBlock } from "@policy-engine/policy-engine.interface";
-import { IPolicyUser, PolicyUser } from "@policy-engine/policy-user";
-import { PolicyComponentsUtils } from "@policy-engine/policy-components-utils";
-import { DIDDocument, DatabaseServer, IRecordResult, RecordImportExport } from "@guardian/common";
-import { RecordItem } from "./record-item";
-import { GenerateDID, GenerateUUID, IGenerateValue, RecordItemStack, Utils } from "./utils";
+import { GenerateUUIDv4, PolicyEvents } from '@guardian/interfaces';
+import { RunningStatus } from './status.type';
+import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
+import { RecordAction } from './action.type';
+import { RecordMethod } from './method.type';
+import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
+import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
+import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
+import { DIDDocument, DatabaseServer, RecordImportExport } from '@guardian/common';
+import { RecordItem } from './record-item';
+import { GenerateDID, GenerateUUID, IGenerateValue, RecordItemStack, Utils } from './utils';
 
 export class Running {
     public readonly type: string = 'Running';
@@ -18,15 +18,15 @@ export class Running {
     private readonly tree: BlockTreeGenerator;
     private _status: RunningStatus;
 
-    private _actions: RecordItemStack;
-    private _generateUUID: RecordItemStack;
-    private _generateDID: RecordItemStack;
+    private readonly _actions: RecordItemStack;
+    private readonly _generateUUID: RecordItemStack;
+    private readonly _generateDID: RecordItemStack;
     private _id: number;
     private _lastError: string;
     private _generatedItems: IGenerateValue<any>[];
     private _startTime: number;
     private _endTime: number;
-    private _results: any[];
+    private readonly _results: any[];
 
     constructor(
         policyInstance: IPolicyBlock,
@@ -279,6 +279,9 @@ export class Running {
                 }
                 case RecordAction.CreateUser: {
                     return document?.document;
+                }
+                default: {
+                    return document;
                 }
             }
         } catch (error) {

@@ -12,7 +12,7 @@ import {
     MessageServer,
     KeyType
 } from '@guardian/common';
-import { ArtifactType, GenerateUUIDv4, SchemaHelper } from '@guardian/interfaces';
+import { ArtifactType, SchemaHelper } from '@guardian/interfaces';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser } from '@policy-engine/policy-user';

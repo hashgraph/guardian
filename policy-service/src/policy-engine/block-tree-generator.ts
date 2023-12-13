@@ -299,7 +299,7 @@ export class BlockTreeGenerator extends NatsService {
         this.getPolicyMessages(PolicyEvents.GET_RECORD_RESULTS, policyId, async (msg: any) => {
             const result = await PolicyComponentsUtils.GetRecordResults(policyId);
             return new MessageResponse(result);
-        }); 
+        });
     }
 
     /**

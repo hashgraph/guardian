@@ -2726,7 +2726,6 @@ export class DatabaseServer {
         return await new DataBaseHelper(Record).save(item);
     }
 
-
     /**
      * Get Record
      * @param filters Filters

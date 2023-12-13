@@ -2281,18 +2281,6 @@ export class Guardians extends NatsService {
         return await this.sendMessage(MessageAPI.SEARCH_BLOCKS, { config, blockId, user });
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
     /**
      * Start recording
      * @param policyId
@@ -2377,27 +2365,4 @@ export class Guardians extends NatsService {
     public async getRecordDetails(policyId: string, owner: string): Promise<any> {
         return await this.sendMessage<any>(MessageAPI.GET_RECORD_DETAILS, { policyId, owner });
     }
-
 }
-
-
-
-// /**
-//  * Get record
-//  * @param policyId
-//  * @param uuid
-//  */
-// public async getRecord(policyId: string, uuid: string) {
-//     return await this.sendMessage(PolicyEngineEvents.GET_RECORD, { policyId, uuid });
-// }
-
-// /**
-//  * Get record export file
-//  * @param policyId
-//  * @param uuid
-//  * @param owner
-//  */
-// public async exportRecord(policyId: string, uuid: string, owner: string) {
-//     const file = await this.sendMessage(PolicyEngineEvents.RECORD_EXPORT_FILE, { policyId, uuid, owner }) as any;
-//     return Buffer.from(file, 'base64');
-// }

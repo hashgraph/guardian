@@ -1,14 +1,8 @@
-import { IRecordResult, VcDocument, VpDocument } from '@guardian/common';
+import { IRecordResult } from '@guardian/common';
 import { CompareOptions } from '../interfaces/compare-options.interface';
 import { IWeightModel } from '../interfaces/weight-model.interface';
 import { IKeyMap } from '../interfaces/key-map.interface';
 import { WeightType } from '../types/weight.type';
-import { CompareUtils } from '../utils/utils';
-import { SchemaModel } from './schema.model';
-import { DocumentFieldsModel } from './document-fields.model';
-import { PropertyModel } from './property.model';
-import { HashUtils } from '../utils/hash-utils';
-import { PropertiesModel } from './properties.model';
 import { DocumentModel } from './document.model';
 
 /**
@@ -79,6 +73,21 @@ export class RecordModel implements IWeightModel {
         return this._key;
     }
 
+    /**
+     * Count
+     * @public
+     */
+    public get count(): number {
+        return this._count;
+    }
+
+    /**
+     * Tokens
+     * @public
+     */
+    public get tokens(): number {
+        return this._tokens;
+    }
 
     constructor(
         options: CompareOptions

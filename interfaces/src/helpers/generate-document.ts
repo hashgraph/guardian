@@ -1,4 +1,4 @@
-import { GenerateID, GenerateUUIDv4, SchemaField, SchemaHelper, SchemaStatus } from '..';
+import { GenerateID, GenerateUUIDv4, SchemaField, SchemaHelper } from '..';
 import { Schema } from '../models/schema';
 
 interface GenerateOption {
@@ -95,6 +95,8 @@ export class DocumentGenerator {
                         return field.enum[0];
                     case 'hederaAccount':
                         return '0.0.1';
+                    default:
+                        break;
                 }
                 switch (field.format) {
                     case 'date':
@@ -111,6 +113,8 @@ export class DocumentGenerator {
                         return 'example:uri';
                     case 'email':
                         return 'example@email.com';
+                    default:
+                        break;
                 }
                 if (field.pattern) {
                     return DocumentGenerator._generateString(field.pattern);
@@ -119,6 +123,8 @@ export class DocumentGenerator {
             }
             case 'null':
                 return undefined;
+            default:
+                break;
         }
         return undefined;
     }
