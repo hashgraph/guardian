@@ -5,7 +5,7 @@ import URL from "../../../support/GuardianUrls";
 const ArtifactsPageLocators = {
     modalWindow: 'mat-dialog-container[id*="mat-dialog"]',
     uploadFileInput: '[dropzoneclassname="file-drop-zone"] input[type="file"]',
-    artifactsList: "/api/v1/artifacts?policyId=&pageIndex=0&pageSize=100",
+    artifactsList: "/api/v1/artifacts?pageIndex=0&pageSize=100&type=policy",
     dialogContainer: '.mat-dialog-container',
 };
 
@@ -13,6 +13,14 @@ export class ArtifactsPage {
 
     openArtifactsTab() {
         cy.visit(URL.Root + URL.Artifacts);
+    }
+
+    openAndVerifyArtifactsTab() {
+        cy.intercept(ArtifactsPageLocators.artifactsList).as(
+            "waitForArtifactsList"
+        );
+        cy.visit(URL.Root + URL.Artifacts);
+        cy.wait("@waitForArtifactsList", { timeout: 300000 })
     }
 
     static waitForArtifactsList(){
