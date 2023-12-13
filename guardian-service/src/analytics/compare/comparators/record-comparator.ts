@@ -97,14 +97,6 @@ export class RecordComparator {
         row.set('left', leftItem?.toObject());
         row.set('right', rightItem?.toObject());
 
-        if (leftItem) {
-            row.set('left_count', leftItem.count);
-            row.set('left_tokens', leftItem.tokens);
-        }
-        if (rightItem) {
-            row.set('right_count', rightItem.count);
-            row.set('right_tokens', rightItem.tokens);
-        }
         if (leftItem && rightItem) {
             row.set('total_rate', `${tree.getRateValue(DocumentsRate.TOTAL_RATE)}%`);
         } else {
@@ -132,11 +124,17 @@ export class RecordComparator {
             { name: 'document_type', label: '', type: 'string' },
             { name: 'document_schema', label: '', type: 'string' },
 
-            { name: 'left_count', label: 'Document count', type: 'string' },
-            { name: 'right_tokens', label: 'Token amount', type: 'string' },
+            { name: 'left_id', label: 'ID', type: 'string' },
+            { name: 'left_message_id', label: 'Message', type: 'string' },
+            { name: 'left_type', label: 'Type', type: 'string' },
+            { name: 'left_schema', label: 'Schema', type: 'string' },
+            { name: 'left_owner', label: 'Owner', type: 'string' },
 
-            { name: 'left_count', label: 'Document count', type: 'string' },
-            { name: 'right_tokens', label: 'Token amount', type: 'string' },
+            { name: 'right_id', label: 'ID', type: 'string' },
+            { name: 'right_message_id', label: 'Message', type: 'string' },
+            { name: 'right_type', label: 'Type', type: 'string' },
+            { name: 'right_schema', label: 'Schema', type: 'string' },
+            { name: 'right_owner', label: 'Owner', type: 'string' },
 
             { name: 'document_rate', label: 'Document Rate', type: 'number', display: 'Rate' },
             { name: 'options_rate', label: 'Options Rate', type: 'number', display: 'Rate' },
