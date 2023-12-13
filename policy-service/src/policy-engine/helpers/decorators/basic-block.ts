@@ -293,7 +293,13 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param link
              */
             public addSourceLink(link: PolicyLink<any>): void {
-                this.sourceLinks.push(link)
+                if (
+                    !this.sourceLinks.some((sourceLink) =>
+                        sourceLink.equals(link)
+                    )
+                ) {
+                    this.sourceLinks.push(link);
+                }
             }
 
             /**
@@ -301,7 +307,13 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param link
              */
             public addTargetLink(link: PolicyLink<any>): void {
-                this.targetLinks.push(link)
+                if (
+                    !this.targetLinks.some((targetLink) =>
+                        targetLink.equals(link)
+                    )
+                ) {
+                    this.targetLinks.push(link);
+                }
             }
 
             /**
