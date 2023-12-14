@@ -1,4 +1,11 @@
-<form *ngIf="options" [formGroup]="options" [attr.dialogForm]="comesFromDialog" [attr.childSchema]="isChildSchema" [attr.showButtons]="showButtons">
+<form 
+    *ngIf="options" 
+    [formGroup]="options" 
+    [attr.dialogForm]="comesFromDialog" 
+    [attr.childSchema]="isChildSchema" 
+    [attr.showButtons]="showButtons"
+    [attr.pageButtons]="fields && showButtons && !isChildSchema"
+>
     <ng-container *ngFor="let item of fields; let i = index">
         <div *ngIf="!item.hide && !item.hidden" [attr.showMobileField]="isShown[i] || isChildSchema"
              class="form-field-container">

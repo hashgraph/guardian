@@ -47,6 +47,6 @@ export class SchemaFormDialog {
     }
 
     onSave() {
-        this.dialogRef.close(null);
+        this.dialogRef.close(this.dataForm?.value);
     }
 }

@@ -121,4 +121,9 @@ export interface SchemaField {
      * Is hidden field
      */
     hidden?: boolean;
+
+    /**
+     * Examples data
+     */
+    examples?: any[];
 }

@@ -320,13 +320,11 @@ form {
     }
 
     .page-btns {
-        display: block;
         width: calc(100% - 36px);
         display: grid;
         grid-template-columns: 1fr 1fr;
         column-gap: 10px;
         margin-top: 20px;
-
         background-color: white;
         padding: 20px 0;
         position: fixed;

@@ -33,6 +33,7 @@ export class SchemaHelper {
             customType: null,
             comment: null,
             isPrivate: null,
+            examples: null
         };
         let _property = property;
         const readonly = _property.readOnly;
@@ -56,6 +57,7 @@ export class SchemaHelper {
             field.pattern = _property.pattern ? String(_property.pattern) : null;
             field.enum = _property.enum;
             field.remoteLink = _property.$ref;
+            field.examples = Array.isArray(_property.examples) ? _property.examples : null;
         }
         field.readOnly = !!(_property.readOnly || readonly);
         return field;
@@ -140,6 +142,9 @@ export class SchemaHelper {
             }
             if (field.pattern) {
                 item.pattern = field.pattern;
+            }
+            if (field.examples) {
+                item.examples = field.examples;
             }
         }
 

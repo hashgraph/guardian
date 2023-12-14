@@ -82,6 +82,9 @@ export class DocumentGenerator {
         context: string[],
         option: GenerateOption
     ): any {
+        if (Array.isArray(field.examples) && field.examples[0]) {
+            return field.examples[0];
+        }
         switch (field.type) {
             case 'number':
                 return 1;
@@ -169,7 +172,11 @@ export class DocumentGenerator {
     ): any {
         const value = DocumentGenerator._generateField(field, context, option);
         if (field.isArray && value !== undefined) {
-            return [value];
+            if (Array.isArray(value)) {
+                return value;
+            } else {
+                return [value];
+            }
         } else {
             return value;
         }

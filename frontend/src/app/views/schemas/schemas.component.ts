@@ -800,8 +800,11 @@ export class SchemaConfigComponent implements OnInit {
             disableClose: true,
             data: { schema, example }
         });
-        dialogRef.afterClosed().subscribe(async (schema: Schema | null) => {
-
+        dialogRef.afterClosed().subscribe(async (exampleDate: any) => {
+            if(exampleDate) {
+                schema.setExample(exampleDate);
+                this.updateSchema(schema.id, schema);
+            }
         });
     }
 

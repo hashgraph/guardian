@@ -360,4 +360,19 @@ export class Schema implements ISchema {
             }
         }
     }
+
+    /**
+     * Set example data
+     * @param data
+     */
+    public setExample(data: any): void {
+        if (data && this.fields) {
+            for (const field of this.fields) {
+                if (!field.isRef && data.hasOwnProperty(field.name)) {
+                    field.examples = [data[field.name]];
+                }
+            }
+            this.update(this.fields, this.conditions);
+        }
+    }
 }
