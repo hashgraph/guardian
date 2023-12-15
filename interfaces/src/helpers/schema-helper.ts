@@ -303,6 +303,23 @@ export class SchemaHelper {
     }
 
     /**
+     * Update schema fields
+     * @param document
+     * @param fn
+     */
+    public static updateFields(document: ISchemaDocument, fn: (name: string, property: any) => any): ISchemaDocument {
+        if (!document || !document.properties) {
+            return document;
+        }
+        const properties = Object.keys(document.properties);
+        for (const name of properties) {
+            const property = document.properties[name];
+            document.properties[name] = fn(name, property);
+        }
+        return document;
+    }
+
+    /**
      * Build document from schema
      * @param schema
      * @param fields

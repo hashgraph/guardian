@@ -4,6 +4,11 @@ form {
     width: 100%;
 }
 
+form[example="true"] .sub-schema {
+    pointer-events: none !important;
+    opacity: 0.7 !important;
+}
+
 .group-label {
     color: rgba(0, 0, 0, .6);
 }

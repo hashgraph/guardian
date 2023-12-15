@@ -48,6 +48,7 @@
     display: flex;
     border-bottom-left-radius: 4px;
     box-shadow: rgb(0 0 0 / 25%) -1px 1px 6px 0px;
+    z-index: 2;
 
     .running-menu-label,
     .recording-menu-label {
@@ -177,6 +178,7 @@
     border-top-right-radius: 0px;
     box-shadow: rgb(0 0 0 / 25%) -1px 1px 6px 0px;
     background: linear-gradient(90deg, #eee 34px, #aaa 34px, #aaa 35px, #fff 35px);
+    z-index: 2;
 
     .record-title {
         position: relative;
@@ -242,4 +244,14 @@
             background: #f6f7b3 !important;
         }
     }
+}
+
+.running-overlay {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    z-index: 1;
+    pointer-events: all;
 }

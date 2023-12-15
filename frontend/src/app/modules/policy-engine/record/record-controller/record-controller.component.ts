@@ -6,6 +6,7 @@ import { ImportFileDialog } from '../../helpers/import-file-dialog/import-file-d
 import { MatDialog } from '@angular/material/dialog';
 import { RecordResultDialog } from '../record-result-dialog/record-result-dialog.component';
 import { Router } from '@angular/router';
+import { ConfirmDialog } from 'src/app/modules/common/confirm-dialog/confirm-dialog.component';
 
 @Component({
     selector: 'app-record-controller',
@@ -33,6 +34,7 @@ export class RecordControllerComponent implements OnInit {
     private _showActions: boolean = false;
     private _subscription = new Subscription();
     private _resultDialog: any;
+    private _overlay: any;
 
     constructor(
         private wsService: WebSocketService,
@@ -41,6 +43,7 @@ export class RecordControllerComponent implements OnInit {
         private dialog: MatDialog
     ) {
         this._showActions = (localStorage.getItem('SHOW_RECORD_ACTIONS') || 'true') === 'true';
+        this._overlay = localStorage.getItem('HIDE_RECORD_OVERLAY');
     }
 
     ngOnInit(): void {
@@ -63,6 +66,21 @@ export class RecordControllerComponent implements OnInit {
 
     ngOnDestroy() {
         this._subscription.unsubscribe();
+    }
+
+    public get overlay(): boolean {
+        return this._overlay !== this.recordId;
+    }
+
+    public set overlay(value: any) {
+        if (this._overlay != value) {
+            this._overlay = value;
+            try {
+                localStorage.setItem('HIDE_RECORD_OVERLAY', String(this._overlay));
+            } catch (error) {
+                console.error(error);
+            }
+        }
     }
 
     public get showActions(): boolean {
@@ -326,6 +344,22 @@ export class RecordControllerComponent implements OnInit {
                 this.stopRunning()
             } else {
                 return;
+            }
+        });
+    }
+
+    public onOverlay() {
+        const dialogRef = this.dialog.open(ConfirmDialog, {
+            width: '360px',
+            data: {
+                title: 'Confirm',
+                description: `Please don't change anything now. This may break the process.`
+            },
+            disableClose: true,
+        });
+        dialogRef.afterClosed().subscribe(result => {
+            if (result) {
+                this.overlay = this.recordId;
             }
         });
     }

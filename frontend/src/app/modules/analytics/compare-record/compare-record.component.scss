@@ -442,19 +442,27 @@
     }
 }
 
+*[type-1="false"] .left-tree[type="FULL"][rate="100%"].hidden-item,
 *[type-1="false"] .right-tree[type="FULL"][rate="100%"].hidden-item {
     opacity: 0.15;
 }
 
+*[type-2="false"] .left-tree[type="PARTLY"][rate="100%"].hidden-item,
 *[type-2="false"] .right-tree[type="PARTLY"][rate="100%"].hidden-item {
     opacity: 0.15;
 }
 
+*[type-3="false"] .left-tree[type="FULL"]:not([rate="100%"]).hidden-item,
+*[type-3="false"] .left-tree[type="PARTLY"]:not([rate="100%"]).hidden-item,
 *[type-3="false"] .right-tree[type="FULL"]:not([rate="100%"]).hidden-item,
 *[type-3="false"] .right-tree[type="PARTLY"]:not([rate="100%"]).hidden-item {
     opacity: 0.15;
 }
 
+*[type-4="false"] .left-tree[type="LEFT_AND_RIGHT"].hidden-item,
+*[type-4="false"] .left-tree[type="LEFT"].hidden-item,
+*[type-4="false"] .left-tree[type="RIGHT"].hidden-item,
+*[type-4="false"] .right-tree[type="LEFT_AND_RIGHT"].hidden-item,
 *[type-4="false"] .right-tree[type="LEFT"].hidden-item,
 *[type-4="false"] .right-tree[type="RIGHT"].hidden-item {
     opacity: 0.15;

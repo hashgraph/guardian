@@ -107,9 +107,9 @@ export class RecordModel implements IWeightModel {
             const mint = vcs[mintIndex];
             if (mint && mint.credentialSubject) {
                 if (Array.isArray(mint.credentialSubject)) {
-                    return mint.credentialSubject[0].amount;
+                    return Number(mint.credentialSubject[0].amount);
                 } else {
-                    return mint.credentialSubject.amount;
+                    return Number(mint.credentialSubject.amount);
                 }
             } else {
                 return 0;

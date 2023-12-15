@@ -366,13 +366,13 @@ export class Schema implements ISchema {
      * @param data
      */
     public setExample(data: any): void {
-        if (data && this.fields) {
-            for (const field of this.fields) {
-                if (!field.isRef && data.hasOwnProperty(field.name)) {
-                    field.examples = [data[field.name]];
+        if (data) {
+            this.document = SchemaHelper.updateFields(this.document, (name: string, property: any) => {
+                if (!(property.$ref && !property.type) && data.hasOwnProperty(name)) {
+                    property.examples = [data[name]];
                 }
-            }
-            this.update(this.fields, this.conditions);
+                return property;
+            });
         }
     }
 }

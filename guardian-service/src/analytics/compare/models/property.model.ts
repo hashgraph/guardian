@@ -452,6 +452,8 @@ export class DocumentPropertyModel extends PropertyModel<any> {
             name === 'type' ||
             name === 'policyId' ||
             name === 'id' ||
+            name === 'ref' ||
+            name === 'tokenId' ||
             path === 'proof' ||
             path === 'issuanceDate' ||
             path === 'issuer' ||

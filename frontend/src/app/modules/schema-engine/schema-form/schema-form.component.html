@@ -5,10 +5,14 @@
     [attr.childSchema]="isChildSchema" 
     [attr.showButtons]="showButtons"
     [attr.pageButtons]="fields && showButtons && !isChildSchema"
+    [attr.example]="example"
 >
     <ng-container *ngFor="let item of fields; let i = index">
-        <div *ngIf="!item.hide && !item.hidden" [attr.showMobileField]="isShown[i] || isChildSchema"
-             class="form-field-container">
+        <div 
+            *ngIf="!item.hide && !item.hidden" 
+            [attr.showMobileField]="isShown[i] || isChildSchema"
+            class="form-field-container">
+
             <!-- simple field -->
             <div *ngIf="!item.isArray && !item.isRef" class="form-field">
                 <div class="invalid-field-label"
@@ -20,7 +24,9 @@
                 </div>
                 <div *ngIf="item.required" class="required-field">* Required</div>
                 <div class="label-field" *ngIf="!isHelpText(item)">{{item.description}}</div>
-                <div *ngIf="isHelpText(item)" class="label-field help-text"
+                <div 
+                    *ngIf="isHelpText(item)" 
+                    class="label-field help-text"
                     [ngStyle]="{ 'color': item.textColor, 'font-size': item.textSize}">
                     <b *ngIf="item.textBold; else plainDescription">{{item.description}}</b>
                     <ng-template #plainDescription>{{item.description}}</ng-template>
@@ -28,12 +34,20 @@
                 <div class="form-field-value">
                     <div class="form-field-prefix" *ngIf="isPrefix(item)">{{item.unit}}</div>
 
-                    <mat-form-field *ngIf="isInput(item)" class="example-full-width required-form-field"
-                        appearance="outline" [ngClass]="{'ipfs-url' : isIPFS(item)}">
+                    <mat-form-field 
+                        *ngIf="isInput(item)" 
+                        class="example-full-width required-form-field"
+                        appearance="outline" 
+                        [ngClass]="{'ipfs-url' : isIPFS(item)}">
                         <input matInput [formControlName]="item.name" [placeholder]="getPlaceholderByFieldType(item)">
                         <div *ngIf="isIPFS(item)">
-                            <input type="file" class="file-input" style="display:none;" accept="image/*"
-                                (change)="onFileSelected($event, options.controls[item.name], item)" #fileUpload>
+                            <input 
+                                type="file" 
+                                class="file-input" 
+                                style="display:none;" 
+                                accept="image/*"
+                                (change)="onFileSelected($event, options.controls[item.name], item)" 
+                                #fileUpload>
                             <div class="file-upload">
                                 <ng-container [ngSwitch]="item.fileUploading">
                                     <mat-spinner *ngSwitchCase="true" [diameter]="38"></mat-spinner>

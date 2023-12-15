@@ -171,7 +171,7 @@
         *ngIf="isDryRun"
         #recordController
         [policyId]="policyId"
-        (update)="updatePolicy"
+        (update)="updatePolicy()"
         [(active)]="recordingActive"
         ></app-record-controller>
 </div>

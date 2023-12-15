@@ -79,42 +79,7 @@
         </div>
     </div>
 
+    <div *ngIf="overlay" class="running-overlay" (click)="onOverlay()">
+
+    </div>
 </div>
-
-
-
-
-
-<!-- <div 
-class="dry-run-action-btn record-btn" 
-(click)="startRecord()" 
-title="Start Record"
-[attr.disabled]="recording || running">
-<mat-icon>radio_button_checked</mat-icon>
-<span>Record</span>
-</div>
-
-<div 
-class="dry-run-action-btn run-btn" 
-(click)="startRun()" 
-title="Run Record"
-[attr.disabled]="recording || running">
-<mat-icon>play_arrow</mat-icon>
-<span>Run</span>
-</div>
-
-<div 
-class="dry-run-action-btn" 
-(click)="stopRecord()" 
-title="Stop Record"
-[attr.disabled]="!(recording || running)">
-<mat-icon class="material-icons-outlined">stop_circle</mat-icon>
-<span>Stop</span>
-</div>
-
-<div 
-class="dry-run-action-btn" 
-(click)="loadRecord()" >
-<mat-icon class="material-icons-outlined">file</mat-icon>
-<span>File</span>
-</div> -->
