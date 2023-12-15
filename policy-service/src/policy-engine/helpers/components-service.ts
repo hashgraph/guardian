@@ -265,4 +265,11 @@ export class ComponentsService {
         }
         return this._runningController.start();
     }
+
+    public async fastForward(options: any): Promise<boolean> {
+        if (this._runningController) {
+            return this._runningController.fastForward(options);
+        }
+        return false;
+    }
 }

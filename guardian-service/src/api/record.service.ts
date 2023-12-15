@@ -315,4 +315,30 @@ export async function recordAPI(): Promise<void> {
             return new MessageError(error);
         }
     });
+
+    /**
+     * Fast Forward
+     *
+     * @param payload - options
+     *
+     * @returns {any} result
+     */
+    ApiResponse(MessageAPI.FAST_FORWARD, async (msg) => {
+        try {
+            if (!msg) {
+                throw new Error('Invalid parameters');
+            }
+
+            const { policyId, owner, options } = msg;
+            await checkPolicy(policyId, owner);
+
+            const guardiansService = new GuardiansService();
+            const result = await guardiansService
+                .sendPolicyMessage(PolicyEvents.FAST_FORWARD, policyId, options);
+            return new MessageResponse(result);
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
 }

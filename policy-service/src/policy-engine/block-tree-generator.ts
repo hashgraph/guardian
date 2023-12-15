@@ -300,6 +300,12 @@ export class BlockTreeGenerator extends NatsService {
             const result = await PolicyComponentsUtils.GetRecordResults(policyId);
             return new MessageResponse(result);
         });
+
+        this.getPolicyMessages(PolicyEvents.FAST_FORWARD, policyId, async (msg: any) => {
+            const options = msg;
+            const result = await PolicyComponentsUtils.FastForward(policyId, options);
+            return new MessageResponse(result);
+        });
     }
 
     /**

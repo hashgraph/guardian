@@ -1254,6 +1254,18 @@ export class PolicyComponentsUtils {
     }
 
     /**
+     * Fast Forward
+     * @param policyId
+     */
+    public static async FastForward(policyId: string, options: any): Promise<boolean> {
+        const policy = PolicyComponentsUtils.PolicyById.get(policyId);
+        if (!policy) {
+            return false;
+        }
+        return await policy.components.fastForward(options);
+    }
+
+    /**
      * Get recording or running status
      * @param policyId
      */

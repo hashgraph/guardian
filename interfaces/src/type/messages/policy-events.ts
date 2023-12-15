@@ -35,4 +35,5 @@ export enum PolicyEvents {
     RUN_RECORD = 'policy-event-run-record',
     STOP_RUNNING = 'policy-event-stop-running',
     GET_RECORD_RESULTS = 'policy-event-get-record-results',
+    FAST_FORWARD = 'policy-event-fast-forward',
 }

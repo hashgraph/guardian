@@ -27,6 +27,7 @@ export class Running {
     private _startTime: number;
     private _endTime: number;
     private readonly _results: any[];
+    private _currentDelay: any;
 
     constructor(
         policyInstance: IPolicyBlock,
@@ -115,6 +116,24 @@ export class Running {
         return await this.results();
     }
 
+    public async fastForward(options: any): Promise<boolean> {
+        try {
+            const skipIndex = Number(options?.index);
+            if (this._currentDelay) {
+                const { index, resolve, timer } = this._currentDelay;
+                if ((skipIndex && skipIndex === index) || (!skipIndex)) {
+                    this._currentDelay = null;
+                    clearTimeout(timer);
+                    resolve();
+                    return true;
+                }
+            }
+            return false;
+        } catch (error) {
+            return false;
+        }
+    }
+
     public async results(): Promise<any[]> {
         if (this._status !== RunningStatus.Stopped) {
             return null;
@@ -165,7 +184,7 @@ export class Running {
                 return;
             }
             this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
-            await this.delay(result.delay);
+            await this.delay(result.delay, result.index);
         }
     }
 
@@ -173,8 +192,19 @@ export class Running {
         return this._id === id && this._status === RunningStatus.Running;
     }
 
-    private async delay(time: number): Promise<void> {
-        return new Promise(resolve => setTimeout(resolve, time));
+    private async delay(time: number, index: number): Promise<void> {
+        this._currentDelay = null;
+        return new Promise(resolve => {
+            const timer = setTimeout(() => {
+                this._currentDelay = null;
+                resolve();
+            }, time);
+            this._currentDelay = {
+                index,
+                resolve,
+                timer
+            };
+        });
     }
 
     /**
@@ -312,7 +342,12 @@ export class Running {
     }
 
     public async next() {
-        const result = { delay: -1, code: 0, error: null };
+        const result = {
+            index: -1,
+            delay: -1,
+            code: 0,
+            error: null
+        };
         try {
             const action = this._actions.current;
             if (!action) {
@@ -329,6 +364,7 @@ export class Running {
             }
 
             if (next) {
+                result.index = this._actions.index;
                 result.code = 1;
                 const delay = (next.time - action.time);
                 if (Number.isFinite(delay) && delay > 0) {

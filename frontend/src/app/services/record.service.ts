@@ -57,10 +57,8 @@ export class RecordService {
     public getRecordDetails(policyId: string): Observable<any> {
         return this.http.get<any>(`${this.url}/${policyId}/running/details`);
     }
-    
-    // public exportRecord(policyId: string, recordId?: string): Observable<ArrayBuffer> {
-    //     return this.http.get(`${this.url}/${policyId}/record/export/${recordId || 'last'}`, {
-    //         responseType: 'arraybuffer'
-    //     });
-    // }
+
+    public fastForward(policyId: string, data: any): Observable<any> {
+        return this.http.post<any>(`${this.url}/${policyId}/running/fast-forward`, data);
+    }
 }

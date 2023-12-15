@@ -180,6 +180,17 @@ export class RecordControllerComponent implements OnInit {
         });
     }
 
+    public fastForward() {
+        // this.loading = true;
+        this.recordService.fastForward(this.policyId, {
+            index: this.recordIndex
+        }).subscribe((record) => {
+            // this.loading = false;
+        }, (e) => {
+            // this.loading = false;
+        });
+    }
+
     private loadStatus() {
         this.loading = true;
         this.recordService.getStatus(this.policyId).subscribe((record) => {
@@ -295,28 +306,6 @@ export class RecordControllerComponent implements OnInit {
         this.update.emit();
     }
 
-
-    public loadRecord() {
-        // this.loading = true;
-        // this.policyEngineService.exportRecord(this.policyId, this.recordId)
-        //     .subscribe(fileBuffer => {
-        //         let downloadLink = document.createElement('a');
-        //         downloadLink.href = window.URL.createObjectURL(
-        //             new Blob([new Uint8Array(fileBuffer)], {
-        //                 type: 'application/guardian-policy-record'
-        //             })
-        //         );
-        //         downloadLink.setAttribute('download', `record_${Date.now()}.record`);
-        //         document.body.appendChild(downloadLink);
-        //         downloadLink.click();
-        //         setTimeout(() => {
-        //             this.loading = false;
-        //         }, 500);
-        //     }, error => {
-        //         this.loading = false;
-        //     });
-    }
-
     public onShowActions() {
         this.showActions = !this.showActions;
     }
@@ -353,7 +342,9 @@ export class RecordControllerComponent implements OnInit {
             width: '360px',
             data: {
                 title: 'Confirm',
-                description: `Please don't change anything now. This may break the process.`
+                description: `You actions in the UI may influence the policy execution replay flow, and result in errors or other discrepancies. Do you wish to continue?`,
+                submitButton: 'Continue',
+                cancelButton: 'Cancel'
             },
             disableClose: true,
         });

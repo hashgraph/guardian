@@ -461,4 +461,57 @@ export class RecordApi {
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    /**
+     * Fast Forward
+     */
+    @Post('/:policyId/running/fast-forward')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Fast Forward.',
+        description: 'Fast Forward.' + ONLY_SR,
+    })
+    @ApiImplicitParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
+    })
+    @ApiBody({
+        description: 'Object that contains options',
+        required: true
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @HttpCode(HttpStatus.OK)
+    async fastForward(@Req() req, @Response() res) {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const owner = req.user.did;
+        const options = req.body;
+        const policyId = req.params.policyId;
+        await checkPolicy(policyId, owner);
+        try {
+            const guardians = new Guardians();
+            const result = await guardians.fastForward(policyId, owner, options);
+            return res.json(result);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }

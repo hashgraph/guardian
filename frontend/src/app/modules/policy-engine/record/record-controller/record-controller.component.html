@@ -50,12 +50,15 @@
                 <div class="running-text">{{recordIndex}}/{{recordCount}}</div>
             </div>
         </div>
-        <div class="running-menu-btn" title="Stop" (click)="stopRunning()">
-            <mat-icon>stop</mat-icon>
-        </div>
         <!-- <div class="running-menu-btn" title="Pause">
             <mat-icon>pause</mat-icon>
         </div> -->
+        <div class="running-menu-btn" title="Fast Forward" (click)="fastForward()">
+            <mat-icon>skip_next</mat-icon>
+        </div>
+        <div class="running-menu-btn" title="Stop" (click)="stopRunning()">
+            <mat-icon>stop</mat-icon>
+        </div>
         <div class="running-menu-btn" title="Actions" (click)="onShowActions()">
             <mat-icon>menu</mat-icon>
         </div>
