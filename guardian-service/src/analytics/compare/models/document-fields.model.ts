@@ -27,8 +27,6 @@ export class DocumentFieldsModel {
 
     constructor(document: any) {
         this.type = document.type;
-        this.fields = DocumentFieldsModel.createFieldsList(document);
-        this.schemas = DocumentFieldsModel.createSchemasList(document);
         if (typeof document.type === 'string') {
             this.type = document.type;
         } else if (Array.isArray(document.type)) {
@@ -40,6 +38,8 @@ export class DocumentFieldsModel {
                 this.type = document.type[0];
             }
         }
+        this.fields = DocumentFieldsModel.createFieldsList(document);
+        this.schemas = DocumentFieldsModel.createSchemasList(document);
     }
 
     /**
@@ -121,26 +121,51 @@ export class DocumentFieldsModel {
     }
 
     /**
+     * Check context
+     * @param context
+     * @param result
+     * @private
+     * @static
+     */
+    private static checkContext(context: string | string[], result: Set<string>): Set<string> {
+        if (context) {
+            if (Array.isArray(context)) {
+                for (const item of context) {
+                    if (typeof item === 'string') {
+                        result.add(item);
+                    }
+                }
+            } else if (typeof context === 'string') {
+                result.add(context);
+            }
+        }
+        return result;
+    }
+
+    /**
      * Create schemas by JSON
      * @param document - json
      * @public
      * @static
      */
     public static createSchemasList(document: any): string[] {
-        if (document && document['@context']) {
-            if (typeof document['@context'] === 'string') {
-                return [document['@context']];
-            } else if (Array.isArray(document['@context'])) {
-                const schemas = [];
-                for (const id of document['@context']) {
-                    if (typeof id === 'string') {
-                        schemas.push(id);
-                    }
+        if (!document) {
+            return [];
+        }
+        const list = new Set<string>();
+        DocumentFieldsModel.checkContext(document['@context'], list);
+        if (document.verifiableCredential) {
+            if (Array.isArray(document.verifiableCredential)) {
+                for (const vc of document.verifiableCredential) {
+                    DocumentFieldsModel.checkContext(vc['@context'], list);
                 }
-                return schemas;
+            } else {
+                const vc = document.verifiableCredential;
+                DocumentFieldsModel.checkContext(vc['@context'], list);
             }
         }
-        return [];
+        list.delete('https://www.w3.org/2018/credentials/v1');
+        return Array.from(list);
     }
 
     /**

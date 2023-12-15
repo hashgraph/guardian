@@ -331,15 +331,11 @@ export class DocumentModel implements IWeightModel {
      * @public
      */
     public getSchemas(): string[] {
-        const list = new Set<string>();
-        if (this._document) {
-            for (const id of this._document.schemas) {
-                if (id !== 'https://www.w3.org/2018/credentials/v1') {
-                    list.add(id);
-                }
-            }
+        if (this._document && this._document.schemas) {
+            return this._document.schemas;
+        } else {
+            return [];
         }
-        return Array.from(list);
     }
 
     /**
@@ -468,19 +464,21 @@ export class DocumentModel implements IWeightModel {
      * @public
      */
     public title(): string {
+        const titles: string[] = [];
         if (this._schemas) {
             for (const schema of this._schemas) {
                 if (schema.description) {
-                    return schema.description;
-                }
-            }
-            for (const schema of this._schemas) {
-                if (schema.iri) {
-                    return schema.iri;
+                    titles.push(schema.description);
+                } else if (schema.iri) {
+                    titles.push(schema.iri);
                 }
             }
         }
-        return this.key;
+        if (titles.length) {
+            return titles.join(', ');
+        } else {
+            return this.key;
+        }
     }
 }
 
