@@ -104,6 +104,8 @@ import { WizardService } from './services/wizard.service';
 import { PoliciesComponent } from './policies/policies.component';
 import { SearchBlocksComponent } from './helpers/search-blocks/search-blocks.component';
 import { SelectSchema } from './helpers/select-schema/select-schema.component';
+// Directives
+import { ResizingDirective } from './directives/resizing.directive';
 
 @NgModule({
     declarations: [
@@ -192,7 +194,8 @@ import { SelectSchema } from './helpers/select-schema/select-schema.component';
         PolicyWizardDialogComponent,
         MessagesReportBlockComponent,
         ViewerDialog,
-        SearchBlocksComponent
+        SearchBlocksComponent,
+        ResizingDirective
     ],
     imports: [
         CommonModule,

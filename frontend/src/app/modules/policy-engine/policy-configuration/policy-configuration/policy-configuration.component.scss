@@ -1,6 +1,7 @@
 ::ng-deep body {
     --pc-main-grid-border: #b4c4cb;
     --pc-border-color: #bdbdbd;
+    --pc-active-resize-delimiter-color: #1f2262;
     --pc-active-icon-color: #3f51b5;
     --pc-no-active-color: #555;
     --pc-active-background-color: #eff0f9;
@@ -138,14 +139,16 @@
     border: 4px solid var(--pc-main-grid-border);
     box-sizing: border-box;
     display: flex;
+    gap: 2px;
+    background-color: var(--pc-main-grid-border);
 }
 
 .left-toolbar {
     height: 100%;
-    width: 225px;
     position: relative;
-    border-right: 4px solid var(--pc-main-grid-border);
     box-sizing: border-box;
+    background-color: white;
+    z-index: 1;
 }
 
 .center-container {
@@ -153,6 +156,8 @@
     position: relative;
     overflow: hidden;
     box-sizing: border-box;
+    z-index: 1;
+    background-color: white;
 }
 
 .tree-container {
@@ -181,30 +186,30 @@
 
 .right-toolbar {
     height: 100%;
-    width: 485px;
+    // width: 485px;
     position: relative;
     box-sizing: border-box;
-    border-left: 4px solid var(--pc-main-grid-border);
     display: flex;
+    gap: 2px;
     flex-direction: column;
     background: var(--pc-main-grid-border);
+    z-index: 1;
+    // min-width: 465px;
 }
 
 .right-top-toolbar {
     position: relative;
     width: 100%;
-    border-bottom: 4px solid var(--pc-main-grid-border);
     box-sizing: border-box;
-    min-height: 340px;
-    max-height: 340px;
-    height: 340px;
+    min-height: 31px;
     flex: 1;
+    z-index: 1;
     background: var(--pc-background-color);
 
     &[collapse-top="true"] {
-        max-height: 35px;
-        height: 35px;
-        min-height: 35px;
+        max-height: 31px;
+        height: 31px;
+        min-height: 31px;
     }
 
     &[collapse-bottom="true"] {
@@ -213,9 +218,9 @@
     }
 
     &[collapse-top="true"][collapse-bottom="true"] {
-        max-height: 35px;
-        height: 35px;
-        min-height: 35px;
+        max-height: 31px;
+        height: 31px;
+        min-height: 31px;
     }
 }
 
@@ -223,6 +228,8 @@
     box-sizing: border-box;
     position: relative;
     flex: 1;
+    min-height: 31px;
+    z-index: 1;
     background: var(--pc-background-color);
 
     &[collapse-top="true"] {
@@ -475,6 +482,9 @@
             padding: 9px 24px;
             cursor: pointer;
             user-select: none;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
 
             .components-group-name-icon {
                 color: var(--pc-favorite-color);
@@ -915,8 +925,9 @@
     }
 
     .properties {
+        width: 100%;
         --col-name-width: 155px;
-        --col-value-width: 285px;
+        // --col-value-width: 285px;
 
         background: var(--pc-prop-border-color);
         position: relative;
@@ -928,6 +939,7 @@
         .propRowCol {
             background: var(--pc-prop-border-color);
             width: 20px;
+            min-width: 20px;
             position: relative;
             cursor: pointer;
             user-select: none;
@@ -1574,5 +1586,59 @@
 
     &[status="TOOL"] {
         color: var(--pc-tool-block-color);
+    }
+}
+
+.resizing, .resizing-vertical {
+    position: relative;
+
+    .resizing__delimiter:hover,
+    &[active="true"] .resizing__delimiter {
+        background-color: var(--pc-active-resize-delimiter-color) !important;
+    }
+}
+
+.resizing__delimiter {
+    background-color: var(--pc-main-grid-border);
+    position: absolute;
+    z-index: 0;
+}
+
+.resizing {
+    height: 100%;
+
+    .resizing__delimiter {
+         width: 4px; height: 100%; left: -2px;
+    }
+
+    .resizing__delimiter:hover {
+        cursor: ew-resize;
+    }
+}
+
+.resizing-vertical {
+    width: 100%;
+
+    .resizing__delimiter {
+        width: 100%;
+        height: 4px;
+        top: -2px;
+    }
+
+    .resizing__delimiter:hover {
+        cursor: ns-resize;
+    }
+}
+
+::ng-deep {
+    .cdk-drag-placeholder {
+        &.left-toolbar,
+        &.center-container,
+        &.right-toolbar,
+        &.right-top-toolbar,
+        &.right-bottom-toolbar {
+            outline: 1px dashed black;
+            opacity: 0.5;
+        }
     }
 }
