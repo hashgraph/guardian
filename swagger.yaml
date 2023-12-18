@@ -8215,7 +8215,7 @@ paths:
         content:
           application/json:
             schema:
-              type: string
+              $ref: '#/components/schemas/Object'
       responses:
         '200':
           description: Successful operation.
@@ -8258,7 +8258,7 @@ paths:
         content:
           application/json:
             schema:
-              type: string
+              $ref: '#/components/schemas/Object'
       responses:
         '200':
           description: Successful operation.
@@ -8300,7 +8300,7 @@ paths:
         content:
           application/json:
             schema:
-              type: string
+              $ref: '#/components/schemas/Object'
       responses:
         '200':
           description: Successful operation.
@@ -8343,7 +8343,7 @@ paths:
         content:
           application/json:
             schema:
-              type: string
+              $ref: '#/components/schemas/Object'
       responses:
         '200':
           description: Successful operation.
@@ -8429,7 +8429,7 @@ paths:
         content:
           application/json:
             schema:
-              type: string
+              $ref: '#/components/schemas/Object'
       responses:
         '200':
           description: Successful operation.
@@ -8471,7 +8471,7 @@ paths:
         content:
           application/json:
             schema:
-              type: string
+              $ref: '#/components/schemas/Object'
       responses:
         '200':
           description: Successful operation.
@@ -8513,7 +8513,7 @@ paths:
         content:
           application/json:
             schema:
-              type: string
+              $ref: '#/components/schemas/Object'
       responses:
         '200':
           description: Successful operation.
@@ -8555,7 +8555,7 @@ paths:
         content:
           application/json:
             schema:
-              type: string
+              $ref: '#/components/schemas/Object'
       responses:
         '200':
           description: Successful operation.
@@ -8597,7 +8597,7 @@ paths:
         content:
           application/json:
             schema:
-              type: string
+              $ref: '#/components/schemas/Object'
       responses:
         '200':
           description: Successful operation.
@@ -8639,7 +8639,7 @@ paths:
         content:
           application/json:
             schema:
-              type: string
+              $ref: '#/components/schemas/Object'
       responses:
         '200':
           description: Successful operation.
@@ -9948,6 +9948,9 @@ components:
         - progress
         - type
         - taskId
+    Object:
+      type: object
+      properties: {}
     RecordStatusDTO:
       type: object
       properties:
