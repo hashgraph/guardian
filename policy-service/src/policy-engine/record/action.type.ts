@@ -1,3 +1,6 @@
+/**
+ * Record action type
+ */
 export enum RecordAction {
     SelectGroup = 'SELECT_POLICY_GROUP',
     SetBlockData = 'SET_BLOCK_DATA',

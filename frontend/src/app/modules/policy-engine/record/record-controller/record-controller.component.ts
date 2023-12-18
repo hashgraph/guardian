@@ -23,7 +23,7 @@ export class RecordControllerComponent implements OnInit {
     public loading: boolean = true;
     public recording: boolean = false;
     public running: boolean = false;
-    public recordId: any;
+    public recordId: string | null;
     public recordItems: any[] = [];
     public recordLoading: boolean = true;
     public recordIndex: any;
@@ -150,6 +150,7 @@ export class RecordControllerComponent implements OnInit {
             if (arrayBuffer) {
                 this.loading = true;
                 this.recordItems = [];
+                this.overlay = null;
                 this.recordService.runRecord(this.policyId, arrayBuffer).subscribe((result) => {
                     this.running = !!result;
                     this.updateActive();
@@ -207,7 +208,7 @@ export class RecordControllerComponent implements OnInit {
         if (data) {
             if (data.type === 'Running') {
                 this.running = true;
-                this.recordId = data.id;
+                this.recordId = String(data.id);
                 this.recordIndex = data.index;
                 this.recordStatus = data.status;
                 this.recordError = data.error;
@@ -215,7 +216,7 @@ export class RecordControllerComponent implements OnInit {
             }
             if (data.type === 'Recording') {
                 this.recording = true;
-                this.recordId = data.uuid;
+                this.recordId = String(data.uuid);
                 this.recordIndex = -1;
                 this.recordStatus = data.status;
                 this.recordError = data.error;

@@ -10,22 +10,73 @@ import { DIDDocument, DatabaseServer, IRecordResult, RecordImportExport } from '
 import { RecordItem } from './record-item';
 import { GenerateDID, GenerateUUID, IGenerateValue, RecordItemStack, Utils } from './utils';
 
+/**
+ * Running controller
+ */
 export class Running {
+    /**
+     * Controller type
+     */
     public readonly type: string = 'Running';
+    /**
+     * Policy ID
+     */
     public readonly policyId: string;
+    /**
+     * Policy root block
+     */
     public readonly policyInstance: IPolicyBlock;
+    /**
+     * Options
+     */
     public readonly options: any;
+    /**
+     * Block messenger
+     */
     private readonly tree: BlockTreeGenerator;
+    /**
+     * Recorded actions (type = User Actions)
+     */
     private readonly _actions: RecordItemStack;
+    /**
+     * Recorded actions (type = Generate UUID)
+     */
     private readonly _generateUUID: RecordItemStack;
+    /**
+     * Recorded actions (type = Generate DID)
+     */
     private readonly _generateDID: RecordItemStack;
+    /**
+     * Recorded result
+     */
     private readonly _results: IRecordResult[];
+    /**
+     * Record ID
+     */
     private _id: number;
+    /**
+     * Status
+     */
     private _status: RunningStatus;
+    /**
+     * Last error
+     */
     private _lastError: string;
+    /**
+     * list of created IDs
+     */
     private _generatedItems: IGenerateValue<any>[];
+    /**
+     * Start time
+     */
     private _startTime: number;
+    /**
+     * End time
+     */
     private _endTime: number;
+    /**
+     * Current delay
+     */
     private _currentDelay: any;
 
     constructor(
@@ -62,6 +113,10 @@ export class Running {
         this._results = results;
     }
 
+    /**
+     * Start running
+     * @public
+     */
     public start(): boolean {
         this._status = RunningStatus.Running;
         this._lastError = null;
@@ -76,6 +131,10 @@ export class Running {
         return true;
     }
 
+    /**
+     * Stop running
+     * @public
+     */
     public stop(): boolean {
         this._status = RunningStatus.Stopped;
         this._lastError = null;
@@ -84,6 +143,10 @@ export class Running {
         return true;
     }
 
+    /**
+     * Finish running
+     * @public
+     */
     public finished(): boolean {
         this._id = -1;
         this._status = RunningStatus.Finished;
@@ -93,6 +156,11 @@ export class Running {
         return true;
     }
 
+    /**
+     * Stop running with error
+     * @param message
+     * @public
+     */
     public error(message: string): boolean {
         this._status = RunningStatus.Error;
         this._lastError = message;
@@ -101,6 +169,10 @@ export class Running {
         return true;
     }
 
+    /**
+     * Start running (with results)
+     * @public
+     */
     public async run(): Promise<IRecordResult[]> {
         this._status = RunningStatus.Running;
         this._lastError = null;
@@ -115,6 +187,11 @@ export class Running {
         return await this.results();
     }
 
+    /**
+     * Skip delay
+     * @param options
+     * @public
+     */
     public async fastForward(options: any): Promise<boolean> {
         try {
             const skipIndex = Number(options?.index);
@@ -133,39 +210,51 @@ export class Running {
         }
     }
 
-    public async retryStep(): Promise<IRecordResult[]> {
+    /**
+     * Retry current action
+     * @public
+     */
+    public async retryStep(): Promise<boolean> {
         try {
             if (this._status === RunningStatus.Error) {
                 this._status = RunningStatus.Running;
                 this._lastError = null;
                 this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
-                await this._run(this._id);
-                return await this.results();
+                this._run(this._id).then();
+                return true;
             } else {
-                return null;
+                return false;
             }
         } catch (error) {
-            return null;
+            return false;
         }
     }
 
-    public async skipStep(): Promise<IRecordResult[]> {
+    /**
+     * Skip current action
+     * @public
+     */
+    public async skipStep(): Promise<boolean> {
         try {
             if (this._status === RunningStatus.Error) {
                 this._status = RunningStatus.Running;
                 this._lastError = null;
                 this._actions.next();
                 this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
-                await this._run(this._id);
-                return await this.results();
+                this._run(this._id).then();
+                return true;
             } else {
-                return null;
+                return false;
             }
         } catch (error) {
-            return null;
+            return false;
         }
     }
 
+    /**
+     * Get current results
+     * @public
+     */
     public async results(): Promise<IRecordResult[]> {
         if (this._status !== RunningStatus.Stopped) {
             return null;
@@ -201,6 +290,11 @@ export class Running {
         return results;
     }
 
+    /**
+     * Run
+     * @param id
+     * @private
+     */
     private async _run(id: number): Promise<void> {
         while (this.isRunning(id)) {
             const result = await this.next();
@@ -220,10 +314,21 @@ export class Running {
         }
     }
 
+    /**
+     * Check status
+     * @param id
+     * @private
+     */
     private isRunning(id: number): boolean {
         return this._id === id && this._status === RunningStatus.Running;
     }
 
+    /**
+     * Create delay
+     * @param time
+     * @param index
+     * @private
+     */
     private async delay(time: number, index: number): Promise<void> {
         this._currentDelay = null;
         return new Promise(resolve => {
@@ -241,8 +346,8 @@ export class Running {
 
     /**
      * Get user
-     * @param policy
-     * @param user
+     * @param did
+     * @private
      */
     private async getUser(did: string): Promise<IPolicyUser> {
         const userFull = new PolicyUser(did);
@@ -259,6 +364,11 @@ export class Running {
         return userFull;
     }
 
+    /**
+     * Replay event
+     * @param action
+     * @private
+     */
     private async runAction(action: RecordItem): Promise<string> {
         if (action.method === RecordMethod.Start) {
             return null;
@@ -324,6 +434,11 @@ export class Running {
         return `Action (${action.method}: ${action.action}) not defined.`;
     }
 
+    /**
+     * Replace dynamic ids in documents
+     * @param action
+     * @private
+     */
     private async getActionDocument(action: RecordItem): Promise<any> {
         try {
             let document = action.document;
@@ -351,6 +466,11 @@ export class Running {
         }
     }
 
+    /**
+     * Replace ids
+     * @param obj
+     * @private
+     */
     private async replaceId(obj: any): Promise<any> {
         for (const value of this._generatedItems) {
             obj = Utils.replaceAllValues(obj, value);
@@ -358,6 +478,11 @@ export class Running {
         return obj;
     }
 
+    /**
+     * Replace ids
+     * @param obj
+     * @private
+     */
     private async replaceRow(obj: any): Promise<any> {
         const result = Utils.findAllDocuments(obj);
         for (const row of result) {
@@ -373,7 +498,11 @@ export class Running {
         return obj;
     }
 
-    public async next() {
+    /**
+     * Get next action
+     * @private
+     */
+    private async next() {
         const result = {
             index: -1,
             delay: -1,
@@ -418,6 +547,7 @@ export class Running {
 
     /**
      * Get error message
+     * @private
      */
     private getErrorMessage(error: string | Error | any): string {
         if (typeof error === 'string') {
@@ -433,6 +563,10 @@ export class Running {
         }
     }
 
+    /**
+     * Get next uuid
+     * @public
+     */
     public async nextUUID(): Promise<string> {
         const uuid = GenerateUUIDv4();
         const action = this._generateUUID.current;
@@ -442,6 +576,10 @@ export class Running {
         return uuid;
     }
 
+    /**
+     * Get next did
+     * @public
+     */
     public async nextDID(topicId: string): Promise<DIDDocument> {
         const didDocument = await DIDDocument.create(null, topicId);
         const did = didDocument.getDid();
@@ -452,6 +590,10 @@ export class Running {
         return didDocument;
     }
 
+    /**
+     * Get full status
+     * @public
+     */
     public getStatus() {
         return {
             id: this._id,
@@ -464,10 +606,18 @@ export class Running {
         }
     }
 
+    /**
+     * Get recorded actions (type = User Actions)
+     * @public
+     */
     public async getActions(): Promise<RecordItem[]> {
         return this._actions.items;
     }
 
+    /**
+     * Get current and recorded results
+     * @public
+     */
     public async getResults(): Promise<any> {
         if (this._id) {
             const results = await RecordImportExport.loadRecordResults(this.policyId, this._startTime, this._endTime);

@@ -1,15 +1,50 @@
 import { RecordItem } from './record-item';
 
+/**
+ * Generate item
+ */
 export interface IGenerateValue<T> {
+    /**
+     * Old value
+     * @public
+     * @readonly
+     */
     readonly oldValue: T;
+    /**
+     * New value
+     * @public
+     * @readonly
+     */
     readonly newValue: T;
+    /**
+     * Replace value
+     * @param value
+     * @public
+     */
     replace<U>(value: U): U;
 }
 
+/**
+ * Generate UUID
+ */
 export class GenerateUUID implements IGenerateValue<string> {
+    /**
+     * Old value
+     * @public
+     * @readonly
+     */
     public readonly oldValue: string;
+    /**
+     * New value
+     * @public
+     * @readonly
+     */
     public readonly newValue: string;
-
+    /**
+     * Value map
+     * @private
+     * @readonly
+     */
     private readonly _map: Map<string, string>;
 
     constructor(oldValue: string, newValue: string) {
@@ -20,6 +55,11 @@ export class GenerateUUID implements IGenerateValue<string> {
         this._map.set(`urn:uuid:${this.oldValue}`, `urn:uuid:${this.newValue}`);
     }
 
+    /**
+     * Replace value
+     * @param value
+     * @public
+     */
     public replace<U>(value: U): U {
         if (typeof value === 'string' && this._map.has(value)) {
             return this._map.get(value) as U;
@@ -28,8 +68,21 @@ export class GenerateUUID implements IGenerateValue<string> {
     }
 }
 
+/**
+ * Generate DID
+ */
 export class GenerateDID implements IGenerateValue<string> {
+    /**
+     * Old value
+     * @public
+     * @readonly
+     */
     public readonly oldValue: string;
+    /**
+     * New value
+     * @public
+     * @readonly
+     */
     public readonly newValue: string;
 
     constructor(oldValue: string, newValue: string) {
@@ -37,6 +90,11 @@ export class GenerateDID implements IGenerateValue<string> {
         this.newValue = newValue;
     }
 
+    /**
+     * Replace value
+     * @param value
+     * @public
+     */
     public replace<U>(value: U): U {
         if (typeof value === 'string' && value === this.oldValue) {
             return this.newValue as U;
@@ -45,10 +103,33 @@ export class GenerateDID implements IGenerateValue<string> {
     }
 }
 
+/**
+ * Row document
+ */
 export class RowDocument {
+    /**
+     * Parent object
+     * @public
+     * @readonly
+     */
     public readonly parent: any;
+    /**
+     * Path in parent object
+     * @public
+     * @readonly
+     */
     public readonly key: any;
+    /**
+     * Document type
+     * @public
+     * @readonly
+     */
     public readonly type: 'vc' | 'vp' | 'did';
+    /**
+     * Filters
+     * @public
+     * @readonly
+     */
     public readonly filters: any;
 
     constructor(document: any, parent: any, key: any) {
@@ -77,6 +158,12 @@ export class RowDocument {
         return 'vp';
     }
 
+    /**
+     * Replace document in parent object
+     * @param root - root object
+     * @param row - new document
+     * @public
+     */
     public replace(root: any, row: any): any {
         if (row) {
             if (this.parent && this.key) {
@@ -90,18 +177,31 @@ export class RowDocument {
         }
     }
 
+    /**
+     * Check document id (document has db id and document id)
+     * @param obj - root object
+     * @public
+     */
     public static check(obj: any): boolean {
         return obj && obj.id && obj._id && obj.document && obj.document.id;
     }
 }
 
+/**
+ * Utils
+ */
 export class Utils {
     /**
      * Replace all values
      * @param obj
      * @param value
+     * @public
+     * @static
      */
-    public static replaceAllValues(obj: any, value: IGenerateValue<any>): any {
+    public static replaceAllValues(
+        obj: any,
+        value: IGenerateValue<any>
+    ): any {
         if (!obj) {
             return obj;
         }
@@ -124,8 +224,17 @@ export class Utils {
      * Find all documents
      * @param obj
      * @param results
+     * @param parent
+     * @param parentKey
+     * @private
+     * @static
      */
-    public static _findAllDocuments(obj: any, results: RowDocument[], parent: any, parentKey: any): void {
+    private static _findAllDocuments(
+        obj: any,
+        results: RowDocument[],
+        parent: any,
+        parentKey: any
+    ): void {
         if (obj && typeof obj === 'object') {
             if (Array.isArray(obj)) {
                 for (let i = 0; i < obj.length; i++) {
@@ -147,7 +256,8 @@ export class Utils {
     /**
      * Find all documents
      * @param obj
-     * @param results
+     * @public
+     * @static
      */
     public static findAllDocuments(obj: any): RowDocument[] {
         const results: RowDocument[] = [];
@@ -158,8 +268,17 @@ export class Utils {
     }
 }
 
+/**
+ * Record actions stack
+ */
 export class RecordItemStack {
+    /**
+     * List of actions
+     */
     private _items: RecordItem[];
+    /**
+     * Current index
+     */
     private _index: number;
 
     constructor() {
@@ -167,6 +286,11 @@ export class RecordItemStack {
         this._index = 0;
     }
 
+    /**
+     * Set actions
+     * @param items
+     * @public
+     */
     public setItems(items: RecordItem[]): void {
         if (Array.isArray(items)) {
             this._items = items;
@@ -176,36 +300,68 @@ export class RecordItemStack {
         this._index = 0;
     }
 
+    /**
+     * Clear index
+     * @public
+     */
     public clearIndex(): void {
         this._index = 0;
     }
 
+    /**
+     * Next index
+     * @public
+     */
     public nextIndex(): void {
         this._index++;
     }
 
+    /**
+     * Next actions
+     * @public
+     */
     public next(): RecordItem | undefined {
         this._index++;
         return this._items[this._index];
     }
 
+    /**
+     * Prev actions
+     * @public
+     */
     public prev(): RecordItem | undefined {
         this._index--;
         return this._items[this._index];
     }
 
+    /**
+     * Get current action
+     * @public
+     */
     public get current(): RecordItem | undefined {
         return this._items[this._index];
     }
 
+    /**
+     * Get current index
+     * @public
+     */
     public get index(): number {
         return this._index;
     }
 
+    /**
+     * Get all actions
+     * @public
+     */
     public get items(): RecordItem[] {
         return this._items;
     }
 
+    /**
+     * Get actions count
+     * @public
+     */
     public get count(): number {
         return this._items.length;
     }

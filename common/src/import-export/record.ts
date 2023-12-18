@@ -6,8 +6,17 @@ import { DatabaseServer } from '../database-modules';
  * Record result
  */
 export interface IRecordResult {
+    /**
+     * Document ID
+     */
     id: string;
+    /**
+     * Document type
+     */
     type: 'vc' | 'vp' | 'schema';
+    /**
+     * Document body (JSON)
+     */
     document: any;
 }
 
@@ -15,8 +24,17 @@ export interface IRecordResult {
  * Record components
  */
 export interface IRecordComponents {
+    /**
+     * Recorded items
+     */
     records: Record[];
+    /**
+     * Result (Documents)
+     */
     results: IRecordResult[];
+    /**
+     * Current time
+     */
     time: number;
 }
 
@@ -24,8 +42,17 @@ export interface IRecordComponents {
  * Record result
  */
 export class RecordResult implements IRecordResult {
+    /**
+     * Document ID
+     */
     public id: string;
+    /**
+     * Document type
+     */
     public type: 'vc' | 'vp' | 'schema';
+    /**
+     * Document body (JSON)
+     */
     public document: any;
 
     constructor(
@@ -38,24 +65,39 @@ export class RecordResult implements IRecordResult {
         this.document = document;
     }
 
+    /**
+     * Get document name
+     */
     public get name(): string {
         return btoa(`${this.type}|${this.id}`);
     }
 
+    /**
+     * Get file
+     */
     public get file(): string {
         return JSON.stringify(this.document);
     }
 
+    /**
+     * Create record item by json
+     */
     public static from(name: string, json: string): RecordResult {
         const [type, id] = atob(name).split('|') as any[];
         const document = JSON.parse(json);
         return new RecordResult(type, id, document);
     }
 
+    /**
+     * Create record item by object
+     */
     public static fromObject(item: IRecordResult): RecordResult {
         return new RecordResult(item.type, item.id, item.document);
     }
 
+    /**
+     * To object
+     */
     public toObject(): IRecordResult {
         return {
             id: this.id,
@@ -74,10 +116,26 @@ export class RecordImportExport {
      */
     public static readonly recordFileName = 'actions.csv';
 
+    /**
+     * Get full time
+     * @param time
+     * @param base
+     *
+     * @returns time
+     * @private
+     */
     private static addTime(time: string | number | Date, base: string | number | Date): number {
         return (Number(time) + Number(base));
     }
 
+    /**
+     * Get diff time
+     * @param time
+     * @param base
+     *
+     * @returns time
+     * @private
+     */
     private static diffTime(time: string | number | Date, base: string | number | Date): string {
         if (time && base) {
             return String(Number(time) - Number(base));
@@ -91,6 +149,8 @@ export class RecordImportExport {
      * @param uuid record
      *
      * @returns results
+     * @public
+     * @static
      */
     public static async loadRecordResults(
         policyId: string,
@@ -144,6 +204,8 @@ export class RecordImportExport {
      * @param uuid record
      *
      * @returns components
+     * @public
+     * @static
      */
     public static async loadRecordComponents(uuid: string): Promise<IRecordComponents> {
         const records = await DatabaseServer.getRecord({ uuid }, { orderBy: { time: 'ASC' } });
@@ -163,6 +225,8 @@ export class RecordImportExport {
      * @param record record to pack
      *
      * @returns Zip file
+     * @public
+     * @static
      */
     public static async generate(uuid: string): Promise<JSZip> {
         const components = await RecordImportExport.loadRecordComponents(uuid);
@@ -175,6 +239,8 @@ export class RecordImportExport {
      * @param components record components
      *
      * @returns Zip file
+     * @public
+     * @static
      */
     public static async generateZipFile(components: IRecordComponents): Promise<JSZip> {
         const zip = new JSZip();
@@ -216,6 +282,8 @@ export class RecordImportExport {
      * Parse zip record file
      * @param zipFile Zip file
      * @returns Parsed record
+     * @public
+     * @static
      */
     public static async parseZipFile(zipFile: any): Promise<IRecordComponents> {
         const zip = new JSZip();

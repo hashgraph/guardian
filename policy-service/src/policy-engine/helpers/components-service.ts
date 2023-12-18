@@ -1,7 +1,6 @@
 import {
     DIDDocument,
     DatabaseServer,
-    IRecordResult,
     Policy as PolicyCollection,
     PolicyTool as PolicyToolCollection,
     Schema as SchemaCollection
@@ -12,17 +11,42 @@ import { IPolicyUser } from '@policy-engine/policy-user';
 import { Recording, Running } from '@policy-engine/record';
 
 export class ComponentsService {
+    /**
+     * Policy topic ID
+     */
     public readonly topicId: string;
+    /**
+     * Policy ID
+     */
     public readonly policyId: string;
+    /**
+     * Policy ID
+     */
     public readonly dryRunId: string;
-
+    /**
+     * Token templates
+     */
     private policyTokens: any[];
+    /**
+     * Group templates
+     */
     private policyGroups: any[];
+    /**
+     * Roles
+     */
     private policyRoles: string[];
+    /**
+     * Schemas
+     */
     private readonly schemasByID: Map<string, SchemaCollection>;
+    /**
+     * Schemas
+     */
     private readonly schemasByType: Map<string, SchemaCollection>;
+    /**
+     * Root block
+     */
     private root: IPolicyBlock;
-
     /**
      * Database instance
      * @public
@@ -172,6 +196,9 @@ export class ComponentsService {
         return true;
     }
 
+    /**
+     * Generate new UUID
+     */
     public async generateUUID(): Promise<string> {
         if (this._runningController) {
             return await this._runningController.nextUUID();
@@ -183,6 +210,9 @@ export class ComponentsService {
         return uuid;
     }
 
+    /**
+     * Generate new DID
+     */
     public async generateDID(topicId: string): Promise<DIDDocument> {
         if (this._runningController) {
             return await this._runningController.nextDID(topicId);
@@ -194,7 +224,14 @@ export class ComponentsService {
         return didDocument;
     }
 
+    /**
+     * Recording Controller
+     */
     private _recordingController: Recording;
+
+    /**
+     * Running Controller
+     */
     private _runningController: Running;
 
     public get recordingController(): Recording | null {
@@ -209,6 +246,9 @@ export class ComponentsService {
         return this._recordingController || this._runningController;
     }
 
+    /**
+     * Start Recording
+     */
     public async startRecording(): Promise<boolean> {
         if (this._runningController) {
             return false;
@@ -219,6 +259,9 @@ export class ComponentsService {
         return await this._recordingController.start();
     }
 
+    /**
+     * Stop Recording
+     */
     public async stopRecording(): Promise<boolean> {
         if (this._recordingController) {
             const old = this._recordingController;
@@ -233,6 +276,9 @@ export class ComponentsService {
         return false;
     }
 
+    /**
+     * Stop Running
+     */
     public async stopRunning(): Promise<boolean> {
         if (this._recordingController) {
             const old = this._recordingController;
@@ -247,6 +293,12 @@ export class ComponentsService {
         return false;
     }
 
+    /**
+     * Run Record
+     * @param actions
+     * @param results
+     * @param options
+     */
     public async runRecord(
         actions: any[],
         results: any[],
@@ -267,6 +319,10 @@ export class ComponentsService {
         return this._runningController.start();
     }
 
+    /**
+     * Skip running delay
+     * @param options
+     */
     public async fastForward(options: any): Promise<boolean> {
         if (this._runningController) {
             return this._runningController.fastForward(options);
@@ -274,14 +330,22 @@ export class ComponentsService {
         return false;
     }
 
-    public async retryStep(options: any): Promise<IRecordResult[]> {
+    /**
+     * Retry running step
+     * @param options
+     */
+    public async retryStep(options: any): Promise<boolean> {
         if (this._runningController) {
             return this._runningController.retryStep();
         }
         return null;
     }
 
-    public async skipStep(options: any): Promise<IRecordResult[]> {
+    /**
+     * Skip running step
+     * @param options
+     */
+    public async skipStep(options: any): Promise<boolean> {
         if (this._runningController) {
             return this._runningController.skipStep();
         }

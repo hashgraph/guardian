@@ -1,12 +1,14 @@
 import { PolicyType, UserRole } from '@guardian/interfaces';
 import { PolicyEngine } from '@helpers/policy-engine';
-import { Logger } from '@guardian/common';
-import { Controller, Get, HttpCode, HttpException, HttpStatus, Post, Req, Response } from '@nestjs/common';
-import { checkPermission } from '@auth/authorization-helper';
+import { IAuthUser, Logger } from '@guardian/common';
+import { Controller, Get, HttpCode, HttpException, HttpStatus, Post, Response, Param, Body } from '@nestjs/common';
 import { ApiBody, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
 import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator';
 import { Guardians } from '@helpers/guardians';
+import { Auth } from '@auth/auth.decorator';
+import { AuthUser } from '@auth/authorization-helper';
+import { RecordActionDTO, RecordStatusDTO, RunningDetailsDTO, RunningResultDTO } from '@middlewares/validation/schemas/record';
 
 /**
  * Check policy
@@ -43,6 +45,9 @@ export class RecordApi {
      * Get recording or running status
      */
     @Get('/:policyId/status')
+    @Auth(
+        UserRole.STANDARD_REGISTRY
+    )
     @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Get recording or running status.',
@@ -61,9 +66,7 @@ export class RecordApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
+        type: RecordStatusDTO
     })
     @ApiUnauthorizedResponse({
         description: 'Unauthorized.',
@@ -76,15 +79,14 @@ export class RecordApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
-    async getRecordStatus(@Req() req, @Response() res) {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const owner = req.user.did;
-        const policyId = req.params.policyId;
-        await checkPolicy(policyId, owner);
+    async getRecordStatus(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+    ) {
+        await checkPolicy(policyId, user.did);
         try {
             const guardians = new Guardians();
-            const result = await guardians.getRecordStatus(policyId, owner);
-            return res.json(result);
+            return await guardians.getRecordStatus(policyId, user.did);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -95,6 +97,9 @@ export class RecordApi {
      * Start recording
      */
     @Post('/:policyId/recording/start')
+    @Auth(
+        UserRole.STANDARD_REGISTRY
+    )
     @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Start recording.',
@@ -113,9 +118,7 @@ export class RecordApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
+        type: Boolean
     })
     @ApiUnauthorizedResponse({
         description: 'Unauthorized.',
@@ -128,16 +131,15 @@ export class RecordApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
-    async startRecord(@Req() req, @Response() res) {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const owner = req.user.did;
-        const options = req.body;
-        const policyId = req.params.policyId;
-        await checkPolicy(policyId, owner);
+    async startRecord(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() options: any
+    ) {
+        await checkPolicy(policyId, user.did);
         try {
             const guardians = new Guardians();
-            const result = await guardians.startRecording(policyId, owner, options);
-            return res.json(result);
+            return await guardians.startRecording(policyId, user.did, options);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -148,6 +150,9 @@ export class RecordApi {
      * Stop recording
      */
     @Post('/:policyId/recording/stop')
+    @Auth(
+        UserRole.STANDARD_REGISTRY
+    )
     @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Stop recording.',
@@ -167,7 +172,8 @@ export class RecordApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
-            'type': 'object'
+            type: 'string',
+            format: 'binary'
         },
     })
     @ApiUnauthorizedResponse({
@@ -181,15 +187,16 @@ export class RecordApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
-    async stopRecord(@Req() req, @Response() res) {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const owner = req.user.did;
-        const options = req.body;
-        const policyId = req.params.policyId;
-        await checkPolicy(policyId, owner);
+    async stopRecord(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() options: any,
+        @Response() res: any
+    ) {
+        await checkPolicy(policyId, user.did);
         try {
             const guardians = new Guardians();
-            const result = await guardians.stopRecording(policyId, owner, options);
+            const result = await guardians.stopRecording(policyId, user.did, options);
             res.setHeader('Content-disposition', `attachment; filename=${Date.now()}`);
             res.setHeader('Content-type', 'application/zip');
             return res.send(result);
@@ -203,6 +210,9 @@ export class RecordApi {
      * Get recorded actions
      */
     @Get('/:policyId/recording/actions')
+    @Auth(
+        UserRole.STANDARD_REGISTRY
+    )
     @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Get recorded actions.',
@@ -221,9 +231,8 @@ export class RecordApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        }
+        isArray: true,
+        type: RecordActionDTO
     })
     @ApiUnauthorizedResponse({
         description: 'Unauthorized.',
@@ -236,15 +245,14 @@ export class RecordApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
-    async getRecordActions(@Req() req, @Response() res) {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const owner = req.user.did;
-        const policyId = req.params.policyId;
-        await checkPolicy(policyId, owner);
+    async getRecordActions(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+    ) {
+        await checkPolicy(policyId, user.did);
         try {
             const guardians = new Guardians();
-            const result = await guardians.getRecordedActions(policyId, owner);
-            return res.json(result);
+            return await guardians.getRecordedActions(policyId, user.did);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -255,6 +263,9 @@ export class RecordApi {
      * Run record from a zip file
      */
     @Post('/:policyId/running/start')
+    @Auth(
+        UserRole.STANDARD_REGISTRY
+    )
     @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Run record from a zip file.',
@@ -273,9 +284,7 @@ export class RecordApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
+        type: Boolean
     })
     @ApiUnauthorizedResponse({
         description: 'Unauthorized.',
@@ -288,17 +297,16 @@ export class RecordApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
-    async runRecord(@Req() req, @Response() res) {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const owner = req.user.did;
-        const file = req.body;
-        const policyId = req.params.policyId;
-        const options = { file };
-        await checkPolicy(policyId, owner);
+    async runRecord(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() file: any
+    ) {
+        await checkPolicy(policyId, user.did);
         try {
+            const options = { file };
             const guardians = new Guardians();
-            const result = await guardians.runRecord(policyId, owner, options);
-            return res.json(result);
+            return await guardians.runRecord(policyId, user.did, options);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -309,6 +317,9 @@ export class RecordApi {
      * Stop running
      */
     @Post('/:policyId/running/stop')
+    @Auth(
+        UserRole.STANDARD_REGISTRY
+    )
     @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Stop running.',
@@ -327,9 +338,7 @@ export class RecordApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
+        type: Boolean
     })
     @ApiUnauthorizedResponse({
         description: 'Unauthorized.',
@@ -342,16 +351,15 @@ export class RecordApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
-    async stopRunning(@Req() req, @Response() res) {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const owner = req.user.did;
-        const options = req.body;
-        const policyId = req.params.policyId;
-        await checkPolicy(policyId, owner);
+    async stopRunning(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() options: any
+    ) {
+        await checkPolicy(policyId, user.did);
         try {
             const guardians = new Guardians();
-            const result = await guardians.stopRunning(policyId, owner, options);
-            return res.json(result);
+            return await guardians.stopRunning(policyId, user.did, options);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -362,6 +370,9 @@ export class RecordApi {
      * Get running results
      */
     @Get('/:policyId/running/results')
+    @Auth(
+        UserRole.STANDARD_REGISTRY
+    )
     @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Get running results.',
@@ -380,9 +391,7 @@ export class RecordApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        }
+        type: RunningResultDTO
     })
     @ApiUnauthorizedResponse({
         description: 'Unauthorized.',
@@ -395,15 +404,14 @@ export class RecordApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
-    async getRecordResults(@Req() req, @Response() res) {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const owner = req.user.did;
-        const policyId = req.params.policyId;
-        await checkPolicy(policyId, owner);
+    async getRecordResults(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+    ) {
+        await checkPolicy(policyId, user.did);
         try {
             const guardians = new Guardians();
-            const result = await guardians.getRecordResults(policyId, owner);
-            return res.json(result);
+            return await guardians.getRecordResults(policyId, user.did);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -414,6 +422,9 @@ export class RecordApi {
      * Get running details
      */
     @Get('/:policyId/running/details')
+    @Auth(
+        UserRole.STANDARD_REGISTRY
+    )
     @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Get running details.',
@@ -432,9 +443,7 @@ export class RecordApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        }
+        type: RunningDetailsDTO
     })
     @ApiUnauthorizedResponse({
         description: 'Unauthorized.',
@@ -447,15 +456,14 @@ export class RecordApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
-    async getRecordDetails(@Req() req, @Response() res) {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const owner = req.user.did;
-        const policyId = req.params.policyId;
-        await checkPolicy(policyId, owner);
+    async getRecordDetails(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string
+    ) {
+        await checkPolicy(policyId, user.did);
         try {
             const guardians = new Guardians();
-            const result = await guardians.getRecordDetails(policyId, owner);
-            return res.json(result);
+            return await guardians.getRecordDetails(policyId, user.did);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -466,6 +474,9 @@ export class RecordApi {
      * Fast Forward
      */
     @Post('/:policyId/running/fast-forward')
+    @Auth(
+        UserRole.STANDARD_REGISTRY
+    )
     @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Fast Forward.',
@@ -484,9 +495,7 @@ export class RecordApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
+        type: Boolean
     })
     @ApiUnauthorizedResponse({
         description: 'Unauthorized.',
@@ -499,16 +508,15 @@ export class RecordApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
-    async fastForward(@Req() req, @Response() res) {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const owner = req.user.did;
-        const options = req.body;
-        const policyId = req.params.policyId;
-        await checkPolicy(policyId, owner);
+    async fastForward(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() options: any
+    ) {
+        await checkPolicy(policyId, user.did);
         try {
             const guardians = new Guardians();
-            const result = await guardians.fastForward(policyId, owner, options);
-            return res.json(result);
+            return await guardians.fastForward(policyId, user.did, options);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -519,6 +527,9 @@ export class RecordApi {
      * Retry Step
      */
     @Post('/:policyId/running/retry')
+    @Auth(
+        UserRole.STANDARD_REGISTRY
+    )
     @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Retry step.',
@@ -537,9 +548,7 @@ export class RecordApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
+        type: Boolean
     })
     @ApiUnauthorizedResponse({
         description: 'Unauthorized.',
@@ -552,16 +561,15 @@ export class RecordApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
-    async retryStep(@Req() req, @Response() res) {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const owner = req.user.did;
-        const options = req.body;
-        const policyId = req.params.policyId;
-        await checkPolicy(policyId, owner);
+    async retryStep(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() options: any
+    ) {
+        await checkPolicy(policyId, user.did);
         try {
             const guardians = new Guardians();
-            const result = await guardians.retryStep(policyId, owner, options);
-            return res.json(result);
+            return await guardians.retryStep(policyId, user.did, options);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -572,6 +580,9 @@ export class RecordApi {
      * Skip Step
      */
     @Post('/:policyId/running/skip')
+    @Auth(
+        UserRole.STANDARD_REGISTRY
+    )
     @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Skip step.',
@@ -590,9 +601,7 @@ export class RecordApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
+        type: Boolean
     })
     @ApiUnauthorizedResponse({
         description: 'Unauthorized.',
@@ -605,16 +614,15 @@ export class RecordApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
-    async skipStep(@Req() req, @Response() res) {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const owner = req.user.did;
-        const options = req.body;
-        const policyId = req.params.policyId;
-        await checkPolicy(policyId, owner);
+    async skipStep(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() options: any
+    ) {
+        await checkPolicy(policyId, user.did);
         try {
             const guardians = new Guardians();
-            const result = await guardians.skipStep(policyId, owner, options);
-            return res.json(result);
+            return await guardians.skipStep(policyId, user.did, options);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);

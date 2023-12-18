@@ -8,10 +8,11 @@ import { AnyBlockType } from './policy-engine.interface';
  * Record utils
  */
 export class RecordUtils {
-
     /**
      * Get record controller
      * @param policyId
+     * @public
+     * @static
      */
     public static GetRecordingController(policyId: string): Recording | null {
         const components = PolicyComponentsUtils.GetPolicyComponents(policyId);
@@ -24,6 +25,8 @@ export class RecordUtils {
     /**
      * Get record controller
      * @param policyId
+     * @public
+     * @static
      */
     public static GetRunAndRecordController(policyId: string): Recording | Running | null {
         const components = PolicyComponentsUtils.GetPolicyComponents(policyId);
@@ -37,6 +40,8 @@ export class RecordUtils {
     /**
      * Start recording
      * @param policyId
+     * @public
+     * @static
      */
     public static async StartRecording(policyId: string): Promise<boolean> {
         const components = PolicyComponentsUtils.GetPolicyComponents(policyId);
@@ -49,6 +54,8 @@ export class RecordUtils {
     /**
      * Stop recording
      * @param policyId
+     * @public
+     * @static
      */
     public static async StopRecording(policyId: string): Promise<boolean> {
         const components = PolicyComponentsUtils.GetPolicyComponents(policyId);
@@ -61,6 +68,8 @@ export class RecordUtils {
     /**
      * Stop running
      * @param policyId
+     * @public
+     * @static
      */
     public static async StopRunning(policyId: string): Promise<boolean> {
         const components = PolicyComponentsUtils.GetPolicyComponents(policyId);
@@ -73,6 +82,9 @@ export class RecordUtils {
     /**
      * Fast Forward
      * @param policyId
+     * @param options
+     * @public
+     * @static
      */
     public static async FastForward(policyId: string, options: any): Promise<boolean> {
         const components = PolicyComponentsUtils.GetPolicyComponents(policyId);
@@ -85,11 +97,14 @@ export class RecordUtils {
     /**
      * Retry Step
      * @param policyId
+     * @param options
+     * @public
+     * @static
      */
-    public static async RetryStep(policyId: string, options: any): Promise<any[]> {
+    public static async RetryStep(policyId: string, options: any): Promise<boolean> {
         const components = PolicyComponentsUtils.GetPolicyComponents(policyId);
         if (!components) {
-            return null;
+            return false;
         }
         return await components.retryStep(options);
     }
@@ -97,11 +112,14 @@ export class RecordUtils {
     /**
      * Skip Step
      * @param policyId
+     * @param options
+     * @public
+     * @static
      */
-    public static async SkipStep(policyId: string, options: any): Promise<any[]> {
+    public static async SkipStep(policyId: string, options: any): Promise<boolean> {
         const components = PolicyComponentsUtils.GetPolicyComponents(policyId);
         if (!components) {
-            return null;
+            return false;
         }
         return await components.skipStep(options);
     }
@@ -109,6 +127,8 @@ export class RecordUtils {
     /**
      * Get recording or running status
      * @param policyId
+     * @public
+     * @static
      */
     public static GetRecordStatus(policyId: string): any {
         const record = RecordUtils.GetRunAndRecordController(policyId);
@@ -122,7 +142,8 @@ export class RecordUtils {
     /**
      * Get recorded actions
      * @param policyId
-     * @param data
+     * @public
+     * @static
      */
     public static async GetRecordedActions(policyId: string): Promise<any[] | null> {
         const record = RecordUtils.GetRunAndRecordController(policyId);
@@ -136,7 +157,8 @@ export class RecordUtils {
     /**
      * Get recorded actions
      * @param policyId
-     * @param data
+     * @public
+     * @static
      */
     public static async GetRecordResults(policyId: string): Promise<any[] | null> {
         const record = RecordUtils.GetRunAndRecordController(policyId);
@@ -151,7 +173,10 @@ export class RecordUtils {
      * Record policy
      * @param policyId
      * @param actions
+     * @param results
      * @param options
+     * @public
+     * @static
      */
     public static async RunRecord(
         policyId: string,
@@ -171,6 +196,8 @@ export class RecordUtils {
      * @param policyId
      * @param user
      * @param uuid
+     * @public
+     * @static
      */
     public static async RecordSelectGroup(
         policyId: string,
@@ -187,7 +214,10 @@ export class RecordUtils {
      * Record SetBlockData
      * @param policyId
      * @param user
-     * @param uuid
+     * @param block
+     * @param data
+     * @public
+     * @static
      */
     public static async RecordSetBlockData(
         policyId: string,
@@ -205,6 +235,8 @@ export class RecordUtils {
      * Record ExternalData
      * @param policyId
      * @param data
+     * @public
+     * @static
      */
     public static async RecordExternalData(
         policyId: string,
@@ -219,8 +251,10 @@ export class RecordUtils {
     /**
      * Record CreateUser
      * @param policyId
+     * @param did
      * @param data
-     * @param data
+     * @public
+     * @static
      */
     public static async RecordCreateUser(
         policyId: string,
@@ -237,6 +271,8 @@ export class RecordUtils {
      * Record SetUser
      * @param policyId
      * @param did
+     * @public
+     * @static
      */
     public static async RecordSetUser(
         policyId: string,

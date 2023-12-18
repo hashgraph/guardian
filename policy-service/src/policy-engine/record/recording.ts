@@ -8,12 +8,29 @@ import { RecordAction } from './action.type';
 import { RecordMethod } from './method.type';
 import { RecordItem } from './record-item';
 
+/**
+ * Recording controller
+ */
 export class Recording {
+    /**
+     * Controller type
+     */
     public readonly type: string = 'Recording';
+    /**
+     * Controller ID
+     */
     public readonly uuid: string;
+    /**
+     * Policy ID
+     */
     public readonly policyId: string;
+    /**
+     * Block messenger
+     */
     private readonly tree: BlockTreeGenerator;
-
+    /**
+     * Recording status
+     */
     private _status: RecordingStatus;
 
     constructor(policyId: string, uuid?: string) {
@@ -24,10 +41,12 @@ export class Recording {
     }
 
     /**
-     * Record policy
-     * @param policyId
-     * @param method
-     * @param msg
+     * Record action
+     * @param action
+     * @param target
+     * @param user
+     * @param document
+     * @private
      */
     private async record(
         action: string,
@@ -49,10 +68,8 @@ export class Recording {
     }
 
     /**
-     * Record policy
-     * @param policyId
-     * @param method
-     * @param msg
+     * Start recording
+     * @public
      */
     public async start(): Promise<boolean> {
         await DatabaseServer.createRecord({
@@ -71,10 +88,8 @@ export class Recording {
     }
 
     /**
-     * Record policy
-     * @param policyId
-     * @param method
-     * @param msg
+     * Stop recording
+     * @public
      */
     public async stop(): Promise<boolean> {
         await DatabaseServer.createRecord({
@@ -92,26 +107,60 @@ export class Recording {
         return true;
     }
 
+    /**
+     * Record event (Select Group)
+     * @param user
+     * @param uuid
+     * @public
+     */
     public async selectGroup(user: IPolicyUser, uuid: string): Promise<void> {
         await this.record(RecordAction.SelectGroup, null, user?.did, { uuid });
     }
 
+    /**
+     * Record event (Set Block Data)
+     * @param user
+     * @param block
+     * @param data
+     * @public
+     */
     public async setBlockData(user: IPolicyUser, block: AnyBlockType, data: any): Promise<void> {
         await this.record(RecordAction.SetBlockData, block?.tag, user?.did, data);
     }
 
+    /**
+     * Record event (Set External Data)
+     * @param data
+     * @public
+     */
     public async externalData(data: any): Promise<void> {
         await this.record(RecordAction.SetExternalData, null, null, data);
     }
 
+    /**
+     * Record event (Create User)
+     * @param did
+     * @param data
+     * @public
+     */
     public async createUser(did: string, data: any): Promise<void> {
         await this.record(RecordAction.CreateUser, null, did, data);
     }
 
+    /**
+     * Record event (Set User)
+     * @param did
+     * @public
+     */
     public async setUser(did: string): Promise<void> {
         await this.record(RecordAction.SetUser, null, did, null);
     }
 
+    /**
+     * Record event (Generate UUID)
+     * @param uuid
+     * @public
+     */
     public async generateUUID(uuid: string): Promise<void> {
         await DatabaseServer.createRecord({
             uuid: this.uuid,
@@ -125,6 +174,11 @@ export class Recording {
         });
     }
 
+    /**
+     * Record event (Generate DID)
+     * @param didDocument
+     * @public
+     */
     public async generateDidDocument(didDocument: DIDDocument): Promise<void> {
         const did = didDocument.getDid();
         await DatabaseServer.createRecord({
@@ -139,6 +193,10 @@ export class Recording {
         });
     }
 
+    /**
+     * Get Recorded actions
+     * @public
+     */
     public async getActions(): Promise<RecordItem[]> {
         return await DatabaseServer.getRecord(
             {
@@ -166,10 +224,18 @@ export class Recording {
         ) as any;
     }
 
+    /**
+     * Get status
+     * @public
+     */
     public get status(): RecordingStatus {
         return this._status;
     }
 
+    /**
+     * Get full status
+     * @public
+     */
     public getStatus() {
         return {
             type: this.type,
@@ -179,6 +245,10 @@ export class Recording {
         }
     }
 
+    /**
+     * Get results
+     * @public
+     */
     public async getResults(): Promise<any> {
         return null;
     }
