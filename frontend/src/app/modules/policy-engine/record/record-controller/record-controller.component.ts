@@ -49,7 +49,9 @@ export class RecordControllerComponent implements OnInit {
     ngOnInit(): void {
         this._subscription.add(
             this.wsService.recordSubscribe((message => {
-                this.updateRecordLogs(message);
+                if(message.policyId === this.policyId) {
+                    this.updateRecordLogs(message);
+                }
             }))
         );
     }
@@ -160,6 +162,8 @@ export class RecordControllerComponent implements OnInit {
                     this.updateActive();
                     this.loading = false;
                 });
+            } else {
+                this.updateActive();
             }
         });
     }

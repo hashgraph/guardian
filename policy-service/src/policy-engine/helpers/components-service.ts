@@ -20,6 +20,10 @@ export class ComponentsService {
      */
     public readonly policyId: string;
     /**
+     * Policy Owner
+     */
+    public readonly owner: string;
+    /**
      * Policy ID
      */
     public readonly dryRunId: string;
@@ -54,6 +58,7 @@ export class ComponentsService {
     public readonly databaseServer: DatabaseServer;
 
     constructor(policy: PolicyCollection, policyId: string) {
+        this.owner = policy.owner;
         this.policyId = policyId;
         this.topicId = policy.topicId;
         if (policy && policy.status === PolicyType.DRY_RUN) {
@@ -254,7 +259,7 @@ export class ComponentsService {
             return false;
         }
         if (!this._recordingController) {
-            this._recordingController = new Recording(this.policyId);
+            this._recordingController = new Recording(this.policyId, this.owner);
         }
         return await this._recordingController.start();
     }
@@ -311,6 +316,7 @@ export class ComponentsService {
             this._runningController = new Running(
                 this.root,
                 this.policyId,
+                this.owner,
                 actions,
                 results,
                 options

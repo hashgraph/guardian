@@ -23,6 +23,10 @@ export class Running {
      */
     public readonly policyId: string;
     /**
+     * Policy owner
+     */
+    public readonly owner: string;
+    /**
      * Policy root block
      */
     public readonly policyInstance: IPolicyBlock;
@@ -67,6 +71,10 @@ export class Running {
      */
     private _generatedItems: IGenerateValue<any>[];
     /**
+     * list of created DIDs
+     */
+    private _generatedDIDs: IGenerateValue<any>[];
+    /**
      * Start time
      */
     private _startTime: number;
@@ -82,12 +90,14 @@ export class Running {
     constructor(
         policyInstance: IPolicyBlock,
         policyId: string,
+        owner: string,
         actions: RecordItem[],
         results: IRecordResult[],
         options: any
     ) {
         this.policyInstance = policyInstance;
         this.policyId = policyId;
+        this.owner = owner;
         this.options = options;
         this.tree = new BlockTreeGenerator();
         this._status = RunningStatus.New;
@@ -110,6 +120,7 @@ export class Running {
             ));
         }
         this._generatedItems = [];
+        this._generatedDIDs = [];
         this._results = results;
     }
 
@@ -122,6 +133,7 @@ export class Running {
         this._lastError = null;
         this._id = Date.now();
         this._generatedItems = [];
+        this._generatedDIDs = [];
         this._actions.clearIndex();
         this._generateUUID.clearIndex();
         this._generateDID.clearIndex();
@@ -178,6 +190,7 @@ export class Running {
         this._lastError = null;
         this._id = Date.now();
         this._generatedItems = [];
+        this._generatedDIDs = [];
         this._actions.clearIndex();
         this._generateUUID.clearIndex();
         this._generateDID.clearIndex();
@@ -371,13 +384,18 @@ export class Running {
      */
     private async runAction(action: RecordItem): Promise<string> {
         if (action.method === RecordMethod.Start) {
+            const recordOwner = action.user;
+            const value = new GenerateDID(recordOwner, this.owner);
+            this._generatedItems.push(value);
+            this._generatedDIDs.push(value);
             return null;
         }
         if (action.method === RecordMethod.Stop) {
             return null;
         }
         if (action.method === RecordMethod.Action) {
-            const userFull = await this.getUser(action.user);
+            const did = this.replaceDID(action.user);
+            const userFull = await this.getUser(did);
             switch (action.action) {
                 case RecordAction.SelectGroup: {
                     const doc = await this.getActionDocument(action);
@@ -412,18 +430,18 @@ export class Running {
                     await DatabaseServer.createVirtualUser(
                         this.policyId,
                         username,
-                        action.user,
+                        userFull.did,
                         action.document?.accountId,
                         action.document?.privateKey
                     );
                     await this.policyInstance.components.databaseServer.saveDid({
-                        did: action.user,
+                        did: userFull.did,
                         document: doc
                     });
                     return null;
                 }
                 case RecordAction.SetUser: {
-                    await DatabaseServer.setVirtualUser(this.policyId, action.user);
+                    await DatabaseServer.setVirtualUser(this.policyId, did);
                     return null;
                 }
                 default: {
@@ -464,6 +482,20 @@ export class Running {
         } catch (error) {
             return action.document;
         }
+    }
+
+    /**
+     * Replace DID
+     * @param did
+     * @private
+     */
+    private replaceDID(did: string): string {
+        for (const value of this._generatedDIDs) {
+            if (value.oldValue === did) {
+                return value.newValue;
+            }
+        }
+        return did;
     }
 
     /**
@@ -586,7 +618,9 @@ export class Running {
         const action = this._generateDID.current;
         const old = action?.document?.did;
         this._generateDID.nextIndex();
-        this._generatedItems.push(new GenerateDID(old, did));
+        const value = new GenerateDID(old, did);
+        this._generatedItems.push(value);
+        this._generatedDIDs.push(value);
         return didDocument;
     }
 

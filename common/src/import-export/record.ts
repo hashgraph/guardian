@@ -254,6 +254,10 @@ export class RecordImportExport {
                 item.method,
                 RecordImportExport.diffTime(item.time, components.time)
             ];
+            if (item.method === 'START') {
+                row.push('');
+                row.push(item.user);
+            }
             if (item.method === 'ACTION' || item.method === 'GENERATE') {
                 row.push(item.action);
                 row.push(item.user || '');

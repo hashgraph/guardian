@@ -25,6 +25,10 @@ export class Recording {
      */
     public readonly policyId: string;
     /**
+     * Policy owner
+     */
+    public readonly owner: string;
+    /**
      * Block messenger
      */
     private readonly tree: BlockTreeGenerator;
@@ -33,9 +37,10 @@ export class Recording {
      */
     private _status: RecordingStatus;
 
-    constructor(policyId: string, uuid?: string) {
+    constructor(policyId: string, owner: string) {
         this.policyId = policyId;
-        this.uuid = uuid || GenerateUUIDv4();
+        this.owner = owner;
+        this.uuid = GenerateUUIDv4();
         this.tree = new BlockTreeGenerator();
         this._status = RecordingStatus.New;
     }
@@ -78,7 +83,7 @@ export class Recording {
             method: RecordMethod.Start,
             action: null,
             time: Date.now(),
-            user: null,
+            user: this.owner,
             target: null,
             document: null
         });
