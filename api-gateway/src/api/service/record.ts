@@ -62,7 +62,8 @@ export class RecordApi {
     })
     @ApiBody({
         description: 'Object that contains options',
-        required: true
+        required: true,
+        type: Object
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -114,7 +115,8 @@ export class RecordApi {
     })
     @ApiBody({
         description: 'Object that contains options',
-        required: true
+        required: true,
+        type: Object
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -167,7 +169,8 @@ export class RecordApi {
     })
     @ApiBody({
         description: 'Object that contains options',
-        required: true
+        required: true,
+        type: Object
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -227,7 +230,8 @@ export class RecordApi {
     })
     @ApiBody({
         description: 'Object that contains options',
-        required: true
+        required: true,
+        type: Object
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -280,7 +284,8 @@ export class RecordApi {
     })
     @ApiBody({
         description: 'A zip file containing record to be run.',
-        required: true
+        required: true,
+        type: String
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -334,7 +339,8 @@ export class RecordApi {
     })
     @ApiBody({
         description: 'Object that contains options',
-        required: true
+        required: true,
+        type: Object
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -387,7 +393,8 @@ export class RecordApi {
     })
     @ApiBody({
         description: 'Object that contains options',
-        required: true
+        required: true,
+        type: Object
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -439,7 +446,8 @@ export class RecordApi {
     })
     @ApiBody({
         description: 'Object that contains options',
-        required: true
+        required: true,
+        type: Object
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -491,7 +499,8 @@ export class RecordApi {
     })
     @ApiBody({
         description: 'Object that contains options',
-        required: true
+        required: true,
+        type: Object
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -544,7 +553,8 @@ export class RecordApi {
     })
     @ApiBody({
         description: 'Object that contains options',
-        required: true
+        required: true,
+        type: Object
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -597,7 +607,8 @@ export class RecordApi {
     })
     @ApiBody({
         description: 'Object that contains options',
-        required: true
+        required: true,
+        type: Object
     })
     @ApiOkResponse({
         description: 'Successful operation.',
