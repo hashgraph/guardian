@@ -8222,9 +8222,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/RecordStatusDTO'
         '401':
-          description: Unauthorized.
+          description: Unauthorized
         '403':
           description: Forbidden.
         '500':
@@ -8237,6 +8237,7 @@ paths:
         - record
       security:
         - bearerAuth: []
+        - bearer: []
   /record/{policyId}/recording/start:
     post:
       operationId: RecordApi_startRecord
@@ -8264,9 +8265,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                type: boolean
         '401':
-          description: Unauthorized.
+          description: Unauthorized
         '403':
           description: Forbidden.
         '500':
@@ -8278,6 +8279,7 @@ paths:
       tags: *ref_13
       security:
         - bearerAuth: []
+        - bearer: []
   /record/{policyId}/recording/stop:
     post:
       operationId: RecordApi_stopRecord
@@ -8305,9 +8307,10 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                type: string
+                format: binary
         '401':
-          description: Unauthorized.
+          description: Unauthorized
         '403':
           description: Forbidden.
         '500':
@@ -8319,6 +8322,7 @@ paths:
       tags: *ref_13
       security:
         - bearerAuth: []
+        - bearer: []
   /record/{policyId}/recording/actions:
     get:
       operationId: RecordApi_getRecordActions
@@ -8346,9 +8350,11 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                type: array
+                items:
+                  $ref: '#/components/schemas/RecordActionDTO'
         '401':
-          description: Unauthorized.
+          description: Unauthorized
         '403':
           description: Forbidden.
         '500':
@@ -8360,6 +8366,7 @@ paths:
       tags: *ref_13
       security:
         - bearerAuth: []
+        - bearer: []
   /record/{policyId}/running/start:
     post:
       operationId: RecordApi_runRecord
@@ -8387,9 +8394,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                type: boolean
         '401':
-          description: Unauthorized.
+          description: Unauthorized
         '403':
           description: Forbidden.
         '500':
@@ -8401,6 +8408,7 @@ paths:
       tags: *ref_13
       security:
         - bearerAuth: []
+        - bearer: []
   /record/{policyId}/running/stop:
     post:
       operationId: RecordApi_stopRunning
@@ -8428,9 +8436,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                type: boolean
         '401':
-          description: Unauthorized.
+          description: Unauthorized
         '403':
           description: Forbidden.
         '500':
@@ -8442,6 +8450,7 @@ paths:
       tags: *ref_13
       security:
         - bearerAuth: []
+        - bearer: []
   /record/{policyId}/running/results:
     get:
       operationId: RecordApi_getRecordResults
@@ -8469,9 +8478,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/RunningResultDTO'
         '401':
-          description: Unauthorized.
+          description: Unauthorized
         '403':
           description: Forbidden.
         '500':
@@ -8483,6 +8492,7 @@ paths:
       tags: *ref_13
       security:
         - bearerAuth: []
+        - bearer: []
   /record/{policyId}/running/details:
     get:
       operationId: RecordApi_getRecordDetails
@@ -8510,9 +8520,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/RunningDetailsDTO'
         '401':
-          description: Unauthorized.
+          description: Unauthorized
         '403':
           description: Forbidden.
         '500':
@@ -8524,6 +8534,7 @@ paths:
       tags: *ref_13
       security:
         - bearerAuth: []
+        - bearer: []
   /record/{policyId}/running/fast-forward:
     post:
       operationId: RecordApi_fastForward
@@ -8551,9 +8562,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                type: boolean
         '401':
-          description: Unauthorized.
+          description: Unauthorized
         '403':
           description: Forbidden.
         '500':
@@ -8565,6 +8576,7 @@ paths:
       tags: *ref_13
       security:
         - bearerAuth: []
+        - bearer: []
   /record/{policyId}/running/retry:
     post:
       operationId: RecordApi_retryStep
@@ -8592,9 +8604,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                type: boolean
         '401':
-          description: Unauthorized.
+          description: Unauthorized
         '403':
           description: Forbidden.
         '500':
@@ -8606,6 +8618,7 @@ paths:
       tags: *ref_13
       security:
         - bearerAuth: []
+        - bearer: []
   /record/{policyId}/running/skip:
     post:
       operationId: RecordApi_skipStep
@@ -8633,9 +8646,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                type: boolean
         '401':
-          description: Unauthorized.
+          description: Unauthorized
         '403':
           description: Forbidden.
         '500':
@@ -8647,6 +8660,7 @@ paths:
       tags: *ref_13
       security:
         - bearerAuth: []
+        - bearer: []
   /schemas/type/{type}:
     get:
       tags:
@@ -9934,6 +9948,102 @@ components:
         - progress
         - type
         - taskId
+    RecordStatusDTO:
+      type: object
+      properties:
+        type:
+          type: string
+        policyId:
+          type: string
+        uuid:
+          type: string
+        status:
+          type: string
+      required:
+        - type
+        - policyId
+        - uuid
+        - status
+    RecordActionDTO:
+      type: object
+      properties:
+        uuid:
+          type: string
+        policyId:
+          type: string
+        method:
+          type: string
+        action:
+          type: string
+        time:
+          type: string
+        user:
+          type: string
+        target:
+          type: string
+      required:
+        - uuid
+        - policyId
+        - method
+        - action
+        - time
+        - user
+        - target
+    ResultInfoDTO:
+      type: object
+      properties:
+        tokens:
+          type: number
+        documents:
+          type: number
+      required:
+        - tokens
+        - documents
+    ResultDocumentDTO:
+      type: object
+      properties:
+        type:
+          type: string
+        schema:
+          type: string
+        rate:
+          type: string
+        documents:
+          type: object
+      required:
+        - type
+        - schema
+        - rate
+        - documents
+    RunningResultDTO:
+      type: object
+      properties:
+        info:
+          $ref: '#/components/schemas/ResultInfoDTO'
+        total:
+          type: number
+        documents:
+          $ref: '#/components/schemas/ResultDocumentDTO'
+      required:
+        - info
+        - total
+        - documents
+    RunningDetailsDTO:
+      type: object
+      properties:
+        left:
+          type: object
+        right:
+          type: object
+        total:
+          type: number
+        documents:
+          type: object
+      required:
+        - left
+        - right
+        - total
+        - documents
     ToolDTO:
       type: object
       properties:
