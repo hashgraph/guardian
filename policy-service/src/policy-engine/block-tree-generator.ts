@@ -7,6 +7,7 @@ import { PolicyValidator } from '@policy-engine/block-validators';
 import { headers } from 'nats';
 import { Inject } from '@helpers/decorators/inject';
 import { ComponentsService } from './helpers/components-service';
+import { RecordUtils } from './record-utils';
 
 /**
  * Block tree generator
@@ -135,7 +136,7 @@ export class BlockTreeGenerator extends NatsService {
             const userFull = await this.getUser(policyInstance, user);
 
             // <-- Record
-            await PolicyComponentsUtils.RecordSelectGroup(policyId, userFull, uuid);
+            await RecordUtils.RecordSelectGroup(policyId, userFull, uuid);
             // Record -->
 
             const result = policyInstance.components.selectGroup(userFull, uuid) as any;
@@ -182,7 +183,7 @@ export class BlockTreeGenerator extends NatsService {
             const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
 
             // <-- Record
-            await PolicyComponentsUtils.RecordSetBlockData(policyId, userFull, block, data);
+            await RecordUtils.RecordSetBlockData(policyId, userFull, block, data);
             // Record -->
 
             if (block && (await block.isAvailable(userFull))) {
@@ -204,7 +205,7 @@ export class BlockTreeGenerator extends NatsService {
             const block = PolicyComponentsUtils.GetBlockByTag<IPolicyInterfaceBlock>(policyId, tag);
 
             // <-- Record
-            await PolicyComponentsUtils.RecordSetBlockData(policyId, userFull, block, data);
+            await RecordUtils.RecordSetBlockData(policyId, userFull, block, data);
             // Record -->
 
             if (block && (await block.isAvailable(userFull))) {
@@ -237,7 +238,7 @@ export class BlockTreeGenerator extends NatsService {
             const { data } = msg;
 
             // <-- Record
-            await PolicyComponentsUtils.RecordExternalData(policyId, data);
+            await RecordUtils.RecordExternalData(policyId, data);
             // Record -->
 
             for (const block of PolicyComponentsUtils.ExternalDataBlocks.values()) {
@@ -250,13 +251,13 @@ export class BlockTreeGenerator extends NatsService {
 
         this.getPolicyMessages(PolicyEvents.CREATE_VIRTUAL_USER, policyId, async (msg: any) => {
             const { did, data } = msg;
-            await PolicyComponentsUtils.RecordCreateUser(policyId, did, data);
+            await RecordUtils.RecordCreateUser(policyId, did, data);
             return new MessageResponse({});
         });
 
         this.getPolicyMessages(PolicyEvents.SET_VIRTUAL_USER, policyId, async (msg: any) => {
             const { did } = msg;
-            await PolicyComponentsUtils.RecordSetUser(policyId, did);
+            await RecordUtils.RecordSetUser(policyId, did);
             return new MessageResponse({});
         });
     }
@@ -266,44 +267,56 @@ export class BlockTreeGenerator extends NatsService {
      */
     async initRecordEvents(policyId: string): Promise<void> {
         this.getPolicyMessages(PolicyEvents.START_RECORDING, policyId, async (msg: any) => {
-            const result = await PolicyComponentsUtils.StartRecording(policyId);
+            const result = await RecordUtils.StartRecording(policyId);
             return new MessageResponse(result);
         });
 
         this.getPolicyMessages(PolicyEvents.STOP_RECORDING, policyId, async (msg: any) => {
-            const result = await PolicyComponentsUtils.StopRecording(policyId);
+            const result = await RecordUtils.StopRecording(policyId);
             return new MessageResponse(result);
         });
 
         this.getPolicyMessages(PolicyEvents.GET_RECORD_STATUS, policyId, async (msg: any) => {
-            const result = PolicyComponentsUtils.GetRecordStatus(policyId);
+            const result = RecordUtils.GetRecordStatus(policyId);
             return new MessageResponse(result);
         });
 
         this.getPolicyMessages(PolicyEvents.GET_RECORDED_ACTIONS, policyId, async (msg: any) => {
-            const result = await PolicyComponentsUtils.GetRecordedActions(policyId);
+            const result = await RecordUtils.GetRecordedActions(policyId);
             return new MessageResponse(result);
         });
 
         this.getPolicyMessages(PolicyEvents.RUN_RECORD, policyId, async (msg: any) => {
             const { records, results, options } = msg;
-            const result = await PolicyComponentsUtils.RunRecord(policyId, records, results, options);
+            const result = await RecordUtils.RunRecord(policyId, records, results, options);
             return new MessageResponse(result);
         });
 
         this.getPolicyMessages(PolicyEvents.STOP_RUNNING, policyId, async (msg: any) => {
-            const result = await PolicyComponentsUtils.StopRunning(policyId);
+            const result = await RecordUtils.StopRunning(policyId);
             return new MessageResponse(result);
         });
 
         this.getPolicyMessages(PolicyEvents.GET_RECORD_RESULTS, policyId, async (msg: any) => {
-            const result = await PolicyComponentsUtils.GetRecordResults(policyId);
+            const result = await RecordUtils.GetRecordResults(policyId);
             return new MessageResponse(result);
         });
 
         this.getPolicyMessages(PolicyEvents.FAST_FORWARD, policyId, async (msg: any) => {
             const options = msg;
-            const result = await PolicyComponentsUtils.FastForward(policyId, options);
+            const result = await RecordUtils.FastForward(policyId, options);
+            return new MessageResponse(result);
+        });
+
+        this.getPolicyMessages(PolicyEvents.RECORD_RETRY_STEP, policyId, async (msg: any) => {
+            const options = msg;
+            const result = await RecordUtils.RetryStep(policyId, options);
+            return new MessageResponse(result);
+        });
+
+        this.getPolicyMessages(PolicyEvents.RECORD_SKIP_STEP, policyId, async (msg: any) => {
+            const options = msg;
+            const result = await RecordUtils.SkipStep(policyId, options);
             return new MessageResponse(result);
         });
     }

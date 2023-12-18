@@ -249,7 +249,7 @@ export class RecordImportExport {
         const now = Date.now();
         const lines = recordString.split('\r\n');
         for (const line of lines) {
-            if (line) {
+            if (line && !line.startsWith('--')) {
                 const [method, time, action, user, target, documentId] = line.split(',');
                 if (method) {
                     records.push({

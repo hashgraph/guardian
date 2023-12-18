@@ -341,4 +341,56 @@ export async function recordAPI(): Promise<void> {
             return new MessageError(error);
         }
     });
+
+    /**
+     * Retry Step
+     *
+     * @param payload - options
+     *
+     * @returns {any} result
+     */
+    ApiResponse(MessageAPI.RECORD_RETRY_STEP, async (msg) => {
+        try {
+            if (!msg) {
+                throw new Error('Invalid parameters');
+            }
+
+            const { policyId, owner, options } = msg;
+            await checkPolicy(policyId, owner);
+
+            const guardiansService = new GuardiansService();
+            const result = await guardiansService
+                .sendPolicyMessage(PolicyEvents.RECORD_RETRY_STEP, policyId, options);
+            return new MessageResponse(result);
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    /**
+     * Skip Step
+     *
+     * @param payload - options
+     *
+     * @returns {any} result
+     */
+    ApiResponse(MessageAPI.RECORD_SKIP_STEP, async (msg) => {
+        try {
+            if (!msg) {
+                throw new Error('Invalid parameters');
+            }
+
+            const { policyId, owner, options } = msg;
+            await checkPolicy(policyId, owner);
+
+            const guardiansService = new GuardiansService();
+            const result = await guardiansService
+                .sendPolicyMessage(PolicyEvents.RECORD_SKIP_STEP, policyId, options);
+            return new MessageResponse(result);
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
 }

@@ -181,13 +181,10 @@ export class RecordControllerComponent implements OnInit {
     }
 
     public fastForward() {
-        // this.loading = true;
         this.recordService.fastForward(this.policyId, {
             index: this.recordIndex
         }).subscribe((record) => {
-            // this.loading = false;
         }, (e) => {
-            // this.loading = false;
         });
     }
 
@@ -225,6 +222,7 @@ export class RecordControllerComponent implements OnInit {
             }
             if (this.recordStatus === 'Stopped') {
                 if (this.running) {
+                    this.recordIndex = data.count - 1;
                     this.showResult();
                 }
                 if (this.recording) {
@@ -275,7 +273,7 @@ export class RecordControllerComponent implements OnInit {
             const item = this.recordItems[index];
             item._time = this.convertMsToTime(item.time - startTime);
             item._index = index + 1;
-            item._selected = item._index === this.recordIndex;
+            item._selected = index === this.recordIndex;
         }
     }
 
@@ -352,6 +350,34 @@ export class RecordControllerComponent implements OnInit {
             if (result) {
                 this.overlay = this.recordId;
             }
+        });
+    }
+
+    public retryStep() {
+        this.loading = true;
+        this.recordItems = [];
+        this.recordService.retryStep(this.policyId).subscribe((result) => {
+            this.running = !!result;
+            this.updateActive();
+            this.loading = false;
+        }, (e) => {
+            this.recording = false;
+            this.updateActive();
+            this.loading = false;
+        });
+    }
+
+    public skipStep() {
+        this.loading = true;
+        this.recordItems = [];
+        this.recordService.skipStep(this.policyId).subscribe((result) => {
+            this.running = !!result;
+            this.updateActive();
+            this.loading = false;
+        }, (e) => {
+            this.recording = false;
+            this.updateActive();
+            this.loading = false;
         });
     }
 }

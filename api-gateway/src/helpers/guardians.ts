@@ -2376,4 +2376,26 @@ export class Guardians extends NatsService {
     public async fastForward(policyId: string, owner: string, options: any): Promise<any> {
         return await this.sendMessage<any>(MessageAPI.FAST_FORWARD, { policyId, owner, options });
     }
+
+    /**
+     * Retry Step
+     * @param policyId
+     * @param owner
+     * @param options
+     * @returns {any}
+     */
+    public async retryStep(policyId: string, owner: string, options: any): Promise<any> {
+        return await this.sendMessage<any>(MessageAPI.RECORD_RETRY_STEP, { policyId, owner, options });
+    }
+
+    /**
+     * Skip Step
+     * @param policyId
+     * @param owner
+     * @param options
+     * @returns {any}
+     */
+    public async skipStep(policyId: string, owner: string, options: any): Promise<any> {
+        return await this.sendMessage<any>(MessageAPI.RECORD_SKIP_STEP, { policyId, owner, options });
+    }
 }

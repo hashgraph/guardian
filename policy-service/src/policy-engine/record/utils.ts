@@ -183,8 +183,14 @@ export class RecordItemStack {
     public nextIndex(): void {
         this._index++;
     }
+
     public next(): RecordItem | undefined {
         this._index++;
+        return this._items[this._index];
+    }
+
+    public prev(): RecordItem | undefined {
+        this._index--;
         return this._items[this._index];
     }
 

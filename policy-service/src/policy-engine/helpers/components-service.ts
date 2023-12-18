@@ -1,6 +1,7 @@
 import {
     DIDDocument,
     DatabaseServer,
+    IRecordResult,
     Policy as PolicyCollection,
     PolicyTool as PolicyToolCollection,
     Schema as SchemaCollection
@@ -271,5 +272,19 @@ export class ComponentsService {
             return this._runningController.fastForward(options);
         }
         return false;
+    }
+
+    public async retryStep(options: any): Promise<IRecordResult[]> {
+        if (this._runningController) {
+            return this._runningController.retryStep();
+        }
+        return null;
+    }
+
+    public async skipStep(options: any): Promise<IRecordResult[]> {
+        if (this._runningController) {
+            return this._runningController.skipStep();
+        }
+        return null;
     }
 }

@@ -6,7 +6,7 @@ import { RecordMethod } from './method.type';
 import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
 import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { DIDDocument, DatabaseServer, RecordImportExport } from '@guardian/common';
+import { DIDDocument, DatabaseServer, IRecordResult, RecordImportExport } from '@guardian/common';
 import { RecordItem } from './record-item';
 import { GenerateDID, GenerateUUID, IGenerateValue, RecordItemStack, Utils } from './utils';
 
@@ -16,24 +16,23 @@ export class Running {
     public readonly policyInstance: IPolicyBlock;
     public readonly options: any;
     private readonly tree: BlockTreeGenerator;
-    private _status: RunningStatus;
-
     private readonly _actions: RecordItemStack;
     private readonly _generateUUID: RecordItemStack;
     private readonly _generateDID: RecordItemStack;
+    private readonly _results: IRecordResult[];
     private _id: number;
+    private _status: RunningStatus;
     private _lastError: string;
     private _generatedItems: IGenerateValue<any>[];
     private _startTime: number;
     private _endTime: number;
-    private readonly _results: any[];
     private _currentDelay: any;
 
     constructor(
         policyInstance: IPolicyBlock,
         policyId: string,
         actions: RecordItem[],
-        results: any[],
+        results: IRecordResult[],
         options: any
     ) {
         this.policyInstance = policyInstance;
@@ -102,7 +101,7 @@ export class Running {
         return true;
     }
 
-    public async run(): Promise<any[]> {
+    public async run(): Promise<IRecordResult[]> {
         this._status = RunningStatus.Running;
         this._lastError = null;
         this._id = Date.now();
@@ -134,11 +133,44 @@ export class Running {
         }
     }
 
-    public async results(): Promise<any[]> {
+    public async retryStep(): Promise<IRecordResult[]> {
+        try {
+            if (this._status === RunningStatus.Error) {
+                this._status = RunningStatus.Running;
+                this._lastError = null;
+                this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
+                await this._run(this._id);
+                return await this.results();
+            } else {
+                return null;
+            }
+        } catch (error) {
+            return null;
+        }
+    }
+
+    public async skipStep(): Promise<IRecordResult[]> {
+        try {
+            if (this._status === RunningStatus.Error) {
+                this._status = RunningStatus.Running;
+                this._lastError = null;
+                this._actions.next();
+                this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
+                await this._run(this._id);
+                return await this.results();
+            } else {
+                return null;
+            }
+        } catch (error) {
+            return null;
+        }
+    }
+
+    public async results(): Promise<IRecordResult[]> {
         if (this._status !== RunningStatus.Stopped) {
             return null;
         }
-        const results: any[] = [];
+        const results: IRecordResult[] = [];
         const db = new DatabaseServer(this.policyId);
         const vcs = await db.getVcDocuments<any[]>({
             updateDate: {
@@ -353,7 +385,6 @@ export class Running {
             if (!action) {
                 return result;
             }
-            const next = this._actions.next();
 
             const error = await this.runAction(action);
             if (error) {
@@ -363,6 +394,7 @@ export class Running {
                 return result;
             }
 
+            const next = this._actions.next();
             if (next) {
                 result.index = this._actions.index;
                 result.code = 1;

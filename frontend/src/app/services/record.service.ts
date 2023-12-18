@@ -61,4 +61,12 @@ export class RecordService {
     public fastForward(policyId: string, data: any): Observable<any> {
         return this.http.post<any>(`${this.url}/${policyId}/running/fast-forward`, data);
     }
+
+    public retryStep(policyId: string): Observable<any> {
+        return this.http.post<any>(`${this.url}/${policyId}/running/retry`, null);
+    }
+
+    public skipStep(policyId: string): Observable<any> {
+        return this.http.post<any>(`${this.url}/${policyId}/running/skip`, null);
+    }
 }

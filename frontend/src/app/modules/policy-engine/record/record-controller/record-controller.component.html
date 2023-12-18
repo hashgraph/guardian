@@ -50,6 +50,13 @@
                 <div class="running-text">{{recordIndex}}/{{recordCount}}</div>
             </div>
         </div>
+
+        <div *ngIf="this.recordError" class="running-menu-btn" title="Retry step" (click)="retryStep()">
+            <mat-icon>play_arrow</mat-icon>
+        </div>
+        <div *ngIf="this.recordError" class="running-menu-btn" title="Skip step" (click)="skipStep()">
+            <mat-icon>redo</mat-icon>
+        </div>
         <!-- <div class="running-menu-btn" title="Pause">
             <mat-icon>pause</mat-icon>
         </div> -->
