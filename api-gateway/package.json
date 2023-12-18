@@ -13,7 +13,7 @@
   "dependencies": {
     "@guardian/common": "^2.19.1",
     "@guardian/interfaces": "^2.19.1",
-    "@nestjs/common": "^9.4.1",
+    "@nestjs/common": "^10.3.0",
     "@nestjs/core": "^9.4.1",
     "@nestjs/jwt": "^10.0.3",
     "@nestjs/microservices": "^9.4.1",
