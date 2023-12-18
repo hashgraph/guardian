@@ -21,6 +21,7 @@ export class PreviewPolicyDialog {
     public similar!: any[];
     public module!: any;
     public tool!: any;
+    public tools!: string;
 
     constructor(
         public dialogRef: MatDialogRef<PreviewPolicyDialog>,
@@ -28,7 +29,6 @@ export class PreviewPolicyDialog {
     ) {
         if (data.policy) {
             const importFile = data.policy;
-
             this.newVersions = importFile.newVersions || [];
             this.policy = importFile.policy;
 
@@ -36,6 +36,9 @@ export class PreviewPolicyDialog {
             if (this.policy.policyRoles) {
                 this.policyGroups += this.policy.policyRoles.join(', ');
             }
+
+            this.tools =
+                importFile?.tools?.map((item: { name: any }) => item.name).join(', ');
 
             const schemas = importFile.schemas || [];
             const tokens = importFile.tokens || [];

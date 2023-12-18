@@ -46,9 +46,9 @@
                         <div class="field-name">Version</div>
                         <div class="field-value">{{ policy.version }}</div>
                     </div>
-                    <app-new-versions 
-                        class="version-container__new-versions" 
-                        type="policy" 
+                    <app-new-versions
+                        class="version-container__new-versions"
+                        type="policy"
                         [newVersions]="newVersions"
                         (onClick)="onNewVersionClick($event)"></app-new-versions>
                 </div>
@@ -73,6 +73,13 @@
                 <div class="field-last">
                     <div class="field-name">Involved Roles</div>
                     <div class="field-value">Standard Registry, {{policyGroups}}</div>
+                </div>
+
+                <div *ngIf="tools" class="delimiter"></div>
+
+                <div *ngIf="tools" class="field-last">
+                    <div class="field-name">Tools</div>
+                    <div class="field-long-value">{{tools}}</div>
                 </div>
 
                 <div *ngIf="schemas" class="delimiter"></div>
