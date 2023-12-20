@@ -49,7 +49,7 @@ export class RecordControllerComponent implements OnInit {
     ngOnInit(): void {
         this._subscription.add(
             this.wsService.recordSubscribe((message => {
-                if(message.policyId === this.policyId) {
+                if (message.policyId === this.policyId) {
                     this.updateRecordLogs(message);
                 }
             }))
@@ -227,7 +227,6 @@ export class RecordControllerComponent implements OnInit {
             }
             if (this.recordStatus === 'Stopped') {
                 if (this.running) {
-                    this.recordIndex = data.count - 1;
                     this.showResult();
                 }
                 if (this.recording) {
@@ -271,14 +270,76 @@ export class RecordControllerComponent implements OnInit {
         this.updateActive();
     }
 
+    private getActionUser(item: any, userMap: Map<string, string>): string {
+        if (item.method === 'START') {
+            const name = 'Administrator';
+            userMap.set(item.user, name);
+            return name;
+        }
+        if (item.action === 'CREATE_USER') {
+            const name = `Virtual User ${userMap.size}`;
+            userMap.set(item.user, name);
+            return name;
+        }
+        if (userMap.has(item.user)) {
+            return userMap.get(item.user) as string;
+        } else {
+            return item.user;
+        }
+    }
+
+    private getActionTitle(item: any, user: string): string {
+        if (item.method === 'START') {
+            return 'Start';
+        }
+        if (item.method === 'STOP') {
+            return 'Stop';
+        }
+        if (item.method === 'GENERATE') {
+            if (item.action === 'GENERATE_UUID') {
+                return 'Generate UUID';
+            }
+            if (item.action === 'GENERATE_DID') {
+                return 'Generate DID';
+            }
+            return 'Generate';
+        }
+        if (item.method === 'ACTION') {
+            if (item.action === 'SELECT_POLICY_GROUP') {
+                return 'Select group';
+            }
+            if (item.action === 'SET_BLOCK_DATA') {
+                if (item.target) {
+                    return `Send data (${item.target})`;
+                }
+                return 'Send data';
+            }
+            if (item.action === 'SET_EXTERNAL_DATA') {
+                return 'Send external data';
+            }
+            if (item.action === 'CREATE_USER') {
+                return `Create user (${user})`;
+            }
+            if (item.action === 'SET_USER') {
+                return `Select user (${user})`;
+            }
+            return 'Action';
+        }
+        return item.action || item.method;
+    }
+
     private updateActionItems(): void {
         const start = this.recordItems[0];
         const startTime = start?.time;
+        const userMap = new Map<string, string>();
+        const lastIndex = Math.min(this.recordIndex, this.recordItems.length - 1);
         for (let index = 0; index < this.recordItems.length; index++) {
             const item = this.recordItems[index];
+            const user = this.getActionUser(item, userMap);
             item._time = this.convertMsToTime(item.time - startTime);
             item._index = index + 1;
-            item._selected = index === this.recordIndex;
+            item._selected = index === lastIndex;
+            item._title = this.getActionTitle(item, user);
         }
     }
 

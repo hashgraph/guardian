@@ -106,7 +106,7 @@ export class Running {
         this._actions = new RecordItemStack();
         this._generateUUID = new RecordItemStack();
         this._generateDID = new RecordItemStack();
-        if (actions) {
+        if (Array.isArray(actions)) {
             this._actions.setItems(actions.filter(item =>
                 item.method !== RecordMethod.Generate
             ));
