@@ -261,6 +261,18 @@
                     </div>
                 </td>
             </ng-container>
+            <ng-container matColumnDef="tree">
+                <th mat-header-cell *matHeaderCellDef></th>
+                <td mat-cell *matCellDef="let element">
+                    <div class="btn-settings"
+                        (click)="onViewSchemaTree(element)"
+                        matTooltip="Tree"
+                        matTooltipPosition="above"
+                        matTooltipClass="guardian-tooltip">
+                        <mat-icon>account_tree</mat-icon>
+                    </div>
+                </td>
+            </ng-container>
             <ng-container matColumnDef="document">
                 <th mat-header-cell *matHeaderCellDef></th>
                 <td mat-cell *matCellDef="let element">

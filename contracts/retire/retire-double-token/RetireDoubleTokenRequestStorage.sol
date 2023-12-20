@@ -18,12 +18,7 @@ contract RetireDoubleTokenRequestStorage is RetireRequestStorage {
     Request[] requests;
     mapping(address => mapping(address => mapping(address => uint256))) requestPos;
 
-    function getRequests(uint8)
-        public
-        view
-        override
-        returns (bytes memory)
-    {
+    function getRequests(uint8) public view override returns (bytes memory) {
         return abi.encode(requests);
     }
 
@@ -37,12 +32,11 @@ contract RetireDoubleTokenRequestStorage is RetireRequestStorage {
         address base = tokens[0];
         address opposite = tokens[1];
 
-        Request memory request = requests[
+        Request storage request = requests[
             requestPos[account][base][opposite] - 1
         ];
         bool inverted = base == request.opposite;
-        RetireTokenRequest[]
-            memory tokenOptions = new RetireTokenRequest[](2);
+        RetireTokenRequest[] memory tokenOptions = new RetireTokenRequest[](2);
         tokenOptions[0] = inverted
             ? RetireTokenRequest(
                 request.opposite,
@@ -77,19 +71,19 @@ contract RetireDoubleTokenRequestStorage is RetireRequestStorage {
         address base = tokens[0];
         address opposite = tokens[1];
         require(requestPos[account][base][opposite] > 0, "NO_REQUEST");
-        Request storage req = requests[
-            requestPos[account][base][opposite] - 1
-        ];
         Request storage last = requests[requests.length - 1];
-        requestPos[account][last.base][last.opposite] = requestPos[account][
-            req.base
-        ][req.opposite];
-        requestPos[account][last.opposite][last.base] = requestPos[account][
-            req.opposite
-        ][req.base];
-        delete requestPos[account][req.base][req.opposite];
-        delete requestPos[account][req.opposite][req.base];
-        req = last;
+        requestPos[last.usr][last.base][last.opposite] = requestPos[account][
+            base
+        ][opposite];
+        requestPos[last.usr][last.opposite][last.base] = requestPos[account][
+            opposite
+        ][base];
+        requests[requestPos[account][base][opposite] - 1] = requests[
+            requests.length - 1
+        ];
+        delete requestPos[account][base][opposite];
+        delete requestPos[account][opposite][base];
+
         requests.pop();
     }
 

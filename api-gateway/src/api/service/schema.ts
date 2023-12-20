@@ -199,6 +199,64 @@ export class SingleSchemaApi {
             throw error
         }
     }
+
+    @Get('/:schemaId/tree')
+    @HttpCode(HttpStatus.OK)
+    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Returns schema tree.',
+        description: 'Returns schema tree.',
+    })
+    @ApiImplicitParam({
+        name: 'schemaId',
+        type: String,
+        description: 'Schema identifier',
+        required: true
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            type: 'object',
+            properties: {
+                name: {
+                    type: 'string'
+                },
+                type: {
+                    type: 'string'
+                },
+                children: {
+                    type: 'array',
+                    items: {
+                        type: 'object'
+                    }
+                }
+            }
+        }
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    async getSchemaTree(@Req() req): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)(req.user);
+        try {
+            const user = req.user;
+            const schemaId = req.params.schemaId;
+            const guardians = new Guardians();
+            const tree = await guardians.getSchemaTree(schemaId, user?.did);
+            return tree;
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw error
+        }
+    }
 }
 
 @Controller('schemas')

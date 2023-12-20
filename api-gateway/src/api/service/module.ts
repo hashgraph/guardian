@@ -39,7 +39,7 @@ export class ModulesApi {
             return res.status(201).json(item);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw error
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

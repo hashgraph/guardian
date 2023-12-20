@@ -51,7 +51,7 @@ reductions.
 This policy is published to the Hedera network and can either be imported via Github(.policy file) or IPFS timestamp.
 
 Timestamp: 
-Policy: 1695233862.252855821
+Policy: 1698756576.572245003
 Tool 33: 1690820529.197570717
 
 ### Available Roles 
@@ -93,7 +93,7 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 ### Step By Step 
 
-1. The policy can be imported using IPFS timestamp 1695233862.252855821
+1. The policy can be imported using IPFS timestamp 1698756576.572245003
 
     <img width="1496" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/08e6005e-2cac-4c3c-8754-bb749981aad2">
     

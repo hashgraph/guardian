@@ -1,5 +1,37 @@
 # 📂 Available Schema Types
 
+## **Embracing GBBC Specifications for Universal Data Comparability**
+
+In the Guardian, the Property Glossary serves a pivotal role in harmonizing data across the entire ecosystem. Leveraging the standards set forth in the [GBBC dMRV Specification](https://gbbcouncil.org/wp-content/uploads/2023/09/Digital-Measurement-Reporting-Verification-dMRV-Framework.pdf) (and beyond), the glossary establishes a unified framework for interpreting and mapping data, ensuring that information collected through various schema formats remains consistent, comparable, and searchable.
+
+## **The Need for Standardized Data Mapping**
+
+The complexity of environmental reporting and digital asset management is compounded when dealing with varied methodologies and schema designs. To address this, the Guardian implements a standardized approach to data mapping, allowing for effective comparison and analysis of project data, regardless of its original schema format. This standardization is vital for:
+
+1. **Ensuring Consistency:** Regardless of how data is formatted in individual schemas, standardizing property definitions ensures a consistent approach to interpreting and comparing data.
+2. **Facilitating Comparability:** By using a common language for data properties, the Guardian enables users to effectively compare and analyze data from similar or different methodologies.
+3. **Enhancing Searchability:** Standardized properties allow for more efficient data retrieval, making it easier to locate specific information across various projects and schemas.
+
+## **Role of the Property Glossary**
+
+The Property Glossary in MGS is more than just a list of definitions; it is a tool for aligning data across the platform. It includes a table of **Standardized Property Definitions.** Drawing from the GBBC Specification, the glossary provides clear definitions for each property, ensuring a common understanding across the platform.
+
+**Introduction**
+
+In the realm of digital environmental assets and carbon offset tokens, data is king. The essence of creating verifiable and trustworthy digital assets lies in the quality and structure of the underlying data. This is where the concept of "Schema Types" comes into play. Schemas serve as the backbone of data organization, ensuring that every piece of information adheres to a predefined format, thereby maintaining consistency, accuracy, and reliability.
+
+**Purpose of Schema Types**
+
+Schema Types are not just about data organization; they are about setting a standard for data integrity and trustworthiness. By defining clear structures and formats for data entry, storage, and retrieval, schemas facilitate:
+
+1. **Standardization and Uniformity:** Ensuring all data across various projects and methodologies conforms to a consistent structure, enabling seamless integration and comparison.
+2. **Flexibility and Customization:** Catering to diverse needs by allowing modifications to fit specific project requirements without compromising data integrity.
+3. **Efficient Data Management:** Streamlining the process of data handling, from input to analysis, ensuring that data-driven decisions are based on accurate and reliable information.
+
+**Role in Digital Environmental Assets**
+
+The utilization of Schema Types is pivotal for the lifecycle of digital environmental assets. From the initial stages of data collection to the final phases of token creation and verification, schemas ensure that each step is backed by solid, verifiable data. This approach not only enhances the credibility of the digital assets but also boosts confidence among stakeholders in the carbon market ecosystem.
+
 | Schema Type | Definition                                                                                                                                  | Example Input                                                                                                                                          |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | String      | A string is a data type used in programming, such as an integer and floating point unit, but is used to represent text rather than numbers. | I ate 3 hamburgers.                                                                                                                                    |

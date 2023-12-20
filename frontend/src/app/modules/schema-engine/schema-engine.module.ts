@@ -24,6 +24,7 @@ import { ExportSchemaDialog } from './export-schema-dialog/export-schema-dialog.
 import { SchemaFieldConfigurationComponent } from './schema-field-configuration/schema-field-configuration.component';
 import { EnumEditorDialog } from './enum-editor-dialog/enum-editor-dialog.component';
 import { CompareSchemaDialog } from './compare-schema-dialog/compare-schema-dialog.component';
+import { SchemaTreeComponent } from './schema-tree/schema-tree.component';
 import { CopySchemaDialog } from './copy-schema-dialog/copy-schema-dialog';
 
 @NgModule({
@@ -43,6 +44,7 @@ import { CopySchemaDialog } from './copy-schema-dialog/copy-schema-dialog';
         EnumEditorDialog,
         CompareSchemaDialog,
         GeojsonTypeComponent,
+        SchemaTreeComponent,
     ],
     imports: [
         CommonModule,

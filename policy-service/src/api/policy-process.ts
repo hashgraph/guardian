@@ -109,11 +109,11 @@ Promise.all([
 
     const policyModel = await generator.generate(policyConfig, skipRegistration, policyValidator);
     if ((policyModel as { type: 'error', message: string }).type === 'error') {
-        generator.publish(PolicyEvents.POLICY_READY, {
+        await generator.publish(PolicyEvents.POLICY_READY, {
             policyId: policyId.toString(),
             error: (policyModel as { type: 'error', message: string }).message
         });
-        return;
+        process.exit(0);
         // throw new Error((policyModel as {type: 'error', message: string}).message);
     }
 

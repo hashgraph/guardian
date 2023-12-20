@@ -30,7 +30,7 @@ export class SourceAddonConfigComponent implements OnInit {
 
     constructor(
     ) {
-        
+
     }
 
     ngOnInit(): void {
@@ -63,7 +63,12 @@ export class SourceAddonConfigComponent implements OnInit {
         })
     }
 
+    removeField(i: number) {
+        this.properties.filters.splice(i, 1)
+    }
+
     onSave() {
         this.item.changed = true;
     }
+
 }

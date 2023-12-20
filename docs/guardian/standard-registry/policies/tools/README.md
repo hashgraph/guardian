@@ -1,9 +1,12 @@
 # 📂 Tools
 
-Tools are a separate integrated constituents of Policies which have their internals (blocks, events, and schemas) isolated from the rest of the policy via an interfaces through which Tools can interoperate with the rest of the content of Policies.
+## **Overview of Tools in the Guardian**
 
-Tool are similar to Modules, with an exception of:
+In the Guardian, 'Tools' are integral components within the policy architecture, offering specialized functionalities distinct from other policy elements. These Tools are designed to align with digital methodologies used by organizations like UNFCCC and Verra, thus ensuring standardization and effectiveness in policy execution.
 
-1. Unlike Modules, Tools do not get wholly embedded into Policies, instead Policies contain links (i.e. references) to tools.
-2. Standard Registry cannot edit Tools added to the Policy, except for their external interfaces
-3. Tools can contain other Tools.
+## **Defining Characteristics of Tools**
+
+1. **Component-Based Structure:** Unlike Modules, Tools maintain a component-based structure within policies. They are linked to policies through references rather than being fully embedded, maintaining a level of isolation. This design preserves the integrity of their internal mechanics, such as blocks, events, and schemas.
+2. **Interface-Driven Interoperability:** Tools are equipped with dedicated interfaces for seamless interaction within the policy ecosystem. These interfaces facilitate effective communication and functionality of Tools alongside other policy content.
+3. **Limited Editability:** Tools are designed with restricted editability to maintain their standardized functions. Standard Registries can modify only the external interfaces of Tools, ensuring consistent application and performance in line with established methodologies.
+4. **Hierarchical Integration:** Unique to Tools is their ability to encapsulate other Tools, allowing for a hierarchical structure within policies. This feature enables the development of complex, layered policy frameworks where each Tool contributes specific capabilities.

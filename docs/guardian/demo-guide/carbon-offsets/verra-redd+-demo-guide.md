@@ -23,13 +23,13 @@ This folder contains a sample file that is referenced in the Demo Usage Guide
 
 ```
 REDD 1.1.0 = 1695249211.391769223
-REDD 2.2.2 = 1695248454.852259003
-Verra REDD Policy 3 groups = 1695248864.688529003
-Verra REDD 4 = 1695250025.604149003
-Verra REDD 5 = 1695251173.300475003
+REDD 2.2.2 = 1698754116.549916003
+Verra REDD Policy 3 groups = 1698754217.516521003
+Verra REDD 4 = 1698754789.539832483
+Verra REDD 5 = 1698754542.390084003
 ```
 
-<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Once Policy is imported successfully, you get two options : Publish and Dry Run mode.
 

@@ -195,4 +195,17 @@ export class PolicyLink<T> {
     public destroy(): void {
         return;
     }
+
+    /**
+     * Equals
+     */
+    public equals(link: PolicyLink<T>): boolean {
+        return (
+            this.target?.tag === link?.target?.tag &&
+            this.source?.tag === link?.source?.tag &&
+            this.inputType === link?.inputType &&
+            this.outputType === link?.outputType &&
+            this.actor === link?.actor
+        );
+    }
 }

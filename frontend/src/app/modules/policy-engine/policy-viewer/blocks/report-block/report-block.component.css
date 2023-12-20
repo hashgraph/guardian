@@ -106,6 +106,13 @@ a[disabled="true"] {
     color: #f44336;
 }
 
+.mint-amount {
+}
+
+.mint-error .mint-amount {
+    color: #f44336;
+}
+
 .filter-btn {
     background-color: #3f51b5;
     color: #fff;

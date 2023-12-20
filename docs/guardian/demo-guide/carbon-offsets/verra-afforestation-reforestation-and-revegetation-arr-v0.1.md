@@ -38,7 +38,7 @@ Now we will be creating the Policy. Click on the "Policies" tab and select "Poli
 
 For this demo guide, we will use the "Import from Open Source" way. Click on that button and find the policy for this guide and click on the import button.
 
-Policy can also be imported by using IPFS timestamp: 1695247491.606164733
+Policy can also be imported by using IPFS timestamp: 1698755139.718108003
 
 Once the policy is imported successfully, you get two options: Publish and Dry Run mode. We select the Dry Run option and select Go.
 

@@ -1502,7 +1502,6 @@ export class HederaSDKHelper {
             responseType: 'json',
         };
         while (goNext) {
-            console.log(url);
             const res = await axios.get(url, p as any);
             delete p.params;
 

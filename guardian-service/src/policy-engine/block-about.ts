@@ -404,7 +404,23 @@ export const BlockAbout = {
             'RefreshEvent'
         ],
         'output': null,
-        'defaultEvent': false
+        'defaultEvent': false,
+        'properties': [
+            {
+                'name': 'uiMetaData',
+                'label': 'UI',
+                'title': 'UI Properties',
+                'type': 'Group',
+                'properties': [
+                    {
+                        'name': 'vpSectionHeader',
+                        'label': 'VP section header',
+                        'title': 'VP section header',
+                        'type': 'Input'
+                    }
+                ]
+            }
+        ]
     },
     'messagesReportBlock': {
         'label': 'Messages Report',

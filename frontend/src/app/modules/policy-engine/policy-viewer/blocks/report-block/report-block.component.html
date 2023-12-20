@@ -55,7 +55,13 @@
                         </div>
                         <div class="vp-field">
                             <div class="vp-field-label">Token amount</div>
-                            <div class="vp-field-value">{{item.mintDocument.amount}}</div>
+                            <div [ngClass]="{'mint-error': mintError(item.mintDocument)}"
+                                 class="vp-field-value">
+                                <span class="mint-amount">{{ item.mintDocument.amount }}</span>
+                                <span>/</span>
+                                <span class="mint-expected">{{ item.mintDocument.expected }}</span>
+                                <span> minted</span>
+                            </div>
                         </div>
                         <div class="vp-field">
                             <div class="vp-field-label">Mint date</div>
@@ -137,7 +143,7 @@
 
                 <div class="vp-section" [attr.vp-section-offset]="mainDocuments.length>1">
                     <div class="vp-section-header">
-                        This Carbon Offset Claim has met all the requirements as issued in the policy secured to this token.
+                        {{uiMetaData.vpSectionHeader || 'This Carbon Offset Claim has met all the requirements as issued in the policy secured to this token.'}}
                     </div>
                     <div class="vp-table">
                         <div *ngIf="item.vpDocument" class="vp-signature">

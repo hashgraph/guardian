@@ -41,7 +41,7 @@ Within this digital methodology, users will use a collection of Clean Developmen
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPSF timestamp. 
 
-Policy: 1698670386.926112366
+Policy: 1698754217.516521003
 
 ### Available Roles 
  
@@ -143,15 +143,4 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 ![image](https://github.com/hashgraph/guardian/assets/79293833/fb4ad543-1111-41a9-9b43-f7ad550923bc)
 
 ![image](https://github.com/hashgraph/guardian/assets/79293833/bd0c787f-4b22-4002-89b5-1d2e948b5837)
-
-
-
-
-
-
-
-
-
-
-
 
