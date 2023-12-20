@@ -177,8 +177,9 @@ export class DocumentFieldsModel {
     public static createFieldsList(document: any): PropertyModel<any>[] {
         const list: PropertyModel<any>[] = [];
         const keys = Object.keys(document);
+        const type = document?.type;
         for (const key of keys) {
-            DocumentFieldsModel.createField(key, document[key], 1, key, list);
+            DocumentFieldsModel.createField(key, document[key], 1, key, type, list);
         }
         return list;
     }
@@ -198,6 +199,7 @@ export class DocumentFieldsModel {
         value: any,
         lvl: number,
         path: string,
+        type: string,
         fields: PropertyModel<any>[]
     ): PropertyModel<any>[] {
         if (value === undefined) {
@@ -207,19 +209,19 @@ export class DocumentFieldsModel {
             if (Array.isArray(value)) {
                 fields.push(new ArrayPropertyModel(name, value.length, lvl, path));
                 for (let index = 0; index < value.length; index++) {
-                    DocumentFieldsModel.createField(String(index), value[index], lvl + 1, `${path}.${index}`, fields);
+                    DocumentFieldsModel.createField(String(index), value[index], lvl + 1, `${path}.${index}`, type, fields);
                 }
                 return fields;
             } else {
                 const keys = Object.keys(value);
                 fields.push(new ObjectPropertyModel(name, !!keys.length, lvl, path));
                 for (const key of keys) {
-                    DocumentFieldsModel.createField(key, value[key], lvl + 1, `${path}.${key}`, fields);
+                    DocumentFieldsModel.createField(key, value[key], lvl + 1, `${path}.${key}`, value.type, fields);
                 }
                 return fields;
             }
         } else {
-            fields.push(new DocumentPropertyModel(name, value, lvl, path));
+            fields.push(new DocumentPropertyModel(name, value, lvl, path, type));
             return fields;
         }
     }

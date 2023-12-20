@@ -444,23 +444,66 @@ export class DocumentPropertyModel extends PropertyModel<any> {
         name: string,
         value: any,
         lvl?: number,
-        path?: string
+        path?: string,
+        type?: string
     ) {
         super(name, PropertyType.Property, value, lvl, path);
-        this.isSystem = (
-            name === '@context' ||
-            name === 'type' ||
-            name === 'policyId' ||
-            name === 'id' ||
-            name === 'ref' ||
-            name === 'tokenId' ||
-            path === 'proof' ||
-            path === 'issuanceDate' ||
-            path === 'issuer' ||
-            path.includes('@context') ||
-            path.startsWith('proof.') ||
-            path.startsWith('type.')
-        );
+        this.isSystem = this.checkSystemField(name, path, type, value);
+        console.debug(this.isSystem, path, type);
+    }
+
+    private checkSystemField(
+        name: string,
+        path: string,
+        type: string,
+        value: any
+    ): boolean {
+        try {
+            if (
+                name === '@context' ||
+                name === 'type' ||
+                name === 'policyId' ||
+                name === 'id' ||
+                name === 'ref' ||
+                name === 'tokenId' ||
+                name === 'issuanceDate' ||
+                name === 'issuer'
+            ) {
+                return true;
+            }
+            if (type === 'MintToken') {
+                if (
+                    name === 'date'
+                ) {
+                    return true;
+                }
+            }
+            if (path && typeof path === 'string') {
+                if (
+                    path === 'proof' ||
+                    path.includes('@context') ||
+                    path.startsWith('proof.') ||
+                    path.startsWith('type.') ||
+                    path.endsWith('proof.created') ||
+                    path.endsWith('proof.jws') ||
+                    path.endsWith('proof.proofPurpose') ||
+                    path.endsWith('proof.type') ||
+                    path.endsWith('proof.verificationMethod')
+                ) {
+                    return true;
+                }
+            }
+            if (value && typeof value === 'string') {
+                if (
+                    value.startsWith('did:hedera:')
+                ) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (error) {
+            return false;
+        }
     }
 
     /**
