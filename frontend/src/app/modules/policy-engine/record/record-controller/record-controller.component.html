@@ -82,6 +82,9 @@
             *ngFor="let item of recordItems" 
             class="record-item" 
             [attr.selected]="item._selected"
+            matTooltipPosition="left"
+            matTooltipClass="record-tooltip"
+            [matTooltip]="item._tooltip"
         >
             <div class="record-item-index">{{item._index}}</div>
             <div class="record-item-method">{{item._title}}</div>

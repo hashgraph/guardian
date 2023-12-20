@@ -328,6 +328,26 @@ export class RecordControllerComponent implements OnInit {
         return item.action || item.method;
     }
 
+    private getActionTooltip(item: any, user: string): string {
+        let tooltip = '';
+        if (item.method) {
+            tooltip += `Method: ${item.method}\r\n`;
+        }
+        if (item.action) {
+            tooltip += `Action: ${item.action}\r\n`;
+        }
+        if (item.user) {
+            tooltip += `User: ${item.user}\r\n`;
+        }
+        if (user) {
+            tooltip += `User Name: ${user}\r\n`;
+        }
+        if (item.target) {
+            tooltip += `Target: ${item.target}\r\n`;
+        }
+        return tooltip;
+    }
+
     private updateActionItems(): void {
         const start = this.recordItems[0];
         const startTime = start?.time;
@@ -340,6 +360,7 @@ export class RecordControllerComponent implements OnInit {
             item._index = index + 1;
             item._selected = index === lastIndex;
             item._title = this.getActionTitle(item, user);
+            item._tooltip = this.getActionTooltip(item, user);
         }
     }
 
