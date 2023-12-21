@@ -424,9 +424,14 @@ export class Running {
                 }
                 case RecordAction.CreateUser: {
                     const doc = await this.getActionDocument(action);
-                    const count = await DatabaseServer.getVirtualUsers(this.policyId);
-                    const username = `Virtual User ${count.length}`;
-
+                    const users = await DatabaseServer.getVirtualUsers(this.policyId);
+                    for (const user of users) {
+                        console.debug(user);
+                        if (user.did === userFull.did) {
+                            return `User with DID (${userFull.did}) already exists.`;
+                        }
+                    }
+                    const username = `Virtual User ${users.length}`;
                     await DatabaseServer.createVirtualUser(
                         this.policyId,
                         username,
