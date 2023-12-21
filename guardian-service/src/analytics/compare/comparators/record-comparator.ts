@@ -359,13 +359,14 @@ export class RecordComparator {
      */
     private total(rates: IRate<any>[]): number {
         let total = 0;
-        for (const child of rates) {
+        for (let index = 1; index < rates.length; index++) {
+            const child = rates[index];
             if (child.totalRate > 0) {
                 total += child.totalRate;
             }
         }
-        if (rates.length) {
-            return Math.floor(total / rates.length);
+        if (rates.length - 1 > 0) {
+            return Math.floor(total / (rates.length - 1));
         }
         return 100;
     }
