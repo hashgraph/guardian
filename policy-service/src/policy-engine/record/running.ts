@@ -1,4 +1,4 @@
-import { GenerateUUIDv4, PolicyEvents } from '@guardian/interfaces';
+import { GenerateUUIDv4, PolicyEvents, TopicType } from '@guardian/interfaces';
 import { RunningStatus } from './status.type';
 import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
 import { RecordAction } from './action.type';
@@ -9,6 +9,7 @@ import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { DIDDocument, DatabaseServer, IRecordResult, RecordImportExport } from '@guardian/common';
 import { RecordItem } from './record-item';
 import { GenerateDID, GenerateUUID, IGenerateValue, RecordItemStack, Utils } from './utils';
+import { AccountId, PrivateKey } from '@hashgraph/sdk';
 
 /**
  * Running controller
@@ -388,6 +389,7 @@ export class Running {
             const value = new GenerateDID(recordOwner, this.owner);
             this._generatedItems.push(value);
             this._generatedDIDs.push(value);
+            await DatabaseServer.setVirtualUser(this.policyId, this.owner);
             return null;
         }
         if (action.method === RecordMethod.Stop) {
@@ -423,26 +425,28 @@ export class Running {
                     return null;
                 }
                 case RecordAction.CreateUser: {
-                    const doc = await this.getActionDocument(action);
+                    const topic = await DatabaseServer.getTopicByType(this.owner, TopicType.UserTopic);
+                    const newPrivateKey = PrivateKey.generate();
+                    const newAccountId = new AccountId(Date.now());
+                    const didObject = await DIDDocument.create(newPrivateKey, topic.topicId);
+                    const userDID = didObject.getDid();
+                    const document = didObject.getDocument();
                     const users = await DatabaseServer.getVirtualUsers(this.policyId);
-                    for (const user of users) {
-                        console.debug(user);
-                        if (user.did === userFull.did) {
-                            return `User with DID (${userFull.did}) already exists.`;
-                        }
-                    }
                     const username = `Virtual User ${users.length}`;
                     await DatabaseServer.createVirtualUser(
                         this.policyId,
                         username,
-                        userFull.did,
-                        action.document?.accountId,
-                        action.document?.privateKey
+                        userDID,
+                        newAccountId.toString(),
+                        newPrivateKey.toString()
                     );
                     await this.policyInstance.components.databaseServer.saveDid({
-                        did: userFull.did,
-                        document: doc
+                        did: userDID,
+                        document
                     });
+                    const value = new GenerateDID(userFull.did, userDID);
+                    this._generatedItems.push(value);
+                    this._generatedDIDs.push(value);
                     return null;
                 }
                 case RecordAction.SetUser: {

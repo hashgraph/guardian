@@ -999,7 +999,6 @@ export class PolicyEngineService {
                         did,
                         data: {
                             accountId: newAccountId.toString(),
-                            privateKey: newPrivateKey.toString(),
                             document
                         }
                     });
