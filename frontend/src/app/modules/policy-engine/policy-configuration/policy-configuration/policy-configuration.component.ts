@@ -969,7 +969,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.changeDetector.detectChanges();
     }
 
-    private setErrors(results: any) {
+    private setErrors(results: any, type: string) {
         const blocks = results.blocks || [];
         const modules = results.modules || [];
         const tools = results.tools || [];
@@ -1000,12 +1000,12 @@ export class PolicyConfigurationComponent implements OnInit {
                 }
             }
         }
-        this.errorsCount = this.errors.length;
+        this.errorsCount = this.errors.length + commonErrors.length;
         this.errorsMap = {};
         for (const element of this.errors) {
             this.errorsMap[element.id] = element.errors;
         }
-        this.errorMessage(commonErrors);
+        this.errorMessage(commonErrors, type);
     }
 
     private jsonToObject(json: string): any {
@@ -1062,10 +1062,10 @@ export class PolicyConfigurationComponent implements OnInit {
         this.updateCodeMirrorStyles();
     }
 
-    private errorMessage(errors: string[]) {
+    private errorMessage(errors: string[], type: string) {
         if (errors && errors.length) {
             const text = errors.map((text) => `<div>${text}</div>`).join('');
-            this.informService.errorShortMessage(text, 'The policy is invalid');
+            this.informService.errorShortMessage(text, `The ${type} is invalid`);
         }
     }
 
@@ -1252,7 +1252,7 @@ export class PolicyConfigurationComponent implements OnInit {
             const { policy, results } = data;
             const config = policy.config;
             this.policyTemplate.rebuild(config);
-            this.setErrors(results);
+            this.setErrors(results, 'policy');
             this.onSelect(this.openFolder.root);
             this.loading = false;
         }, (e) => {
@@ -1296,7 +1296,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.clearState();
                 this.loadData();
             } else {
-                this.setErrors(errors);
+                this.setErrors(errors, 'policy');
                 this.loading = false;
             }
         }, (e) => {
@@ -1487,7 +1487,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.modulesService.validate(module).subscribe((data: any) => {
             const { module, results } = data;
             this.moduleTemplate.rebuild(module);
-            this.setErrors(results);
+            this.setErrors(results, 'module');
             this.onOpenRoot(this.moduleTemplate);
             this.onSelect(this.openFolder.root);
             this.loading = false;
@@ -1558,7 +1558,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.toolsService.validate(tool).subscribe((data: any) => {
             const { tool, results } = data;
             this.toolTemplate.rebuild(tool);
-            this.setErrors(results);
+            this.setErrors(results, 'tool');
             this.onOpenRoot(this.toolTemplate);
             this.onSelect(this.openFolder.root);
             this.loading = false;

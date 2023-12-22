@@ -2,6 +2,7 @@ import { DatabaseServer, PolicyTool } from '@guardian/common';
 import { BlockValidator } from './block-validator';
 import { IModulesErrors } from './interfaces/modules-errors.interface';
 import { ISchema, ModuleStatus } from '@guardian/interfaces';
+import { SchemaValidator } from './schema-validator';
 
 /**
  * Policy Validator
@@ -28,20 +29,15 @@ export class ToolValidator {
      */
     private readonly tools: Map<string, ToolValidator>;
     /**
+     * Schemas
+     * @private
+     */
+    private readonly schemas: Map<string, SchemaValidator>;
+    /**
      * Common errors
      * @private
      */
     private readonly errors: string[];
-    /**
-     * Schemas
-     * @private
-     */
-    private readonly schemas: Map<string, ISchema>;
-    /**
-     * Unsupported Schemas
-     * @private
-     */
-    private readonly unsupportedSchemas: Set<string>;
     /**
      * Tokens
      * @private
@@ -83,10 +79,9 @@ export class ToolValidator {
         this.blocks = new Map();
         this.tools = new Map();
         this.tags = new Map();
+        this.schemas = new Map();
         this.errors = [];
         this.permissions = ['NO_ROLE', 'ANY_ROLE', 'OWNER'];
-        this.schemas = new Map();
-        this.unsupportedSchemas = new Set();
         this.tokens = [];
         this.topics = [];
         this.tokenTemplates = [];
@@ -112,7 +107,6 @@ export class ToolValidator {
                 }
             }
             await this.registerSchemas();
-            this.checkSchemas();
             return true;
         }
     }
@@ -121,35 +115,13 @@ export class ToolValidator {
      * Register schemas
      */
     private async registerSchemas(): Promise<void> {
-        const db = new DatabaseServer(null);
-        for (const [key, value] of this.schemas) {
-            if (typeof value === 'string') {
-                const baseSchema = await db.getSchemaByIRI(value);
-                this.schemas.set(key, baseSchema);
-            }
-        }
+        this.schemas.set('#GeoJSON', SchemaValidator.fromSystem('#GeoJSON'));
         const schemas = await DatabaseServer.getSchemas({ topicId: this.topicId });
         for (const schema of schemas) {
-            this.schemas.set(schema.iri, schema);
+            this.schemas.set(schema.iri, SchemaValidator.fromSchema(schema));
         }
-    }
-
-    /**
-     * Check schemas
-     */
-    private checkSchemas(): void {
-        for (const schema of this.schemas.values()) {
-            const defs = schema?.document?.$defs;
-            if (defs && Object.prototype.toString.call(defs) === '[object Object]') {
-                for (const iri of Object.keys(defs)) {
-                    if (!this.schemaExist(iri)) {
-                        this.schemas.delete(schema.iri);
-                        this.unsupportedSchemas.add(schema.iri);
-                        this.checkSchemas();
-                        return;
-                    }
-                }
-            }
+        for (const validator of this.schemas.values()) {
+            await validator.load();
         }
     }
 
@@ -210,7 +182,7 @@ export class ToolValidator {
                 this.variables.push(variable);
                 switch (variable.type) {
                     case 'Schema': {
-                        this.schemas.set(variable.name, variable.baseSchema);
+                        this.schemas.set(variable.name, SchemaValidator.fromTemplate(variable));
                         break;
                     }
                     case 'Token':
@@ -275,6 +247,10 @@ export class ToolValidator {
      * Validate
      */
     public async validate(): Promise<void> {
+        const allSchemas = this.getAllSchemas(new Map());
+        for (const item of this.schemas.values()) {
+            await item.validate(allSchemas);
+        }
         for (const item of this.blocks.values()) {
             await item.validate();
         }
@@ -320,11 +296,37 @@ export class ToolValidator {
     public getSerializedErrors(): IModulesErrors {
         let valid = !this.errors.length;
         const blocksErrors = [];
+        const toolsErrors = [];
+        const commonErrors = this.errors.slice();
+        /**
+         * Schema errors
+         */
+        for (const item of this.schemas.values()) {
+            const result = item.getSerializedErrors();
+            for (const error of result.errors) {
+                commonErrors.push(error);
+            }
+            valid = valid && result.isValid;
+        }
+        /**
+         * Tools errors
+         */
+        for (const item of this.tools.values()) {
+            const result = item.getSerializedErrors();
+            toolsErrors.push(result);
+            valid = valid && result.isValid;
+        }
+        /**
+         * Blocks errors
+         */
         for (const item of this.blocks.values()) {
-            const result = item.getSerializedErrors()
+            const result = item.getSerializedErrors();
             blocksErrors.push(result);
             valid = valid && result.isValid;
         }
+        /**
+         * Common tool errors
+         */
         for (const item of this.errors) {
             blocksErrors.push({
                 id: this.uuid,
@@ -333,6 +335,9 @@ export class ToolValidator {
                 isValid: false
             });
         }
+        /**
+         * Result error
+         */
         if (!valid) {
             blocksErrors.push({
                 id: this.uuid,
@@ -341,10 +346,11 @@ export class ToolValidator {
                 isValid: false
             });
         }
-        const commonErrors = this.errors.slice();
+
         return {
             errors: commonErrors,
             blocks: blocksErrors,
+            tools: toolsErrors,
             id: this.uuid,
             isValid: valid
         }
@@ -387,15 +393,35 @@ export class ToolValidator {
      */
     public getSchema(iri: string): ISchema {
         if (this.schemas.has(iri)) {
-            return this.schemas.get(iri);
-        }
-        for (const item of this.tools.values()) {
-            const schema = item.getSchema(iri);
-            if (schema) {
-                return schema;
+            const validator = this.schemas.get(iri);
+            if (validator.isValid) {
+                return validator.getSchema();
+            } else {
+                return null;
             }
+        } else {
+            for (const item of this.tools.values()) {
+                const schema = item.getSchema(iri);
+                if (schema) {
+                    return schema;
+                }
+            }
+            return null;
         }
-        return null;
+    }
+
+    /**
+     * Get all schemas
+     * @param iri
+     */
+    public getAllSchemas(map: Map<string, SchemaValidator>): Map<string, SchemaValidator> {
+        for (const [key, value] of this.schemas) {
+            map.set(key, value);
+        }
+        for (const tool of this.tools.values()) {
+            tool.getAllSchemas(map);
+        }
+        return map;
     }
 
     /**
@@ -403,19 +429,17 @@ export class ToolValidator {
      * @param iri
      */
     public schemaExist(iri: string): boolean {
-        if (iri === '#GeoJSON') {
-            return true;
-        }
         if (this.schemas.has(iri)) {
-            return !!this.schemas.get(iri);
-        }
-        for (const item of this.tools.values()) {
-            const exist = item.schemaExist(iri);
-            if (exist) {
-                return exist;
+            const validator = this.schemas.get(iri);
+            return validator.isValid;
+        } else {
+            for (const item of this.tools.values()) {
+                if (item.schemaExist(iri)) {
+                    return true;
+                }
             }
+            return false;
         }
-        return false;
     }
 
     /**
@@ -423,15 +447,17 @@ export class ToolValidator {
      * @param iri
      */
     public unsupportedSchema(iri: string): boolean {
-        if (this.unsupportedSchemas.has(iri)) {
-            return true;
-        }
-        for (const item of this.tools.values()) {
-            if (item.unsupportedSchema(iri)) {
-                return true;
+        if (this.schemas.has(iri)) {
+            const validator = this.schemas.get(iri);
+            return !validator.isValid;
+        } else {
+            for (const item of this.tools.values()) {
+                if (item.unsupportedSchema(iri)) {
+                    return true;
+                }
             }
+            return false;
         }
-        return false;
     }
 
     /**

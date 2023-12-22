@@ -432,6 +432,11 @@ export class Running {
                     const userDID = didObject.getDid();
                     const document = didObject.getDocument();
                     const users = await DatabaseServer.getVirtualUsers(this.policyId);
+                    for (const user of users) {
+                        if (user.did === userDID) {
+                            return `User with DID (${userDID}) already exists.`;
+                        }
+                    }
                     const username = `Virtual User ${users.length}`;
                     await DatabaseServer.createVirtualUser(
                         this.policyId,
