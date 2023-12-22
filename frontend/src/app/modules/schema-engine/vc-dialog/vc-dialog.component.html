@@ -1,36 +1,24 @@
-<div class="g-dialog-content">
-    <div class="g-dialog-header">
-        <div class="g-dialog-cancel">
-            <div class="g-dialog-cancel-btn" (click)="onClick()">
-                <mat-icon>close</mat-icon>
-            </div>
+<app-compare-btn *ngIf="!dryRun && id" [id]="id" type="document"></app-compare-btn>
+<div *ngIf="(isVcDocument || isVpDocument) && toggle" class="toggle-container">
+    <label class="switch">
+        <input [(ngModel)]="viewDocument" type="checkbox">
+        <span class="slider round"></span>
+    </label>
+    <span class="slider-text">View as Form</span>
+</div>
+<div class="view-dialog-content">
+    <ng-container *ngIf="viewDocument">
+        <app-document-view [document]="document" [schema]="schema" [type]="type"></app-document-view>
+    </ng-container>
+    <ng-container *ngIf="!viewDocument">
+        <div *ngIf="type !== 'TEXT'" class="json">
+            {{ json }}
         </div>
-
-        <div class="g-dialog-title">
-            {{title}}
+        <div *ngIf="type === 'TEXT'" class="text">
+            {{ text }}
         </div>
-
-        <div class="g-dialog-actions">
-            <app-compare-btn *ngIf="!dryRun && id" type="document" [id]="id"></app-compare-btn>
-            <mat-slide-toggle 
-                *ngIf="(isVcDocument || isVpDocument) && toggle" 
-                class="view-toggle" 
-                labelPosition='before'
-                [(ngModel)]="viewDocument" 
-                color="primary">View as form</mat-slide-toggle>
-        </div>
-    </div>
-    <div class="g-dialog-body">
-        <ng-container *ngIf="viewDocument">
-            <app-document-view [document]="document" [type]="type" [schema]="schema"></app-document-view>
-        </ng-container>
-        <ng-container *ngIf="!viewDocument">
-            <div class="json" *ngIf="type !== 'TEXT'">
-                {{json}}
-            </div>
-            <div class="text" *ngIf="type === 'TEXT'">
-                {{text}}
-            </div>
-        </ng-container>
-    </div>
+    </ng-container>
+</div>
+<div class="actions-container">
+    <button (click)="onClick()" class="button secondary">Close</button>
 </div>

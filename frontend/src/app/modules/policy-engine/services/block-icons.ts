@@ -45,8 +45,5 @@ BlockIcons[BlockType.Report] = 'addchart';
 BlockIcons[BlockType.ReportItem] = 'list_alt';
 BlockIcons[BlockType.TagsManager] = 'sell';
 BlockIcons[BlockType.NotificationBlock] = 'notifications';
-BlockIcons[BlockType.ExtractDataBlock] = 'find_in_page';
-BlockIcons[BlockType.Tool] = 'handyman';
-BlockIcons[BlockType.Module] = 'folder';
 
 export default BlockIcons;

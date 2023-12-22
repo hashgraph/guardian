@@ -1,7 +1,7 @@
 <li class="standard-registry__card" (click)="onCardClick()" [ngClass]="{ 'standard-registry__card--selected': isRegistrySelected }">
     <div class="standard-registry__header">
         <div class="standard-registry__topic">
-            <label>Standard registry</label>
+            <label class="standard-registry-label">Standard Registry</label>
             <span>{{ registry.hederaAccountId }}</span>
         </div>
 
@@ -21,7 +21,7 @@
                     svgIcon="chevron_down"
                 ></mat-icon>
             </div>
-            
+
             <mat-menu #policiesList="matMenu">
                 <ul class="policies-list">
                     <li *ngFor="let policy of registry.policies" class="policies-list__item" value="policy.name">
@@ -53,17 +53,17 @@
                 <label>Law</label>
                 <span>{{ registry.vcDocument.document.credentialSubject[0].law }}</span>
             </li>
-    
+
             <li class="standard-registry__detail">
                 <label>Geography</label>
                 <span>{{ registry.vcDocument.document.credentialSubject[0].geography }}</span>
             </li>
-    
+
             <li *ngIf="registry.vcDocument.document.credentialSubject[0].ISIC" class="standard-registry__detail">
                 <label>ISIC</label>
                 <span>{{ registry.vcDocument.document.credentialSubject[0].ISIC }}</span>
             </li>
-    
+
             <li *ngIf="registry.vcDocument.document.credentialSubject[0].tags" class="standard-registry__detail">
                 <label>Tags</label>
                 <span>{{ registry.vcDocument.document.credentialSubject[0].tags }}</span>

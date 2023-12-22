@@ -1,179 +1,275 @@
-<div class="content" *ngIf="!loading">
-    <ng-container *ngIf="isConfirmed; else elseTemplate">
-        <div *ngIf="!tokenId">
-            <div class="actions">
-                <mat-form-field appearance="outline">
-                    <mat-label>Policy</mat-label>
-                    <mat-select [(value)]="currentPolicy" (selectionChange)="onFilter()">
-                        <mat-option value="">All policies</mat-option>
-                        <mat-option *ngFor="let policy of policies" [value]="policy.id">
-                            <span>{{policy.name}}</span>
-                            <span> ({{policy.id}})</span>
-                        </mat-option>
-                    </mat-select>
-                </mat-form-field>
-                <div class="new-token-button" style="text-align: end">
-                    <button mat-raised-button color="primary" (click)="newToken()"
-                        style="margin: 6px 15px 15px 15px; min-width: 100px;">
-                        Create Token
-                    </button>
-                </div>
-            </div>
+<ng-container [ngTemplateOutlet]="!tokenId ? tokensTable : usingTokens"></ng-container>
 
-            <div class="table-container">
-                <table mat-table [dataSource]="tokens" class="sensors-table">
-                    <ng-container matColumnDef="tokenId">
-                        <th mat-header-cell *matHeaderCellDef> Token Id </th>
-                        <td mat-cell *matCellDef="let element">
-                            <hedera-explorer *ngIf="!element.draftToken" type="tokens"
-                                [params]="element.tokenId">{{element.tokenId}}</hedera-explorer>
-                            <span *ngIf="element.draftToken">Draft Token</span>
-                        </td>
-                    </ng-container>
-                    <ng-container matColumnDef="tokenName">
-                        <th mat-header-cell *matHeaderCellDef> Token Name </th>
-                        <td mat-cell *matCellDef="let element"> {{element.tokenName}} </td>
-                    </ng-container>
-                    <ng-container matColumnDef="tokenSymbol">
-                        <th mat-header-cell *matHeaderCellDef> Token Symbol </th>
-                        <td mat-cell *matCellDef="let element"> {{element.tokenSymbol}} </td>
-                    </ng-container>
-                    <ng-container matColumnDef="policies">
-                        <th mat-header-cell *matHeaderCellDef> Policies </th>
-                        <td mat-cell *matCellDef="let element" [matTooltip]="element.policies?.join(', ')">
-                            <div class="policies-info">{{getPoliciesInfo(element.policies)}}</div>
-                        </td>
-                    </ng-container>
-                    <ng-container matColumnDef="users">
-                        <th mat-header-cell *matHeaderCellDef></th>
-                        <td mat-cell *matCellDef="let element">
-                            <div [ngClass]="{'btn-settings-des': element.draftToken}" class="btn-settings"
-                                [routerLink]="['/tokens']" [queryParams]="{ tokenId: element.url }" matTooltip="Users"
-                                matTooltipPosition="above" matTooltipClass="guardian-tooltip">
-                                <mat-icon>group</mat-icon>
+<ng-template #tokensTable>
+    <div *ngIf="!loading" class="container">
+        <div class="header">
+            <h1>List of Tokens</h1>
+        </div>
+        <ng-container *ngIf="isConfirmed; else noDIDSettings">
+            <div class="actions-container">
+                <div class="dropdown-block">
+                    <p-dropdown (ngModelChange)="onFilter()" [(ngModel)]="policyDropdownItem" [options]="policies!">
+                        <ng-template pTemplate="selectedItem">
+                            <div *ngIf="policyDropdownItem"><span class="dropdown-label">Policy</span> <span
+                                    class="dropdown-item">{{ policyDropdownItem.name }}</span></div>
+                        </ng-template>
+                        <ng-template let-policy pTemplate="item">
+                            <div
+                                    class="dropdown-item">{{ policy.name + (policy.id !== -1 ? ' (' + policy.id + ')' : '') }}
                             </div>
-                        </td>
-                    </ng-container>
-                    <ng-container matColumnDef="edit">
-                        <th mat-header-cell *matHeaderCellDef> </th>
-                        <td mat-cell *matCellDef="let element">
-                            <div [ngClass]="{'btn-settings-des': !element.enableAdmin}" class="btn-settings"
-                                (click)="editToken(element)" matTooltip="Edit" matTooltipPosition="above"
-                                matTooltipClass="guardian-tooltip">
-                                <mat-icon>edit</mat-icon>
-                            </div>
-                        </td>
-                    </ng-container>
-                    <ng-container matColumnDef="delete">
-                        <th mat-header-cell *matHeaderCellDef> </th>
-                        <td mat-cell *matCellDef="let element">
-                            <div (click)="deleteToken(element)"
-                                 [ngClass]="{'btn-settings-des': !element.enableAdmin || !element.canDelete}"
-                                 class="btn-settings btn-delete" matTooltip="Delete" matTooltipClass="guardian-tooltip"
-                                 matTooltipPosition="above">
-                                <mat-icon>delete</mat-icon>
-                            </div>
-                        </td>
-                    </ng-container>
-                    <ng-container matColumnDef="tags">
-                        <th mat-header-cell *matHeaderCellDef> Tags </th>
-                        <td mat-cell *matCellDef="let element">
-                            <tags-explorer [data]="element._tags" [owner]="owner" [target]="element.id"
-                                [schemas]="tagSchemas" [entity]="tagEntity" [service]="tagsService"></tags-explorer>
-                        </td>
-                    </ng-container>
-                    <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-                    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-                </table>
+                        </ng-template>
+                    </p-dropdown>
+                </div>
+                <button (click)="newToken()" [icon]="'pi pi-plus'" class="button" label="Create token" pButton
+                        type="button"></button>
+            </div>
+            <ng-container *ngIf="tokens.length > 0 else noData">
+                <div class="table-container">
+                    <table>
+                        <tr class="row-header">
+                            <th>TOKEN ID</th>
+                            <th>TOKEN NAME</th>
+                            <th>TOKEN SYMBOL</th>
+                            <th>POLICIES</th>
+                            <th>TAGS</th>
+                            <th>OPERATIONS</th>
+                        </tr>
+                        <ng-container *ngFor="let token of tokens">
+                            <tr class="row-item">
+                                <td>
+                                    <hedera-explorer *ngIf="!token.draftToken else draftToken" [params]="token.tokenId"
+                                                     type="tokens">{{ token.tokenId }}
+                                    </hedera-explorer>
+                                    <ng-template #draftToken>Draft Token</ng-template>
+                                </td>
+                                <td>{{ token.tokenName }}</td>
+                                <td>{{ token.tokenSymbol }}</td>
+                                <td>{{ token.policies?.join(', ') }}</td>
+                                <td>
+                                    <tags-explorer [data]="token._tags" [entity]="tagEntity" [owner]="owner"
+                                                   [schemas]="tagSchemas" [service]="tagsService"
+                                                   [target]="token.id"></tags-explorer>
+                                </td>
+                                <td>
+                                    <div class="flex flex-column-gap-20">
+                                        <svg (click)="!token.draftToken ? goToUsingTokens(token) : null"
+                                             [class.not-allowed-cursor]="!token.enableAdmin || token.draftToken"
+                                             class="opacity-icon" fill="none"
+                                             height="24" viewBox="0 0 24 24" width="24"
+                                             xmlns="http://www.w3.org/2000/svg">
+                                            <g>
+                                                <path [class.disabled-color]="!token.enableAdmin || token.draftToken"
+                                                      class="primary-color"
+                                                      clip-rule="evenodd" d="M9 6C7.34314 6 6 7.34314 6 9C6 10.6568 7.34315 12 9 12C10.6568 12 12 10.6568 12 9C12 7.34315 10.6568 6 9 6ZM4 9C4 6.23858 6.23857 4 9 4C11.7614 4 14 6.23857 14 9C14 11.7614 11.7614 14 9 14C6.23857 14 4 11.7614 4 9ZM14 5C14 4.44772 14.4477 4 15 4C17.7614 4 20 6.23857 20 9C20 11.7614 17.7614 14 15 14C14.4477 14 14 13.5523 14 13C14 12.4477 14.4477 12 15 12C16.6568 12 18 10.6568 18 9C18 7.34315 16.6568 6 15 6C14.4477 6 14 5.55228 14 5ZM4.20266 16.3395C5.47421 15.4918 7.17325 15 9 15C10.8267 15 12.5258 15.4918 13.7973 16.3395C15.0619 17.1826 16 18.4571 16 20C16 20.5523 15.5523 21 15 21C14.4477 21 14 20.5523 14 20C14 19.3338 13.5949 18.6083 12.6879 18.0036C11.7879 17.4036 10.487 17 9 17C7.51304 17 6.21208 17.4036 5.31206 18.0036C4.40505 18.6083 4 19.3338 4 20C4 20.5523 3.55228 21 3 21C2.44772 21 2 20.5523 2 20C2 18.4571 2.93809 17.1826 4.20266 16.3395ZM16.0267 15.9981C16.1533 15.4606 16.6918 15.1275 17.2294 15.2542C19.7332 15.8442 22 17.5593 22 19.9999C22 20.5522 21.5523 20.9999 21 20.9999C20.4477 20.9999 20 20.5522 20 19.9999C20 18.9573 18.9276 17.7092 16.7706 17.2008C16.2331 17.0742 15.9 16.5357 16.0267 15.9981Z"
+                                                      fill-rule="evenodd"/>
+                                            </g>
+                                        </svg>
+                                        <svg (click)="openEditDialog(token)" class="opacity-icon" fill="none" height="24"
+                                             viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                            <path [class.disabled-color]="!token.enableAdmin" class="primary-color"
+                                                  clip-rule="evenodd" d="M16.5084 6.31676C16.8031 6.03714 17.1971 5.8857 17.6038 5.89575C18.0105 5.9058 18.3966 6.07652 18.677 6.37035C18.9574 6.66418 19.1093 7.05705 19.0992 7.46253C19.0892 7.86802 18.9179 8.25291 18.6232 8.53252L8.08714 18.5537L5.37201 18.9094L6.48508 15.8059L16.5075 6.31771L16.5084 6.31676ZM20.0522 5.0628C19.4242 4.40569 18.5605 4.02384 17.6505 4.00108C16.7405 3.97832 15.8586 4.3165 15.1984 4.94139L5.00859 14.586C4.90058 14.6882 4.81814 14.8143 4.7679 14.9541L3.05549 19.7318C3.00064 19.8848 2.98614 20.0494 3.01339 20.2096C3.04063 20.3698 3.10871 20.5204 3.21109 20.6468C3.31346 20.7733 3.44671 20.8714 3.59804 20.9317C3.74938 20.9921 3.91373 21.0126 4.07533 20.9915L8.64177 20.3939C8.84179 20.3679 9.02835 20.2792 9.17452 20.1406L19.9351 9.90599C20.5946 9.27903 20.9773 8.4166 20.999 7.50836C21.0208 6.60012 20.6808 5.72045 20.0522 5.0628ZM13.466 19.1029C13.2137 19.1029 12.9717 19.2029 12.7933 19.3808C12.6149 19.5586 12.5147 19.7999 12.5147 20.0515C12.5147 20.303 12.6149 20.5443 12.7933 20.7222C12.9717 20.9001 13.2137 21 13.466 21H19.1741C19.4264 21 19.6684 20.9001 19.8468 20.7222C20.0252 20.5443 20.1254 20.303 20.1254 20.0515C20.1254 19.7999 20.0252 19.5586 19.8468 19.3808C19.6684 19.2029 19.4264 19.1029 19.1741 19.1029H13.466Z"
+                                                  fill-rule="evenodd"/>
+                                        </svg>
+                                        <svg (click)="token.canDelete ? questToDeleteToken(token) : null"
+                                             class="opacity-icon" fill="none" height="24"
+                                             viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                            <path [class.disabled-color]="!token.enableAdmin || !token.canDelete"
+                                                  class="accent-color-red"
+                                                  clip-rule="evenodd" d="M10 4C9.44771 4 9 4.44771 9 5V6H15V5C15 4.44771 14.5523 4 14 4H10ZM17 6V5C17 3.34315 15.6569 2 14 2H10C8.34315 2 7 3.34315 7 5V6H5C4.44772 6 4 6.44771 4 7C4 7.55228 4.44772 8 5 8V18C5 19.6569 6.34315 21 8 21H16C17.6569 21 19 19.6569 19 18V8C19.5523 8 20 7.55228 20 7C20 6.44771 19.5523 6 19 6H17ZM17 8H7V18C7 18.5523 7.4477 19 8 19H16C16.5523 19 17 18.5523 17 18V8ZM10 10C10.5523 10 11 10.4477 11 11V16C11 16.5523 10.5523 17 10 17C9.44772 17 9 16.5523 9 16V11C9 10.4477 9.44772 10 10 10ZM14 10C14.5523 10 15 10.4477 15 11V16C15 16.5523 14.5523 17 14 17C13.4477 17 13 16.5523 13 16V11C13 10.4477 13.4477 10 14 10Z"
+                                                  fill="#FF432A"
+                                                  fill-rule="evenodd"/>
+                                        </svg>
+                                    </div>
+                                </td>
+                            </tr>
+                        </ng-container>
+                    </table>
+                </div>
+                <div class="table-paginator">
+                    <span>Items per page:</span>
+                    <p-dropdown
+                            (onChange)="newOnPage()"
+                            [(ngModel)]="pageSize"
+                            [options]="[10, 25, 50, 100]"
+                    ></p-dropdown>
+                    <span class="color-grey-6"
+                    >{{ pageIndex * pageSize + 1 }} –
+                        {{
+                            pageIndex * pageSize + pageSize > tokensCount
+                                ? tokensCount
+                                : pageIndex * pageSize + pageSize
+                        }}
+                        of {{ tokensCount }}</span
+                    >
+                    <div class="flex">
+                        <svg
+                                (click)="movePageIndex(-1)"
+                                fill="none"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                width="24"
+                                xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <path
+                                    d="M15.2828 5.68906C14.8923 5.29856 14.2591 5.29856 13.8686 5.68906L8.98115 10.5813C8.20075 11.3625 8.20106 12.6283 8.98184 13.4091L13.8722 18.2994C14.2627 18.6899 14.8959 18.6899 15.2864 18.2994C15.677 17.9089 15.677 17.2757 15.2864 16.8852L11.1008 12.6996C10.7103 12.309 10.7103 11.6759 11.1008 11.2854L15.2828 7.10326C15.6733 6.71276 15.6733 6.07956 15.2828 5.68906Z"
+                                    fill="#848FA9"
+                            />
+                        </svg>
+                        <svg
+                                (click)="movePageIndex(+1)"
+                                fill="none"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                width="24"
+                                xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <path
+                                    d="M8.6926 5.68907C9.0831 5.29857 9.7163 5.29857 10.1068 5.68907L14.9942 10.5813C15.7746 11.3625 15.7743 12.6283 14.9936 13.4091L10.1032 18.2994C9.7127 18.6899 9.0795 18.6899 8.689 18.2994C8.2984 17.9089 8.2984 17.2757 8.689 16.8852L12.8746 12.6996C13.2651 12.309 13.2651 11.6759 12.8746 11.2854L8.6926 7.10327C8.3021 6.71277 8.3021 6.07957 8.6926 5.68907Z"
+                                    fill="#848FA9"
+                            />
+                        </svg>
+                    </div>
+                </div>
+            </ng-container>
+        </ng-container>
+    </div>
+</ng-template>
+
+<ng-template #usingTokens>
+    <div *ngIf="!loading" class="container">
+        <div>
+            <button [iconPos]="'left'" [icon]="'pi pi-chevron-left'" [routerLink]="'/tokens'" class="button secondary height-40 margin-bottom-16"
+                    label="Back to List of Tokens"
+                    pButton type="button"></button>
+        </div>
+        <div class="header">
+            <h1>Token Users</h1>
+            <div>
+                <span class="tokenId"><strong>Token ID: </strong>{{ tokenId }}</span>
             </div>
         </div>
-
-        <div *ngIf="tokenId">
-            <div *ngIf="tokenId" class="token-id">
-                <div class="token-id-header">Token Id:</div>
-                <div class="token-id-value">{{tokenId}}</div>
-            </div>
-            <table mat-table [dataSource]="users" class="users-table">
-                <ng-container matColumnDef="username">
-                    <th mat-header-cell *matHeaderCellDef> Username </th>
-                    <td mat-cell *matCellDef="let element">{{element.username}}
-                        <div class="table-loader">
-                            <div class="lds-ellipsis">
-                                <div></div>
-                                <div></div>
-                                <div></div>
-                                <div></div>
+        <div class="table-container">
+            <table>
+                <tr class="row-header">
+                    <th>USERNAME</th>
+                    <th>ASSOCIATED</th>
+                    <th>TOKEN BALANCE</th>
+                    <th>FROZEN</th>
+                    <th>KYCD</th>
+                    <th>REFRESH</th>
+                </tr>
+                <ng-container *ngFor="let user of users">
+                    <tr class="row-item">
+                        <td>
+                            {{ user.username }}
+                        </td>
+                        <td>
+                            <div *ngIf="!user.loading && user.associated === 'Yes'" class="p-tag p-tag-success">Yes
                             </div>
-                        </div>
-                    </td>
+                            <div *ngIf="!user.loading && user.associated === 'No'" class="p-tag p-tag-error">No</div>
+                        </td>
+                        <td>
+                            <ng-container
+                                    *ngIf="!user.loading && user.balance else preloader">{{ user.balance }}
+                            </ng-container>
+                        </td>
+                        <td>
+                            <button (click)="freeze(user, true)" *ngIf="!user.loading && user.enableFreeze && user.frozen === 'No'"
+                                    class="button secondary"
+                                    pButton>
+                                Freeze
+                            </button>
+                            <button (click)="freeze(user, false)" *ngIf="!user.loading && user.enableFreeze && user.frozen === 'Yes'"
+                                    class="button secondary"
+                                    pButton>
+                                Unfreeze
+                            </button>
+                        </td>
+                        <td>
+                            <button (click)="kyc(user, false)" *ngIf="!user.loading && user.kyc === 'Yes'" class="button secondary"
+                                    label="Revoke KYC"
+                                    pButton
+                                    type="button"></button>
+                            <button (click)="kyc(user, true)" *ngIf="!user.loading && user.kyc === 'No'" [iconPos]="'left'"
+                                    [icon]="'pi pi-chevron-left'"
+                                    class="button secondary" label="Grant KYC"
+                                    pButton type="button"></button>
+                        </td>
+                        <td>
+                            <div class="flex flex-column-gap-20">
+                                <svg (click)="!user.loading ? refresh(user) : null"
+                                     [class.not-allowed-cursor]="user.loading" class="opacity-icon" fill="none"
+                                     height="24"
+                                     viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path [class.disabled-color]="user.loading" class="primary-color"
+                                          clip-rule="evenodd" d="M3 2C3.55228 2 4 2.44772 4 3V5.75001L5.33308 4.54654C7.1016 2.96367 9.43946 2 12 2C17.5229 2 22 6.47716 22 12C22 17.5229 17.5229 22 12 22C7.23966 22 3.25835 18.6748 2.24781 14.2213C2.1256 13.6827 2.46314 13.147 3.00174 13.0248C3.54033 12.9026 4.07602 13.2401 4.19823 13.7787C5.00659 17.3412 8.194 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4C9.95118 4 8.08432 4.76887 6.6685 6.0354L5.60001 7H8C8.55228 7 9 7.44772 9 8C9 8.55228 8.55228 9 8 9H3C2.44772 9 2 8.55228 2 8V3C2 2.44772 2.44772 2 3 2Z"
+                                          fill-rule="evenodd"
+                                    />
+                                </svg>
+                            </div>
+                        </td>
+                    </tr>
                 </ng-container>
-                <ng-container matColumnDef="did">
-                    <th mat-header-cell *matHeaderCellDef> DID </th>
-                    <td mat-cell *matCellDef="let element">{{element.did}}</td>
-                </ng-container>
-                <ng-container matColumnDef="associated">
-                    <th mat-header-cell *matHeaderCellDef> Associated </th>
-                    <td mat-cell *matCellDef="let element">
-                        <div class="item-color item-color-{{getColor(element.associated,false)}}">
-                            {{element.associated}}
-                        </div>
-                    </td>
-                </ng-container>
-                <ng-container matColumnDef="tokenBalance">
-                    <th mat-header-cell *matHeaderCellDef> Token Balance </th>
-                    <td mat-cell *matCellDef="let element"> {{element.balance}} </td>
-                </ng-container>
-                <ng-container matColumnDef="frozen">
-                    <th mat-header-cell *matHeaderCellDef> Frozen </th>
-                    <td mat-cell *matCellDef="let element">
-                        <div *ngIf="element.enableFreeze && element.frozen =='No'"
-                            class="item-cmd item-color-{{getColor(element.frozen,false)}}"
-                            (click)="freeze(element, true)">
-                            Freeze
-                        </div>
-                        <div *ngIf="element.enableFreeze && element.frozen =='Yes'"
-                            class="item-cmd item-color-{{getColor(element.frozen,false)}}"
-                            (click)="freeze(element, false)">
-                            Unfreeze
-                        </div>
-                    </td>
-                </ng-container>
-                <ng-container matColumnDef="kyc">
-                    <th mat-header-cell *matHeaderCellDef> KYCd </th>
-                    <td mat-cell *matCellDef="let element">
-                        <div *ngIf="element.enableKYC && element.kyc =='Yes'"
-                            class="item-cmd item-color-{{getColor(element.kyc,true)}}" (click)="kyc(element, false)">
-                            Revoke KYC
-                        </div>
-                        <div *ngIf="element.enableKYC && element.kyc =='No'"
-                            class="item-cmd item-color-{{getColor(element.kyc,true)}}" (click)="kyc(element, true)">
-                            Grant KYC
-                        </div>
-                    </td>
-                </ng-container>
-                <ng-container matColumnDef="refresh">
-                    <th mat-header-cell *matHeaderCellDef> Refresh </th>
-                    <td mat-cell *matCellDef="let element">
-                        <div class="refresh-btn" (click)="refresh(element)">
-                            <mat-icon>refresh</mat-icon>
-                        </div>
-                    </td>
-                </ng-container>
-                <tr mat-header-row *matHeaderRowDef="usersColumns"></tr>
-                <tr mat-row *matRowDef="let row; columns: usersColumns;" [attr.loading]="row.loading"></tr>
             </table>
         </div>
-    </ng-container>
-    <ng-template #elseTemplate>
-        <div class="not-exist">
-            Before starting work you need to get DID <a [routerLink]="['/profile']">here</a>
-        </div>
+    </div>
+</ng-template>
+
+<ng-template #noData>
+    <div class="not-exist">
+        <svg fill="none" height="32" viewBox="0 0 32 32" width="32" xmlns="http://www.w3.org/2000/svg">
+            <path class="disabled-color" clip-rule="evenodd" d="M2.66699 8C2.66699 6.89543 3.56243 6 4.66699 6C5.77156 6 6.66699 6.89543 6.66699 8C6.66699 9.10457 5.77156 10 4.66699 10C3.56243 10 2.66699 9.10457 2.66699 8ZM9.33366 8.00082C9.3337 7.26444 9.93069 6.66752 10.6671 6.66756L28.0004 6.66852C28.7368 6.66856 29.3337 7.26555 29.3337 8.00193C29.3336 8.73831 28.7366 9.33523 28.0002 9.33519L10.6669 9.33423C9.93054 9.33419 9.33362 8.7372 9.33366 8.00082ZM2.66699 16C2.66699 14.8956 3.56236 14 4.66699 14C5.77163 14 6.66699 14.8956 6.66699 16C6.66699 17.1044 5.77163 18 4.66699 18C3.56236 18 2.66699 17.1044 2.66699 16ZM9.33366 16.0009C9.3337 15.2645 9.93069 14.6676 10.6671 14.6676L28.0004 14.6687C28.7368 14.6687 29.3337 15.2657 29.3337 16.0021C29.3336 16.7385 28.7366 17.3354 28.0002 17.3353L10.6669 17.3343C9.93053 17.3342 9.33361 16.7372 9.33366 16.0009ZM2.66699 24C2.66699 22.8956 3.56236 22 4.66699 22C5.77163 22 6.66699 22.8956 6.66699 24C6.66699 25.1044 5.77163 26 4.66699 26C3.56236 26 2.66699 25.1044 2.66699 24ZM9.33366 24.0009C9.3337 23.2645 9.93069 22.6676 10.6671 22.6676L28.0004 22.6687C28.7368 22.6687 29.3337 23.2657 29.3337 24.0021C29.3336 24.7385 28.7366 25.3354 28.0002 25.3353L10.6669 25.3343C9.93053 25.3342 9.33361 24.7372 9.33366 24.0009Z"
+                  fill-rule="evenodd"/>
+        </svg>
+        <span class="info-text-strong">There were no Tokens created yet</span>
+        <span class="info-text">Please create new token to see the data</span>
+    </div>
+</ng-template>
+
+<ng-template #noDIDSettings>
+    <div class="not-exist">
+        <span>Before starting work you need to get DID <a [routerLink]="['/profile']">here</a></span>
+    </div>
+</ng-template>
+
+<p-dialog [(visible)]="tokenDialogVisible" [closable]="true" [draggable]="false" [modal]="true">
+    <ng-template pTemplate="header">
+        <span class="modal-header">{{ currentTokenId ? 'Edit' : 'New' }} Token</span>
     </ng-template>
-</div>
+    <div style="padding: 0 10px 0 10px;">
+        <app-token-configuration [dataForm]="dataForm" [hide-type]="hideType"
+                                 [readonly]="readonlyForm"></app-token-configuration>
+    </div>
+    <ng-template pTemplate="footer">
+        <button (click)="tokenDialogVisible = false" class="button secondary" label="Close" pButton
+                type="button"></button>
+        <button (click)="saveToken()" [disabled]="dataForm.invalid" [label]="currentTokenId ? 'Save' : 'Create'" class="button" pButton
+                type="button"></button>
+    </ng-template>
+</p-dialog>
+
+<p-dialog [(visible)]="deleteTokenVisible" [closable]="true" [draggable]="false" [modal]="true">
+    <ng-template pTemplate="header">
+        <span class="modal-header">Detele Token</span>
+    </ng-template>
+    <div class="" style="padding: 0 10px 0 10px;">
+        Are you sure to delete token?
+    </div>
+    <ng-template pTemplate="footer">
+        <button (click)="deleteToken(false)" class="button secondary" label="Cancel" pButton
+                type="button"></button>
+        <button (click)="deleteToken(true)" [label]="'Delete'" class="button button-color-red" pButton
+                type="button"></button>
+    </ng-template>
+</p-dialog>
+
+<ng-template #preloader>
+    <div class="preloader-image"></div>
+</ng-template>
 
 <div *ngIf="loading && !taskId" class="loading">
-    <mat-spinner></mat-spinner>
+    <div class="preloader-image preloader-image-l-size"></div>
 </div>
 
 <async-progress *ngIf="loading && taskId" [taskId]="taskId"
-    (error)="onAsyncError($event)" (completed)="onAsyncCompleted()"></async-progress>
+                (completed)="onAsyncCompleted()" (error)="onAsyncError($event)"></async-progress>

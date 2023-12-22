@@ -1,0 +1,558 @@
+.not-exist {
+  position: absolute;
+  left: 48px;
+  right: 48px;
+  bottom: 56px;
+  top: calc(56px + 132px);
+  color: var(--color-grey-black-2);
+  font-family: Inter, serif;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  row-gap: 8px;
+  justify-content: center;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  margin: 56px 48px 110px 48px;
+}
+
+.container > .header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.container > .header > h1 {
+  width: 100%;
+  color: #000;
+  font-family: Poppins, serif;
+  font-size: 32px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 40px;
+}
+
+.tokenId {
+  display: flex;
+  white-space: nowrap;
+  column-gap: 6px;
+  color: var(--color-grey-5, #848FA9);
+  text-align: right;
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+}
+
+.tokenId > strong {
+  color: var(--color-grey-5, #848FA9);
+  text-align: right;
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+}
+
+.actions-container {
+  position: fixed;
+  left: 270px;
+  right: 0;
+  bottom: 0;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  background-color: var(--color-grey-white, #FFFFFF);
+  border-top: 1px solid var(--color-grey-3, #E1E7EF);
+  padding: 0 48px;
+}
+
+.right-buttons {
+  display: flex;
+  column-gap: 16px;
+}
+
+:host ::ng-deep .p-dropdown {
+  width: 400px;
+  border-radius: 8px;
+  border: 1px solid var(--color-grey-3);
+  background: #FFF;
+}
+
+:host ::ng-deep .p-dropdown-panel, .p-dropdown-items-wrapper {
+  border-radius: 8px;
+  border: 1px solid var(--color-grey-3);
+  background: #FFF;
+  margin-top: 4px;
+  box-shadow: 0 0 1px 0 #000;
+}
+
+.dropdown-label {
+  color: var(--color-grey-5);
+  font-family: Inter, serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 16px;
+  margin-right: 10px;
+}
+
+.dropdown-item {
+  color: var(--color-grey-black-2);
+  font-family: Inter, serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 16px;
+}
+
+:host ::ng-deep .p-dialog .p-dialog-footer button {
+  margin-right: 16px;
+}
+
+
+.height-28 {
+  min-height: 28px;
+  max-height: 28px;
+}
+
+.margin-top-20 {
+  margin-top: 20px;
+}
+
+.height-40 {
+  height: 40px;
+}
+
+.margin-bottom-16 {
+  margin-bottom: 16px;
+}
+
+.table-container {
+  margin-top: 16px;
+}
+
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+  overflow: visible;
+}
+
+.row-header {
+  border-radius: 8px 8px 0 0;
+}
+
+th {
+  color: var(--color-grey-5);
+  font-family: Inter, serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+  text-align: left;
+  padding: 0 20px 0 24px;
+  text-transform: uppercase;
+}
+
+.table-paginator {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  column-gap: 24px;
+  padding: 0 16px 0 0;
+
+  color: var(--color-grey-black-2, #23252E);
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 16px; /* 114.286% */
+}
+
+.color-grey-6 {
+  color: var(--color-grey-5, #848FA9);
+}
+
+.row-item, .table-paginator {
+  height: 64px !important;
+  border-radius: 8px !important;
+  background: #FFF;
+  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08) !important;
+}
+
+td {
+  color: var(--color-grey-black-1);
+  font-family: Inter, serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 16px;
+  text-align: left;
+  padding: 0 20px 0 24px;
+}
+
+td:first-child {
+  border-radius: 8px 0 0 8px;
+}
+
+td:last-child {
+  border-radius: 0 8px 8px 0;
+}
+
+.disabled-color {
+  fill: var(--color-grey-5) !important;
+  color: var(--color-grey-5) !important;
+  cursor: not-allowed !important;
+}
+
+button[disabled] {
+  background-color: var(--color-grey-2) !important;
+  color: var(--color-grey-4) !important;
+  cursor: not-allowed !important;
+}
+
+.primary-color {
+  fill: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.button-color-red, .button-color-red:hover {
+  background-color: var(--color-accent-red-1);
+  color: #FFF;
+  border: 0;
+}
+
+.accent-color-red {
+  fill: var(--color-accent-red-1);
+  color: var(--color-accent-red-1);
+}
+
+.opacity-icon {
+  opacity: 1.0;
+  cursor: pointer;
+  transition: opacity 0.25s ease-in-out;
+}
+
+
+.opacity-icon:hover {
+  opacity: 1.0;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-sb-c {
+  justify-content: space-between;
+  align-items: center;
+  column-gap: 16px;
+}
+
+.flex-column-gap-20 {
+  column-gap: 20px;
+}
+
+.flex-column-gap-8 {
+  column-gap: 8px;
+}
+
+.info-text {
+  color: var(--color-grey-5, #848FA9);
+  text-align: center;
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+}
+
+.info-text-strong {
+  color: var(--color-grey-5, #848FA9);
+  text-align: center;
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+}
+
+.modal-header {
+  color: #000;
+  font-family: Poppins, sans-serif;
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 32px;
+}
+
+:host ::ng-deep .p-dialog {
+  width: 720px;
+  border-radius: 16px !important;
+}
+
+:host ::ng-deep .p-dialog-header {
+  padding: 32px;
+  border-radius: 16px 16px 0 0;
+}
+
+:host ::ng-deep .p-dialog-footer {
+  padding: 32px;
+  border-radius: 0 0 16px 16px;
+}
+
+
+.p-tag {
+  width: min-content;
+  border-radius: 6px;
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+.p-tag-error {
+  background: var(--color-accent-red-2, #F5D7D7);
+  color: var(--color-accent-red-1, #FF432A);
+}
+
+.p-tag-success {
+  background: var(--color-accent-green-2, #D7F5F5) !important;
+  color: var(--color-accent-green-1, #19BE47) !important;
+}
+
+.p-tag-grey {
+  background: var(--color-grey-2, #EFF3F7) !important;
+  color: var(--color-grey-5, #848FA9) !important;
+}
+
+.margin-0 {
+  margin: 0;
+}
+
+.not-allowed-cursor {
+  cursor: not-allowed !important;
+}
+
+.search-input {
+  width: 400px;
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid var(--color-grey-3, #E1E7EF);
+  background: var(--color-grey-white, #FFF);
+}
+
+.loading {
+  background: #fff;
+  position: absolute;
+  z-index: 99;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-items: center;
+  justify-content: center;
+  align-content: center;
+}
+
+:host ::ng-deep .p-dropdown {
+  width: 100px;
+  border-radius: 8px;
+  border: 1px solid var(--color-grey-3);
+  background: #FFF;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.branding-container {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  column-gap: 32px;
+
+  .card {
+    width: 100%;
+    padding: 24px;
+    border-radius: 8px;
+    border: 1px solid var(--color-grey-3, #E1E7EF);
+    background: var(--color-grey-white, #FFF);
+
+    .color-picker-item {
+      display: flex;
+      justify-content: flex-start;
+      column-gap: 8px;
+    }
+
+    h4 {
+      color: #000;
+      font-family: Inter, sans-serif;
+      font-size: 16px;
+      font-style: normal;
+      font-weight: 600;
+      line-height: 18px;
+    }
+
+    .tooltip {
+      text-align: justify;
+      color: var(--color-grey-6, #848FA9);
+      font-family: Inter, sans-serif;
+      font-size: 12px;
+      font-style: normal;
+      font-weight: 400;
+      line-height: 14px;
+      margin: 6px 0 16px 0;
+    }
+
+    .p-field {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .p-field-label {
+      color: var(--color-grey-black-1, #181818);
+      font-family: Inter, sans-serif;
+      font-size: 12px;
+      font-style: normal;
+      font-weight: 500;
+      line-height: 14px;
+      margin-bottom: 6px;
+    }
+
+    .p-field-input {
+      border-radius: 8px;
+      border: 1px solid var(--color-grey-3, #E1E7EF);
+      background: var(--color-grey-white, #FFF);
+      outline: none !important;
+      box-shadow: unset !important;
+      padding: 12px 0 12px 16px;
+      align-items: center;
+      align-self: stretch;
+      transition: border 0.25s ease-in-out;
+      box-sizing: border-box;
+
+      color: var(--color-grey-black-1, #181818);
+      font-family: Inter, sans-serif;
+      font-size: 14px;
+      font-style: normal;
+      font-weight: 400;
+      line-height: 16px;
+    }
+
+    .p-field-input:focus {
+      border: 1px solid var(--color-primary);
+    }
+  }
+}
+
+:host ::ng-deep .p-colorpicker-preview {
+  border-radius: 8px;
+  width: 40px;
+  height: 40px;
+}
+
+.image-selector {
+
+  &-container {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    column-gap: 16px;
+
+    .image-container {
+      width: 120px;
+      height: 120px;
+      border-radius: 8px;
+      border: 1px solid var(--color-grey-3, #E1E7EF);
+      background: var(--color-grey-3, #E1E7EF);
+
+      img {
+        width: 120px;
+        height: 120px;
+      }
+    }
+
+    .description {
+      p {
+        color: var(--color-grey-black-2, #23252E);
+        font-family: Inter, sans-serif;
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 18px;
+      }
+
+      .grey {
+        color: var(--color-grey-6, #848FA9);
+      }
+    }
+  }
+}
+
+.settings-container {
+  display: flex;
+  width: 556px;
+  padding: 24px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 24px;
+
+  border-radius: 8px;
+  border: 1px solid var(--color-grey-3, #E1E7EF);
+  background: var(--color-grey-white, #FFF);
+}
+
+form {
+  width: 100%;
+}
+
+.form-input-container {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 24px;
+
+  .p-field-label {
+    color: var(--color-grey-black-1, #181818);
+    font-family: Inter, sans-serif;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 14px;
+    margin-bottom: 6px;
+  }
+
+  .p-field-input {
+    border-radius: 8px;
+    border: 1px solid var(--color-grey-3, #E1E7EF);
+    background: var(--color-grey-white, #FFF);
+    outline: none !important;
+    box-shadow: unset !important;
+    padding: 12px 0 12px 16px;
+    align-items: center;
+    align-self: stretch;
+    transition: border 0.25s ease-in-out;
+    box-sizing: border-box;
+    resize: vertical;
+
+    color: var(--color-grey-black-1, #181818);
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 16px;
+  }
+}

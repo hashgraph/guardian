@@ -52,8 +52,7 @@
                     </mat-panel-title>
                 </mat-expansion-panel-header>
                 <div class="merge-tree">
-                    <div *ngFor="let item of roles" 
-                        class="report-item report-item-small" 
+                    <div *ngFor="let item of roles" class="report-item report-item-small" 
                         [attr.type]="item.type"
                         [attr.rate]="item.total_rate"
                         [style.grid-template-columns]="_gridStyle">

@@ -5,6 +5,10 @@ import { AuthService } from './auth.service';
 import { ToastrService } from 'ngx-toastr';
 import { ApplicationStates, MessageAPI, NotifyAPI, UserRole } from '@guardian/interfaces';
 import { Router } from '@angular/router';
+import { DialogService } from 'primeng/dynamicdialog';
+import {
+    ServiceUnavailableDialog
+} from '../modules/schema-engine/service-unavailable-dialog/service-unavailable-dialog.component';
 
 interface MeecoVerifyVPResponse {
     vc: any;
@@ -50,11 +54,13 @@ export class WebSocketService {
     private serviesStates: any = [];
     private sendingEvent: boolean;
 
+    private requiredServicesWrongStatus: boolean = false;
+
     public readonly meecoPresentVP$: Observable<any> = this.meecoPresentVPSubject.asObservable();
     public readonly meecoVerifyVP$: Observable<any> = this.meecoVerifyVPSubject.asObservable();
     public readonly meecoVerifyVPFailed$: Observable<any> = this.meecoVerifyVPFailedSubject.asObservable();
 
-    constructor(private auth: AuthService, private toastr: ToastrService, private router: Router) {
+    constructor(private dialogService: DialogService, private auth: AuthService, private toastr: ToastrService, private router: Router) {
         this.blockUpdateSubject = new Subject();
         this.userInfoUpdateSubject = new Subject();
         this.servicesReady = new Subject();
@@ -217,10 +223,16 @@ export class WebSocketService {
                     this.updateStatus(data);
                     const allStatesReady = !this.serviesStates.find((item: any) => !item.states.includes(ApplicationStates.READY));
                     // const allStatesReady = true;
-                    if (!allStatesReady) {
-                        if (!['/status', '/admin/settings', '/admin/logs'].includes(location.pathname)) {
+                    if (!allStatesReady && !this.requiredServicesWrongStatus) {
+                        this.requiredServicesWrongStatus = true;
+                        if (!['/status', '/admin/settings', '/admin/logs', '/login'].includes(location.pathname)) {
                             const last = location.pathname === '/status' ? null : btoa(location.href);
-                            this.router.navigate(['/status'], { queryParams: { last } });
+                            //this.router.navigate(['/status'], { queryParams: { last } });
+                            this.dialogService.open(ServiceUnavailableDialog, {
+                                closable: true,
+                                header: 'Something went wrong',
+                                width: '500px',
+                            });
                         }
                     }
                     this.servicesReady.next(allStatesReady);
@@ -230,6 +242,7 @@ export class WebSocketService {
                     break;
                 }
                 case MessageAPI.ERROR_EVENT: {
+                    if (!data.blockType.includes('401'))
                     this.toastr.error(data.message, data.blockType, {
                         timeOut: 10000,
                         closeButton: true,
@@ -300,9 +313,7 @@ export class WebSocketService {
     }
 
     private getUrl(accessToken: string | null = null) {
-        return accessToken
-            ? `${this.getBaseUrl()}/ws/?token=${accessToken}`
-            : `${this.getBaseUrl()}/ws/`;
+        return `${this.getBaseUrl()}/ws/?token=${accessToken}`;
     }
 
     public blockSubscribe(
@@ -352,6 +363,9 @@ export class WebSocketService {
         error?: (error: any) => void,
         complete?: () => void
     ) {
+        if (this.updateNotification.observers.length > 0) {
+            this.updateNotification = new Subject();
+        }
         return this.updateNotification.subscribe(next, error, complete);
     }
 
@@ -362,6 +376,9 @@ export class WebSocketService {
         error?: (error: any) => void,
         complete?: () => void
     ) {
+        if (this.deleteNotification.observers.length > 0) {
+            this.deleteNotification = new Subject();
+        }
         return this.deleteNotification.subscribe(next, error, complete);
     }
 
@@ -372,6 +389,9 @@ export class WebSocketService {
         error?: (error: any) => void,
         complete?: () => void
     ) {
+        if (this.createProgress.observers.length > 0) {
+            this.createProgress = new Subject();
+        }
         return this.createProgress.subscribe(next, error, complete);
     }
 
@@ -382,6 +402,9 @@ export class WebSocketService {
         error?: (error: any) => void,
         complete?: () => void
     ) {
+        if (this.updateProgress.observers.length > 0) {
+            this.updateProgress = new Subject();
+        }
         return this.updateProgress.subscribe(next, error, complete);
     }
 
@@ -392,6 +415,9 @@ export class WebSocketService {
         error?: (error: any) => void,
         complete?: () => void
     ) {
+        if (this.deleteProgress.observers.length > 0) {
+            this.deleteProgress = new Subject();
+        }
         return this.deleteProgress.subscribe(next, error, complete);
     }
 

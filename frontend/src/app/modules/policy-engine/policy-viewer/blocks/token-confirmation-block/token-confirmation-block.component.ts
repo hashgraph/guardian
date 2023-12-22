@@ -10,7 +10,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 @Component({
     selector: 'app-token-confirmation-block',
     templateUrl: './token-confirmation-block.component.html',
-    styleUrls: ['./token-confirmation-block.component.css']
+    styleUrls: ['./token-confirmation-block.component.scss'],
 })
 export class TokenConfirmationBlockComponent implements OnInit {
     @Input('id') id!: string;
@@ -43,7 +43,9 @@ export class TokenConfirmationBlockComponent implements OnInit {
 
     ngOnInit(): void {
         if (!this.static) {
-            this.socket = this.wsService.blockSubscribe(this.onUpdate.bind(this));
+            this.socket = this.wsService.blockSubscribe(
+                this.onUpdate.bind(this)
+            );
         }
         try {
             const top = this.elRef.nativeElement.getBoundingClientRect().top;
@@ -75,13 +77,18 @@ export class TokenConfirmationBlockComponent implements OnInit {
             }, 500);
         } else {
             this.loading = true;
-            this.policyEngineService.getBlockData(this.id, this.policyId).subscribe((data: any) => {
-                this.setData(data);
-                this.loading = false;
-            }, (e) => {
-                console.error(e.error);
-                this.loading = false;
-            });
+            this.policyEngineService
+                .getBlockData(this.id, this.policyId)
+                .subscribe(
+                    (data: any) => {
+                        this.setData(data);
+                        this.loading = false;
+                    },
+                    (e) => {
+                        console.error(e.error);
+                        this.loading = false;
+                    }
+                );
         }
     }
 
@@ -122,13 +129,18 @@ export class TokenConfirmationBlockComponent implements OnInit {
 
     onSkip() {
         this.loading = true;
-        this.policyEngineService.setBlockData(this.id, this.policyId, {
-            action: 'skip'
-        }).subscribe(() => {
-            this.loading = false;
-        }, (e) => {
-            console.error(e.error);
-            this.loading = false;
-        });
+        this.policyEngineService
+            .setBlockData(this.id, this.policyId, {
+                action: 'skip',
+            })
+            .subscribe(
+                () => {
+                    this.loading = false;
+                },
+                (e) => {
+                    console.error(e.error);
+                    this.loading = false;
+                }
+            );
     }
 }

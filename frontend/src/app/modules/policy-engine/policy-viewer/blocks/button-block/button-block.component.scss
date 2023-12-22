@@ -1,0 +1,91 @@
+.loading {
+    position: fixed;
+  /* background: #ffffff32; */
+    z-index: 99;
+  top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
+}
+
+.loading-progress {
+  width: 80%;
+  height: 80%;
+}
+
+
+
+.btn-approve {
+  background: var(--color-accent-green-1) !important;
+  color: var(--color-grey-white) !important;
+  border: none !important;
+    border-radius: 6px;
+    display: inline-block;
+    padding: 2px 8px;
+  margin: 0 5px;
+    cursor: pointer;
+}
+
+.btn-reject {
+  background: var(--color-accent-red-1) !important;
+    border-radius: 6px;
+  color: var(--color-grey-white) !important;
+  border: none !important;
+    display: inline-block;
+    padding: 2px 8px;
+  margin: 0 5px;
+    cursor: pointer;
+}
+
+.status-NEW {
+    color: #0000ee;
+}
+.status-APPROVED {
+    color: #4caf50;
+}
+.status-REJECTED {
+    color: #f44336;
+}
+
+.btn-link {
+    cursor: pointer;
+    width: auto;
+    font-size: 20px;
+  color: #0b73f8;
+    text-decoration: none;
+    display: inline-block;
+  border-bottom: 3px solid #0c77ff;
+    padding-bottom: 3px;
+    font-weight: normal;
+    text-transform: capitalize;
+}
+
+.content .btn-option {
+  border-radius: 6px;
+  border: 1px solid var(--primary-color);
+  color: var(--primary-color);
+  background: var(--color-grey-white);
+
+    text-align: center;
+    position: relative;
+    margin-right: 10px;
+  height: 28px;
+  padding: 6px 20px !important;
+    box-sizing: border-box;
+  cursor: pointer;
+
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+.content {
+    display: flex;
+}

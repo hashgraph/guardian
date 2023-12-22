@@ -46,7 +46,6 @@ export class PolicyTreeComponent implements OnInit {
     @Output('next') next = new EventEmitter();
     @Output('nested') nested = new EventEmitter();
     @Output('currentBlockChange') currentBlockChange = new EventEmitter();
-    @Output('search') search = new EventEmitter();
 
     @ViewChild('parent') parentRef!: ElementRef<HTMLCanvasElement>;
     @ViewChild('canvas') canvasRef!: ElementRef<HTMLCanvasElement>;
@@ -678,13 +677,6 @@ export class PolicyTreeComponent implements OnInit {
         event.preventDefault();
         event.stopPropagation();
         this.delete.emit(this.currentBlock);
-        return false;
-    }
-
-    public onSearch(event: any) {
-        event.preventDefault();
-        event.stopPropagation();
-        this.search.emit(this.currentBlock);
         return false;
     }
 

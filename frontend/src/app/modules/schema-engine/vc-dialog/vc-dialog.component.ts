@@ -1,5 +1,5 @@
-import { Component, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Component } from '@angular/core';
+import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 /**
  * Dialog for display json
@@ -7,13 +7,13 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 @Component({
     selector: 'vc-dialog',
     templateUrl: './vc-dialog.component.html',
-    styleUrls: ['./vc-dialog.component.css']
+    styleUrls: ['./vc-dialog.component.scss']
 })
 export class VCViewerDialog {
-    public id: string = "";
-    public title: string = "";
-    public json: string = "";
-    public text: string = "";
+    public id: string = '';
+    public title: string = '';
+    public json: string = '';
+    public text: string = '';
     public viewDocument!: boolean;
     public isVcDocument!: boolean;
     public document: any;
@@ -25,17 +25,8 @@ export class VCViewerDialog {
     public dryRun: boolean = false;
 
     constructor(
-        public dialogRef: MatDialogRef<VCViewerDialog>,
-        @Inject(MAT_DIALOG_DATA) public data: {
-            id: string,
-            dryRun: boolean,
-            document: any,
-            title: string,
-            viewDocument?: boolean,
-            type?: 'VC' | 'VP' | 'JSON' | 'TEXT',
-            toggle?: boolean,
-            schema?: any
-        }) {
+        public dialogRef: DynamicDialogRef,
+        public dialogConfig: DynamicDialogConfig) {
     }
 
     ngOnInit() {
@@ -48,7 +39,7 @@ export class VCViewerDialog {
             type,
             toggle,
             schema
-        } = this.data;
+        } = this.dialogConfig.data;
         this.id = id;
         this.dryRun = !!dryRun;
         this.title = title;
@@ -65,9 +56,9 @@ export class VCViewerDialog {
         this.isVcDocument = false;
         this.isVpDocument = false;
         this.isJsonDocument = false;
-        if (this.type == 'VC') {
+        if (this.type === 'VC') {
             this.isVcDocument = true;
-        } else if (this.type == 'VP') {
+        } else if (this.type === 'VP') {
             this.isVpDocument = true;
         } else {
             this.isJsonDocument = true;

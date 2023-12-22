@@ -13,7 +13,7 @@ import { InviteDialogComponent } from '../../../helpers/invite-dialog/invite-dia
 @Component({
     selector: 'app-group-manager-block',
     templateUrl: './group-manager-block.component.html',
-    styleUrls: ['./group-manager-block.component.css']
+    styleUrls: ['./group-manager-block.component.scss'],
 })
 export class GroupManagerBlockComponent implements OnInit {
     @Input('id') id!: string;
@@ -41,14 +41,9 @@ export class GroupManagerBlockComponent implements OnInit {
         'groupName',
         'role',
         'type',
-        'actions'
+        'actions',
     ];
-    userColumns: string[] = [
-        'username',
-        'role',
-        'type',
-        'action'
-    ];
+    userColumns: string[] = ['username', 'role', 'type', 'action'];
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -61,7 +56,9 @@ export class GroupManagerBlockComponent implements OnInit {
 
     ngOnInit(): void {
         if (!this.static) {
-            this.socket = this.wsService.blockSubscribe(this.onUpdate.bind(this));
+            this.socket = this.wsService.blockSubscribe(
+                this.onUpdate.bind(this)
+            );
         }
         this.loadData();
     }
@@ -87,13 +84,18 @@ export class GroupManagerBlockComponent implements OnInit {
             }, 500);
         } else {
             this.loading = true;
-            this.policyEngineService.getBlockData(this.id, this.policyId).subscribe((data: any) => {
-                this.setData(data);
-                this.loading = false;
-            }, (e) => {
-                console.error(e.error);
-                this.loading = false;
-            });
+            this.policyEngineService
+                .getBlockData(this.id, this.policyId)
+                .subscribe(
+                    (data: any) => {
+                        this.setData(data);
+                        this.loading = false;
+                    },
+                    (e) => {
+                        console.error(e.error);
+                        this.loading = false;
+                    }
+                );
         }
     }
 
@@ -133,7 +135,6 @@ export class GroupManagerBlockComponent implements OnInit {
     }
 
     onActive(group: any) {
-
     }
 
     onInvite(group: any) {
@@ -146,8 +147,8 @@ export class GroupManagerBlockComponent implements OnInit {
                 blockId: this.id,
                 policyId: this.policyId,
                 group: group.id,
-                roles: group.roles
-            }
+                roles: group.roles,
+            },
         });
         dialogRef.afterClosed().subscribe(async () => {
         });
@@ -160,15 +161,15 @@ export class GroupManagerBlockComponent implements OnInit {
             `User: ${user.username}`,
             `User DID: ${user.did}`,
             `Group: ${groupLabel}`,
-            `Group ID: ${this.selected.id}`
+            `Group ID: ${this.selected.id}`,
         ];
         const dialogRef = this.dialog.open(ConfirmationDialog, {
             width: '550px',
             disableClose: true,
-            data: { title, description }
+            data: {title, description},
         });
 
-        dialogRef.afterClosed().subscribe(result => {
+        dialogRef.afterClosed().subscribe((result) => {
             if (result) {
                 this.delete(user, result);
             }
@@ -177,16 +178,21 @@ export class GroupManagerBlockComponent implements OnInit {
 
     delete(user: any, message: any) {
         this.loading = true;
-        this.policyEngineService.setBlockData(this.id, this.policyId, {
-            action: 'delete',
-            group: this.selected?.id,
-            user: user.did,
-            message: message
-        }).subscribe((result) => {
-            this.loadData();
-        }, (e) => {
-            console.error(e.error);
-            this.loading = false;
-        });
+        this.policyEngineService
+            .setBlockData(this.id, this.policyId, {
+                action: 'delete',
+                group: this.selected?.id,
+                user: user.did,
+                message: message,
+            })
+            .subscribe(
+                (result) => {
+                    this.loadData();
+                },
+                (e) => {
+                    console.error(e.error);
+                    this.loading = false;
+                }
+            );
     }
 }

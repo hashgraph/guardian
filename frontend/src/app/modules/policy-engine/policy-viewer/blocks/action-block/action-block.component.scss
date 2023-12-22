@@ -1,0 +1,92 @@
+.loading {
+    position: fixed;
+  /* background: #ffffff32; */
+    z-index: 99;
+  top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
+}
+
+.loading-progress {
+  width: 80%;
+  height: 80%;
+}
+
+
+
+.btn-approve {
+    background: #4caf50;
+    border-radius: 6px;
+    color: #fff;
+    display: inline-block;
+    padding: 2px 8px;
+    margin: 0px 5px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.btn-reject {
+    background: #f44336;
+    border-radius: 6px;
+    color: #fff;
+    display: inline-block;
+    padding: 2px 8px;
+    margin: 0px 5px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.status-NEW {
+    color: #0000ee;
+}
+.status-APPROVED {
+    color: #4caf50;
+}
+.status-REJECTED {
+    color: #f44336;
+}
+
+.btn-link {
+    cursor: pointer;
+    width: auto;
+    font-size: 20px;
+  color: #0b73f8;
+    text-decoration: none;
+    display: inline-block;
+  border-bottom: 3px solid #0c77ff;
+    padding-bottom: 3px;
+    font-weight: normal;
+    text-transform: capitalize;
+}
+
+.content .btn-option {
+    height: 26px;
+    text-align: center;
+    border-radius: 60px !important;
+    position: relative;
+    margin-right: 10px;
+    height: 38px;
+    box-shadow: 0px 3px 6px #00000029;
+    border-radius: 24px !important;
+    padding: 8px 20px !important;
+    box-sizing: border-box;
+}
+
+.content {
+    flex-wrap: nowrap;
+    display: flex;
+}
+
+.content-dropdown {
+    flex-wrap: nowrap;
+    display: flex;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    padding: 1px;
+}

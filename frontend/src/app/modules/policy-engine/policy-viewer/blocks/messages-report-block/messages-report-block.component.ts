@@ -4,6 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import * as moment from 'moment';
+import { DialogService } from 'primeng/dynamicdialog';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
@@ -126,7 +127,7 @@ class Line {
                     color: this.color1,
                     startPlug: 'disc',
                     endPlug: 'arrow1',
-                    startSocket: 'right', 
+                    startSocket: 'right',
                     endSocket: 'left'
                 }
             );
@@ -264,6 +265,7 @@ export class MessagesReportBlockComponent implements OnInit {
         private wsService: WebSocketService,
         private policyHelper: PolicyHelper,
         private dialog: MatDialog,
+        private dialogService: DialogService,
         private iconRegistry: MatIconRegistry,
         private sanitizer: DomSanitizer
     ) {
@@ -769,9 +771,11 @@ export class MessagesReportBlockComponent implements OnInit {
 
     public onOpenDocument(message: any) {
         if (message.type === 'DID-Document') {
-            const dialogRef = this.dialog.open(VCViewerDialog, {
+            const dialogRef = this.dialogService.open(VCViewerDialog, {
                 width: '850px',
-                panelClass: 'g-dialog',
+                closable: true,
+                header: 'DID',
+                styleClass: 'custom-dialog',
                 data: {
                     document: message.document,
                     title: 'Document',
@@ -779,11 +783,14 @@ export class MessagesReportBlockComponent implements OnInit {
                     viewDocument: false
                 }
             });
-            dialogRef.afterClosed().subscribe(async (result) => { });
+            dialogRef.onClose.subscribe(async (result) => {
+            });
         } else {
-            const dialogRef = this.dialog.open(VCViewerDialog, {
+            const dialogRef = this.dialogService.open(VCViewerDialog, {
                 width: '850px',
-                panelClass: 'g-dialog',
+                closable: true,
+                header: 'VC',
+                styleClass: 'custom-dialog',
                 data: {
                     document: message.document,
                     title: 'Document',
@@ -792,7 +799,8 @@ export class MessagesReportBlockComponent implements OnInit {
                     schema: message.__schema,
                 }
             });
-            dialogRef.afterClosed().subscribe(async (result) => { });
+            dialogRef.onClose.subscribe(async (result) => {
+            });
         }
     }
 

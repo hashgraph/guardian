@@ -5,7 +5,6 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
 import { MessageTranslationService } from './message-translation-service/message-translation-service';
-import { AuthStateService } from './auth-state.service';
 
 /**
  * Error interceptor.
@@ -15,10 +14,11 @@ export class HandleErrorsService implements HttpInterceptor {
     constructor(
         public router: Router,
         private toastr: ToastrService,
-        private messageTranslator: MessageTranslationService,
-        private authState: AuthStateService
+        private messageTranslator: MessageTranslationService
     ) {
     }
+
+    excludeErrorCodes: string[] = ['401'];
 
     private messageToText(message: any) {
         if (typeof message === 'object') {
@@ -34,7 +34,7 @@ export class HandleErrorsService implements HttpInterceptor {
 
         const errorObject = error.error;
         if (!errorObject) {
-            return { warning, text, header };
+            return {warning, text, header};
         }
 
         if (typeof errorObject === 'string') {
@@ -45,7 +45,7 @@ export class HandleErrorsService implements HttpInterceptor {
             } else {
                 text = `${errorObject}`;
             }
-            return { warning, text, header };
+            return {warning, text, header};
         }
 
         warning = errorObject.statusCode === 0;
@@ -63,9 +63,9 @@ export class HandleErrorsService implements HttpInterceptor {
                     } else {
                         text = `${_error.error}`;
                     }
-                    return { warning, text, header };
+                    return {warning, text, header};
                 } catch (a) {
-                    return { warning, text, header };
+                    return {warning, text, header};
                 }
             } else if (typeof errorObject.message === 'string') {
                 const translatedMessage = this.messageTranslator.translateMessage(this.messageToText(errorObject.message));
@@ -79,7 +79,7 @@ export class HandleErrorsService implements HttpInterceptor {
                 } else {
                     header = `${errorObject.statusCode} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : 'Other Error'}`;
                 }
-                return { warning, text, header };
+                return {warning, text, header};
             }
         }
 
@@ -87,7 +87,7 @@ export class HandleErrorsService implements HttpInterceptor {
         header = `${error.statusCode || 500} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : 'Other Error'}`;
         text = `${translatedMessage.text}`;
 
-        return { warning, text, header };
+        return {warning, text, header};
     }
 
     intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
@@ -107,17 +107,16 @@ export class HandleErrorsService implements HttpInterceptor {
                             <div>${result.text}</div>
                             <div>See <a style="color: #0B73F8" href="/admin/logs?message=${btoa(result.text)}">logs</a> for details.</div>
                         `;
-                        this.toastr.error(body, result.header, {
-                            timeOut: 100000,
-                            extendedTimeOut: 30000,
-                            closeButton: true,
-                            positionClass: 'toast-bottom-right',
-                            toastClass: 'ngx-toastr error-message-toastr',
-                            enableHtml: true,
-                        });
-                        // if ((result as any).error?.statusCode == 401) {
-                        //     this.authState.updateState(false);
-                        // }
+                        if (this.excludeErrorCodes.includes(body)) {
+                            this.toastr.error(body, result.header, {
+                                timeOut: 100000,
+                                extendedTimeOut: 30000,
+                                closeButton: true,
+                                positionClass: 'toast-bottom-right',
+                                toastClass: 'ngx-toastr error-message-toastr',
+                                enableHtml: true,
+                            });
+                        }
                     }
                 })
                 return throwError(error);

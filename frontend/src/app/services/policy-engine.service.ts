@@ -196,4 +196,16 @@ export class PolicyEngineService {
     public setMultiPolicy(policyId: string, data: any): Observable<any> {
         return this.http.post<void>(`${this.url}/${policyId}/multiple`, data);
     }
+
+    public getPolicyNavigation(policyId: string): Observable<any> {
+        return this.http.get<void>(`${this.url}/${policyId}/navigation`);
+    }
+
+    public getPolicyCategories(): Observable<any> {
+        return this.http.get<void>(`${this.url}/categories`);
+    }
+
+    public getFilteredPolicies(categoryIds?: string[], text?: string): Observable<any> {
+        return this.http.post<void>(`${this.url}/filtered-policies`, {categoryIds, text});
+    }
 }

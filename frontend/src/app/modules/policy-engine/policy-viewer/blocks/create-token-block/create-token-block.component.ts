@@ -56,7 +56,6 @@ export class CreateTokenBlockComponent implements OnInit {
             enableFreeze: [false, Validators.required],
             enableKYC: [false, Validators.required],
             enableWipe: [true, Validators.required],
-            wipeContractId: [''],
         });
     }
 

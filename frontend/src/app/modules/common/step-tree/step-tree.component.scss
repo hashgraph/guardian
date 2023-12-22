@@ -1,0 +1,122 @@
+.tree-invisible {
+  display: none;
+}
+
+.tree .mat-nested-tree-node div[role="group"] {
+  padding-left: 25px;
+}
+
+.node::after {
+  //content: "";
+  //display: block;
+  //width: 0;
+  //height: 3px;
+  //background: #3f51b5;
+  //transition: width 0.3s;
+  //position: absolute;
+
+  background: rgba(6, 129, 238, 0.08);
+
+  i {
+    padding: 4px;
+    margin-right: 8px;
+    width: 24px;
+    height: 24px;
+    border-radius: 24px;
+    background: var(--color-primary, #0681ee);
+    color: white;
+  }
+
+  p {
+    margin: 0;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: Inter;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+    color: var(--color-primary, #0681ee);
+  }
+}
+
+.current-node::after {
+  width: 100%;
+}
+
+.mat-tree-node.mat-tree-node-no-children {
+
+}
+
+.node {
+  white-space: nowrap;
+  cursor: pointer;
+
+  display: flex;
+  width: 100%;
+  align-items: center;
+
+  height: 56px;
+  padding-left: 24px;
+  padding-right: 24px;
+
+  i {
+    padding: 4px;
+    margin-right: 8px;
+    width: 24px;
+    height: 24px;
+    border-radius: 24px;
+    background: var(--color-grey-3, #e1e7ef);
+    color: white;
+  }
+
+  p {
+    margin: 0;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: Inter;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+    color: var(--color-grey-5, #c4d0e1);
+  }
+}
+
+.current-node {
+  background: rgba(6, 129, 238, 0.08);
+
+  i {
+    padding: 4px;
+    margin-right: 8px;
+    width: 24px;
+    height: 24px;
+    border-radius: 24px;
+    background: var(--color-primary, #0681ee);
+    color: white;
+  }
+
+  p {
+    margin: 0;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: Inter;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+    color: var(--color-primary, #0681ee);
+  }
+}
+
+.node-id {
+  margin-right: 5px;
+  font-weight: bold;
+}
+
+.current-node .node-id {
+  color: #3f51b5;
+}

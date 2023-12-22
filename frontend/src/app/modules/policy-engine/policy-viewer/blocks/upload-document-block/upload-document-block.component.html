@@ -1,7 +1,4 @@
 <div class="content-{{type}}" [hidden]="!isExist">
-    <div *ngIf="loading || disabled" class="loading">
-        <mat-spinner></mat-spinner>
-    </div>
     <ng-container *ngIf="type=='page'">
         <div class="upload-area">
             <div class="page-header">
@@ -25,8 +22,12 @@
             {{dialogDescription}}
         </div>
         <div *ngIf="data.schema" mat-dialog-content class="body-dialog-template">
-            <div *ngIf="dialogLoading || disabled" class="loading-dialog">
-                <mat-spinner></mat-spinner>
+            <ng-template #preloader>
+                <div class="preloader-image"></div>
+            </ng-template>
+
+            <div *ngIf="dialogLoading" class="loading">
+                <div class="preloader-image preloader-image-l-size"></div>
             </div>
             <app-file-drag-n-drop fileExtension="json" dropZoneLabel="Drop file here" (onFileLoaded)="onDrop($event)" [multiple]="true"></app-file-drag-n-drop>
 
@@ -36,3 +37,11 @@
         </div>
     </div>
 </ng-template>
+
+<ng-template #preloader>
+    <div class="preloader-image"></div>
+</ng-template>
+
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
+</div>

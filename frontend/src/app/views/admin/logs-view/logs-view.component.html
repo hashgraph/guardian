@@ -1,121 +1,198 @@
-<div class="content">
-    <form [formGroup]="searchForm" (ngSubmit)="onApply()" class="search-form">
-        <mat-form-field class="submit-field" appearance="outline">
-            <mat-label>Message</mat-label>
-            <input matInput type="text" formControlName="message">
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="search-field">
-            <mat-label>Message Type</mat-label>
-            <mat-select formControlName="type">
-              <mat-option value="ERROR">Error</mat-option>
-              <mat-option value="INFO">Info</mat-option>
-              <mat-option value="WARN">Warn</mat-option>
-              <mat-option value="">All</mat-option>
-            </mat-select>
-          </mat-form-field>
-
-        <mat-form-field appearance="outline">
-            <mat-label>Enter a date range</mat-label>
-            <mat-date-range-input [formGroup]="searchForm" [rangePicker]="picker">
-              <input matStartDate formControlName="startDate" placeholder="Start date">
-              <input matEndDate formControlName="endDate" placeholder="End date">
-            </mat-date-range-input>
-            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-            <mat-date-range-picker #picker></mat-date-range-picker>
-
-            <mat-error *ngIf="searchForm.controls.startDate.hasError('matStartDateInvalid')">Invalid start date</mat-error>
-            <mat-error *ngIf="searchForm.controls.endDate.hasError('matEndDateInvalid')">Invalid end date</mat-error>
-        </mat-form-field>
-
-        <mat-form-field class="search-field">
-            <mat-chip-list #chipList formControlName="attributes">
-                <mat-chip *ngFor="let attribute of searchForm.get('attributes')!.value" [removable]="true" (removed) = "remove(attribute)">
-                    {{attribute}}
-                <button matChipRemove>
-                    <mat-icon>cancel</mat-icon>
-                </button>
-                </mat-chip>
-
-                <input
-                    #chipInput
-                    matInput
-                    [matAutocomplete]="auto"
-                    (matChipInputTokenEnd)="add($event, auto); chipInput.value = ''; chipInput.blur();"
-                    [matChipInputFor]="chipList"
-                    placeholder="Attributes"
-                    [formControl]="autoCompleteControl">
-
-                <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event); chipInput.value = ''; chipInput.blur()">
-                    <mat-option *ngFor="let attr of attributes | async" [value]="attr">
-                        {{attr}}
-                    </mat-option>
-                </mat-autocomplete>
-            </mat-chip-list>
-        </mat-form-field>
-
-        <button mat-raised-button color="primary" type="submit" class="submit-button">Apply filters</button>
-        <button mat-raised-button type="button" (click)="onSave()">Save logs</button>
-        <button mat-raised-button type="button" (click)="clearValues()">Clear filters</button>
-    </form>
-
-    <div class="table-container">
-        <div class="loading-shade"
-            *ngIf="loading">
-            <mat-spinner></mat-spinner>
-        </div>
-        <table mat-table [dataSource]="logs" class="log-table"
-            matSort matSortActive="datetime" matSortDisableClear matSortDirection="desc">
-            <ng-container matColumnDef="type">
-                <th mat-header-cell *matHeaderCellDef> Type </th>
-                <td mat-cell *matCellDef="let element">
-                    <span [ngSwitch]="element.type">
-                        <div *ngSwitchCase="'ERROR'">
-                            <span class="log-type type-ERROR">ERROR</span>
-                        </div>
-                        <div *ngSwitchCase="'WARN'">
-                            <span class="log-type type-WARN">WARN</span>
-                        </div>
-                        <div *ngSwitchCase="'INFO'">
-                            <span class="log-type type-INFO">INFO</span>
-                        </div>
-                    </span>
-                </td>
-            </ng-container>
-            <ng-container matColumnDef="datetime">
-                <th mat-header-cell mat-sort-header *matHeaderCellDef> Datetime </th>
-                <td mat-cell *matCellDef="let element" >
-                    <div>
-                        <span>{{element.datetime}}</span>
-                    </div>
-                </td>
-            </ng-container>
-            <ng-container matColumnDef="message">
-                <th mat-header-cell *matHeaderCellDef> Message </th>
-                <td mat-cell *matCellDef="let element">
-                    <div class="long-message">{{element.message}}</div>
-                </td>
-            </ng-container>
-            <ng-container matColumnDef="attributes">
-                <th mat-header-cell *matHeaderCellDef> Attributes </th>
-                <td mat-cell *matCellDef="let element">
-                    <div class="long-message">
-                        {{element.attributes && element.attributes.join(', ')}}
-                    </div>
-                </td>
-            </ng-container>
-            <ng-container matColumnDef="details">
-                <th mat-header-cell *matHeaderCellDef> Details </th>
-                <td mat-cell *matCellDef="let element" >
-                    <div class="btn-settings" (click)="openDetails(element)" >
-                        <mat-icon>expand_more</mat-icon>
-                        <span>Details</span>
-                    </div>
-                </td>
-            </ng-container>
-            <tr mat-header-row *matHeaderRowDef="logColumns; sticky: true"></tr>
-            <tr mat-row *matRowDef="let row; columns: logColumns;"></tr>
-        </table>
-        <mat-paginator [length]="this.totalCount"  [pageSizeOptions]="[10, 20, 30]"></mat-paginator>
+<div class="container">
+    <ng-container [ngTemplateOutlet]="header"></ng-container>
+    <ng-container *ngIf="!loading">
+        <ng-container [ngTemplateOutlet]="actionsContainer"></ng-container>
+        <ng-container [ngTemplateOutlet]="tableContainer"></ng-container>
+    </ng-container>
+    <div *ngIf="loading" class="loading">
+        <div class="preloader-image preloader-image-l-size"></div>
     </div>
 </div>
+
+<ng-template #header>
+    <div class="header">
+        <h1>Logs</h1>
+    </div>
+</ng-template>
+
+<ng-template #actionsContainer>
+    <div class="actions-container">
+        <form [formGroup]="searchForm">
+            <div class="flex flex-column-gap-8" style="flex-wrap: wrap; row-gap: 8px;">
+                <p-multiSelect [formControlName]="'attributes'" [options]="attributes" [placeholder]="'Attributes'">
+                    <ng-template let-item pTemplate="selectedItem">
+                        <div class="country-item country-item-value">
+                            <span class="grey-6">{{ item }}</span>
+                        </div>
+                    </ng-template>
+                    <ng-template let-item pTemplate="item">
+                        <div class="country-item">
+                            <div>{{ item }}</div>
+                        </div>
+                    </ng-template>
+                </p-multiSelect>
+                <span class="p-input-icon-right">
+                    <i>
+                        <svg
+                                fill="none"
+                                height="16"
+                                viewBox="0 0 16 16"
+                                width="16"
+                                xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <path
+                                    clip-rule="evenodd"
+                                    d="M3.19998 7.19961C3.19998 6.13874 3.6214 5.12133 4.37155 4.37118C5.12169 3.62104 6.13911 3.19961 7.19998 3.19961C8.26084 3.19961 9.27826 3.62104 10.0284 4.37118C10.7785 5.12133 11.2 6.13874 11.2 7.19961C11.2 8.26048 10.7785 9.27789 10.0284 10.028C9.27826 10.7782 8.26084 11.1996 7.19998 11.1996C6.13911 11.1996 5.12169 10.7782 4.37155 10.028C3.6214 9.27789 3.19998 8.26048 3.19998 7.19961ZM7.19998 1.59961C6.31265 1.59961 5.43802 1.81047 4.64816 2.21481C3.85831 2.61915 3.17585 3.20539 2.65702 3.92523C2.13819 4.64507 1.79784 5.4779 1.66402 6.35508C1.53021 7.23226 1.60675 8.12869 1.88735 8.97049C2.16795 9.81228 2.64457 10.5753 3.27793 11.1968C3.91129 11.8183 4.68327 12.2803 5.53024 12.5449C6.37721 12.8095 7.27492 12.869 8.14941 12.7185C9.02389 12.5681 9.85011 12.212 10.56 11.6796C10.5827 11.7099 10.6076 11.7385 10.6344 11.7652L13.0344 14.1652C13.1853 14.3109 13.3873 14.3916 13.5971 14.3897C13.8069 14.3879 14.0075 14.3038 14.1558 14.1555C14.3042 14.0071 14.3883 13.8065 14.3901 13.5967C14.3919 13.387 14.3113 13.1849 14.1656 13.034L11.7656 10.634C11.7388 10.6072 11.7102 10.5824 11.68 10.5596C12.304 9.72762 12.684 8.73831 12.7773 7.70252C12.8707 6.66674 12.6739 5.62541 12.2088 4.69521C11.7437 3.76502 11.0287 2.98272 10.1441 2.43596C9.2594 1.88921 8.23996 1.59961 7.19998 1.59961Z"
+                                    fill="#B0B5BA"
+                                    fill-rule="evenodd"
+                            />
+                        </svg>
+                    </i>
+                    <input
+                            [formControlName]="'message'"
+                            class="search-input"
+                            pInputText
+                            placeholder="Message"
+                    />
+                </span>
+                <p-dropdown [formControlName]="'type'" [options]="types">
+                    <ng-template let-item pTemplate="selectedItem">
+                        <div class="country-item country-item-value">
+                            <span class="grey-6">Message Type {{ item.label }}</span>
+                        </div>
+                    </ng-template>
+                    <ng-template let-item pTemplate="item">
+                        <div class="country-item">
+                            <div>{{ item.label }}</div>
+                        </div>
+                    </ng-template>
+                </p-dropdown>
+                <p-calendar [formControl]="dateRangeForm" [maxDate]="currentDate" [placeholder]="'Enter date range'"
+                            [showIcon]="true" [showTime]="true" dateFormat="mm/dd/yy"
+                            selectionMode="range"></p-calendar>
+            </div>
+        </form>
+        <div class="flex flex-column-gap-8">
+            <button
+                    (click)="onApply()"
+                    class="button"
+                    label="Apply"
+                    pButton
+                    type="button"
+            ></button>
+            <button
+                    (click)="clearValues()"
+                    class="button secondary"
+                    label="Clear filters"
+                    pButton
+                    type="button"
+            ></button>
+            <button
+                    (click)="onSave()"
+                    class="button"
+                    label="Save logs"
+                    pButton
+                    type="button"
+            ></button>
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #tableContainer>
+    <ng-container *ngIf="logs && logs.length > 0; else noData">
+        <div class="table-container">
+            <table>
+                <tr class="row-header">
+                    <th>TYPE</th>
+                    <th>DATE TIME</th>
+                    <th>MESSAGE</th>
+                    <th>ATTRIBUTES</th>
+                    <th>DETAILS</th>
+                </tr>
+                <ng-container *ngFor="let log of logs">
+                    <tr class="row-item">
+                        <td>{{ log.type }}</td>
+                        <td>{{ $any(log).datetime }}</td>
+                        <td>
+                            {{ log.message }}
+                        </td>
+                        <td>
+                            {{ log.attributes }}
+                        </td>
+                        <td>
+                            <button (click)="openDetails(log)" class="button secondary" pButton>Details</button>
+                        </td>
+                    </tr>
+                </ng-container>
+            </table>
+            <div class="table-paginator">
+                <span>Items per page:</span>
+                <p-dropdown
+                        (onChange)="pageIndex = 0; onApply()"
+                        [(ngModel)]="pageSize"
+                        [options]="[10, 25, 50, 100]"
+                ></p-dropdown>
+                <span class="color-grey-6"
+                >{{ pageIndex * pageSize + 1 }} –
+                    {{
+                        pageIndex * pageSize + pageSize > totalCount
+                            ? totalCount
+                            : pageIndex * pageSize + pageSize
+                    }}
+                    of {{ totalCount }}</span
+                >
+                <div class="flex">
+                    <svg
+                            (click)="movePageIndex(-1)"
+                            fill="none"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            width="24"
+                            xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                                d="M15.2828 5.68906C14.8923 5.29856 14.2591 5.29856 13.8686 5.68906L8.98115 10.5813C8.20075 11.3625 8.20106 12.6283 8.98184 13.4091L13.8722 18.2994C14.2627 18.6899 14.8959 18.6899 15.2864 18.2994C15.677 17.9089 15.677 17.2757 15.2864 16.8852L11.1008 12.6996C10.7103 12.309 10.7103 11.6759 11.1008 11.2854L15.2828 7.10326C15.6733 6.71276 15.6733 6.07956 15.2828 5.68906Z"
+                                fill="#848FA9"
+                        />
+                    </svg>
+                    <svg
+                            (click)="movePageIndex(+1)"
+                            fill="none"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            width="24"
+                            xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                                d="M8.6926 5.68907C9.0831 5.29857 9.7163 5.29857 10.1068 5.68907L14.9942 10.5813C15.7746 11.3625 15.7743 12.6283 14.9936 13.4091L10.1032 18.2994C9.7127 18.6899 9.0795 18.6899 8.689 18.2994C8.2984 17.9089 8.2984 17.2757 8.689 16.8852L12.8746 12.6996C13.2651 12.309 13.2651 11.6759 12.8746 11.2854L8.6926 7.10327C8.3021 6.71277 8.3021 6.07957 8.6926 5.68907Z"
+                                fill="#848FA9"
+                        />
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </ng-container>
+</ng-template>
+
+<ng-template #noData>
+    <div class="not-exist">
+        <svg
+                fill="none"
+                height="32"
+                viewBox="0 0 32 32"
+                width="32"
+                xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+                    class="disabled-color"
+                    clip-rule="evenodd"
+                    d="M2.66699 8C2.66699 6.89543 3.56243 6 4.66699 6C5.77156 6 6.66699 6.89543 6.66699 8C6.66699 9.10457 5.77156 10 4.66699 10C3.56243 10 2.66699 9.10457 2.66699 8ZM9.33366 8.00082C9.3337 7.26444 9.93069 6.66752 10.6671 6.66756L28.0004 6.66852C28.7368 6.66856 29.3337 7.26555 29.3337 8.00193C29.3336 8.73831 28.7366 9.33523 28.0002 9.33519L10.6669 9.33423C9.93054 9.33419 9.33362 8.7372 9.33366 8.00082ZM2.66699 16C2.66699 14.8956 3.56236 14 4.66699 14C5.77163 14 6.66699 14.8956 6.66699 16C6.66699 17.1044 5.77163 18 4.66699 18C3.56236 18 2.66699 17.1044 2.66699 16ZM9.33366 16.0009C9.3337 15.2645 9.93069 14.6676 10.6671 14.6676L28.0004 14.6687C28.7368 14.6687 29.3337 15.2657 29.3337 16.0021C29.3336 16.7385 28.7366 17.3354 28.0002 17.3353L10.6669 17.3343C9.93053 17.3342 9.33361 16.7372 9.33366 16.0009ZM2.66699 24C2.66699 22.8956 3.56236 22 4.66699 22C5.77163 22 6.66699 22.8956 6.66699 24C6.66699 25.1044 5.77163 26 4.66699 26C3.56236 26 2.66699 25.1044 2.66699 24ZM9.33366 24.0009C9.3337 23.2645 9.93069 22.6676 10.6671 22.6676L28.0004 22.6687C28.7368 22.6687 29.3337 23.2657 29.3337 24.0021C29.3336 24.7385 28.7366 25.3354 28.0002 25.3353L10.6669 25.3343C9.93053 25.3342 9.33361 24.7372 9.33366 24.0009Z"
+                    fill-rule="evenodd"
+            />
+        </svg>
+        <span class="info-text-strong"
+        >There were no Logs by current criteria</span
+        >
+        <span class="info-text"></span>
+    </div>
+</ng-template>

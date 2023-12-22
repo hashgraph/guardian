@@ -1,7 +1,3 @@
-<div *ngIf="loading" class="loading">
-    <mat-spinner></mat-spinner>
-</div>
-
 <div class="content">
     <div *ngIf="confirmationStatus">
         <div class="status status-{{confirmationStatus}}" [matMenuTriggerFor]="menu1">
@@ -84,4 +80,12 @@
             </div>
         </mat-menu>
     </div>
+</div>
+
+<ng-template #preloader>
+    <div class="preloader-image"></div>
+</ng-template>
+
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
 </div>

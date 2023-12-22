@@ -1,0 +1,74 @@
+.mat-button-base:not([started]) {
+  background-color: rgba(0, 0, 0, 0.12);
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  overflow: visible;
+  padding-bottom: 25px;
+}
+
+.form-input-container {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 24px;
+}
+
+.action-buttons {
+  display: flex;
+}
+
+.cancel-button {
+  margin-left: auto;
+  margin-right: 15px;
+}
+
+.form-label {
+  color: #181818;
+  font-family: Inter, sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+}
+
+.dialog-body {
+  overflow-y: auto;
+  padding: 8px;
+
+  ::ng-deep {
+    .p-inputtext {
+      border-radius: 8px;
+      border: 1px solid var(--color-grey-3, #E1E7EF);
+      background: var(--color-grey-white, #FFF);
+    }
+  }
+}
+
+::ng-deep {
+  .p-button {
+    border-radius: 8px;
+  }
+
+  .p-dialog-title {
+    font-family: Poppins, sans-serif;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 600;
+  }
+
+  .p-dialog {
+    box-shadow: none;
+  }
+
+  .p-dialog-header {
+    border-top-left-radius: 16px !important;
+    border-top-right-radius: 16px !important;
+  }
+
+  .p-dialog-content {
+    border-bottom-left-radius: 16px !important;
+    border-bottom-right-radius: 16px !important;
+  }
+}

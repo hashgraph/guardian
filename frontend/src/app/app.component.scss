@@ -4,21 +4,27 @@
     background: none !important;
 }
 
-::ng-deep .mat-expansion-panel-header[aria-disabled=true] .mat-expansion-panel-header-title {
-    color: rgba(0, 0, 0, .87) !important;
+::ng-deep
+.mat-expansion-panel-header[aria-disabled="true"]
+.mat-expansion-panel-header-title {
+  color: rgba(0, 0, 0, 0.87) !important;
 }
 
-::ng-deep .mat-expansion-panel-header[aria-disabled=true] .mat-expansion-panel-header-description {
-    color: rgba(0, 0, 0, .54) !important;
+::ng-deep
+.mat-expansion-panel-header[aria-disabled="true"]
+.mat-expansion-panel-header-description {
+  color: rgba(0, 0, 0, 0.54) !important;
 }
 
 .content {
-    position: absolute;
+  position: fixed;
     top: var(--header-height);
     right: 0;
-    left: 0;
+  left: var(--header-width-expand);
     height: calc(100vh - var(--header-height));
     overflow: auto;
+  transition: left 0.125s ease-in-out, max-height 0.25s ease-in-out;
+  background: #f9fafc;
 }
 
 body {
@@ -33,10 +39,10 @@ body {
     width: 100vw;
     min-height: 100vh;
     position: relative;
-
+  transition: opacity 0.25s ease-in-out 0.5s;
     .background {
         filter: brightness(0.5);
-        background: center / cover no-repeat url('../assets/bg.jpg') #fff;
+      background: center / cover no-repeat url("../assets/bg.jpg") #fff;
         position: absolute;
         left: 0;
         right: 0;
@@ -46,7 +52,54 @@ body {
 }
 
 ::ng-deep .toast-container .ngx-toastr {
-    width: 450px;
+  min-width: 320px;
+  border-radius: 8px;
+  box-shadow: unset;
+  padding: 16px 16px 20px 48px;
+  background-position: 16px 16px;
+  background-size: 24px;
+
+  &:hover {
+    border: 0;
+    box-shadow: unset;
+  }
+}
+
+::ng-deep .toast-success {
+  background-color: var(--color-accent-green-1);
+  background-image: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M12 5C8.13401 5 5 8.13401 5 12C5 15.866 8.13401 19 12 19C15.866 19 19 15.866 19 12C19 8.13401 15.866 5 12 5ZM3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12ZM16.2338 8.59853C16.6397 8.97314 16.665 9.6058 16.2904 10.0116L11.3672 15.3449C11.1779 15.55 10.9115 15.6667 10.6324 15.6667C10.3533 15.6667 10.0869 15.55 9.89763 15.3449L7.70963 12.9745C7.33503 12.5687 7.36035 11.9361 7.76617 11.5615C8.172 11.1869 8.80466 11.2122 9.17926 11.618L10.6325 13.1923L14.8208 8.65505C15.1954 8.24923 15.828 8.22393 16.2338 8.59853Z' fill='%23FFFFFF'/%3E%3C/svg%3E%0A");
+}
+
+::ng-deep .toast-info {
+  background-color: var(--color-primary);
+  background-image: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M4.69222 9.37158C4.61333 5.48211 7.74556 2 12 2C16.2556 2 19.3867 5.48211 19.3067 9.37158C19.3032 9.54595 19.3014 9.72034 19.3011 9.89474C19.3011 11.6284 19.51 14.0421 19.6511 15.4737C19.6578 15.5442 19.6611 15.6147 19.6611 15.6842H20.8889C21.1836 15.6842 21.4662 15.7951 21.6746 15.9925C21.8829 16.1899 22 16.4577 22 16.7368C22 17.016 21.8829 17.2838 21.6746 17.4812C21.4662 17.6786 21.1836 17.7895 20.8889 17.7895H16.4444C16.4444 18.9062 15.9762 19.9771 15.1427 20.7668C14.3092 21.5564 13.1787 22 12 22C10.8213 22 9.6908 21.5564 8.8573 20.7668C8.02381 19.9771 7.55556 18.9062 7.55556 17.7895H3.11111C2.81643 17.7895 2.53381 17.6786 2.32544 17.4812C2.11706 17.2838 2 17.016 2 16.7368C2 16.4577 2.11706 16.1899 2.32544 15.9925C2.53381 15.7951 2.81643 15.6842 3.11111 15.6842H4.33889C4.33889 15.6147 4.34222 15.5442 4.35 15.4737C4.49 14.0421 4.69889 11.6284 4.69889 9.89474C4.69889 9.72632 4.69667 9.55263 4.69222 9.37158ZM8.69222 15.6842H17.4311L17.4344 15.6811C17.4359 15.6795 17.437 15.6777 17.4378 15.6758V15.6695C17.2978 14.2379 17.0789 11.7368 17.0789 9.89474C17.0789 9.71158 17.0811 9.52316 17.0856 9.33053C17.1444 6.47684 14.8644 4.10526 12 4.10526C9.13556 4.10526 6.85556 6.47684 6.91444 9.33053C6.91889 9.52316 6.92111 9.71158 6.92111 9.89474C6.92111 11.7368 6.70222 14.2379 6.56111 15.6695C6.56096 15.6709 6.56096 15.6723 6.56111 15.6737V15.6758L6.56556 15.6811C6.56648 15.6823 6.5676 15.6833 6.56889 15.6842H8.69222ZM9.77778 17.7895C9.77778 18.3478 10.0119 18.8833 10.4287 19.2781C10.8454 19.6729 11.4106 19.8947 12 19.8947C12.5894 19.8947 13.1546 19.6729 13.5713 19.2781C13.9881 18.8833 14.2222 18.3478 14.2222 17.7895H9.77778Z' fill='%23FFFFFF'/%3E%3C/svg%3E");
+}
+
+
+::ng-deep .toast-warning {
+  background-color: #c0c40a;
+  background-image: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M12 5C8.13401 5 5 8.13401 5 12C5 15.866 8.13401 19 12 19C15.866 19 19 15.866 19 12C19 8.13401 15.866 5 12 5ZM3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12ZM16.2338 8.59853C16.6397 8.97314 16.665 9.6058 16.2904 10.0116L11.3672 15.3449C11.1779 15.55 10.9115 15.6667 10.6324 15.6667C10.3533 15.6667 10.0869 15.55 9.89763 15.3449L7.70963 12.9745C7.33503 12.5687 7.36035 11.9361 7.76617 11.5615C8.172 11.1869 8.80466 11.2122 9.17926 11.618L10.6325 13.1923L14.8208 8.65505C15.1954 8.24923 15.828 8.22393 16.2338 8.59853Z' fill='%23FFFFFF'/%3E%3C/svg%3E%0A");
+}
+
+::ng-deep .toast-error {
+  background-color: var(--color-accent-red-1);
+  background-image: url("data:image/svg+xml,%3Csvg width='18' height='16' viewBox='0 0 18 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M9.84604 0.222555C10.1105 0.372 10.3296 0.588745 10.4807 0.850274L17.775 13.4761C18.2423 14.285 17.9582 15.3155 17.1404 15.7777C16.8826 15.9234 16.591 16 16.2942 16H1.70555C0.763599 16 0 15.2447 0 14.3131C0 14.0195 0.0774579 13.731 0.224717 13.4761L7.51903 0.850274C7.98636 0.041355 9.0282 -0.239684 9.84604 0.222555ZM8.95411 10.7543C8.34499 10.7543 7.88815 11.1996 7.88815 11.7934C7.88815 12.4142 8.33114 12.8596 8.95411 12.8596C9.56323 12.8596 10.0201 12.4142 10.0201 11.8069C10.0201 11.1996 9.56323 10.7543 8.95411 10.7543ZM9.80688 4.21736H8.10134V9.27819H9.80688V4.21736Z' fill='%23FFFFFF'/%3E%3C/svg%3E%0A");
+}
+
+::ng-deep .toast-close-button {
+  color: #FFFFFF;
+  right: 0;
+  top: -14px;
+
+  &:hover {
+    color: #FFFFFF;
+  }
+
+  span {
+    font-size: 27px;
+    font-weight: 200;
+    font-family: Poppins, sans-serif;
+  }
 }
 
 
@@ -56,11 +109,8 @@ body {
     }
 
     .g-dialog-header {
-        height: 90px;
-        padding: 22px;
+      padding: 22px 5px 0 22px;
         box-sizing: border-box;
-        border-radius: 30px;
-        box-shadow: 0px 0px 7px 0px rgb(0 0 0 / 20%);
         margin-bottom: 5px;
         display: flex;
         user-select: none;
@@ -135,13 +185,10 @@ body {
     }
 
     .g-dialog-body {
-        padding: 12px 14px 0px 20px;
+      padding: 12px 14px 0 20px;
         max-height: calc(100vh - 300px);
         overflow-y: auto;
-        margin-top: 10px;
-        margin-bottom: 30px;
-        margin-right: 8px;
-        margin-left: 2px;
+      margin: 10px 8px 25px 2px;
     }
     .g-dialog-title-btn {
         width: 46px;
@@ -175,19 +222,24 @@ body {
 }
 
 ::ng-deep body .mat-input-element:disabled {
-    color: rgba(0,0,0,.54);
+  color: rgba(0, 0, 0, 0.54);
 }
 
-::ng-deep body .mat-checkbox-disabled.mat-checkbox-checked .mat-checkbox-background {
+::ng-deep
+body
+.mat-checkbox-disabled.mat-checkbox-checked
+.mat-checkbox-background {
     background-color: #b0b0b0;
 }
 
-::ng-deep body .mat-radio-button:not(.mat-radio-disabled).cdk-program-focused .mat-radio-persistent-ripple {
-    opacity: .0;
+::ng-deep
+body
+.mat-radio-button:not(.mat-radio-disabled).cdk-program-focused
+.mat-radio-persistent-ripple {
+  opacity: 0;
 }
 
 @media (max-width: 810px) {
-
     .app {
         width: 100%;
         height: 100vh;

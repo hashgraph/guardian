@@ -64,7 +64,7 @@ enum ErrorArrayMessageByFieldType {
 @Component({
     selector: 'app-schema-form',
     templateUrl: './schema-form.component.html',
-    styleUrls: ['./schema-form.component.css'],
+    styleUrls: ['./schema-form.component.scss'],
     providers: [
         { provide: NgxMatDateAdapter, useClass: NgxMatMomentAdapter },
         { provide: NGX_MAT_DATE_FORMATS, useValue: DATETIME_FORMATS }
@@ -86,6 +86,8 @@ export class SchemaFormComponent implements OnInit {
     @Input() showButtons: boolean = true;
     @Input() isChildSchema: boolean = false;
     @Input() comesFromDialog: boolean = false;
+
+    @Input() isFormForFinishSetup: boolean = false;
 
     @Output('change') change = new EventEmitter<Schema | null>();
     @Output('destroy') destroy = new EventEmitter<void>();
@@ -203,19 +205,6 @@ export class SchemaFormComponent implements OnInit {
         this.changeDetectorRef.detectChanges();
     }
 
-    private isAllFieldsHidden(field: SchemaField): boolean {
-        return (
-            field.hidden ||
-            (
-                field.isRef &&
-                field.type !== '#GeoJSON' &&
-                !!field.fields?.every((field: any) =>
-                    this.isAllFieldsHidden(field)
-                )
-            )
-        );
-    }
-
     private createFieldControl(field: SchemaField): any {
         const item: any = {
             ...field,
@@ -250,7 +239,6 @@ export class SchemaFormComponent implements OnInit {
 
         if (!field.isArray && field.isRef) {
             item.fields = field.fields;
-            item.isAllFieldsHidden = this.isAllFieldsHidden(item);
             item.displayRequired = item.fields.some((refField: any) => refField.required);
             if (field.required || item.preset) {
                 item.control =
@@ -298,18 +286,17 @@ export class SchemaFormComponent implements OnInit {
             item.control = new FormArray([]);
             item.list = [];
             item.fields = field.fields;
-            item.isAllFieldsHidden = this.isAllFieldsHidden(item);
             if (item.preset && item.preset.length) {
                 for (let index = 0; index < item.preset.length; index++) {
                     const preset = item.preset[index];
-                    const listItem = this.createListControl(item, preset);
+                    const listItem = this.createListControl(item, preset);//todo
                     item.list.push(listItem);
                     item.control.push(listItem.control);
                 }
                 this.options?.updateValueAndValidity();
                 this.change.emit();
             } else if (field.required) {
-                const listItem = this.createListControl(item);
+                const listItem = this.createListControl(item);//todo
                 item.list.push(listItem);
                 item.control.push(listItem.control);
 

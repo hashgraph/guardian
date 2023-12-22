@@ -1,9 +1,18 @@
-import { AfterContentChecked, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import {
+    AfterContentChecked,
+    AfterViewInit,
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    Input,
+    OnInit,
+} from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { ConfirmationDialog } from '../confirmation-dialog/confirmation-dialog.component';
+import { DialogService } from 'primeng/dynamicdialog';
 
 /**
  * Component for display block of 'Buttons' type.
@@ -11,8 +20,8 @@ import { ConfirmationDialog } from '../confirmation-dialog/confirmation-dialog.c
 @Component({
     selector: 'button-block',
     templateUrl: './button-block.component.html',
-    styleUrls: ['./button-block.component.css'],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    styleUrls: ['./button-block.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ButtonBlockComponent implements OnInit, AfterContentChecked {
     @Input('id') id!: string;
@@ -33,6 +42,7 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
         private wsService: WebSocketService,
         private policyHelper: PolicyHelper,
         public dialog: MatDialog,
+        private dialogService: DialogService,
         private cdref: ChangeDetectorRef
     ) {
     }
@@ -60,7 +70,9 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
 
     ngOnInit(): void {
         if (!this.static) {
-            this.socket = this.wsService.blockSubscribe(this.onUpdate.bind(this));
+            this.socket = this.wsService.blockSubscribe(
+                this.onUpdate.bind(this)
+            );
         }
         this.loadData();
     }
@@ -86,15 +98,20 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
                 this.loading = false;
             }, 500);
         } else {
-            this.policyEngineService.getBlockData(this.id, this.policyId).subscribe((data: any) => {
-                this.setData(data);
-                setTimeout(() => {
-                    this.loading = false;
-                }, 1000);
-            }, (e) => {
-                console.error(e.error);
-                this.loading = false;
-            });
+            this.policyEngineService
+                .getBlockData(this.id, this.policyId)
+                .subscribe(
+                    (data: any) => {
+                        this.setData(data);
+                        setTimeout(() => {
+                            this.loading = false;
+                        }, 1000);
+                    },
+                    (e) => {
+                        console.error(e.error);
+                        this.loading = false;
+                    }
+                );
         }
     }
 
@@ -115,7 +132,8 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
             return result;
         }
         if (button.field) {
-            result = this.getObjectValue(this.data, button.field) !== button.value;
+            result =
+                this.getObjectValue(this.data, button.field) !== button.value;
         }
         if (!result) {
             return result;
@@ -127,16 +145,24 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
             const fieldValue = this.getObjectValue(this.data, filter.field);
             switch (filter.type) {
                 case 'equal':
-                    result = result && (fieldValue == filter.value);
+                    result = result && fieldValue == filter.value;
                     break;
                 case 'not_equal':
-                    result = result && (fieldValue != filter.value);
+                    result = result && fieldValue != filter.value;
                     break;
                 case 'in':
-                    filter.value.split(',').forEach((val: any) => result = result && (val == fieldValue));
+                    filter.value
+                        .split(',')
+                        .forEach(
+                            (val: any) => (result = result && val == fieldValue)
+                        );
                     break;
                 case 'not_in':
-                    filter.value.split(',').forEach((val: any) => result = result && (val != fieldValue));
+                    filter.value
+                        .split(',')
+                        .forEach(
+                            (val: any) => (result = result && val != fieldValue)
+                        );
                     break;
             }
         }
@@ -196,15 +222,16 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
     }
 
     onSelectDialog(button: any) {
-        const dialogRef = this.dialog.open(ConfirmationDialog, {
+        const dialogRef = this.dialogService.open(ConfirmationDialog, {
+            header: button.title,
+            width: '100vh',
             data: {
                 title: button.title,
-                description: button.description
+                description: button.description,
             },
-            disableClose: true,
         });
 
-        dialogRef.afterClosed().subscribe(result => {
+        dialogRef.onClose.subscribe((result) => {
             if (result) {
                 let comments = this.getObjectValue(
                     this.data,
@@ -213,9 +240,10 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
                 if (Array.isArray(comments)) {
                     comments.push(result);
                 } else {
-                    comments = typeof comments === 'string'
-                        ? [comments, result]
-                        : [result];
+                    comments =
+                        typeof comments === 'string'
+                            ? [comments, result]
+                            : [result];
                 }
                 this.setObjectValue(
                     this.data,

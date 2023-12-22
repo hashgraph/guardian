@@ -63,7 +63,7 @@
         column-gap: 10px;
         margin-top: 20px;
         z-index: 1000;
-        
+
         background-color: white;
         padding: 20px 0;
         position: fixed;
@@ -100,4 +100,25 @@
         background-color: rgba(0,0,0,.12);
         color: white;
     }
+}
+
+.dialog {
+    width: 720px;
+    height: auto;
+}
+
+.dialog > .header {
+    height: min-content;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.dialog > .header > span {
+    color: #000;
+    font-family: Poppins, sans-serif;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 32px;
 }

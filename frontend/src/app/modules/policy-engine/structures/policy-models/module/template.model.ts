@@ -152,10 +152,6 @@ export class ModuleTemplate {
         return json;
     }
 
-    public getConfig():any {
-        return this._config.getJSON();
-    }
-
     public emitUpdate() {
         this._changed = false;
         if (this._subscriber) {
@@ -264,7 +260,7 @@ export class ModuleTemplate {
         return this._config.newTool(template);
     }
 
-    public getTools(): Set<string> {
-        return this._config.getTools();
+    public getAllTools(): Set<string> {
+        return this._config.getAllTools();
     }
 }

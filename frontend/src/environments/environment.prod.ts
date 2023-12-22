@@ -15,8 +15,7 @@ export const environment = {
         'topics': 'topics',
         'accounts': 'accounts',
         'messages': 'messages',
-        'serials': 'nfts',
-        'contracts': 'contracts',
+        'serials': 'nfts'
     }
   }
 };

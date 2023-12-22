@@ -1,12 +1,178 @@
-<div class="content">
+<div class="container">
+    <ng-container [ngTemplateOutlet]="header"></ng-container>
+    <ng-container *ngIf="!loading && isConfirmed">
+        <ng-container [ngTemplateOutlet]="actionsContainer"></ng-container>
+        <ng-container [ngTemplateOutlet]="tableContainer"></ng-container>
+    </ng-container>
+    <ng-container *ngIf="!loading && !isConfirmed" [ngTemplateOutlet]="noDIDSettings"></ng-container>
     <div *ngIf="loading && !taskId" class="loading">
-        <mat-spinner></mat-spinner>
+        <div class="preloader-image preloader-image-l-size"></div>
+    </div>
+</div>
+
+<ng-template #header>
+    <div class="header">
+        <h1>Modules</h1>
+    </div>
+</ng-template>
+
+<ng-template #actionsContainer>
+    <div class="actions-container">
+        <span class="p-input-icon-right">
+            <i class="pi pi-search"></i>
+            <input [(ngModel)]="searchParam" class="search-input" pInputText placeholder="Search" type="text">
+        </span>
+        <div class="module-actions-buttons-container">
+            <p-button
+                    (click)="newModules()"
+                    class="toolbar-btn"
+            >
+                <mat-icon class="toolbar-icons">add</mat-icon>
+                <span>Create a Module</span>
+            </p-button>
+            <p-button
+                    (click)="importModules()"
+                    class="toolbar-btn"
+            >
+                <mat-icon class="toolbar-icons">file_open</mat-icon>
+                <span>Import</span>
+            </p-button>
+            <p-button
+                    (click)="compareModules()"
+                    class="toolbar-btn compare-button"
+                    styleClass="p-button-outlined"
+            >
+                <mat-icon class="toolbar-icons">compare</mat-icon>
+                <span>Compare</span>
+            </p-button>
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #tableContainer>
+    <ng-container *ngIf="modules && modules.length > 0 else noData">
+        <div class="table-container">
+            <table>
+                <tr class="row-header">
+                    <th>NAME</th>
+                    <th>DESCRIPTION</th>
+                    <th>TAGS</th>
+                    <th>STATUS</th>
+                    <th>OPERATIONS</th>
+                </tr>
+                <ng-container *ngFor="let module of modules">
+                    <tr *ngIf="module.name.includes(searchParam) || module.description.includes(searchParam)"
+                        class="row-item">
+                        <td>{{ module.name }}</td>
+                        <td>{{ module.description }}</td>
+                        <td>
+                            <tags-explorer [data]="module._tags" [entity]="tagEntity" [owner]="owner"
+                                           [schemas]="tagSchemas" [service]="tagsService"
+                                           [target]="module.id"></tags-explorer>
+                        </td>
+                        <td>
+                            <div *ngIf="module.status === 'DRAFT'" class="p-tag p-tag-grey">Draft</div>
+                            <div *ngIf="module.status === 'PUBLISHED'" class="p-tag p-tag-success">Published</div>
+                        </td>
+                        <td>
+                            <div class="flex flex-sb-c">
+                                <button (click)="publishModule(module)" [disabled]="module.status === 'PUBLISHED'" class="button height-28"
+                                        pButton>Publish
+                                </button>
+                                <div class="flex flex-column-gap-20">
+                                    <svg (click)="exportModules(module)" fill="none" height="24" viewBox="0 0 24 24"
+                                         width="24" xmlns="http://www.w3.org/2000/svg">
+                                        <path class="primary-color" clip-rule="evenodd" d="M11.0001 15C11.0001 15.5523 11.4478 16 12.0001 16C12.5524 16 13.0001 15.5523 13.0001 15V6.41418L15.293 8.70715C15.6836 9.09768 16.3167 9.09768 16.7073 8.70715C17.0978 8.31663 17.0978 7.68346 16.7073 7.29294L12.7073 3.29294L12.7072 3.29295C12.5263 3.11195 12.2762 3 12.0001 3C11.7239 3 11.4739 3.11195 11.2929 3.29295L11.2929 3.29294L7.29289 7.29294C6.90237 7.68346 6.90237 8.31663 7.29289 8.70715C7.68342 9.09768 8.31658 9.09768 8.70711 8.70715L11.0001 6.41419V15ZM5 14.5C5 13.9477 4.55228 13.5 4 13.5C3.44772 13.5 3 13.9477 3 14.5V18C3 19.6569 4.34315 21 6 21H18C19.6569 21 21 19.6569 21 18V14.5C21 13.9477 20.5523 13.5 20 13.5C19.4477 13.5 19 13.9477 19 14.5V18C19 18.5523 18.5523 19 18 19H6C5.44772 19 5 18.5523 5 18V14.5Z"
+                                              fill-rule="evenodd"/>
+                                    </svg>
+                                    <div [queryParams]="{ moduleId: module.uuid }"
+                                         [routerLink]="['/policy-configuration']">
+                                        <svg class="opacity-icon" fill="none" height="24"
+                                             viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                            <path class="primary-color"
+                                                  clip-rule="evenodd" d="M16.5084 6.31676C16.8031 6.03714 17.1971 5.8857 17.6038 5.89575C18.0105 5.9058 18.3966 6.07652 18.677 6.37035C18.9574 6.66418 19.1093 7.05705 19.0992 7.46253C19.0892 7.86802 18.9179 8.25291 18.6232 8.53252L8.08714 18.5537L5.37201 18.9094L6.48508 15.8059L16.5075 6.31771L16.5084 6.31676ZM20.0522 5.0628C19.4242 4.40569 18.5605 4.02384 17.6505 4.00108C16.7405 3.97832 15.8586 4.3165 15.1984 4.94139L5.00859 14.586C4.90058 14.6882 4.81814 14.8143 4.7679 14.9541L3.05549 19.7318C3.00064 19.8848 2.98614 20.0494 3.01339 20.2096C3.04063 20.3698 3.10871 20.5204 3.21109 20.6468C3.31346 20.7733 3.44671 20.8714 3.59804 20.9317C3.74938 20.9921 3.91373 21.0126 4.07533 20.9915L8.64177 20.3939C8.84179 20.3679 9.02835 20.2792 9.17452 20.1406L19.9351 9.90599C20.5946 9.27903 20.9773 8.4166 20.999 7.50836C21.0208 6.60012 20.6808 5.72045 20.0522 5.0628ZM13.466 19.1029C13.2137 19.1029 12.9717 19.2029 12.7933 19.3808C12.6149 19.5586 12.5147 19.7999 12.5147 20.0515C12.5147 20.303 12.6149 20.5443 12.7933 20.7222C12.9717 20.9001 13.2137 21 13.466 21H19.1741C19.4264 21 19.6684 20.9001 19.8468 20.7222C20.0252 20.5443 20.1254 20.303 20.1254 20.0515C20.1254 19.7999 20.0252 19.5586 19.8468 19.3808C19.6684 19.2029 19.4264 19.1029 19.1741 19.1029H13.466Z"
+                                                  fill-rule="evenodd"/>
+                                        </svg>
+                                    </div>
+                                    <svg (click)="module.status === 'DRAFT' ? openDeleteModuleDialog(module) : null"
+                                         class="opacity-icon"
+                                         fill="none" height="24"
+                                         viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                        <path [class.disabled-color]="module.status !== 'DRAFT'"
+                                              class="accent-color-red"
+                                              clip-rule="evenodd" d="M10 4C9.44771 4 9 4.44771 9 5V6H15V5C15 4.44771 14.5523 4 14 4H10ZM17 6V5C17 3.34315 15.6569 2 14 2H10C8.34315 2 7 3.34315 7 5V6H5C4.44772 6 4 6.44771 4 7C4 7.55228 4.44772 8 5 8V18C5 19.6569 6.34315 21 8 21H16C17.6569 21 19 19.6569 19 18V8C19.5523 8 20 7.55228 20 7C20 6.44771 19.5523 6 19 6H17ZM17 8H7V18C7 18.5523 7.4477 19 8 19H16C16.5523 19 17 18.5523 17 18V8ZM10 10C10.5523 10 11 10.4477 11 11V16C11 16.5523 10.5523 17 10 17C9.44772 17 9 16.5523 9 16V11C9 10.4477 9.44772 10 10 10ZM14 10C14.5523 10 15 10.4477 15 11V16C15 16.5523 14.5523 17 14 17C13.4477 17 13 16.5523 13 16V11C13 10.4477 13.4477 10 14 10Z"
+                                              fill="#FF432A"
+                                              fill-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-container>
+            </table>
+            <div class="table-paginator">
+                <span>Items per page:</span>
+                <p-dropdown (onChange)="newOnPage()" [(ngModel)]="pageSize" [options]="[10,25,50,100]"></p-dropdown>
+                <span class="color-grey-6">{{ pageIndex * pageSize + 1 }}
+                    – {{ (pageIndex * pageSize + pageSize) > modulesCount ? modulesCount : (pageIndex * pageSize + pageSize) }}
+                    of {{ modulesCount }}</span>
+                <div class="flex">
+                    <svg (click)="movePageIndex(-1)" fill="none" height="24" viewBox="0 0 24 24" width="24"
+                         xmlns="http://www.w3.org/2000/svg">
+                        <path d="M15.2828 5.68906C14.8923 5.29856 14.2591 5.29856 13.8686 5.68906L8.98115 10.5813C8.20075 11.3625 8.20106 12.6283 8.98184 13.4091L13.8722 18.2994C14.2627 18.6899 14.8959 18.6899 15.2864 18.2994C15.677 17.9089 15.677 17.2757 15.2864 16.8852L11.1008 12.6996C10.7103 12.309 10.7103 11.6759 11.1008 11.2854L15.2828 7.10326C15.6733 6.71276 15.6733 6.07956 15.2828 5.68906Z"
+                              fill="#848FA9"/>
+                    </svg>
+                    <svg (click)="movePageIndex(+1)" fill="none" height="24" viewBox="0 0 24 24" width="24"
+                         xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8.6926 5.68907C9.0831 5.29857 9.7163 5.29857 10.1068 5.68907L14.9942 10.5813C15.7746 11.3625 15.7743 12.6283 14.9936 13.4091L10.1032 18.2994C9.7127 18.6899 9.0795 18.6899 8.689 18.2994C8.2984 17.9089 8.2984 17.2757 8.689 16.8852L12.8746 12.6996C13.2651 12.309 13.2651 11.6759 12.8746 11.2854L8.6926 7.10327C8.3021 6.71277 8.3021 6.07957 8.6926 5.68907Z"
+                              fill="#848FA9"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </ng-container>
+</ng-template>
+
+<ng-template #noData>
+    <div class="not-exist">
+        <svg fill="none" height="32" viewBox="0 0 32 32" width="32" xmlns="http://www.w3.org/2000/svg">
+            <path class="disabled-color" clip-rule="evenodd" d="M2.66699 8C2.66699 6.89543 3.56243 6 4.66699 6C5.77156 6 6.66699 6.89543 6.66699 8C6.66699 9.10457 5.77156 10 4.66699 10C3.56243 10 2.66699 9.10457 2.66699 8ZM9.33366 8.00082C9.3337 7.26444 9.93069 6.66752 10.6671 6.66756L28.0004 6.66852C28.7368 6.66856 29.3337 7.26555 29.3337 8.00193C29.3336 8.73831 28.7366 9.33523 28.0002 9.33519L10.6669 9.33423C9.93054 9.33419 9.33362 8.7372 9.33366 8.00082ZM2.66699 16C2.66699 14.8956 3.56236 14 4.66699 14C5.77163 14 6.66699 14.8956 6.66699 16C6.66699 17.1044 5.77163 18 4.66699 18C3.56236 18 2.66699 17.1044 2.66699 16ZM9.33366 16.0009C9.3337 15.2645 9.93069 14.6676 10.6671 14.6676L28.0004 14.6687C28.7368 14.6687 29.3337 15.2657 29.3337 16.0021C29.3336 16.7385 28.7366 17.3354 28.0002 17.3353L10.6669 17.3343C9.93053 17.3342 9.33361 16.7372 9.33366 16.0009ZM2.66699 24C2.66699 22.8956 3.56236 22 4.66699 22C5.77163 22 6.66699 22.8956 6.66699 24C6.66699 25.1044 5.77163 26 4.66699 26C3.56236 26 2.66699 25.1044 2.66699 24ZM9.33366 24.0009C9.3337 23.2645 9.93069 22.6676 10.6671 22.6676L28.0004 22.6687C28.7368 22.6687 29.3337 23.2657 29.3337 24.0021C29.3336 24.7385 28.7366 25.3354 28.0002 25.3353L10.6669 25.3343C9.93053 25.3342 9.33361 24.7372 9.33366 24.0009Z"
+                  fill-rule="evenodd"/>
+        </svg>
+        <span class="info-text-strong">No modules have been created yet</span>
+        <span class="info-text">Please create a new module or import one to see the data</span>
+    </div>
+</ng-template>
+
+<ng-template #noDIDSettings>
+    <div class="not-exist">
+        <span>Before starting work you need to get DID <a [routerLink]="['/profile']">here</a></span>
+    </div>
+</ng-template>
+
+<p-dialog [(visible)]="deleteTokenVisible" [closable]="true" [draggable]="false" [modal]="true">
+    <ng-template pTemplate="header">
+        <span class="modal-header">Detele Module</span>
+    </ng-template>
+    <div class="" style="padding: 0 10px 0 10px;">
+        Are you sure to delete module?
+    </div>
+    <ng-template pTemplate="footer">
+        <button (click)="deleteModule(false)" class="button secondary" label="Cancel" pButton
+                type="button"></button>
+        <button (click)="deleteModule(true)" [label]="'Delete'" class="button button-color-red" pButton
+                type="button"></button>
+    </ng-template>
+</p-dialog>
+<!--<div class="content">
+    <div *ngIf="loading && !taskId" class="loading">
+        <div class="preloader-image preloader-image-l-size"></div>
     </div>
 
-    <!-- <div *ngIf="loading && taskId" class="loading">
+    &lt;!&ndash; <div *ngIf="loading && taskId" class="loading">
         <async-progress class="loading-progress" [taskId]="taskId" [expected]="expectedTaskMessages"
             (error)="onAsyncError($event)" (completed)="onAsyncCompleted()"></async-progress>
-    </div> -->
+    </div> &ndash;&gt;
 
     <ng-container *ngIf="!isConfirmed">
         <div class="not-exist">
@@ -32,25 +198,25 @@
         <div class="table-container">
             <table mat-table [dataSource]="modules" class="table">
                 <ng-container matColumnDef="uuid">
-                    <th mat-header-cell *matHeaderCellDef> UUID </th>
+                    <th mat-header-cell *matHeaderCellDef> UUID</th>
                     <td mat-cell *matCellDef="let element">
                         {{ element.uuid }}
                     </td>
                 </ng-container>
                 <ng-container matColumnDef="name">
-                    <th mat-header-cell *matHeaderCellDef> Name </th>
+                    <th mat-header-cell *matHeaderCellDef> Name</th>
                     <td mat-cell *matCellDef="let element">
                         {{ element.name }}
                     </td>
                 </ng-container>
                 <ng-container matColumnDef="description">
-                    <th mat-header-cell *matHeaderCellDef> Description </th>
+                    <th mat-header-cell *matHeaderCellDef> Description</th>
                     <td mat-cell *matCellDef="let element">
                         {{ element.description }}
                     </td>
                 </ng-container>
                 <ng-container matColumnDef="status">
-                    <th mat-header-cell *matHeaderCellDef> Status </th>
+                    <th mat-header-cell *matHeaderCellDef> Status</th>
                     <td mat-cell *matCellDef="let element">
                         <span [ngSwitch]="element.status">
                             <div *ngSwitchCase="'DRAFT'">
@@ -66,14 +232,15 @@
                     </td>
                 </ng-container>
                 <ng-container matColumnDef="tags">
-                    <th mat-header-cell *matHeaderCellDef> Tags </th>
+                    <th mat-header-cell *matHeaderCellDef> Tags</th>
                     <td mat-cell *matCellDef="let element">
                         <tags-explorer [data]="element._tags" [owner]="owner" [target]="element.id"
-                            [schemas]="tagSchemas" [entity]="tagEntity" [service]="tagsService"></tags-explorer>
+                                       [schemas]="tagSchemas" [entity]="tagEntity"
+                                       [service]="tagsService"></tags-explorer>
                     </td>
                 </ng-container>
                 <ng-container matColumnDef="operation">
-                    <th mat-header-cell *matHeaderCellDef> Operations </th>
+                    <th mat-header-cell *matHeaderCellDef> Operations</th>
                     <td mat-cell *matCellDef="let element">
                         <div *ngIf="element.status =='DRAFT'" class="btn-publish" (click)="publishModule(element)">
                             Publish
@@ -112,8 +279,8 @@
         </div>
         <div class="table-paginator">
             <mat-paginator [length]="modulesCount" [pageIndex]="pageIndex" [pageSize]="pageSize"
-                [pageSizeOptions]="[10, 25, 50, 100]" (page)="onPage($event)" aria-label="Select page">
+                           [pageSizeOptions]="[10, 25, 50, 100]" (page)="onPage($event)" aria-label="Select page">
             </mat-paginator>
         </div>
     </ng-container>
-</div>
+</div>-->

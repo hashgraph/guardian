@@ -1,11 +1,4 @@
-import {
-    Component,
-    EventEmitter,
-    Input,
-    OnInit,
-    Output,
-    SimpleChanges,
-} from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, } from '@angular/core';
 
 @Component({
     selector: 'app-new-versions',
@@ -29,12 +22,14 @@ export class NewVersionsComponent implements OnInit {
 
     @Output('onClick') private onClickEvent = new EventEmitter<string>();
 
-    constructor() { }
+    constructor() {
+    }
 
-    ngOnInit(): void { }
+    ngOnInit(): void {
+    }
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes.newVersionsInput && this.newVersionsInput) {
+        if (changes.newVersionsInput) {
             this.newVersions = this.newVersionsInput.map((item) => ({
                 ...item,
                 copied: false,

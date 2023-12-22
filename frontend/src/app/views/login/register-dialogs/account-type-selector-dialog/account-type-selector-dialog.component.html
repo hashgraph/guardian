@@ -1,0 +1,35 @@
+<div class="dialog-body">
+    <div class="radio-item">
+        <p>
+            <input (click)="selectUserRole(userRole.USER)" checked id="user" name="user-role" type="radio">
+            <label for="user">Default User</label>
+        </p>
+        <span>
+            Applicants creating environmental projects / performing other activities
+            in the environmental domain.
+        </span>
+    </div>
+    <div class="radio-item">
+        <p>
+            <input (click)="selectUserRole(userRole.STANDARD_REGISTRY)" id="sr" name="user-role" type="radio">
+            <label for="sr">Standard Registry</label>
+        </p>
+        <span>
+            Creating/importing policies, managing users, managing tokens.
+        </span>
+    </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="cancel-button">
+            <button (click)="onNoClick()"
+                    class="button secondary"
+                    label="Cancel"
+                    pButton
+            ></button>
+        </div>
+        <div>
+            <button (click)="onSubmit()" class="button" label="Continue" pButton></button>
+        </div>
+    </div>
+</div>

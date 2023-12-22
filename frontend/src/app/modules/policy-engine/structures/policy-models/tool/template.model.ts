@@ -1,4 +1,4 @@
-import { GenerateUUIDv4, ModuleStatus, PolicyType, Schema, Token } from '@guardian/interfaces';
+import { BlockType, GenerateUUIDv4, ModuleStatus, PolicyType, Schema, Token } from '@guardian/interfaces';
 import { IBlockConfig } from '../interfaces/block-config.interface';
 import { IModuleVariables } from '../interfaces/module-variables.interface';
 import { PolicyBlock } from '../block/block.model';
@@ -151,10 +151,6 @@ export class ToolTemplate {
         return json;
     }
 
-    public getConfig():any {
-        return this._config.getJSON();
-    }
-
     public emitUpdate() {
         this._changed = false;
         if (this._subscriber) {
@@ -263,7 +259,7 @@ export class ToolTemplate {
         return this._config.newTool(template);
     }
 
-    public getTools(): Set<string> {
-        return this._config.getTools();
+    public getAllTools(): Set<string> {
+        return this._config.getAllTools();
     }
 }

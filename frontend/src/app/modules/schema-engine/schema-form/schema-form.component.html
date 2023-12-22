@@ -5,23 +5,38 @@
             <!-- simple field -->
             <div *ngIf="!item.isArray && !item.isRef" class="form-field">
                 <div class="invalid-field-label"
-                    *ngIf="options.controls[item.name] && !options.controls[item.name].valid && !options.controls[item.name].disabled">
-                    <mat-icon class="invalid-arrow-circle">arrow_circle_right</mat-icon>
+                     *ngIf="!isFormForFinishSetup && options.controls[item.name] && !options.controls[item.name].valid && !options.controls[item.name].disabled">
+                    <!--                    <mat-icon class="invalid-arrow-circle">arrow_circle_right</mat-icon>-->
                     <span>
                         <b>{{getInvalidMessageByFieldType(item)}}</b>
                     </span>
                 </div>
-                <div *ngIf="item.required" class="required-field">* Required</div>
-                <div class="label-field" *ngIf="!isHelpText(item)">{{item.description}}</div>
-                <div *ngIf="isHelpText(item)" class="label-field help-text"
+                <div *ngIf="!isFormForFinishSetup && item.required" class="required-field">* Required</div>
+                <div *ngIf="!isFormForFinishSetup && !isHelpText(item)" class="label-field">{{ item.description }}</div>
+                <div *ngIf="!isFormForFinishSetup && isHelpText(item)" class="label-field help-text"
                     [ngStyle]="{ 'color': item.textColor, 'font-size': item.textSize}">
                     <b *ngIf="item.textBold; else plainDescription">{{item.description}}</b>
                     <ng-template #plainDescription>{{item.description}}</ng-template>
                 </div>
                 <div class="form-field-value">
-                    <div class="form-field-prefix" *ngIf="isPrefix(item)">{{item.unit}}</div>
+                    <div *ngIf="!isFormForFinishSetup && isPrefix(item)" class="form-field-prefix">{{ item.unit }}</div>
 
-                    <mat-form-field *ngIf="isInput(item)" class="example-full-width required-form-field"
+                    <ng-container *ngIf="isFormForFinishSetup">
+                        <div class="input-field-container">
+                            <label class="form-label"
+                            >{{ item.description }}</label
+                            >
+                            <input
+                                    [formControlName]="item.name"
+                                    [placeholder]="getPlaceholderByFieldType(item)"
+                                    pInputText
+                                    type="text"
+                            />
+                        </div>
+                    </ng-container>
+
+                    <mat-form-field *ngIf="!isFormForFinishSetup && isInput(item)"
+                                    class="example-full-width required-form-field"
                         appearance="outline" [ngClass]="{'ipfs-url' : isIPFS(item)}">
                         <input matInput [formControlName]="item.name" [placeholder]="getPlaceholderByFieldType(item)">
                         <div *ngIf="isIPFS(item)">
@@ -86,9 +101,9 @@
             </div>
 
             <!-- sub schema -->
-            <div *ngIf="!item.isArray && item.isRef" [style.display]="item.isAllFieldsHidden ? 'none' : 'block'" class="form-field-group sub-schema">
+            <div *ngIf="!item.isArray && item.isRef" class="form-field-group sub-schema">
                 <div class="invalid-field-label" *ngIf="item.control && !item.control.valid && !item.control.disabled">
-                    <mat-icon class="invalid-arrow-circle">arrow_circle_right</mat-icon>
+                    <!--                    <mat-icon class="invalid-arrow-circle">arrow_circle_right</mat-icon>-->
                     <span>
                         <b>Please make sure all fields in schema contain a valid value</b>
                     </span>
@@ -96,7 +111,7 @@
                 <div *ngIf="item.required && item.displayRequired" class="required-field">* Required</div>
                 <div class="label-field" id="detail-section">
                     <div *ngIf="!isChildSchema && fields" class="page-number">{{i + 1}}/{{fields.length}}</div>
-                    <span>{{item.description}}</span>
+                    <span class="detail-section-title">{{ item.description }}</span>
                     <div *ngIf="!isChildSchema && fields && i !== fields.length - 1" class="delimiter-to-next-page"></div>
                     <div *ngIf="!isChildSchema && fields && i !== fields.length - 1" class="next-page-number">{{i + 2}}</div>
                 </div>
@@ -128,7 +143,7 @@
             <!-- array of simple fields -->
             <div *ngIf="item.isArray && !item.isRef" class="form-field-array">
                 <div class="invalid-field-label" *ngIf="item.control && !item.control.valid && !item.control.disabled">
-                    <mat-icon class="invalid-arrow-circle">arrow_circle_right</mat-icon>
+                    <!--                    <mat-icon class="invalid-arrow-circle">arrow_circle_right</mat-icon>-->
                     <span>
                         <b>{{getInvalidMessageByFieldType(item)}}</b>
                     </span>
@@ -226,9 +241,9 @@
             </div>
 
             <!-- array of sub schemas -->
-            <div *ngIf="item.isArray && item.isRef" [style.display]="item.isAllFieldsHidden ? 'none' : 'block'" class="form-field-group schema-form-field-array-group sub-schemas">
+            <div *ngIf="item.isArray && item.isRef" class="form-field-group schema-form-field-array-group sub-schemas">
                 <div class="invalid-field-label" *ngIf="!item.control.valid && !item.control.disabled">
-                    <mat-icon class="invalid-arrow-circle">arrow_circle_right</mat-icon>
+                    <!--                    <mat-icon class="invalid-arrow-circle">arrow_circle_right</mat-icon>-->
                     <span>
                         <b>Please make sure all fields in schemas contain a valid value</b>
                     </span>
@@ -270,9 +285,7 @@
             </div>
         </div>
 
-        <div *ngIf="!delimiterHide && !item.hidden" class="delimiter"></div>
-
-        <ng-template [ngIf]="(getConditions(item).length > 0) && !item.hidden">
+        <ng-template [ngIf]="getConditions(item).length > 0">
             <div *ngFor="let condition of getConditions(item)">
                 <app-schema-form
                     *ngIf="condition.ifCondition.fieldValue === options.controls[item.name]?.value; else elseCondition"
@@ -293,14 +306,39 @@
 
     </ng-container>
 
-    <div *ngIf="fields && showButtons && !isChildSchema" class="page-btns">
-        <button *ngIf="currentIndex === 0  && !cancelHidden" mat-raised-button color="primary" id="cancel-btn"
-            (click)="onCancelBtnClick()">{{cancelText}}</button>
-        <button *ngIf="currentIndex !== 0" mat-raised-button color="primary" id="previous-btn"
-            (click)="getPrevShownFields(fields)">Previous</button>
-        <button *ngIf="!isShown[fields.length - 1]" mat-raised-button color="primary"
-            (click)="getNextShownFields(fields)">Next</button>
-        <button *ngIf="isShown[fields.length - 1] && !submitHidden" mat-raised-button [disabled]="!group.valid"
-            color="primary" id="submit-btn" (click)="onSubmitBtnClick(fields)">{{submitText}}</button>
+    <div *ngIf="fields && showButtons && !comesFromDialog && !isChildSchema" class="progress-footer page-btns">
+        <button (click)="onCancelBtnClick()"
+                *ngIf="currentIndex === 0  && !cancelHidden"
+                [label]="cancelText"
+                class="p-button-outlined"
+                pButton
+                type="button"
+        ></button>
+        <button (click)="getPrevShownFields(fields)"
+                *ngIf="currentIndex !== 0"
+                class="p-button-outlined"
+                label="Previous"
+                pButton
+                type="button"
+        ></button>
+        <div>
+            <button (click)="getNextShownFields(fields)"
+                    *ngIf="!isShown[fields.length - 1]"
+                    class="p-button"
+                    label="Next"
+                    pButton
+                    style="margin-right: 16px;"
+                    type="button"
+            ></button>
+            <button (click)="onSubmitBtnClick(fields)"
+                    *ngIf="isShown[fields.length - 1] && !submitHidden"
+                    [disabled]="!group.valid"
+                    [label]="submitText"
+                    class="p-button"
+                    pButton
+                    style="margin-right: 16px;"
+                    type="button"
+            ></button>
+        </div>
     </div>
 </form>

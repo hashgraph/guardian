@@ -17,10 +17,10 @@
 }
 
 .loading {
-    background: #fff;
     position: fixed;
+    /* background: #ffffff32; */
     z-index: 99;
-    top: var(--header-height-policy);
+    top: 0;
     left: 0;
     bottom: 0;
     right: 0;
@@ -30,6 +30,13 @@
     justify-content: center;
     align-content: center;
 }
+
+.loading-progress {
+    width: 80%;
+    height: 80%;
+}
+
+
 
 .loading-dialog {
     background: #fff;

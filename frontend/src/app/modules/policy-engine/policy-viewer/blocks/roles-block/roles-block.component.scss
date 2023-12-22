@@ -1,0 +1,222 @@
+.content {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 0;
+  display: block;
+  background: #fff;
+}
+
+.loading {
+  position: fixed;
+  /* background: #ffffff32; */
+  z-index: 99;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-items: center;
+  justify-content: center;
+  align-content: center;
+}
+
+.loading-progress {
+  width: 80%;
+  height: 80%;
+}
+
+
+h2 {
+  margin-bottom: 24px;
+  color: var(--color-grey-black-1, #181818);
+  font-family: Poppins;
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 32px;
+}
+
+.title {
+  background: #fff;
+  display: block;
+  margin-top: 20px;
+  text-align: center;
+  font-size: 40px;
+  padding-bottom: 30px;
+  font-weight: bold;
+}
+
+.description {
+  background: #fff;
+  display: block;
+  text-align: center;
+  font-size: 20px;
+  padding-bottom: 30px;
+  color: #404040;
+}
+
+form {
+  max-width: 624px;
+  padding: 24px;
+  border-radius: 8px;
+  border: 1px solid var(--color-grey-3, #E1E7EF);
+  background: var(--color-grey-white, #FFF);
+}
+
+.roles-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.btn-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.group-name {
+  height: 30px;
+}
+
+.group-value {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 50px 15px 50px;
+}
+
+.group-value[disabled="true"] {
+  user-select: none;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.role-value {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 0px 15px 0px;
+}
+
+.form-label {
+  margin-bottom: 6px;
+  color: var(--color-grey-black-1, #181818);
+  font-family: Inter;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 14px;
+}
+
+:host ::ng-deep {
+  .p-dropdown {
+    border-radius: 8px;
+    border: 1px solid var(--color-grey-3, #E1E7EF);
+    background: var(--color-grey-white, #FFF);
+    width: 100%;
+  }
+}
+
+.progress-footer {
+  padding: 12px 48px;
+  display: flex;
+  justify-content: space-between;
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  border-top: 1px solid var(--color-grey-3, #E1E7EF);
+  background: #FFF;
+  padding-left: calc(var(--header-width-expand) + 48px);
+  transition: padding-left 0.125s ease-in-out;
+  z-index: 999;
+}
+
+:host ::ng-deep {
+  .p-button {
+    padding: 5px 12px;
+    min-width: 120px;
+    border-radius: 8px;
+    background: var(--color-primary, #0681EE);
+
+    .p-button-label {
+      font-family: Inter;
+      font-size: 14px;
+      font-style: normal;
+      font-weight: 500;
+      line-height: 30px;
+      color: var(--color-grey-white, #FFF);
+    }
+
+    &:disabled {
+      border-radius: 8px;
+      border: 1px solid var(--color-grey-3, #E1E7EF);
+      background: var(--color-grey-1, #F9FAFC);
+
+      .p-button-label {
+        font-family: Inter;
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 30px;
+        color: var(--color-grey-4, #AAB7C4);
+      }
+    }
+  }
+
+  .p-button-outlined {
+    border-radius: 8px;
+    border: 1px solid var(--color-secondary, #CDDDFD);
+    background: var(--color-grey-white, #FFF);
+
+    .p-button-label {
+      font-family: Inter;
+      font-size: 14px;
+      font-style: normal;
+      font-weight: 500;
+      line-height: 30px;
+      color: var(--color-primary, #0681EE);
+    }
+  }
+}
+
+@media (max-width: 810px) {
+  .title {
+    display: block;
+    margin-top: 20px;
+    text-align: left;
+
+    font-size: 40px;
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 600;
+    line-height: 28px;
+
+    padding-bottom: 30px;
+    font-weight: bold;
+
+    flex: none;
+    order: 0;
+    flex-grow: 1;
+  }
+
+  .description {
+    text-align: left;
+  }
+
+  form {
+    width: 90%;
+    height: calc(1vh - var(--header-height));
+    margin: 20px auto;
+    border: none;
+    position: relative;
+  }
+
+  .btn-form {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    width: 90%;
+    margin: 20px 5% !important;
+  }
+}

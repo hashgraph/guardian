@@ -1,0 +1,189 @@
+.content {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 0;
+  display: block;
+  background: #fff;
+}
+
+.loading {
+  position: fixed;
+  /* background: #ffffff32; */
+  z-index: 99;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-items: center;
+  justify-content: center;
+  align-content: center;
+}
+
+.loading-progress {
+  width: 80%;
+  height: 80%;
+}
+
+
+.table-container {
+  width: 100%;
+
+  ::ng-deep {
+    .mat-table {
+      border-collapse: separate;
+      border-spacing: 0 8px;
+      background: var(--color-grey-1);
+    }
+
+    .mat-row {
+      background: var(--color-grey-white);
+      box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08);
+    }
+
+    .mat-row:hover {
+      background: var(--color-grey-white);
+    }
+  }
+}
+
+.table {
+  width: 100%;
+
+  ::ng-deep {
+    .mat-header-row {
+      background: var(--color-grey-1);
+      box-shadow: none;
+    }
+
+    .mat-header-cell {
+      color: var(--color-grey-5) !important;
+      border: none !important;
+      font-family: Inter, serif;
+      font-size: 12px;
+      font-style: normal;
+      font-weight: 400;
+      line-height: normal;
+      text-transform: uppercase;
+    }
+
+    .mat-header-cell:first-of-type {
+    }
+
+    .mat-cell {
+      border-bottom: none;
+      color: var(--color-grey-black-1);
+      font-family: Inter, sans-serif;
+      font-size: 14px;
+      font-style: normal;
+      font-weight: 400;
+      line-height: normal;
+      padding: 0;
+    }
+
+    .mat-cell:first-of-type {
+      border-top-left-radius: 8px;
+      border-bottom-left-radius: 8px;
+      padding-left: 24px;
+    }
+
+    .mat-cell:last-of-type {
+      border-top-right-radius: 8px;
+      border-bottom-right-radius: 8px;
+    }
+
+    .p-button {
+      border-radius: 8px;
+      color: var(--color-grey-white);
+      background: var(--primary-color);
+    }
+  }
+}
+
+.mat-header-cell {
+  z-index: 9 !important;
+}
+
+.btn-settings {
+  color: #3f51b5;
+  font-weight: 500;
+  cursor: pointer;
+  padding-top: 2px;
+  padding-left: 24px;
+  position: relative;
+  height: 28px;
+  min-width: 28px;
+  display: inline-block;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.btn-settings:hover {
+  text-decoration: underline;
+}
+
+.btn-settings mat-icon {
+  position: absolute;
+  left: 0px;
+  top: 1px;
+  font-size: 30px;
+}
+
+.btn-settings.btn-delete {
+  color: #f44336;
+}
+
+.table .mat-column-action {
+  width: 75px;
+  max-width: 75px;
+}
+
+.table-paginator {
+  height: 60px;
+  border-top: 1px solid #eee;
+  margin-top: 5px;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+
+  ::ng-deep .p-button {
+    border-radius: 8px;
+    color: var(--color-grey-white);
+    background: var(--primary-color);
+  }
+}
+
+.role {
+  padding: 32px 50px 32px 18px;
+
+  color: var(--color-grey-5);
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 16px;
+}
+
+.role .link {
+  position: relative;
+  padding-left: 30px;
+  color: var(--button-primary-color);
+  cursor: pointer;
+}
+
+.role .link mat-icon {
+  position: absolute;
+  left: 0;
+  top: -2px;
+}
+
+.select-btn {
+  text-decoration: underline;
+  cursor: pointer;
+  color: var(--button-primary-color);
+}

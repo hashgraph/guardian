@@ -1,140 +1,224 @@
-<div class="header">
-    <h1>Application Branding</h1>
-    <button mat-raised-button color="primary" class="preview-btn" (click)="reset()">
-        <span class="material-icons">history</span>
-        <span class="aligned-with-icon">Reset</span>
-    </button>
-    <button *ngIf="!isPreviewOn" mat-raised-button color="primary" class="preview-btn" [disabled]="!isSaveEnabled()" (click)="onPreview()">
-        <mat-icon>remove_red_eye</mat-icon>
-        <span class="aligned-with-icon">Preview</span>
-    </button>
-    <button *ngIf="isPreviewOn" mat-raised-button color="primary" class="preview-btn" (click)="onPreview()">
-        <span class="material-icons">visibility_off</span>
-        <span class="aligned-with-icon">Close Preview</span>
-    </button>
-</div>
-
-<div class="content">
-    <div class="name-colors">
-        <h2>Name and colors</h2>
-        <h3 class="form-header">Header color</h3>
-        <form class="color-form">
-            <mat-form-field appearance="outline">
-                <input matInput [formControl]="headerHexColorControl" placeholder="#000000" (input)="updateColorFromHex(headerHexColorControl, headerColorControl)">
-            </mat-form-field>
-            <input class="color-picker" matInput type="color" [formControl]="headerColorControl" (input)="updateHexFromColor(headerHexColorControl, headerColorControl)">
-        </form>
-        <p class="description">Choose a color for the header background</p>
-
-        <h3 class="form-header">Primary color</h3>
-        <form class="color-form">
-            <mat-form-field appearance="outline">
-                <input matInput [formControl]="primaryHexColorControl" placeholder="#0c77ff" (input)="updateColorFromHex(primaryHexColorControl, primaryColorControl)">
-            </mat-form-field>
-            <input class="color-picker" matInput type="color" value="#0c77ff" [formControl]="primaryColorControl" (input)="updateHexFromColor(primaryHexColorControl, primaryColorControl)">
-        </form>
-        <p class="description">Choose a color for the CTA buttons</p>
-
-        <h3 class="form-header">Company name</h3>
-        <form class="company-name-form">
-            <mat-form-field appearance="outline">
-                <input matInput [formControl]="companyNameControl" placeholder="Enter text" (input)="updateCompanyName(companyNameControl)" maxlength="11">
-            </mat-form-field>
-        </form>
-        <p class="description">This name will be displayed on the header accross the application. A maximum is set for 11 characters. On a mobile screen only this name will appear; it will not be accompanied with the company logo.</p>
-    </div>
-
-    <div class="logo-picture-favicon">
-        <h2>Logo, picture and favicon</h2>
-
-        <div class="image-upload-container">
-            <div class="image-placeholder">
-                <div *ngIf="!companyLogoUrl" class="company-logo-preview">
-                    <div class="image-icon">
-                        <mat-icon>insert_photo</mat-icon>
-                    </div>
-                    <div class="image-label">
-                        {{ imageLabel.companyLogo }} Preview
-                    </div>
-                </div>
-                <img *ngIf="companyLogoUrl" [src]="companyLogoUrl" alt="{{ imageLabel.companyLogo }} Preview" />
-            </div>
-            <div class="image-details">
-                <p class="image-title"> Company logo</p>
-                <p class="image-description">The logo will be displayed on the side of the name of the application (Guardian by default) and throughout the application. It is recommended to choose a a small squared image that is 336KB or less. This logo will be omitted on mobile.</p>
-                <button mat-raised-button color="primary" class="upload-btn" (click)="fileInputCompanyLogo.click()">
-                    <span class='material-icons-outlined'>file_upload</span>
-                    <span class="aligned-with-icon">Upload logo</span>
-                </button>
-                <input type="file" id="companyLogoInput" #fileInputCompanyLogo (change)="handleCompanyLogoInput($any($event.target).files)" accept="image/*" style="display:none;">
-                <button *ngIf="companyLogoUrl" mat-icon-button color="warn" aria-label="Clear" style="margin-left: 10px;" (click)="clearCompanyLogo()">
-                    <mat-icon>clear</mat-icon>
-                    <span class="aligned-with-icon">Clear image</span>
-                </button>
-            </div>
-        </div>
-
-        <div class="image-upload-container">
-            <div class="image-placeholder">
-                <div *ngIf="!loginBannerUrl" class="login-banner-preview">
-                    <div class="image-icon">
-                        <mat-icon>insert_photo</mat-icon>
-                    </div>
-                    <div class="image-label">
-                        {{ imageLabel.loginBanner }} Preview
-                    </div>
-                </div>
-                <img *ngIf="loginBannerUrl" [src]="loginBannerUrl" alt="{{ imageLabel.loginBanner }} Preview" />
-            </div>
-            <div class="image-details">
-                <p class="image-title"> Login Banner</p>
-                <p class="image-description">On the login page, the image will be displayed as a background. Horizontal orientation is preferred, with a file size of 336KB or less.</p>
-                <button mat-raised-button color="primary" class="upload-btn" (click)="fileInputLoginBanner.click()">
-                    <span class='material-icons-outlined'>file_upload</span>
-                    <span class="aligned-with-icon">Upload banner</span>
-                </button>
-                <input type="file" id="loginBannerInput" #fileInputLoginBanner (change)="handleLoginBannerInput($any($event.target).files)" accept="image/*" style="display:none;">
-                <button *ngIf="loginBannerUrl" mat-icon-button color="warn" aria-label="Clear" style="margin-left: 10px;" (click)="clearLoginBanner()">
-                    <mat-icon>clear</mat-icon>
-                    <span class="aligned-with-icon">Clear image</span>
-                </button>
-            </div>
-        </div>
-
-        <div class="image-upload-container">
-            <div class="image-placeholder">
-                <div *ngIf="!faviconUrl" class="company-logo-preview">
-                    <div class="image-icon">
-                        <mat-icon>insert_photo</mat-icon>
-                    </div>
-                    <div class="image-label">
-                        {{ imageLabel.favicon }} Preview
-                    </div>
-                </div>
-                <img *ngIf="faviconUrl" [src]="faviconUrl" alt="{{ imageLabel.favicon }} Preview" />
-            </div>
-            <div class="image-details">
-                <p class="image-title">Website favicon</p>
-                <p class="image-description">A favicon is a small website icon. It appears in the browser next to the page title, in the background bar, and in the tabs bar at 32x32 pixels, with a file size of 336KB or less.</p>
-                <button mat-raised-button color="primary" class="upload-btn" (click)="fileInputFavicon.click()">
-                    <span class='material-icons-outlined'>file_upload</span>
-                    <span class="aligned-with-icon">Upload favicon</span>
-                </button>
-                <input type="file" id="faviconInput" #fileInputFavicon (change)="handleFaviconInput($any($event.target).files)" accept="image/*" style="display:none;">
-                <button *ngIf="faviconUrl" mat-icon-button color="warn" aria-label="Clear" style="margin-left: 10px;" (click)="clearFavicon()">
-                    <mat-icon>clear</mat-icon>
-                    <span class="aligned-with-icon">Clear image</span>
-                </button>
-            </div>
-        </div>
+<div class="container">
+    <ng-container [ngTemplateOutlet]="header"></ng-container>
+    <ng-container *ngIf="!loading">
+        <ng-container [ngTemplateOutlet]="container"></ng-container>
+    </ng-container>
+    <div *ngIf="loading" class="loading">
+        <div class="preloader-image preloader-image-l-size"></div>
     </div>
 </div>
+<ng-container [ngTemplateOutlet]="actionsContainer"></ng-container>
 
-<div class="page-btns">
-    <button mat-raised-button color="primary" id="save-btn" [disabled]="!isSaveEnabled()" (click)="onSave()">Save Branding</button>
-    <button mat-raised-button color="primary" id="cancel-btn" (click)="onCancel()">Cancel</button>
-</div>
+<ng-template #header>
+    <div class="header">
+        <h1>Application Branding</h1>
+    </div>
+</ng-template>
 
-<div *ngIf="loading" class="loading">
-    <mat-spinner></mat-spinner>
-</div>
+<ng-template #container>
+    <div class="branding-container">
+        <div class="card">
+            <h4>Name and colors</h4>
+            <div class="p-field">
+                <label class="p-field-label" for="companyName">Company Name</label>
+                <input (input)="updateCompanyName(companyNameControl)" [formControl]="companyNameControl" class="p-field-input"
+                       id="companyName" placeholder="Enter text" type="text"/>
+                <small *ngIf="primaryHexColorControl.invalid" class="p-error">Company name is invalid</small>
+            </div>
+            <div class="tooltip">
+                This name will be displayed on the header across the application. A maximum is set for 11 characters. On
+                a mobile screen only this name will appear; it will not be accompanied with the company logo.
+            </div>
+            <div class="color-picker-item">
+                <div class="p-field">
+                    <label class="p-field-label" for="headerColor">First Menu Color</label>
+                    <input [formControl]="headerColorControl" [value]="headerColorControl.value" class="p-field-input"
+                           id="headerColor" placeholder="Enter text"
+                           type="text"/>
+                    <small *ngIf="headerColorControl.invalid" class="p-error">Color is invalid</small>
+                </div>
+                <p-colorPicker [formControl]="headerColorControl" [format]="'hex'"
+                               class="margin-top-20"></p-colorPicker>
+            </div>
+            <div class="tooltip">
+                Choose a color for the side menu background. This color will be applied
+                as first component of gradient.
+            </div>
+            <div class="color-picker-item">
+                <div class="p-field">
+                    <label class="p-field-label" for="headerColor1">Second Menu Color</label>
+                    <input [formControl]="headerColor1Control" [value]="headerColor1Control.value" class="p-field-input"
+                           id="headerColor1" placeholder="Enter text"
+                           type="text"/>
+                    <small *ngIf="headerColor1Control.invalid" class="p-error">Color is invalid</small>
+                </div>
+                <p-colorPicker [formControl]="headerColor1Control" [format]="'hex'"
+                               class="margin-top-20"></p-colorPicker>
+            </div>
+            <div class="tooltip">
+                Choose a color for the side menu background. This color will be applied
+                as second component of gradient.
+            </div>
+            <div class="color-picker-item">
+                <div class="p-field">
+                    <label class="p-field-label" for="primaryColor">Primary color</label>
+                    <input [formControl]="primaryColorControl" [value]="primaryColorControl.value" class="p-field-input"
+                           id="primaryColor" placeholder="Enter text"
+                           type="text"/>
+                    <small *ngIf="primaryColorControl.invalid" class="p-error">Color is invalid</small>
+                </div>
+                <p-colorPicker [formControl]="primaryColorControl" class="margin-top-20"></p-colorPicker>
+            </div>
+            <div class="tooltip">
+                Choose a color for the CTA buttons
+            </div>
+            <ng-container [ngTemplateOutlet]="companyLogo"></ng-container>
+
+        </div>
+        <div class="card">
+            <h4>Login Background</h4>
+            <ng-container [ngTemplateOutlet]="backgroundInfo"></ng-container>
+        </div>
+    </div>
+
+
+    <ng-template #companyLogo>
+        <div class="image-selector">
+            <h4>Company Logo</h4>
+            <div class="image-selector-container">
+                <div class="image-container">
+                    <img [src]="companyLogoUrl ? companyLogoUrl : 'assets/images/icons/no-image.svg'"/>
+                </div>
+                <div class="description">
+                    <p>The logo will be displayed on the side of the name of the application (Guardian by default) and
+                        throughout the application.</p>
+                    <p class="grey">It is recommended to select a small, square image with a minimum size of 128x128
+                        pixels, and the image file should not exceed 336 KB. This logo will not be displayed on
+                        mobile.</p>
+                    <div class="flex flex-column-gap-8">
+                        <button (click)="logoInputFile.click()" class="button height-28" pButton>
+                            <svg fill="none" height="16" viewBox="0 0 16 16" width="16"
+                                 xmlns="http://www.w3.org/2000/svg">
+                                <path clip-rule="evenodd" d="M7.33338 10C7.33338 10.3682 7.63186 10.6667 8.00005 10.6667C8.36824 10.6667 8.66672 10.3682 8.66672 10L8.66672 4.27612L10.1954 5.80477C10.4557 6.06512 10.8778 6.06512 11.1382 5.80477C11.3985 5.54442 11.3985 5.12231 11.1382 4.86196L8.47151 2.19529L8.4715 2.1953C8.35085 2.07464 8.18417 2 8.00005 2C7.81593 2 7.64925 2.07464 7.5286 2.1953L7.52859 2.19529L4.86193 4.86196C4.60158 5.12231 4.60158 5.54442 4.86193 5.80477C5.12228 6.06512 5.54439 6.06512 5.80474 5.80477L7.33338 4.27612L7.33338 10ZM3.33333 9.66667C3.33333 9.29848 3.03486 9 2.66667 9C2.29848 9 2 9.29848 2 9.66667V12C2 13.1046 2.89543 14 4 14H12C13.1046 14 14 13.1046 14 12V9.66667C14 9.29848 13.7015 9 13.3333 9C12.9651 9 12.6667 9.29848 12.6667 9.66667V12C12.6667 12.3682 12.3682 12.6667 12 12.6667H4C3.63181 12.6667 3.33333 12.3682 3.33333 12V9.66667Z"
+                                      fill="white"
+                                      fill-rule="evenodd"/>
+                            </svg>
+                            <span style="margin-left: 8px">Upload</span>
+                        </button>
+                        <input #logoInputFile (change)="handleCompanyLogoInput($any($event.target).files)"
+                               accept="image/*" style="display:none;"
+                               type="file">
+                        <button (click)="clearCompanyLogo()" class="button secondary height-28" pButton>
+                            <svg fill="none" height="16" viewBox="0 0 16 16" width="16"
+                                 xmlns="http://www.w3.org/2000/svg">
+                                <mask height="16" id="mask0_1598_2998" maskUnits="userSpaceOnUse" style="mask-type:luminance"
+                                      width="16" x="0" y="0">
+                                    <path d="M16 0H0V16H16V0Z" fill="white"/>
+                                </mask>
+                                <g mask="url(#mask0_1598_2998)">
+                                    <path class="primary-color" clip-rule="evenodd" d="M3.52858 3.52876C3.78893 3.26841 4.21104 3.26841 4.47139 3.52876L7.99998 7.05737L11.5286 3.52876C11.7889 3.26841 12.211 3.26841 12.4714 3.52876C12.7317 3.78911 12.7317 4.21122 12.4714 4.47157L8.94279 8.00018L12.4714 11.5288C12.7317 11.7891 12.7317 12.2113 12.4714 12.4716C12.211 12.7319 11.7889 12.7319 11.5286 12.4716L7.99998 8.94299L4.47139 12.4716C4.21104 12.7319 3.78893 12.7319 3.52858 12.4716C3.26823 12.2113 3.26823 11.7891 3.52857 11.5288L7.05717 8.00018L3.52857 4.47157C3.26823 4.21122 3.26823 3.78911 3.52858 3.52876Z"
+                                          fill-rule="evenodd"
+                                    />
+                                </g>
+                            </svg>
+                            <span style="margin-left: 8px">Clear image</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </ng-template>
+
+    <ng-template #backgroundInfo>
+        <div class="image-selector">
+            <div class="image-selector-container"
+                 style="display: flex; align-items: flex-start; justify-content: flex-start; column-gap: 16px;">
+                <div class="image-container"
+                     style="width: 120px; height: 120px; border-radius: 8px; border: 1px solid var(--color-grey-3, #E1E7EF); background: var(--color-grey-3, #E1E7EF);">
+                    <img [src]="loginBannerUrl ? loginBannerUrl : 'assets/images/icons/no-image.svg'"
+                         style="width: 120px; height: 120px;"/>
+                </div>
+                <div class="description">
+                    <p>On the login page, the image will be displayed as a background on the left side.</p>
+                    <p class="grey">It is recommended to choose an image with a horizontal orientation, with a minimum
+                        size of 1280x800 pixels, and the image file should not exceed 1 MB.</p>
+                    <button (click)="backgroundInputFile.click()" class="button height-28" pButton>
+                        <svg fill="none" height="16" viewBox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg">
+                            <path clip-rule="evenodd" d="M7.33338 10C7.33338 10.3682 7.63186 10.6667 8.00005 10.6667C8.36824 10.6667 8.66672 10.3682 8.66672 10L8.66672 4.27612L10.1954 5.80477C10.4557 6.06512 10.8778 6.06512 11.1382 5.80477C11.3985 5.54442 11.3985 5.12231 11.1382 4.86196L8.47151 2.19529L8.4715 2.1953C8.35085 2.07464 8.18417 2 8.00005 2C7.81593 2 7.64925 2.07464 7.5286 2.1953L7.52859 2.19529L4.86193 4.86196C4.60158 5.12231 4.60158 5.54442 4.86193 5.80477C5.12228 6.06512 5.54439 6.06512 5.80474 5.80477L7.33338 4.27612L7.33338 10ZM3.33333 9.66667C3.33333 9.29848 3.03486 9 2.66667 9C2.29848 9 2 9.29848 2 9.66667V12C2 13.1046 2.89543 14 4 14H12C13.1046 14 14 13.1046 14 12V9.66667C14 9.29848 13.7015 9 13.3333 9C12.9651 9 12.6667 9.29848 12.6667 9.66667V12C12.6667 12.3682 12.3682 12.6667 12 12.6667H4C3.63181 12.6667 3.33333 12.3682 3.33333 12V9.66667Z"
+                                  fill="white"
+                                  fill-rule="evenodd"/>
+                        </svg>
+                        <span style="margin-left: 8px">Upload</span>
+                        <input #backgroundInputFile (change)="handleLoginBannerInput($any($event.target).files)"
+                               accept="image/*" style="display:none;"
+                               type="file">
+                    </button>
+                    <button (click)="clearLoginBanner()" class="button secondary height-28" pButton
+                            style="margin-left: 8px;">
+                        <svg fill="none" height="16" viewBox="0 0 16 16" width="16"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <mask height="16" id="mask0_1598_2998" maskUnits="userSpaceOnUse" style="mask-type:luminance"
+                                  width="16" x="0" y="0">
+                                <path d="M16 0H0V16H16V0Z" fill="white"/>
+                            </mask>
+                            <g mask="url(#mask0_1598_2998)">
+                                <path class="primary-color" clip-rule="evenodd" d="M3.52858 3.52876C3.78893 3.26841 4.21104 3.26841 4.47139 3.52876L7.99998 7.05737L11.5286 3.52876C11.7889 3.26841 12.211 3.26841 12.4714 3.52876C12.7317 3.78911 12.7317 4.21122 12.4714 4.47157L8.94279 8.00018L12.4714 11.5288C12.7317 11.7891 12.7317 12.2113 12.4714 12.4716C12.211 12.7319 11.7889 12.7319 11.5286 12.4716L7.99998 8.94299L4.47139 12.4716C4.21104 12.7319 3.78893 12.7319 3.52858 12.4716C3.26823 12.2113 3.26823 11.7891 3.52857 11.5288L7.05717 8.00018L3.52857 4.47157C3.26823 4.21122 3.26823 3.78911 3.52858 3.52876Z"
+                                      fill-rule="evenodd"
+                                />
+                            </g>
+                        </svg>
+                        <span style="margin-left: 8px">Clear image</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </ng-template>
+</ng-template>
+
+<ng-template #actionsContainer>
+    <div class="actions-container" id="fixed-actions-container">
+        <div class="left-buttons">
+            <button (click)="initResetDialog = true" class="button secondary" pButton>
+                <svg fill="none" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                    <path class="primary-color" clip-rule="evenodd"
+                          d="M4.4 3C4.89706 3 5.3 3.40294 5.3 3.9V6.37501L6.49977 5.29188C8.09144 3.8673 10.1955 3 12.5 3C17.4706 3 21.5 7.02944 21.5 12C21.5 16.9706 17.4706 21 12.5 21C8.2157 21 4.63251 18.0073 3.72303 13.9992C3.61304 13.5144 3.91683 13.0323 4.40156 12.9223C4.8863 12.8123 5.36842 13.1161 5.47841 13.6008C6.20594 16.8071 9.0746 19.2 12.5 19.2C16.4765 19.2 19.7 15.9765 19.7 12C19.7 8.02355 16.4765 4.8 12.5 4.8C10.6561 4.8 8.97589 5.49199 7.70165 6.63186L6.74001 7.5H8.9C9.39706 7.5 9.8 7.90294 9.8 8.4C9.8 8.89706 9.39706 9.3 8.9 9.3H4.4C3.90294 9.3 3.5 8.89706 3.5 8.4V3.9C3.5 3.40294 3.90294 3 4.4 3Z"
+                          fill-rule="evenodd"/>
+                </svg>
+                <span style="margin-left: 8px">Reset</span>
+            </button>
+        </div>
+        <div class="right-buttons">
+            <button (click)="onPreview()" [disabled]="!isSaveEnabled()" class="button secondary" pButton>
+                <svg fill="none" height="16" viewBox="0 0 20 16" width="20" xmlns="http://www.w3.org/2000/svg">
+                    <path class="primary-color" clip-rule="evenodd"
+                          d="M10 4.25C9.00544 4.25 8.05161 4.64509 7.34835 5.34835C6.64509 6.05161 6.25 7.00544 6.25 8C6.25 8.99456 6.64509 9.94839 7.34835 10.6517C8.05161 11.3549 9.00544 11.75 10 11.75C10.9946 11.75 11.9484 11.3549 12.6517 10.6517C13.3549 9.94839 13.75 8.99456 13.75 8C13.75 7.00544 13.3549 6.05161 12.6517 5.34835C11.9484 4.64509 10.9946 4.25 10 4.25ZM8.125 8C8.125 7.50272 8.32254 7.02581 8.67417 6.67417C9.02581 6.32254 9.50272 6.125 10 6.125C10.4973 6.125 10.9742 6.32254 11.3258 6.67417C11.6775 7.02581 11.875 7.50272 11.875 8C11.875 8.49728 11.6775 8.97419 11.3258 9.32583C10.9742 9.67746 10.4973 9.875 10 9.875C9.50272 9.875 9.02581 9.67746 8.67417 9.32583C8.32254 8.97419 8.125 8.49728 8.125 8Z"
+                          fill-rule="evenodd"/>
+                    <path class="primary-color" clip-rule="evenodd"
+                          d="M10 0.5C6.7775 0.5 4.2875 2.15 2.64 3.8125C1.9211 4.53685 1.28548 5.33934 0.745 6.205C0.52875 6.555 0.3575 6.875 0.23625 7.1425C0.178279 7.26874 0.127367 7.39811 0.08375 7.53C0.05 7.63125 0 7.8075 0 8C0 8.1925 0.05125 8.37 0.08375 8.46875C0.127367 8.60064 0.178279 8.73001 0.23625 8.85625C0.3575 9.125 0.52875 9.445 0.745 9.795C1.1775 10.495 1.8125 11.3525 2.64 12.1875C4.2875 13.85 6.7775 15.5 10 15.5C13.2225 15.5 15.7125 13.85 17.36 12.1875C18.0789 11.4631 18.7145 10.6606 19.255 9.795C19.4713 9.445 19.6425 9.125 19.7638 8.8575C19.8237 8.72375 19.8762 8.5925 19.9163 8.47C19.9487 8.37 20 8.19375 20 8C20 7.80625 19.9487 7.63 19.9163 7.53125C19.8727 7.39934 19.8218 7.26997 19.7638 7.14375C19.6141 6.82045 19.4442 6.50691 19.255 6.205C18.7145 5.33936 18.0789 4.53687 17.36 3.8125C15.7125 2.15 13.2225 0.5 10 0.5ZM1.945 7.91625C1.93206 7.94397 1.91956 7.97189 1.9075 8L1.945 8.08375C2.02625 8.265 2.1575 8.51375 2.34 8.80875C2.80591 9.55357 3.35347 10.2441 3.9725 10.8675C5.415 12.3225 7.455 13.625 10 13.625C12.545 13.625 14.585 12.3225 16.0275 10.8675C16.6465 10.2445 17.194 9.55439 17.66 8.81C17.8222 8.55022 17.9663 8.27958 18.0912 8C17.9659 7.72038 17.8214 7.44974 17.6588 7.19C17.1931 6.44569 16.646 5.7556 16.0275 5.1325C14.585 3.6775 12.545 2.375 10 2.375C7.455 2.375 5.415 3.6775 3.9725 5.1325C3.35354 5.75552 2.80599 6.44561 2.34 7.19C2.19343 7.42325 2.06151 7.66663 1.945 7.91625Z"
+                          fill-rule="evenodd"/>
+                </svg>
+                <span style="margin-left: 8px">Preview</span>
+            </button>
+            <button (click)="onSave()" class="button" pButton>
+                <span>Save changes</span>
+            </button>
+        </div>
+    </div>
+</ng-template>
+
+<p-dialog [(visible)]="initResetDialog" [closable]="true" [draggable]="false" [modal]="true">
+    <ng-template pTemplate="header">
+        <span class="modal-header">Reset Branding Settings</span>
+    </ng-template>
+    <div class="" style="padding: 0 10px 0 10px;">
+        You are about to revert your custom branding to what was preconfigured when you first built Guardian.
+        <br>
+        Are you sure you want to proceed?
+    </div>
+    <ng-template pTemplate="footer">
+        <button (click)="reset(false)" class="button secondary" label="Cancel" pButton
+                type="button"></button>
+        <button (click)="reset(true)" [label]="'Reset'" class="button button-color-red" pButton
+                type="button"></button>
+    </ng-template>
+</p-dialog>

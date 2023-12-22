@@ -1,0 +1,29 @@
+::ng-deep .file-drop-zone-content {
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+::ng-deep .file-drop-zone {
+  border: 1px dashed #0681ee;
+  background: rgba(6, 129, 238, 0.08);
+  border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.attach-file-label {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  padding: 5px 16px;
+  border-radius: 8px;
+  border: 1px solid #e1e7ef;
+  background: #f9fafc;
+  color: #aab7c4;
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+}

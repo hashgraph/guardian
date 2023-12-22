@@ -1,6 +1,17 @@
-<ngx-file-drop [multiple]="multiple" dropZoneClassName="file-drop-zone" contentClassName="file-drop-zone-content"
-    (click)="importFromFile()" (onFileDrop)="droppedFile($event)">
-    <ng-template ngx-file-drop-content-tmp let-openFileSelector="openFileSelector">
-        {{dropZoneLabel}} <mat-icon> attach_file</mat-icon>
+<ngx-file-drop
+        (click)="importFromFile()"
+        (onFileDrop)="droppedFile($event)"
+        [multiple]="multiple"
+        contentClassName="file-drop-zone-content"
+        dropZoneClassName="file-drop-zone"
+>
+    <ng-template
+            let-openFileSelector="openFileSelector"
+            ngx-file-drop-content-tmp
+    >
+        <div class="attach-file-label">
+            <mat-icon> attach_file</mat-icon>
+            {{ dropZoneLabel }}
+        </div>
     </ng-template>
 </ngx-file-drop>

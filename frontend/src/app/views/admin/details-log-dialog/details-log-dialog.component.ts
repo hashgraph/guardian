@@ -1,6 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder, Validators } from '@angular/forms';
+import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 /**
  * Dialog for creating tokens.
@@ -8,7 +9,7 @@ import { FormBuilder, Validators } from '@angular/forms';
 @Component({
     selector: 'details-log-dialog',
     templateUrl: './details-log-dialog.component.html',
-    styleUrls: ['./details-log-dialog.component.css']
+    styleUrls: ['./details-log-dialog.component.scss']
 })
 export class DetailsLogDialog {
     dataForm = this.fb.group({
@@ -19,14 +20,13 @@ export class DetailsLogDialog {
     });
 
     constructor(
-        public dialogRef: MatDialogRef<DetailsLogDialog>,
-        private fb: FormBuilder,
-        @Inject(MAT_DIALOG_DATA) public data: any) {
+        public dialogRef: DynamicDialogRef, private dialogConfig: DynamicDialogConfig,
+        private fb: FormBuilder) {
             this.dataForm.patchValue({
-                type: data.type,
-                datetime: data.datetime,
-                message: data.message,
-                attributes: data.attributes && data.attributes.join('\r\n')
+                type: dialogConfig.data.type,
+                datetime: dialogConfig.data.datetime,
+                message: dialogConfig.data.message,
+                attributes: dialogConfig.data.attributes && dialogConfig.data.attributes.join('\r\n')
             });
     }
 

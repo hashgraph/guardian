@@ -9,7 +9,7 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
 @Component({
     selector: 'app-multi-sign-block',
     templateUrl: './multi-sign-block.component.html',
-    styleUrls: ['./multi-sign-block.component.css']
+    styleUrls: ['./multi-sign-block.component.scss'],
 })
 export class MultiSignBlockComponent implements OnInit {
     @Input('id') id!: string;
@@ -37,13 +37,15 @@ export class MultiSignBlockComponent implements OnInit {
     constructor(
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
-        private policyHelper: PolicyHelper,
+        private policyHelper: PolicyHelper
     ) {
     }
 
     ngOnInit(): void {
         if (!this.static) {
-            this.socket = this.wsService.blockSubscribe(this.onUpdate.bind(this));
+            this.socket = this.wsService.blockSubscribe(
+                this.onUpdate.bind(this)
+            );
         }
         this.loadData();
     }
@@ -69,13 +71,18 @@ export class MultiSignBlockComponent implements OnInit {
             }, 500);
         } else {
             this.loading = true;
-            this.policyEngineService.getBlockData(this.id, this.policyId).subscribe((data: any) => {
-                this.setData(data);
-                this.loading = false;
-            }, (e) => {
-                console.error(e.error);
-                this.loading = false;
-            });
+            this.policyEngineService
+                .getBlockData(this.id, this.policyId)
+                .subscribe(
+                    (data: any) => {
+                        this.setData(data);
+                        this.loading = false;
+                    },
+                    (e) => {
+                        console.error(e.error);
+                        this.loading = false;
+                    }
+                );
         }
     }
 
@@ -114,10 +121,10 @@ export class MultiSignBlockComponent implements OnInit {
         this.loading = true;
         const data = {
             document: {
-                id: this.data.id
+                id: this.data.id,
             },
-            status
-        }
+            status,
+        };
         this.policyEngineService
             .setBlockData(this.id, this.policyId, data)
             .subscribe(
@@ -130,11 +137,10 @@ export class MultiSignBlockComponent implements OnInit {
     }
 
     onDetails() {
-
     }
 
-    onClickMenu(event:any) {
-        if(event.stopPropagation) {
+    onClickMenu(event: any) {
+        if (event.stopPropagation) {
             event.stopPropagation();
         }
         return false;

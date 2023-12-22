@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { IToken, ITokenInfo, IUser } from '@guardian/interfaces';
 import { Observable } from 'rxjs';
@@ -37,6 +37,19 @@ export class TokenService {
             return this.http.get<ITokenInfo[]>(`${this.url}?policy=${policyId}`);
         }
         return this.http.get<ITokenInfo[]>(`${this.url}`);
+    }
+
+    public getTokensPage(policyId?: string, pageIndex?: number, pageSize?: number): Observable<HttpResponse<any[]>> {
+        if (policyId) {
+            if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
+                return this.http.get<ITokenInfo[]>(`${this.url}?policy=${policyId}&pageIndex=${pageIndex}&pageSize=${pageSize}`, {observe: 'response'});
+            }
+            return this.http.get<ITokenInfo[]>(`${this.url}?policy=${policyId}`, {observe: 'response'});
+        }
+        if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
+            return this.http.get<ITokenInfo[]>(`${this.url}?pageIndex=${pageIndex}&pageSize=${pageSize}`, {observe: 'response'});
+        }
+        return this.http.get<ITokenInfo[]>(`${this.url}`, {observe: 'response'});
     }
 
     public associate(tokenId: string, associate: boolean): Observable<void> {
@@ -83,9 +96,5 @@ export class TokenService {
 
     public info(tokenId: string, username: string): Observable<ITokenInfo> {
         return this.http.get<ITokenInfo>(`${this.url}/${tokenId}/${username}/info`);
-    }
-
-    public serials(tokenId: string): Observable<any> {
-        return this.http.get<any>(`${this.url}/${tokenId}/serials`);
     }
 }

@@ -7,6 +7,7 @@ import { SelectorDialogComponent } from '../../common/selector-dialog/selector-d
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmationDialogComponent } from '../../common/confirmation-dialog/confirmation-dialog.component';
 import { PolicyWizardDialogComponent } from '../helpers/policy-wizard-dialog/policy-wizard-dialog.component';
+import { DialogService } from 'primeng/dynamicdialog';
 
 export enum WizardMode {
     CREATE = 'CREATE',
@@ -20,7 +21,8 @@ export enum WizardMode {
 export class WizardService {
     private readonly url: string = `${API_BASE_URL}/wizard`;
 
-    constructor(private http: HttpClient, private dialog: MatDialog) {}
+    constructor(private http: HttpClient, private dialog: MatDialog, private dialogService: DialogService,) {
+    }
 
     public createPolicyAsync(
         config: any
@@ -107,11 +109,10 @@ export class WizardService {
         policy?: any,
         preset?: any
     ) {
-        const dialogRef = this.dialog.open(PolicyWizardDialogComponent, {
+        const dialogRef = this.dialogService.open(PolicyWizardDialogComponent, {
+            header: 'Policy Wizard',
+            styleClass: 'custom-dialog',
             width: '1100px',
-            panelClass: 'g-dialog',
-            disableClose: true,
-            autoFocus: false,
             data: {
                 policy,
                 policies,
@@ -121,14 +122,14 @@ export class WizardService {
             },
         });
         dialogRef
-            .afterClosed()
+            .onClose
             .subscribe(
                 (value: {
                     create: boolean;
                     config: IWizardConfig;
                     currentNode: any;
                 }) => {
-                    if (!value.create && mode === WizardMode.CREATE) {
+                    if (!value?.create && mode === WizardMode.CREATE) {
                         return;
                     }
                     this.openSaveWizardStateDialog(callback, value);

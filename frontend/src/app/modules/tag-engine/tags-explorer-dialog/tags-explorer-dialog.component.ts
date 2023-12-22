@@ -1,14 +1,13 @@
-import { Component, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Component } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
 import { TagCreateDialog } from '../tags-create-dialog/tags-create-dialog.component';
 import { TagsService } from 'src/app/services/tag.service';
-import { TagsHistory } from "../models/tags-history";
-import { TagMapItem } from "../models/tag-map-item";
-import { TagItem } from "../models/tag-item";
+import { TagsHistory } from '../models/tags-history';
+import { TagMapItem } from '../models/tag-map-item';
+import { TagItem } from '../models/tag-item';
 import * as moment from 'moment';
 import { VCViewerDialog } from '../../schema-engine/vc-dialog/vc-dialog.component';
+import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 /**
  * Dialog for creating tokens.
@@ -16,13 +15,13 @@ import { VCViewerDialog } from '../../schema-engine/vc-dialog/vc-dialog.componen
 @Component({
     selector: 'tags-explorer-dialog',
     templateUrl: './tags-explorer-dialog.component.html',
-    styleUrls: ['./tags-explorer-dialog.component.css']
+    styleUrls: ['./tags-explorer-dialog.component.scss']
 })
 export class TagsExplorerDialog {
     public loading = false;
     public started = false;
-    public title: string = "Tags";
-    public description: string = "";
+    public title: string = 'Tags';
+    public description: string = '';
     public select: TagMapItem | undefined;
     public open: TagItem | undefined;
     public history: TagsHistory;
@@ -32,20 +31,31 @@ export class TagsExplorerDialog {
     public tagsService: TagsService;
     public schemas: any[] = [];
     public hasChanges: boolean = false;
+    public selectedTags: TagMapItem[] = [];
 
     constructor(
-        public dialogRef: MatDialogRef<TagsExplorerDialog>,
-        public dialog: MatDialog,
+        public dialogRef: DynamicDialogRef,
+        public dialog: DialogService,
         private fb: FormBuilder,
-        @Inject(MAT_DIALOG_DATA) public data: any
+        public dialogData: DynamicDialogConfig
     ) {
-        this.schemas = data?.schemas;
-        this.tagsService = data.service;
-        this.history = data.history;
+        this.schemas = dialogData.data?.schemas;
+        this.tagsService = dialogData.data.service;
+        this.history = dialogData.data.history;
+        this.selectedTags = this.history.items;
+
         this.owner = this.history.owner;
         this.select = this.history.getItem();
         this.setTime(this.history.time);
         this.tab = 1;
+
+        if (!this.select) {
+            this.select = this.history.getHistory();
+        }
+        if (!this.selectedTags || this.selectedTags.length === 0) {
+            this.selectedTags = this.history.history;
+            this.tab = 2;
+        }
     }
 
     ngOnInit() {
@@ -70,14 +80,14 @@ export class TagsExplorerDialog {
 
     public onAdd() {
         const dialogRef = this.dialog.open(TagCreateDialog, {
-            width: '850px',
-            panelClass: 'g-dialog',
-            disableClose: true,
+            width: '570px',
+            closable: true,
+            header: this.title,
             data: {
                 schemas: this.schemas
             }
         });
-        dialogRef.afterClosed().subscribe(async (result) => {
+        dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 this.create(result);
             }
@@ -94,9 +104,11 @@ export class TagsExplorerDialog {
             } else {
                 this.select = this.history.getHistory(this.select);
             }
+            this.history.updateItems();
             setTimeout(() => {
                 this.loading = false;
                 this.hasChanges = true;
+                this.openTab(this.tab);
             }, 500);
         }, (e) => {
             console.error(e.error);
@@ -105,7 +117,7 @@ export class TagsExplorerDialog {
         });
     }
 
-    public onDelete(item: TagItem) {
+    public onDelete($event: MouseEvent, item: TagItem) {
         this.loading = true;
         this.tagsService.delete(item.uuid).subscribe((data) => {
             this.history.delete(item);
@@ -117,6 +129,7 @@ export class TagsExplorerDialog {
             setTimeout(() => {
                 this.loading = false;
                 this.hasChanges = true;
+                this.openTab(this.tab);
             }, 500);
         }, (e) => {
             console.error(e.error);
@@ -149,8 +162,10 @@ export class TagsExplorerDialog {
         this.tab = tab;
         if (this.tab === 1) {
             this.select = this.history.getItem();
+            this.selectedTags = this.history.items;
         } else {
             this.select = this.history.getHistory();
+            this.selectedTags = this.history.history;
         }
     }
 
@@ -173,8 +188,8 @@ export class TagsExplorerDialog {
 
     public openVCDocument(item: any, title: string) {
         const dialogRef = this.dialog.open(VCViewerDialog, {
-            width: '850px',
-            panelClass: 'g-dialog',
+            width: '570px',
+            header: title,
             data: {
                 id: item.id,
                 dryRun: !!item.dryRunId,
@@ -184,9 +199,9 @@ export class TagsExplorerDialog {
                 viewDocument: false,
                 toggle: false
             },
-            disableClose: true,
+            closable: true,
         });
-        dialogRef.afterClosed().subscribe(async (result) => {
+        dialogRef.onClose.subscribe(async (result) => {
         });
     }
 }

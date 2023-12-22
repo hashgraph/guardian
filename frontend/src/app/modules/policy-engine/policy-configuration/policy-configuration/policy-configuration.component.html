@@ -1,22 +1,18 @@
 <div class="content">
-    <div *ngIf="loading" class="loading">
-        <mat-spinner></mat-spinner>
-    </div>
-
     <div *ngIf="!isModuleValid" class="not-exist">
         Component doesn't exist
     </div>
 
     <policy-settings *ngIf="openSettings" (update)="onChangeSettings($event)"></policy-settings>
-    <search-blocks 
-        *ngIf="blockSearchData" 
-        class="policy-configuration" 
-        [value]="blockSearchData" 
-        (action)="onSearchAction($event)"></search-blocks>
 
     <div *ngIf="isModuleValid" class="policy-configuration" [attr.readonly]="readonly">
         <div class="top-toolbar">
             <ng-container *ngIf="rootType === 'Policy'">
+                <div (click)="backToPolicies()" class="top-toolbar-btn all-status" title="Back">
+                    <mat-icon>reply</mat-icon>
+                    <span>Back</span>
+                </div>
+
                 <div class="top-toolbar-btn readonly-status" (click)="savePolicy()" title="Save Policy">
                     <mat-icon>save</mat-icon>
                     <span>Save</span>
@@ -42,10 +38,10 @@
                     </div>
                 </div>
 
-                <div *ngIf="policyTemplate.isDryRun" class="top-toolbar-group all-status" style="width: 60px"
+                <div *ngIf="policyTemplate.isDryRun" class="top-toolbar-group all-status" style="width: 80px"
                     [matMenuTriggerFor]="dryRunMenu">
                     <mat-icon class="dry-run-color">build</mat-icon>
-                    <span class="dry-run-color">
+                    <span class="dry-run-color font-size-xs">
                         In Dry Run
                     </span>
                     <div class="expand-group">
@@ -77,6 +73,11 @@
             </ng-container>
 
             <ng-container *ngIf="rootType === 'Module'">
+                <div (click)="backToModules()" class="top-toolbar-btn all-status" title="Back">
+                    <mat-icon>reply</mat-icon>
+                    <span>Back</span>
+                </div>
+
                 <div class="top-toolbar-btn readonly-status" (click)="updateModule()" title="Save Module">
                     <mat-icon>save</mat-icon>
                     <span>Save</span>
@@ -114,6 +115,11 @@
             </ng-container>
 
             <ng-container *ngIf="rootType === 'Tool'">
+                <div (click)="backToTools()" class="top-toolbar-btn all-status" title="Back">
+                    <mat-icon>reply</mat-icon>
+                    <span>Back</span>
+                </div>
+
                 <div class="top-toolbar-btn readonly-status" (click)="updateTool()" title="Save Tool">
                     <mat-icon>save</mat-icon>
                     <span>Save</span>
@@ -218,7 +224,7 @@
             </ng-container>
 
 
-            <div class="top-toolbar-group all-status event-color" [matMenuTriggerFor]="viewMenu" style="width: 60px">
+            <div [matMenuTriggerFor]="viewMenu" class="top-toolbar-group all-status event-color" style="width: 80px">
                 <mat-icon *ngIf="currentView == 'blocks'">view_agenda</mat-icon>
                 <mat-icon *ngIf="currentView == 'json'">code</mat-icon>
                 <mat-icon *ngIf="currentView == 'yaml'">segment</mat-icon>
@@ -233,17 +239,8 @@
             <div class="delimiter"></div>
 
             <ng-container *ngIf="isTree">
-                <div class="top-toolbar-btn all-status" (click)="onSchemas()" title="Settings">
-                    <mat-icon>dataset</mat-icon>
-                    <span>Schemas</span>
-                </div>
-
-                <div class="delimiter"></div>
-            </ng-container>
-
-            <ng-container *ngIf="isTree">
                 <div class="top-toolbar-group all-status event-color" [matMenuTriggerFor]="eventMenu"
-                    style="width: 60px">
+                     style="width: 80px">
                     <mat-icon *ngIf="eventVisible =='All'" class="event-color">flash_on</mat-icon>
                     <mat-icon *ngIf="eventVisible =='Action'" class="event-color">
                         <div class="action-event-icon"></div>
@@ -265,7 +262,7 @@
             </ng-container>
 
 
-            <div class="top-toolbar-group all-status event-color" [matMenuTriggerFor]="themesMenu" style="width: 60px">
+            <div [matMenuTriggerFor]="themesMenu" class="top-toolbar-group all-status event-color" style="width: 80px">
                 <mat-icon>palette</mat-icon>
                 <span>Themes</span>
                 <div class="expand-group">
@@ -299,22 +296,22 @@
                         </div>
                     </div>
 
-                    <div class="pc-tabs-content components-menu" 
-                        cdkDropList 
+                    <div [cdkDropListConnectedTo]="[dropListConnector.body]"
+                         [cdkDropListEnterPredicate]="noReturnPredicate"
                         #menuList="cdkDropList"
-                        [cdkDropListConnectedTo]="[dropListConnector.body]" 
+                         cdkDropList
                         cdkDropListSortingDisabled
-                        [cdkDropListEnterPredicate]="noReturnPredicate" 
+                         class="pc-tabs-content components-menu"
                         (cdkDropListDropped)="drop($event)">
 
                         <div class="components-container" [hidden]="!options.components">
-                            
+
                             <div class="components-search">
                                 <input placeholder="Search" [(ngModel)]="search" (input)="onSearch($event)">
                                 <mat-icon class="components-search-icon">search</mat-icon>
                             </div>
-                            <div 
-                                *ngIf="componentsList.favorites.length" 
+                            <div
+                                    *ngIf="componentsList.favorites.length"
                                 class="components-group"
                                 [attr.readonly]="disableComponentMenu"
                                 [attr.collapsed]="options.favoritesGroup">
@@ -448,11 +445,8 @@
                                 <input placeholder="Search" [(ngModel)]="searchModule" (input)="onModuleSearch($event)">
                                 <mat-icon class="components-search-icon">search</mat-icon>
                             </div>
-                            <div 
-                                *ngIf="modulesList.favorites.length" 
-                                class="components-group"
-                                [attr.collapsed]="options.favoritesModulesGroup" 
-                                [attr.readonly]="disableModuleMenu">
+                            <div *ngIf="modulesList.favorites.length" [attr.collapsed]="options.favoritesModulesGroup"
+                                 [attr.readonly]="disableModuleMenu" class="components-group">
                                 <div class="components-group-name" (click)="collapse('favoritesModulesGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
@@ -487,9 +481,8 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="components-group" 
-                                [attr.collapsed]="options.defaultModulesGroup" 
-                                [attr.readonly]="disableModuleMenu">
+                            <div [attr.collapsed]="options.defaultModulesGroup" [attr.readonly]="disableModuleMenu"
+                                 class="components-group">
                                 <div class="components-group-name" (click)="collapse('defaultModulesGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
@@ -600,29 +593,29 @@
 
                 <div class="pc-tabs minimized-tabs">
                     <div class="pc-tabs-headers right-menu">
-                        <div 
-                            *ngIf="rootType ==='Policy'" 
+                        <div
+                                *ngIf="rootType ==='Policy'"
                             class="tab-header tab-header-icon"
-                            [attr.selected]="openFolder===policyTemplate" 
+                                [attr.selected]="openFolder===policyTemplate"
                             (click)="onOpenRoot(policyTemplate)"
                             style="width: 100px;margin-right: 6px">
                             <mat-icon class="action-color">article</mat-icon>
                             Policy
                         </div>
-                        <div 
-                            *ngIf="rootType ==='Module'" 
-                            class="tab-header tab-header-icon" 
+                        <div
+                                (click)="onOpenRoot(moduleTemplate)"
+                                *ngIf="rootType ==='Module'"
                             [attr.selected]="true"
-                            (click)="onOpenRoot(moduleTemplate)" 
+                                class="tab-header tab-header-icon"
                             style="width: 100px;margin-right: 6px">
                             <mat-icon class="module-root-icon action-color" svgIcon="policy-module"></mat-icon>
                             Module
                         </div>
-                        <div 
-                            *ngIf="rootType ==='Tool'" 
-                            class="tab-header tab-header-icon" 
+                        <div
+                                (click)="onOpenRoot(toolTemplate)"
+                                *ngIf="rootType ==='Tool'"
                             [attr.selected]="true"
-                            (click)="onOpenRoot(toolTemplate)" 
+                                class="tab-header tab-header-icon"
                             style="width: 100px;margin-right: 6px">
                             <mat-icon class="module-root-icon action-color tool-icon">handyman</mat-icon>
                             Tool
@@ -671,25 +664,24 @@
                             <ngx-codemirror [(ngModel)]="code" [options]="codeMirrorOptions" (ngModelChange)="saveState()">
                             </ngx-codemirror>
                         </div>
-                        <policy-tree 
-                            *ngIf="isTree" 
-                            [module]="openFolder" 
-                            [blocks]="openFolder.dataSource" 
+                        <policy-tree
+                                (delete)="onDelete($event)"
+                                (nested)="addSuggestionsBlock($event, true)"
+                                (open)="onOpenModule($event)"
                             [errors]="errorsMap"
-                            [readonly]="readonly" 
-                            [active]="eventVisible" 
-                            [connector]="dropListConnector" 
+                                (reorder)="onReorder($event)"
+                                *ngIf="isTree"
+                                [active]="eventVisible"
                             [suggestions]="isSuggestionsEnabled"
-                            [nextBlock]="nextBlock" 
-                            [nestedBlock]="nestedBlock" 
+                                [blocks]="openFolder.dataSource"
+                                [connector]="dropListConnector"
                             [(currentBlock)]="currentBlock"
-                            (search)="onBlockSearch($event)"
-                            (nested)="addSuggestionsBlock($event, true)" 
+                                [module]="openFolder"
                             (next)="addSuggestionsBlock($event)"
-                            (open)="onOpenModule($event)" 
-                            (delete)="onDelete($event)" 
+                                [nestedBlock]="nestedBlock"
+                                [nextBlock]="nextBlock"
                             (select)="onSelect($event)"
-                            (reorder)="onReorder($event)" 
+                                [readonly]="readonly"
                             (init)="onInitViewer($event)">
                         </policy-tree>
                     </div>
@@ -707,16 +699,23 @@
                                 (click)="select('description')">
                                 Description
                             </div>
-                            <div class="tab-header" [attr.selected]="options.roles" (click)="select('roles')">
+                            <div (click)="select('roles')" [attr.selected]="options.roles" class="tab-header"
+                                 style="max-width: 50px;">
                                 Roles
                             </div>
-                            <div class="tab-header" [attr.selected]="options.groups" (click)="select('groups')">
+                            <div (click)="select('navigation')" [attr.selected]="options.navigation" class="tab-header">
+                                Navigation
+                            </div>
+                            <div (click)="select('groups')" [attr.selected]="options.groups" class="tab-header"
+                                 style="max-width: 65px;">
                                 Groups
                             </div>
-                            <div class="tab-header" [attr.selected]="options.topics" (click)="select('topics')">
+                            <div (click)="select('topics')" [attr.selected]="options.topics" class="tab-header"
+                                 style="max-width: 65px;">
                                 Topics
                             </div>
-                            <div class="tab-header" [attr.selected]="options.tokens" (click)="select('tokens')">
+                            <div (click)="select('tokens')" [attr.selected]="options.tokens" class="tab-header"
+                                 style="max-width: 65px;">
                                 Tokens
                             </div>
                             <div class="tabs-icon" [attr.collapsed]="options.rightTopMenu"
@@ -727,38 +726,47 @@
                         </div>
                         <div class="pc-tabs-content" [attr.readonly]="!isTree">
                             <div class="prop-container" [hidden]="!options.description">
-                                <policy-properties 
+                                <policy-properties
                                     class="readonly-status"
-                                    type="Main" 
-                                    [policy]="policyTemplate" 
+                                    [allCategories]="allCategories"
+                                    [policyCategories]="policyCategoriesMapped"
+                                    [policy]="policyTemplate"
+                                    type="Main"
                                     [readonly]="readonly"></policy-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.roles">
-                                <policy-properties 
+                                <policy-properties
                                     class="readonly-status"
-                                    type="Role" 
-                                    [policy]="policyTemplate" 
+                                    [policy]="policyTemplate"
+                                    type="Role"
                                     [readonly]="readonly"></policy-properties>
                             </div>
+                            <div [hidden]="!options.navigation" class="prop-container">
+                                <policy-properties
+                                        [policy]="policyTemplate"
+                                        [readonly]="readonly"
+                                        class="readonly-status"
+                                        type="Navigation"></policy-properties>
+                            </div>
                             <div class="prop-container" [hidden]="!options.groups">
-                                <policy-properties 
-                                    class="readonly-status" 
+                                <policy-properties
+                                        [policy]="policyTemplate"
                                     type="Groups"
-                                    [policy]="policyTemplate" 
+                                        class="readonly-status"
                                     [readonly]="readonly"></policy-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.topics">
-                                <policy-properties 
+                                <policy-properties
                                     class="readonly-status"
-                                    type="Topics" 
-                                    [policy]="policyTemplate" 
+                                    [policy]="policyTemplate"
+                                    type="Topics"
                                     [readonly]="readonly"></policy-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.tokens">
-                                <policy-properties 
+                                <policy-properties
                                     class="readonly-status"
-                                    type="Tokens" 
-                                    [policy]="policyTemplate" 
+                                    [policy]="policyTemplate"
+                                    type="Tokens"
                                     [readonly]="readonly"></policy-properties>
                             </div>
                         </div>
@@ -790,30 +798,30 @@
                         </div>
                         <div class="pc-tabs-content" [attr.readonly]="!isTree">
                             <div class="prop-container" [hidden]="!options.descriptionModule">
-                                <module-properties class="readonly-status" 
+                                <module-properties [module]="openFolder"
                                     type="Main"
-                                    [module]="openFolder" 
+                                                   class="readonly-status"
                                     [readonly]="readonly"
                                     [errors]="errorsMap[openFolder.id]"></module-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.inputsModule">
-                                <module-properties class="readonly-status" 
-                                    type="Inputs" 
-                                    [module]="openFolder" 
+                                <module-properties [module]="openFolder"
+                                                   class="readonly-status"
+                                                   type="Inputs"
                                     [readonly]="readonly"
                                     [errors]="errorsMap[openFolder.id]"></module-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.outputsModule">
-                                <module-properties class="readonly-status" 
+                                <module-properties [module]="openFolder"
                                     type="Outputs"
-                                    [module]="openFolder" 
+                                                   class="readonly-status"
                                     [readonly]="readonly"
                                     [errors]="errorsMap[openFolder.id]"></module-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.variablesModule">
-                                <module-properties class="readonly-status" 
-                                    type="Variables" 
-                                    [module]="openFolder" 
+                                <module-properties [module]="openFolder"
+                                                   class="readonly-status"
+                                                   type="Variables"
                                     [readonly]="readonly"
                                     [errors]="errorsMap[openFolder.id]"></module-properties>
                             </div>
@@ -821,9 +829,9 @@
                     </div>
                 </div>
 
-                <div class="right-bottom-toolbar" 
+                <div [attr.collapse-top]="options.rightTopMenu"
                     *ngIf="currentBlock && !isRootModule"
-                    [attr.collapse-top]="options.rightTopMenu" 
+                     class="right-bottom-toolbar"
                     [attr.collapse-bottom]="options.rightBottomMenu">
 
                     <div class="pc-tabs">
@@ -853,28 +861,28 @@
                                         <span>{{item}}</span>
                                     </div>
                                 </div>
-                                <common-properties class="readonly-status" 
-                                    [module]="openFolder" 
+                                <common-properties [module]="openFolder"
+                                                   [readonly]="readonly"
                                     [block]="currentBlock"
-                                    [readonly]="readonly" 
+                                                   class="readonly-status"
                                     type="Common"></common-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.events">
-                                <common-properties class="readonly-status" 
-                                    [module]="openFolder" 
+                                <common-properties [module]="openFolder"
+                                                   [readonly]="readonly"
                                     [block]="currentBlock"
-                                    [readonly]="readonly" 
+                                                   class="readonly-status"
                                     type="Events"></common-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.artifacts">
-                                <artifact-properties class="readonly-status" 
-                                    [readonly]="readonly" 
-                                    [rootId]="rootId"
+                                <artifact-properties [policyId]="policyId"
+                                                     [readonly]="readonly"
+                                                     class="readonly-status"
                                     [block]="currentBlock"></artifact-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.json">
-                                <json-properties 
-                                    *ngIf="options.json" 
+                                <json-properties
+                                        *ngIf="options.json"
                                     [block]="currentBlock"
                                     [readonly]="readonly"></json-properties>
                             </div>
@@ -882,9 +890,9 @@
                     </div>
                 </div>
 
-                <div class="right-bottom-toolbar" 
+                <div [attr.collapse-top]="options.rightTopMenu"
                     *ngIf="currentBlock && isRootModule"
-                    [attr.collapse-top]="options.rightTopMenu" 
+                     class="right-bottom-toolbar"
                     [attr.collapse-bottom]="options.rightBottomMenu">
 
                     <div class="pc-tabs">
@@ -900,9 +908,9 @@
                         </div>
                         <div class="pc-tabs-content">
                             <div class="prop-container readonly-status">
-                                <common-properties 
-                                    [module]="openFolder" 
-                                    [block]="currentBlock" 
+                                <common-properties
+                                        [block]="currentBlock"
+                                        [module]="openFolder"
                                     [readonly]="readonly"
                                     type="Events"></common-properties>
                             </div>
@@ -1002,3 +1010,11 @@
         <span [class]="t === theme ? 'action-color' : 'no-action-color'">{{t.name}}</span>
     </div>
 </mat-menu>
+
+<ng-template #preloader>
+    <div class="preloader-image"></div>
+</ng-template>
+
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
+</div>

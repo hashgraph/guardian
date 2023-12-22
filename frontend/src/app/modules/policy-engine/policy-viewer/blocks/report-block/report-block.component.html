@@ -1,103 +1,181 @@
 <div class="content">
-    <div *ngIf="loading" class="loading">
-        <mat-spinner></mat-spinner>
-    </div>
-
     <div class="content-trust-chain">
-
-        <form *ngIf="!mainDocuments" class="filters" [formGroup]="searchForm" (ngSubmit)="updateFilter()">
+        <div class="trust-chain-label">Trust Chain</div>
+        <form
+                (ngSubmit)="updateFilter()"
+                *ngIf="!mainDocuments"
+                [formGroup]="searchForm"
+                class="filters"
+        >
             <mat-form-field class="search-input" appearance="outline">
-                <mat-label>HASH/ID:</mat-label>
-                <input matInput type="text" placeholder="HASH/ID" formControlName="value">
-                <button mat-icon-button matSuffix type="submit" [disabled]="!searchForm.valid">
+                <mat-label class="hash-label">HASH/ID</mat-label>
+                <input
+                        formControlName="value"
+                        matInput
+                        placeholder="HASH/ID"
+                        type="text"
+                />
+                <button
+                        [disabled]="!searchForm.valid"
+                        mat-icon-button
+                        matSuffix
+                        type="submit"
+                >
                     <mat-icon>search</mat-icon>
                 </button>
             </mat-form-field>
         </form>
 
         <div class="not-exist" *ngIf="!mainDocuments && this.hash">
-            Can't find document with HASH: {{this.hash}}
+            Can't find document with HASH: {{ this.hash }}
         </div>
 
         <div *ngIf="mainDocuments" class="display-chain">
-            <div *ngFor="let item of mainDocuments" class="verified-presentation">
-                <div *ngIf="item.vpDocument" class="header">
-                    <a (click)="onBackClick()" class="go-back-link">
-                        <mat-icon>chevron_left</mat-icon>
-                        HASH: {{item.vpDocument.hash}}
-                    </a>
-                    Verified Presentation
-                    <mat-icon>check_circle</mat-icon>
-                    <a class="open-vp" (click)="openVPDocument(item.vpDocument)">VP File</a>
-                </div>
-
-                <div *ngIf="item.vcDocument" class="header">
-                    <a (click)="onBackClick()" class="go-back-link">
-                        <mat-icon>chevron_left</mat-icon>
-                        HASH: {{item.vcDocument.hash}}
-                    </a>
-                    <a class="open-vp" (click)="openVCDocument(item.vcDocument)">File</a>
-                </div>
-
-                <div *ngIf="item.mintDocument" class="vp-section" [attr.vp-section-offset]="mainDocuments.length>1">
-                    <div class="vp-section-header">
-                        Token & Issuer
-                        <a class="open-vp" (click)="openJsonDocument(item.mintDocument)">VC File</a>
+            <div
+                    *ngFor="let item of mainDocuments"
+                    class="verified-presentation"
+            >
+                <div *ngIf="item.vpDocument" class="header card-block">
+                    <div class="card-info">
+                        <h3>Verified Presentation</h3>
+                        <mat-icon>check_circle</mat-icon>
+                        <span class="vertical-devider"></span>
+                        <button (click)="openVPDocument(item.vpDocument)" class="p-button-outlined" icon="pi pi-file" label="VP File"
+                                pButton
+                        ></button>
                     </div>
-                    <div class="vp-table">
+                    <div class="hash-info">
+                        <button (click)="onBackClick()" class="p-button-outlined" icon="pi pi-chevron-left" label=""
+                                pButton
+                        ></button>
+                        <div>
+                            <p class="label">HASH</p>
+                            <p>{{ item.vpDocument.hash }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div *ngIf="item.vcDocument" class="header card-block">
+                    <div class="hash-info">
+                        <button (click)="onBackClick()" class="p-button-outlined" icon="pi pi-chevron-left" label=""
+                                pButton
+                        ></button>
+                        <button (click)="openVCDocument(item.vcDocument)" class="p-button-outlined" icon="pi pi-file" label="File"
+                                pButton
+                        ></button>
+                        <div>
+                            <p class="label">HASH</p>
+                            <p>{{ item.vcDocument.hash }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                        *ngIf="item.mintDocument"
+                        [attr.vp-section-offset]="mainDocuments.length > 1"
+                        class="vp-section"
+                >
+                    <div class="vp-section-header">
+                        <h3>Token & Issuer</h3>
+                        <span class="vertical-devider"></span>
+                        <button (click)="openJsonDocument(item.mintDocument)" class="p-button-outlined" icon="pi pi-file" label="VC File"
+                                pButton
+                        ></button>
+                    </div>
+                    <div class="card-block vp-block">
                         <div class="vp-field">
                             <div class="vp-field-label">Token</div>
-                            <div class="vp-field-value">{{item.mintDocument.tokenId}}</div>
+                            <div [pTooltip]="item.mintDocument.tokenId" class="vp-field-value">
+                                {{ item.mintDocument.tokenId }}
+                            </div>
                         </div>
                         <div class="vp-field">
                             <div class="vp-field-label">Receipt Name</div>
-                            <div class="vp-field-value" [title]="item.mintDocument.issuer">{{item.mintDocument.username}}</div>
+                            <div
+                                    [pTooltip]="item.mintDocument.username"
+                                    [title]="item.mintDocument.issuer"
+                                    class="vp-field-value"
+                            >
+                                {{ item.mintDocument.username }}
+                            </div>
                         </div>
                         <div class="vp-field">
                             <div class="vp-field-label">Token amount</div>
-                            <div [ngClass]="{'mint-error': mintError(item.mintDocument)}"
-                                 class="vp-field-value">
-                                <span class="mint-amount">{{ item.mintDocument.amount }}</span>
-                                <span>/</span>
-                                <span class="mint-expected">{{ item.mintDocument.expected }}</span>
-                                <span> minted</span>
+                            <div [pTooltip]="item.mintDocument.amount || ''" class="vp-field-value">
+                                {{ item.mintDocument.amount }}
                             </div>
                         </div>
                         <div class="vp-field">
                             <div class="vp-field-label">Mint date</div>
-                            <div class="vp-field-value">{{item.mintDocument.date}}</div>
+                            <div [pTooltip]="item.mintDocument.date" class="vp-field-value">
+                                {{ item.mintDocument.date }}
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div *ngIf="(item.primaryImpacts && item.primaryImpacts.length) || (item.secondaryImpacts && item.secondaryImpacts.length)"
-                    class="vp-section impact-section offset" [attr.vp-section-offset]="mainDocuments.length>1">
-                    <div *ngIf="item.primaryImpacts && item.primaryImpacts.length">
+                <div
+                        *ngIf="
+                        (item.primaryImpacts && item.primaryImpacts.length) ||
+                        (item.secondaryImpacts && item.secondaryImpacts.length)
+                    "
+                        [attr.vp-section-offset]="mainDocuments.length > 1"
+                        class="vp-section impact-section offset"
+                >
+                    <div
+                            *ngIf="
+                            item.primaryImpacts && item.primaryImpacts.length
+                        "
+                    >
                         <div class="vp-section-header">
-                            Primary Impact
+                            <h3>Primary Impacts</h3>
                         </div>
                         <div class="vp-table">
                             <div class="cards">
                                 <div class="cards-container">
-                                    <div *ngFor="let item of item.primaryImpacts" class="card-item" [attr.main]="true">
+                                    <div
+                                            *ngFor="let item of item.primaryImpacts"
+                                            [attr.main]="true"
+                                            class="card-item"
+                                    >
                                         <div class="card-title">
                                             <div class="card-icon">
-                                                <mat-icon class="">workspace_premium</mat-icon>
+                                                <mat-icon class=""
+                                                >workspace_premium
+                                                </mat-icon
+                                                >
                                             </div>
-                                            <span>{{item.label}}</span>
+                                            <span>{{ item.label }}</span>
                                         </div>
                                         <div class="card-right">
-                                            <a *ngIf="item.document" (click)="openVCDocument(item, item.document.document)"
-                                                class="open-vc">VC File</a>
+                                            <a
+                                                    (click)="
+                                                    openVCDocument(
+                                                        item,
+                                                        item.document.document
+                                                    )
+                                                "
+                                                    *ngIf="item.document"
+                                                    class="open-vc"
+                                            >VC File</a
+                                            >
                                         </div>
                                         <div class="card-body">
                                             <div
-                                                style="border-bottom: 1px solid rgb(112 112 112 / 64%);margin-bottom: 10px;padding-bottom: 10px;">
-                                                <span>{{item.description}}</span>
+                                                    style="
+                                                    border-bottom: 1px solid
+                                                        rgb(112 112 112 / 64%);
+                                                    margin-bottom: 10px;
+                                                    padding-bottom: 10px;
+                                                "
+                                            >
+                                                <span>{{
+                                                        item.description
+                                                    }}</span>
                                             </div>
                                             <div>
-                                                <span>{{item.amount}}</span>
-                                                <span> {{item.unit}}</span>
+                                                <span>{{ item.amount }}</span>
+                                                <span> {{ item.unit }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -105,33 +183,69 @@
                             </div>
                         </div>
                     </div>
-                    <div *ngIf="item.secondaryImpacts && item.secondaryImpacts.length"
-                        [attr.offset]="!!(item.primaryImpacts && item.primaryImpacts.length)">
+                    <div
+                            *ngIf="
+                            item.secondaryImpacts &&
+                            item.secondaryImpacts.length
+                        "
+                            [attr.offset]="
+                            !!(
+                                item.primaryImpacts &&
+                                item.primaryImpacts.length
+                            )
+                        "
+                    >
                         <div class="vp-section-header">
-                            Secondary Impacts
+                            <h3>Secondary Impacts</h3>
                         </div>
                         <div class="vp-table">
                             <div class="cards">
                                 <div class="cards-container">
-                                    <div *ngFor="let item of item.secondaryImpacts" class="card-item" [attr.main]="false">
+                                    <div
+                                            *ngFor="
+                                            let item of item.secondaryImpacts
+                                        "
+                                            [attr.main]="false"
+                                            class="card-item"
+                                    >
                                         <div class="card-title">
                                             <div class="card-icon">
-                                                <mat-icon class="">workspace_premium</mat-icon>
+                                                <mat-icon class=""
+                                                >workspace_premium
+                                                </mat-icon
+                                                >
                                             </div>
-                                            <span>{{item.label}}</span>
+                                            <span>{{ item.label }}</span>
                                         </div>
                                         <div class="card-right">
-                                            <a *ngIf="item.document" (click)="openVCDocument(item, item.document.document)"
-                                                class="open-vc">VC File</a>
+                                            <a
+                                                    (click)="
+                                                    openVCDocument(
+                                                        item,
+                                                        item.document.document
+                                                    )
+                                                "
+                                                    *ngIf="item.document"
+                                                    class="open-vc"
+                                            >VC File</a
+                                            >
                                         </div>
                                         <div class="card-body">
                                             <div
-                                                style="border-bottom: 1px solid rgb(112 112 112 / 64%);margin-bottom: 10px;padding-bottom: 10px;">
-                                                <span>{{item.description}}</span>
+                                                    style="
+                                                    border-bottom: 1px solid
+                                                        rgb(112 112 112 / 64%);
+                                                    margin-bottom: 10px;
+                                                    padding-bottom: 10px;
+                                                "
+                                            >
+                                                <span>{{
+                                                        item.description
+                                                    }}</span>
                                             </div>
                                             <div>
-                                                <span>{{item.amount}}</span>
-                                                <span> {{item.unit}}</span>
+                                                <span>{{ item.amount }}</span>
+                                                <span> {{ item.unit }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -141,47 +255,81 @@
                     </div>
                 </div>
 
-                <div class="vp-section" [attr.vp-section-offset]="mainDocuments.length>1">
+                <div
+                        [attr.vp-section-offset]="mainDocuments.length > 1"
+                        class="vp-section"
+                >
                     <div class="vp-section-header">
-                        {{uiMetaData.vpSectionHeader || 'This Carbon Offset Claim has met all the requirements as issued in the policy secured to this token.'}}
+                        This Carbon Offset Claim has met all the requirements as
+                        issued in the policy secured to this token.
                     </div>
                     <div class="vp-table">
                         <div *ngIf="item.vpDocument" class="vp-signature">
-                            <div class="vp-field-label">Verified Signature:</div>
-                            <div class="vp-field-value" style="max-width: 70vw;overflow-wrap: break-word;">
-                                {{item.vpDocument.document.document?.proof?.jws}}</div>
+                            <div class="vp-field-label">
+                                Verified Signature:
+                            </div>
+                            <div
+                                    class="vp-field-value"
+                            >
+                                {{
+                                    item.vpDocument.document.document?.proof
+                                        ?.jws
+                                }}
+                            </div>
                         </div>
                         <div *ngIf="item.vcDocument" class="vp-signature">
-                            <div class="vp-field-label">Verified Signature:</div>
-                            <div class="vp-field-value" style="max-width: 70vw;overflow-wrap: break-word;">
-                                {{item.vcDocument.document.document?.proof?.jws}}</div>
+                            <div class="vp-field-label">
+                                Verified Signature:
+                            </div>
+                            <div
+                                    class="vp-field-value"
+                            >
+                                {{
+                                    item.vcDocument.document.document?.proof
+                                        ?.jws
+                                }}
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div *ngIf="policyDocument" class="verified-presentation">
-                <div  class="vp-section">
+                <div class="vp-section">
                     <div class="vp-section-header">
-                        Policy Overview
-                        <a class="open-vp" (click)="openVCDocument(policyDocument)">VC File</a>
+                        <h3>Policy Overview</h3>
+                        <span class="vertical-devider"></span>
+                        <button (click)="openVCDocument(policyDocument)" class="p-button-outlined" icon="pi pi-file" label="VC File"
+                                pButton
+                        ></button>
                     </div>
-                    <div class="vp-table">
+                    <div class="card-block vp-block">
                         <div class="vp-field">
                             <div class="vp-field-label">Policy Name</div>
-                            <div class="vp-field-value">{{policyDocument.name}}</div>
+                            <div [pTooltip]="policyDocument.name" class="vp-field-value">
+                                {{ policyDocument.name }}
+                            </div>
                         </div>
                         <div class="vp-field">
                             <div class="vp-field-label">Description</div>
-                            <div class="vp-field-value">{{policyDocument.description}}</div>
+                            <div [pTooltip]="policyDocument.description" class="vp-field-value">
+                                {{ policyDocument.description }}
+                            </div>
                         </div>
                         <div class="vp-field">
                             <div class="vp-field-label">Version</div>
-                            <div class="vp-field-value">{{policyDocument.version}}</div>
+                            <div [pTooltip]="policyDocument.version" class="vp-field-value">
+                                {{ policyDocument.version }}
+                            </div>
                         </div>
                         <div class="vp-field">
                             <div class="vp-field-label">Issuer Name</div>
-                            <div class="vp-field-value" [title]="policyDocument.issuer">{{policyDocument.username}}
+                            <div
+                                    [pTooltip]="policyDocument.username"
+                                    [title]="policyDocument.issuer"
+                                    class="vp-field-value"
+                            >
+                                {{ policyDocument.username }}
                             </div>
                         </div>
                     </div>
@@ -189,81 +337,211 @@
             </div>
 
             <div class="container">
-                <div class="scroll-right" (click)="onScrollButtonPress(scrollContainer, -150)">
-                    <mat-icon style="margin-left: 32px">chevron_left</mat-icon>
+                <div
+                        (click)="onScrollButtonPress(scrollContainer, -150)"
+                        class="scroll-right"
+                >
+                    <mat-icon>chevron_left</mat-icon>
                 </div>
-                <div class="chain-container" (wheel)="onWheel($event)" #scrollContainer>
+                <div
+                        #scrollContainer
+                        (wheel)="onWheel($event)"
+                        class="chain-container"
+                >
                     <ng-container *ngFor="let item of documents">
                         <div class="multiple-documents-container">
-                            <ng-container *ngIf="!item.notFoundDocuments; else documentsNotFound">
-                                <div style="display: inline-block;" *ngFor="let document of item.document"
-                                    (click)="onMultipleDocumentClick(document, item)">
-                                    <div class="item-relationships-delimiter" [ngStyle]="{
-                                        'opacity': document.index === 0 && item.dynamicFilters.length && item.document.length > 1 ? 1 : 0,
-                                        'transform': document.index === 0 && item.dynamicFilters.length && item.document.length > 1 ? 'scale(1, 1) translate(0, 0)' : 'scale(1, 0) translate(20px, 0)'
-                                    }"></div>
+                            <ng-container
+                                    *ngIf="
+                                    !item.notFoundDocuments;
+                                    else documentsNotFound
+                                "
+                            >
+                                <div
+                                        (click)="
+                                        onMultipleDocumentClick(document, item)
+                                    "
+                                        *ngFor="let document of item.document"
+                                        style="display: inline-block;"
+                                >
+                                    <div
+                                            [ngStyle]="{
+                                            opacity:
+                                                document.index === 0 &&
+                                                item.dynamicFilters.length &&
+                                                item.document.length > 1
+                                                    ? 1
+                                                    : 0,
+                                            transform:
+                                                document.index === 0 &&
+                                                item.dynamicFilters.length &&
+                                                item.document.length > 1
+                                                    ? 'scale(1, 1) translate(0, 0)'
+                                                    : 'scale(1, 0) translate(20px, 0)'
+                                        }"
+                                            class="item-relationships-delimiter"
+                                    ></div>
                                     <mat-icon
-                                        *ngIf="document.index === 0 && item.dynamicFilters.length && item.document.length > 1"
-                                        class="item-relationships-icon material-icons-outlined">account_tree</mat-icon>
-                                    <div class="chain-item item-type-{{item.type}}" [ngClass]="{
-                                        'active-multiple-document': document.index === 0 && item.document.length > 1,
-                                        'second-multiple-document': document.index === 1,
-                                        'third-multiple-document': document.index === 2,
-                                        'hide-multiple-document': item.multiple && (document.index === undefined || document.index === null),
-                                        'single-multiple-document': item.document.length === 1
-                                    }">
+                                            *ngIf="
+                                            document.index === 0 &&
+                                            item.dynamicFilters.length &&
+                                            item.document.length > 1
+                                        "
+                                            class="item-relationships-icon material-icons-outlined"
+                                    >account_tree
+                                    </mat-icon
+                                    >
+                                    <div
+                                            [ngClass]="{
+                                            'active-multiple-document':
+                                                document.index === 0 &&
+                                                item.document.length > 1,
+                                            'second-multiple-document':
+                                                document.index === 1,
+                                            'third-multiple-document':
+                                                document.index === 2,
+                                            'hide-multiple-document':
+                                                item.multiple &&
+                                                (document.index === undefined ||
+                                                    document.index === null),
+                                            'single-multiple-document':
+                                                item.document.length === 1
+                                        }"
+                                            class="chain-item item-type-{{
+                                            item.type
+                                        }}"
+                                    >
                                         <div class="chain-title">
-                                            <ng-container [ngSwitch]="item.iconType" *ngIf="item.icon">
-                                                <mat-icon *ngSwitchCase="'common'">{{item.icon}}</mat-icon>
-                                                <img *ngSwitchCase="'custom'" [src]="item.icon" class="item-image" />
+                                            <ng-container
+                                                    *ngIf="item.icon"
+                                                    [ngSwitch]="item.iconType"
+                                            >
+                                                <mat-icon
+                                                        *ngSwitchCase="'common'"
+                                                >{{ item.icon }}
+                                                </mat-icon
+                                                >
+                                                <img
+                                                        *ngSwitchCase="'custom'"
+                                                        [src]="item.icon"
+                                                        class="item-image"
+                                                />
                                             </ng-container>
-                                            {{item.title}}
+                                            {{ item.title }}
                                         </div>
-                                        <div *ngIf="document.document && document.document.comment"
-                                            class="revoke-container">
-                                            <mat-icon class="revoke-icon">warning</mat-icon>
-                                            <b>Revoked with reason: "{{document.document.comment}}"</b>
+                                        <div
+                                                *ngIf="
+                                                document.document &&
+                                                document.document.comment
+                                            "
+                                                class="revoke-container"
+                                        >
+                                            <mat-icon class="revoke-icon"
+                                            >warning
+                                            </mat-icon
+                                            >
+                                            <b
+                                            >Revoked with reason: "{{
+                                                    document.document.comment
+                                                }}"</b
+                                            >
                                         </div>
                                         <div class="chain-id">
-                                            {{item.description}}
+                                            {{ item.description }}
                                         </div>
-                                        <div *ngIf="document.username" class="parties">
-                                            <div class="parties-label">Parties:</div>
+                                        <div
+                                                *ngIf="document.username"
+                                                class="parties"
+                                        >
+                                            <div class="parties-label">
+                                                Parties:
+                                            </div>
                                             <div class="parties-value">
                                                 <div class="partie">
-                                                    {{document.username}}
+                                                    {{ document.username }}
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="nested-documents">
-                                            <ng-container *ngFor="let link of item.documents">
-                                                <a class="nested-documents-value" (click)="openVCDocument(link)"
-                                                    [title]="link.description">
-                                                    {{link.title}}
+                                            <ng-container
+                                                    *ngFor="
+                                                    let link of item.documents
+                                                "
+                                            >
+                                                <a
+                                                        (click)="
+                                                        openVCDocument(link)
+                                                    "
+                                                        [title]="link.description"
+                                                        class="nested-documents-value"
+                                                >
+                                                    {{ link.title }}
                                                 </a>
                                             </ng-container>
                                         </div>
-                                        <div *ngIf="document.document" class="chain-document">
-                                            <a (click)="openVCDocument(item, document.document.document)">VC File</a>
+                                        <div
+                                                *ngIf="document.document"
+                                                class="chain-document"
+                                        >
+                                            <a
+                                                    (click)="
+                                                    openVCDocument(
+                                                        item,
+                                                        document.document
+                                                            .document
+                                                    )
+                                                "
+                                            >VC File</a
+                                            >
                                         </div>
-                                        <div class="multiple-documents-count"
-                                            *ngIf="item.activeDocumentIndex && item.document && item.document.length > 1">
-                                            <mat-icon (click)="onPrevDocumentClick($event, item, document)">chevron_left
+                                        <div
+                                                *ngIf="
+                                                item.activeDocumentIndex &&
+                                                item.document &&
+                                                item.document.length > 1
+                                            "
+                                                class="multiple-documents-count"
+                                        >
+                                            <mat-icon
+                                                    (click)="
+                                                    onPrevDocumentClick(
+                                                        $event,
+                                                        item,
+                                                        document
+                                                    )
+                                                "
+                                            >chevron_left
                                             </mat-icon>
-                                            {{item.activeDocumentIndex}} in {{item.document.length}}
-                                            <mat-icon (click)="onNextDocumentClick($event, item, document)">chevron_right
+                                            {{ item.activeDocumentIndex }} in
+                                            {{ item.document.length }}
+                                            <mat-icon
+                                                    (click)="
+                                                    onNextDocumentClick(
+                                                        $event,
+                                                        item,
+                                                        document
+                                                    )
+                                                "
+                                            >chevron_right
                                             </mat-icon>
                                         </div>
                                     </div>
                                 </div>
                             </ng-container>
                             <ng-template #documentsNotFound>
-                                <div style="display: inline-block;" *ngIf="item.notFoundDocuments; displayDocuments">
+                                <div
+                                        *ngIf="
+                                        item.notFoundDocuments;
+                                        displayDocuments
+                                    "
+                                        style="display: inline-block;"
+                                >
                                     <div class="chain-item empty-documents">
                                         <div class="chain-title">
-                                            {{item.title}}
+                                            {{ item.title }}
                                         </div>
-                                        <div class="empty-documents-description">
+                                        <div
+                                                class="empty-documents-description"
+                                        >
                                             <mat-icon>search</mat-icon>
                                             <div class="chain-id">
                                                 Documents Not Found
@@ -275,13 +553,22 @@
                         </div>
                     </ng-container>
                 </div>
-                <div class="scroll-right" (click)="onScrollButtonPress(scrollContainer, 150)">
+                <div
+                        (click)="onScrollButtonPress(scrollContainer, 150)"
+                        class="scroll-right"
+                >
                     <mat-icon>chevron_right</mat-icon>
                 </div>
             </div>
-            <div style="height: 24px;"></div>
+            <div style="height: 64px;"></div>
         </div>
-
     </div>
+</div>
 
+<ng-template #preloader>
+    <div class="preloader-image"></div>
+</ng-template>
+
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
 </div>

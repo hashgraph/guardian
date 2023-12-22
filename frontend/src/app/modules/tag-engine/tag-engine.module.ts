@@ -7,24 +7,21 @@ import { TagsExplorerDialog } from './tags-explorer-dialog/tags-explorer-dialog.
 import { TagCreateDialog } from './tags-create-dialog/tags-create-dialog.component';
 import { SchemaEngineModule } from '../schema-engine/schema-engine.module';
 import { CommonComponentsModule } from '../common/common-components.module';
+import { ButtonModule } from 'primeng/button';
+import { DropdownModule } from 'primeng/dropdown';
 
 @NgModule({
-    declarations: [
-        TagsExplorer,
-        TagsExplorerDialog,
-        TagCreateDialog
-    ],
+    declarations: [TagsExplorer, TagsExplorerDialog, TagCreateDialog],
     imports: [
         CommonModule,
         FormsModule,
         CommonComponentsModule,
         MaterialModule,
-        SchemaEngineModule
+        SchemaEngineModule,
+        ButtonModule,
+        DropdownModule,
     ],
-    exports: [
-        TagsExplorer,
-        TagsExplorerDialog,
-        TagCreateDialog
-    ]
+    exports: [TagsExplorer, TagsExplorerDialog, TagCreateDialog],
 })
-export class TagEngineModule { }
+export class TagEngineModule {
+}

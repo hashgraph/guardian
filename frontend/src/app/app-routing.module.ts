@@ -19,7 +19,8 @@ import { SettingsViewComponent } from './views/admin/settings-view/settings-view
 import { ServiceStatusComponent } from './views/admin/service-status/service-status.component';
 import { InfoComponent } from './components/info/info/info.component';
 import { WebSocketService } from './services/web-socket.service';
-import { ContractConfigComponent } from './modules/contract-engine/configs/contract-config/contract-config.component';
+import { ContractConfigComponent } from './views/contract-config/contract-config.component';
+import { ContractRequestConfigComponent } from './views/contract-request-config/contract-request-config.component';
 import { BrandingComponent } from './views/branding/branding.component';
 import { SuggestionsConfigurationComponent } from './views/suggestions-configuration/suggestions-configuration.component';
 import { AsyncProgressComponent } from './modules/common/async-progress/async-progress.component';
@@ -34,6 +35,10 @@ import { ModulesListComponent } from './modules/policy-engine/modules-list/modul
 import { ToolsListComponent } from './modules/policy-engine/tools-list/tools-list.component';
 import { SearchPoliciesComponent } from './modules/analytics/search-policies/search-policies.component';
 import { AboutViewComponent } from './views/admin/about-view/about-view.component';
+import { PolicySearchComponent } from './views/policy-search/policy-search.component';
+import { RetirementComponent } from './views/retirement/retirement.component';
+import { RetirementUserComponent } from './views/retirement-user/retirement-user.component';
+import { ListOfTokensUserComponent } from './views/list-of-tokens-user/list-of-tokens-user.component';
 
 const USER_IS_NOT_RA = "Page is avaliable for admin only";
 
@@ -58,6 +63,7 @@ class Guard {
     canActivate() {
         return this.auth.sessions().pipe(
             map((res: IUser | null) => {
+                console.log(res);
                 if (res) {
                     if (res.role != this.role) {
                         this.router.navigate(['/info'],
@@ -158,12 +164,17 @@ const routes: Routes = [
     { path: 'notifications', component: NotificationsComponent },
 
     { path: 'user-profile', component: UserProfileComponent, canActivate: [UserGuard, ServicesStatusGuard] },
+    {path: 'policy-search', component: PolicySearchComponent, canActivate: [UserGuard, ServicesStatusGuard]},
+    {path: 'tokens-user', component: ListOfTokensUserComponent, canActivate: [UserGuard, ServicesStatusGuard]},
+    {path: 'retirement-user', component: RetirementUserComponent, canActivate: [UserGuard, ServicesStatusGuard]},
 
     { path: 'config', component: RootConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
     { path: 'tokens', component: TokenConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
     { path: 'contracts', component: ContractConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
+    {path: 'contracts/pairs', component: ContractRequestConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard]},
     { path: 'schemas', component: SchemaConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
     { path: 'artifacts', component: ArtifactConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
+    {path: 'retirement', component: RetirementComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard]},
     {
         path: 'admin', component: AdminHeaderComponent, canActivate: [StandardRegistryGuard], canActivateChild: [StandardRegistryGuard],
         children: [

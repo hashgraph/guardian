@@ -2,6 +2,7 @@ import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
+import { PolicyProgressService } from '../../../services/policy-progress.service';
 
 /**
  * Component for display block of 'interfaceContainerBlock' type.
@@ -9,7 +10,7 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
 @Component({
     selector: 'container-block',
     templateUrl: './container-block.component.html',
-    styleUrls: ['./container-block.component.css']
+    styleUrls: ['./container-block.component.scss'],
 })
 export class ContainerBlockComponent implements OnInit, OnDestroy {
     @Input('id') id!: string;
@@ -30,15 +31,20 @@ export class ContainerBlockComponent implements OnInit, OnDestroy {
     constructor(
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
-        private policyHelper: PolicyHelper
+        private policyHelper: PolicyHelper,
+        private policyProgressService: PolicyProgressService
     ) {
     }
 
     ngOnInit(): void {
         if (!this.static) {
-            this.socket = this.wsService.blockSubscribe(this.onUpdate.bind(this));
+            this.socket = this.wsService.blockSubscribe(
+                this.onUpdate.bind(this)
+            );
         }
-        this.params = this.policyHelper.subscribe(this.onUpdateParams.bind(this));
+        this.params = this.policyHelper.subscribe(
+            this.onUpdateParams.bind(this)
+        );
         this.loadData();
     }
 
@@ -61,7 +67,9 @@ export class ContainerBlockComponent implements OnInit, OnDestroy {
         const id = this.policyHelper.getParams(this.id);
         if (this.blocks && this.activeBlockId != id) {
             this.activeBlockId = id;
-            this.selectedIndex = this.blocks.findIndex((b: any) => b.id == this.activeBlockId);
+            this.selectedIndex = this.blocks.findIndex(
+                (b: any) => b.id == this.activeBlockId
+            );
             this.activeBlock = this.blocks[this.selectedIndex];
             if (!this.activeBlock) {
                 this.onBlockChange(0);
@@ -77,15 +85,20 @@ export class ContainerBlockComponent implements OnInit, OnDestroy {
                 this.loading = false;
             }, 500);
         } else {
-            this.policyEngineService.getBlockData(this.id, this.policyId).subscribe((data: any) => {
-                this.setData(data);
-                setTimeout(() => {
-                    this.loading = false;
-                }, 500);
-            }, (e) => {
-                console.error(e.error);
-                this.loading = false;
-            });
+            this.policyEngineService
+                .getBlockData(this.id, this.policyId)
+                .subscribe(
+                    (data: any) => {
+                        this.setData(data);
+                        setTimeout(() => {
+                            this.loading = false;
+                        }, 500);
+                    },
+                    (e) => {
+                        console.error(e.error);
+                        this.loading = false;
+                    }
+                );
         }
     }
 
@@ -98,10 +111,20 @@ export class ContainerBlockComponent implements OnInit, OnDestroy {
             this.blocks = this.blocks.filter((b: any) => !!b);
 
             this.activeBlockId = this.policyHelper.getParams(this.id);
-            this.selectedIndex = this.blocks.findIndex((b: any) => b.id == this.activeBlockId);
+            this.selectedIndex = this.blocks.findIndex(
+                (b: any) => b.id == this.activeBlockId
+            );
             this.activeBlock = this.blocks[this.selectedIndex];
             if (!this.activeBlock) {
                 this.onBlockChange(0);
+            }
+
+            if (data.blocks && data.blocks.length > 0) {
+                data.blocks.forEach((block: any) => {
+                    if (block) {
+                        this.policyProgressService.addBlock(block.id, block);
+                    }
+                });
             }
         } else {
             this.blocks = null;
@@ -127,5 +150,9 @@ export class ContainerBlockComponent implements OnInit, OnDestroy {
             return block.content;
         }
         return block.blockType;
+    }
+
+    canDisplayTabs(): boolean {
+        return !this.policyProgressService.getHasNavigation();
     }
 }

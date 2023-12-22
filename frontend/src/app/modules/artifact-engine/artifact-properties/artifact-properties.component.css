@@ -49,8 +49,8 @@
 
 .remove-prop {
     position: absolute;
-    top: 16px;
-    right: 16px;
+    top: 14px;
+    right: 17px;
     color: #f00;
     cursor: pointer;
 }
@@ -77,24 +77,4 @@
     margin-bottom: 10px;
     height: 50px;
     min-height: 50px;
-}
-
-.add-artifact-button[disabled="true"] {
-    background: #b5b5b5;
-    cursor: not-allowed;
-}
-
-.add-artifact-item {
-    min-width: 200px;
-    max-width: 400px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.artifact-name {
-    max-width: 300px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }

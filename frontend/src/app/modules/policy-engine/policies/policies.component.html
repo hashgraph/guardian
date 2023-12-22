@@ -1,219 +1,709 @@
 <div class="content" [attr.role]="role">
-    <div *ngIf="loading" class="loading">
-        <mat-spinner></mat-spinner>
+    <div class="page-title">
+        {{ role === "USER" ? "List of Policies" : "Manage Policies" }}
     </div>
 
     <ng-container *ngIf="!isConfirmed">
         <div class="not-exist">
-            Before starting work you need to get DID <a [routerLink]="['/profile']">here</a>
+            Before starting work you need to get DID
+            <a [routerLink]="['/profile']">here</a>
         </div>
     </ng-container>
 
     <ng-container *ngIf="isConfirmed && policies">
         <div class="actions-container" [attr.role]="role">
-            <form *ngIf="hasPolicies" class="policy-filters" [formGroup]="filtersForm">
-                <span>Filter by</span>
-
-                <div>
-                    <mat-form-field class="policy-filters__control" appearance="outline">
-                        <input matInput placeholder="Policy name" formControlName="policyName">
-                    </mat-form-field>
-
-                    <mat-form-field *ngIf="hasTagOptions" class="policy-filters__control" appearance="outline">
-                        <mat-label>Tags</mat-label>
-                        <mat-select formControlName="tag">
-                            <mat-option *ngFor="let tag of tagOptions" [value]="tag">
-                                {{ tag }}
-                            </mat-option>
-                        </mat-select>
-                    </mat-form-field>
-                </div>
-
-                <button mat-raised-button color="primary" [disabled]="isFilterButtonDisabled"
-                    (click)="applyFilters()">Apply</button>
-
-                <button mat-stroked-button [disabled]="!filtersForm.dirty" (click)="clearFilters()">Clear
-                    filters</button>
+            <form
+                    *ngIf="hasPolicies"
+                    [formGroup]="filtersForm"
+                    class="policy-filters"
+            >
+                <span class="p-input-icon-right">
+                    <input
+                            class="search-policy-input"
+                            formControlName="policyName"
+                            pInputText
+                            placeholder="Search by Policy name"
+                            type="text"
+                    />
+                    <i class="pi pi-search search-icon"></i>
+                </span>
+                <p-dropdown
+                        [options]="tagOptions"
+                        appendTo="body"
+                        class="tags-dropdown"
+                        formControlName="tag"
+                        placeholder="Tags"
+                ></p-dropdown>
+                <button
+                        (click)="applyFilters()"
+                        class="button ml-8"
+                        label="Apply Filters"
+                        pButton
+                ></button>
+                <button
+                        (click)="clearFilters()"
+                        [disabled]="!filtersForm.dirty"
+                        class="button secondary ml-8"
+                        label="Clear filters"
+                        pButton
+                ></button>
             </form>
 
-            <div>
-                <button mat-raised-button color="primary" (click)="openPolicyWizardDialog()"
-                    class="toolbar-btn wizard-btn">
-                    <mat-icon>auto_awesome</mat-icon>
-                    <span>Policy Wizard</span>
-                </button>
-                <button mat-raised-button color="primary" (click)="newPolicy()" class="toolbar-btn add">
-                    <mat-icon>add</mat-icon>
-                    <span>Create New</span>
-                </button>
-                <button mat-raised-button color="primary" (click)="importPolicy()" class="toolbar-btn">
-                    <mat-icon>file_open</mat-icon>
-                    <span>Import</span>
-                </button>
-                <button mat-raised-button color="primary" (click)="comparePolicy()" class="toolbar-btn">
-                    <mat-icon>compare</mat-icon>
-                    <span>Compare</span>
-                </button>
+            <div style="margin-left: auto;">
+                <p-button
+                        (click)="openPolicyWizardDialog()"
+                        [pTooltip]="'Policy Wizard'"
+                        class="toolbar-btn-primary"
+                        tooltipPosition="bottom"
+                >
+                    <svg
+                            fill="none"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            width="24"
+                            xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                                d="M11.3213 9.80691C11.4588 9.39441 12.0413 9.39441 12.1788 9.80691L12.9849 12.2282C13.1624 12.7604 13.4613 13.244 13.8581 13.6406C14.2549 14.0373 14.7386 14.336 15.2709 14.5132L17.6907 15.3194C18.1031 15.4569 18.1031 16.0394 17.6907 16.1769L15.2697 16.9832C14.7375 17.1607 14.2539 17.4597 13.8573 17.8565C13.4608 18.2533 13.1621 18.7371 12.9849 19.2695L12.1788 21.6895C12.1491 21.7798 12.0917 21.8584 12.0147 21.9142C11.9377 21.97 11.8451 22 11.75 22C11.655 22 11.5624 21.97 11.4854 21.9142C11.4084 21.8584 11.351 21.7798 11.3213 21.6895L10.5152 19.2682C10.3379 18.7361 10.0391 18.2526 9.64251 17.856C9.24595 17.4593 8.76248 17.1605 8.23042 16.9832L5.80943 16.1769C5.71912 16.1473 5.64047 16.0899 5.58471 16.0129C5.52895 15.9359 5.49893 15.8433 5.49893 15.7482C5.49893 15.6531 5.52895 15.5605 5.58471 15.4835C5.64047 15.4065 5.71912 15.3491 5.80943 15.3194L8.23042 14.5132C8.76248 14.3358 9.24595 14.037 9.64251 13.6404C10.0391 13.2438 10.3379 12.7603 10.5152 12.2282L11.3213 9.80691ZM6.49311 3.43313C6.51103 3.379 6.54556 3.3319 6.59178 3.29851C6.638 3.26512 6.69356 3.24715 6.75058 3.24715C6.8076 3.24715 6.86316 3.26512 6.90938 3.29851C6.95561 3.3319 6.99013 3.379 7.00805 3.43313L7.49175 4.88564C7.70798 5.53314 8.21542 6.04065 8.86285 6.2569L10.3152 6.74065C10.3693 6.75857 10.4164 6.7931 10.4498 6.83933C10.4832 6.88555 10.5012 6.94113 10.5012 6.99815C10.5012 7.05517 10.4832 7.11074 10.4498 7.15697C10.4164 7.2032 10.3693 7.23773 10.3152 7.25565L8.86285 7.7394C8.54355 7.8458 8.2534 8.02511 8.01541 8.26312C7.77743 8.50114 7.59814 8.79131 7.49175 9.11066L7.00805 10.5632C6.99013 10.6173 6.95561 10.6644 6.90938 10.6978C6.86316 10.7312 6.8076 10.7491 6.75058 10.7491C6.69356 10.7491 6.638 10.7312 6.59178 10.6978C6.54556 10.6644 6.51103 10.6173 6.49311 10.5632L6.00941 9.11066C5.90303 8.79131 5.72374 8.50114 5.48575 8.26312C5.24776 8.02511 4.95762 7.8458 4.63831 7.7394L3.18596 7.25565C3.13184 7.23773 3.08474 7.2032 3.05135 7.15697C3.01797 7.11074 3 7.05517 3 6.99815C3 6.94113 3.01797 6.88555 3.05135 6.83933C3.08474 6.7931 3.13184 6.75857 3.18596 6.74065L4.63831 6.2569C4.95762 6.1505 5.24776 5.97119 5.48575 5.73318C5.72374 5.49516 5.90303 5.20499 6.00941 4.88564L6.49311 3.43313ZM15.3284 2.12188C15.3407 2.08629 15.3639 2.05542 15.3946 2.03358C15.4252 2.01174 15.462 2 15.4996 2C15.5373 2 15.574 2.01174 15.6047 2.03358C15.6354 2.05542 15.6585 2.08629 15.6709 2.12188L15.9933 3.08938C16.1371 3.52188 16.4758 3.86064 16.9082 4.00439L17.8756 4.32689C17.9112 4.33923 17.9421 4.36235 17.9639 4.39304C17.9858 4.42373 17.9975 4.46047 17.9975 4.49814C17.9975 4.53581 17.9858 4.57254 17.9639 4.60324C17.9421 4.63393 17.9112 4.65705 17.8756 4.66939L16.9082 4.99189C16.6951 5.06279 16.5015 5.18241 16.3427 5.34125C16.1838 5.50008 16.0642 5.69375 15.9933 5.90689L15.6709 6.8744C15.6585 6.90999 15.6354 6.94085 15.6047 6.9627C15.574 6.98454 15.5373 6.99628 15.4996 6.99628C15.462 6.99628 15.4252 6.98454 15.3946 6.9627C15.3639 6.94085 15.3407 6.90999 15.3284 6.8744L15.0059 5.90689C14.935 5.69375 14.8154 5.50008 14.6566 5.34125C14.4978 5.18241 14.3042 5.06279 14.091 4.99189L13.1249 4.66939C13.0893 4.65705 13.0584 4.63393 13.0366 4.60324C13.0148 4.57254 13.003 4.53581 13.003 4.49814C13.003 4.46047 13.0148 4.42373 13.0366 4.39304C13.0584 4.36235 13.0893 4.33923 13.1249 4.32689L14.0923 4.00439C14.5247 3.86064 14.8635 3.52188 15.0072 3.08938L15.3284 2.12313V2.12188Z"
+                                fill="white"
+                        />
+                    </svg>
+                </p-button>
+                <p-button
+                        (click)="createNewPolicy()"
+                        [pTooltip]="'Create a Policy'"
+                        class="toolbar-btn-primary"
+                        tooltipPosition="bottom"
+                >
+                    <svg
+                            fill="none"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            width="24"
+                            xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                                d="M20 12C20 12.6227 19.4952 13.1275 18.8725 13.1275H13.1275V18.8725C13.1275 19.4952 12.6227 20 12 20C11.3773 20 10.8725 19.4952 10.8725 18.8725V13.1275H5.12752C4.50481 13.1275 4 12.6227 4 12C4 11.3773 4.50481 10.8725 5.12752 10.8725H10.8725V5.12752C10.8725 4.50481 11.3773 4 12 4C12.6227 4 13.1275 4.50481 13.1275 5.12752V10.8725H18.8725C19.4952 10.8725 20 11.3773 20 12Z"
+                                fill="white"
+                        />
+                    </svg>
+                </p-button>
+                <p-button
+                        (click)="importPolicy()"
+                        [pTooltip]="'Import'"
+                        class="toolbar-btn-primary"
+                        tooltipPosition="bottom"
+                >
+                    <svg
+                            fill="none"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            width="24"
+                            xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                                clip-rule="evenodd"
+                                d="M11.0001 3C11.0001 2.44771 11.4478 2 12.0001 2C12.5524 2 13.0001 2.44772 13.0001 3V11.5858L15.293 9.29285C15.6836 8.90232 16.3167 8.90232 16.7073 9.29285C17.0978 9.68337 17.0978 10.3165 16.7073 10.7071L12.7073 14.7071L12.7072 14.707C12.5263 14.888 12.2762 15 12.0001 15C11.7239 15 11.4739 14.888 11.2929 14.707L11.2929 14.7071L7.29289 10.7071C6.90237 10.3165 6.90237 9.68337 7.29289 9.29285C7.68342 8.90232 8.31658 8.90232 8.70711 9.29285L11.0001 11.5858V3ZM5 14.5C5 13.9477 4.55228 13.5 4 13.5C3.44772 13.5 3 13.9477 3 14.5V18C3 19.6569 4.34315 21 6 21H18C19.6569 21 21 19.6569 21 18V14.5C21 13.9477 20.5523 13.5 20 13.5C19.4477 13.5 19 13.9477 19 14.5V18C19 18.5523 18.5523 19 18 19H6C5.44772 19 5 18.5523 5 18V14.5Z"
+                                fill="white"
+                                fill-rule="evenodd"
+                        />
+                    </svg>
+                </p-button>
+                <p-button
+                        (click)="comparePolicy()"
+                        [pTooltip]="'Compare'"
+                        class="toolbar-btn-secondary"
+                        styleClass="p-button-outlined"
+                        tooltipPosition="bottom"
+                >
+                    <svg
+                            fill="none"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            width="24"
+                            xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <g clip-path="url(#clip0_1435_5281)">
+                            <mask
+                                    height="25"
+                                    id="mask0_1435_5281"
+                                    maskUnits="userSpaceOnUse"
+                                    style="mask-type: luminance;"
+                                    width="24"
+                                    x="0"
+                                    y="-1"
+                            >
+                                <path
+                                        d="M24 -0.000488281H0V23.9995H24V-0.000488281Z"
+                                        fill="white"
+                                />
+                            </mask>
+                            <g mask="url(#mask0_1435_5281)">
+                                <path
+                                        class="primary-color"
+                                        clip-rule="evenodd"
+                                        d="M12 0.999512C12.5523 0.999512 13 1.44723 13 1.99951L13 2.99951C13.5523 2.99951 14 3.44723 14 3.99951C14 4.5518 13.5523 4.99951 13 4.99951V18.9995C13.5523 18.9995 14 19.4472 14 19.9995C14 20.5518 13.5523 20.9995 13 20.9995L13 21.9995C13 22.5518 12.5523 22.9995 12 22.9995C11.4477 22.9995 11 22.5518 11 21.9995V20.9995H6C4.34316 20.9995 3 19.6564 3 17.9995V5.99951C3 4.34267 4.34314 2.99951 6 2.99951H11V1.99951C11 1.44723 11.4477 0.999512 12 0.999512ZM11 4.99951H6C5.44772 4.99951 5 5.44723 5 5.99951V17.9995C5 18.5518 5.44771 18.9995 6 18.9995H11V4.99951ZM16 3.99951C16 3.44723 16.4477 2.99951 17 2.99951H18C19.6569 2.99951 21 4.34268 21 5.99951V6.99951C21 7.5518 20.5523 7.99951 20 7.99951C19.4477 7.99951 19 7.5518 19 6.99951V5.99951C19 5.44722 18.5523 4.99951 18 4.99951H17C16.4477 4.99951 16 4.5518 16 3.99951ZM20 9.99952C20.5523 9.99952 21 10.4472 21 10.9995V12.9995C21 13.5518 20.5523 13.9995 20 13.9995C19.4477 13.9995 19 13.5518 19 12.9995V10.9995C19 10.4472 19.4477 9.99952 20 9.99952ZM20 15.9995C20.5523 15.9995 21 16.4472 21 16.9995V17.9995C21 19.6564 19.6569 20.9995 18 20.9995H17C16.4477 20.9995 16 20.5518 16 19.9995C16 19.4472 16.4477 18.9995 17 18.9995H18C18.5523 18.9995 19 18.5518 19 17.9995V16.9995C19 16.4472 19.4477 15.9995 20 15.9995Z"
+                                        fill-rule="evenodd"
+                                />
+                            </g>
+                        </g>
+                        <defs>
+                            <clipPath id="clip0_1435_5281">
+                                <rect fill="white" height="24" width="24"/>
+                            </clipPath>
+                        </defs>
+                    </svg>
+                </p-button>
+                <p-button
+                        (click)="openSuggestionsDialog()"
+                        [pTooltip]="'Suggestions'"
+                        class="toolbar-btn-secondary"
+                        styleClass="p-button-text"
+                        tooltipPosition="bottom"
+                >
+                    <svg
+                            fill="none"
+                            height="18"
+                            viewBox="0 0 20 18"
+                            width="20"
+                            xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                                class="primary-color"
+                                clip-rule="evenodd"
+                                d="M3.52595 0.14935C3.82077 0.331557 4.00022 0.653423 4.00022 1V6H5.00022C5.5525 6 6.00022 6.44772 6.00022 7C6.00022 7.55229 5.5525 8 5.00022 8H1.00022C0.447934 8 0.000219047 7.55229 0.000219047 7C0.000219047 6.44772 0.447934 6 1.00022 6H2.00022V2.61804L1.44743 2.89443C0.953454 3.14142 0.352781 2.94119 0.105792 2.44721C-0.141197 1.95324 0.059027 1.35256 0.553006 1.10557L2.55301 0.105574C2.86299 -0.0494204 3.23113 -0.0328564 3.52595 0.14935ZM7.00022 2.99994C7.00025 2.44766 7.44799 1.99997 8.00028 2L19.0003 2.00066C19.5526 2.00069 20.0003 2.44844 20.0002 3.00072C20.0002 3.55301 19.5524 4.00069 19.0002 4.00066L8.00016 4C7.44787 3.99997 7.00019 3.55223 7.00022 2.99994ZM7.00022 8.99994C7.00025 8.44765 7.448 7.99997 8.00028 8L19.0003 8.0007C19.5526 8.00074 20.0003 8.44848 20.0002 9.00076C20.0002 9.55305 19.5524 10.0007 19.0002 10.0007L8.00016 10C7.44787 9.99997 7.00018 9.55222 7.00022 8.99994ZM0.0947926 12.2507C0.427767 10.9571 1.60096 10 3.00022 10H3.28055C4.78259 10 6.00022 11.2176 6.00022 12.7197C6.00022 13.504 5.66164 14.25 5.07153 14.7664L3.6617 16H5.00022C5.5525 16 6.00022 16.4477 6.00022 17C6.00022 17.5523 5.5525 18 5.00022 18H1.00022C0.583609 18 0.210646 17.7417 0.0641149 17.3517C-0.0824165 16.9617 0.0281871 16.5218 0.341721 16.2474L3.75439 13.2614C3.75436 13.2614 3.75441 13.2614 3.75439 13.2614C3.91062 13.1246 4.00022 12.9272 4.00022 12.7197C4.00022 12.3222 3.67801 12 3.28055 12H3.00022C2.53564 12 2.14273 12.3177 2.03167 12.7493C1.894 13.2841 1.34882 13.6061 0.813968 13.4684C0.279116 13.3308 -0.0428702 12.7856 0.0947926 12.2507ZM7.00022 14.9999C7.00025 14.4477 7.448 14 8.00028 14L19.0003 14.0007C19.5526 14.0007 20.0003 14.4485 20.0002 15.0008C20.0002 15.553 19.5524 16.0007 19.0002 16.0007L8.00016 16C7.44787 16 7.00018 15.5522 7.00022 14.9999Z"
+                                fill-rule="evenodd"
+                        />
+                    </svg>
+                </p-button>
             </div>
         </div>
 
-        <p *ngIf="noFilterResults" class="no-results-found">No results found.</p>
+        <p *ngIf="noFilterResults" class="no-results-found">
+            No results found.
+        </p>
 
         <div [hidden]="noFilterResults">
-            <div class="table-container" [attr.role]="role">
-                <table mat-table [dataSource]="policiesList" class="table">
-                    <ng-container matColumnDef="topic">
-                        <th mat-header-cell *matHeaderCellDef> Hedera Topic Id </th>
-                        <td mat-cell *matCellDef="let element">
-                            <hedera-explorer type="topics"
-                                [params]="element.topicId">{{element.topicId}}</hedera-explorer>
-                        </td>
-                    </ng-container>
-                    <ng-container matColumnDef="tokens">
-                        <th mat-header-cell *matHeaderCellDef> Tokens </th>
-                        <td mat-cell *matCellDef="let element">
-                            <a [routerLink]="['/tokens']" [queryParams]="{ policy: element.id }">
-                                Tokens
-                            </a>
-                        </td>
-                    </ng-container>
-                    <ng-container matColumnDef="schemas">
-                        <th mat-header-cell *matHeaderCellDef> Schemas </th>
-                        <td mat-cell *matCellDef="let element">
-                            <a [routerLink]="['/schemas']" [queryParams]="{ 
-                                type: 'policy',
-                                topic: element.topicId 
-                            }">Schemas</a>
-                        </td>
-                    </ng-container>
-                    <ng-container matColumnDef="name">
-                        <th mat-header-cell *matHeaderCellDef> Policy Name </th>
-                        <td mat-cell *matCellDef="let element" [matTooltip]="element.name" matTooltipPosition="above"
-                            matTooltipClass="guardian-tooltip" matTooltipShowDelay="500" matTooltipHideDelay="100">
-                            {{ element.name }}
-                        </td>
-                    </ng-container>
-                    <ng-container matColumnDef="roles">
-                        <th mat-header-cell *matHeaderCellDef> Roles </th>
-                        <td mat-cell *matCellDef="let element">
-                            {{ element.userRoles?.join(', ') }}
-                        </td>
-                    </ng-container>
-                    <ng-container matColumnDef="version">
-                        <th mat-header-cell *matHeaderCellDef> Version </th>
-                        <td mat-cell *matCellDef="let element">
-                            {{ element.version }}
-                        </td>
-                    </ng-container>
-                    <ng-container matColumnDef="tags">
-                        <th mat-header-cell *matHeaderCellDef> Tags </th>
-                        <td mat-cell *matCellDef="let element">
-                            <tags-explorer [data]="element._tags" [owner]="owner" [target]="element.id"
-                                [schemas]="tagSchemas" [entity]="tagEntity" [service]="tagsService"></tags-explorer>
-                        </td>
-                    </ng-container>
-                    <ng-container matColumnDef="description">
-                        <th mat-header-cell *matHeaderCellDef> Description </th>
-                        <td mat-cell *matCellDef="let element" [matTooltip]="element.description"
-                            matTooltipPosition="above" matTooltipClass="guardian-tooltip" matTooltipShowDelay="500"
-                            matTooltipHideDelay="100">
-                            {{ element.description }}
-                        </td>
-                    </ng-container>
-
-                    <ng-container matColumnDef="status">
-                        <th mat-header-cell *matHeaderCellDef> Status/Actions </th>
-                        <td mat-cell *matCellDef="let element">
-                            <select-menu-button class="btn-draft" *ngIf="element.status == 'DRAFT'"
-                                (action)="onPublishAction($event, element)" [options]="publishMenuOption">
-                                Draft
-                            </select-menu-button>
-                            <select-menu-button class="btn-dry-run" *ngIf="element.status == 'DRY-RUN'"
-                                (action)="onDryRunAction($event, element)" [options]="draftMenuOption">
-                                In Dry Run
-                            </select-menu-button>
-                            <select-menu-button class="btn-publish" *ngIf="element.status == 'PUBLISH'">
-                                Published
-                            </select-menu-button>
-                            <select-menu-button class="btn-failed" *ngIf="element.status == 'PUBLISH_ERROR'"
-                                (action)="onPublishErrorAction($event, element)" [options]="publishErrorMenuOption">
-                                Not published
-                            </select-menu-button>
-                        </td>
-                    </ng-container>
-
-                    <ng-container matColumnDef="instance">
-                        <th mat-header-cell *matHeaderCellDef> Instance </th>
-                        <td mat-cell *matCellDef="let element">
-                            <div class="commands-line" *ngIf="element.status !='DRAFT'">
-                                <div style="width: 85px">
-                                    <div *ngIf="element.status =='PUBLISH'" class="btn-icon-go go-published"
-                                        [routerLink]="['/policy-viewer', element.id]">
-                                        <mat-icon>double_arrow</mat-icon>
-                                        <span>Go</span>
+            <ng-container
+                    *ngIf="policiesList && policiesList.length > 0; else noData"
+            >
+                <div class="table-container">
+                    <p-table [value]="policiesList">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th
+                                        *ngIf="canDisplayColumn('name')"
+                                        class="header-cell-text"
+                                        pFrozenColumn
+                                        style="min-width: 140px; max-width: 150px;"
+                                >
+                                    Name
+                                </th>
+                                <th
+                                        *ngIf="canDisplayColumn('description')"
+                                        class="header-cell-text"
+                                        style="min-width: 140px; max-width: 150px;"
+                                >
+                                    Description
+                                </th>
+                                <th
+                                        *ngIf="canDisplayColumn('roles')"
+                                        class="header-cell-text"
+                                        style="min-width: 140px;"
+                                >
+                                    Roles
+                                </th>
+                                <th
+                                        *ngIf="canDisplayColumn('topic')"
+                                        class="header-cell-text"
+                                        style="min-width: 140px;"
+                                >
+                                    Topic
+                                </th>
+                                <th
+                                        *ngIf="canDisplayColumn('version')"
+                                        class="header-cell-text"
+                                        style="min-width: 140px;"
+                                >
+                                    Version
+                                </th>
+                                <th
+                                        *ngIf="canDisplayColumn('tags')"
+                                        class="header-cell-text"
+                                        style="min-width: 165px;"
+                                >
+                                    Tags
+                                </th>
+                                <th
+                                        *ngIf="canDisplayColumn('tokens')"
+                                        class="header-cell-text"
+                                        style="min-width: 140px;"
+                                >
+                                    Tokens
+                                </th>
+                                <th
+                                        *ngIf="canDisplayColumn('schemas')"
+                                        class="header-cell-text"
+                                        style="min-width: 140px;"
+                                >
+                                    Schemas
+                                </th>
+                                <th
+                                        *ngIf="canDisplayColumn('status')"
+                                        class="header-cell-text"
+                                        style="min-width: 140px;"
+                                >
+                                    Status
+                                </th>
+                                <th
+                                        *ngIf="canDisplayColumn('instance')"
+                                        class="header-cell-text"
+                                        style="min-width: 140px;"
+                                >
+                                    Instance
+                                </th>
+                                <th
+                                        *ngIf="canDisplayColumn('operations')"
+                                        class="header-cell-text"
+                                        style="min-width: 140px;"
+                                >
+                                    Operations
+                                </th>
+                            </tr>
+                        </ng-template>
+                        <ng-template let-policy pTemplate="body">
+                            <tr class="policy-grid-row">
+                                <td
+                                        *ngIf="canDisplayColumn('name')"
+                                        class="first-policy-grid-cell text-truncate"
+                                        pFrozenColumn
+                                        pTooltip="{{ policy.name }}"
+                                        style="min-width: 140px; max-width: 150px;"
+                                        tooltipPosition="top"
+                                >
+                                    {{ policy.name }}
+                                </td>
+                                <td
+                                        *ngIf="canDisplayColumn('description')"
+                                        class="text-truncate"
+                                        pTooltip="{{ policy.description }}"
+                                        style="min-width: 140px; max-width: 150px;"
+                                        tooltipPosition="top"
+                                >
+                                    {{ policy.description }}
+                                </td>
+                                <td
+                                        *ngIf="canDisplayColumn('roles')"
+                                        style="min-width: 140px;"
+                                >
+                                    {{ policy.userRoles?.join(", ") }}
+                                </td>
+                                <td
+                                        *ngIf="canDisplayColumn('topic')"
+                                        style="min-width: 140px;"
+                                >
+                                    <hedera-explorer
+                                            [params]="policy.topicId"
+                                            type="topics"
+                                    >{{ policy.topicId }}
+                                    </hedera-explorer
+                                    >
+                                </td>
+                                <td
+                                        *ngIf="canDisplayColumn('version')"
+                                        style="min-width: 140px;"
+                                >
+                                    {{ policy.version }}
+                                </td>
+                                <td
+                                        *ngIf="canDisplayColumn('tags')"
+                                        style="min-width: 165px;"
+                                >
+                                    <tags-explorer
+                                            [data]="policy._tags"
+                                            [entity]="tagEntity"
+                                            [owner]="owner"
+                                            [schemas]="tagSchemas"
+                                            [service]="tagsService"
+                                            [target]="policy.id"
+                                    ></tags-explorer>
+                                </td>
+                                <td
+                                        *ngIf="canDisplayColumn('tokens')"
+                                        style="min-width: 140px;"
+                                >
+                                    <a
+                                            [queryParams]="{ policy: policy.id }"
+                                            [routerLink]="['/tokens']"
+                                            class="grid-link-block"
+                                    >
+                                        <button
+                                                class="button secondary"
+                                                label="Open Tokens"
+                                                pButton
+                                        ></button>
+                                    </a>
+                                </td>
+                                <td
+                                        *ngIf="canDisplayColumn('schemas')"
+                                        style="min-width: 140px;"
+                                >
+                                    <a
+                                            [queryParams]="{
+                                	    type: 'policy',
+                                            topic: policy.topicId
+                                        }"
+                                            [routerLink]="['/schemas']"
+                                            class="grid-link-block"
+                                    >
+                                        <button
+                                                class="button secondary"
+                                                label="Open Schemas"
+                                                pButton
+                                        ></button>
+                                    </a>
+                                </td>
+                                <td
+                                        *ngIf="canDisplayColumn('status')"
+                                        style="min-width: 140px;"
+                                >
+                                    <div
+                                            *ngIf="role === 'USER'"
+                                            class="chip chip-color-{{
+                                            getColor(policy.status)
+                                        }}"
+                                    >
+                                        {{ getLabelStatus(policy.status) }}
                                     </div>
-                                    <div *ngIf="element.status =='DRY-RUN'" class="btn-icon-go go-dry-run"
-                                        [routerLink]="['/policy-viewer', element.id]">
-                                        <mat-icon>double_arrow</mat-icon>
-                                        <span>Go</span>
+                                    <div *ngIf="role === 'STANDARD_REGISTRY'">
+                                        <p-dropdown
+                                                (onChange)="
+                                                policy.status == 'DRAFT'
+                                                    ? onPublishAction(
+                                                          $event,
+                                                          policy
+                                                      )
+                                                    : policy.status == 'DRY-RUN'
+                                                    ? onDryRunAction(
+                                                          $event,
+                                                          policy
+                                                      )
+                                                    : onPublishErrorAction(
+                                                          $event,
+                                                          policy
+                                                      )
+                                            "
+                                                *ngIf="
+                                                policy.status == 'DRAFT' ||
+                                                policy.status == 'DRY-RUN' ||
+                                                policy.status == 'PUBLISH_ERROR'
+                                            "
+                                                [(ngModel)]="publishMenuSelector"
+                                                [options]="
+                                                policy.status == 'DRAFT'
+                                                    ? publishMenuOption
+                                                    : policy.status == 'DRY-RUN'
+                                                    ? draftMenuOption
+                                                    : publishErrorMenuOption
+                                            "
+                                                [placeholder]="
+                                                policy.status == 'DRAFT'
+                                                    ? 'Draft'
+                                                    : policy.status == 'DRY-RUN'
+                                                    ? 'In Dry Run'
+                                                    : 'Not published'
+                                            "
+                                                appendTo="body"
+                                                class="status-actions-dropdown"
+                                        >
+                                            <ng-template
+                                                    pTemplate="selectedItem"
+                                            >
+                                                {{
+                                                    policy.status == "DRAFT"
+                                                        ? "Draft"
+                                                        : policy.status ==
+                                                        "DRY-RUN"
+                                                            ? "In Dry Run"
+                                                            : "Not published"
+                                                }}
+                                            </ng-template>
+                                            <ng-template
+                                                let-option
+                                                pTemplate="item"
+                                            >
+                                                <div>
+                                                    <div
+                                                            class="dropdown-item-title"
+                                                    >
+                                                        {{ option.title }}
+                                                    </div>
+                                                    <span
+                                                            class="dropdown-item-description"
+                                                    >{{
+                                                            option.description
+                                                        }}</span
+                                                    >
+                                                </div>
+                                            </ng-template>
+                                        </p-dropdown>
+                                        <div
+                                                *ngIf="policy.status == 'PUBLISH'"
+                                                class="published-status"
+                                        >
+                                            Published
+                                        </div>
                                     </div>
-                                </div>
-                                <div *ngIf="role === 'USER'">
-                                    <div *ngIf="element.status =='PUBLISH'" class="btn-icon-import"
-                                        [attr.status]="element.multiPolicyStatus" (click)="createMultiPolicy(element)"
-                                        [title]="element.multiPolicyStatus ? 'Show Multi Policy' : 'Create Multi Policy'"
-                                        [matTooltip]="element.multiPolicyStatus ? 'Show Multi Policy' : 'Create Multi Policy'"
-                                        matTooltipPosition="above" matTooltipClass="guardian-tooltip"
-                                        matTooltipShowDelay="500" matTooltipHideDelay="100">
-                                        <mat-icon>share</mat-icon>
+                                </td>
+                                <td
+                                        *ngIf="canDisplayColumn('instance')"
+                                        style="min-width: 140px;"
+                                >
+                                    <div
+                                            *ngIf="policy.status != 'DRAFT'"
+                                            class="commands-line"
+                                    >
+                                        <div
+                                                *ngIf="role === 'USER'"
+                                                style="width: 85px;"
+                                        >
+                                            <!-- todo condition -->
+                                            <button
+                                                    [label]="
+                                                    policy.status == 'PUBLISH'
+                                                        ? 'Open'
+                                                        : 'Dry run'
+                                                "
+                                                    [routerLink]="[
+                                                    '/policy-viewer',
+                                                    policy.id
+                                                ]"
+                                                    class="p-button btn-go-policy"
+                                                    pButton
+                                                    type="button"
+                                            ></button>
+                                        </div>
+                                        <div
+                                                *ngIf="role === 'STANDARD_REGISTRY'"
+                                        >
+                                            <a
+                                                    [routerLink]="[
+                                                    '/policy-viewer',
+                                                    policy.id
+                                                ]"
+                                                    class="grid-link-block"
+                                            >
+                                                <button
+                                                        class="button secondary"
+                                                        icon="pi pi-chevron-right"
+                                                        iconPos="right"
+                                                        label="Register"
+                                                        pButton
+                                                ></button>
+                                            </a>
+                                        </div>
+                                        <div *ngIf="role === 'USER'">
+                                            <button
+                                                    (click)="
+                                                    createMultiPolicy(policy)
+                                                "
+                                                    [label]="
+                                                    policy.multiPolicyStatus
+                                                        ? 'Show Multi Policy'
+                                                        : 'Create Multi Policy'
+                                                "
+                                                    class="p-button-outlined btn-create-multipolicy"
+                                                    pButton
+                                                    type="button"
+                                            ></button>
+                                            <div
+                                                    *ngIf="
+                                                    policy.status == 'DRY-RUN'
+                                                "
+                                                    class="btn-icon-delete-des"
+                                            >
+                                                <mat-icon>share</mat-icon>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div *ngIf="element.status =='DRY-RUN'" class="btn-icon-delete-des">
-                                        <mat-icon>share</mat-icon>
+                                </td>
+                                <td
+                                        *ngIf="canDisplayColumn('operations')"
+                                        class="last-policy-grid-cell"
+                                        style="min-width: 140px;"
+                                >
+                                    <div class="commands-line">
+                                        <div
+                                                [queryParams]="{
+                                                policyId: policy.id
+                                            }"
+                                                [routerLink]="[
+                                                '/policy-configuration'
+                                            ]"
+                                                class="btn-icon-edit"
+                                                matTooltip="Policy configuration"
+                                                matTooltipClass="guardian-tooltip"
+                                                matTooltipHideDelay="100"
+                                                matTooltipPosition="above"
+                                                matTooltipShowDelay="500"
+                                        >
+                                            <svg
+                                                    class="opacity-icon"
+                                                    fill="none"
+                                                    height="24"
+                                                    viewBox="0 0 24 24"
+                                                    width="24"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                            >
+                                                <path
+                                                        class="primary-color"
+                                                        clip-rule="evenodd"
+                                                        d="M16.5084 6.31676C16.8031 6.03714 17.1971 5.8857 17.6038 5.89575C18.0105 5.9058 18.3966 6.07652 18.677 6.37035C18.9574 6.66418 19.1093 7.05705 19.0992 7.46253C19.0892 7.86802 18.9179 8.25291 18.6232 8.53252L8.08714 18.5537L5.37201 18.9094L6.48508 15.8059L16.5075 6.31771L16.5084 6.31676ZM20.0522 5.0628C19.4242 4.40569 18.5605 4.02384 17.6505 4.00108C16.7405 3.97832 15.8586 4.3165 15.1984 4.94139L5.00859 14.586C4.90058 14.6882 4.81814 14.8143 4.7679 14.9541L3.05549 19.7318C3.00064 19.8848 2.98614 20.0494 3.01339 20.2096C3.04063 20.3698 3.10871 20.5204 3.21109 20.6468C3.31346 20.7733 3.44671 20.8714 3.59804 20.9317C3.74938 20.9921 3.91373 21.0126 4.07533 20.9915L8.64177 20.3939C8.84179 20.3679 9.02835 20.2792 9.17452 20.1406L19.9351 9.90599C20.5946 9.27903 20.9773 8.4166 20.999 7.50836C21.0208 6.60012 20.6808 5.72045 20.0522 5.0628ZM13.466 19.1029C13.2137 19.1029 12.9717 19.2029 12.7933 19.3808C12.6149 19.5586 12.5147 19.7999 12.5147 20.0515C12.5147 20.303 12.6149 20.5443 12.7933 20.7222C12.9717 20.9001 13.2137 21 13.466 21H19.1741C19.4264 21 19.6684 20.9001 19.8468 20.7222C20.0252 20.5443 20.1254 20.303 20.1254 20.0515C20.1254 19.7999 20.0252 19.5586 19.8468 19.3808C19.6684 19.2029 19.4264 19.1029 19.1741 19.1029H13.466Z"
+                                                        fill="#23252E"
+                                                        fill-rule="evenodd"
+                                                />
+                                            </svg>
+                                        </div>
+                                        <div
+                                                (click)="exportPolicy(policy.id)"
+                                                class="operations-icon-container"
+                                                matTooltip="Export Policy"
+                                                matTooltipClass="guardian-tooltip"
+                                                matTooltipHideDelay="100"
+                                                matTooltipPosition="above"
+                                                matTooltipShowDelay="500"
+                                        >
+                                            <svg
+                                                    class="opacity-icon"
+                                                    fill="none"
+                                                    height="24"
+                                                    viewBox="0 0 24 24"
+                                                    width="24"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                            >
+                                                <path
+                                                        class="primary-color"
+                                                        clip-rule="evenodd"
+                                                        d="M11.0001 15C11.0001 15.5523 11.4478 16 12.0001 16C12.5524 16 13.0001 15.5523 13.0001 15V6.41418L15.293 8.70715C15.6836 9.09768 16.3167 9.09768 16.7073 8.70715C17.0978 8.31663 17.0978 7.68346 16.7073 7.29294L12.7073 3.29294L12.7072 3.29295C12.5263 3.11195 12.2762 3 12.0001 3C11.7239 3 11.4739 3.11195 11.2929 3.29295L11.2929 3.29294L7.29289 7.29294C6.90237 7.68346 6.90237 8.31663 7.29289 8.70715C7.68342 9.09768 8.31658 9.09768 8.70711 8.70715L11.0001 6.41419V15ZM5 14.5C5 13.9477 4.55228 13.5 4 13.5C3.44772 13.5 3 13.9477 3 14.5V18C3 19.6569 4.34315 21 6 21H18C19.6569 21 21 19.6569 21 18V14.5C21 13.9477 20.5523 13.5 20 13.5C19.4477 13.5 19 13.9477 19 14.5V18C19 18.5523 18.5523 19 18 19H6C5.44772 19 5 18.5523 5 18V14.5Z"
+                                                        fill="#23252E"
+                                                        fill-rule="evenodd"
+                                                />
+                                            </svg>
+                                        </div>
+                                        <div
+                                                (click)="
+                                               policy.status ==='DRAFT' ? deletePolicy(
+                                                    policy.id,
+                                                    policy.previousVersion
+                                                ) : null
+                                            "
+                                                class="operations-icon-container"
+                                                matTooltip="Delete Policy"
+                                                matTooltipClass="guardian-tooltip"
+                                                matTooltipHideDelay="100"
+                                                matTooltipPosition="above"
+                                                matTooltipShowDelay="500"
+                                        >
+                                            <svg
+                                                    class="opacity-icon"
+                                                    fill="none"
+                                                    height="24"
+                                                    viewBox="0 0 24 24"
+                                                    width="24"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                            >
+                                                <path
+                                                        [class.disabled-color]="
+                                                        policy.status ===
+                                                            'DRY-RUN' ||
+                                                        policy.status ===
+                                                            'PUBLISH'
+                                                    "
+                                                        class="accent-color-red"
+                                                        clip-rule="evenodd"
+                                                        d="M10 4C9.44771 4 9 4.44771 9 5V6H15V5C15 4.44771 14.5523 4 14 4H10ZM17 6V5C17 3.34315 15.6569 2 14 2H10C8.34315 2 7 3.34315 7 5V6H5C4.44772 6 4 6.44771 4 7C4 7.55228 4.44772 8 5 8V18C5 19.6569 6.34315 21 8 21H16C17.6569 21 19 19.6569 19 18V8C19.5523 8 20 7.55228 20 7C20 6.44771 19.5523 6 19 6H17ZM17 8H7V18C7 18.5523 7.4477 19 8 19H16C16.5523 19 17 18.5523 17 18V8ZM10 10C10.5523 10 11 10.4477 11 11V16C11 16.5523 10.5523 17 10 17C9.44772 17 9 16.5523 9 16V11C9 10.4477 9.44772 10 10 10ZM14 10C14.5523 10 15 10.4477 15 11V16C15 16.5523 14.5523 17 14 17C13.4477 17 13 16.5523 13 16V11C13 10.4477 13.4477 10 14 10Z"
+                                                        fill="#FF432A"
+                                                        fill-rule="evenodd"
+                                                />
+                                            </svg>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
-                        </td>
-                    </ng-container>
-
-                    <ng-container matColumnDef="operations">
-                        <th mat-header-cell *matHeaderCellDef>Operations</th>
-                        <td mat-cell *matCellDef="let element">
-                            <div class="commands-line">
-                                <div class="btn-icon-edit" [routerLink]="['/policy-configuration']"
-                                    [queryParams]="{ policyId: element.id }" matTooltip="Policy configuration"
-                                    matTooltipPosition="above" matTooltipClass="guardian-tooltip"
-                                    matTooltipShowDelay="500" matTooltipHideDelay="100">
-                                    <mat-icon>edit</mat-icon>
-                                </div>
-                                <div class="btn-icon-more" [matMenuTriggerFor]="policyMenu"
-                                    [matMenuTriggerData]="element">
-                                    <mat-icon>more_vert</mat-icon>
-                                </div>
-                            </div>
-                        </td>
-                    </ng-container>
-
-                    <tr mat-header-row *matHeaderRowDef="columns; sticky: true"></tr>
-                    <tr mat-row *matRowDef="let row; columns: columns;"></tr>
-                </table>
-            </div>
-            <div class="table-paginator">
-                <mat-paginator [length]="policyCount" [pageIndex]="pageIndex" [pageSize]="pageSize"
-                    [pageSizeOptions]="[10, 25, 50, 100]" (page)="onPage($event)" aria-label="Select page">
-                </mat-paginator>
-            </div>
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </div>
+                <div class="table-paginator">
+                    <span>Items per page:</span>
+                    <p-dropdown
+                            (onChange)="newOnPage()"
+                            [(ngModel)]="pageSize"
+                            [options]="[10, 25, 50, 100]"
+                    ></p-dropdown>
+                    <span class="color-grey-6"
+                    >{{ pageIndex * pageSize + 1 }} –
+                        {{
+                            pageIndex * pageSize + pageSize > policiesCount
+                                ? policiesCount
+                                : pageIndex * pageSize + pageSize
+                        }}
+                        of {{ policiesCount }}</span
+                    >
+                    <div class="flex">
+                        <svg
+                                (click)="movePageIndex(-1)"
+                                fill="none"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                width="24"
+                                xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <path
+                                    d="M15.2828 5.68906C14.8923 5.29856 14.2591 5.29856 13.8686 5.68906L8.98115 10.5813C8.20075 11.3625 8.20106 12.6283 8.98184 13.4091L13.8722 18.2994C14.2627 18.6899 14.8959 18.6899 15.2864 18.2994C15.677 17.9089 15.677 17.2757 15.2864 16.8852L11.1008 12.6996C10.7103 12.309 10.7103 11.6759 11.1008 11.2854L15.2828 7.10326C15.6733 6.71276 15.6733 6.07956 15.2828 5.68906Z"
+                                    fill="#848FA9"
+                            />
+                        </svg>
+                        <svg
+                                (click)="movePageIndex(+1)"
+                                fill="none"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                width="24"
+                                xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <path
+                                    d="M8.6926 5.68907C9.0831 5.29857 9.7163 5.29857 10.1068 5.68907L14.9942 10.5813C15.7746 11.3625 15.7743 12.6283 14.9936 13.4091L10.1032 18.2994C9.7127 18.6899 9.0795 18.6899 8.689 18.2994C8.2984 17.9089 8.2984 17.2757 8.689 16.8852L12.8746 12.6996C13.2651 12.309 13.2651 11.6759 12.8746 11.2854L8.6926 7.10327C8.3021 6.71277 8.3021 6.07957 8.6926 5.68907Z"
+                                    fill="#848FA9"
+                            />
+                        </svg>
+                    </div>
+                </div>
+            </ng-container>
         </div>
     </ng-container>
 </div>
 
 <mat-menu #policyMenu="matMenu">
-    <ng-template matMenuContent let-status="status" let-id="id" let-version="previousVersion">
-        <button mat-menu-item (click)="exportPolicy(id)" class="policy-menu-btn">
+    <ng-template
+            let-id="id"
+            let-status="status"
+            let-version="previousVersion"
+            matMenuContent
+    >
+        <button
+                (click)="exportPolicy(id)"
+                class="policy-menu-btn"
+                mat-menu-item
+        >
             <mat-icon>import_export</mat-icon>
             <span>Export policy</span>
         </button>
         <div class="policy-menu-delimiter"></div>
-        <button mat-menu-item (click)="searchPolicy(id)" class="policy-menu-btn">
+        <button
+                (click)="searchPolicy(id)"
+                class="policy-menu-btn"
+                mat-menu-item
+        >
             <mat-icon>search</mat-icon>
             <span>Search policies</span>
         </button>
@@ -221,18 +711,60 @@
             <mat-icon>cloud</mat-icon>
             <span>Search policies</span>
         </button>
-        <button mat-menu-item (click)="comparePolicy(id)" class="policy-menu-btn">
+        <button
+                (click)="comparePolicy(id)"
+                class="policy-menu-btn"
+                mat-menu-item
+        >
             <mat-icon>compare</mat-icon>
             <span>Compare policies</span>
         </button>
         <div class="policy-menu-delimiter"></div>
-        <button *ngIf="status == 'DRAFT'" mat-menu-item (click)="deletePolicy(id, version)" class="policy-menu-btn-del">
+        <button
+                (click)="deletePolicy(id, version)"
+                *ngIf="status === 'DRAFT'"
+                class="policy-menu-btn-del"
+                mat-menu-item
+        >
             <mat-icon>delete</mat-icon>
             <span>Delete policy</span>
         </button>
-        <button *ngIf="status != 'DRAFT'" mat-menu-item class="policy-menu-btn-des">
+        <button
+                *ngIf="status !== 'DRAFT'"
+                class="policy-menu-btn-des"
+                mat-menu-item
+        >
             <mat-icon>delete</mat-icon>
             <span>Delete policy</span>
         </button>
     </ng-template>
 </mat-menu>
+
+<ng-template #noData>
+    <div class="not-exist">
+        <svg
+                fill="none"
+                height="32"
+                viewBox="0 0 32 32"
+                width="32"
+                xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+                    class="disabled-color"
+                    clip-rule="evenodd"
+                    d="M2.66699 8C2.66699 6.89543 3.56243 6 4.66699 6C5.77156 6 6.66699 6.89543 6.66699 8C6.66699 9.10457 5.77156 10 4.66699 10C3.56243 10 2.66699 9.10457 2.66699 8ZM9.33366 8.00082C9.3337 7.26444 9.93069 6.66752 10.6671 6.66756L28.0004 6.66852C28.7368 6.66856 29.3337 7.26555 29.3337 8.00193C29.3336 8.73831 28.7366 9.33523 28.0002 9.33519L10.6669 9.33423C9.93054 9.33419 9.33362 8.7372 9.33366 8.00082ZM2.66699 16C2.66699 14.8956 3.56236 14 4.66699 14C5.77163 14 6.66699 14.8956 6.66699 16C6.66699 17.1044 5.77163 18 4.66699 18C3.56236 18 2.66699 17.1044 2.66699 16ZM9.33366 16.0009C9.3337 15.2645 9.93069 14.6676 10.6671 14.6676L28.0004 14.6687C28.7368 14.6687 29.3337 15.2657 29.3337 16.0021C29.3336 16.7385 28.7366 17.3354 28.0002 17.3353L10.6669 17.3343C9.93053 17.3342 9.33361 16.7372 9.33366 16.0009ZM2.66699 24C2.66699 22.8956 3.56236 22 4.66699 22C5.77163 22 6.66699 22.8956 6.66699 24C6.66699 25.1044 5.77163 26 4.66699 26C3.56236 26 2.66699 25.1044 2.66699 24ZM9.33366 24.0009C9.3337 23.2645 9.93069 22.6676 10.6671 22.6676L28.0004 22.6687C28.7368 22.6687 29.3337 23.2657 29.3337 24.0021C29.3336 24.7385 28.7366 25.3354 28.0002 25.3353L10.6669 25.3343C9.93053 25.3342 9.33361 24.7372 9.33366 24.0009Z"
+                    fill-rule="evenodd"
+            />
+        </svg>
+        <span class="info-text-strong">There were no Policies created yet</span>
+        <span class="info-text">Please create new policy to see the data</span>
+    </div>
+</ng-template>
+
+<ng-template #preloader>
+    <div class="preloader-image"></div>
+</ng-template>
+
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
+</div>

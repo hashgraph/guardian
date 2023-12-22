@@ -1,429 +1,616 @@
 <div class="content">
-    <div *ngIf="loading" class="loading">
-        <mat-spinner></mat-spinner>
-    </div>
-
-    <div *ngIf="!isSystem && !isConfirmed" class="not-exist">
-        Before starting work you need to get DID <a [routerLink]="['/profile']">here</a>
-    </div>
-
+    <div class="page-title">Schemas</div>
     <div class="actions">
-        <div style="padding: 0px 12px 0px 0px">
-            <mat-form-field appearance="outline">
-                <mat-label>Type</mat-label>
-                <mat-select [(value)]="type" (selectionChange)="onChangeType($event)">
-                    <mat-option value="policy" [disabled]="!isConfirmed">Policy Schemas</mat-option>
-                    <mat-option value="module" [disabled]="!isConfirmed">Module Schemas</mat-option>
-                    <mat-option value="tool" [disabled]="!isConfirmed">Tool Schemas</mat-option>
-                    <mat-option value="tag" [disabled]="!isConfirmed">Tag Schemas</mat-option>
-                    <mat-option value="system">System Schemas</mat-option>
-                </mat-select>
-            </mat-form-field>
+        <div class="tabs-nav">
+            <p-tabView>
+                <p-tabPanel *ngFor="let tab of schemasTypes; let i = index" [selected]="tab.value === type">
+                    <ng-template pTemplate="header">
+                        <div
+                                (click)="onChangeType(tab.value)"
+                                class="tabview-label"
+                        >
+                            {{ tab.label }}
+                        </div>
+                    </ng-template>
+                </p-tabPanel>
+            </p-tabView>
         </div>
-        <div>
-            <ng-container *ngIf="isPolicy">
-                <mat-form-field appearance="outline">
-                    <mat-label>Policy</mat-label>
-                    <mat-select [(value)]="currentTopic" (selectionChange)="onFilter()">
-                        <mat-option value="">All</mat-option>
-                        <mat-option class="draft-topic-option" value="draft">No binding</mat-option>
-                        <mat-option *ngFor="let policy of policies" [value]="policy.topicId">
-                            <span>{{policy.name}}</span>
-                            <span> ({{policy.topicId}})</span>
-                        </mat-option>
-                    </mat-select>
-                </mat-form-field>
-            </ng-container>
-            <!-- <ng-container *ngIf="isModule">
-                <mat-form-field appearance="outline">
-                    <mat-label>Module</mat-label>
-                    <mat-select [(value)]="currentTopic" (selectionChange)="onFilter()">
-                        <mat-option value="">All</mat-option>
-                        <mat-option class="draft-topic-option" value="draft">No binding</mat-option>
-                        <mat-option *ngFor="let module of modules" [value]="module.topicId">
-                            <span>{{module.name}}</span>
-                            <span> ({{module.topicId}})</span>
-                        </mat-option>
-                    </mat-select>
-                </mat-form-field>
-            </ng-container> -->
-            <ng-container *ngIf="isTool">
-                <mat-form-field appearance="outline">
-                    <mat-label>Tools</mat-label>
-                    <mat-select [(value)]="currentTopic" (selectionChange)="onFilter()">
-                        <mat-option value="">All</mat-option>
-                        <mat-option *ngFor="let tool of tools" [value]="tool.topicId">
-                            <span>{{tool.name}}</span>
-                            <span> ({{tool.topicId}})</span>
-                        </mat-option>
-                    </mat-select>
-                </mat-form-field>
-            </ng-container>
-        </div>
-        <div style="text-align: end">
-            <button
-                    *ngIf="canCreate"
-                [attr.readonly]="readonly"
-                    class="toolbar-btn add" color="primary"
-                    mat-raised-button
-                (click)="onCreateSchemas()">
-                <mat-icon>add</mat-icon>
-                <span>Create New</span>
-            </button>
-            <button
-                *ngIf="canImport"
-                [attr.readonly]="readonly"
-                (click)="onImportSchemas()"
-                class="toolbar-btn"
-                color="primary"
-                mat-raised-button>
-                <mat-icon>file_open</mat-icon>
-                <span>Import</span>
-            </button>
-            <button
-                *ngIf="isPolicy || isModule || isTool"
-                (click)="onCompare()"
-                class="toolbar-btn"
-                color="primary"
-                mat-raised-button>
-                <mat-icon>compare</mat-icon>
-                <span>Compare</span>
-            </button>
+        <div class="actions-controls-container">
+            <div class="policy-dropdown-container">
+                <ng-container *ngIf="isPolicy">
+                    <p-dropdown
+                            (onChange)="onFilter($event)"
+                            [(ngModel)]="currentTopic"
+                            [options]="policies"
+                            [showClear]="true"
+                            class="policy-dropdown"
+                            optionLabel="name"
+                            optionValue="topicId"
+                            placeholder="Policy"
+                    ></p-dropdown>
+                </ng-container>
+                <ng-container *ngIf="isTool">
+                    <p-dropdown
+                            (onChange)="onFilter($event)"
+                            [(ngModel)]="currentTopic"
+                            [options]="tools"
+                            [showClear]="true"
+                            class="policy-dropdown"
+                            optionLabel="name"
+                            optionValue="topicId"
+                            placeholder="Tool"
+                    ></p-dropdown>
+                </ng-container>
+            </div>
+            <div class="schema-actions-buttons-container">
+                <p-button
+                        (click)="onCreateSchemas()"
+                        *ngIf="isAny"
+                        class="toolbar-btn"
+                >
+                    <mat-icon class="toolbar-icons">add</mat-icon>
+                    <span>Create a Schema</span>
+                </p-button>
+                <p-button
+                        (click)="onImportSchemas()"
+                        *ngIf="isPolicy || isModule || isTool"
+                        class="toolbar-btn"
+                >
+                    <mat-icon class="toolbar-icons">file_open</mat-icon>
+                    <span>Import</span>
+                </p-button>
+                <p-button
+                        (click)="onCompare()"
+                        *ngIf="isPolicy || isModule || isTool"
+                        class="toolbar-btn compare-button"
+                        styleClass="p-button-outlined"
+                >
+                    <mat-icon class="toolbar-icons">compare</mat-icon>
+                    <span>Compare</span>
+                </p-button>
+            </div>
         </div>
     </div>
 
     <div *ngIf="isAny" class="table-container">
-        <table mat-table [dataSource]="page" class="schemas-table" [attr.system]="isSystem">
-            <ng-container matColumnDef="selected">
-                <th mat-header-cell *matHeaderCellDef>
-                    <mat-checkbox class="example-margin" [checked]="selectedAll" color="primary"
-                        (change)="selectAll($event.checked)">
-                    </mat-checkbox>
-                </th>
-                <td mat-cell *matCellDef="let element">
-                    <mat-checkbox class="example-margin" [(ngModel)]="element._selected" color="primary"
-                        [disabled]="!element.messageId" (change)="selectItem()">
-                    </mat-checkbox>
-                </td>
-            </ng-container>
-            <ng-container matColumnDef="uuid">
-                <th *matHeaderCellDef mat-header-cell>ID</th>
-                <td mat-cell *matCellDef="let element">{{element.uuid}}</td>
-            </ng-container>
-            <ng-container matColumnDef="policy">
-                <th *matHeaderCellDef mat-header-cell>Policy</th>
-                <td mat-cell *matCellDef="let element">
-                    <a [queryParams]="{
-                        policyId: policyIdByTopic[element.topicId]
-                    }" [routerLink]="['/policy-configuration']">{{policyNameByTopic[element.topicId]}}</a>
-                </td>
-            </ng-container>
-            <ng-container matColumnDef="module">
-                <th *matHeaderCellDef mat-header-cell>Module</th>
-                <td *matCellDef="let element" mat-cell>{{moduleNameByTopic[element.topicId]}}</td>
-            </ng-container>
-            <ng-container matColumnDef="tool">
-                <th *matHeaderCellDef mat-header-cell>Tool</th>
-                <td *matCellDef="let element" mat-cell>
-                    <a [queryParams]="{
-                        toolId: toolIdByTopic[element.topicId]
-                    }" [routerLink]="['/policy-configuration']">{{toolNameByTopic[element.topicId]}}</a>
+        <p-table [value]="schemas">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th
+                            *ngIf="type === 'tool'"
+                            class="header-cell-text"
+                            style="min-width: 140px; max-width: 150px;"
+                    >
+                        Tool
+                    </th>
+                    <th
+                            *ngIf="type === 'policy'"
+                            class="header-cell-text"
+                            style="min-width: 140px; max-width: 150px;"
+                    >
+                        Policy
+                    </th>
+                    <th
+                            class="header-cell-text"
+                            style="min-width: 140px; max-width: 150px;"
+                    >
+                        Name
+                    </th>
+                    <th
+                            *ngIf="type === 'policy'"
+                            class="header-cell-text"
+                            style="min-width: 140px;"
+                    >
+                        Topic
+                    </th>
+                    <th
+                            *ngIf="type === 'policy'"
+                            class="header-cell-text"
+                            style="min-width: 140px;"
+                    >
+                        Version
+                    </th>
+                    <th
+                            *ngIf="type === 'system' || type === 'tag'"
+                            class="header-cell-text"
+                            style="min-width: 140px;"
+                    >
+                        Owner
+                    </th>
+                    <th
+                            *ngIf="type === 'system' || type === 'policy'"
+                            class="header-cell-text"
+                            style="min-width: 140px;"
+                    >
+                        Entity
+                    </th>
+                    <th
+                            *ngIf="type === 'policy'"
+                            class="header-cell-text"
+                            style="min-width: 140px;"
+                    >
+                        Tags
+                    </th>
+                    <th
+                            *ngIf="
+                            type === 'policy' ||
+                            type === 'module' ||
+                            type === 'tag' ||
+                            type === 'tool'
+                        "
+                            class="header-cell-text"
+                            style="min-width: 140px;"
+                    >
+                        Status
+                    </th>
+                    <th
+                            *ngIf="type === 'system'"
+                            class="header-cell-text"
+                            style="min-width: 140px;"
+                    >
+                        Status
+                    </th>
+                    <th class="header-cell-text" style="min-width: 140px;">
+                        Operations
+                    </th>
+                </tr>
+            </ng-template>
+            <ng-template let-schema pTemplate="body">
+                <tr class="schemas-grid-row">
+                    <td
+                            *ngIf="type === 'tool'"
+                            class="first-schema-grid-cell text-truncate"
+                            style="min-width: 140px; max-width: 150px;"
+                    >
+                        <a [queryParams]="{toolId: toolIdByTopic[schema.topicId]}"
+                           [routerLink]="'/policy-configuration'">{{ toolNameByTopic[schema.topicId] }}</a>
+                    </td>
+                    <td
+                            *ngIf="type === 'policy'"
+                            class="first-schema-grid-cell text-truncate"
+                            style="min-width: 140px; max-width: 150px;"
+                    >
+                        {{ policyNameByTopic[schema.topicId] }}
+                    </td>
+                    <td
+                            [pTooltip]="schema.name"
+                            class="text-truncate"
+                            style="min-width: 140px; max-width: 150px;"
+                    >
+                        {{ schema.name }}
+                    </td>
+                    <td *ngIf="type === 'policy'" style="min-width: 140px;">
+                        <ng-container
+                                *ngIf="
+                                schema.topicId === 'draft';
+                                else topicExplorer
+                            "
+                        >
+                            <span>Draft</span>
+                        </ng-container>
+                        <ng-template #topicExplorer>
+                            <hedera-explorer
+                                    [params]="schema.topicId"
+                                    type="topics"
+                            >{{ schema.topicId }}
+                            </hedera-explorer
+                            >
+                        </ng-template>
+                    </td>
+                    <td *ngIf="type === 'policy'" style="min-width: 140px;">
+                        {{ schema.version || schema.sourceVersion }}
+                    </td>
+                    <td
+                            *ngIf="type === 'system' || type === 'tag'"
+                            style="min-width: 140px;"
+                    >
+                        {{ schema.owner }}
+                    </td>
+                    <td
+                            *ngIf="type === 'system' || type === 'policy'"
+                            style="min-width: 140px;"
+                    >
+                        {{ schema.entity }}
+                    </td>
+                    <td *ngIf="type === 'policy'" style="min-width: 140px;">
+                        <tags-explorer
+                                [data]="schema._tags"
+                                [entity]="tagEntity"
+                                [owner]="owner"
+                                [schemas]="tagSchemas"
+                                [service]="tagsService"
+                                [target]="schema.id"
+                        ></tags-explorer>
+                    </td>
+                    <td
+                            *ngIf="
+                            type === 'policy' ||
+                            type === 'module' ||
+                            type === 'tag' ||
+                            type === 'tool'
+                        "
+                            style="min-width: 140px;"
+                    >
+                        <span [ngSwitch]="schema.status">
+                            <div *ngSwitchCase="'DRAFT'">
+                                <span class="schema-status status-DRAFT"
+                                >Draft</span
+                                >
+                            </div>
+                            <div *ngSwitchCase="'PUBLISHED'">
+                                <span class="schema-status status-PUBLISHED"
+                                >Published</span
+                                >
+                            </div>
+                            <div *ngSwitchCase="'UNPUBLISHED'">
+                                <span class="schema-status status-UNPUBLISHED"
+                                >Unpublished</span
+                                >
+                            </div>
+                            <div *ngSwitchDefault>
+                                <span class="schema-status">{{
+                                        schema.status
+                                    }}</span>
+                            </div>
+                        </span>
+                    </td>
+                    <td *ngIf="type === 'system'" style="min-width: 140px;">
+                        <span>
+                            <div *ngIf="!schema.active">
+                                <span class="schema-status status-DRAFT"
+                                >Inactive</span
+                                >
+                            </div>
+                            <div *ngIf="schema.active">
+                                <span class="schema-status status-PUBLISHED"
+                                >Active</span
+                                >
+                            </div>
+                        </span>
+                    </td>
+                    <td class="last-schema-grid-cell" style="min-width: 140px;">
+                        <div class="operations-row-container">
+                            <!--                         operation-->
+                            <div *ngIf="type === 'policy' || type === 'module' || type === 'tool'">
+                                <div
+                                        (click)="onPublish(schema)"
+                                        *ngIf="schema.status == 'DRAFT'"
+                                        [attr.disabled]="schema.topicId === 'draft'"
+                                        class="btn-approve"
+                                >
+                                    Publish
+                                </div>
+                                <div
+                                        (click)="onPublish(schema)"
+                                        *ngIf="schema.status == 'UNPUBLISHED'"
+                                        [attr.disabled]="schema.topicId === 'draft'"
+                                        class="btn-approve"
+                                >
+                                    Publish
+                                </div>
+                            </div>
 
-                </td>
-            </ng-container>
-            <ng-container matColumnDef="type">
-                <th *matHeaderCellDef mat-header-cell>Name</th>
-                <td mat-cell *matCellDef="let element">{{element.name}}</td>
-            </ng-container>
-            <ng-container matColumnDef="topic">
-                <th *matHeaderCellDef mat-header-cell>Topic</th>
-                <td mat-cell *matCellDef="let element">
-                    <ng-container *ngIf="element.topicId === 'draft'; else topicExplorer">
-                        <span>Draft</span>
-                    </ng-container>
-                    <ng-template #topicExplorer>
-                        <hedera-explorer type="topics" [params]="element.topicId">{{element.topicId}}</hedera-explorer>
-                    </ng-template>
-                </td>
-            </ng-container>
-            <ng-container matColumnDef="version">
-                <th mat-header-cell *matHeaderCellDef> Version </th>
-                <td mat-cell *matCellDef="let element">{{element.version || element.sourceVersion}}</td>
-            </ng-container>
-            <ng-container matColumnDef="owner">
-                <th mat-header-cell *matHeaderCellDef> Owner </th>
-                <td mat-cell *matCellDef="let element">{{element.owner}}</td>
-            </ng-container>
-            <ng-container matColumnDef="entity">
-                <th mat-header-cell *matHeaderCellDef> Entity </th>
-                <td mat-cell *matCellDef="let element">{{element.entity}}</td>
-            </ng-container>
-            <ng-container matColumnDef="tags">
-                <th mat-header-cell *matHeaderCellDef> Tags </th>
-                <td mat-cell *matCellDef="let element">
-                    <tags-explorer
-                            [data]="element._tags"
-                            [owner]="owner"
-                            [schemas]="tagSchemas"
-                        [entity]="tagEntity"
-                            [target]="element.id"
-                        [service]="tagsService"></tags-explorer>
-                </td>
-            </ng-container>
-            <ng-container matColumnDef="status">
-                <th mat-header-cell *matHeaderCellDef> Status </th>
-                <td mat-cell *matCellDef="let element">
-                    <span [ngSwitch]="element.status">
-                        <div *ngSwitchCase="'DRAFT'">
-                            <span class="schema-status status-DRAFT">Draft</span>
-                        </div>
-                        <div *ngSwitchCase="'PUBLISHED'">
-                            <span class="schema-status status-PUBLISHED">Published</span>
-                        </div>
-                        <div *ngSwitchCase="'UNPUBLISHED'">
-                            <span class="schema-status status-UNPUBLISHED">Unpublished</span>
-                        </div>
-                        <div *ngSwitchDefault>
-                            <span class="schema-status">{{element.status}}</span>
-                        </div>
-                    </span>
-                </td>
-            </ng-container>
-            <ng-container matColumnDef="active">
-                <th mat-header-cell *matHeaderCellDef> Status </th>
-                <td mat-cell *matCellDef="let element">
-                    <span>
-                        <div *ngIf="!element.active">
-                            <span class="schema-status status-DRAFT">Inactive</span>
-                        </div>
-                        <div *ngIf="element.active">
-                            <span class="schema-status status-PUBLISHED">Active</span>
-                        </div>
-                    </span>
-                </td>
-            </ng-container>
-            <ng-container matColumnDef="operation">
-                <th mat-header-cell *matHeaderCellDef> Operations </th>
-                <td mat-cell *matCellDef="let element">
-                    <div
-                            *ngIf="element.status === 'DRAFT'"
-                        [attr.disabled]="element.topicId === 'draft'"
-                            class="btn-approve"
-                        (click)="onPublish(element)">
-                        Publish
-                    </div>
-                    <div
-                            *ngIf="element.status === 'UNPUBLISHED'"
-                        [attr.disabled]="element.topicId === 'draft'"
-                            class="btn-approve"
-                        (click)="onPublish(element)">
-                        Publish
-                    </div>
-                </td>
-            </ng-container>
+                            <!--                        activeOperation-->
+                            <div *ngIf="type === 'system'">
+                                <div
+                                        (click)="onActive(schema)"
+                                        *ngIf="!schema.active"
+                                        class="btn-approve"
+                                >
+                                    Active
+                                </div>
+                            </div>
 
-            <ng-container matColumnDef="tagOperation">
-                <th mat-header-cell *matHeaderCellDef> Operations </th>
-                <td mat-cell *matCellDef="let element">
-                    <div
-                            *ngIf="element.status === 'DRAFT'"
-                        [attr.disabled]="element.topicId === 'draft'"
-                            class="btn-approve"
-                        (click)="onPublishTagSchema(element)">
-                        Publish
-                    </div>
-                    <div
-                            *ngIf="element.status === 'UNPUBLISHED'"
-                        [attr.disabled]="element.topicId === 'draft'"
-                            class="btn-approve"
-                        (click)="onPublishTagSchema(element)">
-                        Publish
-                    </div>
-                </td>
-            </ng-container>
+                            <!--                        tagOperation-->
+                            <div *ngIf="type === 'tag'">
+                                <div
+                                        (click)="onPublishTagSchema(schema)"
+                                        *ngIf="schema.status == 'DRAFT'"
+                                        class="btn-approve"
+                                >
+                                    Publish
+                                </div>
+                            </div>
 
-            <ng-container matColumnDef="activeOperation">
-                <th mat-header-cell *matHeaderCellDef> Operations </th>
-                <td mat-cell *matCellDef="let element">
-                    <div *ngIf="!element.active" class="btn-approve" (click)="onActive(element)">Active</div>
-                </td>
-            </ng-container>
+                            <!--                        document-->
+                            <div style="margin-left: auto;">
+                                <div
+                                        (click)="onOpenDocument(schema)"
+                                        class="btn-settings"
+                                        matTooltip="Document"
+                                        matTooltipClass="guardian-tooltip"
+                                        matTooltipPosition="above"
+                                >
+                                    <svg fill="none" height="24" viewBox="0 0 24 24" width="24"
+                                         xmlns="http://www.w3.org/2000/svg">
+                                        <path class="color-primary" clip-rule="evenodd"
+                                              d="M7.36842 3C6.06037 3 5 4.09894 5 5.45455V18.5455C5 19.9011 6.06038 21 7.36842 21H17.6316C18.9397 21 20 19.9011 20 18.5455V10.3636C20 10.1466 19.9168 9.93853 19.7688 9.78509L13.453 3.23966C13.3774 3.16136 13.2881 3.10055 13.191 3.05979C13.0978 3.02068 12.9973 3 12.8947 3H7.36842ZM12.1053 4.63636H7.36842C6.9324 4.63636 6.57895 5.00267 6.57895 5.45455V18.5455C6.57895 18.9973 6.93241 19.3636 7.36842 19.3636H17.6316C18.0676 19.3636 18.4211 18.9973 18.4211 18.5455V11.1818H12.8947C12.4587 11.1818 12.1053 10.8155 12.1053 10.3636V4.63636ZM17.3046 9.54548L13.6842 5.79347V9.54548H17.3046Z"
+                                              fill-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                            </div>
 
-            <ng-container matColumnDef="export">
-                <th mat-header-cell *matHeaderCellDef></th>
-                <td mat-cell *matCellDef="let element">
-                    <div (click)="onExport(element)"
-                         class="btn-settings"
-                         matTooltip="Export"
-                        matTooltipPosition="above"
-                        matTooltipClass="guardian-tooltip">
-                        <mat-icon>import_export</mat-icon>
-                    </div>
-                </td>
-            </ng-container>
-            <ng-container matColumnDef="tree">
-                <th mat-header-cell *matHeaderCellDef></th>
-                <td mat-cell *matCellDef="let element">
-                    <div class="btn-settings"
-                        (click)="onViewSchemaTree(element)"
-                        matTooltip="Tree"
-                        matTooltipPosition="above"
-                        matTooltipClass="guardian-tooltip">
-                        <mat-icon>account_tree</mat-icon>
-                    </div>
-                </td>
-            </ng-container>
-            <ng-container matColumnDef="document">
-                <th mat-header-cell *matHeaderCellDef></th>
-                <td mat-cell *matCellDef="let element">
-                    <div (click)="onOpenDocument(element)"
-                         class="btn-settings"
-                        matTooltip="Document"
-                         matTooltipPosition="above"
-                        matTooltipClass="guardian-tooltip">
-                        <mat-icon>segment</mat-icon>
-                    </div>
-                </td>
-            </ng-container>
-            <ng-container matColumnDef="edit">
-                <th mat-header-cell *matHeaderCellDef> </th>
-                <td mat-cell *matCellDef="let element">
-                    <div
-                            *ngIf="element.status === 'DRAFT'"
-                            class="btn-settings"
-                        (click)="onEditDocument(element)"
-                            matTooltip="Edit"
-                            matTooltipPosition="above"
-                        matTooltipClass="guardian-tooltip">
-                        <mat-icon>edit</mat-icon>
-                    </div>
-                    <div
-                            (click)="onNewVersion(element)"
-                        class="btn-settings"
-                            *ngIf="element.status !== 'DRAFT' && element.isCreator && !readonly"
-                            matTooltip="New Version"
-                        matTooltipPosition="above"
-                        matTooltipClass="guardian-tooltip">
-                        <mat-icon>add</mat-icon>
-                    </div>
-                    <div
-                            (click)="onCloneSchema(element)"
-                        class="btn-settings"
-                            *ngIf="element.status !== 'DRAFT' && !element.isCreator && !readonly"
-                            matTooltip="Copy Schema"
-                        matTooltipPosition="above"
-                        matTooltipClass="guardian-tooltip">
-                        <mat-icon>add</mat-icon>
-                    </div>
-                </td>
-            </ng-container>
-            <ng-container matColumnDef="clone-schema">
-                <th *matHeaderCellDef mat-header-cell></th>
-                <td *matCellDef="let element" mat-cell>
-                    <div
-                            (click)="onCopySchema(element)"
-                            class="btn-settings"
-                            matTooltip="Copy Schema"
-                            matTooltipClass="guardian-tooltip"
-                            matTooltipPosition="above">
-                        <mat-icon>content_copy</mat-icon>
-                    </div>
-                </td>
-            </ng-container>
-            <ng-container matColumnDef="delete">
-                <th mat-header-cell *matHeaderCellDef> </th>
-                <td mat-cell *matCellDef="let element">
-                    <div (click)="onCheckDeleteSchema(element)"
-                        class="btn-settings btn-delete"
-                         *ngIf="element.status == 'DRAFT'"
-                         matTooltip="Delete"
-                        matTooltipPosition="above"
-                        matTooltipClass="guardian-tooltip">
-                        <mat-icon>delete</mat-icon>
-                    </div>
-                    <div *ngIf="element.status !='DRAFT'" class="btn-settings btn-delete-des">
-                        <mat-icon>delete</mat-icon>
-                    </div>
-                </td>
-            </ng-container>
-            <ng-container matColumnDef="editSystem">
-                <th mat-header-cell *matHeaderCellDef> </th>
-                <td mat-cell *matCellDef="let element">
-                    <div (click)="onEditDocument(element)"
-                        class="btn-settings"
-                         *ngIf="!element.readonly && !element.active"
-                         matTooltip="Edit"
-                        matTooltipPosition="above"
-                        matTooltipClass="guardian-tooltip">
-                        <mat-icon>edit</mat-icon>
-                    </div>
-                    <div *ngIf="element.readonly || element.active" class="btn-settings btn-delete-des">
-                        <mat-icon>edit</mat-icon>
-                    </div>
-                </td>
-            </ng-container>
-            <ng-container matColumnDef="deleteSystem">
-                <th mat-header-cell *matHeaderCellDef> </th>
-                <td mat-cell *matCellDef="let element">
-                    <div (click)="onCheckDeleteSchema(element)"
-                        class="btn-settings btn-delete"
-                         *ngIf="!element.readonly && !element.active"
-                         matTooltip="Delete"
-                        matTooltipPosition="above"
-                        matTooltipClass="guardian-tooltip">
-                        <mat-icon>delete</mat-icon>
-                    </div>
-                    <div *ngIf="element.readonly || element.active" class="btn-settings btn-delete-des">
-                        <mat-icon>delete</mat-icon>
-                    </div>
-                </td>
-            </ng-container>
-            <ng-container matColumnDef="editTag">
-                <th mat-header-cell *matHeaderCellDef> </th>
-                <td mat-cell *matCellDef="let element">
-                    <div *ngIf="element.status === 'DRAFT'"
-                         class="btn-settings"
-                        (click)="onEditDocument(element)"
-                         matTooltip="Edit"
-                        matTooltipPosition="above"
-                        matTooltipClass="guardian-tooltip">
-                        <mat-icon>edit</mat-icon>
-                    </div>
-                    <div *ngIf="element.status !== 'DRAFT'" class="btn-settings btn-delete-des">
-                        <mat-icon>edit</mat-icon>
-                    </div>
-                </td>
-            </ng-container>
-            <ng-container matColumnDef="deleteTag">
-                <th mat-header-cell *matHeaderCellDef> </th>
-                <td mat-cell *matCellDef="let element">
-                    <div (click)="onCheckDeleteSchema(element)"
-                        class="btn-settings btn-delete"
-                         *ngIf="element.status === 'DRAFT'"
-                         matTooltip="Delete"
-                        matTooltipPosition="above"
-                        matTooltipClass="guardian-tooltip">
-                        <mat-icon>delete</mat-icon>
-                    </div>
-                    <div *ngIf="element.status !== 'DRAFT'" class="btn-settings btn-delete-des">
-                        <mat-icon>delete</mat-icon>
-                    </div>
-                </td>
-            </ng-container>
+                            <!--                        export-->
+                            <div
+                                    *ngIf="type === 'policy' || type === 'module' || type === 'tool'"
+                            >
+                                <div
+                                        (click)="onExport(schema)"
+                                        class="btn-settings"
+                                        matTooltip="Export"
+                                        matTooltipClass="guardian-tooltip"
+                                        matTooltipPosition="above"
+                                >
+                                    <svg fill="none" height="24" viewBox="0 0 24 24" width="24"
+                                         xmlns="http://www.w3.org/2000/svg">
+                                        <path class="color-primary" clip-rule="evenodd"
+                                              d="M11.0001 15C11.0001 15.5523 11.4478 16 12.0001 16C12.5524 16 13.0001 15.5523 13.0001 15V6.41418L15.293 8.70715C15.6836 9.09768 16.3167 9.09768 16.7073 8.70715C17.0978 8.31663 17.0978 7.68346 16.7073 7.29294L12.7073 3.29294L12.7072 3.29295C12.5263 3.11195 12.2762 3 12.0001 3C11.7239 3 11.4739 3.11195 11.2929 3.29295L11.2929 3.29294L7.29289 7.29294C6.90237 7.68346 6.90237 8.31663 7.29289 8.70715C7.68342 9.09768 8.31658 9.09768 8.70711 8.70715L11.0001 6.41419V15ZM5 14.5C5 13.9477 4.55228 13.5 4 13.5C3.44772 13.5 3 13.9477 3 14.5V18C3 19.6569 4.34315 21 6 21H18C19.6569 21 21 19.6569 21 18V14.5C21 13.9477 20.5523 13.5 20 13.5C19.4477 13.5 19 13.9477 19 14.5V18C19 18.5523 18.5523 19 18 19H6C5.44772 19 5 18.5523 5 18V14.5Z"
+                                              fill-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                            </div>
 
-            <tr mat-header-row *matHeaderRowDef="columns; sticky: true"></tr>
-            <tr mat-row *matRowDef="let row; columns: columns;"></tr>
-        </table>
+                            <!--                        edit-->
+                            <div *ngIf="type === 'policy' || type === 'module' || type === 'tool'">
+                                <div
+                                        (click)="onEditDocument(schema)"
+                                        *ngIf="schema.status == 'DRAFT'"
+                                        class="btn-settings"
+                                        matTooltip="Edit"
+                                        matTooltipClass="guardian-tooltip"
+                                        matTooltipPosition="above"
+                                >
+                                    <svg fill="none" height="24" viewBox="0 0 24 24" width="24"
+                                         xmlns="http://www.w3.org/2000/svg">
+                                        <path class="color-primary" clip-rule="evenodd"
+                                              d="M16.5084 6.31676C16.8031 6.03714 17.1971 5.8857 17.6038 5.89575C18.0105 5.9058 18.3966 6.07652 18.677 6.37035C18.9574 6.66418 19.1093 7.05705 19.0992 7.46253C19.0892 7.86802 18.9179 8.25291 18.6232 8.53252L8.08714 18.5537L5.37201 18.9094L6.48508 15.8059L16.5075 6.31771L16.5084 6.31676ZM20.0522 5.0628C19.4242 4.40569 18.5605 4.02384 17.6505 4.00108C16.7405 3.97832 15.8586 4.3165 15.1984 4.94139L5.00859 14.586C4.90058 14.6882 4.81814 14.8143 4.7679 14.9541L3.05549 19.7318C3.00064 19.8848 2.98614 20.0494 3.01339 20.2096C3.04063 20.3698 3.10871 20.5204 3.21109 20.6468C3.31346 20.7733 3.44671 20.8714 3.59804 20.9317C3.74938 20.9921 3.91373 21.0126 4.07533 20.9915L8.64177 20.3939C8.84179 20.3679 9.02835 20.2792 9.17452 20.1406L19.9351 9.90599C20.5946 9.27903 20.9773 8.4166 20.999 7.50836C21.0208 6.60012 20.6808 5.72045 20.0522 5.0628ZM13.466 19.1029C13.2137 19.1029 12.9717 19.2029 12.7933 19.3808C12.6149 19.5586 12.5147 19.7999 12.5147 20.0515C12.5147 20.303 12.6149 20.5443 12.7933 20.7222C12.9717 20.9001 13.2137 21 13.466 21H19.1741C19.4264 21 19.6684 20.9001 19.8468 20.7222C20.0252 20.5443 20.1254 20.303 20.1254 20.0515C20.1254 19.7999 20.0252 19.5586 19.8468 19.3808C19.6684 19.2029 19.4264 19.1029 19.1741 19.1029H13.466Z"
+                                              fill-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                                <div
+                                        (click)="onNewVersion(schema)"
+                                        *ngIf="
+                                        schema.status != 'DRAFT' &&
+                                        schema.isCreator
+                                    "
+                                        class="btn-settings"
+                                        matTooltip="New Version"
+                                        matTooltipClass="guardian-tooltip"
+                                        matTooltipPosition="above"
+                                >
+                                    <svg fill="none" height="24" viewBox="0 0 24 24" width="24"
+                                         xmlns="http://www.w3.org/2000/svg">
+                                        <path class="color-primary"
+                                              d="M20 12C20 12.6227 19.4952 13.1275 18.8725 13.1275H13.1275V18.8725C13.1275 19.4952 12.6227 20 12 20C11.3773 20 10.8725 19.4952 10.8725 18.8725V13.1275H5.12752C4.50481 13.1275 4 12.6227 4 12C4 11.3773 4.50481 10.8725 5.12752 10.8725H10.8725V5.12752C10.8725 4.50481 11.3773 4 12 4C12.6227 4 13.1275 4.50481 13.1275 5.12752V10.8725H18.8725C19.4952 10.8725 20 11.3773 20 12Z"/>
+                                    </svg>
+                                </div>
+                                <div
+                                        (click)="onCloneSchema(schema)"
+                                        *ngIf="
+                                        schema.status != 'DRAFT' &&
+                                        !schema.isCreator
+                                    "
+                                        class="btn-settings"
+                                        matTooltip="Copy Schema"
+                                        matTooltipClass="guardian-tooltip"
+                                        matTooltipPosition="above"
+                                >
+                                    <svg fill="none" height="24" viewBox="0 0 24 24" width="24"
+                                         xmlns="http://www.w3.org/2000/svg">
+                                        <path class="color-primary"
+                                              d="M20 12C20 12.6227 19.4952 13.1275 18.8725 13.1275H13.1275V18.8725C13.1275 19.4952 12.6227 20 12 20C11.3773 20 10.8725 19.4952 10.8725 18.8725V13.1275H5.12752C4.50481 13.1275 4 12.6227 4 12C4 11.3773 4.50481 10.8725 5.12752 10.8725H10.8725V5.12752C10.8725 4.50481 11.3773 4 12 4C12.6227 4 13.1275 4.50481 13.1275 5.12752V10.8725H18.8725C19.4952 10.8725 20 11.3773 20 12Z"/>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <!--                        delete-->
+                            <div *ngIf="type === 'policy' || type === 'module' || type === 'tool'">
+                                <div
+                                        (click)="deleteSchema(schema)"
+                                        *ngIf="schema.status == 'DRAFT'"
+                                        class="btn-settings btn-delete"
+                                        matTooltip="Delete"
+                                        matTooltipClass="guardian-tooltip"
+                                        matTooltipPosition="above"
+                                >
+                                    <svg fill="none" height="24" viewBox="0 0 24 24" width="24"
+                                         xmlns="http://www.w3.org/2000/svg">
+                                        <path class="color-accent-red" clip-rule="evenodd"
+                                              d="M10 4C9.44771 4 9 4.44771 9 5V6H15V5C15 4.44771 14.5523 4 14 4H10ZM17 6V5C17 3.34315 15.6569 2 14 2H10C8.34315 2 7 3.34315 7 5V6H5C4.44772 6 4 6.44771 4 7C4 7.55228 4.44772 8 5 8V18C5 19.6569 6.34315 21 8 21H16C17.6569 21 19 19.6569 19 18V8C19.5523 8 20 7.55228 20 7C20 6.44771 19.5523 6 19 6H17ZM17 8H7V18C7 18.5523 7.4477 19 8 19H16C16.5523 19 17 18.5523 17 18V8ZM10 10C10.5523 10 11 10.4477 11 11V16C11 16.5523 10.5523 17 10 17C9.44772 17 9 16.5523 9 16V11C9 10.4477 9.44772 10 10 10ZM14 10C14.5523 10 15 10.4477 15 11V16C15 16.5523 14.5523 17 14 17C13.4477 17 13 16.5523 13 16V11C13 10.4477 13.4477 10 14 10Z"
+                                              fill-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                                <div
+                                        *ngIf="schema.status != 'DRAFT'"
+                                        class="btn-settings btn-delete-des"
+                                >
+                                    <svg fill="none" height="24" viewBox="0 0 24 24" width="24"
+                                         xmlns="http://www.w3.org/2000/svg">
+                                        <path class="color-grey" clip-rule="evenodd"
+                                              d="M10 4C9.44771 4 9 4.44771 9 5V6H15V5C15 4.44771 14.5523 4 14 4H10ZM17 6V5C17 3.34315 15.6569 2 14 2H10C8.34315 2 7 3.34315 7 5V6H5C4.44772 6 4 6.44771 4 7C4 7.55228 4.44772 8 5 8V18C5 19.6569 6.34315 21 8 21H16C17.6569 21 19 19.6569 19 18V8C19.5523 8 20 7.55228 20 7C20 6.44771 19.5523 6 19 6H17ZM17 8H7V18C7 18.5523 7.4477 19 8 19H16C16.5523 19 17 18.5523 17 18V8ZM10 10C10.5523 10 11 10.4477 11 11V16C11 16.5523 10.5523 17 10 17C9.44772 17 9 16.5523 9 16V11C9 10.4477 9.44772 10 10 10ZM14 10C14.5523 10 15 10.4477 15 11V16C15 16.5523 14.5523 17 14 17C13.4477 17 13 16.5523 13 16V11C13 10.4477 13.4477 10 14 10Z"
+                                              fill-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <!--                        editSystem-->
+                            <div *ngIf="type === 'system'">
+                                <div
+                                        (click)="onEditDocument(schema)"
+                                        *ngIf="!schema.readonly && !schema.active"
+                                        class="btn-settings"
+                                        matTooltip="Edit"
+                                        matTooltipClass="guardian-tooltip"
+                                        matTooltipPosition="above"
+                                >
+                                    <svg fill="none" height="24" viewBox="0 0 24 24" width="24"
+                                         xmlns="http://www.w3.org/2000/svg">
+                                        <path class="color-primary" clip-rule="evenodd"
+                                              d="M16.5084 6.31676C16.8031 6.03714 17.1971 5.8857 17.6038 5.89575C18.0105 5.9058 18.3966 6.07652 18.677 6.37035C18.9574 6.66418 19.1093 7.05705 19.0992 7.46253C19.0892 7.86802 18.9179 8.25291 18.6232 8.53252L8.08714 18.5537L5.37201 18.9094L6.48508 15.8059L16.5075 6.31771L16.5084 6.31676ZM20.0522 5.0628C19.4242 4.40569 18.5605 4.02384 17.6505 4.00108C16.7405 3.97832 15.8586 4.3165 15.1984 4.94139L5.00859 14.586C4.90058 14.6882 4.81814 14.8143 4.7679 14.9541L3.05549 19.7318C3.00064 19.8848 2.98614 20.0494 3.01339 20.2096C3.04063 20.3698 3.10871 20.5204 3.21109 20.6468C3.31346 20.7733 3.44671 20.8714 3.59804 20.9317C3.74938 20.9921 3.91373 21.0126 4.07533 20.9915L8.64177 20.3939C8.84179 20.3679 9.02835 20.2792 9.17452 20.1406L19.9351 9.90599C20.5946 9.27903 20.9773 8.4166 20.999 7.50836C21.0208 6.60012 20.6808 5.72045 20.0522 5.0628ZM13.466 19.1029C13.2137 19.1029 12.9717 19.2029 12.7933 19.3808C12.6149 19.5586 12.5147 19.7999 12.5147 20.0515C12.5147 20.303 12.6149 20.5443 12.7933 20.7222C12.9717 20.9001 13.2137 21 13.466 21H19.1741C19.4264 21 19.6684 20.9001 19.8468 20.7222C20.0252 20.5443 20.1254 20.303 20.1254 20.0515C20.1254 19.7999 20.0252 19.5586 19.8468 19.3808C19.6684 19.2029 19.4264 19.1029 19.1741 19.1029H13.466Z"
+                                              fill-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                                <div
+                                        *ngIf="schema.readonly || schema.active"
+                                        class="btn-settings btn-delete-des"
+                                >
+                                    <svg fill="none" height="24" viewBox="0 0 24 24" width="24"
+                                         xmlns="http://www.w3.org/2000/svg">
+                                        <path class="color-grey" clip-rule="evenodd"
+                                              d="M16.5084 6.31676C16.8031 6.03714 17.1971 5.8857 17.6038 5.89575C18.0105 5.9058 18.3966 6.07652 18.677 6.37035C18.9574 6.66418 19.1093 7.05705 19.0992 7.46253C19.0892 7.86802 18.9179 8.25291 18.6232 8.53252L8.08714 18.5537L5.37201 18.9094L6.48508 15.8059L16.5075 6.31771L16.5084 6.31676ZM20.0522 5.0628C19.4242 4.40569 18.5605 4.02384 17.6505 4.00108C16.7405 3.97832 15.8586 4.3165 15.1984 4.94139L5.00859 14.586C4.90058 14.6882 4.81814 14.8143 4.7679 14.9541L3.05549 19.7318C3.00064 19.8848 2.98614 20.0494 3.01339 20.2096C3.04063 20.3698 3.10871 20.5204 3.21109 20.6468C3.31346 20.7733 3.44671 20.8714 3.59804 20.9317C3.74938 20.9921 3.91373 21.0126 4.07533 20.9915L8.64177 20.3939C8.84179 20.3679 9.02835 20.2792 9.17452 20.1406L19.9351 9.90599C20.5946 9.27903 20.9773 8.4166 20.999 7.50836C21.0208 6.60012 20.6808 5.72045 20.0522 5.0628ZM13.466 19.1029C13.2137 19.1029 12.9717 19.2029 12.7933 19.3808C12.6149 19.5586 12.5147 19.7999 12.5147 20.0515C12.5147 20.303 12.6149 20.5443 12.7933 20.7222C12.9717 20.9001 13.2137 21 13.466 21H19.1741C19.4264 21 19.6684 20.9001 19.8468 20.7222C20.0252 20.5443 20.1254 20.303 20.1254 20.0515C20.1254 19.7999 20.0252 19.5586 19.8468 19.3808C19.6684 19.2029 19.4264 19.1029 19.1741 19.1029H13.466Z"
+                                              fill-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <!--                        deleteSystem-->
+                            <div *ngIf="type === 'system'">
+                                <div
+                                        (click)="deleteSchema(schema)"
+                                        *ngIf="!schema.readonly && !schema.active"
+                                        class="btn-settings btn-delete"
+                                        matTooltip="Delete"
+                                        matTooltipClass="guardian-tooltip"
+                                        matTooltipPosition="above"
+                                >
+                                    <svg fill="none" height="24" viewBox="0 0 24 24" width="24"
+                                         xmlns="http://www.w3.org/2000/svg">
+                                        <path class="color-accent-red" clip-rule="evenodd"
+                                              d="M10 4C9.44771 4 9 4.44771 9 5V6H15V5C15 4.44771 14.5523 4 14 4H10ZM17 6V5C17 3.34315 15.6569 2 14 2H10C8.34315 2 7 3.34315 7 5V6H5C4.44772 6 4 6.44771 4 7C4 7.55228 4.44772 8 5 8V18C5 19.6569 6.34315 21 8 21H16C17.6569 21 19 19.6569 19 18V8C19.5523 8 20 7.55228 20 7C20 6.44771 19.5523 6 19 6H17ZM17 8H7V18C7 18.5523 7.4477 19 8 19H16C16.5523 19 17 18.5523 17 18V8ZM10 10C10.5523 10 11 10.4477 11 11V16C11 16.5523 10.5523 17 10 17C9.44772 17 9 16.5523 9 16V11C9 10.4477 9.44772 10 10 10ZM14 10C14.5523 10 15 10.4477 15 11V16C15 16.5523 14.5523 17 14 17C13.4477 17 13 16.5523 13 16V11C13 10.4477 13.4477 10 14 10Z"
+                                              fill-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                                <div
+                                        *ngIf="schema.readonly || schema.active"
+                                        class="btn-settings btn-delete-des"
+                                >
+                                    <svg fill="none" height="24" viewBox="0 0 24 24" width="24"
+                                         xmlns="http://www.w3.org/2000/svg">
+                                        <path class="color-grey" clip-rule="evenodd"
+                                              d="M10 4C9.44771 4 9 4.44771 9 5V6H15V5C15 4.44771 14.5523 4 14 4H10ZM17 6V5C17 3.34315 15.6569 2 14 2H10C8.34315 2 7 3.34315 7 5V6H5C4.44772 6 4 6.44771 4 7C4 7.55228 4.44772 8 5 8V18C5 19.6569 6.34315 21 8 21H16C17.6569 21 19 19.6569 19 18V8C19.5523 8 20 7.55228 20 7C20 6.44771 19.5523 6 19 6H17ZM17 8H7V18C7 18.5523 7.4477 19 8 19H16C16.5523 19 17 18.5523 17 18V8ZM10 10C10.5523 10 11 10.4477 11 11V16C11 16.5523 10.5523 17 10 17C9.44772 17 9 16.5523 9 16V11C9 10.4477 9.44772 10 10 10ZM14 10C14.5523 10 15 10.4477 15 11V16C15 16.5523 14.5523 17 14 17C13.4477 17 13 16.5523 13 16V11C13 10.4477 13.4477 10 14 10Z"
+                                              fill-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <!--                        editTag-->
+                            <div *ngIf="type === 'tag'">
+                                <div
+                                        (click)="onEditDocument(schema)"
+                                        *ngIf="schema.status === 'DRAFT'"
+                                        class="btn-settings"
+                                        matTooltip="Edit"
+                                        matTooltipClass="guardian-tooltip"
+                                        matTooltipPosition="above"
+                                >
+                                    <svg fill="none" height="24" viewBox="0 0 24 24" width="24"
+                                         xmlns="http://www.w3.org/2000/svg">
+                                        <path class="color-primary" clip-rule="evenodd"
+                                              d="M16.5084 6.31676C16.8031 6.03714 17.1971 5.8857 17.6038 5.89575C18.0105 5.9058 18.3966 6.07652 18.677 6.37035C18.9574 6.66418 19.1093 7.05705 19.0992 7.46253C19.0892 7.86802 18.9179 8.25291 18.6232 8.53252L8.08714 18.5537L5.37201 18.9094L6.48508 15.8059L16.5075 6.31771L16.5084 6.31676ZM20.0522 5.0628C19.4242 4.40569 18.5605 4.02384 17.6505 4.00108C16.7405 3.97832 15.8586 4.3165 15.1984 4.94139L5.00859 14.586C4.90058 14.6882 4.81814 14.8143 4.7679 14.9541L3.05549 19.7318C3.00064 19.8848 2.98614 20.0494 3.01339 20.2096C3.04063 20.3698 3.10871 20.5204 3.21109 20.6468C3.31346 20.7733 3.44671 20.8714 3.59804 20.9317C3.74938 20.9921 3.91373 21.0126 4.07533 20.9915L8.64177 20.3939C8.84179 20.3679 9.02835 20.2792 9.17452 20.1406L19.9351 9.90599C20.5946 9.27903 20.9773 8.4166 20.999 7.50836C21.0208 6.60012 20.6808 5.72045 20.0522 5.0628ZM13.466 19.1029C13.2137 19.1029 12.9717 19.2029 12.7933 19.3808C12.6149 19.5586 12.5147 19.7999 12.5147 20.0515C12.5147 20.303 12.6149 20.5443 12.7933 20.7222C12.9717 20.9001 13.2137 21 13.466 21H19.1741C19.4264 21 19.6684 20.9001 19.8468 20.7222C20.0252 20.5443 20.1254 20.303 20.1254 20.0515C20.1254 19.7999 20.0252 19.5586 19.8468 19.3808C19.6684 19.2029 19.4264 19.1029 19.1741 19.1029H13.466Z"
+                                              fill-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                                <div
+                                        *ngIf="schema.status !== 'DRAFT'"
+                                        class="btn-settings btn-delete-des"
+                                >
+                                    <svg fill="none" height="24" viewBox="0 0 24 24" width="24"
+                                         xmlns="http://www.w3.org/2000/svg">
+                                        <path class="color-grey" clip-rule="evenodd"
+                                              d="M16.5084 6.31676C16.8031 6.03714 17.1971 5.8857 17.6038 5.89575C18.0105 5.9058 18.3966 6.07652 18.677 6.37035C18.9574 6.66418 19.1093 7.05705 19.0992 7.46253C19.0892 7.86802 18.9179 8.25291 18.6232 8.53252L8.08714 18.5537L5.37201 18.9094L6.48508 15.8059L16.5075 6.31771L16.5084 6.31676ZM20.0522 5.0628C19.4242 4.40569 18.5605 4.02384 17.6505 4.00108C16.7405 3.97832 15.8586 4.3165 15.1984 4.94139L5.00859 14.586C4.90058 14.6882 4.81814 14.8143 4.7679 14.9541L3.05549 19.7318C3.00064 19.8848 2.98614 20.0494 3.01339 20.2096C3.04063 20.3698 3.10871 20.5204 3.21109 20.6468C3.31346 20.7733 3.44671 20.8714 3.59804 20.9317C3.74938 20.9921 3.91373 21.0126 4.07533 20.9915L8.64177 20.3939C8.84179 20.3679 9.02835 20.2792 9.17452 20.1406L19.9351 9.90599C20.5946 9.27903 20.9773 8.4166 20.999 7.50836C21.0208 6.60012 20.6808 5.72045 20.0522 5.0628ZM13.466 19.1029C13.2137 19.1029 12.9717 19.2029 12.7933 19.3808C12.6149 19.5586 12.5147 19.7999 12.5147 20.0515C12.5147 20.303 12.6149 20.5443 12.7933 20.7222C12.9717 20.9001 13.2137 21 13.466 21H19.1741C19.4264 21 19.6684 20.9001 19.8468 20.7222C20.0252 20.5443 20.1254 20.303 20.1254 20.0515C20.1254 19.7999 20.0252 19.5586 19.8468 19.3808C19.6684 19.2029 19.4264 19.1029 19.1741 19.1029H13.466Z"
+                                              fill-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <!--                        deleteTag-->
+                            <div *ngIf="type === 'tag'">
+                                <div
+                                        (click)="deleteSchema(schema)"
+                                        *ngIf="schema.status === 'DRAFT'"
+                                        class="btn-settings btn-delete"
+                                        matTooltip="Delete"
+                                        matTooltipClass="guardian-tooltip"
+                                        matTooltipPosition="above"
+                                >
+                                    <svg fill="none" height="24" viewBox="0 0 24 24" width="24"
+                                         xmlns="http://www.w3.org/2000/svg">
+                                        <path class="color-accent-red" clip-rule="evenodd"
+                                              d="M10 4C9.44771 4 9 4.44771 9 5V6H15V5C15 4.44771 14.5523 4 14 4H10ZM17 6V5C17 3.34315 15.6569 2 14 2H10C8.34315 2 7 3.34315 7 5V6H5C4.44772 6 4 6.44771 4 7C4 7.55228 4.44772 8 5 8V18C5 19.6569 6.34315 21 8 21H16C17.6569 21 19 19.6569 19 18V8C19.5523 8 20 7.55228 20 7C20 6.44771 19.5523 6 19 6H17ZM17 8H7V18C7 18.5523 7.4477 19 8 19H16C16.5523 19 17 18.5523 17 18V8ZM10 10C10.5523 10 11 10.4477 11 11V16C11 16.5523 10.5523 17 10 17C9.44772 17 9 16.5523 9 16V11C9 10.4477 9.44772 10 10 10ZM14 10C14.5523 10 15 10.4477 15 11V16C15 16.5523 14.5523 17 14 17C13.4477 17 13 16.5523 13 16V11C13 10.4477 13.4477 10 14 10Z"
+                                              fill-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                                <div
+                                        *ngIf="schema.status !== 'DRAFT'"
+                                        class="btn-settings btn-delete-des"
+                                >
+                                    <svg fill="none" height="24" viewBox="0 0 24 24" width="24"
+                                         xmlns="http://www.w3.org/2000/svg">
+                                        <path class="color-grey" clip-rule="evenodd"
+                                              d="M10 4C9.44771 4 9 4.44771 9 5V6H15V5C15 4.44771 14.5523 4 14 4H10ZM17 6V5C17 3.34315 15.6569 2 14 2H10C8.34315 2 7 3.34315 7 5V6H5C4.44772 6 4 6.44771 4 7C4 7.55228 4.44772 8 5 8V18C5 19.6569 6.34315 21 8 21H16C17.6569 21 19 19.6569 19 18V8C19.5523 8 20 7.55228 20 7C20 6.44771 19.5523 6 19 6H17ZM17 8H7V18C7 18.5523 7.4477 19 8 19H16C16.5523 19 17 18.5523 17 18V8ZM10 10C10.5523 10 11 10.4477 11 11V16C11 16.5523 10.5523 17 10 17C9.44772 17 9 16.5523 9 16V11C9 10.4477 9.44772 10 10 10ZM14 10C14.5523 10 15 10.4477 15 11V16C15 16.5523 14.5523 17 14 17C13.4477 17 13 16.5523 13 16V11C13 10.4477 13.4477 10 14 10Z"
+                                              fill-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template let-columns pTemplate="emptymessage"></ng-template>
+        </p-table>
     </div>
-
     <div *ngIf="isAny" class="table-paginator">
-        <mat-paginator
-                (page)="onPage($event)"
-                [length]="count"
-            [pageSize]="pageSize"
-                [pageIndex]="pageIndex"
-                [pageSizeOptions]="[10, 25, 50, 100]"
-            aria-label="Select page">
-        </mat-paginator>
+        <span>Items per page:</span>
+        <p-dropdown
+                (onChange)="newOnPage()"
+                [(ngModel)]="pageSize"
+                [options]="[10, 25, 50, 100]"
+        ></p-dropdown>
+        <span class="color-grey-6"
+        >{{ pageIndex * pageSize + 1 }} –
+            {{
+                pageIndex * pageSize + pageSize > count
+                    ? count
+                    : pageIndex * pageSize + pageSize
+            }}
+            of {{ count }}</span
+        >
+        <div class="flex">
+            <svg
+                    (click)="movePageIndex(-1)"
+                    fill="none"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    xmlns="http://www.w3.org/2000/svg"
+            >
+                <path
+                        d="M15.2828 5.68906C14.8923 5.29856 14.2591 5.29856 13.8686 5.68906L8.98115 10.5813C8.20075 11.3625 8.20106 12.6283 8.98184 13.4091L13.8722 18.2994C14.2627 18.6899 14.8959 18.6899 15.2864 18.2994C15.677 17.9089 15.677 17.2757 15.2864 16.8852L11.1008 12.6996C10.7103 12.309 10.7103 11.6759 11.1008 11.2854L15.2828 7.10326C15.6733 6.71276 15.6733 6.07956 15.2828 5.68906Z"
+                        fill="#848FA9"
+                />
+            </svg>
+            <svg
+                    (click)="movePageIndex(+1)"
+                    fill="none"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    xmlns="http://www.w3.org/2000/svg"
+            >
+                <path
+                        d="M8.6926 5.68907C9.0831 5.29857 9.7163 5.29857 10.1068 5.68907L14.9942 10.5813C15.7746 11.3625 15.7743 12.6283 14.9936 13.4091L10.1032 18.2994C9.7127 18.6899 9.0795 18.6899 8.689 18.2994C8.2984 17.9089 8.2984 17.2757 8.689 16.8852L12.8746 12.6996C13.2651 12.309 13.2651 11.6759 12.8746 11.2854L8.6926 7.10327C8.3021 6.71277 8.3021 6.07957 8.6926 5.68907Z"
+                        fill="#848FA9"
+                />
+            </svg>
+        </div>
     </div>
+
+    <div *ngIf="!isSystem && !isConfirmed" class="not-exist">
+        Before starting work you need to get DID
+        <a [routerLink]="['/profile']">here</a>
+    </div>
+</div>
+
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
 </div>

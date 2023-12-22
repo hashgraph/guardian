@@ -1,7 +1,7 @@
-import { Component, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Component } from '@angular/core';
 import { ModulesService } from 'src/app/services/modules.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
+import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ToolsService } from 'src/app/services/tools.service';
 /**
  * Export schema dialog.
@@ -9,7 +9,7 @@ import { ToolsService } from 'src/app/services/tools.service';
 @Component({
     selector: 'export-policy-dialog',
     templateUrl: './export-policy-dialog.component.html',
-    styleUrls: ['./export-policy-dialog.component.css']
+    styleUrls: ['./export-policy-dialog.component.scss'],
 })
 export class ExportPolicyDialog {
     public loading = true;
@@ -19,15 +19,15 @@ export class ExportPolicyDialog {
     public tool!: any;
 
     constructor(
-        public dialogRef: MatDialogRef<ExportPolicyDialog>,
+        public ref: DynamicDialogRef,
+        public config: DynamicDialogConfig,
         private policyEngineService: PolicyEngineService,
         private modulesService: ModulesService,
-        private toolsService: ToolsService,
-        @Inject(MAT_DIALOG_DATA) public data: any
+        private toolsService: ToolsService
     ) {
-        this.policy = data.policy;
-        this.module = data.module;
-        this.tool = data.tool;
+        this.policy = this.config.data.policy;
+        this.module = this.config.data.module;
+        this.tool = this.config.data.tool;
     }
 
     ngOnInit() {
@@ -39,45 +39,63 @@ export class ExportPolicyDialog {
     }
 
     onClose(): void {
-        this.dialogRef.close(false);
+        this.ref.close(false);
+    }
+
+    handleCopyToClipboard(text: string): void {
+        navigator.clipboard.writeText(text || '');
     }
 
     saveToFile() {
         this.loading = true;
-        this.policyEngineService.exportInFile(this.policy.id)
-            .subscribe(fileBuffer => {
+        this.policyEngineService.exportInFile(this.policy.id).subscribe(
+            (fileBuffer) => {
                 let downloadLink = document.createElement('a');
-                downloadLink.href = window.URL.createObjectURL(new Blob([new Uint8Array(fileBuffer)], {
-                    type: 'application/guardian-policy'
-                }));
-                downloadLink.setAttribute('download', `policy_${Date.now()}.policy`);
+                downloadLink.href = window.URL.createObjectURL(
+                    new Blob([new Uint8Array(fileBuffer)], {
+                        type: 'application/guardian-policy',
+                    })
+                );
+                downloadLink.setAttribute(
+                    'download',
+                    `policy_${Date.now()}.policy`
+                );
                 document.body.appendChild(downloadLink);
                 downloadLink.click();
                 setTimeout(() => {
                     this.loading = false;
                 }, 500);
-            }, error => {
+            },
+            (error) => {
                 this.loading = false;
-            });
+            }
+        );
     }
 
     moduleToFile() {
         this.loading = true;
-        this.modulesService.exportInFile(this.module.uuid)
-            .subscribe(fileBuffer => {
+        this.modulesService.exportInFile(this.module.uuid).subscribe(
+            (fileBuffer) => {
                 let downloadLink = document.createElement('a');
-                downloadLink.href = window.URL.createObjectURL(new Blob([new Uint8Array(fileBuffer)], {
-                    type: 'application/guardian-module'
-                }));
-                downloadLink.setAttribute('download', `module_${Date.now()}.module`);
+                downloadLink.href = window.URL.createObjectURL(
+                    new Blob([new Uint8Array(fileBuffer)], {
+                        type: 'application/guardian-module',
+                    })
+                );
+                downloadLink.setAttribute(
+                    'download',
+                    `module_${Date.now()}.module`
+                );
                 document.body.appendChild(downloadLink);
                 downloadLink.click();
                 setTimeout(() => {
                     this.loading = false;
                 }, 500);
-            }, error => {
+            },
+            (error) => {
                 this.loading = false;
-            });
+            }
+        );
     }
 
     toolToFile() {

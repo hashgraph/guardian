@@ -4,11 +4,11 @@
     </mat-tree-node>
     <mat-nested-tree-node *matTreeNodeDef="let node; when: hasChild">
         <div class="mat-tree-node">
-            <button mat-icon-button matTreeNodeToggle [attr.aria-label]="'Toggle ' + node.name">
-                <mat-icon class="mat-icon-rtl-mirror">
-                    {{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
-                </mat-icon>
-            </button>
+            <!--            <button mat-icon-button matTreeNodeToggle [attr.aria-label]="'Toggle ' + node.name">-->
+            <!--                <mat-icon class="mat-icon-rtl-mirror">-->
+            <!--                    {{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}-->
+            <!--                </mat-icon>-->
+            <!--            </button>-->
             <ng-container *ngTemplateOutlet="nodeTemplate; context: { node }"></ng-container>
         </div>
         <div [class.tree-invisible]="!treeControl.isExpanded(node)" role="group">
@@ -20,6 +20,14 @@
 <ng-template #nodeTemplate let-node="node">
     <div (click)="onNodeClick(node)" class="node" [ngClass]="{
         'current-node': currentNode === node
-    }"><span class="node-id">{{node.id}}</span>{{node.name}}</div>
+    }">
+        <i
+                class="pi pi-angle-right"
+        ></i>
+        <p>{{ node.name }}</p>
+        <!--        <span class="node-id">{{node.id}}</span>{{node.name}}-->
+
+
+    </div>
 
 </ng-template>

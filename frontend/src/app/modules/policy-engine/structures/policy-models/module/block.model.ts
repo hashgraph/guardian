@@ -460,7 +460,6 @@ export class PolicyModule extends PolicyBlock {
                 }
             }
         }
-        TemplateUtils.checkSchemaVariables(this._lastVariables.schemas);
     }
 
     public override emitUpdate() {
@@ -633,7 +632,7 @@ export class PolicyModule extends PolicyBlock {
         }
     }
 
-    public getTools(): Set<string> {
+    public getAllTools(): Set<string> {
         const map = new Set<string>();
         if (this._allTools) {
             for (const tool of this._allTools) {

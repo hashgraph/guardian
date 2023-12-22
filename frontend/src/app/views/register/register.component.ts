@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { AbstractControl, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { Validators, ValidatorFn, AbstractControl, ValidationErrors, FormGroup, FormControl } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { AuthStateService } from 'src/app/services/auth-state.service';
 import { UserRole } from '@guardian/interfaces';
@@ -61,19 +61,14 @@ export class RegisterComponent implements OnInit {
                     return;
                 }
                 this.auth.login(d.login, d.password).subscribe((result) => {
-                    this.auth.setRefreshToken(result.refreshToken);
-                    this.auth.updateAccessToken().subscribe((_result) => {
-                        this.auth.setAccessToken(_result);
-                        this.auth.setUsername(d.login);
-                        this.authState.updateState(true);
-                        if (result.role === UserRole.STANDARD_REGISTRY) {
-                            this.router.navigate(['/config']);
-                        } else {
-                            this.router.navigate(['/']);
-                        }
-                    }, () => {
-                        this.loading = false;
-                    })
+                    this.auth.setAccessToken(result.accessToken);
+                    this.auth.setUsername(d.login);
+                    this.authState.updateState(true);
+                    if (result.role === UserRole.STANDARD_REGISTRY) {
+                        this.router.navigate(['/config']);
+                    } else {
+                        this.router.navigate(['/']);
+                    }
                 }, () => {
                     this.loading = false;
                 })

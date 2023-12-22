@@ -26,7 +26,7 @@
     gap: 20px;
 }
 
-.company-logo {
+#company-logo {
     display: none;
 }
 
@@ -354,42 +354,6 @@ a[hidden="true"] {
 
 .menu-backdrop {
     display: none;
-}
-
-@media (max-width: 1500px) {
-    .sub-nav-list {
-        padding: 7px 120px;
-    }
-
-    .nav-list-item {
-        min-width: 140px;
-    }
-}
-
-@media (max-width: 1300px) {
-    .sub-nav-list {
-        padding: 7px 20px;
-    }
-
-    .nav-list-item {
-        min-width: 130px;
-    }
-}
-
-@media (max-width: 1100px) {
-    .sub-nav-list {
-        padding: 7px 10px;
-    }
-
-    .nav-list-item {
-        min-width: 130px;
-    }
-}
-
-@media (max-width: 1000px) {
-    .nav-list-item {
-        min-width: 80px;
-    }
 }
 
 @media (max-width: 810px) {

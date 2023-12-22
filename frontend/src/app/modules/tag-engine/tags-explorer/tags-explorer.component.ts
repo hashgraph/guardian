@@ -5,6 +5,7 @@ import { TagCreateDialog } from '../tags-create-dialog/tags-create-dialog.compon
 import { TagsExplorerDialog } from '../tags-explorer-dialog/tags-explorer-dialog.component';
 import { TagsHistory } from '../models/tags-history';
 import { Schema } from '@guardian/interfaces';
+import { DialogService } from 'primeng/dynamicdialog';
 
 /**
  * Hedera explorer.
@@ -12,7 +13,7 @@ import { Schema } from '@guardian/interfaces';
 @Component({
     selector: 'tags-explorer',
     templateUrl: './tags-explorer.component.html',
-    styleUrls: ['./tags-explorer.component.css']
+    styleUrls: ['./tags-explorer.component.scss']
 })
 export class TagsExplorer {
     @Input('data') data!: any;
@@ -25,7 +26,7 @@ export class TagsExplorer {
     public loading = false;
     public history!: TagsHistory;
 
-    constructor(public dialog: MatDialog) {
+    constructor(public dialog: DialogService) {
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -48,9 +49,10 @@ export class TagsExplorer {
 
     public onOpen() {
         const dialogRef = this.dialog.open(TagsExplorerDialog, {
-            width: '800px',
-            panelClass: 'g-dialog',
-            disableClose: true,
+            width: '750px',
+            height: '500px',
+            closable: false,
+            header: 'Tags',
             data: {
                 service: this.tagsService,
                 history: this.history,
@@ -58,7 +60,7 @@ export class TagsExplorer {
             }
         });
         dialogRef
-            .afterClosed()
+            .onClose
             .subscribe(async (result) =>
                 result ? this.tagsService.tagsUpdated$.next() : null
             );
@@ -66,14 +68,14 @@ export class TagsExplorer {
 
     public onAdd() {
         const dialogRef = this.dialog.open(TagCreateDialog, {
-            width: '850px',
-            panelClass: 'g-dialog',
-            disableClose: true,
+            width: '750px',
+            closable: true,
+            header: 'New Tag',
             data: {
                 schemas: this.schemas
             }
         });
-        dialogRef.afterClosed().subscribe(async (result) => {
+        dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 this.create(result);
             }

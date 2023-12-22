@@ -1,6 +1,5 @@
-import { Component, EventEmitter, Inject, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { IModuleVariables, PolicyBlock, SchemaVariables } from '../../../../structures';
-import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
 
 /**
  * Settings for block of 'sendToGuardian' type.
@@ -61,10 +60,6 @@ export class DocumentValidatorConfigComponent implements OnInit {
             field: '',
             type: 'equal',
         })
-    }
-
-    removeCondition(i: number) {
-        this.properties.conditions.splice(i, 1);
     }
 
     onSave() {

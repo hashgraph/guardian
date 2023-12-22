@@ -4,12 +4,10 @@
         <mat-icon>arrow_drop_down</mat-icon>
     </div>
     <mat-menu #publishMenu="matMenu">
-        <ng-container *ngFor="let item of options">
-            <div *ngIf="hasPermissions(item.permissions)" class="select-menu-item" (click)="onAction(item)">
-                <div class="select-menu-item-title" [style.color]="item.color">{{item.title}}</div>
-                <div class="select-menu-item-description">{{item.description}}</div>
-            </div>
-        </ng-container>
+        <div (click)="onAction(item)" *ngFor="let item of options" class="select-menu-item">
+            <div [style.color]="item.color" class="select-menu-item-title">{{ item.title }}</div>
+            <div class="select-menu-item-description">{{ item.description }}</div>
+        </div>
     </mat-menu>
 </ng-container>
 <ng-template #elseTemplate>

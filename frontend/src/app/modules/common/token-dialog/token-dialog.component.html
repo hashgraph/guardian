@@ -1,4 +1,4 @@
-<div class="g-dialog-content">
+<div *ngIf="false" class="g-dialog-content">
     <div class="g-dialog-header">
         <div class="g-dialog-cancel">
             <div class="g-dialog-cancel-btn" (click)="onNoClick()">
@@ -31,7 +31,8 @@
             {{description}}
         </div>
         <div [style.padding]="innerWidth <= 810 ? '20 0' : '20px 35px 30px 35px'">
-            <app-token-configuration [dataForm]="dataForm" [readonly]="readonly" [hide-type]="hideType" [contracts]="contracts"></app-token-configuration>
+            <app-token-configuration [dataForm]="dataForm" [hide-type]="hideType"
+                                     [readonly]="readonly"></app-token-configuration>
         </div>
     </div>
     <div *ngIf="innerWidth <= 810" class="page-btns">

@@ -1,0 +1,67 @@
+.content {
+  // position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 0;
+  display: block;
+}
+
+.header {
+  // position: absolute;
+  height: 50px;
+  left: 0;
+  right: 0;
+  top: 0;
+}
+
+.body {
+  // position: absolute;
+  left: 0;
+  right: 0;
+  top: 56px;
+  bottom: 0;
+}
+
+.all-body {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0px;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.block-item {
+  display: flex;
+  position: relative;
+  flex: 0;
+  width: 100%;
+  flex-direction: column;
+}
+
+:host ::ng-deep {
+  .mat-tab-header {
+    background-color: var(--color-grey-1) !important;
+  }
+
+  .mat-ink-bar {
+    background-color: var(--primary-color) !important;
+  }
+
+  .mat-tab-label {
+    color: var(--color-grey-5);
+    text-align: center;
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 16px;
+    opacity: unset;
+  }
+
+  .mat-tab-label-active {
+    color: var(--primary-color);
+  }
+}

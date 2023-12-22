@@ -1,0 +1,65 @@
+.content {
+  overflow: visible;
+}
+
+.description {
+  word-wrap: break-word;
+  color: var(--color-grey-black-1);
+  font-family: Inter, sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 14px;
+}
+
+.textarea {
+  display: flex;
+  flex-direction: column;
+}
+
+.buttons {
+  display: flex;
+  justify-content: end;
+  padding: 5px 0 20px 0;
+}
+
+.dialog-body {
+  height: 35vh;
+  overflow-y: auto;
+}
+
+::ng-deep {
+  .p-dialog-title {
+    font-family: Poppins, sans-serif;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 600;
+  }
+
+  .p-dialog {
+    box-shadow: none;
+  }
+
+  .p-dialog-header {
+    border-top-left-radius: 16px !important;
+    border-top-right-radius: 16px !important;
+  }
+
+  .p-dialog-content {
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+  }
+
+  .p-button {
+    border-radius: 8px;
+  }
+}
+
+.action-buttons {
+  display: flex;
+}
+
+.cancel-button {
+  margin-left: auto;
+  margin-right: 15px;
+}

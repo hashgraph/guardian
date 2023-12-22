@@ -1,105 +1,220 @@
 <div class="content" [hidden]="!isActive">
-    <div *ngIf="loading" class="loading">
-        <mat-spinner></mat-spinner>
-    </div>
-
     <div *ngIf="addons && addons.length" class="grid-filters">
         <div *ngFor="let block of addons" class="grid-filter">
             <render-block [block]="block" [policyId]="policyId"></render-block>
         </div>
     </div>
-    <div *ngIf="fields && documents">
-        <table mat-table [dataSource]="documents" class="table" multiTemplateDataRows matSort
-            (matSortChange)="onSortChange($event)" [matSortDirection]="sortOptions.direction"
-            [matSortActive]="this.sortOptions.active"
-            [matSortDisabled]="!enableSorting">
-            <ng-container [matColumnDef]="'history'">
-                <th mat-header-cell *matHeaderCellDef>
-                    History
-                </th>
-                <td mat-cell *matCellDef="let element">
-                    <div *ngIf="element.history && element.history.length">
-                        <mat-icon>{{statusDetailed === element? 'keyboard_arrow_down' : 'keyboard_arrow_right'}}</mat-icon>
-                    </div>
-                </td>
-            </ng-container>
-
-            <ng-container *ngFor="let field of fields" [matColumnDef]="field.index">
-                <ng-container *ngIf="field.type === 'text' && field.name; then sortingColumn else notSortingColumn">
-                </ng-container>
-                <ng-template #sortingColumn>
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header>
-                        {{field.title}}
-                        <help-icon *ngIf="field.tooltip" [text]="field.tooltip"></help-icon>
+    <div *ngIf="fields && documents" style="background: var(--grey-grey-1, #F9FAFC);">
+        <div class="table-container">
+            <table
+                    (matSortChange)="onSortChange($event)"
+                    [dataSource]="documents"
+                    [matSortActive]="this.sortOptions.active"
+                    [matSortDirection]="sortOptions.direction"
+                    [matSortDisabled]="!enableSorting"
+                    class="table"
+                    mat-table
+                    matSort
+                    multiTemplateDataRows
+            >
+                <ng-container [matColumnDef]="'history'">
+                    <th *matHeaderCellDef mat-header-cell>
+                        History
                     </th>
-                </ng-template>
-
-                <ng-template #notSortingColumn>
-                    <th mat-header-cell *matHeaderCellDef>
-                        {{field.title}}
-                        <help-icon *ngIf="field.tooltip" [text]="field.tooltip"></help-icon>
-                    </th>
-                </ng-template>
-                <td mat-cell *matCellDef="let element" let>
-                    <div [style.width]="field.width">
-                        <div *ngIf="getGroup(element, field) as option">
-                            <span *ngIf="option.type=='text'" class="text" [title]="getText(element, option)">
-                                {{getText(element, option)}}
-                            </span>
-                            <span *ngIf="option.type=='issuer'" class="text" [title]="getText(element, option)">
-                                {{getIssuer(element, option)}}
-                            </span>
-                            <span *ngIf="option.type=='array'" class="text array" [title]="getText(element, option)">
-                                {{getText(element, option)}}
-                                <mat-icon (click)="onArray($event, element, option)">keyboard_arrow_down</mat-icon>
-                            </span>
-                            <span *ngIf="option.type=='serials' && element.serials" class="text serials" [title]="getText(element, option)">
-                                <hedera-explorer 
-                                    *ngFor="let serial of element.serials"
-                                    type="tokens" 
-                                    [params]="element.tokenId" 
-                                    subType="serials"
-                                    [subParams]="serial">{{serial}}</hedera-explorer>
-                                <mat-icon (click)="onSerials($event, element, option)">keyboard_arrow_down</mat-icon>
-                            </span>
-                            <span *ngIf="option.type=='button'" class="col-btn" (click)="$event.stopImmediatePropagation();">
-                                <div class="btn-field {{option.uiClass}}" (click)="onButton($event, element, option)">
-                                    {{getText(element, option)}}
-                                </div>
-                            </span>
-                            <div *ngIf="option.type=='block'" class="col-btn" (click)="$event.stopImmediatePropagation();">
-                                <render-block [block]="option._block"
-                                    [static]="getConfig(element, option, option._block)" [policyId]="policyId">
-                                </render-block>
-                            </div>
+                    <td *matCellDef="let element" mat-cell>
+                        <div *ngIf="element.history && element.history.length">
+                            <mat-icon>{{
+                                    statusDetailed === element
+                                        ? "keyboard_arrow_down"
+                                        : "keyboard_arrow_right"
+                                }}
+                            </mat-icon>
                         </div>
-                    </div>
-                </td>
-            </ng-container>
+                    </td>
+                </ng-container>
 
-            <ng-container [matColumnDef]="'statusDetails'">
-                    <td mat-cell *matCellDef="let element" let class="expanded-detail" [attr.colspan]="fields.length + 1">
-                        <div [@statusExpand]="element == statusDetailed ? 'expanded' : 'collapsed'"
-                            *ngIf="element.history">
-                            <div class="timeline-container">
-                                <div *ngFor="let historyElem of element.history" class="timeline-item" [attr.date-is]='historyElem.created'>
-                                    <h1>{{historyElem.labelValue}}</h1>
-                                    <p>{{parseArrayValue(historyElem.comment)}}</p>
+                <ng-container
+                        *ngFor="let field of fields"
+                        [matColumnDef]="field.index"
+                >
+                    <ng-container
+                            *ngIf="
+                            field.type === 'text' && field.name;
+                            then sortingColumn;
+                            else notSortingColumn
+                        "
+                    >
+                    </ng-container>
+                    <ng-template #sortingColumn>
+                        <th *matHeaderCellDef mat-header-cell mat-sort-header>
+                            {{ field.title }}
+                            <help-icon
+                                    *ngIf="field.tooltip"
+                                    [text]="field.tooltip"
+                            ></help-icon>
+                        </th>
+                    </ng-template>
+
+                    <ng-template #notSortingColumn>
+                        <th *matHeaderCellDef mat-header-cell>
+                            {{ field.title }}
+                            <help-icon
+                                    *ngIf="field.tooltip"
+                                    [text]="field.tooltip"
+                            ></help-icon>
+                        </th>
+                    </ng-template>
+                    <td *matCellDef="let element" let mat-cell>
+                        <div [style.width]="field.width">
+                            <div *ngIf="getGroup(element, field) as option">
+                                <span
+                                        *ngIf="option.type == 'text'"
+                                        [title]="getText(element, option)"
+                                        class="text"
+                                >
+                                    {{ getText(element, option) }}
+                                </span>
+                                <span
+                                        *ngIf="option.type == 'issuer'"
+                                        [title]="getText(element, option)"
+                                        class="text"
+                                >
+                                    {{ getIssuer(element, option) }}
+                                </span>
+                                <span
+                                        *ngIf="option.type == 'array'"
+                                        [title]="getText(element, option)"
+                                        class="text array"
+                                >
+                                    {{ getText(element, option) }}
+                                    <mat-icon
+                                            (click)="
+                                            onArray($event, element, option)
+                                        "
+                                    >keyboard_arrow_down</mat-icon
+                                    >
+                                </span>
+                                <span
+                                        *ngIf="
+                                        option.type == 'serials' &&
+                                        element.serials
+                                    "
+                                        [title]="getText(element, option)"
+                                        class="text serials"
+                                >
+                                    <hedera-explorer
+                                            *ngFor="let serial of element.serials"
+                                            [params]="element.tokenId"
+                                            [subParams]="serial"
+                                            subType="serials"
+                                            type="tokens"
+                                    >{{ serial }}</hedera-explorer
+                                    >
+                                    <mat-icon
+                                            (click)="
+                                            onSerials($event, element, option)
+                                        "
+                                    >keyboard_arrow_down</mat-icon
+                                    >
+                                </span>
+                                <span
+                                        (click)="$event.stopImmediatePropagation()"
+                                        *ngIf="option.type == 'button'"
+                                        class="col-btn"
+                                >
+                                    <div
+                                            (click)="
+                                            onButton($event, element, option)
+                                        "
+                                            class="btn-field {{ option.uiClass }}"
+                                    >
+                                        {{ getText(element, option) }}
+                                    </div>
+                                </span>
+                                <div
+                                        (click)="$event.stopImmediatePropagation()"
+                                        *ngIf="option.type == 'block'"
+                                        class="col-btn"
+                                >
+                                    <render-block
+                                            [block]="option._block"
+                                            [policyId]="policyId"
+                                            [static]="
+                                            getConfig(
+                                                element,
+                                                option,
+                                                option._block
+                                            )
+                                        "
+                                    >
+                                    </render-block>
                                 </div>
                             </div>
                         </div>
                     </td>
-            </ng-container>
+                </ng-container>
 
-            <tr mat-header-row *matHeaderRowDef="columns"></tr>
-            <tr mat-row *matRowDef="let row; columns: columns;"
-                class="table-row" [ngClass]="{'has-history-row': row.history, 'revoked': row.option?.status === 'Revoked'}"
-                (click)="statusDetailed = statusDetailed === row ? null : row"
-            ></tr>
-            <tr mat-row *matRowDef="let row; columns: ['statusDetails']" class="detailed-row"></tr>
-        </table>
+                <ng-container [matColumnDef]="'statusDetails'">
+                    <td
+                            *matCellDef="let element"
+                            [attr.colspan]="fields.length + 1"
+                            class="expanded-detail"
+                            let
+                            mat-cell
+                    >
+                        <div
+                                *ngIf="element.history"
+                                [@statusExpand]="
+                                element == statusDetailed
+                                    ? 'expanded'
+                                    : 'collapsed'
+                            "
+                        >
+                            <div class="timeline-container">
+                                <div
+                                        *ngFor="let historyElem of element.history"
+                                        [attr.date-is]="historyElem.created"
+                                        class="timeline-item"
+                                >
+                                    <h1 class="timeline-header-title">
+                                        {{ historyElem.labelValue }}
+                                    </h1>
+                                    <p>
+                                        {{
+                                            parseArrayValue(historyElem.comment)
+                                        }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </ng-container>
+
+                <tr *matHeaderRowDef="columns" mat-header-row></tr>
+                <tr
+                        (click)="
+                        statusDetailed = statusDetailed === row ? null : row
+                    "
+                        *matRowDef="let row; columns: columns"
+                        [ngClass]="{
+                        'has-history-row': row.history,
+                        revoked: row.option?.status === 'Revoked'
+                    }"
+                        class="table-row"
+                        mat-row
+                ></tr>
+                <tr
+                        *matRowDef="let row; columns: ['statusDetails']"
+                        class="detailed-row"
+                        mat-row
+                ></tr>
+            </table>
+        </div>
         <div *ngIf="paginationAddon" class="pagination">
-            <render-block [block]="paginationAddon" [policyId]="policyId"></render-block>
+            <render-block
+                    [block]="paginationAddon"
+                    [policyId]="policyId"
+            ></render-block>
         </div>
     </div>
 
@@ -108,4 +223,12 @@
             <render-block [block]="child" [policyId]="policyId"></render-block>
         </div>
     </div>
+</div>
+
+<ng-template #preloader>
+    <div class="preloader-image"></div>
+</ng-template>
+
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
 </div>

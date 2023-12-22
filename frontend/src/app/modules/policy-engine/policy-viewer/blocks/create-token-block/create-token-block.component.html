@@ -1,7 +1,4 @@
 <div class="content-{{type}}" [hidden]="!isExist">
-    <div *ngIf="loading || disabled" class="loading">
-        <mat-spinner></mat-spinner>
-    </div>
     <ng-container *ngIf="type=='page'">
         <form [formGroup]="dataForm" (ngSubmit)="onSubmit()" class="form-{{type}}">
             <h1 *ngIf="title" mat-dialog-title>{{title}}</h1>
@@ -19,4 +16,12 @@
         <button mat-raised-button color="primary" class="btn-block-{{buttonClass}}"
             (click)="onDialog()">{{content}}</button>
     </ng-container>
+</div>
+
+<ng-template #preloader>
+    <div class="preloader-image"></div>
+</ng-template>
+
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
 </div>

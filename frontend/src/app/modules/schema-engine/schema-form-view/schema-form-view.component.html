@@ -6,15 +6,15 @@
 
                 <div class="form-field-value">
                     <div class="form-field-prefix" *ngIf="isPrefix(item)">{{item.unit}}</div>
-
-                    <mat-form-field *ngIf="isInput(item)" class="example-full-width" appearance="outline">
-                        <input matInput readonly [value]="item.value" [ngClass]="{'hidden-item': isIPFS(item) }">
+                    <div *ngIf="isInput(item)" class="example-full-width">
+                        <input [ngClass]="{'hidden-item': isIPFS(item) }" [readonly]="true" [value]="item.value" class="p-field-input"
+                               pInputText>
                         <div *ngIf="isIPFS(item)">
                             <div class="image-action-buttons">
-                                <button mat-button type="button" [cdkCopyToClipboard]="item.value">
+                                <button [cdkCopyToClipboard]="item.value" class="button" pButton type="button">
                                     Copy Link
                                 </button>
-                                <button mat-button color="accent" [cdkCopyToClipboard]="getCID(item.value)">
+                                <button [cdkCopyToClipboard]="getCID(item.value)" class="button secondary" pButton>
                                     Copy CID
                                 </button>
                             </div>
@@ -24,31 +24,25 @@
                                 <mat-spinner class="loading"></mat-spinner>
                             </ng-template>
                         </div>
-                    </mat-form-field>
+                    </div>
 
-                    <mat-form-field *ngIf="isTime(item)" class="example-full-width" appearance="outline">
-                        <input matInput readonly type="time" step="1" [value]="item.value">
-                    </mat-form-field>
+                    <div *ngIf="isTime(item)" class="example-full-width">
+                        <input [readonly]="true" [value]="item.value | date: 'mediumTime'" class="p-field-input" pInputText
+                               type="date">
+                    </div>
 
-                    <mat-form-field *ngIf="isDateTime(item)" class="example-full-width" appearance="outline">
-                        <input readonly matInput [ngxMatDatetimePicker]="dateTimePicker" [value]="item.value">
-                        <mat-datepicker-toggle matSuffix [for]="$any(dateTimePicker)"></mat-datepicker-toggle>
-                        <ngx-mat-datetime-picker [disabled]="true" #dateTimePicker [enableMeridian]="true">
-                        </ngx-mat-datetime-picker>
-                    </mat-form-field>
+                    <div *ngIf="isDateTime(item)" class="example-full-width">
+                        <input [readonly]="true" [value]="item.value | date: 'medium'" class="p-field-input" pInputText
+                               type="date">
+                    </div>
 
-                    <mat-form-field *ngIf="isDate(item)" class="example-full-width" appearance="outline">
-                        <input [matDatepicker]="dateItem" [value]="formatDate(item.value)" matInput readonly>
-                        <mat-datepicker-toggle matSuffix [for]="dateItem"></mat-datepicker-toggle>
-                        <mat-datepicker [disabled]="true" #dateItem></mat-datepicker>
-                    </mat-form-field>
+                    <div *ngIf="isDate(item)" appearance="outline" class="example-full-width">
+                        <input [readonly]="true" [value]="item.value | date: 'shortDate'" class="p-field-input" pInputText
+                               type="date">
+                    </div>
 
                     <div *ngIf="isBoolean(item)" class="boolean-form-field">
-                        <mat-radio-group [value]="item.value" [disabled]="true">
-                            <mat-radio-button color="primary" [value]="true">True</mat-radio-button>
-                            <mat-radio-button color="primary" [value]="false">False</mat-radio-button>
-                            <mat-radio-button color="primary" *ngIf="!item.required" value="">Unset</mat-radio-button>
-                        </mat-radio-group>
+                        <p-checkbox [(ngModel)]="item.value" name="groupname" value="val1"></p-checkbox>
                     </div>
 
                     <div class="form-field-postfix" *ngIf="isPostfix(item)">{{item.unit}}</div>
@@ -83,52 +77,44 @@
 
                         <div class="form-field-value">
                             <div class="form-field-prefix" *ngIf="isPrefix(item)">{{item.unit}}</div>
-
-                            <mat-form-field *ngIf="isInput(item)" class="example-full-width" appearance="outline">
-                                <input readonly matInput [value]="listItem.value"
-                                    [ngClass]="{'hidden-item':  isIPFS(item) }">
-                                <div *ngIf=" isIPFS(item)">
+                            <div *ngIf="isInput(item)" class="example-full-width">
+                                <input [ngClass]="{'hidden-item': isIPFS(item) }" [readonly]="true" [value]="item.value" class="p-field-input"
+                                       pInputText>
+                                <div *ngIf="isIPFS(item)">
                                     <div class="image-action-buttons">
-                                        <button mat-button type="button" [cdkCopyToClipboard]="listItem.value">
+                                        <button [cdkCopyToClipboard]="item.value" class="button" pButton type="button">
                                             Copy Link
                                         </button>
-                                        <button mat-button color="accent" [cdkCopyToClipboard]="getCID(listItem.value)">
+                                        <button [cdkCopyToClipboard]="getCID(item.value)" class="button secondary"
+                                                pButton>
                                             Copy CID
                                         </button>
                                     </div>
-                                    <img *ngIf="!listItem.loading; else loading" class="ipfs-image"
-                                        [src]="listItem.imgSrc" [alt]="listItem.value">
+                                    <img *ngIf="!item.loading; else loading" [alt]="item.value" [src]="item.imgSrc"
+                                         class="ipfs-image">
                                     <ng-template #loading>
                                         <mat-spinner class="loading"></mat-spinner>
                                     </ng-template>
                                 </div>
-                            </mat-form-field>
+                            </div>
 
-                            <mat-form-field *ngIf="isTime(item)" class="example-full-width" appearance="outline">
-                                <input readonly matInput type="time" step="1" [value]="listItem.value">
-                            </mat-form-field>
+                            <div *ngIf="isTime(item)" class="example-full-width">
+                                <input [readonly]="true" [value]="item.value | date: 'mediumTime'" class="p-field-input" pInputText
+                                       type="date">
+                            </div>
 
-                            <mat-form-field *ngIf="isDateTime(item)" class="example-full-width" appearance="outline">
-                                <input readonly matInput [ngxMatDatetimePicker]="dateTimePicker"
-                                    [value]="listItem.value">
-                                <mat-datepicker-toggle matSuffix [for]="$any(dateTimePicker)"></mat-datepicker-toggle>
-                                <ngx-mat-datetime-picker [disabled]="true" #dateTimePicker [enableMeridian]="true">
-                                </ngx-mat-datetime-picker>
-                            </mat-form-field>
+                            <div *ngIf="isDateTime(item)" class="example-full-width">
+                                <input [readonly]="true" [value]="item.value | date: 'medium'" class="p-field-input" pInputText
+                                       type="date">
+                            </div>
 
-                            <mat-form-field *ngIf="isDate(item)" class="example-full-width" appearance="outline">
-                                <input readonly [value]="listItem.value" matInput [matDatepicker]="dateItem">
-                                <mat-datepicker-toggle matSuffix [for]="dateItem"></mat-datepicker-toggle>
-                                <mat-datepicker [disabled]="true" #dateItem></mat-datepicker>
-                            </mat-form-field>
+                            <div *ngIf="isDate(item)" appearance="outline" class="example-full-width">
+                                <input [readonly]="true" [value]="item.value | date: 'shortDate'" class="p-field-input" pInputText
+                                       type="date">
+                            </div>
 
                             <div *ngIf="isBoolean(item)" class="boolean-form-field">
-                                <mat-radio-group [value]="listItem.value" [disabled]="true">
-                                    <mat-radio-button color="primary" [value]="true">True</mat-radio-button>
-                                    <mat-radio-button color="primary" [value]="false">False</mat-radio-button>
-                                    <mat-radio-button color="primary" *ngIf="!item.required" value="">Unset
-                                    </mat-radio-button>
-                                </mat-radio-group>
+                                <p-checkbox [(ngModel)]="item.value" name="groupname" value="val1"></p-checkbox>
                             </div>
 
                             <div class="form-field-postfix" *ngIf="isPostfix(item)">{{item.unit}}</div>

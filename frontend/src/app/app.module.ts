@@ -47,11 +47,16 @@ import { LogsViewComponent } from './views/admin/logs-view/logs-view.component';
 import { SettingsViewComponent } from './views/admin/settings-view/settings-view.component';
 import { DetailsLogDialog } from './views/admin/details-log-dialog/details-log-dialog.component';
 import { ServiceStatusComponent } from './views/admin/service-status/service-status.component';
+import { ContractConfigComponent } from './views/contract-config/contract-config.component';
+import { ContractRequestConfigComponent } from './views/contract-request-config/contract-request-config.component';
 import { SchemaConfigComponent } from './views/schemas/schemas.component';
 import { BrandingDialogComponent } from './components/branding-dialog/branding-dialog.component';
 import { NotificationsComponent } from './views/notifications/notifications.component';
 //Components
 import { InfoComponent } from './components/info/info/info.component';
+import { AddPairDialogComponent } from './components/add-pair-dialog/add-pair-dialog.component';
+import { RetireTokenDialogComponent } from './components/retire-token-dialog/retire-token-dialog.component';
+import { DataInputDialogComponent } from './components/data-input-dialog/data-input-dialog.component';
 import { BrandingComponent } from './views/branding/branding.component';
 import { StandardRegistryCardComponent } from './components/standard-registry-card/standard-registry-card.component';
 import { SuggestionsConfigurationComponent } from './views/suggestions-configuration/suggestions-configuration.component';
@@ -64,7 +69,6 @@ import { CommonComponentsModule } from './modules/common/common-components.modul
 import { TagEngineModule } from './modules/tag-engine/tag-engine.module';
 import { SchemaEngineModule } from './modules/schema-engine/schema-engine.module'
 import { ThemeService } from './services/theme.service';
-import { ContractEngineModule } from './modules/contract-engine/contract-engine.module';
 // Injectors
 import { GET_SCHEMA_NAME } from './injectors/get-schema-name.injector';
 import { BLOCK_TYPE_TIPS, BLOCK_TYPE_TIPS_VALUE, } from './injectors/block-type-tips.injector';
@@ -75,6 +79,40 @@ import { MeecoVCSubmitDialogComponent } from './components/meeco-vc-submit-dialo
 import { AboutViewComponent } from './views/admin/about-view/about-view.component';
 import { CompareStorage } from './services/compare-storage.service';
 import { ToolsService } from './services/tools.service';
+import { NewHeaderComponent } from './views/new-header/new-header.component';
+import { SearchResultCardComponent } from './components/search-result-card/search-result-card.component';
+import { PolicyAISearchComponent } from './views/policy-search/policy-ai-search/policy-ai-search.component';
+import { PolicyGuidedSearchComponent } from './views/policy-search/policy-guided-search/policy-guided-search.component';
+import { PolicySearchComponent } from './views/policy-search/policy-search.component';
+import { RetirementComponent } from './views/retirement/retirement.component';
+import { ListOfTokensUserComponent } from './views/list-of-tokens-user/list-of-tokens-user.component';
+
+// PrimeNG
+import { InputTextModule } from 'primeng/inputtext';
+import { DropdownModule } from 'primeng/dropdown';
+import { TableModule } from 'primeng/table';
+import { DialogModule } from 'primeng/dialog';
+import { TagModule } from 'primeng/tag';
+import { ButtonModule } from 'primeng/button';
+import { TooltipModule } from 'primeng/tooltip';
+import { RetirementUserComponent } from './views/retirement-user/retirement-user.component';
+import { StepsModule } from 'primeng/steps';
+import { ProgressBarModule } from 'primeng/progressbar';
+import { TabViewModule } from 'primeng/tabview';
+import { DynamicDialogModule } from 'primeng/dynamicdialog';
+import { ColorPickerModule } from 'primeng/colorpicker';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { AISearchService } from './services/ai-search.service';
+import { DndModule } from 'ngx-drag-drop';
+import { PasswordModule } from 'primeng/password';
+import { RegisterDialogComponent } from './views/login/register-dialogs/register-dialog/register-dialog.component';
+import { TermsConditionsComponent } from './views/login/register-dialogs/terms-conditions-dialog/terms-conditions.component';
+import { AccountTypeSelectorDialogComponent } from './views/login/register-dialogs/account-type-selector-dialog/account-type-selector-dialog.component';
+import { ForgotPasswordDialogComponent } from './views/login/forgot-password-dialog/forgot-password-dialog.component';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { RadioButtonModule } from 'primeng/radiobutton';
+import { CalendarModule } from 'primeng/calendar';
+import { InputTextareaModule } from 'primeng/inputtextarea';
 
 @NgModule({
     declarations: [
@@ -95,6 +133,11 @@ import { ToolsService } from './services/tools.service';
         DetailsLogDialog,
         ServiceStatusComponent,
         InfoComponent,
+        ContractConfigComponent,
+        ContractRequestConfigComponent,
+        AddPairDialogComponent,
+        RetireTokenDialogComponent,
+        DataInputDialogComponent,
         SchemaConfigComponent,
         BrandingComponent,
         BrandingDialogComponent,
@@ -104,6 +147,18 @@ import { ToolsService } from './services/tools.service';
         NotificationsComponent,
         QrCodeDialogComponent,
         MeecoVCSubmitDialogComponent,
+        NewHeaderComponent,
+        PolicySearchComponent,
+        PolicyGuidedSearchComponent,
+        PolicyAISearchComponent,
+        SearchResultCardComponent,
+        RetirementComponent,
+        RetirementUserComponent,
+        ListOfTokensUserComponent,
+        RegisterDialogComponent,
+        TermsConditionsComponent,
+        AccountTypeSelectorDialogComponent,
+        ForgotPasswordDialogComponent,
     ],
     imports: [
         BrowserModule,
@@ -121,6 +176,26 @@ import { ToolsService } from './services/tools.service';
         ToastrModule.forRoot(),
         HttpClientJsonpModule,
         QRCodeModule,
+        ButtonModule,
+        InputTextModule,
+        DropdownModule,
+        ButtonModule,
+        DialogModule,
+        TagModule,
+        TableModule,
+        TooltipModule,
+        StepsModule,
+        ProgressBarModule,
+        TabViewModule,
+        DynamicDialogModule,
+        ColorPickerModule,
+        ProgressSpinnerModule,
+        DndModule,
+        PasswordModule,
+        MultiSelectModule,
+        RadioButtonModule,
+        CalendarModule,
+        InputTextareaModule,
     ],
     exports: [],
     providers: [
@@ -152,6 +227,7 @@ import { ToolsService } from './services/tools.service';
         WizardService,
         SuggestionsService,
         NotificationService,
+        AISearchService,
         CompareStorage,
         {
             provide: GET_SCHEMA_NAME,

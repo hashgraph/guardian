@@ -32,8 +32,3 @@
     display: inline !important;
     color: #f00 !important;
 }
-
-.prop-checkbox {
-    position: relative;
-    top: 3px;
-}

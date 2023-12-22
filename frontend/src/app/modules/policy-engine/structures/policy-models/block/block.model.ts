@@ -1,6 +1,5 @@
 import { moveItemInArray } from '@angular/cdk/drag-drop';
-import { GenerateUUIDv4, IArtifact } from '@guardian/interfaces';
-import { BlockType } from '@guardian/interfaces';
+import { BlockType, GenerateUUIDv4, IArtifact } from '@guardian/interfaces';
 import { PolicyEvent } from './block-event.model';
 import { IBlockConfig } from '../interfaces/block-config.interface';
 import { IEventConfig } from '../interfaces/event-config.interface';
@@ -462,14 +461,6 @@ export class PolicyBlock {
             if (Array.isArray(this.parent.properties?.finalBlocks)) {
                 return this.parent.properties.finalBlocks.indexOf(this.tag) > -1;
             }
-        }
-        return false;
-    }
-
-    public replaceConfig(newConfig: PolicyBlock): boolean {
-        if (this.blockType === newConfig?.blockType) {
-            Object.assign(this.properties, newConfig.properties);
-            return true;
         }
         return false;
     }

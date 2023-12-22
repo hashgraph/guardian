@@ -95,7 +95,6 @@ const Container: IBlockSetting = {
         { type: BlockType.ExternalTopic },
         { type: BlockType.MessagesReportBlock },
         { type: BlockType.NotificationBlock },
-        { type: BlockType.ExtractDataBlock },
     ]
 }
 
@@ -141,7 +140,6 @@ const Step: IBlockSetting = {
         { type: BlockType.ExternalTopic },
         { type: BlockType.MessagesReportBlock },
         { type: BlockType.NotificationBlock },
-        { type: BlockType.ExtractDataBlock },
     ]
 }
 
@@ -492,15 +490,6 @@ const DocumentValidatorBlock: IBlockSetting = {
     property: DocumentValidatorConfigComponent
 }
 
-const ExtractData: IBlockSetting = {
-    type: BlockType.ExtractDataBlock,
-    icon: BlockIcons[BlockType.ExtractDataBlock],
-    group: BlockGroup.Documents,
-    header: BlockHeaders.ServerBlocks,
-    factory: null,
-    property: null
-}
-
 const CreateToken: IBlockSetting = {
     type: BlockType.CreateToken,
     icon: BlockIcons[BlockType.CreateToken],
@@ -695,6 +684,5 @@ export default [
     TagManager,
     ExternalTopic,
     AutoReport,
-    NotificationBlock,
-    ExtractData
+    NotificationBlock
 ];

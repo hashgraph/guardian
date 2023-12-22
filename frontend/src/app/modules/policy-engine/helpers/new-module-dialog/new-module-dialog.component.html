@@ -1,31 +1,33 @@
-<div class="g-dialog-content">
-    <div class="g-dialog-header">
-        <div class="g-dialog-cancel">
-            <div class="g-dialog-cancel-btn" (click)="onNoClick()">
-                <mat-icon>close</mat-icon>
-            </div>
+<div class="dialog-body">
+    <form (ngSubmit)="onSubmit()" [formGroup]="dataForm">
+        <div class="form-input-container">
+            <label class="p-field-label" for="name">* Name</label>
+            <input class="p-field-input" formControlName="name" id="name" pInputText type="text"/>
         </div>
-        <div class="g-dialog-title">
-            {{title}}
+        <div class="form-input-container">
+            <label class="p-field-label" for="description">Description</label>
+            <textarea
+                    class="p-field-input"
+                    cols="30"
+                    formControlName="description"
+                    id="description"
+                    pInputTextarea
+                    rows="3"
+            ></textarea>
         </div>
-        <div class="g-dialog-actions">
-            <div class="g-dialog-actions-btn" (click)="onSubmit()" [attr.disabled]="!dataForm.valid">
-                Create
-            </div>
+    </form>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="cancel-button">
+            <button (click)="onNoClick()"
+                    class="button secondary"
+                    label="Cancel"
+                    pButton
+            ></button>
         </div>
-    </div>
-    <div class="g-dialog-body">
-        <div class="context">
-            <form [formGroup]="dataForm" (ngSubmit)="onSubmit()">
-                <mat-form-field class="example-full-width" appearance="outline">
-                    <mat-label>* NAME:</mat-label>
-                    <input matInput type="text" [placeholder]="placeholder" formControlName="name">
-                </mat-form-field>
-                <mat-form-field class="example-full-width" appearance="outline">
-                    <mat-label>DESCRIPTION:</mat-label>
-                    <textarea matInput type="text" placeholder="Description" formControlName="description"></textarea>
-                </mat-form-field>
-            </form>
+        <div>
+            <button (click)="onSubmit()" class="button" label="Create" pButton></button>
         </div>
     </div>
 </div>

@@ -1,18 +1,8 @@
-import { ModuleComponent } from "../policy-configuration/blocks/module/module.component";
-import { ContainerBlockComponent } from "../policy-viewer/blocks/container-block/container-block.component";
+import { ModuleComponent } from '../policy-configuration/blocks/module/module.component';
+import { ContainerBlockComponent } from '../policy-viewer/blocks/container-block/container-block.component';
 import { BlockType } from '@guardian/interfaces';
-import {
-    BlockGroup,
-    BlockHeaders,
-    IBlockAbout,
-    PolicyBlock,
-    IBlockSetting,
-    ChildrenType,
-    ControlType,
-    PolicyModule,
-    PolicyTemplate
-} from "../structures";
-import { PolicyFolder } from "../structures/policy-models/interfaces/types";
+import { BlockGroup, BlockHeaders, ChildrenType, ControlType, IBlockSetting, PolicyModule } from '../structures';
+import { PolicyFolder } from '../structures/policy-models/interfaces/types';
 
 const Module: IBlockSetting = {
     type: BlockType.Module,
@@ -53,10 +43,7 @@ const Module: IBlockSetting = {
         { type: BlockType.MultiSignBlock },
         { type: BlockType.CreateToken },
         { type: BlockType.SplitBlock },
-        { type: BlockType.ExternalTopic },
-        { type: BlockType.MessagesReportBlock },
-        { type: BlockType.NotificationBlock },
-        { type: BlockType.ExtractDataBlock },
+        {type: BlockType.MessagesReportBlock}
     ],
     about: {
         post: false,

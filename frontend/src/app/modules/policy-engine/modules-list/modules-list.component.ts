@@ -1,5 +1,4 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { IUser, SchemaHelper, TagType } from '@guardian/interfaces';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -7,13 +6,12 @@ import { ExportPolicyDialog } from '../helpers/export-policy-dialog/export-polic
 import { ImportPolicyDialog } from '../helpers/import-policy-dialog/import-policy-dialog.component';
 import { PreviewPolicyDialog } from '../helpers/preview-policy-dialog/preview-policy-dialog.component';
 import { InformService } from 'src/app/services/inform.service';
-import { ConfirmationDialogComponent } from 'src/app/modules/common/confirmation-dialog/confirmation-dialog.component';
 import { ModulesService } from 'src/app/services/modules.service';
 import { NewModuleDialog } from '../helpers/new-module-dialog/new-module-dialog.component';
 import { TagsService } from 'src/app/services/tag.service';
 import { forkJoin } from 'rxjs';
 import { CompareModulesDialogComponent } from '../helpers/compare-modules-dialog/compare-modules-dialog.component';
-import { mobileDialog } from 'src/app/utils/mobile-utils';
+import { DialogService } from 'primeng/dynamicdialog';
 
 enum OperationMode {
     None,
@@ -36,7 +34,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
     public loading: boolean = true;
     public isConfirmed: boolean = false;
     public modules: any[] | null;
-    public modulesCount: any;
+    public modulesCount: number;
     public pageIndex: number;
     public pageSize: number;
     public columns: string[] = [
@@ -53,18 +51,22 @@ export class ModulesListComponent implements OnInit, OnDestroy {
     public tagEntity = TagType.Module;
     public owner: any;
     public tagSchemas: any[] = [];
+    searchParam: string = '';
+    deleteTokenVisible: boolean = false;
+    private currentModule: any;
 
     constructor(
         public tagsService: TagsService,
         private profileService: ProfileService,
         private modulesService: ModulesService,
-        private dialog: MatDialog,
+        private dialog: DialogService,
         private informService: InformService,
         private router: Router,
+        private dialogService: DialogService,
     ) {
         this.modules = null;
         this.pageIndex = 0;
-        this.pageSize = 100;
+        this.pageSize = 10;
         this.modulesCount = 0;
     }
 
@@ -108,7 +110,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
         this.loading = true;
         this.modulesService.page(this.pageIndex, this.pageSize).subscribe((policiesResponse) => {
             this.modules = policiesResponse.body || [];
-            this.modulesCount = policiesResponse.headers.get('X-Total-Count') || this.modules.length;
+            this.modulesCount = Number(policiesResponse.headers.get('X-Total-Count') || this.modules.length);
 
             const ids = this.modules.map(e => e.id);
             this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
@@ -140,19 +142,23 @@ export class ModulesListComponent implements OnInit, OnDestroy {
         this.loadAllModules();
     }
 
+    public newOnPage() {
+        this.pageIndex = 0;
+        this.loadAllModules();
+    }
+
     private importDetails(result: any) {
-        const { type, data, module } = result;
-        const dialogRef = this.dialog.open(PreviewPolicyDialog, mobileDialog({
+        const {type, data, module} = result;
+        const dialogRef = this.dialog.open(PreviewPolicyDialog, {
             width: '950px',
-            panelClass: 'g-dialog',
-            disableClose: true,
+            closable: true,
             data: {
-                module: module,
+                module,
             }
-        }));
-        dialogRef.afterClosed().subscribe(async (result) => {
+        });
+        dialogRef.onClose.subscribe(async (result) => {
             if (result) {
-                if (type == 'message') {
+                if (type === 'message') {
                     this.loading = true;
                     this.modulesService.importByMessage(data).subscribe(
                         (result) => {
@@ -175,15 +181,15 @@ export class ModulesListComponent implements OnInit, OnDestroy {
 
     public importModules(messageId?: string) {
         const dialogRef = this.dialog.open(ImportPolicyDialog, {
-            width: '500px',
-            autoFocus: false,
-            disableClose: true,
+            header: 'Select action',
+            width: '720px',
+            closable: true,
             data: {
                 type: 'module',
                 timeStamp: messageId
             }
         });
-        dialogRef.afterClosed().subscribe(async (result) => {
+        dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 this.importDetails(result);
             }
@@ -191,22 +197,22 @@ export class ModulesListComponent implements OnInit, OnDestroy {
     }
 
     compareModules(element?: any) {
-        const dialogRef = this.dialog.open(CompareModulesDialogComponent, {
+        const dialogRef = this.dialogService.open(CompareModulesDialogComponent, {
+            header: 'Compare Modules',
             width: '650px',
-            panelClass: 'g-dialog',
-            disableClose: true,
-            autoFocus: false,
+            styleClass: 'custom-dialog',
             data: {
+                type: 'Module',
                 modules: this.modules,
             }
         });
-        dialogRef.afterClosed().subscribe(async (result) => {
+        dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 this.router.navigate(['/compare'], {
                     queryParams: {
                         type: 'module',
-                        moduleId1: result.moduleId1,
-                        moduleId2: result.moduleId2
+                        moduleId1: result.itemId1,
+                        moduleId2: result.itemId2
                     }
                 });
             }
@@ -220,30 +226,26 @@ export class ModulesListComponent implements OnInit, OnDestroy {
                 this.loading = false;
                 this.dialog.open(ExportPolicyDialog, {
                     width: '700px',
-                    panelClass: 'g-dialog',
                     data: {
                         module
                     },
-                    disableClose: true,
-                    autoFocus: false
+                    closable: true,
                 })
             });
     }
 
     public newModules() {
-        const dialogRef = this.dialog.open(NewModuleDialog, {
+        const dialogRef = this.dialogService.open(NewModuleDialog, {
+            header: 'New Module',
             width: '650px',
-            panelClass: 'g-dialog',
-            disableClose: true,
-            autoFocus: false,
-            data: {}
+            styleClass: 'custom-dialog',
         });
-        dialogRef.afterClosed().subscribe(async (result) => {
+        dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 const module = {
                     name: result.name,
                     description: result.description,
-                    menu: "show",
+                    menu: 'show',
                     config: {
                         blockType: 'module'
                     }
@@ -258,32 +260,30 @@ export class ModulesListComponent implements OnInit, OnDestroy {
         });
     }
 
-    public deleteModule(element: any) {
-        const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-            data: {
-                dialogTitle: 'Delete module',
-                dialogText: 'Are you sure to delete module?'
-            },
-            disableClose: true,
-            autoFocus: false
-        });
-        dialogRef.afterClosed().subscribe((result) => {
-            if (!result) {
-                return;
-            }
-            this.loading = true;
-            this.modulesService.delete(element.uuid).subscribe((result) => {
-                this.loadAllModules();
-            }, (e) => {
-                this.loading = false;
-            });
+    public openDeleteModuleDialog(module: any) {
+        this.currentModule = module;
+        this.deleteTokenVisible = true;
+    }
+
+    public deleteModule(deleteModule: boolean) {
+        if (!deleteModule) {
+            this.deleteTokenVisible = false;
+            return;
+        }
+        this.loading = true;
+        this.modulesService.delete(this.currentModule.uuid).subscribe((result) => {
+            this.loadAllModules();
+        }, (e) => {
+            this.loading = false;
+        }, () => {
+            this.deleteTokenVisible = false;
         });
     }
 
     public publishModule(element: any) {
         this.loading = true;
         this.modulesService.publish(element.uuid).subscribe((result) => {
-            const { isValid, errors } = result;
+            const {isValid, errors} = result;
             if (!isValid) {
                 let text = [];
                 const blocks = errors.blocks;
@@ -311,5 +311,15 @@ export class ModulesListComponent implements OnInit, OnDestroy {
         }, (e) => {
             this.loading = false;
         });
+    }
+
+    movePageIndex(inc: number) {
+        if (inc > 0 && this.pageIndex < (this.modulesCount / this.pageSize) - 1) {
+            this.pageIndex += 1;
+            this.loadAllModules();
+        } else if (inc < 0 && this.pageIndex > 0) {
+            this.pageIndex -= 1;
+            this.loadAllModules();
+        }
     }
 }
