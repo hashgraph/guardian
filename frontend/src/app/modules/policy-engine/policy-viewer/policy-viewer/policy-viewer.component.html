@@ -1,4 +1,4 @@
-<div [attr.status]="policyInfo?.status" class="content">
+<div [attr.status]="policyInfo?.status" [attr.instance]="!!policy" class="content">
     <ng-container *ngIf="!isConfirmed">
         <div class="not-exist">
             Before starting work you need to get DID
@@ -50,6 +50,26 @@
 
             <div class="delimiter"></div>
 
+            <div 
+                class="dry-run-action-btn record-btn" 
+                (click)="startRecord()" 
+                title="Start Record"
+                [attr.disabled]="recordingActive">
+                <mat-icon>radio_button_checked</mat-icon>
+                <span>Record</span>
+            </div>
+
+            <div 
+                class="dry-run-action-btn run-btn" 
+                (click)="runRecord()" 
+                title="Run Record"
+                [attr.disabled]="recordingActive">
+                <mat-icon>play_arrow</mat-icon>
+                <span>Run</span>
+            </div>
+
+            <div class="delimiter"></div>
+
             <div
                     (click)="onView('policy')"
                     [attr.action]="view === 'policy'"
@@ -84,46 +104,33 @@
 
         <div class="policy-header" [attr.policy-status]="policyInfo.status">
             <div>
-                <a routerLink="/policy-viewer"
-                >
+                <a routerLink="/policy-viewer">
                     <p-button
-                            [ngClass]="
-                            policyInfo.status === 'DRY-RUN' ? 'back-button' : ''
-                        "
+                            [ngClass]="policyInfo.status === 'DRY-RUN' ? 'back-button' : ''"
                             icon="pi pi-arrow-left"
                             label="Back to Manage Policies"
                             styleClass="p-button-outlined p-button-sm"
-                    ></p-button
-                    >
+                    ></p-button>
                 </a>
             </div>
             <div *ngIf="policyInfo" class="policy-info-container">
                 <div class="policy-name-container">
-                    <span *ngIf="policyInfo && policyInfo.name">{{
-                            policyInfo.name
-                        }}</span>
+                    <span *ngIf="policyInfo && policyInfo.name">{{policyInfo.name}}</span>
                 </div>
 
                 <div class="policy-additional-info-container">
                     <span
-                            *ngIf="
-                            policyInfo && policyInfo.version && innerWidth > 810
-                        "
-                            [ngClass]="
-                            policyInfo.status === 'DRY-RUN'
+                            *ngIf="policyInfo && policyInfo.version && innerWidth > 810"
+                            [ngClass]="policyInfo.status === 'DRY-RUN'
                                 ? 'white-additional-policy-info-text'
-                                : ''
-                        "
-                            class="additional-policy-info-text"
-                    >Version: ({{ policyInfo.version }})</span
-                    >
+                                : ''"
+                            class="additional-policy-info-text">Version: ({{ policyInfo.version }})</span>
                     <span
                             *ngIf="!groups.length && innerWidth > 810"
                             [ngClass]="
                             policyInfo.status === 'DRY-RUN'
                                 ? 'white-additional-policy-info-text'
-                                : ''
-                        "
+                                : ''"
                             class="additional-policy-info-text"
                     >
                         Role: {{ policyInfo.userRoles.join(", ") }}
@@ -163,10 +170,10 @@
         </div>
 
         <div
-                [attr.hidden-container]="view === 'policy'"
+            [attr.hidden-container]="view === 'policy'"
             *ngIf="isDryRun"
             [attr.policy-status]="policyInfo.status"
-                class="second-policy-container"
+            class="second-policy-container"
         >
             <div class="table-container">
                 <table
@@ -208,11 +215,11 @@
                         <th mat-header-cell *matHeaderCellDef></th>
                         <td mat-cell *matCellDef="let element">
                             <div
-                                    (click)="openDocument(element)"
-                                    class="btn-settings"
+                                (click)="openDocument(element)"
+                                class="btn-settings"
                                 matTooltip="Document"
-                                    matTooltipClass="guardian-tooltip"
-                                    matTooltipPosition="above"
+                                matTooltipClass="guardian-tooltip"
+                                matTooltipPosition="above"
                             >
                                 <svg
                                         fill="none"
@@ -232,10 +239,7 @@
                             </div>
                         </td>
                     </ng-container>
-                    <tr
-                            *matHeaderRowDef="columns; sticky: true"
-                            mat-header-row
-                    ></tr>
+                    <tr *matHeaderRowDef="columns; sticky: true" mat-header-row></tr>
                     <tr *matRowDef="let row; columns: columns" mat-row></tr>
                 </table>
             </div>
@@ -286,6 +290,14 @@
             </div>
         </div>
     </ng-container>
+
+    <app-record-controller
+        *ngIf="isDryRun"
+        #recordController
+        [policyId]="policyId"
+        (update)="updatePolicy()"
+        [(active)]="recordingActive"
+        ></app-record-controller>
 </div>
 
 <mat-menu #menu="matMenu">

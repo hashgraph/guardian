@@ -10,9 +10,9 @@
 
 .loading {
     position: fixed;
-  /* background: #ffffff32; */
-    z-index: 99;
-  top: 0;
+    /* background: #ffffff32; */
+    z-index: 90;
+    top: 0;
     left: 0;
     bottom: 0;
     right: 0;
@@ -24,8 +24,8 @@
 }
 
 .loading-progress {
-  width: 80%;
-  height: 80%;
+    width: 80%;
+    height: 80%;
 }
 
 

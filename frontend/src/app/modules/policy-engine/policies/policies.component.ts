@@ -240,22 +240,15 @@ export class PoliciesComponent implements OnInit {
         );
     }
 
-    newOnPage() {
-        this.pageIndex = 0;
-        this.loadPolicy();
-    }
-
-    movePageIndex(inc: number) {
-        if (
-            inc > 0 &&
-            this.pageIndex < this.policiesCount / this.pageSize - 1
-        ) {
-            this.pageIndex += 1;
-            this.loadPolicy();
-        } else if (inc < 0 && this.pageIndex > 0) {
-            this.pageIndex -= 1;
-            this.loadPolicy();
+    public onPage(event: any): void {
+        if (this.pageSize != event.pageSize) {
+            this.pageIndex = 0;
+            this.pageSize = event.pageSize;
+        } else {
+            this.pageIndex = event.pageIndex;
+            this.pageSize = event.pageSize;
         }
+        this.loadPolicy();
     }
 
     canDisplayColumn(columnName: string): boolean {

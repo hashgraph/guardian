@@ -36,11 +36,15 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { DropdownModule } from 'primeng/dropdown';
 import { DeleteSchemaDialogComponent } from './delete-schema-dialog/delete-schema-dialog.component';
 import { ServiceUnavailableDialog } from './service-unavailable-dialog/service-unavailable-dialog.component';
+import { SchemaFormDialog } from './schema-form-dialog/schema-form-dialog.component';
+import { SchemaTreeComponent } from './schema-tree/schema-tree.component';
+import { CopySchemaDialog } from './copy-schema-dialog/copy-schema-dialog';
 
 @NgModule({
     declarations: [
         SchemaDialog,
         SchemaFormComponent,
+        CopySchemaDialog,
         SchemaConfigurationComponent,
         ImportSchemaDialog,
         SchemaFormViewComponent,
@@ -54,7 +58,9 @@ import { ServiceUnavailableDialog } from './service-unavailable-dialog/service-u
         CompareSchemaDialog,
         GeojsonTypeComponent,
         DeleteSchemaDialogComponent,
-        ServiceUnavailableDialog
+        ServiceUnavailableDialog,
+        SchemaTreeComponent,
+        SchemaFormDialog
     ],
     imports: [
         CommonModule,
@@ -86,6 +92,7 @@ import { ServiceUnavailableDialog } from './service-unavailable-dialog/service-u
         VCViewerDialog,
         ExportSchemaDialog,
         SchemaFieldConfigurationComponent,
+        SchemaFormDialog
     ],
 })
 export class SchemaEngineModule {

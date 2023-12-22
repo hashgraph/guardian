@@ -95,6 +95,9 @@ import { ImportFileDialog } from './helpers/import-file-dialog/import-file-dialo
 import { NewThemeDialog } from './helpers/new-theme-dialog/new-theme-dialog.component';
 import { ViewerDialog } from './helpers/viewer-dialog/viewer-dialog.component';
 import { CompareModulesDialogComponent } from './helpers/compare-modules-dialog/compare-modules-dialog.component';
+import { RecordControllerComponent } from './record/record-controller/record-controller.component';
+import { RecordResultDialog } from './record/record-result-dialog/record-result-dialog.component';
+import { RecordResultsComponent } from './record/record-results/record-results.component';
 //Modules
 import { ModulesListComponent } from './modules-list/modules-list.component';
 import { ToolsListComponent } from './tools-list/tools-list.component';
@@ -209,6 +212,9 @@ import { OverlayPanelModule } from 'primeng/overlaypanel';
         ViewerDialog,
         DeletePolicyDialogComponent,
         ProgressTrackerComponent,
+        RecordControllerComponent,
+        RecordResultDialog,
+        RecordResultsComponent
     ],
     imports: [
         CommonModule,

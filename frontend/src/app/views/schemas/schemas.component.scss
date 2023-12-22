@@ -5,73 +5,73 @@
     bottom: 0;
     top: 0;
     display: block;
-  margin: 56px 48px 0 48px;
+    margin: 56px 48px 0 48px;
 }
 
 .page-title {
-  font-family: Poppins, serif;
-  font-size: 32px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: normal;
+    font-family: Poppins, serif;
+    font-size: 32px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
 }
 
 :host ::ng-deep {
-  .p-tabview-nav-link {
-    padding: 0 !important;
-    color: var(--color-grey-5) !important;
-  }
+    .p-tabview-nav-link {
+        padding: 0 !important;
+        color: var(--color-grey-5) !important;
+    }
 
-  .p-tabview-nav {
-    background: none;
-  }
+    .p-tabview-nav {
+        background: none;
+    }
 
-  .p-tabview-panels {
-    background: none;
-  }
+    .p-tabview-panels {
+        background: none;
+    }
 
-  .p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {
-    color: var(--color-primary) !important;
-  }
+    .p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {
+        color: var(--color-primary) !important;
+    }
 }
 
 .tabview-label {
-  padding: 10px 25px 10px 25px;
-  background: #f9fafc;
-  text-align: center;
-  font-family: Inter, sans-serif;
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 600;
-}
-
-.actions-controls-container {
-  display: flex;
-}
-
-.toolbar-icons {
-  margin-right: 12px;
-}
-
-.compare-button {
-  ::ng-deep .p-button-outlined {
-    color: var(--color-primary);
+    padding: 10px 25px 10px 25px;
+    background: #f9fafc;
+    text-align: center;
     font-family: Inter, sans-serif;
     font-size: 14px;
     font-style: normal;
-    font-weight: 500;
-    margin-left: 10px;
-    background-color: #ffffff !important;
-    border: 1px solid #cdddfd;
-  }
+    font-weight: 600;
+}
+
+.actions-controls-container {
+    display: flex;
+}
+
+.toolbar-icons {
+    margin-right: 12px;
+}
+
+.compare-button {
+    ::ng-deep .p-button-outlined {
+        color: var(--color-primary);
+        font-family: Inter, sans-serif;
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 500;
+        margin-left: 10px;
+        background-color: #ffffff !important;
+        border: 1px solid #cdddfd;
+    }
 }
 
 .loading {
-  background: #f9fafc;
+    background: #f9fafc;
     position: absolute;
     z-index: 99;
     top: 0;
-  left: -15px;
+    left: -15px;
     bottom: 0;
     right: 0;
     display: flex;
@@ -87,14 +87,14 @@
 }
 
 a {
-  color: var(--color-primary);
+    color: var(--color-primary);
     cursor: pointer;
     text-decoration: underline;
 }
 
 .schemas-table {
     width: 100%;
-  margin-top: 30px;
+    margin-top: 30px;
 }
 
 .g-btn {
@@ -103,17 +103,17 @@ a {
 }
 
 .actions {
-  display: flex;
-  flex-direction: column;
-  margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    margin-top: 15px;
 }
 
 .tabs-nav {
-  ::ng-deep {
-    ul li {
-      border-bottom: 1px solid !important;
+    ::ng-deep {
+        ul li {
+            border-bottom: 1px solid !important;
+        }
     }
-  }
 }
 
 .actions ::ng-deep button.mat-raised-button.mat-primary {
@@ -129,58 +129,59 @@ a {
 }
 
 .table-container {
-  margin-top: 20px;
-  overflow-x: auto;
+    margin-top: 20px;
+    overflow-x: auto;
 }
 
 .table-paginator {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  column-gap: 24px;
-  padding: 0 16px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    column-gap: 24px;
+    padding: 0 16px 0 0;
 
-  color: var(--color-grey-black-2, #23252e);
-  font-family: Inter, sans-serif;
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 16px; /* 114.286% */
+    color: var(--color-grey-black-2, #23252e);
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 16px;
+    /* 114.286% */
 
-  height: 64px !important;
-  border-radius: 8px !important;
-  background: #fff;
-  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08) !important;
+    height: 64px !important;
+    border-radius: 8px !important;
+    background: #fff;
+    box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08) !important;
 }
 
 .schema-status {
-  width: min-content;
-  border-radius: 6px;
-  font-family: Inter, sans-serif;
-  font-size: 14px;
-  font-style: normal;
+    width: min-content;
+    border-radius: 6px;
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-style: normal;
     font-weight: 500;
-  line-height: 16px;
-  padding: 4px 6px;
+    line-height: 16px;
+    padding: 4px 6px;
 }
 
 .status-DRAFT {
-  background: var(--color-grey-2, #EFF3F7) !important;
-  color: var(--color-grey-5, #848FA9) !important;
+    background: var(--color-grey-2, #EFF3F7) !important;
+    color: var(--color-grey-5, #848FA9) !important;
 }
 
 .status-PUBLISHED {
-  background: var(--color-accent-green-2, #D7F5F5) !important;
-  color: var(--color-accent-green-1, #19BE47) !important;
+    background: var(--color-accent-green-2, #D7F5F5) !important;
+    color: var(--color-accent-green-1, #19BE47) !important;
 }
 
 .status-UNPUBLISHED {
-  background: var(--color-accent-red-2) !important;
-  color: var(--color-accent-red-1) !important;
+    background: var(--color-accent-red-2) !important;
+    color: var(--color-accent-red-1) !important;
 }
 
 .btn-approve {
-  background: var(--color-primary);
+    background: var(--color-primary);
     border-radius: 6px;
     color: #fff;
     display: inline-block;
@@ -211,7 +212,7 @@ a {
 }
 
 .btn-settings {
-  color: var(--color-primary);
+    color: var(--color-primary);
     font-weight: 500;
     cursor: pointer;
     padding-top: 2px;
@@ -223,6 +224,7 @@ a {
     overflow: hidden;
     box-sizing: border-box;
 }
+
 .btn-settings:hover {
     text-decoration: underline;
 }
@@ -235,15 +237,15 @@ a {
 }
 
 .btn-settings.btn-publish {
-  color: var(--color-primary);
+    color: var(--color-primary);
 }
 
 .btn-settings.btn-unpublish {
-  color: var(--color-accent-red-1);
+    color: var(--color-accent-red-1);
 }
 
 .btn-settings.btn-delete {
-  color: var(--color-accent-red-1);
+    color: var(--color-accent-red-1);
 }
 
 .btn-settings.btn-delete-des {
@@ -352,16 +354,16 @@ a {
 }
 
 .toolbar-btn {
-  ::ng-deep .p-button {
-    background: var(--color-primary);
-    font-family: Inter, sans-serif;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 500;
-    margin-left: 10px;
-    height: 40px;
-    border-radius: 8px;
-  }
+    ::ng-deep .p-button {
+        background: var(--color-primary);
+        font-family: Inter, sans-serif;
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 500;
+        margin-left: 10px;
+        height: 40px;
+        border-radius: 8px;
+    }
 }
 
 .schemas-table .mat-column-tags {
@@ -373,64 +375,64 @@ a {
 }
 
 .policy-dropdown-container {
-  display: flex;
+    display: flex;
 }
 
 .policy-dropdown {
-  ::ng-deep {
-    .p-dropdown {
-      width: 400px;
-      height: 40px;
-      border-radius: 8px;
+    ::ng-deep {
+        .p-dropdown {
+            width: 400px;
+            height: 40px;
+            border-radius: 8px;
+        }
     }
-  }
 }
 
 .header-cell-text {
-  color: #848fa9 !important;
-  font-family: Inter, sans-serif;
-  font-size: 14px;
-  text-transform: uppercase;
-  font-weight: 400 !important;
-  border: none !important;
+    color: #848fa9 !important;
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    text-transform: uppercase;
+    font-weight: 400 !important;
+    border: none !important;
 }
 
 .schemas-grid-row {
-  font-family: Inter, sans-serif;
-  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08);
-  font-size: 14px;
+    font-family: Inter, sans-serif;
+    box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08);
+    font-size: 14px;
 }
 
 .first-schema-grid-cell {
-  border-top-left-radius: 8px;
-  border-bottom-left-radius: 8px;
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
 }
 
 .last-schema-grid-cell {
-  border-top-right-radius: 8px;
-  border-bottom-right-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
 }
 
 .text-truncate {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 :host ::ng-deep {
-  .p-datatable-table {
-    border-collapse: separate;
-    border-spacing: 0 15px;
-  }
+    .p-datatable-table {
+        border-collapse: separate;
+        border-spacing: 0 15px;
+    }
 }
 
 .operations-row-container {
-  display: flex;
+    display: flex;
 }
 
 
 .schema-actions-buttons-container {
-  margin-left: auto;
+    margin-left: auto;
 }
 
 .toolbar-btn[readonly="true"] {
@@ -439,25 +441,33 @@ a {
 }
 
 .color-primary {
-  fill: var(--color-primary);
-  color: var(--color-primary);
+    fill: var(--color-primary);
+    color: var(--color-primary);
 }
 
 .color-accent-red {
-  fill: var(--color-accent-red-1);
-  color: var(--color-accent-red-1);
+    fill: var(--color-accent-red-1);
+    color: var(--color-accent-red-1);
 }
 
 .color-accent-green {
-  fill: var(--color-accent-green-1);
-  color: var(--color-accent-green-1);
+    fill: var(--color-accent-green-1);
+    color: var(--color-accent-green-1);
 }
 
 .color-grey {
-  fill: var(--color-grey-4);
-  color: var(--color-grey-4);
+    fill: var(--color-grey-4);
+    color: var(--color-grey-4);
 }
 
 ::ng-deep .p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {
-  border-color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.schema-menu-btn mat-icon {
+    color: var(--color-primary);
+}
+
+.schema-menu-btn-del mat-icon {
+    color: var(--color-accent-red-1);
 }

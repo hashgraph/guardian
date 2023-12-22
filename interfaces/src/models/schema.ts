@@ -360,4 +360,19 @@ export class Schema implements ISchema {
             }
         }
     }
+
+    /**
+     * Set example data
+     * @param data
+     */
+    public setExample(data: any): void {
+        if (data) {
+            this.document = SchemaHelper.updateFields(this.document, (name: string, property: any) => {
+                if (!(property.$ref && !property.type) && data.hasOwnProperty(name)) {
+                    property.examples = [data[name]];
+                }
+                return property;
+            });
+        }
+    }
 }

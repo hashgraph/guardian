@@ -2,14 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
-import {
-    ISchema,
-    IUser,
-    Schema,
-    SchemaCategory,
-    SchemaHelper,
-    TagType,
-} from '@guardian/interfaces';
+import { ISchema, IUser, Schema, SchemaCategory, SchemaHelper, TagType } from '@guardian/interfaces';
 import { forkJoin, Observable } from 'rxjs';
 //services
 import { ProfileService } from '../../services/profile.service';
@@ -20,17 +13,17 @@ import { TagsService } from '../../services/tag.service';
 import { ConfirmationDialogComponent } from '../../modules/common/confirmation-dialog/confirmation-dialog.component';
 import { SchemaDialog } from '../../modules/schema-engine/schema-dialog/schema-dialog.component';
 import { ImportSchemaDialog } from '../../modules/schema-engine/import-schema/import-schema-dialog.component';
+import { ExportSchemaDialog } from '../../modules/schema-engine/export-schema-dialog/export-schema-dialog.component';
+import { CompareSchemaDialog } from '../../modules/schema-engine/compare-schema-dialog/compare-schema-dialog.component';
+import { SchemaFormDialog } from '../../modules/schema-engine/schema-form-dialog/schema-form-dialog.component';
 import { SetVersionDialog } from '../../modules/schema-engine/set-version-dialog/set-version-dialog.component';
 import { VCViewerDialog } from '../../modules/schema-engine/vc-dialog/vc-dialog.component';
 import { SchemaViewDialog } from '../../modules/schema-engine/schema-view-dialog/schema-view-dialog.component';
-import { ExportSchemaDialog } from '../../modules/schema-engine/export-schema-dialog/export-schema-dialog.component';
-import { CompareSchemaDialog } from '../../modules/schema-engine/compare-schema-dialog/compare-schema-dialog.component';
 import { ModulesService } from '../../services/modules.service';
 import { ToolsService } from 'src/app/services/tools.service';
-import {
-    AlertComponent,
-    AlertType,
-} from 'src/app/modules/common/alert/alert.component';
+import { AlertComponent, AlertType } from 'src/app/modules/common/alert/alert.component';
+import { CopySchemaDialog } from '../../modules/schema-engine/copy-schema-dialog/copy-schema-dialog';
+import { SchemaTreeComponent } from 'src/app/modules/schema-engine/schema-tree/schema-tree.component';
 import { DialogService } from 'primeng/dynamicdialog';
 import { DeleteSchemaDialogComponent } from '../../modules/schema-engine/delete-schema-dialog/delete-schema-dialog.component';
 
@@ -39,7 +32,7 @@ enum SchemaType {
     Policy = 'policy',
     Tag = 'tag',
     Module = 'module',
-    Tool = 'tool',
+    Tool = 'tool'
 }
 
 const policySchemaColumns: string[] = [
@@ -51,20 +44,22 @@ const policySchemaColumns: string[] = [
     'tags',
     'status',
     'operation',
-    'export',
-    'edit',
-    'delete',
-    'document',
+    'menu',
 ];
 
 const moduleSchemaColumns: string[] = [
     'type',
     'status',
     'operation',
-    'export',
-    'edit',
-    'delete',
-    'document',
+    'menu',
+];
+
+const toolSchemaColumns: string[] = [
+    'tool',
+    'type',
+    'status',
+    'operation',
+    'menu',
 ];
 
 const systemSchemaColumns: string[] = [
@@ -73,9 +68,7 @@ const systemSchemaColumns: string[] = [
     'entity',
     'active',
     'activeOperation',
-    'editSystem',
-    'deleteSystem',
-    'document',
+    'menu',
 ];
 
 const tagSchemaColumns: string[] = [
@@ -83,9 +76,7 @@ const tagSchemaColumns: string[] = [
     'owner',
     'status',
     'tagOperation',
-    'editTag',
-    'deleteTag',
-    'document',
+    'menu',
 ];
 
 /**
@@ -94,44 +85,39 @@ const tagSchemaColumns: string[] = [
 @Component({
     selector: 'app-schema-config',
     templateUrl: './schemas.component.html',
-    styleUrls: ['./schemas.component.scss'],
+    styleUrls: ['./schemas.component.scss']
 })
 export class SchemaConfigComponent implements OnInit {
     public loading: boolean = true;
     public type: SchemaType = SchemaType.System;
     public isConfirmed: boolean = false;
     public currentTopic: string = '';
-    public schemas: Schema[] = [];
+    public page: Schema[] = [];
+    public pageIndex: number = 0;
+    public pageSize: number = 25;
+    public count: number = 0;
     public selectedAll: boolean = false;
-    public pageIndex: number;
-    public pageSize: number;
-    public count: number;
     public owner: string = '';
     public policyNameByTopic: { [x: string]: string } = {};
     public moduleNameByTopic: { [x: string]: string } = {};
     public toolNameByTopic: { [x: string]: string } = {};
-    public toolIdByTopic: { [x: string]: string } = {};
     public readonlyByTopic: { [x: string]: boolean } = {};
+    public policyIdByTopic: { [x: string]: string } = {};
+    public toolIdByTopic: { [x: string]: string } = {};
     public tagSchemas: Schema[] = [];
     public tagEntity = TagType.Schema;
     public policies: any[] = [];
     public modules: any[] = [];
     public tools: any[] = [];
     public draftTools: any[] = [];
-    public properties: any[] = [];
-    public allSchemas: any[] = [];
     public columns: string[] = [];
-    private schemasMap: { [x: string]: ISchema[] } = {};
-    private allSchemasMap: { [x: string]: ISchema[] } = {};
-
-    schemaNameByTopicId: any;
-
-    schemasTypes: { label: string; value: SchemaType }[] = [
-        {label: 'Policy Schemas', value: SchemaType.Policy},
-        {label: 'Module Schemas', value: SchemaType.Module},
-        {label: 'Tag Schemas', value: SchemaType.Tag},
-        {label: 'System Schemas', value: SchemaType.System},
-        {label: 'Tool Schemas', value: SchemaType.Tool},
+    public compareList: any[] = [];
+    public schemasTypes: { label: string; value: SchemaType }[] = [
+        { label: 'Policy Schemas', value: SchemaType.Policy },
+        { label: 'Module Schemas', value: SchemaType.Module },
+        { label: 'Tag Schemas', value: SchemaType.Tag },
+        { label: 'System Schemas', value: SchemaType.System },
+        { label: 'Tool Schemas', value: SchemaType.Tool },
     ];
 
     constructor(
@@ -146,8 +132,6 @@ export class SchemaConfigComponent implements OnInit {
         private dialog: MatDialog,
         private dialogService: DialogService
     ) {
-        this.pageSize = 10;
-        this.pageIndex = 0;
         this.readonlyByTopic = {};
     }
 
@@ -182,11 +166,11 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     public get canCreate(): boolean {
-        return this.isAny;
+        return (this.isAny);
     }
 
     public get canImport(): boolean {
-        return this.isPolicy || this.isModule || this.isTool;
+        return (this.isPolicy || this.isModule || this.isTool);
     }
 
     public get readonly(): boolean {
@@ -227,7 +211,7 @@ export class SchemaConfigComponent implements OnInit {
             case SchemaType.Module:
                 return moduleSchemaColumns;
             case SchemaType.Tool:
-                return moduleSchemaColumns;
+                return toolSchemaColumns;
             case SchemaType.System:
                 return systemSchemaColumns;
             default:
@@ -286,7 +270,7 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     private loadError(error: any): void {
-        this.schemas = [];
+        this.page = [];
         this.count = 0;
         this.loading = false;
         console.error(error);
@@ -302,127 +286,116 @@ export class SchemaConfigComponent implements OnInit {
             this.moduleService.page(),
             this.toolService.page(),
             //Compare
-            this.schemaService.list(),
-            //Properties
-            this.schemaService.properties()
-        ]).subscribe(
-            (value: any) => {
-                try {
-                    //Profile
-                    const profile: IUser | null = value[0];
-                    this.isConfirmed = !!(profile && profile.confirmed);
-                    this.owner = profile?.did || '';
-                    if (!this.isConfirmed) {
-                        this.type = SchemaType.System;
-                    }
-
-                    //Tags
-                    const tagSchemas: ISchema[] = value[1] || [];
-                    this.tagSchemas = SchemaHelper.map(tagSchemas);
-
-                    //Filters
-                    this.readonlyByTopic = {};
-
-                    const policies: any[] = value[2] || [];
-                    this.policyNameByTopic = {};
-                    this.policies = [];
-                    for (const policy of policies) {
-                        if (policy.topicId) {
-                            this.policyNameByTopic[policy.topicId] =
-                                policy.name;
-                            this.policies.push(policy);
-                            this.readonlyByTopic[policy.topicId] =
-                                policy.creator !== this.owner;
-                        }
-                    }
-
-                    const modules: any[] = value[3]?.body || [];
-                    this.moduleNameByTopic = {};
-                    this.modules = [];
-                    for (const module of modules) {
-                        if (module.topicId) {
-                            this.moduleNameByTopic[module.topicId] =
-                                module.name;
-                            this.modules.push(module);
-                            this.readonlyByTopic[module.topicId] =
-                                module.creator !== this.owner;
-                        }
-                    }
-
-                    const tools: any[] = value[4]?.body || [];
-                    this.toolNameByTopic = {};
-                    this.tools = [];
-                    this.draftTools = [];
-                    for (const tool of tools) {
-                        if (tool.topicId) {
-                            this.toolNameByTopic[tool.topicId] = tool.name;
-                            this.toolIdByTopic[tool.topicId] = tool.id;
-                            this.tools.push(tool);
-                            this.readonlyByTopic[tool.topicId] =
-                                tool.creator !== this.owner;
-                            if (tool.status !== 'PUBLISHED') {
-                                this.draftTools.push(tool);
-                            }
-                        }
-                    }
-
-                    //Compare
-                    const list: any[] = value[5] || [];
-                    for (const schema of list) {
-                        schema.policy = this.policyNameByTopic[schema.topicId];
-                        schema.module = this.moduleNameByTopic[schema.topicId];
-                        schema.tool = this.toolNameByTopic[schema.topicId];
-                        const name = SchemaHelper.getSchemaName(
-                            schema.name,
-                            schema.version || schema.sourceVersion,
-                            schema.status
-                        );
-                        if (schema.policy) {
-                            schema.fullName = `${name} (${schema.policy})`;
-                        } else if (schema.module) {
-                            schema.fullName = `${name} (${schema.module})`;
-                        } else if (schema.tool) {
-                            schema.fullName = `${name} (${schema.tool})`;
-                        } else {
-                            schema.fullName = name;
-                        }
-                    }
-                    this.allSchemas = list;
-
-                    //Properties
-                    this.properties = value[6] || [];
-
-                    //LoadData
-                    this.loadSchemas();
-                } catch (error) {
-                    this.loadError(error);
+            this.schemaService.list()
+        ]).subscribe((value) => {
+            try {
+                //Profile
+                const profile: IUser | null = value[0];
+                this.isConfirmed = !!(profile && profile.confirmed);
+                this.owner = profile?.did || '';
+                if (!this.isConfirmed) {
+                    this.type = SchemaType.System;
                 }
-            },
-            ({message}) => {
-                this.loadError(message);
+
+                //Tags
+                const tagSchemas: ISchema[] = value[1] || [];
+                this.tagSchemas = SchemaHelper.map(tagSchemas);
+
+                //Filters
+                this.readonlyByTopic = {};
+
+                const policies: any[] = value[2] || [];
+                this.policyNameByTopic = {};
+                this.policyIdByTopic = {};
+                this.policies = [];
+                for (const policy of policies) {
+                    if (policy.topicId) {
+                        this.policyIdByTopic[policy.topicId] = policy.id;
+                        this.policyNameByTopic[policy.topicId] = policy.name;
+                        this.policies.push(policy);
+                        this.readonlyByTopic[policy.topicId] = policy.creator !== this.owner;
+                    }
+                }
+
+                const modules: any[] = value[3]?.body || [];
+                this.moduleNameByTopic = {};
+                this.modules = [];
+                for (const module of modules) {
+                    if (module.topicId) {
+                        this.moduleNameByTopic[module.topicId] = module.name;
+                        this.modules.push(module);
+                        this.readonlyByTopic[module.topicId] = module.creator !== this.owner;
+                    }
+                }
+
+                const tools: any[] = value[4]?.body || [];
+                this.toolNameByTopic = {};
+                this.toolIdByTopic = {};
+                this.tools = [];
+                this.draftTools = [];
+                for (const tool of tools) {
+                    if (tool.topicId) {
+                        this.toolIdByTopic[tool.topicId] = tool.id;
+                        this.toolNameByTopic[tool.topicId] = tool.name;
+                        this.tools.push(tool);
+                        if (
+                            tool.creator === this.owner &&
+                            tool.status !== 'PUBLISHED'
+                        ) {
+                            this.readonlyByTopic[tool.topicId] = false;
+                            this.draftTools.push(tool);
+                        } else {
+                            this.readonlyByTopic[tool.topicId] = true;
+                        }
+                    }
+                }
+
+                //Compare
+                const list: any[] = value[5] || [];
+                for (const schema of list) {
+                    schema.policy = this.policyNameByTopic[schema.topicId];
+                    schema.module = this.moduleNameByTopic[schema.topicId];
+                    schema.tool = this.toolNameByTopic[schema.topicId];
+                    const name = SchemaHelper.getSchemaName(
+                        schema.name,
+                        schema.version || schema.sourceVersion,
+                        schema.status
+                    );
+                    if (schema.policy) {
+                        schema.fullName = `${name} (${schema.policy})`;
+                    } else if (schema.module) {
+                        schema.fullName = `${name} (${schema.module})`;
+                    } else if (schema.tool) {
+                        schema.fullName = `${name} (${schema.tool})`;
+                    } else {
+                        schema.fullName = name;
+                    }
+                }
+                this.compareList = list;
+
+                //LoadData
+                this.loadSchemas();
+            } catch (error) {
+                this.loadError(error);
             }
-        );
+        }, ({ message }) => {
+            this.loadError(message);
+        });
     }
 
     private loadSchemas() {
         this.loading = true;
-        this.schemas = [];
+        this.page = [];
         this.columns = this.getColumns();
         this.currentTopic = this.getTopicId();
         let loader: Observable<HttpResponse<ISchema[]>>;
         switch (this.type) {
             case SchemaType.System: {
-                loader = this.schemaService.getSystemSchemas(
-                    this.pageIndex,
-                    this.pageSize
-                );
+                loader = this.schemaService.getSystemSchemas(this.pageIndex, this.pageSize);
                 break;
             }
             case SchemaType.Tag: {
-                loader = this.tagsService.getSchemas(
-                    this.pageIndex,
-                    this.pageSize
-                );
+                loader = this.tagsService.getSchemas(this.pageIndex, this.pageSize);
                 break;
             }
             case SchemaType.Policy:
@@ -430,84 +403,44 @@ export class SchemaConfigComponent implements OnInit {
             case SchemaType.Tool:
             default: {
                 const category = this.getCategory();
-                loader = this.schemaService.getSchemasByPage(
-                    category,
-                    this.currentTopic,
-                    this.pageIndex,
-                    this.pageSize
-                );
+                loader = this.schemaService.getSchemasByPage(category, this.currentTopic, this.pageIndex, this.pageSize);
                 break;
             }
         }
-        loader.subscribe(
-            (schemasResponse: HttpResponse<ISchema[]>) => {
-                this.finishLoadSchemas(schemasResponse);
-                this.loadTagsData();
-            },
-            (e) => {
-                this.loadError(e);
+        loader.subscribe((schemasResponse: HttpResponse<ISchema[]>) => {
+            this.page = SchemaHelper.map(schemasResponse.body || []);
+            for (const element of this.page as any[]) {
+                element.__policyId = this.policyIdByTopic[element.topicId];
+                element.__policyName = this.policyNameByTopic[element.topicId] || ' - ';
+                element.__toolId = this.toolIdByTopic[element.topicId];
+                element.__toolName = this.toolNameByTopic[element.topicId] || ' - ';
             }
-        );
-    }
-
-    private finishLoadSchemas(schemasResponse: HttpResponse<ISchema[]>) {
-        this.schemas = SchemaHelper.map(schemasResponse.body || []);
-        this.count = (schemasResponse.headers.get('X-Total-Count') ||
-            this.schemas.length) as number;
-        this.schemaMapping(this.schemas);
-        this.schemaAllMapping();
-    }
-
-    private schemaMapping(schemas: ISchema[]) {
-        this.schemasMap = {};
-        for (let i = 0; i < schemas.length; i++) {
-            const schema: any = schemas[i];
-            schema.readonly =
-                schema.readonly || this.readonlyByTopic[schema.topicId];
-            if (this.schemasMap[schema.topicId]) {
-                this.schemasMap[schema.topicId].push(schema);
-            } else {
-                this.schemasMap[schema.topicId] = [schema];
-            }
-        }
-    }
-
-    private schemaAllMapping() {
-        this.schemaService.getSchemas(this.currentTopic).subscribe((schemas => {
-            this.allSchemasMap = {};
-            for (let i = 0; i < schemas.length; i++) {
-                const schema: any = schemas[i];
-                schema.readonly =
-                    schema.readonly || this.readonlyByTopic[schema.topicId];
-                if (this.allSchemasMap[schema.topicId]) {
-                    this.allSchemasMap[schema.topicId].push(schema);
-                } else {
-                    this.allSchemasMap[schema.topicId] = [schema];
-                }
-                setTimeout(() => {
-                    this.loading = false;
-                }, 500);
-            }
-        }));
+            this.count = (schemasResponse.headers.get('X-Total-Count') || this.page.length) as number;
+            this.loadTagsData();
+        }, (e) => {
+            this.loadError(e);
+        });
     }
 
     private loadTagsData() {
         if (this.type === SchemaType.Policy) {
-            const ids = this.schemas.map((e) => e.id);
-            this.tagsService.search(this.tagEntity, ids).subscribe(
-                (data) => {
-                    for (const schema of this.schemas) {
-                        (schema as any)._tags = data[schema.id];
-                    }
-                },
-                (e) => {
-                    this.loadError(e);
+            const ids = this.page.map(e => e.id);
+            this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
+                for (const schema of this.page) {
+                    (schema as any)._tags = data[schema.id];
                 }
-            );
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, (e) => {
+                this.loadError(e);
+            });
         } else {
+            setTimeout(() => {
+                this.loading = false;
+            }, 500);
         }
     }
-
     public onFilter(event: any) {
         if (event.value === null) {
             this.currentTopic = '';
@@ -533,38 +466,68 @@ export class SchemaConfigComponent implements OnInit {
         this.loadSchemas();
     }
 
-    public onChangeType(tabType: SchemaType) {
-        this.type = tabType; // type error (template)
+    public onChangeType(type: SchemaType): void {
+        this.type = type;
         this.pageIndex = 0;
-        this.pageSize = 10;
+        this.pageSize = 100;
         this.currentTopic = '';
         this.router.navigate(['/schemas'], {
-            queryParams: {type: this.type},
+            queryParams: { type }
         });
         this.loadSchemas();
     }
 
     public selectAll(selectedAll: boolean): void {
         this.selectedAll = selectedAll;
-        for (let i = 0; i < this.schemas.length; i++) {
-            const element: any = this.schemas[i];
+        for (let i = 0; i < this.page.length; i++) {
+            const element: any = this.page[i];
             if (element.messageId) {
                 element._selected = selectedAll;
             }
         }
-        this.schemas = this.schemas.slice();
+        this.page = this.page.slice();
     }
 
     public selectItem(): void {
         this.selectedAll = true;
-        for (let i = 0; i < this.schemas.length; i++) {
-            const element: any = this.schemas[i];
+        for (let i = 0; i < this.page.length; i++) {
+            const element: any = this.page[i];
             if (!element._selected) {
                 this.selectedAll = false;
                 break;
             }
         }
-        this.schemas = this.schemas.slice();
+        this.page = this.page.slice();
+    }
+
+    public ifCanDelete(element: Schema): boolean {
+        if (this.type === SchemaType.System) {
+            return !element.readonly && !element.active;
+        } else {
+            return element.status === 'DRAFT';
+        }
+    }
+
+    public ifCanCopy(element: Schema): boolean {
+        return (this.type === SchemaType.Policy);
+    }
+
+    public ifCanExport(element: Schema): boolean {
+        return (
+            this.type === SchemaType.Policy ||
+            this.type === SchemaType.Module ||
+            this.type === SchemaType.Tool
+        );
+    }
+
+    public ifCanEdit(element: Schema): boolean {
+        if (this.type === SchemaType.System) {
+            return !element.readonly && !element.active;
+        } else if (this.type === SchemaType.Tag) {
+            return element.status === 'DRAFT';
+        } else {
+            return element.status === 'DRAFT' || !this.readonly;
+        }
     }
 
     private createSchema(schema: Schema | null): void {
@@ -575,27 +538,21 @@ export class SchemaConfigComponent implements OnInit {
         this.loading = true;
         switch (this.type) {
             case SchemaType.System: {
-                this.schemaService.createSystemSchemas(schema).subscribe(
-                    (data) => {
-                        localStorage.removeItem('restoreSchemaData');
-                        this.loadSchemas();
-                    },
-                    (e) => {
-                        this.loadError(e);
-                    }
-                );
+                this.schemaService.createSystemSchemas(schema).subscribe((data) => {
+                    localStorage.removeItem('restoreSchemaData');
+                    this.loadSchemas();
+                }, (e) => {
+                    this.loadError(e);
+                });
                 break;
             }
             case SchemaType.Tag: {
-                this.tagsService.createSchema(schema).subscribe(
-                    (data) => {
-                        localStorage.removeItem('restoreSchemaData');
-                        this.loadSchemas();
-                    },
-                    (e) => {
-                        this.loadError(e);
-                    }
-                );
+                this.tagsService.createSchema(schema).subscribe((data) => {
+                    localStorage.removeItem('restoreSchemaData');
+                    this.loadSchemas();
+                }, (e) => {
+                    this.loadError(e);
+                });
                 break;
             }
             case SchemaType.Module:
@@ -603,21 +560,16 @@ export class SchemaConfigComponent implements OnInit {
             case SchemaType.Policy:
             default: {
                 const category = this.getCategory();
-                this.schemaService
-                    .pushCreate(category, schema, schema.topicId)
-                    .subscribe(
-                        (result) => {
-                            const {taskId} = result;
-                            this.router.navigate(['task', taskId], {
-                                queryParams: {
-                                    last: btoa(location.href),
-                                },
-                            });
-                        },
-                        (e) => {
-                            this.loadError(e);
+                this.schemaService.pushCreate(category, schema, schema.topicId).subscribe((result) => {
+                    const { taskId } = result;
+                    this.router.navigate(['task', taskId], {
+                        queryParams: {
+                            last: btoa(location.href)
                         }
-                    );
+                    });
+                }, (e) => {
+                    this.loadError(e);
+                });
                 break;
             }
         }
@@ -631,42 +583,33 @@ export class SchemaConfigComponent implements OnInit {
         this.loading = true;
         switch (this.type) {
             case SchemaType.System: {
-                this.schemaService.updateSystemSchema(schema, id).subscribe(
-                    (data) => {
-                        localStorage.removeItem('restoreSchemaData');
-                        this.loadSchemas();
-                    },
-                    (e) => {
-                        this.loadError(e);
-                    }
-                );
+                this.schemaService.updateSystemSchema(schema, id).subscribe((data) => {
+                    localStorage.removeItem('restoreSchemaData');
+                    this.loadSchemas();
+                }, (e) => {
+                    this.loadError(e);
+                });
                 break;
             }
             case SchemaType.Tag: {
-                this.tagsService.updateSchema(schema, id).subscribe(
-                    (data) => {
-                        localStorage.removeItem('restoreSchemaData');
-                        this.loadSchemas();
-                    },
-                    (e) => {
-                        this.loadError(e);
-                    }
-                );
+                this.tagsService.updateSchema(schema, id).subscribe((data) => {
+                    localStorage.removeItem('restoreSchemaData');
+                    this.loadSchemas();
+                }, (e) => {
+                    this.loadError(e);
+                });
                 break;
             }
             case SchemaType.Module:
             case SchemaType.Tool:
             case SchemaType.Policy:
             default: {
-                this.schemaService.update(schema, id).subscribe(
-                    (data) => {
-                        localStorage.removeItem('restoreSchemaData');
-                        this.loadSchemas();
-                    },
-                    (e) => {
-                        this.loadError(e);
-                    }
-                );
+                this.schemaService.update(schema, id).subscribe((data) => {
+                    localStorage.removeItem('restoreSchemaData');
+                    this.loadSchemas();
+                }, (e) => {
+                    this.loadError(e);
+                });
                 break;
             }
         }
@@ -690,26 +633,22 @@ export class SchemaConfigComponent implements OnInit {
             case SchemaType.Policy:
             default: {
                 const category = this.getCategory();
-                this.schemaService.newVersion(category, schema, id).subscribe(
-                    (result) => {
-                        const {taskId} = result;
-                        this.router.navigate(['task', taskId], {
-                            queryParams: {
-                                last: btoa(location.href),
-                            },
-                        });
-                    },
-                    (e) => {
-                        this.loadError(e);
-                    }
-                );
+                this.schemaService.newVersion(category, schema, id).subscribe((result) => {
+                    const { taskId } = result;
+                    this.router.navigate(['task', taskId], {
+                        queryParams: {
+                            last: btoa(location.href)
+                        }
+                    });
+                }, (e) => {
+                    this.loadError(e);
+                });
                 break;
             }
         }
     }
 
-    deleteSchema(schema: any): void {
-        const id = schema.id;
+    private deleteSchema(id: string): void {
         if (!id) {
             return;
         }
@@ -727,39 +666,30 @@ export class SchemaConfigComponent implements OnInit {
             this.loading = true;
             switch (this.type) {
                 case SchemaType.System: {
-                    this.schemaService.deleteSystemSchema(id).subscribe(
-                        (data: any) => {
-                            this.loadSchemas();
-                        },
-                        (e) => {
-                            this.loadError(e);
-                        }
-                    );
+                    this.schemaService.deleteSystemSchema(id).subscribe((data: any) => {
+                        this.loadSchemas();
+                    }, (e) => {
+                        this.loadError(e);
+                    });
                     break;
                 }
                 case SchemaType.Tag: {
-                    this.tagsService.deleteSchema(id).subscribe(
-                        (data: any) => {
-                            this.loadSchemas();
-                        },
-                        (e) => {
-                            this.loadError(e);
-                        }
-                    );
+                    this.tagsService.deleteSchema(id).subscribe((data: any) => {
+                        this.loadSchemas();
+                    }, (e) => {
+                        this.loadError(e);
+                    });
                     break;
                 }
                 case SchemaType.Module:
                 case SchemaType.Tool:
                 case SchemaType.Policy:
                 default: {
-                    this.schemaService.delete(id).subscribe(
-                        (data: any) => {
-                            this.loadSchemas();
-                        },
-                        (e) => {
-                            this.loadError(e);
-                        }
-                    );
+                    this.schemaService.delete(id).subscribe((data: any) => {
+                        this.loadSchemas();
+                    }, (e) => {
+                        this.loadError(e);
+                    });
                     break;
                 }
             }
@@ -773,51 +703,31 @@ export class SchemaConfigComponent implements OnInit {
                 return;
             }
             case SchemaType.Tag: {
-                this.tagsService.publishSchema(id).subscribe(
-                    (res) => {
-                        this.loading = false;
-                        this.loadSchemas();
-                    },
-                    (e) => {
-                        this.loadError(e);
-                    }
-                );
+                this.tagsService.publishSchema(id).subscribe((res) => {
+                    this.loading = false;
+                    this.loadSchemas();
+                }, (e) => {
+                    this.loadError(e);
+                });
                 break;
             }
             case SchemaType.Module:
             case SchemaType.Tool:
             case SchemaType.Policy:
             default: {
-                this.schemaService.pushPublish(id, version).subscribe(
-                    (result) => {
-                        const {taskId} = result;
-                        this.router.navigate(['task', taskId], {
-                            queryParams: {
-                                last: btoa(location.href),
-                            },
-                        });
-                    },
-                    (e) => {
-                        this.loadError(e);
-                    }
-                );
+                this.schemaService.pushPublish(id, version).subscribe((result) => {
+                    const { taskId } = result;
+                    this.router.navigate(['task', taskId], {
+                        queryParams: {
+                            last: btoa(location.href)
+                        }
+                    });
+                }, (e) => {
+                    this.loadError(e);
+                });
                 break;
             }
         }
-    }
-
-    private unpublished(element: Schema): void {
-        this.loading = true;
-        this.schemaService.unpublished(element.id).subscribe(
-            (data: any) => {
-                const schemas = SchemaHelper.map(data);
-                this.schemaMapping(schemas);
-                this.loadSchemas();
-            },
-            (e) => {
-                this.loadError(e);
-            }
-        );
     }
 
     private importByMessage(data: any, topicId: string): void {
@@ -834,19 +744,16 @@ export class SchemaConfigComponent implements OnInit {
             case SchemaType.Policy:
             default: {
                 const category = this.getCategory();
-                this.schemaService.pushImportByMessage(data, topicId).subscribe(
-                    (result) => {
-                        const {taskId} = result;
-                        this.router.navigate(['task', taskId], {
-                            queryParams: {
-                                last: btoa(location.href),
-                            },
-                        });
-                    },
-                    (e) => {
-                        this.loadError(e);
-                    }
-                );
+                this.schemaService.pushImportByMessage(data, topicId).subscribe((result) => {
+                    const { taskId } = result;
+                    this.router.navigate(['task', taskId], {
+                        queryParams: {
+                            last: btoa(location.href)
+                        }
+                    });
+                }, (e) => {
+                    this.loadError(e);
+                });
                 break;
             }
         }
@@ -866,19 +773,16 @@ export class SchemaConfigComponent implements OnInit {
             case SchemaType.Policy:
             default: {
                 const category = this.getCategory();
-                this.schemaService.pushImportByFile(data, topicId).subscribe(
-                    (result) => {
-                        const {taskId} = result;
-                        this.router.navigate(['task', taskId], {
-                            queryParams: {
-                                last: btoa(location.href),
-                            },
-                        });
-                    },
-                    (e) => {
-                        this.loadError(e);
-                    }
-                );
+                this.schemaService.pushImportByFile(data, topicId).subscribe((result) => {
+                    const { taskId } = result;
+                    this.router.navigate(['task', taskId], {
+                        queryParams: {
+                            last: btoa(location.href)
+                        }
+                    });
+                }, (e) => {
+                    this.loadError(e);
+                });
                 break;
             }
         }
@@ -895,16 +799,33 @@ export class SchemaConfigComponent implements OnInit {
             data: {
                 type: 'new',
                 schemaType: this.type,
-                schemasMap: this.allSchemasMap,
                 topicId: this.currentTopic,
                 policies: this.policies,
                 modules: this.modules,
-                tools: this.draftTools,
-                properties: this.properties,
-            },
+                tools: this.draftTools
+            }
         });
         dialogRef.onClose.subscribe(async (schema: Schema | null) => {
             this.createSchema(schema);
+        });
+    }
+
+    public onOpenConfig(element: Schema): void {
+        return this.onEditDocument(element);
+    }
+
+    public onOpenForm(schema: Schema, example: boolean): void {
+        const dialogRef = this.dialog.open(SchemaFormDialog, {
+            width: '950px',
+            panelClass: 'g-dialog',
+            disableClose: true,
+            data: { schema, example }
+        });
+        dialogRef.afterClosed().subscribe(async (exampleDate: any) => {
+            if (exampleDate) {
+                schema.setExample(exampleDate);
+                this.updateSchema(schema.id, schema);
+            }
         });
     }
 
@@ -914,16 +835,33 @@ export class SchemaConfigComponent implements OnInit {
             width: '850px',
             styleClass: 'custom-dialog',
             data: {
-                document: element.document,
+                document: element?.document,
                 title: 'Schema',
                 type: 'JSON',
-            },
+            }
         });
-        dialogRef.onClose.subscribe(async (result) => {
-        });
+        dialogRef.onClose.subscribe(async (result) => { });
     }
 
-    public onEditDocument(element: Schema): void {
+    public onEditSchema(element: Schema): void {
+        if (this.type === SchemaType.System && !element.readonly && !element.active) {
+            return this.onEditDocument(element);
+        }
+        if (this.type === SchemaType.Tag && element.status === 'DRAFT') {
+            return this.onEditDocument(element);
+        }
+        if (element.status === 'DRAFT') {
+            return this.onEditDocument(element);
+        }
+        if (element.isCreator && !this.readonly) {
+            return this.onNewVersion(element);
+        }
+        if (!element.isCreator && !this.readonly) {
+            return this.onCloneSchema(element);
+        }
+    }
+
+    private onEditDocument(element: Schema): void {
         const dialogRef = this.dialogService.open(SchemaDialog, {
             header: 'Edit Schema',
             width: '950px',
@@ -931,13 +869,12 @@ export class SchemaConfigComponent implements OnInit {
             data: {
                 type: 'edit',
                 schemaType: this.type,
-                schemasMap: this.allSchemasMap,
                 topicId: this.currentTopic,
                 policies: this.policies,
-                scheme: element,
+                modules: this.modules,
                 tools: this.draftTools,
-                properties: this.properties,
-            },
+                scheme: element
+            }
         });
         dialogRef.onClose.subscribe(async (schema: Schema | null) => {
             this.updateSchema(element.id, schema);
@@ -949,17 +886,13 @@ export class SchemaConfigComponent implements OnInit {
             this.onDeleteSchema(element);
         } else {
             this.loading = true;
-            this.schemaService.getSchemaParents(element.id).subscribe(
-                (parents) => {
-                    this.onDeleteSchema(element, parents);
-                },
-                (e) => {
-                    this.loadError(e);
-                },
-                () => {
-                    this.loading = false;
-                }
-            );
+            this.schemaService.getSchemaParents(element.id).subscribe((parents) => {
+                this.onDeleteSchema(element, parents);
+            }, (e) => {
+                this.loadError(e);
+            }, () => {
+                this.loading = false;
+            });
         }
     }
 
@@ -968,10 +901,10 @@ export class SchemaConfigComponent implements OnInit {
             const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
                 data: {
                     dialogTitle: 'Delete schema',
-                    dialogText: 'Are you sure to delete schema?',
+                    dialogText: 'Are you sure to delete schema?'
                 },
                 disableClose: true,
-                autoFocus: false,
+                autoFocus: false
             });
             dialogRef.afterClosed().subscribe((result) => {
                 if (!result) {
@@ -983,42 +916,39 @@ export class SchemaConfigComponent implements OnInit {
             this.dialog.open(AlertComponent, {
                 data: {
                     type: AlertType.WARN,
-                    text: `There are some schemas that depend on this schema:\r\n${parents
-                        .map((parent) =>
-                            SchemaHelper.getSchemaName(
-                                parent.name,
-                                parent.version || parent.sourceVersion,
-                                parent.status
-                            )
+                    text: `There are some schemas that depend on this schema:\r\n${parents.map((parent) =>
+                        SchemaHelper.getSchemaName(
+                            parent.name,
+                            parent.version || parent.sourceVersion,
+                            parent.status
                         )
-                        .join('\r\n')}`,
-                },
+                    ).join('\r\n')}`
+                }
             });
         }
     }
 
-    public onNewVersion(element: Schema): void {
+    private onNewVersion(element: Schema): void {
         const dialogRef = this.dialogService.open(SchemaDialog, {
             header: 'New Version',
             width: '950px',
             styleClass: 'custom-dialog',
             data: {
-                schemaType: this.type,
                 type: 'version',
-                schemasMap: this.allSchemasMap,
                 topicId: this.currentTopic,
+                schemaType: this.type,
                 policies: this.policies,
-                scheme: element,
+                modules: this.modules,
                 tools: this.draftTools,
-                properties: this.properties,
-            },
+                scheme: element
+            }
         });
         dialogRef.onClose.subscribe(async (schema: Schema | null) => {
             this.newVersionSchema(element.id, schema);
         });
     }
 
-    public onCloneSchema(element: Schema): void {
+    private onCloneSchema(element: Schema): void {
         const newDocument: any = { ...element };
         delete newDocument._id;
         delete newDocument.id;
@@ -1033,26 +963,62 @@ export class SchemaConfigComponent implements OnInit {
             styleClass: 'custom-dialog',
             data: {
                 type: 'version',
-                schemasMap: this.allSchemasMap,
                 topicId: this.currentTopic,
+                schemaType: this.type,
                 policies: this.policies,
-                scheme: newDocument,
+                modules: this.modules,
                 tools: this.draftTools,
-                properties: this.properties,
-            },
+                scheme: newDocument
+            }
         });
         dialogRef.onClose.subscribe(async (schema: Schema | null) => {
             this.createSchema(schema);
         });
     }
 
+    public onCopySchema(element: Schema): void {
+        const newDocument: any = { ...element };
+        delete newDocument._id;
+        delete newDocument.id;
+        delete newDocument.uuid;
+        delete newDocument.creator;
+        delete newDocument.owner;
+        delete newDocument.version;
+        delete newDocument.previousVersion;
+        const dialogRef = this.dialog.open(CopySchemaDialog, {
+            width: '950px',
+            panelClass: 'g-dialog',
+            disableClose: true,
+            data: {
+                type: 'new',
+                topicId: this.currentTopic,
+                schemaType: this.type,
+                policies: this.policies,
+                modules: this.modules,
+                tools: this.draftTools,
+                scheme: newDocument
+            }
+        });
+        dialogRef.afterClosed().subscribe(async (copyInfo: any | null) => {
+            if (copyInfo) {
+                this.schemaService.copySchema(copyInfo).subscribe((result) => {
+                    const { taskId } = result;
+                    this.router.navigate(['task', taskId], {
+                        queryParams: {
+                            last: btoa(location.href)
+                        }
+                    });
+                }, (e) => {
+                    this.loadError(e);
+                });
+            }
+        });
+    }
+
     public onPublish(element: Schema): void {
         const dialogRef = this.dialog.open(SetVersionDialog, {
             width: '350px',
-            disableClose: false,
-            data: {
-                schemas: this.schemas,
-            },
+            disableClose: true
         });
         dialogRef.afterClosed().subscribe(async (version) => {
             if (version) {
@@ -1073,7 +1039,7 @@ export class SchemaConfigComponent implements OnInit {
             header: 'Select action',
             width: '720px',
             styleClass: 'custom-dialog',
-            data: {timeStamp: messageId},
+            data: { timeStamp: messageId }
         });
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
@@ -1085,14 +1051,17 @@ export class SchemaConfigComponent implements OnInit {
     private importSchemasDetails(result: any) {
         const { type, data, schemas } = result;
         const dialogRef = this.dialog.open(SchemaViewDialog, {
-            width: '720px',
+            width: '950px',
             panelClass: 'g-dialog',
             disableClose: true,
             data: {
                 schemas: schemas,
                 topicId: this.currentTopic,
+                schemaType: this.type,
                 policies: this.policies,
-            },
+                modules: this.modules,
+                tools: this.draftTools
+            }
         });
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result && result.messageId) {
@@ -1112,29 +1081,27 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     public onExport(element: Schema): void {
-        this.schemaService.exportInMessage(element.id).subscribe((schema) =>
-            this.dialogService.open(ExportSchemaDialog, {
+        this.schemaService.exportInMessage(element.id)
+            .subscribe(schema => this.dialogService.open(ExportSchemaDialog, {
                 header: 'Export Schema',
                 width: '720px',
                 styleClass: 'custom-dialog',
                 data: {
-                    schema: schema,
+                    schema: schema
                 },
-            })
-        );
+            }), (e) => {
+                this.loadError(e);
+            });
     }
 
     public onActive(element: Schema): void {
         this.loading = true;
-        this.schemaService.activeSystemSchema(element.id).subscribe(
-            (res) => {
-                this.loading = false;
-                this.loadSchemas();
-            },
-            (e) => {
-                this.loadError(e);
-            }
-        );
+        this.schemaService.activeSystemSchema(element.id).subscribe((res) => {
+            this.loading = false;
+            this.loadSchemas();
+        }, (e) => {
+            this.loadError(e);
+        });
     }
 
     public onCompare(element?: Schema) {
@@ -1145,8 +1112,8 @@ export class SchemaConfigComponent implements OnInit {
             data: {
                 schema: element,
                 policies: this.policies,
-                schemas: this.allSchemas,
-            },
+                schemas: this.compareList
+            }
         });
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
@@ -1154,47 +1121,17 @@ export class SchemaConfigComponent implements OnInit {
                     queryParams: {
                         type: 'schema',
                         schemaId1: result.schemaId1,
-                        schemaId2: result.schemaId2,
-                    },
+                        schemaId2: result.schemaId2
+                    }
                 });
             }
         });
     }
 
-    private _deleteSystem(id: string): Observable<ISchema[]> {
-        switch (this.type) {
-            case 'system':
-                return this.schemaService.deleteSystemSchema(id);
-            case 'tag':
-                return this.tagsService.deleteSchema(id);
-            default:
-                return this.schemaService.delete(id);
-        }
-    }
-
-    private _updateSystem(schema: Schema, id: string): Observable<ISchema[]> {
-        switch (this.type) {
-            case 'system':
-                return this.schemaService.updateSystemSchema(schema, id);
-            case 'tag':
-                return this.tagsService.updateSchema(schema, id);
-            default:
-                return this.schemaService.update(schema, id);
-        }
-    }
-
-    newOnPage() {
-        this.pageIndex = 0;
-        this.loadSchemas();
-    }
-
-    movePageIndex(inc: number) {
-        if (inc > 0 && this.pageIndex < this.count / this.pageSize - 1) {
-            this.pageIndex += 1;
-            this.loadSchemas();
-        } else if (inc < 0 && this.pageIndex > 0) {
-            this.pageIndex -= 1;
-            this.loadSchemas();
-        }
+    public onViewSchemaTree(element: Schema): void {
+        this.dialog.open(SchemaTreeComponent, {
+            data: element,
+            autoFocus: false
+        })
     }
 }

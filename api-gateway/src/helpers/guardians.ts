@@ -671,7 +671,7 @@ export class Guardians extends NatsService {
      * @param task
      */
     public async copySchemaAsync(iri: string, topicId: string, name: string, owner: string, task: NewTask): Promise<NewTask> {
-        return await this.sendMessage(MessageAPI.COPY_SCHEMA_ASYNC, {iri, topicId, name, task, owner});
+        return await this.sendMessage(MessageAPI.COPY_SCHEMA_ASYNC, { iri, topicId, name, task, owner });
     }
 
     /**
@@ -933,6 +933,7 @@ export class Guardians extends NatsService {
         propLvl: any,
         childrenLvl: any,
         idLvl: any,
+        keyLvl: any,
     ) {
         return await this.sendMessage(MessageAPI.COMPARE_DOCUMENTS, {
             type,
@@ -941,7 +942,8 @@ export class Guardians extends NatsService {
             eventsLvl,
             propLvl,
             childrenLvl,
-            idLvl
+            idLvl,
+            keyLvl
         });
     }
 
@@ -2277,5 +2279,123 @@ export class Guardians extends NatsService {
         user: any
     ): Promise<any[]> {
         return await this.sendMessage(MessageAPI.SEARCH_BLOCKS, { config, blockId, user });
+    }
+
+    /**
+     * Start recording
+     * @param policyId
+     * @param owner
+     * @param options
+     * @returns {any}
+     */
+    public async startRecording(policyId: string, owner: string, options: any): Promise<any> {
+        return await this.sendMessage<any>(MessageAPI.START_RECORDING, { policyId, owner, options });
+    }
+
+    /**
+     * Stop recording
+     * @param policyId
+     * @param owner
+     * @param options
+     * @returns {any}
+     */
+    public async stopRecording(policyId: string, owner: string, options: any): Promise<any> {
+        const file = await this.sendMessage<any>(MessageAPI.STOP_RECORDING, { policyId, owner, options });
+        return Buffer.from(file, 'base64');
+    }
+
+    /**
+     * Get recorded actions
+     * @param policyId
+     * @param owner
+     * @returns {any}
+     */
+    public async getRecordedActions(policyId: string, owner: string): Promise<any> {
+        return await this.sendMessage<any>(MessageAPI.GET_RECORDED_ACTIONS, { policyId, owner });
+    }
+
+    /**
+     * Get recording or running status
+     * @param policyId
+     * @param owner
+     * @returns {any}
+     */
+    public async getRecordStatus(policyId: string, owner: string): Promise<any> {
+        return await this.sendMessage<any>(MessageAPI.GET_RECORD_STATUS, { policyId, owner });
+    }
+
+    /**
+     * Run record
+     * @param policyId
+     * @param owner
+     * @param options
+     * @returns {any}
+     */
+    public async runRecord(policyId: string, owner: string, options: any): Promise<any> {
+        return await this.sendMessage<any>(MessageAPI.RUN_RECORD, { policyId, owner, options });
+    }
+
+    /**
+     * Stop running
+     * @param policyId
+     * @param owner
+     * @param options
+     * @returns {any}
+     */
+    public async stopRunning(policyId: string, owner: string, options: any): Promise<any> {
+        return await this.sendMessage<any>(MessageAPI.STOP_RUNNING, { policyId, owner, options });
+    }
+
+    /**
+     * Get running results
+     * @param policyId
+     * @param owner
+     * @returns {any}
+     */
+    public async getRecordResults(policyId: string, owner: string): Promise<any> {
+        return await this.sendMessage<any>(MessageAPI.GET_RECORD_RESULTS, { policyId, owner });
+    }
+
+    /**
+     * Get record details
+     * @param policyId
+     * @param owner
+     * @returns {any}
+     */
+    public async getRecordDetails(policyId: string, owner: string): Promise<any> {
+        return await this.sendMessage<any>(MessageAPI.GET_RECORD_DETAILS, { policyId, owner });
+    }
+
+    /**
+     * Fast Forward
+     * @param policyId
+     * @param owner
+     * @param options
+     * @returns {any}
+     */
+    public async fastForward(policyId: string, owner: string, options: any): Promise<any> {
+        return await this.sendMessage<any>(MessageAPI.FAST_FORWARD, { policyId, owner, options });
+    }
+
+    /**
+     * Retry Step
+     * @param policyId
+     * @param owner
+     * @param options
+     * @returns {any}
+     */
+    public async retryStep(policyId: string, owner: string, options: any): Promise<any> {
+        return await this.sendMessage<any>(MessageAPI.RECORD_RETRY_STEP, { policyId, owner, options });
+    }
+
+    /**
+     * Skip Step
+     * @param policyId
+     * @param owner
+     * @param options
+     * @returns {any}
+     */
+    public async skipStep(policyId: string, owner: string, options: any): Promise<any> {
+        return await this.sendMessage<any>(MessageAPI.RECORD_SKIP_STEP, { policyId, owner, options });
     }
 }

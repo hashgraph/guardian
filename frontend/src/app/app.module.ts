@@ -69,6 +69,7 @@ import { CommonComponentsModule } from './modules/common/common-components.modul
 import { TagEngineModule } from './modules/tag-engine/tag-engine.module';
 import { SchemaEngineModule } from './modules/schema-engine/schema-engine.module'
 import { ThemeService } from './services/theme.service';
+import { RecordService } from './services/record.service';
 // Injectors
 import { GET_SCHEMA_NAME } from './injectors/get-schema-name.injector';
 import { BLOCK_TYPE_TIPS, BLOCK_TYPE_TIPS_VALUE, } from './injectors/block-type-tips.injector';
@@ -228,6 +229,7 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
         SuggestionsService,
         NotificationService,
         AISearchService,
+        RecordService,
         CompareStorage,
         {
             provide: GET_SCHEMA_NAME,

@@ -1,6 +1,6 @@
 import { PolicyModule } from '@guardian/common';
 import { BlockModel } from './block.model';
-import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { CompareOptions } from '../interfaces/compare-options.interface';
 import { IKeyMap } from '../interfaces/key-map.interface';
 import { PropertyModel } from './property.model';
 import { PropertyType } from '../types/property.type';
@@ -57,7 +57,7 @@ export class ModuleModel {
      * Compare Options
      * @private
      */
-    private readonly options: ICompareOptions;
+    private readonly options: CompareOptions;
 
     /**
      * All Blocks
@@ -65,7 +65,7 @@ export class ModuleModel {
      */
     private readonly _list: BlockModel[];
 
-    constructor(policyModule: PolicyModule, options: ICompareOptions) {
+    constructor(policyModule: PolicyModule, options: CompareOptions) {
         this.options = options;
 
         this.id = policyModule.id;
@@ -104,7 +104,7 @@ export class ModuleModel {
      * @param options - comparison options
      * @public
      */
-    private updateAllBlocks(root: BlockModel, options: ICompareOptions): void {
+    private updateAllBlocks(root: BlockModel, options: CompareOptions): void {
         for (const child of root.children) {
             this.updateAllBlocks(child, options);
         }
@@ -117,7 +117,7 @@ export class ModuleModel {
      * @param options - comparison options
      * @private
      */
-    private createInputEvents(variables: any[], options: ICompareOptions): VariableModel[] {
+    private createInputEvents(variables: any[], options: CompareOptions): VariableModel[] {
         const result: VariableModel[] = [];
         if (Array.isArray(variables)) {
             for (const json of variables) {
@@ -136,7 +136,7 @@ export class ModuleModel {
      * @param options - comparison options
      * @private
      */
-    private createOutputEvents(variables: any[], options: ICompareOptions): VariableModel[] {
+    private createOutputEvents(variables: any[], options: CompareOptions): VariableModel[] {
         const result: VariableModel[] = [];
         if (Array.isArray(variables)) {
             for (const json of variables) {
@@ -155,7 +155,7 @@ export class ModuleModel {
      * @param options - comparison options
      * @private
      */
-    private createVariables(variables: any[], options: ICompareOptions): VariableModel[] {
+    private createVariables(variables: any[], options: CompareOptions): VariableModel[] {
         const result: VariableModel[] = [];
         if (Array.isArray(variables)) {
             for (const json of variables) {

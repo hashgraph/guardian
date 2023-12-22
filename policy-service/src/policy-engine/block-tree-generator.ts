@@ -7,6 +7,7 @@ import { PolicyValidator } from '@policy-engine/block-validators';
 import { headers } from 'nats';
 import { Inject } from '@helpers/decorators/inject';
 import { ComponentsService } from './helpers/components-service';
+import { RecordUtils } from './record-utils';
 
 /**
  * Block tree generator
@@ -58,7 +59,7 @@ export class BlockTreeGenerator extends NatsService {
         } else {
             userFull.setUsername(regUser.username);
         }
-        const groups = await policy.databaseServer.getGroupsByUser(policy.policyId, userFull.did);
+        const groups = await policy.components.databaseServer.getGroupsByUser(policy.policyId, userFull.did);
         for (const group of groups) {
             if (group.active !== false) {
                 return userFull.setGroup(group);
@@ -104,7 +105,6 @@ export class BlockTreeGenerator extends NatsService {
         });
 
         this.getPolicyMessages(PolicyEvents.GET_ROOT_BLOCK_DATA, policyId, async (msg: any) => {
-
             const { user } = msg;
 
             const userFull = await this.getUser(policyInstance, user);
@@ -118,7 +118,6 @@ export class BlockTreeGenerator extends NatsService {
         });
 
         this.getPolicyMessages(PolicyEvents.GET_POLICY_GROUPS, policyId, async (msg: any) => {
-
             const { user } = msg;
 
             const userFull = await this.getUser(policyInstance, user);
@@ -133,18 +132,15 @@ export class BlockTreeGenerator extends NatsService {
         });
 
         this.getPolicyMessages(PolicyEvents.SELECT_POLICY_GROUP, policyId, async (msg: any) => {
-
             const { user, uuid } = msg;
-
             const userFull = await this.getUser(policyInstance, user);
 
-            const templates = policyInstance.components.getGroupTemplates<any>();
-            if (templates.length === 0) {
-                return new MessageResponse([] as any);
-            }
+            // <-- Record
+            await RecordUtils.RecordSelectGroup(policyId, userFull, uuid);
+            // Record -->
 
-            await PolicyComponentsUtils.SelectGroup(policyInstance, userFull, uuid);
-            return new MessageResponse(true as any);
+            const result = policyInstance.components.selectGroup(userFull, uuid) as any;
+            return new MessageResponse(result);
         });
 
         this.getPolicyMessages(PolicyEvents.GET_BLOCK_DATA, policyId, async (msg: any) => {
@@ -182,11 +178,13 @@ export class BlockTreeGenerator extends NatsService {
         });
 
         this.getPolicyMessages(PolicyEvents.SET_BLOCK_DATA, policyId, async (msg: any) => {
-
             const { user, blockId, data } = msg;
-
             const userFull = await this.getUser(policyInstance, user);
             const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
+
+            // <-- Record
+            await RecordUtils.RecordSetBlockData(policyId, userFull, block, data);
+            // Record -->
 
             if (block && (await block.isAvailable(userFull))) {
                 if (typeof block.setData !== 'function') {
@@ -203,9 +201,12 @@ export class BlockTreeGenerator extends NatsService {
 
         this.getPolicyMessages(PolicyEvents.SET_BLOCK_DATA_BY_TAG, policyId, async (msg: any) => {
             const { user, tag, data } = msg;
-
             const userFull = await this.getUser(policyInstance, user);
             const block = PolicyComponentsUtils.GetBlockByTag<IPolicyInterfaceBlock>(policyId, tag);
+
+            // <-- Record
+            await RecordUtils.RecordSetBlockData(policyId, userFull, block, data);
+            // Record -->
 
             if (block && (await block.isAvailable(userFull))) {
                 const result = await block.setData(userFull, data);
@@ -236,14 +237,88 @@ export class BlockTreeGenerator extends NatsService {
         this.getPolicyMessages(PolicyEvents.MRV_DATA, policyId, async (msg: any) => {
             const { data } = msg;
 
+            // <-- Record
+            await RecordUtils.RecordExternalData(policyId, data);
+            // Record -->
+
             for (const block of PolicyComponentsUtils.ExternalDataBlocks.values()) {
                 if (block.policyId === policyId) {
                     await (block as any).receiveData(data);
                 }
             }
-
             return new MessageResponse({});
-        })
+        });
+
+        this.getPolicyMessages(PolicyEvents.CREATE_VIRTUAL_USER, policyId, async (msg: any) => {
+            const { did, data } = msg;
+            await RecordUtils.RecordCreateUser(policyId, did, data);
+            return new MessageResponse({});
+        });
+
+        this.getPolicyMessages(PolicyEvents.SET_VIRTUAL_USER, policyId, async (msg: any) => {
+            const { did } = msg;
+            await RecordUtils.RecordSetUser(policyId, did);
+            return new MessageResponse({});
+        });
+    }
+
+    /**
+     * Init record events
+     */
+    async initRecordEvents(policyId: string): Promise<void> {
+        this.getPolicyMessages(PolicyEvents.START_RECORDING, policyId, async (msg: any) => {
+            const result = await RecordUtils.StartRecording(policyId);
+            return new MessageResponse(result);
+        });
+
+        this.getPolicyMessages(PolicyEvents.STOP_RECORDING, policyId, async (msg: any) => {
+            const result = await RecordUtils.StopRecording(policyId);
+            return new MessageResponse(result);
+        });
+
+        this.getPolicyMessages(PolicyEvents.GET_RECORD_STATUS, policyId, async (msg: any) => {
+            const result = RecordUtils.GetRecordStatus(policyId);
+            return new MessageResponse(result);
+        });
+
+        this.getPolicyMessages(PolicyEvents.GET_RECORDED_ACTIONS, policyId, async (msg: any) => {
+            const result = await RecordUtils.GetRecordedActions(policyId);
+            return new MessageResponse(result);
+        });
+
+        this.getPolicyMessages(PolicyEvents.RUN_RECORD, policyId, async (msg: any) => {
+            const { records, results, options } = msg;
+            const result = await RecordUtils.RunRecord(policyId, records, results, options);
+            return new MessageResponse(result);
+        });
+
+        this.getPolicyMessages(PolicyEvents.STOP_RUNNING, policyId, async (msg: any) => {
+            const result = await RecordUtils.StopRunning(policyId);
+            return new MessageResponse(result);
+        });
+
+        this.getPolicyMessages(PolicyEvents.GET_RECORD_RESULTS, policyId, async (msg: any) => {
+            const result = await RecordUtils.GetRecordResults(policyId);
+            return new MessageResponse(result);
+        });
+
+        this.getPolicyMessages(PolicyEvents.FAST_FORWARD, policyId, async (msg: any) => {
+            const options = msg;
+            const result = await RecordUtils.FastForward(policyId, options);
+            return new MessageResponse(result);
+        });
+
+        this.getPolicyMessages(PolicyEvents.RECORD_RETRY_STEP, policyId, async (msg: any) => {
+            const options = msg;
+            const result = await RecordUtils.RetryStep(policyId, options);
+            return new MessageResponse(result);
+        });
+
+        this.getPolicyMessages(PolicyEvents.RECORD_SKIP_STEP, policyId, async (msg: any) => {
+            const options = msg;
+            const result = await RecordUtils.SkipStep(policyId, options);
+            return new MessageResponse(result);
+        });
     }
 
     /**
@@ -276,16 +351,19 @@ export class BlockTreeGenerator extends NatsService {
                 await components.registerTool(tool);
             }
 
-            const { rootInstance, allInstances } =
-                await PolicyComponentsUtils.BuildBlockTree(policy, policyId, components);
+            const {
+                rootInstance,
+                allInstances
+            } = await PolicyComponentsUtils.BuildBlockTree(policy, policyId, components);
+            await components.registerRoot(rootInstance);
 
             if (!skipRegistration) {
-                await PolicyComponentsUtils.RegisterPolicyInstance(policyId, policy);
+                await PolicyComponentsUtils.RegisterPolicyInstance(policyId, policy, components);
                 await PolicyComponentsUtils.RegisterBlockTree(allInstances);
                 this.models.set(policyId, rootInstance);
             }
             await this.initPolicyEvents(policyId, rootInstance);
-
+            await this.initRecordEvents(policyId);
             return rootInstance;
         } catch (error) {
             new Logger().error(`Error build policy ${error}`, ['POLICY', policy.name, policyId.toString()]);

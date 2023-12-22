@@ -39,6 +39,7 @@ import { PolicySearchComponent } from './views/policy-search/policy-search.compo
 import { RetirementComponent } from './views/retirement/retirement.component';
 import { RetirementUserComponent } from './views/retirement-user/retirement-user.component';
 import { ListOfTokensUserComponent } from './views/list-of-tokens-user/list-of-tokens-user.component';
+import { RecordResultsComponent } from './modules/policy-engine/record/record-results/record-results.component';
 
 const USER_IS_NOT_RA = "Page is avaliable for admin only";
 
@@ -198,6 +199,7 @@ const routes: Routes = [
 
     { path: 'compare', component: CompareComponent, canActivate: [ServicesStatusGuard] },
     { path: 'search', component: SearchPoliciesComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
+    { path: 'record-results', component: RecordResultsComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
 
     { path: 'branding', component: BrandingComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
 

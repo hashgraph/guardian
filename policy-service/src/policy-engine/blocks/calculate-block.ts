@@ -220,7 +220,12 @@ export class CalculateContainerBlock {
         }
 
         const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
-        const newVC = await VCHelper.createVC(ref.policyOwner, root.hederaAccountKey, vcSubject);
+        const uuid = await ref.components.generateUUID();
+        const newVC = await VCHelper.createVcDocument(
+            vcSubject,
+            { did: ref.policyOwner, key: root.hederaAccountKey },
+            { uuid }
+        );
 
         const item = PolicyUtils.createVC(ref, owner, newVC);
         item.type = outputSchema.iri;

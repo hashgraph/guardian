@@ -34,7 +34,7 @@ export enum PolicyEngineEvents {
     GET_VIRTUAL_USERS = 'policy-engine-event-get-virtual-users',
     CREATE_VIRTUAL_USER = 'policy-engine-event-create-virtual-user',
     SET_VIRTUAL_USER = 'policy-engine-event-login-virtual-user',
-    RESTART_DRY_RUN= 'policy-engine-event-restart-dry-run',
+    RESTART_DRY_RUN = 'policy-engine-event-restart-dry-run',
     GET_VIRTUAL_DOCUMENTS = 'policy-engine-event-get-virtual-documents',
     DELETE_POLICY_ASYNC = 'policy-engine-event-delete-policy-async',
     GET_INVITE = 'policy-engine-event-get-invite',
@@ -43,5 +43,5 @@ export enum PolicyEngineEvents {
     CLONE_POLICY_ASYNC = 'policy-engine-event-clone-policy-async',
     GET_TOKENS_MAP = 'policy-engine-event-get-tokens-map',
     SET_MULTI_POLICY = 'policy-engine-event-set-multi-policy',
-    GET_MULTI_POLICY = 'policy-engine-event-get-multi-policy'
+    GET_MULTI_POLICY = 'policy-engine-event-get-multi-policy',
 }

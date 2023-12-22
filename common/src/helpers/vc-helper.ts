@@ -26,6 +26,7 @@ import {
 import { Singleton } from '../decorators/singleton';
 import { DataBaseHelper } from './db-helper';
 import { Schema as SchemaCollection } from '../entity';
+import { IDocumentOptions, ISuiteOptions } from '../hedera-modules/vcjs/vcjs';
 
 /**
  * Configured VCHelper
@@ -187,29 +188,27 @@ export class VcHelper extends VCJS {
      * @param {PrivateKey | string} key - Private Key
      * @param {any} subject - Credential Object
      * @param {any} [group] - Issuer
-     * @returns {HcsVcDocument<VcSubject>} - VC Document
+     *
+     * @returns {VcDocument} - VC Document
+     *
+     * @deprecated
      */
     public override async createVC(
         did: string,
         key: string | PrivateKey,
         subject: ICredentialSubject,
-        group?: any
+        group?: any,
     ): Promise<VcDocument> {
-        const vcSchema = await VcHelper.getSchemaByContext(
-            subject['@context'],
-            subject.type
-        );
-        switch (vcSchema?.entity) {
-            case SchemaEntity.EVC:
-                return await super.createVC(
-                    did,
-                    key,
-                    this.setNestedNodeIds(JSON.parse(JSON.stringify(subject))),
-                    group,
-                    SignatureType.BbsBlsSignature2020
-                );
-            default:
-                return await super.createVC(did, key, subject, group);
+        const vcSchema = await VcHelper.getSchemaByContext(subject['@context'], subject.type);
+        const entity: SchemaEntity = vcSchema?.entity;
+        if (entity === SchemaEntity.EVC) {
+            return await super.createVC(did, key,
+                this.setNestedNodeIds(JSON.parse(JSON.stringify(subject))),
+                group,
+                SignatureType.BbsBlsSignature2020
+            );
+        } else {
+            return await super.createVC(did, key, subject, group);
         }
     }
 
@@ -218,10 +217,12 @@ export class VcHelper extends VCJS {
      *
      * @param {string} did - DID
      * @param {PrivateKey | string} key - Private Key
-     * @param {HcsVcDocument<VcSubject>[]} vcs - VC Documents
+     * @param {VcDocument[]} vcs - VC Documents
      * @param {string} [uuid] - new uuid
      *
-     * @returns {HcsVpDocument} - VP Document
+     * @returns {VpDocument} - VP Document
+     *
+     * @deprecated
      */
     public override async createVP(
         did: string,
@@ -238,5 +239,56 @@ export class VcHelper extends VCJS {
             vcs[i] = await this.vcDeriveProof(item, revealVc);
         }
         return await super.createVP(did, key, vcs, uuid);
+    }
+
+    /**
+     * Create VC Document
+     *
+     * @param {ICredentialSubject} subject - Credential Object
+     * @param {ISuiteOptions} suiteOptions - Suite Options (Issuer, Private Key, Signature Type)
+     * @param {IDocumentOptions} [documentOptions] - Document Options (UUID, Group)
+     *
+     * @returns {VcDocument} - VC Document
+     */
+    public override async createVcDocument(
+        subject: ICredentialSubject,
+        suiteOptions: ISuiteOptions,
+        documentOptions?: IDocumentOptions
+    ): Promise<VcDocument> {
+        const vcSchema = await VcHelper.getSchemaByContext(subject['@context'], subject.type);
+        const entity: SchemaEntity = vcSchema?.entity;
+        if (entity === SchemaEntity.EVC) {
+            suiteOptions.signatureType = SignatureType.BbsBlsSignature2020;
+            subject = this.setNestedNodeIds(JSON.parse(JSON.stringify(subject)));
+            return await super.createVcDocument(subject, suiteOptions, documentOptions);
+        } else {
+            suiteOptions.signatureType = SignatureType.Ed25519Signature2018;
+            return await super.createVcDocument(subject, suiteOptions, documentOptions);
+        }
+    }
+
+    /**
+     * Create VP Document
+     *
+     * @param {VcDocument[]} vcs - VC Documents
+     * @param {ISuiteOptions} suiteOptions - Suite Options (Issuer, Private Key)
+     * @param {IDocumentOptions} [documentOptions] - Document Options (UUID, Group)
+     *
+     * @returns {VpDocument} - VP Document
+     */
+    public override async createVpDocument(
+        vcs: VcDocument[],
+        suiteOptions: ISuiteOptions,
+        documentOptions?: IDocumentOptions
+    ): Promise<VpDocument> {
+        for (let i = 0; i < vcs.length; i++) {
+            const item = vcs[i];
+            if (item.getProof().type !== SignatureType.BbsBlsSignature2020) {
+                continue;
+            }
+            const revealVc = await this.createRevealVC(item);
+            vcs[i] = await this.vcDeriveProof(item, revealVc);
+        }
+        return await super.createVpDocument(vcs, suiteOptions, documentOptions);
     }
 }

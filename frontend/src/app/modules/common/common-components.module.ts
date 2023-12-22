@@ -30,6 +30,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { ButtonModule } from 'primeng/button';
+import { PaginatorComponent } from './paginator/paginator.component';
 
 @NgModule({
     declarations: [
@@ -51,7 +52,8 @@ import { ButtonModule } from 'primeng/button';
         NewVersionsComponent,
         CompareBtnComponent,
         CompareViewerComponent,
-        AlertComponent
+        AlertComponent,
+        PaginatorComponent
     ],
     imports: [
         CommonModule,
@@ -86,7 +88,8 @@ import { ButtonModule } from 'primeng/button';
         NgxMaskModule,
         NewVersionsComponent,
         CompareBtnComponent,
-        CompareViewerComponent
+        CompareViewerComponent,
+        PaginatorComponent
     ]
 })
 export class CommonComponentsModule { }

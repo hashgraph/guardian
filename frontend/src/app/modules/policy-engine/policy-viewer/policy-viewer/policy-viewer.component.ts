@@ -1,18 +1,16 @@
-import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { IUser, PolicyType } from '@guardian/interfaces';
-import { ToastrService } from 'ngx-toastr';
 import { forkJoin, Subscription } from 'rxjs';
 import { HttpResponse } from '@angular/common/http';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
-import { TokenService } from 'src/app/services/token.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 import { IStep } from '../../structures';
 import { PolicyProgressService } from '../../services/policy-progress.service';
 import { DialogService } from 'primeng/dynamicdialog';
+import { RecordControllerComponent } from '../../record/record-controller/record-controller.component';
 
 /**
  * Component for choosing a policy and
@@ -24,30 +22,31 @@ import { DialogService } from 'primeng/dynamicdialog';
     styleUrls: ['./policy-viewer.component.scss'],
 })
 export class PolicyViewerComponent implements OnInit, OnDestroy {
-    policyId!: string;
-    policy: any | null;
-    policyInfo: any | null;
-    role!: any;
-    loading: boolean = true;
-    isConfirmed: boolean = false;
-    virtualUsers: any[] = [];
-    view: string = 'policy';
-    documents: any[] = [];
-    columns: string[] = [];
-    columnsMap: any = {
+    public policyId!: string;
+    public policy: any | null;
+    public policyInfo: any | null;
+    public role!: any;
+    public loading: boolean = true;
+    public isConfirmed: boolean = false;
+    public virtualUsers: any[] = [];
+    public view: string = 'policy';
+    public documents: any[] = [];
+    public columns: string[] = [];
+    public columnsMap: any = {
         transactions: ['createDate', 'type', 'owner', 'document'],
         artifacts: ['createDate', 'type', 'owner', 'document'],
         ipfs: ['createDate', 'size', 'url', 'document'],
     };
-    pageIndex: number;
-    pageSize: number;
-    documentCount: any;
-    groups: any[] = [];
-    isMultipleGroups: boolean = false;
-    userRole!: string;
-    userGroup!: string;
+    public pageIndex: number;
+    public pageSize: number;
+    public documentCount: any;
+    public groups: any[] = [];
+    public isMultipleGroups: boolean = false;
+    public userRole!: string;
+    public userGroup!: string;
+    public recordingActive: boolean = false;
 
-    steps: IStep[] = [];
+    public steps: IStep[] = [];
 
     private subscription = new Subscription();
 
@@ -62,16 +61,18 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         return this.policyInfo && this.policyInfo.status === 'DRY-RUN';
     }
 
+    @ViewChild('recordController')
+    public set recordController(value: RecordControllerComponent | undefined) {
+        this._recordController = value;
+    }
+    private _recordController!: RecordControllerComponent | undefined;
+
     constructor(
         private profileService: ProfileService,
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
-        private tokenService: TokenService,
         private route: ActivatedRoute,
-        private router: Router,
-        private dialog: MatDialog,
         private dialogService: DialogService,
-        private toastr: ToastrService,
         private policyProgressService: PolicyProgressService,
         private changeDetector: ChangeDetectorRef,
     ) {
@@ -128,6 +129,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         this.policyInfo = null;
         this.isConfirmed = false;
         this.loading = true;
+        this.recordingActive = false;
         this.profileService.getProfile().subscribe(
             (profile: IUser | null) => {
                 this.isConfirmed = !!(profile && profile.confirmed);
@@ -139,55 +141,37 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                         this.loading = false;
                     }, 500);
                 }
-            },
-            (e) => {
+            }, (e) => {
                 this.loading = false;
-            }
-        );
+            });
     }
 
     loadPolicyById(policyId: string) {
         forkJoin([
-            this.policyEngineService.policyBlock(policyId),
             this.policyEngineService.policy(policyId),
-            this.policyEngineService.getGroups(policyId),
+            this.policyEngineService.policyBlock(policyId),
+            this.policyEngineService.getGroups(policyId)
         ]).subscribe(
             (value) => {
-                this.policy = value[0];
-                this.policyInfo = value[1];
+                this.policyInfo = value[0];
+                this.policy = value[1];
                 this.groups = value[2] || [];
 
                 this.virtualUsers = [];
-                this.isMultipleGroups = !!(
-                    this.policyInfo?.policyGroups && this.groups?.length
-                );
+                this.isMultipleGroups = !!(this.policyInfo?.policyGroups && this.groups?.length);
 
                 this.userRole = this.policyInfo.userRole;
-                this.userGroup =
-                    this.policyInfo.userGroup?.groupLabel ||
-                    this.policyInfo.userGroup?.uuid;
+                this.userGroup = this.policyInfo.userGroup?.groupLabel || this.policyInfo.userGroup?.uuid;
 
                 if (this.policyInfo?.status === PolicyType.DRY_RUN) {
-                    this.policyEngineService
-                        .getVirtualUsers(this.policyInfo.id)
-                        .subscribe(
-                            (users) => {
-                                this.virtualUsers = users;
-                                setTimeout(() => {
-                                    this.loading = false;
-                                }, 500);
-                            },
-                            (e) => {
-                                this.loading = false;
-                            }
-                        );
+                    this.loadDryRunOptions();
                 } else {
                     setTimeout(() => {
                         this.loading = false;
                     }, 500);
                 }
 
-                this.policyProgressService.updateData({role: this.policyInfo.userRole});
+                this.policyProgressService.updateData({ role: this.policyInfo.userRole });
 
                 this.policyProgressService.data$.subscribe((data: any) => {
                     this.policyEngineService.getPolicyNavigation(policyId).subscribe((data: any) => {
@@ -200,11 +184,20 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                         }
                     })
                 })
-            },
-            (e) => {
+            }, (e) => {
                 this.loading = false;
-            }
-        );
+            });
+    }
+
+    loadDryRunOptions() {
+        this.policyEngineService.getVirtualUsers(this.policyInfo.id).subscribe((value) => {
+            this.virtualUsers = value;
+            setTimeout(() => {
+                this.loading = false;
+            }, 500);
+        }, (e) => {
+            this.loading = false;
+        });
     }
 
     updatePolicyProgress(navigation: any) {
@@ -234,11 +227,9 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                     this.policy = null;
                     this.policyInfo = null;
                     this.loadPolicyById(this.policyId);
-                },
-                (e) => {
+                }, (e) => {
                     this.loading = false;
-                }
-            );
+                });
     }
 
     createVirtualUser() {
@@ -251,11 +242,9 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                     setTimeout(() => {
                         this.loading = false;
                     }, 500);
-                },
-                (e) => {
+                }, (e) => {
                     this.loading = false;
-                }
-            );
+                });
     }
 
     setVirtualUser(item: any) {
@@ -269,11 +258,9 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                     this.policyInfo = null;
                     this.isMultipleGroups = false;
                     this.loadPolicyById(this.policyId);
-                },
-                (e) => {
+                }, (e) => {
                     this.loading = false;
-                }
-            );
+                });
     }
 
     restartDryRun() {
@@ -284,11 +271,9 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.policyInfo = null;
                 this.isMultipleGroups = false;
                 this.loadPolicyById(this.policyId);
-            },
-            (e) => {
+            }, (e) => {
                 this.loading = false;
-            }
-        );
+            });
     }
 
     onView(view: string) {
@@ -304,13 +289,10 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                     this.view,
                     this.pageIndex,
                     this.pageSize
-                )
-                .subscribe(
+                ).subscribe(
                     (documents: HttpResponse<any[]>) => {
                         this.documents = documents.body || [];
-                        this.documents = this.documents.map((d) =>
-                            this.setType(d)
-                        );
+                        this.documents = this.documents.map((d) => this.setType(d));
                         this.documentCount =
                             documents.headers.get('X-Total-Count') ||
                             this.documents.length;
@@ -318,24 +300,20 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                         setTimeout(() => {
                             this.loading = false;
                         }, 500);
-                    },
-                    (e) => {
+                    }, (e) => {
                         this.loading = false;
-                    }
-                );
+                    });
         }
     }
 
     openDocument(element: any) {
         let dialogRef;
 
-        if (this.innerWidth <= 810) {
+        if (window.innerWidth <= 810) {
             const bodyStyles = window.getComputedStyle(document.body);
-            const headerHeight: number = parseInt(
-                bodyStyles.getPropertyValue('--header-height')
-            );
+            const headerHeight: number = parseInt(bodyStyles.getPropertyValue('--header-height'));
             dialogRef = this.dialogService.open(VCViewerDialog, {
-                width: `${this.innerWidth.toString()}px`,
+                width: `${window.innerWidth.toString()}px`,
                 header: 'Document',
                 styleClass: 'custom-dialog',
                 data: this,
@@ -352,8 +330,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 },
             });
         }
-        dialogRef.onClose.subscribe(async (result) => {
-        });
+        dialogRef.onClose.subscribe(async (result) => { });
     }
 
     onPage(event: any) {
@@ -366,6 +343,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         }
 
         this.loading = true;
+        this.pageIndex = 0;
+        this.pageSize = 10;
         this.policyEngineService
             .loadDocuments(
                 this.policyInfo.id,
@@ -373,21 +352,18 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.pageIndex,
                 this.pageSize
             )
-            .subscribe(
-                (documents: HttpResponse<any[]>) => {
-                    this.documents = documents.body || [];
-                    this.documents = this.documents.map((d) => this.setType(d));
-                    this.documentCount =
-                        documents.headers.get('X-Total-Count') ||
-                        this.documents.length;
-                    setTimeout(() => {
-                        this.loading = false;
-                    }, 500);
-                },
-                (e) => {
+            .subscribe((documents: HttpResponse<any[]>) => {
+                this.documents = documents.body || [];
+                this.documents = this.documents.map((d) => this.setType(d));
+                this.documentCount =
+                    documents.headers.get('X-Total-Count') ||
+                    this.documents.length;
+                setTimeout(() => {
                     this.loading = false;
-                }
-            );
+                }, 500);
+            }, (e) => {
+                this.loading = false;
+            });
     }
 
     private setType(document: any) {
@@ -534,5 +510,35 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 break;
             }
         }
+    }
+
+    public updatePolicy() {
+        forkJoin([
+            this.policyEngineService.getVirtualUsers(this.policyId),
+            this.policyEngineService.policyBlock(this.policyId),
+            this.policyEngineService.policy(this.policyId),
+        ]).subscribe((value) => {
+            this.policy = null;
+            this.changeDetector.detectChanges();
+            this.virtualUsers = value[0];
+            this.policy = value[1];
+            this.policyInfo = value[2];
+            this.isMultipleGroups = !!(this.policyInfo?.policyGroups && this.groups?.length);
+            this.userRole = this.policyInfo.userRole;
+            this.userGroup = this.policyInfo.userGroup?.groupLabel || this.policyInfo.userGroup?.uuid;
+            this.changeDetector.detectChanges();
+        }, (e) => {
+            this.loading = false;
+        });
+    }
+
+    public startRecord() {
+        this.recordingActive = true;
+        this._recordController?.startRecording();
+    }
+
+    public runRecord() {
+        this.recordingActive = true;
+        this._recordController?.runRecord();
     }
 }

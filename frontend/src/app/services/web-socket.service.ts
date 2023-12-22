@@ -39,6 +39,7 @@ export class WebSocketService {
     private reconnectAttempts: number = 10;  /// number of connection attempts
     private servicesReady: Subject<boolean>;
     private profileSubject: Subject<{ type: string, data: any }>;
+    private recordUpdateSubject: Subject<any>;
     private blockUpdateSubject: Subject<any>;
     private userInfoUpdateSubject: Subject<any>;
     private taskStatusSubject: Subject<any>;
@@ -61,6 +62,7 @@ export class WebSocketService {
     public readonly meecoVerifyVPFailed$: Observable<any> = this.meecoVerifyVPFailedSubject.asObservable();
 
     constructor(private dialogService: DialogService, private auth: AuthService, private toastr: ToastrService, private router: Router) {
+        this.recordUpdateSubject = new Subject();
         this.blockUpdateSubject = new Subject();
         this.userInfoUpdateSubject = new Subject();
         this.servicesReady = new Subject();
@@ -237,6 +239,10 @@ export class WebSocketService {
                     }
                     this.servicesReady.next(allStatesReady);
                     break;
+                case MessageAPI.UPDATE_RECORD: {
+                    this.recordUpdateSubject.next(data);
+                    break;
+                }
                 case MessageAPI.UPDATE_EVENT: {
                     this.blockUpdateSubject.next(data);
                     break;
@@ -313,7 +319,9 @@ export class WebSocketService {
     }
 
     private getUrl(accessToken: string | null = null) {
-        return `${this.getBaseUrl()}/ws/?token=${accessToken}`;
+        return accessToken
+            ? `${this.getBaseUrl()}/ws/?token=${accessToken}`
+            : `${this.getBaseUrl()}/ws/`;
     }
 
     public blockSubscribe(
@@ -322,6 +330,14 @@ export class WebSocketService {
         complete?: (() => void)
     ): Subscription {
         return this.blockUpdateSubject.subscribe(next, error, complete);
+    }
+
+    public recordSubscribe(
+        next?: ((id: any) => void),
+        error?: ((error: any) => void),
+        complete?: (() => void)
+    ): Subscription {
+        return this.recordUpdateSubject.subscribe(next, error, complete);
     }
 
     public subscribeUserInfo(

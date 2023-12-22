@@ -142,12 +142,17 @@
 }
 
 .restore-data {
-    margin-top: 10px;
-    margin-left: 40px;
     display: flex;
     align-items: center;
     gap: 10px;
     color: var(--primary-color);
+    margin-top: 10px;
+    margin-left: 25px;
+    margin-right: 50px;
+    padding-bottom: 15px;
+    padding-left: 15px;
+    border-bottom: 1px solid #c8c8c8;
+    margin-bottom: 10px;
 }
 
 .restore-data button.mat-raised-button {
@@ -175,7 +180,7 @@
         }
 
         .schema-form {
-          max-height: calc(100vh - 360px);
+            max-height: calc(100vh - 465px);
             padding: 20px 20px 0px 0;
             margin-bottom: 0;
         }

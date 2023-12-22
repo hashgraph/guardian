@@ -142,7 +142,7 @@ export class PolicyEngine extends NatsService {
     }
 
     public async restartPolicyInstance(user: any, policyId: string) {
-        return await this.sendMessage(PolicyEngineEvents.RESTART_POLICY_INSTANCE, {user, policyId});
+        return await this.sendMessage(PolicyEngineEvents.RESTART_POLICY_INSTANCE, { user, policyId });
     }
 
     /**
@@ -340,10 +340,10 @@ export class PolicyEngine extends NatsService {
     /**
      * Create new Virtual User
      * @param policyId
-     * @param did
+     * @param owner
      */
-    public async createVirtualUser(policyId: string, did: string) {
-        return await this.sendMessage(PolicyEngineEvents.CREATE_VIRTUAL_USER, { policyId, did });
+    public async createVirtualUser(policyId: string, owner: string) {
+        return await this.sendMessage(PolicyEngineEvents.CREATE_VIRTUAL_USER, { policyId, owner });
     }
 
     /**

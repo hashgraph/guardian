@@ -4,7 +4,7 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
 import { AnyBlockType, IPolicyDocument } from '@policy-engine/policy-engine.interface';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { BlockActionError } from '@policy-engine/errors';
-import { GenerateUUIDv4, SchemaCategory, SchemaHelper, SchemaStatus, TagType } from '@guardian/interfaces';
+import { SchemaCategory, SchemaHelper, SchemaStatus, TagType } from '@guardian/interfaces';
 import {
     Tag,
     MessageAction,
@@ -158,10 +158,11 @@ export class TagsManagerBlock {
                     if (ref.dryRun) {
                         vcHelper.addDryRunContext(credentialSubject);
                     }
-                    const vcObject = await vcHelper.createVC(
-                        user.did,
-                        hederaAccount.hederaAccountKey,
-                        credentialSubject
+                    const uuid = await ref.components.generateUUID();
+                    const vcObject = await vcHelper.createVcDocument(
+                        credentialSubject,
+                        { did: user.did, key: hederaAccount.hederaAccountKey },
+                        { uuid }
                     );
                     tag.document = vcObject.getDocument();
                 } else {
@@ -170,7 +171,8 @@ export class TagsManagerBlock {
 
                 const target = await this.getTarget(TagType.PolicyDocument, tag.localTarget || tag.target);
                 if (target) {
-                    tag.uuid = tag.uuid || GenerateUUIDv4();
+                    const uuid: string = await ref.components.generateUUID();
+                    tag.uuid = tag.uuid || uuid;
                     tag.operation = 'Create';
                     tag.entity = TagType.PolicyDocument;
                     tag.target = null;

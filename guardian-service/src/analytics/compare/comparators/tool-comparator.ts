@@ -1,5 +1,5 @@
 import { DatabaseServer } from '@guardian/common';
-import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { CompareOptions, IChildrenLvl, IEventsLvl, IIdLvl, IKeyLvl, IPropertiesLvl } from '../interfaces/compare-options.interface';
 import { ToolModel } from '../models/tool.model';
 import { SchemaModel } from '../models/schema.model';
 import { ICompareResult } from '../interfaces/compare-result.interface';
@@ -19,62 +19,23 @@ import { MultiCompareUtils } from '../utils/multi-compare-utils';
  */
 export class ToolComparator {
     /**
-     * Properties
-     * 0 - Don't compare
-     * 1 - Only simple properties
-     * 2 - All properties
-     * @private
-     */
-    private readonly propLvl: number;
-
-    /**
-     * Children
-     * 0 - Don't compare
-     * 1 - Only child blocks of the first level
-     * 2 - All children
-     * @private
-     */
-    private readonly childLvl: number;
-
-    /**
-     * Events
-     * 0 - Don't compare
-     * 1 - All events
-     * @private
-     */
-    private readonly eventLvl: number;
-
-    /**
-     * UUID
-     * 0 - Don't compare
-     * 1 - All UUID
-     * @private
-     */
-    private readonly idLvl: number;
-
-    /**
      * Compare Options
      * @private
      */
-    private readonly options: ICompareOptions;
+    private readonly options: CompareOptions;
 
-    constructor(options?: ICompareOptions) {
+    constructor(options?: CompareOptions) {
         if (options) {
-            this.propLvl = options.propLvl;
-            this.childLvl = options.childLvl;
-            this.eventLvl = options.eventLvl;
-            this.idLvl = options.idLvl;
+            this.options = options;
         } else {
-            this.propLvl = 2;
-            this.childLvl = 2;
-            this.eventLvl = 1;
-            this.idLvl = 1;
-        }
-        this.options = {
-            propLvl: this.propLvl,
-            childLvl: this.childLvl,
-            eventLvl: this.eventLvl,
-            idLvl: this.idLvl,
+            this.options = new CompareOptions(
+                IPropertiesLvl.All,
+                IChildrenLvl.All,
+                IEventsLvl.All,
+                IIdLvl.All,
+                IKeyLvl.Default,
+                null
+            );
         }
     }
 
@@ -540,7 +501,7 @@ export class ToolComparator {
      * @public
      * @static
      */
-    public static async createModelById(toolId: string, options: ICompareOptions): Promise<ToolModel> {
+    public static async createModelById(toolId: string, options: CompareOptions): Promise<ToolModel> {
         //Tool
         const tool = await DatabaseServer.getToolById(toolId);
 

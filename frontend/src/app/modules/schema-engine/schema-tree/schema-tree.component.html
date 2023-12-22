@@ -1,0 +1,16 @@
+<div #main>
+    <div mat-dialog-title class="dialog-header">
+        <h1>{{schema.name}}</h1>
+        <div class="dialog-actions">
+            <button mat-icon-button class="download" (click)="download()"><mat-icon>download</mat-icon></button>
+            <button mat-icon-button class="close" mat-dialog-close><mat-icon>close</mat-icon></button>
+        </div>
+    </div>
+
+    <div mat-dialog-content>
+        <div #content class="content" (mousedown)="startMove()">
+            <canvas #canvas [style.display]="loading ? 'none' : 'block'"></canvas>
+            <mat-spinner class="loading" *ngIf="loading"></mat-spinner>
+        </div>
+    </div>
+</div>

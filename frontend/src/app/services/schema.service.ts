@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { ISchema, SchemaCategory, SchemaEntity } from '@guardian/interfaces';
+import { ISchema, SchemaCategory, SchemaEntity, SchemaNode } from '@guardian/interfaces';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
 import { AuthService } from './auth.service';
@@ -37,8 +37,8 @@ export class SchemaService {
     }
 
     public newVersion(category: SchemaCategory, schema: ISchema, id?: string): Observable<ITask> {
+        const data = Object.assign({}, schema, { id: id || schema.id });
         schema.category = category;
-        const data = Object.assign({}, schema, {id: id || schema.id});
         return this.http.post<ITask>(`${this.url}/push/${data.topicId}`, data);
     }
 
@@ -51,6 +51,21 @@ export class SchemaService {
             return this.http.get<ISchema[]>(`${this.url}/${topicId}`);
         }
         return this.http.get<ISchema[]>(`${this.url}`);
+    }
+
+    public getSubSchemas(
+        topicId?: string,
+        category?: SchemaCategory
+    ): Observable<any[]> {
+        if (topicId && category) {
+            return this.http.get<any[]>(`${this.url}/list/sub?topicId=${topicId}&category=${category}`);
+        } else if (topicId) {
+            return this.http.get<any[]>(`${this.url}/list/sub?topicId=${topicId}`);
+        } else if (category) {
+            return this.http.get<any[]>(`${this.url}/list/sub?category=${category}`);
+        } else {
+            return this.http.get<any[]>(`${this.url}/list/sub`);
+        }
     }
 
     public getSchemasByPolicy(policyId: string): Observable<ISchema[]> {
@@ -167,6 +182,14 @@ export class SchemaService {
 
     public getSchemaParents(id: string): Observable<ISchema[]> {
         return this.http.get<ISchema[]>(`${this.singleSchemaUrl}/${id}/parents`);
+    }
+
+    copySchema(copyInfo: any) {
+        return this.http.post<ITask>(`${this.url}/push/copy`, copyInfo);
+    }
+
+    public getSchemaTree(id: string): Observable<SchemaNode> {
+        return this.http.get<SchemaNode>(`${this.singleSchemaUrl}/${id}/tree`);
     }
 
     public properties(): Observable<any[]> {

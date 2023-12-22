@@ -1,5 +1,5 @@
 import { Artifact } from '@guardian/common';
-import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { CompareOptions } from '../interfaces/compare-options.interface';
 import MurmurHash3 from 'imurmurhash';
 import * as crypto from 'crypto';
 
@@ -29,9 +29,9 @@ export class FileModel {
      * Compare Options
      * @private
      */
-    private readonly options: ICompareOptions;
+    private readonly options: CompareOptions;
 
-    constructor(artifact: Artifact, buffer: Buffer, options: ICompareOptions) {
+    constructor(artifact: Artifact, buffer: Buffer, options: CompareOptions) {
         this.options = options;
         this.uuid = artifact.uuid;
         this.data = crypto
@@ -70,7 +70,7 @@ export class FileModel {
      * @param options - comparison options
      * @public
      */
-    public hash(options?: ICompareOptions): string {
+    public hash(options?: CompareOptions): string {
         return this._weight;
     }
 
@@ -79,7 +79,7 @@ export class FileModel {
      * @param options - comparison options
      * @public
      */
-    public update(options: ICompareOptions): void {
+    public update(options: CompareOptions): void {
         const hashState = MurmurHash3();
         hashState.hash(String(this.uuid));
         hashState.hash(String(this.data));

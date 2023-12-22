@@ -239,6 +239,15 @@ body
   opacity: 0;
 }
 
+::ng-deep body .record-tooltip {
+    word-wrap: normal;
+    word-break: normal;
+    white-space: pre;
+    min-width: 200px;
+    max-width: 400px;
+    font-size: 14px;
+}
+
 @media (max-width: 810px) {
     .app {
         width: 100%;

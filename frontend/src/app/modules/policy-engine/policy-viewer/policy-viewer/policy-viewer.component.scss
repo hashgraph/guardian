@@ -10,8 +10,23 @@
 .loading {
     background: #fff;
     position: fixed;
-    z-index: 99;
+    z-index: 101;
     top: var(--header-height);
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
+}
+
+.record-loading {
+    background: #fff;
+    position: absolute;
+    z-index: 99;
+    top: 0;
     left: 0;
     bottom: 0;
     right: 0;
@@ -282,6 +297,13 @@ a.go-back-link mat-icon {
     border: 1px solid #3f51b5;
 }
 
+.dry-run-group-btn[disabled="true"],
+.dry-run-action-btn[disabled="true"] {
+    filter: grayscale(1);
+    opacity: 0.7;
+    pointer-events: none;
+}
+
 .dry-run-group-btn span {
     max-width: 65px;
     min-width: 45px;
@@ -309,6 +331,14 @@ a.go-back-link mat-icon {
     top: 2px;
     font-size: 27px;
     left: -5px;
+}
+
+.record-btn {
+    color: #ff0000;
+}
+
+.run-btn {
+    color: #00ad00;
 }
 
 .delimiter {

@@ -33,6 +33,7 @@ export class SchemaHelper {
             customType: null,
             comment: null,
             isPrivate: null,
+            examples: null
         };
         let _property = property;
         const readonly = _property.readOnly;
@@ -56,6 +57,7 @@ export class SchemaHelper {
             field.pattern = _property.pattern ? String(_property.pattern) : null;
             field.enum = _property.enum;
             field.remoteLink = _property.$ref;
+            field.examples = Array.isArray(_property.examples) ? _property.examples : null;
         }
         field.readOnly = !!(_property.readOnly || readonly);
         return field;
@@ -140,6 +142,9 @@ export class SchemaHelper {
             }
             if (field.pattern) {
                 item.pattern = field.pattern;
+            }
+            if (field.examples) {
+                item.examples = field.examples;
             }
         }
 
@@ -295,6 +300,23 @@ export class SchemaHelper {
                 .sort((a, b) => a.orderPosition - b.orderPosition)
                 .map(item => item.field)
         );
+    }
+
+    /**
+     * Update schema fields
+     * @param document
+     * @param fn
+     */
+    public static updateFields(document: ISchemaDocument, fn: (name: string, property: any) => any): ISchemaDocument {
+        if (!document || !document.properties) {
+            return document;
+        }
+        const properties = Object.keys(document.properties);
+        for (const name of properties) {
+            const property = document.properties[name];
+            document.properties[name] = fn(name, property);
+        }
+        return document;
     }
 
     /**

@@ -1,4 +1,4 @@
-import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { CompareOptions } from '../interfaces/compare-options.interface';
 import { IRateTable } from '../interfaces/rate-table.interface';
 import { IRate } from '../interfaces/rate.interface';
 import { Status } from '../types/status.type';
@@ -71,7 +71,7 @@ export class PermissionsRate implements IRate<string> {
      * @param options - comparison options
      * @public
      */
-    public calc(options: ICompareOptions): void {
+    public calc(options: CompareOptions): void {
         return;
     }
 
