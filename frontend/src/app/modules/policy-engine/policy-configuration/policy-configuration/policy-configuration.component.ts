@@ -1,4 +1,4 @@
-import { CdkDropList } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
 import { ChangeDetectorRef, Component, HostListener, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -38,6 +38,8 @@ import { SuggestionsService } from '../../../../services/suggestions.service';
 import { ToolsService } from '../../../../services/tools.service';
 import { AnalyticsService } from '../../../../services/analytics.service';
 import { WizardMode, WizardService } from 'src/app/modules/policy-engine/services/wizard.service';
+import { StopResizingEvent } from '../../directives/resizing.directive';
+import { OrderOption } from '../../structures/interfaces/order-option.interface';
 
 /**
  * The page for editing the policy and blocks.
@@ -1676,5 +1678,48 @@ export class PolicyConfigurationComponent implements OnInit {
                 (event.source as PolicyBlock).replaceConfig(event.target as PolicyBlock);
             }
         }
+    }
+
+    onDroppedSection(event: CdkDragDrop<any[]>) {
+        moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+        this.options.save();
+    }
+
+    saveSizes(event: StopResizingEvent) {
+        return (item: OrderOption) => {
+            if (item.id === event.prev?.id) {
+                item.size = event.prev.size;
+            }
+            if (item.id === event.next?.id) {
+                item.size = event.next.size;
+            }
+            return item;
+        }
+    }
+
+    stopResizingConfiguration(event: StopResizingEvent) {
+        this.options.configurationOrder = this.options.configurationOrder.map(
+            this.saveSizes(event)
+        );
+        this.options.save();
+    }
+
+    stopResizingProperties(event: StopResizingEvent) {
+        this.options.propertiesOrder = this.options.propertiesOrder.map(
+            this.saveSizes(event)
+        );
+        this.options.save();
+    }
+
+    onDragSection(event: any) {
+        document.body.classList.add('inherit-cursor');
+        document.body.classList.add('pointer-events-children-none');
+        document.body.style.cursor = 'grabbing';
+    }
+
+    onDropSection(event: any) {
+        document.body.classList.remove('inherit-cursor');
+        document.body.classList.remove('pointer-events-children-none');
+        document.body.style.cursor = '';
     }
 }
