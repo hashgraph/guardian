@@ -90,6 +90,8 @@
       * [⚙ Schema Differentiation APIs](guardian/standard-registry/schemas/schema-differentiation/schema-differentiation-apis/README.md)
         * [Returns Result of Schema comparison](guardian/standard-registry/schemas/schema-differentiation/schema-differentiation-apis/returns-result-of-schema-comparison.md)
         * [Exports Schema Differentiation Results](guardian/standard-registry/schemas/schema-differentiation/schema-differentiation-apis/exports-schema-differentiation-results.md)
+    * [📁 Example Data](guardian/standard-registry/schemas/example-data/README.md)
+      * [💻 Adding Example data using UI](guardian/standard-registry/schemas/example-data/adding-example-data-using-ui.md)
     * [📂 Schema Tree](guardian/standard-registry/schemas/schema-tree/README.md)
       * [💻 Schema Tree UI](guardian/standard-registry/schemas/schema-tree/schema-tree-ui.md)
       * [⚙ Returning Schema Tree](guardian/standard-registry/schemas/schema-tree/returning-schema-tree.md)

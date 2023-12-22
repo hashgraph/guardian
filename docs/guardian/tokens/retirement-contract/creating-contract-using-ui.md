@@ -43,7 +43,7 @@ Also you can check “without approval” to set retirement tokens as immediate 
 
 7\)   _SRs_ can check/approve/reject/ban requests for the wiper role in the wipe contract (Requests operation in wipe contract).
 
-<figure><img src="../../../.gitbook/assets/image (3) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 8\)   To execute the retirement Guardian users which hold USER role navigate to the ‘Retire’ tab and click on ‘Retire’ button, choose appropriate pool and set token count/serials
 

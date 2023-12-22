@@ -90,7 +90,7 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 ### Workflow&#x20;
 
-<figure><img src="../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (366).png" alt=""><figcaption></figcaption></figure>
 
 ### IPFS Timestamp
 
