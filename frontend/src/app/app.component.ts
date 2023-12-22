@@ -84,6 +84,7 @@ export class AppComponent implements OnInit {
         switch (type) {
             case 'COLLAPSE': {
                 document.getElementById('main-content')!.style.left = 'var(--header-width-collapse)';
+                document.getElementById('main-content')!.setAttribute('main-collapse-menu', 'true');
                 if (progressFooter) {
                     progressFooter.style.paddingLeft = 'calc(var(--header-width-collapse) + 48px)';
                 }
@@ -92,10 +93,12 @@ export class AppComponent implements OnInit {
             case 'NO_MARGIN':
             default: {
                 document.getElementById('main-content')!.style.left = '0';
+                document.getElementById('main-content')!.removeAttribute('main-collapse-menu');
                 break;
             }
             case 'EXPAND': {
                 document.getElementById('main-content')!.style.left = 'var(--header-width-expand)';
+                document.getElementById('main-content')!.setAttribute('main-collapse-menu', 'false');
                 if (progressFooter) {
                     progressFooter.style.paddingLeft = 'calc(var(--header-width-expand) + 48px)';
                 }

@@ -18,13 +18,23 @@
     background: transparent;
     position: fixed;
     z-index: 160;
-    top: var(--header-height);
+    top: 4px;
     left: 0;
     bottom: 0;
     right: 0;
     display: flex;
     border-top: none !important;
     pointer-events: none;
+}
+
+::ng-deep *[main-collapse-menu="true"] .running-container,
+::ng-deep *[main-collapse-menu="true"] .recording-container {
+    left: var(--header-width-collapse);
+}
+
+::ng-deep *[main-collapse-menu="false"] .running-container,
+::ng-deep *[main-collapse-menu="false"] .recording-container {
+    left: var(--header-width-expand);
 }
 
 .running-container {
@@ -59,7 +69,7 @@
         position: relative;
         pointer-events: none;
 
-        &::after{
+        &::after {
             pointer-events: none !important;
             position: absolute;
             content: "";
@@ -226,6 +236,7 @@
     }
 
     & .record-item[selected="true"] {
+
         .record-item-method,
         .record-item-time {
             background: #e6ffe7;
@@ -233,6 +244,7 @@
     }
 
     &[record-status="Error"] .record-item[selected="true"] {
+
         .record-item-method,
         .record-item-time {
             background: #ffe6e6 !important;
@@ -240,6 +252,7 @@
     }
 
     &[record-status="Stopped"] .record-item[selected="true"] {
+
         .record-item-method,
         .record-item-time {
             background: #f6f7b3 !important;

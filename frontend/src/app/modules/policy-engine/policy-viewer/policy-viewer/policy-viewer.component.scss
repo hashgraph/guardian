@@ -221,7 +221,7 @@ a.go-back-link mat-icon {
     top: 125px;
     left: 0px;
     right: 0px;
-    height: 45px;
+    height: 50px;
     display: flex;
     box-sizing: border-box;
     z-index: 150;
@@ -229,7 +229,7 @@ a.go-back-link mat-icon {
     background: #fff;
     border-bottom: 1px solid #000000;
     box-shadow: 0px 0px 1px 1px rgb(179 179 179);
-    padding: 0px 10px;
+    padding: 3px 10px 0px 10px;
 }
 
 .dry-run-btn {
