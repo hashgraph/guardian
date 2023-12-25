@@ -46,4 +46,6 @@ export enum PolicyEngineEvents {
     GET_MULTI_POLICY = 'policy-engine-event-get-multi-policy',
     GET_POLICIES_BY_CATEGORY = 'policy-engine-event-get-policies-category',
     GET_POLICY_NAVIGATION = 'policy-engine-event-get-policies-navigation',
+    GET_PUBLISH_POLICIES = 'policy-engine-event-get-publish-policies',
+    GET_FIELDS_DESCRIPTIONS = 'policy-engine-event-get-fields-description',
 }

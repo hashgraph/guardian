@@ -500,6 +500,10 @@ export class PolicyEngine extends NatsService {
             replaceAllEntities(model.config, SchemaFields, schemaIRI, newSchema.iri);
             replaceAllVariables(model.config, 'Schema', schemaIRI, newSchema.iri);
 
+            if (model.projectSchema === schemaIRI) {
+                model.projectSchema = newSchema.iri;
+            }
+
             const name = newSchema.name;
             num++;
             notifier.info(`Schema ${num} (${name || '-'}) published`);
@@ -830,6 +834,9 @@ export class PolicyEngine extends NatsService {
         }
         if (!policy.config) {
             throw new Error('The policy is empty');
+        }
+        if (!policy.categories?.filter((e) => e).length) {
+            throw new Error('The policy categories are empty');
         }
         if (policy.status === PolicyType.PUBLISH) {
             throw new Error(`Policy already published`);

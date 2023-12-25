@@ -15,6 +15,8 @@ import {
     IPolicyContainerBlock,
     IPolicyInstance,
     IPolicyInterfaceBlock,
+    IPolicyNavigation,
+    IPolicyNavigationStep,
     ISerializedBlock,
     ISerializedBlockExtend
 } from './policy-engine.interface';
@@ -26,6 +28,7 @@ import { GetBlockAbout } from '@policy-engine/blocks';
 import { IPolicyUser } from './policy-user';
 import { ExternalEvent } from './interfaces/external-event';
 import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
+import { PolicyNavigationMap } from './interfaces/block-state';
 import { ComponentsService } from './helpers/components-service';
 
 /**
@@ -239,6 +242,13 @@ export class PolicyComponentsUtils {
      * @private
      */
     private static readonly TagMapByPolicyId: Map<string, PolicyTagMap> =
+        new Map();
+    /**
+     * Block navigation map
+     * policyId -> Block tag -> Block UUID
+     * @private
+     */
+    private static readonly NavigationMapByPolicyId: Map<string, PolicyNavigationMap> =
         new Map();
     /**
      * Policy actions map
@@ -774,6 +784,31 @@ export class PolicyComponentsUtils {
     }
 
     /**
+     * Register policy instance
+     *
+     * @param policyId
+     * @param policy
+     * @constructor
+     */
+    public static async RegisterNavigation(
+        policyId: string,
+        navigation: IPolicyNavigation[]
+    ) {
+        const map: PolicyNavigationMap = new Map<string, IPolicyNavigationStep[]>();
+        PolicyComponentsUtils.NavigationMapByPolicyId.set(policyId, map);
+        if (Array.isArray(navigation)) {
+            navigation.forEach(nav => {
+                if (Array.isArray(nav.steps)) {
+                    nav.steps.forEach((step: IPolicyNavigationStep) => {
+                        step.uuid = PolicyComponentsUtils.TagMapByPolicyId.get(policyId).get(step.block);
+                    });
+                }
+                map.set(nav.role, nav.steps);
+            });
+        }
+    }
+
+    /**
      * Unregister blocks
      * @param policyId
      */
@@ -941,6 +976,34 @@ export class PolicyComponentsUtils {
         const uuid =
             PolicyComponentsUtils.TagMapByPolicyId.get(policyId).get(tag);
         return PolicyComponentsUtils.BlockByBlockId.get(uuid) as T;
+    }
+
+    /**
+     * Get navigation
+     * @param policyId
+     * @param role
+     */
+    public static GetNavigation<T extends IPolicyNavigationStep[]>(
+        policyId: string,
+        user: IPolicyUser
+    ): T {
+        if (!PolicyComponentsUtils.PolicyById.has(policyId)) {
+            throw new Error('The policy does not exist');
+        }
+        if (!PolicyComponentsUtils.NavigationMapByPolicyId.has(policyId)) {
+            return null;
+        }
+        const navMap = PolicyComponentsUtils.NavigationMapByPolicyId.get(policyId);
+        const policy = PolicyComponentsUtils.PolicyById.get(policyId);
+        if (!user.role) {
+            if (user.did === policy.owner) {
+                return navMap.get('OWNER') as T;
+            } else {
+                return navMap.get('NO_ROLE') as T;
+            }
+        } else {
+            return navMap.get(user.role) as T;
+        }
     }
 
     /**

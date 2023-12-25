@@ -937,3 +937,39 @@ export interface IPolicyInstance {
      */
     readonly components: ComponentsService
 }
+
+/**
+ * Navigation
+ */
+export interface IPolicyNavigation {
+    /**
+     * Data
+     */
+    role: string;
+    /**
+     * Data
+     */
+    steps: IPolicyNavigationStep[];
+}
+
+/**
+ * Navigation Step
+ */
+export interface IPolicyNavigationStep {
+    /**
+     * Data
+     */
+    uuid: string;
+    /**
+     * Data
+     */
+    name: string;
+    /**
+     * Data
+     */
+    block: string;
+    /**
+     * Data
+     */
+    level: number;
+}
