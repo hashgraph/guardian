@@ -3660,6 +3660,63 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /policies/categories:
+    get:
+      operationId: PolicyApi_getPolicyCategoriesAsync
+      summary: Get all categories
+      description: Get all categories
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PolicyCategoryDTO'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: &ref_6
+        - policies
+  /policies/filtered-policies:
+    post:
+      operationId: PolicyApi_getPoliciesByCategory
+      summary: Get filtered policies
+      description: Get policies by categories and text
+      parameters: []
+      requestBody:
+        required: true
+        description: Filters
+        content:
+          application/json:
+            schema:
+              type: string
+            examples:
+              Filter1:
+                value:
+                  categoryIds:
+                    - '000000000000000000000001'
+                    - '000000000000000000000002'
+                  text: abc
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_6
   /policies/push/{policyId}:
     post:
       operationId: PolicyApi_updatePolicyAsync
@@ -3678,8 +3735,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_6
-        - policies
+      tags: *ref_6
       security:
         - bearerAuth: []
         - bearerAuth: []
@@ -3971,6 +4027,29 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /policies/{policyId}/navigation:
+    get:
+      operationId: PolicyApi_getPolicyNavigation
+      summary: Returns a policy navigation.
+      description: Returns a policy navigation.
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_6
+      security:
+        - bearerAuth: []
+        - bearerAuth: []
   /policies/{policyId}/groups:
     get:
       tags:
@@ -8195,6 +8274,100 @@ paths:
       security:
         - bearer: []
         - bearerAuth: []
+  /projects/search:
+    post:
+      operationId: ProjectsAPI_projectSearch
+      summary: Search projects
+      description: Search projects by filters
+      parameters: []
+      requestBody:
+        required: true
+        description: The question of choosing a methodology
+        content:
+          application/json:
+            schema:
+              type: string
+            examples:
+              q:
+                value: >-
+                  What methodology can I use for production of electricity using
+                  renewable energy technologies?
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProjectDTO'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: &ref_13
+        - projects
+  /projects/compare/documents:
+    post:
+      operationId: ProjectsAPI_compareDocuments
+      summary: Compare documents.
+      description: Compare documents.
+      parameters: []
+      requestBody:
+        required: true
+        description: Filters.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FilterDocumentsDTO'
+            examples:
+              Filter1:
+                value:
+                  documentId1: '000000000000000000000001'
+                  documentId2: '000000000000000000000002'
+              Filter2:
+                value:
+                  documentIds:
+                    - '000000000000000000000001'
+                    - '000000000000000000000002'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompareDocumentsDTO'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_13
+  /projects/properties:
+    get:
+      operationId: ProjectsAPI_getPolicyProperties
+      summary: Get all properties
+      description: Get all properties
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PropertiesDTO'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_13
   /record/{policyId}/status:
     get:
       operationId: RecordApi_getRecordStatus
@@ -8233,7 +8406,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_13
+      tags: &ref_14
         - record
       security:
         - bearerAuth: []
@@ -8276,7 +8449,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_13
+      tags: *ref_14
       security:
         - bearerAuth: []
         - bearer: []
@@ -8319,7 +8492,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_13
+      tags: *ref_14
       security:
         - bearerAuth: []
         - bearer: []
@@ -8363,7 +8536,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_13
+      tags: *ref_14
       security:
         - bearerAuth: []
         - bearer: []
@@ -8405,7 +8578,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_13
+      tags: *ref_14
       security:
         - bearerAuth: []
         - bearer: []
@@ -8447,7 +8620,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_13
+      tags: *ref_14
       security:
         - bearerAuth: []
         - bearer: []
@@ -8489,7 +8662,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_13
+      tags: *ref_14
       security:
         - bearerAuth: []
         - bearer: []
@@ -8531,7 +8704,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_13
+      tags: *ref_14
       security:
         - bearerAuth: []
         - bearer: []
@@ -8573,7 +8746,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_13
+      tags: *ref_14
       security:
         - bearerAuth: []
         - bearer: []
@@ -8615,7 +8788,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_13
+      tags: *ref_14
       security:
         - bearerAuth: []
         - bearer: []
@@ -8657,7 +8830,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_13
+      tags: *ref_14
       security:
         - bearerAuth: []
         - bearer: []
@@ -9729,6 +9902,19 @@ components:
         - token
         - count
         - serials
+    PolicyCategoryDTO:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+      required:
+        - id
+        - name
+        - type
     SchemaDTO:
       type: object
       properties:
@@ -9948,6 +10134,44 @@ components:
         - progress
         - type
         - taskId
+    ProjectDTO:
+      type: object
+      properties:
+        id:
+          type: string
+        policyId:
+          type: string
+        policyName:
+          type: string
+        registered:
+          type: string
+        title:
+          type: string
+        companyName:
+          type: string
+        sectoralScope:
+          type: string
+      required:
+        - id
+        - policyId
+        - policyName
+        - registered
+        - title
+        - companyName
+        - sectoralScope
+    PropertiesDTO:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        value:
+          type: string
+      required:
+        - id
+        - title
+        - value
     Object:
       type: object
       properties: {}
