@@ -1,0 +1,11 @@
+version: "3.8"
+services:
+  project-comparsion:
+    image: unfcccdevreg.azurecr.io/project-comparsion:latest
+    ports:
+      - "4200:80"
+    volumes:
+      - ./default_proj.conf:/etc/nginx/conf.d/default.conf:ro
+networks:
+  monitoring:
+    driver: bridge

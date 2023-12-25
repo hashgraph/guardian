@@ -1,0 +1,22 @@
+{
+    "/api/v1/*": {
+        "target": "http://api-gateway:3002/",
+        "secure": false,
+        "logLevel": "debug",
+        "changeOrigin": true,
+        "ws": false,
+        "pathRewrite": {
+            "/api/v1": ""
+        }
+    },
+    "/ws/*": {
+        "target": "http://api-gateway:3002/",
+        "secure": false,
+        "ws": true,
+        "logLevel": "debug",
+        "changeOrigin": true,
+        "pathRewrite": {
+            "/ws": ""
+        }
+    }
+}
