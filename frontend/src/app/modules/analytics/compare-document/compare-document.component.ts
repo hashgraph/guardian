@@ -80,15 +80,16 @@ export class CompareDocumentComponent implements OnInit {
     private _pOffset = 30;
 
     constructor() {
-    }
-
-    ngOnInit() {
         this.minWidth = 1600;
         this.headers = [];
         this.size = 0;
         this.totals = [];
         this.resultContext = null;
         this.treeContext = null;
+    }
+
+    ngOnInit() {
+
     }
 
     ngOnChanges(changes: SimpleChanges): void {

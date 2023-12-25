@@ -1,29 +1,6 @@
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
-import {
-    ContractParamType,
-    ExternalMessageEvents,
-    GenerateUUIDv4,
-    IRootConfig,
-    NotificationAction,
-    WorkerTaskType
-} from '@guardian/interfaces';
-import {
-    ExternalEventChannel,
-    Logger,
-    Token,
-    MultiPolicy,
-    KeyType,
-    Wallet,
-    DatabaseServer,
-    MessageAction,
-    MessageServer,
-    SynchronizationMessage,
-    TopicConfig,
-    VcDocumentDefinition as VcDocument,
-    Workers,
-    NotificationHelper,
-    Users,
-} from '@guardian/common';
+import { ContractParamType, ExternalMessageEvents, GenerateUUIDv4, IRootConfig, NotificationAction, WorkerTaskType } from '@guardian/interfaces';
+import { DatabaseServer, ExternalEventChannel, KeyType, Logger, MessageAction, MessageServer, MultiPolicy, NotificationHelper, SynchronizationMessage, Token, TopicConfig, Users, VcDocumentDefinition as VcDocument, Wallet, Workers, } from '@guardian/common';
 import { AccountId, PrivateKey, TokenId } from '@hashgraph/sdk';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
@@ -134,8 +111,13 @@ export class MintService {
                 1, 10
             );
         };
-        const mintAndTransferNFT = (metaData: string[]) =>
-            mintNFT(metaData).then(transferNFT);
+        const mintAndTransferNFT = async (metaData: string[]) => {
+            try {
+                return await transferNFT(await mintNFT(metaData));
+            } catch (e) {
+                return null;
+            }
+        }
         const mintId = Date.now();
         MintService.log(`Mint(${mintId}): Start (Count: ${tokenValue})`, ref);
 
@@ -166,7 +148,7 @@ export class MintService {
             try {
                 const results = await Promise.all(dataChunk.map(mintAndTransferNFT));
                 for (const serials of results) {
-                    if (serials) {
+                    if (Array.isArray(serials)) {
                         for (const n of serials) {
                             result.push(n);
                         }
@@ -410,7 +392,7 @@ export class MintService {
             multipleConfig ? `Multi mint` : `Mint completed`,
             multipleConfig
                 ? `Request to mint is submitted`
-                : `All ${token.tokenName} tokens have been minted and transferred`,
+                : `${token.tokenName} tokens have been minted and transferred`,
             NotificationAction.POLICY_VIEW,
             ref.policyId
         );
@@ -491,7 +473,7 @@ export class MintService {
 
         notifier?.success(
             `Mint completed`,
-            `All ${token.tokenName} tokens have been minted and transferred`
+            `${token.tokenName} tokens have been minted and transferred`
         );
 
         new ExternalEventChannel().publishMessage(

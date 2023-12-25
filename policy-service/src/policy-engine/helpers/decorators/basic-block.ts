@@ -6,7 +6,7 @@ import { AnyBlockType, IPolicyBlock, IPolicyDocument, ISerializedBlock, } from '
 import { PolicyComponentsUtils } from '../../policy-components-utils';
 import { IPolicyEvent, PolicyLink } from '@policy-engine/interfaces/policy-event';
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
-import { Logger, DatabaseServer } from '@guardian/common';
+import { Logger, DatabaseServer, Policy } from '@guardian/common';
 import deepEqual from 'deep-equal';
 import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
 import { ComponentsService } from '../components-service';
@@ -104,7 +104,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             /**
              * Policy instance
              */
-            public policyInstance: any;
+            public policyInstance: Policy;
             /**
              * Topic id
              */
@@ -293,7 +293,13 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param link
              */
             public addSourceLink(link: PolicyLink<any>): void {
-                this.sourceLinks.push(link)
+                if (
+                    !this.sourceLinks.some((sourceLink) =>
+                        sourceLink.equals(link)
+                    )
+                ) {
+                    this.sourceLinks.push(link);
+                }
             }
 
             /**
@@ -301,7 +307,13 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param link
              */
             public addTargetLink(link: PolicyLink<any>): void {
-                this.targetLinks.push(link)
+                if (
+                    !this.targetLinks.some((targetLink) =>
+                        targetLink.equals(link)
+                    )
+                ) {
+                    this.targetLinks.push(link);
+                }
             }
 
             /**
@@ -468,7 +480,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param policyId
              * @param policy
              */
-            public setPolicyInstance(policyId: string, policy: any) {
+            public setPolicyInstance(policyId: string, policy: Policy) {
                 this.policyInstance = policy;
                 this.policyId = policyId;
                 if (this.policyInstance && this.policyInstance.status === PolicyType.DRY_RUN) {

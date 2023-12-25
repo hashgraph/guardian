@@ -7,6 +7,7 @@ import { IWeightBlock } from '../interfaces/weight-block.interface';
 import { IWeightItem } from '../interfaces/weight-item.interface';
 import { CompareUtils } from '../utils/utils';
 import { PolicyComparator } from './policy-comparator';
+import { CompareOptions, IChildrenLvl, IEventsLvl, IIdLvl, IKeyLvl, IPropertiesLvl } from '../interfaces/compare-options.interface';
 
 /**
  * Weight Types
@@ -31,12 +32,14 @@ export class HashComparator {
     /**
      * Options
      */
-    public static readonly options = {
-        childLvl: 2,
-        eventLvl: 1,
-        idLvl: 0,
-        propLvl: 2
-    };
+    public static readonly options = new CompareOptions(
+        IPropertiesLvl.All,
+        IChildrenLvl.All,
+        IEventsLvl.All,
+        IIdLvl.None,
+        IKeyLvl.Default,
+        null
+    );
 
     /**
      * Create policy model by zip file

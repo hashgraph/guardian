@@ -12,7 +12,7 @@ import {
     MessageServer,
     KeyType
 } from '@guardian/common';
-import { ArtifactType, GenerateUUIDv4, SchemaHelper } from '@guardian/interfaces';
+import { ArtifactType, SchemaHelper } from '@guardian/interfaces';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser } from '@policy-engine/policy-user';
@@ -291,7 +291,12 @@ export class CustomLogicBlock {
             throw new Error(JSON.stringify(res.error));
         }
 
-        const newVC = await VCHelper.createVC(root.did, root.hederaAccountKey, vcSubject);
+        const uuid = await ref.components.generateUUID();
+        const newVC = await VCHelper.createVcDocument(
+            vcSubject,
+            { did: root.did, key: root.hederaAccountKey },
+            { uuid }
+        );
 
         const item = PolicyUtils.createVC(ref, owner, newVC);
         item.type = outputSchema.iri;
@@ -331,7 +336,7 @@ export class CustomLogicBlock {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {
             if (idType === 'UUID') {
-                return GenerateUUIDv4();
+                return await ref.components.generateUUID();
             }
             if (idType === 'DID') {
                 const topic = await PolicyUtils.getOrCreateTopic(ref, 'root', null, null);

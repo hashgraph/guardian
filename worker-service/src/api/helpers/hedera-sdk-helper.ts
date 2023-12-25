@@ -668,7 +668,7 @@ export class HederaSDKHelper {
             .setMaxTransactionFee(MAX_FEE)
             .freezeWith(client);
         const signTx = await transaction.sign(_supplyKey);
-        const receipt = await this.executeAndReceipt(client, signTx, 'TokenMintNFTTransaction');
+        const receipt = await this.executeAndReceipt(client, signTx, 'TokenMintNFTTransaction', data);
         const transactionStatus = receipt.status;
 
         if (transactionStatus === Status.Success) {
@@ -1059,12 +1059,25 @@ export class HederaSDKHelper {
     ): Promise<TransactionReceipt> {
         if (this.dryRun) {
             await this.virtualTransactionLog(this.dryRun, type);
+            let serials = [];
+            if (type === 'TokenMintNFTTransaction') {
+                if (metadata && metadata.length) {
+                    serials = new Array(Math.min(10, metadata?.length));
+                    const id = Date.now() % 1000000000;
+                    for (let i = 0; i < serials.length; i++) {
+                        serials[i] = Long.fromInt(id + i);
+                    }
+                }
+            }
+            if (type === 'NFTTransferTransaction') {
+                serials = metadata;
+            }
             return {
                 status: Status.Success,
                 topicId: new TokenId(Date.now()),
                 tokenId: new TokenId(Date.now()),
                 accountId: new AccountId(Date.now()),
-                serials: [Long.fromInt(1)]
+                serials
             } as any
         } else {
             const id = GenerateUUIDv4();

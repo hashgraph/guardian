@@ -1,4 +1,5 @@
 import {
+    ChangeDetectorRef,
     Component,
     Input,
     OnChanges,
@@ -9,6 +10,7 @@ import { FormControl } from '@angular/forms';
 import { GeoJsonSchema, GeoJsonType } from '@guardian/interfaces';
 import ajv from 'ajv';
 import { Subject } from 'rxjs';
+import { MapService } from 'src/app/services/map.service';
 import { ajvSchemaValidator } from 'src/app/validators/ajv-schema.validator';
 
 @Component({
@@ -61,7 +63,10 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
     isJSON: boolean = false;
     jsonInput: string = '';
 
-    constructor() {}
+    constructor(
+        public mapService: MapService,
+        private cdkRef: ChangeDetectorRef
+    ) {}
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes?.isDisabled && !changes?.isDisabled.firstChange) {
@@ -488,5 +493,10 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
         } catch {
             this.control?.patchValue({});
         }
+    }
+
+    authFailed() {
+        this.mapService.mapLoaded = false;
+        this.cdkRef.detectChanges();
     }
 }

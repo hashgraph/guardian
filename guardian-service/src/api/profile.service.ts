@@ -148,7 +148,7 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
     const didObject = await DIDDocument.create(hederaAccountKey, topicConfig.topicId);
     const userDID = didObject.getDid();
 
-    const existingUser = await new DataBaseHelper(DidDocumentCollection).findOne({did: userDID});
+    const existingUser = await new DataBaseHelper(DidDocumentCollection).findOne({ did: userDID });
     if (existingUser) {
         notifier.completedAndStart('User restored');
         notifier.completed();
@@ -281,7 +281,7 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
             credentialSubject = SchemaHelper.updateObjectContext(schemaObject, credentialSubject);
         }
 
-        const vcObject = await vcHelper.createVC(userDID, hederaAccountKey, credentialSubject);
+        const vcObject = await vcHelper.createVcDocument(credentialSubject, { did: userDID, key: hederaAccountKey });
         const vcMessage = new VCMessage(MessageAction.CreateVC);
         vcMessage.setDocument(vcObject);
         const vcDoc = await new DataBaseHelper(VcDocumentCollection).save({
@@ -596,4 +596,4 @@ export function profileAPI() {
         ProfileController
     ]
 })
-export class ProfileModule {}
+export class ProfileModule { }

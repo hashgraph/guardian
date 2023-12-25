@@ -109,7 +109,12 @@ export class TokenOperationAddon {
         if (ref.options.description) {
             vcSubject.description = ref.options.description;
         }
-        const vc = await vcHelper.createVC(root.did, root.hederaAccountKey, vcSubject);
+        const uuid = await ref.components.generateUUID();
+        const vc = await vcHelper.createVcDocument(
+            vcSubject,
+            { did: root.did, key: root.hederaAccountKey },
+            { uuid }
+        );
         return vc;
     }
 }

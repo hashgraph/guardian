@@ -1,5 +1,5 @@
-import { ICompareOptions } from '../interfaces/compare-options.interface';
-import { AnyPropertyModel, ArrayPropertyModel, ObjectPropertyModel, PropertyModel } from './property.model';
+import { CompareOptions } from '../interfaces/compare-options.interface';
+import { ArrayPropertyModel, DocumentPropertyModel, ObjectPropertyModel, PropertyModel } from './property.model';
 import { SchemaModel } from './schema.model';
 
 /**
@@ -27,8 +27,6 @@ export class DocumentFieldsModel {
 
     constructor(document: any) {
         this.type = document.type;
-        this.fields = DocumentFieldsModel.createFieldsList(document);
-        this.schemas = DocumentFieldsModel.createSchemasList(document);
         if (typeof document.type === 'string') {
             this.type = document.type;
         } else if (Array.isArray(document.type)) {
@@ -40,6 +38,8 @@ export class DocumentFieldsModel {
                 this.type = document.type[0];
             }
         }
+        this.fields = DocumentFieldsModel.createFieldsList(document);
+        this.schemas = DocumentFieldsModel.createSchemasList(document);
     }
 
     /**
@@ -71,7 +71,7 @@ export class DocumentFieldsModel {
      * @param options - comparison options
      * @public
      */
-    public hash(options: ICompareOptions): string {
+    public hash(options: CompareOptions): string {
         const result: string[] = [];
         for (const item of this.fields) {
             const hash = item.hash(options);
@@ -88,7 +88,7 @@ export class DocumentFieldsModel {
      * @param options - comparison options
      * @public
      */
-    public updateSchemas(schemas: SchemaModel[], options: ICompareOptions): void {
+    public updateSchemas(schemas: SchemaModel[], options: CompareOptions): void {
         for (const data of this.fields) {
             const path = this.getRelativePath(data);
             for (const schema of schemas) {
@@ -106,7 +106,7 @@ export class DocumentFieldsModel {
      * Update all weight
      * @public
      */
-    public update(options: ICompareOptions): void {
+    public update(options: CompareOptions): void {
         for (const data of this.fields) {
             data.update(options);
         }
@@ -121,26 +121,51 @@ export class DocumentFieldsModel {
     }
 
     /**
+     * Check context
+     * @param context
+     * @param result
+     * @private
+     * @static
+     */
+    private static checkContext(context: string | string[], result: Set<string>): Set<string> {
+        if (context) {
+            if (Array.isArray(context)) {
+                for (const item of context) {
+                    if (typeof item === 'string') {
+                        result.add(item);
+                    }
+                }
+            } else if (typeof context === 'string') {
+                result.add(context);
+            }
+        }
+        return result;
+    }
+
+    /**
      * Create schemas by JSON
      * @param document - json
      * @public
      * @static
      */
     public static createSchemasList(document: any): string[] {
-        if (document && document['@context']) {
-            if (typeof document['@context'] === 'string') {
-                return [document['@context']];
-            } else if (Array.isArray(document['@context'])) {
-                const schemas = [];
-                for (const id of document['@context']) {
-                    if (typeof id === 'string') {
-                        schemas.push(id);
-                    }
+        if (!document) {
+            return [];
+        }
+        const list = new Set<string>();
+        DocumentFieldsModel.checkContext(document['@context'], list);
+        if (document.verifiableCredential) {
+            if (Array.isArray(document.verifiableCredential)) {
+                for (const vc of document.verifiableCredential) {
+                    DocumentFieldsModel.checkContext(vc['@context'], list);
                 }
-                return schemas;
+            } else {
+                const vc = document.verifiableCredential;
+                DocumentFieldsModel.checkContext(vc['@context'], list);
             }
         }
-        return [];
+        list.delete('https://www.w3.org/2018/credentials/v1');
+        return Array.from(list);
     }
 
     /**
@@ -152,8 +177,9 @@ export class DocumentFieldsModel {
     public static createFieldsList(document: any): PropertyModel<any>[] {
         const list: PropertyModel<any>[] = [];
         const keys = Object.keys(document);
+        const type = document?.type;
         for (const key of keys) {
-            DocumentFieldsModel.createField(key, document[key], 1, key, list);
+            DocumentFieldsModel.createField(key, document[key], 1, key, type, list);
         }
         return list;
     }
@@ -173,6 +199,7 @@ export class DocumentFieldsModel {
         value: any,
         lvl: number,
         path: string,
+        type: string,
         fields: PropertyModel<any>[]
     ): PropertyModel<any>[] {
         if (value === undefined) {
@@ -182,19 +209,19 @@ export class DocumentFieldsModel {
             if (Array.isArray(value)) {
                 fields.push(new ArrayPropertyModel(name, value.length, lvl, path));
                 for (let index = 0; index < value.length; index++) {
-                    DocumentFieldsModel.createField(String(index), value[index], lvl + 1, `${path}.${index}`, fields);
+                    DocumentFieldsModel.createField(String(index), value[index], lvl + 1, `${path}.${index}`, type, fields);
                 }
                 return fields;
             } else {
                 const keys = Object.keys(value);
                 fields.push(new ObjectPropertyModel(name, !!keys.length, lvl, path));
                 for (const key of keys) {
-                    DocumentFieldsModel.createField(key, value[key], lvl + 1, `${path}.${key}`, fields);
+                    DocumentFieldsModel.createField(key, value[key], lvl + 1, `${path}.${key}`, value.type, fields);
                 }
                 return fields;
             }
         } else {
-            fields.push(new AnyPropertyModel(name, value, lvl, path));
+            fields.push(new DocumentPropertyModel(name, value, lvl, path, type));
             return fields;
         }
     }

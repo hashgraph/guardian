@@ -285,7 +285,7 @@ export class PolicyApi {
         const engineService = new PolicyEngine();
         let model: any;
         try {
-            model = await engineService.getPolicy({filters: req.params.policyId}) as any;
+            model = await engineService.getPolicy({ filters: req.params.policyId }) as any;
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1073,6 +1073,9 @@ export class PolicyApi {
         if (policy.owner !== req.user.did) {
             throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
         }
+        if (policy.status !== PolicyType.DRY_RUN) {
+            throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN)
+        }
         try {
             return res.send(await engineService.getVirtualUsers(req.params.policyId));
         } catch (error) {
@@ -1098,6 +1101,9 @@ export class PolicyApi {
         }
         if (policy.owner !== req.user.did) {
             throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
+        }
+        if (policy.status !== PolicyType.DRY_RUN) {
+            throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN)
         }
         try {
             return res.status(201).send(await engineService.createVirtualUser(req.params.policyId, req.user.did));
@@ -1125,6 +1131,9 @@ export class PolicyApi {
         if (policy.owner !== req.user.did) {
             throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
         }
+        if (policy.status !== PolicyType.DRY_RUN) {
+            throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN)
+        }
         try {
             return res.send(await engineService.loginVirtualUser(req.params.policyId, req.body.did));
         } catch (error) {
@@ -1150,6 +1159,9 @@ export class PolicyApi {
         }
         if (policy.owner !== req.user.did) {
             throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
+        }
+        if (policy.status !== PolicyType.DRY_RUN) {
+            throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN)
         }
         try {
             return res.json(await engineService.restartDryRun(req.body, req.user, req.params.policyId));

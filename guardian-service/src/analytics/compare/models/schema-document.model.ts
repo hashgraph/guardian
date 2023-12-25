@@ -1,6 +1,6 @@
 import { FieldModel } from './field.model';
 import { ConditionModel } from './condition.model';
-import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { CompareOptions } from '../interfaces/compare-options.interface';
 import MurmurHash3 from 'imurmurhash';
 import { ComparePolicyUtils } from '../utils/compare-policy-utils';
 
@@ -140,7 +140,7 @@ export class SchemaDocumentModel {
      * @param options - comparison options
      * @public
      */
-    public update(options: ICompareOptions): void {
+    public update(options: CompareOptions): void {
         const hashState = MurmurHash3();
         for (const field of this.fields) {
             field.update(options);
@@ -154,7 +154,7 @@ export class SchemaDocumentModel {
      * @param options - comparison options
      * @public
      */
-    public hash(options: ICompareOptions): string {
+    public hash(options: CompareOptions): string {
         return this._weight;
     }
 

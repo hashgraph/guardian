@@ -7,15 +7,29 @@
             <h1 *ngIf="title" mat-dialog-title>{{title}}</h1>
             <div *ngIf="description" class="description">{{description}}</div>
             <div *ngIf="restoreData" class="restore-data">
-                <mat-icon>info</mat-icon><b>There is some data to restore. You can restore latest values:</b>
+                <mat-icon>info</mat-icon>
+                <b>There is some data to restore. You can restore latest values:</b>
                 <button mat-raised-button aria-label="Restore Values" type="button" (click)="onRestoreClick()">
                     Restore Values<mat-icon>restore</mat-icon>
                 </button>
             </div>
+            <div *ngIf="dryRunMode" class="restore-data">
+                <mat-icon>info</mat-icon>
+                <b>There is dry run mode. You can fill document with test data:</b>
+                <button mat-raised-button aria-label="Restore Values" type="button" (click)="onDryRun()">
+                    Test<mat-icon>restore</mat-icon>
+                </button>
+            </div>
             <div class="schema-form">
-                <app-schema-form [formGroup]="dataForm" [schema]="schema" [private-fields]="hideFields"
-                    [preset]="presetDocument" [readonly-fields]="presetReadonlyFields" submitText="Create"
-                    (cancelBtnEvent)="onCancelPage($event)" (submitBtnEvent)="onSubmit('page')">
+                <app-schema-form 
+                    [formGroup]="dataForm" 
+                    [schema]="schema" 
+                    [private-fields]="hideFields"
+                    [preset]="presetDocument" 
+                    [readonly-fields]="presetReadonlyFields" 
+                    submitText="Create"
+                    (cancelBtnEvent)="onCancelPage($event)" 
+                    (submitBtnEvent)="onSubmit('page')">
                 </app-schema-form>
             </div>
         </form>
@@ -33,9 +47,17 @@
             {{description}}
         </div>
         <div *ngIf="restoreData" class="restore-data">
-            <mat-icon>info</mat-icon><b>There is some data to restore. You can restore latest values:</b>
+            <mat-icon>info</mat-icon>
+            <b>There is some data to restore. You can restore latest values:</b>
             <button mat-raised-button aria-label="Restore Values" type="button" (click)="onRestoreClick()">
                 Restore Values<mat-icon>restore</mat-icon>
+            </button>
+        </div>
+        <div *ngIf="dryRunMode" class="restore-data">
+            <mat-icon>info</mat-icon>
+            <b>There is dry run mode. You can fill document with test data:</b>
+            <button mat-raised-button aria-label="Restore Values" type="button" (click)="onDryRun()">
+                Test<mat-icon>restore</mat-icon>
             </button>
         </div>
         <div *ngIf="data.schema" mat-dialog-content class="body-dialog-template">
@@ -44,9 +66,13 @@
             </div>
             <form [formGroup]="dataForm" (ngSubmit)="data.onSubmit('dialog')">
                 <div class="form-{{data.type}}">
-                    <app-schema-form [formGroup]="data.dataForm" [schema]="data.schema"
-                        [readonly-fields]="presetReadonlyFields" [private-fields]="data.hideFields"
-                        [preset]="presetDocument" [comesFromDialog]="true"
+                    <app-schema-form 
+                        [formGroup]="data.dataForm" 
+                        [schema]="data.schema"
+                        [readonly-fields]="presetReadonlyFields" 
+                        [private-fields]="data.hideFields"
+                        [preset]="presetDocument" 
+                        [comesFromDialog]="true"
                         (cancelBtnEvent)="handleCancelBtnEvent($event, data)"
                         (submitBtnEvent)="handleSubmitBtnEvent($event, data)">
                     </app-schema-form>

@@ -1,4 +1,4 @@
-import { CdkDropList } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
 import { ChangeDetectorRef, Component, HostListener, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -38,6 +38,8 @@ import { SuggestionsService } from '../../../../services/suggestions.service';
 import { ToolsService } from '../../../../services/tools.service';
 import { AnalyticsService } from '../../../../services/analytics.service';
 import { WizardMode, WizardService } from 'src/app/modules/policy-engine/services/wizard.service';
+import { StopResizingEvent } from '../../directives/resizing.directive';
+import { OrderOption } from '../../structures/interfaces/order-option.interface';
 
 /**
  * The page for editing the policy and blocks.
@@ -969,7 +971,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.changeDetector.detectChanges();
     }
 
-    private setErrors(results: any) {
+    private setErrors(results: any, type: string) {
         const blocks = results.blocks || [];
         const modules = results.modules || [];
         const tools = results.tools || [];
@@ -1000,12 +1002,12 @@ export class PolicyConfigurationComponent implements OnInit {
                 }
             }
         }
-        this.errorsCount = this.errors.length;
+        this.errorsCount = this.errors.length + commonErrors.length;
         this.errorsMap = {};
         for (const element of this.errors) {
             this.errorsMap[element.id] = element.errors;
         }
-        this.errorMessage(commonErrors);
+        this.errorMessage(commonErrors, type);
     }
 
     private jsonToObject(json: string): any {
@@ -1062,10 +1064,10 @@ export class PolicyConfigurationComponent implements OnInit {
         this.updateCodeMirrorStyles();
     }
 
-    private errorMessage(errors: string[]) {
+    private errorMessage(errors: string[], type: string) {
         if (errors && errors.length) {
             const text = errors.map((text) => `<div>${text}</div>`).join('');
-            this.informService.errorShortMessage(text, 'The policy is invalid');
+            this.informService.errorShortMessage(text, `The ${type} is invalid`);
         }
     }
 
@@ -1252,7 +1254,7 @@ export class PolicyConfigurationComponent implements OnInit {
             const { policy, results } = data;
             const config = policy.config;
             this.policyTemplate.rebuild(config);
-            this.setErrors(results);
+            this.setErrors(results, 'policy');
             this.onSelect(this.openFolder.root);
             this.loading = false;
         }, (e) => {
@@ -1296,7 +1298,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.clearState();
                 this.loadData();
             } else {
-                this.setErrors(errors);
+                this.setErrors(errors, 'policy');
                 this.loading = false;
             }
         }, (e) => {
@@ -1487,7 +1489,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.modulesService.validate(module).subscribe((data: any) => {
             const { module, results } = data;
             this.moduleTemplate.rebuild(module);
-            this.setErrors(results);
+            this.setErrors(results, 'module');
             this.onOpenRoot(this.moduleTemplate);
             this.onSelect(this.openFolder.root);
             this.loading = false;
@@ -1558,7 +1560,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.toolsService.validate(tool).subscribe((data: any) => {
             const { tool, results } = data;
             this.toolTemplate.rebuild(tool);
-            this.setErrors(results);
+            this.setErrors(results, 'tool');
             this.onOpenRoot(this.toolTemplate);
             this.onSelect(this.openFolder.root);
             this.loading = false;
@@ -1676,5 +1678,48 @@ export class PolicyConfigurationComponent implements OnInit {
                 (event.source as PolicyBlock).replaceConfig(event.target as PolicyBlock);
             }
         }
+    }
+
+    onDroppedSection(event: CdkDragDrop<any[]>) {
+        moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+        this.options.save();
+    }
+
+    saveSizes(event: StopResizingEvent) {
+        return (item: OrderOption) => {
+            if (item.id === event.prev?.id) {
+                item.size = event.prev.size;
+            }
+            if (item.id === event.next?.id) {
+                item.size = event.next.size;
+            }
+            return item;
+        }
+    }
+
+    stopResizingConfiguration(event: StopResizingEvent) {
+        this.options.configurationOrder = this.options.configurationOrder.map(
+            this.saveSizes(event)
+        );
+        this.options.save();
+    }
+
+    stopResizingProperties(event: StopResizingEvent) {
+        this.options.propertiesOrder = this.options.propertiesOrder.map(
+            this.saveSizes(event)
+        );
+        this.options.save();
+    }
+
+    onDragSection(event: any) {
+        document.body.classList.add('inherit-cursor');
+        document.body.classList.add('pointer-events-children-none');
+        document.body.style.cursor = 'grabbing';
+    }
+
+    onDropSection(event: any) {
+        document.body.classList.remove('inherit-cursor');
+        document.body.classList.remove('pointer-events-children-none');
+        document.body.style.cursor = '';
     }
 }

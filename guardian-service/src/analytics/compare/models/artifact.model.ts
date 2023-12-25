@@ -1,5 +1,5 @@
 import MurmurHash3 from 'imurmurhash';
-import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { CompareOptions, IEventsLvl } from '../interfaces/compare-options.interface';
 import { IWeightItem } from '../interfaces/weight-item.interface';
 
 /**
@@ -58,14 +58,14 @@ export class ArtifactModel {
      * @param options - comparison options
      * @public
      */
-    public update(data: string, options: ICompareOptions): void {
+    public update(data: string, options: CompareOptions): void {
         const hashState = MurmurHash3();
         hashState.hash(this.name);
         hashState.hash(this.type);
         hashState.hash(this.extension);
         hashState.hash(data);
         const weight = String(hashState.result());
-        if (options.eventLvl > 0) {
+        if (options.eventLvl === IEventsLvl.All) {
             this._weight = weight;
         } else {
             this._weight = '';
@@ -110,7 +110,7 @@ export class ArtifactModel {
      * Get weight object
      * @public
      */
-    public toWeight(options: ICompareOptions): IWeightItem {
+    public toWeight(options: CompareOptions): IWeightItem {
         return {
             weight: this._hash
         }

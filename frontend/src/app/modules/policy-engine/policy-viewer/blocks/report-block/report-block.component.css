@@ -11,7 +11,7 @@
 .loading {
     background: #fff;
     position: fixed;
-    z-index: 99;
+    z-index: 90;
     top: var(--header-height-policy);
     left: 0;
     bottom: 0;
@@ -103,6 +103,13 @@ a[disabled="true"] {
     right: 0;
     top: 1px;
     cursor: pointer;
+    color: #f44336;
+}
+
+.mint-amount {
+}
+
+.mint-error .mint-amount {
     color: #f44336;
 }
 

@@ -6,7 +6,6 @@ import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfac
 import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { BlockActionError } from '@policy-engine/errors';
-import { GenerateUUIDv4 } from '@guardian/interfaces';
 import {
     PolicyRoles,
     VcDocument as VcDocumentCollection,
@@ -155,11 +154,11 @@ export class MultiSignBlock {
         const groupContext = await PolicyUtils.getGroupContext(ref, user);
         const vcDocument = sourceDoc.document;
         const credentialSubject = vcDocument.credentialSubject[0];
-        const newVC = await this.vcHelper.createVC(
-            root.did,
-            root.hederaAccountKey,
+        const uuid = await ref.components.generateUUID();
+        const newVC = await this.vcHelper.createVcDocument(
             credentialSubject,
-            groupContext
+            { did: root.did, key: root.hederaAccountKey },
+            { uuid, group: groupContext }
         );
 
         await ref.databaseServer.setMultiSigDocument(
@@ -216,11 +215,11 @@ export class MultiSignBlock {
             const documentOwnerAccount = await PolicyUtils.getHederaAccount(ref, docOwner.did);
 
             const vcs = data.map(e => VcDocument.fromJsonTree(e.document));
-            const vp = await this.vcHelper.createVP(
-                policyOwnerAccount.did,
-                policyOwnerAccount.hederaAccountKey,
+            const uuid: string = await ref.components.generateUUID();
+            const vp = await this.vcHelper.createVpDocument(
                 vcs,
-                GenerateUUIDv4()
+                { did: policyOwnerAccount.did, key: policyOwnerAccount.hederaAccountKey },
+                { uuid }
             );
 
             const vpMessage = new VPMessage(MessageAction.CreateVP);

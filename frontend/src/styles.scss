@@ -320,6 +320,10 @@ button.mat-button {
     border-radius: 15px !important;
 }
 
-.cursor-grabbing, .cursor-grabbing * {
-    cursor: grabbing !important;
+.inherit-cursor * {
+    cursor: inherit !important;
+}
+
+.pointer-events-children-none > * {
+    pointer-events: none !important;
 }

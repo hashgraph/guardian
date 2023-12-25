@@ -20,7 +20,6 @@ import {
     PolicyImportExport,
     RunFunctionAsync,
     Singleton,
-    TopicConfig,
     Users
 } from '@guardian/common';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
@@ -219,6 +218,14 @@ export class PolicyEngineService {
 
                 default:
                     throw new Error('Unknown type');
+            }
+        })
+
+        this.channel.getMessages(PolicyEvents.RECORD_UPDATE_BROADCAST, async (msg: any) => {
+            const policy = await DatabaseServer.getPolicyById(msg?.policyId);
+            if (policy) {
+                msg.user = { did: policy.owner };
+                this.channel.publish('update-record', msg);
             }
         })
 
@@ -957,7 +964,7 @@ export class PolicyEngineService {
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.CREATE_VIRTUAL_USER, async (msg) => {
             try {
-                const { policyId, did } = msg;
+                const { policyId, owner } = msg;
 
                 const model = await DatabaseServer.getPolicyById(policyId);
                 if (!model) {
@@ -967,34 +974,34 @@ export class PolicyEngineService {
                     throw new Error(`Policy is not in Dry Run`);
                 }
 
-                const topic = await TopicConfig.fromObject(
-                    await DatabaseServer.getTopicByType(did, TopicType.UserTopic), false
-                );
-
+                const topic = await DatabaseServer.getTopicByType(owner, TopicType.UserTopic);
                 const newPrivateKey = PrivateKey.generate();
                 const newAccountId = new AccountId(Date.now());
-                const treasury = {
-                    id: newAccountId,
-                    key: newPrivateKey
-                };
+                const didObject = await DIDDocument.create(newPrivateKey, topic.topicId);
+                const did = didObject.getDid();
+                const document = didObject.getDocument();
 
-                const didObject = await DIDDocument.create(treasury.key, topic.topicId);
-                const userDID = didObject.getDid();
-
-                const u = await DatabaseServer.getVirtualUsers(policyId);
+                const count = await DatabaseServer.getVirtualUsers(policyId);
+                const username = `Virtual User ${count.length}`;
                 await DatabaseServer.createVirtualUser(
                     policyId,
-                    `Virtual User ${u.length}`,
-                    userDID,
-                    treasury.id.toString(),
-                    treasury.key.toString()
+                    username,
+                    did,
+                    newAccountId.toString(),
+                    newPrivateKey.toString()
                 );
 
                 const db = new DatabaseServer(policyId);
-                await db.saveDid({
-                    did: didObject.getDid(),
-                    document: didObject.getDocument()
-                })
+                await db.saveDid({ did, document });
+
+                await (new GuardiansService())
+                    .sendPolicyMessage(PolicyEvents.CREATE_VIRTUAL_USER, policyId, {
+                        did,
+                        data: {
+                            accountId: newAccountId.toString(),
+                            document
+                        }
+                    });
 
                 const users = await DatabaseServer.getVirtualUsers(policyId);
                 return new MessageResponse(users);
@@ -1017,6 +1024,10 @@ export class PolicyEngineService {
 
                 await DatabaseServer.setVirtualUser(policyId, did)
                 const users = await DatabaseServer.getVirtualUsers(policyId);
+
+                await (new GuardiansService())
+                    .sendPolicyMessage(PolicyEvents.SET_VIRTUAL_USER, policyId, { did });
+
                 return new MessageResponse(users);
             } catch (error) {
                 return new MessageError(error);
@@ -1025,10 +1036,6 @@ export class PolicyEngineService {
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.RESTART_DRY_RUN, async (msg) => {
             try {
-                if (!msg.model) {
-                    throw new Error('Policy is empty');
-                }
-
                 const policyId = msg.policyId;
                 const user = msg.user;
                 const owner = await this.getUserDid(user.username);

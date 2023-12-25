@@ -10,3 +10,14 @@ export function GenerateUUIDv4() {
         return v.toString(16);
     });
 }
+
+/**
+ * Generate random UUID
+ */
+export function GenerateID() {
+    return 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'.replace(/[x]/g, (c) => {
+        // tslint:disable-next-line:no-bitwise
+        const v = Math.random() * 16 | 0;
+        return v.toString(16);
+    });
+}

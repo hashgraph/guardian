@@ -163,7 +163,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
             return;
         }
         for (const doc of documents) {
-            if (doc.history) {
+            if (Array.isArray(doc.history)) {
                 doc.history = doc.history
                     .map((item: any) =>
                         Object.assign(item, {
@@ -178,6 +178,9 @@ export class DocumentsSourceBlockComponent implements OnInit {
                             created: (item.created as Date).toLocaleString(),
                         })
                     );
+            }
+            if (Array.isArray(doc.serials)) {
+                doc.serials.sort((a: any, b: any) => a < b ? -1 : 1);
             }
         }
     }

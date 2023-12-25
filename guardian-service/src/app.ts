@@ -68,6 +68,7 @@ import { analyticsAPI } from '@api/analytics.service';
 import { GridFSBucket } from 'mongodb';
 import { suggestionsAPI } from '@api/suggestions.service';
 import { SynchronizationTask } from '@helpers/synchronization-task';
+import { recordAPI } from '@api/record.service';
 
 export const obj = {};
 
@@ -173,6 +174,7 @@ Promise.all([
         await mapAPI();
         await themeAPI();
         await wizardAPI();
+        await recordAPI();
         await brandingAPI(brandingRepository);
         await suggestionsAPI()
     } catch (error) {

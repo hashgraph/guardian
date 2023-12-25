@@ -1,7 +1,7 @@
 import { DatabaseServer } from '@guardian/common';
 import { CSV } from '../../table/csv';
 import { ReportTable } from '../../table/report-table';
-import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { CompareOptions, IChildrenLvl, IEventsLvl, IIdLvl, IKeyLvl, IPropertiesLvl } from '../interfaces/compare-options.interface';
 import { ICompareResult } from '../interfaces/compare-result.interface';
 import { IMultiCompareResult } from '../interfaces/multi-compare-result.interface';
 import { IRate } from '../interfaces/rate.interface';
@@ -21,62 +21,23 @@ import { CompareUtils } from '../utils/utils';
  */
 export class PolicyComparator {
     /**
-     * Properties
-     * 0 - Don't compare
-     * 1 - Only simple properties
-     * 2 - All properties
-     * @private
-     */
-    private readonly propLvl: number;
-
-    /**
-     * Children
-     * 0 - Don't compare
-     * 1 - Only child blocks of the first level
-     * 2 - All children
-     * @private
-     */
-    private readonly childLvl: number;
-
-    /**
-     * Events
-     * 0 - Don't compare
-     * 1 - All events
-     * @private
-     */
-    private readonly eventLvl: number;
-
-    /**
-     * UUID
-     * 0 - Don't compare
-     * 1 - All UUID
-     * @private
-     */
-    private readonly idLvl: number;
-
-    /**
      * Compare Options
      * @private
      */
-    private readonly options: ICompareOptions;
+    private readonly options: CompareOptions;
 
-    constructor(options?: ICompareOptions) {
+    constructor(options?: CompareOptions) {
         if (options) {
-            this.propLvl = options.propLvl;
-            this.childLvl = options.childLvl;
-            this.eventLvl = options.eventLvl;
-            this.idLvl = options.idLvl;
+            this.options = options;
         } else {
-            this.propLvl = 2;
-            this.childLvl = 2;
-            this.eventLvl = 1;
-            this.idLvl = 1;
-        }
-        this.options = {
-            propLvl: this.propLvl,
-            childLvl: this.childLvl,
-            eventLvl: this.eventLvl,
-            idLvl: this.idLvl,
+            this.options = new CompareOptions(
+                IPropertiesLvl.All,
+                IChildrenLvl.All,
+                IEventsLvl.All,
+                IIdLvl.All,
+                IKeyLvl.Default,
+                null
+            );
         }
     }
 
@@ -555,7 +516,7 @@ export class PolicyComparator {
      * @public
      * @static
      */
-    public static async createModelById(policyId: string, options: ICompareOptions): Promise<PolicyModel> {
+    public static async createModelById(policyId: string, options: CompareOptions): Promise<PolicyModel> {
         //Policy
         const policy = await DatabaseServer.getPolicyById(policyId);
 
