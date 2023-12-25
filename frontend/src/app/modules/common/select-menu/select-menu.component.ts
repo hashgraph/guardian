@@ -13,8 +13,10 @@ export class SelectMenuButton {
         id: string,
         title: string,
         description: string,
-        color: string
+        color: string,
+        permissions?: number,
     }[];
+    @Input() permissions?: number;
     @Output('action') action = new EventEmitter<any>();
 
     constructor() {
@@ -26,5 +28,18 @@ export class SelectMenuButton {
 
     onClick()  {
         this.action.emit(null);
+    }
+
+    hasPermissions(index: number | undefined) {
+        if (index === undefined || this.permissions === undefined) {
+            return true;
+        }
+        if (!Number.isFinite(index) || !Number.isFinite(this.permissions)) {
+            return true;
+        }
+        if (index < 0 || this.permissions < 0) {
+            return true;
+        }
+        return (this.permissions >> index) % 2 != 0;
     }
 }
