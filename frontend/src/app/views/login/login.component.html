@@ -1,15 +1,15 @@
 <div class="demo-block">
-    <div>Demo users</div>
-    <div class="login-menu">
+    <div (click)="loginUsersShow($event)" class="demo-users">Demo users</div>
+    <div class="login-menu disabled">
         <div class="debug-user">
-            <button (click)="authState.doLogin('StandardRegistry','test')">Standard Registry</button>
-            <button (click)="authState.doLogin('Installer','test')">Installer</button>
-            <button (click)="authState.doLogin('Installer2','test')">Installer 2</button>
-            <button (click)="authState.doLogin('Auditor','test')">Auditor</button>
-            <button (click)="authState.doLogin('Registrant','test')">Registrant</button>
-            <button (click)="authState.doLogin('VVB','test')">VVB</button>
-            <button (click)="authState.doLogin('ProjectProponent','test')">Project Proponent</button>
-            <button (click)="authState.doLogin('Verra','test')">Verra</button>
+            <button (click)="authState.doLogin('StandardRegistry','test')" mat-raised-button>Standard Registry</button>
+            <button (click)="authState.doLogin('Installer','test')" mat-raised-button>Installer</button>
+            <button (click)="authState.doLogin('Installer2','test')" mat-raised-button>Installer 2</button>
+            <button (click)="authState.doLogin('Auditor','test')" mat-raised-button>Auditor</button>
+            <button (click)="authState.doLogin('Registrant','test')" mat-raised-button>Registrant</button>
+            <button (click)="authState.doLogin('VVB','test')" mat-raised-button>VVB</button>
+            <button (click)="authState.doLogin('ProjectProponent','test')" mat-raised-button>Project Proponent</button>
+            <button (click)="authState.doLogin('Verra','test')" mat-raised-button>Verra</button>
         </div>
         <div class="debug-user">
             <div (click)="authState.doLogin(user.username, 'test')"
