@@ -1,4 +1,4 @@
-# 🏨 CDM AMS II.G
+# 🏨 CDM AMS II.G: Energy Efficiency Measures in Thermal Applications of Non-Renewable Biomass
 
 ## Table of Contents
 
@@ -89,23 +89,23 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 3. Place status in “Dry Run” and select “Go”.
 
-![](../../../.gitbook/assets/3.png)
+![](<../../../.gitbook/assets/3 (2).png>)
 
 4. By selecting the edit button in the operations tab, you can access the policy configurator and view the workflow blocks.
 
-![](../../../.gitbook/assets/4.png)
+![](<../../../.gitbook/assets/4 (3).png>)
 
 5. You can access and view the module by selecting the module tab in the policy configurator.
 
-![](../../../.gitbook/assets/5.png)
+![](<../../../.gitbook/assets/5 (2).png>)
 
 6. Going back to the policy workflow, add users by selecting the “create user” button. Then select the dropdown user menu and select “Virtual User 1”.
 
-![](../../../.gitbook/assets/6.png)
+![](<../../../.gitbook/assets/6 (2).png>)
 
 7. Virtual User 1 will be assigned to the Project\_Proponent
 
-![](<../../../.gitbook/assets/7 (2).png>)
+![](<../../../.gitbook/assets/7 (2) (3).png>)
 
 8. Virtual User 2 will be assigned to the VVB
 
@@ -117,15 +117,15 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 10. The final role that will be assigned to Virtual User 3 is the Designated National Authority
 
-![](../../../.gitbook/assets/10.png)
+![](<../../../.gitbook/assets/10 (3).png>)
 
 11. Click on the Users dropdown menu and select Virtual User 1 (Project Proponent) and select the “New Project” button.
 
-![](<../../../.gitbook/assets/11 (1).png>)
+![](<../../../.gitbook/assets/11 (1) (1).png>)
 
 12. Once the form is completed, go to Virtual User 3’s (Designated National Authority) profile. The Designated National Authority can now view the project information document by selecting “view document” and then they can select validate or reject.
 
-![](../../../.gitbook/assets/12.png)
+![](<../../../.gitbook/assets/12 (1).png>)
 
 13. Go to the Administrator’s (Standard Registry) profile. The Standard Registry can now approve the VVB.
 
@@ -133,19 +133,19 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 14. Stay on the Administrator’s (Standard Registry) profile. The Standard Registry now has access to the project information document by clicking “view document” once they have reviewed it they can select “Add” to add the project to the project pipeline.
 
-![](../../../.gitbook/assets/14.png)
+![](<../../../.gitbook/assets/14 (1).png>)
 
 15. Navigate back to Virtual User 1’s (Project Proponent) profile and assign the VVB.
 
-![](../../../.gitbook/assets/15.png)
+![](<../../../.gitbook/assets/15 (1).png>)
 
 16. Go to the Virtual User 2’s (VVB) profile. The VVB has access to the project form by selecting “View Document”. Then the VVB can select Verify or Reject.
 
-![](../../../.gitbook/assets/16.png)
+![](<../../../.gitbook/assets/16 (1).png>)
 
 17. Navigate back to the Administrator and select Add.
 
-![](../../../.gitbook/assets/17.png)
+![](<../../../.gitbook/assets/17 (1).png>)
 
 18. Navigate back to Virtual User 1’s (Project Proponent) profile and select “Add Report”.
 
