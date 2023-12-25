@@ -39,7 +39,7 @@
         "module-alias": "^2.2.2",
         "prom-client": "^14.1.1",
         "prometheus-api-metrics": "3.2.2",
-        "reflect-metadata": "^0.1.13",
+        "reflect-metadata": "^0.2.1",
         "ws": "^8.2.1",
         "yaml": "^2.3.1",
         "yup": "^1.1.1"
