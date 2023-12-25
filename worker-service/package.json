@@ -4,8 +4,8 @@
     "@azure/core-rest-pipeline": "1.12.1"
   },
   "dependencies": {
-    "@guardian/common": "^2.19.1",
-    "@guardian/interfaces": "^2.19.1",
+      "@guardian/common": "^2.20.0-prerelease",
+      "@guardian/interfaces": "^2.20.0-prerelease",
     "@hashgraph/sdk": "2.34.1",
     "@nestjs/common": "^9.4.1",
     "@nestjs/core": "^9.4.1",
@@ -62,5 +62,6 @@
     "start": "node dist/index.js",
     "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/worker-service.xml --exit"
   },
-  "version": "2.19.1"
+    "version": "2.20.0-prerelease",
+    "stableVersion": "2.19.1"
 }

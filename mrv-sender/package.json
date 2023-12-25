@@ -4,7 +4,7 @@
     "@azure/core-rest-pipeline": "1.12.1"
   },
   "dependencies": {
-    "@guardian/common": "^2.19.1",
+      "@guardian/common": "^2.20.0-prerelease",
     "@transmute/credentials-context": "0.7.0-unstable.80",
     "@transmute/did-context": "0.7.0-unstable.80",
     "@transmute/ed25519-signature-2018": "0.7.0-unstable.80",
@@ -42,5 +42,6 @@
     "dev:docker": "nodemon .",
     "start": "node dist/index.js"
   },
-  "version": "2.19.1"
+    "version": "2.20.0-prerelease",
+    "stableVersion": "2.19.1"
 }
