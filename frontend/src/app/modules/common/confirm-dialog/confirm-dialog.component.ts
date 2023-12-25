@@ -1,5 +1,4 @@
 import { Component, Inject } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 /**
@@ -10,17 +9,21 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
     styleUrls: ['./confirm-dialog.component.css']
 })
 export class ConfirmDialog {
-    title: string = "";
-    description?: string;
-    descriptions?: string[];
+    public title: string = '';
+    public description?: string;
+    public descriptions?: string[];
+    public submitButton: string = 'Ok';
+    public cancelButton: string = 'Cancel';
 
     constructor(
         public dialogRef: MatDialogRef<ConfirmDialog>,
         @Inject(MAT_DIALOG_DATA) public data: any
     ) {
         this.title = data.title;
-        if(Array.isArray(data.description)) {
-            this.descriptions  = data.description;
+        this.submitButton = data.submitButton || 'Ok';
+        this.cancelButton = data.cancelButton || 'Cancel';
+        if (Array.isArray(data.description)) {
+            this.descriptions = data.description;
         } else {
             this.description = data.description;
         }

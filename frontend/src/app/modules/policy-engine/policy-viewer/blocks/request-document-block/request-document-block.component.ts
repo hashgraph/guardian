@@ -1,11 +1,10 @@
 import { ChangeDetectorRef, Component, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { IUser } from '@guardian/interfaces';
+import { DocumentGenerator, IUser } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { ProfileService } from 'src/app/services/profile.service';
-import { global } from '@angular/compiler/src/util';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { Router } from '@angular/router';
 
@@ -23,30 +22,31 @@ export class RequestDocumentBlockComponent implements OnInit {
     @Input('static') static!: any;
     @ViewChild("dialogTemplate") dialogTemplate!: TemplateRef<any>;
 
-    isExist = false;
-    disabled = false;
-    loading: boolean = true;
-    socket: any;
-    dialogLoading: boolean = false;
-    dataForm: FormGroup;
-    schema: any;
-    hideFields: any;
-    type!: string;
-    content: any;
-    dialogContent: any;
-    dialogClass: any;
-    dialogRef: any;
-    ref: any;
-    title: any;
-    description: any;
-    presetDocument: any;
-    rowDocument: any;
-    needPreset: any;
-    presetFields: any;
-    presetReadonlyFields: any;
-    buttonClass: any;
-    user!: IUser;
-    restoreData: any;
+    public isExist = false;
+    public disabled = false;
+    public loading: boolean = true;
+    public socket: any;
+    public dialogLoading: boolean = false;
+    public dataForm: FormGroup;
+    public schema: any;
+    public hideFields: any;
+    public type!: string;
+    public content: any;
+    public dialogContent: any;
+    public dialogClass: any;
+    public dialogRef: any;
+    public ref: any;
+    public title: any;
+    public description: any;
+    public presetDocument: any;
+    public rowDocument: any;
+    public needPreset: any;
+    public presetFields: any;
+    public presetReadonlyFields: any;
+    public buttonClass: any;
+    public user!: IUser;
+    public restoreData: any;
+    public dryRunMode: boolean = false;
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -59,6 +59,7 @@ export class RequestDocumentBlockComponent implements OnInit {
         private changeDetectorRef: ChangeDetectorRef
     ) {
         this.dataForm = fb.group({});
+        this.dryRunMode = true;
     }
 
     ngOnInit(): void {
@@ -304,6 +305,11 @@ export class RequestDocumentBlockComponent implements OnInit {
             this.preset(presetDocument);
         }
         this.restoreData = null;
+    }
+
+    onDryRun() {
+        const presetDocument = DocumentGenerator.generateDocument(this.schema);
+        this.preset(presetDocument);
     }
 
     handleCancelBtnEvent(value: boolean, data: any) {

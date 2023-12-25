@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IUser, PolicyType } from '@guardian/interfaces';
@@ -10,6 +10,8 @@ import { ProfileService } from 'src/app/services/profile.service';
 import { TokenService } from 'src/app/services/token.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
+import { RecordService } from 'src/app/services/record.service';
+import { RecordControllerComponent } from '../../record/record-controller/record-controller.component';
 
 /**
  * Component for choosing a policy and
@@ -21,17 +23,17 @@ import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialo
     styleUrls: ['./policy-viewer.component.scss']
 })
 export class PolicyViewerComponent implements OnInit, OnDestroy {
-    policyId!: string;
-    policy: any | null;
-    policyInfo: any | null;
-    role!: any;
-    loading: boolean = true;
-    isConfirmed: boolean = false;
-    virtualUsers: any[] = []
-    view: string = 'policy';
-    documents: any[] = [];
-    columns: string[] = [];
-    columnsMap: any = {
+    public policyId!: string;
+    public policy: any | null;
+    public policyInfo: any | null;
+    public role!: any;
+    public loading: boolean = true;
+    public isConfirmed: boolean = false;
+    public virtualUsers: any[] = []
+    public view: string = 'policy';
+    public documents: any[] = [];
+    public columns: string[] = [];
+    public columnsMap: any = {
         transactions: [
             'createDate',
             'type',
@@ -51,33 +53,34 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             'document'
         ]
     };
-    pageIndex: number;
-    pageSize: number;
-    documentCount: any;
-    groups: any[] = [];
-    isMultipleGroups: boolean = false;
-    userRole!: string;
-    userGroup!: string;
+    public pageIndex: number;
+    public pageSize: number;
+    public documentCount: any;
+    public groups: any[] = [];
+    public isMultipleGroups: boolean = false;
+    public userRole!: string;
+    public userGroup!: string;
+    public recordingActive: boolean = false;
 
     private subscription = new Subscription();
-
-    public innerWidth: any;
-    public innerHeight: any;
-
 
     public get isDryRun(): boolean {
         return this.policyInfo && this.policyInfo.status === 'DRY-RUN';
     }
 
+    @ViewChild('recordController')
+    public set recordController(value: RecordControllerComponent | undefined) {
+        this._recordController = value;
+    }
+    private _recordController!: RecordControllerComponent | undefined;
+
     constructor(
         private profileService: ProfileService,
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
-        private tokenService: TokenService,
         private route: ActivatedRoute,
-        private router: Router,
         private dialog: MatDialog,
-        private toastr: ToastrService
+        private cdRef: ChangeDetectorRef
     ) {
         this.policy = null;
         this.pageIndex = 0;
@@ -86,8 +89,6 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        this.innerWidth = window.innerWidth;
-        this.innerHeight = window.innerHeight;
         this.loading = true;
         this.subscription.add(
             this.route.queryParams.subscribe(queryParams => {
@@ -129,6 +130,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         this.policyInfo = null;
         this.isConfirmed = false;
         this.loading = true;
+        this.recordingActive = false;
         this.profileService.getProfile().subscribe((profile: IUser | null) => {
             this.isConfirmed = !!(profile && profile.confirmed);
             this.role = profile ? profile.role : null;
@@ -146,33 +148,37 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
     loadPolicyById(policyId: string) {
         forkJoin([
-            this.policyEngineService.policyBlock(policyId),
             this.policyEngineService.policy(policyId),
-            this.policyEngineService.getGroups(policyId),
+            this.policyEngineService.policyBlock(policyId),
+            this.policyEngineService.getGroups(policyId)
         ]).subscribe((value) => {
-            this.policy = value[0];
-            this.policyInfo = value[1];
+            this.policyInfo = value[0];
+            this.policy = value[1];
             this.groups = value[2] || [];
+
             this.virtualUsers = [];
             this.isMultipleGroups = !!(this.policyInfo?.policyGroups && this.groups?.length);
-
             this.userRole = this.policyInfo.userRole;
             this.userGroup = this.policyInfo.userGroup?.groupLabel || this.policyInfo.userGroup?.uuid;
 
             if (this.policyInfo?.status === PolicyType.DRY_RUN) {
-                this.policyEngineService.getVirtualUsers(this.policyInfo.id).subscribe((users) => {
-                    this.virtualUsers = users;
-                    setTimeout(() => {
-                        this.loading = false;
-                    }, 500);
-                }, (e) => {
-                    this.loading = false;
-                });
+                this.loadDryRunOptions();
             } else {
                 setTimeout(() => {
                     this.loading = false;
                 }, 500);
             }
+        }, (e) => {
+            this.loading = false;
+        });
+    }
+
+    loadDryRunOptions() {
+        this.policyEngineService.getVirtualUsers(this.policyInfo.id).subscribe((value) => {
+            this.virtualUsers = value;
+            setTimeout(() => {
+                this.loading = false;
+            }, 500);
         }, (e) => {
             this.loading = false;
         });
@@ -254,13 +260,13 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     openDocument(element: any) {
         let dialogRef;
 
-        if (this.innerWidth <= 810) {
+        if (window.innerWidth <= 810) {
             const bodyStyles = window.getComputedStyle(document.body);
             const headerHeight: number = parseInt(bodyStyles.getPropertyValue('--header-height'));
             dialogRef = this.dialog.open(VCViewerDialog, {
-                width: `${this.innerWidth.toString()}px`,
+                width: `${window.innerWidth.toString()}px`,
                 maxWidth: '100vw',
-                height: `${this.innerHeight - headerHeight}px`,
+                height: `${window.innerHeight - headerHeight}px`,
                 position: {
                     'bottom': '0'
                 },
@@ -334,5 +340,35 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             document.__type = '';
         }
         return document;
+    }
+
+    public updatePolicy() {
+        forkJoin([
+            this.policyEngineService.getVirtualUsers(this.policyId),
+            this.policyEngineService.policyBlock(this.policyId),
+            this.policyEngineService.policy(this.policyId),
+        ]).subscribe((value) => {
+            this.policy = null;
+            this.cdRef.detectChanges();
+            this.virtualUsers = value[0];
+            this.policy = value[1];
+            this.policyInfo = value[2];
+            this.isMultipleGroups = !!(this.policyInfo?.policyGroups && this.groups?.length);
+            this.userRole = this.policyInfo.userRole;
+            this.userGroup = this.policyInfo.userGroup?.groupLabel || this.policyInfo.userGroup?.uuid;
+            this.cdRef.detectChanges();
+        }, (e) => {
+            this.loading = false;
+        });
+    }
+
+    public startRecord() {
+        this.recordingActive = true;
+        this._recordController?.startRecording();
+    }
+
+    public runRecord() {
+        this.recordingActive = true;
+        this._recordController?.runRecord();
     }
 }

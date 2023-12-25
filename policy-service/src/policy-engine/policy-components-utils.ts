@@ -1,6 +1,23 @@
-import { EventActor, EventCallback, PolicyBlockFullArgumentList, PolicyBlockMap, PolicyInputEventType, PolicyLink, PolicyOutputEventType, PolicyTagMap } from '@policy-engine/interfaces';
+import {
+    EventActor,
+    EventCallback,
+    PolicyBlockFullArgumentList,
+    PolicyBlockMap,
+    PolicyInputEventType,
+    PolicyLink,
+    PolicyOutputEventType,
+    PolicyTagMap
+} from '@policy-engine/interfaces';
 import { BlockType, GenerateUUIDv4, ModuleStatus, PolicyEvents, PolicyType } from '@guardian/interfaces';
-import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock, IPolicyInstance, IPolicyInterfaceBlock, ISerializedBlock, ISerializedBlockExtend } from './policy-engine.interface';
+import {
+    AnyBlockType,
+    IPolicyBlock,
+    IPolicyContainerBlock,
+    IPolicyInstance,
+    IPolicyInterfaceBlock,
+    ISerializedBlock,
+    ISerializedBlockExtend
+} from './policy-engine.interface';
 import { DatabaseServer, Policy, PolicyTool } from '@guardian/common';
 import { STATE_KEY } from '@policy-engine/helpers/constants';
 import { GetBlockByType } from '@policy-engine/blocks/get-block-by-type';
@@ -711,14 +728,14 @@ export class PolicyComponentsUtils {
      */
     public static async RegisterPolicyInstance(
         policyId: string,
-        policy: Policy
+        policy: Policy,
+        components: ComponentsService
     ) {
         const dryRun = policy.status === PolicyType.DRY_RUN ? policyId : null;
-        const databaseServer = new DatabaseServer(dryRun);
         const policyInstance: IPolicyInstance = {
             policyId,
             dryRun,
-            databaseServer,
+            components,
             isMultipleGroup: !!policy.policyGroups?.length,
             instanceTopicId: policy.instanceTopicId,
             synchronizationTopicId: policy.synchronizationTopicId,
@@ -979,30 +996,12 @@ export class PolicyComponentsUtils {
         policy: IPolicyInstance | IPolicyInterfaceBlock,
         user: IPolicyUser
     ): Promise<any[]> {
-        return await policy.databaseServer.getGroupsByUser(
+        return await policy.components.databaseServer.getGroupsByUser(
             policy.policyId,
             user.did,
             {
                 fields: ['uuid', 'role', 'groupLabel', 'groupName', 'active'],
             }
-        );
-    }
-
-    /**
-     * Select Policy Group
-     * @param policy
-     * @param user
-     * @param uuid
-     */
-    public static async SelectGroup(
-        policy: IPolicyInstance | IPolicyInterfaceBlock,
-        user: IPolicyUser,
-        uuid: string
-    ): Promise<void> {
-        await policy.databaseServer.setActiveGroup(
-            policy.policyId,
-            user.did,
-            uuid
         );
     }
 
@@ -1188,5 +1187,16 @@ export class PolicyComponentsUtils {
                 }
             );
         }
+    }
+
+    /**
+     * Get policy components
+     * @param policyId
+     */
+    public static GetPolicyComponents(policyId: string): ComponentsService | null {
+        if (PolicyComponentsUtils.PolicyById.has(policyId)) {
+            return PolicyComponentsUtils.PolicyById.get(policyId).components;
+        }
+        return null;
     }
 }

@@ -1,5 +1,5 @@
 import { VcDocument, VpDocument } from '@guardian/common';
-import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { CompareOptions, IChildrenLvl } from '../interfaces/compare-options.interface';
 import { IWeightModel } from '../interfaces/weight-model.interface';
 import { IKeyMap } from '../interfaces/key-map.interface';
 import { WeightType } from '../types/weight.type';
@@ -38,7 +38,7 @@ export class DocumentModel implements IWeightModel {
      * Compare Options
      * @public
      */
-    public readonly options: ICompareOptions;
+    public readonly options: CompareOptions;
 
     /**
      * Document
@@ -125,6 +125,12 @@ export class DocumentModel implements IWeightModel {
     private readonly _options: PropertiesModel;
 
     /**
+     * Attributes
+     * @private
+     */
+    private _attributes: any;
+
+    /**
      * Children
      * @public
      */
@@ -148,10 +154,18 @@ export class DocumentModel implements IWeightModel {
         return this._relationshipIds;
     }
 
+    /**
+     * Attributes
+     * @public
+     */
+    public get attributes(): any {
+        return this._attributes;
+    }
+
     constructor(
         type: DocumentType,
         document: VcDocument | VpDocument,
-        options: ICompareOptions
+        options: CompareOptions
     ) {
         this.type = type;
         this.options = options;
@@ -167,6 +181,16 @@ export class DocumentModel implements IWeightModel {
         this._weight = [];
         this._weightMap = {};
         this._hash = '';
+    }
+
+    /**
+     * Set attributes
+     * @param schemas
+     * @public
+     */
+    public setAttributes(attributes: any): DocumentModel {
+        this._attributes = attributes;
+        return this;
     }
 
     /**
@@ -197,7 +221,7 @@ export class DocumentModel implements IWeightModel {
      * Update all weight
      * @public
      */
-    public update(options: ICompareOptions): DocumentModel {
+    public update(options: CompareOptions): DocumentModel {
         const weights = [];
         const weightMap = {};
         const hashUtils: HashUtils = new HashUtils();
@@ -252,9 +276,9 @@ export class DocumentModel implements IWeightModel {
             _document = hashUtils.result();
         }
 
-        if (options.childLvl > 1) {
+        if (options.childLvl === IChildrenLvl.All) {
             _children = _children2;
-        } else if (options.childLvl > 0) {
+        } else if (options.childLvl === IChildrenLvl.First) {
             _children = _children1;
         } else {
             _children = '0';
@@ -307,15 +331,11 @@ export class DocumentModel implements IWeightModel {
      * @public
      */
     public getSchemas(): string[] {
-        const list = new Set<string>();
-        if (this._document) {
-            for (const id of this._document.schemas) {
-                if (id !== 'https://www.w3.org/2018/credentials/v1') {
-                    list.add(id);
-                }
-            }
+        if (this._document && this._document.schemas) {
+            return this._document.schemas;
+        } else {
+            return [];
         }
-        return Array.from(list);
     }
 
     /**
@@ -420,6 +440,7 @@ export class DocumentModel implements IWeightModel {
             key: this.key,
             owner: this.owner,
             policy: this.policy,
+            attributes: this.attributes,
             document,
             options
         }
@@ -443,19 +464,21 @@ export class DocumentModel implements IWeightModel {
      * @public
      */
     public title(): string {
+        const titles: string[] = [];
         if (this._schemas) {
             for (const schema of this._schemas) {
                 if (schema.description) {
-                    return schema.description;
-                }
-            }
-            for (const schema of this._schemas) {
-                if (schema.iri) {
-                    return schema.iri;
+                    titles.push(schema.description);
+                } else if (schema.iri) {
+                    titles.push(schema.iri);
                 }
             }
         }
-        return this.key;
+        if (titles.length) {
+            return titles.join(', ');
+        } else {
+            return this.key;
+        }
     }
 }
 
@@ -463,7 +486,7 @@ export class DocumentModel implements IWeightModel {
  * VC Document Model
  */
 export class VcDocumentModel extends DocumentModel {
-    constructor(vc: VcDocument, options: ICompareOptions) {
+    constructor(vc: VcDocument, options: CompareOptions) {
         super(DocumentType.VC, vc, options);
 
         this._relationshipIds = [];
@@ -476,13 +499,19 @@ export class VcDocumentModel extends DocumentModel {
         this._key = vc.schema;
     }
 
+    public static from(data: any, options: CompareOptions): VcDocumentModel {
+        return new VcDocumentModel({
+            schema: null,
+            document: data
+        } as any, options);
+    }
 }
 
 /**
  * VP Document Model
  */
 export class VpDocumentModel extends DocumentModel {
-    constructor(vp: VpDocument, options: ICompareOptions) {
+    constructor(vp: VpDocument, options: CompareOptions) {
         super(DocumentType.VP, vp, options);
 
         this._relationshipIds = [];
@@ -493,5 +522,12 @@ export class VpDocumentModel extends DocumentModel {
         }
 
         this._key = vp.type;
+    }
+
+    public static from(data: any, options: CompareOptions): VpDocumentModel {
+        return new VpDocumentModel({
+            type: null,
+            document: data
+        } as any, options);
     }
 }

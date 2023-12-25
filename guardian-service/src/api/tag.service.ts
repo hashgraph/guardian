@@ -375,7 +375,7 @@ export async function tagsAPI(): Promise<void> {
                         const schemaObject = new Schema(tagSchema);
                         credentialSubject = SchemaHelper.updateObjectContext(schemaObject, credentialSubject);
                     }
-                    const vcObject = await vcHelper.createVC(owner, root.hederaAccountKey, credentialSubject);
+                    const vcObject = await vcHelper.createVcDocument(credentialSubject, { did: owner, key: root.hederaAccountKey });
                     tag.document = vcObject.getDocument();
                 } else {
                     tag.document = null;

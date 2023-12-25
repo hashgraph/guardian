@@ -75,6 +75,7 @@ import { MeecoVCSubmitDialogComponent } from './components/meeco-vc-submit-dialo
 import { AboutViewComponent } from './views/admin/about-view/about-view.component';
 import { CompareStorage } from './services/compare-storage.service';
 import { ToolsService } from './services/tools.service';
+import { RecordService } from './services/record.service';
 
 @NgModule({
     declarations: [
@@ -152,6 +153,7 @@ import { ToolsService } from './services/tools.service';
         WizardService,
         SuggestionsService,
         NotificationService,
+        RecordService,
         CompareStorage,
         {
             provide: GET_SCHEMA_NAME,

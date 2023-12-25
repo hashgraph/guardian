@@ -1,5 +1,5 @@
 import { Token } from '@guardian/common';
-import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { CompareOptions, IIdLvl } from '../interfaces/compare-options.interface';
 import MurmurHash3 from 'imurmurhash';
 import { IWeightItem } from '../interfaces/weight-item.interface';
 
@@ -83,9 +83,9 @@ export class TokenModel {
      * Compare Options
      * @private
      */
-    private readonly options: ICompareOptions;
+    private readonly options: CompareOptions;
 
-    constructor(token: Token, options: ICompareOptions) {
+    constructor(token: Token, options: CompareOptions) {
         this.options = options;
         this.id = token.id;
         this.tokenId = token.tokenId;
@@ -145,7 +145,7 @@ export class TokenModel {
      * @param options - comparison options
      * @public
      */
-    public hash(options?: ICompareOptions): string {
+    public hash(options?: CompareOptions): string {
         return this._weight;
     }
 
@@ -154,7 +154,7 @@ export class TokenModel {
      * @param options - comparison options
      * @public
      */
-    public update(options: ICompareOptions): void {
+    public update(options: CompareOptions): void {
         const hashState = MurmurHash3();
         hashState.hash(String(this.tokenName));
         hashState.hash(String(this.tokenSymbol));
@@ -165,7 +165,7 @@ export class TokenModel {
         hashState.hash(String(this.enableFreeze));
         hashState.hash(String(this.enableKYC));
         hashState.hash(String(this.enableWipe));
-        if (options.idLvl > 0) {
+        if (options.idLvl === IIdLvl.All) {
             hashState.hash(String(this.tokenId));
         }
         this._weight = String(hashState.result());
@@ -175,7 +175,7 @@ export class TokenModel {
      * Get weight object
      * @public
      */
-    public toWeight(options: ICompareOptions): IWeightItem {
+    public toWeight(options: CompareOptions): IWeightItem {
         if (!this._weight) {
             return {
                 weight: this.tokenId

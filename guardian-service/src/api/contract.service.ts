@@ -122,7 +122,7 @@ async function setPool(
                     contractId
                 );
                 // tslint:disable-next-line:no-empty
-            } catch {}
+            } catch { }
             await setContractWiperPermissions(
                 contractRepository,
                 retirePoolRepository,
@@ -795,8 +795,7 @@ export async function syncRetireContract(
                         contractOwnerIds.map((user) =>
                             NotificationHelper.info(
                                 `Pools cleared in contract: ${contractId}`,
-                                `All ${
-                                    count === 1 ? 'single' : 'double'
+                                `All ${count === 1 ? 'single' : 'double'
                                 } pools cleared`,
                                 user
                             )
@@ -816,8 +815,7 @@ export async function syncRetireContract(
                         contractOwnerIds.map((user) =>
                             NotificationHelper.info(
                                 `Requests cleared in contract: ${contractId}`,
-                                `All ${
-                                    count === 1 ? 'single' : 'double'
+                                `All ${count === 1 ? 'single' : 'double'
                                 } requests cleared`,
                                 user
                             )
@@ -1006,11 +1004,7 @@ async function saveRetireVC(
         );
     }
 
-    const vcObject = await vcHelper.createVC(
-        did,
-        hederaAccountKey,
-        credentialSubject
-    );
+    const vcObject = await vcHelper.createVcDocument(credentialSubject, { did, key: hederaAccountKey });
     const vcMessage = new VCMessage(MessageAction.CreateVC);
     vcMessage.setDocument(vcObject);
     await messageServer.sendMessage(vcMessage);

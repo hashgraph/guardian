@@ -1,4 +1,4 @@
-import { CheckResult, GenerateUUIDv4, removeObjectProperties, Schema, SchemaHelper } from '@guardian/interfaces';
+import { CheckResult, removeObjectProperties, Schema, SchemaHelper } from '@guardian/interfaces';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { BlockActionError } from '@policy-engine/errors';
 import { ActionCallback, StateField } from '@policy-engine/helpers/decorators';
@@ -6,7 +6,7 @@ import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyRequestBlock, 
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { EventBlock } from '@policy-engine/helpers/decorators/event-block';
-import { DIDDocument, DIDMessage, KeyType, MessageAction, MessageServer, VcDocument as VcDocumentCollection, VcHelper, } from '@guardian/common';
+import { DIDMessage, KeyType, MessageAction, MessageServer, VcDocument as VcDocumentCollection, VcHelper, } from '@guardian/common';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
@@ -221,11 +221,11 @@ export class RequestVcDocumentBlock {
             }
 
             const groupContext = await PolicyUtils.getGroupContext(ref, user);
-            const vc = await _vcHelper.createVC(
-                user.did,
-                hederaAccount.hederaAccountKey,
+            const uuid = await ref.components.generateUUID();
+            const vc = await _vcHelper.createVcDocument(
                 credentialSubject,
-                groupContext
+                { did: user.did, key: hederaAccount.hederaAccountKey },
+                { uuid, group: groupContext }
             );
             let item = PolicyUtils.createVC(ref, user, vc);
             const accounts = PolicyUtils.getHederaAccounts(
@@ -291,16 +291,21 @@ export class RequestVcDocumentBlock {
      * @param userHederaAccount
      * @param userHederaKey
      */
-    async generateId(idType: string, user: IPolicyUser, userHederaAccount: string, userHederaKey: string): Promise<string | undefined> {
+    async generateId(
+        idType: string,
+        user: IPolicyUser,
+        userHederaAccount: string,
+        userHederaKey: string
+    ): Promise<string | undefined> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {
             if (idType === 'UUID') {
-                return GenerateUUIDv4();
+                return await ref.components.generateUUID();
             }
             if (idType === 'DID') {
                 const topic = await PolicyUtils.getOrCreateTopic(ref, 'root', null, null);
 
-                const didObject = await DIDDocument.create(null, topic.topicId);
+                const didObject = await ref.components.generateDID(topic.topicId);
                 const did = didObject.getDid();
                 const key = didObject.getPrivateKeyString();
 

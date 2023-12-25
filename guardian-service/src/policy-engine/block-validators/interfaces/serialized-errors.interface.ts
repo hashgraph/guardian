@@ -24,4 +24,9 @@ export interface ISerializedErrors {
      * Tools
      */
     tools?: IModulesErrors[];
+
+    /**
+     * Is valid
+     */
+    isValid: boolean;
 }

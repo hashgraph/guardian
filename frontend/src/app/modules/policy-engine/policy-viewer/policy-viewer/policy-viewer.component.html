@@ -1,4 +1,7 @@
-<div class="content" [attr.status]='policyInfo?.status'>
+<div class="content" 
+    [attr.status]='policyInfo?.status' 
+    [attr.instance]="!!policy"
+    >
     <div *ngIf="loading" class="loading">
         <mat-spinner></mat-spinner>
     </div>
@@ -17,7 +20,10 @@
 
     <ng-container *ngIf="isConfirmed && policyId && policy">
         <div *ngIf="isDryRun" class="dry-run-content">
-            <div class="dry-run-action-btn" [routerLink]="['/policy-configuration']" [queryParams]="{ policyId }"
+            <div 
+                class="dry-run-action-btn" 
+                [routerLink]="['/policy-configuration']" 
+                [queryParams]="{ policyId }"
                 title="Edit Policy">
                 <mat-icon>edit</mat-icon>
                 <span>View Config</span>
@@ -45,6 +51,26 @@
 
             <div class="delimiter"></div>
 
+            <div 
+                class="dry-run-action-btn record-btn" 
+                (click)="startRecord()" 
+                title="Start Record"
+                [attr.disabled]="recordingActive">
+                <mat-icon>radio_button_checked</mat-icon>
+                <span>Record</span>
+            </div>
+
+            <div 
+                class="dry-run-action-btn run-btn" 
+                (click)="runRecord()" 
+                title="Run Record"
+                [attr.disabled]="recordingActive">
+                <mat-icon>play_arrow</mat-icon>
+                <span>Run</span>
+            </div>
+
+            <div class="delimiter"></div>
+
             <div class="dry-run-btn" (click)="onView('policy')" [attr.action]="view === 'policy'">
                 Policy View
             </div>
@@ -64,12 +90,12 @@
         <div class="policy-header" [attr.policy-status]="policyInfo.status">
             <a routerLink="/policy-viewer" class="go-back-link">
                 <mat-icon>chevron_left</mat-icon>
-                <span *ngIf="policyInfo && policyInfo.name">{{policyInfo.name}}</span>
-                <span *ngIf="policyInfo && policyInfo.description && innerWidth > 810">: {{policyInfo.description}}</span>
-                <span *ngIf="policyInfo && policyInfo.version && innerWidth > 810">({{policyInfo.version}})</span>
+                <span *ngIf="policyInfo && policyInfo.name" class="heder-policy-name">{{policyInfo.name}}</span>
+                <span *ngIf="policyInfo && policyInfo.description" class="heder-policy-description">: {{policyInfo.description}}</span>
+                <span *ngIf="policyInfo && policyInfo.version" class="heder-policy-version">({{policyInfo.version}})</span>
             </a>
             <ng-container *ngIf="policyInfo">
-                <span *ngIf="!groups.length && innerWidth > 810" class="current-user-role">
+                <span *ngIf="!groups.length" class="current-user-role">
                     Role: {{policyInfo.userRoles.join(', ')}}
                 </span>
                 <span *ngIf="isMultipleGroups" class="current-user-group" [matMenuTriggerFor]="group">
@@ -84,7 +110,8 @@
             </ng-container>
         </div>
 
-        <div class="policy-container" [attr.policy-status]="policyInfo.status"
+        <div class="policy-container" 
+            [attr.policy-status]="policyInfo.status"
             [attr.hidden-container]="view !== 'policy'">
             <render-block [block]="policy" [policyId]="policyId"></render-block>
         </div>
@@ -139,6 +166,14 @@
         </div>
 
     </ng-container>
+
+    <app-record-controller
+        *ngIf="isDryRun"
+        #recordController
+        [policyId]="policyId"
+        (update)="updatePolicy()"
+        [(active)]="recordingActive"
+        ></app-record-controller>
 </div>
 
 <mat-menu #menu="matMenu">

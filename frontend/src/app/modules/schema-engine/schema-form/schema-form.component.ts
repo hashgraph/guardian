@@ -79,6 +79,7 @@ export class SchemaFormComponent implements OnInit {
     @Input('delimiter-hide') delimiterHide: boolean = false;
     @Input('conditions') conditions: any = null;
     @Input('preset') presetDocument: any = null;
+    @Input('example') example: boolean = false;
     @Input() cancelText: string = 'Cancel';
     @Input() submitText: string = 'Submit';
     @Input() cancelHidden: boolean = false;

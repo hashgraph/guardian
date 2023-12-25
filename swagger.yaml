@@ -8195,6 +8195,472 @@ paths:
       security:
         - bearer: []
         - bearerAuth: []
+  /record/{policyId}/status:
+    get:
+      operationId: RecordApi_getRecordStatus
+      summary: Get recording or running status.
+      description: >-
+        Get recording or running status. Only users with the Standard Registry
+        role are allowed to make the request.
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Object that contains options
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Object'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecordStatusDTO'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: &ref_13
+        - record
+      security:
+        - bearerAuth: []
+        - bearer: []
+  /record/{policyId}/recording/start:
+    post:
+      operationId: RecordApi_startRecord
+      summary: Start recording.
+      description: >-
+        Start recording. Only users with the Standard Registry role are allowed
+        to make the request.
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Object that contains options
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Object'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_13
+      security:
+        - bearerAuth: []
+        - bearer: []
+  /record/{policyId}/recording/stop:
+    post:
+      operationId: RecordApi_stopRecord
+      summary: Stop recording.
+      description: >-
+        Stop recording. Only users with the Standard Registry role are allowed
+        to make the request.
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Object that contains options
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Object'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_13
+      security:
+        - bearerAuth: []
+        - bearer: []
+  /record/{policyId}/recording/actions:
+    get:
+      operationId: RecordApi_getRecordActions
+      summary: Get recorded actions.
+      description: >-
+        Get recorded actions. Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Object that contains options
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Object'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RecordActionDTO'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_13
+      security:
+        - bearerAuth: []
+        - bearer: []
+  /record/{policyId}/running/start:
+    post:
+      operationId: RecordApi_runRecord
+      summary: Run record from a zip file.
+      description: >-
+        Run record from a zip file. Only users with the Standard Registry role
+        are allowed to make the request.
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: A zip file containing record to be run.
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_13
+      security:
+        - bearerAuth: []
+        - bearer: []
+  /record/{policyId}/running/stop:
+    post:
+      operationId: RecordApi_stopRunning
+      summary: Stop running.
+      description: >-
+        Stop running. Only users with the Standard Registry role are allowed to
+        make the request.
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Object that contains options
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Object'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_13
+      security:
+        - bearerAuth: []
+        - bearer: []
+  /record/{policyId}/running/results:
+    get:
+      operationId: RecordApi_getRecordResults
+      summary: Get running results.
+      description: >-
+        Get running results. Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Object that contains options
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Object'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunningResultDTO'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_13
+      security:
+        - bearerAuth: []
+        - bearer: []
+  /record/{policyId}/running/details:
+    get:
+      operationId: RecordApi_getRecordDetails
+      summary: Get running details.
+      description: >-
+        Get running details. Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Object that contains options
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Object'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunningDetailsDTO'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_13
+      security:
+        - bearerAuth: []
+        - bearer: []
+  /record/{policyId}/running/fast-forward:
+    post:
+      operationId: RecordApi_fastForward
+      summary: Fast Forward.
+      description: >-
+        Fast Forward. Only users with the Standard Registry role are allowed to
+        make the request.
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Object that contains options
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Object'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_13
+      security:
+        - bearerAuth: []
+        - bearer: []
+  /record/{policyId}/running/retry:
+    post:
+      operationId: RecordApi_retryStep
+      summary: Retry step.
+      description: >-
+        Retry step. Only users with the Standard Registry role are allowed to
+        make the request.
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Object that contains options
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Object'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_13
+      security:
+        - bearerAuth: []
+        - bearer: []
+  /record/{policyId}/running/skip:
+    post:
+      operationId: RecordApi_skipStep
+      summary: Skip step.
+      description: >-
+        Skip step. Only users with the Standard Registry role are allowed to
+        make the request.
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Object that contains options
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Object'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_13
+      security:
+        - bearerAuth: []
+        - bearer: []
   /schemas/type/{type}:
     get:
       tags:
@@ -9482,6 +9948,105 @@ components:
         - progress
         - type
         - taskId
+    Object:
+      type: object
+      properties: {}
+    RecordStatusDTO:
+      type: object
+      properties:
+        type:
+          type: string
+        policyId:
+          type: string
+        uuid:
+          type: string
+        status:
+          type: string
+      required:
+        - type
+        - policyId
+        - uuid
+        - status
+    RecordActionDTO:
+      type: object
+      properties:
+        uuid:
+          type: string
+        policyId:
+          type: string
+        method:
+          type: string
+        action:
+          type: string
+        time:
+          type: string
+        user:
+          type: string
+        target:
+          type: string
+      required:
+        - uuid
+        - policyId
+        - method
+        - action
+        - time
+        - user
+        - target
+    ResultInfoDTO:
+      type: object
+      properties:
+        tokens:
+          type: number
+        documents:
+          type: number
+      required:
+        - tokens
+        - documents
+    ResultDocumentDTO:
+      type: object
+      properties:
+        type:
+          type: string
+        schema:
+          type: string
+        rate:
+          type: string
+        documents:
+          type: object
+      required:
+        - type
+        - schema
+        - rate
+        - documents
+    RunningResultDTO:
+      type: object
+      properties:
+        info:
+          $ref: '#/components/schemas/ResultInfoDTO'
+        total:
+          type: number
+        documents:
+          $ref: '#/components/schemas/ResultDocumentDTO'
+      required:
+        - info
+        - total
+        - documents
+    RunningDetailsDTO:
+      type: object
+      properties:
+        left:
+          type: object
+        right:
+          type: object
+        total:
+          type: number
+        documents:
+          type: object
+      required:
+        - left
+        - right
+        - total
+        - documents
     ToolDTO:
       type: object
       properties:

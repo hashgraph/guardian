@@ -13,11 +13,12 @@ import { TagsService } from '../../services/tag.service';
 import { ConfirmationDialogComponent } from '../../modules/common/confirmation-dialog/confirmation-dialog.component';
 import { SchemaDialog } from '../../modules/schema-engine/schema-dialog/schema-dialog.component';
 import { ImportSchemaDialog } from '../../modules/schema-engine/import-schema/import-schema-dialog.component';
+import { ExportSchemaDialog } from '../../modules/schema-engine/export-schema-dialog/export-schema-dialog.component';
+import { CompareSchemaDialog } from '../../modules/schema-engine/compare-schema-dialog/compare-schema-dialog.component';
+import { SchemaFormDialog } from '../../modules/schema-engine/schema-form-dialog/schema-form-dialog.component';
 import { SetVersionDialog } from '../../modules/schema-engine/set-version-dialog/set-version-dialog.component';
 import { VCViewerDialog } from '../../modules/schema-engine/vc-dialog/vc-dialog.component';
 import { SchemaViewDialog } from '../../modules/schema-engine/schema-view-dialog/schema-view-dialog.component';
-import { ExportSchemaDialog } from '../../modules/schema-engine/export-schema-dialog/export-schema-dialog.component';
-import { CompareSchemaDialog } from '../../modules/schema-engine/compare-schema-dialog/compare-schema-dialog.component';
 import { ModulesService } from '../../services/modules.service';
 import { ToolsService } from 'src/app/services/tools.service';
 import { AlertComponent, AlertType } from 'src/app/modules/common/alert/alert.component';
@@ -41,22 +42,14 @@ const policySchemaColumns: string[] = [
     'tags',
     'status',
     'operation',
-    'export',
-    'tree',
-    'edit',
-    'clone-schema',
-    'delete',
-    'document',
+    'menu',
 ];
 
 const moduleSchemaColumns: string[] = [
     'type',
     'status',
     'operation',
-    'export',
-    'edit',
-    'delete',
-    'document',
+    'menu',
 ];
 
 const toolSchemaColumns: string[] = [
@@ -64,11 +57,7 @@ const toolSchemaColumns: string[] = [
     'type',
     'status',
     'operation',
-    'export',
-    'tree',
-    'edit',
-    'delete',
-    'document',
+    'menu',
 ];
 
 const systemSchemaColumns: string[] = [
@@ -77,9 +66,7 @@ const systemSchemaColumns: string[] = [
     'entity',
     'active',
     'activeOperation',
-    'editSystem',
-    'deleteSystem',
-    'document',
+    'menu',
 ];
 
 const tagSchemaColumns: string[] = [
@@ -87,9 +74,7 @@ const tagSchemaColumns: string[] = [
     'owner',
     'status',
     'tagOperation',
-    'editTag',
-    'deleteTag',
-    'document',
+    'menu',
 ];
 
 /**
@@ -415,6 +400,12 @@ export class SchemaConfigComponent implements OnInit {
         }
         loader.subscribe((schemasResponse: HttpResponse<ISchema[]>) => {
             this.page = SchemaHelper.map(schemasResponse.body || []);
+            for (const element of this.page as any[]) {
+                element.__policyId = this.policyIdByTopic[element.topicId];
+                element.__policyName = this.policyNameByTopic[element.topicId] || ' - ';
+                element.__toolId = this.toolIdByTopic[element.topicId];
+                element.__toolName = this.toolNameByTopic[element.topicId] || ' - ';
+            }
             this.count = (schemasResponse.headers.get('X-Total-Count') || this.page.length) as number;
             this.loadTagsData();
         }, (e) => {
@@ -497,6 +488,36 @@ export class SchemaConfigComponent implements OnInit {
             }
         }
         this.page = this.page.slice();
+    }
+
+    public ifCanDelete(element: Schema): boolean {
+        if (this.type === SchemaType.System) {
+            return !element.readonly && !element.active;
+        } else {
+            return element.status === 'DRAFT';
+        }
+    }
+
+    public ifCanCopy(element: Schema): boolean {
+        return ( this.type === SchemaType.Policy);
+    }
+
+    public ifCanExport(element: Schema): boolean {
+        return (
+            this.type === SchemaType.Policy ||
+            this.type === SchemaType.Module ||
+            this.type === SchemaType.Tool
+        );
+    }
+
+    public ifCanEdit(element: Schema): boolean {
+        if (this.type === SchemaType.System) {
+            return !element.readonly && !element.active;
+        } else if (this.type === SchemaType.Tag) {
+            return element.status === 'DRAFT';
+        } else {
+            return element.status === 'DRAFT' || !this.readonly;
+        }
     }
 
     private createSchema(schema: Schema | null): void {
@@ -768,13 +789,32 @@ export class SchemaConfigComponent implements OnInit {
         });
     }
 
+    public onOpenConfig(element: Schema): void {
+        return this.onEditDocument(element);
+    }
+
+    public onOpenForm(schema: Schema, example: boolean): void {
+        const dialogRef = this.dialog.open(SchemaFormDialog, {
+            width: '950px',
+            panelClass: 'g-dialog',
+            disableClose: true,
+            data: { schema, example }
+        });
+        dialogRef.afterClosed().subscribe(async (exampleDate: any) => {
+            if(exampleDate) {
+                schema.setExample(exampleDate);
+                this.updateSchema(schema.id, schema);
+            }
+        });
+    }
+
     public onOpenDocument(element: Schema): void {
         const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
             panelClass: 'g-dialog',
             disableClose: true,
             data: {
-                document: element.document,
+                document: element?.document,
                 title: 'Schema',
                 type: 'JSON',
             }
@@ -782,7 +822,25 @@ export class SchemaConfigComponent implements OnInit {
         dialogRef.afterClosed().subscribe(async (result) => { });
     }
 
-    public onEditDocument(element: Schema): void {
+    public onEditSchema(element: Schema): void {
+        if (this.type === SchemaType.System && !element.readonly && !element.active) {
+            return this.onEditDocument(element);
+        }
+        if (this.type === SchemaType.Tag && element.status === 'DRAFT') {
+            return this.onEditDocument(element);
+        }
+        if (element.status === 'DRAFT') {
+            return this.onEditDocument(element);
+        }
+        if (element.isCreator && !this.readonly) {
+            return this.onNewVersion(element);
+        }
+        if (!element.isCreator && !this.readonly) {
+            return this.onCloneSchema(element);
+        }
+    }
+
+    private onEditDocument(element: Schema): void {
         const dialogRef = this.dialog.open(SchemaDialog, {
             width: '950px',
             panelClass: 'g-dialog',
@@ -849,7 +907,7 @@ export class SchemaConfigComponent implements OnInit {
         }
     }
 
-    public onNewVersion(element: Schema): void {
+    private onNewVersion(element: Schema): void {
         const dialogRef = this.dialog.open(SchemaDialog, {
             width: '950px',
             panelClass: 'g-dialog',
@@ -869,7 +927,7 @@ export class SchemaConfigComponent implements OnInit {
         });
     }
 
-    public onCloneSchema(element: Schema): void {
+    private onCloneSchema(element: Schema): void {
         const newDocument: any = { ...element };
         delete newDocument._id;
         delete newDocument.id;
@@ -1017,13 +1075,6 @@ export class SchemaConfigComponent implements OnInit {
             });
     }
 
-    public onViewSchemaTree(element: Schema): void {
-        this.dialog.open(SchemaTreeComponent, {
-            data: element,
-            autoFocus: false
-        })
-    }
-
     public onActive(element: Schema): void {
         this.loading = true;
         this.schemaService.activeSystemSchema(element.id).subscribe((res) => {
@@ -1057,5 +1108,12 @@ export class SchemaConfigComponent implements OnInit {
                 });
             }
         });
+    }
+
+    public onViewSchemaTree(element: Schema): void {
+        this.dialog.open(SchemaTreeComponent, {
+            data: element,
+            autoFocus: false
+        })
     }
 }

@@ -222,9 +222,20 @@ export class WebSocketsService {
             }
         }, 500);
 
+        this.channel.subscribe('update-record', async (msg) => {
+            this.wss.clients.forEach((client: any) => {
+                if (this.checkUserByDid(client, msg)) {
+                    this.send(client, {
+                        type: 'update-record-event',
+                        data: msg,
+                    });
+                }
+            });
+            return new MessageResponse({});
+        });
+
         this.channel.subscribe('update-block', async (msg) => {
             updateArray.push(msg);
-
             return new MessageResponse({});
         });
 
