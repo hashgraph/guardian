@@ -31,6 +31,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { ButtonModule } from 'primeng/button';
 import { PaginatorComponent } from './paginator/paginator.component';
+import { DataInputDialogComponent } from './data-input-dialog/data-input-dialog.component';
 
 @NgModule({
     declarations: [
@@ -53,7 +54,8 @@ import { PaginatorComponent } from './paginator/paginator.component';
         CompareBtnComponent,
         CompareViewerComponent,
         AlertComponent,
-        PaginatorComponent
+        PaginatorComponent,
+        DataInputDialogComponent
     ],
     imports: [
         CommonModule,
@@ -89,7 +91,8 @@ import { PaginatorComponent } from './paginator/paginator.component';
         NewVersionsComponent,
         CompareBtnComponent,
         CompareViewerComponent,
-        PaginatorComponent
+        PaginatorComponent,
+        DataInputDialogComponent
     ]
 })
 export class CommonComponentsModule { }
