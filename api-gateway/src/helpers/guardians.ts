@@ -387,8 +387,8 @@ export class Guardians extends NatsService {
      * Get associated tokens
      * @param did
      */
-    public async getAssociatedTokens(did: string): Promise<ITokenInfo[]> {
-        return await this.sendMessage(MessageAPI.GET_ASSOCIATED_TOKENS, { did });
+    public async getAssociatedTokens(did: string, pageIndex: number, pageSize: number): Promise<ITokenInfo[]> {
+        return await this.sendMessage(MessageAPI.GET_ASSOCIATED_TOKENS, { did, pageIndex, pageSize });
     }
 
     /**
@@ -934,6 +934,7 @@ export class Guardians extends NatsService {
         childrenLvl: any,
         idLvl: any,
         keyLvl: any,
+	refLvl: any
     ) {
         return await this.sendMessage(MessageAPI.COMPARE_DOCUMENTS, {
             type,
@@ -943,7 +944,8 @@ export class Guardians extends NatsService {
             propLvl,
             childrenLvl,
             idLvl,
-            keyLvl
+            keyLvl,
+	    refLvl
         });
     }
 

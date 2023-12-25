@@ -359,6 +359,7 @@ export class AnalyticsApi {
         const documentIds = body ? body.documentIds : null;
         const eventsLvl = body ? body.eventsLvl : null;
         const propLvl = body ? body.propLvl : null;
+        const refLvl = body ? body.refLvl : null;
         const childrenLvl = body ? body.childrenLvl : null;
         const idLvl = body ? body.idLvl : null;
         const user = req.user;
@@ -384,7 +385,7 @@ export class AnalyticsApi {
                 propLvl,
                 childrenLvl,
                 idLvl,
-                0
+                refLvl
             );
         } catch (error) {
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -742,6 +743,7 @@ export class AnalyticsApi {
         const documentIds = body ? body.documentIds : null;
         const eventsLvl = body ? body.eventsLvl : null;
         const propLvl = body ? body.propLvl : null;
+        const refLvl = body ? body.refLvl : null;
         const childrenLvl = body ? body.childrenLvl : null;
         const idLvl = body ? body.idLvl : null;
         const user = req.user;
@@ -766,7 +768,7 @@ export class AnalyticsApi {
                 propLvl,
                 childrenLvl,
                 idLvl,
-                0
+                refLvl
             );
         } catch (error) {
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);

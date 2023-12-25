@@ -37,6 +37,7 @@ import { AuthGuard } from '@auth/auth-guard';
 import { UsersService } from '@helpers/users';
 import { RolesGuard } from '@auth/roles-guard';
 import { RecordApi } from '@api/service/record';
+import { ProjectsAPI } from '@api/service/project';
 
 const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
 const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
@@ -96,6 +97,7 @@ const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
         BrandingApi,
         SuggestionsApi,
         NotificationsApi,
+        ProjectsAPI,
         RecordApi
     ],
     providers: [

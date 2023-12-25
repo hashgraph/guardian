@@ -26,7 +26,8 @@ export class BrandingApi {
           companyName,
           companyLogoUrl,
           loginBannerUrl,
-          faviconUrl
+          faviconUrl,
+          headerColor1
         } = req.body;
 
         const data = {
@@ -35,7 +36,8 @@ export class BrandingApi {
           companyName,
           companyLogoUrl,
           loginBannerUrl,
-          faviconUrl
+          faviconUrl,
+          headerColor1
         };
 
         const guardians = new Guardians();

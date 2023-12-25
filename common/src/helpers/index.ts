@@ -21,3 +21,5 @@ export * from './validate-configuration';
 export * from './vc-helper';
 export * from './wallet';
 export * from './workers';
+export * from './policy-category';
+export * from './policy-property';
