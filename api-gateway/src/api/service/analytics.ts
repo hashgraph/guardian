@@ -359,9 +359,10 @@ export class AnalyticsApi {
         const documentIds = body ? body.documentIds : null;
         const eventsLvl = body ? body.eventsLvl : null;
         const propLvl = body ? body.propLvl : null;
-        const refLvl = body ? body.refLvl : null;
         const childrenLvl = body ? body.childrenLvl : null;
         const idLvl = body ? body.idLvl : null;
+        const keyLvl = 0;
+        const refLvl = 0;
         const user = req.user;
         if (!user) {
             throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
@@ -385,6 +386,7 @@ export class AnalyticsApi {
                 propLvl,
                 childrenLvl,
                 idLvl,
+                keyLvl,
                 refLvl
             );
         } catch (error) {
@@ -743,9 +745,10 @@ export class AnalyticsApi {
         const documentIds = body ? body.documentIds : null;
         const eventsLvl = body ? body.eventsLvl : null;
         const propLvl = body ? body.propLvl : null;
-        const refLvl = body ? body.refLvl : null;
         const childrenLvl = body ? body.childrenLvl : null;
         const idLvl = body ? body.idLvl : null;
+        const keyLvl = 0;
+        const refLvl = 0;
         const user = req.user;
         if (!user) {
             throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
@@ -768,6 +771,7 @@ export class AnalyticsApi {
                 propLvl,
                 childrenLvl,
                 idLvl,
+                keyLvl,
                 refLvl
             );
         } catch (error) {

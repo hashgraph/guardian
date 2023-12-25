@@ -12,6 +12,7 @@ import {
 } from '@guardian/common';
 import { MessageAPI, PolicyEvents, PolicyType } from '@guardian/interfaces';
 import { GuardiansService } from '@helpers/guardians';
+import { IRefLvl } from 'analytics/compare/interfaces/compare-options.interface';
 
 /**
  * Compare results
@@ -26,6 +27,7 @@ export async function compareResults(details: any): Promise<any> {
             IEventsLvl.None,
             IIdLvl.None,
             IKeyLvl.Default,
+            IRefLvl.Default,
             null
         );
         const documents: IRecordResult[] = details.documents;

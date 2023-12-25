@@ -96,6 +96,7 @@ export class DocumentFieldsModel {
                 if (field) {
                     data.setDescription(field.description);
                     data.setTitle(field.title);
+                    data.setProperty(field.property);
                     continue;
                 }
             }
@@ -118,6 +119,17 @@ export class DocumentFieldsModel {
      */
     public getFieldsList(): PropertyModel<any>[] {
         return this.fields.slice();
+    }
+
+    /**
+     * Merge fields
+     * @param fields - models
+     * @public
+     */
+    public merge(doc: DocumentFieldsModel): void {
+        for (const field of doc.fields) {
+            this.fields.push(field);
+        }
     }
 
     /**

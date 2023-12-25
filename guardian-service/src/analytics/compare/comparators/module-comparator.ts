@@ -1,6 +1,6 @@
 import { BlockModel } from '../models/block.model';
 import { BlocksRate } from '../rates/blocks-rate';
-import { CompareOptions, IChildrenLvl, IEventsLvl, IIdLvl, IKeyLvl, IPropertiesLvl } from '../interfaces/compare-options.interface';
+import { CompareOptions, IChildrenLvl, IEventsLvl, IIdLvl, IKeyLvl, IPropertiesLvl, IRefLvl } from '../interfaces/compare-options.interface';
 import { ReportTable } from '../../table/report-table';
 import { Status } from '../types/status.type';
 import { IRateMap } from '../interfaces/rate-map.interface';
@@ -33,6 +33,7 @@ export class ModuleComparator {
                 IEventsLvl.All,
                 IIdLvl.All,
                 IKeyLvl.Default,
+                IRefLvl.Default,
                 null
             );
         }

@@ -1,5 +1,5 @@
 import { BaseEntity } from '../models';
-import { GenerateUUIDv4, PolicyType } from '@guardian/interfaces';
+import { GenerateUUIDv4, PolicyCategoryExport, PolicyType } from '@guardian/interfaces';
 import { AfterDelete, BeforeCreate, BeforeUpdate, Entity, OnLoad, Property, Unique } from '@mikro-orm/core';
 import { DataBaseHelper } from '../helpers';
 import { ObjectId } from '@mikro-orm/mongodb';

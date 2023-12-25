@@ -1,7 +1,7 @@
 import { DatabaseServer } from '@guardian/common';
 import { CSV } from '../../table/csv';
 import { ReportTable } from '../../table/report-table';
-import { CompareOptions, IChildrenLvl, IEventsLvl, IIdLvl, IKeyLvl, IPropertiesLvl } from '../interfaces/compare-options.interface';
+import { CompareOptions, IChildrenLvl, IEventsLvl, IIdLvl, IKeyLvl, IPropertiesLvl, IRefLvl } from '../interfaces/compare-options.interface';
 import { ICompareResult } from '../interfaces/compare-result.interface';
 import { IMultiCompareResult } from '../interfaces/multi-compare-result.interface';
 import { IRate } from '../interfaces/rate.interface';
@@ -36,6 +36,7 @@ export class PolicyComparator {
                 IEventsLvl.All,
                 IIdLvl.All,
                 IKeyLvl.Default,
+                IRefLvl.Default,
                 null
             );
         }

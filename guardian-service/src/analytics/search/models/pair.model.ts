@@ -1,3 +1,4 @@
+import { IRefLvl } from 'analytics/compare/interfaces/compare-options.interface';
 import {
     ArtifactsRate,
     CompareOptions,
@@ -72,6 +73,7 @@ export class PairSearchModel {
         IEventsLvl.All,
         IIdLvl.All,
         IKeyLvl.Default,
+        IRefLvl.Default,
         null
     );
 

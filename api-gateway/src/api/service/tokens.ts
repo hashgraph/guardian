@@ -104,22 +104,24 @@ export class TokensApi {
             }
 
             let tokensAndCount = {
-                tokens: [],
+                items: [],
                 count: 0
             }
 
             if (user.role === UserRole.STANDARD_REGISTRY) {
-                tokensAndCount = await guardians.getTokens({ did: user.did, pageIndex, pageSize });
+                tokensAndCount = await guardians.getTokensPage(user.did, pageIndex, pageSize);
                 const map = await engineService.getTokensMap(user.did);
-                tokensAndCount.tokens = await setDynamicTokenPolicy(tokensAndCount.tokens, engineService);
-                tokensAndCount.tokens = setTokensPolicies(tokensAndCount.tokens, map, policyId, false);
+                tokensAndCount.items = await setDynamicTokenPolicy(tokensAndCount.items, engineService);
+                tokensAndCount.items = setTokensPolicies(tokensAndCount.items, map, policyId, false);
             } else if (user.did) {
                 tokensAndCount = await guardians.getAssociatedTokens(user.did, pageIndex, pageSize);
                 const map = await engineService.getTokensMap(user.parent, 'PUBLISH');
-                tokensAndCount.tokens = await setDynamicTokenPolicy(tokensAndCount.tokens, engineService);
-                tokensAndCount.tokens = setTokensPolicies(tokensAndCount.tokens, map, policyId, true);
+                tokensAndCount.items = await setDynamicTokenPolicy(tokensAndCount.items, engineService);
+                tokensAndCount.items = setTokensPolicies(tokensAndCount.items, map, policyId, true);
             }
-            return res.setHeader('X-Total-Count', tokensAndCount.count).json(tokensAndCount.tokens);
+            return res
+                .setHeader('X-Total-Count', tokensAndCount.count)
+                .json(tokensAndCount.items);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error;

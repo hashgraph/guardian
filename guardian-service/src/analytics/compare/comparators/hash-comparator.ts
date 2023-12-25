@@ -7,7 +7,7 @@ import { IWeightBlock } from '../interfaces/weight-block.interface';
 import { IWeightItem } from '../interfaces/weight-item.interface';
 import { CompareUtils } from '../utils/utils';
 import { PolicyComparator } from './policy-comparator';
-import { CompareOptions, IChildrenLvl, IEventsLvl, IIdLvl, IKeyLvl, IPropertiesLvl } from '../interfaces/compare-options.interface';
+import { CompareOptions, IChildrenLvl, IEventsLvl, IIdLvl, IKeyLvl, IPropertiesLvl, IRefLvl } from '../interfaces/compare-options.interface';
 
 /**
  * Weight Types
@@ -38,6 +38,7 @@ export class HashComparator {
         IEventsLvl.All,
         IIdLvl.None,
         IKeyLvl.Default,
+        IRefLvl.Default,
         null
     );
 
