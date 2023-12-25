@@ -4,7 +4,7 @@
     "@azure/core-rest-pipeline": "1.12.1"
   },
   "dependencies": {
-    "@aws-sdk/client-secrets-manager": "^3.319.0",
+    "@aws-sdk/client-secrets-manager": "^3.480.0",
     "@azure/identity": "^3.2.2",
     "@azure/keyvault-secrets": "^4.7.0",
     "@google-cloud/secret-manager": "^4.2.2",
