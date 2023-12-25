@@ -47,16 +47,11 @@ import { LogsViewComponent } from './views/admin/logs-view/logs-view.component';
 import { SettingsViewComponent } from './views/admin/settings-view/settings-view.component';
 import { DetailsLogDialog } from './views/admin/details-log-dialog/details-log-dialog.component';
 import { ServiceStatusComponent } from './views/admin/service-status/service-status.component';
-import { ContractConfigComponent } from './views/contract-config/contract-config.component';
-import { ContractRequestConfigComponent } from './views/contract-request-config/contract-request-config.component';
 import { SchemaConfigComponent } from './views/schemas/schemas.component';
 import { BrandingDialogComponent } from './components/branding-dialog/branding-dialog.component';
 import { NotificationsComponent } from './views/notifications/notifications.component';
 //Components
 import { InfoComponent } from './components/info/info/info.component';
-import { AddPairDialogComponent } from './components/add-pair-dialog/add-pair-dialog.component';
-import { RetireTokenDialogComponent } from './components/retire-token-dialog/retire-token-dialog.component';
-import { DataInputDialogComponent } from './components/data-input-dialog/data-input-dialog.component';
 import { BrandingComponent } from './views/branding/branding.component';
 import { StandardRegistryCardComponent } from './components/standard-registry-card/standard-registry-card.component';
 import { SuggestionsConfigurationComponent } from './views/suggestions-configuration/suggestions-configuration.component';
@@ -85,7 +80,6 @@ import { SearchResultCardComponent } from './components/search-result-card/searc
 import { PolicyAISearchComponent } from './views/policy-search/policy-ai-search/policy-ai-search.component';
 import { PolicyGuidedSearchComponent } from './views/policy-search/policy-guided-search/policy-guided-search.component';
 import { PolicySearchComponent } from './views/policy-search/policy-search.component';
-import { RetirementComponent } from './views/retirement/retirement.component';
 import { ListOfTokensUserComponent } from './views/list-of-tokens-user/list-of-tokens-user.component';
 
 // PrimeNG
@@ -96,7 +90,6 @@ import { DialogModule } from 'primeng/dialog';
 import { TagModule } from 'primeng/tag';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
-import { RetirementUserComponent } from './views/retirement-user/retirement-user.component';
 import { StepsModule } from 'primeng/steps';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { TabViewModule } from 'primeng/tabview';
@@ -114,6 +107,7 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { CalendarModule } from 'primeng/calendar';
 import { InputTextareaModule } from 'primeng/inputtextarea';
+import { ContractEngineModule } from './modules/contract-engine/contract-engine.module';
 
 @NgModule({
     declarations: [
@@ -134,11 +128,6 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
         DetailsLogDialog,
         ServiceStatusComponent,
         InfoComponent,
-        ContractConfigComponent,
-        ContractRequestConfigComponent,
-        AddPairDialogComponent,
-        RetireTokenDialogComponent,
-        DataInputDialogComponent,
         SchemaConfigComponent,
         BrandingComponent,
         BrandingDialogComponent,
@@ -153,8 +142,6 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
         PolicyGuidedSearchComponent,
         PolicyAISearchComponent,
         SearchResultCardComponent,
-        RetirementComponent,
-        RetirementUserComponent,
         ListOfTokensUserComponent,
         RegisterDialogComponent,
         TermsConditionsComponent,
@@ -197,6 +184,7 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
         RadioButtonModule,
         CalendarModule,
         InputTextareaModule,
+        ContractEngineModule
     ],
     exports: [],
     providers: [

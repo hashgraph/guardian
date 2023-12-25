@@ -50,7 +50,7 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
             },
             {
                 title: 'Retirement',
-                routerLink: '/retirement'
+                routerLink: '/contracts'
             },
         ],
     },
