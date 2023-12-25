@@ -9,6 +9,26 @@ form {
   right: 10px;
 }
 
+.demo-users {
+  cursor: pointer;
+  color: #4169E2;
+}
+
+.login-menu {
+  position: absolute;
+  right: 10px;
+  background: white !important;
+  max-height: 345px;
+  height: auto;
+  width: 470px;
+  border-radius: 30px;
+  overflow: scroll;
+}
+
+.login-menu.disabled {
+  display: none;
+}
+
 .wrong-notification {
   font-size: 14px;
   color: var(--color-accent-red-1);
@@ -199,4 +219,31 @@ form {
 
 :host ::ng-deep .p-button:focus {
   box-shadow: unset !important;
+}
+
+.current-user-name {
+  font-size: 20px;
+  line-height: 0px;
+  display: inline-block;
+}
+
+.current-user-role {
+  font-size: 16px;
+  line-height: 0px;
+  color: #707070;
+  margin-left: 5px;
+}
+
+.current-user {
+  border-bottom: 1px dashed gray;
+}
+
+.debug-user button {
+  width: 145px;
+  padding: 0 15px;
+  margin: 5px 4px;
+}
+
+.debug-user {
+  white-space: normal;
 }

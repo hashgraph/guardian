@@ -1,14 +1,7 @@
-import {
-    ApplicationState, LargePayloadContainer,
-    Logger,
-    MessageBrokerChannel,
-    ValidateConfiguration,
-    SecretManager, OldSecretManager, NotificationService, Users
-} from '@guardian/common';
+import { ApplicationState, LargePayloadContainer, Logger, MessageBrokerChannel, NotificationService, OldSecretManager, SecretManager, Users, ValidateConfiguration } from '@guardian/common';
 import { Worker } from './api/worker';
 import { HederaSDKHelper } from './api/helpers/hedera-sdk-helper';
 import { ApplicationStates } from '@guardian/interfaces';
-import { decode } from 'jsonwebtoken';
 import * as process from 'process';
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
@@ -73,14 +66,14 @@ Promise.all([
                 return false;
             }
 
-            try {
-                const decoded = decode(IPFS_STORAGE_API_KEY);
-                if (!decoded) {
-                    return false
-                }
-            } catch (e) {
-                return false
-            }
+            // try {
+            //     const decoded = decode(IPFS_STORAGE_API_KEY);
+            //     if (!decoded) {
+            //         return false
+            //     }
+            // } catch (e) {
+            //     return false
+            // }
         }
         if (process.env.IPFS_PROVIDER === 'local') {
             if (!process.env.IPFS_NODE_ADDRESS) {
