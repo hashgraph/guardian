@@ -3660,63 +3660,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /policies/categories:
-    get:
-      operationId: PolicyApi_getPolicyCategoriesAsync
-      summary: Get all categories
-      description: Get all categories
-      parameters: []
-      responses:
-        '200':
-          description: Successful operation.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PolicyCategoryDTO'
-        '500':
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_6
-        - policies
-  /policies/filtered-policies:
-    post:
-      operationId: PolicyApi_getPoliciesByCategory
-      summary: Get filtered policies
-      description: Get policies by categories and text
-      parameters: []
-      requestBody:
-        required: true
-        description: Filters
-        content:
-          application/json:
-            schema:
-              type: string
-            examples:
-              Filter1:
-                value:
-                  categoryIds:
-                    - '000000000000000000000001'
-                    - '000000000000000000000002'
-                  text: abc
-      responses:
-        '200':
-          description: Successful operation.
-          content:
-            application/json:
-              schema:
-                type: object
-        '500':
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_6
   /policies/push/{policyId}:
     post:
       operationId: PolicyApi_updatePolicyAsync
@@ -3735,7 +3678,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_6
+      tags: &ref_6
+        - policies
       security:
         - bearerAuth: []
         - bearerAuth: []
@@ -5082,6 +5026,62 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /policies/methodologies/categories:
+    get:
+      operationId: PolicyApi_getPolicyCategoriesAsync
+      summary: Get all categories
+      description: Get all categories
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PolicyCategoryDTO'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_6
+  /policies/methodologies/search:
+    post:
+      operationId: PolicyApi_getPoliciesByCategory
+      summary: Get filtered policies
+      description: Get policies by categories and text
+      parameters: []
+      requestBody:
+        required: true
+        description: Filters
+        content:
+          application/json:
+            schema:
+              type: string
+            examples:
+              Filter1:
+                value:
+                  categoryIds:
+                    - '000000000000000000000001'
+                    - '000000000000000000000002'
+                  text: abc
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_6
   /schema/{schemaId}:
     get:
       tags:
