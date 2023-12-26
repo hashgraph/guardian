@@ -101,18 +101,18 @@
                                     Description
                                 </th>
                                 <th *ngIf="canDisplayColumn('roles')" class="header-cell-text"
-                                    style="min-width: 140px;">
+                                    style="min-width: 130px;">
                                     Roles
                                 </th>
                                 <th *ngIf="canDisplayColumn('topic')" class="header-cell-text"
-                                    style="min-width: 140px;">
+                                    style="min-width: 120px;">
                                     Topic
                                 </th>
                                 <th *ngIf="canDisplayColumn('version')" class="header-cell-text"
-                                    style="min-width: 140px;">
+                                    style="min-width: 110px;">
                                     Version
                                 </th>
-                                <th *ngIf="canDisplayColumn('tags')" class="header-cell-text" style="min-width: 165px;">
+                                <th *ngIf="canDisplayColumn('tags')" class="header-cell-text" style="min-width: 185px;">
                                     Tags
                                 </th>
                                 <th *ngIf="canDisplayColumn('tokens')" class="header-cell-text"
@@ -149,17 +149,17 @@
                                     tooltipPosition="top">
                                     {{ policy.description }}
                                 </td>
-                                <td *ngIf="canDisplayColumn('roles')" style="min-width: 140px;">
+                                <td *ngIf="canDisplayColumn('roles')" style="min-width: 130px;">
                                     {{ policy.userRoles?.join(", ") }}
                                 </td>
-                                <td *ngIf="canDisplayColumn('topic')" style="min-width: 140px;">
+                                <td *ngIf="canDisplayColumn('topic')" style="min-width: 120px;">
                                     <hedera-explorer [params]="policy.topicId" type="topics">{{ policy.topicId }}
                                     </hedera-explorer>
                                 </td>
-                                <td *ngIf="canDisplayColumn('version')" style="min-width: 140px;">
+                                <td *ngIf="canDisplayColumn('version')" style="min-width: 110px;">
                                     {{ policy.version }}
                                 </td>
-                                <td *ngIf="canDisplayColumn('tags')" style="min-width: 165px;">
+                                <td *ngIf="canDisplayColumn('tags')" style="min-width: 185px;">
                                     <tags-explorer [data]="policy._tags" [entity]="tagEntity" [owner]="owner"
                                         [schemas]="tagSchemas" [service]="tagsService"
                                         [target]="policy.id"></tags-explorer>
