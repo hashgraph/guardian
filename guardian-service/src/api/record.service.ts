@@ -1,4 +1,4 @@
-import { CompareOptions, IChildrenLvl, IEventsLvl, IIdLvl, IKeyLvl, IPropertiesLvl, RecordComparator } from '@analytics';
+import { CompareOptions, IChildrenLvl, IEventsLvl, IIdLvl, IKeyLvl, IRefLvl, IPropertiesLvl, RecordComparator } from '@analytics';
 import { ApiResponse } from '@api/helpers/api-response';
 import {
     BinaryMessageResponse,
@@ -12,7 +12,6 @@ import {
 } from '@guardian/common';
 import { MessageAPI, PolicyEvents, PolicyType } from '@guardian/interfaces';
 import { GuardiansService } from '@helpers/guardians';
-import { IRefLvl } from 'analytics/compare/interfaces/compare-options.interface';
 
 /**
  * Compare results

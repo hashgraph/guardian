@@ -1,4 +1,3 @@
-import { IRefLvl } from 'analytics/compare/interfaces/compare-options.interface';
 import {
     ArtifactsRate,
     CompareOptions,
@@ -8,6 +7,7 @@ import {
     IEventsLvl,
     IIdLvl,
     IKeyLvl,
+    IRefLvl,
     IPropertiesLvl,
     IRate,
     PermissionsRate,

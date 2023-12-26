@@ -35,10 +35,12 @@
     <ng-template #menuBarItem let-barItems="barItems">
         <ng-container *ngFor="let barItem of barItems">
             <div class="item-block">
-                <div (click)="barItem.childItems ? barItem.active = !barItem.active : null"
-                     [class.current]="!barItem.childItems && activeLink.startsWith(barItem.routerLink)"
-                     [routerLink]="!barItem.childItems ? barItem.routerLink : null"
-                     class="item clickable">
+                <div 
+                    (click)="barItem.childItems ? barItem.active = !barItem.active : null"
+                    [class.current]="!barItem.childItems && activeLink.startsWith(barItem.routerLink)"
+                    [routerLink]="!barItem.childItems ? barItem.routerLink : null"
+                    class="item clickable"
+                >
                     <img *ngIf="barItem.iconUrl" [src]="'/assets/images/icons/' + barItem.iconUrl + '.svg'" alt="">
                     <div [class.hidden-logotype]="menuCollapsed" class="span-icon">
                         <span [class.without-icon]="!barItem.iconUrl">{{ barItem.title }}</span>

@@ -108,6 +108,8 @@ import { RadioButtonModule } from 'primeng/radiobutton';
 import { CalendarModule } from 'primeng/calendar';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { ContractEngineModule } from './modules/contract-engine/contract-engine.module';
+import { ProjectComparisonService } from './services/project-comparison.service';
+import { ProjectComparisonModule } from './modules/project-comparison/project-comparison.module';
 
 @NgModule({
     declarations: [
@@ -178,13 +180,14 @@ import { ContractEngineModule } from './modules/contract-engine/contract-engine.
         DynamicDialogModule,
         ColorPickerModule,
         ProgressSpinnerModule,
-        DndModule,
         PasswordModule,
         MultiSelectModule,
         RadioButtonModule,
         CalendarModule,
         InputTextareaModule,
-        ContractEngineModule
+        ContractEngineModule,
+        ProjectComparisonModule,
+        DndModule,
     ],
     exports: [],
     providers: [
@@ -219,6 +222,7 @@ import { ContractEngineModule } from './modules/contract-engine/contract-engine.
         AISearchService,
         RecordService,
         CompareStorage,
+        ProjectComparisonService,
         {
             provide: GET_SCHEMA_NAME,
             useValue: SchemaHelper.getSchemaName
