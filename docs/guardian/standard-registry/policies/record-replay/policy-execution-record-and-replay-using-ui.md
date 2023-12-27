@@ -69,21 +69,3 @@ A summary dialogue is shown at the end of the replay. This dialogue contains the
 The ‘details’ page shows detailed breakdown of differences between the corresponding documents or tokens.
 
 ![image15.png](<../../../../.gitbook/assets/14 (9).png>)
-
-**Schemas**
-
-Changes in the Schemas menu
-
-![image16.png](<../../../../.gitbook/assets/15 (11).png>)
-
-1. Example – the facility to add example values for the schema fields
-
-![image17.png](<../../../../.gitbook/assets/16 (10).png>)
-
-1. Preview – show a preview of how users will see the policy form during the execution of the policy
-
-![image18.png](<../../../../.gitbook/assets/17 (11).png>)
-
-In Dry Run mode it is possible to quickly fill in the fields using the provided example values from the schema. This feature is most useful for testing/demonstrations or for experimenting and learning Guardian capabilities.
-
-![image19.png](<../../../../.gitbook/assets/18 (8).png>)
