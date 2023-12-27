@@ -1247,6 +1247,7 @@ export class PolicyConfigurationComponent implements OnInit {
             policyGroups: json?.policyGroups,
             policyTopics: json?.policyTopics,
             policyTokens: json?.policyTokens,
+            categories: json?.categories,
             config: json?.config
         }
         this.policyEngineService.validate(object).subscribe((data: any) => {

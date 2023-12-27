@@ -67,7 +67,6 @@ import { AppModule } from './app.module';
 import { analyticsAPI } from '@api/analytics.service';
 import { GridFSBucket } from 'mongodb';
 import { suggestionsAPI } from '@api/suggestions.service';
-import { setDefaultPolicyCategories } from '@api/helpers/set-default-policy-categories';
 import { SynchronizationTask } from '@helpers/synchronization-task';
 import { recordAPI } from '@api/record.service';
 import { projectsAPI } from '@api/projects.service';
@@ -301,7 +300,6 @@ Promise.all([
         }
 
         try {
-            await setDefaultPolicyCategories();
             await setDefaultSchema();
         } catch (error) {
             console.error(error.message);

@@ -835,9 +835,6 @@ export class PolicyEngine extends NatsService {
         if (!policy.config) {
             throw new Error('The policy is empty');
         }
-        if (!policy.categories?.filter((e) => e).length) {
-            throw new Error('The policy categories are empty');
-        }
         if (policy.status === PolicyType.PUBLISH) {
             throw new Error(`Policy already published`);
         }

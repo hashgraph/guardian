@@ -26,7 +26,7 @@ export class PolicyGuidedSearchComponent implements OnInit {
     loading: boolean = false;
 
     selectedCategoryIds: string[] = [];
-    searchFilter = new FormControl({value: '', disabled: true});
+    searchFilter = new FormControl({ value: '', disabled: true });
 
     policyScale: string;
     categories: IPolicyCategory[] = [];
@@ -77,7 +77,10 @@ export class PolicyGuidedSearchComponent implements OnInit {
             filterCategories.push(this.policyScale)
         }
 
-        this.policyEngineService.getFilteredPolicies(filterCategories, this.searchFilter.value || '').subscribe((data: any) => {
+        this.policyEngineService.getMethodologies(
+            filterCategories,
+            this.searchFilter.value || ''
+        ).subscribe((data: any) => {
             this.results = data;
             this.loading = false;
         })

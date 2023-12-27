@@ -18,8 +18,8 @@ export class ProjectComparisonService {
         return this.http.get<IPolicyCategory[]>(`${this.url}/policies/methodologies/categories`);
     }
 
-    public getMethodologies(categoryIds?: string[]): Observable<IMethodology[]> {
-        return this.http.post<IMethodology[]>(`${this.url}/policies/methodologies/search`, { categoryIds });
+    public getMethodologies(categoryIds?: string[], text?: string): Observable<IMethodology[]> {
+        return this.http.post<IMethodology[]>(`${this.url}/policies/methodologies/search`, { categoryIds, text });
     }
 
     public getProperties(): Observable<any[]> {

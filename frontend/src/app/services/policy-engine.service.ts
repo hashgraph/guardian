@@ -201,11 +201,11 @@ export class PolicyEngineService {
         return this.http.get<void>(`${this.url}/${policyId}/navigation`);
     }
 
-    public getPolicyCategories(): Observable<any> {
-        return this.http.get<void>(`${this.url}/categories`);
+    public getPolicyCategories(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.url}/methodologies/categories`);
     }
 
-    public getFilteredPolicies(categoryIds?: string[], text?: string): Observable<any> {
-        return this.http.post<void>(`${this.url}/filtered-policies`, {categoryIds, text});
+    public getMethodologies(categoryIds?: string[], text?: string): Observable<any[]> {
+        return this.http.post<any[]>(`${this.url}/methodologies/search`, { categoryIds, text });
     }
 }

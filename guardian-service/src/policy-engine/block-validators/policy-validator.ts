@@ -88,12 +88,15 @@ export class PolicyValidator {
         if (!policy || (typeof policy !== 'object')) {
             this.addError('Invalid policy config');
             return false;
-        } else {
-            this.addPermissions(policy.policyRoles);
-            await this.registerBlock(policy.config);
-            await this.registerSchemas();
-            return true;
         }
+        if (!policy.categories?.filter((e) => e).length) {
+            this.addError('The policy categories are empty');
+            return false;
+        }
+        this.addPermissions(policy.policyRoles);
+        await this.registerBlock(policy.config);
+        await this.registerSchemas();
+        return true;
     }
 
     /**
