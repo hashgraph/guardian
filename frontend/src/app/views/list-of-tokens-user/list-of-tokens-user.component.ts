@@ -219,21 +219,14 @@ export class ListOfTokensUserComponent implements OnInit {
             : `Used in ${policies.length} policies`;
     }
 
-    newOnPage() {
-        this.pageIndex = 0;
-        this.loadDate();
-    }
-
-    movePageIndex(inc: number) {
-        if (
-            inc > 0 &&
-            this.pageIndex < this.tokensCount / this.pageSize - 1
-        ) {
-            this.pageIndex += 1;
-            this.loadDate();
-        } else if (inc < 0 && this.pageIndex > 0) {
-            this.pageIndex -= 1;
-            this.loadDate();
+    public onPage(event: any): void {
+        if (this.pageSize != event.pageSize) {
+            this.pageIndex = 0;
+            this.pageSize = event.pageSize;
+        } else {
+            this.pageIndex = event.pageIndex;
+            this.pageSize = event.pageSize;
         }
+        this.loadDate();
     }
 }

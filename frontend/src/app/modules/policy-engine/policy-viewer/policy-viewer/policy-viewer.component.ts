@@ -46,10 +46,10 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public userGroup!: string;
     public recordingActive: boolean = false;
     public steps: IStep[] = [];
-    private subscription = new Subscription();
     public navigationFooterDisabled = false;
     public prevButtonDisabled = false;
     public nextButtonDisabled = false;
+    private subscription = new Subscription();
 
     public get isDryRun(): boolean {
         return this.policyInfo && this.policyInfo.status === 'DRY-RUN';
@@ -325,7 +325,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         dialogRef.onClose.subscribe(async (result) => { });
     }
 
-    
+
     public onPage(event: any): void {
         if (this.pageSize != event.pageSize) {
             this.pageIndex = 0;

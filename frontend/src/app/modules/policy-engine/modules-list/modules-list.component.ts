@@ -142,13 +142,8 @@ export class ModulesListComponent implements OnInit, OnDestroy {
         this.loadAllModules();
     }
 
-    public newOnPage() {
-        this.pageIndex = 0;
-        this.loadAllModules();
-    }
-
     private importDetails(result: any) {
-        const {type, data, module} = result;
+        const { type, data, module } = result;
         const dialogRef = this.dialog.open(PreviewPolicyDialog, {
             width: '950px',
             closable: true,
@@ -283,7 +278,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
     public publishModule(element: any) {
         this.loading = true;
         this.modulesService.publish(element.uuid).subscribe((result) => {
-            const {isValid, errors} = result;
+            const { isValid, errors } = result;
             if (!isValid) {
                 let text = [];
                 const blocks = errors.blocks;
@@ -311,15 +306,5 @@ export class ModulesListComponent implements OnInit, OnDestroy {
         }, (e) => {
             this.loading = false;
         });
-    }
-
-    movePageIndex(inc: number) {
-        if (inc > 0 && this.pageIndex < (this.modulesCount / this.pageSize) - 1) {
-            this.pageIndex += 1;
-            this.loadAllModules();
-        } else if (inc < 0 && this.pageIndex > 0) {
-            this.pageIndex -= 1;
-            this.loadAllModules();
-        }
     }
 }

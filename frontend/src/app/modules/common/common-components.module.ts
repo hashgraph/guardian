@@ -32,6 +32,7 @@ import { ProgressBarModule } from 'primeng/progressbar';
 import { ButtonModule } from 'primeng/button';
 import { PaginatorComponent } from './paginator/paginator.component';
 import { DataInputDialogComponent } from './data-input-dialog/data-input-dialog.component';
+import { AngularSvgIconModule } from 'angular-svg-icon';
 
 @NgModule({
     declarations: [
@@ -69,7 +70,8 @@ import { DataInputDialogComponent } from './data-input-dialog/data-input-dialog.
         InputTextModule,
         DropdownModule,
         ProgressBarModule,
-        ButtonModule
+        ButtonModule,
+        AngularSvgIconModule.forRoot()
     ],
     exports: [
         DatetimePicker,

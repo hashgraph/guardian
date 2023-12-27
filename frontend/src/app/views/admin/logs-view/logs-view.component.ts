@@ -47,10 +47,10 @@ export class LogsViewComponent implements OnInit {
     dateRangeForm: FormControl = new FormControl('');
 
     types: any = [
-        {id: '', label: 'All'},
-        {id: 'ERROR', label: 'Error'},
-        {id: 'WARN', label: 'Warning'},
-        {id: 'INFO', label: 'Info'},
+        { id: '', label: 'All' },
+        { id: 'ERROR', label: 'Error' },
+        { id: 'WARN', label: 'Warning' },
+        { id: 'INFO', label: 'Info' },
     ];
 
     @ViewChild(MatAutocompleteTrigger) autocomplete: MatAutocompleteTrigger;
@@ -76,8 +76,8 @@ export class LogsViewComponent implements OnInit {
         this.logService.getAttributes(
             this.autoCompleteControl.value,
             this.searchForm?.get('attributes')?.value).subscribe(attrs => {
-            this.attributes = attrs;
-        });
+                this.attributes = attrs;
+            });
 
         this.route.queryParams.subscribe((params) => {
             if (params.attr) {
@@ -248,17 +248,18 @@ export class LogsViewComponent implements OnInit {
         })
     }
 
-    movePageIndex(inc: number) {
-        if (inc > 0 && this.pageIndex < this.totalCount / this.pageSize - 1) {
-            this.pageIndex += 1;
-            this.onApply();
-        } else if (inc < 0 && this.pageIndex > 0) {
-            this.pageIndex -= 1;
-            this.onApply();
-        }
-    }
-
     changeTypeEvent(event: any) {
         this.searchForm.controls.type.setValue(event.id);
+    }
+
+    public onPage(event: any): void {
+        if (this.pageSize != event.pageSize) {
+            this.pageIndex = 0;
+            this.pageSize = event.pageSize;
+        } else {
+            this.pageIndex = event.pageIndex;
+            this.pageSize = event.pageSize;
+        }
+        this.onApply();
     }
 }

@@ -305,22 +305,4 @@ export class ToolsListComponent implements OnInit, OnDestroy {
             this.loading = false;
         });
     }
-
-    newOnPage() {
-        this.pageIndex = 0;
-        this.loadTools();
-    }
-
-    movePageIndex(inc: number) {
-        if (
-            inc > 0 &&
-            this.pageIndex < this.toolsCount / this.pageSize - 1
-        ) {
-            this.pageIndex += 1;
-            this.loadTools();
-        } else if (inc < 0 && this.pageIndex > 0) {
-            this.pageIndex -= 1;
-            this.loadTools();
-        }
-    }
 }

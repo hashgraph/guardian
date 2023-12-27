@@ -109,7 +109,9 @@ export class TokenConfigComponent implements OnInit {
     }
 
     onFilter() {
-        this.currentPolicy = this.policyDropdownItem.id === -1 ? '' : this.policyDropdownItem.id;
+        this.currentPolicy =
+            (this.policyDropdownItem && this.policyDropdownItem.id !== -1) ?
+                this.policyDropdownItem.id : '';
         if (this.currentPolicy) {
             this.router.navigate(['/tokens'], {
                 queryParams: {
@@ -192,13 +194,13 @@ export class TokenConfigComponent implements OnInit {
             this.isConfirmed = !!(profile && profile.confirmed);
             this.owner = profile?.did;
             this.policies = policies;
-            this.policies.unshift({id: -1, name: 'All policies'});
+            this.policies.unshift({ id: -1, name: 'All policies' });
             if (this.isConfirmed) {
                 this.queryChange();
             } else {
                 this.loading = false;
             }
-        }, ({message}) => {
+        }, ({ message }) => {
             this.loading = false;
             console.error(message);
         });
@@ -227,7 +229,7 @@ export class TokenConfigComponent implements OnInit {
                 case OperationMode.Kyc:
                     this.taskService.get(taskId).subscribe((task) => {
                         this.loading = false;
-                        const {result} = task;
+                        const { result } = task;
                         this.refreshUser(this.user, result);
                         this.user = null;
                     });
@@ -235,7 +237,7 @@ export class TokenConfigComponent implements OnInit {
                 case OperationMode.Freeze:
                     this.taskService.get(taskId).subscribe((task) => {
                         this.loading = false;
-                        const {result} = task;
+                        const { result } = task;
                         this.refreshUser(this.user, result);
                         this.user = null;
                     });
@@ -306,7 +308,7 @@ export class TokenConfigComponent implements OnInit {
     freeze(user: any, freeze: boolean) {
         this.loading = true;
         this.tokenService.pushFreeze(this.tokenId, user.username, freeze).subscribe((result) => {
-            const {taskId, expectation} = result;
+            const { taskId, expectation } = result;
             this.taskId = taskId;
             this.expectedTaskMessages = expectation;
             this.operationMode = OperationMode.Freeze;
@@ -320,7 +322,7 @@ export class TokenConfigComponent implements OnInit {
     kyc(user: any, grantKYC: boolean) {
         this.loading = true;
         this.tokenService.pushKyc(this.tokenId, user.username, grantKYC).subscribe((result) => {
-            const {taskId, expectation} = result;
+            const { taskId, expectation } = result;
             this.taskId = taskId;
             this.expectedTaskMessages = expectation;
             this.operationMode = OperationMode.Kyc;
@@ -356,7 +358,7 @@ export class TokenConfigComponent implements OnInit {
 
     private createToken(data: any) {
         this.tokenService.pushCreate(data).subscribe((result) => {
-            const {taskId, expectation} = result;
+            const { taskId, expectation } = result;
             this.router.navigate(['task', taskId], {
                 queryParams: {
                     last: btoa(location.href)
@@ -370,7 +372,7 @@ export class TokenConfigComponent implements OnInit {
 
     private updateToken(data: any) {
         this.tokenService.pushUpdate(data).subscribe((result) => {
-            const {taskId, expectation} = result;
+            const { taskId, expectation } = result;
             this.router.navigate(['task', taskId], {
                 queryParams: {
                     last: btoa(location.href)
@@ -410,7 +412,7 @@ export class TokenConfigComponent implements OnInit {
             if (this.currentTokenId) {
                 this.loading = true;
                 this.tokenService.pushDelete(this.currentTokenId).subscribe((result) => {
-                    const {taskId, expectation} = result;
+                    const { taskId, expectation } = result;
                     this.router.navigate(['task', taskId], {
                         queryParams: {
                             last: btoa(location.href)
@@ -424,21 +426,14 @@ export class TokenConfigComponent implements OnInit {
         }
     }
 
-    newOnPage() {
-        this.pageIndex = 0;
-        this.loadTokens();
-    }
-
-    movePageIndex(inc: number) {
-        if (
-            inc > 0 &&
-            this.pageIndex < this.tokensCount / this.pageSize - 1
-        ) {
-            this.pageIndex += 1;
-            this.loadTokens();
-        } else if (inc < 0 && this.pageIndex > 0) {
-            this.pageIndex -= 1;
-            this.loadTokens();
+    public onPage(event: any): void {
+        if (this.pageSize != event.pageSize) {
+            this.pageIndex = 0;
+            this.pageSize = event.pageSize;
+        } else {
+            this.pageIndex = event.pageIndex;
+            this.pageSize = event.pageSize;
         }
+        this.loadTokens();
     }
 }

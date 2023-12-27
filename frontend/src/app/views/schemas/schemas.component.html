@@ -3,8 +3,6 @@
 
     <div class="actions">
 
-
-
         <div class="tabs-nav">
             <p-tabView>
                 <p-tabPanel *ngFor="let tab of schemasTypes" [selected]="tab.value === type">
@@ -72,7 +70,6 @@
 
     <div *ngIf="isAny" class="table-container">
         <p-table [value]="page">
-
             <ng-template pTemplate="header">
                 <tr>
                     <ng-container *ngIf="type === 'policy'">
@@ -85,35 +82,31 @@
                         <th class="header-cell-text" style="min-width: 140px;">
                             Topic
                         </th>
-                        <th class="header-cell-text" style="min-width: 140px;">
+                        <th class="header-cell-text" style="min-width: 100px;">
                             Version
                         </th>
-                        <th class="header-cell-text" style="min-width: 140px;">
+                        <th class="header-cell-text" style="min-width: 100px;">
                             Entity
                         </th>
-                        <th class="header-cell-text" style="min-width: 140px;">
+                        <th class="header-cell-text" style="min-width: 185px;">
                             Tags
                         </th>
-                        <th class="header-cell-text" style="min-width: 140px;">
+                        <th class="header-cell-text" style="min-width: 100px;">
                             Status
                         </th>
                         <th class="header-cell-text" style="min-width: 140px;">
                             Operations
-                        </th>
-                        <th class="header-cell-text" style="min-width: 140px;">
                         </th>
                     </ng-container>
                     <ng-container *ngIf="type === 'module'">
                         <th class="header-cell-text" style="min-width: 140px; max-width: 150px;">
                             Name
                         </th>
-                        <th class="header-cell-text" style="min-width: 140px;">
+                        <th class="header-cell-text" style="min-width: 100px;">
                             Status
                         </th>
                         <th class="header-cell-text" style="min-width: 140px;">
                             Operations
-                        </th>
-                        <th class="header-cell-text" style="min-width: 140px;">
                         </th>
                     </ng-container>
                     <ng-container *ngIf="type === 'tool'">
@@ -123,13 +116,11 @@
                         <th class="header-cell-text" style="min-width: 140px; max-width: 150px;">
                             Name
                         </th>
-                        <th class="header-cell-text" style="min-width: 140px;">
+                        <th class="header-cell-text" style="min-width: 100px;">
                             Status
                         </th>
                         <th class="header-cell-text" style="min-width: 140px;">
                             Operations
-                        </th>
-                        <th class="header-cell-text" style="min-width: 140px;">
                         </th>
                     </ng-container>
                     <ng-container *ngIf="type === 'system'">
@@ -139,16 +130,14 @@
                         <th class="header-cell-text" style="min-width: 140px;">
                             Owner
                         </th>
-                        <th class="header-cell-text" style="min-width: 140px;">
+                        <th class="header-cell-text" style="min-width: 100px;">
                             Entity
                         </th>
-                        <th class="header-cell-text" style="min-width: 140px;">
+                        <th class="header-cell-text" style="min-width: 100px;">
                             Status
                         </th>
                         <th class="header-cell-text" style="min-width: 140px;">
                             Operations
-                        </th>
-                        <th class="header-cell-text" style="min-width: 140px;">
                         </th>
                     </ng-container>
                     <ng-container *ngIf="type === 'tag'">
@@ -158,21 +147,19 @@
                         <th class="header-cell-text" style="min-width: 140px;">
                             Owner
                         </th>
-                        <th class="header-cell-text" style="min-width: 140px;">
+                        <th class="header-cell-text" style="min-width: 100px;">
                             Status
                         </th>
                         <th class="header-cell-text" style="min-width: 140px;">
                             Operations
                         </th>
-                        <th class="header-cell-text" style="min-width: 140px;">
-                        </th>
                     </ng-container>
+                    <th class="header-cell-text" style="min-width: 100px; width: 100px; max-width: 100px;">
+                    </th>
                 </tr>
             </ng-template>
-
             <ng-template let-schema pTemplate="body">
                 <tr class="schemas-grid-row">
-
 
                     <ng-container *ngIf="type === 'policy'">
                         <td class="first-schema-grid-cell text-truncate" style="min-width: 140px; max-width: 150px;">
@@ -191,13 +178,13 @@
                                 <hedera-explorer [params]="schema.topicId" type="topics">{{ schema.topicId }}</hedera-explorer>
                             </ng-template>
                         </td>
-                        <td style="min-width: 140px;">
+                        <td style="min-width: 100px;">
                             {{ schema.version || schema.sourceVersion }}
                         </td>
-                        <td style="min-width: 140px;">
+                        <td style="min-width: 100px;">
                             {{ schema.entity }}
                         </td>
-                        <td style="min-width: 140px;">
+                        <td style="min-width: 185px;">
                             <tags-explorer 
                                 [data]="schema._tags" 
                                 [entity]="tagEntity" 
@@ -206,7 +193,7 @@
                                 [service]="tagsService" 
                                 [target]="schema.id"></tags-explorer>
                         </td>
-                        <td style="min-width: 140px;">
+                        <td style="min-width: 100px;">
                             <span [ngSwitch]="schema.status">
                                 <div *ngSwitchCase="'DRAFT'">
                                     <span class="schema-status status-DRAFT">Draft</span>
@@ -238,58 +225,6 @@
                                         [attr.disabled]="schema.topicId === 'draft'" 
                                         class="btn-approve">
                                         Publish
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="last-schema-grid-cell" style="min-width: 140px;">
-                            <div class="operations-row-container">
-                                <div style="margin-left: auto;">
-                                    <div 
-                                        *ngIf="ifCanEdit(schema)"
-                                        (click)="onEditSchema(schema)" 
-                                        class="btn-settings" 
-                                        matTooltip="Edit"
-                                        matTooltipClass="guardian-tooltip" 
-                                        matTooltipPosition="above">
-                                        <svg fill="none" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
-                                            <path class="color-primary" clip-rule="evenodd"
-                                                d="M16.5084 6.31676C16.8031 6.03714 17.1971 5.8857 17.6038 5.89575C18.0105 5.9058 18.3966 6.07652 18.677 6.37035C18.9574 6.66418 19.1093 7.05705 19.0992 7.46253C19.0892 7.86802 18.9179 8.25291 18.6232 8.53252L8.08714 18.5537L5.37201 18.9094L6.48508 15.8059L16.5075 6.31771L16.5084 6.31676ZM20.0522 5.0628C19.4242 4.40569 18.5605 4.02384 17.6505 4.00108C16.7405 3.97832 15.8586 4.3165 15.1984 4.94139L5.00859 14.586C4.90058 14.6882 4.81814 14.8143 4.7679 14.9541L3.05549 19.7318C3.00064 19.8848 2.98614 20.0494 3.01339 20.2096C3.04063 20.3698 3.10871 20.5204 3.21109 20.6468C3.31346 20.7733 3.44671 20.8714 3.59804 20.9317C3.74938 20.9921 3.91373 21.0126 4.07533 20.9915L8.64177 20.3939C8.84179 20.3679 9.02835 20.2792 9.17452 20.1406L19.9351 9.90599C20.5946 9.27903 20.9773 8.4166 20.999 7.50836C21.0208 6.60012 20.6808 5.72045 20.0522 5.0628ZM13.466 19.1029C13.2137 19.1029 12.9717 19.2029 12.7933 19.3808C12.6149 19.5586 12.5147 19.7999 12.5147 20.0515C12.5147 20.303 12.6149 20.5443 12.7933 20.7222C12.9717 20.9001 13.2137 21 13.466 21H19.1741C19.4264 21 19.6684 20.9001 19.8468 20.7222C20.0252 20.5443 20.1254 20.303 20.1254 20.0515C20.1254 19.7999 20.0252 19.5586 19.8468 19.3808C19.6684 19.2029 19.4264 19.1029 19.1741 19.1029H13.466Z"
-                                                fill-rule="evenodd" />
-                                        </svg>
-                                    </div>
-                                    <div 
-                                        *ngIf="!ifCanEdit(schema)"
-                                        class="btn-settings" 
-                                        matTooltip="Edit"
-                                        matTooltipClass="guardian-tooltip" 
-                                        matTooltipPosition="above">
-                                        <svg fill="none" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
-                                            <path class="color-grey" clip-rule="evenodd"
-                                                d="M16.5084 6.31676C16.8031 6.03714 17.1971 5.8857 17.6038 5.89575C18.0105 5.9058 18.3966 6.07652 18.677 6.37035C18.9574 6.66418 19.1093 7.05705 19.0992 7.46253C19.0892 7.86802 18.9179 8.25291 18.6232 8.53252L8.08714 18.5537L5.37201 18.9094L6.48508 15.8059L16.5075 6.31771L16.5084 6.31676ZM20.0522 5.0628C19.4242 4.40569 18.5605 4.02384 17.6505 4.00108C16.7405 3.97832 15.8586 4.3165 15.1984 4.94139L5.00859 14.586C4.90058 14.6882 4.81814 14.8143 4.7679 14.9541L3.05549 19.7318C3.00064 19.8848 2.98614 20.0494 3.01339 20.2096C3.04063 20.3698 3.10871 20.5204 3.21109 20.6468C3.31346 20.7733 3.44671 20.8714 3.59804 20.9317C3.74938 20.9921 3.91373 21.0126 4.07533 20.9915L8.64177 20.3939C8.84179 20.3679 9.02835 20.2792 9.17452 20.1406L19.9351 9.90599C20.5946 9.27903 20.9773 8.4166 20.999 7.50836C21.0208 6.60012 20.6808 5.72045 20.0522 5.0628ZM13.466 19.1029C13.2137 19.1029 12.9717 19.2029 12.7933 19.3808C12.6149 19.5586 12.5147 19.7999 12.5147 20.0515C12.5147 20.303 12.6149 20.5443 12.7933 20.7222C12.9717 20.9001 13.2137 21 13.466 21H19.1741C19.4264 21 19.6684 20.9001 19.8468 20.7222C20.0252 20.5443 20.1254 20.303 20.1254 20.0515C20.1254 19.7999 20.0252 19.5586 19.8468 19.3808C19.6684 19.2029 19.4264 19.1029 19.1741 19.1029H13.466Z"
-                                                fill-rule="evenodd" />
-                                        </svg>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div 
-                                        class="btn-settings" 
-                                        [matMenuTriggerFor]="schemaMenu"
-                                        [matMenuTriggerData]="{ schema }"
-                                        matTooltip="Menu"
-                                        matTooltipClass="guardian-tooltip" 
-                                        matTooltipPosition="above">
-                                        <svg fill="none" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
-                                            <path class="color-primary" clip-rule="evenodd"
-                                                d="m 20,12 c 0,0.6227 -0.5048,1.1275 -1.1275,1.1275 H 5.12752 C 4.50481,13.1275 4,12.6227 4,12 4,11.3773 4.50481,10.8725 5.12752,10.8725 H 18.8725 C 19.4952,10.8725 20,11.3773 20,12 Z"
-                                                fill-rule="evenodd" />
-                                            <path class="color-primary" clip-rule="evenodd"
-                                                d="m 20,18.5005 c 0,0.6227 -0.5048,1.1275 -1.1275,1.1275 H 5.12752 C 4.50481,19.628 4,19.1232 4,18.5005 4,17.8778 4.50481,17.373 5.12752,17.373 H 18.8725 c 0.6227,0 1.1275,0.5048 1.1275,1.1275 z"
-                                                fill-rule="evenodd" />
-                                            <path class="color-primary" clip-rule="evenodd"
-                                                d="M 20,5.5005 C 20,6.1232 19.4952,6.628 18.8725,6.628 H 5.12752 C 4.50481,6.628 4,6.1232 4,5.5005 4,4.8778 4.50481,4.373 5.12752,4.373 H 18.8725 C 19.4952,4.373 20,4.8778 20,5.5005 Z"
-                                                fill-rule="evenodd" />
-                                        </svg>
                                     </div>
                                 </div>
                             </div>
@@ -299,7 +234,7 @@
                         <td [pTooltip]="schema.name" class="text-truncate" style="min-width: 140px; max-width: 150px;">
                             {{ schema.name }}
                         </td>
-                        <td style="min-width: 140px;">
+                        <td style="min-width: 100px;">
                             <span [ngSwitch]="schema.status">
                                 <div *ngSwitchCase="'DRAFT'">
                                     <span class="schema-status status-DRAFT">Draft</span>
@@ -335,8 +270,6 @@
                                 </div>
                             </div>
                         </td>
-                        <th class="header-cell-text" style="min-width: 140px;">
-                        </th>
                     </ng-container>
                     <ng-container *ngIf="type === 'tool'">
                         <td class="first-schema-grid-cell text-truncate" style="min-width: 140px; max-width: 150px;">
@@ -348,7 +281,7 @@
                         <td [pTooltip]="schema.name" class="text-truncate" style="min-width: 140px; max-width: 150px;">
                             {{ schema.name }}
                         </td>
-                        <td style="min-width: 140px;">
+                        <td style="min-width: 100px;">
                             <span [ngSwitch]="schema.status">
                                 <div *ngSwitchCase="'DRAFT'">
                                     <span class="schema-status status-DRAFT">Draft</span>
@@ -384,8 +317,6 @@
                                 </div>
                             </div>
                         </td>
-                        <th class="header-cell-text" style="min-width: 140px;">
-                        </th>
                     </ng-container>
                     <ng-container *ngIf="type === 'system'">
                         <td [pTooltip]="schema.name" class="text-truncate" style="min-width: 140px; max-width: 150px;">
@@ -394,10 +325,10 @@
                         <td style="min-width: 140px;">
                             {{ schema.owner }}
                         </td>
-                        <td style="min-width: 140px;">
+                        <td style="min-width: 100px;">
                             {{ schema.entity }}
                         </td>
-                        <td style="min-width: 140px;">
+                        <td style="min-width: 100px;">
                             <span>
                                 <div *ngIf="!schema.active">
                                     <span class="schema-status status-DRAFT">Inactive</span>
@@ -416,8 +347,6 @@
                                 </div>
                             </div>
                         </td>
-                        <th class="header-cell-text" style="min-width: 140px;">
-                        </th>
                     </ng-container>
                     <ng-container *ngIf="type === 'tag'">
                         <td [pTooltip]="schema.name" class="text-truncate" style="min-width: 140px; max-width: 150px;">
@@ -426,7 +355,7 @@
                         <td style="min-width: 140px;">
                             {{ schema.owner }}
                         </td>
-                        <td style="min-width: 140px;">
+                        <td style="min-width: 100px;">
                             <span [ngSwitch]="schema.status">
                                 <div *ngSwitchCase="'DRAFT'">
                                     <span class="schema-status status-DRAFT">Draft</span>
@@ -462,10 +391,60 @@
                                 </div>
                             </div>
                         </td>
-                        <th class="header-cell-text" style="min-width: 140px;">
-                        </th>
                     </ng-container>
 
+                    <td class="last-schema-grid-cell" style="min-width: 100px; width: 100px; max-width: 100px;">
+                        <div class="operations-row-container">
+                            <div style="margin-right: 12px;">
+                                <div 
+                                    *ngIf="ifCanEdit(schema)"
+                                    (click)="onEditSchema(schema)" 
+                                    class="btn-settings" 
+                                    matTooltip="Edit"
+                                    matTooltipClass="guardian-tooltip" 
+                                    matTooltipPosition="above">
+                                    <svg fill="none" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                        <path class="color-primary" clip-rule="evenodd"
+                                            d="M16.5084 6.31676C16.8031 6.03714 17.1971 5.8857 17.6038 5.89575C18.0105 5.9058 18.3966 6.07652 18.677 6.37035C18.9574 6.66418 19.1093 7.05705 19.0992 7.46253C19.0892 7.86802 18.9179 8.25291 18.6232 8.53252L8.08714 18.5537L5.37201 18.9094L6.48508 15.8059L16.5075 6.31771L16.5084 6.31676ZM20.0522 5.0628C19.4242 4.40569 18.5605 4.02384 17.6505 4.00108C16.7405 3.97832 15.8586 4.3165 15.1984 4.94139L5.00859 14.586C4.90058 14.6882 4.81814 14.8143 4.7679 14.9541L3.05549 19.7318C3.00064 19.8848 2.98614 20.0494 3.01339 20.2096C3.04063 20.3698 3.10871 20.5204 3.21109 20.6468C3.31346 20.7733 3.44671 20.8714 3.59804 20.9317C3.74938 20.9921 3.91373 21.0126 4.07533 20.9915L8.64177 20.3939C8.84179 20.3679 9.02835 20.2792 9.17452 20.1406L19.9351 9.90599C20.5946 9.27903 20.9773 8.4166 20.999 7.50836C21.0208 6.60012 20.6808 5.72045 20.0522 5.0628ZM13.466 19.1029C13.2137 19.1029 12.9717 19.2029 12.7933 19.3808C12.6149 19.5586 12.5147 19.7999 12.5147 20.0515C12.5147 20.303 12.6149 20.5443 12.7933 20.7222C12.9717 20.9001 13.2137 21 13.466 21H19.1741C19.4264 21 19.6684 20.9001 19.8468 20.7222C20.0252 20.5443 20.1254 20.303 20.1254 20.0515C20.1254 19.7999 20.0252 19.5586 19.8468 19.3808C19.6684 19.2029 19.4264 19.1029 19.1741 19.1029H13.466Z"
+                                            fill-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div 
+                                    *ngIf="!ifCanEdit(schema)"
+                                    class="btn-settings" 
+                                    matTooltip="Edit"
+                                    matTooltipClass="guardian-tooltip" 
+                                    matTooltipPosition="above">
+                                    <svg fill="none" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                        <path class="color-grey" clip-rule="evenodd"
+                                            d="M16.5084 6.31676C16.8031 6.03714 17.1971 5.8857 17.6038 5.89575C18.0105 5.9058 18.3966 6.07652 18.677 6.37035C18.9574 6.66418 19.1093 7.05705 19.0992 7.46253C19.0892 7.86802 18.9179 8.25291 18.6232 8.53252L8.08714 18.5537L5.37201 18.9094L6.48508 15.8059L16.5075 6.31771L16.5084 6.31676ZM20.0522 5.0628C19.4242 4.40569 18.5605 4.02384 17.6505 4.00108C16.7405 3.97832 15.8586 4.3165 15.1984 4.94139L5.00859 14.586C4.90058 14.6882 4.81814 14.8143 4.7679 14.9541L3.05549 19.7318C3.00064 19.8848 2.98614 20.0494 3.01339 20.2096C3.04063 20.3698 3.10871 20.5204 3.21109 20.6468C3.31346 20.7733 3.44671 20.8714 3.59804 20.9317C3.74938 20.9921 3.91373 21.0126 4.07533 20.9915L8.64177 20.3939C8.84179 20.3679 9.02835 20.2792 9.17452 20.1406L19.9351 9.90599C20.5946 9.27903 20.9773 8.4166 20.999 7.50836C21.0208 6.60012 20.6808 5.72045 20.0522 5.0628ZM13.466 19.1029C13.2137 19.1029 12.9717 19.2029 12.7933 19.3808C12.6149 19.5586 12.5147 19.7999 12.5147 20.0515C12.5147 20.303 12.6149 20.5443 12.7933 20.7222C12.9717 20.9001 13.2137 21 13.466 21H19.1741C19.4264 21 19.6684 20.9001 19.8468 20.7222C20.0252 20.5443 20.1254 20.303 20.1254 20.0515C20.1254 19.7999 20.0252 19.5586 19.8468 19.3808C19.6684 19.2029 19.4264 19.1029 19.1741 19.1029H13.466Z"
+                                            fill-rule="evenodd" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div>
+                                <div 
+                                    class="btn-settings" 
+                                    [matMenuTriggerFor]="schemaMenu"
+                                    [matMenuTriggerData]="{ schema }"
+                                    matTooltip="Menu"
+                                    matTooltipClass="guardian-tooltip" 
+                                    matTooltipPosition="above">
+                                    <svg fill="none" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                        <path class="color-primary" clip-rule="evenodd"
+                                            d="m 20,12 c 0,0.6227 -0.5048,1.1275 -1.1275,1.1275 H 5.12752 C 4.50481,13.1275 4,12.6227 4,12 4,11.3773 4.50481,10.8725 5.12752,10.8725 H 18.8725 C 19.4952,10.8725 20,11.3773 20,12 Z"
+                                            fill-rule="evenodd" />
+                                        <path class="color-primary" clip-rule="evenodd"
+                                            d="m 20,18.5005 c 0,0.6227 -0.5048,1.1275 -1.1275,1.1275 H 5.12752 C 4.50481,19.628 4,19.1232 4,18.5005 4,17.8778 4.50481,17.373 5.12752,17.373 H 18.8725 c 0.6227,0 1.1275,0.5048 1.1275,1.1275 z"
+                                            fill-rule="evenodd" />
+                                        <path class="color-primary" clip-rule="evenodd"
+                                            d="M 20,5.5005 C 20,6.1232 19.4952,6.628 18.8725,6.628 H 5.12752 C 4.50481,6.628 4,6.1232 4,5.5005 4,4.8778 4.50481,4.373 5.12752,4.373 H 18.8725 C 19.4952,4.373 20,4.8778 20,5.5005 Z"
+                                            fill-rule="evenodd" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
                 </tr>
             </ng-template>
             <ng-template let-columns pTemplate="emptymessage"></ng-template>
