@@ -123,6 +123,7 @@ import { ProgressTrackerComponent } from './policy-viewer/progress-tracker/progr
 import { PolicyProgressService } from './services/policy-progress.service';
 import { InputSwitchModule } from 'primeng/inputswitch';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
+import { AngularSvgIconModule } from 'angular-svg-icon';
 
 @NgModule({
     declarations: [
@@ -243,6 +244,7 @@ import { OverlayPanelModule } from 'primeng/overlaypanel';
         AppRoutingModule,
         DialogModule,
         OverlayPanelModule,
+        AngularSvgIconModule.forRoot()
     ],
     exports: [],
     providers: [

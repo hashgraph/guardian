@@ -329,7 +329,8 @@ td:last-child {
 }
 
 .disabled-color {
-    fill: var(--grey-grey-6);
+    fill: var(--color-grey-5, #848FA9) !important;
+    color: var(--color-grey-5, #848FA9) !important;
 }
 
 .sort-by-label {
@@ -440,4 +441,8 @@ td:last-child {
     color: var(--grey-grey-6) !important;
     cursor: no-drop;
     filter: brightness(1);
+}
+
+.color-search {
+    fill: #B0B5BA;
 }

@@ -12,6 +12,7 @@ import { AnnotationBlockComponent } from './component/annotation-block/annotatio
 import { ProjectsOverviewComponent } from './component/projects-overview/projects-overview.component';
 import { ProjectsComparisonTableComponent } from './component/projects-comparison-table/projects-comparison-table.component';
 import { CommonModule } from '@angular/common';
+import { AngularSvgIconModule } from 'angular-svg-icon';
 
 @NgModule({
     declarations: [
@@ -32,6 +33,7 @@ import { CommonModule } from '@angular/common';
         MultiSelectModule,
         ReactiveFormsModule,
         HttpClientModule,
+        AngularSvgIconModule.forRoot()
     ],
     exports: [
         AnnotationBlockComponent,

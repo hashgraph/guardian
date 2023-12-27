@@ -10,6 +10,7 @@ import { CommonComponentsModule } from '../common/common-components.module';
 import { DropdownModule } from 'primeng/dropdown';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
+import { AngularSvgIconModule } from 'angular-svg-icon';
 
 @NgModule({
     declarations: [
@@ -25,7 +26,8 @@ import { DialogModule } from 'primeng/dialog';
         AppRoutingModule,
         DropdownModule,
         ButtonModule,
-        DialogModule
+        DialogModule,
+        AngularSvgIconModule.forRoot()
     ],
     exports: [
         ArtifactConfigComponent,

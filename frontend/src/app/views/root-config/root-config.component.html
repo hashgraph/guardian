@@ -30,46 +30,22 @@
         <div class="item">
             <span>DID Document</span>
             <div
-                    (click)="openDIDDocument(profile!.didDocument, 'DID')"
-                    class="view-document-button"
+                (click)="openDIDDocument(profile!.didDocument, 'DID')"
+                class="view-document-button"
             >
-                <svg
-                        fill="none"
-                        height="16"
-                        viewBox="0 0 16 16"
-                        width="16"
-                        xmlns="http://www.w3.org/2000/svg"
-                >
-                    <path
-                            clip-rule="evenodd"
-                            d="M4.45616 1.3335C3.46786 1.3335 2.66669 2.14753 2.66669 3.15168V12.8486C2.66669 13.8528 3.46786 14.6668 4.45616 14.6668H12.2105C13.1989 14.6668 14 13.8528 14 12.8486V6.78804C14 6.6273 13.9372 6.47315 13.8253 6.35949L9.05338 1.51102C8.99629 1.45302 8.92883 1.40798 8.85546 1.37779C8.78502 1.34881 8.70908 1.3335 8.6316 1.3335H4.45616ZM8.03511 2.54562H4.45616C4.12672 2.54562 3.85967 2.81696 3.85967 3.15168V12.8486C3.85967 13.1834 4.12673 13.4547 4.45616 13.4547H12.2105C12.54 13.4547 12.807 13.1834 12.807 12.8486V7.3941H8.6316C8.30216 7.3941 8.03511 7.12277 8.03511 6.78804V2.54562ZM11.9635 6.182L9.22809 3.40273V6.182H11.9635Z"
-                            fill="#0681EE"
-                            fill-rule="evenodd"
-                    />
-                </svg>
+                <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg" svgClass="primary-color">
+                </svg-icon>
                 <span>View document</span>
             </div>
         </div>
         <div class="item">
             <span>VC Document</span>
             <div
-                    (click)="openVCDocument(profile!.vcDocument, 'VC')"
-                    class="view-document-button"
+                (click)="openVCDocument(profile!.vcDocument, 'VC')"
+                class="view-document-button"
             >
-                <svg
-                        fill="none"
-                        height="16"
-                        viewBox="0 0 16 16"
-                        width="16"
-                        xmlns="http://www.w3.org/2000/svg"
-                >
-                    <path
-                            clip-rule="evenodd"
-                            d="M4.45616 1.3335C3.46786 1.3335 2.66669 2.14753 2.66669 3.15168V12.8486C2.66669 13.8528 3.46786 14.6668 4.45616 14.6668H12.2105C13.1989 14.6668 14 13.8528 14 12.8486V6.78804C14 6.6273 13.9372 6.47315 13.8253 6.35949L9.05338 1.51102C8.99629 1.45302 8.92883 1.40798 8.85546 1.37779C8.78502 1.34881 8.70908 1.3335 8.6316 1.3335H4.45616ZM8.03511 2.54562H4.45616C4.12672 2.54562 3.85967 2.81696 3.85967 3.15168V12.8486C3.85967 13.1834 4.12673 13.4547 4.45616 13.4547H12.2105C12.54 13.4547 12.807 13.1834 12.807 12.8486V7.3941H8.6316C8.30216 7.3941 8.03511 7.12277 8.03511 6.78804V2.54562ZM11.9635 6.182L9.22809 3.40273V6.182H11.9635Z"
-                            fill="#0681EE"
-                            fill-rule="evenodd"
-                    />
-                </svg>
+                <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg" svgClass="primary-color">
+                </svg-icon>
                 <span>View document</span>
             </div>
         </div>
@@ -81,10 +57,9 @@
             <span>Hedera Account ID</span>
             <div>
                 <hedera-explorer
-                        [params]="profile!.hederaAccountId || ''"
-                        type="accounts"
-                >{{ profile!.hederaAccountId }}
-                </hedera-explorer>
+                    [params]="profile!.hederaAccountId || ''"
+                    type="accounts"
+                >{{ profile!.hederaAccountId }}</hedera-explorer>
             </div>
         </div>
         <div class="item">
@@ -112,65 +87,61 @@
 
 <ng-template #registerDID>
     <form
-            (ngSubmit)="onHederaSubmit()"
-            *ngIf="!isConfirmed && isNewAccount"
-            [formGroup]="hederaForm"
-            class="finish-setup-form"
+        (ngSubmit)="onHederaSubmit()"
+        *ngIf="!isConfirmed && isNewAccount"
+        [formGroup]="hederaForm"
+        class="finish-setup-form"
     >
         <div class="finish-setup-title">Finish Setup</div>
         <div class="finish-setup-form-container">
             <div class="list">
                 <div *ngIf="!generated" class="list-item">
                     <div class="input-field-container">
-                        <label class="form-label" htmlFor="operatorId"
-                        >* OPERATOR ID (Hedera Account):</label
-                        >
+                        <label class="form-label" htmlFor="operatorId">
+                            * OPERATOR ID (Hedera Account):
+                        </label>
                         <input
-                                formControlName="hederaAccountId"
-                                id="operatorId"
-                                pInputText
-                                placeholder="0.0.1548173"
-                                type="text"
+                            formControlName="hederaAccountId"
+                            id="operatorId"
+                            pInputText
+                            placeholder="0.0.1548173"
+                            type="text"
                         />
                     </div>
                     <div class="input-field-container">
-                        <label class="form-label" htmlFor="operatorKey"
-                        >* OPERATOR KEY (Hedera Account Private Key):</label
-                        >
+                        <label class="form-label" htmlFor="operatorKey">
+                            * OPERATOR KEY (Hedera Account Private Key):
+                        </label>
                         <input
-                                formControlName="hederaAccountKey"
-                                id="operatorKey"
-                                pInputText
-                                placeholder="302e020100300506032b657004220420e..."
-                                type="text"
+                            formControlName="hederaAccountKey"
+                            id="operatorKey"
+                            pInputText
+                            placeholder="302e020100300506032b657004220420e..."
+                            type="text"
                         />
                     </div>
                     <div *ngIf="!showForm && !generated" class="topic-id-field">
                         <mat-form-field
-                                appearance="outline"
-                                class="example-full-width"
+                            appearance="outline"
+                            class="example-full-width"
                         >
                             <mat-label>Topic ID:</mat-label>
                             <mat-select [formControl]="selectedTokenId">
-                                <mat-select-trigger>{{
-                                        selectedTokenId.value
-                                    }}
+                                <mat-select-trigger>
+                                    {{selectedTokenId.value}}
                                 </mat-select-trigger>
                                 <mat-option
-                                        *ngFor="let topic of userTopics"
-                                        [value]="topic.topicId"
+                                    *ngFor="let topic of userTopics"
+                                    [value]="topic.topicId"
                                 >
                                     <div class="topic-item">
                                         <span>{{ topic.topicId }}</span>
-                                        <span
-                                        ><hedera-explorer
+                                        <span>
+                                            <hedera-explorer
                                                 [params]="topic.topicId"
                                                 type="topics"
-                                        >{{
-                                                topic.date
-                                            }}</hedera-explorer
-                                        ></span
-                                        >
+                                            >{{topic.date}}</hedera-explorer>
+                                        </span>
                                     </div>
                                 </mat-option>
                             </mat-select>
@@ -178,11 +149,11 @@
 
                         <div class="list-button">
                             <button
-                                    (click)="getAllUserTopics($event)"
-                                    [disabled]="!hederaForm.valid"
-                                    aria-label="Refresh topics"
-                                    color="primary"
-                                    mat-mini-fab
+                                (click)="getAllUserTopics($event)"
+                                [disabled]="!hederaForm.valid"
+                                aria-label="Refresh topics"
+                                color="primary"
+                                mat-mini-fab
                             >
                                 <mat-icon>refresh</mat-icon>
                             </button>
@@ -191,21 +162,21 @@
                 </div>
                 <div *ngIf="!generated">
                     <p-button
-                            (click)="randomKey()"
-                            class="generate-btn"
-                            label="Generate"
-                            styleClass="p-button-outlined"
+                        (click)="randomKey()"
+                        class="generate-btn"
+                        label="Generate"
+                        styleClass="p-button-outlined"
                     >
                     </p-button>
                 </div>
                 <div *ngIf="showForm && generated" class="list-item">
                     <app-schema-form
-                            (change)="onChangeForm()"
-                            [formGroup]="vcForm"
-                            [isFormForFinishSetup]="true"
-                            [private-fields]="hideVC"
-                            [schema]="schema"
-                            [showButtons]="false"
+                        (change)="onChangeForm()"
+                        [formGroup]="vcForm"
+                        [isFormForFinishSetup]="true"
+                        [private-fields]="hideVC"
+                        [schema]="schema"
+                        [showButtons]="false"
                     >
                     </app-schema-form>
                 </div>
@@ -213,29 +184,28 @@
             <div *ngIf="!generated" class="action-btns">
                 <ng-container *ngIf="showForm; else proceedButton">
                     <p-button
-                            (click)="onRestoreDataClick()"
-                            [disabled]="shouldDisableActionBtns"
-                            class="generate-btn"
-                            label="Restore data"
-                            styleClass="p-button-outlined"
+                        (click)="onRestoreDataClick()"
+                        [disabled]="shouldDisableActionBtns"
+                        class="generate-btn"
+                        label="Restore data"
+                        styleClass="p-button-outlined"
                     >
                         <i class="pi pi-replay"></i>
                     </p-button>
                     <p-button
-                            (click)="onNextClick()"
-                            [disabled]="shouldDisableActionBtns"
-                            class="next-btn"
-                            label="Next"
+                        (click)="onNextClick()"
+                        [disabled]="shouldDisableActionBtns"
+                        class="next-btn"
+                        label="Next"
                     >
                     </p-button>
                 </ng-container>
-
                 <ng-template #proceedButton>
                     <p-button
-                            (click)="onNextClick()"
-                            [disabled]="shouldDisableActionBtns"
-                            class="next-btn"
-                            label="Proceed"
+                        (click)="onNextClick()"
+                        [disabled]="shouldDisableActionBtns"
+                        class="next-btn"
+                        label="Proceed"
                     >
                     </p-button>
                 </ng-template>
@@ -244,10 +214,10 @@
             <div *ngIf="showForm && generated" id="connect-btn">
                 <div style="width: fit-content; margin-left: auto;">
                     <p-button
-                            [disabled]="!formValid"
-                            class="connect-btn"
-                            label="Connect"
-                            type="submit"
+                        [disabled]="!formValid"
+                        class="connect-btn"
+                        label="Connect"
+                        type="submit"
                     >
                     </p-button>
                 </div>
@@ -259,8 +229,8 @@
         <div class="progress">
             <span>Finishing Setup</span>
             <mat-progress-bar
-                    [value]="progress"
-                    mode="determinate"
+                [value]="progress"
+                mode="determinate"
             ></mat-progress-bar>
         </div>
     </div>
@@ -269,10 +239,10 @@
         <p>An error occurred while creating the document.</p>
         <p>Please try again later.</p>
         <button
-                (click)="retry()"
-                color="primary"
-                mat-raised-button
-                type="button"
+            (click)="retry()"
+            color="primary"
+            mat-raised-button
+            type="button"
         >
             Retry
         </button>

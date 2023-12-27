@@ -110,6 +110,7 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
 import { ContractEngineModule } from './modules/contract-engine/contract-engine.module';
 import { ProjectComparisonService } from './services/project-comparison.service';
 import { ProjectComparisonModule } from './modules/project-comparison/project-comparison.module';
+import { AngularSvgIconModule } from 'angular-svg-icon';
 
 @NgModule({
     declarations: [
@@ -188,6 +189,7 @@ import { ProjectComparisonModule } from './modules/project-comparison/project-co
         ContractEngineModule,
         ProjectComparisonModule,
         DndModule,
+        AngularSvgIconModule.forRoot()
     ],
     exports: [],
     providers: [
