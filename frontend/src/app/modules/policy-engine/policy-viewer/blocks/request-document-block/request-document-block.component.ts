@@ -20,6 +20,7 @@ export class RequestDocumentBlockComponent implements OnInit {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
+    @Input('dryRun') dryRun!: any;
     @ViewChild("dialogTemplate") dialogTemplate!: TemplateRef<any>;
 
     public isExist = false;

@@ -13,7 +13,7 @@
                     Restore Values<mat-icon>restore</mat-icon>
                 </button>
             </div>
-            <div *ngIf="dryRunMode" class="restore-data">
+            <div *ngIf="dryRun" class="restore-data">
                 <mat-icon>info</mat-icon>
                 <b>There is dry run mode. You can fill document with test data:</b>
                 <button mat-raised-button aria-label="Restore Values" type="button" (click)="onDryRun()">
@@ -53,7 +53,7 @@
                 Restore Values<mat-icon>restore</mat-icon>
             </button>
         </div>
-        <div *ngIf="dryRunMode" class="restore-data">
+        <div *ngIf="dryRun" class="restore-data">
             <mat-icon>info</mat-icon>
             <b>There is dry run mode. You can fill document with test data:</b>
             <button mat-raised-button aria-label="Restore Values" type="button" (click)="onDryRun()">
