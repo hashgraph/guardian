@@ -2,24 +2,24 @@
     <div class="content-trust-chain">
         <div class="trust-chain-label">Trust Chain</div>
         <form
-                (ngSubmit)="updateFilter()"
-                *ngIf="!mainDocuments"
-                [formGroup]="searchForm"
-                class="filters"
+            (ngSubmit)="updateFilter()"
+            *ngIf="!mainDocuments"
+            [formGroup]="searchForm"
+            class="filters"
         >
             <mat-form-field class="search-input" appearance="outline">
                 <mat-label class="hash-label">HASH/ID</mat-label>
                 <input
-                        formControlName="value"
-                        matInput
-                        placeholder="HASH/ID"
-                        type="text"
+                    formControlName="value"
+                    matInput
+                    placeholder="HASH/ID"
+                    type="text"
                 />
                 <button
-                        [disabled]="!searchForm.valid"
-                        mat-icon-button
-                        matSuffix
-                        type="submit"
+                    [disabled]="!searchForm.valid"
+                    mat-icon-button
+                    matSuffix
+                    type="submit"
                 >
                     <mat-icon>search</mat-icon>
                 </button>
@@ -32,8 +32,8 @@
 
         <div *ngIf="mainDocuments" class="display-chain">
             <div
-                    *ngFor="let item of mainDocuments"
-                    class="verified-presentation"
+                *ngFor="let item of mainDocuments"
+                class="verified-presentation"
             >
                 <div *ngIf="item.vpDocument" class="header card-block">
                     <div class="card-info">
@@ -71,9 +71,9 @@
                 </div>
 
                 <div
-                        *ngIf="item.mintDocument"
-                        [attr.vp-section-offset]="mainDocuments.length > 1"
-                        class="vp-section"
+                    *ngIf="item.mintDocument"
+                    [attr.vp-section-offset]="mainDocuments.length > 1"
+                    class="vp-section"
                 >
                     <div class="vp-section-header">
                         <h3>Token & Issuer</h3>
@@ -92,9 +92,9 @@
                         <div class="vp-field">
                             <div class="vp-field-label">Receipt Name</div>
                             <div
-                                    [pTooltip]="item.mintDocument.username"
-                                    [title]="item.mintDocument.issuer"
-                                    class="vp-field-value"
+                                [pTooltip]="item.mintDocument.username"
+                                [title]="item.mintDocument.issuer"
+                                class="vp-field-value"
                             >
                                 {{ item.mintDocument.username }}
                             </div>
@@ -115,18 +115,11 @@
                 </div>
 
                 <div
-                        *ngIf="
-                        (item.primaryImpacts && item.primaryImpacts.length) ||
-                        (item.secondaryImpacts && item.secondaryImpacts.length)
-                    "
-                        [attr.vp-section-offset]="mainDocuments.length > 1"
-                        class="vp-section impact-section offset"
+                    *ngIf="(item.primaryImpacts && item.primaryImpacts.length) || (item.secondaryImpacts && item.secondaryImpacts.length)"
+                    [attr.vp-section-offset]="mainDocuments.length > 1"
+                    class="vp-section impact-section offset"
                 >
-                    <div
-                            *ngIf="
-                            item.primaryImpacts && item.primaryImpacts.length
-                        "
-                    >
+                    <div *ngIf="item.primaryImpacts && item.primaryImpacts.length">
                         <div class="vp-section-header">
                             <h3>Primary Impacts</h3>
                         </div>
@@ -134,44 +127,31 @@
                             <div class="cards">
                                 <div class="cards-container">
                                     <div
-                                            *ngFor="let item of item.primaryImpacts"
-                                            [attr.main]="true"
-                                            class="card-item"
+                                        *ngFor="let item of item.primaryImpacts"
+                                        [attr.main]="true"
+                                        class="card-item"
                                     >
                                         <div class="card-title">
                                             <div class="card-icon">
-                                                <mat-icon class=""
-                                                >workspace_premium
-                                                </mat-icon
-                                                >
+                                                <mat-icon>workspace_premium</mat-icon>
                                             </div>
                                             <span>{{ item.label }}</span>
                                         </div>
                                         <div class="card-right">
-                                            <a
-                                                    (click)="
-                                                    openVCDocument(
-                                                        item,
-                                                        item.document.document
-                                                    )
-                                                "
-                                                    *ngIf="item.document"
-                                                    class="open-vc"
-                                            >VC File</a
-                                            >
+                                            <a (click)="openVCDocument(item,item.document.document)"
+                                                *ngIf="item.document"
+                                                class="open-vc"
+                                            >VC File</a>
                                         </div>
                                         <div class="card-body">
                                             <div
-                                                    style="
+                                                style="
                                                     border-bottom: 1px solid
                                                         rgb(112 112 112 / 64%);
                                                     margin-bottom: 10px;
                                                     padding-bottom: 10px;
-                                                "
-                                            >
-                                                <span>{{
-                                                        item.description
-                                                    }}</span>
+                                                ">
+                                                <span>{{item.description}}</span>
                                             </div>
                                             <div>
                                                 <span>{{ item.amount }}</span>
@@ -184,11 +164,8 @@
                         </div>
                     </div>
                     <div
-                            *ngIf="
-                            item.secondaryImpacts &&
-                            item.secondaryImpacts.length
-                        "
-                            [attr.offset]="
+                        *ngIf="item.secondaryImpacts && item.secondaryImpacts.length"
+                        [attr.offset]="
                             !!(
                                 item.primaryImpacts &&
                                 item.primaryImpacts.length
@@ -201,47 +178,24 @@
                         <div class="vp-table">
                             <div class="cards">
                                 <div class="cards-container">
-                                    <div
-                                            *ngFor="
-                                            let item of item.secondaryImpacts
-                                        "
-                                            [attr.main]="false"
-                                            class="card-item"
-                                    >
+                                    <div *ngFor="let item of item.secondaryImpacts" [attr.main]="false" class="card-item">
                                         <div class="card-title">
                                             <div class="card-icon">
-                                                <mat-icon class=""
-                                                >workspace_premium
-                                                </mat-icon
-                                                >
+                                                <mat-icon>workspace_premium</mat-icon>
                                             </div>
                                             <span>{{ item.label }}</span>
                                         </div>
                                         <div class="card-right">
-                                            <a
-                                                    (click)="
-                                                    openVCDocument(
-                                                        item,
-                                                        item.document.document
-                                                    )
-                                                "
-                                                    *ngIf="item.document"
-                                                    class="open-vc"
-                                            >VC File</a
-                                            >
+                                            <a (click)="openVCDocument(item,item.document.document)" *ngIf="item.document" class="open-vc">VC File</a>
                                         </div>
                                         <div class="card-body">
-                                            <div
-                                                    style="
+                                            <div style="
                                                     border-bottom: 1px solid
                                                         rgb(112 112 112 / 64%);
                                                     margin-bottom: 10px;
                                                     padding-bottom: 10px;
-                                                "
-                                            >
-                                                <span>{{
-                                                        item.description
-                                                    }}</span>
+                                                ">
+                                                <span>{{item.description}}</span>
                                             </div>
                                             <div>
                                                 <span>{{ item.amount }}</span>
@@ -256,8 +210,8 @@
                 </div>
 
                 <div
-                        [attr.vp-section-offset]="mainDocuments.length > 1"
-                        class="vp-section"
+                    [attr.vp-section-offset]="mainDocuments.length > 1"
+                    class="vp-section"
                 >
                     <div class="vp-section-header">
                         This Carbon Offset Claim has met all the requirements as
@@ -268,26 +222,16 @@
                             <div class="vp-field-label">
                                 Verified Signature:
                             </div>
-                            <div
-                                    class="vp-field-value"
-                            >
-                                {{
-                                    item.vpDocument.document.document?.proof
-                                        ?.jws
-                                }}
+                            <div class="vp-field-value">
+                                {{ item.vpDocument.document.document?.proof?.jws}}
                             </div>
                         </div>
                         <div *ngIf="item.vcDocument" class="vp-signature">
                             <div class="vp-field-label">
                                 Verified Signature:
                             </div>
-                            <div
-                                    class="vp-field-value"
-                            >
-                                {{
-                                    item.vcDocument.document.document?.proof
-                                        ?.jws
-                                }}
+                            <div class="vp-field-value">
+                                {{item.vcDocument.document.document?.proof?.jws}}
                             </div>
                         </div>
                     </div>
@@ -325,9 +269,9 @@
                         <div class="vp-field">
                             <div class="vp-field-label">Issuer Name</div>
                             <div
-                                    [pTooltip]="policyDocument.username"
-                                    [title]="policyDocument.issuer"
-                                    class="vp-field-value"
+                                [pTooltip]="policyDocument.username"
+                                [title]="policyDocument.issuer"
+                                class="vp-field-value"
                             >
                                 {{ policyDocument.username }}
                             </div>
@@ -337,61 +281,50 @@
             </div>
 
             <div class="container">
-                <div
-                        (click)="onScrollButtonPress(scrollContainer, -150)"
-                        class="scroll-right"
-                >
+                <div (click)="onScrollButtonPress(scrollContainer, -150)" class="scroll-right">
                     <mat-icon>chevron_left</mat-icon>
                 </div>
                 <div
-                        #scrollContainer
-                        (wheel)="onWheel($event)"
-                        class="chain-container"
+                    #scrollContainer
+                    (wheel)="onWheel($event)"
+                    class="chain-container"
                 >
                     <ng-container *ngFor="let item of documents">
                         <div class="multiple-documents-container">
                             <ng-container
-                                    *ngIf="
+                                *ngIf="
                                     !item.notFoundDocuments;
                                     else documentsNotFound
-                                "
-                            >
-                                <div
-                                        (click)="
-                                        onMultipleDocumentClick(document, item)
-                                    "
-                                        *ngFor="let document of item.document"
-                                        style="display: inline-block;"
+                                ">
+                                <div 
+                                    (click)="onMultipleDocumentClick(document, item)"
+                                    *ngFor="let document of item.document"
+                                    style="display: inline-block;"
                                 >
-                                    <div
-                                            [ngStyle]="{
+                                    <div [ngStyle]="{
                                             opacity:
                                                 document.index === 0 &&
                                                 item.dynamicFilters.length &&
-                                                item.document.length > 1
-                                                    ? 1
-                                                    : 0,
+                                                item.document.length > 1 ? 1 : 0,
                                             transform:
                                                 document.index === 0 &&
                                                 item.dynamicFilters.length &&
                                                 item.document.length > 1
                                                     ? 'scale(1, 1) translate(0, 0)'
                                                     : 'scale(1, 0) translate(20px, 0)'
-                                        }"
-                                            class="item-relationships-delimiter"
+                                        }" 
+                                        class="item-relationships-delimiter"
                                     ></div>
                                     <mat-icon
-                                            *ngIf="
-                                            document.index === 0 &&
-                                            item.dynamicFilters.length &&
-                                            item.document.length > 1
-                                        "
-                                            class="item-relationships-icon material-icons-outlined"
-                                    >account_tree
-                                    </mat-icon
-                                    >
+                                        *ngIf="
+                                        document.index === 0 &&
+                                        item.dynamicFilters.length &&
+                                        item.document.length > 1"
+                                        class="item-relationships-icon material-icons-outlined">
+                                        account_tree
+                                    </mat-icon>
                                     <div
-                                            [ngClass]="{
+                                        [ngClass]="{
                                             'active-multiple-document':
                                                 document.index === 0 &&
                                                 item.document.length > 1,
@@ -406,51 +339,38 @@
                                             'single-multiple-document':
                                                 item.document.length === 1
                                         }"
-                                            class="chain-item item-type-{{
-                                            item.type
-                                        }}"
+                                        class="chain-item item-type-{{item.type}}"
                                     >
                                         <div class="chain-title">
                                             <ng-container
-                                                    *ngIf="item.icon"
-                                                    [ngSwitch]="item.iconType"
+                                                *ngIf="item.icon"
+                                                [ngSwitch]="item.iconType"
                                             >
-                                                <mat-icon
-                                                        *ngSwitchCase="'common'"
-                                                >{{ item.icon }}
-                                                </mat-icon
-                                                >
+                                                <mat-icon *ngSwitchCase="'common'">{{ item.icon }}</mat-icon>
                                                 <img
-                                                        *ngSwitchCase="'custom'"
-                                                        [src]="item.icon"
-                                                        class="item-image"
+                                                    *ngSwitchCase="'custom'"
+                                                    [src]="item.icon"
+                                                    class="item-image"
                                                 />
                                             </ng-container>
                                             {{ item.title }}
                                         </div>
                                         <div
-                                                *ngIf="
+                                            *ngIf="
                                                 document.document &&
                                                 document.document.comment
                                             "
-                                                class="revoke-container"
+                                            class="revoke-container"
                                         >
-                                            <mat-icon class="revoke-icon"
-                                            >warning
-                                            </mat-icon
-                                            >
-                                            <b
-                                            >Revoked with reason: "{{
-                                                    document.document.comment
-                                                }}"</b
-                                            >
+                                            <mat-icon class="revoke-icon">warning</mat-icon>
+                                            <b>Revoked with reason: "{{document.document.comment}}"</b>
                                         </div>
                                         <div class="chain-id">
                                             {{ item.description }}
                                         </div>
                                         <div
-                                                *ngIf="document.username"
-                                                class="parties"
+                                            *ngIf="document.username"
+                                            class="parties"
                                         >
                                             <div class="parties-label">
                                                 Parties:
@@ -462,86 +382,50 @@
                                             </div>
                                         </div>
                                         <div class="nested-documents">
-                                            <ng-container
-                                                    *ngFor="
-                                                    let link of item.documents
-                                                "
-                                            >
-                                                <a
-                                                        (click)="
-                                                        openVCDocument(link)
-                                                    "
-                                                        [title]="link.description"
-                                                        class="nested-documents-value"
+                                            <ng-container *ngFor="let link of item.documents">
+                                                <a (click)="openVCDocument(link)"
+                                                    [title]="link.description"
+                                                    class="nested-documents-value"
                                                 >
                                                     {{ link.title }}
                                                 </a>
                                             </ng-container>
                                         </div>
                                         <div
-                                                *ngIf="document.document"
-                                                class="chain-document"
+                                            *ngIf="document.document"
+                                            class="chain-document"
                                         >
-                                            <a
-                                                    (click)="
-                                                    openVCDocument(
-                                                        item,
-                                                        document.document
-                                                            .document
-                                                    )
-                                                "
-                                            >VC File</a
-                                            >
+                                            <a (click)="openVCDocument(item,document.document.document)">VC File</a>
                                         </div>
                                         <div
-                                                *ngIf="
+                                            *ngIf="
                                                 item.activeDocumentIndex &&
                                                 item.document &&
                                                 item.document.length > 1
                                             "
-                                                class="multiple-documents-count"
+                                            class="multiple-documents-count"
                                         >
-                                            <mat-icon
-                                                    (click)="
-                                                    onPrevDocumentClick(
-                                                        $event,
-                                                        item,
-                                                        document
-                                                    )
-                                                "
-                                            >chevron_left
-                                            </mat-icon>
+                                            <mat-icon (click)="onPrevDocumentClick($event,item,document)">chevron_left</mat-icon>
                                             {{ item.activeDocumentIndex }} in
                                             {{ item.document.length }}
-                                            <mat-icon
-                                                    (click)="
-                                                    onNextDocumentClick(
-                                                        $event,
-                                                        item,
-                                                        document
-                                                    )
-                                                "
-                                            >chevron_right
-                                            </mat-icon>
+                                            <mat-icon (click)="onNextDocumentClick($event,item,document)">chevron_right</mat-icon>
                                         </div>
                                     </div>
                                 </div>
                             </ng-container>
                             <ng-template #documentsNotFound>
                                 <div
-                                        *ngIf="
+                                    *ngIf="
                                         item.notFoundDocuments;
                                         displayDocuments
                                     "
-                                        style="display: inline-block;"
+                                    style="display: inline-block;"
                                 >
                                     <div class="chain-item empty-documents">
                                         <div class="chain-title">
                                             {{ item.title }}
                                         </div>
-                                        <div
-                                                class="empty-documents-description"
-                                        >
+                                        <div class="empty-documents-description">
                                             <mat-icon>search</mat-icon>
                                             <div class="chain-id">
                                                 Documents Not Found
@@ -554,8 +438,8 @@
                     </ng-container>
                 </div>
                 <div
-                        (click)="onScrollButtonPress(scrollContainer, 150)"
-                        class="scroll-right"
+                    (click)="onScrollButtonPress(scrollContainer, 150)"
+                    class="scroll-right"
                 >
                     <mat-icon>chevron_right</mat-icon>
                 </div>

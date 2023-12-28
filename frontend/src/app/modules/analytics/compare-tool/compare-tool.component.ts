@@ -275,11 +275,11 @@ export class CompareToolComponent implements OnInit {
                     } else {
                         const items = variableConfig || [];
                         let root = items[index];
-                        if (!root) {
+                        if(!root) {
                             propertiesContext.fantom = true;
                             root = items.find((p: any) => !!p);
                         }
-                        if (root) {
+                        if(root) {
                             propertiesContext.item = root.item;
                             propertiesContext.type = root.type;
                         }

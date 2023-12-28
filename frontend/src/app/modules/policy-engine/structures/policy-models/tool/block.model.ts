@@ -313,8 +313,6 @@ export class PolicyTool extends PolicyBlock {
 
     public override getJSON(): any {
         const json: any = {
-            name: this._name,
-            description: this._description,
             ...this.properties
         };
         delete json.children;
@@ -472,6 +470,7 @@ export class PolicyTool extends PolicyBlock {
                 }
             }
         }
+        TemplateUtils.checkSchemaVariables(this._lastVariables.schemas);
     }
 
     public override emitUpdate() {
@@ -644,7 +643,7 @@ export class PolicyTool extends PolicyBlock {
         }
     }
 
-    public getAllTools(): Set<string> {
+    public getTools(): Set<string> {
         const map = new Set<string>();
         if (this._allTools) {
             for (const tool of this._allTools) {
@@ -658,6 +657,11 @@ export class PolicyTool extends PolicyBlock {
 
     public getEnvironments(): any {
         return {
+            name: this._name,
+            description: this._description,
+            localTag: this._localTag,
+            tag: this._tag,
+            lastPrefix: this._lastPrefix,
             schemas: this._schemas,
             tools: this._tools,
             tokens: this._tokens,
@@ -667,6 +671,11 @@ export class PolicyTool extends PolicyBlock {
 
     public setEnvironments(env: any): void {
         if(env) {
+            this._name = env.name;
+            this._description = env.description;
+            this._localTag = env.localTag;
+            this._tag = env.tag;
+            this._lastPrefix = env.lastPrefix;
             this._schemas = env.schemas;
             this._tools = env.tools;
             this._tokens = env.tokens;

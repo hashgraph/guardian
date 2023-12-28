@@ -236,7 +236,6 @@
     }
 
     & .record-item[selected="true"] {
-
         .record-item-method,
         .record-item-time {
             background: #e6ffe7;
@@ -244,7 +243,6 @@
     }
 
     &[record-status="Error"] .record-item[selected="true"] {
-
         .record-item-method,
         .record-item-time {
             background: #ffe6e6 !important;
@@ -252,7 +250,6 @@
     }
 
     &[record-status="Stopped"] .record-item[selected="true"] {
-
         .record-item-method,
         .record-item-time {
             background: #f6f7b3 !important;

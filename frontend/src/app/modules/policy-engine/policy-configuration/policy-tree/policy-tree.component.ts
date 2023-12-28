@@ -5,8 +5,6 @@ import { PolicyBlock, BlocLine, BlockRect, EventCanvas, PolicyFolder, PolicyItem
 import { RegisteredService } from '../../services/registered.service';
 import { ThemeService } from '../../../../services/theme.service';
 import { BLOCK_TYPE_TIPS } from 'src/app/injectors/block-type-tips.injector';
-import { DomSanitizer } from '@angular/platform-browser';
-import { MatIconRegistry } from '@angular/material/icon';
 
 enum BlockStyle {
     None = 'None',
@@ -24,7 +22,7 @@ enum BlockStyle {
 @Component({
     selector: 'policy-tree',
     templateUrl: './policy-tree.component.html',
-    styleUrls: ['./policy-tree.component.css']
+    styleUrls: ['./policy-tree.component.scss']
 })
 export class PolicyTreeComponent implements OnInit {
     @Input('module') module!: PolicyFolder;
@@ -46,6 +44,7 @@ export class PolicyTreeComponent implements OnInit {
     @Output('next') next = new EventEmitter();
     @Output('nested') nested = new EventEmitter();
     @Output('currentBlockChange') currentBlockChange = new EventEmitter();
+    @Output('search') search = new EventEmitter();
 
     @ViewChild('parent') parentRef!: ElementRef<HTMLCanvasElement>;
     @ViewChild('canvas') canvasRef!: ElementRef<HTMLCanvasElement>;
@@ -677,6 +676,13 @@ export class PolicyTreeComponent implements OnInit {
         event.preventDefault();
         event.stopPropagation();
         this.delete.emit(this.currentBlock);
+        return false;
+    }
+
+    public onSearch(event: any) {
+        event.preventDefault();
+        event.stopPropagation();
+        this.search.emit(this.currentBlock);
         return false;
     }
 

@@ -16,18 +16,10 @@
 <div class="dialog-footer" mat-dialog-actions>
     <div class="action-buttons">
         <div class="cancel-button">
-            <p-button
-                    (click)="onNoClick()"
-                    label="Cancel"
-                    styleClass="p-button-outlined"
-            ></p-button>
+            <p-button (click)="onNoClick()" label="Cancel" styleClass="p-button-outlined"></p-button>
         </div>
         <div>
-            <p-button
-                    (click)="onSubmit()"
-                    [disabled]="value.invalid"
-                    label="Save"
-            ></p-button>
+            <p-button (click)="onSubmit()" [disabled]="value.invalid" label="Save"></p-button>
         </div>
     </div>
 </div>

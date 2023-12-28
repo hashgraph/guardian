@@ -98,6 +98,8 @@ import { CompareModulesDialogComponent } from './helpers/compare-modules-dialog/
 import { RecordControllerComponent } from './record/record-controller/record-controller.component';
 import { RecordResultDialog } from './record/record-result-dialog/record-result-dialog.component';
 import { RecordResultsComponent } from './record/record-results/record-results.component';
+import { SearchBlocksComponent } from './helpers/search-blocks/search-blocks.component';
+import { SelectSchema } from './helpers/select-schema/select-schema.component';
 //Modules
 import { ModulesListComponent } from './modules-list/modules-list.component';
 import { ToolsListComponent } from './tools-list/tools-list.component';
@@ -124,6 +126,8 @@ import { PolicyProgressService } from './services/policy-progress.service';
 import { InputSwitchModule } from 'primeng/inputswitch';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { AngularSvgIconModule } from 'angular-svg-icon';
+// Directives
+import { ResizingDirective } from './directives/resizing.directive';
 
 @NgModule({
     declarations: [
@@ -190,6 +194,7 @@ import { AngularSvgIconModule } from 'angular-svg-icon';
         CommonPropertyComponent,
         MultiSignBlockComponent,
         SelectBlock,
+        SelectSchema,
         CreateTokenConfigComponent,
         CreateTokenBlockComponent,
         MultiPolicyDialogComponent,
@@ -211,11 +216,13 @@ import { AngularSvgIconModule } from 'angular-svg-icon';
         PolicyWizardDialogComponent,
         MessagesReportBlockComponent,
         ViewerDialog,
+        SearchBlocksComponent,
         DeletePolicyDialogComponent,
         ProgressTrackerComponent,
         RecordControllerComponent,
         RecordResultDialog,
-        RecordResultsComponent
+        RecordResultsComponent,
+        ResizingDirective
     ],
     imports: [
         CommonModule,
@@ -254,5 +261,4 @@ import { AngularSvgIconModule } from 'angular-svg-icon';
         PolicyProgressService,
     ],
 })
-export class PolicyEngineModule {
-}
+export class PolicyEngineModule { }

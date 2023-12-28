@@ -7,7 +7,7 @@ import { ModuleEvent, ModuleVariable, PolicyModule, SchemaVariables } from '../.
 @Component({
     selector: 'module-properties',
     templateUrl: './module-properties.component.html',
-    styleUrls: ['./module-properties.component.css']
+    styleUrls: ['./module-properties.component.scss']
 })
 export class ModulePropertiesComponent implements OnInit {
     @Input('module') module!: any;
@@ -53,7 +53,7 @@ export class ModulePropertiesComponent implements OnInit {
         this.module.createVariable();
     }
 
-    onEditVariable(variable: ModuleVariable, refresh = false) {
+    onEditVariable(variable: ModuleVariable) {
         variable.changed = true;
         variable.emitUpdate();
     }

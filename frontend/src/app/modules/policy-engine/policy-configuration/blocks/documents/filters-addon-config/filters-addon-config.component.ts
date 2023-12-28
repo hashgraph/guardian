@@ -7,7 +7,7 @@ import { IModuleVariables, PolicyBlock } from '../../../../structures';
 @Component({
     selector: 'filters-addon-config',
     templateUrl: './filters-addon-config.component.html',
-    styleUrls: ['./filters-addon-config.component.css'],
+    styleUrls: ['./filters-addon-config.component.scss'],
     encapsulation: ViewEncapsulation.Emulated
 })
 export class FiltersAddonConfigComponent implements OnInit {
@@ -17,7 +17,7 @@ export class FiltersAddonConfigComponent implements OnInit {
 
     private moduleVariables!: IModuleVariables | null;
     private item!: PolicyBlock;
-    
+
     propHidden: any = {
         main: false,
         optionsGroup: false,
@@ -55,7 +55,7 @@ export class FiltersAddonConfigComponent implements OnInit {
     onHide(item: any, prop: any) {
         item[prop] = !item[prop];
     }
-    
+
     onSave() {
         this.item.changed = true;
     }

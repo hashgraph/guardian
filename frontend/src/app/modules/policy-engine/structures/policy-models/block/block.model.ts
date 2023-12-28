@@ -465,6 +465,14 @@ export class PolicyBlock {
         return false;
     }
 
+    public replaceConfig(newConfig: PolicyBlock): boolean {
+        if (this.blockType === newConfig?.blockType) {
+            Object.assign(this.properties, newConfig.properties);
+            return true;
+        }
+        return false;
+    }
+
     public append(parent: PolicyBlock) {
         parent._addChild(this);
         parent.refresh();

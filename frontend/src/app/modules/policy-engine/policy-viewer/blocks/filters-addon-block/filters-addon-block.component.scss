@@ -1,8 +1,8 @@
 .loading {
     position: fixed;
-  /* background: #ffffff32; */
+    /* background: #ffffff32; */
     z-index: 99;
-  top: 0;
+    top: 0;
     left: 0;
     bottom: 0;
     right: 0;
@@ -14,11 +14,9 @@
 }
 
 .loading-progress {
-  width: 80%;
-  height: 80%;
+    width: 80%;
+    height: 80%;
 }
-
-
 
 .content {
     flex-wrap: nowrap;
@@ -33,12 +31,12 @@
     padding: 10px 10px 6px 10px;
 }
 
-.content-name{
+.content-name {
     display: inline-block;
     margin-right: 10px;
 }
 
-.content-select{
+.content-select {
     display: inline-block;
     width: 190px;
 }

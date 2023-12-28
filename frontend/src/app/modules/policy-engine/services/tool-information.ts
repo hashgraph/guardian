@@ -1,7 +1,13 @@
 import { ToolComponent } from '../policy-configuration/blocks/tool/tool.component';
 import { ContainerBlockComponent } from '../policy-viewer/blocks/container-block/container-block.component';
 import { BlockType } from '@guardian/interfaces';
-import { BlockGroup, BlockHeaders, ChildrenType, ControlType, IBlockSetting, PolicyTool } from '../structures';
+import {
+    BlockGroup,
+    BlockHeaders, IBlockSetting,
+    ChildrenType,
+    ControlType,
+    PolicyTool
+} from '../structures';
 import { PolicyFolder } from '../structures/policy-models/interfaces/types';
 
 const Tool: IBlockSetting = {
@@ -43,7 +49,10 @@ const Tool: IBlockSetting = {
         { type: BlockType.MultiSignBlock },
         { type: BlockType.CreateToken },
         { type: BlockType.SplitBlock },
-        {type: BlockType.MessagesReportBlock}
+        { type: BlockType.ExternalTopic },
+        { type: BlockType.MessagesReportBlock },
+        { type: BlockType.NotificationBlock },
+        { type: BlockType.ExtractDataBlock },
     ],
     about: {
         post: false,

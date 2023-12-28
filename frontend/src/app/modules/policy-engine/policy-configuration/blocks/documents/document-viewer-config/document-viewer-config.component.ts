@@ -7,7 +7,7 @@ import { IModuleVariables, PolicyBlock } from '../../../../structures';
 @Component({
     selector: 'document-viewer-config',
     templateUrl: './document-viewer-config.component.html',
-    styleUrls: ['./document-viewer-config.component.css'],
+    styleUrls: ['./document-viewer-config.component.scss'],
     encapsulation: ViewEncapsulation.Emulated
 })
 export class DocumentSourceComponent implements OnInit {
@@ -63,6 +63,10 @@ export class DocumentSourceComponent implements OnInit {
             tooltip: '',
             type: 'text',
         })
+    }
+
+    removeField(i: number) {
+        this.properties.uiMetaData.fields.splice(i, 1);
     }
 
     load(block: PolicyBlock) {

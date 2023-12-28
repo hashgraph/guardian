@@ -1,3 +1,5 @@
+import { OrderOption } from "../interfaces/order-option.interface";
+import { ArrayProperty } from "./array-property";
 import { BooleanProperty } from "./boolean-prop";
 import { ObjectProperty } from "./object-prop";
 
@@ -33,6 +35,8 @@ export class Options {
     private readonly _favorites: ObjectProperty<boolean>;
     private readonly _favoritesModules: ObjectProperty<boolean>;
     private readonly _legendActive: BooleanProperty;
+    private readonly _configurationOrder: ArrayProperty<OrderOption>;
+    private readonly _propertiesOrder: ArrayProperty<OrderOption>;
 
     constructor() {
         const prefix = 'POLICY_CONFIG_';
@@ -67,6 +71,18 @@ export class Options {
         this._favorites = new ObjectProperty(prefix + 'FAVORITES', {});
         this._favoritesModules = new ObjectProperty(prefix + 'FAVORITES_MODULES', {});
         this._legendActive = new BooleanProperty(prefix + 'LEGEND', true);
+        this._configurationOrder = new ArrayProperty(
+            prefix + 'CONFIGURATION_ORDER',
+            [
+                { id: 'blocks', size: '225px' },
+                { id: 'tree', size: 'auto' },
+                { id: 'properties', size: '465px' },
+            ]
+        );
+        this._propertiesOrder = new ArrayProperty(prefix + 'PROPERTIES_ORDER', [
+            { id: 'policy', size: 'auto' },
+            { id: 'block', size: 'auto' },
+        ]);
     }
 
     public load() {
@@ -102,6 +118,8 @@ export class Options {
             this.legendActive = this._legendActive.load();
             this._favorites.load();
             this._favoritesModules.load();
+            this._configurationOrder.load();
+            this._propertiesOrder.load();
         } catch (error) {
             console.error(error);
         }
@@ -140,6 +158,8 @@ export class Options {
             this._outputsModule.save();
             this._variablesModule.save();
             this._legendActive.save();
+            this._configurationOrder.save();
+            this._propertiesOrder.save();
         } catch (error) {
             console.error(error);
         }
@@ -259,6 +279,14 @@ export class Options {
 
     public get legendActive(): boolean {
         return this._legendActive.value;
+    }
+
+    public get configurationOrder(): OrderOption[] {
+        return this._configurationOrder.value;
+    }
+
+    public get propertiesOrder(): OrderOption[] {
+        return this._propertiesOrder.value;
     }
 
     public set components(value: boolean) {
@@ -466,6 +494,18 @@ export class Options {
 
     public set legendActive(value: boolean) {
         this._legendActive.value = value;
+    }
+
+    public set configurationOrder(value: OrderOption[]) {
+        if (Array.isArray(value)) {
+            this._configurationOrder.value = value;
+        }
+    }
+
+    public set propertiesOrder(value: OrderOption[]) {
+        if (Array.isArray(value)) {
+            this._propertiesOrder.value = value;
+        }
     }
 
     public getFavorite(name: string): boolean {

@@ -7,11 +7,11 @@
                 <div *ngIf="!isGroup" class="role-value">
                     <label class="form-label" htmlFor="role">Role</label>
                     <p-dropdown
-                            #operationDropdown
-                            [options]="roles"
-                            formControlName="roleOrGroup"
-                            id="role"
-                            placeholder="Not selected"
+                        #operationDropdown
+                        [options]="roles"
+                        formControlName="roleOrGroup"
+                        id="role"
+                        placeholder="Not selected"
                     >
                     </p-dropdown>
                 </div>
@@ -77,12 +77,12 @@
     <div>
         <!-- <button pButton type="button" class="p-button-outlined" label="Save Changes" style="margin-right: 16px;"></button> -->
         <button (click)="onSubmit()"
-                [disabled]="!roleForm.valid"
-                class="p-button"
-                form="roles-form"
-                label="Next"
-                pButton
-                type="submit"
+            [disabled]="!roleForm.valid"
+            class="p-button"
+            form="roles-form"
+            label="Next"
+            pButton
+            type="submit"
         ></button>
     </div>
 </div>

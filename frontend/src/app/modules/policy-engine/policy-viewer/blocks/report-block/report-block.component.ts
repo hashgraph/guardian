@@ -316,7 +316,7 @@ export class ReportBlockComponent implements OnInit {
     onBackClick() {
         this.loading = true;
         this.policyEngineService
-            .setBlockData(this.id, this.policyId, {filterValue: null})
+            .setBlockData(this.id, this.policyId, { filterValue: null })
             .subscribe(
                 () => {
                     this.loadData();

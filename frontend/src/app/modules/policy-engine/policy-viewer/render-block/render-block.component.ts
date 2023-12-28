@@ -8,7 +8,7 @@ import {
     Renderer2,
     TemplateRef,
     ViewChild,
-    ViewContainerRef,
+    ViewContainerRef
 } from '@angular/core';
 import { RegisteredService } from '../../services/registered.service';
 import { IBlock } from '../../structures';
@@ -26,7 +26,8 @@ export class RenderBlockComponent {
     @Input('block') block!: IBlock<any>;
     @Input('static') static!: any;
     @Input('policyId') policyId!: any;
-
+    @Input('dryRun') dryRun!: any;
+    
     @ViewChild('target', { read: ViewContainerRef }) target!: ViewContainerRef;
     @ViewChild('empty', { read: TemplateRef }) empty!: TemplateRef<any>;
 
@@ -93,13 +94,12 @@ export class RenderBlockComponent {
         this.target.clear();
         const factory: any = this.registeredService.getFactory(this.blockType);
         if (factory) {
-            let componentFactory = this.componentFactoryResolver.resolveComponentFactory(
-                factory
-            );
+            let componentFactory = this.componentFactoryResolver.resolveComponentFactory(factory);
             this.componentRef = this.target.createComponent(componentFactory);
             this.componentRef.instance.id = this.id;
             this.componentRef.instance.static = this.static;
             this.componentRef.instance.policyId = this.policyId;
+            this.componentRef.instance.dryRun = this.dryRun;
             this.componentRef.changeDetectorRef.detectChanges();
 
             this.policyProgressService.addComponentRef(this.id, this.componentRef);

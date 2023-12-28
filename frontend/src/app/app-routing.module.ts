@@ -64,7 +64,6 @@ class Guard {
     canActivate() {
         return this.auth.sessions().pipe(
             map((res: IUser | null) => {
-                console.log(res);
                 if (res) {
                     if (res.role != this.role) {
                         this.router.navigate(['/info'],
@@ -179,8 +178,8 @@ const routes: Routes = [
         children: [
             { path: 'status', component: ServiceStatusComponent },
             { path: 'settings', component: SettingsViewComponent },
-            { path: 'logs', component: LogsViewComponent },
-            { path: 'about', component: AboutViewComponent }
+            {path: 'logs', component: LogsViewComponent},
+            {path: 'about', component: AboutViewComponent}
         ]
     },
     { path: 'status', component: ServiceStatusComponent },

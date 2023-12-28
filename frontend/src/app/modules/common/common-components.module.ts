@@ -22,6 +22,7 @@ import { StepTreeComponent } from './step-tree/step-tree.component';
 import { SeparateStepperComponent } from './separate-stepper/separate-stepper.component';
 import { NgxMaskModule } from 'ngx-mask';
 import { NewVersionsComponent } from './new-versions/new-versions.component';
+import { DataInputDialogComponent } from './data-input-dialog/data-input-dialog.component';
 import { CompareBtnComponent } from './compare-btn/compare-btn.component';
 import { CompareViewerComponent } from './compare-viewer/compare-viewer.component';
 import { AlertComponent } from './alert/alert.component';
@@ -31,7 +32,6 @@ import { DropdownModule } from 'primeng/dropdown';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { ButtonModule } from 'primeng/button';
 import { PaginatorComponent } from './paginator/paginator.component';
-import { DataInputDialogComponent } from './data-input-dialog/data-input-dialog.component';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 
 @NgModule({
@@ -52,11 +52,11 @@ import { AngularSvgIconModule } from 'angular-svg-icon';
         StepTreeComponent,
         SeparateStepperComponent,
         NewVersionsComponent,
+        DataInputDialogComponent,
         CompareBtnComponent,
         CompareViewerComponent,
         AlertComponent,
         PaginatorComponent,
-        DataInputDialogComponent
     ],
     imports: [
         CommonModule,

@@ -158,7 +158,7 @@ export class LoginComponent implements OnInit, OnDestroy {
                     }
                 });
             },
-            ({message}) => {
+            ({ message }) => {
                 this.loading = false;
                 this.errorMessage = message;
                 if (this.errorMessage.includes('401')) {
@@ -218,7 +218,7 @@ export class LoginComponent implements OnInit, OnDestroy {
                         data: {
                             document: event.vc,
                             presentationRequestId:
-                            event.presentation_request_id,
+                                event.presentation_request_id,
                             submissionId: event.submission_id,
                             userRole: event.role,
                         },
@@ -310,7 +310,7 @@ export class LoginComponent implements OnInit, OnDestroy {
                 }, () => {
                     this.loading = false;
                 })
-            }, ({error}) => {
+            }, ({ error }) => {
                 this.error = error.message;
                 this.loading = false;
                 this.brandingLoading = false;
@@ -369,9 +369,5 @@ export class LoginComponent implements OnInit, OnDestroy {
                 console.log(data);
             }
         });
-    }
-
-    loginUsersShow($event: any) {
-        $event.target.nextElementSibling.classList.toggle('disabled');
     }
 }

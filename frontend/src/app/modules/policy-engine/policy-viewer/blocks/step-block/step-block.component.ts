@@ -10,7 +10,7 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
 @Component({
     selector: 'step-block',
     templateUrl: './step-block.component.html',
-    styleUrls: ['./step-block.component.css']
+    styleUrls: ['./step-block.component.scss']
 })
 export class StepBlockComponent implements OnInit {
     private socket: Subscription | null;
@@ -26,7 +26,7 @@ export class StepBlockComponent implements OnInit {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
-
+    @Input('dryRun') dryRun!: any;
 
     blocks: any;
     activeBlockId: any;

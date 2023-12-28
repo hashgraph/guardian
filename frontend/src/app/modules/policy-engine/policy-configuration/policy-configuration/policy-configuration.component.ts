@@ -850,7 +850,7 @@ export class PolicyConfigurationComponent implements OnInit {
     private updateTemporarySchemas(): void {
         if (this.tools) {
             const temporarySchemas: any[] = [];
-            const toolIds = this.rootTemplate.getAllTools();
+            const toolIds = this.rootTemplate.getTools();
             for (const messageId of toolIds) {
                 const menu = this.tools.find(f => f.messageId === messageId);
                 if (menu) {

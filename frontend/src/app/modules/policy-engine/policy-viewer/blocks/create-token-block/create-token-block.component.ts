@@ -14,7 +14,7 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
 @Component({
     selector: 'create-token-block',
     templateUrl: './create-token-block.component.html',
-    styleUrls: ['./create-token-block.component.css']
+    styleUrls: ['./create-token-block.component.scss']
 })
 export class CreateTokenBlockComponent implements OnInit {
     @Input('id') id!: string;
@@ -56,6 +56,7 @@ export class CreateTokenBlockComponent implements OnInit {
             enableFreeze: [false, Validators.required],
             enableKYC: [false, Validators.required],
             enableWipe: [true, Validators.required],
+            wipeContractId: [''],
         });
     }
 

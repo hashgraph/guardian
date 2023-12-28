@@ -12,7 +12,6 @@ import {
 } from '../../structures';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyCategoryType, Schema } from '@guardian/interfaces';
-import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 
 /**
  * Settings for policy.
@@ -20,7 +19,7 @@ import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 @Component({
     selector: 'policy-properties',
     templateUrl: './policy-properties.component.html',
-    styleUrls: ['./policy-properties.component.css']
+    styleUrls: ['./policy-properties.component.scss']
 })
 export class PolicyPropertiesComponent implements OnInit {
     @Input('policy') policy!: PolicyTemplate;

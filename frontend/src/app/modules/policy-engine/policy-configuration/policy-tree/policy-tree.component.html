@@ -2,17 +2,17 @@
     <div #parent class="canvas">
         <canvas #canvas></canvas>
     </div>
-    <div #treeList="cdkDropList"
-        (cdkDropListSorted)="onDragSorted($event)"
-        [cdkDropListConnectedTo]="menuList"
-        cdkDropList
+    <div class="drop-container" 
+        #treeList="cdkDropList" 
+        cdkDropList 
+        onDragEntered 
         [cdkDropListDisabled]="readonly"
-        class="drop-container"
+        [cdkDropListConnectedTo]="menuList" 
         (cdkDropListDropped)="drop($event)"
-        onDragEntered
+        (cdkDropListSorted)="onDragSorted($event)" 
         (cdkDropListEntered)="onDragEntered($event)"
-        [cdkDropListSortPredicate]="onDragSortPredicate">
-
+        [cdkDropListSortPredicate]="onDragSortPredicate"
+    >
         <div *ngIf="data" class="tree" [attr.readonly]="readonly" [attr.move-actions]="visibleMoveActions">
             <div class="block-all-expand" (click)="onAllCollapse()" [attr.collapsed]="allCollapse">
                 <mat-icon *ngIf="allCollapse === '2'">unfold_more</mat-icon>
@@ -21,21 +21,21 @@
 
             <ng-container *ngFor="let item of data">
 
-                <div [attr.block-id]="item.id"
-                    [attr.block-instance]="item.node.tag"
+                <div class="block-container" 
+                    [attr.expandable]="item.expandable" 
                     [attr.collapsed]="item.collapsed"
-                    [attr.error]="item.error"
-                    [attr.expandable]="item.expandable"
+                    [attr.selected]="isSelect(item)" 
+                    [attr.error]="item.error" 
                     [attr.root]="item.root"
-                    [attr.selected]="isSelect(item)"
-                    [cdkDragData]="item.level"
+                    [attr.block-id]="item.id" 
+                    [attr.block-instance]="item.node.tag" 
                     [attr.block-type]="item.type"
-                    [style.paddingLeft]="item.offset"
-                    cdkDrag
-                    class="block-container"
+                    [style.paddingLeft]="item.offset" 
+                    cdkDrag 
+                    [cdkDragData]="item.level" 
                     [cdkDragDisabled]="item.root"
-                    [attr.deprecated]="item.deprecated">
-
+                    [attr.deprecated]="item.deprecated"
+                >
                     <div class="block-expand" (click)="onCollapse($event, item)">
                         <mat-icon>arrow_drop_down</mat-icon>
                     </div>
@@ -90,7 +90,7 @@
                                 [attr.can-left]="item.canLeft"
                                 [attr.can-right]="item.canRight"
                             >
-                                <button (click)="onDropUp($event)" mat-icon-button
+                                <button (click)="onDropUp($event)" mat-icon-button 
                                     class="action-button move-action-up">
                                     <mat-icon>arrow_drop_up</mat-icon>
                                 </button>
@@ -112,9 +112,11 @@
                                 </button>
                             </div>
                             <div class="actions-container">
-                                <button (click)="onVisibleMoreActions($event)" class="action-button more-action-button"
-                                        mat-icon-button>
+                                <button (click)="onVisibleMoreActions($event)" mat-icon-button class="action-button more-action-button">
                                     <mat-icon>more_horiz</mat-icon>
+                                </button>
+                                <button (click)="onSearch($event)" mat-icon-button class="action-button">
+                                    <mat-icon>search</mat-icon>
                                 </button>
                                 <button (click)="onDelete($event)" mat-icon-button class="action-button delete-action">
                                     <mat-icon>delete</mat-icon>
@@ -139,7 +141,7 @@
                                 [attr.can-left]="item.canLeft"
                                 [attr.can-right]="item.canRight"
                             >
-                                <button (click)="onDropUp($event)" mat-icon-button
+                                <button (click)="onDropUp($event)" mat-icon-button 
                                     class="action-button move-action-up">
                                     <mat-icon>arrow_drop_up</mat-icon>
                                 </button>
@@ -188,7 +190,7 @@
                                 [attr.can-left]="item.canLeft"
                                 [attr.can-right]="item.canRight"
                             >
-                                <button (click)="onDropUp($event)" mat-icon-button
+                                <button (click)="onDropUp($event)" mat-icon-button 
                                     class="action-button move-action-up">
                                     <mat-icon>arrow_drop_up</mat-icon>
                                 </button>
@@ -223,12 +225,12 @@
 
                 </div>
 
-                <div
+                <div 
                     *ngIf="isSuggenstionEnabled && isSelect(item) && nestedBlock"
-                    [attr.block-type]="nestedBlock.type"
-                    [attr.expandable]="false"
+                    class="block-container preview" 
+                    [attr.expandable]="false" 
                     [attr.selected]="false"
-                    class="block-container preview"
+                    [attr.block-type]="nestedBlock.type" 
                     [style.paddingLeft]="getNestedOffset(item.level+1)"
                     (click)="nested.emit(nestedBlock.type)">
                     <div class="block-expand">
@@ -248,12 +250,12 @@
                     </div>
                 </div>
 
-                <div
+                <div 
                     *ngIf="isSuggenstionEnabled && nextBlock && isLatestBlockInSelect(item)"
                     (click)="next.emit(nextBlock.type)"
                     class="block-container preview"
-                    [attr.expandable]="false"
-                    [attr.selected]="false"
+                    [attr.expandable]="false" 
+                    [attr.selected]="false" 
                     [attr.block-type]="nextBlock.type"
                     [style.paddingLeft]="selectedNode?.offset">
                     <div class="block-expand">

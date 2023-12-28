@@ -1,25 +1,18 @@
 <div *ngIf="type == 'selector' && visible" class="content">
-    <ng-container *ngFor="let option of options">
-        <div
-                (click)="onSelect(option.value)"
-                *ngIf="option.name"
-                class="btn-option {{ option.uiClass }}"
-        >
-            {{ option.name }}
+    <ng-container *ngFor="let option of options" >
+        <div *ngIf="option.name" class="btn-option {{option.uiClass}}" (click)="onSelect(option.value)">
+            {{option.name}}
         </div>
     </ng-container>
 </div>
 
 <div *ngIf="type == 'download'" class="content">
-    <div (click)="onDownload()" class="btn-link">{{ content }}</div>
+    <div class="btn-link" (click)="onDownload()">{{content}}</div>
 </div>
 
 <div *ngIf="type == 'dropdown'" class="content-dropdown">
     <mat-select [(value)]="currentValue" (selectionChange)="onDropdown()">
-        <mat-option *ngFor="let item of options" [value]="item.value">{{
-                item.name
-            }}
-        </mat-option>
+        <mat-option *ngFor="let item of options" [value]="item.value">{{item.name}}</mat-option>
     </mat-select>
 </div>
 

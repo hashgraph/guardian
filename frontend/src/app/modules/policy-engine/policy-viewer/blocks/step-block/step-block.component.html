@@ -1,7 +1,7 @@
 <div class="content" [hidden]="!isActive">
-  <div *ngIf="activeBlock">
-    <render-block [block]="activeBlock" [policyId]="policyId"></render-block>
-  </div>
+    <div *ngIf="activeBlock">
+        <render-block [block]="activeBlock" [policyId]="policyId" [dryRun]="dryRun"></render-block>
+    </div>
 </div>
 
 <ng-template #preloader>

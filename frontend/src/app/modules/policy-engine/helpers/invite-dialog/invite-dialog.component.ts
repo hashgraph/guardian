@@ -15,7 +15,7 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 @Component({
     selector: 'invite-dialog',
     templateUrl: './invite-dialog.component.html',
-    styleUrls: ['./invite-dialog.component.css']
+    styleUrls: ['./invite-dialog.component.scss']
 })
 export class InviteDialogComponent implements OnInit, AfterContentInit {
     loading = false;

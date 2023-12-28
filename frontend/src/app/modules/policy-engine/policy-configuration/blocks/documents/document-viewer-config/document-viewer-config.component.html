@@ -43,7 +43,10 @@
             </td>
             <td class="propRowCell cellName">{{getFieldName(field, i)}}</td>
             <td class="propRowCell not-editable-text">
-                {{ field.name }}
+                <span>{{field.name}}</span>
+                <span class="remove-prop" [attr.readonly]="readonly" (click)="removeField(i)">
+                    <mat-icon>delete</mat-icon>
+                </span>
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
