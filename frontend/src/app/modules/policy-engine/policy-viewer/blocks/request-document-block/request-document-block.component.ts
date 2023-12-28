@@ -47,7 +47,6 @@ export class RequestDocumentBlockComponent implements OnInit {
     public buttonClass: any;
     public user!: IUser;
     public restoreData: any;
-    public dryRunMode: boolean = false;
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -60,7 +59,6 @@ export class RequestDocumentBlockComponent implements OnInit {
         private changeDetectorRef: ChangeDetectorRef
     ) {
         this.dataForm = fb.group({});
-        this.dryRunMode = true;
     }
 
     ngOnInit(): void {

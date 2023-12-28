@@ -26,7 +26,7 @@ export class StepBlockComponent implements OnInit {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
-
+    @Input('dryRun') dryRun!: any;
 
     blocks: any;
     activeBlockId: any;
