@@ -36,11 +36,11 @@ _(Please see_ [_examples 2_](data-input-via-forms-using-roles-to-partition-user-
 
 2.1 For each user there is a separate timer execution context (i.e., each user has an independent timer). For this it requires a document owned by the user to be passed into this. To ensure this, let’s add the timer immediately after user registration.
 
-![Adding timerBlock after user registration](<../../../../.gitbook/assets/4 (3) (1).png>)
+![Adding timerBlock after user registration](<../../../../.gitbook/assets/4 (3) (1) (1).png>)
 
 2.2 Set the timer to trigger every minute
 
-![Setting the timer for every minute](<../../../../.gitbook/assets/5 (2) (1).png>)
+![Setting the timer for every minute](<../../../../.gitbook/assets/5 (2) (1) (1).png>)
 
 2.3 Now after the timer is launched, it would create a ‘**TimerEvent**’ periodically every minute. And then connect it with ‘_**aggregateDocumentBlock**_':
 

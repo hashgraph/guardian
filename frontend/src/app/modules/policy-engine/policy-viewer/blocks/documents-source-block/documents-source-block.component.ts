@@ -28,6 +28,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
+    @Input('dryRun') dryRun!: any;
 
     isActive = false;
     loading: boolean = true;
@@ -209,7 +210,8 @@ export class DocumentsSourceBlockComponent implements OnInit {
                     title: field.dialogContent,
                     block: field._block,
                     static: this.getConfig(row, field, field._block),
-                    policyId: this.policyId
+                    policyId: this.policyId,
+                    dryRun: this.dryRun
                 }
             });
             dialogRef.afterClosed().subscribe(async (result) => { });

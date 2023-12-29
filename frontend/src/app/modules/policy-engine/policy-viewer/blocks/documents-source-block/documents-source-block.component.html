@@ -5,7 +5,7 @@
 
     <div *ngIf="addons && addons.length" class="grid-filters">
         <div *ngFor="let block of addons" class="grid-filter">
-            <render-block [block]="block" [policyId]="policyId"></render-block>
+            <render-block [block]="block" [policyId]="policyId" [dryRun]="dryRun"></render-block>
         </div>
     </div>
     <div *ngIf="fields && documents">
@@ -69,7 +69,9 @@
                             </span>
                             <div *ngIf="option.type=='block'" class="col-btn" (click)="$event.stopImmediatePropagation();">
                                 <render-block [block]="option._block"
-                                    [static]="getConfig(element, option, option._block)" [policyId]="policyId">
+                                    [static]="getConfig(element, option, option._block)" 
+                                    [policyId]="policyId"
+                                    [dryRun]="dryRun">
                                 </render-block>
                             </div>
                         </div>
@@ -99,13 +101,13 @@
             <tr mat-row *matRowDef="let row; columns: ['statusDetails']" class="detailed-row"></tr>
         </table>
         <div *ngIf="paginationAddon" class="pagination">
-            <render-block [block]="paginationAddon" [policyId]="policyId"></render-block>
+            <render-block [block]="paginationAddon" [policyId]="policyId" [dryRun]="dryRun"></render-block>
         </div>
     </div>
 
     <div *ngIf="children" class="grid-children">
         <div *ngFor="let child of children" class="grid-child">
-            <render-block [block]="child" [policyId]="policyId"></render-block>
+            <render-block [block]="child" [policyId]="policyId" [dryRun]="dryRun"></render-block>
         </div>
     </div>
 </div>

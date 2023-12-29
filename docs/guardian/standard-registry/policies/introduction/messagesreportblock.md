@@ -74,7 +74,7 @@ Block can work independently (stand-alone):
 
 Or used in conjunctions with other blocks (e.g. with grid)
 
-![image3.png](<../../../../.gitbook/assets/2 (3).png>)
+![image3.png](<../../../../.gitbook/assets/2 (3) (1).png>)
 
 ### **2.1 Display** **Modes**
 

@@ -20,6 +20,7 @@ export class RequestDocumentBlockComponent implements OnInit {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
+    @Input('dryRun') dryRun!: any;
     @ViewChild("dialogTemplate") dialogTemplate!: TemplateRef<any>;
 
     public isExist = false;
@@ -46,7 +47,6 @@ export class RequestDocumentBlockComponent implements OnInit {
     public buttonClass: any;
     public user!: IUser;
     public restoreData: any;
-    public dryRunMode: boolean = false;
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -59,7 +59,6 @@ export class RequestDocumentBlockComponent implements OnInit {
         private changeDetectorRef: ChangeDetectorRef
     ) {
         this.dataForm = fb.group({});
-        this.dryRunMode = true;
     }
 
     ngOnInit(): void {

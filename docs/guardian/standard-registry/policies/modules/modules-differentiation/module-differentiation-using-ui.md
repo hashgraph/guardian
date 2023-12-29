@@ -12,7 +12,7 @@ Once, compare button is clicked, we need to select the first and second modules 
 
 ### 1.1 Result of comparison:
 
-<figure><img src="../../../../../.gitbook/assets/2.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/2 (3).png" alt=""><figcaption></figcaption></figure>
 
 #### **1.1.1 Params**
 
