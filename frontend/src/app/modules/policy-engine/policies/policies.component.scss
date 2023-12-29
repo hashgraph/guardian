@@ -289,15 +289,8 @@
         fill: var(--color-grey-5, #848FA9) !important;
         color: var(--color-grey-5, #848FA9) !important;
         cursor: not-allowed !important;
-    }  
+    }
 }
-
-
-
-
-
-
-
 
 .policy-menu-btn-del {
     color: #f44336;
@@ -382,8 +375,13 @@
     align-items: center;
 }
 
+
+.commands-line>* {
+    margin-left: 20px;
+}
+
 .commands-line>*:not(:first-child) {
-    margin-left: 18px;
+    margin-left: 12px;
 }
 
 .btn-icon-import[status="Main"],
