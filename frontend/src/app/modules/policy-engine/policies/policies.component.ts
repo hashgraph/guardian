@@ -332,7 +332,7 @@ export class PoliciesComponent implements OnInit {
         );
     }
 
-    deletePolicy(policyId: any, previousVersion: any) {
+    public deletePolicy(policyId: any, previousVersion: any) {
         const dialogRef = this.dialogService.open(DeletePolicyDialogComponent, {
             header: 'Delete Policy',
             width: '720px',
@@ -829,7 +829,7 @@ export class PoliciesComponent implements OnInit {
         );
     }
 
-    openSuggestionsDialog() {
+    public openSuggestionsDialog() {
         this.dialogService
             .open(SuggestionsConfigurationComponent, {
                 height: '640px',
@@ -838,5 +838,46 @@ export class PoliciesComponent implements OnInit {
                 header: 'Suggestions',
             })
             .onClose.subscribe();
+    }
+
+    public getStatusName(policy: any): string {
+        if (policy.status == 'DRAFT') {
+            return 'Draft';
+        }
+        if (policy.status == 'DRY-RUN') {
+            return 'In Dry Run';
+        }
+        if (policy.status == 'PUBLISH') {
+            return 'Published';
+        }
+        return 'Not published';
+    }
+
+    public onChangeStatus(event: any, policy: any): void {
+        if (policy.status == 'DRAFT') {
+            this.onPublishAction(event, policy);
+        }
+        if (policy.status == 'DRY-RUN') {
+            this.onDryRunAction(event, policy);
+        }
+        if (policy.status == 'PUBLISH') {
+            return;
+        } else {
+            this.onPublishErrorAction(event, policy)
+        }
+    }
+
+    public getStatusOptions(policy: any) {
+        if (policy.status == 'DRAFT') {
+            return this.publishMenuOption;
+        }
+        if (policy.status == 'DRY-RUN') {
+            return this.draftMenuOption;
+        }
+        if (policy.status == 'PUBLISH') {
+            return [];
+        } else {
+            return this.publishErrorMenuOption;
+        }
     }
 }

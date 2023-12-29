@@ -4,16 +4,13 @@
         [class.current]="active"
         class="item cursor-pointer"
     >
-        <!-- <img alt="" src="assets/images/icons/notification.svg"> -->
-        <mat-icon class="icon">compare</mat-icon>
+        <svg-icon class="svg-icon-16" src="/assets/images/icons/compare.svg" svgClass="color-white"></svg-icon>
         <div [class.hidden-logotype]="!collapsed" class="collapsed-notify-counter">
-
             <div class="badge" (click)="onMenuOpened($event)">
                 <span class="notification-counter">
                     {{ count }}
                 </span>
             </div>
-        
         </div>
         <div 
             [class.hidden-logotype]="collapsed"

@@ -54,7 +54,6 @@
 .status-draft {
     font-weight: 500;
     color: var(--color-primary);
-    ;
 }
 
 .status-publish {
@@ -258,19 +257,47 @@
 }
 
 .policy-menu-btn {
-    color: #3f51b5;
     user-select: none;
-    font-size: 16px;
     position: relative;
     width: 220px;
+    display: block;
 
-    mat-icon {
-        color: #3f51b5;
-        font-size: 26px;
-        top: -2px;
-        position: relative;
+    ::ng-deep .p-button-outlined {
+        color: var(--primary-color);
+        font-family: Inter, sans-serif;
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 500;
+        background-color: #ffffff;
+        height: 40px;
+        border: none !important;
+        border-radius: 8px;
+        width: 100%;
+        display: grid;
+        grid-template-columns: 40px auto;
+        text-align: left;
     }
+
+    ::ng-deep .accent-color-red {
+        fill: var(--color-accent-red-1) !important;
+        color: var(--color-accent-red-1) !important;
+    }
+
+    ::ng-deep .accent-color-red.p-disabled,
+    ::ng-deep .p-disabled {
+        opacity: 1 !important;
+        fill: var(--color-grey-5, #848FA9) !important;
+        color: var(--color-grey-5, #848FA9) !important;
+        cursor: not-allowed !important;
+    }  
 }
+
+
+
+
+
+
+
 
 .policy-menu-btn-del {
     color: #f44336;
@@ -403,6 +430,22 @@
 .primary-color {
     fill: var(--color-primary);
     color: var(--color-primary);
+}
+
+.color-white {
+    fill: white;
+    color: white;
+}
+
+.disabled-color {
+    fill: var(--color-grey-5, #848FA9) !important;
+    color: var(--color-grey-5, #848FA9) !important;
+    cursor: not-allowed !important;
+}
+
+.accent-color-red {
+    fill: var(--color-accent-red-1);
+    color: var(--color-accent-red-1);
 }
 
 .search-policy-input {
@@ -739,12 +782,6 @@
     justify-content: center;
 }
 
-.disabled-color {
-    fill: var(--color-grey-5, #848FA9) !important;
-    color: var(--color-grey-5, #848FA9) !important;
-    cursor: not-allowed !important;
-}
-
 .info-text {
     color: var(--color-grey-5, #848fa9);
     text-align: center;
@@ -774,14 +811,4 @@
 
 .opacity-icon:hover {
     opacity: 1.0;
-}
-
-.primary-color {
-    fill: var(--color-primary);
-    color: var(--color-primary);
-}
-
-.accent-color-red {
-    fill: var(--color-accent-red-1);
-    color: var(--color-accent-red-1);
 }
