@@ -21,12 +21,11 @@
     "api-tests",
     "notification-service"
   ],
-  "version": "2.20.0-prerelease",
+  "version": "2.20.0",
   "devDependencies": {
     "detect-secrets": "^1.0.6"
   },
   "scripts": {
     "detect-secrets": "detect-secrets-launcher --word-list exclude-secrets.txt k8s-manifests/**/* */src/**.ts **/.env*"
-  },
-  "stableVersion": "2.19.1"
+  }
 }

@@ -8,7 +8,7 @@
     "@azure/identity": "^3.2.2",
     "@azure/keyvault-secrets": "^4.7.0",
     "@google-cloud/secret-manager": "^4.2.2",
-      "@guardian/interfaces": "^2.20.0-prerelease",
+      "@guardian/interfaces": "^2.20.0",
     "@hashgraph/sdk": "2.34.1",
     "@mattrglobal/jsonld-signatures-bbs": "^1.1.2",
     "@meeco/cryppo": "^2.0.2",
@@ -80,6 +80,5 @@
     "test:local": "mocha tests/**/*.test.js --exit",
     "test:stability": "mocha tests/stability.test.js"
   },
-    "version": "2.20.0-prerelease",
-    "stableVersion": "2.19.1"
+    "version": "2.20.0"
 }
