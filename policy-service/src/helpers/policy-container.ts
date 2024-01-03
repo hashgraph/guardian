@@ -198,7 +198,6 @@ export class PolicyContainer extends NatsService {
      * @param config
      */
     public addPolicy(config: IPolicyStartOptions): boolean {
-        console.log(JSON.stringify(config, null, 4))
         if (this.processCount >= this.maxPolicyInstances) {
             this.unsubscribeFromModelGeneration();
             return false

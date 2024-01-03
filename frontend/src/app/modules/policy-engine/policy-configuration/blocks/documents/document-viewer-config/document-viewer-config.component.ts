@@ -65,6 +65,10 @@ export class DocumentSourceComponent implements OnInit {
         })
     }
 
+    removeField(i: number) {
+        this.properties.uiMetaData.fields.splice(i, 1);
+    }
+
     load(block: PolicyBlock) {
         this.moduleVariables = block.moduleVariables;
         this.module = this.moduleVariables?.module;

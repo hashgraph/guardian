@@ -1,7 +1,10 @@
 {
   "name": "guardian",
   "private": true,
-  "packageManager": "yarn@3.2.1",
+  "packageManager": "yarn@1.22.21",
+  "resolutions": {
+    "@azure/core-rest-pipeline": "1.12.1"
+  },
   "workspaces": [
     "interfaces",
     "common",
@@ -18,5 +21,11 @@
     "api-tests",
     "notification-service"
   ],
-    "version": "2.18.0"
+  "version": "2.19.1",
+  "devDependencies": {
+    "detect-secrets": "^1.0.6"
+  },
+  "scripts": {
+    "detect-secrets": "detect-secrets-launcher --word-list exclude-secrets.txt k8s-manifests/**/* */src/**.ts **/.env*"
+  }
 }

@@ -1,11 +1,5 @@
 import { Singleton } from '../decorators/singleton';
-import {
-    GenerateUUIDv4,
-    HederaResponseCode,
-    IActiveTask,
-    ITask,
-    WorkerEvents,
-} from '@guardian/interfaces';
+import { GenerateUUIDv4, HederaResponseCode, IActiveTask, ITask, WorkerEvents, } from '@guardian/interfaces';
 import { Environment } from '../hedera-modules';
 import { NatsService } from '../mq';
 
@@ -300,7 +294,6 @@ export class Workers extends NatsService {
          */
         ipfsStorageApiKey: string
     }) {
-        console.log('update worker settings', settings);
         this.publish(WorkerEvents.UPDATE_SETTINGS, settings);
     }
 }

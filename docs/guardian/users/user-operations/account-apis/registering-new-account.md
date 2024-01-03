@@ -8,7 +8,7 @@
 {% endswagger-description %}
 
 {% swagger-parameter in="body" required="true" %}
-Object that contain username, password and role (optional) fields
+Object that contain username, password, confirm password and role (optional) fields
 {% endswagger-parameter %}
 
 {% swagger-response status="201: Created" description="Successful Operation" %}

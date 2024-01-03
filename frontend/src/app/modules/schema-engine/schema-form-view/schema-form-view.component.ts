@@ -173,7 +173,6 @@ export class SchemaFormViewComponent implements OnInit {
     }
 
     isDate(item: SchemaField): boolean {
-        console.log(item);
         return item.type === 'string' && item.format === 'date';
     }
 

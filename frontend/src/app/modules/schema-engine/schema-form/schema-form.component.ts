@@ -203,6 +203,19 @@ export class SchemaFormComponent implements OnInit {
         this.changeDetectorRef.detectChanges();
     }
 
+    private isAllFieldsHidden(field: SchemaField): boolean {
+        return (
+            field.hidden ||
+            (
+                field.isRef &&
+                field.type !== '#GeoJSON' &&
+                !!field.fields?.every((field: any) =>
+                    this.isAllFieldsHidden(field)
+                )
+            )
+        );
+    }
+
     private createFieldControl(field: SchemaField): any {
         const item: any = {
             ...field,
@@ -237,6 +250,7 @@ export class SchemaFormComponent implements OnInit {
 
         if (!field.isArray && field.isRef) {
             item.fields = field.fields;
+            item.isAllFieldsHidden = this.isAllFieldsHidden(item);
             item.displayRequired = item.fields.some((refField: any) => refField.required);
             if (field.required || item.preset) {
                 item.control =
@@ -284,17 +298,18 @@ export class SchemaFormComponent implements OnInit {
             item.control = new FormArray([]);
             item.list = [];
             item.fields = field.fields;
+            item.isAllFieldsHidden = this.isAllFieldsHidden(item);
             if (item.preset && item.preset.length) {
                 for (let index = 0; index < item.preset.length; index++) {
                     const preset = item.preset[index];
-                    const listItem = this.createListControl(item, preset);//todo
+                    const listItem = this.createListControl(item, preset);
                     item.list.push(listItem);
                     item.control.push(listItem.control);
                 }
                 this.options?.updateValueAndValidity();
                 this.change.emit();
             } else if (field.required) {
-                const listItem = this.createListControl(item);//todo
+                const listItem = this.createListControl(item);
                 item.list.push(listItem);
                 item.control.push(listItem.control);
 

@@ -30,7 +30,7 @@ export class DocumentValidatorConfigComponent implements OnInit {
 
     constructor(
     ) {
-        
+
     }
 
     ngOnInit(): void {
@@ -61,6 +61,10 @@ export class DocumentValidatorConfigComponent implements OnInit {
             field: '',
             type: 'equal',
         })
+    }
+
+    removeCondition(i: number) {
+        this.properties.conditions.splice(i, 1);
     }
 
     onSave() {

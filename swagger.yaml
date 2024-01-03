@@ -5066,8 +5066,49 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags:
+      tags: &ref_7
         - schema
+      security:
+        - bearerAuth: []
+  /schema/{schemaId}/tree:
+    get:
+      operationId: SingleSchemaApi_getSchemaTree
+      summary: Returns schema tree.
+      description: Returns schema tree.
+      parameters:
+        - name: schemaId
+          required: true
+          in: path
+          description: Schema identifier
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  type:
+                    type: string
+                  children:
+                    type: array
+                    items:
+                      type: object
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_7
       security:
         - bearerAuth: []
   /schemas:
@@ -5255,7 +5296,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_7
+      tags: &ref_8
         - schemas
       security:
         - bearerAuth: []
@@ -5286,7 +5327,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_7
+      tags: *ref_8
       security:
         - bearerAuth: []
   /schemas/list/sub:
@@ -5328,7 +5369,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_7
+      tags: *ref_8
       security:
         - bearerAuth: []
   /schemas/push/copy:
@@ -5363,7 +5404,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_7
+      tags: *ref_8
       security:
         - bearer: []
         - bearerAuth: []
@@ -6862,7 +6903,7 @@ paths:
       responses:
         '202':
           description: ''
-      tags: &ref_8
+      tags: &ref_9
         - tokens
   /tokens/{tokenId}/associate:
     put:
@@ -7413,7 +7454,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_8
+      tags: *ref_9
       security:
         - bearer: []
   /themes:
@@ -7906,7 +7947,7 @@ paths:
       responses:
         '204':
           description: ''
-      tags: &ref_9
+      tags: &ref_10
         - branding
     get:
       operationId: BrandingApi_getBranding
@@ -7914,7 +7955,7 @@ paths:
       responses:
         '200':
           description: ''
-      tags: *ref_9
+      tags: *ref_10
   /suggestions:
     post:
       operationId: SuggestionsApi_policySuggestions
@@ -7948,7 +7989,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_10
+      tags: &ref_11
         - suggestions
       security:
         - bearer: []
@@ -7982,7 +8023,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_10
+      tags: *ref_11
       security:
         - bearer: []
         - bearerAuth: []
@@ -8008,7 +8049,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_10
+      tags: *ref_11
       security:
         - bearer: []
         - bearerAuth: []
@@ -8038,7 +8079,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_11
+      tags: &ref_12
         - notifications
       security:
         - bearer: []
@@ -8066,7 +8107,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_11
+      tags: *ref_12
       security:
         - bearer: []
         - bearerAuth: []
@@ -8093,7 +8134,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_11
+      tags: *ref_12
       security:
         - bearer: []
         - bearerAuth: []
@@ -8120,7 +8161,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_11
+      tags: *ref_12
       security:
         - bearer: []
         - bearerAuth: []
@@ -8150,7 +8191,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_11
+      tags: *ref_12
       security:
         - bearer: []
         - bearerAuth: []
@@ -8574,7 +8615,7 @@ info:
     the heart of the Guardian solution is a sophisticated Policy Workflow Engine
     (PWE) that enables applications to offer a requirements-based tokenization
     implementation.
-  version: 2.18.0
+  version: 2.19.1
   contact:
     name: API developer
     url: https://envisionblockchain.com
