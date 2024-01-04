@@ -128,7 +128,8 @@ export class MultiSignBlockComponent implements OnInit {
         this.policyEngineService
             .setBlockData(this.id, this.policyId, data)
             .subscribe(
-                () => {},
+                () => {
+                },
                 (e) => {
                     console.error(e.error);
                     this.loading = false;

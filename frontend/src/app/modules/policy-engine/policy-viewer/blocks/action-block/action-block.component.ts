@@ -91,9 +91,7 @@ export class ActionBlockComponent implements OnInit {
                 this.field = data.field;
                 this.options = this.uiMetaData.options || [];
                 this.value = this.getObjectValue(this.data, this.field);
-                this.visible =
-                    this.options.findIndex((o: any) => o.value == this.value) ==
-                    -1;
+                this.visible = this.options.findIndex((o: any) => o.value == this.value) == -1;
             }
             if (this.type == 'download') {
                 this.content = this.uiMetaData.content;
@@ -146,8 +144,7 @@ export class ActionBlockComponent implements OnInit {
     onSelect(value: any) {
         this.setObjectValue(this.data, this.field, value);
         this.value = this.getObjectValue(this.data, this.field);
-        this.visible =
-            this.options.findIndex((o: any) => o.value == this.value) == -1;
+        this.visible = this.options.findIndex((o: any) => o.value == this.value) == -1;
         this.policyEngineService
             .setBlockData(this.id, this.policyId, this.data)
             .subscribe(
@@ -194,9 +191,7 @@ export class ActionBlockComponent implements OnInit {
     }
 
     downloadObjectAsJson(exportObj: any, exportName: string) {
-        const dataStr =
-            'data:text/json;charset=utf-8,' +
-            encodeURIComponent(JSON.stringify(exportObj));
+        const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(exportObj));
         const downloadAnchorNode = document.createElement('a');
         downloadAnchorNode.setAttribute('href', dataStr);
         downloadAnchorNode.setAttribute('download', exportName + '.config');

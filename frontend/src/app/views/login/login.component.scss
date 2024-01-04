@@ -158,7 +158,8 @@ form {
   font-size: 14px;
   font-style: normal;
   font-weight: 500;
-  line-height: 30px; /* 214.286% */
+  line-height: 30px;
+  /* 214.286% */
   cursor: pointer;
 }
 
@@ -187,6 +188,7 @@ form {
     transform: rotate(0deg);
     opacity: 1;
   }
+
   25% {
     transform: rotate(360deg);
     border-top: 3px solid rgba(0, 0, 0, 0);
@@ -194,6 +196,7 @@ form {
     border-left: 3px solid rgba(0, 0, 0, 0);
     border-bottom: 3px solid rgba(0, 0, 0, 0);
   }
+
   50% {
     transform: rotate(720deg);
     border-top: 3px solid rgba(0, 0, 0, 0);
@@ -201,6 +204,7 @@ form {
     border-bottom: 3px solid var(--color-primary);
     border-right: 3px solid rgba(0, 0, 0, 0);
   }
+
   75% {
     transform: rotate(1080deg);
     border-top: 3px solid rgba(0, 0, 0, 0);
@@ -208,6 +212,7 @@ form {
     border-right: 3px solid rgba(0, 0, 0, 0);
     border-left: 3px solid var(--color-primary);
   }
+
   100% {
     transform: rotate(1440deg);
     border-top: 3px solid var(--color-primary);
@@ -221,29 +226,73 @@ form {
   box-shadow: unset !important;
 }
 
-.current-user-name {
-  font-size: 20px;
-  line-height: 0px;
-  display: inline-block;
+.demo-block {
+  .user-content-button {
+    align-items: center;
+    gap: 10px;
+    display: flex;
+    cursor: pointer;
+  }
+
+  .admin-panel {
+    color: var(--color-primary, #4169E2);
+    font-size: 14px;
+  }
 }
 
-.current-user-role {
-  font-size: 16px;
-  line-height: 0px;
-  color: #707070;
-  margin-left: 5px;
+.demo-menu {
+  background: white !important;
+  max-height: 345px;
+  height: auto;
+  width: 510px;
+  border-radius: 30px;
+  overflow: scroll;
+
+  .debug-user button {
+    width: 145px;
+    padding: 0 15px;
+    margin: 5px 4px;
+  }
+
+  .debug-user {
+    white-space: normal;
+  }
+
+  .current-user {
+    border-bottom: 1px dashed gray;
+  }
+
+  .current-user-name {
+    font-size: 20px;
+    line-height: 0px;
+    display: inline-block;
+  }
+
+  .current-user-role {
+    font-size: 16px;
+    line-height: 0px;
+    color: #707070;
+    margin-left: 5px;
+  }
+
+  .current-user-first {
+    margin-top: 20px;
+  }
+
+  .current-user-last {
+    border: unset;
+  }
+
+  .current-user-policy-roles {
+    line-height: 0px;
+    margin-bottom: 15px;
+    color: var(--button-primary-color);
+  }
 }
 
-.current-user {
-  border-bottom: 1px dashed gray;
-}
-
-.debug-user button {
-  width: 145px;
-  padding: 0 15px;
-  margin: 5px 4px;
-}
-
-.debug-user {
-  white-space: normal;
+::ng-deep .policy-roles-tooltip {
+  white-space: pre-line !important;
+  max-width: 350px !important;
+  font-size: 15px;
+  width: 100%;
 }

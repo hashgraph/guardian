@@ -187,7 +187,7 @@ class Line {
 @Component({
     selector: 'app-messages-report-block',
     templateUrl: './messages-report-block.component.html',
-    styleUrls: ['./messages-report-block.component.css']
+    styleUrls: ['./messages-report-block.component.scss']
 })
 export class MessagesReportBlockComponent implements OnInit {
     @Input('id') id!: string;

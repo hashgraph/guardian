@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
+import { Component, EventEmitter, Inject, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { IModuleVariables, PolicyBlock, SchemaVariables } from '../../../../structures';
 
 /**
@@ -7,7 +7,7 @@ import { IModuleVariables, PolicyBlock, SchemaVariables } from '../../../../stru
 @Component({
     selector: 'document-validator-config',
     templateUrl: './document-validator-config.component.html',
-    styleUrls: ['./document-validator-config.component.css'],
+    styleUrls: ['./document-validator-config.component.scss'],
     encapsulation: ViewEncapsulation.Emulated
 })
 export class DocumentValidatorConfigComponent implements OnInit {
@@ -60,6 +60,10 @@ export class DocumentValidatorConfigComponent implements OnInit {
             field: '',
             type: 'equal',
         })
+    }
+
+    removeCondition(i: number) {
+        this.properties.conditions.splice(i, 1);
     }
 
     onSave() {

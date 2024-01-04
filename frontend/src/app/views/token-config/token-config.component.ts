@@ -109,7 +109,9 @@ export class TokenConfigComponent implements OnInit {
     }
 
     onFilter() {
-        this.currentPolicy = this.policyDropdownItem.id === -1 ? '' : this.policyDropdownItem.id;
+        this.currentPolicy =
+            (this.policyDropdownItem && this.policyDropdownItem.id !== -1) ?
+                this.policyDropdownItem.id : '';
         if (this.currentPolicy) {
             this.router.navigate(['/tokens'], {
                 queryParams: {
@@ -424,21 +426,14 @@ export class TokenConfigComponent implements OnInit {
         }
     }
 
-    newOnPage() {
-        this.pageIndex = 0;
-        this.loadTokens();
-    }
-
-    movePageIndex(inc: number) {
-        if (
-            inc > 0 &&
-            this.pageIndex < this.tokensCount / this.pageSize - 1
-        ) {
-            this.pageIndex += 1;
-            this.loadTokens();
-        } else if (inc < 0 && this.pageIndex > 0) {
-            this.pageIndex -= 1;
-            this.loadTokens();
+    public onPage(event: any): void {
+        if (this.pageSize != event.pageSize) {
+            this.pageIndex = 0;
+            this.pageSize = event.pageSize;
+        } else {
+            this.pageIndex = event.pageIndex;
+            this.pageSize = event.pageSize;
         }
+        this.loadTokens();
     }
 }

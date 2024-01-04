@@ -27,7 +27,7 @@
                                     "type": "initial"
                                 },
                                 {
-                                    "maximumError": "35kb",
+                                    "maximumError": "30kb",
                                     "maximumWarning": "15kb",
                                     "type": "anyComponentStyle"
                                 }
@@ -48,7 +48,7 @@
                                     "type": "initial"
                                 },
                                 {
-                                    "maximumError": "35kb",
+                                    "maximumError": "30kb",
                                     "maximumWarning": "15kb",
                                     "type": "anyComponentStyle"
                                 }

@@ -11,7 +11,6 @@ import { ImportPolicyDialog } from '../helpers/import-policy-dialog/import-polic
 import { PreviewPolicyDialog } from '../helpers/preview-policy-dialog/preview-policy-dialog.component';
 import { TasksService } from 'src/app/services/tasks.service';
 import { InformService } from 'src/app/services/inform.service';
-import { ConfirmationDialogComponent } from 'src/app/modules/common/confirmation-dialog/confirmation-dialog.component';
 import { MultiPolicyDialogComponent } from '../helpers/multi-policy-dialog/multi-policy-dialog.component';
 import { ComparePolicyDialog } from '../helpers/compare-policy-dialog/compare-policy-dialog.component';
 import { TagsService } from 'src/app/services/tag.service';
@@ -133,7 +132,7 @@ export class PoliciesComponent implements OnInit {
         this.columnsRole[UserRole.STANDARD_REGISTRY] = [
             'name',
             'description',
-            'roles',
+            // 'roles',
             'topic',
             'version',
             'tags',
@@ -333,7 +332,7 @@ export class PoliciesComponent implements OnInit {
         );
     }
 
-    deletePolicy(policyId: any, previousVersion: any) {
+    public deletePolicy(policyId: any, previousVersion: any) {
         const dialogRef = this.dialogService.open(DeletePolicyDialogComponent, {
             header: 'Delete Policy',
             width: '720px',
@@ -830,7 +829,7 @@ export class PoliciesComponent implements OnInit {
         );
     }
 
-    openSuggestionsDialog() {
+    public openSuggestionsDialog() {
         this.dialogService
             .open(SuggestionsConfigurationComponent, {
                 height: '640px',
@@ -839,5 +838,46 @@ export class PoliciesComponent implements OnInit {
                 header: 'Suggestions',
             })
             .onClose.subscribe();
+    }
+
+    public getStatusName(policy: any): string {
+        if (policy.status == 'DRAFT') {
+            return 'Draft';
+        }
+        if (policy.status == 'DRY-RUN') {
+            return 'In Dry Run';
+        }
+        if (policy.status == 'PUBLISH') {
+            return 'Published';
+        }
+        return 'Not published';
+    }
+
+    public onChangeStatus(event: any, policy: any): void {
+        if (policy.status == 'DRAFT') {
+            this.onPublishAction(event, policy);
+        }
+        if (policy.status == 'DRY-RUN') {
+            this.onDryRunAction(event, policy);
+        }
+        if (policy.status == 'PUBLISH') {
+            return;
+        } else {
+            this.onPublishErrorAction(event, policy)
+        }
+    }
+
+    public getStatusOptions(policy: any) {
+        if (policy.status == 'DRAFT') {
+            return this.publishMenuOption;
+        }
+        if (policy.status == 'DRY-RUN') {
+            return this.draftMenuOption;
+        }
+        if (policy.status == 'PUBLISH') {
+            return [];
+        } else {
+            return this.publishErrorMenuOption;
+        }
     }
 }

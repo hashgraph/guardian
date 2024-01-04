@@ -16,7 +16,6 @@ export class ContainerBlockComponent implements OnInit, OnDestroy {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
-    @Input('dryRun') dryRun!: any;
 
     loading: boolean = true;
     socket: any;

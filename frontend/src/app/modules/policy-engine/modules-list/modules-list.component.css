@@ -193,8 +193,8 @@ td:last-child {
 }
 
 .disabled-color {
-    fill: var(--color-grey-5) !important;
-    color: var(--color-grey-5) !important;
+    fill: var(--color-grey-5, #848FA9) !important;
+    color: var(--color-grey-5, #848FA9) !important;
     cursor: not-allowed !important;
 }
 

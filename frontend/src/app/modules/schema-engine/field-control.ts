@@ -259,4 +259,23 @@ export class FieldControl {
             return null;
         };
     }
+
+    public isCondition(types: any): boolean {
+        if (!this.controlType || !types[this.controlType.value]) {
+            return false;
+        }
+        if (this.controlArray && this.controlArray.value) {
+            return false;
+        }
+        if (!this.controlDescription || !this.controlDescription.value) {
+            return false;
+        }
+        if (types[this.controlType.value].isRef) {
+            return false;
+        }
+        if (types[this.controlType.value].type === 'boolean' && !this.controlRequired.value) {
+            return false;
+        }
+        return true;
+    }
 }

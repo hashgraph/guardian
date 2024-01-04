@@ -20,19 +20,19 @@
                 </mat-expansion-panel-header>
                 <div class="info-container" [style.grid-template-columns]="_gridStyle">
                     <ng-container *ngFor="let context of resultContext">
-                        <div *ngIf="context.right"
-                             [attr.open]="true"
+                        <div class="middle-compare-result compare-result"
+                             *ngIf="context.right"
                              [style.grid-column-start]="2 * context.index"
-                             class="middle-compare-result compare-result">
+                             [attr.open]="true">
                         </div>
                         <div
+                                [style.grid-column-start]="2 * context.index + 1"
                                 [attr.open]="true"
                                 [ngClass]="{
                                 'left-compare-result': context.left,
                                 'right-compare-result': context.right,
                                 'compare-result': true
-                            }"
-                                [style.grid-column-start]="2 * context.index + 1">
+                            }">
                             <ng-container *ngTemplateOutlet="resultInfo; context: context"></ng-container>
                         </div>
                     </ng-container>
@@ -46,26 +46,26 @@
                     </mat-panel-title>
                 </mat-expansion-panel-header>
                 <div class="merge-tree" [attr.tree-size]="size">
-                    <div *ngFor="let item of inputEvents" [attr.rate]="item.total_rate"
+                    <div *ngFor="let item of inputEvents" class="report-item report-item-small"
                          [attr.type]="item.type"
-                         [style.grid-template-columns]="_gridStyle"
-                         class="report-item report-item-small">
+                         [attr.rate]="item.total_rate"
+                         [style.grid-template-columns]="_gridStyle">
                         <ng-container *ngFor="let context of item.contexts">
                             <div
+                                    [style.grid-column-start]="2 * context.index + 1"
                                     [attr.open]="true"
                                     [ngClass]="{
                                     'left-compare-result': context.left,
                                     'right-compare-result': context.right,
                                     'fantom-block': context.fantom,
                                     'compare-result': true
-                                }"
-                                    [style.grid-column-start]="2 * context.index + 1">
+                                }">
                                 <ng-container *ngTemplateOutlet="propInfo; context: context"></ng-container>
                             </div>
                             <div class="middle-compare-result compare-result"
                                  *ngIf="context.right"
-                                 [attr.open]="true"
-                                 [style.grid-column-start]="2 * context.index">
+                                 [style.grid-column-start]="2 * context.index"
+                                 [attr.open]="true">
                             </div>
                         </ng-container>
                     </div>
@@ -79,26 +79,26 @@
                     </mat-panel-title>
                 </mat-expansion-panel-header>
                 <div class="merge-tree" [attr.tree-size]="size">
-                    <div *ngFor="let item of outputEvents" [attr.rate]="item.total_rate"
+                    <div *ngFor="let item of outputEvents" class="report-item report-item-small"
                          [attr.type]="item.type"
-                         [style.grid-template-columns]="_gridStyle"
-                         class="report-item report-item-small">
+                         [attr.rate]="item.total_rate"
+                         [style.grid-template-columns]="_gridStyle">
                         <ng-container *ngFor="let context of item.contexts">
                             <div
+                                    [style.grid-column-start]="2 * context.index + 1"
                                     [attr.open]="true"
                                     [ngClass]="{
                                     'left-compare-result': context.left,
                                     'right-compare-result': context.right,
                                     'fantom-block': context.fantom,
                                     'compare-result': true
-                                }"
-                                    [style.grid-column-start]="2 * context.index + 1">
+                                }">
                                 <ng-container *ngTemplateOutlet="propInfo; context: context"></ng-container>
                             </div>
                             <div class="middle-compare-result compare-result"
                                  *ngIf="context.right"
-                                 [attr.open]="true"
-                                 [style.grid-column-start]="2 * context.index">
+                                 [style.grid-column-start]="2 * context.index"
+                                 [attr.open]="true">
                             </div>
                         </ng-container>
                     </div>
@@ -113,26 +113,26 @@
                 </mat-expansion-panel-header>
                 <div class="merge-tree" [attr.tree-size]="size">
                     <div *ngFor="let item of variables"
-                         [attr.rate]="item.total_rate"
+                         class="report-item report-item-small"
                          [attr.type]="item.type"
-                         [style.grid-template-columns]="_gridStyle"
-                         class="report-item report-item-small">
+                         [attr.rate]="item.total_rate"
+                         [style.grid-template-columns]="_gridStyle">
                         <ng-container *ngFor="let context of item.contexts">
                             <div
+                                    [style.grid-column-start]="2 * context.index + 1"
                                     [attr.open]="true"
                                     [ngClass]="{
                                     'left-compare-result': context.left,
                                     'right-compare-result': context.right,
                                     'fantom-block': context.fantom,
                                     'compare-result': true
-                                }"
-                                    [style.grid-column-start]="2 * context.index + 1">
+                                }">
                                 <ng-container *ngTemplateOutlet="propInfo; context: context"></ng-container>
                             </div>
                             <div class="middle-compare-result compare-result"
                                  *ngIf="context.right"
-                                 [attr.open]="true"
-                                 [style.grid-column-start]="2 * context.index">
+                                 [style.grid-column-start]="2 * context.index"
+                                 [attr.open]="true">
                             </div>
                         </ng-container>
                     </div>
@@ -145,11 +145,11 @@
                 </mat-expansion-panel-header>
 
                 <div class="merge-container">
-                    <div [attr.type-1]="_type1"
+                    <div class="legend"
+                         [attr.type-1]="_type1"
                          [attr.type-2]="_type2"
                          [attr.type-3]="_type3"
-                         [attr.type-4]="_type4"
-                         class="legend">
+                         [attr.type-4]="_type4">
                         <div class="legend-item" (click)="_type1=!_type1">
                             <div class="legend-icon legend-l1"></div>
                             <div class="legend-text">
@@ -176,13 +176,13 @@
                         </div>
                     </div>
 
-                    <div *ngIf="type==='tree'" [attr.open]="_panelOpenState"
+                    <div *ngIf="type==='tree'" class="merge-tree"
                          [attr.tree-size]="size"
+                         [attr.open]="_panelOpenState"
                          [attr.type-1]="_type1"
                          [attr.type-2]="_type2"
                          [attr.type-3]="_type3"
-                         [attr.type-4]="_type4"
-                         class="merge-tree">
+                         [attr.type-4]="_type4">
 
                         <div *ngFor="let row of blocks" class="report-item report-item-number"
                              [attr.hidden]="row.hidden"
@@ -199,17 +199,17 @@
                                         [attr.offset]="row.lvl"
                                         [attr.rate]="treeItemContext.rate"
                                         [attr.type]="treeItemContext.type"
+                                        [style.padding-left.px]="row.offset"
+                                        [style.grid-column-start]="2 * treeItemContext.index + 1"
                                         [ngClass]="{
                                         'left-tree': treeItemContext.left,
                                         'right-tree': treeItemContext.right,
                                         'hidden-item': true,
                                         'fantom-tree': treeItemContext.fantom
-                                    }"
-                                        [style.grid-column-start]="2 * treeItemContext.index + 1"
-                                        [style.padding-left.px]="row.offset">
+                                    }">
                                     <div class="block-tree" (click)="row.open = !row.open">
-                                        <div [attr.index-rate]="treeItemContext.data.indexRate"
-                                             class="block-index">
+                                        <div class="block-index"
+                                             [attr.index-rate]="treeItemContext.data.indexRate">
                                             {{ treeItemContext.data.blockIndex }}
                                         </div>
                                         <div class="block-icon">
@@ -231,22 +231,22 @@
                             <ng-container *ngIf="row.open">
                                 <ng-container *ngFor="let treeDetailContext of row.detailContexts">
                                     <div [attr.open]="row.open"
+                                         [style.padding-left.px]="row.offset"
+                                         [style.grid-column-start]="2 * treeDetailContext.index + 1"
                                          [ngClass]="{
                                             'left-compare-result': treeDetailContext.left,
                                             'right-compare-result': treeDetailContext.right,
                                             'fantom-block': treeDetailContext.fantom,
                                             'hidden-item': true,
                                             'compare-result': true
-                                        }"
-                                         [style.grid-column-start]="2 * treeDetailContext.index + 1"
-                                         [style.padding-left.px]="row.offset">
+                                        }">
                                         <ng-container
                                                 *ngTemplateOutlet="resultDetails; context: treeDetailContext"></ng-container>
                                     </div>
-                                    <div *ngIf="treeDetailContext.right"
-                                         [attr.open]="row.open"
+                                    <div class="middle-compare-result compare-result"
+                                         *ngIf="treeDetailContext.right"
                                          [style.grid-column-start]="2 * treeDetailContext.index"
-                                         class="middle-compare-result compare-result"></div>
+                                         [attr.open]="row.open"></div>
                                 </ng-container>
                             </ng-container>
                         </div>
@@ -260,10 +260,10 @@
                                         {{ column.label }}
                                     </mat-header-cell>
                                     <mat-cell *cdkCellDef="let row">
-                                        <span [attr.display-type]="column.display"
-                                              [attr.value]="row.data[column.name]"
+                                        <span class="table-value"
                                               [title]="row.data[column.name]"
-                                              class="table-value">
+                                              [attr.value]="row.data[column.name]"
+                                              [attr.display-type]="column.display">
                                             {{ row.data[column.name] }}
                                         </span>
                                     </mat-cell>
@@ -309,23 +309,23 @@
     <div *ngIf="_toBlockDetailsContext(data); let data" class="prop-container">
         <div class="prop">
             <div class="prop-name">Permission Rate:</div>
-            <div [attr.rate]="data.permissionRate" class="prop-value">{{ data.permissionRate }}</div>
+            <div class="prop-value" [attr.rate]="data.permissionRate">{{ data.permissionRate }}</div>
         </div>
         <div class="prop">
             <div class="prop-name">Properties Rate:</div>
-            <div [attr.rate]="data.propRate" class="prop-value">{{ data.propRate }}</div>
+            <div class="prop-value" [attr.rate]="data.propRate">{{ data.propRate }}</div>
         </div>
         <div class="prop">
             <div class="prop-name">Events Rate:</div>
-            <div [attr.rate]="data.eventRate" class="prop-value">{{ data.eventRate }}</div>
+            <div class="prop-value" [attr.rate]="data.eventRate">{{ data.eventRate }}</div>
         </div>
         <div class="prop">
             <div class="prop-name">Artifacts Rate:</div>
-            <div [attr.rate]="data.artifactsRate" class="prop-value">{{ data.artifactsRate }}</div>
+            <div class="prop-value" [attr.rate]="data.artifactsRate">{{ data.artifactsRate }}</div>
         </div>
         <div class="prop">
             <div class="prop-name">Total Rate:</div>
-            <div [attr.rate]="data.totalRate" class="prop-value">{{ data.totalRate }}</div>
+            <div class="prop-value" [attr.rate]="data.totalRate">{{ data.totalRate }}</div>
         </div>
 
         <div class="prop-delimiter"></div>
@@ -341,10 +341,10 @@
             <div class="prop-table-header">Permissions:</div>
             <div class="prop-table-body">
                 <div *ngFor="let perm of data.permissions"
+                     class="prop-table-row"
                      [attr.fantom]="perm.fantom"
-                     [attr.index]="data.index"
                      [attr.type]="perm.type"
-                     class="prop-table-row">
+                     [attr.index]="data.index">
                     <div class="prop-table-name" [style.padding-left.px]="10">
                         {{ perm.name }}:
                     </div>
@@ -363,11 +363,11 @@
             <div class="prop-table-header">Properties:</div>
             <div class="prop-table-body">
                 <div *ngFor="let prop of data.properties"
+                     class="prop-table-row"
                      [attr.fantom]="prop.fantom"
-                     [attr.index]="data.index"
-                     [attr.offset]="prop.lvl"
                      [attr.type]="prop.type"
-                     class="prop-table-row">
+                     [attr.offset]="prop.lvl"
+                     [attr.index]="data.index">
                     <div class="prop-table-name" [style.padding-left.px]="prop.offset">
                         {{ prop.name }}:
                     </div>
@@ -390,18 +390,18 @@
             <div class="prop-table-body">
                 <ng-container *ngFor="let event of data.events">
 
-                    <div [attr.fantom]="event.fantom"
-                         [attr.index]="data.index"
+                    <div class="prop-table-row"
+                         [attr.fantom]="event.fantom"
                          [attr.type]="event.type"
-                         class="prop-table-row">
+                         [attr.index]="data.index">
                         <div class="prop-table-name" [style.padding-left.px]="10">Event:</div>
                         <div class="prop-table-value"><span></span></div>
                     </div>
 
-                    <div [attr.fantom]="event.fantom"
-                         [attr.index]="data.index"
+                    <div class="prop-table-row"
+                         [attr.fantom]="event.fantom"
                          [attr.type]="event.type"
-                         class="prop-table-row">
+                         [attr.index]="data.index">
                         <div class="prop-table-name" [style.padding-left.px]="20">source:</div>
                         <div class="prop-table-value">
                             <span *ngIf="event.value">
@@ -410,10 +410,10 @@
                         </div>
                     </div>
 
-                    <div [attr.fantom]="event.fantom"
-                         [attr.index]="data.index"
+                    <div class="prop-table-row"
+                         [attr.fantom]="event.fantom"
                          [attr.type]="event.type"
-                         class="prop-table-row">
+                         [attr.index]="data.index">
                         <div class="prop-table-name" [style.padding-left.px]="20">output:</div>
                         <div class="prop-table-value">
                             <span *ngIf="event.value">
@@ -422,10 +422,10 @@
                         </div>
                     </div>
 
-                    <div [attr.fantom]="event.fantom"
-                         [attr.index]="data.index"
+                    <div class="prop-table-row"
+                         [attr.fantom]="event.fantom"
                          [attr.type]="event.type"
-                         class="prop-table-row">
+                         [attr.index]="data.index">
                         <div class="prop-table-name" [style.padding-left.px]="20">target:</div>
                         <div class="prop-table-value">
                             <span *ngIf="event.value">
@@ -434,10 +434,10 @@
                         </div>
                     </div>
 
-                    <div [attr.fantom]="event.fantom"
-                         [attr.index]="data.index"
+                    <div class="prop-table-row"
+                         [attr.fantom]="event.fantom"
                          [attr.type]="event.type"
-                         class="prop-table-row">
+                         [attr.index]="data.index">
                         <div class="prop-table-name" [style.padding-left.px]="20">input:</div>
                         <div class="prop-table-value">
                             <span *ngIf="event.value">
@@ -446,10 +446,10 @@
                         </div>
                     </div>
 
-                    <div [attr.fantom]="event.fantom"
-                         [attr.index]="data.index"
+                    <div class="prop-table-row"
+                         [attr.fantom]="event.fantom"
                          [attr.type]="event.type"
-                         class="prop-table-row">
+                         [attr.index]="data.index">
                         <div class="prop-table-name" [style.padding-left.px]="20">actor:</div>
                         <div class="prop-table-value">
                             <span *ngIf="event.value">
@@ -458,10 +458,10 @@
                         </div>
                     </div>
 
-                    <div [attr.fantom]="event.fantom"
-                         [attr.index]="data.index"
+                    <div class="prop-table-row"
+                         [attr.fantom]="event.fantom"
                          [attr.type]="event.type"
-                         class="prop-table-row">
+                         [attr.index]="data.index">
                         <div class="prop-table-name" [style.padding-left.px]="20">disabled:</div>
                         <div class="prop-table-value">
                             <span *ngIf="event.value">
@@ -480,44 +480,44 @@
             <div class="prop-table-header">Artifacts:</div>
             <div class="prop-table-body">
                 <ng-container *ngFor="let artifact of data.artifacts">
-                    <div [attr.fantom]="artifact.fantom"
-                         [attr.index]="data.index"
+                    <div class="prop-table-row"
+                         [attr.fantom]="artifact.fantom"
                          [attr.type]="artifact.type"
-                         class="prop-table-row">
+                         [attr.index]="data.index">
                         <div class="prop-table-name" [style.padding-left.px]="10">Artifact:</div>
                         <div class="prop-table-value"><span></span></div>
                     </div>
-                    <div [attr.fantom]="artifact.fantom"
-                         [attr.index]="data.index"
+                    <div class="prop-table-row"
+                         [attr.fantom]="artifact.fantom"
                          [attr.type]="artifact.type"
-                         class="prop-table-row">
+                         [attr.index]="data.index">
                         <div class="prop-table-name" [style.padding-left.px]="20">name:</div>
                         <div class="prop-table-value">
                             <span *ngIf="artifact.value">{{ artifact.fileName }}</span>
                         </div>
                     </div>
-                    <div [attr.fantom]="artifact.fantom"
-                         [attr.index]="data.index"
+                    <div class="prop-table-row"
+                         [attr.fantom]="artifact.fantom"
                          [attr.type]="artifact.type"
-                         class="prop-table-row">
+                         [attr.index]="data.index">
                         <div class="prop-table-name" [style.padding-left.px]="20">extension:</div>
                         <div class="prop-table-value">
                             <span *ngIf="artifact.value">{{ artifact.fileExtension }}</span>
                         </div>
                     </div>
-                    <div [attr.fantom]="artifact.fantom"
-                         [attr.index]="data.index"
+                    <div class="prop-table-row"
+                         [attr.fantom]="artifact.fantom"
                          [attr.type]="artifact.type"
-                         class="prop-table-row">
+                         [attr.index]="data.index">
                         <div class="prop-table-name" [style.padding-left.px]="20">type:</div>
                         <div class="prop-table-value">
                             <span *ngIf="artifact.value">{{ artifact.fileType }}</span>
                         </div>
                     </div>
-                    <div [attr.fantom]="artifact.fantom"
-                         [attr.index]="data.index"
+                    <div class="prop-table-row"
+                         [attr.fantom]="artifact.fantom"
                          [attr.type]="artifact.type"
-                         class="prop-table-row">
+                         [attr.index]="data.index">
                         <div class="prop-table-name" [style.padding-left.px]="20">hash:</div>
                         <div class="prop-table-value">
                             <span *ngIf="artifact.value">{{ artifact.fileHash }}</span>
@@ -536,11 +536,11 @@
         <div class="prop-table">
             <div class="prop-table-body">
                 <div *ngFor="let prop of data.properties"
+                     class="prop-table-row"
                      [attr.fantom]="prop.fantom"
-                     [attr.index]="data.index"
-                     [attr.offset]="prop.lvl"
                      [attr.type]="prop.type"
-                     class="prop-table-row">
+                     [attr.offset]="prop.lvl"
+                     [attr.index]="data.index">
                     <div class="prop-table-name" [style.padding-left.px]="prop.offset">
                         {{ prop.name }}:
                     </div>

@@ -1,6 +1,5 @@
 import { Component, EventEmitter, Inject, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { IModuleVariables, PolicyBlock, SchemaVariables } from '../../../../structures';
-import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
 
 /**
  * Settings for block of 'externalDataBlock' type.
@@ -8,7 +7,7 @@ import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
 @Component({
     selector: 'external-data-config',
     templateUrl: './external-data-config.component.html',
-    styleUrls: ['./external-data-config.component.css'],
+    styleUrls: ['./external-data-config.component.scss'],
     encapsulation: ViewEncapsulation.Emulated
 })
 export class ExternalDataConfigComponent implements OnInit {

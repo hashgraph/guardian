@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { CompareStorage } from '../../../services/compare-storage.service';
 import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
@@ -10,6 +10,9 @@ import { MatMenuTrigger } from '@angular/material/menu';
     styleUrls: ['./compare-viewer.component.scss']
 })
 export class CompareViewerComponent implements OnInit {
+    @Input() active: boolean = false;
+    @Input() collapsed: boolean = false;
+
     @ViewChild(MatMenuTrigger) compareMenu: MatMenuTrigger;
 
     public count: number = 0;
@@ -54,11 +57,6 @@ export class CompareViewerComponent implements OnInit {
         }
     }
 
-    public onMenuOpened() {
-        this.menuOpened = true;
-        this.refresh();
-    }
-
     public isSelected(id: string): boolean {
         return this.selected[id] === true;
     }
@@ -88,5 +86,22 @@ export class CompareViewerComponent implements OnInit {
                 }
             });
         }
+    }
+
+    public onMenuOpened($event: MouseEvent) {
+        $event.stopPropagation();
+        if (this.collapsed) {
+            $event.stopImmediatePropagation();
+            const ids = this.ids.filter(id => this.selected[id]);
+            this.router.navigate(['/compare'], {
+                queryParams: {
+                    type: 'document',
+                    documentIds: ids
+                }
+            });
+            return;
+        }
+        this.menuOpened = true;
+        this.refresh();
     }
 }

@@ -148,21 +148,6 @@ export class ArtifactConfigComponent implements OnInit {
         });
     }
 
-    newOnPage() {
-        this.pageIndex = 0;
-        this.loadArtifacts();
-    }
-
-    movePageIndex(inc: number) {
-        if (inc > 0 && this.pageIndex < (this.artifactsCount / this.pageSize) - 1) {
-            this.pageIndex += 1;
-            this.loadArtifacts();
-        } else if (inc < 0 && this.pageIndex > 0) {
-            this.pageIndex -= 1;
-            this.loadArtifacts();
-        }
-    }
-
     openDeleteArtifactDialog(artifact: any) {
         this.deleteArtifactVisible = true;
         this.currentArtifact = artifact;

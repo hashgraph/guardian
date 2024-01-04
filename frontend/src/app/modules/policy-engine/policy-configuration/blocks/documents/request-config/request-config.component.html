@@ -4,19 +4,12 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Schema</td>
         <td class="propRowCell">
-            <mat-select (change)="onSave()" [(value)]="properties.schema" [disabled]="readonly">
-                <mat-option
-                        *ngFor="let schema of schemas"
-                        [attr.status]="schema.status"
-                        [matTooltip]="schema.tooltip"
-                        [value]="schema.value"
-                        class="schema-variable"
-                        matTooltipClass="guardian-tooltip small-guardian-tooltip"
-                        matTooltipPosition="below"
-                        matTooltipShowDelay="500"
-                >{{ schema.displayName }}
-                </mat-option>
-            </mat-select>
+            <select-schema
+                    [schemas]="schemas"
+                    [(value)]="properties.schema"
+                    [disabled]="readonly"
+                    (change)="onSave()"
+            ></select-schema>
         </td>
     </tr>
 
@@ -144,19 +137,12 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Preset Schema</td>
         <td class="propRowCell">
-            <mat-select (selectionChange)="onSelectInput()" [(value)]="properties.presetSchema" [disabled]="readonly">
-                <mat-option
-                        *ngFor="let schema of schemas"
-                        [attr.status]="schema.status"
-                        [matTooltip]="schema.tooltip"
-                        [value]="schema.value"
-                        class="schema-variable"
-                        matTooltipClass="guardian-tooltip small-guardian-tooltip"
-                        matTooltipPosition="below"
-                        matTooltipShowDelay="500"
-                >{{ schema.displayName }}
-                </mat-option>
-            </mat-select>
+            <select-schema
+                    [schemas]="schemas"
+                    [(value)]="properties.presetSchema"
+                    [disabled]="readonly"
+                    (change)="onSelectInput()"
+            ></select-schema>
         </td>
     </tr>
     <ng-container *ngFor="let field of properties.presetFields; let i=index">

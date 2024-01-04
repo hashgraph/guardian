@@ -7,7 +7,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 @Component({
     selector: 'viewer-dialog',
     templateUrl: './viewer-dialog.component.html',
-    styleUrls: ['./viewer-dialog.component.css']
+    styleUrls: ['./viewer-dialog.component.scss']
 })
 export class ViewerDialog {
     public title: string = '';

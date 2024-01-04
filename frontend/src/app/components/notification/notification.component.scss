@@ -48,6 +48,7 @@
         margin: 0 auto;
         background-color: #2c78f654;
     }
+
     &__view-all {
         margin-top: 5px;
         text-align: center;
@@ -189,6 +190,7 @@
       }
     }
     }
+
     &__details {
       height: 24px;
     }
@@ -209,6 +211,7 @@
         overflow: hidden;
         padding-right: 5px;
     }
+
     &__message {
         grid-area: message;
         white-space: nowrap;
@@ -222,6 +225,7 @@
     justify-content: space-between;
 
   }
+
     &__details {
         grid-area: details;
         justify-self: end;

@@ -50,7 +50,8 @@ export class WizardService {
             );
             delete wizardStates[policyId];
             localStorage.setItem('wizard', JSON.stringify(wizardStates));
-        } catch {}
+        } catch {
+        }
     }
 
     public setWizardPreset(policyId: string, preset: any) {

@@ -77,19 +77,4 @@ export class NotificationsComponent implements OnInit {
             () => (this.loading = false)
         );
     }
-
-    public newOnPage() {
-        this.pageIndex = 0;
-        this.loadNotifications();
-    }
-
-    movePageIndex(inc: number) {
-        if (inc > 0 && this.pageIndex < (this.notificationsCount / this.pageSize) - 1) {
-            this.pageIndex += 1;
-            this.loadNotifications();
-        } else if (inc < 0 && this.pageIndex > 0) {
-            this.pageIndex -= 1;
-            this.loadNotifications();
-        }
-    }
 }

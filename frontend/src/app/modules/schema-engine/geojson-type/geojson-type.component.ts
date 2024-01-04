@@ -1,11 +1,4 @@
-import {
-    ChangeDetectorRef,
-    Component,
-    Input,
-    OnChanges,
-    OnInit,
-    SimpleChanges,
-} from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnChanges, OnInit, SimpleChanges, } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { GeoJsonSchema, GeoJsonType } from '@guardian/interfaces';
 import ajv from 'ajv';
@@ -16,7 +9,7 @@ import { ajvSchemaValidator } from 'src/app/validators/ajv-schema.validator';
 @Component({
     selector: 'app-geojson-type',
     templateUrl: './geojson-type.component.html',
-    styleUrls: ['./geojson-type.component.css'],
+    styleUrls: ['./geojson-type.component.scss'],
 })
 export class GeojsonTypeComponent implements OnInit, OnChanges {
     @Input('formGroup') control?: FormControl;
@@ -66,7 +59,8 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
     constructor(
         public mapService: MapService,
         private cdkRef: ChangeDetectorRef
-    ) {}
+    ) {
+    }
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes?.isDisabled && !changes?.isDisabled.firstChange) {
@@ -210,9 +204,9 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
                 this.updateCoordinates.next(
                     this.markers[0]
                         ? [
-                              this.markers[0].position.lng,
-                              this.markers[0].position.lat,
-                          ]
+                            this.markers[0].position.lng,
+                            this.markers[0].position.lat,
+                        ]
                         : null
                 );
                 break;
@@ -221,9 +215,9 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
                 this.updateCoordinates.next(
                     this.markers.length
                         ? this.markers.map((item: any) => [
-                              item.position.lng,
-                              item.position.lat,
-                          ])
+                            item.position.lng,
+                            item.position.lat,
+                        ])
                         : null
                 );
                 break;
@@ -232,11 +226,11 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
                 this.updateCoordinates.next(
                     this.polygons[0]
                         ? [
-                              this.polygons[0].paths.map((path: any) => [
-                                  path.lng,
-                                  path.lat,
-                              ]),
-                          ]
+                            this.polygons[0].paths.map((path: any) => [
+                                path.lng,
+                                path.lat,
+                            ]),
+                        ]
                         : null
                 );
                 break;
@@ -245,11 +239,11 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
                 this.updateCoordinates.next(
                     this.polygons.length
                         ? this.polygons.map((polygon: any) => [
-                              polygon.paths.map((path: any) => [
-                                  path.lng,
-                                  path.lat,
-                              ]),
-                          ])
+                            polygon.paths.map((path: any) => [
+                                path.lng,
+                                path.lat,
+                            ]),
+                        ])
                         : null
                 );
                 break;
@@ -267,8 +261,8 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
                 this.updateCoordinates.next(
                     this.lines.length
                         ? this.lines.map((line: any) =>
-                              line.path.map((path: any) => [path.lng, path.lat])
-                          )
+                            line.path.map((path: any) => [path.lng, path.lat])
+                        )
                         : null
                 );
                 break;

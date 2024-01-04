@@ -45,17 +45,11 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public userRole!: string;
     public userGroup!: string;
     public recordingActive: boolean = false;
-
     public steps: IStep[] = [];
-
-    private subscription = new Subscription();
-
-    public innerWidth: any;
-    public innerHeight: any;
-
     public navigationFooterDisabled = false;
     public prevButtonDisabled = false;
     public nextButtonDisabled = false;
+    private subscription = new Subscription();
 
     public get isDryRun(): boolean {
         return this.policyInfo && this.policyInfo.status === 'DRY-RUN';
@@ -83,8 +77,6 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        this.innerWidth = window.innerWidth;
-        this.innerHeight = window.innerHeight;
         this.loading = true;
         this.subscription.add(
             this.route.queryParams.subscribe((queryParams) => {
@@ -333,7 +325,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         dialogRef.onClose.subscribe(async (result) => { });
     }
 
-    onPage(event: any) {
+    public onPage(event: any): void {
         if (this.pageSize != event.pageSize) {
             this.pageIndex = 0;
             this.pageSize = event.pageSize;
@@ -341,54 +333,6 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             this.pageIndex = event.pageIndex;
             this.pageSize = event.pageSize;
         }
-
-        this.loading = true;
-        this.pageIndex = 0;
-        this.pageSize = 10;
-        this.policyEngineService
-            .loadDocuments(
-                this.policyInfo.id,
-                this.view,
-                this.pageIndex,
-                this.pageSize
-            )
-            .subscribe((documents: HttpResponse<any[]>) => {
-                this.documents = documents.body || [];
-                this.documents = this.documents.map((d) => this.setType(d));
-                this.documentCount =
-                    documents.headers.get('X-Total-Count') ||
-                    this.documents.length;
-                setTimeout(() => {
-                    this.loading = false;
-                }, 500);
-            }, (e) => {
-                this.loading = false;
-            });
-    }
-
-    private setType(document: any) {
-        if (this.view === 'artifacts') {
-            if (document.dryRunClass === 'VcDocumentCollection') {
-                document.__type = 'VC';
-            } else if (document.dryRunClass === 'VpDocumentCollection') {
-                document.__type = 'VP';
-            } else if (document.dryRunClass === 'DidDocumentCollection') {
-                document.__type = 'DID';
-                document.owner = document.did;
-            } else if (document.dryRunClass === 'ApprovalDocumentCollection') {
-                document.__type = 'VC';
-            }
-        } else if (this.view === 'transactions') {
-            document.__type = document.type;
-            document.owner = document.hederaAccountId;
-        } else if (this.view === 'ipfs') {
-            document.__type = '';
-        }
-        return document;
-    }
-
-    newOnPage() {
-        this.pageIndex = 0;
 
         this.loading = true;
         this.policyEngineService
@@ -415,40 +359,25 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             );
     }
 
-    movePageIndex(inc: number) {
-        const exec = () => {
-            this.loading = true;
-            this.policyEngineService
-                .loadDocuments(
-                    this.policyInfo.id,
-                    this.view,
-                    this.pageIndex,
-                    this.pageSize
-                )
-                .subscribe(
-                    (documents: HttpResponse<any[]>) => {
-                        this.documents = documents.body || [];
-                        this.documents = this.documents.map((d) => this.setType(d));
-                        this.documentCount =
-                            documents.headers.get('X-Total-Count') ||
-                            this.documents.length;
-                        setTimeout(() => {
-                            this.loading = false;
-                        }, 500);
-                    },
-                    (e) => {
-                        this.loading = false;
-                    }
-                );
+    private setType(document: any) {
+        if (this.view === 'artifacts') {
+            if (document.dryRunClass === 'VcDocumentCollection') {
+                document.__type = 'VC';
+            } else if (document.dryRunClass === 'VpDocumentCollection') {
+                document.__type = 'VP';
+            } else if (document.dryRunClass === 'DidDocumentCollection') {
+                document.__type = 'DID';
+                document.owner = document.did;
+            } else if (document.dryRunClass === 'ApprovalDocumentCollection') {
+                document.__type = 'VC';
+            }
+        } else if (this.view === 'transactions') {
+            document.__type = document.type;
+            document.owner = document.hederaAccountId;
+        } else if (this.view === 'ipfs') {
+            document.__type = '';
         }
-
-        if (inc > 0 && this.pageIndex < (this.documentCount / this.pageSize) - 1) {
-            this.pageIndex += 1;
-            exec();
-        } else if (inc < 0 && this.pageIndex > 0) {
-            this.pageIndex -= 1;
-            exec();
-        }
+        return document;
     }
 
     updateNavigationButtons() {

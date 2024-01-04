@@ -1,0 +1,83 @@
+<div class="search-result">
+    <div *ngIf="loading" class="loading">
+        <mat-spinner></mat-spinner>
+    </div>
+    <div class="search-result-header">
+        <div class="search-result-header__icon">
+            <mat-icon>{{ icon }}</mat-icon>
+        </div>
+        <div class="search-result-header__path">
+            <span>{{ title }}</span>
+        </div>
+        <div class="search-result-header__buttons">
+            <div (click)="onCancel()" class="search-result-header__button cancel">
+                Cancel
+            </div>
+        </div>
+    </div>
+    <div class="search-result-body">
+
+        <div *ngFor="let group of groups" class="search-result-group">
+            <!-- <div class="search-result-group__details">
+                {{group.name}}
+            </div> -->
+            <div class="search-result-chains">
+                <div
+                        *ngFor="let groupItem of group.items"
+                        [attr.collapsed]="groupItem.collapsed"
+                        class="search-result-chain"
+                >
+                    <div class="search-result-chain__details">
+                        <div (click)="onCollapse(groupItem)" class="details-expand">
+                            <mat-icon>arrow_drop_down</mat-icon>
+                        </div>
+                        <div class="details-delimiter"></div>
+                        <div class="details-value max-size">{{ group.name }}</div>
+
+                        <div class="details-name">Length:</div>
+                        <div [attr.rate-color]="groupItem.countColor" class="details-value">
+                            {{ groupItem.count }}
+                        </div>
+                        <div class="details-delimiter"></div>
+                        <div class="details-name">Rate:</div>
+                        <div [attr.rate-color]="groupItem.rateColor" class="details-value">
+                            {{ groupItem.rate }}%
+                        </div>
+                    </div>
+                    <div class="search-result-tree">
+                        <div *ngFor="let block of groupItem.tree"
+                             [style.padding-left.px]="block.offset"
+                             class="search-result-pair"
+                        >
+                            <div
+                                    [attr.selected]="block.selected"
+                                    [style]="blockStyle(block)"
+                                    class="block-item"
+                                    theme-all
+                            >
+                                <div class="block-item-icon">
+                                    <mat-icon theme-text>{{ block.icon }}</mat-icon>
+                                </div>
+                                <div class="block-item-name" theme-text>
+                                    {{ block.name }}
+                                </div>
+                            </div>
+                            <div [attr.rate-color]="block.rateColor" class="search-result-pair__rate">
+                                {{ block.rate }}%
+                            </div>
+                        </div>
+                        <div *ngIf="groupItem.target" class="search-result-props">
+                            <common-properties
+                                    [block]="groupItem.target"
+                                    [module]="groupItem.root"
+                                    [readonly]="true"
+                                    class="readonly-status"
+                                    type="Common"></common-properties>
+                            <div (click)="onReplace(groupItem)" class="search-apply-button">Apply</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

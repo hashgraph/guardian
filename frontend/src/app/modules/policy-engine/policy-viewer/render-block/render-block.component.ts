@@ -8,7 +8,7 @@ import {
     Renderer2,
     TemplateRef,
     ViewChild,
-    ViewContainerRef,
+    ViewContainerRef
 } from '@angular/core';
 import { RegisteredService } from '../../services/registered.service';
 import { IBlock } from '../../structures';
@@ -94,9 +94,7 @@ export class RenderBlockComponent {
         this.target.clear();
         const factory: any = this.registeredService.getFactory(this.blockType);
         if (factory) {
-            let componentFactory = this.componentFactoryResolver.resolveComponentFactory(
-                factory
-            );
+            let componentFactory = this.componentFactoryResolver.resolveComponentFactory(factory);
             this.componentRef = this.target.createComponent(componentFactory);
             this.componentRef.instance.id = this.id;
             this.componentRef.instance.static = this.static;

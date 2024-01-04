@@ -11,7 +11,11 @@ import { ButtonModule } from 'primeng/button';
 import { DropdownModule } from 'primeng/dropdown';
 
 @NgModule({
-    declarations: [TagsExplorer, TagsExplorerDialog, TagCreateDialog],
+    declarations: [
+        TagsExplorer,
+        TagsExplorerDialog,
+        TagCreateDialog
+    ],
     imports: [
         CommonModule,
         FormsModule,
@@ -21,7 +25,11 @@ import { DropdownModule } from 'primeng/dropdown';
         ButtonModule,
         DropdownModule,
     ],
-    exports: [TagsExplorer, TagsExplorerDialog, TagCreateDialog],
+    exports: [
+        TagsExplorer,
+        TagsExplorerDialog,
+        TagCreateDialog
+    ]
 })
 export class TagEngineModule {
 }

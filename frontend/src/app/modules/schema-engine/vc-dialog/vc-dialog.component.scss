@@ -19,7 +19,14 @@
   column-gap: 10px;
   justify-content: flex-start;
   align-items: center;
-  margin-bottom: 24px;
+  grid-column: 2;
+  margin-bottom: 30px;
+}
+
+.compare-container {
+  grid-column: 1;
+  margin-bottom: 30px;
+  margin-left: 8px;
 }
 
 .view-dialog-container {
@@ -64,4 +71,9 @@
     border-bottom-left-radius: 16px !important;
     border-bottom-right-radius: 16px !important;
   }
+}
+
+.view-dialog-bar {
+  display: grid;
+  grid-template-columns: auto 170px;
 }

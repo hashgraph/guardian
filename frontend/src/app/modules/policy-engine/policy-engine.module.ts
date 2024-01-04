@@ -56,7 +56,7 @@ import { RequestDocumentBlockComponent } from './policy-viewer/blocks/request-do
 import { DocumentsSourceBlockComponent } from './policy-viewer/blocks/documents-source-block/documents-source-block.component';
 import { ContainerBlockComponent } from './policy-viewer/blocks/container-block/container-block.component';
 import { InformationBlockComponent } from './policy-viewer/blocks/information-block/information-block.component';
-import { RenderBlockComponent } from './policy-viewer/render-block/render-block.component.ts';
+import { RenderBlockComponent } from './policy-viewer/render-block/render-block.component';
 import { ActionBlockComponent } from './policy-viewer/blocks/action-block/action-block.component';
 import { DocumentDialogBlock } from './policy-viewer/blocks/document-dialog-block/document-dialog-block.component';
 import { StepBlockComponent } from './policy-viewer/blocks/step-block/step-block.component';
@@ -95,6 +95,12 @@ import { ImportFileDialog } from './helpers/import-file-dialog/import-file-dialo
 import { NewThemeDialog } from './helpers/new-theme-dialog/new-theme-dialog.component';
 import { ViewerDialog } from './helpers/viewer-dialog/viewer-dialog.component';
 import { CompareModulesDialogComponent } from './helpers/compare-modules-dialog/compare-modules-dialog.component';
+import { RecordControllerComponent } from './record/record-controller/record-controller.component';
+import { RecordResultDialog } from './record/record-result-dialog/record-result-dialog.component';
+import { RecordResultsComponent } from './record/record-results/record-results.component';
+import { SearchBlocksComponent } from './helpers/search-blocks/search-blocks.component';
+import { SelectSchema } from './helpers/select-schema/select-schema.component';
+//Modules
 import { ModulesListComponent } from './modules-list/modules-list.component';
 import { ToolsListComponent } from './tools-list/tools-list.component';
 //Services
@@ -102,11 +108,24 @@ import { RegisteredService } from './services/registered.service';
 import { WizardService } from './services/wizard.service';
 //Policies Grid
 import { PoliciesComponent } from './policies/policies.component';
-import { SearchBlocksComponent } from './helpers/search-blocks/search-blocks.component';
-import { SelectSchema } from './helpers/select-schema/select-schema.component';
-import { RecordControllerComponent } from './record/record-controller/record-controller.component';
-import { RecordResultDialog } from './record/record-result-dialog/record-result-dialog.component';
-import { RecordResultsComponent } from './record/record-results/record-results.component';
+import { InputTextModule } from 'primeng/inputtext';
+import { TableModule } from 'primeng/table';
+import { InputTextareaModule } from 'primeng/inputtextarea';
+import { ButtonModule } from 'primeng/button';
+import { DropdownModule } from 'primeng/dropdown';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
+import { TabMenuModule } from 'primeng/tabmenu';
+import { TooltipModule } from 'primeng/tooltip';
+import { SplitButtonModule } from 'primeng/splitbutton';
+import { TabViewModule } from 'primeng/tabview';
+import { DialogModule } from 'primeng/dialog';
+import { DeletePolicyDialogComponent } from './helpers/delete-policy-dialog/delete-policy-dialog.component';
+import { ProgressTrackerComponent } from './policy-viewer/progress-tracker/progress-tracker.component';
+import { PolicyProgressService } from './services/policy-progress.service';
+import { InputSwitchModule } from 'primeng/inputswitch';
+import { OverlayPanelModule } from 'primeng/overlaypanel';
+import { AngularSvgIconModule } from 'angular-svg-icon';
 // Directives
 import { ResizingDirective } from './directives/resizing.directive';
 
@@ -198,6 +217,8 @@ import { ResizingDirective } from './directives/resizing.directive';
         MessagesReportBlockComponent,
         ViewerDialog,
         SearchBlocksComponent,
+        DeletePolicyDialogComponent,
+        ProgressTrackerComponent,
         RecordControllerComponent,
         RecordResultDialog,
         RecordResultsComponent,
@@ -214,13 +235,30 @@ import { ResizingDirective } from './directives/resizing.directive';
         ArtifactEngineModule,
         TagEngineModule,
         CompareModule,
-        AppRoutingModule
+        InputTextModule,
+        TableModule,
+        InputTextareaModule,
+        ButtonModule,
+        DropdownModule,
+        MultiSelectModule,
+        TableModule,
+        DynamicDialogModule,
+        TabMenuModule,
+        TooltipModule,
+        SplitButtonModule,
+        TabViewModule,
+        InputSwitchModule,
+        AppRoutingModule,
+        DialogModule,
+        OverlayPanelModule,
+        AngularSvgIconModule.forRoot()
     ],
-    exports: [
-    ],
+    exports: [],
     providers: [
         RegisteredService,
-        WizardService
-    ]
+        WizardService,
+        DialogService,
+        PolicyProgressService,
+    ],
 })
 export class PolicyEngineModule { }

@@ -155,8 +155,8 @@
 
 
 .disabled-color {
-  fill: var(--color-grey-5) !important;
-  color: var(--color-grey-5) !important;
+  fill: var(--color-grey-5, #848FA9) !important;
+  color: var(--color-grey-5, #848FA9) !important;
 }
 
 .middle-size {
@@ -185,6 +185,7 @@
     transform: rotate(0deg);
     opacity: 1;
   }
+
   25% {
     transform: rotate(360deg);
     border-top: 3px solid rgba(0, 0, 0, 0);
@@ -192,6 +193,7 @@
     border-left: 3px solid rgba(0, 0, 0, 0);
     border-bottom: 3px solid rgba(0, 0, 0, 0);
   }
+
   50% {
     transform: rotate(720deg);
     border-top: 3px solid rgba(0, 0, 0, 0);
@@ -199,6 +201,7 @@
     border-bottom: 3px solid var(--color-primary);
     border-right: 3px solid rgba(0, 0, 0, 0);
   }
+
   75% {
     transform: rotate(1080deg);
     border-top: 3px solid rgba(0, 0, 0, 0);
@@ -206,6 +209,7 @@
     border-right: 3px solid rgba(0, 0, 0, 0);
     border-left: 3px solid var(--color-primary);
   }
+
   100% {
     transform: rotate(1440deg);
     border-top: 3px solid var(--color-primary);

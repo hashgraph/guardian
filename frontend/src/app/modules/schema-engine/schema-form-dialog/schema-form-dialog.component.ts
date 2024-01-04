@@ -9,7 +9,7 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 @Component({
     selector: 'schema-form-dialog',
     templateUrl: './schema-form-dialog.component.html',
-    styleUrls: ['./schema-form-dialog.component.css']
+    styleUrls: ['./schema-form-dialog.component.scss']
 })
 export class SchemaFormDialog {
     public schema: Schema;

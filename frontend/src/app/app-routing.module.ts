@@ -38,6 +38,8 @@ import { ListOfTokensUserComponent } from './views/list-of-tokens-user/list-of-t
 import { RecordResultsComponent } from './modules/policy-engine/record/record-results/record-results.component';
 import { ContractConfigComponent } from './modules/contract-engine/configs/contract-config/contract-config.component';
 import { UserContractConfigComponent } from './modules/contract-engine/configs/user-contract-config/user-contract-config.component';
+import { AnnotationBlockComponent } from './modules/project-comparison/component/annotation-block/annotation-block.component';
+import { ProjectsComparisonTableComponent } from './modules/project-comparison/component/projects-comparison-table/projects-comparison-table.component';
 
 const USER_IS_NOT_RA = "Page is avaliable for admin only";
 
@@ -62,7 +64,6 @@ class Guard {
     canActivate() {
         return this.auth.sessions().pipe(
             map((res: IUser | null) => {
-                console.log(res);
                 if (res) {
                     if (res.role != this.role) {
                         this.router.navigate(['/info'],
@@ -198,6 +199,9 @@ const routes: Routes = [
     { path: 'record-results', component: RecordResultsComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
 
     { path: 'branding', component: BrandingComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
+
+    {path: 'projects', component: AnnotationBlockComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard], data: {title: 'GUARDIAN / Project Overview'}},
+    {path: 'projects/comparison', component: ProjectsComparisonTableComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard], data: {title: 'GUARDIAN / Project Comparison'}},
 
     { path: '', component: HomeComponent },
     { path: 'info', component: InfoComponent },

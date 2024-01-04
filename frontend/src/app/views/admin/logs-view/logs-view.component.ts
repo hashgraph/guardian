@@ -2,7 +2,6 @@ import { Component, EventEmitter, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormControl } from '@angular/forms';
 import { MatAutocompleteSelectedEvent, MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import { MatChipInputEvent } from '@angular/material/chips';
-import { MatDialog } from '@angular/material/dialog';
 import { saveAs } from 'file-saver';
 import { ILog } from '@guardian/interfaces';
 import * as moment from 'moment';
@@ -11,7 +10,7 @@ import { catchError, map, startWith, switchMap } from 'rxjs/operators';
 import { LoggerService } from 'src/app/services/logger.service';
 import { DetailsLogDialog } from '../details-log-dialog/details-log-dialog.component';
 import { ActivatedRoute } from '@angular/router';
-import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { DialogService } from 'primeng/dynamicdialog';
 
 /**
  * Page for creating, editing, importing and exporting schemas.
@@ -248,17 +247,18 @@ export class LogsViewComponent implements OnInit {
         })
     }
 
-    movePageIndex(inc: number) {
-        if (inc > 0 && this.pageIndex < this.totalCount / this.pageSize - 1) {
-            this.pageIndex += 1;
-            this.onApply();
-        } else if (inc < 0 && this.pageIndex > 0) {
-            this.pageIndex -= 1;
-            this.onApply();
-        }
-    }
-
     changeTypeEvent(event: any) {
         this.searchForm.controls.type.setValue(event.id);
+    }
+
+    public onPage(event: any): void {
+        if (this.pageSize != event.pageSize) {
+            this.pageIndex = 0;
+            this.pageSize = event.pageSize;
+        } else {
+            this.pageIndex = event.pageIndex;
+            this.pageSize = event.pageSize;
+        }
+        this.onApply();
     }
 }

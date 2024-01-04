@@ -7,7 +7,7 @@ import { IModuleVariables, PolicyBlock, TopicVariables } from '../../../../struc
 @Component({
     selector: 'send-config',
     templateUrl: './send-config.component.html',
-    styleUrls: ['./send-config.component.css'],
+    styleUrls: ['./send-config.component.scss'],
     encapsulation: ViewEncapsulation.Emulated
 })
 export class SendConfigComponent implements OnInit {

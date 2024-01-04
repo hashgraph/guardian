@@ -35,10 +35,12 @@
     <ng-template #menuBarItem let-barItems="barItems">
         <ng-container *ngFor="let barItem of barItems">
             <div class="item-block">
-                <div (click)="barItem.childItems ? barItem.active = !barItem.active : null"
-                     [class.current]="!barItem.childItems && activeLink.startsWith(barItem.routerLink)"
-                     [routerLink]="!barItem.childItems ? barItem.routerLink : null"
-                     class="item clickable">
+                <div
+                        (click)="barItem.childItems ? barItem.active = !barItem.active : null"
+                        [class.current]="!barItem.childItems && activeLink.startsWith(barItem.routerLink)"
+                        [routerLink]="!barItem.childItems ? barItem.routerLink : null"
+                        class="item clickable"
+                >
                     <img *ngIf="barItem.iconUrl" [src]="'/assets/images/icons/' + barItem.iconUrl + '.svg'" alt="">
                     <div [class.hidden-logotype]="menuCollapsed" class="span-icon">
                         <span [class.without-icon]="!barItem.iconUrl">{{ barItem.title }}</span>
@@ -60,15 +62,20 @@
         <div *ngIf="role !== 'AUDITOR'" [class.hidden-logotype]="menuCollapsed"
              class="item background-light border-item">
             <img alt="" src="assets/images/icons/money.svg">
-            <span>Balance
+            <span>
+                Balance
                 <strong *ngIf="balance">{{ balance }}</strong>
             </span>
             <div *ngIf="!balance" class="preloader">
                 <div class="preloader-image"></div>
             </div>
         </div>
-        <div [class.current]="activeLink.startsWith('/notifications')" [routerLink]="'/notifications'"
-             class="item cursor-pointer">
+
+        <div
+                [class.current]="activeLink.startsWith('/notifications')"
+                [routerLink]="'/notifications'"
+                class="item cursor-pointer"
+        >
             <img alt="" src="assets/images/icons/notification.svg">
             <div [class.hidden-logotype]="!menuCollapsed" class="collapsed-notify-counter">
                 <app-notification [menuCollapsed]="smallMenuMode"></app-notification>
@@ -78,9 +85,19 @@
                 <app-notification [menuCollapsed]="smallMenuMode"></app-notification>
             </div>
         </div>
+
+        <app-compare-viewer
+                [collapsed]="menuCollapsed"
+                [active]="activeLink.startsWith('/compare')"
+        ></app-compare-viewer>
+
         <div class="boundary-box">
-            <div (click)="goToHomePage()"
-                 [class.clickable]="role !== 'AUDITOR'" [class.current]="activeLink.startsWith('/config') || activeLink.startsWith('/user-profile')" class="item">
+            <div
+                    (click)="goToHomePage()"
+                    [class.clickable]="role !== 'AUDITOR'"
+                    [class.current]="activeLink.startsWith('/config') || activeLink.startsWith('/user-profile')"
+                    class="item"
+            >
                 <img alt="" src="assets/images/icons/user.svg">
                 <div [style.display]="menuCollapsed ? 'none' : 'flex'" class="span-icon">
                     <span matTooltip="Open Profile" matTooltipPosition="after">{{ username }}</span>

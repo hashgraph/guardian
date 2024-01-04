@@ -498,7 +498,8 @@ th {
   font-size: 14px;
   font-style: normal;
   font-weight: 400;
-  line-height: 16px; /* 114.286% */
+  line-height: 16px;
+  /* 114.286% */
 }
 
 .color-grey-6 {
@@ -533,8 +534,8 @@ td:last-child {
 }
 
 .disabled-color {
-  fill: var(--color-grey-5) !important;
-  color: var(--color-grey-5) !important;
+  fill: var(--color-grey-5, #848FA9) !important;
+  color: var(--color-grey-5, #848FA9) !important;
   cursor: not-allowed !important;
 }
 
@@ -545,8 +546,8 @@ button[disabled] {
 }
 
 .primary-color {
-  fill: var(--color-primary);
-  color: var(--color-primary);
+  fill: var(--color-primary, #0681ee);
+  color: var(--color-primary, #0681ee);
 }
 
 .button-color-red,

@@ -447,6 +447,7 @@ a.go-back-link mat-icon {
     overflow: hidden;
     box-sizing: border-box;
 }
+
 .btn-settings:hover {
     text-decoration: underline;
 }
@@ -554,7 +555,9 @@ a.go-back-link mat-icon {
 @media (max-width: 810px) {
     .policy-header {
         position: sticky;
-        top: 0 /*var(--header-height)*/;
+      top: 0
+      /*var(--header-height)*/
+    ;
         box-shadow: none;
         border: none;
     }
@@ -653,7 +656,8 @@ a.go-back-link mat-icon {
   font-size: 14px;
   font-style: normal;
   font-weight: 400;
-  line-height: 16px; /* 114.286% */
+  line-height: 16px;
+  /* 114.286% */
 }
 
 .progress-container {
@@ -729,5 +733,11 @@ a.go-back-link mat-icon {
         color: var(--color-primary, #0681EE);
       }
     }
+  }
+}
+
+@media screen and (max-width: 810px) {
+  .policy-additional-info-container {
+    display: none !important;
   }
 }

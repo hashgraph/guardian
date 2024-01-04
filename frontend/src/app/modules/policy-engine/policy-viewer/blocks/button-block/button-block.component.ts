@@ -1,12 +1,4 @@
-import {
-    AfterContentChecked,
-    AfterViewInit,
-    ChangeDetectionStrategy,
-    ChangeDetectorRef,
-    Component,
-    Input,
-    OnInit,
-} from '@angular/core';
+import { AfterContentChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
@@ -21,7 +13,7 @@ import { DialogService } from 'primeng/dynamicdialog';
     selector: 'button-block',
     templateUrl: './button-block.component.html',
     styleUrls: ['./button-block.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ButtonBlockComponent implements OnInit, AfterContentChecked {
     @Input('id') id!: string;
@@ -132,8 +124,7 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
             return result;
         }
         if (button.field) {
-            result =
-                this.getObjectValue(this.data, button.field) !== button.value;
+            result = this.getObjectValue(this.data, button.field) !== button.value;
         }
         if (!result) {
             return result;
@@ -145,24 +136,16 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
             const fieldValue = this.getObjectValue(this.data, filter.field);
             switch (filter.type) {
                 case 'equal':
-                    result = result && fieldValue == filter.value;
+                    result = result && (fieldValue == filter.value);
                     break;
                 case 'not_equal':
-                    result = result && fieldValue != filter.value;
+                    result = result && (fieldValue != filter.value);
                     break;
                 case 'in':
-                    filter.value
-                        .split(',')
-                        .forEach(
-                            (val: any) => (result = result && val == fieldValue)
-                        );
+                    filter.value.split(',').forEach((val: any) => result = result && (val == fieldValue));
                     break;
                 case 'not_in':
-                    filter.value
-                        .split(',')
-                        .forEach(
-                            (val: any) => (result = result && val != fieldValue)
-                        );
+                    filter.value.split(',').forEach((val: any) => result = result && (val != fieldValue));
                     break;
             }
         }
@@ -213,7 +196,8 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
                 tag: button.tag,
             })
             .subscribe(
-                () => {},
+                () => {
+                },
                 (e) => {
                     console.error(e.error);
                     this.loading = false;
@@ -240,10 +224,9 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
                 if (Array.isArray(comments)) {
                     comments.push(result);
                 } else {
-                    comments =
-                        typeof comments === 'string'
-                            ? [comments, result]
-                            : [result];
+                    comments = typeof comments === 'string'
+                        ? [comments, result]
+                        : [result];
                 }
                 this.setObjectValue(
                     this.data,

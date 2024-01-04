@@ -80,7 +80,8 @@
             <span *ngIf="property.required" class="required-fields">*</span> {{property.label}}
         </td>
         <td class="propRowCell">
-            <input class="prop-input" type="checkbox" [(ngModel)]="value" [readonly]="readonly" (change)="onSave()">
+            <input class="prop-input prop-checkbox" type="checkbox" [(ngModel)]="value" [readonly]="readonly"
+                   (change)="onSave()">
         </td>
     </tr>
 </ng-container>
@@ -109,16 +110,22 @@
             <span *ngIf="property.required" class="required-fields">*</span> {{property.label}}
         </td>
         <td *ngIf="loaded" [ngSwitch]="property.items" class="propRowCell ns">
-            <mat-select *ngSwitchCase="'Schemas'" multiple [(value)]="value" [disabled]="readonly" (change)="onSave()">
+            <mat-select
+                    *ngSwitchCase="'Schemas'"
+                    multiple
+                    [(value)]="value"
+                    [disabled]="readonly"
+                    (change)="onSave()">
                 <mat-option
-                    *ngFor="let schema of schemas"
+                        *ngFor="let schema of schemas"
                     class="schema-variable"
                     [attr.status]="schema.status"
-                    matTooltipPosition="below"
-                    matTooltipClass="guardian-tooltip small-guardian-tooltip"
+                        matTooltipPosition="below"
+                        matTooltipClass="guardian-tooltip small-guardian-tooltip"
                     matTooltipShowDelay="500"
                     [matTooltip]="schema.tooltip"
                     [value]="schema.value"
+                        [attr.disable]="schema.disable"
                 >{{schema.displayName}}</mat-option>
             </mat-select>
             <mat-select *ngSwitchCase="'Block'" multiple [(value)]="value" [disabled]="readonly"
@@ -166,19 +173,12 @@
             <span *ngIf="property.required" class="required-fields">*</span> {{property.label}}
         </td>
         <td class="propRowCell ns">
-            <mat-select [(value)]="value" [disabled]="readonly" (change)="onSave()">
-                <mat-option
-                        *ngFor="let schema of schemas"
-                        class="schema-variable"
-                        [attr.status]="schema.status"
-                        matTooltipPosition="below"
-                        matTooltipClass="guardian-tooltip small-guardian-tooltip"
-                        matTooltipShowDelay="500"
-                        [matTooltip]="schema.tooltip"
-                        [value]="schema.value"
-                >{{ schema.displayName }}
-                </mat-option>
-            </mat-select>
+            <select-schema
+                    [schemas]="schemas"
+                    [(value)]="value"
+                    [disabled]="readonly"
+                    (change)="onSave()"
+            ></select-schema>
         </td>
     </tr>
 </ng-container>

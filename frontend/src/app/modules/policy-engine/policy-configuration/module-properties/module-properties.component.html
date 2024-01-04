@@ -81,8 +81,8 @@
                                 Variable Type
                             </td>
                             <td class="propRowCell">
-                                <mat-select (valueChange)="onEditVariable(item, true)" [(ngModel)]="item.type"
-                                            [disabled]="readonly">
+                                <mat-select [(ngModel)]="item.type" [disabled]="readonly"
+                                            (valueChange)="onEditVariable(item)">
                                     <mat-option value="Schema">Schema</mat-option>
                                     <mat-option value="Token">Token</mat-option>
                                     <mat-option value="TokenTemplate">Token Template</mat-option>
@@ -97,24 +97,16 @@
                             class="propRow subRow">
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">
-                                <span class="required-fields">*</span>
+                                <!-- <span class="required-fields">*</span> -->
                                 Base schema
                             </td>
                             <td *ngIf="!baseSchemaReadOnly(item.baseSchema)" class="propRowCell">
-                                <mat-select
-                                        (valueChange)="onEditVariable(item, true)"
-                                        [(ngModel)]="item.baseSchema"
-                                        [disabled]="readonly">
-                                    <mat-option
-                                            *ngFor="let schema of baseSchemas"
-                                            [matTooltip]="schema.tooltip"
-                                            [value]="schema.value"
-                                            matTooltipClass="guardian-tooltip small-guardian-tooltip"
-                                            matTooltipPosition="below"
-                                            matTooltipShowDelay="500"
-                                    >{{ schema.displayName }}
-                                    </mat-option>
-                                </mat-select>
+                                <select-schema
+                                        [schemas]="baseSchemas"
+                                        [(value)]="item.baseSchema"
+                                        [disabled]="readonly"
+                                        (change)="onEditVariable(item)"
+                                ></select-schema>
                             </td>
                             <td *ngIf="baseSchemaReadOnly(item.baseSchema)" class="propRowCell">
                                 <span class="readonly-prop">{{item.baseSchema.name}}</span>

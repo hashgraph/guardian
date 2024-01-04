@@ -7,7 +7,7 @@ import { IModuleVariables, PolicyBlock, SchemaVariables } from '../../../../stru
 @Component({
     selector: 'source-addon-config',
     templateUrl: './source-addon-config.component.html',
-    styleUrls: ['./source-addon-config.component.css'],
+    styleUrls: ['./source-addon-config.component.scss'],
     encapsulation: ViewEncapsulation.Emulated
 })
 export class SourceAddonConfigComponent implements OnInit {
@@ -60,6 +60,10 @@ export class SourceAddonConfigComponent implements OnInit {
             field: '',
             type: 'equal',
         })
+    }
+
+    removeField(i: number) {
+        this.properties.filters.splice(i, 1)
     }
 
     onSave() {

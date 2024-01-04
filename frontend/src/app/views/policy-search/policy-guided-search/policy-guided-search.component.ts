@@ -77,7 +77,10 @@ export class PolicyGuidedSearchComponent implements OnInit {
             filterCategories.push(this.policyScale)
         }
 
-        this.policyEngineService.getFilteredPolicies(filterCategories, this.searchFilter.value || '').subscribe((data: any) => {
+        this.policyEngineService.getMethodologies(
+            filterCategories,
+            this.searchFilter.value || ''
+        ).subscribe((data: any) => {
             this.results = data;
             this.loading = false;
         })

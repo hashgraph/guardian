@@ -151,6 +151,10 @@ export class ToolTemplate {
         return json;
     }
 
+    public getConfig(): any {
+        return this._config.getJSON();
+    }
+
     public emitUpdate() {
         this._changed = false;
         if (this._subscriber) {
@@ -220,7 +224,7 @@ export class ToolTemplate {
 
     public setTools(tools: any[]): void {
         this._config.setTools(tools);
-    }   
+    }
 
     public setTokens(tokens: Token[]): void {
         this._config.setTokens(tokens);
@@ -259,7 +263,7 @@ export class ToolTemplate {
         return this._config.newTool(template);
     }
 
-    public getAllTools(): Set<string> {
-        return this._config.getAllTools();
+    public getTools(): Set<string> {
+        return this._config.getTools();
     }
 }

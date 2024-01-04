@@ -43,19 +43,22 @@ const Module: IBlockSetting = {
         { type: BlockType.MultiSignBlock },
         { type: BlockType.CreateToken },
         { type: BlockType.SplitBlock },
-        {type: BlockType.MessagesReportBlock}
+        {type: BlockType.ExternalTopic},
+        {type: BlockType.MessagesReportBlock},
+        {type: BlockType.NotificationBlock},
+        {type: BlockType.ExtractDataBlock},
     ],
     about: {
         post: false,
         get: false,
         input: (value: any, block: PolicyModule, module?: PolicyFolder): string[] => {
-            if(block === module) {
+            if (block === module) {
                 return block.outputEvents.map(e => e.name);
             }
             return block.inputEvents.map(e => e.name);
         },
         output: (value: any, block: PolicyModule, module?: PolicyFolder): string[] => {
-            if(block === module) {
+            if (block === module) {
                 return block.inputEvents.map(e => e.name);
             }
             return block.outputEvents.map(e => e.name);
