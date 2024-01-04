@@ -38,9 +38,9 @@
                     <th *matHeaderCellDef mat-header-cell></th>
                     <td mat-cell *matCellDef="let element">
                         <p-button
-                                (click)="onInvite(element)"
-                                *ngIf="element.canInvite"
-                                label="Get Invite"
+                            (click)="onInvite(element)"
+                            *ngIf="element.canInvite"
+                            label="Get Invite"
                         >
                         </p-button>
                     </td>
@@ -79,9 +79,9 @@
                 <span>{{ groupAccessType }}</span>
             </div>
             <p-button
-                    (click)="onInvite(selected)"
-                    *ngIf="canInvite"
-                    label="Get Invite"
+                (click)="onInvite(selected)"
+                *ngIf="canInvite"
+                label="Get Invite"
             >
             </p-button>
         </div>
@@ -109,17 +109,17 @@
                     <th *matHeaderCellDef mat-header-cell></th>
                     <td mat-cell *matCellDef="let element">
                         <div
-                                (click)="onDelete(element)"
-                                *ngIf="canDelete && element.type !== 'Owner'"
-                                class="btn-settings btn-delete"
+                            (click)="onDelete(element)"
+                            *ngIf="canDelete && element.type !== 'Owner'"
+                            class="btn-settings btn-delete"
                         >
                             <mat-icon>delete</mat-icon>
                         </div>
                     </td>
                 </ng-container>
                 <tr
-                        *matHeaderRowDef="userColumns; sticky: true"
-                        mat-header-row
+                    *matHeaderRowDef="userColumns; sticky: true"
+                    mat-header-row
                 ></tr>
                 <tr *matRowDef="let row; columns: userColumns" mat-row></tr>
             </table>

@@ -3,7 +3,22 @@ import { emptyNotifier, initNotifier } from '@helpers/notifier';
 import { Controller } from '@nestjs/common';
 import { DatabaseServer, Logger, MessageError, MessageResponse, RunFunctionAsync, Users } from '@guardian/common';
 import { ISchema, MessageAPI, ModuleStatus, SchemaCategory, SchemaHelper, SchemaStatus, TopicType, Schema, SchemaNode } from '@guardian/interfaces';
-import { checkForCircularDependency, copySchemaAsync, createSchemaAndArtifacts, deleteSchema, exportSchemas, findAndPublishSchema, getPageOptions, getSchemaCategory, importSchemaByFiles, importSchemasByMessages, importTagsByFiles, incrementSchemaVersion, prepareSchemaPreview, updateSchemaDefs } from './helpers';
+import {
+    checkForCircularDependency,
+    copySchemaAsync,
+    createSchemaAndArtifacts,
+    deleteSchema,
+    exportSchemas,
+    findAndPublishSchema,
+    getPageOptions,
+    getSchemaCategory,
+    importSchemaByFiles,
+    importSchemasByMessages,
+    importTagsByFiles,
+    incrementSchemaVersion,
+    prepareSchemaPreview,
+    updateSchemaDefs
+} from './helpers';
 
 @Controller()
 export class SchemaService { }
@@ -44,7 +59,7 @@ export async function schemaAPI(): Promise<void> {
     });
 
     ApiResponse(MessageAPI.COPY_SCHEMA_ASYNC, async (msg) => {
-        const {iri, topicId, name, owner, task} = msg;
+        const { iri, topicId, name, owner, task } = msg;
         const notifier = await initNotifier(task);
         RunFunctionAsync(async () => {
             const schema = await copySchemaAsync(iri, topicId, name, owner);

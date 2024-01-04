@@ -9,7 +9,7 @@ import { Singleton } from './decorators/singleton';
  * Project service
  */
 @Singleton
-export class ProjectService extends NatsService{
+export class ProjectService extends NatsService {
 
     /**
      * Message queue name
@@ -28,7 +28,6 @@ export class ProjectService extends NatsService{
      */
     public async search(categoryIds: string[], policyIds: string[]): Promise<any> {
         const res = (await this.sendMessage(MessageAPI.SEARCH_PROJECTS, { categoryIds, policyIds })) as any;
-
         if (!res) {
             throw new Error('Invalid projects search response');
         }

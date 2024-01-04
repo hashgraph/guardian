@@ -31,5 +31,4 @@ import { DropdownModule } from 'primeng/dropdown';
         TagCreateDialog
     ]
 })
-export class TagEngineModule {
-}
+export class TagEngineModule { }

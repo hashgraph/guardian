@@ -7,6 +7,7 @@ import {
     IEventsLvl,
     IIdLvl,
     IKeyLvl,
+    IRefLvl,
     IPropertiesLvl,
     IRate,
     PermissionsRate,
@@ -72,6 +73,7 @@ export class PairSearchModel {
         IEventsLvl.All,
         IIdLvl.All,
         IKeyLvl.Default,
+        IRefLvl.Default,
         null
     );
 

@@ -258,7 +258,7 @@ export class PoliciesComponent implements OnInit {
         this.loading = true;
         this.policyEngineService.dryRun(element.id).subscribe(
             (data: any) => {
-                const {policies, isValid, errors} = data;
+                const { policies, isValid, errors } = data;
                 if (!isValid) {
                     let text = [];
                     const blocks = errors.blocks;
@@ -293,7 +293,7 @@ export class PoliciesComponent implements OnInit {
         this.loading = true;
         this.policyEngineService.draft(element.id).subscribe(
             (data: any) => {
-                const {policies, isValid, errors} = data;
+                const { policies, isValid, errors } = data;
                 this.loadAllPolicy();
             },
             (e) => {
@@ -319,7 +319,7 @@ export class PoliciesComponent implements OnInit {
         this.loading = true;
         this.policyEngineService.pushPublish(element.id, version).subscribe(
             (result) => {
-                const {taskId, expectation} = result;
+                const { taskId, expectation } = result;
                 this.router.navigate(['task', taskId], {
                     queryParams: {
                         last: btoa(location.href),
@@ -351,7 +351,7 @@ export class PoliciesComponent implements OnInit {
             this.loading = true;
             this.policyEngineService.pushDelete(policyId).subscribe(
                 (result) => {
-                    const {taskId, expectation} = result;
+                    const { taskId, expectation } = result;
                     this.router.navigate(['task', taskId], {
                         queryParams: {
                             last: btoa(location.href),
@@ -439,7 +439,7 @@ export class PoliciesComponent implements OnInit {
                         .pushImportByMessage(data, versionOfTopicId)
                         .subscribe(
                             (result) => {
-                                const {taskId, expectation} = result;
+                                const { taskId, expectation } = result;
                                 this.router.navigate(['task', taskId], {
                                     queryParams: {
                                         last: btoa(location.href),
@@ -455,7 +455,7 @@ export class PoliciesComponent implements OnInit {
                         .pushImportByFile(data, versionOfTopicId)
                         .subscribe(
                             (result) => {
-                                const {taskId, expectation} = result;
+                                const { taskId, expectation } = result;
                                 this.router.navigate(['task', taskId], {
                                     queryParams: {
                                         last: btoa(location.href),
@@ -655,7 +655,7 @@ export class PoliciesComponent implements OnInit {
                 this.loading = true;
                 this.policyEngineService.pushCreate(result).subscribe(
                     (result) => {
-                        const {taskId, expectation} = result;
+                        const { taskId, expectation } = result;
                         this.router.navigate(['/task', taskId]);
                     },
                     (e) => {
@@ -688,7 +688,7 @@ export class PoliciesComponent implements OnInit {
                             })
                             .subscribe(
                                 (result) => {
-                                    const {taskId, expectation} = result;
+                                    const { taskId, expectation } = result;
                                     this.router.navigate(['task', taskId], {
                                         queryParams: {
                                             last: btoa(location.href),
@@ -799,13 +799,13 @@ export class PoliciesComponent implements OnInit {
 
     public searchPolicy(policyId: any) {
         this.loading = true;
-        this.analyticsService.searchPolicies({policyId}).subscribe(
+        this.analyticsService.searchPolicies({ policyId }).subscribe(
             (data) => {
                 this.loading = false;
                 if (!data || !data.result) {
                     return;
                 }
-                const {target, result} = data;
+                const { target, result } = data;
                 const list = result.sort((a: any, b: any) =>
                     a.rate > b.rate ? -1 : 1
                 );
@@ -822,7 +822,7 @@ export class PoliciesComponent implements OnInit {
                     },
                 });
             },
-            ({message}) => {
+            ({ message }) => {
                 this.loading = false;
                 console.error(message);
             }

@@ -143,7 +143,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
     }
 
     private importDetails(result: any) {
-        const {type, data, module} = result;
+        const { type, data, module } = result;
         const dialogRef = this.dialog.open(PreviewPolicyDialog, {
             width: '950px',
             closable: true,
@@ -278,7 +278,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
     public publishModule(element: any) {
         this.loading = true;
         this.modulesService.publish(element.uuid).subscribe((result) => {
-            const {isValid, errors} = result;
+            const { isValid, errors } = result;
             if (!isValid) {
                 let text = [];
                 const blocks = errors.blocks;

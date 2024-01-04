@@ -95,5 +95,4 @@ import { CopySchemaDialog } from './copy-schema-dialog/copy-schema-dialog';
         SchemaFormDialog
     ],
 })
-export class SchemaEngineModule {
-}
+export class SchemaEngineModule { }

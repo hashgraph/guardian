@@ -1,6 +1,6 @@
 import { ApiResponse } from '@api/helpers/api-response';
 import { DataBaseHelper, DatabaseServer, KeyType, Logger, MessageError, MessageResponse, RunFunctionAsync, Token, TopicHelper, Users, Wallet, Workers, } from '@guardian/common';
-import { GenerateUUIDv4, IRootConfig, IToken, MessageAPI, TopicType, WorkerTaskType } from '@guardian/interfaces';
+import { GenerateUUIDv4, IRootConfig, IToken, MessageAPI, OrderDirection, TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
 import { publishTokenTags } from './tag.service';
 
@@ -776,7 +776,10 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
             }
 
             if (!user.hederaAccountId) {
-                return new MessageResponse([]);
+                return new MessageResponse({
+                    result: [],
+                    count: 0
+                });
 
             }
 
@@ -790,7 +793,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
                 }
             }, 20);
 
-            const tokens: any = await tokenRepository.find(user.parent
+            const [tokens, count] = await tokenRepository.findAndCount(user.parent
                 ? {
                     where: {
                         $or: [
@@ -818,7 +821,11 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
             for (const token of tokens) {
                 result.push(getTokenInfo(info, token, serials[token.tokenId]));
             }
-            return new MessageResponse(result);
+
+            return new MessageResponse({
+                result,
+                count
+            });
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error, 400);
@@ -849,15 +856,60 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
                 return new MessageResponse(tokens);
 
             }
+        } else {
+            const tokens = await tokenRepository.find({
+                where: {
+                    $or: [
+                        { owner: { $eq: msg.did } },
+                        { owner: { $exists: false } }
+                    ]
+                }
+            });
+            return new MessageResponse(tokens);
         }
-        return new MessageResponse(await tokenRepository.find({
+    })
+
+    /**
+     * Return tokens
+     *
+     * @param {Object} [payload] - filters
+     * @param {string} [payload.tokenId] - token id
+     * @param {string} [payload.did] - user did
+     *
+     * @returns {IToken[], number} - tokens and count
+     */
+    ApiResponse(MessageAPI.GET_TOKENS_PAGE, async (msg): Promise<any> => {
+        const options =
+            (
+                typeof msg.pageIndex === 'number' &&
+                typeof msg.pageSize === 'number'
+            ) ?
+                {
+                    orderBy: {
+                        createDate: OrderDirection.DESC,
+                    },
+                    limit: msg.pageSize,
+                    offset: msg.pageIndex * msg.pageSize,
+                }
+                : {
+                    orderBy: {
+                        createDate: OrderDirection.DESC,
+                    },
+                };
+
+        const [tokens, count] = await tokenRepository.findAndCount({
             where: {
                 $or: [
                     { owner: { $eq: msg.did } },
                     { owner: { $exists: false } }
                 ]
             }
-        }));
+        }, options);
+
+        return new MessageResponse({
+            tokens,
+            count
+        });
     })
 
     /**

@@ -69,6 +69,12 @@ export class PropertyModel<T> implements IProperties<T> {
     protected _key: string;
 
     /**
+     * Property
+     * @protected
+     */
+    protected _property: string;
+
+    /**
      * Model key
      * @public
      */
@@ -130,6 +136,9 @@ export class PropertyModel<T> implements IProperties<T> {
         if (this._title) {
             item.title = this._title;
         }
+        if (this._property) {
+            item.property = this._property;
+        }
         return item;
     }
 
@@ -175,6 +184,14 @@ export class PropertyModel<T> implements IProperties<T> {
     }
 
     /**
+     * Set property
+     * @public
+     */
+    public setProperty(property: string): void {
+        this._property = property;
+    }
+
+    /**
      * Update all weight
      * @public
      */
@@ -183,6 +200,8 @@ export class PropertyModel<T> implements IProperties<T> {
             this._key = this._description;
         } else if (options.keyLvl === IKeyLvl.Title) {
             this._key = this._title;
+        } else if (options.keyLvl === IKeyLvl.Property) {
+            this._key = this._property;
         } else {
             this._key = this.path;
         }

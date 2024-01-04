@@ -46,10 +46,10 @@ export class LogsViewComponent implements OnInit {
     dateRangeForm: FormControl = new FormControl('');
 
     types: any = [
-        {id: '', label: 'All'},
-        {id: 'ERROR', label: 'Error'},
-        {id: 'WARN', label: 'Warning'},
-        {id: 'INFO', label: 'Info'},
+        { id: '', label: 'All' },
+        { id: 'ERROR', label: 'Error' },
+        { id: 'WARN', label: 'Warning' },
+        { id: 'INFO', label: 'Info' },
     ];
 
     @ViewChild(MatAutocompleteTrigger) autocomplete: MatAutocompleteTrigger;
@@ -75,8 +75,8 @@ export class LogsViewComponent implements OnInit {
         this.logService.getAttributes(
             this.autoCompleteControl.value,
             this.searchForm?.get('attributes')?.value).subscribe(attrs => {
-            this.attributes = attrs;
-        });
+                this.attributes = attrs;
+            });
 
         this.route.queryParams.subscribe((params) => {
             if (params.attr) {

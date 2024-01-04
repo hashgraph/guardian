@@ -194,13 +194,13 @@ export class TokenConfigComponent implements OnInit {
             this.isConfirmed = !!(profile && profile.confirmed);
             this.owner = profile?.did;
             this.policies = policies;
-            this.policies.unshift({id: -1, name: 'All policies'});
+            this.policies.unshift({ id: -1, name: 'All policies' });
             if (this.isConfirmed) {
                 this.queryChange();
             } else {
                 this.loading = false;
             }
-        }, ({message}) => {
+        }, ({ message }) => {
             this.loading = false;
             console.error(message);
         });
@@ -229,7 +229,7 @@ export class TokenConfigComponent implements OnInit {
                 case OperationMode.Kyc:
                     this.taskService.get(taskId).subscribe((task) => {
                         this.loading = false;
-                        const {result} = task;
+                        const { result } = task;
                         this.refreshUser(this.user, result);
                         this.user = null;
                     });
@@ -237,7 +237,7 @@ export class TokenConfigComponent implements OnInit {
                 case OperationMode.Freeze:
                     this.taskService.get(taskId).subscribe((task) => {
                         this.loading = false;
-                        const {result} = task;
+                        const { result } = task;
                         this.refreshUser(this.user, result);
                         this.user = null;
                     });
@@ -308,7 +308,7 @@ export class TokenConfigComponent implements OnInit {
     freeze(user: any, freeze: boolean) {
         this.loading = true;
         this.tokenService.pushFreeze(this.tokenId, user.username, freeze).subscribe((result) => {
-            const {taskId, expectation} = result;
+            const { taskId, expectation } = result;
             this.taskId = taskId;
             this.expectedTaskMessages = expectation;
             this.operationMode = OperationMode.Freeze;
@@ -322,7 +322,7 @@ export class TokenConfigComponent implements OnInit {
     kyc(user: any, grantKYC: boolean) {
         this.loading = true;
         this.tokenService.pushKyc(this.tokenId, user.username, grantKYC).subscribe((result) => {
-            const {taskId, expectation} = result;
+            const { taskId, expectation } = result;
             this.taskId = taskId;
             this.expectedTaskMessages = expectation;
             this.operationMode = OperationMode.Kyc;
@@ -358,7 +358,7 @@ export class TokenConfigComponent implements OnInit {
 
     private createToken(data: any) {
         this.tokenService.pushCreate(data).subscribe((result) => {
-            const {taskId, expectation} = result;
+            const { taskId, expectation } = result;
             this.router.navigate(['task', taskId], {
                 queryParams: {
                     last: btoa(location.href)
@@ -372,7 +372,7 @@ export class TokenConfigComponent implements OnInit {
 
     private updateToken(data: any) {
         this.tokenService.pushUpdate(data).subscribe((result) => {
-            const {taskId, expectation} = result;
+            const { taskId, expectation } = result;
             this.router.navigate(['task', taskId], {
                 queryParams: {
                     last: btoa(location.href)
@@ -412,7 +412,7 @@ export class TokenConfigComponent implements OnInit {
             if (this.currentTokenId) {
                 this.loading = true;
                 this.tokenService.pushDelete(this.currentTokenId).subscribe((result) => {
-                    const {taskId, expectation} = result;
+                    const { taskId, expectation } = result;
                     this.router.navigate(['task', taskId], {
                         queryParams: {
                             last: btoa(location.href)

@@ -110,6 +110,8 @@ export class ProjectsAPI {
         if (!ids) {
             throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
         }
+
+        const idLvl = 0;
         const eventsLvl = 0;
         const propLvl = 2;
         const childrenLvl = 0;
@@ -124,8 +126,8 @@ export class ProjectsAPI {
             }
         }
 
-        const refLvl = samePolicy ? 1 : 2;
-        const idLvl = samePolicy ? 1 : 3;
+        const refLvl = samePolicy ? 'Revert' : 'Merge';
+        const keyLvl = samePolicy ? 'Default' : 'Property';
         try {
             return await guardians.compareDocuments(
                 user,
@@ -135,6 +137,7 @@ export class ProjectsAPI {
                 propLvl,
                 childrenLvl,
                 idLvl,
+                keyLvl,
                 refLvl
             );
         } catch (error) {

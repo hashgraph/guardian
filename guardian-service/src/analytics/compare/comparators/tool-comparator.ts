@@ -1,5 +1,5 @@
 import { DatabaseServer } from '@guardian/common';
-import { CompareOptions, IChildrenLvl, IEventsLvl, IIdLvl, IKeyLvl, IPropertiesLvl } from '../interfaces/compare-options.interface';
+import { CompareOptions, IChildrenLvl, IEventsLvl, IIdLvl, IKeyLvl, IPropertiesLvl, IRefLvl } from '../interfaces/compare-options.interface';
 import { ToolModel } from '../models/tool.model';
 import { SchemaModel } from '../models/schema.model';
 import { ICompareResult } from '../interfaces/compare-result.interface';
@@ -34,6 +34,7 @@ export class ToolComparator {
                 IEventsLvl.All,
                 IIdLvl.All,
                 IKeyLvl.Default,
+                IRefLvl.Default,
                 null
             );
         }

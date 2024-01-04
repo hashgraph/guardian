@@ -1,8 +1,8 @@
 .loading {
     position: fixed;
-  /* background: #ffffff32; */
+    /* background: #ffffff32; */
     z-index: 99;
-  top: 0;
+    top: 0;
     left: 0;
     bottom: 0;
     right: 0;
@@ -14,13 +14,13 @@
 }
 
 .loading-progress {
-  width: 80%;
-  height: 80%;
+    width: 80%;
+    height: 80%;
 }
 
 .btn-SIGN {
-  background: var(--color-accent-green-1);
-  color: var(--color-grey-white);
+    background: var(--color-accent-green-1);
+    color: var(--color-grey-white);
     border-radius: 6px;
     display: inline-block;
     padding: 2px 8px;
@@ -31,8 +31,8 @@
 }
 
 .btn-DECLINE {
-  background: var(--color-accent-red-1);
-  color: var(--color-grey-white);
+    background: var(--color-accent-red-1);
+    color: var(--color-grey-white);
     border-radius: 6px;
     display: inline-block;
     padding: 2px 8px;
@@ -65,27 +65,27 @@
     cursor: pointer;
     width: auto;
     font-size: 20px;
-  color: #0b73f8;
+    color: #0b73f8;
     text-decoration: none;
     display: inline-block;
-  border-bottom: 3px solid #0c77ff;
+    border-bottom: 3px solid #0c77ff;
     padding-bottom: 3px;
     font-weight: normal;
     text-transform: capitalize;
 }
 
 .content .btn-option {
-  height: 28px;
-  box-shadow: 0 3px 6px #00000029;
-  padding: 6px 20px !important;
-  box-sizing: border-box;
-  cursor: pointer;
-  font-family: Inter, sans-serif;
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 16px;
-  border-radius: 6px;
+    height: 28px;
+    box-shadow: 0 3px 6px #00000029;
+    padding: 6px 20px !important;
+    box-sizing: border-box;
+    cursor: pointer;
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 16px;
+    border-radius: 6px;
     text-align: center;
     position: relative;
 }
@@ -213,7 +213,7 @@
 }
 
 .icon-details {
-  color: #0b73f8;
+    color: #0b73f8;
     position: absolute;
     top: 2px;
     right: 0;

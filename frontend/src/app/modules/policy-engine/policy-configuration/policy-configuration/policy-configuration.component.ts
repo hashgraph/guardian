@@ -855,7 +855,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 const menu = this.tools.find(f => f.messageId === messageId);
                 if (menu) {
                     for (const schema of menu.schemas) {
-                        temporarySchemas.push({...schema, status: 'TOOL'});
+                        temporarySchemas.push({ ...schema, status: 'TOOL' });
                     }
                 }
             }

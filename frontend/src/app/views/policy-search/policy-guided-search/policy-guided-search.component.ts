@@ -26,7 +26,7 @@ export class PolicyGuidedSearchComponent implements OnInit {
     loading: boolean = false;
 
     selectedCategoryIds: string[] = [];
-    searchFilter = new FormControl({value: '', disabled: true});
+    searchFilter = new FormControl({ value: '', disabled: true });
 
     policyScale: string;
     categories: IPolicyCategory[] = [];

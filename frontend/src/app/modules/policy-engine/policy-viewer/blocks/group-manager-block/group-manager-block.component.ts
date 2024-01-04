@@ -166,7 +166,7 @@ export class GroupManagerBlockComponent implements OnInit {
         const dialogRef = this.dialog.open(ConfirmationDialog, {
             width: '550px',
             disableClose: true,
-            data: {title, description},
+            data: { title, description },
         });
 
         dialogRef.afterClosed().subscribe((result) => {

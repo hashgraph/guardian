@@ -41,7 +41,7 @@ export class PolicyProgressService {
 
     addBlock(id: string, block: IBlock<any>) {
         let containerId: string = this.getTabsContainerBlock(block.id);
-        this._map.set(id, {containerId, block});
+        this._map.set(id, { containerId, block });
     }
 
     private getTabsContainerBlock(blockId: string): string {

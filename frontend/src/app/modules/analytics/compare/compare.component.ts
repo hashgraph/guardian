@@ -272,7 +272,7 @@ export class CompareComponent implements OnInit {
             setTimeout(() => {
                 this.loading = false;
             }, 500);
-        }, ({message}) => {
+        }, ({ message }) => {
             this.loading = false;
             console.error(message);
         });
@@ -468,7 +468,7 @@ export class CompareComponent implements OnInit {
                 this.downloadObjectAsJson(data, 'report');
             }
             this.loading = false;
-        }, ({message}) => {
+        }, ({ message }) => {
             this.loading = false;
             console.error(message);
         });
