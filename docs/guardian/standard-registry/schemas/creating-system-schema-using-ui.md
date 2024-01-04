@@ -22,7 +22,7 @@ We can select respective property for that specific field by searching by enteri
 
 We can also customize the Field keys and Field Title by clicking on Advanced Tab.
 
-![](<../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (1) (1).png>)
+![](<../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (1) (1) (1).png>)
 
 Instead of creating a new Schema from scratch, there is also an option to import it via File or via IPFS.
 

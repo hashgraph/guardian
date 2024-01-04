@@ -1,11 +1,4 @@
-import {
-    ChangeDetectorRef,
-    Component,
-    Input,
-    OnInit,
-    TemplateRef,
-    ViewChild,
-} from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { DocumentGenerator, IUser } from '@guardian/interfaces';
@@ -14,7 +7,6 @@ import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { Router } from '@angular/router';
-import { DialogService } from 'primeng/dynamicdialog';
 
 /**
  * Component for display block of 'requestVcDocument' types.
@@ -22,13 +14,14 @@ import { DialogService } from 'primeng/dynamicdialog';
 @Component({
     selector: 'request-document-block',
     templateUrl: './request-document-block.component.html',
-    styleUrls: ['./request-document-block.component.scss'],
+    styleUrls: ['./request-document-block.component.scss']
 })
 export class RequestDocumentBlockComponent implements OnInit {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
-    @ViewChild('dialogTemplate') dialogTemplate!: TemplateRef<any>;
+    @Input('dryRun') dryRun!: any;
+    @ViewChild("dialogTemplate") dialogTemplate!: TemplateRef<any>;
 
     public isExist = false;
     public disabled = false;
@@ -54,7 +47,6 @@ export class RequestDocumentBlockComponent implements OnInit {
     public buttonClass: any;
     public user!: IUser;
     public restoreData: any;
-    public dryRunMode: boolean = false;
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -63,24 +55,21 @@ export class RequestDocumentBlockComponent implements OnInit {
         private policyHelper: PolicyHelper,
         private fb: FormBuilder,
         private dialog: MatDialog,
-        private dialogService: DialogService,
         private router: Router,
         private changeDetectorRef: ChangeDetectorRef
     ) {
         this.dataForm = fb.group({});
-        this.dryRunMode = true;
     }
 
     ngOnInit(): void {
         if (!this.static) {
-            this.socket = this.wsService.blockSubscribe(
-                this.onUpdate.bind(this)
-            );
+            this.socket = this.wsService.blockSubscribe(this.onUpdate.bind(this));
         }
-        this.profile.getProfile().subscribe((user: IUser) => {
-            this.user = user;
-            this.loadData();
-        });
+        this.profile.getProfile()
+            .subscribe((user: IUser) => {
+                this.user = user;
+                this.loadData();
+            });
         (window as any).__requestLast = this;
         (window as any).__request = (window as any).__request || {};
         (window as any).__request[this.id] = this;
@@ -106,20 +95,15 @@ export class RequestDocumentBlockComponent implements OnInit {
                 this.loading = false;
             }, 500);
         } else {
-            this.policyEngineService
-                .getBlockData(this.id, this.policyId)
-                .subscribe(
-                    (data: any) => {
-                        this.setData(data);
-                        setTimeout(() => {
-                            this.loading = false;
-                        }, 500);
-                    },
-                    (e) => {
-                        console.error(e.error);
-                        this.loading = false;
-                    }
-                );
+            this.policyEngineService.getBlockData(this.id, this.policyId).subscribe((data: any) => {
+                this.setData(data);
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, (e) => {
+                console.error(e.error);
+                this.loading = false;
+            });
         }
     }
 
@@ -165,11 +149,7 @@ export class RequestDocumentBlockComponent implements OnInit {
             this.schema = schema;
             this.hideFields = {};
             if (uiMetaData.privateFields) {
-                for (
-                    let index = 0;
-                    index < uiMetaData.privateFields.length;
-                    index++
-                ) {
+                for (let index = 0; index < uiMetaData.privateFields.length; index++) {
                     const field = uiMetaData.privateFields[index];
                     this.hideFields[field] = true;
                 }
@@ -221,27 +201,22 @@ export class RequestDocumentBlockComponent implements OnInit {
             this.prepareDataFrom(data);
             this.dialogLoading = true;
             this.loading = true;
-            this.policyEngineService
-                .setBlockData(this.id, this.policyId, {
-                    document: data,
-                    ref: this.ref,
-                })
-                .subscribe(
-                    () => {
-                        setTimeout(() => {
-                            if (this.dialogRef) {
-                                this.dialogRef.close();
-                                this.dialogRef = null;
-                            }
-                            this.dialogLoading = false;
-                        }, 1000);
-                    },
-                    (e) => {
-                        console.error(e.error);
-                        this.dialogLoading = false;
-                        this.loading = false;
+            this.policyEngineService.setBlockData(this.id, this.policyId, {
+                document: data,
+                ref: this.ref
+            }).subscribe(() => {
+                setTimeout(() => {
+                    if (this.dialogRef) {
+                        this.dialogRef.close();
+                        this.dialogRef = null;
                     }
-                );
+                    this.dialogLoading = false;
+                }, 1000);
+            }, (e) => {
+                console.error(e.error);
+                this.dialogLoading = false;
+                this.loading = false;
+            });
         }
     }
 
@@ -249,14 +224,12 @@ export class RequestDocumentBlockComponent implements OnInit {
         if (Array.isArray(data)) {
             for (let j = 0; j < data.length; j++) {
                 let dataArrayElem = data[j];
-                if (dataArrayElem === '' || dataArrayElem === null) {
+                if (dataArrayElem === "" || dataArrayElem === null) {
                     data.splice(j, 1);
                     j--;
                 }
-                if (
-                    Object.getPrototypeOf(dataArrayElem) === Object.prototype ||
-                    Array.isArray(dataArrayElem)
-                ) {
+                if (Object.getPrototypeOf(dataArrayElem) === Object.prototype
+                    || Array.isArray(dataArrayElem)) {
                     this.prepareDataFrom(dataArrayElem);
                 }
             }
@@ -266,13 +239,11 @@ export class RequestDocumentBlockComponent implements OnInit {
             let dataKeys = Object.keys(data);
             for (let i = 0; i < dataKeys.length; i++) {
                 const dataElem = data[dataKeys[i]];
-                if (dataElem === '' || dataElem === null) {
+                if (dataElem === "" || dataElem === null) {
                     delete data[dataKeys[i]];
                 }
-                if (
-                    Object.getPrototypeOf(dataElem) === Object.prototype ||
-                    Array.isArray(dataElem)
-                ) {
+                if (Object.getPrototypeOf(dataElem) === Object.prototype
+                    || Array.isArray(dataElem)) {
                     this.prepareDataFrom(dataElem);
                 }
             }
@@ -301,37 +272,32 @@ export class RequestDocumentBlockComponent implements OnInit {
 
         if (window.innerWidth <= 810) {
             const bodyStyles = window.getComputedStyle(document.body);
-            const headerHeight: number = parseInt(
-                bodyStyles.getPropertyValue('--header-height')
-            );
+            const headerHeight: number = parseInt(bodyStyles.getPropertyValue('--header-height'));
             this.dialogRef = this.dialog.open(this.dialogTemplate, {
                 width: `100vw`,
                 maxWidth: '100vw',
-
+                height: `${window.innerHeight - headerHeight}px`,
                 position: {
-                    bottom: '0',
+                    'bottom': '0'
                 },
                 panelClass: 'g-dialog',
                 hasBackdrop: true, // Shadows beyond the dialog
                 closeOnNavigation: true,
                 disableClose: true,
                 autoFocus: false,
-                data: this,
+                data: this
             });
         } else {
             this.dialogRef = this.dialog.open(this.dialogTemplate, {
                 width: '850px',
-                height: '81vh',
                 disableClose: true,
-                data: this,
+                data: this
             });
         }
     }
 
     onRestoreClick() {
-        const presetDocument = Array.isArray(
-            this.restoreData.document?.credentialSubject
-        )
+        const presetDocument = Array.isArray(this.restoreData.document?.credentialSubject)
             ? this.restoreData.document.credentialSubject[0]
             : this.restoreData.document?.credentialSubject;
         if (presetDocument) {
@@ -346,7 +312,7 @@ export class RequestDocumentBlockComponent implements OnInit {
     }
 
     handleCancelBtnEvent(value: boolean, data: any) {
-        data.onCancel();
+        data.onCancel()
     }
 
     handleSubmitBtnEvent(value: boolean, data: any) {

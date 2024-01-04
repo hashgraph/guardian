@@ -126,16 +126,16 @@ This configuration allows you to leave untouched all the data referring to Mainn
 * 4.1.2 For setup IPFS local node you need to set variables in the same file `./configs/.env.develop.guardian.system`
 
 ```
-IPFS_NODE_ADDRESS="..." # Default IPFS_NODE_ADDRESS="http://localhost:5001"
-IPFS_PUBLIC_GATEWAY='...' # Default IPFS_PUBLIC_GATEWAY='https://localhost:8080/ipfs/${cid}'
+IPFS_NODE_ADDRESS="..." # Default IPFS_NODE_ADDRESS="http://ipfs-node:5001"
+IPFS_PUBLIC_GATEWAY='...' # Default IPFS_PUBLIC_GATEWAY='http://ipfs-node:8080/ipfs/${cid}'
 IPFS_PROVIDER="local"
 ```
 
 {% hint style="info" %}
 Note:
 
-1. Default IPFS\_NODE\_ADDRESS="[http://localhost:5001](http://localhost:5001/)"
-2. Default IPFS\_PUBLIC\_GATEWAY="[https://localhost:8080/ipfs/${cid}](https://localhost:8080/ipfs/$%7Bcid%7D)"
+1. Default IPFS\_NODE\_ADDRESS="[http://ipfs-node:5001](http://ipfs-node:5001)"
+2. Default IPFS\_PUBLIC\_GATEWAY="[http://ipfs-node:8080/ipfs/${cid}](http://ipfs-node:8080/ipfs/$%7Bcid%7D%22)"
 {% endhint %}
 
 #### 4.2 Setting up IPFS Web3Storage node:

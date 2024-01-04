@@ -48,7 +48,7 @@ The Guardian GHGP Corporate Policy offers a unique technical opportunity for com
 
 ### Policy Workflow <a href="#_toc146717950" id="_toc146717950"></a>
 
-<figure><img src="../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Policy Guide <a href="#_toc146717951" id="_toc146717951"></a>
 
@@ -153,7 +153,7 @@ The Organization is responsible for inputting key data and information and assig
 
 <figure><img src="../../../.gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (3) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>
 

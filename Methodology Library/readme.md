@@ -11,6 +11,8 @@ This folder contains sub folders for each Methodology and their authors (with ma
    - VM0042
    - VM0044
    - VerraARR
+   - PWRM0001
+   - VM0041
 4. DOVU Template Methodologies (10) - DOVU
    - Agrecalc
    - Cool Farm Tool

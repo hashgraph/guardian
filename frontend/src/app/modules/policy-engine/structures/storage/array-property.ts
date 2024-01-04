@@ -45,4 +45,12 @@ export class ArrayProperty<T> {
         this._value.push(item);
         return this._value;
     }
+
+    public get value(): T[] {
+        return this._value;
+    }
+
+    public set value(value: T[]) {
+        this._value = value;
+    }
 }

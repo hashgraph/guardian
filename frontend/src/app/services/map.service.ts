@@ -8,6 +8,16 @@ import { API_BASE_URL } from './api';
 @Injectable()
 export class MapService {
     private readonly url: string = `${API_BASE_URL}/map`;
+    private _mapLoaded: boolean = false;
+
+    set mapLoaded(value: boolean) {
+        this._mapLoaded = value;
+    }
+
+    get mapLoaded() {
+        return this._mapLoaded;
+    }
+
     constructor(private http: HttpClient) {}
 
     public getApiKey(): Observable<any> {

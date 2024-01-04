@@ -3,7 +3,8 @@
   "private": true,
   "packageManager": "yarn@1.22.21",
   "resolutions": {
-    "@azure/core-rest-pipeline": "1.12.1"
+    "@azure/core-rest-pipeline": "1.12.1",
+    "image-size": "1.0.2"
   },
   "workspaces": [
     "interfaces",
@@ -21,7 +22,7 @@
     "api-tests",
     "notification-service"
   ],
-  "version": "2.19.1",
+  "version": "2.20.0",
   "devDependencies": {
     "detect-secrets": "^1.0.6"
   },

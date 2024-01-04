@@ -28,7 +28,7 @@ Let’s add several additional attributes into the documents to simplify the doc
 
 1.1 Add new container
 
-![Adding new container](<../../../../.gitbook/assets/5 (2).png>)
+![Adding new container](<../../../../.gitbook/assets/5 (2) (1).png>)
 
 1.2 Add ‘_**reportBlock**_’
 
@@ -50,11 +50,11 @@ The ‘**reportItemBlock**’ items are executed sequentially, thus in the filte
 
 1.3.2 ’**report\_document**_’_. To find the MRV report (i.e. data document which was the basis of the decision to mint tokens) we will also use one of the **Common Variables** – _documentId_
 
-![Adding documentId value](<../../../../.gitbook/assets/9 (3) (1).png>)
+![Adding documentId value](<../../../../.gitbook/assets/9 (3) (1) (1).png>)
 
 To find further documents we will need to use values from the **Ref** variable which point to the previous document. Let’s save in a new variable:
 
-![Using Ref variable](<../../../../.gitbook/assets/10 (3) (1).png>)
+![Using Ref variable](<../../../../.gitbook/assets/10 (3) (1) (1).png>)
 
 1.3.3 ’**project\_document(approver)**_’_ - Lets use the previously defined variable alongside the static filtration parameters.
 

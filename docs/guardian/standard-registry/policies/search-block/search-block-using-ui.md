@@ -30,7 +30,7 @@ Clicking “Apply” button will transfer (or apply) the configuration of the fo
 **Note:** Original settings of the base policy block will be lost if ‘Apply’ action is executed.
 {% endhint %}
 
-<figure><img src="../../../../.gitbook/assets/image (3) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (3) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 2.3 Search Results Layout Display
 

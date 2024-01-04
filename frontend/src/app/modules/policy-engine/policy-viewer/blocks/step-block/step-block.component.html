@@ -1,6 +1,6 @@
 <div class="content" [hidden]="!isActive">
   <div *ngIf="activeBlock">
-    <render-block [block]="activeBlock" [policyId]="policyId"></render-block>
+    <render-block [block]="activeBlock" [policyId]="policyId" [dryRun]="dryRun"></render-block>
   </div>
 </div>
 

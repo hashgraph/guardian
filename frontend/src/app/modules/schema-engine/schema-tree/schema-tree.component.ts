@@ -251,13 +251,15 @@ export class SchemaTreeComponent implements OnInit {
 
     startMove() {
         this.isMoving = true;
-        window.document.body.classList.add('cursor-grabbing');
+        document.body.classList.add('inherit-cursor');
+        document.body.style.cursor = 'grabbing';
     }
 
     @HostListener('window:mouseup')
     stopMove() {
         this.isMoving = false;
-        window.document.body.classList.remove('cursor-grabbing');
+        document.body.classList.remove('inherit-cursor');
+        document.body.style.cursor = '';
     }
 
     @HostListener('window:mousemove', ['$event'])
