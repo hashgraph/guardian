@@ -548,5 +548,3 @@
   * [Performance Improvement](guardian-in-production/performance-improvement.md)
   * [Cloud Infrastructure](guardian-in-production/cloud-infrastructure.md)
   * [Independent Packaged Deployment](guardian-in-production/independent-packaged-deployment.md)
-* [Import](import/README.md)
-  * [Policy execution record and replay](import/policy-execution-record-and-replay.md)
