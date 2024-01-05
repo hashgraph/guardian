@@ -18,6 +18,7 @@ import { ReportService } from './analytics/report.service';
 import { AppModule } from './app.module';
 import { SwaggerModule } from '@nestjs/swagger';
 import { SwaggerConfig } from '@helpers/swagger-config';
+import { AnalyticsDebug, AnalyticsUtils } from '@helpers/utils';
 
 const PORT = process.env.PORT || 3020;
 Promise.all([
@@ -51,6 +52,9 @@ Promise.all([
 
         app.use(express.static('public'));
         app.use(express.json({ limit: '2mb' }));
+
+        AnalyticsUtils.DEBUG_LVL = parseInt(process.env.ANALYTICS_DEBUG_LVL || '3', 10);
+        AnalyticsUtils.REQUEST_LIMIT =  parseInt(process.env.ANALYTICS_REQUEST_LIMIT || '30', 10);
 
         new Logger().setConnection(cn);
         const workersHelper = new Workers();
