@@ -52,7 +52,7 @@ export class SearchBlocksComponent implements OnInit {
 
     public groups: IGroup[] = [];
 
-    private source: any;
+    private source:any;
 
     constructor(
         private registeredService: RegisteredService,
@@ -69,44 +69,6 @@ export class SearchBlocksComponent implements OnInit {
 
     ngOnChanges(changes: any): void {
         this.update();
-    }
-
-    public onCancel() {
-        this.action.emit({
-            type: 'cancel'
-        })
-    }
-
-    public onReplace(item: IGroupItem) {
-        this.action.emit({
-            type: 'replace',
-            source: this.source,
-            target: item.target
-        })
-    }
-
-    public blockStyle(block: IBlock): any {
-        return this.themeService.getStyle(block.node);
-    }
-
-    public onCollapse(item: IGroupItem): void {
-        const collapsed = !item.collapsed;
-        for (const group of this.groups) {
-            for (const item of group.items) {
-                item.collapsed = true;
-            }
-        }
-        item.collapsed = collapsed;
-    }
-
-    public onSelect(item: IGroupItem): void {
-        const selected = !item.selected;
-        for (const group of this.groups) {
-            for (const item of group.items) {
-                item.selected = false;
-            }
-        }
-        item.selected = selected;
     }
 
     private update() {
@@ -184,7 +146,7 @@ export class SearchBlocksComponent implements OnInit {
                 groupItem.target = block.node;
             }
         }
-        if (groupItem.target) {
+        if(groupItem.target) {
             groupItem.root = PolicyTemplate.fromBlock(groupItem.target);
             groupItem.target.setModule(groupItem.root);
         }
@@ -208,6 +170,44 @@ export class SearchBlocksComponent implements OnInit {
         return groupItem;
     }
 
+    public onCancel() {
+        this.action.emit({
+            type: 'cancel'
+        })
+    }
+
+    public onReplace(item: IGroupItem) {
+        this.action.emit({
+            type: 'replace',
+            source: this.source,
+            target: item.target
+        })
+    }
+
+    public blockStyle(block: IBlock): any {
+        return this.themeService.getStyle(block.node);
+    }
+
+    public onCollapse(item: IGroupItem): void {
+        const collapsed = !item.collapsed;
+        for (const group of this.groups) {
+            for (const item of group.items) {
+                item.collapsed = true;
+            }
+        }
+        item.collapsed = collapsed;
+    }
+
+    public onSelect(item: IGroupItem): void {
+        const selected = !item.selected;
+        for (const group of this.groups) {
+            for (const item of group.items) {
+                item.selected = false;
+            }
+        }
+        item.selected = selected;
+    }
+
     private getColor(value: number, max: number): string {
         if (value < max * 0.7) {
             return 'red';
@@ -218,3 +218,4 @@ export class SearchBlocksComponent implements OnInit {
         return 'green';
     }
 }
+

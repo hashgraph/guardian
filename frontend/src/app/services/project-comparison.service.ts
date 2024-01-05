@@ -19,7 +19,7 @@ export class ProjectComparisonService {
     }
 
     public getMethodologies(categoryIds?: string[], text?: string): Observable<IMethodology[]> {
-        return this.http.post<IMethodology[]>(`${this.url}/policies/methodologies/search`, {categoryIds, text});
+        return this.http.post<IMethodology[]>(`${this.url}/policies/methodologies/search`, { categoryIds, text });
     }
 
     public getProperties(): Observable<any[]> {
@@ -27,10 +27,10 @@ export class ProjectComparisonService {
     }
 
     public getFilteredProjects(categoryIds?: string[], policyIds?: string[]): Observable<IMethodology[]> {
-        return this.http.post<IMethodology[]>(`${this.url}/projects/search`, {categoryIds, policyIds});
+        return this.http.post<IMethodology[]>(`${this.url}/projects/search`, { categoryIds, policyIds });
     }
 
     public compareProjects(documentIds?: string[]): Observable<any> {
-        return this.http.post<any>(`${this.url}/projects/compare/documents`, {documentIds});
+        return this.http.post<any>(`${this.url}/projects/compare/documents`, { documentIds });
     }
 }

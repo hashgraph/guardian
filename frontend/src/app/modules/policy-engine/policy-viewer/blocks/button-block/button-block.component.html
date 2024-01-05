@@ -1,14 +1,14 @@
 <div class="content" *ngIf="commonVisible">
-    <ng-container *ngFor="let button of buttons">
+    <ng-container *ngFor="let button of buttons" >
         <div *ngIf="button.type == 'selector' && button.visible && button.name">
             <div *ngIf="button.name" class="btn-option {{button.uiClass}}" (click)="onSelect(button)">
-                {{ button.name }}
+                {{button.name}}
             </div>
         </div>
 
         <div *ngIf="button.type === 'selector-dialog' && button.visible && button.name">
             <div *ngIf="button.name" class="btn-option {{button.uiClass}}" (click)="onSelectDialog(button)">
-                {{ button.name }}
+                {{button.name}}
             </div>
         </div>
     </ng-container>

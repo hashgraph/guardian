@@ -50,7 +50,7 @@ export class TemplateUtils {
 
     private static _checkSchemaVariables(variables: SchemaVariables[], map: Set<string>): void {
         for (const variable of variables) {
-            if (!variable.disable && variable.defs && variable.defs.length) {
+            if(!variable.disable && variable.defs && variable.defs.length) {
                 for (const iri of variable.defs) {
                     if (!map.has(iri)) {
                         variable.disable = true;

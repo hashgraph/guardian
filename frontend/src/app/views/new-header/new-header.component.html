@@ -35,11 +35,11 @@
     <ng-template #menuBarItem let-barItems="barItems">
         <ng-container *ngFor="let barItem of barItems">
             <div class="item-block">
-                <div
-                        (click)="barItem.childItems ? barItem.active = !barItem.active : null"
-                        [class.current]="!barItem.childItems && activeLink.startsWith(barItem.routerLink)"
-                        [routerLink]="!barItem.childItems ? barItem.routerLink : null"
-                        class="item clickable"
+                <div 
+                    (click)="barItem.childItems ? barItem.active = !barItem.active : null"
+                    [class.current]="!barItem.childItems && activeLink.startsWith(barItem.routerLink)"
+                    [routerLink]="!barItem.childItems ? barItem.routerLink : null"
+                    class="item clickable"
                 >
                     <img *ngIf="barItem.iconUrl" [src]="'/assets/images/icons/' + barItem.iconUrl + '.svg'" alt="">
                     <div [class.hidden-logotype]="menuCollapsed" class="span-icon">
@@ -71,10 +71,10 @@
             </div>
         </div>
 
-        <div
-                [class.current]="activeLink.startsWith('/notifications')"
-                [routerLink]="'/notifications'"
-                class="item cursor-pointer"
+        <div 
+            [class.current]="activeLink.startsWith('/notifications')" 
+            [routerLink]="'/notifications'"
+            class="item cursor-pointer"
         >
             <img alt="" src="assets/images/icons/notification.svg">
             <div [class.hidden-logotype]="!menuCollapsed" class="collapsed-notify-counter">
@@ -87,16 +87,16 @@
         </div>
 
         <app-compare-viewer
-                [collapsed]="menuCollapsed"
-                [active]="activeLink.startsWith('/compare')"
+            [collapsed]="menuCollapsed"
+            [active]="activeLink.startsWith('/compare')" 
         ></app-compare-viewer>
 
         <div class="boundary-box">
-            <div
-                    (click)="goToHomePage()"
-                    [class.clickable]="role !== 'AUDITOR'"
-                    [class.current]="activeLink.startsWith('/config') || activeLink.startsWith('/user-profile')"
-                    class="item"
+            <div 
+                (click)="goToHomePage()"
+                [class.clickable]="role !== 'AUDITOR'" 
+                [class.current]="activeLink.startsWith('/config') || activeLink.startsWith('/user-profile')" 
+                class="item"
             >
                 <img alt="" src="assets/images/icons/user.svg">
                 <div [style.display]="menuCollapsed ? 'none' : 'flex'" class="span-icon">

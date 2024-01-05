@@ -152,7 +152,7 @@ export class ModuleTemplate {
         return json;
     }
 
-    public getConfig(): any {
+    public getConfig():any {
         return this._config.getJSON();
     }
 

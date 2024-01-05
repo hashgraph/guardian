@@ -102,11 +102,11 @@
                             </td>
                             <td *ngIf="!baseSchemaReadOnly(item.baseSchema)" class="propRowCell">
                                 <select-schema
-                                        [schemas]="baseSchemas"
-                                        [(value)]="item.baseSchema"
-                                        [disabled]="readonly"
-                                        (change)="onEditVariable(item)"
-                                ></select-schema>
+                                    [schemas]="baseSchemas" 
+                                    [(value)]="item.baseSchema"
+                                    [disabled]="readonly"
+                                    (change)="onEditVariable(item)" 
+                                    ></select-schema>
                             </td>
                             <td *ngIf="baseSchemaReadOnly(item.baseSchema)" class="propRowCell">
                                 <span class="readonly-prop">{{item.baseSchema.name}}</span>

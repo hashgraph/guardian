@@ -12,61 +12,61 @@
                                 <div class="input-item">
                                     <span>Sectoral scopes</span>
                                     <p-multiSelect
-                                            [formControlName]="'sectoralScopes'"
-                                            [options]="sectoralScopesList"
-                                            class="sort-by-dropdown"
-                                            optionLabel="name"
-                                            optionValue="id"
+                                        [formControlName]="'sectoralScopes'"
+                                        [options]="sectoralScopesList"
+                                        class="sort-by-dropdown"
+                                        optionLabel="name"
+                                        optionValue="id"
                                     ></p-multiSelect>
                                 </div>
                                 <div class="input-item">
                                     <span>Activity Scale</span>
                                     <p-multiSelect
-                                            [formControlName]="'activityScales'"
-                                            [options]="activityScalesList"
-                                            class="sort-by-dropdown"
-                                            optionLabel="name"
-                                            optionValue="id"
+                                        [formControlName]="'activityScales'"
+                                        [options]="activityScalesList"
+                                        class="sort-by-dropdown"
+                                        optionLabel="name"
+                                        optionValue="id"
                                     ></p-multiSelect>
                                 </div>
                                 <div class="input-item">
                                     <span>Applied Technologies</span>
                                     <p-multiSelect
-                                            [formControlName]="'appliedTechnologies'"
-                                            [options]="appliedTechnologiesList"
-                                            class="sort-by-dropdown"
-                                            optionLabel="name"
-                                            optionValue="id"
+                                        [formControlName]="'appliedTechnologies'"
+                                        [options]="appliedTechnologiesList"
+                                        class="sort-by-dropdown"
+                                        optionLabel="name"
+                                        optionValue="id"
                                     ></p-multiSelect>
                                 </div>
                                 <div class="input-item">
                                     <span>Project Scales</span>
                                     <p-multiSelect
-                                            [formControlName]="'projectScales'"
-                                            [options]="projectScalesList"
-                                            class="sort-by-dropdown"
-                                            optionLabel="name"
-                                            optionValue="id"
+                                        [formControlName]="'projectScales'"
+                                        [options]="projectScalesList"
+                                        class="sort-by-dropdown"
+                                        optionLabel="name"
+                                        optionValue="id"
                                     ></p-multiSelect>
                                 </div>
                                 <div class="input-item">
                                     <span>Sub Types</span>
                                     <p-multiSelect
-                                            [formControlName]="'subTypes'"
-                                            [options]="subTypesList"
-                                            class="sort-by-dropdown"
-                                            optionLabel="name"
-                                            optionValue="id"
+                                        [formControlName]="'subTypes'"
+                                        [options]="subTypesList"
+                                        class="sort-by-dropdown"
+                                        optionLabel="name"
+                                        optionValue="id"
                                     ></p-multiSelect>
                                 </div>
                                 <div class="input-item">
                                     <span>Methodologies Used</span>
                                     <p-multiSelect
-                                            [formControlName]="'methodologiesUsed'"
-                                            [options]="methodologiesUsedList"
-                                            class="sort-by-dropdown"
-                                            optionLabel="name"
-                                            optionValue="id"
+                                        [formControlName]="'methodologiesUsed'"
+                                        [options]="methodologiesUsedList"
+                                        class="sort-by-dropdown"
+                                        optionLabel="name"
+                                        optionValue="id"
                                     ></p-multiSelect>
                                 </div>
                                 <!-- <div class="input-item">
@@ -111,10 +111,10 @@
                         </div>
                         <div class="footer">
                             <button
-                                    (click)="searchByFilter()"
-                                    [disabled]="!filterFormGroup.dirty"
-                                    class="button height-28"
-                                    pButton
+                                (click)="searchByFilter()"
+                                [disabled]="!filterFormGroup.dirty"
+                                class="button height-28"
+                                pButton
                             >
                                 Apply filter
                             </button>
@@ -126,18 +126,16 @@
                     <div class="toolbar">
                         <span class="p-input-icon-right">
                             <i>
-                                <svg-icon class="svg-icon-16" src="/assets/images/icons/16/search.svg"
-                                          svgClass="color-search">
+                                <svg-icon class="svg-icon-16" src="/assets/images/icons/16/search.svg" svgClass="color-search">
                                 </svg-icon>
                             </i>
                             <form [formGroup]="filterFormGroup">
-                                <input (ngModelChange)="filterByInput()" [formControlName]="'search'"
-                                       class="search-input" pInputText
-                                       placeholder="Search by Project Title"/>
+                                <input (ngModelChange)="filterByInput()" [formControlName]="'search'" class="search-input" pInputText
+                                    placeholder="Search by Project Title" />
                             </form>
                         </span>
                         <p-dropdown (onChange)="sortData()" [(ngModel)]="selectedSortByOption" [options]="sortByOption"
-                                    class="sort-by-dropdown offset">
+                            class="sort-by-dropdown offset">
                             <ng-template pTemplate="selectedItem">
                                 <span class="sort-by-label">Sort By</span>
                                 {{ selectedSortByOption.name }}
@@ -163,7 +161,7 @@
             <strong>{{ selectedProjectsCount }} Projects</strong> added for Comparison
         </div>
         <button (click)="compareExecute()" [disabled]="projectsToComparing.length< 2" class="button secondary w-180"
-                label="Open the Comparison" pButton>
+            label="Open the Comparison" pButton>
         </button>
     </div>
 </div>
@@ -199,9 +197,9 @@
                         </td>
                         <td>
                             <p-button
-                                    (click)="alreadyInCompare(project) ? removeFromCompare(project) : addToCompare(project)"
-                                    [icon]="'pi ' + (alreadyInCompare(project) ? 'pi-minus' : 'pi-plus')"
-                                    class="choose-button"
+                                (click)="alreadyInCompare(project) ? removeFromCompare(project) : addToCompare(project)"
+                                [icon]="'pi ' + (alreadyInCompare(project) ? 'pi-minus' : 'pi-plus')"
+                                class="choose-button"
                             >
                             </p-button>
                         </td>

@@ -325,6 +325,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         dialogRef.onClose.subscribe(async (result) => { });
     }
 
+
     public onPage(event: any): void {
         if (this.pageSize != event.pageSize) {
             this.pageIndex = 0;

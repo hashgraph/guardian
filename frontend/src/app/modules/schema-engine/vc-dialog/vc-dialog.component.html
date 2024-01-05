@@ -1,5 +1,5 @@
 <div class="view-dialog-bar">
-    <app-compare-btn *ngIf="!dryRun && id" [id]="id" type="document" class="compare-container"></app-compare-btn>
+    <app-compare-btn *ngIf="!dryRun && id" [id]="id" type="document"  class="compare-container"></app-compare-btn>
     <div *ngIf="(isVcDocument || isVpDocument) && toggle" class="toggle-container">
         <label class="switch">
             <input [(ngModel)]="viewDocument" type="checkbox">

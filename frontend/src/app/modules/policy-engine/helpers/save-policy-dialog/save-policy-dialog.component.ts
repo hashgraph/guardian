@@ -70,7 +70,7 @@ export class SavePolicyDialog {
             });
         } else if (this.action === PolicyAction.CREATE_NEW_VERSION) {
             this.dataForm = this.fb.group({
-                name: [{value: this.data.policy.name, disabled: true}, Validators.required],
+                name: [{ value: this.data.policy.name, disabled: true }, Validators.required],
                 description: [this.data.policy.description],
                 topicDescription: [this.data.policy.topicDescription],
                 policyTag: [tag, Validators.required],

@@ -17,11 +17,11 @@
         <td class="propRowCell cellName">Input Schema</td>
         <td class="propRowCell">
             <select-schema
-                    [schemas]="schemas"
-                    [(value)]="properties.inputSchema"
-                    [disabled]="readonly"
-                    (change)="onSelectInput()"
-            ></select-schema>
+                [schemas]="schemas" 
+                [(value)]="properties.inputSchema"
+                [disabled]="readonly" 
+                (change)="onSelectInput()"
+                ></select-schema>
         </td>
     </tr>
     <ng-container *ngIf="properties.inputSchema">
@@ -51,11 +51,11 @@
         <td class="propRowCell cellName">Output Schema</td>
         <td class="propRowCell">
             <select-schema
-                    [schemas]="schemas"
-                    [(value)]="properties.outputSchema"
-                    [disabled]="readonly"
-                    (change)="onSelectOutput()"
-            ></select-schema>
+                [schemas]="schemas" 
+                [(value)]="properties.outputSchema"
+                [disabled]="readonly" 
+                (change)="onSelectOutput()"
+                ></select-schema>
         </td>
     </tr>
     <ng-container *ngIf="properties.outputSchema">

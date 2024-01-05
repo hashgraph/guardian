@@ -23,7 +23,6 @@ import { AngularSvgIconModule } from 'angular-svg-icon';
     imports: [
         CommonModule,
         FormsModule,
-
         BrowserModule,
         InputTextModule,
         DropdownModule,

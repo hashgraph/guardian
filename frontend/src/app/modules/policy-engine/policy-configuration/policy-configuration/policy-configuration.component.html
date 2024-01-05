@@ -24,7 +24,7 @@
                 </div>
 
                 <div class="top-toolbar-btn readonly-status wizard-btn" (click)="openPolicyWizardDialog()"
-                     title="Policy Wizard">
+                    title="Policy Wizard">
                     <mat-icon>auto_awesome</mat-icon>
                     <span>Wizard</span>
                 </div>
@@ -32,7 +32,7 @@
                 <div class="delimiter"></div>
 
                 <div *ngIf="policyTemplate.isDraft" class="top-toolbar-group all-status"
-                     [matMenuTriggerFor]="publishMenu">
+                    [matMenuTriggerFor]="publishMenu">
                     <mat-icon class="edit-color">edit</mat-icon>
                     <span class="edit-color">Draft</span>
                     <div class="expand-group">
@@ -172,12 +172,12 @@
                         <span>Redo</span>
                     </div>
                     <div class="top-toolbar-btn" (click)="onSuggestionsClick()" title="Suggestions"
-                         [ngClass]="{'btn-mode-active': isSuggestionsEnabled}">
+                        [ngClass]="{'btn-mode-active': isSuggestionsEnabled}">
                         <mat-icon>assistant</mat-icon>
                         <span>Suggestions</span>
                     </div>
                     <div class="top-toolbar-btn" (click)="copyBlocksMode=!copyBlocksMode" title="Copy Mode"
-                         [ngClass]="{'btn-mode-active': copyBlocksMode}">
+                        [ngClass]="{'btn-mode-active': copyBlocksMode}">
                         <mat-icon>content_copy</mat-icon>
                         <span>Copy Mode</span>
                     </div>
@@ -242,7 +242,7 @@
 
             <ng-container *ngIf="isTree">
                 <div class="top-toolbar-group all-status event-color" [matMenuTriggerFor]="eventMenu"
-                     style="width: 80px">
+                    style="width: 80px">
                     <mat-icon *ngIf="eventVisible =='All'" class="event-color">flash_on</mat-icon>
                     <mat-icon *ngIf="eventVisible =='Action'" class="event-color">
                         <div class="action-event-icon"></div>
@@ -285,26 +285,26 @@
                 <div class="pc-tabs">
                     <div class="pc-tabs-headers">
                         <div class="tab-header tab-header-min" [attr.selected]="options.components"
-                             (click)="select('components')">
+                            (click)="select('components')">
                             <mat-icon class="action-color">article</mat-icon>
                             <span>Blocks</span>
                         </div>
                         <div class="tab-header tab-header-min" [attr.selected]="options.moduleLibrary"
-                             (click)="select('moduleLibrary')">
+                            (click)="select('moduleLibrary')">
                             <mat-icon class="action-color" svgIcon="policy-module"></mat-icon>
                             <span>Modules</span>
                         </div>
                         <div class="tab-header tab-header-min" [attr.selected]="options.toolLibrary"
-                             (click)="select('toolLibrary')">
+                            (click)="select('toolLibrary')">
                             <mat-icon class="action-color tool-icon">handyman</mat-icon>
                             <span>Tools</span>
                         </div>
                     </div>
 
                     <div [cdkDropListConnectedTo]="[dropListConnector.body]"
-                         [cdkDropListEnterPredicate]="noReturnPredicate" #menuList="cdkDropList" cdkDropList
-                         cdkDropListSortingDisabled class="pc-tabs-content components-menu"
-                         (cdkDropListDropped)="drop($event)">
+                        [cdkDropListEnterPredicate]="noReturnPredicate" #menuList="cdkDropList" cdkDropList
+                        cdkDropListSortingDisabled class="pc-tabs-content components-menu"
+                        (cdkDropListDropped)="drop($event)">
 
                         <div class="components-container" [hidden]="!options.components">
 
@@ -313,113 +313,109 @@
                                 <mat-icon class="components-search-icon">search</mat-icon>
                             </div>
                             <div *ngIf="componentsList.favorites.length" class="components-group"
-                                 [attr.readonly]="disableComponentMenu" [attr.collapsed]="options.favoritesGroup">
+                                [attr.readonly]="disableComponentMenu" [attr.collapsed]="options.favoritesGroup">
                                 <div class="components-group-name" (click)="collapse('favoritesGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
                                     <mat-icon class="components-group-name-icon">star</mat-icon>
                                     <span style="padding-left: 22px">Favorites
-                                        ({{ componentsList.favorites.length }})</span>
+                                        ({{componentsList.favorites.length}})</span>
                                 </div>
                                 <div class="components-group-body readonly-status">
                                     <div class="components-group-item" *ngFor="let item of componentsList.favorites">
                                         <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
-                                             [attr.block-type]="item.header" (click)="onAdd(item)">
+                                            [attr.block-type]="item.header" (click)="onAdd(item)">
                                             <div class="drag-component">
-                                                <mat-icon class="drag-component-icon">{{ item.icon }}</mat-icon>
-                                                <span class="drag-component-name">{{ item.name }}</span>
+                                                <mat-icon class="drag-component-icon">{{item.icon}}</mat-icon>
+                                                <span class="drag-component-name">{{item.name}}</span>
                                             </div>
                                         </div>
                                         <div class="component-btn" (click)="onAdd(item)">
-                                            <mat-icon class="component-btn-icon">{{ item.icon }}</mat-icon>
-                                            <span>{{ item.name }}</span>
+                                            <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
+                                            <span>{{item.name}}</span>
                                             <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
-                                                      (click)="setFavorite($event, item)">star
-                                            </mat-icon>
+                                                (click)="setFavorite($event, item)">star</mat-icon>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="components-group" [attr.readonly]="disableComponentMenu"
-                                 [attr.collapsed]="options.uiGroup">
+                                [attr.collapsed]="options.uiGroup">
                                 <div class="components-group-name" (click)="collapse('uiGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
-                                    <span>UI Components ({{ componentsList.uiComponents.length }})</span>
+                                    <span>UI Components ({{componentsList.uiComponents.length}})</span>
                                 </div>
                                 <div class="components-group-body readonly-status">
                                     <div class="components-group-item" *ngFor="let item of componentsList.uiComponents">
                                         <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
-                                             [attr.block-type]="item.header" (click)="onAdd(item)">
+                                            [attr.block-type]="item.header" (click)="onAdd(item)">
                                             <div class="drag-component">
-                                                <mat-icon class="drag-component-icon">{{ item.icon }}</mat-icon>
-                                                <span class="drag-component-name">{{ item.name }}</span>
+                                                <mat-icon class="drag-component-icon">{{item.icon}}</mat-icon>
+                                                <span class="drag-component-name">{{item.name}}</span>
                                             </div>
                                         </div>
                                         <div class="component-btn" (click)="onAdd(item)">
-                                            <mat-icon class="component-btn-icon">{{ item.icon }}</mat-icon>
-                                            <span>{{ item.name }}</span>
+                                            <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
+                                            <span>{{item.name}}</span>
                                             <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
-                                                      (click)="setFavorite($event, item)">star
-                                            </mat-icon>
+                                                (click)="setFavorite($event, item)">star</mat-icon>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="components-group" [attr.readonly]="disableComponentMenu"
-                                 [attr.collapsed]="options.serverGroup">
+                                [attr.collapsed]="options.serverGroup">
                                 <div class="components-group-name" (click)="collapse('serverGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
-                                    <span>Server Components ({{ componentsList.serverBlocks.length }})</span>
+                                    <span>Server Components ({{componentsList.serverBlocks.length}})</span>
                                 </div>
                                 <div class="components-group-body readonly-status">
                                     <div class="components-group-item" *ngFor="let item of componentsList.serverBlocks">
                                         <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
-                                             [attr.block-type]="item.header" (click)="onAdd(item)">
+                                            [attr.block-type]="item.header" (click)="onAdd(item)">
                                             <div class="drag-component">
-                                                <mat-icon class="drag-component-icon">{{ item.icon }}</mat-icon>
-                                                <span class="drag-component-name">{{ item.name }}</span>
+                                                <mat-icon class="drag-component-icon">{{item.icon}}</mat-icon>
+                                                <span class="drag-component-name">{{item.name}}</span>
                                             </div>
                                         </div>
                                         <div class="component-btn" (click)="onAdd(item)">
-                                            <mat-icon class="component-btn-icon">{{ item.icon }}</mat-icon>
-                                            <span>{{ item.name }}</span>
+                                            <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
+                                            <span>{{item.name}}</span>
                                             <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
-                                                      (click)="setFavorite($event, item)">star
-                                            </mat-icon>
+                                                (click)="setFavorite($event, item)">star</mat-icon>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="components-group" [attr.readonly]="disableComponentMenu"
-                                 [attr.collapsed]="options.addonsGroup">
+                                [attr.collapsed]="options.addonsGroup">
                                 <div class="components-group-name" (click)="collapse('addonsGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
-                                    <span>Addons ({{ componentsList.addons.length }})</span>
+                                    <span>Addons ({{componentsList.addons.length}})</span>
                                 </div>
                                 <div class="components-group-body readonly-status">
                                     <div class="components-group-item" *ngFor="let item of componentsList.addons">
                                         <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
-                                             [attr.block-type]="item.header" (click)="onAdd(item)">
+                                            [attr.block-type]="item.header" (click)="onAdd(item)">
                                             <div class="drag-component">
-                                                <mat-icon class="drag-component-icon">{{ item.icon }}</mat-icon>
-                                                <span class="drag-component-name">{{ item.name }}</span>
+                                                <mat-icon class="drag-component-icon">{{item.icon}}</mat-icon>
+                                                <span class="drag-component-name">{{item.name}}</span>
                                             </div>
                                         </div>
                                         <div class="component-btn" (click)="onAdd(item)">
-                                            <mat-icon class="component-btn-icon">{{ item.icon }}</mat-icon>
-                                            <span>{{ item.name }}</span>
+                                            <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
+                                            <span>{{item.name}}</span>
                                             <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
-                                                      (click)="setFavorite($event, item)">star
-                                            </mat-icon>
+                                                (click)="setFavorite($event, item)">star</mat-icon>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div *ngIf="componentsList.unGrouped.length" class="components-group"
-                                 [attr.readonly]="disableComponentMenu" [attr.collapsed]="options.unGroup">
+                                [attr.readonly]="disableComponentMenu" [attr.collapsed]="options.unGroup">
                                 <div class="components-group-name" (click)="collapse('unGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
@@ -428,19 +424,18 @@
                                 <div class="components-group-body readonly-status">
                                     <div class="components-group-item" *ngFor="let item of componentsList.unGrouped">
                                         <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
-                                             [attr.block-type]="item.header" (click)="onAdd(item)">
+                                            [attr.block-type]="item.header" (click)="onAdd(item)">
                                             <div class="drag-component">
-                                                <mat-icon class="drag-component-icon">{{ item.icon }}</mat-icon>
-                                                <span class="drag-component-name">{{ item.name }}</span>
+                                                <mat-icon class="drag-component-icon">{{item.icon}}</mat-icon>
+                                                <span class="drag-component-name">{{item.name}}</span>
                                             </div>
                                         </div>
                                         <div class="component-btn" (click)="onAdd(item)"
-                                             [attr.block-type]="item.header">
-                                            <mat-icon class="component-btn-icon">{{ item.icon }}</mat-icon>
-                                            <span>{{ item.name }}</span>
+                                            [attr.block-type]="item.header">
+                                            <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
+                                            <span>{{item.name}}</span>
                                             <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
-                                                      (click)="setFavorite($event, item)">star
-                                            </mat-icon>
+                                                (click)="setFavorite($event, item)">star</mat-icon>
                                         </div>
                                     </div>
                                 </div>
@@ -453,33 +448,33 @@
                                 <mat-icon class="components-search-icon">search</mat-icon>
                             </div>
                             <div *ngIf="modulesList.favorites.length" [attr.collapsed]="options.favoritesModulesGroup"
-                                 [attr.readonly]="disableModuleMenu" class="components-group">
+                                [attr.readonly]="disableModuleMenu" class="components-group">
                                 <div class="components-group-name" (click)="collapse('favoritesModulesGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
                                     <mat-icon class="components-group-name-icon">star</mat-icon>
                                     <span style="padding-left: 22px">Favorites
-                                        ({{ modulesList.favorites.length }})</span>
+                                        ({{modulesList.favorites.length}})</span>
                                 </div>
                                 <div class="components-group-body readonly-status">
                                     <div class="components-group-item" *ngFor="let item of modulesList.favorites">
                                         <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
-                                             [attr.block-type]="item.header" (click)="onAddModule(item)">
+                                            [attr.block-type]="item.header" (click)="onAddModule(item)">
                                             <div class="drag-component drag-module">
                                                 <div class="drag-component-icon">
                                                     <mat-icon svgIcon="policy-module"></mat-icon>
                                                 </div>
-                                                <span class="drag-component-name">{{ item.name }}</span>
+                                                <span class="drag-component-name">{{item.name}}</span>
                                             </div>
                                         </div>
                                         <div class="component-btn" (click)="onAddModule(item)">
                                             <div class="component-btn-icon">
                                                 <mat-icon svgIcon="policy-module"></mat-icon>
                                             </div>
-                                            <span>{{ item.name }}</span>
+                                            <span>{{item.name}}</span>
                                             <span class="component-btn-toolbar">
                                                 <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
-                                                          (click)="setModuleFavorite($event, item)">star</mat-icon>
+                                                    (click)="setModuleFavorite($event, item)">star</mat-icon>
                                                 <!-- <mat-icon [attr.readonly]="item.isDefault" class="component-btn-delete"
                                                     [attr.favorite]="item.favorite"
                                                     (click)="onDeleteModule(item)">delete</mat-icon> -->
@@ -489,62 +484,62 @@
                                 </div>
                             </div>
                             <div [attr.collapsed]="options.defaultModulesGroup" [attr.readonly]="disableModuleMenu"
-                                 class="components-group">
+                                class="components-group">
                                 <div class="components-group-name" (click)="collapse('defaultModulesGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
-                                    <span>Default Modules ({{ modulesList.defaultModules.length }})</span>
+                                    <span>Default Modules ({{modulesList.defaultModules.length}})</span>
                                 </div>
                                 <div class="components-group-body readonly-status">
                                     <div class="components-group-item" *ngFor="let item of modulesList.defaultModules">
                                         <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
-                                             [attr.block-type]="item.header" (click)="onAddModule(item)">
+                                            [attr.block-type]="item.header" (click)="onAddModule(item)">
                                             <div class="drag-component drag-module">
                                                 <div class="drag-component-icon">
                                                     <mat-icon svgIcon="policy-module"></mat-icon>
                                                 </div>
-                                                <span class="drag-component-name">{{ item.name }}</span>
+                                                <span class="drag-component-name">{{item.name}}</span>
                                             </div>
                                         </div>
                                         <div class="component-btn" (click)="onAddModule(item)">
                                             <div class="component-btn-icon">
                                                 <mat-icon svgIcon="policy-module"></mat-icon>
                                             </div>
-                                            <span>{{ item.name }}</span>
+                                            <span>{{item.name}}</span>
                                             <span class="component-btn-toolbar">
                                                 <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
-                                                          (click)="setModuleFavorite($event, item)">star</mat-icon>
+                                                    (click)="setModuleFavorite($event, item)">star</mat-icon>
                                             </span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="components-group" [attr.collapsed]="options.customModulesGroup"
-                                 [attr.readonly]="disableModuleMenu">
+                                [attr.readonly]="disableModuleMenu">
                                 <div class="components-group-name" (click)="collapse('customModulesGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
-                                    <span>Custom models ({{ modulesList.customModules.length }})</span>
+                                    <span>Custom models ({{modulesList.customModules.length}})</span>
                                 </div>
                                 <div class="components-group-body readonly-status">
                                     <div class="components-group-item" *ngFor="let item of modulesList.customModules">
                                         <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
-                                             [attr.block-type]="item.header" (click)="onAddModule(item)">
+                                            [attr.block-type]="item.header" (click)="onAddModule(item)">
                                             <div class="drag-component drag-module">
                                                 <div class="drag-component-icon">
                                                     <mat-icon svgIcon="policy-module"></mat-icon>
                                                 </div>
-                                                <span class="drag-component-name">{{ item.name }}</span>
+                                                <span class="drag-component-name">{{item.name}}</span>
                                             </div>
                                         </div>
                                         <div class="component-btn" (click)="onAddModule(item)">
                                             <div class="component-btn-icon">
                                                 <mat-icon svgIcon="policy-module"></mat-icon>
                                             </div>
-                                            <span>{{ item.name }}</span>
+                                            <span>{{item.name}}</span>
                                             <span class="component-btn-toolbar">
                                                 <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
-                                                          (click)="setModuleFavorite($event, item)">star</mat-icon>
+                                                    (click)="setModuleFavorite($event, item)">star</mat-icon>
                                             </span>
                                         </div>
                                     </div>
@@ -558,28 +553,28 @@
                                 <mat-icon class="components-search-icon">search</mat-icon>
                             </div>
                             <div class="components-group" [attr.collapsed]="options.customToolsGroup"
-                                 [attr.readonly]="disableToolMenu">
+                                [attr.readonly]="disableToolMenu">
                                 <div class="components-group-name" (click)="collapse('customToolsGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
-                                    <span>Tools ({{ modulesList.customTools.length }})</span>
+                                    <span>Tools ({{modulesList.customTools.length}})</span>
                                 </div>
                                 <div class="components-group-body readonly-status">
                                     <div class="components-group-item" *ngFor="let item of modulesList.customTools">
                                         <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
-                                             [attr.block-type]="item.header" (click)="onAddTool(item)">
+                                            [attr.block-type]="item.header" (click)="onAddTool(item)">
                                             <div class="drag-component drag-module">
                                                 <div class="drag-component-icon">
                                                     <mat-icon class="tool-icon">handyman</mat-icon>
                                                 </div>
-                                                <span class="drag-component-name">{{ item.name }}</span>
+                                                <span class="drag-component-name">{{item.name}}</span>
                                             </div>
                                         </div>
                                         <div class="component-btn" (click)="onAddTool(item)">
                                             <div class="component-btn-icon">
                                                 <mat-icon class="tool-icon">handyman</mat-icon>
                                             </div>
-                                            <span>{{ item.name }}</span>
+                                            <span>{{item.name}}</span>
                                             <span class="component-btn-toolbar">
                                                 <!-- <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
                                                     (click)="setModuleFavorite($event, item)">star</mat-icon> -->
@@ -596,34 +591,34 @@
 
                 <div *ngIf="!isTree && errors?.length" class="json-errors">
                     <div *ngFor="let item of errors" class="errors-property">
-                        <span>{{ item }}</span>
+                        <span>{{item}}</span>
                     </div>
                 </div>
 
                 <div class="pc-tabs minimized-tabs">
                     <div class="pc-tabs-headers right-menu">
                         <div *ngIf="rootType ==='Policy'" class="tab-header tab-header-icon"
-                             [attr.selected]="openFolder===policyTemplate" (click)="onOpenRoot(policyTemplate)"
-                             style="width: 100px;margin-right: 6px">
+                            [attr.selected]="openFolder===policyTemplate" (click)="onOpenRoot(policyTemplate)"
+                            style="width: 100px;margin-right: 6px">
                             <mat-icon class="action-color">article</mat-icon>
                             Policy
                         </div>
                         <div (click)="onOpenRoot(moduleTemplate)" *ngIf="rootType ==='Module'" [attr.selected]="true"
-                             class="tab-header tab-header-icon" style="width: 100px;margin-right: 6px">
+                            class="tab-header tab-header-icon" style="width: 100px;margin-right: 6px">
                             <mat-icon class="module-root-icon action-color" svgIcon="policy-module"></mat-icon>
                             Module
                         </div>
                         <div (click)="onOpenRoot(toolTemplate)" *ngIf="rootType ==='Tool'" [attr.selected]="true"
-                             class="tab-header tab-header-icon" style="width: 100px;margin-right: 6px">
+                            class="tab-header tab-header-icon" style="width: 100px;margin-right: 6px">
                             <mat-icon class="module-root-icon action-color tool-icon">handyman</mat-icon>
                             Tool
                         </div>
 
                         <ng-container *ngIf="allSubModule">
                             <div class="tab-header tab-header-icon" *ngFor="let item of allSubModule"
-                                 [attr.selected]="openFolder===item" (click)="onOpenModule(item)">
+                                [attr.selected]="openFolder===item" (click)="onOpenModule(item)">
                                 <mat-icon class="module-root-icon edit-color" svgIcon="policy-module"></mat-icon>
-                                {{ item.localTag }}
+                                {{item.localTag}}
                             </div>
                         </ng-container>
                         <div class="theme-legends" [attr.active]="options.legendActive">
@@ -634,23 +629,23 @@
                                 <div *ngFor="let rule of theme.rules" class="theme-rule">
                                     <div class="theme-rule-prev" [style]="blockStyle(rule)" theme-block theme-all></div>
                                     <div class="theme-rule-description">
-                                        {{ getLegendText(rule) }}
+                                        {{getLegendText(rule)}}
                                     </div>
                                 </div>
                                 <div *ngIf="theme.default" class="theme-rule">
                                     <div class="theme-rule-prev" [style]="blockStyle(theme.default)" theme-block
-                                         theme-all></div>
-                                    <div class="theme-rule-description">{{ theme.default.description || '-' }}</div>
+                                        theme-all></div>
+                                    <div class="theme-rule-description">{{theme.default.description || '-'}}</div>
                                 </div>
                             </div>
                             <div *ngIf="!isTree" class="theme-legends-container">
                                 <div *ngFor="let syntaxGroup of theme.syntaxGroups" class="theme-rule">
                                     <div class="theme-rule-syntax-prev" style="padding: 5px 10px;">
                                         <div style="width: 100%; height: 100%;"
-                                             [ngStyle]="{ 'background-color': syntaxGroup.color}"></div>
+                                            [ngStyle]="{ 'background-color': syntaxGroup.color}"></div>
                                     </div>
                                     <div class="theme-rule-description">
-                                        {{ syntaxGroup.name }}
+                                        {{syntaxGroup.name}}
                                     </div>
                                 </div>
                             </div>
@@ -661,17 +656,16 @@
                     }">
                         <div *ngIf="!isTree" class="textarea-code">
                             <ngx-codemirror [(ngModel)]="code" [options]="codeMirrorOptions"
-                                            (ngModelChange)="saveState()">
+                                (ngModelChange)="saveState()">
                             </ngx-codemirror>
                         </div>
                         <policy-tree (delete)="onDelete($event)" (nested)="addSuggestionsBlock($event, true)"
-                                     (open)="onOpenModule($event)" [errors]="errorsMap" (reorder)="onReorder($event)"
-                                     *ngIf="isTree" [active]="eventVisible" [suggestions]="isSuggestionsEnabled"
-                                     [blocks]="openFolder.dataSource" [connector]="dropListConnector"
-                                     [(currentBlock)]="currentBlock" [module]="openFolder"
-                                     (next)="addSuggestionsBlock($event)"
-                                     [nestedBlock]="nestedBlock" [nextBlock]="nextBlock" (select)="onSelect($event)"
-                                     [readonly]="readonly" (init)="onInitViewer($event)">
+                            (open)="onOpenModule($event)" [errors]="errorsMap" (reorder)="onReorder($event)"
+                            *ngIf="isTree" [active]="eventVisible" [suggestions]="isSuggestionsEnabled"
+                            [blocks]="openFolder.dataSource" [connector]="dropListConnector"
+                            [(currentBlock)]="currentBlock" [module]="openFolder" (next)="addSuggestionsBlock($event)"
+                            [nestedBlock]="nestedBlock" [nextBlock]="nextBlock" (select)="onSelect($event)"
+                            [readonly]="readonly" (init)="onInitViewer($event)">
                         </policy-tree>
                     </div>
                 </div>
@@ -680,35 +674,35 @@
             <div class="right-toolbar">
 
                 <div class="right-top-toolbar" [attr.collapse-top]="options.rightTopMenu"
-                     [attr.collapse-bottom]="options.rightBottomMenu">
+                    [attr.collapse-bottom]="options.rightBottomMenu">
 
                     <div *ngIf="policyDescription" class="pc-tabs">
                         <div class="pc-tabs-headers">
                             <div class="tab-header" [attr.selected]="options.description"
-                                 (click)="select('description')">
+                                (click)="select('description')">
                                 Description
                             </div>
                             <div (click)="select('roles')" [attr.selected]="options.roles" class="tab-header"
-                                 style="max-width: 50px;">
+                                style="max-width: 50px;">
                                 Roles
                             </div>
                             <div (click)="select('navigation')" [attr.selected]="options.navigation" class="tab-header">
                                 Navigation
                             </div>
                             <div (click)="select('groups')" [attr.selected]="options.groups" class="tab-header"
-                                 style="max-width: 65px;">
+                                style="max-width: 65px;">
                                 Groups
                             </div>
                             <div (click)="select('topics')" [attr.selected]="options.topics" class="tab-header"
-                                 style="max-width: 65px;">
+                                style="max-width: 65px;">
                                 Topics
                             </div>
                             <div (click)="select('tokens')" [attr.selected]="options.tokens" class="tab-header"
-                                 style="max-width: 65px;">
+                                style="max-width: 65px;">
                                 Tokens
                             </div>
                             <div class="tabs-icon" [attr.collapsed]="options.rightTopMenu"
-                                 (click)="collapse('rightTopMenu')">
+                                (click)="collapse('rightTopMenu')">
                                 <mat-icon class="tabs-icon-full">open_in_full</mat-icon>
                                 <mat-icon class="tabs-icon-min">close_fullscreen</mat-icon>
                             </div>
@@ -716,29 +710,28 @@
                         <div class="pc-tabs-content" [attr.readonly]="!isTree">
                             <div class="prop-container" [hidden]="!options.description">
                                 <policy-properties class="readonly-status" [allCategories]="allCategories"
-                                                   [policyCategories]="policyCategoriesMapped" [policy]="policyTemplate"
-                                                   type="Main"
-                                                   [readonly]="readonly"></policy-properties>
+                                    [policyCategories]="policyCategoriesMapped" [policy]="policyTemplate" type="Main"
+                                    [readonly]="readonly"></policy-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.roles">
                                 <policy-properties class="readonly-status" [policy]="policyTemplate" type="Role"
-                                                   [readonly]="readonly"></policy-properties>
+                                    [readonly]="readonly"></policy-properties>
                             </div>
                             <div [hidden]="!options.navigation" class="prop-container">
                                 <policy-properties [policy]="policyTemplate" [readonly]="readonly"
-                                                   class="readonly-status" type="Navigation"></policy-properties>
+                                    class="readonly-status" type="Navigation"></policy-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.groups">
                                 <policy-properties [policy]="policyTemplate" type="Groups" class="readonly-status"
-                                                   [readonly]="readonly"></policy-properties>
+                                    [readonly]="readonly"></policy-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.topics">
                                 <policy-properties class="readonly-status" [policy]="policyTemplate" type="Topics"
-                                                   [readonly]="readonly"></policy-properties>
+                                    [readonly]="readonly"></policy-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.tokens">
                                 <policy-properties class="readonly-status" [policy]="policyTemplate" type="Tokens"
-                                                   [readonly]="readonly"></policy-properties>
+                                    [readonly]="readonly"></policy-properties>
                             </div>
                         </div>
                     </div>
@@ -746,23 +739,23 @@
                     <div *ngIf="moduleDescription" class="pc-tabs">
                         <div class="pc-tabs-headers">
                             <div class="tab-header" [attr.selected]="options.descriptionModule"
-                                 (click)="select('descriptionModule')">
+                                (click)="select('descriptionModule')">
                                 Description
                             </div>
                             <div class="tab-header" [attr.selected]="options.inputsModule"
-                                 (click)="select('inputsModule')">
+                                (click)="select('inputsModule')">
                                 Inputs
                             </div>
                             <div class="tab-header" [attr.selected]="options.outputsModule"
-                                 (click)="select('outputsModule')">
+                                (click)="select('outputsModule')">
                                 Outputs
                             </div>
                             <div class="tab-header" [attr.selected]="options.variablesModule"
-                                 (click)="select('variablesModule')">
+                                (click)="select('variablesModule')">
                                 Variables
                             </div>
                             <div class="tabs-icon" [attr.collapsed]="options.rightTopMenu"
-                                 (click)="collapse('rightTopMenu')">
+                                (click)="collapse('rightTopMenu')">
                                 <mat-icon class="tabs-icon-full">open_in_full</mat-icon>
                                 <mat-icon class="tabs-icon-min">close_fullscreen</mat-icon>
                             </div>
@@ -770,30 +763,26 @@
                         <div class="pc-tabs-content" [attr.readonly]="!isTree">
                             <div class="prop-container" [hidden]="!options.descriptionModule">
                                 <module-properties [module]="openFolder" type="Main" class="readonly-status"
-                                                   [readonly]="readonly"
-                                                   [errors]="errorsMap[openFolder.id]"></module-properties>
+                                    [readonly]="readonly" [errors]="errorsMap[openFolder.id]"></module-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.inputsModule">
                                 <module-properties [module]="openFolder" class="readonly-status" type="Inputs"
-                                                   [readonly]="readonly"
-                                                   [errors]="errorsMap[openFolder.id]"></module-properties>
+                                    [readonly]="readonly" [errors]="errorsMap[openFolder.id]"></module-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.outputsModule">
                                 <module-properties [module]="openFolder" type="Outputs" class="readonly-status"
-                                                   [readonly]="readonly"
-                                                   [errors]="errorsMap[openFolder.id]"></module-properties>
+                                    [readonly]="readonly" [errors]="errorsMap[openFolder.id]"></module-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.variablesModule">
                                 <module-properties [module]="openFolder" class="readonly-status" type="Variables"
-                                                   [readonly]="readonly"
-                                                   [errors]="errorsMap[openFolder.id]"></module-properties>
+                                    [readonly]="readonly" [errors]="errorsMap[openFolder.id]"></module-properties>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div [attr.collapse-top]="options.rightTopMenu" *ngIf="currentBlock && !isRootModule"
-                     class="right-bottom-toolbar" [attr.collapse-bottom]="options.rightBottomMenu">
+                    class="right-bottom-toolbar" [attr.collapse-bottom]="options.rightBottomMenu">
 
                     <div class="pc-tabs">
                         <div class="pc-tabs-headers">
@@ -810,7 +799,7 @@
                                 Json
                             </div>
                             <div class="tabs-icon" [attr.collapsed]="options.rightBottomMenu"
-                                 (click)="collapse('rightBottomMenu')">
+                                (click)="collapse('rightBottomMenu')">
                                 <mat-icon class="tabs-icon-full">open_in_full</mat-icon>
                                 <mat-icon class="tabs-icon-min">close_fullscreen</mat-icon>
                             </div>
@@ -819,30 +808,30 @@
                             <div class="prop-container" [hidden]="!options.properties">
                                 <div *ngIf="errorsMap[currentBlock.id]" class="errors-properties">
                                     <div *ngFor="let item of errorsMap[currentBlock.id]" class="errors-property">
-                                        <span>{{ item }}</span>
+                                        <span>{{item}}</span>
                                     </div>
                                 </div>
                                 <common-properties [module]="openFolder" [readonly]="readonly" [block]="currentBlock"
-                                                   class="readonly-status" type="Common"></common-properties>
+                                    class="readonly-status" type="Common"></common-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.events">
                                 <common-properties [module]="openFolder" [readonly]="readonly" [block]="currentBlock"
-                                                   class="readonly-status" type="Events"></common-properties>
+                                    class="readonly-status" type="Events"></common-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.artifacts">
                                 <artifact-properties [policyId]="policyId" [readonly]="readonly" class="readonly-status"
-                                                     [block]="currentBlock"></artifact-properties>
+                                    [block]="currentBlock"></artifact-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.json">
                                 <json-properties *ngIf="options.json" [block]="currentBlock"
-                                                 [readonly]="readonly"></json-properties>
+                                    [readonly]="readonly"></json-properties>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div [attr.collapse-top]="options.rightTopMenu" *ngIf="currentBlock && isRootModule"
-                     class="right-bottom-toolbar" [attr.collapse-bottom]="options.rightBottomMenu">
+                    class="right-bottom-toolbar" [attr.collapse-bottom]="options.rightBottomMenu">
 
                     <div class="pc-tabs">
                         <div class="pc-tabs-headers">
@@ -850,7 +839,7 @@
                                 Events
                             </div>
                             <div class="tabs-icon" [attr.collapsed]="options.rightBottomMenu"
-                                 (click)="collapse('rightBottomMenu')">
+                                (click)="collapse('rightBottomMenu')">
                                 <mat-icon class="tabs-icon-full">open_in_full</mat-icon>
                                 <mat-icon class="tabs-icon-min">close_fullscreen</mat-icon>
                             </div>
@@ -858,7 +847,7 @@
                         <div class="pc-tabs-content">
                             <div class="prop-container readonly-status">
                                 <common-properties [block]="currentBlock" [module]="openFolder" [readonly]="readonly"
-                                                   type="Events"></common-properties>
+                                    type="Events"></common-properties>
                             </div>
                         </div>
                     </div>

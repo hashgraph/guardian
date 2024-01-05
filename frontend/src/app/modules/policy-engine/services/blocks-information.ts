@@ -90,7 +90,7 @@ const Container: IBlockSetting = {
         { type: BlockType.ExternalTopic },
         { type: BlockType.MessagesReportBlock },
         { type: BlockType.NotificationBlock },
-        {type: BlockType.ExtractDataBlock},
+        { type: BlockType.ExtractDataBlock },
     ]
 }
 
@@ -136,7 +136,7 @@ const Step: IBlockSetting = {
         { type: BlockType.ExternalTopic },
         { type: BlockType.MessagesReportBlock },
         { type: BlockType.NotificationBlock },
-        {type: BlockType.ExtractDataBlock},
+        { type: BlockType.ExtractDataBlock },
     ]
 }
 

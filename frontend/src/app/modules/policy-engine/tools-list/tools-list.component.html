@@ -119,51 +119,51 @@
                                  UUID
                              </th>-->
                             <th
-                                    class="header-cell-text"
-                                    style="min-width: 140px; max-width: 150px;"
+                                class="header-cell-text"
+                                style="min-width: 140px; max-width: 150px;"
                             >
                                 Name
                             </th>
                             <th
-                                    class="header-cell-text"
-                                    style="min-width: 140px; max-width: 150px;"
+                                class="header-cell-text"
+                                style="min-width: 140px; max-width: 150px;"
                             >
                                 Description
                             </th>
                             <th
-                                    class="header-cell-text"
-                                    style="min-width: 140px;"
+                                class="header-cell-text"
+                                style="min-width: 140px;"
                             >
                                 Schemas
                             </th>
                             <th
-                                    class="header-cell-text"
-                                    style="min-width: 140px;"
+                                class="header-cell-text"
+                                style="min-width: 140px;"
                             >
                                 Status
                             </th>
                             <th
-                                    class="header-cell-text"
-                                    style="min-width: 140px;"
+                                class="header-cell-text"
+                                style="min-width: 140px;"
                             >
                                 Hedera Topic Id
                             </th>
                             <th
-                                    class="header-cell-text"
-                                    style="min-width: 165px;"
+                                class="header-cell-text"
+                                style="min-width: 165px;"
                             >
                                 Tags
                             </th>
                             <th
-                                    *ngIf="canPublishAnyTool"
-                                    class="header-cell-text"
-                                    style="min-width: 140px;"
+                                *ngIf="canPublishAnyTool"
+                                class="header-cell-text"
+                                style="min-width: 140px;"
                             >
                                 Operations
                             </th>
                             <th
-                                    class="header-cell-text"
-                                    style="min-width: 140px;"
+                                class="header-cell-text"
+                                style="min-width: 140px;"
                             >
                                 {{ !canPublishAnyTool ? 'Operations' : '' }}
                             </th>
@@ -180,18 +180,18 @@
                                 {{ tool.uuid }}
                             </td>-->
                             <td
-                                    class="first-policy-grid-cell text-truncate"
-                                    pTooltip="{{ tool.name }}"
-                                    style="min-width: 140px; max-width: 150px;"
-                                    tooltipPosition="top"
+                                class="first-policy-grid-cell text-truncate"
+                                pTooltip="{{ tool.name }}"
+                                style="min-width: 140px; max-width: 150px;"
+                                tooltipPosition="top"
                             >
                                 {{ tool.name || '–' }}
                             </td>
                             <td
-                                    class="text-truncate"
-                                    pTooltip="{{ tool.description }}"
-                                    style="min-width: 140px; max-width: 150px;"
-                                    tooltipPosition="top"
+                                class="text-truncate"
+                                pTooltip="{{ tool.description }}"
+                                style="min-width: 140px; max-width: 150px;"
+                                tooltipPosition="top"
                             >
                                 {{ tool.description || '–' }}
                             </td>
@@ -220,115 +220,115 @@
                                 </hedera-explorer>
                             </td>
                             <td
-                                    style="min-width: 165px;"
+                                style="min-width: 165px;"
                             >
                                 <tags-explorer
-                                        [data]="tool._tags"
-                                        [entity]="tagEntity"
-                                        [owner]="owner"
-                                        [schemas]="tagSchemas"
-                                        [service]="tagsService"
-                                        [target]="tool.id"></tags-explorer>
+                                    [data]="tool._tags"
+                                    [entity]="tagEntity"
+                                    [owner]="owner"
+                                    [schemas]="tagSchemas"
+                                    [service]="tagsService"
+                                    [target]="tool.id"></tags-explorer>
                             </td>
                             <td
-                                    *ngIf="canPublishAnyTool"
-                                    class="last-policy-grid-cell"
+                                *ngIf="canPublishAnyTool"
+                                class="last-policy-grid-cell"
                             >
                                 <div *ngIf="tool.status === 'DRAFT'"
                                      class="commands-line"
                                 >
                                     <button
-                                            (click)="publishTool(tool)"
-                                            class="button height-28"
-                                            pButton
-                                            type="button"
+                                        (click)="publishTool(tool)"
+                                        class="button height-28"
+                                        pButton
+                                        type="button"
                                     >
                                         Publish
                                     </button>
                                 </div>
                             </td>
                             <td
-                                    class="last-policy-grid-cell"
-                                    style="min-width: 140px;"
+                                class="last-policy-grid-cell"
+                                style="min-width: 140px;"
                             >
                                 <div class="commands-line">
                                     <div
-                                            [queryParams]="{toolId: tool.id}"
-                                            [routerLink]="['/policy-configuration']"
-                                            class="btn-icon-edit"
-                                            matTooltip="Edit"
-                                            matTooltipClass="guardian-tooltip"
-                                            matTooltipHideDelay="100"
-                                            matTooltipPosition="above"
-                                            matTooltipShowDelay="500"
+                                        [queryParams]="{toolId: tool.id}"
+                                        [routerLink]="['/policy-configuration']"
+                                        class="btn-icon-edit"
+                                        matTooltip="Edit"
+                                        matTooltipClass="guardian-tooltip"
+                                        matTooltipHideDelay="100"
+                                        matTooltipPosition="above"
+                                        matTooltipShowDelay="500"
                                     >
                                         <svg
-                                                class="opacity-icon"
-                                                fill="none"
-                                                height="24"
-                                                viewBox="0 0 24 24"
-                                                width="24"
-                                                xmlns="http://www.w3.org/2000/svg"
+                                            class="opacity-icon"
+                                            fill="none"
+                                            height="24"
+                                            viewBox="0 0 24 24"
+                                            width="24"
+                                            xmlns="http://www.w3.org/2000/svg"
                                         >
                                             <path
-                                                    class="primary-color"
-                                                    clip-rule="evenodd"
-                                                    d="M16.5084 6.31676C16.8031 6.03714 17.1971 5.8857 17.6038 5.89575C18.0105 5.9058 18.3966 6.07652 18.677 6.37035C18.9574 6.66418 19.1093 7.05705 19.0992 7.46253C19.0892 7.86802 18.9179 8.25291 18.6232 8.53252L8.08714 18.5537L5.37201 18.9094L6.48508 15.8059L16.5075 6.31771L16.5084 6.31676ZM20.0522 5.0628C19.4242 4.40569 18.5605 4.02384 17.6505 4.00108C16.7405 3.97832 15.8586 4.3165 15.1984 4.94139L5.00859 14.586C4.90058 14.6882 4.81814 14.8143 4.7679 14.9541L3.05549 19.7318C3.00064 19.8848 2.98614 20.0494 3.01339 20.2096C3.04063 20.3698 3.10871 20.5204 3.21109 20.6468C3.31346 20.7733 3.44671 20.8714 3.59804 20.9317C3.74938 20.9921 3.91373 21.0126 4.07533 20.9915L8.64177 20.3939C8.84179 20.3679 9.02835 20.2792 9.17452 20.1406L19.9351 9.90599C20.5946 9.27903 20.9773 8.4166 20.999 7.50836C21.0208 6.60012 20.6808 5.72045 20.0522 5.0628ZM13.466 19.1029C13.2137 19.1029 12.9717 19.2029 12.7933 19.3808C12.6149 19.5586 12.5147 19.7999 12.5147 20.0515C12.5147 20.303 12.6149 20.5443 12.7933 20.7222C12.9717 20.9001 13.2137 21 13.466 21H19.1741C19.4264 21 19.6684 20.9001 19.8468 20.7222C20.0252 20.5443 20.1254 20.303 20.1254 20.0515C20.1254 19.7999 20.0252 19.5586 19.8468 19.3808C19.6684 19.2029 19.4264 19.1029 19.1741 19.1029H13.466Z"
-                                                    fill="#23252E"
-                                                    fill-rule="evenodd"
+                                                class="primary-color"
+                                                clip-rule="evenodd"
+                                                d="M16.5084 6.31676C16.8031 6.03714 17.1971 5.8857 17.6038 5.89575C18.0105 5.9058 18.3966 6.07652 18.677 6.37035C18.9574 6.66418 19.1093 7.05705 19.0992 7.46253C19.0892 7.86802 18.9179 8.25291 18.6232 8.53252L8.08714 18.5537L5.37201 18.9094L6.48508 15.8059L16.5075 6.31771L16.5084 6.31676ZM20.0522 5.0628C19.4242 4.40569 18.5605 4.02384 17.6505 4.00108C16.7405 3.97832 15.8586 4.3165 15.1984 4.94139L5.00859 14.586C4.90058 14.6882 4.81814 14.8143 4.7679 14.9541L3.05549 19.7318C3.00064 19.8848 2.98614 20.0494 3.01339 20.2096C3.04063 20.3698 3.10871 20.5204 3.21109 20.6468C3.31346 20.7733 3.44671 20.8714 3.59804 20.9317C3.74938 20.9921 3.91373 21.0126 4.07533 20.9915L8.64177 20.3939C8.84179 20.3679 9.02835 20.2792 9.17452 20.1406L19.9351 9.90599C20.5946 9.27903 20.9773 8.4166 20.999 7.50836C21.0208 6.60012 20.6808 5.72045 20.0522 5.0628ZM13.466 19.1029C13.2137 19.1029 12.9717 19.2029 12.7933 19.3808C12.6149 19.5586 12.5147 19.7999 12.5147 20.0515C12.5147 20.303 12.6149 20.5443 12.7933 20.7222C12.9717 20.9001 13.2137 21 13.466 21H19.1741C19.4264 21 19.6684 20.9001 19.8468 20.7222C20.0252 20.5443 20.1254 20.303 20.1254 20.0515C20.1254 19.7999 20.0252 19.5586 19.8468 19.3808C19.6684 19.2029 19.4264 19.1029 19.1741 19.1029H13.466Z"
+                                                fill="#23252E"
+                                                fill-rule="evenodd"
                                             />
                                         </svg>
                                     </div>
                                     <div
-                                            (click)="exportTool(tool)"
-                                            class="operations-icon-container"
-                                            matTooltip="Export"
-                                            matTooltipClass="guardian-tooltip"
-                                            matTooltipHideDelay="100"
-                                            matTooltipPosition="above"
-                                            matTooltipShowDelay="500"
+                                        (click)="exportTool(tool)"
+                                        class="operations-icon-container"
+                                        matTooltip="Export"
+                                        matTooltipClass="guardian-tooltip"
+                                        matTooltipHideDelay="100"
+                                        matTooltipPosition="above"
+                                        matTooltipShowDelay="500"
                                     >
                                         <svg
-                                                class="opacity-icon"
-                                                fill="none"
-                                                height="24"
-                                                viewBox="0 0 24 24"
-                                                width="24"
-                                                xmlns="http://www.w3.org/2000/svg"
+                                            class="opacity-icon"
+                                            fill="none"
+                                            height="24"
+                                            viewBox="0 0 24 24"
+                                            width="24"
+                                            xmlns="http://www.w3.org/2000/svg"
                                         >
                                             <path
-                                                    class="primary-color"
-                                                    clip-rule="evenodd"
-                                                    d="M11.0001 15C11.0001 15.5523 11.4478 16 12.0001 16C12.5524 16 13.0001 15.5523 13.0001 15V6.41418L15.293 8.70715C15.6836 9.09768 16.3167 9.09768 16.7073 8.70715C17.0978 8.31663 17.0978 7.68346 16.7073 7.29294L12.7073 3.29294L12.7072 3.29295C12.5263 3.11195 12.2762 3 12.0001 3C11.7239 3 11.4739 3.11195 11.2929 3.29295L11.2929 3.29294L7.29289 7.29294C6.90237 7.68346 6.90237 8.31663 7.29289 8.70715C7.68342 9.09768 8.31658 9.09768 8.70711 8.70715L11.0001 6.41419V15ZM5 14.5C5 13.9477 4.55228 13.5 4 13.5C3.44772 13.5 3 13.9477 3 14.5V18C3 19.6569 4.34315 21 6 21H18C19.6569 21 21 19.6569 21 18V14.5C21 13.9477 20.5523 13.5 20 13.5C19.4477 13.5 19 13.9477 19 14.5V18C19 18.5523 18.5523 19 18 19H6C5.44772 19 5 18.5523 5 18V14.5Z"
-                                                    fill="#23252E"
-                                                    fill-rule="evenodd"
+                                                class="primary-color"
+                                                clip-rule="evenodd"
+                                                d="M11.0001 15C11.0001 15.5523 11.4478 16 12.0001 16C12.5524 16 13.0001 15.5523 13.0001 15V6.41418L15.293 8.70715C15.6836 9.09768 16.3167 9.09768 16.7073 8.70715C17.0978 8.31663 17.0978 7.68346 16.7073 7.29294L12.7073 3.29294L12.7072 3.29295C12.5263 3.11195 12.2762 3 12.0001 3C11.7239 3 11.4739 3.11195 11.2929 3.29295L11.2929 3.29294L7.29289 7.29294C6.90237 7.68346 6.90237 8.31663 7.29289 8.70715C7.68342 9.09768 8.31658 9.09768 8.70711 8.70715L11.0001 6.41419V15ZM5 14.5C5 13.9477 4.55228 13.5 4 13.5C3.44772 13.5 3 13.9477 3 14.5V18C3 19.6569 4.34315 21 6 21H18C19.6569 21 21 19.6569 21 18V14.5C21 13.9477 20.5523 13.5 20 13.5C19.4477 13.5 19 13.9477 19 14.5V18C19 18.5523 18.5523 19 18 19H6C5.44772 19 5 18.5523 5 18V14.5Z"
+                                                fill="#23252E"
+                                                fill-rule="evenodd"
                                             />
                                         </svg>
                                     </div>
                                     <div
-                                            (click)="tool.status ==='DRAFT' ? deleteTool(tool) : null"
-                                            class="operations-icon-container"
-                                            matTooltip="Delete"
-                                            matTooltipClass="guardian-tooltip"
-                                            matTooltipHideDelay="100"
-                                            matTooltipPosition="above"
-                                            matTooltipShowDelay="500"
+                                        (click)="tool.status ==='DRAFT' ? deleteTool(tool) : null"
+                                        class="operations-icon-container"
+                                        matTooltip="Delete"
+                                        matTooltipClass="guardian-tooltip"
+                                        matTooltipHideDelay="100"
+                                        matTooltipPosition="above"
+                                        matTooltipShowDelay="500"
                                     >
                                         <svg
-                                                class="opacity-icon"
-                                                fill="none"
-                                                height="24"
-                                                viewBox="0 0 24 24"
-                                                width="24"
-                                                xmlns="http://www.w3.org/2000/svg"
+                                            class="opacity-icon"
+                                            fill="none"
+                                            height="24"
+                                            viewBox="0 0 24 24"
+                                            width="24"
+                                            xmlns="http://www.w3.org/2000/svg"
                                         >
                                             <path
-                                                    [class.disabled-color]="tool.status !== 'DRAFT'"
-                                                    class="accent-color-red"
-                                                    clip-rule="evenodd"
-                                                    d="M10 4C9.44771 4 9 4.44771 9 5V6H15V5C15 4.44771 14.5523 4 14 4H10ZM17 6V5C17 3.34315 15.6569 2 14 2H10C8.34315 2 7 3.34315 7 5V6H5C4.44772 6 4 6.44771 4 7C4 7.55228 4.44772 8 5 8V18C5 19.6569 6.34315 21 8 21H16C17.6569 21 19 19.6569 19 18V8C19.5523 8 20 7.55228 20 7C20 6.44771 19.5523 6 19 6H17ZM17 8H7V18C7 18.5523 7.4477 19 8 19H16C16.5523 19 17 18.5523 17 18V8ZM10 10C10.5523 10 11 10.4477 11 11V16C11 16.5523 10.5523 17 10 17C9.44772 17 9 16.5523 9 16V11C9 10.4477 9.44772 10 10 10ZM14 10C14.5523 10 15 10.4477 15 11V16C15 16.5523 14.5523 17 14 17C13.4477 17 13 16.5523 13 16V11C13 10.4477 13.4477 10 14 10Z"
-                                                    fill="#FF432A"
-                                                    fill-rule="evenodd"
+                                                [class.disabled-color]="tool.status !== 'DRAFT'"
+                                                class="accent-color-red"
+                                                clip-rule="evenodd"
+                                                d="M10 4C9.44771 4 9 4.44771 9 5V6H15V5C15 4.44771 14.5523 4 14 4H10ZM17 6V5C17 3.34315 15.6569 2 14 2H10C8.34315 2 7 3.34315 7 5V6H5C4.44772 6 4 6.44771 4 7C4 7.55228 4.44772 8 5 8V18C5 19.6569 6.34315 21 8 21H16C17.6569 21 19 19.6569 19 18V8C19.5523 8 20 7.55228 20 7C20 6.44771 19.5523 6 19 6H17ZM17 8H7V18C7 18.5523 7.4477 19 8 19H16C16.5523 19 17 18.5523 17 18V8ZM10 10C10.5523 10 11 10.4477 11 11V16C11 16.5523 10.5523 17 10 17C9.44772 17 9 16.5523 9 16V11C9 10.4477 9.44772 10 10 10ZM14 10C14.5523 10 15 10.4477 15 11V16C15 16.5523 14.5523 17 14 17C13.4477 17 13 16.5523 13 16V11C13 10.4477 13.4477 10 14 10Z"
+                                                fill="#FF432A"
+                                                fill-rule="evenodd"
                                             />
                                         </svg>
                                     </div>
@@ -339,11 +339,11 @@
                 </p-table>
             </div>
 
-            <app-paginator
-                    [pageIndex]="pageIndex"
-                    [pageSize]="pageSize"
-                    [length]="toolsCount"
-                    (page)="onPage($event)"
+            <app-paginator 
+                [pageIndex]="pageIndex" 
+                [pageSize]="pageSize" 
+                [length]="toolsCount"
+                (page)="onPage($event)"
             ></app-paginator>
 
         </ng-container>

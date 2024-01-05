@@ -206,6 +206,6 @@ export class PolicyEngineService {
     }
 
     public getMethodologies(categoryIds?: string[], text?: string): Observable<any[]> {
-        return this.http.post<any[]>(`${this.url}/methodologies/search`, {categoryIds, text});
+        return this.http.post<any[]>(`${this.url}/methodologies/search`, { categoryIds, text });
     }
 }

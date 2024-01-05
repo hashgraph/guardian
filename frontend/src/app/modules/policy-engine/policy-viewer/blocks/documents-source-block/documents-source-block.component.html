@@ -7,15 +7,15 @@
     <div *ngIf="fields && documents" style="background: var(--grey-grey-1, #F9FAFC);">
         <div class="table-container">
             <table
-                    (matSortChange)="onSortChange($event)"
-                    [dataSource]="documents"
-                    [matSortActive]="this.sortOptions.active"
-                    [matSortDirection]="sortOptions.direction"
-                    [matSortDisabled]="!enableSorting"
-                    class="table"
-                    mat-table
-                    matSort
-                    multiTemplateDataRows
+                (matSortChange)="onSortChange($event)"
+                [dataSource]="documents"
+                [matSortActive]="this.sortOptions.active"
+                [matSortDirection]="sortOptions.direction"
+                [matSortDisabled]="!enableSorting"
+                class="table"
+                mat-table
+                matSort
+                multiTemplateDataRows
             >
                 <ng-container [matColumnDef]="'history'">
                     <th *matHeaderCellDef mat-header-cell>
@@ -24,7 +24,7 @@
                     <td *matCellDef="let element" mat-cell>
                         <div *ngIf="element.history && element.history.length">
                             <mat-icon>
-                                {{ statusDetailed === element ? "keyboard_arrow_down" : "keyboard_arrow_right" }}
+                                {{statusDetailed === element? "keyboard_arrow_down": "keyboard_arrow_right"}}
                             </mat-icon>
                         </div>
                     </td>
@@ -53,65 +53,64 @@
                         <div [style.width]="field.width">
                             <div *ngIf="getGroup(element, field) as option">
                                 <span
-                                        *ngIf="option.type == 'text'"
-                                        [title]="getText(element, option)"
-                                        class="text"
+                                    *ngIf="option.type == 'text'"
+                                    [title]="getText(element, option)"
+                                    class="text"
                                 >
                                     {{ getText(element, option) }}
                                 </span>
                                 <span
-                                        *ngIf="option.type == 'issuer'"
-                                        [title]="getText(element, option)"
-                                        class="text"
+                                    *ngIf="option.type == 'issuer'"
+                                    [title]="getText(element, option)"
+                                    class="text"
                                 >
                                     {{ getIssuer(element, option) }}
                                 </span>
                                 <span
-                                        *ngIf="option.type == 'array'"
-                                        [title]="getText(element, option)"
-                                        class="text array"
+                                    *ngIf="option.type == 'array'"
+                                    [title]="getText(element, option)"
+                                    class="text array"
                                 >
                                     {{ getText(element, option) }}
                                     <mat-icon (click)="onArray($event, element, option)">
                                         keyboard_arrow_down
                                     </mat-icon>
                                 </span>
-                                <span
-                                        *ngIf="option.type == 'serials' && element.serials"
-                                        [title]="getText(element, option)"
-                                        class="text serials"
+                                <span 
+                                    *ngIf="option.type == 'serials' && element.serials" 
+                                    [title]="getText(element, option)" 
+                                    class="text serials"
                                 >
                                     <hedera-explorer
-                                            *ngFor="let serial of element.serials"
-                                            [params]="element.tokenId"
-                                            [subParams]="serial"
-                                            subType="serials"
-                                            type="tokens"
+                                        *ngFor="let serial of element.serials"
+                                        [params]="element.tokenId"
+                                        [subParams]="serial"
+                                        subType="serials"
+                                        type="tokens"
                                     >{{ serial }}</hedera-explorer>
                                     <mat-icon (click)="onSerials($event, element, option)">
                                         keyboard_arrow_down
                                     </mat-icon>
                                 </span>
                                 <span
-                                        (click)="$event.stopImmediatePropagation()"
-                                        *ngIf="option.type == 'button'"
-                                        class="col-btn"
+                                    (click)="$event.stopImmediatePropagation()"
+                                    *ngIf="option.type == 'button'"
+                                    class="col-btn"
                                 >
-                                    <div (click)="onButton($event, element, option)"
-                                         class="btn-field {{ option.uiClass }}">
+                                    <div (click)="onButton($event, element, option)" class="btn-field {{ option.uiClass }}">
                                         {{ getText(element, option) }}
                                     </div>
                                 </span>
                                 <div
-                                        (click)="$event.stopImmediatePropagation()"
-                                        *ngIf="option.type == 'block'"
-                                        class="col-btn"
+                                    (click)="$event.stopImmediatePropagation()"
+                                    *ngIf="option.type == 'block'"
+                                    class="col-btn"
                                 >
-                                    <render-block
-                                            [block]="option._block"
-                                            [dryRun]="dryRun"
-                                            [policyId]="policyId"
-                                            [static]="getConfig(element, option, option._block)"
+                                    <render-block 
+                                        [block]="option._block" 
+                                        [dryRun]="dryRun"
+                                        [policyId]="policyId" 
+                                        [static]="getConfig(element, option, option._block)"
                                     >
                                     </render-block>
                                 </div>
@@ -121,21 +120,21 @@
                 </ng-container>
 
                 <ng-container [matColumnDef]="'statusDetails'">
-                    <td
-                            *matCellDef="let element"
-                            [attr.colspan]="fields.length + 1"
-                            class="expanded-detail"
-                            let mat-cell
+                    <td 
+                        *matCellDef="let element" 
+                        [attr.colspan]="fields.length + 1" 
+                        class="expanded-detail" 
+                        let mat-cell
                     >
-                        <div
-                                *ngIf="element.history"
-                                [@statusExpand]="element == statusDetailed? 'expanded': 'collapsed'"
+                        <div 
+                            *ngIf="element.history" 
+                            [@statusExpand]="element == statusDetailed? 'expanded': 'collapsed'"
                         >
                             <div class="timeline-container">
-                                <div
-                                        *ngFor="let historyElem of element.history"
-                                        [attr.date-is]="historyElem.created"
-                                        class="timeline-item"
+                                <div 
+                                    *ngFor="let historyElem of element.history" 
+                                    [attr.date-is]="historyElem.created"
+                                    class="timeline-item"
                                 >
                                     <h1 class="timeline-header-title">
                                         {{ historyElem.labelValue }}
@@ -149,19 +148,19 @@
 
                 <tr *matHeaderRowDef="columns" mat-header-row></tr>
                 <tr
-                        (click)="statusDetailed = statusDetailed === row ? null : row"
-                        *matRowDef="let row; columns: columns"
-                        [ngClass]="{
+                    (click)="statusDetailed = statusDetailed === row ? null : row"
+                    *matRowDef="let row; columns: columns"
+                    [ngClass]="{
                         'has-history-row': row.history,
                         revoked: row.option?.status === 'Revoked'
                     }"
-                        class="table-row"
-                        mat-row
+                    class="table-row"
+                    mat-row
                 ></tr>
                 <tr
-                        *matRowDef="let row; columns: ['statusDetails']"
-                        class="detailed-row"
-                        mat-row
+                    *matRowDef="let row; columns: ['statusDetails']"
+                    class="detailed-row"
+                    mat-row
                 ></tr>
             </table>
         </div>

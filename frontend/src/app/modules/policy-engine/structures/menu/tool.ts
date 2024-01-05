@@ -56,6 +56,9 @@ export class ToolMenuItem {
     private readonly parent: ToolMenu;
     private readonly _toolIds: string[];
 
+    private _children: ToolMenuItem[];
+    private _all: ToolMenuItem[];
+
     constructor(parent: ToolMenu, tool: any) {
         this.parent = parent;
         this.id = (tool.id || '');
@@ -68,7 +71,7 @@ export class ToolMenuItem {
         this.schemas = [];
         if (Array.isArray(tool.schemas)) {
             for (const schema of tool.schemas) {
-                this.schemas.push({...schema, status: 'TOOL'});
+                this.schemas.push({ ...schema, status: 'TOOL' });
             }
         }
         this._toolIds = [];
@@ -88,13 +91,9 @@ export class ToolMenuItem {
         this._all = [];
     }
 
-    private _children: ToolMenuItem[];
-
     public get children(): ToolMenuItem[] {
         return this._children;
     }
-
-    private _all: ToolMenuItem[];
 
     public get all(): ToolMenuItem[] {
         return this._all;

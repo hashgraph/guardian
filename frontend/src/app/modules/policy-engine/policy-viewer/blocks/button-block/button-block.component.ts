@@ -196,8 +196,7 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
                 tag: button.tag,
             })
             .subscribe(
-                () => {
-                },
+                () => { },
                 (e) => {
                     console.error(e.error);
                     this.loading = false;

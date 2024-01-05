@@ -86,11 +86,11 @@
                     </table>
                 </div>
 
-                <app-paginator
-                        [pageIndex]="pageIndex"
-                        [pageSize]="pageSize"
-                        [length]="tokensCount"
-                        (page)="onPage($event)"
+                <app-paginator 
+                    [pageIndex]="pageIndex" 
+                    [pageSize]="pageSize" 
+                    [length]="tokensCount"
+                    (page)="onPage($event)"
                 ></app-paginator>
 
             </ng-container>

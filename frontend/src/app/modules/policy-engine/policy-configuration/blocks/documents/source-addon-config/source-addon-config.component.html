@@ -17,11 +17,11 @@
         <td class="propRowCell cellName">Schema</td>
         <td class="propRowCell">
             <select-schema
-                    [schemas]="schemas"
-                    [(value)]="properties.schema"
-                    [disabled]="readonly"
-                    (change)="onSave()"
-            ></select-schema>
+                [schemas]="schemas"
+                [(value)]="properties.schema"
+                [disabled]="readonly"
+                (change)="onSave()"
+                ></select-schema>
         </td>
     </tr>
 

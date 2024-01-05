@@ -32,15 +32,13 @@
         </ng-template>
         <ng-template [ngSwitchCase]="1">
             <form [formGroup]="dataForm">
-                <label class="form-label" htmlFor="timestamp"
-                >Message timestamp</label
-                >
+                <label class="form-label" htmlFor="timestamp">Message timestamp</label>
                 <input
-                        formControlName="timestamp"
-                        id="timestamp"
-                        pInputText
-                        placeholder="Timestamp"
-                        type="text"
+                    formControlName="timestamp"
+                    id="timestamp"
+                    pInputText
+                    placeholder="Timestamp"
+                    type="text"
                 />
             </form>
         </ng-template>

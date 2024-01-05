@@ -16,7 +16,7 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
-  padding: 15px 15px 5px 15px;
+    padding: 15px 15px 5px 15px;
 }
 
 .compare-item {
@@ -25,7 +25,7 @@
     padding: 0px 6px;
     position: relative;
     flex-wrap: nowrap;
-  height: 30px;
+    height: 30px;
 
     &:hover {
         background: #f1f1f1;
@@ -40,7 +40,7 @@
     .compare-item-name {
         flex: 1;
         cursor: pointer;
-      padding: 0px 8px;
+        padding: 0px 8px;
     }
 
     .compare-item-delete {
@@ -55,7 +55,7 @@
             color: #f44336;
             width: 20px;
             height: 20px;
-          top: -1px;
+            top: -1px;
             right: 0;
         }
     }
@@ -104,108 +104,108 @@
 }
 
 .item {
-  display: flex;
-  align-items: center;
-  column-gap: 16px;
-  border-radius: 8px;
-  min-height: 48px;
-  max-height: 48px;
-  padding: 0 16px;
-  white-space: nowrap;
-  box-sizing: border-box;
-  margin: 0 16px 8px 16px;
-  transition: background 0.125s ease-in-out,
-  opacity 0.125s ease-in-out,
-  width 0.125s ease-in-out,
-  height 0.125s ease-in-out;
-
-  img {
-    width: 16px;
-    height: 16px;
-  }
-
-  span {
     display: flex;
     align-items: center;
-    column-gap: 10px;
-    color: #fff;
-    font-family: Inter, serif;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 500;
-    line-height: 20px;
+    column-gap: 16px;
+    border-radius: 8px;
+    min-height: 48px;
+    max-height: 48px;
+    padding: 0 16px;
+    white-space: nowrap;
+    box-sizing: border-box;
+    margin: 0 16px 8px 16px;
+    transition: background 0.125s ease-in-out,
+        opacity 0.125s ease-in-out,
+        width 0.125s ease-in-out,
+        height 0.125s ease-in-out;
 
-    strong {
-      color: #fff;
-      font-family: Inter, serif;
-      font-size: 16px;
-      font-style: normal;
-      font-weight: 700;
-      line-height: 16px;
+    img {
+        width: 16px;
+        height: 16px;
     }
-  }
 
-  .span-icon {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
+    span {
+        display: flex;
+        align-items: center;
+        column-gap: 10px;
+        color: #fff;
+        font-family: Inter, serif;
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 20px;
 
-  .flex-column-gap-10 {
-    display: flex;
-    column-gap: 14px;
-  }
+        strong {
+            color: #fff;
+            font-family: Inter, serif;
+            font-size: 16px;
+            font-style: normal;
+            font-weight: 700;
+            line-height: 16px;
+        }
+    }
+
+    .span-icon {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .flex-column-gap-10 {
+        display: flex;
+        column-gap: 14px;
+    }
 }
 
 .cursor-pointer {
-  cursor: pointer;
+    cursor: pointer;
 }
 
 .collapsed-notify-counter {
-  margin-left: -20px;
-  margin-top: -16px;
+    margin-left: -20px;
+    margin-top: -16px;
 }
 
 .hidden-logotype {
-  display: none !important;
-  opacity: 0 !important;
+    display: none !important;
+    opacity: 0 !important;
 }
 
 .current {
-  background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.15);
 }
 
 .badge {
-  background-color: #9c27b0;
-  width: min-content;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1px 8px;
-  border-radius: 16px;
-  cursor: pointer;
+    background-color: #9c27b0;
+    width: min-content;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1px 8px;
+    border-radius: 16px;
+    cursor: pointer;
 
-  span {
-    color: #fff;
-    font-family: Inter, serif;
-    font-size: 12px;
-    font-style: normal;
-    font-weight: 500;
-    line-height: 20px;
-  }
+    span {
+        color: #fff;
+        font-family: Inter, serif;
+        font-size: 12px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 20px;
+    }
 }
 
 .icon {
-  width: 16px;
-  height: 16px;
-  position: relative;
-  color: #fff;
-  font-size: 16px;
+    width: 16px;
+    height: 16px;
+    position: relative;
+    color: #fff;
+    font-size: 16px;
 }
 
 .color-white {
-  fill: white;
-  width: 16px;
-  height: 16px;
+    fill: white;
+    width: 16px;
+    height: 16px;
 }

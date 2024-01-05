@@ -2,16 +2,16 @@
     <div #parent class="canvas">
         <canvas #canvas></canvas>
     </div>
-    <div class="drop-container"
-         #treeList="cdkDropList"
-         cdkDropList
-         onDragEntered
+    <div class="drop-container" 
+        #treeList="cdkDropList" 
+        cdkDropList 
+        onDragEntered 
         [cdkDropListDisabled]="readonly"
-         [cdkDropListConnectedTo]="menuList"
+        [cdkDropListConnectedTo]="menuList" 
         (cdkDropListDropped)="drop($event)"
-         (cdkDropListSorted)="onDragSorted($event)"
+        (cdkDropListSorted)="onDragSorted($event)" 
         (cdkDropListEntered)="onDragEntered($event)"
-         [cdkDropListSortPredicate]="onDragSortPredicate"
+        [cdkDropListSortPredicate]="onDragSortPredicate"
     >
         <div *ngIf="data" class="tree" [attr.readonly]="readonly" [attr.move-actions]="visibleMoveActions">
             <div class="block-all-expand" (click)="onAllCollapse()" [attr.collapsed]="allCollapse">
@@ -21,20 +21,20 @@
 
             <ng-container *ngFor="let item of data">
 
-                <div class="block-container"
-                     [attr.expandable]="item.expandable"
+                <div class="block-container" 
+                    [attr.expandable]="item.expandable" 
                     [attr.collapsed]="item.collapsed"
-                     [attr.selected]="isSelect(item)"
-                     [attr.error]="item.error"
+                    [attr.selected]="isSelect(item)" 
+                    [attr.error]="item.error" 
                     [attr.root]="item.root"
-                     [attr.block-id]="item.id"
-                     [attr.block-instance]="item.node.tag"
+                    [attr.block-id]="item.id" 
+                    [attr.block-instance]="item.node.tag" 
                     [attr.block-type]="item.type"
-                     [style.paddingLeft]="item.offset"
-                     cdkDrag
-                     [cdkDragData]="item.level"
+                    [style.paddingLeft]="item.offset" 
+                    cdkDrag 
+                    [cdkDragData]="item.level" 
                     [cdkDragDisabled]="item.root"
-                     [attr.deprecated]="item.deprecated"
+                    [attr.deprecated]="item.deprecated"
                 >
                     <div class="block-expand" (click)="onCollapse($event, item)">
                         <mat-icon>arrow_drop_down</mat-icon>
@@ -90,7 +90,7 @@
                                 [attr.can-left]="item.canLeft"
                                 [attr.can-right]="item.canRight"
                             >
-                                <button (click)="onDropUp($event)" mat-icon-button
+                                <button (click)="onDropUp($event)" mat-icon-button 
                                     class="action-button move-action-up">
                                     <mat-icon>arrow_drop_up</mat-icon>
                                 </button>
@@ -142,7 +142,7 @@
                                 [attr.can-left]="item.canLeft"
                                 [attr.can-right]="item.canRight"
                             >
-                                <button (click)="onDropUp($event)" mat-icon-button
+                                <button (click)="onDropUp($event)" mat-icon-button 
                                     class="action-button move-action-up">
                                     <mat-icon>arrow_drop_up</mat-icon>
                                 </button>
@@ -191,7 +191,7 @@
                                 [attr.can-left]="item.canLeft"
                                 [attr.can-right]="item.canRight"
                             >
-                                <button (click)="onDropUp($event)" mat-icon-button
+                                <button (click)="onDropUp($event)" mat-icon-button 
                                     class="action-button move-action-up">
                                     <mat-icon>arrow_drop_up</mat-icon>
                                 </button>
@@ -226,12 +226,12 @@
 
                 </div>
 
-                <div
+                <div 
                     *ngIf="isSuggenstionEnabled && isSelect(item) && nestedBlock"
-                    class="block-container preview"
-                    [attr.expandable]="false"
+                    class="block-container preview" 
+                    [attr.expandable]="false" 
                     [attr.selected]="false"
-                    [attr.block-type]="nestedBlock.type"
+                    [attr.block-type]="nestedBlock.type" 
                     [style.paddingLeft]="getNestedOffset(item.level+1)"
                     (click)="nested.emit(nestedBlock.type)">
                     <div class="block-expand">
@@ -251,12 +251,12 @@
                     </div>
                 </div>
 
-                <div
+                <div 
                     *ngIf="isSuggenstionEnabled && nextBlock && isLatestBlockInSelect(item)"
                     (click)="next.emit(nextBlock.type)"
                     class="block-container preview"
-                    [attr.expandable]="false"
-                    [attr.selected]="false"
+                    [attr.expandable]="false" 
+                    [attr.selected]="false" 
                     [attr.block-type]="nextBlock.type"
                     [style.paddingLeft]="selectedNode?.offset">
                     <div class="block-expand">

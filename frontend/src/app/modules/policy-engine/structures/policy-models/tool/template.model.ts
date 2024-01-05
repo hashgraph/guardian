@@ -151,7 +151,7 @@ export class ToolTemplate {
         return json;
     }
 
-    public getConfig(): any {
+    public getConfig():any {
         return this._config.getJSON();
     }
 
@@ -224,7 +224,7 @@ export class ToolTemplate {
 
     public setTools(tools: any[]): void {
         this._config.setTools(tools);
-    }
+    }   
 
     public setTokens(tokens: Token[]): void {
         this._config.setTokens(tokens);

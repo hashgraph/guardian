@@ -450,9 +450,9 @@ export class ProjectsComparisonTableComponent implements OnInit {
                 } else {
                     displayValue = value === undefined ? 'N/A' : String(value);
                 }
-                return {green, value, displayValue};
+                return { green, value, displayValue };
             } else {
-                return {green, value: undefined, displayValue: 'N/A'};
+                return { green, value: undefined, displayValue: 'N/A' };
             }
         })
     }

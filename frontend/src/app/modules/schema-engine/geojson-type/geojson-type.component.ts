@@ -39,9 +39,9 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
     commonOptions: google.maps.MarkerOptions &
         google.maps.PolygonOptions &
         google.maps.PolylineOptions = {
-        animation: 2,
-        clickable: false,
-    };
+            animation: 2,
+            clickable: false,
+        };
     type: GeoJsonType = GeoJsonType.POINT;
     coordinatesPlaceholder!: string;
     pointConstructor: any = [];

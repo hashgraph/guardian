@@ -21,13 +21,10 @@
     <div (click)="onNodeClick(node)" class="node" [ngClass]="{
         'current-node': currentNode === node
     }">
-        <i
-                class="pi pi-angle-right"
-        ></i>
+        <i class="pi pi-angle-right"></i>
         <p>{{ node.name }}</p>
         <!--        <span class="node-id">{{node.id}}</span>{{node.name}}-->
 
 
     </div>
-
 </ng-template>

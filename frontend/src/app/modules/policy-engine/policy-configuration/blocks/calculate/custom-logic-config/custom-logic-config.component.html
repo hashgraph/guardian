@@ -5,11 +5,11 @@
         <td class="propRowCell cellName">Output Schema</td>
         <td class="propRowCell">
             <select-schema
-                    [schemas]="schemas"
-                    [(value)]="properties.outputSchema"
-                    [disabled]="readonly"
-                    (change)="onSave()"
-            ></select-schema>
+                [schemas]="schemas" 
+                [(value)]="properties.outputSchema"
+                [disabled]="readonly" 
+                (change)="onSave()"
+                ></select-schema>
         </td>
     </tr>
 

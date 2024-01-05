@@ -78,11 +78,11 @@
                 </ng-container>
             </table>
 
-            <app-paginator
-                    [pageIndex]="pageIndex"
-                    [pageSize]="pageSize"
-                    [length]="notificationsCount"
-                    (page)="onPage($event)"
+            <app-paginator 
+                [pageIndex]="pageIndex" 
+                [pageSize]="pageSize" 
+                [length]="notificationsCount"
+                (page)="onPage($event)"
             ></app-paginator>
 
         </div>

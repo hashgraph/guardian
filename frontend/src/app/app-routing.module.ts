@@ -164,9 +164,9 @@ const routes: Routes = [
     { path: 'notifications', component: NotificationsComponent },
 
     { path: 'user-profile', component: UserProfileComponent, canActivate: [UserGuard, ServicesStatusGuard] },
-    {path: 'policy-search', component: PolicySearchComponent, canActivate: [UserGuard, ServicesStatusGuard]},
-    {path: 'tokens-user', component: ListOfTokensUserComponent, canActivate: [UserGuard, ServicesStatusGuard]},
-    {path: 'retirement-user', component: UserContractConfigComponent, canActivate: [UserGuard, ServicesStatusGuard]},
+    { path: 'policy-search', component: PolicySearchComponent, canActivate: [UserGuard, ServicesStatusGuard] },
+    { path: 'tokens-user', component: ListOfTokensUserComponent, canActivate: [UserGuard, ServicesStatusGuard] },
+    { path: 'retirement-user', component: UserContractConfigComponent, canActivate: [UserGuard, ServicesStatusGuard] },
 
     { path: 'config', component: RootConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
     { path: 'tokens', component: TokenConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
@@ -178,8 +178,8 @@ const routes: Routes = [
         children: [
             { path: 'status', component: ServiceStatusComponent },
             { path: 'settings', component: SettingsViewComponent },
-            {path: 'logs', component: LogsViewComponent},
-            {path: 'about', component: AboutViewComponent}
+            { path: 'logs', component: LogsViewComponent },
+            { path: 'about', component: AboutViewComponent }
         ]
     },
     { path: 'status', component: ServiceStatusComponent },
@@ -200,8 +200,8 @@ const routes: Routes = [
 
     { path: 'branding', component: BrandingComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
 
-    {path: 'projects', component: AnnotationBlockComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard], data: {title: 'GUARDIAN / Project Overview'}},
-    {path: 'projects/comparison', component: ProjectsComparisonTableComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard], data: {title: 'GUARDIAN / Project Comparison'}},
+    { path: 'projects', component: AnnotationBlockComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard], data: { title: 'GUARDIAN / Project Overview' } },
+    { path: 'projects/comparison', component: ProjectsComparisonTableComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard], data: { title: 'GUARDIAN / Project Comparison' } },
 
     { path: '', component: HomeComponent },
     { path: 'info', component: InfoComponent },

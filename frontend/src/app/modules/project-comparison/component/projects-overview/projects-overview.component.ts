@@ -97,7 +97,7 @@ export class ProjectsOverviewComponent implements OnInit {
     }
 
     get selectedCategoryIds(): string[] {
-        const {sectoralScopes, activityScales, appliedTechnologies, projectScales, subTypes} = this.filterFormGroup.value;
+        const { sectoralScopes, activityScales, appliedTechnologies, projectScales, subTypes } = this.filterFormGroup.value;
         return [
             ...(Array.isArray(sectoralScopes) ? sectoralScopes : []),
             ...(Array.isArray(activityScales) ? activityScales : []),
@@ -108,7 +108,7 @@ export class ProjectsOverviewComponent implements OnInit {
     }
 
     get selectedMethodologyIds(): string[] {
-        const {methodologiesUsed} = this.filterFormGroup.value;
+        const { methodologiesUsed } = this.filterFormGroup.value;
         return [...(Array.isArray(methodologiesUsed) ? methodologiesUsed : []),];
     }
 
@@ -142,7 +142,7 @@ export class ProjectsOverviewComponent implements OnInit {
 
     compareExecute() {
         const projectIds = this.projectsToComparing.map(project => project.id);
-        this.router.navigate(['/projects/comparison'], {queryParams: {projectIds: projectIds.join(',')}});
+        this.router.navigate(['/projects/comparison'], { queryParams: { projectIds: projectIds.join(',') } });
     }
 
     searchByFilter() {
@@ -258,7 +258,7 @@ export class ProjectsOverviewComponent implements OnInit {
 
     private trackFilterChanges() {
         this.filterFormGroup.valueChanges.subscribe(() => {
-            const {sectoralScopes, activityScales, appliedTechnologies, projectScales, subTypes} = this.filterFormGroup.value;
+            const { sectoralScopes, activityScales, appliedTechnologies, projectScales, subTypes } = this.filterFormGroup.value;
             const categoryIds: string[] = [
                 ...(Array.isArray(sectoralScopes) ? sectoralScopes : []),
                 ...(Array.isArray(activityScales) ? activityScales : []),

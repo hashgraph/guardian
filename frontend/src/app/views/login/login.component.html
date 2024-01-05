@@ -7,34 +7,32 @@
     <mat-menu #demoMenu="matMenu" xPosition="before">
         <div mat-menu-item class="demo-menu">
             <div class="debug-user">
-                <button mat-raised-button (click)="authState.doLogin('StandardRegistry','test')">Standard Registry
-                </button>
+                <button mat-raised-button (click)="authState.doLogin('StandardRegistry','test')">Standard Registry</button>
                 <button mat-raised-button (click)="authState.doLogin('Installer','test')">Installer</button>
                 <button mat-raised-button (click)="authState.doLogin('Installer2','test')">Installer 2</button>
                 <button mat-raised-button (click)="authState.doLogin('Auditor','test')">Auditor</button>
                 <button mat-raised-button (click)="authState.doLogin('Registrant','test')">Registrant</button>
                 <button mat-raised-button (click)="authState.doLogin('VVB','test')">VVB</button>
-                <button mat-raised-button (click)="authState.doLogin('ProjectProponent','test')">Project Proponent
-                </button>
+                <button mat-raised-button (click)="authState.doLogin('ProjectProponent','test')">Project Proponent</button>
                 <button mat-raised-button (click)="authState.doLogin('Verra','test')">Verra</button>
             </div>
             <div class="debug-user">
                 <div class="current-user"
-                     *ngFor="let user of testUsers$ | async as users; index as i; first as isFirst"
-                     (click)="authState.doLogin(user.username, 'test')"
-                     [ngClass]="{
-                        'current-user-first' : isFirst,
-                        'current-user-last': i === users.length - 1
+                    *ngFor="let user of testUsers$ | async as users; index as i; first as isFirst"
+                    (click)="authState.doLogin(user.username, 'test')"
+                    [ngClass]="{ 
+                        'current-user-first' : isFirst, 
+                        'current-user-last': i === users.length - 1 
                     }">
                     <div class="current-user-name">
-                        <span>{{ user.username }}</span>
-                        <span class="current-user-role">({{ user.role }})</span>
+                        <span>{{user.username}}</span> 
+                        <span class="current-user-role">({{user.role}})</span>
                     </div>
-                    <div class="current-user-policy-roles"
-                         *ngIf="user.policyRoles && user.policyRoles.length"
-                         [matTooltip]="getPoliciesRolesTooltip(user.policyRoles)"
-                         matTooltipClass="policy-roles-tooltip">
-                        <b>User participates in {{ user.policyRoles.length }} policies</b>
+                    <div class="current-user-policy-roles" 
+                        *ngIf="user.policyRoles && user.policyRoles.length"
+                        [matTooltip]="getPoliciesRolesTooltip(user.policyRoles)"
+                        matTooltipClass="policy-roles-tooltip">
+                        <b>User participates in {{user.policyRoles.length}} policies</b>
                     </div>
                 </div>
             </div>

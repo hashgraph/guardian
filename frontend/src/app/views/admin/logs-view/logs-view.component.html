@@ -37,10 +37,10 @@
                         </svg-icon>
                     </i>
                     <input
-                            [formControlName]="'message'"
-                            class="search-input"
-                            pInputText
-                            placeholder="Message"
+                        [formControlName]="'message'"
+                        class="search-input"
+                        pInputText
+                        placeholder="Message"
                     />
                 </span>
                 <p-dropdown [formControlName]="'type'" [options]="types">
@@ -62,25 +62,25 @@
         </form>
         <div class="flex flex-column-gap-8">
             <button
-                    (click)="onApply()"
-                    class="button"
-                    label="Apply"
-                    pButton
-                    type="button"
+                (click)="onApply()"
+                class="button"
+                label="Apply"
+                pButton
+                type="button"
             ></button>
             <button
-                    (click)="clearValues()"
-                    class="button secondary"
-                    label="Clear filters"
-                    pButton
-                    type="button"
+                (click)="clearValues()"
+                class="button secondary"
+                label="Clear filters"
+                pButton
+                type="button"
             ></button>
             <button
-                    (click)="onSave()"
-                    class="button"
-                    label="Save logs"
-                    pButton
-                    type="button"
+                (click)="onSave()"
+                class="button"
+                label="Save logs"
+                pButton
+                type="button"
             ></button>
         </div>
     </div>
@@ -114,11 +114,11 @@
                 </ng-container>
             </table>
 
-            <app-paginator
-                    [pageIndex]="pageIndex"
-                    [pageSize]="pageSize"
-                    [length]="totalCount"
-                    (page)="onPage($event)"
+            <app-paginator 
+                [pageIndex]="pageIndex" 
+                [pageSize]="pageSize" 
+                [length]="totalCount"
+                (page)="onPage($event)"
             ></app-paginator>
 
         </div>
