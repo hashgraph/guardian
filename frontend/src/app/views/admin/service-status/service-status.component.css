@@ -176,3 +176,13 @@
     width: 100%;
     margin-top: 10px;
 }
+
+.error-color {
+    fill: var(--color-accent-red-1, #FF432A);
+    color: var(--color-accent-red-1, #FF432A);
+}
+
+.success-color {
+    fill: #19BE47;
+    color: #19BE47;
+}

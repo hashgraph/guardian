@@ -6,7 +6,7 @@
                 <ng-container *ngIf="projectScaleOptions && projectScaleOptions.length > 0; else noCategoriesTemplate">
                     <div style="width: 100%; display: flex; align-items: center; justify-content: flex-start; column-gap: 16px;">
                         <div class="p-field-checkbox">
-                            <p-radioButton (ngModelChange)="onRadioSelect()"
+                            <p-radioButton (onChange)="onRadioSelect()"
                                            [(ngModel)]="policyScale"
                                            [value]="''"
                                            id="any-scale"
@@ -15,7 +15,7 @@
                             <label for="any-scale">Any</label>
                         </div>
                         <div *ngFor="let category of projectScaleOptions" class="p-field-checkbox">
-                            <p-radioButton (ngModelChange)="onRadioSelect()"
+                            <p-radioButton (onChange)="onRadioSelect()"
                                            [(ngModel)]="policyScale"
                                            [inputId]="category.id"
                                            [value]="category.id"

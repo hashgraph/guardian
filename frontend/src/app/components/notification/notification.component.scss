@@ -7,6 +7,32 @@
     color: var(--color-primary);
 }
 
+.info-color {
+    fill: var(--color-secondary, #CDDDFD);
+    color: var(--color-secondary, #CDDDFD);
+}
+
+.details-color {
+    fill: #C4D0E1;
+    color: #C4D0E1;
+}
+
+.success-color {
+    fill: #19BE47;
+    color: #19BE47;
+}
+
+.error-color {
+    fill: var(--color-accent-red-1, #FF432A);
+    color: var(--color-accent-red-1, #FF432A);
+}
+
+.disabled-color {
+    fill: var(--color-grey-6, #848FA9);
+    color: var(--color-grey-6, #848FA9);
+}
+
+
 .badge {
     background-color: #ff432a;
     width: min-content;

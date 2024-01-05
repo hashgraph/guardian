@@ -27,12 +27,13 @@ enum OperationMode {
     providers: [DialogService]
 })
 export class TokenConfigComponent implements OnInit {
-    isConfirmed: boolean = false;
-    tokens: any[] = [];
-    loading: boolean = true;
-    tokenId: string = ''
-    users: any[] = [];
-    usersColumns: string[] = [
+    public isConfirmed: boolean = false;
+    public tokens: any[] = [];
+    public loading: boolean = true;
+    public tokenId: string = '';
+    public tokenUrl: string = '';
+    public users: any[] = [];
+    public usersColumns: string[] = [
         'username',
         'associated',
         'tokenBalance',
@@ -40,21 +41,19 @@ export class TokenConfigComponent implements OnInit {
         'kyc',
         'refresh'
     ];
-
-    taskId: string | undefined = undefined;
-    expectedTaskMessages: number = 0;
-    operationMode: OperationMode = OperationMode.None;
-    user: any;
-    currentPolicy: any = '';
-    policies: any[] | null = null;
-    tagEntity = TagType.Token;
-    owner: any;
-    tagSchemas: any[] = [];
-
-    tokenDialogVisible: boolean = false;
-    deleteTokenVisible: boolean = false;
-    currentTokenId: any;
-    dataForm = new FormGroup({
+    public taskId: string | undefined = undefined;
+    public expectedTaskMessages: number = 0;
+    public operationMode: OperationMode = OperationMode.None;
+    public user: any;
+    public currentPolicy: any = '';
+    public policies: any[] | null = null;
+    public tagEntity = TagType.Token;
+    public owner: any;
+    public tagSchemas: any[] = [];
+    public tokenDialogVisible: boolean = false;
+    public deleteTokenVisible: boolean = false;
+    public currentTokenId: any;
+    public dataForm = new FormGroup({
         draftToken: new FormControl(true, [Validators.required]),
         tokenName: new FormControl('Token Name', [Validators.required, noWhitespaceValidator()]),
         tokenSymbol: new FormControl('F', [Validators.required, noWhitespaceValidator()]),
@@ -67,15 +66,10 @@ export class TokenConfigComponent implements OnInit {
         enableKYC: new FormControl(false, [Validators.required]),
         enableWipe: new FormControl(true, [Validators.required])
     });
-    dataFormPristine: any = this.dataForm.value;
-    readonlyForm: boolean = false;
-    hideType: boolean = false;
-
-    policyDropdownItem: any;
-
-    public innerWidth: any;
-    public innerHeight: any;
-
+    public dataFormPristine: any = this.dataForm.value;
+    public readonlyForm: boolean = false;
+    public hideType: boolean = false;
+    public policyDropdownItem: any;
     public tokensCount: any;
     public pageIndex: number;
     public pageSize: number;
@@ -98,17 +92,89 @@ export class TokenConfigComponent implements OnInit {
     }
 
     ngOnInit() {
-        this.innerWidth = window.innerWidth;
-        this.innerHeight = window.innerHeight;
-        this.tokenId = '';
         this.loading = true;
         this.currentPolicy = this.route.snapshot.queryParams['policy'];
-        this.route.queryParams.subscribe(queryParams => {
-            this.loadProfile();
+        this.tokenUrl = this.route.snapshot.queryParams['tokenId'];
+        this.tokenId = this.tokenUrl ? atob(this.tokenUrl) : '';
+        this.loadProfile();
+    }
+
+    private loadProfile() {
+        this.loading = true;
+        forkJoin([
+            this.profileService.getProfile(),
+            this.policyEngineService.all(),
+            this.tagsService.getPublishedSchemas()
+        ]).subscribe((value) => {
+            const profile = value[0];
+            const policies = value[1] || [];
+            const tagSchemas: any[] = value[2] || [];
+
+            this.isConfirmed = !!(profile && profile.confirmed);
+            this.owner = profile?.did;
+            this.policies = policies;
+            this.policies.unshift({ id: -1, name: 'All policies' });
+            if (this.currentPolicy) {
+                this.policyDropdownItem = policies.find(p => p.id === this.currentPolicy);
+            }
+            this.tagSchemas = SchemaHelper.map(tagSchemas);
+            this.queryChange();
+        }, ({ message }) => {
+            this.loading = false;
+            console.error(message);
         });
     }
 
-    onFilter() {
+    private queryChange() {
+        this.loading = true;
+        if (!this.isConfirmed) {
+            this.loading = false;
+            return;
+        }
+        if (this.tokenId) {
+            this.auth.getUsers().subscribe((users) => {
+                this.users = users;
+                this.refreshAll(this.users);
+                setTimeout(() => {
+                    this.loading = false;
+                }, 1500);
+            }, (e) => {
+                console.error(e.error);
+                this.loading = false;
+            });
+        } else {
+            this.loadTokens();
+        }
+    }
+
+    private loadTokens() {
+        this.loading = true;
+        this.tokenService.getTokensPage(this.currentPolicy, this.pageIndex, this.pageSize)
+            .subscribe((tokensResponse) => {
+                const data = tokensResponse.body || [];
+                this.tokens = data.map((e: any) => new Token(e));
+                this.tokensCount =
+                    tokensResponse.headers.get('X-Total-Count') ||
+                    this.tokens.length;
+                const ids = this.tokens.map(e => e.id);
+                this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
+                    for (const token of this.tokens) {
+                        (token as any)._tags = data[token.id];
+                    }
+                    setTimeout(() => {
+                        this.loading = false;
+                    }, 500);
+                }, (e) => {
+                    console.error(e.error);
+                    this.loading = false;
+                });
+            }, (e) => {
+                console.error(e.error);
+                this.loading = false;
+            });
+    }
+
+    public onFilter() {
         this.currentPolicy =
             (this.policyDropdownItem && this.policyDropdownItem.id !== -1) ?
                 this.policyDropdownItem.id : '';
@@ -121,92 +187,10 @@ export class TokenConfigComponent implements OnInit {
         } else {
             this.router.navigate(['/tokens']);
         }
-        this.loadTokens();
+        this.queryChange();
     }
 
-    loadTokens() {
-        this.loading = true;
-
-        forkJoin([
-            this.tokenService.getTokensPage(this.currentPolicy, this.pageIndex, this.pageSize),
-            this.tagsService.getPublishedSchemas()
-        ]).subscribe((value) => {
-            const tokensResponse = value[0];
-            const data = tokensResponse.body || [];
-            const tagSchemas: any[] = value[1] || [];
-
-            this.tokens = data.map((e: any) => new Token(e));
-            this.tagSchemas = SchemaHelper.map(tagSchemas);
-
-            const ids = this.tokens.map(e => e.id);
-            this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
-                for (const token of this.tokens) {
-                    (token as any)._tags = data[token.id];
-                }
-                setTimeout(() => {
-                    this.loading = false;
-                }, 500);
-            }, (e) => {
-                console.error(e.error);
-                this.loading = false;
-            });
-
-            this.tokensCount =
-                tokensResponse.headers.get('X-Total-Count') ||
-                this.tokens.length;
-        }, (e) => {
-            console.error(e.error);
-            this.loading = false;
-        });
-    }
-
-    queryChange() {
-        const tokenId = this.route.snapshot.queryParams['tokenId'];
-        if (tokenId) {
-            this.tokenId = atob(tokenId);
-        } else {
-            this.tokenId = '';
-        }
-        if (this.tokenId) {
-            this.auth.getUsers().subscribe((users) => {
-                this.users = users;
-                this.refreshAll(this.users);
-                setTimeout(() => {
-                    this.loading = false;
-                }, 500);
-            }, (e) => {
-                console.error(e.error);
-                this.loading = false;
-            });
-        } else {
-            this.loadTokens();
-        }
-    }
-
-    loadProfile() {
-        this.loading = true;
-        forkJoin([
-            this.profileService.getProfile(),
-            this.policyEngineService.all(),
-        ]).subscribe((value) => {
-            const profile = value[0];
-            const policies = value[1] || [];
-            this.isConfirmed = !!(profile && profile.confirmed);
-            this.owner = profile?.did;
-            this.policies = policies;
-            this.policies.unshift({ id: -1, name: 'All policies' });
-            if (this.isConfirmed) {
-                this.queryChange();
-            } else {
-                this.loading = false;
-            }
-        }, ({ message }) => {
-            this.loading = false;
-            console.error(message);
-        });
-    }
-
-    newToken() {
+    public newToken() {
         this.readonlyForm = false;
         this.dataForm.patchValue(this.dataFormPristine);
         this.tokenDialogVisible = true;
@@ -248,7 +232,7 @@ export class TokenConfigComponent implements OnInit {
         }
     }
 
-    refreshUser(user: any, res: any) {
+    private refreshUser(user: any, res: any) {
         user.refreshed = true;
         user.associated = 'n/a';
         user.balance = 'n/a';
@@ -274,7 +258,7 @@ export class TokenConfigComponent implements OnInit {
         }
     }
 
-    refresh(user: any) {
+    public refresh(user: any) {
         user.loading = true;
         this.tokenService.info(this.tokenId, user.username).subscribe((res) => {
             this.refreshUser(user, res);
@@ -285,14 +269,14 @@ export class TokenConfigComponent implements OnInit {
         });
     }
 
-    refreshAll(users: any[]) {
+    public refreshAll(users: any[]) {
         for (let index = 0; index < users.length; index++) {
             const user = users[index];
             this.refresh(user);
         }
     }
 
-    getColor(status: string, reverseLogic: boolean) {
+    public getColor(status: string, reverseLogic: boolean) {
         if (!status) {
             return 'na';
         }
@@ -305,7 +289,7 @@ export class TokenConfigComponent implements OnInit {
         }
     }
 
-    freeze(user: any, freeze: boolean) {
+    public freeze(user: any, freeze: boolean) {
         this.loading = true;
         this.tokenService.pushFreeze(this.tokenId, user.username, freeze).subscribe((result) => {
             const { taskId, expectation } = result;
@@ -319,7 +303,7 @@ export class TokenConfigComponent implements OnInit {
         });
     }
 
-    kyc(user: any, grantKYC: boolean) {
+    public kyc(user: any, grantKYC: boolean) {
         this.loading = true;
         this.tokenService.pushKyc(this.tokenId, user.username, grantKYC).subscribe((result) => {
             const { taskId, expectation } = result;
@@ -333,7 +317,7 @@ export class TokenConfigComponent implements OnInit {
         });
     }
 
-    getPoliciesInfo(policies: string[]): string {
+    public getPoliciesInfo(policies: string[]): string {
         if (!policies || !policies.length) {
             return '';
         }
@@ -342,12 +326,12 @@ export class TokenConfigComponent implements OnInit {
             : `Used in ${policies.length} policies`;
     }
 
-    questToDeleteToken(token: any) {
+    public questToDeleteToken(token: any) {
         this.currentTokenId = token.tokenId;
         this.deleteTokenVisible = true;
     }
 
-    saveToken() {
+    public saveToken() {
         if (this.dataForm.valid) {
             this.loading = true;
             const dataValue = this.dataForm.value;
@@ -384,24 +368,40 @@ export class TokenConfigComponent implements OnInit {
         });
     }
 
-    openEditDialog(token?: any) {
-        if (token) {
-            this.currentTokenId = token.tokenId;
-            this.readonlyForm = !token.draftToken;
-            this.dataForm.patchValue(token);
-        } else {
-            this.tokenDialogVisible = true;
-            this.readonlyForm = !token.draftToken;
+    public openEditDialog(token?: any) {
+        if (!token || !token.enableAdmin) {
+            return;
         }
+        this.currentTokenId = token.tokenId;
+        this.readonlyForm = !token.draftToken;
+        this.dataForm.patchValue(token);
         this.tokenDialogVisible = true;
     }
 
-    goToUsingTokens(token: any) {
+    public goToUsingTokens(token: any) {
+        this.tokenUrl = token.url;
+        this.tokenId = this.tokenUrl ? atob(this.tokenUrl) : '';
         this.router.navigate(['/tokens'], {
             queryParams: {
                 tokenId: token.url,
             }
         });
+        this.queryChange();
+    }
+
+    public goToTokensPage() {
+        this.tokenUrl = '';
+        this.tokenId = '';
+        if (this.currentPolicy) {
+            this.router.navigate(['/tokens'], {
+                queryParams: {
+                    policy: this.currentPolicy
+                }
+            });
+        } else {
+            this.router.navigate(['/tokens']);
+        }
+        this.queryChange();
     }
 
     deleteToken(deleteToken: boolean) {

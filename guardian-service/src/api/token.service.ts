@@ -1,5 +1,5 @@
 import { ApiResponse } from '@api/helpers/api-response';
-import { DataBaseHelper, DatabaseServer, KeyType, Logger, MessageError, MessageResponse, RunFunctionAsync, Token, TopicHelper, Users, Wallet, Workers, } from '@guardian/common';
+import { ArrayMessageResponse, DataBaseHelper, DatabaseServer, KeyType, Logger, MessageError, MessageResponse, RunFunctionAsync, Token, TopicHelper, Users, Wallet, Workers, } from '@guardian/common';
 import { GenerateUUIDv4, IRootConfig, IToken, MessageAPI, OrderDirection, TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
 import { publishTokenTags } from './tag.service';
@@ -776,11 +776,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
             }
 
             if (!user.hederaAccountId) {
-                return new MessageResponse({
-                    result: [],
-                    count: 0
-                });
-
+                return new ArrayMessageResponse([], 0);
             }
 
             const workers = new Workers();
@@ -822,10 +818,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
                 result.push(getTokenInfo(info, token, serials[token.tokenId]));
             }
 
-            return new MessageResponse({
-                result,
-                count
-            });
+            return new ArrayMessageResponse(result, count);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error, 400);
@@ -905,11 +898,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
                 ]
             }
         }, options);
-
-        return new MessageResponse({
-            tokens,
-            count
-        });
+        return new ArrayMessageResponse(tokens, count);
     })
 
     /**

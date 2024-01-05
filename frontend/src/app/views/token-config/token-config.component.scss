@@ -200,6 +200,11 @@ td:last-child {
     color: var(--color-primary);
 }
 
+.delete-color {
+    fill: var(--color-accent-red-1, #FF432A);
+    color: var(--color-accent-red-1, #FF432A);
+}
+
 .button-color-red,
 .button-color-red:hover {
     background-color: var(--color-accent-red-1);
@@ -217,7 +222,6 @@ td:last-child {
     cursor: pointer;
     transition: opacity 0.25s ease-in-out;
 }
-
 
 .opacity-icon:hover {
     opacity: 1.0;
