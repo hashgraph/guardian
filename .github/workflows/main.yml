@@ -55,6 +55,7 @@ jobs:
           popd
         env:
           CI: true
+          NODE_OPTIONS: --openssl-legacy-provider
       - name: Detect secrets
         run: |
           yarn run detect-secrets
