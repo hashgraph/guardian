@@ -13,13 +13,14 @@
             </div>
 
             <div class="tag-container">
-                <div (click)="onSelect(item)" *ngFor="let item of selectedTags" [class.selected]="item === select"
-                     class="item">
-                    <svg fill="none" height="16" viewBox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg">
-                        <path [class.white]="item === select" class="tag-icon" clip-rule="evenodd" d="M1.78519 7.61467C1.63037 7.76944 1.50757 7.95319 1.42378 8.15543C1.34 8.35766 1.29688 8.57443 1.29688 8.79333C1.29688 9.01224 1.34 9.229 1.42378 9.43124C1.50757 9.63348 1.63037 9.81723 1.78519 9.972L6.02785 14.2147C6.18262 14.3695 6.36637 14.4923 6.56861 14.5761C6.77085 14.6599 6.98761 14.703 7.20652 14.703C7.42543 14.703 7.64219 14.6599 7.84443 14.5761C8.04666 14.4923 8.23042 14.3695 8.38519 14.2147L13.5119 9.088C13.6666 8.9332 13.7894 8.74944 13.8731 8.5472C13.9568 8.34497 13.9999 8.12822 13.9999 7.90933V3C13.9999 2.73478 13.8945 2.48043 13.707 2.29289C13.5194 2.10536 13.2651 2 12.9999 2H8.08985C7.87097 1.99996 7.65422 2.04303 7.45198 2.12677C7.24974 2.2105 7.06598 2.33325 6.91119 2.488L1.78519 7.61467ZM9.99185 4.66667C9.25185 4.66667 8.66652 5.22133 8.66652 5.992C8.66652 6.76333 9.25185 7.33333 9.99185 7.33333C10.7472 7.33333 11.3332 6.76333 11.3332 5.992C11.3332 5.22133 10.7465 4.66667 9.99185 4.66667Z"
-                              fill="white"
-                              fill-rule="evenodd"/>
-                    </svg>
+                <div (click)="onSelect(item)" 
+                    *ngFor="let item of selectedTags" 
+                    [class.selected]="item === select"
+                    class="item"
+                >
+                    <svg-icon class="svg-icon-16" 
+                        src="/assets/images/icons/16/label.svg" 
+                        [svgClass]="item === select ? 'white-color' : 'primary-color'"></svg-icon>
                     <div class="name">
                         {{item.name}}
                     </div>
@@ -30,32 +31,31 @@
             </div>
 
             <button (click)="onAdd()"
-                    *ngIf="this.tab === 1"
-                    [label]="'Create a Tag'"
-                    class="button secondary"
-                    icon="pi pi-plus"
-                    pButton>
+                *ngIf="this.tab === 1"
+                [label]="'Create a Tag'"
+                class="button secondary"
+                icon="pi pi-plus"
+                pButton>
             </button>
 
             <div *ngIf="select" class="details-container">
-
-                <div *ngFor="let item of select.items" [attr.open]="item.open" [attr.owner]="item.owner === owner"
-                     [attr.status]="item.status" class="item">
+                <div *ngFor="let item of select.items" 
+                    [attr.open]="item.open" 
+                    [attr.owner]="item.owner === owner"
+                    [attr.status]="item.status" 
+                    class="item"
+                >
                     <div (click)="onOpen(item)" [class.collapsed]="!item.open" class="header">
-                        <svg [class.rotate-180]="!item.open" fill="none" height="16" viewBox="0 0 16 16" width="16"
-                             xmlns="http://www.w3.org/2000/svg">
-                            <path
-                                    d="M12.1954 10.1927C12.4557 9.93239 12.4557 9.51025 12.1954 9.24992L8.93394 5.99163C8.41314 5.47136 7.56927 5.47157 7.04874 5.99209L3.78852 9.25232C3.52818 9.51265 3.52818 9.93479 3.78852 10.1951C4.04888 10.4555 4.47098 10.4555 4.73133 10.1951L7.52174 7.40472C7.78214 7.14439 8.20421 7.14439 8.46454 7.40472L11.2526 10.1927C11.5129 10.4531 11.9351 10.4531 12.1954 10.1927Z"
-                                    fill="#AAB7C4"/>
-                        </svg>
+                        <svg-icon class="svg-icon-16" 
+                            [class.rotate-180]="!item.open"
+                            src="/assets/images/icons/16/top-arrow.svg" 
+                            svgClass="collapse-color"></svg-icon> 
                         <span>{{item.owner}}</span>
-                        <svg (click)="onDelete($event, item)" *ngIf="item.owner === owner"
-                             fill="none" height="16" viewBox="0 0 16 16"
-                             width="16" xmlns="http://www.w3.org/2000/svg">
-                            <path clip-rule="evenodd" d="M6.6665 2.66683C6.29831 2.66683 5.99984 2.96531 5.99984 3.3335V4.00016H9.99984V3.3335C9.99984 2.9653 9.70137 2.66683 9.33317 2.66683H6.6665ZM11.3332 4.00016V3.3335C11.3332 2.22893 10.4378 1.3335 9.33317 1.3335H6.6665C5.56193 1.3335 4.6665 2.22893 4.6665 3.3335V4.00016H3.33317C2.96498 4.00016 2.6665 4.29864 2.6665 4.66683C2.6665 5.03502 2.96498 5.3335 3.33317 5.3335V12.0002C3.33317 13.1048 4.22861 14.0002 5.33317 14.0002H10.6665C11.7711 14.0002 12.6665 13.1048 12.6665 12.0002V5.3335C13.0347 5.3335 13.3332 5.03502 13.3332 4.66683C13.3332 4.29864 13.0347 4.00016 12.6665 4.00016H11.3332ZM11.3332 5.3335H4.6665V12.0002C4.6665 12.3684 4.96497 12.6668 5.33317 12.6668H10.6665C11.0347 12.6668 11.3332 12.3684 11.3332 12.0002V5.3335ZM6.6665 6.66683C7.03469 6.66683 7.33317 6.96531 7.33317 7.3335V10.6668C7.33317 11.035 7.03469 11.3335 6.6665 11.3335C6.29831 11.3335 5.99984 11.035 5.99984 10.6668V7.3335C5.99984 6.96531 6.29831 6.66683 6.6665 6.66683ZM9.33317 6.66683C9.70136 6.66683 9.99984 6.96531 9.99984 7.3335V10.6668C9.99984 11.035 9.70136 11.3335 9.33317 11.3335C8.96498 11.3335 8.6665 11.035 8.6665 10.6668V7.3335C8.6665 6.96531 8.96498 6.66683 9.33317 6.66683Z"
-                                  fill="#FF432A"
-                                  fill-rule="evenodd"/>
-                        </svg>
+                        <svg-icon class="svg-icon-16" 
+                            (click)="onDelete($event, item)" 
+                            *ngIf="item.owner === owner"
+                            src="/assets/images/icons/16/delete.svg" 
+                            svgClass="accent-color-red"></svg-icon>
                     </div>
                     <div [style.display]="item.open ? 'flex' : 'none'" class="expand-items">
                         <div *ngIf="item.name" class="item">
@@ -68,8 +68,7 @@
                                  [class.p-tag-grey]="item.status === 'Draft'"
                                  [class.p-tag-success]="item.status === 'Published'"
                                  class="p-tag"
-                            >{{ item.status }}
-                            </div>
+                            >{{ item.status }}</div>
                         </div>
                         <div *ngIf="item.description" class="item">
                             <h6>Description</h6>
@@ -117,11 +116,10 @@
 </div>
 <ng-template #emptyContainer>
     <div class="empty-container">
-        <svg fill="none" height="32" viewBox="0 0 32 32" width="32" xmlns="http://www.w3.org/2000/svg">
-            <path clip-rule="evenodd" d="M2.6665 8C2.6665 6.89543 3.56194 6 4.6665 6C5.77107 6 6.6665 6.89543 6.6665 8C6.6665 9.10457 5.77107 10 4.6665 10C3.56194 10 2.6665 9.10457 2.6665 8ZM9.33317 8.00082C9.33321 7.26444 9.9302 6.66752 10.6666 6.66756L27.9999 6.66852C28.7363 6.66856 29.3332 7.26555 29.3332 8.00193C29.3331 8.73831 28.7361 9.33523 27.9998 9.33519L10.6664 9.33423C9.93005 9.33419 9.33313 8.7372 9.33317 8.00082ZM2.6665 16C2.6665 14.8956 3.56187 14 4.6665 14C5.77114 14 6.6665 14.8956 6.6665 16C6.6665 17.1044 5.77114 18 4.6665 18C3.56187 18 2.6665 17.1044 2.6665 16ZM9.33317 16.0009C9.33322 15.2645 9.93021 14.6676 10.6666 14.6676L27.9999 14.6687C28.7363 14.6687 29.3332 15.2657 29.3332 16.0021C29.3331 16.7385 28.7361 17.3354 27.9998 17.3353L10.6664 17.3343C9.93004 17.3342 9.33312 16.7372 9.33317 16.0009ZM2.6665 24C2.6665 22.8956 3.56187 22 4.6665 22C5.77114 22 6.6665 22.8956 6.6665 24C6.6665 25.1044 5.77114 26 4.6665 26C3.56187 26 2.6665 25.1044 2.6665 24ZM9.33317 24.0009C9.33322 23.2645 9.93021 22.6676 10.6666 22.6676L27.9999 22.6687C28.7363 22.6687 29.3332 23.2657 29.3332 24.0021C29.3331 24.7385 28.7361 25.3354 27.9998 25.3353L10.6664 25.3343C9.93004 25.3342 9.33313 24.7372 9.33317 24.0009Z"
-                  fill="#848FA9"
-                  fill-rule="evenodd"/>
-        </svg>
+        <svg-icon class="svg-icon-32" 
+            src="/assets/images/icons/32/list.svg" 
+            svgClass="grey-color">
+        </svg-icon>
         <span>There were no Tags created yet</span>
         <button (click)="onAdd()" [label]="'Create a Tag'" class="button secondary" icon="pi pi-plus" pButton></button>
     </div>

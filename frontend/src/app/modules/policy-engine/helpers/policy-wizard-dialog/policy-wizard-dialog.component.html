@@ -543,54 +543,30 @@
             <div class="grid-columns-title">Grid Columns</div>
             <div class="grid-columns-container">
                 <div
-                        (cdkDropListDropped)="drop($event, gridColumns)"
-                        cdkDropList
-                        cdkDropListOrientation="horizontal"
-                        class="grid-columns-list"
+                    (cdkDropListDropped)="drop($event, gridColumns)"
+                    cdkDropList
+                    cdkDropListOrientation="horizontal"
+                    class="grid-columns-list"
                 >
                     <div
-                            *ngFor="let column of gridColumns"
-                            cdkDrag
-                            class="grid-column"
+                        *ngFor="let column of gridColumns"
+                        cdkDrag
+                        class="grid-column"
                     >
                         <div class="grid-column-container">
                             <div class="column-title">{{ column.title }}</div>
                             <div class="cursor-pointer">
-                                <svg
-                                        (click)="
-                                        onRemoveColumn(
-                                            column.title,
-                                            gridColumns
-                                        )
-                                    "
-                                        fill="none"
-                                        height="24"
-                                        viewBox="0 0 24 24"
-                                        width="24"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <path
-                                            class="accent-color-red"
-                                            clip-rule="evenodd"
-                                            d="M10 4C9.44771 4 9 4.44771 9 5V6H15V5C15 4.44771 14.5523 4 14 4H10ZM17 6V5C17 3.34315 15.6569 2 14 2H10C8.34315 2 7 3.34315 7 5V6H5C4.44772 6 4 6.44771 4 7C4 7.55228 4.44772 8 5 8V18C5 19.6569 6.34315 21 8 21H16C17.6569 21 19 19.6569 19 18V8C19.5523 8 20 7.55228 20 7C20 6.44771 19.5523 6 19 6H17ZM17 8H7V18C7 18.5523 7.4477 19 8 19H16C16.5523 19 17 18.5523 17 18V8ZM10 10C10.5523 10 11 10.4477 11 11V16C11 16.5523 10.5523 17 10 17C9.44772 17 9 16.5523 9 16V11C9 10.4477 9.44772 10 10 10ZM14 10C14.5523 10 15 10.4477 15 11V16C15 16.5523 14.5523 17 14 17C13.4477 17 13 16.5523 13 16V11C13 10.4477 13.4477 10 14 10Z"
-                                            fill="#FF432A"
-                                            fill-rule="evenodd"
-                                    />
-                                </svg>
+                                <svg-icon (click)="onRemoveColumn(column.title, gridColumns)"
+                                    src="/assets/images/icons/delete.svg" 
+                                    svgClass="accent-color-red"></svg-icon>
                             </div>
                         </div>
                     </div>
                     <div class="grid-column grid-column-disabled">Document</div>
-                    <div
-                            *ngIf="approveEnable"
-                            class="grid-column grid-column-disabled"
-                    >
+                    <div *ngIf="approveEnable" class="grid-column grid-column-disabled">
                         Operation
                     </div>
-                    <div
-                            *ngIf="dependencySchema"
-                            class="grid-column grid-column-disabled"
-                    >
+                    <div *ngIf="dependencySchema" class="grid-column grid-column-disabled">
                         Create {{ dependencySchema }}
                     </div>
                 </div>
@@ -599,9 +575,7 @@
             <div class="grid-columns-title">Add Column</div>
             <div class="grid-column-add-container">
                 <div class="form-input-container w-45">
-                    <label class="form-label" htmlFor="columnName"
-                    >* Column name:</label
-                    >
+                    <label class="form-label" htmlFor="columnName">* Column name:</label>
                     <input
                         #titleInput
                         id="columnName"
@@ -646,17 +620,10 @@
                 <!--                    </mat-select>-->
                 <!--                </mat-form-field>-->
 
-                <p-button
-                        (click)="
-                        onAddColumn(
-                            titleInput.value,
-                            fieldSelect.value,
-                            gridColumns
-                        )
-                    "
-                        class="add-role-button"
-                        icon="pi pi-plus"
-                        styleClass="p-button-outlined"
+                <p-button (click)="onAddColumn(titleInput.value, fieldSelect.value, gridColumns)"
+                    class="add-role-button"
+                    icon="pi pi-plus"
+                    styleClass="p-button-outlined"
                 >
                 </p-button>
                 <!--                <button-->
@@ -682,11 +649,11 @@
     <div class="policy-schemas-input">
         <label class="form-label">Which users are able to view?</label>
         <p-multiSelect
-                (onChange)="onSelectedTrustChainRolesChange($event.value)"
-                [ngModel]="selectedTrustChainRoles"
-                [options]="policyRolesForm.value"
-                appendTo="body"
-                defaultLabel="Select User"
+            (onChange)="onSelectedTrustChainRolesChange($event.value)"
+            [ngModel]="selectedTrustChainRoles"
+            [options]="policyRolesForm.value"
+            appendTo="body"
+            defaultLabel="Select User"
         >
         </p-multiSelect>
     </div>
@@ -722,12 +689,12 @@
             <!--            </p-multiSelect>-->
 
             <p-dropdown
-                    [options]="mintedSchemas"
-                    appendTo="body"
-                    formControlName="mintSchemaIri"
-                    optionLabel="name"
-                    optionValue="iri"
-                    placeholder="Select Schema"
+                [options]="mintedSchemas"
+                appendTo="body"
+                formControlName="mintSchemaIri"
+                optionLabel="name"
+                optionValue="iri"
+                placeholder="Select Schema"
             ></p-dropdown>
         </div>
 
@@ -743,9 +710,7 @@
         <!--        </mat-form-field>-->
 
         <div class="input-switch-container">
-            <p-inputSwitch
-                    formControlName="viewOnlyOwnDocuments"
-            ></p-inputSwitch>
+            <p-inputSwitch formControlName="viewOnlyOwnDocuments"></p-inputSwitch>
             <span class="input-switch-label">View only own VPs</span>
         </div>
 
@@ -773,14 +738,12 @@
             <span class="input-switch-label">{{ title }}</span>
         </div>
         <button
-                (click)="someHelpGif.toggle($event)"
-                [disabled]="!helpSrc"
-                class="info-btn"
-                color="primary"
-                mat-mini-fab
-        >
-            i
-        </button>
+            (click)="someHelpGif.toggle($event)"
+            [disabled]="!helpSrc"
+            class="info-btn"
+            color="primary"
+            mat-mini-fab
+        >i</button>
         <p-overlayPanel #someHelpGif>
             <img [src]="helpSrc" class="help-img"/>
         </p-overlayPanel>

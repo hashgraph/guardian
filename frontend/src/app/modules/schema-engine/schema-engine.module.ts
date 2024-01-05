@@ -39,6 +39,7 @@ import { ServiceUnavailableDialog } from './service-unavailable-dialog/service-u
 import { SchemaFormDialog } from './schema-form-dialog/schema-form-dialog.component';
 import { SchemaTreeComponent } from './schema-tree/schema-tree.component';
 import { CopySchemaDialog } from './copy-schema-dialog/copy-schema-dialog';
+import { AngularSvgIconModule } from 'angular-svg-icon';
 
 @NgModule({
     declarations: [
@@ -80,6 +81,7 @@ import { CopySchemaDialog } from './copy-schema-dialog/copy-schema-dialog';
         InputTextareaModule,
         CheckboxModule,
         DropdownModule,
+        AngularSvgIconModule.forRoot()
     ],
     exports: [
         SchemaDialog,

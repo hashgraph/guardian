@@ -10,7 +10,8 @@
     gap: 20px;
 }
 
-.service-status-row, .service-status-row td {
+.service-status-row,
+.service-status-row td {
     padding: 0 10px;
 }
 
@@ -45,7 +46,8 @@
     font-size: xx-large;
 }
 
-.a, a:visited {
+.a,
+a:visited {
     color: blue;
 }
 
@@ -65,13 +67,13 @@
     margin: var(--container-margin);
 }
 
-.container > .header {
+.container>.header {
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
 
-.container > .header > h1 {
+.container>.header>h1 {
     width: 100%;
     color: #000;
     font-family: Poppins, serif;
@@ -88,7 +90,7 @@
     row-gap: 16px;
 }
 
-.status-container > .item {
+.status-container>.item {
     height: auto;
     border-radius: 16px;
     background: #FFF;
@@ -97,13 +99,13 @@
 }
 
 
-.status-container > .item > .header {
+.status-container>.item>.header {
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
 
-.status-container > .item > .header > span {
+.status-container>.item>.header>span {
     color: #000;
     font-family: Inter, serif;
     font-size: 16px;
@@ -142,6 +144,7 @@
         transform: rotate(0deg);
         opacity: 1;
     }
+
     25% {
         transform: rotate(360deg);
         border-top: 3px solid rgba(0, 0, 0, 0);
@@ -149,6 +152,7 @@
         border-left: 3px solid rgba(0, 0, 0, 0);
         border-bottom: 3px solid rgba(0, 0, 0, 0);
     }
+
     50% {
         transform: rotate(720deg);
         border-top: 3px solid rgba(0, 0, 0, 0);
@@ -156,6 +160,7 @@
         border-bottom: 3px solid var(--color-primary);
         border-right: 3px solid rgba(0, 0, 0, 0);
     }
+
     75% {
         transform: rotate(1080deg);
         border-top: 3px solid rgba(0, 0, 0, 0);
@@ -163,6 +168,7 @@
         border-right: 3px solid rgba(0, 0, 0, 0);
         border-left: 3px solid var(--color-primary);
     }
+
     100% {
         transform: rotate(1440deg);
         border-top: 3px solid var(--color-primary);
@@ -180,6 +186,11 @@
 .error-color {
     fill: var(--color-accent-red-1, #FF432A);
     color: var(--color-accent-red-1, #FF432A);
+}
+
+.warning-color {
+    fill: #ffb524;
+    color: #ffb524;
 }
 
 .success-color {

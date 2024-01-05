@@ -50,7 +50,7 @@ export class TagsExplorer {
     public onOpen() {
         const dialogRef = this.dialog.open(TagsExplorerDialog, {
             width: '750px',
-            height: '500px',
+            height: '600px',
             closable: false,
             header: 'Tags',
             data: {

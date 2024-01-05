@@ -9,6 +9,7 @@ import { SchemaEngineModule } from '../schema-engine/schema-engine.module';
 import { CommonComponentsModule } from '../common/common-components.module';
 import { ButtonModule } from 'primeng/button';
 import { DropdownModule } from 'primeng/dropdown';
+import { AngularSvgIconModule } from 'angular-svg-icon';
 
 @NgModule({
     declarations: [
@@ -24,6 +25,7 @@ import { DropdownModule } from 'primeng/dropdown';
         SchemaEngineModule,
         ButtonModule,
         DropdownModule,
+        AngularSvgIconModule.forRoot()
     ],
     exports: [
         TagsExplorer,
