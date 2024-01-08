@@ -72,15 +72,6 @@ Promise.all([
             if (!IPFS_STORAGE_API_KEY) {
                 return false;
             }
-
-            try {
-                const decoded = decode(IPFS_STORAGE_API_KEY);
-                if (!decoded) {
-                    return false
-                }
-            } catch (e) {
-                return false
-            }
         }
         if (process.env.IPFS_PROVIDER === 'local') {
             if (!process.env.IPFS_NODE_ADDRESS) {
