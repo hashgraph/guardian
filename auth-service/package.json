@@ -10,8 +10,8 @@
     "image-size": "1.0.2"
   },
   "dependencies": {
-      "@guardian/common": "^2.20.0",
-      "@guardian/interfaces": "^2.20.0",
+    "@guardian/common": "^2.20.1",
+    "@guardian/interfaces": "^2.20.1",
     "@meeco/cryppo": "^2.0.2",
     "@mikro-orm/core": "5.7.12",
     "@mikro-orm/mongodb": "5.7.12",
@@ -73,5 +73,5 @@
     "start": "node dist/index.js",
     "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/ui-service.xml"
   },
-    "version": "2.20.0"
+  "version": "2.20.1"
 }
