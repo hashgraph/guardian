@@ -38,7 +38,7 @@
     "jsonwebtoken": "^8.5.1",
     "jszip": "^3.7.1",
     "module-alias": "^2.2.2",
-    "prom-client": "^14.1.1",
+    "prom-client": "^15.1.0",
     "prometheus-api-metrics": "3.2.2",
     "reflect-metadata": "^0.1.13",
     "ws": "^8.2.1",
