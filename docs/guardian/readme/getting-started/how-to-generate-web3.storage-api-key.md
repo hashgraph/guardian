@@ -2,6 +2,11 @@
 
 To get a quick info, please visit: [https://web3.storage/docs/#quickstart](https://web3.storage/docs/#quickstart)
 
+1. [Step By Step Process](how-to-generate-web3.storage-api-key.md#step-by-step-process)
+2. Demo Video
+
+### Step By Step Process
+
 Following are the steps to follow to generate Web3.Storage API Key:
 
 1. We need to create an account in Web3.Storage using [https://web3.storage/login/](https://web3.storage/login/)
@@ -19,3 +24,7 @@ Following are the steps to follow to generate Web3.Storage API Key:
 4\. Once, token is created, Token Key can be copied and pasted as IPFS\_\_Storage\_\_API\_Key in `ipfs-client/.env` or `ipfs-client/.env/docker`.
 
 <figure><img src="../../../.gitbook/assets/image (11) (5).png" alt=""><figcaption></figcaption></figure>
+
+### Demo Video
+
+[Youtube](https://www.youtube.com/watch?v=JhfbHXRDSYU\&list=PLnld0e1pwLhqdR0F9dusqILDww6uZywwR\&index=6)
