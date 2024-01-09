@@ -3,7 +3,7 @@
 ## Guardian
 
 * [🌏 Getting Started](README.md)
-  * [🏜 Discovering ESG assets on Hedera](guardian/readme/discovering-esg-assets-on-hedera.md)
+  * [🏜 Discovering Environmental assets on Hedera](guardian/readme/discovering-esg-assets-on-hedera.md)
   * [🎓 Guardian Glossary](guardian/readme/guardian-glossary.md)
   * [📖 Installation Guide](guardian/readme/getting-started/README.md)
     * [🗒 Prerequisites](guardian/readme/getting-started/prerequisites.md)

@@ -265,8 +265,8 @@ Referral Link : [https://github.com/hashgraph/guardian/issues/2924](https://gith
 
 ## GHG scorecards Research
 
-* Identify the KPIs (and the data requirements behind them) to be captured by the ESG scorecards to best support demand signaling.
-* Identify the business requirements for the ESG Scorecards, i.e., how they could be used by supply and demand-side actors, markets, etc.?
+* Identify the KPIs (and the data requirements behind them) to be captured by the Environmental scorecards to best support demand signaling.
+* Identify the business requirements for the Environmental Scorecards, i.e., how they could be used by supply and demand-side actors, markets, etc.?
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/1017](https://github.com/hashgraph/guardian/issues/1017)
 
