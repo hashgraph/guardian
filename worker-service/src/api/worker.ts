@@ -17,7 +17,6 @@ import {
 } from '@guardian/interfaces';
 import { HederaSDKHelper, NetworkOptions } from './helpers/hedera-sdk-helper';
 import { IpfsClient } from './ipfs-client';
-import Blob from 'cross-blob';
 import { AccountId, ContractFunctionParameters, ContractId, PrivateKey, TokenId } from '@hashgraph/sdk';
 import { HederaUtils } from './helpers/utils';
 import axios from 'axios';
@@ -115,13 +114,12 @@ export class Worker extends NatsService {
     constructor(
     ) {
         super();
-        const secretManager = SecretManager.New()
-        secretManager.getSecrets('apikey/ipfs').
-            then(secrets => {
-                const { IPFS_STORAGE_API_KEY } = secrets;
-                this.ipfsClient = new IpfsClient(IPFS_STORAGE_API_KEY);
-            });
-
+        // const secretManager = SecretManager.New()
+        // secretManager.getSecrets('apikey/ipfs').
+        //     then(secrets => {
+        //         const { IPFS_STORAGE_API_KEY } = secrets;
+        //     });
+        this.ipfsClient = new IpfsClient(this);
         this.logger = new Logger();
 
         this.minPriority = parseInt(process.env.MIN_PRIORITY, 10);
@@ -206,7 +204,7 @@ export class Worker extends NatsService {
                 IPFS_STORAGE_API_KEY: msg.ipfsStorageApiKey
             });
             try {
-                this.ipfsClient = new IpfsClient(msg.ipfsStorageApiKey);
+                this.ipfsClient = new IpfsClient(this);
                 const validator = new ValidateConfiguration();
                 await validator.validate();
             } catch (error) {
@@ -261,8 +259,8 @@ export class Worker extends NatsService {
                     if (data && data.body) {
                         fileContent = Buffer.from(data.body, 'base64')
                     }
-                    const blob: any = new Blob([fileContent]);
-                    const r = await this.ipfsClient.addFile(blob);
+                    //const blob: any = new Blob([fileContent]);
+                    const r = await this.ipfsClient.addFile(fileContent);
                     this.publish(ExternalMessageEvents.IPFS_ADDED_FILE, r);
                     result.data = r;
                     break;

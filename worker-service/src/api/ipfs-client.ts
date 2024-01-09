@@ -1,7 +1,7 @@
-import { Web3Storage } from 'web3.storage';
-import Blob from 'cross-blob';
 import axios from 'axios';
 import { create } from 'ipfs-client'
+import { NatsService } from '@guardian/common';
+import { W3SEvents } from '@guardian/interfaces';
 
 /**
  * Providers type
@@ -28,7 +28,7 @@ export class IpfsClient {
      * Web3storage instance
      * @private
      */
-    private readonly client: Web3Storage | any;
+    private client: any;
 
     /**
      * Client options
@@ -36,30 +36,19 @@ export class IpfsClient {
      */
     private readonly options: {[key: string]: any} = {};
 
-    constructor(token?: string) {
-        this.options.token = token;
+    constructor(private readonly _channel: NatsService) {
         this.options.nodeAddress = process.env.IPFS_NODE_ADDRESS;
-
-        this.client = this.createClient();
+        this.createClient();
     }
 
     /**
      * Create ipfs client
      * @private
      */
-    private createClient(): Web3Storage | unknown {
+    private createClient(): any {
         let client;
 
         switch (this.IPFS_PROVIDER) {
-            case 'web3storage': {
-                if (!this.options.token) {
-                    throw new Error('Web3Storage token is not set')
-                }
-                client = new Web3Storage({ token: this.options.token } as any);
-
-                break;
-            }
-
             case 'local': {
                 if (!this.options.nodeAddress) {
                     throw new Error('IPFS_NODE_ADDRESS variable is not set');
@@ -75,7 +64,7 @@ export class IpfsClient {
                 throw new Error(`${this.IPFS_PROVIDER} provider is unknown`);
         }
 
-        return client;
+        this.client = client;
     }
 
     /**
@@ -83,16 +72,16 @@ export class IpfsClient {
      * @param file
      * @param beforeCallback
      */
-    public async addFile(file: Blob): Promise<string> {
+    public async addFile(file: Buffer): Promise<string> {
         let cid;
         switch (this.IPFS_PROVIDER) {
             case 'web3storage': {
-                cid = await this.client.put([file] as any, { wrapWithDirectory: false });
+                cid = await this._channel.sendRawMessage(W3SEvents.UPLOAD_FILE, file);
                 break;
             }
 
             case 'local': {
-                const { path } = await this.client.add(await file.arrayBuffer());
+                const { path } = await this.client.add(file);
                 cid = path;
                 break;
             }
