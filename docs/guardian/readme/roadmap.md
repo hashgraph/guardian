@@ -82,7 +82,7 @@ Referral Link : [https://github.com/hashgraph/guardian/issues/2919](https://gith
 
 ### Mitigation Credits Research
 
-Introduce the ability to mint Mitigation Asset Type tokens as the result of the calculation of the diff between planned (and reported on the ESG) and actual results of the calculations based on the MRV data for a reporting period. This would likely require:
+Introduce the ability to mint Mitigation Asset Type tokens as the result of the calculation of the diff between planned (and reported on the Environmental) and actual results of the calculations based on the MRV data for a reporting period. This would likely require:
 
 * New type of blocks in the policy definition language specifying 'target' numbers.
 * Policy Engine ability to mint different types of tokens depending on the conditions
@@ -96,9 +96,9 @@ Referral Link : [https://github.com/hashgraph/guardian/issues/54](https://github
 
 The ability to define states and to link it to a type, perhaps been able to link a button or UI to a set of states. There should be warnings for modifying, a state label or title within the UI, whereby it makes it harder for an asset to be identified. In addition, the validation check should ensure that the correct states have been selected for button objects or other like-UI, to reduce the time and frustration hardcoding different states.
 
-In short, standardising all state options for all policies -- perhaps having a new type of button that is linked to a custom state list/enum sat with drop-down links could be the way to go.
+In short, standardizing all state options for all policies -- perhaps having a new type of button that is linked to a custom state list/enum sat with drop-down links could be the way to go.
 
-The states could be anything, but the goal would be to be standardised throughout all policies:
+The states could be anything, but the goal would be to be standardized throughout all policies:
 
 * approved
 * rejected
