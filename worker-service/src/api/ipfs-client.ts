@@ -36,8 +36,9 @@ export class IpfsClient {
      */
     private readonly options: {[key: string]: any} = {};
 
-    constructor(private _channel: NatsService) {
+    constructor(private readonly _channel: NatsService) {
         this.options.nodeAddress = process.env.IPFS_NODE_ADDRESS;
+        this.createClient();
     }
 
     /**

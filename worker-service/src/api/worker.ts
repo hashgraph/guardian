@@ -17,7 +17,6 @@ import {
 } from '@guardian/interfaces';
 import { HederaSDKHelper, NetworkOptions } from './helpers/hedera-sdk-helper';
 import { IpfsClient } from './ipfs-client';
-import Blob from 'cross-blob';
 import { AccountId, ContractFunctionParameters, ContractId, PrivateKey, TokenId } from '@hashgraph/sdk';
 import { HederaUtils } from './helpers/utils';
 import axios from 'axios';
