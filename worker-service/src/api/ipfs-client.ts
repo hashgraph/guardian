@@ -49,6 +49,9 @@ export class IpfsClient {
         let client;
 
         switch (this.IPFS_PROVIDER) {
+            case 'web3storage':
+                break;
+
             case 'local': {
                 if (!this.options.nodeAddress) {
                     throw new Error('IPFS_NODE_ADDRESS variable is not set');
