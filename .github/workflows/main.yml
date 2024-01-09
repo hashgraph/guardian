@@ -55,11 +55,13 @@ jobs:
           popd
         env:
           CI: true
+          NODE_OPTIONS: --openssl-legacy-provider
       - name: Detect secrets
         run: |
           yarn run detect-secrets
         env:
           CI: true
+          NODE_OPTIONS: --openssl-legacy-provider
       - name: Lint
         run: |
           pushd interfaces
@@ -91,6 +93,7 @@ jobs:
           popd
         env:
           CI: true
+          NODE_OPTIONS: --openssl-legacy-provider
       - name: Test
         run: |
           pushd common
@@ -107,6 +110,7 @@ jobs:
           popd
         env:
           CI: true
+          NODE_OPTIONS: --openssl-legacy-provider
           OPERATOR_ID: ${{ secrets.OPERATOR_ID }}
           OPERATOR_KEY: ${{ secrets.OPERATOR_KEY }}
       - name: Publish Unit Test Results
