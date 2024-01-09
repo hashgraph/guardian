@@ -8,7 +8,6 @@ import {
 import { Worker } from './api/worker';
 import { HederaSDKHelper } from './api/helpers/hedera-sdk-helper';
 import { ApplicationStates } from '@guardian/interfaces';
-import { decode } from 'jsonwebtoken';
 import * as process from 'process';
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
@@ -71,15 +70,6 @@ Promise.all([
         if (process.env.IPFS_PROVIDER === 'web3storage') {
             if (!IPFS_STORAGE_API_KEY) {
                 return false;
-            }
-
-            try {
-                const decoded = decode(IPFS_STORAGE_API_KEY);
-                if (!decoded) {
-                    return false
-                }
-            } catch (e) {
-                return false
             }
         }
         if (process.env.IPFS_PROVIDER === 'local') {
