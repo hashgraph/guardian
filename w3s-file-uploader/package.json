@@ -55,8 +55,7 @@
     "dev:docker": "nodemon .",
     "dev": "tsc -w",
     "lint": "tslint --config ../tslint.json --project .",
-    "start": "node --experimental-specifier-resolution=explicit dist/index.js",
-    "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/worker-service.xml --exit"
+    "start": "node dist/index.js"
   },
   "version": "2.20.1",
   "type": "module"
