@@ -189,17 +189,17 @@ For setup w3up upload IPFS web3storage access you need to set variables in file 
    ```
  
 To obtain the values for these variables please follow the steps below:
-- Create an account on https://web3.storage, please specify the email you have access to as the account authentication is based on the email validation
+- Create an account on https://web3.storage, please specify the email you have access to as the account authentication is based on the email validation.
 - Install w3cli as described in the [corresponding section](https://web3.storage/docs/w3cli/#install) of the web3.storage documentation.
 - Create your 'space' as described in the ['Create your first space'](https://web3.storage/docs/w3cli/#create-your-first-space) section of the documentation.
 - Execute the following command to retrieve your Agent private key and DID
 `npx ucan-key ed`. 
-The private key (starting with `Mg...`) is the value to be used in the environment variable IPFS_STORAGE_KEY.
+The private key (starting with `Mg...`) is the value to be used in the environment variable `IPFS_STORAGE_KEY`.
 - Execute the following to set the Space you intend on delegating access to:
   `w3 space use`
 - Retrieve the PROOF by executing the following:
   ```w3 delegation create <did_from_ucan-key_command_above> | base64```. 
-  The output of this command is the value to be used in the environment variable IPFS_STORAGE_PROOF.
+  The output of this command is the value to be used in the environment variable `IPFS_STORAGE_PROOF`.
 
 The complete guide to using the new w3up web3.storage API is available at https://web3.storage/docs/w3up-client.
   
