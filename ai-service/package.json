@@ -1,7 +1,7 @@
 {
     "name": "ai-service",
     "version": "1.0.0",
-    "main": "index.js",
+    "main": "dist/app.js",
     "license": "MIT",
     "dependencies": {
         "@mikro-orm/core": "5.7.12",
@@ -19,8 +19,10 @@
     },
     "scripts": {
         "build": "tsc",
-        "build:prod": "tsc",
-        "start": "node dist/app.js"
+        "build:prod": "tsc --project tsconfig.production.json",
+        "debug": "nodemon dist/index.js",
+        "dev:docker": "nodemon .",
+        "dev": "tsc -w"
     },
     "devDependencies": {
         "nodemon": "^3.0.1"

@@ -6,7 +6,7 @@
         "emitDecoratorMetadata": true,
         "esModuleInterop": true,
         "experimentalDecorators": true,
-        "inlineSourceMap": true,
+        "inlineSourceMap": false,
         "lib": [
             "es6"
         ],
