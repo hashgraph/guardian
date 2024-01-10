@@ -20,8 +20,7 @@
     "worker-service",
     "policy-service",
     "api-tests",
-    "notification-service",
-    "w3s-file-uploader"
+    "notification-service"
   ],
   "version": "2.20.1",
   "devDependencies": {
