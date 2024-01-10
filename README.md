@@ -189,7 +189,7 @@ For setup w3up upload IPFS web3storage access you need to set variables in file 
    ```
  
 To obtain the values for these variables please follow the steps below:
-- Create an account on https://web3.storage, please specify the email you have access to as the account authentication is based on the email validation. Make sure to follow through the registration process to the end, chose an appropriate billing plan for your needs (e.g. 'starter') and enter your payment details.
+- Create an account on https://web3.storage, please specify the email you have access to as the account authentication is based on the email validation. Make sure to follow through the registration process to the end, choose an appropriate billing plan for your needs (e.g. 'starter') and enter your payment details.
 - Install w3cli as described in the [corresponding section](https://web3.storage/docs/w3cli/#install) of the web3.storage documentation.
 - Create your 'space' as described in the ['Create your first space'](https://web3.storage/docs/w3cli/#create-your-first-space) section of the documentation.
 - Execute the following command to retrieve your Agent private key and DID
