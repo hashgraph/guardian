@@ -5,8 +5,8 @@
     "image-size": "1.0.2"
   },
   "dependencies": {
-      "@guardian/common": "^2.20.0",
-      "@guardian/interfaces": "^2.20.0",
+    "@guardian/common": "^2.20.1",
+    "@guardian/interfaces": "^2.20.1",
     "@hashgraph/sdk": "2.34.1",
     "@nestjs/common": "^9.4.1",
     "@nestjs/core": "^9.4.1",
@@ -26,7 +26,7 @@
     "jsonwebtoken": "^8.5.1",
     "module-alias": "^2.2.2",
     "reflect-metadata": "^0.1.13",
-    "web3.storage": "4.3.0"
+    "web3.storage": "4.5.5"
   },
   "description": "",
   "devDependencies": {
@@ -63,5 +63,5 @@
     "start": "node dist/index.js",
     "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/worker-service.xml --exit"
   },
-    "version": "2.20.0"
+  "version": "2.20.1"
 }

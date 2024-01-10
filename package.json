@@ -20,9 +20,10 @@
     "worker-service",
     "policy-service",
     "api-tests",
-    "notification-service"
+    "notification-service",
+    "w3s-file-uploader"
   ],
-  "version": "2.20.0",
+  "version": "2.20.1",
   "devDependencies": {
     "detect-secrets": "^1.0.6"
   },
