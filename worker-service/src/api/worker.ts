@@ -4,7 +4,6 @@ import {
     MessageResponse,
     NatsService,
     ValidateConfiguration,
-    SecretManager,
     NotificationHelper,
     Users
 } from '@guardian/common';
@@ -114,11 +113,6 @@ export class Worker extends NatsService {
     constructor(
     ) {
         super();
-        // const secretManager = SecretManager.New()
-        // secretManager.getSecrets('apikey/ipfs').
-        //     then(secrets => {
-        //         const { IPFS_STORAGE_API_KEY } = secrets;
-        //     });
         this.ipfsClient = new IpfsClient(this);
         this.logger = new Logger();
 
@@ -199,10 +193,6 @@ export class Worker extends NatsService {
         })
 
         this.subscribe(WorkerEvents.UPDATE_SETTINGS, async (msg: any) => {
-            const secretManager = SecretManager.New();
-            await secretManager.setSecrets('apikey/ipfs', {
-                IPFS_STORAGE_API_KEY: msg.ipfsStorageApiKey
-            });
             try {
                 this.ipfsClient = new IpfsClient(this);
                 const validator = new ValidateConfiguration();

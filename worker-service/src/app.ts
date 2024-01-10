@@ -3,7 +3,7 @@ import {
     Logger,
     MessageBrokerChannel,
     ValidateConfiguration,
-    SecretManager, OldSecretManager, NotificationService, Users
+    OldSecretManager, NotificationService, Users
 } from '@guardian/common';
 import { Worker } from './api/worker';
 import { HederaSDKHelper } from './api/helpers/hedera-sdk-helper';
@@ -52,12 +52,6 @@ Promise.all([
         if (timer) {
             clearInterval(timer);
         }
-        const secretManager = SecretManager.New();
-        let {IPFS_STORAGE_API_KEY} = await secretManager.getSecrets('apikey/ipfs');
-        if (!IPFS_STORAGE_API_KEY) {
-            IPFS_STORAGE_API_KEY= process.env.IPFS_STORAGE_API_KEY
-            await secretManager.setSecrets('apikey/ipfs', { IPFS_STORAGE_API_KEY });
-        }
 
         HederaSDKHelper.setTransactionLogSender(async (data) => {
             await channel.publish(`guardians.transaction-log-event`, data);
@@ -67,11 +61,6 @@ Promise.all([
         const w = new Worker();
         await w.setConnection(cn).init();
 
-        if (process.env.IPFS_PROVIDER === 'web3storage') {
-            if (!IPFS_STORAGE_API_KEY) {
-                return false;
-            }
-        }
         if (process.env.IPFS_PROVIDER === 'local') {
             if (!process.env.IPFS_NODE_ADDRESS) {
                 return false
