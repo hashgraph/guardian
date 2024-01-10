@@ -1,7 +1,9 @@
 import axios from 'axios';
 import { create } from 'ipfs-client'
-import { NatsService } from '@guardian/common';
-import { W3SEvents } from '@guardian/interfaces';
+import { CarReader } from '@ipld/car';
+import * as Delegation from '@ucanto/core/delegation';
+import * as Signer from '@ucanto/principal/ed25519';
+import * as Client from '@web3-storage/w3up-client';
 
 /**
  * Providers type
@@ -10,7 +12,7 @@ type IpfsProvider = 'web3storage' | 'local';
 /**
  * IPFS Client helper
  */
-export class IpfsClient {
+export class IpfsClientClass {
 
     /**
      * IPFS provider
@@ -36,21 +38,35 @@ export class IpfsClient {
      */
     private readonly options: {[key: string]: any} = {};
 
-    constructor(private readonly _channel: NatsService) {
+    constructor(
+        w3sKey?: string,
+        w3sProof?: string
+    ) {
         this.options.nodeAddress = process.env.IPFS_NODE_ADDRESS;
-        this.createClient();
+        if (w3sKey && w3sProof) {
+            this.options.w3s = {
+                key: w3sKey,
+                proof: w3sProof
+            }
+        }
     }
 
     /**
      * Create ipfs client
      * @private
      */
-    private createClient(): any {
+    public async createClient(): Promise<any> {
         let client;
 
         switch (this.IPFS_PROVIDER) {
-            case 'web3storage':
+            case 'web3storage': {
+                const principal = Signer.parse(this.options.w3s.key);
+                client = await Client.create({principal});
+                const proof = await this.parseProof(this.options.w3s.proof);
+                const space = await client.addSpace(proof);
+                await client.setCurrentSpace(space.did());
                 break;
+            }
 
             case 'local': {
                 if (!this.options.nodeAddress) {
@@ -79,7 +95,11 @@ export class IpfsClient {
         let cid;
         switch (this.IPFS_PROVIDER) {
             case 'web3storage': {
-                cid = await this._channel.sendRawMessage(W3SEvents.UPLOAD_FILE, file);
+                const result = await this.client.uploadFile(
+                    new Blob([file])
+                );
+
+                cid = result.toString()
                 break;
             }
 
@@ -93,6 +113,15 @@ export class IpfsClient {
                 throw new Error(`${this.IPFS_PROVIDER} provider is unknown`);
         }
         return cid;
+    }
+
+    private async parseProof(data) {
+        const blocks = [];
+        const reader = await CarReader.fromBytes(Buffer.from(data, 'base64'));
+        for await (const block of reader.blocks()) {
+            blocks.push(block);
+        }
+        return Delegation.importDAG(blocks);
     }
 
     /**

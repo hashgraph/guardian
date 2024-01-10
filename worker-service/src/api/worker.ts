@@ -1,21 +1,7 @@
-import {
-    Logger,
-    MessageBrokerChannel,
-    MessageResponse,
-    NatsService,
-    ValidateConfiguration,
-    NotificationHelper,
-    Users
-} from '@guardian/common';
-import {
-    ExternalMessageEvents, GenerateUUIDv4,
-    ITask,
-    ITaskResult,
-    WorkerEvents,
-    WorkerTaskType
-} from '@guardian/interfaces';
+import { Logger, MessageBrokerChannel, MessageResponse, NatsService, NotificationHelper, Users, ValidateConfiguration } from '@guardian/common';
+import { ExternalMessageEvents, GenerateUUIDv4, ITask, ITaskResult, WorkerEvents, WorkerTaskType } from '@guardian/interfaces';
 import { HederaSDKHelper, NetworkOptions } from './helpers/hedera-sdk-helper';
-import { IpfsClient } from './ipfs-client';
+import { IpfsClientClass } from './ipfs-client-class';
 import { AccountId, ContractFunctionParameters, ContractId, PrivateKey, TokenId } from '@hashgraph/sdk';
 import { HederaUtils } from './helpers/utils';
 import axios from 'axios';
@@ -63,7 +49,7 @@ export class Worker extends NatsService {
     /**
      * Ipfs client
      */
-    private ipfsClient: IpfsClient;
+    private ipfsClient: IpfsClientClass;
 
     /**
      * Current task ID
@@ -113,7 +99,10 @@ export class Worker extends NatsService {
     constructor(
     ) {
         super();
-        this.ipfsClient = new IpfsClient(this);
+        this.ipfsClient = new IpfsClientClass(
+            process.env.IPFS_STORAGE_KEY,
+            process.env.IPFS_STORAGE_PROOF
+        );
         this.logger = new Logger();
 
         this.minPriority = parseInt(process.env.MIN_PRIORITY, 10);
@@ -127,6 +116,8 @@ export class Worker extends NatsService {
     public async init(): Promise<void> {
         await super.init();
         this.channel = new MessageBrokerChannel(this.connection, 'worker');
+
+        await this.ipfsClient.createClient()
 
         this.subscribe(WorkerEvents.GET_FREE_WORKERS, async (msg) => {
             if (!this.isInUse) {
@@ -194,7 +185,9 @@ export class Worker extends NatsService {
 
         this.subscribe(WorkerEvents.UPDATE_SETTINGS, async (msg: any) => {
             try {
-                this.ipfsClient = new IpfsClient(this);
+                this.ipfsClient = new IpfsClientClass(
+                    process.env.IPFS_STORAGE_KEY,
+                    process.env.IPFS_STORAGE_PROOF);
                 const validator = new ValidateConfiguration();
                 await validator.validate();
             } catch (error) {
