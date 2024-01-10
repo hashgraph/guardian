@@ -201,6 +201,13 @@ The private key (starting with `Mg...`) is the value to be used in the environme
   ```w3 delegation create <did_from_ucan-key_command_above> | base64```. 
   The output of this command is the value to be used in the environment variable `IPFS_STORAGE_PROOF`.
 
+To summarise, the process of configuring delegated access to the w3up API consists of execution the following command sequence:
+1. `w3 login`
+2. `w3 create space`
+3. `w3 use space`
+4. `npx ucan-key ed`
+5. `w3 delegation`
+
 The complete guide to using the new w3up web3.storage API is available at https://web3.storage/docs/w3up-client.
   
 #### 5. Build and launch with Docker. Please note that this build is meant to be used in production and will not contain any debug information. From the project's root folder:
