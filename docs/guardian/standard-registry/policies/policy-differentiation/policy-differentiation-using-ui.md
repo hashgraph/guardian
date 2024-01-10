@@ -1,8 +1,11 @@
 # 💻 Multi Policy Differentiation using UI
 
-We can now perform a detailed comparison between more than two policies.
+1. [Step By Step Process](policy-differentiation-using-ui.md#step-by-step-process)
+2. [Demo Video](policy-differentiation-using-ui.md#demo-video)
 
-## 1. Start Comparison and choose policies:
+## Step by Step Process
+
+### 1. Start Comparison and choose policies:
 
 To compare the policies, we need to click on **Compare** button in the policies tab as shown below:
 
@@ -12,7 +15,7 @@ When Compare button is clicked, we get a pop up to select policies, which we wan
 
 <figure><img src="../../../../.gitbook/assets/image (5) (4).png" alt=""><figcaption></figcaption></figure>
 
-## 2. Comparison Result
+### 2. Comparison Result
 
 We have several different sections in our comparison screen including filter parameters:
 
@@ -54,7 +57,7 @@ Selected Policies are compared to the first Policy (displayed in the section on 
 | Don't compare | UUIDs of schemas, tokens, topics, etc and their Properties are not compared when blocks are compared                                                                                                                                                                                                |
 | All UUID      | <p>all IDs are taken into consideration when comparing blocks<br><em>(for example when this option is chosen if all Properties of tokens in two Policies being compared are the same these tokens would still be considered different since they would by definition have different UUIDs)</em></p> |
 
-## 2. Sections:
+### 2. Sections:
 
 There are different sections in the comparison such as
 
@@ -83,3 +86,7 @@ We have several Display settings in Policy Blocks section:
 Block comparison displays can be unfolded to display a detailed view of the block Properties.
 
 <figure><img src="../../../../.gitbook/assets/image (5) (3).png" alt=""><figcaption></figcaption></figure>
+
+## Demo Video
+
+[Youtube](https://www.youtube.com/watch?v=wdPjoAgWSuI\&list=PLnld0e1pwLhqdR0F9dusqILDww6uZywwR\&index=10)

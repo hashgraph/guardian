@@ -1,5 +1,13 @@
 # 🔨 Building from source and run using Docker
 
+[Step By Step Process](./#step-by-step-process)
+
+[Demo Video](./#demo-video)
+
+[Troubleshoot](./#troubleshoot)
+
+### Step By Step Process
+
 The following steps need to be executed in order to start Guardian using docker:
 
 1. Clone the repo
@@ -162,6 +170,10 @@ About docker-compose: from the end of June 2023 Compose V1 won’t be supported 
 {% endhint %}
 
 6\. Browse to [http://localhost:3000](http://localhost:3000) and complete the setup. To get more info, please check: [Launching Guardian](https://github.com/hashgraph/guardian/blob/main/docs/guardian/readme/getting-started/installation/broken-reference/README.md)
+
+### Demo Video
+
+[Youtube](https://www.youtube.com/watch?v=d5GxTn-OjSE\&list=PLnld0e1pwLhqdR0F9dusqILDww6uZywwR\&index=11)
 
 ### Troubleshoot
 
