@@ -4,7 +4,6 @@ import {
     MessageResponse,
     NatsService,
     ValidateConfiguration,
-    SecretManager,
     NotificationHelper,
     Users
 } from '@guardian/common';

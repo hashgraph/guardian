@@ -3,7 +3,7 @@ import {
     Logger,
     MessageBrokerChannel,
     ValidateConfiguration,
-    SecretManager, OldSecretManager, NotificationService, Users
+    OldSecretManager, NotificationService, Users
 } from '@guardian/common';
 import { Worker } from './api/worker';
 import { HederaSDKHelper } from './api/helpers/hedera-sdk-helper';
