@@ -52,8 +52,8 @@
   ],
   "name": "worker-service",
   "scripts": {
-    "build": "tsc",
-    "build:prod": "tsc --project tsconfig.production.json",
+    "build": "tsc && tsc-alias",
+    "build:prod": "tsc --project tsconfig.production.json && tsc-alias",
     "debug": "nodemon dist/index.js",
     "dev:docker": "nodemon .",
     "dev": "tsc && (concurrently \"tsc -w\" \"tsc-alias -w\")",

@@ -20,6 +20,7 @@
     "worker-service",
     "policy-service",
     "api-tests",
+    "ai-service",
     "notification-service"
   ],
   "version": "2.20.1",
