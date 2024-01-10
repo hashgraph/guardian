@@ -180,8 +180,10 @@ To let the Multi-environment transition happen in a transparent way the `GUARDIA
 
 
 ##### 4.2 Setting up IPFS Web3Storage node:**
-   
-For setup w3up upload IPFS web3storage access you need to set variables in file `./w3s-file-uploader/configs/.env.w3s-file-uploader.develop`:
+
+To select this option ensure that `IPFS_PROVIDER="web3storage"` setting exists in your `./configs/.env.<environment>.guardian.system` file.
+
+For setup w3up upload IPFS web3storage access you need to set correct values to variables in file `./w3s-file-uploader/configs/.env.w3s-file-uploader.<environment>`:
    
    ```
    IPFS_STORAGE_KEY="..."
