@@ -3,7 +3,7 @@
 To get a quick info, please visit: [https://web3.storage/docs/#quickstart](https://web3.storage/docs/#quickstart)
 
 1. [Step By Step Process](how-to-generate-web3.storage-api-key.md#step-by-step-process)
-2. Demo Video
+2. [Demo Video](how-to-generate-web3.storage-api-key.md#demo-video)
 
 ### Step By Step Process
 
@@ -71,3 +71,4 @@ The output of this command is the value to be used in the environment variable `
 
 ### Demo Video
 
+[Youtube](https://youtu.be/wnGchPBpCFk)
