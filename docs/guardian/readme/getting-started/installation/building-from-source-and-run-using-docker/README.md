@@ -148,14 +148,20 @@ Note:
 
 #### 4.2 Setting up IPFS Web3Storage node:
 
-For setup IPFS web3storage node you need to set variables in file `./configs/.env.develop.guardian.system`:
+For setup IPFS web3storage node you need to set variables in file `./configs/.env..guardian.system`:
 
 ```
-IPFS_STORAGE_API_KEY="..."
 IPFS_PROVIDER="web3storage"
 ```
 
-To generate Web3.Storage API KEY please follow the steps from [https://web3.storage/docs/#quickstart](https://web3.storage/docs/#quickstart) to obtain it. To know complete information on generating API Key please check : [how-to-generate-web3.storage-api-key.md](../../how-to-generate-web3.storage-api-key.md "mention")
+To configure access to the [w3up](https://github.com/web3-storage/w3up) IPFS upload API from web3.storage for your Guardian instance you need to set correct values to the following variables in the `./configs/.env.<environment>.guardian.system` file.
+
+```
+IPFS_STORAGE_KEY="..."
+IPFS_STORAGE_PROOF="..."
+```
+
+To know complete process of How to setup IPFS Storage variables, please check [How to generate Web3.Storage API values](../../how-to-generate-web3.storage-api-key.md)
 
 5\. Build and launch with Docker. Make sure you use Docker Compose V2 (comes with Docker Desktop > 3.6.0) as at https://docs.docker.com/compose/install/. Please note that this build is meant to be used in production and will not contain any debug information. From the project's root folder:
 
