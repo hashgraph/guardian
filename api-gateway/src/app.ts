@@ -48,7 +48,7 @@ Promise.all([
             errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY
         }));
 
-        app.use(json({ limit: '2mb' }));
+        app.use(json({ limit: '10mb' }));
 
         new Logger().setConnection(cn);
         await new Guardians().setConnection(cn).init();
