@@ -97,11 +97,13 @@ export class Worker extends NatsService {
     private readonly taskTimeout: number;
 
     constructor(
+        private w3cKey: string,
+        private w3cProof: string
     ) {
         super();
         this.ipfsClient = new IpfsClientClass(
-            process.env.IPFS_STORAGE_KEY,
-            process.env.IPFS_STORAGE_PROOF
+            this.w3cKey,
+            this.w3cProof
         );
         this.logger = new Logger();
 
@@ -186,8 +188,9 @@ export class Worker extends NatsService {
         this.subscribe(WorkerEvents.UPDATE_SETTINGS, async (msg: any) => {
             try {
                 this.ipfsClient = new IpfsClientClass(
-                    process.env.IPFS_STORAGE_KEY,
-                    process.env.IPFS_STORAGE_PROOF);
+                    this.w3cKey,
+                    this.w3cProof
+                );
                 const validator = new ValidateConfiguration();
                 await validator.validate();
             } catch (error) {
