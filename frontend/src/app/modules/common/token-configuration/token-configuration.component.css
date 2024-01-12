@@ -136,3 +136,8 @@ form {
     font-weight: 400;
     line-height: 16px;
 }
+
+.wipe-contract-dropdown {
+    margin-top: 16px;
+    width: 100%;
+}

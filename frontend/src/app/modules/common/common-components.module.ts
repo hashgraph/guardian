@@ -12,7 +12,6 @@ import { ConfirmationDialogComponent } from './confirmation-dialog/confirmation-
 import { FileDragNDropComponent } from './file-drag-n-drop/file-drag-n-drop.component';
 import { IconPreviewDialog } from './icon-preview-dialog/icon-preview-dialog.component';
 import { TokenConfigurationComponent } from './token-configuration/token-configuration.component';
-import { TokenDialog } from './token-dialog/token-dialog.component';
 import { NgxFileDropModule } from 'ngx-file-drop';
 import { FileExplorer } from './file-explorer/file-explorer.component';
 import { NgxColorsModule } from 'ngx-colors';
@@ -45,7 +44,6 @@ import { AngularSvgIconModule } from 'angular-svg-icon';
         FileDragNDropComponent,
         IconPreviewDialog,
         TokenConfigurationComponent,
-        TokenDialog,
         FileExplorer,
         ConfirmDialog,
         SelectorDialogComponent,
@@ -83,7 +81,6 @@ import { AngularSvgIconModule } from 'angular-svg-icon';
         FileDragNDropComponent,
         IconPreviewDialog,
         TokenConfigurationComponent,
-        TokenDialog,
         FileExplorer,
         ConfirmDialog,
         NgxColorsModule,

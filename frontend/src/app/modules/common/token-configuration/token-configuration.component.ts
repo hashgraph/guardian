@@ -11,8 +11,10 @@ export class TokenConfigurationComponent implements OnInit {
     @Input('dataForm') dataForm!: FormGroup;
     @Input('readonly') readonly?: any;
     @Input('hide-type') hideType: boolean = false;
-
+    @Input() contracts: any[];
     ft: any;
+
+    test: any;
 
     tokenTypes: { value: string, name: string }[] = [
         {
@@ -24,7 +26,6 @@ export class TokenConfigurationComponent implements OnInit {
             value: 'non-fungible'
         }
     ];
-    selectedTokenType: { value: string, name: string } = this.tokenTypes[0];
 
     constructor() {
     }
@@ -67,6 +68,10 @@ export class TokenConfigurationComponent implements OnInit {
 
     set enableKYC(value: any) {
         this.dataForm?.patchValue({enableKYC: value});
+    }
+
+    get wipeContractId(): any {
+        return this.dataForm?.get('wipeContractId')?.value;
     }
 
     ngOnInit(): void {

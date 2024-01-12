@@ -18,13 +18,15 @@
     </div>
     <div class="p-field">
         <label class="p-field-label">* Token Type</label>
-        <p-dropdown [disabled]="readonly" [options]="tokenTypes" optionLabel="name" optionValue="value">
+        <p-dropdown formControlName="tokenType" [disabled]="readonly"
+                    [options]="tokenTypes" optionLabel="name" optionValue="value"
+                    (onChange)="onChangeType()">
             <ng-template let-tokenType pTemplate="item">
                 <div class="dropdown-item">{{ tokenType.name }}</div>
             </ng-template>
         </p-dropdown>
     </div>
-    <div *ngIf="selectedTokenType.value === 'fungible'" class="p-field immutable">
+    <div *ngIf="ft" class="p-field immutable">
         <label class="p-field-label" for="decimals">Decimals</label>
         <input class="p-field-input" formControlName="decimals" id="decimals" type="text"/>
     </div>
@@ -51,6 +53,18 @@
             <div class="switch-btn">
                 <switch-button [(value)]="enableWipe" [off-label]="'Disabled'" [on-label]="'Enabled'"></switch-button>
             </div>
+        </div>
+        <div class="key-value" *ngIf="enableWipe">
+            <div class="key-name">
+                Wipe Contract
+            </div>
+            <div class="key-description">
+                The contract which can call wipe for token. If empty, wipe key will be used.
+            </div>
+            <p-dropdown class="wipe-contract-dropdown" [disabled]="readonly" formControlName="wipeContractId"
+                        [options]="!readonly ? [{ contractId: '' }].concat(contracts) : [{ contractId: wipeContractId }]"
+                        optionLabel="contractId" optionValue="contractId" [showClear]="true">
+            </p-dropdown>
         </div>
         <div class="key-value">
             <div class="key-name">

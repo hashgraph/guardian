@@ -54,16 +54,16 @@
                                     <div class="flex flex-column-gap-20">
                                         <svg-icon (click)="!token.draftToken ? goToUsingTokens(token) : null"
                                             class="opacity-icon"
-                                            src="/assets/images/icons/group.svg" 
+                                            src="/assets/images/icons/group.svg"
                                             [svgClass]="!token.draftToken ? 'primary-color' : 'disabled-color'"></svg-icon>
                                         <svg-icon (click)="openEditDialog(token)"
                                             class="opacity-icon"
-                                            src="/assets/images/icons/edit.svg" 
+                                            src="/assets/images/icons/edit.svg"
                                             [svgClass]="token.enableAdmin ? 'primary-color' : 'disabled-color'"></svg-icon>
 
                                         <svg-icon (click)="token.canDelete ? questToDeleteToken(token) : null"
                                             class="opacity-icon"
-                                            src="/assets/images/icons/delete.svg" 
+                                            src="/assets/images/icons/delete.svg"
                                             [svgClass]="token.canDelete ? 'delete-color' : 'disabled-color'"></svg-icon>
                                     </div>
                                 </td>
@@ -72,9 +72,9 @@
                     </table>
                 </div>
 
-                <app-paginator 
-                    [pageIndex]="pageIndex" 
-                    [pageSize]="pageSize" 
+                <app-paginator
+                    [pageIndex]="pageIndex"
+                    [pageSize]="pageSize"
                     [length]="tokensCount"
                     (page)="onPage($event)"
                 ></app-paginator>
@@ -88,8 +88,8 @@
     <div *ngIf="!loading" class="container">
         <div>
             <button (click)="goToTokensPage()"
-                    [iconPos]="'left'" 
-                    [icon]="'pi pi-chevron-left'" 
+                    [iconPos]="'left'"
+                    [icon]="'pi pi-chevron-left'"
                     class="button secondary height-40 margin-bottom-16"
                     label="Back to List of Tokens"
                     pButton type="button"></button>
@@ -151,7 +151,7 @@
                             <div class="flex flex-column-gap-20">
                                 <svg-icon (click)="!user.loading ? refresh(user) : null"
                                     class="opacity-icon"
-                                    src="/assets/images/icons/refresh.svg" 
+                                    src="/assets/images/icons/refresh.svg"
                                     [svgClass]="user.loading ? 'disabled-color' : 'primary-color'"></svg-icon>
                             </div>
                         </td>
@@ -182,7 +182,7 @@
         <span class="modal-header">{{ currentTokenId ? 'Edit' : 'New' }} Token</span>
     </ng-template>
     <div style="padding: 0 10px 0 10px;">
-        <app-token-configuration [dataForm]="dataForm" [hide-type]="hideType"
+        <app-token-configuration [dataForm]="dataForm" [hide-type]="hideType" [contracts]="contracts"
                                  [readonly]="readonlyForm"></app-token-configuration>
     </div>
     <ng-template pTemplate="footer">
