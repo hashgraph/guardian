@@ -8024,10 +8024,12 @@ paths:
       operationId: BrandingApi_setBranding
       parameters: []
       responses:
-        '204':
-          description: ''
+        '401':
+          description: Unauthorized
       tags: &ref_10
         - branding
+      security:
+        - bearer: []
     get:
       operationId: BrandingApi_getBranding
       parameters: []
