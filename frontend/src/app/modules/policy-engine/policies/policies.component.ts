@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { IUser, Schema, SchemaHelper, TagType, Token, UserRole } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
@@ -14,7 +14,6 @@ import { InformService } from 'src/app/services/inform.service';
 import { MultiPolicyDialogComponent } from '../helpers/multi-policy-dialog/multi-policy-dialog.component';
 import { ComparePolicyDialog } from '../helpers/compare-policy-dialog/compare-policy-dialog.component';
 import { TagsService } from 'src/app/services/tag.service';
-import { SetVersionDialog } from '../../schema-engine/set-version-dialog/set-version-dialog.component';
 import { forkJoin } from 'rxjs';
 import { SchemaService } from 'src/app/services/schema.service';
 import { WizardMode, WizardService } from 'src/app/modules/policy-engine/services/wizard.service';
@@ -25,6 +24,7 @@ import { mobileDialog } from 'src/app/utils/mobile-utils';
 import { DialogService } from 'primeng/dynamicdialog';
 import { SuggestionsConfigurationComponent } from '../../../views/suggestions-configuration/suggestions-configuration.component';
 import { DeletePolicyDialogComponent } from '../helpers/delete-policy-dialog/delete-policy-dialog.component';
+import { SetVersionDialog } from '../../schema-engine/set-version-dialog/set-version-dialog.component';
 
 /**
  * Component for choosing a policy and
@@ -106,6 +106,20 @@ export class PoliciesComponent implements OnInit {
     filtersForm = new FormGroup({
         policyName: new FormControl(''),
         tag: new FormControl(''),
+    }, (fg) => {
+
+        for (const key in (fg as FormGroup).controls) {
+            if (!fg.get(key)) {
+                continue;
+            }
+            const value = fg.get(key)?.value;
+            if (value?.length > 0) {
+                return null;
+            }
+        }
+        return {
+            policyName: 'At least one value must be set'
+        };
     });
     noFilterResults: boolean = false;
 
@@ -854,16 +868,21 @@ export class PoliciesComponent implements OnInit {
     }
 
     public onChangeStatus(event: any, policy: any): void {
-        if (policy.status == 'DRAFT') {
-            this.onPublishAction(event, policy);
-        }
-        if (policy.status == 'DRY-RUN') {
-            this.onDryRunAction(event, policy);
-        }
-        if (policy.status == 'PUBLISH') {
-            return;
-        } else {
-            this.onPublishErrorAction(event, policy)
+        switch (policy.status) {
+            case 'DRAFT':
+                this.onPublishAction(event, policy);
+                break;
+
+            case 'DRY-RUN':
+                this.onDryRunAction(event, policy);
+                break;
+
+            case 'PUBLISH':
+                break;
+
+            default:
+                this.onPublishErrorAction(event, policy);
+                break;
         }
     }
 

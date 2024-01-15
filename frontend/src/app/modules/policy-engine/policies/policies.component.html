@@ -14,61 +14,62 @@
         <div class="actions-container" [attr.role]="role">
             <form *ngIf="hasPolicies" [formGroup]="filtersForm" class="policy-filters">
                 <span class="p-input-icon-right">
-                    <input 
-                        class="search-policy-input" 
-                        formControlName="policyName" 
+                    <input
+                            class="search-policy-input"
+                            formControlName="policyName"
                         pInputText
-                        placeholder="Search by Policy name" 
+                            placeholder="Search by Policy name"
                         type="text" />
                     <i class="pi pi-search search-icon"></i>
                 </span>
-                <p-dropdown 
-                    [options]="tagOptions" 
-                    appendTo="body" 
-                    class="tags-dropdown" 
+                <p-dropdown
+                        [options]="tagOptions"
+                        appendTo="body"
+                        class="tags-dropdown"
                     formControlName="tag"
                     placeholder="Tags"></p-dropdown>
-                <button (click)="applyFilters()" class="button ml-8" label="Apply Filters" pButton></button>
-                <button (click)="clearFilters()" 
-                    [disabled]="!filtersForm.dirty" 
-                    class="button secondary ml-8" 
-                    label="Clear filters" 
+                <button (click)="applyFilters()" [disabled]="filtersForm.invalid" class="button ml-8"
+                        label="Apply Filters" pButton></button>
+                <button (click)="clearFilters()"
+                        [disabled]="!filtersForm.dirty"
+                        class="button secondary ml-8"
+                        label="Clear filters"
                     pButton></button>
             </form>
 
             <div style="margin-left: auto;">
-                <p-button 
+                <p-button
                     (click)="openPolicyWizardDialog()"
                     class="toolbar-btn-primary"
-                    [pTooltip]="'Policy Wizard'" 
+                    [pTooltip]="'Policy Wizard'"
                     tooltipPosition="bottom">
                     <svg-icon src="/assets/images/icons/wizard.svg" svgClass="color-white"></svg-icon>
                 </p-button>
-                <p-button 
-                    (click)="createNewPolicy()" 
+                <p-button
+                        (click)="createNewPolicy()"
                     class="toolbar-btn-primary"
-                    [pTooltip]="'Create a Policy'" 
+                        [pTooltip]="'Create a Policy'"
                     tooltipPosition="bottom">
                     <svg-icon src="/assets/images/icons/add.svg" svgClass="color-white"></svg-icon>
                 </p-button>
-                <p-button 
-                    (click)="importPolicy()" 
+                <p-button
+                        (click)="importPolicy()"
                     class="toolbar-btn-primary"
-                    [pTooltip]="'Import'" 
+                        [pTooltip]="'Import'"
                     tooltipPosition="bottom">
                     <svg-icon src="/assets/images/icons/import.svg" svgClass="color-white"></svg-icon>
                 </p-button>
-                <p-button 
-                    (click)="comparePolicy()" 
-                    [pTooltip]="'Compare'" 
+                <p-button
+                        (click)="comparePolicy()"
+                        [pTooltip]="'Compare'"
                     class="toolbar-btn-secondary"
-                    styleClass="p-button-outlined" 
+                        styleClass="p-button-outlined"
                     tooltipPosition="bottom">
                     <svg-icon src="/assets/images/icons/compare.svg" svgClass="primary-color"></svg-icon>
                 </p-button>
-                <p-button 
-                    (click)="openSuggestionsDialog()" 
-                    [pTooltip]="'Suggestions'" 
+                <p-button
+                        (click)="openSuggestionsDialog()"
+                        [pTooltip]="'Suggestions'"
                     class="toolbar-btn-secondary"
                     styleClass="p-button-text"
                     tooltipPosition="bottom">
@@ -134,18 +135,18 @@
                         </ng-template>
                         <ng-template let-policy pTemplate="body">
                             <tr class="policy-grid-row">
-                                <td *ngIf="canDisplayColumn('name')" 
+                                <td *ngIf="canDisplayColumn('name')"
                                     class="first-policy-grid-cell text-truncate"
-                                    pFrozenColumn 
+                                    pFrozenColumn
                                     pTooltip="{{ policy.name }}"
                                     tooltipPosition="top"
-                                    style="min-width: 140px; max-width: 150px;" 
+                                    style="min-width: 140px; max-width: 150px;"
                                 >
                                     {{ policy.name }}
                                 </td>
-                                <td *ngIf="canDisplayColumn('description')" 
+                                <td *ngIf="canDisplayColumn('description')"
                                     class="text-truncate"
-                                    pTooltip="{{ policy.description }}" 
+                                    pTooltip="{{ policy.description }}"
                                     tooltipPosition="top"
                                     style="min-width: 140px; max-width: 150px;"
                                 >
@@ -163,17 +164,17 @@
                                     {{ policy.version }}
                                 </td>
                                 <td *ngIf="canDisplayColumn('tags')" style="min-width: 185px;">
-                                    <tags-explorer 
-                                        [data]="policy._tags" 
-                                        [entity]="tagEntity" 
+                                    <tags-explorer
+                                            [data]="policy._tags"
+                                            [entity]="tagEntity"
                                         [owner]="owner"
-                                        [schemas]="tagSchemas" 
+                                            [schemas]="tagSchemas"
                                         [service]="tagsService"
                                         [target]="policy.id"></tags-explorer>
                                 </td>
                                 <td *ngIf="canDisplayColumn('tokens')" style="min-width: 140px;">
                                     <a class="grid-link-block"
-                                        [queryParams]="{ policy: policy.id }" 
+                                       [queryParams]="{ policy: policy.id }"
                                         [routerLink]="['/tokens']">
                                         <button class="button secondary" label="Open Tokens" pButton></button>
                                     </a>
@@ -182,8 +183,8 @@
                                     <a [queryParams]="{
                                 	        type: 'policy',
                                             topic: policy.topicId
-                                        }" 
-                                        [routerLink]="['/schemas']" 
+                                        }"
+                                       [routerLink]="['/schemas']"
                                         class="grid-link-block">
                                         <button class="button secondary" label="Open Schemas" pButton></button>
                                     </a>
@@ -193,17 +194,17 @@
                                         {{ getLabelStatus(policy.status) }}
                                     </div>
                                     <div *ngIf="role === 'STANDARD_REGISTRY'">
-                                        <p-dropdown 
-                                            (onChange)="onChangeStatus($event, policy)" 
+                                        <p-dropdown
+                                                (onChange)="onChangeStatus($event, policy)"
                                             *ngIf="
                                                 policy.status == 'DRAFT' ||
                                                 policy.status == 'DRY-RUN' ||
                                                 policy.status == 'PUBLISH_ERROR'
-                                            " 
-                                            [(ngModel)]="publishMenuSelector" 
-                                            [options]="getStatusOptions(policy)" 
-                                            [placeholder]="getStatusName(policy)" 
-                                            appendTo="body" 
+                                            "
+                                                [(ngModel)]="publishMenuSelector"
+                                                [options]="getStatusOptions(policy)"
+                                                [placeholder]="getStatusName(policy)"
+                                                appendTo="body"
                                             class="status-actions-dropdown"
                                         >
                                             <ng-template pTemplate="selectedItem">
@@ -229,28 +230,28 @@
                                     <div *ngIf="policy.status != 'DRAFT'" class="commands-line">
                                         <div *ngIf="role === 'USER'" style="width: 85px;">
                                             <!-- todo condition -->
-                                            <button 
-                                                [label]="policy.status == 'PUBLISH' ? 'Open' : 'Dry run'" 
-                                                [routerLink]="['/policy-viewer', policy.id]" 
-                                                class="p-button btn-go-policy" 
-                                                pButton 
+                                            <button
+                                                    [label]="policy.status == 'PUBLISH' ? 'Open' : 'Dry run'"
+                                                    [routerLink]="['/policy-viewer', policy.id]"
+                                                    class="p-button btn-go-policy"
+                                                    pButton
                                                 type="button"></button>
                                         </div>
                                         <div *ngIf="role === 'STANDARD_REGISTRY'">
                                             <a [routerLink]="['/policy-viewer', policy.id]" class="grid-link-block">
-                                                <button 
-                                                    class="button secondary" 
-                                                    icon="pi pi-chevron-right" 
-                                                    iconPos="right" 
+                                                <button
+                                                        class="button secondary"
+                                                        icon="pi pi-chevron-right"
+                                                        iconPos="right"
                                                     label="Register"
                                                     pButton></button>
                                             </a>
                                         </div>
                                         <div *ngIf="role === 'USER'">
-                                            <button 
-                                                (click)="createMultiPolicy(policy)" 
-                                                [label]=" policy.multiPolicyStatus ? 'Show Multi Policy' : 'Create Multi Policy'" 
-                                                class="p-button-outlined btn-create-multipolicy" 
+                                            <button
+                                                    (click)="createMultiPolicy(policy)"
+                                                    [label]=" policy.multiPolicyStatus ? 'Show Multi Policy' : 'Create Multi Policy'"
+                                                    class="p-button-outlined btn-create-multipolicy"
                                                 pButton
                                                 type="button"></button>
                                             <div *ngIf="policy.status == 'DRY-RUN'" class="btn-icon-delete-des">
@@ -261,26 +262,26 @@
                                 </td>
 
 
-                                <td *ngIf="canDisplayColumn('operations')" class="last-policy-grid-cell" 
+                                <td *ngIf="canDisplayColumn('operations')" class="last-policy-grid-cell"
                                     style="min-width: 130px; width: 130px; max-width: 130px;">
                                     <div class="commands-line">
-                                        <div 
-                                            [queryParams]="{ policyId: policy.id }" 
-                                            [routerLink]="['/policy-configuration']" 
-                                            class="btn-icon-edit" 
+                                        <div
+                                                [queryParams]="{ policyId: policy.id }"
+                                                [routerLink]="['/policy-configuration']"
+                                                class="btn-icon-edit"
                                             matTooltip="Policy configuration"
-                                            matTooltipClass="guardian-tooltip" 
+                                                matTooltipClass="guardian-tooltip"
                                             matTooltipHideDelay="100"
-                                            matTooltipPosition="above" 
+                                                matTooltipPosition="above"
                                             matTooltipShowDelay="500"
                                         >
                                             <svg-icon src="/assets/images/icons/edit.svg" svgClass="primary-color"></svg-icon>
                                         </div>
-                                        <div 
+                                        <div
                                             class="operations-icon-container"
-                                            matTooltip="Menu" 
+                                            matTooltip="Menu"
                                             matTooltipClass="guardian-tooltip"
-                                            matTooltipHideDelay="100" 
+                                            matTooltipHideDelay="100"
                                             matTooltipPosition="above"
                                             matTooltipShowDelay="500"
                                             [matMenuTriggerFor]="policyMenu"
@@ -295,9 +296,9 @@
                     </p-table>
                 </div>
 
-                <app-paginator 
-                    [pageIndex]="pageIndex" 
-                    [pageSize]="pageSize" 
+                <app-paginator
+                        [pageIndex]="pageIndex"
+                        [pageSize]="pageSize"
                     [length]="policiesCount"
                     (page)="onPage($event)"
                 ></app-paginator>
@@ -309,11 +310,11 @@
 
 <mat-menu #policyMenu="matMenu">
     <ng-template let-id="id" let-status="status" let-version="previousVersion" matMenuContent>
-        <p-button 
+        <p-button
             (click)="exportPolicy(id)"
-            label="Export policy" 
+            label="Export policy"
             class="policy-menu-btn"
-            styleClass="p-button-outlined" 
+            styleClass="p-button-outlined"
             [pTooltip]="'Export policy'"
             tooltipPosition="bottom">
             <svg-icon src="/assets/images/icons/export.svg" svgClass="primary-color"></svg-icon>
@@ -321,29 +322,29 @@
 
         <div class="policy-menu-delimiter"></div>
 
-        <p-button 
+        <p-button
             (click)="searchPolicy(id)"
-            label="Search policies" 
+            label="Search policies"
             class="policy-menu-btn"
-            styleClass="p-button-outlined" 
+            styleClass="p-button-outlined"
             [pTooltip]="'Search policies'"
             tooltipPosition="bottom">
             <svg-icon src="/assets/images/icons/search.svg" svgClass="primary-color"></svg-icon>
         </p-button>
 
-        <p-button 
-            [disabled]="true" 
-            label="Search policies" 
+        <p-button
+                [disabled]="true"
+                label="Search policies"
             class="policy-menu-btn"
             styleClass="p-button-outlined">
             <svg-icon src="/assets/images/icons/cloud.svg" svgClass="disabled-color"></svg-icon>
         </p-button>
 
-        <p-button 
+        <p-button
             (click)="comparePolicy(id)"
-            label="Compare policies" 
+            label="Compare policies"
             class="policy-menu-btn"
-            styleClass="p-button-outlined" 
+            styleClass="p-button-outlined"
             [pTooltip]="'Compare policies'"
             tooltipPosition="bottom">
             <svg-icon src="/assets/images/icons/compare.svg" svgClass="primary-color"></svg-icon>
@@ -351,16 +352,16 @@
 
         <div class="policy-menu-delimiter"></div>
 
-        <p-button 
-            (click)="status === 'DRAFT' ? deletePolicy(id, version) : null" 
-            [disabled]="status !=='DRAFT'" 
-            label="Delete Policy" 
+        <p-button
+                (click)="status === 'DRAFT' ? deletePolicy(id, version) : null"
+                [disabled]="status !=='DRAFT'"
+                label="Delete Policy"
             class="policy-menu-btn"
-            styleClass="p-button-outlined accent-color-red" 
+                styleClass="p-button-outlined accent-color-red"
             [pTooltip]="'Delete Policy'"
             tooltipPosition="bottom">
-            <svg-icon 
-                src="/assets/images/icons/delete.svg" 
+            <svg-icon
+                    src="/assets/images/icons/delete.svg"
                 [svgClass]="status === 'DRAFT' ? 'accent-color-red' : 'disabled-color'"></svg-icon>
         </p-button>
     </ng-template>

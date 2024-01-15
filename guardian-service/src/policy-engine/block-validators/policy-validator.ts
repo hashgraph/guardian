@@ -89,10 +89,11 @@ export class PolicyValidator {
             this.addError('Invalid policy config');
             return false;
         }
-        if (!policy.categories?.filter((e) => e).length) {
-            this.addError('The policy categories are empty');
-            return false;
-        }
+        // TODO: Add default categories or remove
+        // if (!policy.categories?.filter((e) => e).length) {
+        //     this.addError('The policy categories are empty');
+        //     return false;
+        // }
         this.addPermissions(policy.policyRoles);
         await this.registerBlock(policy.config);
         await this.registerSchemas();

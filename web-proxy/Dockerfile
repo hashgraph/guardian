@@ -1,4 +1,4 @@
-FROM node:16 AS interfacesModuleBuilder
+FROM node:20 AS interfacesModuleBuilder
 WORKDIR /usr/local/interfaces
 COPY ./interfaces/package*.json ./
 COPY ./interfaces/tsconfig*.json ./
@@ -6,7 +6,8 @@ ADD ./interfaces/src ./src/.
 RUN npm install
 RUN npm pack
 
-FROM node:16 as frontendBuilder
+FROM node:20 as frontendBuilder
+ENV NODE_OPTIONS="--openssl-legacy-provider"
 WORKDIR /usr/local/frontend
 COPY ./frontend/. /usr/local/frontend
 COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.tgz ./

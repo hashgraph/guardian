@@ -25,7 +25,6 @@ import { AlertComponent, AlertType } from 'src/app/modules/common/alert/alert.co
 import { CopySchemaDialog } from '../../modules/schema-engine/copy-schema-dialog/copy-schema-dialog';
 import { SchemaTreeComponent } from 'src/app/modules/schema-engine/schema-tree/schema-tree.component';
 import { DialogService } from 'primeng/dynamicdialog';
-import { DeleteSchemaDialogComponent } from '../../modules/schema-engine/delete-schema-dialog/delete-schema-dialog.component';
 
 enum SchemaType {
     System = 'system',
@@ -307,7 +306,10 @@ export class SchemaConfigComponent implements OnInit {
                 const policies: any[] = value[2] || [];
                 this.policyNameByTopic = {};
                 this.policyIdByTopic = {};
-                this.policies = [];
+                this.policies = [{
+                    name: 'Not set',
+                    topicId: null
+                }];
                 for (const policy of policies) {
                     if (policy.topicId) {
                         this.policyIdByTopic[policy.topicId] = policy.id;
@@ -653,15 +655,15 @@ export class SchemaConfigComponent implements OnInit {
             return;
         }
 
-        const dialogRef = this.dialogService.open(DeleteSchemaDialogComponent, {
-            header: 'Delete Schema',
-            width: '720px',
-            styleClass: 'custom-dialog',
-        });
-        dialogRef.onClose.subscribe((result) => {
-            if (!result) {
-                return;
-            }
+        // const dialogRef = this.dialogService.open(DeleteSchemaDialogComponent, {
+        //     header: 'Delete Schema',
+        //     width: '720px',
+        //     styleClass: 'custom-dialog',
+        // });
+        // dialogRef.onClose.subscribe((result) => {
+        //     if (!result) {
+        //         return;
+        //     }
 
             this.loading = true;
             switch (this.type) {
@@ -693,7 +695,7 @@ export class SchemaConfigComponent implements OnInit {
                     break;
                 }
             }
-        });
+        // });
     }
 
     private publishSchema(id: string, version: string): void {

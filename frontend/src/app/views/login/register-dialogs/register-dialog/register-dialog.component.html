@@ -11,21 +11,6 @@
             </span>
         </div>
         <div class="form-input-container">
-            <label class="p-field-label" for="email">Email</label>
-            <input class="p-field-input" formControlName="email" id="email" pInputText placeholder="Contact Email"
-                   type="text"/>
-            <span *ngIf="
-                  registerFormGroup.controls['email'].value.includes(' ')"
-                  class="danger-text">
-                Email has a whitespace symbols
-            </span>
-            <span *ngIf="registerFormGroup.controls['email'].value.length !== 0 && !
-                  registerFormGroup.controls['email'].value.match('([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\\.[a-zA-Z0-9_-]+)')"
-                  class="danger-text">
-                Wrong Email
-            </span>
-        </div>
-        <div class="form-input-container">
             <label class="p-field-label" for="password">Password</label>
             <input class="p-field-input" formControlName="password" id="password" pInputText placeholder="Password"
                    type="password"/>

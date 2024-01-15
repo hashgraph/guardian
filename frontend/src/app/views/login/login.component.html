@@ -20,15 +20,15 @@
                 <div class="current-user"
                     *ngFor="let user of testUsers$ | async as users; index as i; first as isFirst"
                     (click)="authState.doLogin(user.username, 'test')"
-                    [ngClass]="{ 
-                        'current-user-first' : isFirst, 
-                        'current-user-last': i === users.length - 1 
+                     [ngClass]="{
+                        'current-user-first' : isFirst,
+                        'current-user-last': i === users.length - 1
                     }">
                     <div class="current-user-name">
-                        <span>{{user.username}}</span> 
+                        <span>{{ user.username }}</span>
                         <span class="current-user-role">({{user.role}})</span>
                     </div>
-                    <div class="current-user-policy-roles" 
+                    <div class="current-user-policy-roles"
                         *ngIf="user.policyRoles && user.policyRoles.length"
                         [matTooltip]="getPoliciesRolesTooltip(user.policyRoles)"
                         matTooltipClass="policy-roles-tooltip">
@@ -60,19 +60,14 @@
                                pPassword placeholder="Password"/>
                         <button (click)="password.type === 'password' ? password.type = 'text' : password.type = 'password'"
                                 [icon]="'pi pi-eye'" class="p-button-rounded p-button-secondary p-button-text" pButton
+                                type="button"
                                 style="position: absolute; right: 20%;"></button>
-                    </div>
-                </div>
-                <div class="forgot-password-button">
-                    <span (click)="forgotPasswordInit()" class="primary-text-button">Forgot password</span>
-                    <div *ngIf="wrongNameOrPassword" class="wrong-notification">
-                        Wrong Username or Password
                     </div>
                 </div>
                 <div style="display: flex; column-gap: 10px; align-items: center;">
                     <button (click)="onLogin()"
                             [disabled]="!this.loginForm.controls['login'].value || !this.loginForm.controls['password'].value"
-                            class="button full-width" label="Log In" pButton></button>
+                            class="button full-width" label="Log In" pButton type="submit"></button>
                 </div>
                 <div class="sign-up">
                     <span>Don’t have an Account?</span>

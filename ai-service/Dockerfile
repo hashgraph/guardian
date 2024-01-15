@@ -1,4 +1,4 @@
-FROM node:16 AS interfacesModuleBuilder
+FROM node:20 AS interfacesModuleBuilder
 WORKDIR /usr/local/interfaces
 COPY ./interfaces/package.json ./
 COPY ./interfaces/tsconfig*.json ./
@@ -6,7 +6,7 @@ ADD ./interfaces/src ./src/.
 RUN yarn install
 RUN yarn pack
 
-FROM node:16 AS commonModuleBuilder
+FROM node:20 AS commonModuleBuilder
 WORKDIR /usr/local/common
 COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.tgz /tmp/interfaces.tgz
 COPY ./common/package.json ./

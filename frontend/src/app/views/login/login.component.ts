@@ -298,18 +298,19 @@ export class LoginComponent implements OnInit, OnDestroy {
 
                     return;
                 }
-                this.auth.login(userData.username, userData.password).subscribe((result) => {
-                    this.auth.setAccessToken(result.accessToken);
-                    this.auth.setUsername(userData.username);
-                    this.authState.updateState(true);
-                    if (result.role === UserRole.STANDARD_REGISTRY) {
-                        this.router.navigate(['/config']);
-                    } else {
-                        this.router.navigate(['/']);
-                    }
-                }, () => {
-                    this.loading = false;
-                })
+                this.login(userData.username, userData.password);
+                // this.auth.login(userData.username, userData.password).subscribe((result) => {
+                //     this.auth.setAccessToken(result.accessToken);
+                //     this.auth.setUsername(userData.username);
+                //     this.authState.updateState(true);
+                //     if (result.role === UserRole.STANDARD_REGISTRY) {
+                //         this.router.navigate(['/config']);
+                //     } else {
+                //         this.router.navigate(['/']);
+                //     }
+                // }, () => {
+                //     this.loading = false;
+                // })
             }, ({ error }) => {
                 this.error = error.message;
                 this.loading = false;

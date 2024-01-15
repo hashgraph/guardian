@@ -13,7 +13,7 @@ export class RegisterDialogComponent implements OnInit {
         username: new FormControl('', {validators: [Validators.pattern(`\\S+`), Validators.required]}),
         password: new FormControl('', {validators: [Validators.pattern(`\\S+`), Validators.required]}),
         confirmPassword: new FormControl('', {validators: [Validators.pattern(`\\S+`), Validators.required]}),
-        email: new FormControl('', {validators: [Validators.pattern(`([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\\.[a-zA-Z0-9_-]+)`), Validators.required]}),
+        // email: new FormControl('', {validators: [Validators.pattern(`([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\\.[a-zA-Z0-9_-]+)`), Validators.required]}),
     });
 
     constructor(private dialogRef: DynamicDialogRef, private dialogConfig: DynamicDialogConfig,) {
