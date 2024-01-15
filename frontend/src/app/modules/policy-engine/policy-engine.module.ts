@@ -128,6 +128,7 @@ import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 // Directives
 import { ResizingDirective } from './directives/resizing.directive';
+import { CONFIGURATION_ERRORS } from './injectors/configuration.errors.injector';
 
 @NgModule({
     declarations: [
@@ -259,6 +260,10 @@ import { ResizingDirective } from './directives/resizing.directive';
         WizardService,
         DialogService,
         PolicyProgressService,
+        {
+            provide: CONFIGURATION_ERRORS,
+            useValue: new Map()
+        }
     ],
 })
 export class PolicyEngineModule { }

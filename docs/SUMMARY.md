@@ -24,7 +24,7 @@
     * [🔨 How to Configure Hedera Local Node](guardian/readme/getting-started/how-to-configure-hedera-local-node.md)
     * [🔨 How to Configure HashiCorp Vault](guardian/readme/getting-started/how-to-configure-hashicorp-vault.md)
     * [🔨 How to create Operator ID and Operator Key](guardian/readme/getting-started/how-to-create-operator-id-and-operator-key.md)
-    * [🔨 How to generate Web3.Storage API Key](guardian/readme/getting-started/how-to-generate-web3.storage-api-key.md)
+    * [🔨 How to generate Web3.Storage API values](guardian/readme/getting-started/how-to-generate-web3.storage-api-key.md)
     * [🔨 How to Change Explorer URL](guardian/readme/getting-started/how-to-change-explorer-url.md)
     * [🔨 How to Restore Account from Database/Hashicorp Vault during Setup](guardian/readme/getting-started/how-to-restore-account-from-database-hashicorp-vault-during-setup.md)
   * [🙏 Contributing](guardian/readme/contributing/README.md)

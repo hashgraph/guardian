@@ -1,5 +1,5 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { ChangeDetectorRef, Component, OnInit, Inject } from '@angular/core';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { IUser, Schema, SchemaHelper, TagType, Token, UserRole } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
@@ -25,6 +25,7 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { SuggestionsConfigurationComponent } from '../../../views/suggestions-configuration/suggestions-configuration.component';
 import { DeletePolicyDialogComponent } from '../helpers/delete-policy-dialog/delete-policy-dialog.component';
 import { SetVersionDialog } from '../../schema-engine/set-version-dialog/set-version-dialog.component';
+import { CONFIGURATION_ERRORS } from '../injectors/configuration.errors.injector';
 
 /**
  * Component for choosing a policy and
@@ -137,6 +138,8 @@ export class PoliciesComponent implements OnInit {
         private tokenService: TokenService,
         private analyticsService: AnalyticsService,
         private changeDetector: ChangeDetectorRef
+        @Inject(CONFIGURATION_ERRORS)
+        private _configurationErrors: Map<string, any>
     ) {
         this.policies = null;
         this.pageIndex = 0;
@@ -294,6 +297,13 @@ export class PoliciesComponent implements OnInit {
                         text.join(''),
                         'The policy is invalid'
                     );
+                    this._configurationErrors.set(element.id, errors);
+                    this.router.navigate(['policy-configuration'], {
+                        queryParams: {
+                            policyId: element.id,
+                        },
+                        replaceUrl: true,
+                    });
                 }
                 this.loadAllPolicy();
             },

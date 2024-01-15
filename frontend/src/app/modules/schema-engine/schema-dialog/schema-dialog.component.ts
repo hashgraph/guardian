@@ -89,7 +89,13 @@ export class SchemaDialog {
         } catch (error) {
             console.error(error);
         }
-        this.ref.close(schema);
+        this.ref.close(
+            {
+                ...schema,
+                fields: [],
+                conditions: []
+            }
+        );
     }
 
     onChangeForm(schemaControl: SchemaConfigurationComponent) {

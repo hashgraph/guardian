@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, SimpleChanges, } from '@angular/core';
+import { Component, EventEmitter, Inject, Input, OnDestroy, OnInit, Output, SimpleChanges, } from '@angular/core';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { forkJoin, Subscription } from 'rxjs';
 import { IStatus, StatusType, TaskAction, UserRole, } from '@guardian/interfaces';
@@ -7,6 +7,7 @@ import { TasksService } from 'src/app/services/tasks.service';
 import { InformService } from 'src/app/services/inform.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { WizardService } from '../../policy-engine/services/wizard.service';
+import { CONFIGURATION_ERRORS } from '../../policy-engine/injectors/configuration.errors.injector';
 
 @Component({
     selector: 'async-progress',
@@ -38,7 +39,9 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
         private router: Router,
         private informService: InformService,
         private auth: AuthService,
-        private wizardService: WizardService
+        private wizardService: WizardService,
+        @Inject(CONFIGURATION_ERRORS)
+        private _configurationErrors: Map<string, any>
     ) {
         this.last = this.route?.snapshot?.queryParams?.last;
         try {
@@ -235,6 +238,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                             text.join(''),
                             'The policy is invalid'
                         );
+                        this._configurationErrors.set(policyId, errors);
                     }
                     this.router.navigate(['policy-configuration'], {
                         queryParams: {
@@ -270,6 +274,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                             text.join(''),
                             'The tool is invalid'
                         );
+                        this._configurationErrors.set(tool?.id, errors);
                     }
                     this.router.navigate(['policy-configuration'], {
                         queryParams: {
