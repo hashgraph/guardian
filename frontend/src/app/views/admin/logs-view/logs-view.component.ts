@@ -77,7 +77,7 @@ export class LogsViewComponent implements OnInit, OnDestroy {
 
     onFilter(event: any) {
         event.originalEvent.preventDefault();
-        console.log(event);
+
         this.autoCompleteControl.setValue(event.filter);
         return false;
     }
@@ -90,11 +90,9 @@ export class LogsViewComponent implements OnInit, OnDestroy {
             });
 
         this.subscriptions.add(this.autoCompleteControl.valueChanges.pipe(debounceTime(500)).subscribe(searchValue => {
-            console.log(this.searchInput);
             this.logService.getAttributes(
                 searchValue,
                 this.searchForm?.get('attributes')?.value).subscribe(attrs => {
-                console.log(attrs);
                 this.searchInput._filteredOptions = attrs;
                 this.attributes = attrs;
             });
@@ -102,10 +100,14 @@ export class LogsViewComponent implements OnInit, OnDestroy {
 
         this.route.queryParams.subscribe((params) => {
             if (params.attr) {
-                this.searchForm.patchValue({
-                    attributes: [params.attr],
-                });
-                this.onApply();
+                setTimeout(() => {
+                    this.searchForm.patchValue({
+                        attributes: [params.attr],
+                    });
+                    this.attributes.push(params.attr);
+                    this.onApply();
+                }, 500)
+
             }
             if (params.message) {
                 try {
@@ -113,7 +115,9 @@ export class LogsViewComponent implements OnInit, OnDestroy {
                     this.searchForm.patchValue({
                         message,
                     });
-                    this.onApply();
+                    setTimeout(() => {
+                        this.onApply();
+                    }, 500)
                 } catch (error) {
                     return;
                 }
@@ -124,10 +128,11 @@ export class LogsViewComponent implements OnInit, OnDestroy {
 
     ngOnDestroy() {
         this.subscriptions.unsubscribe();
+
     }
 
     ngAfterViewInit() {
-        merge(this.onSearch)
+        this.subscriptions.add(merge(this.onSearch)
             .pipe(
                 startWith({}),
                 switchMap(() => {
@@ -156,7 +161,8 @@ export class LogsViewComponent implements OnInit, OnDestroy {
                         .format('YYYY-MM-DD HH:mm:ss');
                     return item;
                 });
-            });
+            })
+        );
     }
 
     remove(attribute: string) {
