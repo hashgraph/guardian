@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { DocumentGenerator, IUser } from '@guardian/interfaces';
+import { DocumentGenerator, Schema, IUser } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -146,7 +146,7 @@ export class RequestDocumentBlockComponent implements OnInit {
             const active = data.active;
             this.ref = row;
             this.type = uiMetaData.type;
-            this.schema = schema;
+            this.schema = new Schema(schema);
             this.hideFields = {};
             if (uiMetaData.privateFields) {
                 for (let index = 0; index < uiMetaData.privateFields.length; index++) {

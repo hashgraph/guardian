@@ -133,7 +133,7 @@ export class SchemaFormComponent implements OnInit {
         this.conditionFields = [];
 
         if (this.conditions) {
-            this.conditions.forEach((cond: any) => {
+            this.conditions = this.conditions.map((cond: any) => {
                 if (this.presetDocument) {
                     cond.preset = {};
                     for (const thenField of cond.thenFields) {
@@ -145,10 +145,11 @@ export class SchemaFormComponent implements OnInit {
                             this.presetDocument[elseField?.name];
                     }
                 }
-                cond.conditionForm = new FormGroup({});
-                this.subscribeCondition(cond.conditionForm);
+                const conditionForm = new FormGroup({});
+                this.subscribeCondition(conditionForm);
                 this.conditionFields.push(...cond.thenFields);
                 this.conditionFields.push(...cond.elseFields);
+                return Object.assign({ conditionForm }, cond);
             });
         }
 

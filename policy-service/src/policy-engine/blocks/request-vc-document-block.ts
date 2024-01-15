@@ -134,7 +134,7 @@ export class RequestVcDocumentBlock {
         return {
             id: ref.uuid,
             blockType: ref.blockType,
-            schema: this._schema,
+            schema: { ...this._schema, fields: [], conditions: [] },
             presetSchema: options.presetSchema,
             presetFields: options.presetFields,
             uiMetaData: options.uiMetaData || {},
