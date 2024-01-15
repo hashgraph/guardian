@@ -1,5 +1,5 @@
 import { CdkDropList } from '@angular/cdk/drag-drop';
-import { ChangeDetectorRef, Component, HostListener, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, Inject, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PolicyCategoryType, Schema, SchemaHelper, Token } from '@guardian/interfaces';
@@ -24,8 +24,6 @@ import { SuggestionsService } from '../../../../services/suggestions.service';
 import { PolicyFolder, PolicyItem, PolicyRoot } from '../../structures/policy-models/interfaces/types';
 import { ToolsService } from 'src/app/services/tools.service';
 import { DialogService } from 'primeng/dynamicdialog';
-import { StopResizingEvent } from '../../directives/resizing.directive';
-import { OrderOption } from '../../structures/interfaces/order-option.interface';
 import { CONFIGURATION_ERRORS } from '../../injectors/configuration.errors.injector';
 
 /**
@@ -202,7 +200,6 @@ export class PolicyConfigurationComponent implements OnInit {
         private policyEngineService: PolicyEngineService,
         private modulesService: ModulesService,
         private toolsService: ToolsService,
-        private analyticsService: AnalyticsService,
         @Inject(CONFIGURATION_ERRORS)
         private _configurationErrors: Map<string, any>
     ) {
@@ -1071,8 +1068,8 @@ export class PolicyConfigurationComponent implements OnInit {
         return JSON.stringify(root, null, 2);
     }
 
-    private yamlToJson(yaml: string): string {
-        const root = this.yamlToObject(yaml);
+    private yamlToJson(_yaml: string): string {
+        const root = this.yamlToObject(_yaml);
         return this.objectToJson(root);
     }
 

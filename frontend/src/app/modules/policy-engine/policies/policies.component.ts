@@ -1,5 +1,5 @@
-import { ChangeDetectorRef, Component, OnInit, Inject } from '@angular/core';
-import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
+import { ChangeDetectorRef, Component, Inject, OnInit } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { IUser, Schema, SchemaHelper, TagType, Token, UserRole } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
@@ -137,7 +137,7 @@ export class PoliciesComponent implements OnInit {
         private wizardService: WizardService,
         private tokenService: TokenService,
         private analyticsService: AnalyticsService,
-        private changeDetector: ChangeDetectorRef
+        private changeDetector: ChangeDetectorRef,
         @Inject(CONFIGURATION_ERRORS)
         private _configurationErrors: Map<string, any>
     ) {
