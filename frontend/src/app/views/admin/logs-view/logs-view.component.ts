@@ -1,12 +1,12 @@
-import { Component, EventEmitter, OnInit, ViewChild } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormControl } from '@angular/forms';
 import { MatAutocompleteSelectedEvent, MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { saveAs } from 'file-saver';
 import { ILog } from '@guardian/interfaces';
 import * as moment from 'moment';
-import { merge, of } from 'rxjs';
-import { catchError, map, startWith, switchMap } from 'rxjs/operators';
+import { merge, of, Subscription } from 'rxjs';
+import { catchError, debounceTime, map, startWith, switchMap } from 'rxjs/operators';
 import { LoggerService } from 'src/app/services/logger.service';
 import { DetailsLogDialog } from '../details-log-dialog/details-log-dialog.component';
 import { ActivatedRoute } from '@angular/router';
@@ -20,7 +20,9 @@ import { DialogService } from 'primeng/dynamicdialog';
     templateUrl: './logs-view.component.html',
     styleUrls: ['./logs-view.component.scss'],
 })
-export class LogsViewComponent implements OnInit {
+export class LogsViewComponent implements OnInit, OnDestroy {
+    @ViewChild('searchInput') searchInput: any;
+
     loading: boolean = true;
     logs: ILog[] = [];
     logColumns: string[] = [
@@ -59,6 +61,8 @@ export class LogsViewComponent implements OnInit {
     selectedMessageType: any = this.types[3];
     dateRange: any;
 
+    private subscriptions = new Subscription();
+
     get currentDate() {
         return new Date();
     };
@@ -71,12 +75,30 @@ export class LogsViewComponent implements OnInit {
     ) {
     }
 
+    onFilter(event: any) {
+        event.originalEvent.preventDefault();
+        console.log(event);
+        this.autoCompleteControl.setValue(event.filter);
+        return false;
+    }
+
     ngOnInit() {
         this.logService.getAttributes(
             this.autoCompleteControl.value,
             this.searchForm?.get('attributes')?.value).subscribe(attrs => {
                 this.attributes = attrs;
             });
+
+        this.subscriptions.add(this.autoCompleteControl.valueChanges.pipe(debounceTime(500)).subscribe(searchValue => {
+            console.log(this.searchInput);
+            this.logService.getAttributes(
+                searchValue,
+                this.searchForm?.get('attributes')?.value).subscribe(attrs => {
+                console.log(attrs);
+                this.searchInput._filteredOptions = attrs;
+                this.attributes = attrs;
+            });
+        }));
 
         this.route.queryParams.subscribe((params) => {
             if (params.attr) {
@@ -98,6 +120,10 @@ export class LogsViewComponent implements OnInit {
             }
         });
         this.loading = false;
+    }
+
+    ngOnDestroy() {
+        this.subscriptions.unsubscribe();
     }
 
     ngAfterViewInit() {

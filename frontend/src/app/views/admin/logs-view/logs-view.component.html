@@ -19,7 +19,10 @@
     <div class="actions-container">
         <form [formGroup]="searchForm">
             <div class="flex flex-column-gap-8" style="flex-wrap: wrap; row-gap: 8px;">
-                <p-multiSelect [formControlName]="'attributes'" [options]="attributes" [placeholder]="'Attributes'">
+                <p-multiSelect #searchInput (onFilter)="onFilter($event)"
+                               [filter]="true" [options]="attributes"
+                               emptyMessage=""
+                               formControlName="attributes" placeholder="Attributes">
                     <ng-template let-item pTemplate="selectedItem">
                         <div class="country-item country-item-value">
                             <span class="grey-6">{{ item }}</span>
@@ -114,9 +117,9 @@
                 </ng-container>
             </table>
 
-            <app-paginator 
-                [pageIndex]="pageIndex" 
-                [pageSize]="pageSize" 
+            <app-paginator
+                    [pageIndex]="pageIndex"
+                    [pageSize]="pageSize"
                 [length]="totalCount"
                 (page)="onPage($event)"
             ></app-paginator>
