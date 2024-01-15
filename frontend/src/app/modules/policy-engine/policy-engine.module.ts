@@ -109,6 +109,7 @@ import { RecordResultDialog } from './record/record-result-dialog/record-result-
 import { RecordResultsComponent } from './record/record-results/record-results.component';
 // Directives
 import { ResizingDirective } from './directives/resizing.directive';
+import { CONFIGURATION_ERRORS } from './injectors/configuration.errors.injector';
 
 @NgModule({
     declarations: [
@@ -220,7 +221,10 @@ import { ResizingDirective } from './directives/resizing.directive';
     ],
     providers: [
         RegisteredService,
-        WizardService
+        WizardService, {
+            provide: CONFIGURATION_ERRORS,
+            useValue: new Map()
+        }
     ]
 })
 export class PolicyEngineModule { }

@@ -1,5 +1,5 @@
 import { CdkDragDrop, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
-import { ChangeDetectorRef, Component, HostListener, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, Inject, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Schema, SchemaHelper, Token } from '@guardian/interfaces';
@@ -40,6 +40,7 @@ import { AnalyticsService } from '../../../../services/analytics.service';
 import { WizardMode, WizardService } from 'src/app/modules/policy-engine/services/wizard.service';
 import { StopResizingEvent } from '../../directives/resizing.directive';
 import { OrderOption } from '../../structures/interfaces/order-option.interface';
+import { CONFIGURATION_ERRORS } from '../../injectors/configuration.errors.injector';
 
 /**
  * The page for editing the policy and blocks.
@@ -206,7 +207,9 @@ export class PolicyConfigurationComponent implements OnInit {
         private policyEngineService: PolicyEngineService,
         private modulesService: ModulesService,
         private toolsService: ToolsService,
-        private analyticsService: AnalyticsService
+        private analyticsService: AnalyticsService,
+        @Inject(CONFIGURATION_ERRORS)
+        private _configurationErrors: Map<string, any>
     ) {
         this.options = new Options();
         this.storage = new PolicyStorage(localStorage);
@@ -247,6 +250,19 @@ export class PolicyConfigurationComponent implements OnInit {
         this.policyId = this.route.snapshot.queryParams.policyId;
         this.moduleId = this.route.snapshot.queryParams.moduleId;
         this.toolId = this.route.snapshot.queryParams.toolId;
+
+        if (this._configurationErrors.has(this.policyId)) {
+            this.setErrors(this._configurationErrors.get(this.policyId), 'policy');
+            this._configurationErrors.delete(this.policyId);
+        }
+        if (this._configurationErrors.has(this.moduleId)) {
+            this.setErrors(this._configurationErrors.get(this.moduleId), 'module');
+            this._configurationErrors.delete(this.moduleId);
+        }
+        if (this._configurationErrors.has(this.toolId)) {
+            this.setErrors(this._configurationErrors.get(this.toolId), 'tool');
+            this._configurationErrors.delete(this.toolId);
+        }
 
         if (this.policyId) {
             this.rootType = 'Policy';

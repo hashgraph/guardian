@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { IUser, Schema, SchemaHelper, TagType, Token, UserRole } from '@guardian/interfaces';
@@ -23,6 +23,7 @@ import { FormControl, FormGroup } from '@angular/forms';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 import { SearchPolicyDialog } from '../../analytics/search-policy-dialog/search-policy-dialog.component';
 import { mobileDialog } from 'src/app/utils/mobile-utils';
+import { CONFIGURATION_ERRORS } from '../injectors/configuration.errors.injector';
 
 /**
  * Component for choosing a policy and
@@ -105,7 +106,9 @@ export class PoliciesComponent implements OnInit {
         private schemaService: SchemaService,
         private wizardService: WizardService,
         private tokenService: TokenService,
-        private analyticsService: AnalyticsService
+        private analyticsService: AnalyticsService,
+        @Inject(CONFIGURATION_ERRORS)
+        private _configurationErrors: Map<string, any>
     ) {
         this.policies = null;
         this.pageIndex = 0;
@@ -234,6 +237,13 @@ export class PoliciesComponent implements OnInit {
                     }
                 }
                 this.informService.errorMessage(text.join(''), 'The policy is invalid');
+                this._configurationErrors.set(element.id, errors);
+                this.router.navigate(['policy-configuration'], {
+                    queryParams: {
+                        policyId: element.id,
+                    },
+                    replaceUrl: true,
+                });
             }
             this.loadAllPolicy();
         }, (e) => {
