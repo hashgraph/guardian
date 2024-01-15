@@ -21,24 +21,26 @@
                     <div class="statuses">
                         <div *ngFor="let state of service.states" [ngSwitch]="state" [pTooltip]="state">
                             <svg-icon *ngSwitchCase="'READY'"
-                                src="/assets/images/icons/check.svg" 
+                                      src="/assets/images/icons/check.svg"
                                 svgClass="success-color">
                             </svg-icon>
                             <svg-icon *ngSwitchCase="'BAD_CONFIGURATION'"
-                                src="/assets/images/icons/warning.svg" 
+                                      src="/assets/images/icons/warning.svg"
                                 svgClass="warning-color">
                             </svg-icon>
                             <div *ngSwitchCase="'INITIALIZING'" class="preloader-image"></div>
                             <div *ngSwitchCase="'STARTED'" class="preloader-image"></div>
                             <svg-icon *ngSwitchCase="'STOPPED'"
-                                src="/assets/images/icons/time.svg" 
+                                      src="/assets/images/icons/time.svg"
                                 svgClass="error-color">
                             </svg-icon>
                         </div>
                     </div>
                 </div>
                 <div class="actions-container">
-                    <button [queryParams]="{ attr: service.serviceName }" [routerLink]="'/admin/logs'" class="button secondary" label="View Logs"
+                    <button *ngIf="service.serviceName !== 'LOGGER_SERVICE'"
+                            [queryParams]="{ attr: service.serviceName }" [routerLink]="'/admin/logs'"
+                            class="button secondary" label="View Logs"
                             pButton type="button"></button>
                 </div>
             </div>

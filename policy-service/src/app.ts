@@ -1,8 +1,4 @@
-import {
-    MessageBrokerChannel,
-    ApplicationState,
-    Logger, LargePayloadContainer
-} from '@guardian/common';
+import { ApplicationState, LargePayloadContainer, Logger, MessageBrokerChannel } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { PolicyContainer } from '@helpers/policy-container';
 import { startMetricsServer } from './utils/metrics';
@@ -32,7 +28,7 @@ Promise.all([
     if (Number.isInteger(maxPayload)) {
         new LargePayloadContainer().runServer();
     }
-    await new Logger().info('Policy service started', ['GUARDIAN_SERVICE']);
+    await new Logger().info('Policy service started', ['POLICY_SERVICE']);
 
     await state.updateState(ApplicationStates.READY);
 

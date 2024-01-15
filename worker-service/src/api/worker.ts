@@ -135,19 +135,19 @@ export class Worker extends NatsService {
             this.isInUse = true;
             this.currentTaskId = task.id;
 
-            this.logger.info(`Task started: ${task.id}, ${task.type}`, [process.env.SERVICE_CHANNEL]);
+            this.logger.info(`Task started: ${task.id}, ${task.type}`, [process.env.SERVICE_CHANNEL, 'WORKER']);
 
             const result = await this.processTaskWithTimeout(task);
 
             try {
                 // await this.publish([task.reply, WorkerEvents.TASK_COMPLETE].join('-'), result);
                 if (result?.error) {
-                    this.logger.error(`Task error: ${this.currentTaskId}, ${result?.error}`, [process.env.SERVICE_CHANNEL]);
+                    this.logger.error(`Task error: ${this.currentTaskId}, ${result?.error}`, [process.env.SERVICE_CHANNEL, 'WORKER']);
                 } else {
-                    this.logger.info(`Task completed: ${this.currentTaskId}`, [process.env.SERVICE_CHANNEL]);
+                    this.logger.info(`Task completed: ${this.currentTaskId}`, [process.env.SERVICE_CHANNEL, 'WORKER']);
                 }
             } catch (error) {
-                this.logger.error(error.message, [process.env.SERVICE_CHANNEL]);
+                this.logger.error(error.message, [process.env.SERVICE_CHANNEL, 'WORKER']);
                 this.clearState();
 
             }

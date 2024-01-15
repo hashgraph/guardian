@@ -86,14 +86,14 @@ Promise.all([
             new LargePayloadContainer().runServer();
         }
         await state.updateState(ApplicationStates.READY);
-        logger.info('Worker started', [channelName]);
+        logger.info('Worker started', [channelName, 'WORKER']);
     });
 
     validator.setInvalidAction(async () => {
         timer = setInterval(async () => {
             await state.updateState(ApplicationStates.BAD_CONFIGURATION);
         }, 1000);
-        logger.error('Worker not configured', [channelName]);
+        logger.error('Worker not configured', [channelName, 'WORKER']);
     })
 
     await validator.validate();
