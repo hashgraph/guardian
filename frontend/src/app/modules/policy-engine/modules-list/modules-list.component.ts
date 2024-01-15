@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { IUser, SchemaHelper, TagType } from '@guardian/interfaces';
@@ -14,6 +14,7 @@ import { TagsService } from 'src/app/services/tag.service';
 import { forkJoin } from 'rxjs';
 import { CompareModulesDialogComponent } from '../helpers/compare-modules-dialog/compare-modules-dialog.component';
 import { mobileDialog } from 'src/app/utils/mobile-utils';
+import { CONFIGURATION_ERRORS } from '../injectors/configuration.errors.injector';
 
 enum OperationMode {
     None,
@@ -61,6 +62,8 @@ export class ModulesListComponent implements OnInit, OnDestroy {
         private dialog: MatDialog,
         private informService: InformService,
         private router: Router,
+        @Inject(CONFIGURATION_ERRORS)
+        private _configurationErrors: Map<string, any>
     ) {
         this.modules = null;
         this.pageIndex = 0;
@@ -306,6 +309,13 @@ export class ModulesListComponent implements OnInit, OnDestroy {
                     }
                 }
                 this.informService.errorMessage(text.join(''), 'The module is invalid');
+                this._configurationErrors.set(element.uuid, errors);
+                this.router.navigate(['policy-configuration'], {
+                    queryParams: {
+                        moduleId: element.uuid,
+                    },
+                    replaceUrl: true,
+                });
             }
             this.loadAllModules();
         }, (e) => {
