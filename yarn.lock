@@ -5439,10 +5439,10 @@ fast-xml-parser@4.2.5:
   dependencies:
     strnum "^1.0.5"
 
-fast-xml-parser@^4.2.6:
-  version "4.3.2"
-  resolved "https://registry.yarnpkg.com/fast-xml-parser/-/fast-xml-parser-4.3.2.tgz#761e641260706d6e13251c4ef8e3f5694d4b0d79"
-  integrity sha512-rmrXUXwbJedoXkStenj1kkljNF7ugn5ZjR9FJcwmCfcCbtOMDghPajbc+Tck6vE6F5XsDmx+Pr2le9fw8+pXBg==
+fast-xml-parser@^4.3.3:
+  version "4.3.3"
+  resolved "https://registry.yarnpkg.com/fast-xml-parser/-/fast-xml-parser-4.3.3.tgz#aeaf5778392329f17168c40c51bcbfec8ff965be"
+  integrity sha512-coV/D1MhrShMvU6D0I+VAK3umz6hUaxxhL0yp/9RjfiYUfAv14rDhGQL+PLForhMdr0wq3PiV07WtkkNjJjNHg==
   dependencies:
     strnum "^1.0.5"
 
@@ -8936,9 +8936,14 @@ one-time@^1.0.0:
   dependencies:
     fn.name "1.x.x"
 
-one-webcrypto@^1.0.3, "one-webcrypto@git+https://github.com/web3-storage/one-webcrypto.git":
+one-webcrypto@^1.0.3:
   version "1.0.3"
   resolved "git+https://github.com/web3-storage/one-webcrypto.git#5148cd14d5489a8ac4cd38223870e02db15a2382"
+
+"one-webcrypto@https://github.com/web3-storage/one-webcrypto":
+  version "1.0.3"
+  uid "5148cd14d5489a8ac4cd38223870e02db15a2382"
+  resolved "https://github.com/web3-storage/one-webcrypto#5148cd14d5489a8ac4cd38223870e02db15a2382"
 
 onetime@^5.1.0:
   version "5.1.2"
