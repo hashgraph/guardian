@@ -4,17 +4,13 @@
             <h1 *ngIf="title" mat-dialog-title>{{title}}</h1>
             <div *ngIf="description" class="description">{{description}}</div>
             <div class="schema-form">
-                <app-token-configuration [dataForm]="dataForm" [preset]="templatePreset"
+                <app-token-configuration [dataForm]="dataForm" [preset]="templatePreset" [contracts]="contracts"
                     [hide-type]="true"></app-token-configuration>
             </div>
             <div class="page-btns">
                 <button mat-raised-button color="primary" type="submit" [disabled]="!dataForm.valid">Ok</button>
             </div>
         </form>
-    </ng-container>
-    <ng-container *ngIf="type=='dialog'">
-        <button mat-raised-button color="primary" class="btn-block-{{buttonClass}}"
-            (click)="onDialog()">{{content}}</button>
     </ng-container>
 </div>
 

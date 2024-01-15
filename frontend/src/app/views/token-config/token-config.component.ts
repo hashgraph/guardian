@@ -3,7 +3,7 @@ import { AuthService } from '../../services/auth.service';
 import { ProfileService } from '../../services/profile.service';
 import { TokenService } from '../../services/token.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { SchemaHelper, TagType, Token } from '@guardian/interfaces';
+import { ContractType, SchemaHelper, TagType, Token } from '@guardian/interfaces';
 import { InformService } from 'src/app/services/inform.service';
 import { TasksService } from 'src/app/services/tasks.service';
 import { forkJoin } from 'rxjs';
@@ -12,6 +12,7 @@ import { TagsService } from 'src/app/services/tag.service';
 import { DialogService } from 'primeng/dynamicdialog';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { noWhitespaceValidator } from '../../validators/no-whitespace-validator';
+import { ContractService } from 'src/app/services/contract.service';
 
 enum OperationMode {
     None, Kyc, Freeze
@@ -64,7 +65,8 @@ export class TokenConfigComponent implements OnInit {
         changeSupply: new FormControl(true, [Validators.required]),
         enableFreeze: new FormControl(false, [Validators.required]),
         enableKYC: new FormControl(false, [Validators.required]),
-        enableWipe: new FormControl(true, [Validators.required])
+        enableWipe: new FormControl(true, [Validators.required]),
+        wipeContractId: new FormControl(''),
     });
     public dataFormPristine: any = this.dataForm.value;
     public readonlyForm: boolean = false;
@@ -73,6 +75,7 @@ export class TokenConfigComponent implements OnInit {
     public tokensCount: any;
     public pageIndex: number;
     public pageSize: number;
+    public contracts: any[] = [];
 
     constructor(
         public tagsService: TagsService,
@@ -82,6 +85,7 @@ export class TokenConfigComponent implements OnInit {
         private informService: InformService,
         private taskService: TasksService,
         private policyEngineService: PolicyEngineService,
+        private contractService: ContractService,
         private route: ActivatedRoute,
         private router: Router,
         public dialog: DialogService
@@ -149,29 +153,32 @@ export class TokenConfigComponent implements OnInit {
 
     private loadTokens() {
         this.loading = true;
-        this.tokenService.getTokensPage(this.currentPolicy, this.pageIndex, this.pageSize)
-            .subscribe((tokensResponse) => {
-                const data = tokensResponse.body || [];
-                this.tokens = data.map((e: any) => new Token(e));
-                this.tokensCount =
-                    tokensResponse.headers.get('X-Total-Count') ||
-                    this.tokens.length;
-                const ids = this.tokens.map(e => e.id);
-                this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
-                    for (const token of this.tokens) {
-                        (token as any)._tags = data[token.id];
-                    }
-                    setTimeout(() => {
-                        this.loading = false;
-                    }, 500);
-                }, (e) => {
-                    console.error(e.error);
+        forkJoin([
+            this.tokenService.getTokensPage(this.currentPolicy, this.pageIndex, this.pageSize),
+            this.contractService.getContracts({
+                type: ContractType.WIPE
+            })
+        ]).subscribe((value) => {
+            this.contracts = value[1] && value[1].body || [];
+            const tokensResponse = value[0];
+            const data = tokensResponse.body || [];
+            this.tokens = data.map((e: any) => new Token(e));
+            this.tokensCount =
+                tokensResponse.headers.get('X-Total-Count') ||
+                this.tokens.length;
+            const ids = this.tokens.map(e => e.id);
+            this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
+                for (const token of this.tokens) {
+                    (token as any)._tags = data[token.id];
+                }
+                setTimeout(() => {
                     this.loading = false;
-                });
+                }, 500);
             }, (e) => {
                 console.error(e.error);
                 this.loading = false;
             });
+        });
     }
 
     public onFilter() {

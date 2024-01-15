@@ -1116,7 +1116,7 @@ export async function contractAPI(
                         hederaAccountKey: rootKey,
                         topicKey: rootKey,
                         memo: topic.topicId,
-                        gas: type === ContractType.WIPE ? 1000000 : 2000000,
+                        gas: type === ContractType.WIPE ? 1000000 : 3000000,
                     },
                 },
                 20
