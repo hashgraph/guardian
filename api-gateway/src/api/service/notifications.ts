@@ -46,11 +46,11 @@ export class NotificationsApi {
     @HttpCode(HttpStatus.OK)
     async getAllNotifications(@Req() req, @Response() res) {
         try {
-            let pageIndex: any;
-            let pageSize: any;
+            let pageIndex: number;
+            let pageSize: number;
             if (req.query && req.query.pageIndex && req.query.pageSize) {
-                pageIndex = req.query.pageIndex;
-                pageSize = req.query.pageSize;
+                pageIndex = Number.parseInt(req.query.pageIndex, 10);
+                pageSize = Number.parseInt(req.query.pageSize, 10);
             }
             const [notifications, count] = await this.notifier.all(
                 req.user.id,

@@ -7,7 +7,7 @@ import { IModuleVariables, PolicyBlock } from '../../../../structures';
 @Component({
     selector: 'switch-config',
     templateUrl: './switch-config.component.html',
-    styleUrls: ['./switch-config.component.css'],
+    styleUrls: ['./switch-config.component.scss'],
     encapsulation: ViewEncapsulation.Emulated
 })
 export class SwitchConfigComponent implements OnInit {

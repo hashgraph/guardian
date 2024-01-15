@@ -1,179 +1,220 @@
-<div class="content" *ngIf="!loading">
-    <ng-container *ngIf="isConfirmed; else elseTemplate">
-        <div *ngIf="!tokenId">
-            <div class="actions">
-                <mat-form-field appearance="outline">
-                    <mat-label>Policy</mat-label>
-                    <mat-select [(value)]="currentPolicy" (selectionChange)="onFilter()">
-                        <mat-option value="">All policies</mat-option>
-                        <mat-option *ngFor="let policy of policies" [value]="policy.id">
-                            <span>{{policy.name}}</span>
-                            <span> ({{policy.id}})</span>
-                        </mat-option>
-                    </mat-select>
-                </mat-form-field>
-                <div class="new-token-button" style="text-align: end">
-                    <button mat-raised-button color="primary" (click)="newToken()"
-                        style="margin: 6px 15px 15px 15px; min-width: 100px;">
-                        Create Token
-                    </button>
-                </div>
-            </div>
+<ng-container [ngTemplateOutlet]="!tokenId ? tokensTable : usingTokens"></ng-container>
 
-            <div class="table-container">
-                <table mat-table [dataSource]="tokens" class="sensors-table">
-                    <ng-container matColumnDef="tokenId">
-                        <th mat-header-cell *matHeaderCellDef> Token Id </th>
-                        <td mat-cell *matCellDef="let element">
-                            <hedera-explorer *ngIf="!element.draftToken" type="tokens"
-                                [params]="element.tokenId">{{element.tokenId}}</hedera-explorer>
-                            <span *ngIf="element.draftToken">Draft Token</span>
-                        </td>
-                    </ng-container>
-                    <ng-container matColumnDef="tokenName">
-                        <th mat-header-cell *matHeaderCellDef> Token Name </th>
-                        <td mat-cell *matCellDef="let element"> {{element.tokenName}} </td>
-                    </ng-container>
-                    <ng-container matColumnDef="tokenSymbol">
-                        <th mat-header-cell *matHeaderCellDef> Token Symbol </th>
-                        <td mat-cell *matCellDef="let element"> {{element.tokenSymbol}} </td>
-                    </ng-container>
-                    <ng-container matColumnDef="policies">
-                        <th mat-header-cell *matHeaderCellDef> Policies </th>
-                        <td mat-cell *matCellDef="let element" [matTooltip]="element.policies?.join(', ')">
-                            <div class="policies-info">{{getPoliciesInfo(element.policies)}}</div>
-                        </td>
-                    </ng-container>
-                    <ng-container matColumnDef="users">
-                        <th mat-header-cell *matHeaderCellDef></th>
-                        <td mat-cell *matCellDef="let element">
-                            <div [ngClass]="{'btn-settings-des': element.draftToken}" class="btn-settings"
-                                [routerLink]="['/tokens']" [queryParams]="{ tokenId: element.url }" matTooltip="Users"
-                                matTooltipPosition="above" matTooltipClass="guardian-tooltip">
-                                <mat-icon>group</mat-icon>
+<ng-template #tokensTable>
+    <div *ngIf="!loading" class="container">
+        <div class="header">
+            <h1>List of Tokens</h1>
+        </div>
+        <ng-container *ngIf="isConfirmed; else noDIDSettings">
+            <div class="actions-container">
+                <div class="dropdown-block">
+                    <p-dropdown (onChange)="onFilter()" [(ngModel)]="policyDropdownItem" [options]="policies!">
+                        <ng-template pTemplate="selectedItem">
+                            <div *ngIf="policyDropdownItem"><span class="dropdown-label">Policy</span> <span
+                                    class="dropdown-item">{{ policyDropdownItem.name }}</span></div>
+                        </ng-template>
+                        <ng-template let-policy pTemplate="item">
+                            <div class="dropdown-item">
+                                {{ policy.name + (policy.id !== -1 ? ' (' + policy.id + ')' : '') }}
                             </div>
-                        </td>
-                    </ng-container>
-                    <ng-container matColumnDef="edit">
-                        <th mat-header-cell *matHeaderCellDef> </th>
-                        <td mat-cell *matCellDef="let element">
-                            <div [ngClass]="{'btn-settings-des': !element.enableAdmin}" class="btn-settings"
-                                (click)="editToken(element)" matTooltip="Edit" matTooltipPosition="above"
-                                matTooltipClass="guardian-tooltip">
-                                <mat-icon>edit</mat-icon>
-                            </div>
-                        </td>
-                    </ng-container>
-                    <ng-container matColumnDef="delete">
-                        <th mat-header-cell *matHeaderCellDef> </th>
-                        <td mat-cell *matCellDef="let element">
-                            <div (click)="deleteToken(element)"
-                                 [ngClass]="{'btn-settings-des': !element.enableAdmin || !element.canDelete}"
-                                 class="btn-settings btn-delete" matTooltip="Delete" matTooltipClass="guardian-tooltip"
-                                 matTooltipPosition="above">
-                                <mat-icon>delete</mat-icon>
-                            </div>
-                        </td>
-                    </ng-container>
-                    <ng-container matColumnDef="tags">
-                        <th mat-header-cell *matHeaderCellDef> Tags </th>
-                        <td mat-cell *matCellDef="let element">
-                            <tags-explorer [data]="element._tags" [owner]="owner" [target]="element.id"
-                                [schemas]="tagSchemas" [entity]="tagEntity" [service]="tagsService"></tags-explorer>
-                        </td>
-                    </ng-container>
-                    <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-                    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-                </table>
+                        </ng-template>
+                    </p-dropdown>
+                </div>
+                <button (click)="newToken()" [icon]="'pi pi-plus'" class="button" label="Create token" pButton
+                        type="button"></button>
+            </div>
+            <ng-container *ngIf="tokens.length > 0 else noData">
+                <div class="table-container">
+                    <table>
+                        <tr class="row-header">
+                            <th>TOKEN ID</th>
+                            <th>TOKEN NAME</th>
+                            <th>TOKEN SYMBOL</th>
+                            <th>POLICIES</th>
+                            <th>TAGS</th>
+                            <th>OPERATIONS</th>
+                        </tr>
+                        <ng-container *ngFor="let token of tokens">
+                            <tr class="row-item">
+                                <td>
+                                    <hedera-explorer *ngIf="!token.draftToken else draftToken" [params]="token.tokenId" type="tokens">
+                                        {{ token.tokenId }}
+                                    </hedera-explorer>
+                                    <ng-template #draftToken>Draft Token</ng-template>
+                                </td>
+                                <td>{{ token.tokenName }}</td>
+                                <td>{{ token.tokenSymbol }}</td>
+                                <td>{{ token.policies?.join(', ') }}</td>
+                                <td>
+                                    <tags-explorer [data]="token._tags" [entity]="tagEntity" [owner]="owner"
+                                                   [schemas]="tagSchemas" [service]="tagsService"
+                                                   [target]="token.id"></tags-explorer>
+                                </td>
+                                <td>
+                                    <div class="flex flex-column-gap-20">
+                                        <svg-icon (click)="!token.draftToken ? goToUsingTokens(token) : null"
+                                            class="opacity-icon"
+                                            src="/assets/images/icons/group.svg"
+                                            [svgClass]="!token.draftToken ? 'primary-color' : 'disabled-color'"></svg-icon>
+                                        <svg-icon (click)="openEditDialog(token)"
+                                            class="opacity-icon"
+                                            src="/assets/images/icons/edit.svg"
+                                            [svgClass]="token.enableAdmin ? 'primary-color' : 'disabled-color'"></svg-icon>
+
+                                        <svg-icon (click)="token.canDelete ? questToDeleteToken(token) : null"
+                                            class="opacity-icon"
+                                            src="/assets/images/icons/delete.svg"
+                                            [svgClass]="token.canDelete ? 'delete-color' : 'disabled-color'"></svg-icon>
+                                    </div>
+                                </td>
+                            </tr>
+                        </ng-container>
+                    </table>
+                </div>
+
+                <app-paginator
+                    [pageIndex]="pageIndex"
+                    [pageSize]="pageSize"
+                    [length]="tokensCount"
+                    (page)="onPage($event)"
+                ></app-paginator>
+
+            </ng-container>
+        </ng-container>
+    </div>
+</ng-template>
+
+<ng-template #usingTokens>
+    <div *ngIf="!loading" class="container">
+        <div>
+            <button (click)="goToTokensPage()"
+                    [iconPos]="'left'"
+                    [icon]="'pi pi-chevron-left'"
+                    class="button secondary height-40 margin-bottom-16"
+                    label="Back to List of Tokens"
+                    pButton type="button"></button>
+        </div>
+        <div class="header">
+            <h1>Token Users</h1>
+            <div>
+                <span class="tokenId"><strong>Token ID: </strong>{{ tokenId }}</span>
             </div>
         </div>
-
-        <div *ngIf="tokenId">
-            <div *ngIf="tokenId" class="token-id">
-                <div class="token-id-header">Token Id:</div>
-                <div class="token-id-value">{{tokenId}}</div>
-            </div>
-            <table mat-table [dataSource]="users" class="users-table">
-                <ng-container matColumnDef="username">
-                    <th mat-header-cell *matHeaderCellDef> Username </th>
-                    <td mat-cell *matCellDef="let element">{{element.username}}
-                        <div class="table-loader">
-                            <div class="lds-ellipsis">
-                                <div></div>
-                                <div></div>
-                                <div></div>
-                                <div></div>
+        <div class="table-container">
+            <table>
+                <tr class="row-header">
+                    <th>USERNAME</th>
+                    <th>ASSOCIATED</th>
+                    <th>TOKEN BALANCE</th>
+                    <th>FROZEN</th>
+                    <th>KYCD</th>
+                    <th>REFRESH</th>
+                </tr>
+                <ng-container *ngFor="let user of users">
+                    <tr class="row-item">
+                        <td>
+                            {{ user.username }}
+                        </td>
+                        <td>
+                            <div *ngIf="!user.loading && user.associated === 'Yes'" class="p-tag p-tag-success">Yes
                             </div>
-                        </div>
-                    </td>
+                            <div *ngIf="!user.loading && user.associated === 'No'" class="p-tag p-tag-error">No</div>
+                        </td>
+                        <td>
+                            <ng-container *ngIf="!user.loading && user.balance else preloader">
+                                {{ user.balance }}
+                            </ng-container>
+                        </td>
+                        <td>
+                            <button (click)="freeze(user, true)" *ngIf="!user.loading && user.enableFreeze && user.frozen === 'No'"
+                                    class="button secondary"
+                                    pButton>
+                                Freeze
+                            </button>
+                            <button (click)="freeze(user, false)" *ngIf="!user.loading && user.enableFreeze && user.frozen === 'Yes'"
+                                    class="button secondary"
+                                    pButton>
+                                Unfreeze
+                            </button>
+                        </td>
+                        <td>
+                            <button (click)="kyc(user, false)" *ngIf="!user.loading && user.kyc === 'Yes'" class="button secondary"
+                                    label="Revoke KYC"
+                                    pButton
+                                    type="button"></button>
+                            <button (click)="kyc(user, true)" *ngIf="!user.loading && user.kyc === 'No'" [iconPos]="'left'"
+                                    [icon]="'pi pi-chevron-left'"
+                                    class="button secondary" label="Grant KYC"
+                                    pButton type="button"></button>
+                        </td>
+                        <td>
+                            <div class="flex flex-column-gap-20">
+                                <svg-icon (click)="!user.loading ? refresh(user) : null"
+                                    class="opacity-icon"
+                                    src="/assets/images/icons/refresh.svg"
+                                    [svgClass]="user.loading ? 'disabled-color' : 'primary-color'"></svg-icon>
+                            </div>
+                        </td>
+                    </tr>
                 </ng-container>
-                <ng-container matColumnDef="did">
-                    <th mat-header-cell *matHeaderCellDef> DID </th>
-                    <td mat-cell *matCellDef="let element">{{element.did}}</td>
-                </ng-container>
-                <ng-container matColumnDef="associated">
-                    <th mat-header-cell *matHeaderCellDef> Associated </th>
-                    <td mat-cell *matCellDef="let element">
-                        <div class="item-color item-color-{{getColor(element.associated,false)}}">
-                            {{element.associated}}
-                        </div>
-                    </td>
-                </ng-container>
-                <ng-container matColumnDef="tokenBalance">
-                    <th mat-header-cell *matHeaderCellDef> Token Balance </th>
-                    <td mat-cell *matCellDef="let element"> {{element.balance}} </td>
-                </ng-container>
-                <ng-container matColumnDef="frozen">
-                    <th mat-header-cell *matHeaderCellDef> Frozen </th>
-                    <td mat-cell *matCellDef="let element">
-                        <div *ngIf="element.enableFreeze && element.frozen =='No'"
-                            class="item-cmd item-color-{{getColor(element.frozen,false)}}"
-                            (click)="freeze(element, true)">
-                            Freeze
-                        </div>
-                        <div *ngIf="element.enableFreeze && element.frozen =='Yes'"
-                            class="item-cmd item-color-{{getColor(element.frozen,false)}}"
-                            (click)="freeze(element, false)">
-                            Unfreeze
-                        </div>
-                    </td>
-                </ng-container>
-                <ng-container matColumnDef="kyc">
-                    <th mat-header-cell *matHeaderCellDef> KYCd </th>
-                    <td mat-cell *matCellDef="let element">
-                        <div *ngIf="element.enableKYC && element.kyc =='Yes'"
-                            class="item-cmd item-color-{{getColor(element.kyc,true)}}" (click)="kyc(element, false)">
-                            Revoke KYC
-                        </div>
-                        <div *ngIf="element.enableKYC && element.kyc =='No'"
-                            class="item-cmd item-color-{{getColor(element.kyc,true)}}" (click)="kyc(element, true)">
-                            Grant KYC
-                        </div>
-                    </td>
-                </ng-container>
-                <ng-container matColumnDef="refresh">
-                    <th mat-header-cell *matHeaderCellDef> Refresh </th>
-                    <td mat-cell *matCellDef="let element">
-                        <div class="refresh-btn" (click)="refresh(element)">
-                            <mat-icon>refresh</mat-icon>
-                        </div>
-                    </td>
-                </ng-container>
-                <tr mat-header-row *matHeaderRowDef="usersColumns"></tr>
-                <tr mat-row *matRowDef="let row; columns: usersColumns;" [attr.loading]="row.loading"></tr>
             </table>
         </div>
-    </ng-container>
-    <ng-template #elseTemplate>
-        <div class="not-exist">
-            Before starting work you need to get DID <a [routerLink]="['/profile']">here</a>
-        </div>
+    </div>
+</ng-template>
+
+<ng-template #noData>
+    <div class="not-exist">
+        <svg-icon class="svg-icon-32" src="/assets/images/icons/32/list.svg" svgClass="disabled-color">
+        </svg-icon>
+        <span class="info-text-strong">There were no Tokens created yet</span>
+        <span class="info-text">Please create new token to see the data</span>
+    </div>
+</ng-template>
+
+<ng-template #noDIDSettings>
+    <div class="not-exist">
+        <span>Before starting work you need to get DID <a [routerLink]="['/profile']">here</a></span>
+    </div>
+</ng-template>
+
+<p-dialog [(visible)]="tokenDialogVisible" [closable]="true" [draggable]="false" [modal]="true">
+    <ng-template pTemplate="header">
+        <span class="modal-header">{{ currentTokenId ? 'Edit' : 'New' }} Token</span>
     </ng-template>
-</div>
+    <div style="padding: 0 10px 0 10px;">
+        <app-token-configuration [dataForm]="dataForm" [hide-type]="hideType" [contracts]="contracts"
+                                 [readonly]="readonlyForm"></app-token-configuration>
+    </div>
+    <ng-template pTemplate="footer">
+        <button (click)="tokenDialogVisible = false" class="button secondary" label="Close" pButton
+                type="button"></button>
+        <button (click)="saveToken()" [disabled]="dataForm.invalid" [label]="currentTokenId ? 'Save' : 'Create'" class="button" pButton
+                type="button"></button>
+    </ng-template>
+</p-dialog>
+
+<p-dialog [(visible)]="deleteTokenVisible" [closable]="true" [draggable]="false" [modal]="true">
+    <ng-template pTemplate="header">
+        <span class="modal-header">Detele Token</span>
+    </ng-template>
+    <div class="" style="padding: 0 10px 0 10px;">
+        Are you sure to delete token?
+    </div>
+    <ng-template pTemplate="footer">
+        <button (click)="deleteToken(false)" class="button secondary" label="Cancel" pButton
+                type="button"></button>
+        <button (click)="deleteToken(true)" [label]="'Delete'" class="button button-color-red" pButton
+                type="button"></button>
+    </ng-template>
+</p-dialog>
+
+<ng-template #preloader>
+    <div class="preloader-image"></div>
+</ng-template>
 
 <div *ngIf="loading && !taskId" class="loading">
-    <mat-spinner></mat-spinner>
+    <div class="preloader-image preloader-image-l-size"></div>
 </div>
 
 <async-progress *ngIf="loading && taskId" [taskId]="taskId"
-    (error)="onAsyncError($event)" (completed)="onAsyncCompleted()"></async-progress>
+                (completed)="onAsyncCompleted()" (error)="onAsyncError($event)"></async-progress>

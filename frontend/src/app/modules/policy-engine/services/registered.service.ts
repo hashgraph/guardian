@@ -211,4 +211,4 @@ export class RegisteredService {
     public getName(blockType: string): string {
         return this.blockName[blockType];
     }
- }
+}

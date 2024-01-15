@@ -1,0 +1,21 @@
+<div class="table-paginator">
+    <span>Items per page:</span>
+    <p-dropdown (onChange)="newOnSize()" [(ngModel)]="pageSize" [options]="[10, 25, 50, 100]"></p-dropdown>
+    <span class="color-grey-6">
+        {{ pageNumberMin }} – {{ pageNumberMax }} of {{ length }}
+    </span>
+    <div class="flex">
+        <svg-icon 
+            class="svg-btn" 
+            (click)="movePageIndex(-1)"
+            src="/assets/images/icons/left-arrow.svg" 
+            svgClass="svg-color">
+        </svg-icon>
+        <svg-icon 
+            class="svg-btn" 
+            (click)="movePageIndex(+1)"
+            src="/assets/images/icons/right-arrow.svg" 
+            svgClass="svg-color">
+        </svg-icon>
+    </div>
+</div>

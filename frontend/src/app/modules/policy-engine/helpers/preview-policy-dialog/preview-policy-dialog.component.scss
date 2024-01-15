@@ -1,0 +1,113 @@
+.loading {
+  background: #fff;
+  position: absolute;
+  z-index: 99;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-items: center;
+  justify-content: center;
+  align-content: center;
+}
+
+.field-value {
+  color: #181818;
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.field-name {
+  color: #181818;
+  font-family: Inter, sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 600;
+}
+
+.version-container {
+  display: flex;
+}
+
+.version-container__new-versions {
+  margin-top: 3px;
+}
+
+.dialog-body {
+  height: 45vh;
+  max-width: 100vw;
+  overflow-y: auto;
+}
+
+::ng-deep {
+  .p-dialog-title {
+    font-family: Poppins, sans-serif;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 600;
+  }
+
+  .p-dialog {
+    max-width: 100%;
+    box-shadow: none;
+  }
+
+  .p-dialog-header {
+    border-top-left-radius: 16px !important;
+    border-top-right-radius: 16px !important;
+  }
+
+  .p-dialog-content {
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+  }
+}
+
+.action-buttons {
+  display: flex;
+  padding-top: 25px;
+}
+
+.cancel-button {
+  margin-left: auto;
+  margin-right: 15px;
+}
+
+::ng-deep {
+  .p-button {
+    border-radius: 8px;
+  }
+}
+
+.form-label {
+  color: #181818;
+  font-family: Inter, sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+}
+
+.policy-version-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.fields-container {
+  margin-top: 24px;
+}
+
+.version-of-dropdown {
+  ::ng-deep {
+    .p-dropdown {
+      width: 100%;
+    }
+  }
+}

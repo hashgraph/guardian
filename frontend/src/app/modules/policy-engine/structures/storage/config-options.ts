@@ -9,6 +9,7 @@ export class Options {
     private readonly _toolLibrary: BooleanProperty;
     private readonly _description: BooleanProperty;
     private readonly _roles: BooleanProperty;
+    private readonly _navigation: BooleanProperty;
     private readonly _groups: BooleanProperty;
     private readonly _topics: BooleanProperty;
     private readonly _tokens: BooleanProperty;
@@ -44,6 +45,7 @@ export class Options {
         this._toolLibrary = new BooleanProperty(prefix + 'TOOL_LIBRARY', false);
         this._description = new BooleanProperty(prefix + 'DESCRIPTION', true);
         this._roles = new BooleanProperty(prefix + 'ROLES', false);
+        this._navigation = new BooleanProperty(prefix + 'NAVIGATION', false);
         this._groups = new BooleanProperty(prefix + 'GROUPS', false);
         this._topics = new BooleanProperty(prefix + 'TOPICS', false);
         this._tokens = new BooleanProperty(prefix + 'TOKENS', false);
@@ -90,6 +92,7 @@ export class Options {
             this.toolLibrary = this._toolLibrary.load();
             this.description = this._description.load();
             this.roles = this._roles.load();
+            this.navigation = this._navigation.load();
             this.groups = this._groups.load();
             this.topics = this._topics.load();
             this.tokens = this._tokens.load();
@@ -129,6 +132,7 @@ export class Options {
             this._toolLibrary.save();
             this._description.save();
             this._roles.save();
+            this._navigation.save();
             this._groups.save();
             this._topics.save();
             this._tokens.save();
@@ -179,6 +183,10 @@ export class Options {
 
     public get roles(): boolean {
         return this._roles.value;
+    }
+
+    public get navigation(): boolean {
+        return this._navigation.value;
     }
 
     public get groups(): boolean {
@@ -309,6 +317,7 @@ export class Options {
         if (value) {
             this._description.value = true;
             this._roles.value = false;
+            this._navigation.value = false;
             this._groups.value = false;
             this._topics.value = false;
             this._tokens.value = false;
@@ -319,6 +328,18 @@ export class Options {
         if (value) {
             this._description.value = false;
             this._roles.value = true;
+            this._navigation.value = false;
+            this._groups.value = false;
+            this._topics.value = false;
+            this._tokens.value = false;
+        }
+    }
+
+    public set navigation(value: boolean) {
+        if (value) {
+            this._description.value = false;
+            this._roles.value = false;
+            this._navigation.value = true;
             this._groups.value = false;
             this._topics.value = false;
             this._tokens.value = false;
@@ -329,6 +350,7 @@ export class Options {
         if (value) {
             this._description.value = false;
             this._roles.value = false;
+            this._navigation.value = false;
             this._groups.value = true;
             this._topics.value = false;
             this._tokens.value = false;
@@ -339,6 +361,7 @@ export class Options {
         if (value) {
             this._description.value = false;
             this._roles.value = false;
+            this._navigation.value = false;
             this._groups.value = false;
             this._topics.value = true;
             this._tokens.value = false;
@@ -349,6 +372,7 @@ export class Options {
         if (value) {
             this._description.value = false;
             this._roles.value = false;
+            this._navigation.value = false;
             this._groups.value = false;
             this._topics.value = false;
             this._tokens.value = true;
@@ -520,6 +544,9 @@ export class Options {
                 break;
             case 'roles':
                 this.roles = true;
+                break;
+            case 'navigation':
+                this.navigation = true;
                 break;
             case 'groups':
                 this.groups = true;

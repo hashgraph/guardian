@@ -1,7 +1,6 @@
 ::ng-deep body {
     --pc-main-grid-border: #b4c4cb;
     --pc-border-color: #bdbdbd;
-    --pc-active-resize-delimiter-color: #1f2262;
     --pc-active-icon-color: #3f51b5;
     --pc-no-active-color: #555;
     --pc-active-background-color: #eff0f9;
@@ -109,7 +108,7 @@
     left: 0;
     right: 0;
     top: 0;
-    height: calc(100vh - 125px);
+  height: 100%;
     overflow: hidden;
     min-width: 1000px;
 }
@@ -139,16 +138,14 @@
     border: 4px solid var(--pc-main-grid-border);
     box-sizing: border-box;
     display: flex;
-    gap: 2px;
-    background-color: var(--pc-main-grid-border);
 }
 
 .left-toolbar {
     height: 100%;
+    width: 225px;
     position: relative;
+    border-right: 4px solid var(--pc-main-grid-border);
     box-sizing: border-box;
-    background-color: white;
-    z-index: 1;
 }
 
 .center-container {
@@ -156,8 +153,6 @@
     position: relative;
     overflow: hidden;
     box-sizing: border-box;
-    z-index: 1;
-    background-color: white;
 }
 
 .tree-container {
@@ -186,30 +181,30 @@
 
 .right-toolbar {
     height: 100%;
-    // width: 485px;
+    width: 485px;
     position: relative;
     box-sizing: border-box;
+    border-left: 4px solid var(--pc-main-grid-border);
     display: flex;
-    gap: 2px;
     flex-direction: column;
     background: var(--pc-main-grid-border);
-    z-index: 1;
-    // min-width: 465px;
 }
 
 .right-top-toolbar {
     position: relative;
     width: 100%;
+    border-bottom: 4px solid var(--pc-main-grid-border);
     box-sizing: border-box;
-    min-height: 31px;
+    min-height: 340px;
+    max-height: 340px;
+    height: 340px;
     flex: 1;
-    z-index: 1;
     background: var(--pc-background-color);
 
     &[collapse-top="true"] {
-        max-height: 31px;
-        height: 31px;
-        min-height: 31px;
+        max-height: 35px;
+        height: 35px;
+        min-height: 35px;
     }
 
     &[collapse-bottom="true"] {
@@ -218,9 +213,9 @@
     }
 
     &[collapse-top="true"][collapse-bottom="true"] {
-        max-height: 31px;
-        height: 31px;
-        min-height: 31px;
+        max-height: 35px;
+        height: 35px;
+        min-height: 35px;
     }
 }
 
@@ -228,8 +223,6 @@
     box-sizing: border-box;
     position: relative;
     flex: 1;
-    min-height: 31px;
-    z-index: 1;
     background: var(--pc-background-color);
 
     &[collapse-top="true"] {
@@ -282,7 +275,7 @@
         display: flex;
         flex-direction: column;
         overflow: hidden;
-        height: 52px;
+      height: 60px;
         margin: 5px 4px;
         padding: 4px 2px 2px 2px;
         font-size: 12px;
@@ -482,9 +475,6 @@
             padding: 9px 24px;
             cursor: pointer;
             user-select: none;
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
 
             .components-group-name-icon {
                 color: var(--pc-favorite-color);
@@ -925,9 +915,8 @@
     }
 
     .properties {
-        width: 100%;
         --col-name-width: 155px;
-        // --col-value-width: 285px;
+        --col-value-width: 285px;
 
         background: var(--pc-prop-border-color);
         position: relative;
@@ -939,7 +928,6 @@
         .propRowCol {
             background: var(--pc-prop-border-color);
             width: 20px;
-            min-width: 20px;
             position: relative;
             cursor: pointer;
             user-select: none;
@@ -1102,10 +1090,6 @@
                 font-size: 12px;
             }
 
-            .propRowCell:has(.remove-prop) {
-                padding-right: 30px;
-            }
-
             .required-fields {
                 position: relative !important;
                 width: 8px !important;
@@ -1194,6 +1178,12 @@
             padding-left: 50px !important;
         }
 
+      .navigation .stepRow .propRowCol {
+        left: 20px !important;
+        top: 3px !important;
+      }
+
+
         .remove-cell input {
             width: calc(100% - 28px) !important;
         }
@@ -1248,6 +1238,21 @@
             }
         }
 
+      .remove-step {
+        width: auto !important;
+        text-align: end;
+        color: #e30101;
+        cursor: pointer;
+
+        mat-icon {
+          font-size: 20px;
+        }
+
+        &[readonly="true"] {
+          display: none;
+        }
+      }
+
         .propBottom {
             background: var(--pc-background-color);
             font-weight: 500;
@@ -1272,6 +1277,17 @@
                 border-top: 1px solid var(--pc-border-color);
             }
         }
+
+      .navigation .propBottom {
+        left: -2px;
+        right: 1px;
+        bottom: -24px;
+        box-shadow: 2px 4px 0 0 var(--pc-prop-border-color), 2px 0px 0 0 var(--pc-prop-border-color), 0px 0px 0 0 var(--pc-prop-border-color);
+
+        &::after {
+          display: none;
+        }
+      }
 
         .propRowBottom {
             height: 28px;
@@ -1398,7 +1414,7 @@
 
     .grid-setting {
         position: relative;
-        height: auto;
+      height: 100%;
         width: 100%;
         overflow: auto;
 
@@ -1419,11 +1435,6 @@
 
         .label {
             display: flex;
-        }
-
-        &[readonly="true"] {
-            pointer-events: none;
-            filter: grayscale(1);
         }
     }
 }
@@ -1566,12 +1577,6 @@
 ::ng-deep .schema-variable {
     color: var(--pc-text-color);
 
-    &[disable="true"] {
-        filter: grayscale(1);
-        opacity: 0.7;
-        pointer-events: none;
-    }
-
     &[status="DRAFT"] {
         color: var(--pc-edit-status-color);
     }
@@ -1589,56 +1594,77 @@
     }
 }
 
-.resizing, .resizing-vertical {
-    position: relative;
-
-    .resizing__delimiter:hover,
-    &[active="true"] .resizing__delimiter {
-        background-color: var(--pc-active-resize-delimiter-color) !important;
-    }
+.loading {
+  background: #fff;
+  position: absolute;
+  z-index: 99;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-items: center;
+  justify-content: center;
+  align-content: center;
 }
 
-.resizing__delimiter {
-    background-color: var(--pc-main-grid-border);
-    position: absolute;
-    z-index: 0;
+.loading-progress {
+  width: 80%;
+  height: 80%;
 }
 
-.resizing {
-    height: 100%;
-
-    .resizing__delimiter {
-         width: 4px; height: 100%; left: -2px;
-    }
-
-    .resizing__delimiter:hover {
-        cursor: ew-resize;
-    }
+.preloader-image {
+  width: 16px;
+  height: 16px;
+  border-top: 3px solid var(--color-primary);
+  border-left: 3px solid rgba(0, 0, 0, 0);
+  border-right: 3px solid rgba(0, 0, 0, 0);
+  border-bottom: 3px solid rgba(0, 0, 0, 0);
+  border-radius: 100%;
+  filter: brightness(100%);
+  animation-name: preloaderRotationColored;
+  animation-duration: 7.5s;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
 }
 
-.resizing-vertical {
-    width: 100%;
-
-    .resizing__delimiter {
-        width: 100%;
-        height: 4px;
-        top: -2px;
-    }
-
-    .resizing__delimiter:hover {
-        cursor: ns-resize;
-    }
+.preloader-image-l-size {
+  width: 56px;
+  height: 56px;
 }
 
-::ng-deep {
-    .cdk-drag-placeholder {
-        &.left-toolbar,
-        &.center-container,
-        &.right-toolbar,
-        &.right-top-toolbar,
-        &.right-bottom-toolbar {
-            outline: 1px dashed black;
-            opacity: 0.5;
-        }
-    }
+@keyframes preloaderRotationColored {
+  0% {
+    transform: rotate(0deg);
+    opacity: 1;
+  }
+  25% {
+    transform: rotate(360deg);
+    border-top: 3px solid rgba(0, 0, 0, 0);
+    border-right: 3px solid var(--color-primary);
+    border-left: 3px solid rgba(0, 0, 0, 0);
+    border-bottom: 3px solid rgba(0, 0, 0, 0);
+  }
+  50% {
+    transform: rotate(720deg);
+    border-top: 3px solid rgba(0, 0, 0, 0);
+    border-left: 3px solid rgba(0, 0, 0, 0);
+    border-bottom: 3px solid var(--color-primary);
+    border-right: 3px solid rgba(0, 0, 0, 0);
+  }
+  75% {
+    transform: rotate(1080deg);
+    border-top: 3px solid rgba(0, 0, 0, 0);
+    border-bottom: 3px solid rgba(0, 0, 0, 0);
+    border-right: 3px solid rgba(0, 0, 0, 0);
+    border-left: 3px solid var(--color-primary);
+  }
+  100% {
+    transform: rotate(1440deg);
+    border-top: 3px solid var(--color-primary);
+    border-left: 3px solid rgba(0, 0, 0, 0);
+    border-right: 3px solid rgba(0, 0, 0, 0);
+    border-bottom: 3px solid rgba(0, 0, 0, 0);
+  }
 }

@@ -1,4 +1,5 @@
 import {
+    AfterViewInit,
     ChangeDetectorRef,
     Component,
     Inject,
@@ -14,7 +15,6 @@ import {
     FormArray,
     AbstractControl,
 } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import {
     IWizardConfig,
     Schema,
@@ -26,13 +26,17 @@ import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { takeUntil } from 'rxjs/operators';
 import { SeparateStepperComponent } from 'src/app/modules/common/separate-stepper/separate-stepper.component';
 import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
+import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { IPolicyCategory } from '../../structures';
+import { PolicyEngineService } from '../../../../services/policy-engine.service';
+import { PolicyCategoryType } from '@guardian/interfaces';
 
 @Component({
     selector: 'app-policy-wizard-dialog',
     templateUrl: './policy-wizard-dialog.component.html',
-    styleUrls: ['./policy-wizard-dialog.component.css'],
+    styleUrls: ['./policy-wizard-dialog.component.scss'],
 })
-export class PolicyWizardDialogComponent implements OnInit {
+export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
     @ViewChild(SeparateStepperComponent) matTree!: SeparateStepperComponent;
     @ViewChild('policyDescriptionForm', { read: TemplateRef })
     policyDescriptionFormTemp: any;
@@ -54,12 +58,35 @@ export class PolicyWizardDialogComponent implements OnInit {
     selectedSchemas: Schema[] = [];
     mintedSchemas: Schema[] = [];
     selectedTrustChainRoles: string[] = [];
+    loading: boolean = false;
 
     policyForm = this.fb.group({
         name: ['', Validators.required],
-        description: [''],
-        topicDescription: [''],
+        sectoralScope: new FormControl({
+            value: '',
+            disabled: this.loading,
+        }),
+        projectScale: new FormControl({
+            value: '',
+            disabled: this.loading,
+        }),
+        applicabilityConditions: [''],
+        detailsUrl: [''],
         policyTag: [`Tag_${Date.now()}`, Validators.required],
+        typicalProjects: [''],
+        topicDescription: [''],
+        description: [''],
+        appliedTechnologyType: new FormControl({
+            value: '',
+            disabled: this.loading,
+        }),
+        migrationActivityType: new FormControl({
+            value: [],
+            disabled: this.loading,
+        }),
+        subType: new FormControl({value: [], disabled: this.loading}),
+        atValidation: [''],
+        monitored: [''],
     });
     policyRolesForm = this.fb.control(['OWNER']);
     policySchemasForm = this.fb.array([]);
@@ -72,6 +99,14 @@ export class PolicyWizardDialogComponent implements OnInit {
         trustChain: this.trustChainForm,
     });
 
+    categories: IPolicyCategory[] = [];
+
+    appliedTechnologyTypeOptions: IPolicyCategory[] = [];
+    migrationActivityTypeOptions: IPolicyCategory[] = [];
+    projectScaleOptions: IPolicyCategory[] = [];
+    sectoralScopeOptions: IPolicyCategory[] = [];
+    subTypeOptions: IPolicyCategory[] = [];
+
     treeData: any;
     currentNode: any;
 
@@ -80,7 +115,6 @@ export class PolicyWizardDialogComponent implements OnInit {
     preset: any;
 
     constructor(
-        public dialogRef: MatDialogRef<PolicyWizardDialogComponent>,
         private fb: FormBuilder,
         private cdRef: ChangeDetectorRef,
         @Inject(GET_SCHEMA_NAME)
@@ -89,30 +123,109 @@ export class PolicyWizardDialogComponent implements OnInit {
             version?: string,
             status?: string
         ) => string,
-        @Inject(MAT_DIALOG_DATA)
-        public data: {
-            schemas: Schema[];
-            [key: string]: any;
-        }
+        public ref: DynamicDialogRef,
+        public config: DynamicDialogConfig,
+        private policyEngineService: PolicyEngineService
     ) {
-        this.schemas = data?.schemas || [];
-        this.policies = data?.policies || [];
+        this.schemas = this.config.data?.schemas || [];
+        this.policies = this.config.data?.policies || [];
         this.groupedSchemas = this.mapGroupedSchemas(
             this.groupSchemasByTopics(this.schemas),
             this.policies,
-            data?.policy
+            this.config.data?.policy
         );
-        if (data?.policy) {
-            this.policyForm.patchValue({
-                name: data?.policy.name,
-                description: data?.policy.description,
-                policyTag: data?.policy.policyTag,
-                topicDescription: data?.policy.topicDescription,
-            });
+
+        for (const group of this.groupedSchemas) {
+            (group as any).label = group.name;
+            (group as any).items = [];
+            if (group.schemas && group.schemas.length) {
+                for (const schema of group.schemas) {
+                    (group as any).items.push({
+                        label: schema.name,
+                        value: schema,
+                    });
+                }
+            }
+        }
+
+        if (this.config.data?.policy) {
+            this.policyForm.patchValue(
+                {
+                    name: this.config.data?.policy.name,
+                    sectoralScope: this.config.data?.policy.sectoralScope,
+                    projectScale: this.config.data?.policy.projectScale,
+                    applicabilityConditions: this.config.data?.policy.applicabilityConditions,
+                    detailsUrl: this.config.data?.policy.detailsUrl,
+                    policyTag: this.config.data?.policy.policyTag,
+                    typicalProjects: this.config.data?.policy.typicalProjects,
+                    topicDescription: this.config.data?.policy.topicDescription,
+                    description: this.config.data?.policy.description,
+                    appliedTechnologyType: this.config.data?.policy.appliedTechnologyType,
+                    migrationActivityType: this.config.data?.policy.migrationActivityType,
+                    subType: this.config.data?.policy.subType,
+                    atValidation: this.config.data?.policy.atValidation,
+                    monitored: this.config.data?.policy.monitored,
+                }
+                //     {
+                //     name: this.config.data?.policy.name,
+                //     description: this.config.data?.policy.description,
+                //     policyTag: this.config.data?.policy.policyTag,
+                //     topicDescription: this.config.data?.policy.topicDescription,
+                // }
+            );
             this.policyForm.get('policyTag')?.disable();
         }
-        this.tokens = data?.tokens || [];
-        this.preset = data?.state || [];
+        this.tokens = this.config.data?.tokens || [];
+        this.preset = this.config.data?.state || [];
+
+        this.loading = true;
+        this.policyEngineService
+            .getPolicyCategories()
+            .subscribe((data: any) => {
+                this.loading = false;
+                this.categories = data;
+
+                this.categories.forEach((item: IPolicyCategory) => {
+                    switch (item.type) {
+                        case PolicyCategoryType.APPLIED_TECHNOLOGY_TYPE:
+                            this.appliedTechnologyTypeOptions.push(item);
+                            break;
+                        case PolicyCategoryType.MITIGATION_ACTIVITY_TYPE:
+                            this.migrationActivityTypeOptions.push(item);
+                            break;
+                        case PolicyCategoryType.PROJECT_SCALE:
+                            this.projectScaleOptions.push(item);
+                            break;
+                        case PolicyCategoryType.SECTORAL_SCOPE:
+                            this.sectoralScopeOptions.push(item);
+                            break;
+                        case PolicyCategoryType.SUB_TYPE:
+                            this.subTypeOptions.push(item);
+                            break;
+
+                        default:
+                            break;
+                    }
+                });
+
+                this.updateFormControlState();
+            });
+    }
+
+    updateFormControlState() {
+        if (this.loading) {
+            this.dataForm.get('sectoralScope')?.disable();
+            this.dataForm.get('projectScale')?.disable();
+            this.dataForm.get('appliedTechnologyType')?.disable();
+            this.dataForm.get('migrationActivityType')?.disable();
+            this.dataForm.get('subType')?.disable();
+        } else {
+            this.dataForm.get('sectoralScope')?.enable();
+            this.dataForm.get('projectScale')?.enable();
+            this.dataForm.get('appliedTechnologyType')?.enable();
+            this.dataForm.get('migrationActivityType')?.enable();
+            this.dataForm.get('subType')?.enable();
+        }
     }
 
     private mapGroupedSchemas(
@@ -252,11 +365,13 @@ export class PolicyWizardDialogComponent implements OnInit {
                     const schemaRoleConfigControl = schemaNode.control.get(
                         'rolesConfig'
                     ) as FormArray;
-                    const initialRolesForControl: any =
-                        schemaNode.control.get('initialRolesFor');
+                    const initialRolesForControl: any = schemaNode.control.get(
+                        'initialRolesFor'
+                    );
 
-                    const isApproveEnableControl: any =
-                        schemaNode.control.get('isApproveEnable');
+                    const isApproveEnableControl: any = schemaNode.control.get(
+                        'isApproveEnable'
+                    );
                     const dependencySchemaControl: any = schemaNode.control.get(
                         'dependencySchemaIri'
                     );
@@ -308,6 +423,14 @@ export class PolicyWizardDialogComponent implements OnInit {
         return result;
     }
 
+    handlePrevClick() {
+        this.matTree.onPrevClick();
+    }
+
+    handleNextClick() {
+        this.matTree.onNextClick();
+    }
+
     setParents(root: any) {
         root.children?.forEach((child: any) => {
             child.parent = root;
@@ -348,11 +471,13 @@ export class PolicyWizardDialogComponent implements OnInit {
             (existingRole: any) =>
                 !options.displayedInRoles.includes(existingRole)
         );
-        const initialRolesForControl: any =
-            schemaConfigControl.get('initialRolesFor');
+        const initialRolesForControl: any = schemaConfigControl.get(
+            'initialRolesFor'
+        );
 
-        const isApproveEnableControl: any =
-            schemaConfigControl.get('isApproveEnable');
+        const isApproveEnableControl: any = schemaConfigControl.get(
+            'isApproveEnable'
+        );
         const dependencySchemaControl: any = schemaConfigControl.get(
             'dependencySchemaIri'
         );
@@ -435,11 +560,9 @@ export class PolicyWizardDialogComponent implements OnInit {
                             (control) => control === schemaRoleConfigForm
                         )
                     );
-                    node.options.displayedInRoles =
-                        node.options.displayedInRoles.filter(
-                            (displayedRole: string) =>
-                                value.includes(displayedRole)
-                        );
+                    node.options.displayedInRoles = node.options.displayedInRoles.filter(
+                        (displayedRole: string) => value.includes(displayedRole)
+                    );
                     dependencySchemaListener.unsubscribe();
                     isApproveEnableListener.unsubscribe();
                     initialRolesForListener.unsubscribe();
@@ -452,7 +575,7 @@ export class PolicyWizardDialogComponent implements OnInit {
     }
 
     onNoClick(): void {
-        this.dialogRef.close({
+        this.ref.close({
             create: false,
             currentNode: this.currentNode.id,
             config: this.dataForm.value,
@@ -509,7 +632,7 @@ export class PolicyWizardDialogComponent implements OnInit {
         if (!this.dataForm.valid) {
             return;
         }
-        this.dialogRef.close({
+        this.ref.close({
             create: true,
             currentNode: this.currentNode.id,
             config: this.dataForm.value,
@@ -666,11 +789,9 @@ export class PolicyWizardDialogComponent implements OnInit {
                         this.trustChainForm,
                         trustChainRoleConfigControl
                     );
-                    this.selectedTrustChainRoles =
-                        this.selectedTrustChainRoles.filter(
-                            (displayedRole: string) =>
-                                value.includes(displayedRole)
-                        );
+                    this.selectedTrustChainRoles = this.selectedTrustChainRoles.filter(
+                        (displayedRole: string) => value.includes(displayedRole)
+                    );
                     this.matTree.refreshTree();
                     rolesSubscription.unsubscribe();
                 }

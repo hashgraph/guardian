@@ -6,9 +6,11 @@ import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
 import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, RawBodyRequest, Req, Response } from '@nestjs/common';
 import { checkPermission } from '@auth/authorization-helper';
-import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, getSchemaPath } from '@nestjs/swagger';
+import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, getSchemaPath } from '@nestjs/swagger';
 import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
 import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator';
+import { ProjectService } from '@helpers/projects';
+import { PolicyCategoryDTO } from '@middlewares/validation/schemas/policies';
 
 @Controller('policies')
 @ApiTags('policies')
@@ -301,9 +303,12 @@ export class PolicyApi {
             model.description = policy.description;
             model.topicDescription = policy.topicDescription;
             model.policyRoles = policy.policyRoles;
+            model.policyNavigation = policy.policyNavigation;
             model.policyTopics = policy.policyTopics;
             model.policyTokens = policy.policyTokens;
             model.policyGroups = policy.policyGroups;
+            model.categories = policy.categories;
+            model.projectSchema = policy.projectSchema;
             const result = await engineService.savePolicy(model, req.user, req.params.policyId);
             return res.json(result);
         } catch (error) {
@@ -468,6 +473,37 @@ export class PolicyApi {
         const engineService = new PolicyEngine();
         try {
             return res.send(await engineService.validatePolicy(req.body, req.user));
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @ApiOperation({
+        summary: 'Returns a policy navigation.',
+        description: 'Returns a policy navigation.',
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
+    @Get('/:policyId/navigation')
+    @HttpCode(HttpStatus.OK)
+    async getPolicyNavigation(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
+        const engineService = new PolicyEngine();
+        try {
+            return res.send(await engineService.getNavigation(req.user, req.params.policyId));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1291,6 +1327,79 @@ export class PolicyApi {
         const engineService = new PolicyEngine();
         try {
             return res.send(await engineService.setMultiPolicy(req.user, req.params.policyId, req.body));
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Get('/methodologies/categories')
+    @ApiOperation({
+        summary: 'Get all categories',
+        description: 'Get all categories',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        type: PolicyCategoryDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @HttpCode(HttpStatus.ACCEPTED)
+    async getPolicyCategoriesAsync(@Req() req, @Response() res): Promise<any> {
+        try {
+            const projectService = new ProjectService();
+            const categories = await projectService.getPolicyCategories();
+            return res.send(categories);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Post('/methodologies/search')
+    @ApiOperation({
+        summary: 'Get filtered policies',
+        description: 'Get policies by categories and text',
+    })
+    @ApiBody({
+        description: 'Filters',
+        required: true,
+        examples: {
+            Filter1: {
+                value: {
+                    categoryIds: ['000000000000000000000001', '000000000000000000000002'],
+                    text: 'abc'
+                }
+            }
+        }
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @HttpCode(HttpStatus.ACCEPTED)
+    async getPoliciesByCategory(@Req() req, @Response() res): Promise<any> {
+        const engineService = new PolicyEngine();
+
+        const categoryIds = req.body.categoryIds;
+        const text = req.body.text;
+
+        try {
+            const policies = await engineService.getPoliciesByCategoriesAndText(categoryIds, text);
+            return res.send(policies);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);

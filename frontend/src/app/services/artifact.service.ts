@@ -12,37 +12,20 @@ export class ArtifactService {
         private http: HttpClient
     ) { }
 
-    public addArtifacts(
-        files: File[],
-        currentId: string
-    ): Observable<any> {
+    public addArtifacts(files: File[], policyId: string): Observable<any> {
         const formData = new FormData();
         for (const file of files) {
             formData.append('artifacts', file);
         }
-        return this.http.post<string>(`${this.url}/${currentId}`, formData);
+        return this.http.post<string>(`${this.url}/${policyId}`, formData);
     }
 
-    public getArtifacts(
-        currentId?: string,
-        type?: string,
-        pageIndex?: any,
-        pageSize?: any
-    ): Observable<HttpResponse<any[]>> {
-        const parameters: any = {
+    public getArtifacts(policyId?: string, pageIndex?: any, pageSize?: any): Observable<HttpResponse<any[]>> {
+        const parameters = {
+            policyId,
             pageIndex,
-            pageSize,
-            type
-        };
-        if (currentId) {
-            if (type === 'tool') {
-                parameters.toolId = currentId;
-            } else if (type === 'policy') {
-                parameters.policyId = currentId;
-            } else {
-                parameters.id = currentId;
-            }
-        }
+            pageSize
+        } as any;
         return this.http.get<any>(`${this.url}`, {
             observe: 'response',
             params: parameters

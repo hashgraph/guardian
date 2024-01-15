@@ -1,11 +1,12 @@
 import { Component, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder, Validators } from '@angular/forms';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ImportType } from '@guardian/interfaces';
 import { InformService } from 'src/app/services/inform.service';
 import { TasksService } from 'src/app/services/tasks.service';
 import { ModulesService } from 'src/app/services/modules.service';
+import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { MenuItem } from 'primeng/api';
 import { ToolsService } from 'src/app/services/tools.service';
 
 /**
@@ -14,13 +15,13 @@ import { ToolsService } from 'src/app/services/tools.service';
 @Component({
     selector: 'import-policy-dialog',
     templateUrl: './import-policy-dialog.component.html',
-    styleUrls: ['./import-policy-dialog.component.css']
+    styleUrls: ['./import-policy-dialog.component.scss'],
 })
 export class ImportPolicyDialog {
     type?: string;
-    importType?: ImportType;
+    importType?: ImportType = 0;
     dataForm = this.fb.group({
-        timestamp: ['', Validators.required]
+        timestamp: ['', Validators.required],
     });
     loading: boolean = false;
     taskId: string | undefined = undefined;
@@ -28,20 +29,29 @@ export class ImportPolicyDialog {
 
     public isImportTypeSelected: boolean = false;
 
+    items: MenuItem[] = [
+        {label: 'Import from file'},
+        {label: 'Import from IPFS'},
+        // { label: 'Open Source Policies' },
+    ];
+
     public innerWidth: any;
     public innerHeight: any;
 
+    public openSourcePolicies: any[] = [];
+    public selectedOpenSourcePolicy: any;
+
     constructor(
-        public dialogRef: MatDialogRef<ImportPolicyDialog>,
+        public ref: DynamicDialogRef,
+        public config: DynamicDialogConfig,
         private fb: FormBuilder,
         private policyEngineService: PolicyEngineService,
         private modulesService: ModulesService,
         private toolsService: ToolsService,
         private informService: InformService,
-        private taskService: TasksService,
-        @Inject(MAT_DIALOG_DATA) public data: any
+        private taskService: TasksService
     ) {
-        switch (data.type) {
+        switch (this.config.data.type) {
             case 'policy':
                 this.type = 'policy';
                 break;
@@ -55,11 +65,11 @@ export class ImportPolicyDialog {
                 this.type = 'policy';
                 break;
         }
-        if (data.timeStamp) {
+        if (this.config.data.timeStamp) {
             this.importType = ImportType.IPFS;
             this.isImportTypeSelected = true;
             this.dataForm.patchValue({
-                timestamp: data.timeStamp
+                timestamp: this.config.data.timeStamp,
             });
             this.importFromMessage();
         }
@@ -70,13 +80,17 @@ export class ImportPolicyDialog {
         this.innerHeight = window.innerHeight;
     }
 
+    handleChangeTab(order: number): void {
+        this.setImportType(order);
+    }
+
     public setImportType(importType: ImportType) {
         this.importType = importType;
         this.isImportTypeSelected = true;
     }
 
     public onNoClick(): void {
-        this.dialogRef.close(null);
+        this.ref.close(null);
     }
 
     public onAsyncError(error: any) {
@@ -89,17 +103,20 @@ export class ImportPolicyDialog {
         if (this.taskId) {
             const taskId: string = this.taskId;
             this.taskId = undefined;
-            this.taskService.get(taskId).subscribe((task) => {
-                this.loading = false;
-                const { result } = task;
-                this.dialogRef.close({
-                    type: 'message',
-                    data: this.dataForm.get('timestamp')?.value,
-                    policy: result
-                });
-            }, (e) => {
-                this.loading = false;
-            });
+            this.taskService.get(taskId).subscribe(
+                (task) => {
+                    this.loading = false;
+                    const {result} = task;
+                    this.ref.close({
+                        type: 'message',
+                        data: this.dataForm.get('timestamp')?.value,
+                        policy: result,
+                    });
+                },
+                (e) => {
+                    this.loading = false;
+                }
+            );
         }
     }
 
@@ -129,34 +146,40 @@ export class ImportPolicyDialog {
         }
         this.loading = true;
         const messageId = this.dataForm.get('timestamp')?.value;
-        this.modulesService.previewByMessage(messageId).subscribe((result) => {
-            this.loading = false;
-            this.dialogRef.close({
-                type: 'message',
-                data: this.dataForm.get('timestamp')?.value,
-                module: result
-            });
-        }, (error) => {
-            this.loading = false;
-        });
+        this.modulesService.previewByMessage(messageId).subscribe(
+            (result) => {
+                this.loading = false;
+                this.ref.close({
+                    type: 'message',
+                    data: this.dataForm.get('timestamp')?.value,
+                    module: result,
+                });
+            },
+            (error) => {
+                this.loading = false;
+            }
+        );
     }
 
     private moduleFromFile(file: any) {
-        const reader = new FileReader()
+        const reader = new FileReader();
         reader.readAsArrayBuffer(file);
         reader.addEventListener('load', (e: any) => {
             const arrayBuffer = e.target.result;
             this.loading = true;
-            this.modulesService.previewByFile(arrayBuffer).subscribe((result) => {
-                this.loading = false;
-                this.dialogRef.close({
-                    type: 'file',
-                    data: arrayBuffer,
-                    module: result
-                });
-            }, (e) => {
-                this.loading = false;
-            });
+            this.modulesService.previewByFile(arrayBuffer).subscribe(
+                (result) => {
+                    this.loading = false;
+                    this.ref.close({
+                        type: 'file',
+                        data: arrayBuffer,
+                        module: result,
+                    });
+                },
+                (e) => {
+                    this.loading = false;
+                }
+            );
         });
     }
 
@@ -166,32 +189,38 @@ export class ImportPolicyDialog {
         }
         this.loading = true;
         const messageId = this.dataForm.get('timestamp')?.value;
-        this.policyEngineService.pushPreviewByMessage(messageId).subscribe((result) => {
-            const { taskId, expectation } = result;
-            this.taskId = taskId;
-            this.expectedTaskMessages = expectation;
-        }, (error) => {
-            this.loading = false;
-            this.taskId = undefined;
-        });
+        this.policyEngineService.pushPreviewByMessage(messageId).subscribe(
+            (result) => {
+                const {taskId, expectation} = result;
+                this.taskId = taskId;
+                this.expectedTaskMessages = expectation;
+            },
+            (error) => {
+                this.loading = false;
+                this.taskId = undefined;
+            }
+        );
     }
 
     private policyFromFile(file: any) {
-        const reader = new FileReader()
+        const reader = new FileReader();
         reader.readAsArrayBuffer(file);
         reader.addEventListener('load', (e: any) => {
             const arrayBuffer = e.target.result;
             this.loading = true;
-            this.policyEngineService.previewByFile(arrayBuffer).subscribe((result) => {
-                this.loading = false;
-                this.dialogRef.close({
-                    type: 'file',
-                    data: arrayBuffer,
-                    policy: result
-                });
-            }, (e) => {
-                this.loading = false;
-            });
+            this.policyEngineService.previewByFile(arrayBuffer).subscribe(
+                (result) => {
+                    this.loading = false;
+                    this.ref.close({
+                        type: 'file',
+                        data: arrayBuffer,
+                        policy: result,
+                    });
+                },
+                (e) => {
+                    this.loading = false;
+                }
+            );
         });
     }
 
@@ -203,7 +232,7 @@ export class ImportPolicyDialog {
         const messageId = this.dataForm.get('timestamp')?.value;
         this.toolsService.previewByMessage(messageId).subscribe((result) => {
             this.loading = false;
-            this.dialogRef.close({
+            this.ref.close({
                 type: 'message',
                 data: this.dataForm.get('timestamp')?.value,
                 tool: result
@@ -221,7 +250,7 @@ export class ImportPolicyDialog {
             this.loading = true;
             this.toolsService.previewByFile(arrayBuffer).subscribe((result) => {
                 this.loading = false;
-                this.dialogRef.close({
+                this.ref.close({
                     type: 'file',
                     data: arrayBuffer,
                     tool: result
@@ -231,4 +260,12 @@ export class ImportPolicyDialog {
             });
         });
     }
+
+    // public OnViewDocumentation(): void {
+
+    // }
+
+    // public OnDirectDownload(): void {
+
+    // }
 }

@@ -111,6 +111,23 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Return tokens
+     *
+     * @param {string} [did]
+     * @param {string} [pageIndex]
+     * @param {string} [pageSize]
+     *
+     * @returns {ResponseAndCount<IToken>} - tokens
+     */
+    public async getTokensPage(
+        did?: string,
+        pageIndex?: number,
+        pageSize?: number
+    ): Promise<ResponseAndCount<IToken>> {
+        return await this.sendMessage(MessageAPI.GET_TOKENS_PAGE, { did, pageIndex, pageSize });
+    }
+
+    /**
      * Return token
      *
      * @param {string} [tokenId] - token id
@@ -386,9 +403,15 @@ export class Guardians extends NatsService {
     /**
      * Get associated tokens
      * @param did
+     * @param pageIndex
+     * @param pageSize
      */
-    public async getAssociatedTokens(did: string): Promise<ITokenInfo[]> {
-        return await this.sendMessage(MessageAPI.GET_ASSOCIATED_TOKENS, { did });
+    public async getAssociatedTokens(
+        did: string,
+        pageIndex: number,
+        pageSize: number
+    ): Promise<ResponseAndCount<ITokenInfo>> {
+        return await this.sendMessage(MessageAPI.GET_ASSOCIATED_TOKENS, { did, pageIndex, pageSize });
     }
 
     /**
@@ -934,6 +957,7 @@ export class Guardians extends NatsService {
         childrenLvl: any,
         idLvl: any,
         keyLvl: any,
+        refLvl: any
     ) {
         return await this.sendMessage(MessageAPI.COMPARE_DOCUMENTS, {
             type,
@@ -943,7 +967,8 @@ export class Guardians extends NatsService {
             propLvl,
             childrenLvl,
             idLvl,
-            keyLvl
+            keyLvl,
+            refLvl
         });
     }
 

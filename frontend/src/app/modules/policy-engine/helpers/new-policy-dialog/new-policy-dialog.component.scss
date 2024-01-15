@@ -1,0 +1,87 @@
+form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  overflow: visible;
+  padding-bottom: 25px;
+}
+
+.form-input-container {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 24px;
+}
+
+.action-buttons {
+  display: flex;
+}
+
+.cancel-button {
+  margin-left: auto;
+  margin-right: 15px;
+}
+
+::ng-deep {
+  .p-button {
+    border-radius: 8px;
+  }
+}
+
+.form-label {
+  margin-bottom: 6px;
+  color: var(--color-grey-black-1, #181818);
+  font-family: Inter;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 14px;
+}
+
+.dialog-body {
+  height: 45vh;
+  overflow-y: auto;
+
+  h3 {
+    color: #000;
+    font-family: Inter;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 18px;
+  }
+
+  ::ng-deep {
+    .p-dropdown, .p-multiselect {
+      width: 100%;
+    }
+  }
+}
+
+.dialog-footer {
+  padding: 32px 32px 0 32px;
+  border-top: 1px solid var(--color-grey-3, #E1E7EF);
+  background: var(--color-grey-white, #FFF);
+}
+
+::ng-deep {
+  .p-dialog-title {
+    font-family: Poppins, sans-serif;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 600;
+  }
+
+  .p-dialog {
+    box-shadow: none;
+  }
+
+  .p-dialog-header {
+    border-top-left-radius: 16px !important;
+    border-top-right-radius: 16px !important;
+  }
+
+  .p-dialog-content {
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+  }
+}

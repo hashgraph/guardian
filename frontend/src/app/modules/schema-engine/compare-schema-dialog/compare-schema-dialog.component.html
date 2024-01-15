@@ -1,63 +1,87 @@
-<div class="g-dialog-content">
-    <div class="g-dialog-header">
-        <div class="g-dialog-cancel">
-            <div class="g-dialog-cancel-btn" (click)="onClose()">
-                <mat-icon>close</mat-icon>
-            </div>
+<div class="dialog-body">
+    <div *ngIf="loading" class="loading">
+        <div class="preloader-image preloader-image-l-size"></div>
+    </div>
+
+    <div class="row-container">
+        <div class="policy-dropdown-container">
+            <label class="form-label" htmlFor="firstPolicy">Policy</label>
+            <p-dropdown
+                    (onChange)="onChange()"
+                    [(ngModel)]="topicId1"
+                    [options]="policies"
+                    [showClear]="true"
+                    appendTo="body"
+                    id="firstPolicy"
+                    optionLabel="name"
+                    optionValue="topicId"
+                    placeholder="Select Policy"
+            ></p-dropdown>
         </div>
-        <div class="g-dialog-title">
-            Compare schemas
-        </div>
-        <div class="g-dialog-actions">
-            <div class="g-dialog-actions-btn" (click)="onCompare()" [attr.disabled]="!schemaId1 || !schemaId2">
-                Compare
-            </div>
+
+        <div class="policy-dropdown-container">
+            <label class="form-label" htmlFor="firstSchema">First Schema</label>
+            <p-dropdown
+                    (onChange)="onChange()"
+                    [(ngModel)]="schemaId1"
+                    [options]="list1"
+                    [showClear]="true"
+                    appendTo="body"
+                    id="firstSchema"
+                    optionLabel="fullName"
+                    optionValue="id"
+                    placeholder="Select Schema"
+            ></p-dropdown>
         </div>
     </div>
-    <div class="g-dialog-body">
-        <div class="context">
-            <div *ngIf="loading" class="loading">
-                <mat-spinner></mat-spinner>
-            </div>
 
-            <div class="grid">
-                <mat-form-field appearance="outline" style="width: 150px">
-                    <mat-label>Policy:</mat-label>
-                    <mat-select [(value)]="topicId1" (valueChange)="onChange()">
-                        <mat-option>None</mat-option>
-                        <mat-option *ngFor="let policy of policies"
-                            [value]="policy.topicId">{{policy.name}}</mat-option>
-                    </mat-select>
-                </mat-form-field>
-                <mat-form-field appearance="outline" style="width: 100%">
-                    <mat-label>First schema:</mat-label>
-                    <mat-select [(value)]="schemaId1" (valueChange)="onChange()">
-                        <mat-option>None</mat-option>
-                        <mat-option [matTooltip]="schema.fullName" matTooltipPosition="below" matTooltipClass="guardian-tooltip"
-                            matTooltipShowDelay="500" *ngFor="let schema of list1" [value]="schema.id">{{schema.fullName}}</mat-option>
-                    </mat-select>
-                </mat-form-field>
-            </div>
+    <div class="row-container">
+        <div class="policy-dropdown-container">
+            <label class="form-label" htmlFor="secondPolicy">Policy</label>
+            <p-dropdown
+                    (onChange)="onChange()"
+                    [(ngModel)]="topicId2"
+                    [options]="policies"
+                    [showClear]="true"
+                    appendTo="body"
+                    id="secondPolicy"
+                    optionLabel="name"
+                    optionValue="topicId"
+                    placeholder="Select Policy"
+            ></p-dropdown>
+        </div>
 
-            <div class="grid">
-                <mat-form-field appearance="outline" style="width: 150px">
-                    <mat-label>Policy</mat-label>
-                    <mat-select [(value)]="topicId2" (valueChange)="onChange()">
-                        <mat-option>None</mat-option>
-                        <mat-option *ngFor="let policy of policies"
-                            [value]="policy.topicId">{{policy.name}}</mat-option>
-                    </mat-select>
-                </mat-form-field>
-                <mat-form-field appearance="outline" style="width: 100%">
-                    <mat-label>Secondary schema</mat-label>
-                    <mat-select [(value)]="schemaId2" (valueChange)="onChange()">
-                        <mat-option>None</mat-option>
-                        <mat-option [matTooltip]="schema.fullName" matTooltipPosition="below" matTooltipClass="guardian-tooltip"
-                            matTooltipShowDelay="500" *ngFor="let schema of list2" [value]="schema.id">{{schema.fullName}}</mat-option>
-                    </mat-select>
-                </mat-form-field>
-            </div>
+        <div class="policy-dropdown-container">
+            <label class="form-label" htmlFor="secondPolicy"
+            >Second Schema</label
+            >
+            <p-dropdown
+                    (onChange)="onChange()"
+                    [(ngModel)]="schemaId2"
+                    [options]="list2"
+                    [showClear]="true"
+                    appendTo="body"
+                    id="secondPolicy"
+                    optionLabel="fullName"
+                    optionValue="id"
+                    placeholder="Select Schema"
+            ></p-dropdown>
+        </div>
+    </div>
+</div>
 
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="cancel-button">
+            <button
+                    (click)="onClose()"
+                    class="button secondary"
+                    label="Cancel"
+                    pButton
+            ></button>
+        </div>
+        <div>
+            <button (click)="onCompare()" class="button" label="Compare" pButton></button>
         </div>
     </div>
 </div>

@@ -53,6 +53,10 @@ export interface SchemaField {
      */
     unitSystem: string;
     /**
+     * Property
+     */
+    property: string;
+    /**
      * Custom Type
      */
     customType: string;

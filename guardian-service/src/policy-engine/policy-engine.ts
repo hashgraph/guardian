@@ -500,6 +500,10 @@ export class PolicyEngine extends NatsService {
             replaceAllEntities(model.config, SchemaFields, schemaIRI, newSchema.iri);
             replaceAllVariables(model.config, 'Schema', schemaIRI, newSchema.iri);
 
+            if (model.projectSchema === schemaIRI) {
+                model.projectSchema = newSchema.iri;
+            }
+
             const name = newSchema.name;
             num++;
             notifier.info(`Schema ${num} (${name || '-'}) published`);

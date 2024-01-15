@@ -1,18 +1,8 @@
-import { ModuleComponent } from "../policy-configuration/blocks/module/module.component";
-import { ContainerBlockComponent } from "../policy-viewer/blocks/container-block/container-block.component";
+import { ModuleComponent } from '../policy-configuration/blocks/module/module.component';
+import { ContainerBlockComponent } from '../policy-viewer/blocks/container-block/container-block.component';
 import { BlockType } from '@guardian/interfaces';
-import {
-    BlockGroup,
-    BlockHeaders,
-    IBlockAbout,
-    PolicyBlock,
-    IBlockSetting,
-    ChildrenType,
-    ControlType,
-    PolicyModule,
-    PolicyTemplate
-} from "../structures";
-import { PolicyFolder } from "../structures/policy-models/interfaces/types";
+import { BlockGroup, BlockHeaders, ChildrenType, ControlType, IBlockSetting, PolicyModule } from '../structures';
+import { PolicyFolder } from '../structures/policy-models/interfaces/types';
 
 const Module: IBlockSetting = {
     type: BlockType.Module,
@@ -62,13 +52,13 @@ const Module: IBlockSetting = {
         post: false,
         get: false,
         input: (value: any, block: PolicyModule, module?: PolicyFolder): string[] => {
-            if(block === module) {
+            if (block === module) {
                 return block.outputEvents.map(e => e.name);
             }
             return block.inputEvents.map(e => e.name);
         },
         output: (value: any, block: PolicyModule, module?: PolicyFolder): string[] => {
-            if(block === module) {
+            if (block === module) {
                 return block.inputEvents.map(e => e.name);
             }
             return block.outputEvents.map(e => e.name);

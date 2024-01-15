@@ -198,15 +198,6 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                     replaceUrl: true,
                 });
                 break;
-            case TaskAction.IMPORT_TOOL_FILE:
-            case TaskAction.IMPORT_TOOL_MESSAGE:
-                this.router.navigate(['policy-configuration'], {
-                    queryParams: {
-                        toolId: result.toolId,
-                    },
-                    replaceUrl: true,
-                });
-                break;
             case TaskAction.WIZARD_CREATE_POLICY:
                 const { policyId, saveState } = result;
                 if (saveState) {
@@ -347,8 +338,6 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.CREATE_POLICY:
             case TaskAction.IMPORT_POLICY_FILE:
             case TaskAction.IMPORT_POLICY_MESSAGE:
-            case TaskAction.IMPORT_TOOL_FILE:
-            case TaskAction.IMPORT_TOOL_MESSAGE:
             case TaskAction.WIZARD_CREATE_POLICY:
             case TaskAction.PUBLISH_POLICY:
             case TaskAction.DELETE_POLICY:

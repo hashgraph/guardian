@@ -69,6 +69,7 @@ import { GridFSBucket } from 'mongodb';
 import { suggestionsAPI } from '@api/suggestions.service';
 import { SynchronizationTask } from '@helpers/synchronization-task';
 import { recordAPI } from '@api/record.service';
+import { projectsAPI } from '@api/projects.service';
 
 export const obj = {};
 
@@ -91,7 +92,9 @@ Promise.all([
         'v2-11-0',
         'v2-12-0',
         'v2-13-0',
-        'v2-16-0'
+        'v2-16-0',
+        'v2-17-0',
+        'v2-18-0'
     ]),
     MessageBrokerChannel.connect('GUARDIANS_SERVICE'),
     NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
@@ -176,7 +179,8 @@ Promise.all([
         await wizardAPI();
         await recordAPI();
         await brandingAPI(brandingRepository);
-        await suggestionsAPI()
+        await suggestionsAPI();
+        await projectsAPI();
     } catch (error) {
         console.error(error.message);
         process.exit(0);

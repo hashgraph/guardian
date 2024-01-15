@@ -26,7 +26,8 @@ import {
     Contract as ContractCollection,
     ExternalDocument,
     SuggestionsConfig,
-    Record
+    Record,
+    PolicyCategory
 } from '../entity';
 import { Binary } from 'bson';
 import {
@@ -38,7 +39,9 @@ import {
 import { BaseEntity } from '../models';
 import { DataBaseHelper } from '../helpers';
 import { Theme } from '../entity/theme';
+import { GetConditionsPoliciesByCategories } from '../helpers/policy-category';
 import { PolicyTool } from '../entity/tool';
+import { PolicyProperty } from '../entity/policy-property';
 
 /**
  * Database server
@@ -84,6 +87,8 @@ export class DatabaseServer {
         this.classMap.set(Tag, 'Tag');
         this.classMap.set(TagCache, 'TagCache');
         this.classMap.set(ExternalDocument, 'ExternalDocument');
+        this.classMap.set(PolicyCategory, 'PolicyCategories');
+        this.classMap.set(PolicyProperty, 'PolicyProperties');
     }
 
     /**
@@ -735,6 +740,48 @@ export class DatabaseServer {
      */
     public async getPolicy(policyId: string): Promise<Policy> {
         return await new DataBaseHelper(Policy).findOne(policyId);
+    }
+
+    /**
+     * Get Publish Policies
+     *
+     * @virtual
+     */
+    public static async getPublishPolicies(): Promise<Policy[]> {
+        return await new DataBaseHelper(Policy).find({
+            where: {
+                status: { $eq: 'PUBLISH' }
+            }
+        });
+    }
+
+    /**
+     * Get Policy Categories
+     *
+     * @virtual
+     */
+    public static async getPolicyCategories(): Promise<PolicyCategory[]> {
+        return await new DataBaseHelper(PolicyCategory).find(PolicyCategory);
+    }
+
+    /**
+     * Get Policy Properties
+     *
+     * @virtual
+     */
+    public static async getPolicyProperties(): Promise<PolicyProperty[]> {
+        return await new DataBaseHelper(PolicyProperty).find(PolicyProperty);
+    }
+
+    /**
+     * Get Policies By Category and Name
+     * @param {string[]} categoryIds - category ids
+     * @param {string} text - part of category name
+     * @returns {any} - found policies
+     */
+    public static async getFilteredPolicies(categoryIds: string[], text: string): Promise<Policy[]> {
+        const conditions = await GetConditionsPoliciesByCategories(categoryIds, text);
+        return await new DataBaseHelper(Policy).find({ $and: conditions });
     }
 
     /**
@@ -1956,9 +2003,13 @@ export class DatabaseServer {
         model.description = data.description;
         model.topicDescription = data.topicDescription;
         model.policyRoles = data.policyRoles;
+        model.policyNavigation = data.policyNavigation;
         model.policyTopics = data.policyTopics;
         model.policyTokens = data.policyTokens;
         model.policyGroups = data.policyGroups;
+        model.categories = data.categories;
+        model.projectSchema = data.projectSchema;
+
         return await new DataBaseHelper(Policy).save(model);
     }
 

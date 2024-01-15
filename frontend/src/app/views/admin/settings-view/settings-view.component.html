@@ -1,4 +1,4 @@
-<h1 class="settings-title">Change settings</h1>
+<!--<h1 class="settings-title">Change settings</h1>
 <div *ngIf="!isLoading; else spinner">
     <form [formGroup]="dataForm" (ngSubmit)="onSubmit()">
         <mat-form-field class="submit-field" appearance="outline">
@@ -19,8 +19,56 @@
         <button mat-raised-button color="primary" type="submit" class="submit-button"
             [disabled]="!dataForm.valid">Ok</button>
     </form>
+</div>-->
 
+<div class="container">
+    <ng-container [ngTemplateOutlet]="header"></ng-container>
+    <ng-container *ngIf="!isLoading">
+        <ng-container [ngTemplateOutlet]="container"></ng-container>
+    </ng-container>
+    <div *ngIf="isLoading" class="loading">
+        <div class="preloader-image preloader-image-l-size"></div>
+    </div>
 </div>
+<ng-container [ngTemplateOutlet]="actionsContainer"></ng-container>
+
+<ng-template #header>
+    <div class="header">
+        <h1>Settings</h1>
+    </div>
+</ng-template>
+
+<ng-template #container>
+    <div class="settings-container">
+        <form [formGroup]="dataForm">
+            <div class="form-input-container">
+                <label class="p-field-label" for="operatorId">* Operator ID</label>
+                <input class="p-field-input" formControlName="operatorId" id="operatorId" pInputText placeholder="0.0.1159"
+                       type="text"/>
+            </div>
+            <div class="form-input-container">
+                <label class="p-field-label" for="opKey">* Operator Key (Hedera Account Private Key)</label>
+                <input class="p-field-input" formControlName="operatorKey" id="opKey" pInputText placeholder="Operator key"
+                       type="text"/>
+            </div>
+            <div class="form-input-container">
+                <label class="p-field-label" for="ipfsKey">* IPFS Storage API Key</label>
+                <input class="p-field-input" formControlName="ipfsStorageApiKey" id="ipfsKey" pInputText
+                       placeholder="IPFS Storage API Key" type="text"/>
+            </div>
+        </form>
+    </div>
+</ng-template>
+
+<ng-template #actionsContainer>
+    <div class="actions-container" id="fixed-actions-container">
+        <div class="right-buttons">
+            <button (click)="onSubmit()" [disabled]="dataForm.invalid" class="button" pButton>
+                <span>Save Changes</span>
+            </button>
+        </div>
+    </div>
+</ng-template>
 
 <ng-template #spinner>
     <mat-spinner class="loading"></mat-spinner>

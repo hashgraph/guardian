@@ -7,7 +7,7 @@ import { ModuleEvent, ModuleVariable, PolicyModule, SchemaVariables } from '../.
 @Component({
     selector: 'module-properties',
     templateUrl: './module-properties.component.html',
-    styleUrls: ['./module-properties.component.css']
+    styleUrls: ['./module-properties.component.scss']
 })
 export class ModulePropertiesComponent implements OnInit {
     @Input('module') module!: any;

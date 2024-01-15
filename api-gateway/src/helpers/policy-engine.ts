@@ -165,6 +165,14 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
+     * Get policies by category Id
+     * @param filters
+     */
+    public async getPoliciesByCategoriesAndText(categoryIds: string[], text: string): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICIES_BY_CATEGORY, { categoryIds, text });
+    }
+
+    /**
      * Get block data
      * @param user
      * @param policyId
@@ -384,6 +392,16 @@ export class PolicyEngine extends NatsService {
             pageIndex,
             pageSize
         });
+    }
+
+    /**
+     * Get policy navigation
+     *
+     * @param user
+     * @param policyId
+     */
+    public async getNavigation(user: any, policyId: string) {
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_NAVIGATION, { user, policyId });
     }
 
     /**

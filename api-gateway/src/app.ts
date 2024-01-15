@@ -17,6 +17,7 @@ import { SwaggerConfig } from '@helpers/swagger-config';
 import { SwaggerModels, SwaggerPaths } from './old-descriptions';
 import { MeecoAuth } from '@helpers/meeco';
 import * as extraModels from './middlewares/validation/schemas'
+import { ProjectService } from '@helpers/projects';
 
 const PORT = process.env.PORT || 3002;
 
@@ -56,6 +57,7 @@ Promise.all([
         await new PolicyEngine().setConnection(cn).init();
         await new Users().setConnection(cn).init();
         await new Wallet().setConnection(cn).init();
+        await new ProjectService().setConnection(cn).init();
 
         await new MeecoAuth().setConnection(cn).init();
         await new MeecoAuth().registerListeners();

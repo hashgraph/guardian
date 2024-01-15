@@ -10,7 +10,7 @@ import cronstrue from 'cronstrue';
 @Component({
     selector: 'cron-config-dialog',
     templateUrl: './cron-config-dialog.component.html',
-    styleUrls: ['./cron-config-dialog.component.css']
+    styleUrls: ['./cron-config-dialog.component.scss']
 })
 export class CronConfigDialog {
     started = false;

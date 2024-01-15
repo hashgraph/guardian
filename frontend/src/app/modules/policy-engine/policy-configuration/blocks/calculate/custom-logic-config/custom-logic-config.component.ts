@@ -2,12 +2,11 @@ import { Component, EventEmitter, Inject, Input, OnInit, Output, ViewEncapsulati
 import { MatDialog } from '@angular/material/dialog';
 import { CodeEditorDialogComponent } from '../../../../helpers/code-editor-dialog/code-editor-dialog.component';
 import { IModuleVariables, PolicyBlock, SchemaVariables } from '../../../../structures';
-import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
 
 @Component({
     selector: 'app-custom-logic-config',
     templateUrl: './custom-logic-config.component.html',
-    styleUrls: ['./custom-logic-config.component.css'],
+    styleUrls: ['./custom-logic-config.component.scss'],
     encapsulation: ViewEncapsulation.Emulated
 })
 export class CustomLogicConfigComponent implements OnInit {

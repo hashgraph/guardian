@@ -11,8 +11,8 @@
         (cdkDropListDropped)="drop($event)"
         (cdkDropListSorted)="onDragSorted($event)" 
         (cdkDropListEntered)="onDragEntered($event)"
-        [cdkDropListSortPredicate]="onDragSortPredicate">
-
+        [cdkDropListSortPredicate]="onDragSortPredicate"
+    >
         <div *ngIf="data" class="tree" [attr.readonly]="readonly" [attr.move-actions]="visibleMoveActions">
             <div class="block-all-expand" (click)="onAllCollapse()" [attr.collapsed]="allCollapse">
                 <mat-icon *ngIf="allCollapse === '2'">unfold_more</mat-icon>
@@ -34,8 +34,8 @@
                     cdkDrag 
                     [cdkDragData]="item.level" 
                     [cdkDragDisabled]="item.root"
-                    [attr.deprecated]="item.deprecated">
-
+                    [attr.deprecated]="item.deprecated"
+                >
                     <div class="block-expand" (click)="onCollapse($event, item)">
                         <mat-icon>arrow_drop_down</mat-icon>
                     </div>
@@ -112,7 +112,8 @@
                                 </button>
                             </div>
                             <div class="actions-container">
-                                <button (click)="onVisibleMoreActions($event)" mat-icon-button class="action-button more-action-button">
+                                <button (click)="onVisibleMoreActions($event)" mat-icon-button
+                                        class="action-button more-action-button">
                                     <mat-icon>more_horiz</mat-icon>
                                 </button>
                                 <button (click)="onSearch($event)" mat-icon-button class="action-button">

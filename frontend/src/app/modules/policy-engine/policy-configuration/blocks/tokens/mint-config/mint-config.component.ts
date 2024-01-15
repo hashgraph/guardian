@@ -7,7 +7,7 @@ import { IModuleVariables, PolicyBlock, TokenTemplateVariables, TokenVariables }
 @Component({
     selector: 'mint-config',
     templateUrl: './mint-config.component.html',
-    styleUrls: ['./mint-config.component.css'],
+    styleUrls: ['./mint-config.component.scss'],
     encapsulation: ViewEncapsulation.Emulated
 })
 export class MintConfigComponent implements OnInit {
@@ -17,7 +17,7 @@ export class MintConfigComponent implements OnInit {
 
     private moduleVariables!: IModuleVariables | null;
     private item!: PolicyBlock;
-    
+
     propHidden: any = {
         main: false,
     };
@@ -63,7 +63,7 @@ export class MintConfigComponent implements OnInit {
         delete this.properties.tokenId;
         delete this.properties.template;
     }
-    
+
     onSave() {
         this.item.changed = true;
     }

@@ -10,6 +10,7 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ConfigType, IUser, sortObjectsArray } from '@guardian/interfaces';
 import { SuggestionsService } from 'src/app/services/suggestions.service';
 import { ProfileService } from 'src/app/services/profile.service';
+import { DndDropEvent } from 'ngx-drag-drop';
 
 interface SuggestionsOrderPriorityItem {
     id: string;
@@ -169,5 +170,9 @@ export class SuggestionsConfigurationComponent {
             this.suggestionsOrderPriority.indexOf(item),
             0
         );
+    }
+
+    onLeftDrop(event: DndDropEvent, policiesAndModules: SuggestionsOrderPriorityItem[]) {
+        console.log('123');
     }
 }

@@ -1,9 +1,269 @@
-<div class="content user-profile">
-
+<div class="container">
+    <ng-container
+            *ngIf="loading && taskId"
+            [ngTemplateOutlet]="taskExecution"
+    ></ng-container>
+    <ng-container *ngIf="!loading && isConfirmed">
+        <ng-container [ngTemplateOutlet]="header"></ng-container>
+        <ng-container
+                *ngIf="profile"
+                [ngTemplateOutlet]="userInfo"
+        ></ng-container>
+    </ng-container>
+    <ng-container
+            *ngIf="!loading && !isConfirmed"
+            [ngTemplateOutlet]="registerDID"
+    ></ng-container>
     <div *ngIf="loading && !taskId" class="loading">
-        <mat-spinner></mat-spinner>
+        <div class="preloader-image preloader-image-l-size"></div>
+    </div>
+</div>
+
+<ng-template #header>
+    <div class="header">
+        <h1>Profile</h1>
+    </div>
+</ng-template>
+
+<ng-template #userInfo>
+    <div class="user-info-container">
+        <div class="item">
+            <span>DID Document</span>
+            <div
+                (click)="openDIDDocument(profile!.didDocument, 'DID')"
+                class="view-document-button"
+            >
+                <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg" svgClass="primary-color">
+                </svg-icon>
+                <span>View document</span>
+            </div>
+        </div>
+        <div class="item">
+            <span>VC Document</span>
+            <div
+                (click)="openVCDocument(profile!.vcDocument, 'VC')"
+                class="view-document-button"
+            >
+                <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg" svgClass="primary-color">
+                </svg-icon>
+                <span>View document</span>
+            </div>
+        </div>
+        <div class="item">
+            <span>Balance</span>
+            <span>{{ balance }}</span>
+        </div>
+        <div class="item">
+            <span>Hedera Account ID</span>
+            <div>
+                <hedera-explorer
+                    [params]="profile!.hederaAccountId || ''"
+                    type="accounts"
+                >{{ profile!.hederaAccountId }}</hedera-explorer>
+            </div>
+        </div>
+        <div class="item">
+            <span>DID</span>
+            <span>{{ profile!.did }}</span>
+        </div>
+        <div *ngIf="profile!.topicId" class="item">
+            <span>User Topic</span>
+            <div>
+                <hedera-explorer [params]="profile!.topicId" type="topics"
+                >{{ profile!.topicId }}
+                </hedera-explorer>
+            </div>
+        </div>
+        <div *ngIf="profile!.parentTopicId" class="item">
+            <span>Initialization Topic</span>
+            <div>
+                <hedera-explorer [params]="profile!.parentTopicId" type="topics"
+                >{{ profile!.parentTopicId }}
+                </hedera-explorer>
+            </div>
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #registerDID>
+    <form
+        (ngSubmit)="onHederaSubmit()"
+        *ngIf="!isConfirmed && isNewAccount"
+        [formGroup]="hederaForm"
+        class="finish-setup-form"
+    >
+        <div class="finish-setup-title">Finish Setup</div>
+        <div class="finish-setup-form-container">
+            <div class="list">
+                <div *ngIf="!generated" class="list-item">
+                    <div class="input-field-container">
+                        <label class="form-label" htmlFor="operatorId">
+                            * OPERATOR ID (Hedera Account):
+                        </label>
+                        <input
+                            formControlName="hederaAccountId"
+                            id="operatorId"
+                            pInputText
+                            placeholder="0.0.1548173"
+                            type="text"
+                        />
+                    </div>
+                    <div class="input-field-container">
+                        <label class="form-label" htmlFor="operatorKey">
+                            * OPERATOR KEY (Hedera Account Private Key):
+                        </label>
+                        <input
+                            formControlName="hederaAccountKey"
+                            id="operatorKey"
+                            pInputText
+                            placeholder="302e020100300506032b657004220420e..."
+                            type="text"
+                        />
+                    </div>
+                    <div *ngIf="!showForm && !generated" class="topic-id-field">
+                        <mat-form-field
+                            appearance="outline"
+                            class="example-full-width"
+                        >
+                            <mat-label>Topic ID:</mat-label>
+                            <mat-select [formControl]="selectedTokenId">
+                                <mat-select-trigger>
+                                    {{selectedTokenId.value}}
+                                </mat-select-trigger>
+                                <mat-option
+                                    *ngFor="let topic of userTopics"
+                                    [value]="topic.topicId"
+                                >
+                                    <div class="topic-item">
+                                        <span>{{ topic.topicId }}</span>
+                                        <span>
+                                            <hedera-explorer
+                                                [params]="topic.topicId"
+                                                type="topics"
+                                            >{{topic.date}}</hedera-explorer>
+                                        </span>
+                                    </div>
+                                </mat-option>
+                            </mat-select>
+                        </mat-form-field>
+
+                        <div class="list-button">
+                            <button
+                                (click)="getAllUserTopics($event)"
+                                [disabled]="!hederaForm.valid"
+                                aria-label="Refresh topics"
+                                color="primary"
+                                mat-mini-fab
+                            >
+                                <mat-icon>refresh</mat-icon>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div *ngIf="!generated">
+                    <p-button
+                        (click)="randomKey()"
+                        class="generate-btn"
+                        label="Generate"
+                        styleClass="p-button-outlined"
+                    >
+                    </p-button>
+                </div>
+                <div *ngIf="showForm && generated" class="list-item">
+                    <app-schema-form
+                        (change)="onChangeForm()"
+                        [formGroup]="vcForm"
+                        [isFormForFinishSetup]="true"
+                        [private-fields]="hideVC"
+                        [schema]="schema"
+                        [showButtons]="false"
+                    >
+                    </app-schema-form>
+                </div>
+            </div>
+            <div *ngIf="!generated" class="action-btns">
+                <ng-container *ngIf="showForm; else proceedButton">
+                    <p-button
+                        (click)="onRestoreDataClick()"
+                        [disabled]="shouldDisableActionBtns"
+                        class="generate-btn"
+                        label="Restore data"
+                        styleClass="p-button-outlined"
+                    >
+                        <i class="pi pi-replay"></i>
+                    </p-button>
+                    <p-button
+                        (click)="onNextClick()"
+                        [disabled]="shouldDisableActionBtns"
+                        class="next-btn"
+                        label="Next"
+                    >
+                    </p-button>
+                </ng-container>
+                <ng-template #proceedButton>
+                    <p-button
+                        (click)="onNextClick()"
+                        [disabled]="shouldDisableActionBtns"
+                        class="next-btn"
+                        label="Proceed"
+                    >
+                    </p-button>
+                </ng-template>
+            </div>
+            <div *ngIf="showForm && generated" class="white-space"></div>
+            <div *ngIf="showForm && generated" id="connect-btn">
+                <div style="width: fit-content; margin-left: auto;">
+                    <p-button
+                        [disabled]="!formValid"
+                        class="connect-btn"
+                        label="Connect"
+                        type="submit"
+                    >
+                    </p-button>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <div *ngIf="!isConfirmed && !isNewAccount && !isFailed" class="loading">
+        <div class="progress">
+            <span>Finishing Setup</span>
+            <mat-progress-bar
+                [value]="progress"
+                mode="determinate"
+            ></mat-progress-bar>
+        </div>
     </div>
 
+    <div *ngIf="!isConfirmed && isFailed" class="error-list">
+        <p>An error occurred while creating the document.</p>
+        <p>Please try again later.</p>
+        <button
+            (click)="retry()"
+            color="primary"
+            mat-raised-button
+            type="button"
+        >
+            Retry
+        </button>
+    </div>
+
+    <div *ngIf="errorLoadSchema" class="error-schema">
+        <p>Failed to load system schemas.</p>
+    </div>
+</ng-template>
+
+<ng-template #taskExecution>
+    <async-progress
+            (completed)="onAsyncCompleted()"
+            (error)="onAsyncError($event)"
+            *ngIf="loading && taskId"
+            [taskId]="taskId"
+    ></async-progress>
+</ng-template>
+
+<!--
+<div class="content user-profile" style="display: none">
     <async-progress *ngIf="loading && taskId" [taskId]="taskId"
             (error)="onAsyncError($event)" (completed)="onAsyncCompleted()"></async-progress>
 
@@ -113,7 +373,7 @@
             <ng-container *ngIf="showForm; else proceedButton">
                 <button
                     mat-stroked-button
-                    class="action-btns__item action-btns__item--stroked"
+                    class="action-btns__item action-btns__item&#45;&#45;stroked"
                     [disabled]="shouldDisableActionBtns"
                     color="primary"
                     (click)="onRestoreDataClick()"
@@ -176,3 +436,4 @@
     </div>
 
 </div>
+-->
