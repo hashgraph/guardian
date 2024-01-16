@@ -41,6 +41,7 @@ WORKDIR /usr/local/guardian-service
 COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.tgz /tmp/interfaces.tgz
 COPY --from=commonModuleBuilder /usr/local/common/guardian-common-*.tgz /tmp/common.tgz
 COPY --from=guardianServiceBuilder  /usr/local/guardian-service/yarn.lock ./
+ADD ./guardian-service/src/migrations/artifacts ./src/migrations/artifacts/.
 COPY ./guardian-service/package.json ./
 COPY ./yarn.lock ./
 COPY ./package-lock.json ./
