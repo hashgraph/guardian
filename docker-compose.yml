@@ -51,10 +51,10 @@ services:
       - ./file:/vault/file:rw
       - ./config:/vault/config:rw
 
-# https://docs.docker.com/compose/environment-variables/envvars-precedence/
-# Environment leverage the gerarchy defined in the docker compose between "env_file" and "environment" attributes
-# ecosystem variables defined in the "env_file" .env.${GUARDIAN_ENV}.guardian.system
-# specific service variables defined by "environment" can override what is defined in the ecosystem file
+  # https://docs.docker.com/compose/environment-variables/envvars-precedence/
+  # Environment leverage the gerarchy defined in the docker compose between "env_file" and "environment" attributes
+  # ecosystem variables defined in the "env_file" .env.${GUARDIAN_ENV}.guardian.system
+  # specific service variables defined by "environment" can override what is defined in the ecosystem file
 
   notification-service:
     env_file:

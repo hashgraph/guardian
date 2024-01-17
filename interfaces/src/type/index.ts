@@ -35,3 +35,5 @@ export * from './user-role.type';
 export * from './user.type';
 export * from './contract.type';
 export * from './contract-param.type';
+export * from './w3s-events';
+export * from './policy-category-type';

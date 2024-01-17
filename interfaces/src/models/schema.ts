@@ -227,8 +227,9 @@ export class Schema implements ISchema {
         this.type = SchemaHelper.buildType(this.uuid, this.version);
         const { previousVersion } = SchemaHelper.parseSchemaComment(this.document.$comment);
         this.previousVersion = previousVersion;
-        this.fields = SchemaHelper.parseFields(this.document, this.contextURL, null, includeSystemProperties);
-        this.conditions = SchemaHelper.parseConditions(this.document, this.contextURL, this.fields);
+        const schemaCache = new Map<string, any>();
+        this.fields = SchemaHelper.parseFields(this.document, this.contextURL, schemaCache, null, includeSystemProperties);
+        this.conditions = SchemaHelper.parseConditions(this.document, this.contextURL, this.fields, schemaCache);
     }
 
     /**

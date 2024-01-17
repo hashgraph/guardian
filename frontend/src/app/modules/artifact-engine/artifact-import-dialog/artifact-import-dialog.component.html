@@ -3,10 +3,10 @@
         Import Artifacts
     </h1>
     <div mat-dialog-content>
-        <form *ngIf="type === 'policy'">
+        <form>
             <mat-form-field class="example-full-width" appearance="outline">
                 <mat-label>Policy Identifier</mat-label>
-                <mat-select [formControl]="parentId">
+                <mat-select [formControl]="policyId">
                     <ng-container *ngFor="let policy of policies">
                         <mat-option value="{{policy.id}}">{{policy.name}}</mat-option>
                     </ng-container>
@@ -15,22 +15,13 @@
             <app-file-drag-n-drop fileExtension="*" [multiple]="true" (onFileLoaded)="importFiles($event)"
                 dropZoneLabel="Import Artifacts"></app-file-drag-n-drop>
             <div mat-dialog-actions>
-                <button mat-button type="button" [mat-dialog-close]>Cancel</button>
-            </div>
-        </form>
-        <form *ngIf="type === 'tool'">
-            <mat-form-field class="example-full-width" appearance="outline">
-                <mat-label>Tool Identifier</mat-label>
-                <mat-select [formControl]="parentId">
-                    <ng-container *ngFor="let tool of tools">
-                        <mat-option value="{{tool.id}}">{{tool.name}}</mat-option>
-                    </ng-container>
-                </mat-select>
-            </mat-form-field>
-            <app-file-drag-n-drop fileExtension="*" [multiple]="true" (onFileLoaded)="importFiles($event)"
-                dropZoneLabel="Import Artifacts"></app-file-drag-n-drop>
-            <div mat-dialog-actions>
-                <button mat-button type="button" [mat-dialog-close]>Cancel</button>
+                <div class="cancel-button">
+                    <p-button
+                            (click)="onNoClick()"
+                            label="Cancel"
+                            styleClass="p-button-outlined"
+                    ></p-button>
+                </div>
             </div>
         </form>
     </div>

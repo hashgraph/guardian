@@ -1,304 +1,459 @@
 <div class="content">
-    <div *ngIf="loading" class="loading">
-        <mat-spinner></mat-spinner>
-    </div>
-
-    <div *ngIf="!isSystem && !isConfirmed" class="not-exist">
-        Before starting work you need to get DID <a [routerLink]="['/profile']">here</a>
-    </div>
+    <div class="page-title">Schemas</div>
 
     <div class="actions">
-        <div style="padding: 0px 12px 0px 0px">
-            <mat-form-field appearance="outline">
-                <mat-label>Type</mat-label>
-                <mat-select [(value)]="type" (selectionChange)="onChangeType($event)">
-                    <mat-option value="policy" [disabled]="!isConfirmed">Policy Schemas</mat-option>
-                    <mat-option value="module" [disabled]="!isConfirmed">Module Schemas</mat-option>
-                    <mat-option value="tool" [disabled]="!isConfirmed">Tool Schemas</mat-option>
-                    <mat-option value="tag" [disabled]="!isConfirmed">Tag Schemas</mat-option>
-                    <mat-option value="system">System Schemas</mat-option>
-                </mat-select>
-            </mat-form-field>
+
+        <div class="tabs-nav">
+            <p-tabView>
+                <p-tabPanel *ngFor="let tab of schemasTypes" [selected]="tab.value === type">
+                    <ng-template pTemplate="header">
+                        <div (click)="onChangeType(tab.value)" class="tabview-label">{{ tab.label }}</div>
+                    </ng-template>
+                </p-tabPanel>
+            </p-tabView>
         </div>
-        <div>
-            <ng-container *ngIf="isPolicy">
-                <mat-form-field appearance="outline">
-                    <mat-label>Policy</mat-label>
-                    <mat-select [(value)]="currentTopic" (selectionChange)="onFilter()">
-                        <mat-option value="">All</mat-option>
-                        <mat-option class="draft-topic-option" value="draft">No binding</mat-option>
-                        <mat-option *ngFor="let policy of policies" [value]="policy.topicId">
-                            <span>{{policy.name}}</span>
-                            <span> ({{policy.topicId}})</span>
-                        </mat-option>
-                    </mat-select>
-                </mat-form-field>
-            </ng-container>
-            <!-- <ng-container *ngIf="isModule">
-                <mat-form-field appearance="outline">
-                    <mat-label>Module</mat-label>
-                    <mat-select [(value)]="currentTopic" (selectionChange)="onFilter()">
-                        <mat-option value="">All</mat-option>
-                        <mat-option class="draft-topic-option" value="draft">No binding</mat-option>
-                        <mat-option *ngFor="let module of modules" [value]="module.topicId">
-                            <span>{{module.name}}</span>
-                            <span> ({{module.topicId}})</span>
-                        </mat-option>
-                    </mat-select>
-                </mat-form-field>
-            </ng-container> -->
-            <ng-container *ngIf="isTool">
-                <mat-form-field appearance="outline">
-                    <mat-label>Tools</mat-label>
-                    <mat-select [(value)]="currentTopic" (selectionChange)="onFilter()">
-                        <mat-option value="">All</mat-option>
-                        <mat-option *ngFor="let tool of tools" [value]="tool.topicId">
-                            <span>{{tool.name}}</span>
-                            <span> ({{tool.topicId}})</span>
-                        </mat-option>
-                    </mat-select>
-                </mat-form-field>
-            </ng-container>
-        </div>
-        <div style="text-align: end">
-            <button 
-                *ngIf="canCreate" 
-                [attr.readonly]="readonly"
-                mat-raised-button color="primary" 
-                class="toolbar-btn add" 
-                (click)="onCreateSchemas()">
-                <mat-icon>add</mat-icon>
-                <span>Create New</span>
-            </button>
-            <button 
-                *ngIf="canImport"
-                [attr.readonly]="readonly"
-                (click)="onImportSchemas()" 
-                class="toolbar-btn" 
-                color="primary"
-                mat-raised-button>
-                <mat-icon>file_open</mat-icon>
-                <span>Import</span>
-            </button>
-            <button 
-                *ngIf="isPolicy || isModule || isTool"
-                (click)="onCompare()" 
-                class="toolbar-btn" 
-                color="primary"
-                mat-raised-button>
-                <mat-icon>compare</mat-icon>
-                <span>Compare</span>
-            </button>
+
+        <div class="actions-controls-container">
+            <div class="policy-dropdown-container">
+                <ng-container *ngIf="isPolicy">
+                    <p-dropdown
+                            (onChange)="onFilter($event)"
+                            [(ngModel)]="currentTopic"
+                        [options]="policies"
+                            [showClear]="false"
+                            class="policy-dropdown"
+                            optionLabel="name"
+                        optionValue="topicId"
+                        placeholder="Policy"></p-dropdown>
+                </ng-container>
+                <ng-container *ngIf="isTool">
+                    <p-dropdown
+                            (onChange)="onFilter($event)"
+                            [(ngModel)]="currentTopic"
+                        [options]="tools"
+                            [showClear]="true"
+                            class="policy-dropdown"
+                            optionLabel="name"
+                        optionValue="topicId"
+                        placeholder="Tool"></p-dropdown>
+                </ng-container>
+            </div>
+            <div class="schema-actions-buttons-container">
+                <p-button
+                        (click)="onCreateSchemas()"
+                        *ngIf="canCreate"
+                    class="toolbar-btn"
+                >
+                    <mat-icon class="toolbar-icons">add</mat-icon>
+                    <span>Create a Schema</span>
+                </p-button>
+                <p-button
+                        (click)="onImportSchemas()"
+                        *ngIf="canImport"
+                    class="toolbar-btn"
+                >
+                    <mat-icon class="toolbar-icons">file_open</mat-icon>
+                    <span>Import</span>
+                </p-button>
+                <p-button
+                        (click)="onCompare()"
+                    *ngIf="isPolicy || isModule || isTool"
+                        class="toolbar-btn compare-button"
+                    styleClass="p-button-outlined"
+                >
+                    <mat-icon class="toolbar-icons">compare</mat-icon>
+                    <span>Compare</span>
+                </p-button>
+            </div>
         </div>
     </div>
 
     <div *ngIf="isAny" class="table-container">
-        <table mat-table [dataSource]="page" class="schemas-table" [attr.system]="isSystem">
-            <ng-container matColumnDef="selected">
-                <th mat-header-cell *matHeaderCellDef>
-                    <mat-checkbox class="example-margin" [checked]="selectedAll" color="primary"
-                        (change)="selectAll($event.checked)">
-                    </mat-checkbox>
-                </th>
-                <td mat-cell *matCellDef="let element">
-                    <mat-checkbox class="example-margin" [(ngModel)]="element._selected" color="primary"
-                        [disabled]="!element.messageId" (change)="selectItem()">
-                    </mat-checkbox>
-                </td>
-            </ng-container>
-            <ng-container matColumnDef="uuid">
-                <th *matHeaderCellDef mat-header-cell>ID</th>
-                <td mat-cell *matCellDef="let element">{{element.uuid}}</td>
-            </ng-container>
-            <ng-container matColumnDef="policy">
-                <th *matHeaderCellDef mat-header-cell>Policy</th>
-                <td mat-cell *matCellDef="let element">
-                    <a 
-                        *ngIf="element.__policyId"
-                        class="policy-link" 
-                        [routerLink]="['/policy-configuration']" 
-                        [queryParams]="{ policyId: element.__policyId }">{{element.__policyName}}</a>
-                </td>
-            </ng-container>
-            <ng-container matColumnDef="module">
-                <th *matHeaderCellDef mat-header-cell>Module</th>
-                <td *matCellDef="let element" mat-cell>{{moduleNameByTopic[element.topicId]}}</td>
-            </ng-container>
-            <ng-container matColumnDef="tool">
-                <th *matHeaderCellDef mat-header-cell>Tool</th>
-                <td *matCellDef="let element" mat-cell>
-                    <a 
-                        *ngIf="element.__toolId"
-                        class="policy-link" 
-                        [routerLink]="['/policy-configuration']" 
-                        [queryParams]="{ toolId: element.__toolId }">{{element.__toolName}}</a>
-                </td>
-            </ng-container>
-            <ng-container matColumnDef="type">
-                <th *matHeaderCellDef mat-header-cell>Name</th>
-                <td mat-cell *matCellDef="let element">{{element.name}}</td>
-            </ng-container>
-            <ng-container matColumnDef="topic">
-                <th *matHeaderCellDef mat-header-cell>Topic</th>
-                <td mat-cell *matCellDef="let element">
-                    <ng-container *ngIf="element.topicId === 'draft'; else topicExplorer">
-                        <span>Draft</span>
+        <p-table [value]="page">
+            <ng-template pTemplate="header">
+                <tr>
+                    <ng-container *ngIf="type === 'policy'">
+                        <th class="header-cell-text" style="min-width: 140px; max-width: 150px;">
+                            Policy
+                        </th>
+                        <th class="header-cell-text" style="min-width: 140px; max-width: 150px;">
+                            Name
+                        </th>
+                        <th class="header-cell-text" style="min-width: 140px;">
+                            Topic
+                        </th>
+                        <th class="header-cell-text" style="min-width: 100px;">
+                            Version
+                        </th>
+                        <th class="header-cell-text" style="min-width: 100px;">
+                            Entity
+                        </th>
+                        <th class="header-cell-text" style="min-width: 185px;">
+                            Tags
+                        </th>
+                        <th class="header-cell-text" style="min-width: 100px;">
+                            Status
+                        </th>
+                        <th class="header-cell-text" style="min-width: 140px;">
+                            Operations
+                        </th>
                     </ng-container>
-                    <ng-template #topicExplorer>
-                        <hedera-explorer type="topics" [params]="element.topicId">{{element.topicId}}</hedera-explorer>
-                    </ng-template>
-                </td>
-            </ng-container>
-            <ng-container matColumnDef="version">
-                <th mat-header-cell *matHeaderCellDef> Version </th>
-                <td mat-cell *matCellDef="let element">{{element.version || element.sourceVersion}}</td>
-            </ng-container>
-            <ng-container matColumnDef="owner">
-                <th mat-header-cell *matHeaderCellDef> Owner </th>
-                <td mat-cell *matCellDef="let element">{{element.owner}}</td>
-            </ng-container>
-            <ng-container matColumnDef="entity">
-                <th mat-header-cell *matHeaderCellDef> Entity </th>
-                <td mat-cell *matCellDef="let element">{{element.entity}}</td>
-            </ng-container>
-            <ng-container matColumnDef="tags">
-                <th mat-header-cell *matHeaderCellDef> Tags </th>
-                <td mat-cell *matCellDef="let element">
-                    <tags-explorer 
-                        [data]="element._tags" 
-                        [owner]="owner" 
-                        [target]="element.id" 
-                        [entity]="tagEntity"
-                        [schemas]="tagSchemas" 
-                        [service]="tagsService"></tags-explorer>
-                </td>
-            </ng-container>
-            <ng-container matColumnDef="status">
-                <th mat-header-cell *matHeaderCellDef> Status </th>
-                <td mat-cell *matCellDef="let element">
-                    <span [ngSwitch]="element.status">
-                        <div *ngSwitchCase="'DRAFT'">
-                            <span class="schema-status status-DRAFT">Draft</span>
-                        </div>
-                        <div *ngSwitchCase="'PUBLISHED'">
-                            <span class="schema-status status-PUBLISHED">Published</span>
-                        </div>
-                        <div *ngSwitchCase="'UNPUBLISHED'">
-                            <span class="schema-status status-UNPUBLISHED">Unpublished</span>
-                        </div>
-                        <div *ngSwitchDefault>
-                            <span class="schema-status">{{element.status}}</span>
-                        </div>
-                    </span>
-                </td>
-            </ng-container>
-            <ng-container matColumnDef="active">
-                <th mat-header-cell *matHeaderCellDef> Status </th>
-                <td mat-cell *matCellDef="let element">
-                    <span>
-                        <div *ngIf="!element.active">
-                            <span class="schema-status status-DRAFT">Inactive</span>
-                        </div>
-                        <div *ngIf="element.active">
-                            <span class="schema-status status-PUBLISHED">Active</span>
-                        </div>
-                    </span>
-                </td>
-            </ng-container>
-            <ng-container matColumnDef="operation">
-                <th mat-header-cell *matHeaderCellDef> Operations </th>
-                <td mat-cell *matCellDef="let element">
-                    <div 
-                        *ngIf="element.status === 'DRAFT'" 
-                        [attr.disabled]="element.topicId === 'draft'"
-                        class="btn-approve" 
-                        (click)="onPublish(element)">
-                        Publish
-                    </div>
-                    <div 
-                        *ngIf="element.status === 'UNPUBLISHED'" 
-                        [attr.disabled]="element.topicId === 'draft'"
-                        class="btn-approve" 
-                        (click)="onPublish(element)">
-                        Publish
-                    </div>
-                </td>
-            </ng-container>
-            <ng-container matColumnDef="tagOperation">
-                <th mat-header-cell *matHeaderCellDef> Operations </th>
-                <td mat-cell *matCellDef="let element">
-                    <div 
-                        *ngIf="element.status === 'DRAFT'" 
-                        [attr.disabled]="element.topicId === 'draft'"
-                        class="btn-approve" 
-                        (click)="onPublishTagSchema(element)">
-                        Publish
-                    </div>
-                    <div 
-                        *ngIf="element.status === 'UNPUBLISHED'" 
-                        [attr.disabled]="element.topicId === 'draft'"
-                        class="btn-approve" 
-                        (click)="onPublishTagSchema(element)">
-                        Publish
-                    </div>
-                </td>
-            </ng-container>
-            <ng-container matColumnDef="activeOperation">
-                <th mat-header-cell *matHeaderCellDef> Operations </th>
-                <td mat-cell *matCellDef="let element">
-                    <div *ngIf="!element.active" class="btn-approve" (click)="onActive(element)">Active</div>
-                </td>
-            </ng-container>
+                    <ng-container *ngIf="type === 'module'">
+                        <th class="header-cell-text" style="min-width: 140px; max-width: 150px;">
+                            Name
+                        </th>
+                        <th class="header-cell-text" style="min-width: 100px;">
+                            Status
+                        </th>
+                        <th class="header-cell-text" style="min-width: 140px;">
+                            Operations
+                        </th>
+                    </ng-container>
+                    <ng-container *ngIf="type === 'tool'">
+                        <th class="header-cell-text" style="min-width: 140px; max-width: 150px;">
+                            Tool
+                        </th>
+                        <th class="header-cell-text" style="min-width: 140px; max-width: 150px;">
+                            Name
+                        </th>
+                        <th class="header-cell-text" style="min-width: 100px;">
+                            Status
+                        </th>
+                        <th class="header-cell-text" style="min-width: 140px;">
+                            Operations
+                        </th>
+                    </ng-container>
+                    <ng-container *ngIf="type === 'system'">
+                        <th class="header-cell-text" style="min-width: 140px; max-width: 150px;">
+                            Name
+                        </th>
+                        <th class="header-cell-text" style="min-width: 140px;">
+                            Owner
+                        </th>
+                        <th class="header-cell-text" style="min-width: 100px;">
+                            Entity
+                        </th>
+                        <th class="header-cell-text" style="min-width: 100px;">
+                            Status
+                        </th>
+                        <th class="header-cell-text" style="min-width: 140px;">
+                            Operations
+                        </th>
+                    </ng-container>
+                    <ng-container *ngIf="type === 'tag'">
+                        <th class="header-cell-text" style="min-width: 140px; max-width: 150px;">
+                            Name
+                        </th>
+                        <th class="header-cell-text" style="min-width: 140px;">
+                            Owner
+                        </th>
+                        <th class="header-cell-text" style="min-width: 100px;">
+                            Status
+                        </th>
+                        <th class="header-cell-text" style="min-width: 140px;">
+                            Operations
+                        </th>
+                    </ng-container>
+                    <th class="header-cell-text" style="min-width: 110px; width: 110px; max-width: 110px;">
+                    </th>
+                </tr>
+            </ng-template>
+            <ng-template let-schema pTemplate="body">
+                <tr class="schemas-grid-row">
 
-            <ng-container matColumnDef="menu">
-                <th mat-header-cell *matHeaderCellDef>Operations</th>
-                <td mat-cell *matCellDef="let element">
-                    <div class="commands-line">
-                        <div
-                            *ngIf="ifCanEdit(element)"
-                            class="btn-settings" 
-                            (click)="onEditSchema(element)"
-                            matTooltip="Edit" 
-                            matTooltipPosition="above"
-                            matTooltipClass="guardian-tooltip">
-                            <mat-icon>edit</mat-icon>
-                        </div>
-                        <div
-                            *ngIf="!ifCanEdit(element)"
-                            class="btn-settings btn-settings-des" 
-                            matTooltip="Edit"
-                            matTooltipPosition="above"
-                            matTooltipClass="guardian-tooltip">
-                            <mat-icon>edit</mat-icon>
-                        </div>
-                        <div class="btn-settings" 
-                            [matMenuTriggerFor]="schemaMenu"
-                            [matMenuTriggerData]="{ element }">
-                            <mat-icon>more_vert</mat-icon>
-                        </div>
-                    </div>
-                </td>
-            </ng-container>
+                    <ng-container *ngIf="type === 'policy'">
+                        <td class="first-schema-grid-cell text-truncate" style="min-width: 140px; max-width: 150px;">
+                            <a [queryParams]="{
+                                policyId: policyIdByTopic[schema.topicId]
+                            }" [routerLink]="['/policy-configuration']">{{policyNameByTopic[schema.topicId]}}</a>
+                        </td>
+                        <td [pTooltip]="schema.name" class="text-truncate" style="min-width: 140px; max-width: 150px;">
+                            {{ schema.name }}
+                        </td>
+                        <td style="min-width: 140px;">
+                            <ng-container *ngIf="schema.topicId === 'draft'; else topicExplorer">
+                                <span>Draft</span>
+                            </ng-container>
+                            <ng-template #topicExplorer>
+                                <hedera-explorer [params]="schema.topicId" type="topics">{{ schema.topicId }}</hedera-explorer>
+                            </ng-template>
+                        </td>
+                        <td style="min-width: 100px;">
+                            {{ schema.version || schema.sourceVersion }}
+                        </td>
+                        <td style="min-width: 100px;">
+                            {{ schema.entity }}
+                        </td>
+                        <td style="min-width: 185px;">
+                            <tags-explorer
+                                    [data]="schema._tags"
+                                    [entity]="tagEntity"
+                                    [owner]="owner"
+                                [schemas]="tagSchemas"
+                                    [service]="tagsService"
+                                [target]="schema.id"></tags-explorer>
+                        </td>
+                        <td style="min-width: 100px;">
+                            <span [ngSwitch]="schema.status">
+                                <div *ngSwitchCase="'DRAFT'">
+                                    <span class="schema-status status-DRAFT">Draft</span>
+                                </div>
+                                <div *ngSwitchCase="'PUBLISHED'">
+                                    <span class="schema-status status-PUBLISHED">Published</span>
+                                </div>
+                                <div *ngSwitchCase="'UNPUBLISHED'">
+                                    <span class="schema-status status-UNPUBLISHED">Unpublished</span>
+                                </div>
+                                <div *ngSwitchDefault>
+                                    <span class="schema-status">{{schema.status}}</span>
+                                </div>
+                            </span>
+                        </td>
+                        <td class="last-schema-grid-cell" style="min-width: 140px;">
+                            <div class="operations-row-container">
+                                <div>
+                                    <div
+                                            (click)="onPublish(schema)"
+                                        *ngIf="schema.status == 'DRAFT'"
+                                            [attr.disabled]="schema.topicId === 'draft'"
+                                        class="btn-approve">
+                                        Publish
+                                    </div>
+                                    <div
+                                            (click)="onPublish(schema)"
+                                        *ngIf="schema.status == 'UNPUBLISHED'"
+                                            [attr.disabled]="schema.topicId === 'draft'"
+                                        class="btn-approve">
+                                        Publish
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </ng-container>
+                    <ng-container *ngIf="type === 'module'">
+                        <td [pTooltip]="schema.name" class="text-truncate" style="min-width: 140px; max-width: 150px;">
+                            {{ schema.name }}
+                        </td>
+                        <td style="min-width: 100px;">
+                            <span [ngSwitch]="schema.status">
+                                <div *ngSwitchCase="'DRAFT'">
+                                    <span class="schema-status status-DRAFT">Draft</span>
+                                </div>
+                                <div *ngSwitchCase="'PUBLISHED'">
+                                    <span class="schema-status status-PUBLISHED">Published</span>
+                                </div>
+                                <div *ngSwitchCase="'UNPUBLISHED'">
+                                    <span class="schema-status status-UNPUBLISHED">Unpublished</span>
+                                </div>
+                                <div *ngSwitchDefault>
+                                    <span class="schema-status">{{schema.status}}</span>
+                                </div>
+                            </span>
+                        </td>
+                        <td class="last-schema-grid-cell" style="min-width: 140px;">
+                            <div class="operations-row-container">
+                                <div>
+                                    <div
+                                            (click)="onPublish(schema)"
+                                        *ngIf="schema.status == 'DRAFT'"
+                                            [attr.disabled]="schema.topicId === 'draft'"
+                                        class="btn-approve">
+                                        Publish
+                                    </div>
+                                    <div
+                                            (click)="onPublish(schema)"
+                                        *ngIf="schema.status == 'UNPUBLISHED'"
+                                            [attr.disabled]="schema.topicId === 'draft'"
+                                        class="btn-approve">
+                                        Publish
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </ng-container>
+                    <ng-container *ngIf="type === 'tool'">
+                        <td class="first-schema-grid-cell text-truncate" style="min-width: 140px; max-width: 150px;">
+                            <a [queryParams]="{toolId: toolIdByTopic[schema.topicId]}"
+                                [routerLink]="'/policy-configuration'">
+                                {{ toolNameByTopic[schema.topicId] }}
+                            </a>
+                        </td>
+                        <td [pTooltip]="schema.name" class="text-truncate" style="min-width: 140px; max-width: 150px;">
+                            {{ schema.name }}
+                        </td>
+                        <td style="min-width: 100px;">
+                            <span [ngSwitch]="schema.status">
+                                <div *ngSwitchCase="'DRAFT'">
+                                    <span class="schema-status status-DRAFT">Draft</span>
+                                </div>
+                                <div *ngSwitchCase="'PUBLISHED'">
+                                    <span class="schema-status status-PUBLISHED">Published</span>
+                                </div>
+                                <div *ngSwitchCase="'UNPUBLISHED'">
+                                    <span class="schema-status status-UNPUBLISHED">Unpublished</span>
+                                </div>
+                                <div *ngSwitchDefault>
+                                    <span class="schema-status">{{schema.status}}</span>
+                                </div>
+                            </span>
+                        </td>
+                        <td class="last-schema-grid-cell" style="min-width: 140px;">
+                            <div class="operations-row-container">
+                                <div>
+                                    <div
+                                            (click)="onPublish(schema)"
+                                        *ngIf="schema.status == 'DRAFT'"
+                                            [attr.disabled]="schema.topicId === 'draft'"
+                                        class="btn-approve">
+                                        Publish
+                                    </div>
+                                    <div
+                                            (click)="onPublish(schema)"
+                                        *ngIf="schema.status == 'UNPUBLISHED'"
+                                            [attr.disabled]="schema.topicId === 'draft'"
+                                        class="btn-approve">
+                                        Publish
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </ng-container>
+                    <ng-container *ngIf="type === 'system'">
+                        <td [pTooltip]="schema.name" class="text-truncate" style="min-width: 140px; max-width: 150px;">
+                            {{ schema.name }}
+                        </td>
+                        <td style="min-width: 140px;">
+                            {{ schema.owner }}
+                        </td>
+                        <td style="min-width: 100px;">
+                            {{ schema.entity }}
+                        </td>
+                        <td style="min-width: 100px;">
+                            <span>
+                                <div *ngIf="!schema.active">
+                                    <span class="schema-status status-DRAFT">Inactive</span>
+                                </div>
+                                <div *ngIf="schema.active">
+                                    <span class="schema-status status-PUBLISHED">Active</span>
+                                </div>
+                            </span>
+                        </td>
+                        <td class="last-schema-grid-cell" style="min-width: 140px;">
+                            <div class="operations-row-container">
+                                <div>
+                                    <div (click)="onActive(schema)" *ngIf="!schema.active" class="btn-approve">
+                                        Active
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </ng-container>
+                    <ng-container *ngIf="type === 'tag'">
+                        <td [pTooltip]="schema.name" class="text-truncate" style="min-width: 140px; max-width: 150px;">
+                            {{ schema.name }}
+                        </td>
+                        <td style="min-width: 140px;">
+                            {{ schema.owner }}
+                        </td>
+                        <td style="min-width: 100px;">
+                            <span [ngSwitch]="schema.status">
+                                <div *ngSwitchCase="'DRAFT'">
+                                    <span class="schema-status status-DRAFT">Draft</span>
+                                </div>
+                                <div *ngSwitchCase="'PUBLISHED'">
+                                    <span class="schema-status status-PUBLISHED">Published</span>
+                                </div>
+                                <div *ngSwitchCase="'UNPUBLISHED'">
+                                    <span class="schema-status status-UNPUBLISHED">Unpublished</span>
+                                </div>
+                                <div *ngSwitchDefault>
+                                    <span class="schema-status">{{schema.status}}</span>
+                                </div>
+                            </span>
+                        </td>
+                        <td class="last-schema-grid-cell" style="min-width: 140px;">
+                            <div class="operations-row-container">
+                                <div>
+                                    <div
+                                            (click)="onPublishTagSchema(schema)"
+                                        *ngIf="schema.status == 'DRAFT'"
+                                            [attr.disabled]="schema.topicId === 'draft'"
+                                        class="btn-approve">
+                                        Publish
+                                    </div>
+                                    <div
+                                            (click)="onPublishTagSchema(schema)"
+                                        *ngIf="schema.status == 'UNPUBLISHED'"
+                                            [attr.disabled]="schema.topicId === 'draft'"
+                                        class="btn-approve">
+                                        Publish
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </ng-container>
 
-            <tr mat-header-row *matHeaderRowDef="columns; sticky: true"></tr>
-            <tr mat-row *matRowDef="let row; columns: columns;"></tr>
-        </table>
+                    <td class="last-schema-grid-cell" style="min-width: 110px; width: 110px; max-width: 110px;">
+                        <div class="operations-row-container">
+                            <div style="margin-right: 12px;">
+                                <div
+                                    *ngIf="ifCanEdit(schema)"
+                                    (click)="onEditSchema(schema)"
+                                    class="btn-settings"
+                                    matTooltip="Edit"
+                                    matTooltipClass="guardian-tooltip"
+                                    matTooltipPosition="above">
+                                    <svg-icon src="/assets/images/icons/edit.svg" svgClass="color-primary"></svg-icon>
+                                </div>
+                                <div
+                                    *ngIf="!ifCanEdit(schema)"
+                                    class="btn-settings"
+                                    matTooltip="Edit"
+                                    matTooltipClass="guardian-tooltip"
+                                    matTooltipPosition="above">
+                                    <svg-icon src="/assets/images/icons/edit.svg" svgClass="color-grey"></svg-icon>
+                                </div>
+                            </div>
+                            <div>
+                                <div
+                                        class="btn-settings"
+                                    [matMenuTriggerFor]="schemaMenu"
+                                    [matMenuTriggerData]="{ schema }"
+                                    matTooltip="Menu"
+                                        matTooltipClass="guardian-tooltip"
+                                    matTooltipPosition="above"
+                                >
+                                    <svg-icon src="/assets/images/icons/menu.svg" svgClass="color-primary"></svg-icon>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template let-columns pTemplate="emptymessage"></ng-template>
+        </p-table>
     </div>
 
-    <div *ngIf="isAny" class="table-paginator">
-        <mat-paginator 
-            [length]="count" 
-            [pageIndex]="pageIndex" 
-            [pageSize]="pageSize"
-            [pageSizeOptions]="[10, 25, 50, 100]" 
-            (page)="onPage($event)" 
-            aria-label="Select page">
-        </mat-paginator>
+    <app-paginator
+        *ngIf="isAny"
+        [pageIndex]="pageIndex"
+        [pageSize]="pageSize"
+        [length]="count"
+        (page)="onPage($event)"
+    ></app-paginator>
+
+    <div *ngIf="!isSystem && !isConfirmed" class="not-exist">
+        Before starting work you need to get DID
+        <a [routerLink]="['/profile']">here</a>
     </div>
 </div>
 
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
+</div>
+
 <mat-menu #schemaMenu="matMenu">
-    <ng-template matMenuContent let-element="element">
+    <ng-template matMenuContent let-element="schema">
         <button *ngIf="ifCanCopy(element)" mat-menu-item (click)="onCopySchema(element)" class="schema-menu-btn">
             <mat-icon>content_copy</mat-icon>
             <span>Copy</span>
@@ -330,21 +485,21 @@
             <mat-icon>segment</mat-icon>
             <span>Schema</span>
         </button>
-		
+
         <button mat-menu-item (click)="onViewSchemaTree(element)" class="schema-menu-btn">
             <mat-icon>account_tree</mat-icon>
             <span>Tree</span>
         </button>
-        
+
         <div class="schema-menu-delimiter"></div>
 
         <button *ngIf="ifCanDelete(element)" mat-menu-item (click)="onCheckDeleteSchema(element)" class="schema-menu-btn-del">
             <mat-icon>delete</mat-icon>
             <span>Delete schema</span>
         </button>
-        <button *ngIf="!ifCanDelete(element)" mat-menu-item class="schema-menu-btn-des">
-            <mat-icon>delete</mat-icon>
-            <span>Delete schema</span>
-        </button>
+        <!--        <button *ngIf="!ifCanDelete(element)" mat-menu-item class="schema-menu-btn-des">-->
+        <!--            <mat-icon>delete</mat-icon>-->
+        <!--            <span>Delete schema</span>-->
+        <!--        </button>-->
     </ng-template>
 </mat-menu>

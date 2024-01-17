@@ -1,6 +1,6 @@
-import { Component, Inject } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 /**
  * Dialog allowing you to select a file and load schemes.
@@ -8,26 +8,23 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 @Component({
     selector: 'confirmation-dialog',
     templateUrl: './confirmation-dialog.component.html',
-    styleUrls: ['./confirmation-dialog.component.css']
+    styleUrls: ['./confirmation-dialog.component.scss'],
 })
 export class ConfirmationDialog {
-    value: FormControl = new FormControl(
-        '',
-        Validators.required
-        );
-    title: string = "";
+    value: FormControl = new FormControl('', Validators.required);
+    title: string = '';
     description?: string;
     descriptions?: string[];
 
     constructor(
-        public dialogRef: MatDialogRef<ConfirmationDialog>,
-        @Inject(MAT_DIALOG_DATA) public data: any
+        public ref: DynamicDialogRef,
+        public config: DynamicDialogConfig
     ) {
-        this.title = data.title;
-        if(Array.isArray(data.description)) {
-            this.descriptions  = data.description;
+        this.title = this.config.data.title;
+        if (Array.isArray(this.config.data.description)) {
+            this.descriptions = this.config.data.description;
         } else {
-            this.description = data.description;
+            this.description = this.config.data.description;
         }
     }
 
@@ -35,13 +32,13 @@ export class ConfirmationDialog {
     }
 
     onNoClick(): void {
-        this.dialogRef.close(null);
+        this.ref.close(null);
     }
 
     onSubmit() {
         if (this.value.invalid) {
             return;
         }
-        this.dialogRef.close(this.value.value);
+        this.ref.close(this.value.value);
     }
 }

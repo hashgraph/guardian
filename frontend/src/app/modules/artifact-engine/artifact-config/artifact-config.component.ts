@@ -9,7 +9,6 @@ import { ProfileService } from 'src/app/services/profile.service';
 import { ConfirmationDialogComponent } from 'src/app/modules/common/confirmation-dialog/confirmation-dialog.component';
 import { ArtifactService } from 'src/app/services/artifact.service';
 import { ArtifactImportDialog } from '../artifact-import-dialog/artifact-import-dialog.component';
-import { ToolsService } from 'src/app/services/tools.service';
 
 /**
  * Page for creating, editing, importing and exporting schemas.
@@ -20,12 +19,12 @@ import { ToolsService } from 'src/app/services/tools.service';
     styleUrls: ['./artifact-config.component.css']
 })
 export class ArtifactConfigComponent implements OnInit {
-    public loading: boolean = true;
-    public isConfirmed: boolean = false;
-    public artifacts: any[] = [];
-    public artifactsCount: any;
-    public columns: string[] = [];
-    public policyArtifactColumns: string[] = [
+    loading: boolean = true;
+    isConfirmed: boolean = false;
+    artifacts: any[] = [];
+    artifactsCount: any;
+    columns: string[] = [];
+    policyArtifactColumns: string[] = [
         'uuid',
         'policy',
         'name',
@@ -33,109 +32,53 @@ export class ArtifactConfigComponent implements OnInit {
         'extention',
         'delete'
     ];
-    public policies: any[] | null;
-    public tools: any[] | null;
-    public draftPolicies: any[] | null;
-    public draftTools: any[] | null;
-    public policyNameById: any = {};
-    public toolNameById: any = {};
-    public readonlyById: any = {};
-
-    public currentId: any = '';
-    public pageIndex: number;
-    public pageSize: number;
-    public type: string = 'policy';
-
-    public owner: string = '';
-
-    public get isPolicy(): boolean {
-        return this.type === 'policy';
-    }
-
-    public get isTool(): boolean {
-        return this.type === 'tool';
-    }
-
-    public get readonly(): boolean {
-        return this.readonlyById[this.currentId];
-    }
+    policies: any[] | null;
+    currentPolicy: any = '';
+    pageIndex: number;
+    pageSize: number;
+    policyNameById: any = {};
+    private currentArtifact: any;
+    deleteArtifactVisible: boolean = false;
 
     constructor(
         private profileService: ProfileService,
         private policyEngineService: PolicyEngineService,
-        private toolService: ToolsService,
         private route: ActivatedRoute,
         private router: Router,
         public dialog: MatDialog,
         private artifact: ArtifactService) {
         this.policies = null;
-        this.tools = null;
-        this.draftPolicies = null;
-        this.draftTools = null;
         this.pageIndex = 0;
-        this.pageSize = 100;
+        this.pageSize = 10;
     }
 
     ngOnInit() {
-        const type = this.route.snapshot.queryParams['type'];
-        const toolId = this.route.snapshot.queryParams['toolId'];
         const policyId = this.route.snapshot.queryParams['policyId'];
-        if (policyId) {
-            this.type = 'policy';
-            this.currentId = policyId != 'all' ? policyId : '';
-        } else if (toolId) {
-            this.type = 'tool';
-            this.currentId = toolId != 'all' ? toolId : '';
-        } else {
-            this.type = type || 'policy';
-            this.currentId = '';
-        }
+        this.currentPolicy = policyId && policyId != 'all' ? policyId : '';
         this.loadProfile()
     }
 
-    private loadProfile() {
+    loadProfile() {
         this.loading = true;
         forkJoin([
             this.profileService.getProfile(),
             this.policyEngineService.all(),
-            this.toolService.page()
         ]).subscribe((value) => {
             this.loading = false;
 
             const profile: IUser | null = value[0];
             const policies: any[] = value[1] || [];
-            const tools: any[] = value[2]?.body || [];
 
             this.isConfirmed = !!(profile && profile.confirmed);
-            this.owner = profile?.did || '';
-
             this.policies = [];
-            this.draftPolicies = [];
-            for (const policy of policies) {
+            for (let i = 0; i < policies.length; i++) {
+                const policy = policies[i];
                 this.policyNameById[policy.id] = policy.name;
                 this.policies.push(policy);
-                if (policy.status === PolicyType.DRAFT) {
-                    this.draftPolicies.push(policy);
-                }
-            }
-            this.tools = [];
-            this.draftTools = [];
-            for (const tool of tools) {
-                this.toolNameById[tool.id] = tool.name;
-                this.tools.push(tool);
-                if (
-                    tool.creator === this.owner &&
-                    tool.status !== 'PUBLISHED'
-                ) {
-                    this.readonlyById[tool.id] = false;
-                    this.draftTools.push(tool);
-                } else {
-                    this.readonlyById[tool.id] = true;
-                }
             }
 
             this.pageIndex = 0;
-            this.pageSize = 100;
+            this.pageSize = 10;
             this.loadArtifacts();
         }, ({ message }) => {
             this.loading = false;
@@ -143,16 +86,12 @@ export class ArtifactConfigComponent implements OnInit {
         });
     }
 
-    private loadArtifacts() {
+    loadArtifacts() {
         this.loading = true;
-
+        const request =
+            this.artifact.getArtifacts(this.currentPolicy.id, this.pageIndex, this.pageSize);
         this.columns = this.policyArtifactColumns;
-        this.artifact.getArtifacts(
-            this.currentId,
-            this.type,
-            this.pageIndex,
-            this.pageSize
-        ).subscribe((artifactResponse: HttpResponse<any[]>) => {
+        request.subscribe((artifactResponse: HttpResponse<any[]>) => {
             this.artifacts = artifactResponse.body?.map(item => {
                 const policy = this.policies?.find(policy => policy.id === item.policyId)
                 return Object.assign(item, {
@@ -169,59 +108,17 @@ export class ArtifactConfigComponent implements OnInit {
         });
     }
 
-    public onChangeType(event: any): void {
+    onFilter() {
         this.pageIndex = 0;
-        if (this.type === 'policy') {
-            this.router.navigate(['/artifacts'], {
-                queryParams: {
-                    type: this.type,
-                    policyId: 'all'
-                }
-            });
-        } else if (this.type === 'tool') {
-            this.router.navigate(['/artifacts'], {
-                queryParams: {
-                    type: 'tool',
-                    toolId: 'all'
-                }
-            });
-        } else {
-            this.router.navigate(['/artifacts'], {
-                queryParams: {
-                    policyId: 'all'
-                }
-            });
-        }
+        this.router.navigate(['/artifacts'], {
+            queryParams: {
+                policyId: this.currentPolicy.id ? this.currentPolicy.id : 'all'
+            }
+        });
         this.loadArtifacts();
     }
 
-    public onFilter() {
-        this.pageIndex = 0;
-        if (this.type === 'policy') {
-            this.router.navigate(['/artifacts'], {
-                queryParams: {
-                    type: 'policy',
-                    policyId: this.currentId ? this.currentId : 'all'
-                }
-            });
-        } else if (this.type === 'tool') {
-            this.router.navigate(['/artifacts'], {
-                queryParams: {
-                    type: 'tool',
-                    toolId: this.currentId ? this.currentId : 'all'
-                }
-            });
-        } else {
-            this.router.navigate(['/artifacts'], {
-                queryParams: {
-                    policyId: this.currentId ? this.currentId : 'all'
-                }
-            });
-        }
-        this.loadArtifacts();
-    }
-
-    public onPage(event: any) {
+    onPage(event: any) {
         if (this.pageSize != event.pageSize) {
             this.pageIndex = 0;
             this.pageSize = event.pageSize;
@@ -232,46 +129,45 @@ export class ArtifactConfigComponent implements OnInit {
         this.loadArtifacts();
     }
 
-    public deleteArtifact(element: any) {
-        const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+    importArtifacts() {
+        const dialogRef = this.dialog.open(ArtifactImportDialog, {
             data: {
-                dialogTitle: 'Delete artifact',
-                dialogText: 'Are you sure to delete artifact?'
+                policyId: this.currentPolicy.id,
+                policies: this.policies
             },
             disableClose: true,
-            autoFocus: false
         });
+
         dialogRef.afterClosed().subscribe((result) => {
             if (!result) {
                 return;
             }
-
             this.loading = true;
-            this.artifact.deleteArtifact(element.id).subscribe((data: any) => {
-                this.loadArtifacts();
-            }, (e) => {
-                this.loading = false;
-            });
+            this.artifact.addArtifacts(result.files, result.policyId)
+                .subscribe((res) => this.loadArtifacts(), (err) => this.loading = false);
         });
     }
 
-    public importArtifacts() {
-        const dialogRef = this.dialog.open(ArtifactImportDialog, {
-            data: {
-                type: this.type,
-                currentId: this.currentId,
-                policies: this.draftPolicies,
-                tools: this.draftTools
-            },
-            disableClose: true,
-        });
-        dialogRef.afterClosed().subscribe((result) => {
-            if (!result) {
-                return;
-            }
-            this.loading = true;
-            this.artifact.addArtifacts(result.files, result.currentId)
-                .subscribe((res) => this.loadArtifacts(), (err) => this.loading = false);
+    openDeleteArtifactDialog(artifact: any) {
+        this.deleteArtifactVisible = true;
+        this.currentArtifact = artifact;
+    }
+
+    deleteArtifact(deleteArtifact: boolean) {
+        if (!deleteArtifact) {
+            this.deleteArtifactVisible = false;
+            return;
+        }
+        this.loading = true;
+        const request =
+            this.artifact.deleteArtifact(this.currentArtifact.id);
+
+        request.subscribe((data: any) => {
+            this.loadArtifacts();
+        }, (e) => {
+            this.loading = false;
+        }, () => {
+            this.deleteArtifactVisible = false
         });
     }
 }

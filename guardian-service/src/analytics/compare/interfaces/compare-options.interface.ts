@@ -43,7 +43,22 @@ export enum IIdLvl {
 export enum IKeyLvl {
     Default = 'Default', //Default
     Description = 'Description', //Description
-    Title = 'Title' //Title
+    Title = 'Title', //Title
+    Property = 'Property' //Title
+}
+
+/**
+ * Ref
+ * 0 - Default
+ * 1 - None
+ * 2 - Revert
+ * 3 - Merge
+ */
+export enum IRefLvl {
+    Default = 'Default', //Default
+    None = 'None', //Don't compare
+    Revert = 'Revert', //Revert
+    Merge = 'Merge' //Merge
 }
 
 /**
@@ -71,6 +86,10 @@ export class CompareOptions {
      */
     public readonly keyLvl: IKeyLvl;
     /**
+     * Ref
+     */
+    public readonly refLvl: IRefLvl;
+    /**
      * Permissions
      */
     public readonly owner: string;
@@ -81,6 +100,7 @@ export class CompareOptions {
         eventLvl?: IEventsLvl | string | number | null | undefined,
         idLvl?: IIdLvl | string | number | null | undefined,
         keyLvl?: IKeyLvl | string | number | null | undefined,
+        refLvl?: IRefLvl | string | number | null | undefined,
         owner?: string | null | undefined,
     ) {
         switch (propLvl) {
@@ -186,8 +206,44 @@ export class CompareOptions {
                 this.keyLvl = IKeyLvl.Title;
                 break;
             }
+            case IKeyLvl.Property:
+            case '3':
+            case 3: {
+                this.keyLvl = IKeyLvl.Property;
+                break;
+            }
             default: {
                 this.keyLvl = IKeyLvl.Default;
+                break;
+            }
+        }
+        switch (refLvl) {
+            case IRefLvl.Default:
+            case '0':
+            case 0: {
+                this.refLvl = IRefLvl.Default;
+                break;
+            }
+            case IRefLvl.None:
+            case '1':
+            case 1: {
+                this.refLvl = IRefLvl.None;
+                break;
+            }
+            case IRefLvl.Revert:
+            case '2':
+            case 2: {
+                this.refLvl = IRefLvl.Revert;
+                break;
+            }
+            case IRefLvl.Merge:
+            case '3':
+            case 3: {
+                this.refLvl = IRefLvl.Merge;
+                break;
+            }
+            default: {
+                this.refLvl = IRefLvl.Default;
                 break;
             }
         }

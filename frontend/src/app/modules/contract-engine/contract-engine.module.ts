@@ -20,6 +20,7 @@ import { UserRetirePoolsDialogComponent } from './dialogs/user-retire-pools-dial
 import { UserRetireRequestsDialogComponent } from './dialogs/user-retire-requests-dialog/user-retire-requests-dialog.component';
 // Pipes
 import { TokenCount } from './pipes/token-count.pipe';
+import { UserContractConfigComponent } from './configs/user-contract-config/user-contract-config.component';
 
 @NgModule({
     declarations: [
@@ -33,6 +34,7 @@ import { TokenCount } from './pipes/token-count.pipe';
         TokenCount,
         UserRetirePoolsDialogComponent,
         UserRetireRequestsDialogComponent,
+        UserContractConfigComponent
     ],
     imports: [
         CommonModule,

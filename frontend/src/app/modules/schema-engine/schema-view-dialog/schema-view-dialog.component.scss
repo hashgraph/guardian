@@ -1,0 +1,133 @@
+form {
+    display: flex;
+    flex-direction: column;
+    width: 452px;
+    overflow: visible;
+    padding-bottom: 25px;
+}
+
+.context {
+    position: relative;
+}
+
+.loading {
+    background: #fff;
+    position: absolute;
+    z-index: 99;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
+}
+
+.schema-header {
+  font-size: 24px;
+  line-height: 32px;
+    display: block;
+    padding: 12px;
+    box-sizing: border-box;
+    text-align: center;
+    color: #000;
+}
+
+.delimiter {
+    padding: 50px 50px;
+    width: 100%;
+    height: 100px;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.delimiter::after {
+    content: '';
+    position: absolute;
+    height: 2px;
+    top: 50px;
+    left: 0px;
+    right: 0px;
+    border-top: 1px solid #c8c8c8;
+}
+
+.field-value {
+    color: #000;
+    font-size: 20px;
+}
+
+.field-name {
+    margin-bottom: 12px;
+}
+
+.field {
+    margin-top: 5px;
+    margin-bottom: 28px;
+}
+
+.field-last {
+    margin-bottom: 0px;
+}
+
+.version-container {
+    display: flex;
+    gap: 15px;
+}
+
+.version-container__new-versions {
+    margin-top: 3px;
+}
+
+.g-dialog-header {
+  padding: 0;
+}
+
+.g-dialog-title {
+  padding: 0 !important;
+  margin-bottom: 24px !important;
+  color: #495057 !important;
+  font-weight: 600 !important;
+  font-size: 1.25rem !important;
+  font-family: Poppins, sans-serif !important;
+  font-style: normal !important;
+}
+
+.form-input-container {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 24px;
+}
+
+.form-label {
+  margin-bottom: 6px;
+  color: var(--color-grey-black-1, #181818);
+  font-family: Inter;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 14px;
+}
+
+:host ::ng-deep {
+  .mat-dialog-title {
+    margin-bottom: 32px;
+    color: #000;
+    font-family: Poppins;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+  }
+
+  .mat-form-field {
+    width: 100%;
+  }
+
+  .mat-dialog-actions {
+    display: flex;
+    justify-content: end;
+    gap: 16px;
+  }
+}

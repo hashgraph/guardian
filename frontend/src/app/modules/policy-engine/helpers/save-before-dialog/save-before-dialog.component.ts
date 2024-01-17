@@ -2,22 +2,23 @@ import { Component, OnInit } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 
 @Component({
-  selector: 'app-save-before-dialog',
-  templateUrl: './save-before-dialog.component.html',
-  styleUrls: ['./save-before-dialog.component.css']
+    selector: 'app-save-before-dialog',
+    templateUrl: './save-before-dialog.component.html',
+    styleUrls: ['./save-before-dialog.component.scss']
 })
 export class SaveBeforeDialogComponent implements OnInit {
 
-  constructor(public dialogRef: MatDialogRef<SaveBeforeDialogComponent>) { }
+    constructor(public dialogRef: MatDialogRef<SaveBeforeDialogComponent>) {
+    }
 
-  ngOnInit(): void {
-  }
+    ngOnInit(): void {
+    }
 
-  cancel() {
-    this.dialogRef.close(null);
-  }
+    cancel() {
+        this.dialogRef.close(null);
+    }
 
-  save() {
-    this.dialogRef.close(true);
-  }
+    save() {
+        this.dialogRef.close(true);
+    }
 }

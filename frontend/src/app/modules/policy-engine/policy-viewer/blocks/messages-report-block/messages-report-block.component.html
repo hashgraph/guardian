@@ -1,12 +1,16 @@
 <div class="content">
+    <ng-template #preloader>
+        <div class="preloader-image"></div>
+    </ng-template>
+
     <div *ngIf="loading" class="loading">
-        <mat-spinner></mat-spinner>
+        <div class="preloader-image preloader-image-l-size"></div>
     </div>
 
     <div *ngIf="status === 'STARTED'" class="sub-loading">
         <div class="loading-text">
             <div>
-                <mat-spinner></mat-spinner>
+                <div class="preloader-image preloader-image-l-size"></div>
             </div>
             <div>Please wait while your report is calculated</div>
             <div>This may take a few minutes ...</div>

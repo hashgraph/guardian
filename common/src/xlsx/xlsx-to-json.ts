@@ -140,6 +140,7 @@ export class XlsxToJson {
             unit: null,
             unitSystem: null,
             customType: null,
+            property: null,
             isRef: null
         };
         const fieldType = FieldTypes.findByName(type);

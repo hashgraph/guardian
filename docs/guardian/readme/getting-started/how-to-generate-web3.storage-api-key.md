@@ -1,30 +1,74 @@
-# 🔨 How to generate Web3.Storage API Key
+# 🔨 How to generate Web3.Storage API values
 
 To get a quick info, please visit: [https://web3.storage/docs/#quickstart](https://web3.storage/docs/#quickstart)
 
 1. [Step By Step Process](how-to-generate-web3.storage-api-key.md#step-by-step-process)
-2. Demo Video
+2. [Demo Video](how-to-generate-web3.storage-api-key.md#demo-video)
 
 ### Step By Step Process
 
-Following are the steps to follow to generate Web3.Storage API Key:
+Following are the steps to follow to generate Web3.Storage API values:
 
-1. We need to create an account in Web3.Storage using [https://web3.storage/login/](https://web3.storage/login/)
+1. Create an account on [https://web3.storage](https://web3.storage/), please specify the email you have access to as the account authentication is based on the email validation. Make sure to follow through the registration process to the end, choose an appropriate billing plan for your needs (e.g. 'starter') and enter your payment details.
 
-<figure><img src="../../../.gitbook/assets/image (16) (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (417).png" alt=""><figcaption></figcaption></figure>
 
-2\. Once Logged in successfully, hover over **Account** and click **Create an API Token** in the dropdown menu.
+<figure><img src="../../../.gitbook/assets/image (418).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (19) (2).png" alt=""><figcaption></figcaption></figure>
+2\. Install w3cli as described in the [corresponding section](https://web3.storage/docs/w3cli/#install) of the web3.storage documentation.
 
-3\. Now, enter a descriptive name for your API token and click **Create**.
+**You'll need** [**Node**](https://nodejs.com/) **version 18 or higher, with NPM version 7 or higher to complete the installation**
 
-<figure><img src="../../../.gitbook/assets/image (5) (8).png" alt=""><figcaption></figcaption></figure>
+You can check your local versions like this:
 
-4\. Once, token is created, Token Key can be copied and pasted as IPFS\_\_Storage\_\_API\_Key in `ipfs-client/.env` or `ipfs-client/.env/docker`.
+```
+node --version && npm --version
+```
 
-<figure><img src="../../../.gitbook/assets/image (11) (5).png" alt=""><figcaption></figcaption></figure>
+Install the `@web3-storage/w3cli` package with `npm`
+
+```
+npm install -g @web3-storage/w3cli
+```
+
+3\. Create your 'space' as described in the ['Create your first space'](https://web3.storage/docs/w3cli/#create-your-first-space) section of the documentation.
+
+```
+w3 space create
+```
+
+4. Execute the following to set the Space you intend on delegating access to:
+
+```
+w3 space use
+```
+
+5. Execute the following command to retrieve your Agent private key and DID:
+
+```
+npx ucan-key ed
+```
+
+{% hint style="info" %}
+**Note:** The private key (starting with `Mg...`) is the value to be used in the environment variable `IPFS_STORAGE_KEY`.
+{% endhint %}
+
+6. Retrieve the IPFS\_STORAGE\_PROOF by executing the following:
+
+```
+w3 delegation create <did_from_ucan-key_command_above> | base64
+```
+
+The output of this command is the value to be used in the environment variable `IPFS_STORAGE_PROOF`.
+
+**To summarize, the process of configuring delegated access to the w3up API consists of execution of the following command sequence:**
+
+1. `w3 login`
+2. `w3 create space`
+3. `w3 use space`
+4. `npx ucan-key ed`
+5. `w3 delegation`
 
 ### Demo Video
 
-[Youtube](https://www.youtube.com/watch?v=JhfbHXRDSYU\&list=PLnld0e1pwLhqdR0F9dusqILDww6uZywwR\&index=6)
+[Youtube](https://youtu.be/wnGchPBpCFk)

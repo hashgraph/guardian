@@ -172,4 +172,13 @@ export class TagsHistory {
             return this._history[0];
         }
     }
+
+    public updateItems(): void {
+        if (this._items && this._items.length > 0) {
+            this._items = this._items.filter(item => item.owner !== 'history');
+        } else {
+            this._items = [];
+            this._top = undefined;
+        }
+    }
 }

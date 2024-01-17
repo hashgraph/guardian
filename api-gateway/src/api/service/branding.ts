@@ -1,10 +1,9 @@
-import { Controller, Get, HttpCode, HttpStatus, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { Logger } from '@guardian/common';
-import { Response } from 'express';
 import { Guardians } from '@helpers/guardians';
-import { checkPermission } from '@auth/authorization-helper';
-import { UserRole } from '@guardian/interfaces';
 import { ApiTags } from '@nestjs/swagger';
+import { Auth } from '@auth/auth.decorator';
+import { UserRole } from '@guardian/interfaces';
 
 /**
  * Branding route
@@ -13,12 +12,10 @@ import { ApiTags } from '@nestjs/swagger';
 @ApiTags('branding')
 export class BrandingApi {
 
-  @Post('/')
+  @Auth(UserRole.STANDARD_REGISTRY)
   @HttpCode(HttpStatus.NO_CONTENT)
-  async setBranding(
-    @Req() req,
-    @Res() res: Response): Promise<any> {
-      await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+  @Post('/')
+  async setBranding(@Body() body: any): Promise<any> {
       try {
         const {
           headerColor,
@@ -26,8 +23,9 @@ export class BrandingApi {
           companyName,
           companyLogoUrl,
           loginBannerUrl,
-          faviconUrl
-        } = req.body;
+          faviconUrl,
+          headerColor1
+        } = body;
 
         const data = {
           headerColor,
@@ -35,7 +33,8 @@ export class BrandingApi {
           companyName,
           companyLogoUrl,
           loginBannerUrl,
-          faviconUrl
+          faviconUrl,
+          headerColor1
         };
 
         const guardians = new Guardians();
@@ -45,16 +44,16 @@ export class BrandingApi {
         throw error;
       }
 
-      return res.status(204).end();
+    return;
   }
 
   @Get('/')
-  async getBranding(@Res() res: Response): Promise<any> {
+  async getBranding(): Promise<any> {
     try {
       const guardians = new Guardians();
       const brandingDataString = await guardians.getBranding();
       const brandingData = JSON.parse(brandingDataString.config);
-      return res.json(brandingData);
+      return brandingData;
     } catch (error) {
       new Logger().error(error, ['API_GATEWAY']);
       throw error;

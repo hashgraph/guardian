@@ -404,6 +404,21 @@ export class DocumentModel implements IWeightModel {
     }
 
     /**
+     * Merge documents
+     * @param docs - models
+     * @public
+     */
+    public merge(docs: DocumentModel[] | DocumentModel): void {
+        if (Array.isArray(docs)) {
+            for (const doc of docs) {
+                this.merge(doc);
+            }
+        } else {
+            this._document.merge(docs._document);
+        }
+    }
+
+    /**
      * Comparison of models using key
      * @param item - model
      * @public

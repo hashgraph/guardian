@@ -1,5 +1,4 @@
 import { ChangeDetectorRef, Component, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { IUser } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
@@ -13,7 +12,7 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
 @Component({
     selector: 'request-document-block',
     templateUrl: './upload-document-block.component.html',
-    styleUrls: ['./upload-document-block.component.css']
+    styleUrls: ['./upload-document-block.component.scss']
 })
 export class UploadDocumentBlockComponent implements OnInit {
     @Input('id') id!: string;
@@ -109,23 +108,23 @@ export class UploadDocumentBlockComponent implements OnInit {
     }
 
     onSubmit($event: any) {
-            this.dialogLoading = true;
-            this.loading = true;
-            this.policyEngineService.setBlockData(this.id, this.policyId, {
-                documents: this.items,
-            }).subscribe(() => {
-                setTimeout(() => {
-                    if (this.dialogRef) {
-                        this.dialogRef.close();
-                        this.dialogRef = null;
-                    }
-                    this.dialogLoading = false;
-                }, 1000);
-            }, (e) => {
-                console.error(e.error);
+        this.dialogLoading = true;
+        this.loading = true;
+        this.policyEngineService.setBlockData(this.id, this.policyId, {
+            documents: this.items,
+        }).subscribe(() => {
+            setTimeout(() => {
+                if (this.dialogRef) {
+                    this.dialogRef.close();
+                    this.dialogRef = null;
+                }
                 this.dialogLoading = false;
-                this.loading = false;
-            });
+            }, 1000);
+        }, (e) => {
+            console.error(e.error);
+            this.dialogLoading = false;
+            this.loading = false;
+        });
     }
 
     onCancel(): void {

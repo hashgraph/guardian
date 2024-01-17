@@ -12,10 +12,11 @@ export class FieldControl {
     public readonly name: string;
 
     public controlKey: FormControl;
-    public hidden: FormControl;
     public controlTitle: FormControl;
+    public hidden: FormControl;
     public controlDescription: FormControl;
     public controlType: FormControl;
+    public property: FormControl;
     public controlRequired: FormControl;
     public controlArray: FormControl;
     public controlUnit: FormControl;
@@ -59,6 +60,7 @@ export class FieldControl {
             this.controlPrivate = new FormControl(field.isPrivate || false);
             this.controlEnum = new FormArray([]);
             this.hidden = new FormControl(!!field.hidden);
+            this.property = new FormControl(field.property || '');
             field.enum?.forEach(item => {
                 this.controlEnum.push(new FormControl(item))
             });
@@ -89,6 +91,7 @@ export class FieldControl {
             this.controlPrivate = new FormControl(false);
             this.controlPattern = new FormControl('');
             this.hidden = new FormControl(false);
+            this.property = new FormControl('');
         }
         if (this._entityType) {
             this._entityType.valueChanges
@@ -172,7 +175,8 @@ export class FieldControl {
             controlBold: this.controlBold,
             controlPrivate: this.controlPrivate,
             controlPattern: this.controlPattern,
-            hidden: this.hidden
+            hidden: this.hidden,
+            property: this.property,
         });
     }
 
@@ -196,6 +200,7 @@ export class FieldControl {
             const isPrivate = group.controlPrivate;
             const pattern = group.controlPattern;
             const hidden = group.hidden;
+            const property = group.property;
             return {
                 key,
                 title,
@@ -211,7 +216,8 @@ export class FieldControl {
                 textBold,
                 isPrivate,
                 pattern,
-                hidden
+                hidden,
+                property
             };
         } else {
             return null;

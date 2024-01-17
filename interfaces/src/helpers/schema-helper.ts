@@ -23,6 +23,7 @@ export class SchemaHelper {
             pattern: null,
             unit: null,
             unitSystem: null,
+            property: null,
             isArray: null,
             isRef: null,
             readOnly: null,
@@ -71,11 +72,12 @@ export class SchemaHelper {
      * @param hidden
      * @param url
      */
-    public static parseField(name: string, property: any, required: boolean, url: string): SchemaField {
-        const field: SchemaField = SchemaHelper.parseProperty(name, property);
+    public static parseField(name: string, prop: any, required: boolean, url: string): SchemaField {
+        const field: SchemaField = SchemaHelper.parseProperty(name, prop);
         const {
             unit,
             unitSystem,
+            property,
             customType,
             textColor,
             textSize,
@@ -93,6 +95,7 @@ export class SchemaHelper {
         } else {
             field.unit = unit ? String(unit) : null;
             field.unitSystem = unitSystem ? String(unitSystem) : null;
+            field.property = property ? String(property) : null;
             field.textColor = textColor;
             field.textSize = textSize;
             field.textBold = textBold;
@@ -238,7 +241,13 @@ export class SchemaHelper {
      * @param fields
      * @param defs
      */
-    public static parseConditions(document: ISchemaDocument, context: string, fields: SchemaField[], defs: any = null): SchemaCondition[] {
+    public static parseConditions(
+        document: ISchemaDocument,
+        context: string,
+        fields: SchemaField[],
+        schemaCache: Map<string, any>,
+        defs: any = null
+    ): SchemaCondition[] {
         const conditions: SchemaCondition[] = [];
 
         if (!document || !document.allOf) {
@@ -259,8 +268,18 @@ export class SchemaHelper {
                     field: fields.find(field => field.name === ifConditionFieldName),
                     fieldValue: condition.if.properties[ifConditionFieldName].const
                 },
-                thenFields: SchemaHelper.parseFields(condition.then, context, document.$defs || defs) as SchemaField[],
-                elseFields: SchemaHelper.parseFields(condition.else, context, document.$defs || defs) as SchemaField[]
+                thenFields: SchemaHelper.parseFields(
+                    condition.then,
+                    context,
+                    schemaCache,
+                    document.$defs || defs
+                ) as SchemaField[],
+                elseFields: SchemaHelper.parseFields(
+                    condition.else,
+                    context,
+                    schemaCache,
+                    document.$defs || defs
+                ) as SchemaField[],
             };
 
             conditions.push(conditionToAdd);
@@ -276,7 +295,13 @@ export class SchemaHelper {
      * @param defs
      * @param includeSystemProperties
      */
-    public static parseFields(document: ISchemaDocument, contextURL: string, defs?: any, includeSystemProperties: boolean = false): SchemaField[] {
+    public static parseFields(
+        document: ISchemaDocument,
+        contextURL: string,
+        schemaCache: Map<string, any>,
+        defs?: any,
+        includeSystemProperties: boolean = false
+    ): SchemaField[] {
         const fields: SchemaField[] = [];
         const fieldsWithPositions: SchemaField[] = [];
 
@@ -299,12 +324,33 @@ export class SchemaHelper {
             }
             const field = SchemaHelper.parseField(name, property, !!required[name], contextURL);
             if (field.isRef) {
-                const subSchemas = defs || document.$defs;
-                const subDocument = subSchemas[field.type];
-                const subFields = SchemaHelper.parseFields(subDocument, contextURL, subSchemas);
-                const conditions = SchemaHelper.parseConditions(subDocument, contextURL, subFields, subSchemas);
-                field.fields = subFields;
-                field.conditions = conditions;
+                if (schemaCache.has(field.type)) {
+                    const schema = schemaCache.get(field.type);
+                    field.fields = schema.fields;
+                    field.conditions = schema.conditions;
+                } else {
+                    const subSchemas = defs || document.$defs;
+                    const subDocument = subSchemas[field.type];
+                    const subFields = SchemaHelper.parseFields(
+                        subDocument,
+                        contextURL,
+                        schemaCache,
+                        subSchemas
+                    );
+                    const conditions = SchemaHelper.parseConditions(
+                        subDocument,
+                        contextURL,
+                        subFields,
+                        schemaCache,
+                        subSchemas
+                    );
+                    field.fields = subFields;
+                    field.conditions = conditions;
+                    schemaCache.set(field.type, {
+                        fields: field.fields,
+                        conditions: field.conditions,
+                    });
+                }
             }
             if (field.order === -1) {
                 fields.push(field);
@@ -465,6 +511,9 @@ export class SchemaHelper {
         }
         if (field.unitSystem) {
             comment.unitSystem = field.unitSystem;
+        }
+        if (field.property) {
+            comment.property = field.property;
         }
         if (field.customType) {
             comment.customType = field.customType;
@@ -861,7 +910,6 @@ export class SchemaHelper {
      * Get fields from object
      * @param fields
      * @param required
-     * @param hidden
      * @param properties
      * @param contextURL
      * @private

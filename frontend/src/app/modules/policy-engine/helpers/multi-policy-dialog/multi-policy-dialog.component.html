@@ -1,24 +1,13 @@
 <div class="g-dialog-content">
     <div class="g-dialog-header">
-        <div class="g-dialog-cancel">
-            <div class="g-dialog-cancel-btn" (click)="onOk()">
-                <mat-icon>close</mat-icon>
-            </div>
-        </div>
         <div class="g-dialog-title" id="title">
             Multi Policy
-        </div>
-        <div class="g-dialog-actions">
-            <div *ngIf="!exists" class="g-dialog-actions-btn" (click)="onCreate()" [attr.disabled]="!(valid && initDialog)">
-                <span *ngIf="policyType=='Main'">Create</span>
-                <span *ngIf="policyType=='Sub'">Join</span>
-            </div>
         </div>
     </div>
     <div class="g-dialog-body">
         <div class="context">
             <div *ngIf="loading" class="loading">
-                <mat-spinner></mat-spinner>
+                <div class="preloader-image preloader-image-l-size"></div>
             </div>
 
             <div>
@@ -108,6 +97,19 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+    <div mat-dialog-actions>
+        <div class="cancel-button">
+            <p-button
+                    (click)="onOk()"
+                    label="Cancel"
+                    styleClass="p-button-outlined"
+            ></p-button>
+        </div>
+        <div *ngIf="!exists">
+            <p-button (click)="onCreate()" [disabled]="!(valid && initDialog)"
+                      [label]="policyType=='Main' ? 'Create' : 'Join'"></p-button>
         </div>
     </div>
 </div>

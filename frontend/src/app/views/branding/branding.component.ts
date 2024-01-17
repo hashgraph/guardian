@@ -1,16 +1,16 @@
 import { Component, ElementRef, OnInit } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
-import { Router, NavigationEnd } from '@angular/router';
+import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { InformService } from 'src/app/services/inform.service';
 import { BrandingPayload, BrandingService } from 'src/app/services/branding.service';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { BrandingDialogComponent } from 'src/app/components/branding-dialog/branding-dialog.component';
+import { MatDialog } from '@angular/material/dialog';
+import { colorToGradient } from '../../static/color-remoter.function';
 
 @Component({
     selector: 'app-branding',
     templateUrl: './branding.component.html',
-    styleUrls: ['./branding.component.css']
+    styleUrls: ['./branding.component.scss']
 })
 export class BrandingComponent implements OnInit {
 
@@ -19,16 +19,13 @@ export class BrandingComponent implements OnInit {
     public isChangesMade: boolean = false;
     public innerWidth: any;
 
-    initialHeaderColor: string = window.getComputedStyle(document.documentElement).getPropertyValue('--header-background-color');
-    initialPrimaryColor: string = window.getComputedStyle(document.documentElement).getPropertyValue('--primary-color');
-    initialFontFamily: string = window.getComputedStyle(document.documentElement).getPropertyValue('--app-font-family');
     faviconLinks = document.querySelectorAll<HTMLLinkElement>('link[rel="shortcut icon"],link[rel="icon"]');
-    initialFaviconUrl = this.faviconLinks.length > 0 ? this.faviconLinks[0].href : null;
 
     headerHexColorControl = new FormControl('', [Validators.pattern(/^#[0-9A-Fa-f]{6}$/)]);
     headerColorControl = new FormControl('', [Validators.pattern(/^#[0-9A-Fa-f]{6}$/)]);
+    headerColor1Control = new FormControl('', [Validators.pattern(/^#[0-9A-Fa-f]{6}$/)]);
     primaryHexColorControl = new FormControl('', [Validators.pattern(/^#[0-9A-Fa-f]{6}$/)]);
-    primaryColorControl = new FormControl('#2C78F6', [Validators.pattern(/^#[0-9A-Fa-f]{6}$/)]);
+    primaryColorControl = new FormControl('', [Validators.pattern(/^#[0-9A-Fa-f]{6}$/)]);
 
     fonts = [
         {label: 'Roboto', value: 'Roboto'},
@@ -56,6 +53,8 @@ export class BrandingComponent implements OnInit {
 
     imageError: any;
 
+    initResetDialog: boolean = false;
+
     constructor(
         private router: Router,
         private elRef: ElementRef,
@@ -70,6 +69,7 @@ export class BrandingComponent implements OnInit {
     }
 
     ngOnInit(): void {
+        this.loading = true;
         this.innerWidth = window.innerWidth;
         this.brandingService.loadBrandingData(this.innerWidth).then((brandingData: BrandingPayload) => {
             this.companyLogoUrl = brandingData.companyLogoUrl;
@@ -77,22 +77,12 @@ export class BrandingComponent implements OnInit {
             this.faviconUrl = brandingData.faviconUrl;
             this.headerHexColorControl.setValue(brandingData.headerColor);
             this.headerColorControl.setValue(brandingData.headerColor);
+            this.headerColor1Control.setValue(brandingData.headerColor1);
             this.primaryHexColorControl.setValue(brandingData.primaryColor);
             this.primaryColorControl.setValue(brandingData.primaryColor);
-            this.companyNameControl.setValue(brandingData.companyName || 'Guardian');
+            this.companyNameControl.setValue(brandingData.companyName || 'GUARDIAN');
+            this.loading = false;
         });
-    }
-
-    updateColorFromHex(hexColorControl: FormControl, colorControl: FormControl) {
-        const hexColor = hexColorControl.value;
-        colorControl.setValue(hexColor);
-        this.isChangesMade = true;
-    }
-
-    updateHexFromColor(hexColorControl: FormControl, colorControl: FormControl) {
-        const color = colorControl.value;
-        hexColorControl.setValue(color);
-        this.isChangesMade = true;
     }
 
     updateCompanyName(companyNameControl: FormControl) {
@@ -157,7 +147,7 @@ export class BrandingComponent implements OnInit {
         const maxWidth = 25600;
         const maxHeight = 15200;
         const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif'];
-        const maxSize = 0.32 * 1024 * 1024;
+        const maxSize = 1024 * 1024;
         this.handleImageInputChange(event, maxWidth, maxHeight, allowedTypes, maxSize)
             .then((imgBase64Path: string) => {
                 this.loginBannerUrl = imgBase64Path;
@@ -182,44 +172,12 @@ export class BrandingComponent implements OnInit {
     }
 
     clearCompanyLogo(): void {
-        this.companyLogoFile = null;
         this.companyLogoUrl = null;
-        this.isChangesMade = false;
-
-        // Reset file input element
-        const companyLogoInput = document.getElementById('companyLogoInput') as HTMLInputElement;
-        companyLogoInput.value = ''; // Clear the input value
-        const newCompanyLogoInput = companyLogoInput.cloneNode(true) as HTMLInputElement;
-        companyLogoInput.parentNode?.replaceChild(newCompanyLogoInput, companyLogoInput);
     }
 
     clearLoginBanner(): void {
         this.loginBannerFile = null;
         this.loginBannerUrl = null;
-        this.isChangesMade = false;
-
-        // Reset file input element
-        const loginBannerInput = document.getElementById('loginBannerInput') as HTMLInputElement;
-        loginBannerInput.value = ''; // Clear the input value
-        const newLoginBannerInput = loginBannerInput.cloneNode(true) as HTMLInputElement;
-        loginBannerInput.parentNode?.replaceChild(newLoginBannerInput, loginBannerInput);
-    }
-
-    clearFavicon(): void {
-        this.faviconFile = null;
-        this.faviconUrl = null;
-        this.isChangesMade = false;
-
-        // Reset file input element
-        const faviconInput = document.getElementById('faviconInput') as HTMLInputElement;
-        faviconInput.value = ''; // Clear the input value
-        const newFaviconInput = faviconInput.cloneNode(true) as HTMLInputElement;
-        faviconInput.parentNode?.replaceChild(newFaviconInput, faviconInput);
-    }
-
-    onCancel() {
-        this.isChangesMade = false;
-        this.router.navigate(['/config']);
     }
 
     async onSave() {
@@ -227,10 +185,11 @@ export class BrandingComponent implements OnInit {
         const brandingData = await this.brandingService.getBrandingData();
         const payload = {
             headerColor: this.headerColorControl.value ? this.headerColorControl.value : brandingData.headerColor,
+            headerColor1: this.headerColor1Control.value ? this.headerColor1Control.value : brandingData.headerColor1,
             primaryColor: this.primaryColorControl.value ? this.primaryColorControl.value : brandingData.primaryColor,
             companyName: this.companyNameControl.value ? this.companyNameControl.value : brandingData.companyName,
-            companyLogoUrl: this.companyLogoUrl ? this.companyLogoUrl : brandingData.companyLogoUrl,
-            loginBannerUrl: this.loginBannerUrl ? this.loginBannerUrl : brandingData.loginBannerUrl,
+            companyLogoUrl: this.companyLogoUrl,
+            loginBannerUrl: this.loginBannerUrl,
             faviconUrl: this.faviconUrl ? this.faviconUrl : ''
         };
 
@@ -242,14 +201,16 @@ export class BrandingComponent implements OnInit {
     async onPreview() {
         const favicon = document.querySelectorAll<HTMLLinkElement>('link[rel="shortcut icon"],link[rel="icon"]');
         const loginBanner = document.querySelector<HTMLElement>('.background')!;
-        const companyLogo = document.querySelector<HTMLImageElement>('.company-logo')!;
-        const companyName = document.querySelector<HTMLElement>('.company-name')!;
+        const companyLogo = document.querySelector<HTMLImageElement>('#company-logo')!;
+        const companyName = document.querySelector<HTMLElement>('#company-name')!;
         const brandingData = await this.brandingService.getBrandingData();
+        const gradientData = colorToGradient(this.headerColorControl.value, this.headerColor1Control.value);
+        const shadow = colorToGradient(this.headerColorControl.value, this.headerColor1Control.value);
 
         if (this.isPreviewOn) {
-            document.documentElement.style.setProperty('--header-background-color', brandingData.headerColor);
-            document.documentElement.style.setProperty('--primary-color', brandingData.primaryColor);
-            document.documentElement.style.setProperty('--button-primary-color', brandingData.primaryColor);
+            document.body.style.setProperty('--linear-gradient', gradientData);
+            document.body.style.setProperty('--header-color-shadow', shadow);
+            document.body.style.setProperty('--color-primary', this.primaryHexColorControl.value);
             companyName.innerHTML = brandingData.companyName;
             document.title = brandingData.companyName;
 
@@ -259,7 +220,6 @@ export class BrandingComponent implements OnInit {
             } else {
                 companyLogo.style.display = 'none';
             }
-            loginBanner.style.background = `center/cover no-repeat url(${brandingData.loginBannerUrl})`;
             favicon[0].href = brandingData.faviconUrl;
 
             this.isPreviewOn = false;
@@ -268,9 +228,10 @@ export class BrandingComponent implements OnInit {
         const headerColor = this.headerColorControl.value ? this.headerColorControl.value : brandingData.headerColor;
         const primaryColor = this.primaryColorControl.value ? this.primaryColorControl.value : brandingData.primaryColor;
 
-        document.documentElement.style.setProperty('--header-background-color', headerColor);
-        document.documentElement.style.setProperty('--primary-color', primaryColor);
-        document.documentElement.style.setProperty('--button-primary-color', primaryColor);
+        document.body.style.setProperty('--linear-gradient', gradientData);
+        document.body.style.setProperty('--header-color-shadow', shadow);
+        document.body.style.setProperty('--color-primary', primaryColor);
+        //document.documentElement.style.setProperty('--button-primary-color', primaryColor);
         if (this.companyNameControl.value) {
             companyName.innerHTML = this.companyNameControl.value;
             document.title = this.companyNameControl.value;
@@ -282,10 +243,6 @@ export class BrandingComponent implements OnInit {
             companyLogo.style.display = 'none';
         }
 
-        if (this.loginBannerUrl) {
-            loginBanner.style.background = `center/cover no-repeat url(${this.loginBannerUrl})`;
-        }
-
         if (this.faviconUrl) {
             favicon[0].href = this.faviconUrl;
         }
@@ -293,40 +250,40 @@ export class BrandingComponent implements OnInit {
         this.isPreviewOn = true;
     }
 
-    reset() {
-        const dialogRef: MatDialogRef<any> = this.dialog.open(BrandingDialogComponent, {
-            width: '400px',
-            data: {
-                message: 'You are about to revert your custom branding to what was preconfigured when you first built Guardian.\n\nAre you sure you want to proceed?'
-            }
-        });
+    reset(reset: boolean) {
+        if (!reset) {
+            this.initResetDialog = false;
+            return;
+        }
+        this.initResetDialog = false;
+        const payload = {
+            headerColor: '#0681EE',
+            headerColor1: '#0A467C',
+            primaryColor: '#0681EE',
+            companyName: 'GUARDIAN',
+            companyLogoUrl: '',
+            loginBannerUrl: '',
+            faviconUrl: 'favicon.ico'
+        };
 
-        dialogRef.afterClosed().subscribe(result => {
-            if (result === 'proceed') {
-                // create JSON payload with variables
-                const payload = {
-                    headerColor: '#000',
-                    primaryColor: '#2C78F6',
-                    companyName: 'Guardian',
-                    companyLogoUrl: '',
-                    loginBannerUrl: 'bg.jpg',
-                    faviconUrl: 'favicon.ico'
-                };
-
-                this.brandingService.saveBrandingData(payload);
-                this.isChangesMade = false;
-                this.loading = true;
-            }
-        });
+        this.brandingService.saveBrandingData(payload);
+        this.isChangesMade = false;
+        this.loading = true;
     }
 
     public isSaveEnabled(): boolean {
         return (
             this.isChangesMade ||
             this.headerColorControl.value !== '#000' ||
+            this.headerColor1Control.value !== '#000' ||
             this.primaryColorControl.value !== '#2C78F6' ||
-            this.companyNameControl.value !== 'Guardian'
+            this.companyNameControl.value !== 'GUARDIAN'
         );
     }
 
+    public onDestroy() {
+        this.brandingService.getBrandingData().then((payload) => {
+
+        })
+    }
 }

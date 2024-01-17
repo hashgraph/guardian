@@ -1,0 +1,106 @@
+.mat-button-base:not([started]) {
+  background-color: rgba(0, 0, 0, 0.12);
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  width: 452px;
+  height: 540px;
+  overflow: visible;
+}
+
+textarea {
+  min-height: 100px;
+}
+
+.switch-btn {
+  height: 46px;
+  font-weight: 500;
+  font-size: 20px;
+  color: #fff;
+  box-sizing: border-box;
+  min-width: 250px;
+  text-align: center;
+  cursor: pointer;
+}
+
+:host ::ng-deep .cdk-drop-list-dragging *:not(.cdk-drag-placeholder) {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+:host .restore-data {
+  flex: 1.7;
+}
+
+:host button.restore-data-button {
+  padding: 0 27px;
+  height: 43px;
+  background-color: unset;
+}
+
+:host .restore-data button mat-icon {
+  margin-left: 5px;
+}
+
+::ng-deep {
+  .p-button {
+    border-radius: 8px;
+  }
+
+  .p-dialog-title {
+    font-family: Poppins, sans-serif;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 600;
+  }
+
+  .p-dialog {
+    box-shadow: none;
+  }
+
+  .p-dialog-header {
+    border-top-left-radius: 16px !important;
+    border-top-right-radius: 16px !important;
+  }
+
+  .p-dialog-content {
+    padding: 0 32px 32px 32px !important;
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+  }
+}
+
+.dialog-body {
+  height: 45vh;
+  overflow-y: auto;
+}
+
+.tabview-label {
+  padding: 10px 25px 10px 25px;
+  color: var(--color-primary);
+  text-align: center;
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 600;
+}
+
+:host ::ng-deep {
+  .p-tabview-nav-link {
+    padding: 0 !important;
+  }
+}
+
+.dialog-footer {
+  margin-top: 25px;
+}
+
+.action-buttons {
+  display: flex;
+}
+
+.cancel-button {
+  margin-left: auto;
+  margin-right: 15px;
+}

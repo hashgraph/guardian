@@ -7,7 +7,7 @@ import { IModuleVariables, PolicyBlock } from '../../../../structures';
 @Component({
     selector: 'revoke-config',
     templateUrl: './revoke-config.component.html',
-    styleUrls: ['./revoke-config.component.css'],
+    styleUrls: ['./revoke-config.component.scss'],
     encapsulation: ViewEncapsulation.Emulated
 })
 export class RevokeConfigComponent implements OnInit {
@@ -17,7 +17,7 @@ export class RevokeConfigComponent implements OnInit {
 
     private moduleVariables!: IModuleVariables | null;
     private item!: PolicyBlock;
-    
+
     propHidden: any = {
         main: false,
         optionsGroup: false,
@@ -51,7 +51,7 @@ export class RevokeConfigComponent implements OnInit {
     onHide(item: any, prop: any) {
         item[prop] = !item[prop];
     }
-    
+
     onSave() {
         this.item.changed = true;
     }

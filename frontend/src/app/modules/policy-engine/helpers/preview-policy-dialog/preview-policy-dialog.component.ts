@@ -1,5 +1,5 @@
-import { Component, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Component } from '@angular/core';
+import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 /**
  * Dialog for export/import policy.
@@ -7,7 +7,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 @Component({
     selector: 'preview-policy-dialog',
     templateUrl: './preview-policy-dialog.component.html',
-    styleUrls: ['./preview-policy-dialog.component.css']
+    styleUrls: ['./preview-policy-dialog.component.scss'],
 })
 export class PreviewPolicyDialog {
     public loading = true;
@@ -21,14 +21,14 @@ export class PreviewPolicyDialog {
     public similar!: any[];
     public module!: any;
     public tool!: any;
-    public tools!: string;
 
     constructor(
-        public dialogRef: MatDialogRef<PreviewPolicyDialog>,
-        @Inject(MAT_DIALOG_DATA) public data: any
+        public ref: DynamicDialogRef,
+        public config: DynamicDialogConfig
     ) {
-        if (data.policy) {
-            const importFile = data.policy;
+        if (this.config.data.policy) {
+            const importFile = this.config.data.policy;
+
             this.newVersions = importFile.newVersions || [];
             this.policy = importFile.policy;
 
@@ -37,38 +37,39 @@ export class PreviewPolicyDialog {
                 this.policyGroups += this.policy.policyRoles.join(', ');
             }
 
-            this.tools =
-                importFile?.tools?.map((item: { name: any }) => item.name).join(', ');
-
             const schemas = importFile.schemas || [];
             const tokens = importFile.tokens || [];
 
-            this.schemas = schemas.map((s: any) => {
-                if (s.version) {
-                    return `${s.name} (${s.version})`;
-                }
-                return s.name;
-            }).join(', ');
+            this.schemas = schemas
+                .map((s: any) => {
+                    if (s.version) {
+                        return `${s.name} (${s.version})`;
+                    }
+                    return s.name;
+                })
+                .join(', ');
             this.tokens = tokens.map((s: any) => s.tokenName).join(', ');
 
             const similar = importFile.similar || [];
-            this.similar = similar.map((s: any) => {
-                if (s.version) {
-                    return `${s.name} (${s.version})`;
-                }
-                return s.name;
-            }).join(', ');
+            this.similar = similar
+                .map((s: any) => {
+                    if (s.version) {
+                        return `${s.name} (${s.version})`;
+                    }
+                    return s.name;
+                })
+                .join(', ');
         }
 
-        if (data.module) {
-            this.module = data.module?.module;
+        if (this.config.data.module) {
+            this.module = this.config.data.module.module;
         }
 
-        if (data.tool) {
-            this.tool = data.tool?.tool;
+        if (this.config.data.tool) {
+            this.tool = this.config.data.tool?.tool;
         }
 
-        this.policies = data.policies || [];
+        this.policies = this.config.data.policies || [];
     }
 
     ngOnInit() {
@@ -79,18 +80,18 @@ export class PreviewPolicyDialog {
     }
 
     onClose(): void {
-        this.dialogRef.close(false);
+        this.ref.close(false);
     }
 
     onImport() {
-        this.dialogRef.close({
-            versionOfTopicId: this.versionOfTopicId
+        this.ref.close({
+            versionOfTopicId: this.versionOfTopicId,
         });
     }
 
     onNewVersionClick(messageId: string) {
-        this.dialogRef.close({
-            messageId
+        this.ref.close({
+            messageId,
         });
     }
 }

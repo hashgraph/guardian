@@ -5,10 +5,119 @@ import { AnalyticsTopicCache as TopicCache } from '@entity/analytics-topic-cache
 import { ReportStatus } from '@interfaces/report-status.type';
 import { ReportSteep } from '@interfaces/report-steep.type';
 
+class Counter {
+    private count: number;
+    private last: number;
+    private lastCount: number;
+
+    constructor() {
+        this.last = Date.now();
+        this.count = 0;
+        this.lastCount = 0;
+    }
+
+    public add(): void {
+        this.count++;
+        const current = Date.now();
+        if (current - this.last > 60000) {
+            console.log(`Requests: ${this.count - this.lastCount} per minute.`);
+            this.last = current;
+            this.lastCount = this.count;
+        }
+    }
+}
+
+export class TaskQueue {
+    /**
+     * Limit
+     */
+    private limit: number;
+    /**
+     * Tasks
+     */
+    private tasks: ((value: number) => void)[];
+
+    constructor() {
+        this.tasks = [];
+        setInterval(this.onTask.bind(this), 1000);
+    }
+
+    /**
+     * Get id
+     * @param report
+     * @param max
+     */
+    public getId(limit: number): Promise<number> {
+        this.limit = limit;
+        return new Promise<number>((resolve, reject) => {
+            this.tasks.push(resolve);
+        });
+    }
+
+    /**
+     * onTask
+     */
+    private onTask(): void {
+        if (this.tasks.length && this.limit) {
+            const length = Math.min(this.tasks.length, this.limit)
+            for (let i = 0; i < length; i++) {
+                this.tasks.shift()(i);
+            }
+        }
+    }
+}
+
+
+/**
+ * Analytics debug
+ */
+export enum AnalyticsDebug {
+    NONE = 0, // 0
+    MESSAGES = 1, // 1 << 0
+    REQUESTS = 2 // 1 << 1
+}
+
 /**
  * Utils
  */
 export class AnalyticsUtils {
+    /**
+     * Debug level
+     */
+    public static DEBUG_LVL: number = AnalyticsDebug.NONE;
+    /**
+     * Request count limit per second
+     */
+    public static REQUEST_LIMIT: number = 40;
+    /**
+     * Request counter
+     */
+    private static counter = new Counter();
+    /**
+     * Request counter
+     */
+    private static taskQueue = new TaskQueue();
+
+    /**
+     * Send debug message
+     * @param message
+     * @param lvl
+     */
+    private static debugMessage(message: string, lvl: AnalyticsDebug): void {
+        try {
+            if (lvl & AnalyticsUtils.DEBUG_LVL) {
+                if (lvl === AnalyticsDebug.MESSAGES) {
+                    console.log(message);
+                }
+                if (lvl === AnalyticsDebug.REQUESTS) {
+                    AnalyticsUtils.counter.add();
+                }
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
     /**
      * Update report progress
      * @param report
@@ -87,10 +196,12 @@ export class AnalyticsUtils {
     public static async loadMessages(topic: TopicCache): Promise<any> {
         const messages = [];
         try {
-            console.log('load:', topic.topicId);
+            AnalyticsUtils.debugMessage(`Load topic: ${topic.topicId}`, AnalyticsDebug.MESSAGES);
             const workers = new Workers();
             let next: string = null;
             do {
+                await AnalyticsUtils.taskQueue.getId(AnalyticsUtils.REQUEST_LIMIT);
+                AnalyticsUtils.debugMessage('Request count', AnalyticsDebug.REQUESTS);
                 const data = await workers.addRetryableTask({
                     type: WorkerTaskType.GET_TOPIC_MESSAGE_CHUNKS,
                     data: {
@@ -104,7 +215,7 @@ export class AnalyticsUtils {
                 }
                 next = data.next;
                 if (next) {
-                    console.log('next:', next, topic.topicId, messages.length);
+                    AnalyticsUtils.debugMessage(`Next messages: ${next}, ${topic.topicId}, ${messages.length}`, AnalyticsDebug.MESSAGES);
                 }
             } while (next);
             return { messages };
@@ -123,7 +234,10 @@ export class AnalyticsUtils {
      */
     public static async loadMessage(timeStamp: string): Promise<any> {
         try {
+            AnalyticsUtils.debugMessage(`Load message: ${timeStamp}`, AnalyticsDebug.MESSAGES);
             const workers = new Workers();
+            await AnalyticsUtils.taskQueue.getId(AnalyticsUtils.REQUEST_LIMIT);
+            AnalyticsUtils.debugMessage('Request count', AnalyticsDebug.REQUESTS);
             const message = await workers.addRetryableTask({
                 type: WorkerTaskType.GET_TOPIC_MESSAGE,
                 data: {
@@ -230,7 +344,10 @@ export class AnalyticsUtils {
      * @param tokenId
      */
     public static async getTokenInfo(tokenId: string): Promise<any> {
+        AnalyticsUtils.debugMessage(`Load token: ${tokenId}`, AnalyticsDebug.MESSAGES);
         const workers = new Workers();
+        await AnalyticsUtils.taskQueue.getId(AnalyticsUtils.REQUEST_LIMIT);
+        AnalyticsUtils.debugMessage('Request count', AnalyticsDebug.REQUESTS);
         const info = await workers.addRetryableTask({
             type: WorkerTaskType.GET_TOKEN_INFO,
             data: { tokenId }

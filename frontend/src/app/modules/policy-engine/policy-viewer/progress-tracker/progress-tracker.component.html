@@ -1,0 +1,21 @@
+<div class="progress-container">
+    <div (click)="onStepAction(step.blockId)"
+         *ngFor="let step of steps; index as i"
+         [ngClass]="{'active': isStepActive(step), 'spaceAfter': steps[i+1] && steps[i+1].level <= 1 && step.level <= 1, 'subStep': step.level > 1, 'stepWithAction': isStepActive(step) || stepHasAction(step.blockId)}"
+         class="step-item"
+    >
+        <i *ngIf="step.level <= 1" [ngClass]="isStepCompleted(step) && !stepHasAction(step.blockId) ? 'pi-check' : 'pi-angle-right'"
+           class="pi"></i>
+        <p>{{ step.label }}</p>
+    </div>
+</div>
+<div class="progress-footer-container">
+</div>
+
+<!-- <div class="progress-footer">
+    <button pButton type="button" class="button" label="Previous" [disabled]="true"></button>
+    <div>
+        <button pButton type="button" class="p-button-outlined" label="Save Changes" style="margin-right: 16px;"></button>
+        <button pButton type="button" class="p-button" label="Next"></button>
+    </div>
+</div> -->

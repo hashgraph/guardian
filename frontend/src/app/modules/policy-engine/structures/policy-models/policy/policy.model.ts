@@ -18,6 +18,8 @@ import { PolicyFolder, PolicyItem } from '../interfaces/types';
 import { TemplateUtils } from '../utils';
 import { PolicyTool } from '../tool/block.model';
 import { ToolVariables } from '../variables/tool-variables';
+import { PolicyNavigationStepModel } from './policy-navigation-step.model';
+import { PolicyNavigationModel } from './policy-navigation.model';
 
 export class PolicyTemplate {
     public readonly valid: boolean;
@@ -58,6 +60,10 @@ export class PolicyTemplate {
     private _temporarySchemas!: Schema[];
     private _lastVariables!: IModuleVariables;
     private _changed: boolean;
+
+    private _policyNavigation!: PolicyNavigationModel[];
+    private _categories!: string[];
+    private _projectSchema!: string;
 
     public readonly isDraft: boolean = false;
     public readonly isPublished: boolean = false;
@@ -172,6 +178,22 @@ export class PolicyTemplate {
 
     public get policyRoles(): PolicyRole[] {
         return this._policyRoles;
+    }
+
+    public get projectSchema() {
+        return this._projectSchema;
+    }
+
+    public get policySchemas() {
+        return this._schemas;
+    }
+
+    public get categories(): string[] {
+        return this._categories;
+    }
+
+    public get policyNavigation(): PolicyNavigationModel[] {
+        return this._policyNavigation;
     }
 
     public get changed(): boolean {
@@ -331,17 +353,82 @@ export class PolicyTemplate {
         event?.remove();
     }
 
+    public setProjectSchema(value: string) {
+        this._projectSchema = value;
+        this.emitUpdate();
+    }
+
+    public setCategories(categories: string[]) {
+        this._categories = categories;
+        this.emitUpdate();
+    }
+
+    public createStep(role: string, index: number) {
+        const e = new PolicyNavigationStepModel({
+            name: '',
+            block: null,
+            level: 1,
+        }, this);
+        this.addStep(role, e, index);
+    }
+
+    public addStep(role: string, step: PolicyNavigationStepModel, index: number) {
+        for (const nav of this._policyNavigation) {
+            if (nav.role === role) {
+                nav.steps.splice(index, 0, step);
+            }
+        }
+
+        this.emitUpdate();
+    }
+
+    public removeStep(role: string, step: PolicyNavigationStepModel) {
+        for (const nav of this._policyNavigation) {
+            let index = -1;
+            if (nav.role === role) {
+                index = nav.steps.findIndex((c) => c.id == step.id);
+            }
+            if (index !== -1) {
+                nav.steps.splice(index, 1);
+                this.emitUpdate();
+            }
+        }
+    }
+
     private buildPolicy(policy: any) {
         this._policyTag = policy.policyTag;
         this._name = policy.name;
         this._description = policy.description;
         this._topicDescription = policy.topicDescription;
-
+        this._projectSchema = policy.projectSchema;
+        this._categories = policy.categories;
 
         this._policyRoles = [];
         if (Array.isArray(policy.policyRoles)) {
             for (const role of policy.policyRoles) {
                 this._policyRoles.push(new PolicyRole(role, this));
+            }
+        }
+
+        this._policyNavigation = [];
+        if (Array.isArray(policy.policyRoles)) {
+            for (const role of policy.policyRoles) {
+                this._policyNavigation.push(new PolicyNavigationModel({role, steps: []}, this));
+            }
+        }
+        this._policyNavigation.push(new PolicyNavigationModel({role: 'NO_ROLE', steps: []}, this));
+        this._policyNavigation.push(new PolicyNavigationModel({role: 'OWNER', steps: []}, this));
+
+        if (policy.policyNavigation && Array.isArray(policy.policyNavigation)) {
+            for (const nav of policy.policyNavigation) {
+                const navigation = this._policyNavigation.find((item: any) => item.role === nav.role);
+                if (navigation) {
+                    const steps: PolicyNavigationStepModel[] = [];
+                    nav.steps.forEach((step: PolicyNavigationStepModel) => {
+                        steps.push(new PolicyNavigationStepModel(step, this))
+                    })
+                    navigation.steps = steps;
+                }
             }
         }
 
@@ -365,6 +452,29 @@ export class PolicyTemplate {
                 this._policyTokens.push(new PolicyToken(token, this));
             }
         }
+    }
+
+    private _buildBlock(
+        config: IBlockConfig,
+        parent: PolicyModule | PolicyBlock | null,
+        module: PolicyModule | PolicyTemplate
+    ) {
+        let block: PolicyModule | PolicyBlock;
+        if (config.blockType === 'module') {
+            block = new PolicyModule(config, parent);
+            block.setModule(module);
+            module = block as PolicyModule;
+        } else {
+            block = new PolicyBlock(config, parent);
+            block.setModule(module);
+        }
+        if (Array.isArray(config.children)) {
+            for (const childConfig of config.children) {
+                const child = this._buildBlock(childConfig, block, module);
+                block.children.push(child);
+            }
+        }
+        return block;
     }
 
     private buildBlock(config: IBlockConfig) {
@@ -423,6 +533,14 @@ export class PolicyTemplate {
             }
         }
 
+        for (const nav of this._policyNavigation) {
+            for (const step of nav.steps) {
+                if (step.blockTag) {
+                    step.block = this._tagMap[step.blockTag];
+                }
+            }
+        }
+
         this._dataSource = [this._config];
 
         this.updateVariables();
@@ -464,6 +582,8 @@ export class PolicyTemplate {
             previousVersion: this.previousVersion,
             description: this.description,
             topicDescription: this.topicDescription,
+            projectSchema: this.projectSchema,
+            categories: this.categories,
             status: this.status,
             creator: this.creator,
             owner: this.owner,
@@ -475,6 +595,7 @@ export class PolicyTemplate {
             codeVersion: this.codeVersion,
             createDate: this.createDate,
             policyRoles: Array<string>(),
+            policyNavigation: Array<any>(),
             policyTopics: Array<any>(),
             policyTokens: Array<any>(),
             policyGroups: Array<any>(),
@@ -482,6 +603,9 @@ export class PolicyTemplate {
         };
         for (const role of this.policyRoles) {
             json.policyRoles.push(role.getJSON());
+        }
+        for (const nav of this._policyNavigation) {
+            json.policyNavigation.push(nav.getJSON());
         }
         for (const group of this._policyGroups) {
             json.policyGroups.push(group.getJSON());

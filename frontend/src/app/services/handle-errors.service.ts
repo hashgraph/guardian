@@ -5,7 +5,6 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
 import { MessageTranslationService } from './message-translation-service/message-translation-service';
-import { AuthStateService } from './auth-state.service';
 
 /**
  * Error interceptor.
@@ -15,10 +14,11 @@ export class HandleErrorsService implements HttpInterceptor {
     constructor(
         public router: Router,
         private toastr: ToastrService,
-        private messageTranslator: MessageTranslationService,
-        private authState: AuthStateService
+        private messageTranslator: MessageTranslationService
     ) {
     }
+
+    excludeErrorCodes: string[] = ['401'];
 
     private messageToText(message: any) {
         if (typeof message === 'object') {
@@ -107,17 +107,16 @@ export class HandleErrorsService implements HttpInterceptor {
                             <div>${result.text}</div>
                             <div>See <a style="color: #0B73F8" href="/admin/logs?message=${btoa(result.text)}">logs</a> for details.</div>
                         `;
-                        this.toastr.error(body, result.header, {
-                            timeOut: 100000,
-                            extendedTimeOut: 30000,
-                            closeButton: true,
-                            positionClass: 'toast-bottom-right',
-                            toastClass: 'ngx-toastr error-message-toastr',
-                            enableHtml: true,
-                        });
-                        // if ((result as any).error?.statusCode == 401) {
-                        //     this.authState.updateState(false);
-                        // }
+                        if (this.excludeErrorCodes.includes(body)) {
+                            this.toastr.error(body, result.header, {
+                                timeOut: 100000,
+                                extendedTimeOut: 30000,
+                                closeButton: true,
+                                positionClass: 'toast-bottom-right',
+                                toastClass: 'ngx-toastr error-message-toastr',
+                                enableHtml: true,
+                            });
+                        }
                     }
                 })
                 return throwError(error);

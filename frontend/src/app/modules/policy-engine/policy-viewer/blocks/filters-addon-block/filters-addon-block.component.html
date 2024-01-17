@@ -1,7 +1,3 @@
-<div *ngIf="loading" class="loading">
-    <mat-spinner></mat-spinner>
-</div>
-
 <!-- <div *ngIf="type == 'unelected'" class="content">
     <div class="btn-link" (click)="onFilters()">{{content}}</div>
 </div> -->
@@ -15,4 +11,12 @@
             <mat-option *ngFor="let item of options" [value]="item.value">{{item.name}}</mat-option>
         </mat-select>
     </div>
+</div>
+
+<ng-template #preloader>
+    <div class="preloader-image"></div>
+</ng-template>
+
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
 </div>

@@ -6,49 +6,61 @@ import { Observable, ReplaySubject } from 'rxjs';
 import { InformService } from 'src/app/services/inform.service';
 import { SchemaService } from 'src/app/services/schema.service';
 import { TasksService } from 'src/app/services/tasks.service';
+import { MenuItem } from 'primeng/api';
+import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 /**
  * Dialog allowing you to select a file and load schemas.
  */
 @Component({
     selector: 'import-schema-dialog',
     templateUrl: './import-schema-dialog.component.html',
-    styleUrls: ['./import-schema-dialog.component.css']
+    styleUrls: ['./import-schema-dialog.component.scss'],
 })
 export class ImportSchemaDialog {
-    importType?: ImportType;
+    importType?: ImportType = 0;
     dataForm = this.fb.group({
-        timestamp: ['', Validators.required]
+        timestamp: ['', Validators.required],
     });
     loading: boolean = false;
+
+    items: MenuItem[] = [
+        {label: 'Import from file'},
+        {label: 'Import from IPFS'},
+    ];
 
     taskId: string | undefined = undefined;
     expectedTaskMessages: number = 0;
 
-    public isImportTypeSelected: boolean = false;
+    public isImportTypeSelected: boolean = true;
 
     public innerWidth: any;
     public innerHeight: any;
 
     constructor(
-        public dialogRef: MatDialogRef<ImportSchemaDialog>,
+        public ref: DynamicDialogRef,
+        public config: DynamicDialogConfig,
         private fb: FormBuilder,
         private schemaService: SchemaService,
         private informService: InformService,
-        private taskService: TasksService,
-        @Inject(MAT_DIALOG_DATA) public data: any) {
-        if (data.timeStamp) {
+        private taskService: TasksService
+    ) {
+        if (this.config.data.timeStamp) {
             this.importType = ImportType.IPFS;
             this.isImportTypeSelected = true;
             this.dataForm.patchValue({
-                timestamp: data.timeStamp
+                timestamp: this.config.data.timeStamp,
             });
             this.importFromMessage();
         }
     }
 
     ngOnInit() {
-      this.innerWidth = window.innerWidth;
-      this.innerHeight = window.innerHeight;
+        this.innerWidth = window.innerWidth;
+        this.innerHeight = window.innerHeight;
+    }
+
+    handleChangeTab(order: number): void {
+        this.setImportType(order);
     }
 
     setImportType(importType: ImportType) {
@@ -57,7 +69,7 @@ export class ImportSchemaDialog {
     }
 
     onNoClick(): void {
-        this.dialogRef.close(null);
+        this.ref.close(null);
     }
 
     importFromMessage() {
@@ -68,14 +80,17 @@ export class ImportSchemaDialog {
         this.loading = true;
         const messageId = this.dataForm.get('timestamp')?.value;
 
-        this.schemaService.pushPreviewByMessage(messageId).subscribe((result) => {
-            const { taskId, expectation } = result;
-            this.taskId = taskId;
-            this.expectedTaskMessages = expectation;
-        }, (e) => {
-            this.loading = false;
-            this.taskId = undefined;
-        });
+        this.schemaService.pushPreviewByMessage(messageId).subscribe(
+            (result) => {
+                const {taskId, expectation} = result;
+                this.taskId = taskId;
+                this.expectedTaskMessages = expectation;
+            },
+            (e) => {
+                this.loading = false;
+                this.taskId = undefined;
+            }
+        );
     }
 
     onAsyncError(error: any) {
@@ -88,36 +103,42 @@ export class ImportSchemaDialog {
         if (this.taskId) {
             const taskId: string = this.taskId;
             this.taskId = undefined;
-            this.taskService.get(taskId).subscribe((task) => {
-                this.loading = false;
-                const { result } = task;
-                this.dialogRef.close({
-                    type: 'message',
-                    data: this.dataForm.get('timestamp')?.value,
-                    schemas: result
-                });
-            }, (e) => {
-                this.loading = false;
-            });
+            this.taskService.get(taskId).subscribe(
+                (task) => {
+                    this.loading = false;
+                    const {result} = task;
+                    this.ref.close({
+                        type: 'message',
+                        data: this.dataForm.get('timestamp')?.value,
+                        schemas: result,
+                    });
+                },
+                (e) => {
+                    this.loading = false;
+                }
+            );
         }
     }
 
     importFromFile(file: any) {
-        const reader = new FileReader()
+        const reader = new FileReader();
         reader.readAsArrayBuffer(file);
         reader.addEventListener('load', (e: any) => {
             const arrayBuffer = e.target.result;
             this.loading = true;
-            this.schemaService.previewByFile(arrayBuffer).subscribe((result) => {
-                this.loading = false;
-                this.dialogRef.close({
-                    type: 'file',
-                    data: arrayBuffer,
-                    schemas: result
-                });
-            }, (e) => {
-                this.loading = false;
-            });
+            this.schemaService.previewByFile(arrayBuffer).subscribe(
+                (result) => {
+                    this.loading = false;
+                    this.ref.close({
+                        type: 'file',
+                        data: arrayBuffer,
+                        schemas: result,
+                    });
+                },
+                (e) => {
+                    this.loading = false;
+                }
+            );
         });
     }
 }

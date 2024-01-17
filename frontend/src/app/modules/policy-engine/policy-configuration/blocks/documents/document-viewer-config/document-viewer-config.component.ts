@@ -7,7 +7,7 @@ import { IModuleVariables, PolicyBlock } from '../../../../structures';
 @Component({
     selector: 'document-viewer-config',
     templateUrl: './document-viewer-config.component.html',
-    styleUrls: ['./document-viewer-config.component.css'],
+    styleUrls: ['./document-viewer-config.component.scss'],
     encapsulation: ViewEncapsulation.Emulated
 })
 export class DocumentSourceComponent implements OnInit {

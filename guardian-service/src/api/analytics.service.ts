@@ -43,7 +43,15 @@ export async function analyticsAPI(): Promise<void> {
                 childrenLvl,
                 idLvl
             } = msg;
-            const options = new CompareOptions(propLvl, childrenLvl, eventsLvl, idLvl, null, null);
+            const options = new CompareOptions(
+                propLvl,
+                childrenLvl,
+                eventsLvl,
+                idLvl,
+                null,
+                null,
+                null
+            );
 
             const compareModels: PolicyModel[] = [];
             for (const policyId of ids) {
@@ -89,7 +97,15 @@ export async function analyticsAPI(): Promise<void> {
                 childrenLvl,
                 idLvl
             } = msg;
-            const options = new CompareOptions(propLvl, childrenLvl, eventsLvl, idLvl, null, null);
+            const options = new CompareOptions(
+                propLvl,
+                childrenLvl,
+                eventsLvl,
+                idLvl,
+                null,
+                null,
+                null
+            );
 
             //Policy
             const module1 = await DatabaseServer.getModuleById(moduleId1);
@@ -133,6 +149,7 @@ export async function analyticsAPI(): Promise<void> {
                 IChildrenLvl.None,
                 IEventsLvl.None,
                 idLvl,
+                null,
                 null,
                 null
             );
@@ -251,7 +268,8 @@ export async function analyticsAPI(): Promise<void> {
                 propLvl,
                 childrenLvl,
                 idLvl,
-                keyLvl
+                keyLvl,
+                refLvl
             } = msg;
             const options = new CompareOptions(
                 propLvl,
@@ -259,6 +277,7 @@ export async function analyticsAPI(): Promise<void> {
                 eventsLvl,
                 idLvl,
                 keyLvl,
+                refLvl,
                 user?.role === UserRole.STANDARD_REGISTRY ? user.did : null
             );
 
@@ -314,6 +333,7 @@ export async function analyticsAPI(): Promise<void> {
                 childrenLvl,
                 eventsLvl,
                 idLvl,
+                null,
                 null,
                 user?.role === UserRole.STANDARD_REGISTRY ? user.did : null
             );

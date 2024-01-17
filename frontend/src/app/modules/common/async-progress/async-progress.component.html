@@ -1,21 +1,15 @@
-<div class="content">
-    <div class="loading-progress" *ngIf="!taskNotFound; else taskNotFoundMessage">
-        <div>
-            <mat-progress-bar mode="buffer" [value]="progressValue"></mat-progress-bar>
+<div class="center-container">
+    <div class="task-viewer">
+        <div class="header">{{ action }}...</div>
+        <div class="progress-bar">
+            <p-progressBar [showValue]="false" [value]="progressValue"></p-progressBar>
         </div>
-        <div class="loading-progress-info">
-            <mat-nav-list>
-                <div mat-list-item href="..." *ngFor="let status of statuses" class="status-grid">
-                    <div [ngClass]="{'info': isInfo(status)}"><span *ngIf="isInfo(status)">INFO: </span>{{
-                        status.message }}
-                    </div>
-                    <div class="status"><span *ngIf="!isInfo(status)">{{ status.type }}</span></div>
-                </div>
-            </mat-nav-list>
+        <div class="status-items">
+            <ng-container *ngFor="let status of statuses">
+                <div *ngIf="isInfo(status)" class="info-part">INFO: {{ status.message }}</div>
+                <div *ngIf="!isInfo(status)" class="non-info-part">
+                    {{ status.message }} <span>{{ status.type }}</span></div>
+            </ng-container>
         </div>
     </div>
-    <ng-template #taskNotFoundMessage>
-        <div class="task-not-found"><mat-icon class="task-not-found__icon">search</mat-icon><span
-                class="task-not-found__label">Task not found</span></div>
-    </ng-template>
 </div>

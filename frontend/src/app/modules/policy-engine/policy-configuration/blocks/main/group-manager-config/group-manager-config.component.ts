@@ -7,7 +7,7 @@ import { IModuleVariables, PolicyBlock } from '../../../../structures';
 @Component({
     selector: 'group-manager-config',
     templateUrl: './group-manager-config.component.html',
-    styleUrls: ['./group-manager-config.component.css'],
+    styleUrls: ['./group-manager-config.component.scss'],
     encapsulation: ViewEncapsulation.Emulated
 })
 export class GroupManagerConfigComponent implements OnInit {

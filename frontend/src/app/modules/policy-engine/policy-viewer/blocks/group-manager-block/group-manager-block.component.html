@@ -1,49 +1,57 @@
 <div class="content" [hidden]="!isActive">
-    <div *ngIf="loading" class="loading">
-        <mat-spinner></mat-spinner>
-    </div>
-
     <div *ngIf="!selected">
         <div *ngIf="groups" class="table-container">
             <table mat-table [dataSource]="groups" class="table">
                 <ng-container matColumnDef="id">
-                    <th mat-header-cell *matHeaderCellDef> Group Id </th>
+                    <th *matHeaderCellDef mat-header-cell>Group Id</th>
                     <td mat-cell *matCellDef="let element">
-                        <div class="select-btn" (click)="onSelect(element)">{{element.id}} </div>
+                        <div (click)="onSelect(element)" class="select-btn">
+                            {{ element.id }}
+                        </div>
                     </td>
                 </ng-container>
                 <ng-container matColumnDef="groupLabel">
-                    <th mat-header-cell *matHeaderCellDef> Label </th>
-                    <td mat-cell *matCellDef="let element"> {{element.groupLabel}} </td>
-                </ng-container>
-                <ng-container matColumnDef="groupName">
-                    <th mat-header-cell *matHeaderCellDef> Group Name </th>
-                    <td mat-cell *matCellDef="let element"> {{element.groupName}} </td>
-                </ng-container>
-                <ng-container matColumnDef="role">
-                    <th mat-header-cell *matHeaderCellDef> Role </th>
-                    <td mat-cell *matCellDef="let element"> {{element.role}} </td>
-                </ng-container>
-                <ng-container matColumnDef="type">
-                    <th mat-header-cell *matHeaderCellDef> Type </th>
-                    <td mat-cell *matCellDef="let element"> {{element.type}} </td>
-                </ng-container>
-                <ng-container matColumnDef="actions">
-                    <th mat-header-cell *matHeaderCellDef> </th>
-                    <td mat-cell *matCellDef="let element">
-                        <button *ngIf="element.canInvite" mat-raised-button color="primary" (click)="onInvite(element)"
-                            style="margin: 15px; min-width: 100px;">
-                            Get Invite
-                        </button>
+                    <th *matHeaderCellDef mat-header-cell>Label</th>
+                    <td *matCellDef="let element" mat-cell>
+                        {{ element.groupLabel }}
                     </td>
                 </ng-container>
-                <tr mat-header-row *matHeaderRowDef="groupColumns; sticky: true"></tr>
-                <tr mat-row *matRowDef="let row; columns: groupColumns;"></tr>
+                <ng-container matColumnDef="groupName">
+                    <th *matHeaderCellDef mat-header-cell>Group Name</th>
+                    <td *matCellDef="let element" mat-cell>
+                        {{ element.groupName }}
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="role">
+                    <th *matHeaderCellDef mat-header-cell>Role</th>
+                    <td *matCellDef="let element" mat-cell>
+                        {{ element.role }}
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="type">
+                    <th *matHeaderCellDef mat-header-cell>Type</th>
+                    <td *matCellDef="let element" mat-cell>
+                        {{ element.type }}
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="actions">
+                    <th *matHeaderCellDef mat-header-cell></th>
+                    <td mat-cell *matCellDef="let element">
+                        <p-button
+                            (click)="onInvite(element)"
+                            *ngIf="element.canInvite"
+                            label="Get Invite"
+                        >
+                        </p-button>
+                    </td>
+                </ng-container>
+                <tr
+                        *matHeaderRowDef="groupColumns; sticky: true"
+                        mat-header-row
+                ></tr>
+                <tr *matRowDef="let row; columns: groupColumns" mat-row></tr>
             </table>
         </div>
-
-
-
     </div>
 
     <div *ngIf="selected">
@@ -56,51 +64,73 @@
             </div>
             <div class="role">
                 <span>Role: </span>
-                <span>{{role}}</span>
+                <span>{{ role }}</span>
             </div>
             <div class="role">
                 <span>Type: </span>
-                <span>{{type}}</span>
+                <span>{{ type }}</span>
             </div>
             <div class="role">
                 <span>Relationship Type: </span>
-                <span>{{groupRelationshipType}}</span>
+                <span>{{ groupRelationshipType }}</span>
             </div>
-            <div class="role" style="flex: 1">
+            <div class="role" style="flex: 1;">
                 <span>Access Type: </span>
-                <span>{{groupAccessType}}</span>
+                <span>{{ groupAccessType }}</span>
             </div>
-            <button *ngIf="canInvite" mat-raised-button color="primary" (click)="onInvite(selected)"
-                style="margin: 15px; min-width: 100px;">
-                Get Invite
-            </button>
+            <p-button
+                (click)="onInvite(selected)"
+                *ngIf="canInvite"
+                label="Get Invite"
+            >
+            </p-button>
         </div>
         <div *ngIf="users" class="table-container">
             <table mat-table [dataSource]="users" class="table">
                 <ng-container matColumnDef="username">
-                    <th mat-header-cell *matHeaderCellDef> User Name </th>
-                    <td mat-cell *matCellDef="let element"> {{element.username}} </td>
+                    <th *matHeaderCellDef mat-header-cell>User Name</th>
+                    <td *matCellDef="let element" mat-cell>
+                        {{ element.username }}
+                    </td>
                 </ng-container>
                 <ng-container matColumnDef="role">
-                    <th mat-header-cell *matHeaderCellDef> Role </th>
-                    <td mat-cell *matCellDef="let element"> {{element.role}} </td>
+                    <th *matHeaderCellDef mat-header-cell>Role</th>
+                    <td *matCellDef="let element" mat-cell>
+                        {{ element.role }}
+                    </td>
                 </ng-container>
                 <ng-container matColumnDef="type">
-                    <th mat-header-cell *matHeaderCellDef> Type </th>
-                    <td mat-cell *matCellDef="let element"> {{element.type}} </td>
+                    <th *matHeaderCellDef mat-header-cell>Type</th>
+                    <td *matCellDef="let element" mat-cell>
+                        {{ element.type }}
+                    </td>
                 </ng-container>
                 <ng-container matColumnDef="action">
-                    <th mat-header-cell *matHeaderCellDef> </th>
+                    <th *matHeaderCellDef mat-header-cell></th>
                     <td mat-cell *matCellDef="let element">
-                        <div *ngIf="canDelete && element.type !== 'Owner'" (click)="onDelete(element)"
-                            class="btn-settings btn-delete">
+                        <div
+                            (click)="onDelete(element)"
+                            *ngIf="canDelete && element.type !== 'Owner'"
+                            class="btn-settings btn-delete"
+                        >
                             <mat-icon>delete</mat-icon>
                         </div>
                     </td>
                 </ng-container>
-                <tr mat-header-row *matHeaderRowDef="userColumns; sticky: true"></tr>
-                <tr mat-row *matRowDef="let row; columns: userColumns;"></tr>
+                <tr
+                    *matHeaderRowDef="userColumns; sticky: true"
+                    mat-header-row
+                ></tr>
+                <tr *matRowDef="let row; columns: userColumns" mat-row></tr>
             </table>
         </div>
     </div>
+</div>
+
+<ng-template #preloader>
+    <div class="preloader-image"></div>
+</ng-template>
+
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
 </div>

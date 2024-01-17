@@ -1,5 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 @Component({
   selector: 'app-confirmation-dialog',
@@ -11,7 +12,10 @@ export class ConfirmationDialogComponent implements OnInit {
   public dialogTitle!: string;
   public dialogText!: string;
 
-  constructor(@Inject(MAT_DIALOG_DATA) public data: any) { 
+    constructor(
+        public dialogRef: MatDialogRef<ConfirmationDialogComponent>,
+        @Inject(MAT_DIALOG_DATA) public data: any
+    ) {
     this.dialogTitle = data.dialogTitle;
     this.dialogText = data.dialogText;
   }
@@ -19,4 +23,11 @@ export class ConfirmationDialogComponent implements OnInit {
   ngOnInit(): void {
   }
 
+    onNoClick(): void {
+        this.dialogRef.close(false);
+    }
+
+    onSubmit(): void {
+        this.dialogRef.close(true);
+    }
 }

@@ -7,7 +7,7 @@ import { PolicyBlock, SchemaVariables } from '../../structures';
 @Component({
     selector: 'select-schema',
     templateUrl: './select-schema.component.html',
-    styleUrls: ['./select-schema.component.css']
+    styleUrls: ['./select-schema.component.scss']
 })
 export class SelectSchema {
     @Input('schemas') schemas!: SchemaVariables[];

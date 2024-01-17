@@ -31,6 +31,12 @@ export class FieldModel implements IWeightModel {
     public readonly title: string;
 
     /**
+     * Field property
+     * @public
+     */
+    public readonly property: string;
+
+    /**
      * Field description
      * @public
      */
@@ -173,11 +179,11 @@ export class FieldModel implements IWeightModel {
 
     constructor(
         name: string,
-        property: any,
+        prop: any,
         required: boolean,
         index: number
     ) {
-        let _property = property;
+        let _property = prop;
         if (_property.oneOf && _property.oneOf.length) {
             _property = _property.oneOf[0];
         }
@@ -209,11 +215,13 @@ export class FieldModel implements IWeightModel {
             unit,
             unitSystem,
             customType,
-            orderPosition
+            orderPosition,
+            property
         } = this.parseFieldComment(this.comment);
 
         this.unit = unit ? String(unit) : null;
         this.unitSystem = unitSystem ? String(unitSystem) : null;
+        this.property = property ? String(property) : null;
         this.customType = customType ? String(customType) : null;
         this.required = required;
 
@@ -407,6 +415,9 @@ export class FieldModel implements IWeightModel {
         if (this.title) {
             properties.push(new AnyPropertyModel('title', this.title));
         }
+        if (this.property) {
+            properties.push(new AnyPropertyModel('property', this.property));
+        }
         if (this.description) {
             properties.push(new AnyPropertyModel('description', this.description));
         }
@@ -464,6 +475,7 @@ export class FieldModel implements IWeightModel {
             index: this.index,
             name: this.name,
             title: this.title,
+            property: this.property,
             description: this.description,
             type: this.type,
             format: this.format,

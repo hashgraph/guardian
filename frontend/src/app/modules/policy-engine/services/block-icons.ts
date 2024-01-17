@@ -1,4 +1,4 @@
-import { BlockType } from "@guardian/interfaces"
+import { BlockType } from '@guardian/interfaces'
 
 const BlockIcons: { [type: string]: string } = {};
 BlockIcons[BlockType.Container] = 'tab';

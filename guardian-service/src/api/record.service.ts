@@ -1,4 +1,4 @@
-import { CompareOptions, IChildrenLvl, IEventsLvl, IIdLvl, IKeyLvl, IPropertiesLvl, RecordComparator } from '@analytics';
+import { CompareOptions, IChildrenLvl, IEventsLvl, IIdLvl, IKeyLvl, IRefLvl, IPropertiesLvl, RecordComparator } from '@analytics';
 import { ApiResponse } from '@api/helpers/api-response';
 import {
     BinaryMessageResponse,
@@ -26,6 +26,7 @@ export async function compareResults(details: any): Promise<any> {
             IEventsLvl.None,
             IIdLvl.None,
             IKeyLvl.Default,
+            IRefLvl.Default,
             null
         );
         const documents: IRecordResult[] = details.documents;
