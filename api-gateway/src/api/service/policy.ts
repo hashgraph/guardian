@@ -1,14 +1,17 @@
 import { PolicyType, TaskAction, UserRole } from '@guardian/interfaces';
-import { PolicyEngine } from '@helpers/policy-engine';
+import { AuthenticatedRequest, Logger, IAuthUser, RunFunctionAsync } from '@guardian/common';
 import { Users } from '@helpers/users';
-import { AuthenticatedRequest, Logger, RunFunctionAsync } from '@guardian/common';
+import { PolicyEngine } from '@helpers/policy-engine';
 import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
-import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, RawBodyRequest, Req, Response } from '@nestjs/common';
-import { checkPermission } from '@auth/authorization-helper';
-import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, getSchemaPath } from '@nestjs/swagger';
-import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
+import { Auth } from '@auth/auth.decorator';
+import { AuthUser, checkPermission } from '@auth/authorization-helper';
+import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, RawBodyRequest, Req, Response, Body } from '@nestjs/common';
 import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator';
+import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, getSchemaPath, ApiBody, ApiForbiddenResponse, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
+
+const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
 
 @Controller('policies')
 @ApiTags('policies')
@@ -104,7 +107,7 @@ export class PolicyApi {
 
     @ApiOperation({
         summary: 'Creates a new policy.',
-        description: 'Creates a new policy. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Creates a new policy.' + ONLY_SR,
     })
     @ApiSecurity('bearerAuth')
     @ApiOkResponse({
@@ -136,7 +139,7 @@ export class PolicyApi {
 
     @ApiOperation({
         summary: 'Creates a new policy.',
-        description: 'Creates a new policy. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Creates a new policy.' + ONLY_SR,
     })
     @ApiSecurity('bearerAuth')
     @ApiOkResponse({
@@ -225,7 +228,7 @@ export class PolicyApi {
 
     @ApiOperation({
         summary: 'Retrieves policy configuration.',
-        description: 'Retrieves policy configuration for the specified policy ID. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Retrieves policy configuration for the specified policy ID.' + ONLY_SR,
     })
     @ApiSecurity('bearerAuth')
     @ApiOkResponse({
@@ -262,7 +265,7 @@ export class PolicyApi {
 
     @ApiOperation({
         summary: 'Updates policy configuration.',
-        description: 'Updates policy configuration for the specified policy ID. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Updates policy configuration for the specified policy ID.' + ONLY_SR,
     })
     @ApiSecurity('bearerAuth')
     @ApiOkResponse({
@@ -314,7 +317,7 @@ export class PolicyApi {
 
     @ApiOperation({
         summary: 'Publishes the policy onto IPFS.',
-        description: 'Publishes the policy with the specified (internal) policy ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Publishes the policy with the specified (internal) policy ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic.' + ONLY_SR,
     })
     @ApiSecurity('bearerAuth')
     @ApiOkResponse({
@@ -345,7 +348,7 @@ export class PolicyApi {
 
     @ApiOperation({
         summary: 'Publishes the policy onto IPFS.',
-        description: 'Publishes the policy with the specified (internal) policy ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Publishes the policy with the specified (internal) policy ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic.' + ONLY_SR,
     })
     @ApiSecurity('bearerAuth')
     @ApiOkResponse({
@@ -383,7 +386,7 @@ export class PolicyApi {
 
     @ApiOperation({
         summary: 'Dry Run policy.',
-        description: 'Run policy without making any persistent changes or executing transaction. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Run policy without making any persistent changes or executing transaction.' + ONLY_SR,
     })
     @ApiSecurity('bearerAuth')
     @ApiOkResponse({
@@ -414,7 +417,7 @@ export class PolicyApi {
 
     @ApiOperation({
         summary: 'Dry Run policy.',
-        description: 'Run policy without making any persistent changes or executing transaction. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Run policy without making any persistent changes or executing transaction.' + ONLY_SR,
     })
     @ApiSecurity('bearerAuth')
     @ApiOkResponse({
@@ -445,7 +448,7 @@ export class PolicyApi {
 
     @ApiOperation({
         summary: 'Validates policy.',
-        description: 'Validates selected policy. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Validates selected policy.' + ONLY_SR,
     })
     @ApiSecurity('bearerAuth')
     @ApiOkResponse({
@@ -739,7 +742,7 @@ export class PolicyApi {
 
     @ApiOperation({
         summary: 'Return policy and its artifacts in a zip file format for the specified policy.',
-        description: 'Returns a zip file containing the published policy and all associated artifacts, i.e. schemas and VCs. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Returns a zip file containing the published policy and all associated artifacts, i.e. schemas and VCs.' + ONLY_SR,
     })
     @ApiSecurity('bearerAuth')
     @ApiOkResponse({
@@ -774,7 +777,7 @@ export class PolicyApi {
 
     @ApiOperation({
         summary: 'Return Heder message ID for the specified published policy.',
-        description: 'Returns the Hedera message ID for the specified policy published onto IPFS. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Returns the Hedera message ID for the specified policy published onto IPFS.' + ONLY_SR,
     })
     @ApiSecurity('bearerAuth')
     @ApiOkResponse({
@@ -805,7 +808,7 @@ export class PolicyApi {
 
     @ApiOperation({
         summary: 'Imports new policy from IPFS.',
-        description: 'Imports new policy and all associated artifacts from IPFS into the local DB. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Imports new policy and all associated artifacts from IPFS into the local DB.' + ONLY_SR,
     })
     @ApiSecurity('bearerAuth')
     @ApiOkResponse({
@@ -838,7 +841,7 @@ export class PolicyApi {
 
     @ApiOperation({
         summary: 'Imports new policy from IPFS.',
-        description: 'Imports new policy and all associated artifacts from IPFS into the local DB. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Imports new policy and all associated artifacts from IPFS into the local DB.' + ONLY_SR,
     })
     @ApiSecurity('bearerAuth')
     @ApiOkResponse({
@@ -875,7 +878,7 @@ export class PolicyApi {
 
     @ApiOperation({
         summary: 'Imports new policy from a zip file.',
-        description: 'Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR,
     })
     @ApiSecurity('bearerAuth')
     @ApiOkResponse({
@@ -908,7 +911,7 @@ export class PolicyApi {
 
     @ApiOperation({
         summary: 'Imports new policy from a zip file.',
-        description: 'Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR,
     })
     @ApiSecurity('bearerAuth')
     @ApiOkResponse({
@@ -945,7 +948,7 @@ export class PolicyApi {
 
     @ApiOperation({
         summary: 'Policy preview from IPFS.',
-        description: 'Previews the policy from IPFS without loading it into the local DB. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Previews the policy from IPFS without loading it into the local DB.' + ONLY_SR,
     })
     @ApiSecurity('bearerAuth')
     @ApiOkResponse({
@@ -976,7 +979,7 @@ export class PolicyApi {
 
     @ApiOperation({
         summary: 'Policy preview from IPFS.',
-        description: 'Previews the policy from IPFS without loading it into the local DB. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Previews the policy from IPFS without loading it into the local DB.' + ONLY_SR,
     })
     @ApiSecurity('bearerAuth')
     @ApiOkResponse({
@@ -1011,36 +1014,112 @@ export class PolicyApi {
         return res.status(202).send(task);
     }
 
+
+    /**
+     * Policy preview from a zip file.
+     */
+    @Post('/import/file/preview')
+    @Auth(
+        UserRole.STANDARD_REGISTRY
+    )
+    @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Policy preview from a zip file.',
-        description: 'Previews the policy from a zip file without loading it into the local DB. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Previews the policy from a zip file without loading it into the local DB.' + ONLY_SR,
     })
-    @ApiSecurity('bearerAuth')
+    @ApiBody({
+        description: 'A zip file containing policy config.',
+        required: true,
+        type: String
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
             'type': 'object'
         },
     })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO
     })
-    @ApiSecurity('bearerAuth')
-    @Post('/import/file/preview')
     @HttpCode(HttpStatus.OK)
-    async importPolicyFromFilePreview(@Req() req: RawBodyRequest<AuthenticatedRequest>, @Response() res) {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const engineService = new PolicyEngine();
+    async importPolicyFromFilePreview(
+        @AuthUser() user: IAuthUser,
+        @Body() file: any
+    ) {
         try {
-            return res.send(await engineService.importFilePreview(req.user, req.body));
+            const engineService = new PolicyEngine();
+            return await engineService.importFilePreview(user, file);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+
+    /**
+     * Policy preview from a xlsx file.
+     */
+    @Post('/import/xlsx/preview')
+    @Auth(
+        UserRole.STANDARD_REGISTRY
+    )
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Policy preview from a xlsx file.',
+        description: 'Previews the policy from a xlsx file without loading it into the local DB.' + ONLY_SR,
+    })
+    @ApiBody({
+        description: 'A xlsx file containing policy config.',
+        required: true,
+        type: String
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @HttpCode(HttpStatus.OK)
+    async importPolicyFromXlsxPreview(
+        @AuthUser() user: IAuthUser,
+        @Body() file: any
+    ) {
+        try {
+            const engineService = new PolicyEngine();
+            return await engineService.importXlsxPreview(user, file);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
 
     @Get('/blocks/about')
     @HttpCode(HttpStatus.OK)

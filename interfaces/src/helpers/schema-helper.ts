@@ -71,7 +71,7 @@ export class SchemaHelper {
      * @param hidden
      * @param url
      */
-    public static parseField(name: string, property: any, required: boolean, url: string): [SchemaField, number] {
+    public static parseField(name: string, property: any, required: boolean, url: string): SchemaField {
         const field: SchemaField = SchemaHelper.parseProperty(name, property);
         const {
             unit,
@@ -96,12 +96,31 @@ export class SchemaHelper {
             field.textColor = textColor;
             field.textSize = textSize;
             field.textBold = textBold;
+            if (textColor) {
+                if (!field.font) {
+                    field.font = {};
+                }
+                field.font.color = textColor;
+            }
+            if (textSize) {
+                if (!field.font) {
+                    field.font = {};
+                }
+                field.font.size = textSize;
+            }
+            if (textBold) {
+                if (!field.font) {
+                    field.font = {};
+                }
+                field.font.bold = textBold;
+            }
         }
         field.customType = customType ? String(customType) : null;
         field.isPrivate = isPrivate;
         field.required = required;
         field.hidden = !!hidden;
-        return [field, orderPosition];
+        field.order = orderPosition || -1;
+        return field;
     }
 
     /**
@@ -259,6 +278,7 @@ export class SchemaHelper {
      */
     public static parseFields(document: ISchemaDocument, contextURL: string, defs?: any, includeSystemProperties: boolean = false): SchemaField[] {
         const fields: SchemaField[] = [];
+        const fieldsWithPositions: SchemaField[] = [];
 
         if (!document || !document.properties) {
             return fields;
@@ -271,14 +291,13 @@ export class SchemaHelper {
             }
         }
 
-        const fieldsWithPositions = [];
         const properties = Object.keys(document.properties);
         for (const name of properties) {
             const property = document.properties[name];
             if (!includeSystemProperties && property.readOnly) {
                 continue;
             }
-            const [field, orderPosition] = SchemaHelper.parseField(name, property, !!required[name], contextURL);
+            const field = SchemaHelper.parseField(name, property, !!required[name], contextURL);
             if (field.isRef) {
                 const subSchemas = defs || document.$defs;
                 const subDocument = subSchemas[field.type];
@@ -287,19 +306,14 @@ export class SchemaHelper {
                 field.fields = subFields;
                 field.conditions = conditions;
             }
-            if (orderPosition) {
-                fieldsWithPositions.push({ field, orderPosition });
-            } else {
+            if (field.order === -1) {
                 fields.push(field);
+            } else {
+                fieldsWithPositions.push(field);
             }
-
         }
-
-        return fields.concat(
-            fieldsWithPositions
-                .sort((a, b) => a.orderPosition - b.orderPosition)
-                .map(item => item.field)
-        );
+        fieldsWithPositions.sort((a, b) => a.order < b.order ? -1 : 1);
+        return [...fields, ...fieldsWithPositions];
     }
 
     /**

@@ -1,6 +1,6 @@
 import { Singleton } from '@helpers/decorators/singleton';
 import { GenerateUUIDv4, PolicyEngineEvents } from '@guardian/interfaces';
-import { NatsService } from '@guardian/common';
+import { IAuthUser, NatsService } from '@guardian/common';
 
 /**
  * Policy engine service
@@ -293,6 +293,15 @@ export class PolicyEngine extends NatsService {
      */
     public async importFilePreview(user, zip) {
         return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_FILE_PREVIEW, { zip, user });
+    }
+
+    /**
+     * Get policy info from xlsx file
+     * @param user
+     * @param zip
+     */
+    public async importXlsxPreview(user: IAuthUser, xlsx: any) {
+        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_XLSX_FILE_PREVIEW, { user, xlsx });
     }
 
     /**

@@ -12,6 +12,7 @@ import {
     DIDDocument,
     findAllEntities,
     IAuthUser,
+    IPolicyComponents,
     Logger,
     MessageError,
     MessageResponse,
@@ -19,8 +20,10 @@ import {
     Policy,
     PolicyImportExport,
     RunFunctionAsync,
+    Schema,
     Singleton,
-    Users
+    Users,
+    XlsxToJson
 } from '@guardian/common';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 import { PolicyComponentsUtils } from './policy-components-utils';
@@ -761,6 +764,21 @@ export class PolicyEngineService {
                 const hash = HashComparator.createHash(compareModel);
                 const similarPolicies = await DatabaseServer.getListOfPolicies({ owner, hash });
                 policyToImport.similar = similarPolicies;
+                return new MessageResponse(policyToImport);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_XLSX_FILE_PREVIEW, async (msg) => {
+            try {
+                const { xlsx } = msg;
+                if (!xlsx) {
+                    throw new Error('file in body is empty');
+                }
+                const schemas = await XlsxToJson.parse(Buffer.from(xlsx.data));
+                const policyToImport: any = { schemas };
                 return new MessageResponse(policyToImport);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);

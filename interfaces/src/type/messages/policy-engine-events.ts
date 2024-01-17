@@ -6,6 +6,7 @@ export enum PolicyEngineEvents {
     POLICY_IMPORT_MESSAGE_PREVIEW = 'policy-engine-event-policy-import-message-preview',
     POLICY_IMPORT_MESSAGE_PREVIEW_ASYNC = 'policy-engine-event-policy-import-message-preview-async',
     POLICY_IMPORT_FILE_PREVIEW = 'policy-engine-event-policy-import-file-preview',
+    POLICY_IMPORT_XLSX_FILE_PREVIEW = 'policy-engine-event-policy-import-xlsx-file-preview',
     CREATE_POLICIES = 'policy-engine-event-create-policies',
     CREATE_POLICIES_ASYNC = 'policy-engine-event-create-policies-async',
     SAVE_POLICIES = 'policy-engine-event-save-policies',
