@@ -1,4 +1,21 @@
+import { SchemaEntity } from "@guardian/interfaces";
 import { FieldTypes, IFieldTypes } from "./dictionary";
+
+export function entityToXlsx(entity: SchemaEntity): string {
+    if (entity === SchemaEntity.VC) {
+        return 'Verifiable Credentials';
+    } else {
+        return 'Sub-Schema';
+    }
+}
+
+export function xlsxToEntity(value: string): SchemaEntity {
+    if (value === 'VC' || value === 'Verifiable Credentials') {
+        return SchemaEntity.VC;
+    } else {
+        return SchemaEntity.NONE;
+    }
+}
 
 export function xlsxToUnit(format: string): string {
     return format.match(/[^0,\#,\_,\s,\-,\*,\;,\?,\@,\,,\."]{1,}/g)[0];
@@ -46,9 +63,30 @@ export function anyToXlsx(value: any): string {
     return value ? String(value) : '';
 }
 
-export function arrayToXlsx(value: any[]): string {
-    if (Array.isArray(value)) {
-        return value.map(i => String(i)).join(',');
+export function arrayToXlsx(examples: any[], multiple: boolean): string {
+    if (Array.isArray(examples)) {
+        let value = examples[0];
+        if (multiple) {
+            value = value[0];
+        }
+        if (Array.isArray(value)) {
+            return value.map(i => String(i)).join(',');
+        } if (typeof value === 'object') {
+            return JSON.stringify(value);
+        } else {
+            return value;
+        }
+    }
+    return undefined;
+}
+
+export function xlsxToArray(value: any, multiple: boolean): any[] {
+    if (value) {
+        if (multiple) {
+            return [[value]];
+        } else {
+            return [value];
+        }
     }
     return undefined;
 }

@@ -13,7 +13,7 @@ export interface IFieldTypes {
 
 export enum Dictionary {
     REQUIRED_FIELD = 'Required Field',
-    SCHEMA_TYPE = 'Schema Type',
+    FIELD_TYPE = 'Field Type',
     PARAMETER = 'Parameter',
     QUESTION = 'Question',
     ALLOW_MULTIPLE_ANSWERS = 'Allow Multiple Answers',
@@ -23,6 +23,7 @@ export enum Dictionary {
     SCHEMA_NAME = 'Schema',
     SCHEMA_DESCRIPTION = 'Description',
     VISIBILITY = 'Visibility',
+    SCHEMA_TYPE = 'Schema Type',
 }
 
 export class FieldTypes {

@@ -1,5 +1,5 @@
 import { Dictionary, FieldTypes } from './models/dictionary';
-import { anyToXlsx, arrayToXlsx, booleanToXlsx, fontToXlsx, stringToXlsx, typeToXlsx, unitToXlsx, valueToFormula } from './models/value-converters';
+import { anyToXlsx, arrayToXlsx, booleanToXlsx, entityToXlsx, fontToXlsx, stringToXlsx, typeToXlsx, unitToXlsx, valueToFormula } from './models/value-converters';
 import { Range, Workbook, Worksheet } from './models/workbook';
 import { Table } from './models/header-utils';
 import { ISchema, Schema, SchemaCondition, SchemaField } from '@guardian/interfaces';
@@ -49,9 +49,13 @@ export class JsonToXlsx {
                 .setStyle(header.style);
         }
         worksheet.setValue(schema.name, table.start.c, table.getRow(Dictionary.SCHEMA_NAME));
-        worksheet.setValue(schema.description, table.start.c, table.getRow(Dictionary.SCHEMA_DESCRIPTION));
+        worksheet.setValue(Dictionary.SCHEMA_DESCRIPTION, table.start.c, table.getRow(Dictionary.SCHEMA_DESCRIPTION));
+        worksheet.setValue(Dictionary.SCHEMA_TYPE, table.start.c, table.getRow(Dictionary.SCHEMA_TYPE));
+        worksheet.setValue(schema.description, table.start.c + 1, table.getRow(Dictionary.SCHEMA_DESCRIPTION));
+        worksheet.setValue(entityToXlsx(schema.entity), table.start.c + 1, table.getRow(Dictionary.SCHEMA_TYPE));
         worksheet.mergeCells(Range.fromColumns(table.start.c, table.end.c - 1, table.getRow(Dictionary.SCHEMA_NAME)));
-        worksheet.mergeCells(Range.fromColumns(table.start.c, table.end.c - 1, table.getRow(Dictionary.SCHEMA_DESCRIPTION)));
+        worksheet.mergeCells(Range.fromColumns(table.start.c + 1, table.end.c - 1, table.getRow(Dictionary.SCHEMA_DESCRIPTION)));
+        worksheet.mergeCells(Range.fromColumns(table.start.c + 1, table.end.c - 1, table.getRow(Dictionary.SCHEMA_TYPE)));
 
         //Field headers
         for (const header of table.fieldHeaders) {
@@ -116,13 +120,13 @@ export class JsonToXlsx {
         const type = FieldTypes.findByValue(field);
         if (type) {
             worksheet
-                .getCell(table.getCol(Dictionary.SCHEMA_TYPE), row)
+                .getCell(table.getCol(Dictionary.FIELD_TYPE), row)
                 .setValue(typeToXlsx(type))
                 .setStyle(table.fieldStyle);
         } else if (field.isRef) {
             const sheetName = schemaCache.get(field.type);
             worksheet
-                .getCell(table.getCol(Dictionary.SCHEMA_TYPE), row)
+                .getCell(table.getCol(Dictionary.FIELD_TYPE), row)
                 .setLink(sheetName, `#'${sheetName}'!A1`)
                 .setStyle(table.linkStyle);
         }
@@ -130,7 +134,7 @@ export class JsonToXlsx {
         if (!field.isRef) {
             worksheet
                 .getCell(table.getCol(Dictionary.ANSWER), row)
-                .setValue(type.pars(arrayToXlsx(field.examples)))
+                .setValue(type.pars(arrayToXlsx(field.examples, field.isArray)))
                 .setStyle(table.fieldStyle);
         }
         if (field.unit) {

@@ -1,6 +1,6 @@
 import { Workbook, Worksheet } from './models/workbook';
 import { Dictionary, FieldTypes } from './models/dictionary';
-import { xlsxToBoolean, xlsxToFont, xlsxToUnit } from './models/value-converters';
+import { xlsxToArray, xlsxToBoolean, xlsxToEntity, xlsxToFont, xlsxToUnit } from './models/value-converters';
 import { Table } from './models/header-utils';
 import * as mathjs from 'mathjs';
 import { XlsxSchemaConditions } from './models/schema-condition';
@@ -10,8 +10,6 @@ export class XlsxToJson {
     public static async parse(buffer: Buffer): Promise<Schema[]> {
         const workbook = new Workbook();
         await workbook.read(buffer)
-        console.log('read');
-
         const schemas: Schema[] = [];
         const map = new Map<string, string>();
         const worksheets = workbook.getWorksheets();
@@ -21,6 +19,7 @@ export class XlsxToJson {
             map.set(worksheet.name, schema.iri);
             map.set(schema.name, schema.iri);
         }
+        map.set('#GeoJSON', '#GeoJSON');
         for (const schema of schemas) {
             for (const field of schema.fields) {
                 if (field.isRef) {
@@ -38,33 +37,46 @@ export class XlsxToJson {
         const range = worksheet.getRange();
         const table = new Table(range.s);
 
-        let col = range.s.c;
-        let row = range.s.r;
-        let title: any;
+        const startCol = range.s.c;
+        const endCol = range.e.c;
+        const startRow = range.s.r;
 
-        title = worksheet.getValue<string>(col, row);
-        if (table.isDescription(title)) {
-            schema.name = title;
-            row++;
+        let row = startRow;
+
+        for (; row < range.e.r; row++) {
+            const title = worksheet.getValue<string>(startCol, row);
+            if (row === startRow && table.isName(title)) {
+                table.setRow(Dictionary.SCHEMA_NAME, row);
+            }
+            if (table.isSchemaHeader(title)) {
+                table.setRow(title, row);
+            }
+            if (table.isFieldHeader(title)) {
+                break
+            }
         }
 
-        title = worksheet.getValue<string>(col, row);
-        if (table.isDescription(title)) {
-            schema.description = title;
-            row++;
-        }
-
-        for (let c = range.s.c; c < range.e.c; c++) {
-            const value = worksheet.getValue<string>(c, row);
-            if (table.isHeader(value)) {
-                table.setCol(value, c);
+        for (let col = startCol; col < endCol; col++) {
+            const value = worksheet.getValue<string>(col, row);
+            if (table.isFieldHeader(value)) {
+                table.setCol(value, col);
             }
         }
         if (!table.check()) {
             throw Error('Invalid headers');
         }
 
-        table.setEnd(range.e.c, row);
+        table.setEnd(endCol, row);
+
+        if (table.getRow(Dictionary.SCHEMA_NAME) !== -1) {
+            schema.name = worksheet.getValue<string>(startCol, table.getRow(Dictionary.SCHEMA_NAME));
+        }
+        if (table.getRow(Dictionary.SCHEMA_DESCRIPTION) !== -1) {
+            schema.description = worksheet.getValue<string>(startCol + 1, table.getRow(Dictionary.SCHEMA_DESCRIPTION));
+        }
+        if (table.getRow(Dictionary.SCHEMA_TYPE) !== -1) {
+            schema.entity = xlsxToEntity(worksheet.getValue<string>(startCol + 1, table.getRow(Dictionary.SCHEMA_TYPE)));
+        }
 
         row = table.end.r + 1;
         const fields: SchemaField[] = [];
@@ -121,7 +133,7 @@ export class XlsxToJson {
     ): SchemaField {
         const name = worksheet.getPath(table.getCol(Dictionary.ANSWER), row);
         const path = worksheet.getFullPath(table.getCol(Dictionary.ANSWER), row);
-        const type = worksheet.getValue<string>(table.getCol(Dictionary.SCHEMA_TYPE), row);
+        const type = worksheet.getValue<string>(table.getCol(Dictionary.FIELD_TYPE), row);
         const description = worksheet.getValue<string>(table.getCol(Dictionary.QUESTION), row);
         const required = xlsxToBoolean(worksheet.getValue<string>(table.getCol(Dictionary.REQUIRED_FIELD), row));
         const isArray = xlsxToBoolean(worksheet.getValue<string>(table.getCol(Dictionary.ALLOW_MULTIPLE_ANSWERS), row));
@@ -152,7 +164,7 @@ export class XlsxToJson {
             field.unitSystem = fieldType?.unitSystem;
             field.customType = fieldType?.customType;
             field.hidden = fieldType?.hidden;
-            field.isRef = fieldType.isRef;
+            field.isRef = fieldType?.isRef;
         } else {
             field.type = type;
             field.isRef = true;
@@ -211,7 +223,7 @@ export class XlsxToJson {
             if (type === Dictionary.AUTO_CALCULATE) {
                 // field.value = sheet.getFormulae(header.get(Dictionary.ANSWER), row);
             } else if (answer) {
-                field.examples = [answer];
+                field.examples = xlsxToArray(answer, field.isArray);
             }
         }
 

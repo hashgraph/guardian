@@ -127,8 +127,8 @@ export class Table {
                 .setStyle(this.fieldHeadersStyle)
                 .setWidth(20)
         );
-        this._fieldHeaders.set(Dictionary.SCHEMA_TYPE,
-            new TableHeader(Dictionary.SCHEMA_TYPE, true)
+        this._fieldHeaders.set(Dictionary.FIELD_TYPE,
+            new TableHeader(Dictionary.FIELD_TYPE, true)
                 .setStyle(this.fieldHeadersStyle)
                 .setWidth(20)
         );
@@ -164,9 +164,12 @@ export class Table {
         );
         this._schemaHeaders.set(Dictionary.SCHEMA_DESCRIPTION,
             new TableHeader(Dictionary.ANSWER, false)
-                .setStyle(this.schemaDescriptionStyle)
+                .setStyle(this.fieldHeadersStyle)
         );
-
+        this._schemaHeaders.set(Dictionary.SCHEMA_TYPE,
+            new TableHeader(Dictionary.ANSWER, false)
+                .setStyle(this.fieldHeadersStyle)
+        );
         this.end = this.start;
     }
 
@@ -200,9 +203,10 @@ export class Table {
 
         this._schemaHeaders.get(Dictionary.SCHEMA_NAME).setPoint(col, row++);
         this._schemaHeaders.get(Dictionary.SCHEMA_DESCRIPTION).setPoint(col, row++);
+        this._schemaHeaders.get(Dictionary.SCHEMA_TYPE).setPoint(col, row++);
 
         this._fieldHeaders.get(Dictionary.REQUIRED_FIELD).setPoint(col++, row);
-        this._fieldHeaders.get(Dictionary.SCHEMA_TYPE).setPoint(col++, row);
+        this._fieldHeaders.get(Dictionary.FIELD_TYPE).setPoint(col++, row);
         this._fieldHeaders.get(Dictionary.PARAMETER).setPoint(col++, row);
         this._fieldHeaders.get(Dictionary.VISIBILITY).setPoint(col++, row);
         this._fieldHeaders.get(Dictionary.QUESTION).setPoint(col++, row);
@@ -233,11 +237,15 @@ export class Table {
         return true;
     }
 
-    public isDescription(value: string): boolean {
-        return !this._fieldHeaders.has(value);
+    public isName(value: string): boolean {
+        return true;
     }
 
-    public isHeader(value: string): boolean {
+    public isSchemaHeader(value: string): boolean {
+        return this._schemaHeaders.has(value);
+    }
+
+    public isFieldHeader(value: string): boolean {
         return this._fieldHeaders.has(value);
     }
 }

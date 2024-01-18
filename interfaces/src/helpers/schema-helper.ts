@@ -46,6 +46,7 @@ export class SchemaHelper {
         field.description = _property.description || name;
         field.isArray = _property.type === SchemaDataTypes.array;
         field.comment = _property.$comment;
+        field.examples = Array.isArray(_property.examples) ? _property.examples : null;
         if (field.isArray) {
             _property = _property.items;
         }
@@ -58,7 +59,6 @@ export class SchemaHelper {
             field.pattern = _property.pattern ? String(_property.pattern) : null;
             field.enum = _property.enum;
             field.remoteLink = _property.$ref;
-            field.examples = Array.isArray(_property.examples) ? _property.examples : null;
         }
         field.readOnly = !!(_property.readOnly || readonly);
         return field;
