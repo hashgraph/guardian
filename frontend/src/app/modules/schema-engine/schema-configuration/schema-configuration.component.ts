@@ -1,34 +1,8 @@
-import {
-    NGX_MAT_DATE_FORMATS,
-    NgxMatDateAdapter,
-} from '@angular-material-components/datetime-picker';
+import { NGX_MAT_DATE_FORMATS, NgxMatDateAdapter, } from '@angular-material-components/datetime-picker';
 import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
-import {
-    Component,
-    EventEmitter,
-    Input,
-    OnInit,
-    Output,
-    SimpleChanges,
-} from '@angular/core';
-import {
-    AbstractControl,
-    FormBuilder,
-    FormControl,
-    FormGroup,
-    ValidationErrors,
-    ValidatorFn,
-    Validators,
-} from '@angular/forms';
-import {
-    FieldTypesDictionary,
-    Schema,
-    SchemaCategory,
-    SchemaCondition,
-    SchemaEntity,
-    SchemaField,
-    UnitSystem,
-} from '@guardian/interfaces';
+import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, } from '@angular/core';
+import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators, } from '@angular/forms';
+import { FieldTypesDictionary, Schema, SchemaCategory, SchemaCondition, SchemaEntity, SchemaField, SchemaHelper, UnitSystem, } from '@guardian/interfaces';
 import * as moment from 'moment';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -37,6 +11,15 @@ import { ConditionControl } from '../condition-control';
 import { FieldControl } from '../field-control';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { IPFSService } from 'src/app/services/ipfs.service';
+import { SchemaService } from '../../../services/schema.service';
+
+enum SchemaType {
+    System = 'system',
+    Policy = 'policy',
+    Tag = 'tag',
+    Module = 'module',
+    Tool = 'tool'
+}
 
 /**
  * Schemas constructor
@@ -76,6 +59,7 @@ export class SchemaConfigurationComponent implements OnInit {
     public typesMap!: any;
     public types!: any[];
     public measureTypes!: any[];
+    public subSchemas!: Schema[];
 
     public schemaTypes!: any[];
     public schemaTypeMap!: any;
@@ -123,15 +107,7 @@ export class SchemaConfigurationComponent implements OnInit {
         );
     }
 
-    public get isEdit(): boolean {
-        return this.type === 'version' || this.type === 'edit';
-    }
-
-    public get isNewVersion(): boolean {
-        return this.type === 'version';
-    }
-
-    constructor(private fb: FormBuilder, private ipfs: IPFSService) {
+    constructor(private fb: FormBuilder, private ipfs: IPFSService, private schemaService: SchemaService) {
         const vcDefaultFields = [
             {
                 name: 'policyId',
@@ -197,6 +173,31 @@ export class SchemaConfigurationComponent implements OnInit {
         };
     }
 
+    public get isEdit(): boolean {
+        return this.type === 'version' || this.type === 'edit';
+    }
+
+    public get isNewVersion(): boolean {
+        return this.type === 'version';
+    }
+
+    public get category(): SchemaCategory {
+        switch (this.schemaType) {
+            case SchemaType.Tag:
+                return SchemaCategory.TAG;
+            case SchemaType.Policy:
+                return SchemaCategory.POLICY;
+            case SchemaType.Module:
+                return SchemaCategory.MODULE;
+            case SchemaType.Tool:
+                return SchemaCategory.TOOL;
+            case SchemaType.System:
+                return SchemaCategory.SYSTEM;
+            default:
+                return SchemaCategory.POLICY;
+        }
+    }
+
     get currentEntity(): any {
         return this.dataForm?.get('entity')?.value;
     }
@@ -232,7 +233,7 @@ export class SchemaConfigurationComponent implements OnInit {
         if (this.isPolicy) {
             this.updateSubSchemas(this.value?.topicId || this.topicId);
         } else {
-            this.updateSubSchemas(null);
+            this.updateSubSchemas();
         }
         this.buildForm();
         if (changes.value && this.value) {
@@ -332,41 +333,184 @@ export class SchemaConfigurationComponent implements OnInit {
         this.updateSubSchemas(topicId);
     }
 
-    updateSubSchemas(topicId: string | null) {
-        this.schemaTypes = [];
-        if (this.schemasMap && topicId) {
-            this.schemas = this.schemasMap[topicId]?.filter((s) => {
-                if (this.value?.document?.$id) {
-                    const isInDefs = Object.keys(
-                        s.document?.$defs || {}
-                    ).includes(this.value.document.$id);
-                    return (
-                        s.document?.$id !== this.value.document.$id && !isInDefs
-                    );
-                }
-                return true;
+    buildSchema(value: any) {
+        const schema = new Schema(this.value);
+        schema.name = value.name;
+        schema.description = value.description;
+        schema.entity = value.entity;
+
+        const fields: SchemaField[] = [];
+        const fieldsWithNames: any[] = [];
+
+        for (const fieldConfig of this.fields) {
+            const schemaField = this.buildSchemaField(
+                fieldConfig,
+                value.fields
+            );
+            fields.push(schemaField);
+            fieldsWithNames.push({
+                field: schemaField,
+                name: fieldConfig.name,
             });
         }
-        if (this.schemas) {
-            for (let i = 0; i < this.schemas.length; i++) {
+
+        const defaultFields = this.defaultFieldsMap[value.entity] || [];
+        for (let i = 0; i < defaultFields.length; i++) {
+            const fieldConfig = defaultFields[i];
+            const schemaField: SchemaField = {
+                name: fieldConfig.name,
+                title: '',
+                description: '',
+                required: fieldConfig.required,
+                isArray: fieldConfig.isArray,
+                isRef: fieldConfig.isRef,
+                type: fieldConfig.type,
+                format: fieldConfig.format,
+                pattern: fieldConfig.pattern,
+                unit: fieldConfig.unit,
+                unitSystem: fieldConfig.unitSystem,
+                customType: fieldConfig.customType,
+                readOnly: true,
+                isPrivate: fieldConfig.isPrivate,
+                property: fieldConfig.property
+            };
+            fields.push(schemaField);
+        }
+
+        const conditions: SchemaCondition[] = [];
+        for (const element of this.conditions) {
+            const conditionValue = value.conditions[element.name];
+            const thenFields: SchemaField[] = [];
+            const elseFields: SchemaField[] = [];
+
+            for (const thenField of element.thenControls) {
+                const schemaField = this.buildSchemaField(
+                    thenField,
+                    conditionValue.thenFieldControls
+                );
+                thenFields.push(schemaField);
+            }
+            for (const elseField of element.elseControls) {
+                const schemaField = this.buildSchemaField(
+                    elseField,
+                    conditionValue.elseFieldControls
+                );
+                elseFields.push(schemaField);
+            }
+
+            const item = fieldsWithNames.find(
+                (item) => item.name === conditionValue.ifCondition.field.name
+            );
+            conditions.push({
+                ifCondition: {
+                    field: item.field,
+                    fieldValue: conditionValue.ifCondition.fieldValue,
+                },
+                thenFields: thenFields,
+                elseFields: elseFields,
+            });
+        }
+
+        console.log(fields, conditions, this.schemas);
+
+        schema.update(fields, conditions);
+        schema.updateRefs(this.subSchemas);
+        return schema;
+    }
+
+    private updateSubSchemas(topicId?: string): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            if (!topicId || topicId === 'draft') {
+                this.mappingSubSchemas();
+                resolve();
+            }
+            this.schemaService.getSubSchemas(topicId, this.category).subscribe((data) => {
+                const subSchemas = SchemaHelper.map(data || []);
+                this.mappingSubSchemas(subSchemas, topicId);
+                resolve();
+            }, (error) => {
+                console.error(error);
+                resolve();
+            });
+        })
+    }
+
+    private mappingSubSchemas(data?: Schema[], topicId?: string): void {
+        this.subSchemas = [];
+        this.schemaTypes = [];
+        if (Array.isArray(data)) {
+            const currentSchemaId = this.value?.document?.$id;
+            for (const schema of data) {
+                if (this.checkDependencies(currentSchemaId, schema)) {
+                    this.subSchemas.push(schema);
+                }
+            }
+            for (const schema of this.subSchemas) {
                 const value = this.getId('schemas');
+                const type = schema.topicId === topicId ? 'main' : 'sub';
+                const name = schema.name;
+                const version = schema.version ? `v${schema.version}` : '';
+                const component = (schema.topicId !== topicId && schema.component) ? schema.component : '';
+                let title = name;
+                if (component) {
+                    title = component + ': ' + title;
+                }
+                if (version) {
+                    title = title + ` (${version})`;
+                }
                 this.schemaTypes.push({
-                    name: this.schemas[i].version
-                        ? `${this.schemas[i].name} (${this.schemas[i].version})`
-                        : this.schemas[i].name,
-                    value: value,
+                    type,
+                    name,
+                    version,
+                    component,
+                    title,
+                    value
                 });
                 this.schemaTypeMap[value] = {
-                    type: this.schemas[i].iri,
+                    type: schema.iri,
                     format: undefined,
                     pattern: undefined,
                     isRef: true,
-                };
+                }
             }
-        } else {
-            this.schemas = [];
         }
     }
+
+    // updateSubSchemas(topicId: string | null) {
+    //     this.schemaTypes = [];
+    //     if (this.schemasMap && topicId) {
+    //         this.schemas = this.schemasMap[topicId]?.filter((s) => {
+    //             if (this.value?.document?.$id) {
+    //                 const isInDefs = Object.keys(
+    //                     s.document?.$defs || {}
+    //                 ).includes(this.value.document.$id);
+    //                 return (
+    //                     s.document?.$id !== this.value.document.$id && !isInDefs
+    //                 );
+    //             }
+    //             return true;
+    //         });
+    //     }
+    //     if (this.schemas) {
+    //         for (let i = 0; i < this.schemas.length; i++) {
+    //             const value = this.getId('schemas');
+    //             this.schemaTypes.push({
+    //                 name: this.schemas[i].version
+    //                     ? `${this.schemas[i].name} (${this.schemas[i].version})`
+    //                     : this.schemas[i].name,
+    //                 value: value,
+    //             });
+    //             this.schemaTypeMap[value] = {
+    //                 type: this.schemas[i].iri,
+    //                 format: undefined,
+    //                 pattern: undefined,
+    //                 isRef: true,
+    //             };
+    //         }
+    //     } else {
+    //         this.schemas = [];
+    //     }
+    // }
 
     updateConditionControls(conditions: SchemaCondition[]) {
         this.conditions = [];
@@ -672,87 +816,16 @@ export class SchemaConfigurationComponent implements OnInit {
         };
     }
 
-    buildSchema(value: any) {
-        const schema = new Schema(this.value);
-        schema.name = value.name;
-        schema.description = value.description;
-        schema.entity = value.entity;
-
-        const fields: SchemaField[] = [];
-        const fieldsWithNames: any[] = [];
-
-        for (const fieldConfig of this.fields) {
-            const schemaField = this.buildSchemaField(
-                fieldConfig,
-                value.fields
-            );
-            fields.push(schemaField);
-            fieldsWithNames.push({
-                field: schemaField,
-                name: fieldConfig.name,
-            });
-        }
-
-        const defaultFields = this.defaultFieldsMap[value.entity] || [];
-        for (let i = 0; i < defaultFields.length; i++) {
-            const fieldConfig = defaultFields[i];
-            const schemaField: SchemaField = {
-                name: fieldConfig.name,
-                title: '',
-                description: '',
-                required: fieldConfig.required,
-                isArray: fieldConfig.isArray,
-                isRef: fieldConfig.isRef,
-                type: fieldConfig.type,
-                format: fieldConfig.format,
-                pattern: fieldConfig.pattern,
-                unit: fieldConfig.unit,
-                unitSystem: fieldConfig.unitSystem,
-                customType: fieldConfig.customType,
-                readOnly: true,
-                isPrivate: fieldConfig.isPrivate,
-                property: fieldConfig.property
-            };
-            fields.push(schemaField);
-        }
-
-        const conditions: SchemaCondition[] = [];
-        for (const element of this.conditions) {
-            const conditionValue = value.conditions[element.name];
-            const thenFields: SchemaField[] = [];
-            const elseFields: SchemaField[] = [];
-
-            for (const thenField of element.thenControls) {
-                const schemaField = this.buildSchemaField(
-                    thenField,
-                    conditionValue.thenFieldControls
-                );
-                thenFields.push(schemaField);
+    private checkDependencies(currentSchemaId: any, schema: Schema): boolean {
+        if (currentSchemaId && schema.document) {
+            if (schema.document.$id === currentSchemaId) {
+                return false;
             }
-            for (const elseField of element.elseControls) {
-                const schemaField = this.buildSchemaField(
-                    elseField,
-                    conditionValue.elseFieldControls
-                );
-                elseFields.push(schemaField);
+            if (schema.document.$defs && schema.document.$defs[currentSchemaId]) {
+                return false;
             }
-
-            const item = fieldsWithNames.find(
-                (item) => item.name === conditionValue.ifCondition.field.name
-            );
-            conditions.push({
-                ifCondition: {
-                    field: item.field,
-                    fieldValue: conditionValue.ifCondition.fieldValue,
-                },
-                thenFields: thenFields,
-                elseFields: elseFields,
-            });
         }
-
-        schema.update(fields, conditions);
-        schema.updateRefs(this.schemas);
-        return schema;
+        return true;
     }
 
     public getSchema() {
