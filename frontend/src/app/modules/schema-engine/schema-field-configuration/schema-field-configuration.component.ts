@@ -78,7 +78,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
         this.property = new FormControl();
     }
 
-    fillDropDowns() {
+    ngOnInit(): void {
         if (this.field) {
             const enumValues = this.field.controlEnum.value;
             if (enumValues && enumValues.length) {
@@ -90,7 +90,6 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
             if (remoteLinkValue) {
                 this.loadRemoteEnumData(remoteLinkValue);
             }
-
             if (this.field.controlRequired.value === true) {
                 this.fieldType.setValue('required')
             } else if (this.field.hidden.value === true) {
@@ -100,27 +99,6 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
             }
             this.property.setValue(this.field.property.value);
         }
-        if (this.types) {
-            const newSimpleTypes = this.types.map((type: any) => {
-                return {label: type.name, value: type.value};
-            });
-            this.groupedFieldTypes.unshift({
-                label: 'Simple Types',
-                value: 'st',
-                items: newSimpleTypes,
-            });
-        }
-        if (this.schemaTypes) {
-            const newSchemasTypes = this.schemaTypes.map((schemaType: any) => {
-                return {label: schemaType.name, value: schemaType.value};
-            });
-            this.groupedFieldTypes.push({
-                label: 'Schema defined',
-                value: 'sd',
-                items: newSchemasTypes,
-            });
-        }
-
         this.fieldTypeSub = this.fieldType.valueChanges.subscribe(value => {
             switch (value) {
                 case 'required':
@@ -141,7 +119,6 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
                     break;
             }
         });
-
         this.fieldPropertySub = this.property.valueChanges.subscribe(val => {
             if (val) {
                 this.field.property.setValue(val);
@@ -149,13 +126,39 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
         });
     }
 
-    ngOnInit(): void {
-        this.fillDropDowns();
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes?.types?.firstChange && this.types) {
+            const newSimpleTypes = this.types.map((type: any) => {
+                return {label: type.name, value: type.value};
+            });
+            this.groupedFieldTypes.unshift({
+                label: 'Simple Types',
+                value: 'st',
+                items: newSimpleTypes,
+            });
+        }
+        if (changes?.schemaTypes?.firstChange && this.schemaTypes) {
+            const newSchemasTypes = this.schemaTypes.map((schemaType: any) => {
+                return {label: schemaType.name, value: schemaType.value};
+            });
+            this.groupedFieldTypes.push({
+                label: 'Schema defined',
+                value: 'sd',
+                items: newSchemasTypes,
+            });
+        }
+        if (changes.extended && Object.keys(changes).length === 1) {
+            return;
+        }
+        if (this.field) {
+            const type = this.field.controlType;
+            this.onTypeChange(type);
+        }
     }
 
     ngOnDestroy() {
-        this.fieldPropertySub?.unsubscribe();
-        this.fieldTypeSub?.unsubscribe();
+        this.fieldPropertySub.unsubscribe();
+        this.fieldTypeSub.unsubscribe();
     }
 
     updateControlEnum(values: string[]) {
@@ -187,17 +190,6 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
                 this.updateControlEnum(res.enum);
             })
             .finally(() => (this.loading = false));
-    }
-
-    ngOnChanges(changes: SimpleChanges): void {
-        if (changes.extended && Object.keys(changes).length === 1) {
-            return;
-        }
-
-        if (this.field) {
-            const type = this.field.controlType;
-            this.onTypeChange(type);
-        }
     }
 
     onRemove(field: any) {

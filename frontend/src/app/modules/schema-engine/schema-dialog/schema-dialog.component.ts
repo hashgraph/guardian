@@ -23,7 +23,7 @@ export class SchemaDialog {
     public type: 'new' | 'edit' | 'version' = 'new';
     public topicId: any;
 
-    public schemaType: string = 'policy';
+    public schemaType: any = 'policy';
     public valid: boolean = true;
     public extended: boolean = false;
     public fields: any[] = [];

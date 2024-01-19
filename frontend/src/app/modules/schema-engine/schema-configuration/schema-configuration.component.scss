@@ -11,6 +11,21 @@ form {
     margin-bottom: 25px;
 }
 
+.loading {
+  background: #fff;
+  position: absolute;
+  z-index: 99;
+  top: 8px;
+  left: 8px;
+  bottom: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-items: center;
+  justify-content: center;
+  align-content: center;
+}
+
 .custom-fields-row {
     display: flex;
     margin-bottom: 8px;
@@ -83,6 +98,7 @@ form {
     cursor: pointer;
     font-size: 25px;
 }
+
 .custom-fields-remove mat-icon {
     font-size: 30px;
 }
@@ -114,6 +130,7 @@ form {
     bottom: 100px;
     z-index: 1;
 }
+
 .custom-field-type {
     position: relative;
     display: flex;
@@ -189,6 +206,7 @@ form {
     box-sizing: border-box;
     position: relative;
 }
+
 .block-delimiter::after {
     content: attr(data-label);
     position: absolute;
@@ -201,6 +219,7 @@ form {
     top: 30px;
     transform: translate(-50%, 0px);
 }
+
 .block-delimiter::before {
   content: "";
     position: absolute;
