@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import { FormControl, FormGroup, Validators, } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { UnitSystem } from '@guardian/interfaces';
@@ -31,8 +31,6 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     @Input('properties') properties: { title: string; _id: string; value: string }[];
 
     @Output('remove') remove = new EventEmitter<any>();
-
-    @ViewChild('typeControl') typeControl: any;
 
     unit: boolean = true;
     enum: boolean = false;
@@ -149,13 +147,10 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
                 this.field.property.setValue(val);
             }
         });
-
-        if (this.typeControl) {
-            // this.field.controlType.setValue('18');
-        }
     }
 
     ngOnInit(): void {
+        this.fillDropDowns();
     }
 
     ngOnDestroy() {
@@ -195,9 +190,6 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes.schemaTypes) {
-            this.fillDropDowns();
-        }
         if (changes.extended && Object.keys(changes).length === 1) {
             return;
         }

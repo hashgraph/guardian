@@ -223,7 +223,7 @@ export class SchemaConfigurationComponent implements OnInit {
         });
     }
 
-    ngOnChanges(changes: SimpleChanges): void {
+    async ngOnChanges(changes: SimpleChanges): Promise<void> {
         if (changes.extended && Object.keys(changes).length === 1) {
             return;
         }
@@ -231,9 +231,9 @@ export class SchemaConfigurationComponent implements OnInit {
             this.dataForm = null as any;
         }
         if (this.isPolicy) {
-            this.updateSubSchemas(this.value?.topicId || this.topicId);
+            await this.updateSubSchemas(this.value?.topicId || this.topicId);
         } else {
-            this.updateSubSchemas();
+            await this.updateSubSchemas();
         }
         this.buildForm();
         if (changes.value && this.value) {
@@ -410,8 +410,6 @@ export class SchemaConfigurationComponent implements OnInit {
                 elseFields: elseFields,
             });
         }
-
-        console.log(fields, conditions, this.schemas);
 
         schema.update(fields, conditions);
         schema.updateRefs(this.subSchemas);

@@ -109,7 +109,7 @@
         <div class="custom-fields-main-container">
             <div class="dropdown-field max-width-50">
                 <label class="form-label">Field type</label>
-                <p-dropdown #typeControl
+                <p-dropdown
                         (onChange)="onTypeChange($event)"
                         [formControl]="field.controlType"
                         [group]="true"

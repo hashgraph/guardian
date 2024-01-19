@@ -1,4 +1,4 @@
-<form [formGroup]="dataForm" class="context">
+<form *ngIf="dataForm" [formGroup]="dataForm" class="context">
     <div class="configurator-block-title">Schema Properties</div>
 
     <!--    <mat-form-field appearance="outline" [attr.disabled]="isNewVersion">-->
@@ -508,7 +508,7 @@
         </div>
     </ng-template>
 
-    <ng-template [ngIf]="fields.length == 0">
+    <ng-template [ngIf]="fields?.length == 0">
         <div class="no-conditions-label">To add Conditions first you need to add field</div>
     </ng-template>
 </form>
