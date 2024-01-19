@@ -5,18 +5,16 @@
         <img alt="" class="equal-icon" src="assets/images/icons/equal.svg"/>
     </div>
     <div class="fields-main-container">
-        <ng-template
-                [ngIf]="field.controlKey.invalid && field.controlKey.errors"
-        >
+        <ng-template [ngIf]="field.controlKey.invalid && field.controlKey.errors">
             <small
-                    *ngIf="field.controlKey.hasError('key')"
-                    class="error-message"
+                *ngIf="field.controlKey.hasError('key')"
+                class="error-message"
             >
                 Key contains invalid characters.
             </small>
             <small
-                    *ngIf="field.controlKey.hasError('systemName')"
-                    class="error-message"
+                *ngIf="field.controlKey.hasError('systemName')"
+                class="error-message"
             >
                 Key has a system name.
             </small>
@@ -26,20 +24,20 @@
             <div *ngIf="extended" class="input-field-container">
                 <label class="form-label">Key</label>
                 <input
-                        [formControl]="field.controlKey"
-                        pInputText
-                        placeholder="Field name"
-                        type="text"
+                    [formControl]="field.controlKey"
+                    pInputText
+                    placeholder="Field name"
+                    type="text"
                 />
             </div>
 
             <div *ngIf="extended" class="input-field-container">
                 <label class="form-label">Title</label>
                 <input
-                        [formControl]="field.controlTitle"
-                        pInputText
-                        placeholder="Field title"
-                        type="text"
+                    [formControl]="field.controlTitle"
+                    pInputText
+                    placeholder="Field title"
+                    type="text"
                 />
             </div>
         </div>
@@ -48,10 +46,10 @@
             <div *ngIf="!helpText" class="input-field-container">
                 <label class="form-label">* Description</label>
                 <input
-                        [formControl]="field.controlDescription"
-                        pInputText
-                        placeholder="Field description"
-                        type="text"
+                    [formControl]="field.controlDescription"
+                    pInputText
+                    placeholder="Field description"
+                    type="text"
                 />
             </div>
             <div (click)="onRemove(field)" *ngIf="!helpText" class="custom-fields-remove">
@@ -63,15 +61,15 @@
             <div class="dropdown-field">
                 <label class="form-label">Property</label>
                 <p-dropdown
-                        [filterBy]="'title'"
-                        [filter]="true"
-                        [formControl]="property"
-                        [options]="properties"
-                        [showClear]="true"
-                        appendTo="body"
-                        optionLabel="title"
-                        optionValue="title"
-                        placeholder="Select a property"
+                    [filterBy]="'title'"
+                    [filter]="true"
+                    [formControl]="property"
+                    [options]="properties"
+                    [showClear]="true"
+                    appendTo="body"
+                    optionLabel="title"
+                    optionValue="title"
+                    placeholder="Select a property"
                 ></p-dropdown>
             </div>
         </div>
@@ -80,27 +78,27 @@
             <div *ngIf="helpText" class="input-field-container">
                 <label class="form-label">Help Text</label>
                 <input
-                        [formControl]="field.controlDescription"
-                        pInputText
-                        placeholder="Field description"
-                        type="text"
+                    [formControl]="field.controlDescription"
+                    pInputText
+                    placeholder="Field description"
+                    type="text"
                 />
             </div>
 
             <div *ngIf="isString" class="input-field-container">
                 <label class="form-label">Pattern</label>
                 <input
-                        [formControl]="field.controlPattern"
-                        pInputText
-                        placeholder="[0-9]"
-                        type="text"
+                    [formControl]="field.controlPattern"
+                    pInputText
+                    placeholder="[0-9]"
+                    type="text"
                 />
             </div>
 
             <div
-                    (click)="onRemove(field)"
-                    *ngIf="helpText && !extended"
-                    class="custom-fields-remove"
+                (click)="onRemove(field)"
+                *ngIf="helpText && !extended"
+                class="custom-fields-remove"
             >
                 <img alt="" src="assets/images/icons/delete.svg"/>
             </div>
@@ -110,52 +108,50 @@
             <div class="dropdown-field max-width-50">
                 <label class="form-label">Field type</label>
                 <p-dropdown
-                        (onChange)="onTypeChange($event)"
-                        [formControl]="field.controlType"
-                        [group]="true"
-                        [options]="groupedFieldTypes"
-                        appendTo="body"
-                        optionLabel="label"
-                        optionValue="value"
-                        placeholder="Type"
+                    (onChange)="onTypeChange($event)"
+                    [formControl]="field.controlType"
+                    [group]="true"
+                    [options]="groupedFieldTypes"
+                    appendTo="body"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Type"
                 ></p-dropdown>
             </div>
 
             <div *ngIf="unit" class="input-field-container">
                 <label class="form-label">Unit</label>
                 <input
-                        [formControl]="field.controlUnit"
-                        pInputText
-                        placeholder="Unit"
-                        type="text"
+                    [formControl]="field.controlUnit"
+                    pInputText
+                    placeholder="Unit"
+                    type="text"
                 />
             </div>
 
             <ng-container *ngIf="helpText; else notHelpText">
                 <div class="checkbox-field-container">
-                    <mat-checkbox
-                            [formControl]="field.controlBold"
-                    ></mat-checkbox>
+                    <mat-checkbox [formControl]="field.controlBold"></mat-checkbox>
                     <label class="checkbox-label">Bold</label>
                 </div>
 
                 <div class="input-field-container">
                     <label class="form-label">Color</label>
                     <input
-                            [formControl]="field.controlColor"
-                            pInputText
-                            placeholder="Color"
-                            type="text"
+                        [formControl]="field.controlColor"
+                        pInputText
+                        placeholder="Color"
+                        type="text"
                     />
                 </div>
 
                 <div class="input-field-container">
                     <label class="form-label">Font</label>
                     <input
-                            [formControl]="field.controlSize"
-                            pInputText
-                            placeholder="Font size in px"
-                            type="text"
+                        [formControl]="field.controlSize"
+                        pInputText
+                        placeholder="Font size in px"
+                        type="text"
                     />
                 </div>
                 <div (click)="onHepTextReset()" class="reset-btn">
@@ -181,12 +177,12 @@
                 <div class="dropdown-field">
                     <label class="form-label">Required</label>
                     <p-dropdown
-                            [formControl]="fieldType"
-                            [options]="fieldTypes"
-                            appendTo="body"
-                            optionLabel="label"
-                            optionValue="value"
-                            placeholder="Required"
+                        [formControl]="fieldType"
+                        [options]="fieldTypes"
+                        appendTo="body"
+                        optionLabel="label"
+                        optionValue="value"
+                        placeholder="Required"
                     ></p-dropdown>
                 </div>
 
@@ -200,31 +196,27 @@
                 </mat-form-field>-->
 
                 <div class="checkbox-field-container">
-                    <mat-checkbox
-                            [formControl]="field.controlArray"
-                    ></mat-checkbox>
+                    <mat-checkbox [formControl]="field.controlArray"></mat-checkbox>
                     <label class="checkbox-label">Allow multiple answers</label>
                 </div>
 
                 <div *ngIf="canBePrivate" class="checkbox-field-container">
-                    <mat-checkbox
-                            [formControl]="field.controlPrivate"
-                    ></mat-checkbox>
+                    <mat-checkbox [formControl]="field.controlPrivate"></mat-checkbox>
                     <label class="checkbox-label">Private</label>
                 </div>
             </ng-template>
         </div>
         <div *ngIf="enum && !loading" class="enum-options-container">
             <mat-form-field
-                    *ngIf="this.field.controlEnum.value.length"
-                    appearance="outline"
-                    class="enum-form-field"
+                *ngIf="this.field.controlEnum.value.length"
+                appearance="outline"
+                class="enum-form-field"
             >
                 <mat-label>Enum data</mat-label>
                 <mat-chip-list #chipList aria-label="Enum values">
                     <mat-chip
-                            *ngFor="let keyword of keywords"
-                            class="mat-chip-value"
+                        *ngFor="let keyword of keywords"
+                        class="mat-chip-value"
                     >
                         <div class="mat-chip-value-label">
                             {{ keyword }}
@@ -236,9 +228,9 @@
                 </mat-chip-list>
             </mat-form-field>
             <div
-                    (click)="onEditEnum()"
-                    [ngClass]="{ 'enum-edit-button-only': !field.enum.length }"
-                    class="enum-edit-button"
+                (click)="onEditEnum()"
+                [ngClass]="{ 'enum-edit-button-only': !field.enum.length }"
+                class="enum-edit-button"
             >
                 <mat-icon>edit</mat-icon>
                 <span class="enum-edit-button-label">Edit values</span>
@@ -255,40 +247,38 @@
         <div *ngIf="extended" class="input-field-container">
             <label class="form-label" htmlFor="key">Key</label>
             <input
-                    [disabled]="true"
-                    [value]="value?.name"
-                    id="key"
-                    pInputText
-                    placeholder="Field name"
-                    type="text"
+                [disabled]="true"
+                [value]="value?.name"
+                id="key"
+                pInputText
+                placeholder="Field name"
+                type="text"
             />
         </div>
 
         <div *ngIf="extended" class="input-field-container">
             <label class="form-label" htmlFor="title">Title</label>
             <input
-                    [disabled]="true"
-                    [value]="value?.title"
-                    id="title"
-                    pInputText
-                    placeholder="Field title"
-                    type="text"
+                [disabled]="true"
+                [value]="value?.title"
+                id="title"
+                pInputText
+                placeholder="Field title"
+                type="text"
             />
         </div>
     </div>
 
     <div class="custom-fields-main-container">
         <div class="input-field-container">
-            <label class="form-label" htmlFor="description"
-            >* Description</label
-            >
+            <label class="form-label" htmlFor="description">* Description</label>
             <input
-                    [disabled]="true"
-                    [value]="value?.description"
-                    id="description"
-                    pInputText
-                    placeholder="Field description"
-                    type="text"
+                [disabled]="true"
+                [value]="value?.description"
+                id="description"
+                pInputText
+                placeholder="Field description"
+                type="text"
             />
         </div>
     </div>
@@ -297,35 +287,35 @@
         <div class="input-field-container">
             <label class="form-label" htmlFor="fieldType">Field type</label>
             <input
-                    [disabled]="true"
-                    [value]="value?.type"
-                    id="fieldType"
-                    pInputText
-                    placeholder="Field type"
-                    type="text"
+                [disabled]="true"
+                [value]="value?.type"
+                id="fieldType"
+                pInputText
+                placeholder="Field type"
+                type="text"
             />
         </div>
         <div class="checkbox-field-container">
             <mat-checkbox
-                    [checked]="value?.required"
-                    [disabled]="readonly"
-                    color="primary"
+                [checked]="value?.required"
+                [disabled]="readonly"
+                color="primary"
             >
             </mat-checkbox>
-            <label class="checkbox-label" htmlFor="requiredField"
-            >Required Field</label
-            >
+            <label class="checkbox-label" htmlFor="requiredField">
+                Required Field
+            </label>
         </div>
         <div class="checkbox-field-container">
             <mat-checkbox
-                    [checked]="value?.isArray"
-                    [disabled]="readonly"
-                    color="primary"
+                [checked]="value?.isArray"
+                [disabled]="readonly"
+                color="primary"
             >
             </mat-checkbox>
-            <label class="checkbox-label" htmlFor="isArray"
-            >Allow multiple answers</label
-            >
+            <label class="checkbox-label" htmlFor="isArray">
+                Allow multiple answers
+            </label>
         </div>
     </div>
 </div>
