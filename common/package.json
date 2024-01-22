@@ -39,7 +39,7 @@
     "gulp-rename": "^2.0.0",
     "gulp-sourcemaps": "^3.0.0",
     "gulp-typescript": "^6.0.0-alpha.1",
-    "js-base64": "^3.6.1",
+    "js-base64": "^3.7.6",
     "jszip": "^3.7.1",
     "lodash.get": "^4.4.2",
     "lodash.set": "^4.3.2",
