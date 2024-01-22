@@ -24,15 +24,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
+
     background-color: #fff;
     border-radius: 50%;
     fill: var(--color-grey-white, #fff);
     filter: drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.08));
     position: fixed;
-    top: 56px;
-    left: calc(var(--header-width-expand) - 20px);
+
     transition: transform 0.125s ease-in-out,
         left 0.125s ease-in-out,
         width 0.125s ease-in-out,
@@ -42,17 +40,28 @@
     cursor: pointer;
     z-index: 1000;
 
+    // width: 40px;
+    // height: 40px;
+    // top: 56px;
+    // left: calc(var(--header-width-expand) - 20px);
+
+    left: calc(var(--header-width-expand) - 1px);
+    top: 80px;
+    width: 32px;
+    height: 32px;
+    transform: translate(-50%, -50%);
+
     &:hover {
         width: 46px;
         height: 46px;
-        top: 52px;
-        left: calc(var(--header-width-expand) - 23px);
+        // top: 52px;
+        // left: calc(var(--header-width-expand) - 23px);
     }
 }
-
+#remoteButton.collapse-button,
 .collapse-button {
-    left: calc(var(--header-width-collapse) - 20px) !important;
-    transform: rotate(180deg);
+    left: calc(var(--header-width-collapse) - 1px) !important;
+    transform: translate(-50%, -50%) rotate(180deg);
 }
 
 .collapsed-notify-counter {

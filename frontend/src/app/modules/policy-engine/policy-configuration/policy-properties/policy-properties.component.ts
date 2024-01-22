@@ -10,8 +10,7 @@ import {
     IPolicyCategory,
     SchemaVariables
 } from '../../structures';
-import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { PolicyCategoryType, Schema } from '@guardian/interfaces';
+import { PolicyCategoryType } from '@guardian/interfaces';
 
 /**
  * Settings for policy.
@@ -34,6 +33,7 @@ export class PolicyPropertiesComponent implements OnInit {
 
     propHidden: any = {
         metaData: false,
+        categorization: false,
         rolesGroup: false,
         navigationRoles: [],
         navigationSteps: [],
@@ -74,8 +74,11 @@ export class PolicyPropertiesComponent implements OnInit {
 
     ngOnChanges(changes: SimpleChanges) {
         this.roles = this.policy.policyRoles;
-        this.navigationRoles = [...this.policy.policyRoles.map(item => item.name), 'NO_ROLE', 'OWNER']
-
+        this.navigationRoles = [
+            ...this.policy.policyRoles.map(item => item.name),
+            'NO_ROLE',
+            'OWNER'
+        ];
         this.navigation = this.policy.policyNavigation;
         this.policyGroups = this.policy.policyGroups;
         this.topics = this.policy.policyTopics;
