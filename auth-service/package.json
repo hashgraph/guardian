@@ -22,7 +22,7 @@
     "base-x": "^4.0.0",
     "base64url": "^3.0.1",
     "base64url-universal": "^2.0.0",
-    "dotenv": "^16.0.0",
+    "dotenv": "^16.3.2",
     "express": "^4.17.1",
     "gulp": "^4.0.2",
     "gulp-copy": "^4.0.1",
