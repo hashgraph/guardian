@@ -8829,10 +8829,10 @@ native-fetch@^3.0.0:
   resolved "https://registry.yarnpkg.com/native-fetch/-/native-fetch-3.0.0.tgz#06ccdd70e79e171c365c75117959cf4fe14a09bb"
   integrity sha512-G3Z7vx0IFb/FQ4JxvtqGABsOTIqRWvgQz6e+erkB+JJD6LrszQtMozEHI4EkmgZQvnGHrpLVzUWk7t4sJCIkVw==
 
-nats@^2.6.1:
-  version "2.18.0"
-  resolved "https://registry.yarnpkg.com/nats/-/nats-2.18.0.tgz#a82b263ed71be0f8518af4313e2339055e5d946b"
-  integrity sha512-zZF004ejzf67Za0Tva+xphxoxBMNc5IMLqbZ7Ho0j9TMuisjpo+qCd1EktXRCLNxmrZ8O6Tbm1dBsZYNF6yR1A==
+nats@^2.19.0:
+  version "2.19.0"
+  resolved "https://registry.yarnpkg.com/nats/-/nats-2.19.0.tgz#3772b5bc4ae9506f4c686d4b86e413a6ceeb967c"
+  integrity sha512-TuOAqPljCRpfHPo2o3midezchqYJUOOnK/YLmYf9rdoshzlYN1xvCd9dAKveVB6Bfubp/m63eN3l3ukfn43JOg==
   dependencies:
     nkeys.js "1.0.5"
 
