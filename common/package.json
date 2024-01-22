@@ -5,7 +5,7 @@
     "image-size": "1.0.2"
   },
   "dependencies": {
-    "@aws-sdk/client-secrets-manager": "^3.319.0",
+    "@aws-sdk/client-secrets-manager": "^3.496.0",
     "@azure/identity": "^3.2.2",
     "@azure/keyvault-secrets": "^4.7.0",
     "@google-cloud/secret-manager": "^4.2.2",
