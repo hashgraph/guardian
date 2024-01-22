@@ -4,6 +4,7 @@ import { CarReader } from '@ipld/car';
 import * as Delegation from '@ucanto/core/delegation';
 import * as Signer from '@ucanto/principal/ed25519';
 import * as Client from '@web3-storage/w3up-client';
+import { StoreMemory } from '@web3-storage/access'
 
 /**
  * Providers type
@@ -61,7 +62,10 @@ export class IpfsClientClass {
         switch (this.IPFS_PROVIDER) {
             case 'web3storage': {
                 const principal = Signer.parse(this.options.w3s.key);
-                client = await Client.create({principal});
+                client = await Client.create({
+                    principal,
+                    store: new StoreMemory()
+                });
                 const proof = await this.parseProof(this.options.w3s.proof);
                 const space = await client.addSpace(proof);
                 await client.setCurrentSpace(space.did());
