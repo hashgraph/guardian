@@ -4,8 +4,9 @@ import { Users } from '@helpers/users';
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
 import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
-import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response, Body } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response, Body, Param, Query } from '@nestjs/common';
 import { ApiBody, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath } from '@nestjs/swagger';
+import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator';
 import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
 import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator';
 import { ProjectService } from '@helpers/projects';
@@ -776,32 +777,59 @@ export class PolicyApi {
         }
     }
 
+
+
+
+
+
+
+
+    /**
+     * Export policy in a zip file.
+     */
+    @Get('/:policyId/export/file')
+    @Auth(
+        UserRole.STANDARD_REGISTRY
+    )
+    @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Return policy and its artifacts in a zip file format for the specified policy.',
         description: 'Returns a zip file containing the published policy and all associated artifacts, i.e. schemas and VCs.' + ONLY_SR,
     })
-    @ApiSecurity('bearerAuth')
+    @ApiImplicitParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
-            'type': 'object'
+            type: 'string',
+            format: 'binary'
         },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO
     })
-    @ApiSecurity('bearerAuth')
-    @Get('/:policyId/export/file')
     @HttpCode(HttpStatus.OK)
-    async getPolicyExportFile(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const engineService = new PolicyEngine();
+    async getPolicyExportFile(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Response() res: any
+    ): Promise<any> {
         try {
-            const policyFile: any = await engineService.exportFile(req.user, req.params.policyId);
-            const policy: any = await engineService.getPolicy({ filters: req.params.policyId });
+            const engineService = new PolicyEngine();
+            const policyFile: any = await engineService.exportFile(user, policyId);
+            const policy: any = await engineService.getPolicy({ filters: policyId });
             res.setHeader('Content-disposition', `attachment; filename=${policy.name}`);
             res.setHeader('Content-type', 'application/zip');
             return res.send(policyFile);
@@ -811,31 +839,105 @@ export class PolicyApi {
         }
     }
 
+    /**
+     * Export policy in a Heder message.
+     */
+    @Get('/:policyId/export/message')
+    @Auth(
+        UserRole.STANDARD_REGISTRY
+    )
+    @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Return Heder message ID for the specified published policy.',
         description: 'Returns the Hedera message ID for the specified policy published onto IPFS.' + ONLY_SR,
     })
-    @ApiSecurity('bearerAuth')
+    @ApiImplicitParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
+    })
+
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
             'type': 'object'
         },
     })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO
     })
-    @ApiSecurity('bearerAuth')
-    @Get('/:policyId/export/message')
     @HttpCode(HttpStatus.OK)
-    async getPolicyExportMessage(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const engineService = new PolicyEngine();
+    async getPolicyExportMessage(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+    ): Promise<any> {
         try {
-            return res.send(await engineService.exportMessage(req.user, req.params.policyId));
+            const engineService = new PolicyEngine();
+            return await engineService.exportMessage(user, policyId);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw error
+        }
+    }
+
+    /**
+     * Export policy in a xlsx file.
+     */
+    @Get('/:policyId/export/xlsx')
+    @Auth(
+        UserRole.STANDARD_REGISTRY
+    )
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Return policy and its artifacts in a xlsx file format for the specified policy.',
+        description: 'Returns a xlsx file containing the published policy and all associated artifacts, i.e. schemas and VCs.' + ONLY_SR,
+    })
+    @ApiImplicitParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            type: 'string',
+            format: 'binary'
+        },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @HttpCode(HttpStatus.OK)
+    async getPolicyExportXlsx(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Response() res: any
+    ): Promise<any> {
+        try {
+            const engineService = new PolicyEngine();
+            const policyFile: any = await engineService.exportXlsx(user, policyId);
+            const policy: any = await engineService.getPolicy({ filters: policyId });
+            res.setHeader('Content-disposition', `attachment; filename=${policy.name}`);
+            res.setHeader('Content-type', 'application/zip');
+            return res.send(policyFile);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error
@@ -912,75 +1014,9 @@ export class PolicyApi {
         return res.status(202).send(task);
     }
 
-    @ApiOperation({
-        summary: 'Imports new policy from a zip file.',
-        description: 'Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR,
-    })
-    @ApiSecurity('bearerAuth')
-    @ApiOkResponse({
-        description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
-    })
-    @ApiInternalServerErrorResponse({
-        description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
-    })
-    @ApiSecurity('bearerAuth')
-    @Post('/import/file')
-    @HttpCode(HttpStatus.CREATED)
-    async importPolicyFromFile(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const engineService = new PolicyEngine();
-        const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;
-        try {
-            const policies = await engineService.importFile(req.user, req.body, versionOfTopicId);
-            return res.status(201).send(policies);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
 
-    @ApiOperation({
-        summary: 'Imports new policy from a zip file.',
-        description: 'Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR,
-    })
-    @ApiSecurity('bearerAuth')
-    @ApiOkResponse({
-        description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
-    })
-    @ApiInternalServerErrorResponse({
-        description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
-    })
-    @ApiSecurity('bearerAuth')
-    @Post('/push/import/file')
-    @HttpCode(HttpStatus.ACCEPTED)
-    async importPolicyFromFileAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const user = req.user;
-        const zip = req.body;
-        const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;
-        const taskManager = new TaskManager();
-        const task = taskManager.start(TaskAction.IMPORT_POLICY_FILE, user.id);
-        RunFunctionAsync<ServiceError>(async () => {
-            const engineService = new PolicyEngine();
-            await engineService.importFileAsync(user, zip, versionOfTopicId, task);
-        }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
-        });
-        return res.status(202).send(task);
-    }
+
+
 
     @ApiOperation({
         summary: 'Policy preview from IPFS.',
@@ -1050,6 +1086,119 @@ export class PolicyApi {
         return res.status(202).send(task);
     }
 
+    /**
+     * Policy import from a zip file.
+     */
+    @Post('/import/file')
+    @Auth(
+        UserRole.STANDARD_REGISTRY
+    )
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Imports new policy from a zip file.',
+        description: 'Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR,
+    })
+    @ApiImplicitQuery({
+        name: 'versionOfTopicId',
+        type: String,
+        description: 'Topic Id',
+        required: false
+    })
+    @ApiBody({
+        description: 'A zip file containing policy config.',
+        required: true,
+        type: String
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @HttpCode(HttpStatus.CREATED)
+    async importPolicyFromFile(
+        @AuthUser() user: IAuthUser,
+        @Body() file: any,
+        @Query('versionOfTopicId') versionOfTopicId,
+        @Response() res: any
+    ): Promise<any> {
+        const engineService = new PolicyEngine();
+        try {
+            const policies = await engineService.importFile(user, file, versionOfTopicId);
+            return res.status(201).send(policies);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Policy import from a zip file (async).
+     */
+    @Post('/push/import/file')
+    @Auth(
+        UserRole.STANDARD_REGISTRY
+    )
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Imports new policy from a zip file.',
+        description: 'Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR,
+    })
+    @ApiImplicitQuery({
+        name: 'versionOfTopicId',
+        type: String,
+        description: 'Topic Id',
+        required: false
+    })
+    @ApiBody({
+        description: 'A zip file containing policy config.',
+        required: true,
+        type: String
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @HttpCode(HttpStatus.ACCEPTED)
+    async importPolicyFromFileAsync(
+        @AuthUser() user: IAuthUser,
+        @Body() file: any,
+        @Query('versionOfTopicId') versionOfTopicId,
+        @Response() res: any
+    ): Promise<any> {
+        const taskManager = new TaskManager();
+        const task = taskManager.start(TaskAction.IMPORT_POLICY_FILE, user.id);
+        RunFunctionAsync<ServiceError>(async () => {
+            const engineService = new PolicyEngine();
+            await engineService.importFileAsync(user, file, versionOfTopicId, task);
+        }, async (error) => {
+            new Logger().error(error, ['API_GATEWAY']);
+            taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
+        });
+        return res.status(202).send(task);
+    }
 
     /**
      * Policy preview from a zip file.
@@ -1098,6 +1247,121 @@ export class PolicyApi {
         }
     }
 
+    /**
+     * Policy import from a zip file.
+     */
+    @Post('/import/xlsx')
+    @Auth(
+        UserRole.STANDARD_REGISTRY
+    )
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Imports new policy from a xlsx file.',
+        description: 'Imports new policy and all associated artifacts, such as schemas and VCs, from the provided xlsx file into the local DB.' + ONLY_SR,
+    })
+    @ApiImplicitQuery({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
+    })
+    @ApiBody({
+        description: 'A xlsx file containing policy config.',
+        required: true,
+        type: String
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @HttpCode(HttpStatus.CREATED)
+    async importPolicyFromXlsx(
+        @AuthUser() user: IAuthUser,
+        @Query('policyId') policyId,
+        @Body() file: any,
+        @Response() res: any
+    ): Promise<any> {
+        try {
+            const engineService = new PolicyEngine();
+            const policies = await engineService.importXlsx(user, policyId, file);
+            return res.status(201).send(policies);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Policy import from a xlsx file (async).
+     */
+    @Post('/push/import/xlsx')
+    @Auth(
+        UserRole.STANDARD_REGISTRY
+    )
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Imports new policy from a xlsx file.',
+        description: 'Imports new policy and all associated artifacts, such as schemas and VCs, from the provided xlsx file into the local DB.' + ONLY_SR,
+    })
+    @ApiImplicitQuery({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
+    })
+    @ApiBody({
+        description: 'A xlsx file containing policy config.',
+        required: true,
+        type: String
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @HttpCode(HttpStatus.ACCEPTED)
+    async importPolicyFromXlsxAsync(
+        @AuthUser() user: IAuthUser,
+        @Query('policyId') policyId,
+        @Body() file: any,
+        @Response() res: any
+    ): Promise<any> {
+        const taskManager = new TaskManager();
+        const task = taskManager.start(TaskAction.IMPORT_POLICY_FILE, user.id);
+        RunFunctionAsync<ServiceError>(async () => {
+            const engineService = new PolicyEngine();
+            await engineService.importXlsxAsync(user, file, policyId, task);
+        }, async (error) => {
+            new Logger().error(error, ['API_GATEWAY']);
+            taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
+        });
+        return res.status(202).send(task);
+    }
 
     /**
      * Policy preview from a xlsx file.
@@ -1145,13 +1409,6 @@ export class PolicyApi {
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
-
-
-
-
-
-
 
 
 

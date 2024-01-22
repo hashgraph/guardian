@@ -235,7 +235,7 @@ export async function importSchemaByFiles(
 
     const tools = await DatabaseServer.getTools({ status: ModuleStatus.PUBLISHED }, { fields: ['topicId'] });
     const toolSchemas = await DatabaseServer.getSchemas({ topicId: { $in: tools.map(t => t.topicId) } });
-    const updatedSchemasMap = {
+    const updatedSchemasMap: any = {
         '#GeoJSON': geoJson
     };
     const parsedSchemas: Schema[] = [];

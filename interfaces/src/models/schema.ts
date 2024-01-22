@@ -127,6 +127,10 @@ export class Schema implements ISchema {
      */
     public component?: string;
     /**
+     * Errors
+     */
+    public errors?: any[];
+    /**
      * User DID
      * @private
      */

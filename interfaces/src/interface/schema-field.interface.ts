@@ -140,4 +140,9 @@ export interface SchemaField {
      * Font style
      */
     font?: any;
+
+    /**
+     * Errors
+     */
+    errors?: any[];
 }

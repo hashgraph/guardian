@@ -1,4 +1,4 @@
-import { SchemaEntity } from "@guardian/interfaces";
+import { DocumentGenerator, SchemaEntity, SchemaField } from "@guardian/interfaces";
 import { FieldTypes, IFieldTypes } from "./dictionary";
 
 export function entityToXlsx(entity: SchemaEntity): string {
@@ -52,21 +52,21 @@ export function stringToXlsx(value: string): string {
 }
 
 export function numberToXlsx(value: number): string {
-    return String(value);
+    return value !== undefined ? String(value) : '';
 }
 
 export function booleanToXlsx(value: boolean): string {
-    return value === true ? 'Yes' : (value === false ? 'No' : undefined);
+    return value === true ? 'Yes' : (value === false ? 'No' : '');
 }
 
 export function anyToXlsx(value: any): string {
-    return value ? String(value) : '';
+    return value !== undefined ? String(value) : '';
 }
 
-export function arrayToXlsx(examples: any[], multiple: boolean): string {
-    if (Array.isArray(examples)) {
-        let value = examples[0];
-        if (multiple) {
+export function examplesToXlsx(field: SchemaField): string {
+    if (Array.isArray(field.examples)) {
+        let value = field.examples[0];
+        if (field.isArray) {
             value = value[0];
         }
         if (Array.isArray(value)) {
@@ -76,8 +76,9 @@ export function arrayToXlsx(examples: any[], multiple: boolean): string {
         } else {
             return value;
         }
+    } else {
+        return DocumentGenerator.generateExample(field) || '';
     }
-    return undefined;
 }
 
 export function xlsxToArray(value: any, multiple: boolean): any[] {
@@ -88,7 +89,7 @@ export function xlsxToArray(value: any, multiple: boolean): any[] {
             return [value];
         }
     }
-    return undefined;
+    return [];
 }
 
 export function fontToXlsx(font: any, base?: any): any {

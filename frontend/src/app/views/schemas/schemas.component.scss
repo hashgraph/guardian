@@ -180,6 +180,11 @@ a {
     color: var(--color-accent-red-1) !important;
 }
 
+.status-ERROR {
+    background: var(--color-accent-red-2) !important;
+    color: var(--color-accent-red-1) !important;
+}
+
 .btn-approve {
     background: var(--color-primary);
     border-radius: 6px;

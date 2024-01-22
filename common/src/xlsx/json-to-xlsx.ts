@@ -1,5 +1,5 @@
 import { Dictionary, FieldTypes } from './models/dictionary';
-import { anyToXlsx, arrayToXlsx, booleanToXlsx, entityToXlsx, fontToXlsx, stringToXlsx, typeToXlsx, unitToXlsx, valueToFormula } from './models/value-converters';
+import { anyToXlsx, examplesToXlsx, booleanToXlsx, entityToXlsx, fontToXlsx, stringToXlsx, typeToXlsx, unitToXlsx, valueToFormula } from './models/value-converters';
 import { Range, Workbook, Worksheet } from './models/workbook';
 import { Table } from './models/header-utils';
 import { ISchema, Schema, SchemaCondition, SchemaField } from '@guardian/interfaces';
@@ -11,7 +11,7 @@ interface IRowField {
 }
 
 export class JsonToXlsx {
-    public static async parse(json: ISchema[]): Promise<Buffer> {
+    public static async generate(json: ISchema[]): Promise<ArrayBuffer> {
         const workbook = new Workbook();
         const items = [];
         const map = new Map<string, string>();
@@ -29,7 +29,7 @@ export class JsonToXlsx {
         for (const item of items) {
             await JsonToXlsx.parseSheet(item.worksheet, item.schema, map);
         }
-        return Buffer.from(await workbook.write());
+        return await workbook.write();
     }
 
     public static async parseSheet(
@@ -134,7 +134,7 @@ export class JsonToXlsx {
         if (!field.isRef) {
             worksheet
                 .getCell(table.getCol(Dictionary.ANSWER), row)
-                .setValue(type.pars(arrayToXlsx(field.examples, field.isArray)))
+                .setValue(type.pars(examplesToXlsx(field)))
                 .setStyle(table.fieldStyle);
         }
         if (field.unit) {

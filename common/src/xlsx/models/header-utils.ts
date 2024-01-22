@@ -223,18 +223,18 @@ export class Table {
         this.end = { c, r };
     }
 
-    public check(): boolean {
+    public getErrorHeader(): TableHeader | null {
         for (const header of this._fieldHeaders.values()) {
             if (header.required && header.column === -1) {
-                return false;
+                return header;
             }
         }
         for (const header of this._schemaHeaders.values()) {
             if (header.required && header.row === -1) {
-                return false;
+                return header;
             }
         }
-        return true;
+        return null;
     }
 
     public isName(value: string): boolean {

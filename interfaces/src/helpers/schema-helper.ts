@@ -1007,4 +1007,33 @@ export class SchemaHelper {
         }
         return result;
     }
+
+    /**
+     * Get schema name with detailed information
+     * @param name Name
+     * @param version Version
+     * @param status Status
+     * @returns Name
+     */
+    public static checkErrors(schema: Schema): any[] {
+        const errors = [];
+        if (schema.errors && schema.errors.length) {
+            errors.push(...schema.errors);
+        }
+        if (Array.isArray(schema.fields)) {
+            for (const field of schema.fields) {
+                if (field.errors && field.errors.length) {
+                    errors.push(...field.errors);
+                }
+            }
+        }
+        if (Array.isArray(schema.conditions)) {
+            for (const condition of schema.conditions) {
+                if (condition.errors && condition.errors.length) {
+                    errors.push(...condition.errors);
+                }
+            }
+        }
+        return errors;
+    }
 }

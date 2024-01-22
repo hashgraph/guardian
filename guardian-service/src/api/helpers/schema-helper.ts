@@ -279,7 +279,11 @@ export async function updateSchemaDocument(schema: SchemaCollection): Promise<vo
  * @param schemas Schemas
  * @param map Map of updated schemas
  */
-export function fixSchemaDefsOnImport(iri: string, schemas: Schema[], map: any): boolean {
+export function fixSchemaDefsOnImport(
+    iri: string,
+    schemas: Schema[],
+    map: { [x: string]: Schema }
+): boolean {
     if (map[iri]) {
         return true;
     }
@@ -340,11 +344,11 @@ export async function copySchemaAsync(iri: string, topicId: string, name: string
     const users = new Users();
     const root = await users.getHederaAccount(owner);
 
-    let item = await DatabaseServer.getSchema({iri});
+    let item = await DatabaseServer.getSchema({ iri });
 
     const oldSchemaIri = item.iri;
     await copyDefsSchemas(item.document?.$defs, owner, topicId, root);
-    item = await DatabaseServer.getSchema({iri});
+    item = await DatabaseServer.getSchema({ iri });
 
     // Clean document
     delete item._id;
@@ -477,8 +481,10 @@ export async function createSchema(
         await topicHelper.twoWayLink(topic, null, null);
     }
 
+    const errors = SchemaHelper.checkErrors(newSchema as Schema)
     SchemaHelper.updateIRI(schemaObject);
-    schemaObject.status = SchemaStatus.DRAFT;
+    schemaObject.errors = errors;
+    schemaObject.status = errors?.length ? SchemaStatus.ERROR : SchemaStatus.DRAFT;
     schemaObject.topicId = topic?.topicId || 'draft';
     schemaObject.iri = schemaObject.iri || `${schemaObject.uuid}`;
     schemaObject.codeVersion = SchemaConverterUtils.VERSION;

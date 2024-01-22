@@ -101,6 +101,12 @@ export class PolicyEngineService {
         });
     }
 
+    public exportToExcel(policyId: string): Observable<ArrayBuffer> {
+        return this.http.get(`${this.url}/${policyId}/export/xlsx`, {
+            responseType: 'arraybuffer'
+        });
+    }
+
     public exportInMessage(policyId: string): Observable<any> {
         return this.http.get(`${this.url}/${policyId}/export/message`);
     }
@@ -143,6 +149,32 @@ export class PolicyEngineService {
 
     public previewByFile(policyFile: any): Observable<any> {
         return this.http.post<any[]>(`${this.url}/import/file/preview`, policyFile, {
+            headers: {
+                'Content-Type': 'binary/octet-stream'
+            }
+        });
+    }
+
+    public previewByXlsx(policyFile: any): Observable<any> {
+        return this.http.post<any[]>(`${this.url}/import/xlsx/preview`, policyFile, {
+            headers: {
+                'Content-Type': 'binary/octet-stream'
+            }
+        });
+    }
+
+    public importByXlsx(policyFile: any, policyId: string): Observable<any[]> {
+        var query = policyId ? `?policyId=${policyId}` : '';
+        return this.http.post<any[]>(`${this.url}/import/xlsx${query}`, policyFile, {
+            headers: {
+                'Content-Type': 'binary/octet-stream'
+            }
+        });
+    }
+
+    public pushImportByXlsx(policyFile: any, policyId: string): Observable<{ taskId: string, expectation: number }> {
+        var query = policyId ? `?policyId=${policyId}` : '';
+        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/import/xlsx${query}`, policyFile, {
             headers: {
                 'Content-Type': 'binary/octet-stream'
             }
