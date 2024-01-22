@@ -21,9 +21,10 @@
     "scripts": {
         "build": "tsc",
         "build:prod": "tsc --project tsconfig.production.json",
-        "debug": "nodemon dist/index.js",
+        "debug": "nodemon dist/app.js",
         "dev:docker": "nodemon .",
-        "dev": "tsc -w"
+        "dev": "tsc -w",
+        "start": "node dist/app.js"
     },
     "devDependencies": {
         "nodemon": "^3.0.1"
