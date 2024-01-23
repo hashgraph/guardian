@@ -1017,20 +1017,44 @@ export class SchemaHelper {
      */
     public static checkErrors(schema: Schema): any[] {
         const errors = [];
-        if (schema.errors && schema.errors.length) {
-            errors.push(...schema.errors);
+        if (Array.isArray(schema.errors)) {
+            for (const error of schema.errors) {
+                errors.push({
+                    target: {
+                        type: 'schema'
+                    },
+                    ...error
+                });
+            }
         }
         if (Array.isArray(schema.fields)) {
             for (const field of schema.fields) {
-                if (field.errors && field.errors.length) {
-                    errors.push(...field.errors);
+                if (Array.isArray(field.errors)) {
+                    for (const error of field.errors) {
+                        errors.push({
+                            ...error,
+                            target: {
+                                type: 'field',
+                                field: field.name,
+                            }
+                        });
+                    }
                 }
             }
         }
         if (Array.isArray(schema.conditions)) {
             for (const condition of schema.conditions) {
-                if (condition.errors && condition.errors.length) {
-                    errors.push(...condition.errors);
+                if (Array.isArray(condition.errors)) {
+                    for (const error of condition.errors) {
+                        errors.push({
+                            ...error,
+                            target: {
+                                type: 'condition',
+                                field: condition.ifCondition?.field?.name,
+                                fieldValue: condition.ifCondition?.fieldValue
+                            }
+                        });
+                    }
                 }
             }
         }

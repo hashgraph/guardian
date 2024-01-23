@@ -150,7 +150,7 @@
                 </tr>
             </ng-template>
             <ng-template let-schema pTemplate="body">
-                <tr class="schemas-grid-row">
+                <tr class="schemas-grid-row" [attr.schema-status]="schema.status">
 
                     <ng-container *ngIf="type === 'policy'">
                         <td class="first-schema-grid-cell text-truncate" style="min-width: 140px; max-width: 150px;">
@@ -199,7 +199,7 @@
                                     <span class="schema-status status-UNPUBLISHED">Unpublished</span>
                                 </div>
                                 <div *ngSwitchCase="'ERROR'">
-                                    <span class="schema-status status-ERROR">Error</span>
+                                    <span class="schema-status status-ERROR">Incomplete</span>
                                 </div>
                                 <div *ngSwitchDefault>
                                     <span class="schema-status">{{schema.status}}</span>
@@ -237,6 +237,9 @@
                                 </div>
                                 <div *ngSwitchCase="'UNPUBLISHED'">
                                     <span class="schema-status status-UNPUBLISHED">Unpublished</span>
+                                </div>
+                                <div *ngSwitchCase="'ERROR'">
+                                    <span class="schema-status status-ERROR">Incomplete</span>
                                 </div>
                                 <div *ngSwitchDefault>
                                     <span class="schema-status">{{schema.status}}</span>
@@ -280,6 +283,9 @@
                                 </div>
                                 <div *ngSwitchCase="'UNPUBLISHED'">
                                     <span class="schema-status status-UNPUBLISHED">Unpublished</span>
+                                </div>
+                                <div *ngSwitchCase="'ERROR'">
+                                    <span class="schema-status status-ERROR">Incomplete</span>
                                 </div>
                                 <div *ngSwitchDefault>
                                     <span class="schema-status">{{schema.status}}</span>
@@ -350,6 +356,9 @@
                                 </div>
                                 <div *ngSwitchCase="'UNPUBLISHED'">
                                     <span class="schema-status status-UNPUBLISHED">Unpublished</span>
+                                </div>
+                                <div *ngSwitchCase="'ERROR'">
+                                    <span class="schema-status status-ERROR">Incomplete</span>
                                 </div>
                                 <div *ngSwitchDefault>
                                     <span class="schema-status">{{schema.status}}</span>

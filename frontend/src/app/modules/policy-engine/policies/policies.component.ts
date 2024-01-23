@@ -655,7 +655,7 @@ export class PoliciesComponent implements OnInit {
             case 'PUBLISH_ERROR':
                 return 'Publish Error';
             case 'PUBLISH':
-                return 'Publish';
+                return 'Published';
             default:
                 return 'Incorrect status';
         }

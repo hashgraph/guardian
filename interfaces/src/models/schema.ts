@@ -194,6 +194,7 @@ export class Schema implements ISchema {
                 this.context = null;
             }
             this.component = (schema as any).component || (schema as any).__component;
+            this.errors = schema.errors;
         } else {
             this._id = undefined;
             this.id = undefined;
@@ -217,6 +218,7 @@ export class Schema implements ISchema {
             this.documentURL = '';
             this.contextURL = '';
             this.iri = '';
+            this.errors = [];
         }
         if (this.document) {
             this.parseDocument(includeSystemProperties);

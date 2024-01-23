@@ -407,6 +407,10 @@ a {
     font-size: 14px;
 }
 
+.schemas-grid-row[schema-status="ERROR"] {
+    background: #fff0f0 !important;
+}
+
 .first-schema-grid-cell {
     border-top-left-radius: 8px;
     border-bottom-left-radius: 8px;

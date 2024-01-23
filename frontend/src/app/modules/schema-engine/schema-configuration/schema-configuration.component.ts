@@ -72,10 +72,8 @@ export class SchemaConfigurationComponent implements OnInit {
 
     public started = false;
     public loading: boolean = true;
-
     public fields!: FieldControl[];
     public conditions!: ConditionControl[];
-
     public fieldsForm!: FormGroup;
     public conditionsForm!: FormGroup;
     public dataForm!: FormGroup;
@@ -83,23 +81,21 @@ export class SchemaConfigurationComponent implements OnInit {
     public typesMap!: any;
     public types!: any[];
     public measureTypes!: any[];
-
+    public errors!: any[];
     public schemaTypes!: any[];
     public schemaTypeMap!: any;
     public subSchemas!: Schema[];
     public destroy$: Subject<boolean> = new Subject<boolean>();
-
     private _patternByNumberType: any = {
         duration: /^[0-9]+$/,
         number: /^-?\d*(\.\d+)?$/,
         integer: /^-?\d*$/
     };
-
-    systemEntityOptions: { label: string; value: string }[] = [
+    public systemEntityOptions: { label: string; value: string }[] = [
         { label: 'STANDARD REGISTRY', value: 'STANDARD_REGISTRY' },
         { label: 'USER', value: 'USER' },
     ];
-    policyModuleEntityOptions: { label: string; value: string }[] = [
+    public policyModuleEntityOptions: { label: string; value: string }[] = [
         { label: 'Default', value: 'NONE' },
         { label: 'Verifiable Credential', value: 'VC' },
         { label: 'Encrypted Verifiable Credential', value: 'EVC' },
@@ -532,8 +528,10 @@ export class SchemaConfigurationComponent implements OnInit {
                 conditions: {}
             });
         }
+
         const fields = this.value.fields;
         const conditions = this.value.conditions || [];
+        const errors = this.value.errors || [];
         const conditionsFields: string[] = [];
         conditions.forEach((item) => {
             conditionsFields.push(
@@ -546,6 +544,7 @@ export class SchemaConfigurationComponent implements OnInit {
 
         this.updateFieldControls(fields, conditionsFields);
         this.updateConditionControls(conditions);
+        this.errors = errors;
     }
 
     private getType(field: SchemaField | null): string {

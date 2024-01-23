@@ -655,47 +655,36 @@ export class SchemaConfigComponent implements OnInit {
             return;
         }
 
-        // const dialogRef = this.dialogService.open(DeleteSchemaDialogComponent, {
-        //     header: 'Delete Schema',
-        //     width: '720px',
-        //     styleClass: 'custom-dialog',
-        // });
-        // dialogRef.onClose.subscribe((result) => {
-        //     if (!result) {
-        //         return;
-        //     }
-
-            this.loading = true;
-            switch (this.type) {
-                case SchemaType.System: {
-                    this.schemaService.deleteSystemSchema(id).subscribe((data: any) => {
-                        this.loadSchemas();
-                    }, (e) => {
-                        this.loadError(e);
-                    });
-                    break;
-                }
-                case SchemaType.Tag: {
-                    this.tagsService.deleteSchema(id).subscribe((data: any) => {
-                        this.loadSchemas();
-                    }, (e) => {
-                        this.loadError(e);
-                    });
-                    break;
-                }
-                case SchemaType.Module:
-                case SchemaType.Tool:
-                case SchemaType.Policy:
-                default: {
-                    this.schemaService.delete(id).subscribe((data: any) => {
-                        this.loadSchemas();
-                    }, (e) => {
-                        this.loadError(e);
-                    });
-                    break;
-                }
+        this.loading = true;
+        switch (this.type) {
+            case SchemaType.System: {
+                this.schemaService.deleteSystemSchema(id).subscribe((data: any) => {
+                    this.loadSchemas();
+                }, (e) => {
+                    this.loadError(e);
+                });
+                break;
             }
-        // });
+            case SchemaType.Tag: {
+                this.tagsService.deleteSchema(id).subscribe((data: any) => {
+                    this.loadSchemas();
+                }, (e) => {
+                    this.loadError(e);
+                });
+                break;
+            }
+            case SchemaType.Module:
+            case SchemaType.Tool:
+            case SchemaType.Policy:
+            default: {
+                this.schemaService.delete(id).subscribe((data: any) => {
+                    this.loadSchemas();
+                }, (e) => {
+                    this.loadError(e);
+                });
+                break;
+            }
+        }
     }
 
     private publishSchema(id: string, version: string): void {

@@ -1,6 +1,11 @@
-<div *ngIf="!readonly" [formGroup]="form" cdkDrag
-     cdkDragLockAxis="y"
-     class="custom-field">
+<div 
+    *ngIf="!readonly" 
+    [formGroup]="form" 
+    cdkDrag
+    cdkDragLockAxis="y"
+    class="custom-field"
+    [attr.error]="!!error"
+>
     <div cdkDragHandle class="left-side-panel">
         <img alt="" class="equal-icon" src="assets/images/icons/equal.svg"/>
     </div>
@@ -19,6 +24,13 @@
                 Key has a system name.
             </small>
         </ng-template>
+
+        <div *ngIf="error" class="extended-config">
+            <div class="input-field-container error-text">
+                <div>{{error.text}}</div>
+                <div *ngIf="error.message" class="error-text-message">{{error.message}}</div>
+            </div>
+        </div>
 
         <div [attr.extended]="extended" class="extended-config">
             <div *ngIf="extended" class="input-field-container">
@@ -161,19 +173,6 @@
             </ng-container>
 
             <ng-template #notHelpText>
-                <!-- <div class="checkbox-field-container">
-                    <mat-checkbox [disabled]="field.controlRequired.value === true" [formControl]="field.hidden">
-                        Hidden field
-                    </mat-checkbox>
-                    <label class="checkbox-label">Required Field</label>
-                </div>
-
-                <div class="checkbox-field-container">
-                    <mat-checkbox [disabled]="field.hidden.value === true" [formControl]="field.controlRequired">
-                    </mat-checkbox>
-                    <label class="checkbox-label">Required Field</label>
-                </div> -->
-
                 <div class="dropdown-field">
                     <label class="form-label">Required</label>
                     <p-dropdown
@@ -185,15 +184,6 @@
                         placeholder="Required"
                     ></p-dropdown>
                 </div>
-
-                <!--<mat-form-field appearance="outline">
-                    <mat-label>Field type</mat-label>
-                    <mat-select [formControl]="fieldType">
-                        <mat-option value="none">None</mat-option>
-                        <mat-option value="required">Required</mat-option>
-                        <mat-option value="hidden">Hidden</mat-option>
-                    </mat-select>
-                </mat-form-field>-->
 
                 <div class="checkbox-field-container">
                     <mat-checkbox [formControl]="field.controlArray"></mat-checkbox>
