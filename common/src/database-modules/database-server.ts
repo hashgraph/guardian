@@ -27,10 +27,13 @@ import {
     ExternalDocument,
     SuggestionsConfig,
     Record,
-    PolicyCategory
+    PolicyCategory,
+    VcDocument,
+    VpDocument
 } from '../entity';
 import { Binary } from 'bson';
 import {
+    DocumentType,
     GenerateUUIDv4,
     IVC,
     SchemaEntity,
@@ -2167,6 +2170,53 @@ export class DatabaseServer {
             ];
         }
         return await new DataBaseHelper(DryRun).findAndCount(filters, otherOptions);
+    }
+
+    /**
+     * Get Virtual Documents
+     * @param policyId
+     * @param includeDocument
+     * @param type
+     * @param pageIndex
+     * @param pageSize
+     *
+     * @returns Documents and count
+     */
+    public static async getDocuments(
+        policyId: string,
+        includeDocument: boolean = false,
+        type?: DocumentType,
+        pageIndex?: string,
+        pageSize?: string,
+    ): Promise<[any[], number]> {
+        const filters: any = {
+            $and: [{
+                policyId,
+            }]
+        }
+        const otherOptions: any = {
+            fields: ['id', 'owner']
+        };
+        if (includeDocument) {
+            otherOptions.fields.push('documentFileId');
+        }
+        const _pageSize = parseInt(pageSize, 10);
+        const _pageIndex = parseInt(pageIndex, 10);
+        if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
+            otherOptions.orderBy = { createDate: 'DESC' };
+            otherOptions.limit = _pageSize;
+            otherOptions.offset = _pageIndex * _pageSize;
+        }
+        if (type === DocumentType.VC) {
+            otherOptions.fields.push('schema');
+            filters.$and.push({ schema: { $ne: null }});
+            filters.$and.push({ schema: { $nin: ['#UserRole'] }});
+            return await new DataBaseHelper(VcDocument).findAndCount(filters, otherOptions);
+        } else if (type === DocumentType.VP) {
+            return await new DataBaseHelper(VpDocument).findAndCount(filters, otherOptions);
+        } else {
+            throw new Error(`Unknown type: ${type}`);
+        }
     }
 
     /**

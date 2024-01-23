@@ -74,7 +74,7 @@ a.go-back-link mat-icon {
 .back-button {
     ::ng-deep {
         .p-button {
-            background: #23252e !important;
+            background: none !important;
             color: #ffffff;
             border-radius: 8px;
             border: 1px solid #fff;
@@ -206,6 +206,18 @@ a.go-back-link mat-icon {
 .content[status="DRY-RUN"] .policy-header {
     height: 136px;
     background: #23252e;
+    color: #fff;
+}
+
+.content[status="DISCONTINUED"] .policy-header {
+    height: 136px;
+    background: #ff3e3e;
+    color: #fff;
+}
+
+.content[status="PUBLISH"] .policy-header[expired="true"] {
+    height: 136px;
+    background: #FF8460;
     color: #fff;
 }
 

@@ -38,4 +38,5 @@ export enum PolicyEvents {
     FAST_FORWARD = 'policy-event-fast-forward',
     RECORD_RETRY_STEP = 'policy-event-retry-step',
     RECORD_SKIP_STEP = 'policy-event-skip-step',
+    REFRESH_MODEL = 'policy-event-refresh-model',
 }

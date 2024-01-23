@@ -12,6 +12,7 @@ export class TokenConfigurationComponent implements OnInit {
     @Input('readonly') readonly?: any;
     @Input('hide-type') hideType: boolean = false;
     @Input() contracts: any[];
+    displayContracts: any[];
     ft: any;
 
     test: any;
@@ -83,6 +84,16 @@ export class TokenConfigurationComponent implements OnInit {
             }
         }
         this.onChangeType();
+        if (
+            this.wipeContractId &&
+            this.contracts.findIndex(
+                (contract) => contract.contractId === this.wipeContractId
+            ) < 0
+        ) {
+            this.displayContracts = this.contracts.concat([
+                { contractId: this.wipeContractId },
+            ]);
+        }
     }
 
     onChangeType() {

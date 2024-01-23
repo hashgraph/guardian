@@ -98,7 +98,7 @@ export class PolicyTemplate {
         this.buildBlock(policy.config);
 
         this.isDraft = this.status === PolicyType.DRAFT;
-        this.isPublished = this.status === PolicyType.PUBLISH;
+        this.isPublished = this.status === PolicyType.PUBLISH || this.status === PolicyType.DISCONTINUED;
         this.isDryRun = this.status === PolicyType.DRY_RUN;
         this.isPublishError = this.status === PolicyType.PUBLISH_ERROR;
         this.readonly = this.isPublished || this.isDryRun || this.isPublishError;

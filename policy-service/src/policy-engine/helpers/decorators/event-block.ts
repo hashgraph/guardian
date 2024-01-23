@@ -2,6 +2,7 @@ import { PolicyBlockDecoratorOptions } from '@policy-engine/interfaces/block-opt
 import { BasicBlock } from './basic-block';
 import { BlockActionError } from '@policy-engine/errors';
 import { IPolicyUser } from '@policy-engine/policy-user';
+import { PolicyType } from '@guardian/interfaces';
 
 /**
  * Event block decorator
@@ -48,6 +49,9 @@ export function EventBlock(options: Partial<PolicyBlockDecoratorOptions>) {
             async setData(...args) {
                 if (!this.isActive(args[0])) {
                     throw new BlockActionError('Block not available', this.blockType, this.uuid);
+                }
+                if (this.policyInstance.status === PolicyType.DISCONTINUED) {
+                    throw new BlockActionError(`Policy is discontinued and can't produce new artifacts`, this.blockType, this.uuid);
                 }
                 const user = args[0];
                 if (this._accessMap.get(user?.did) === true) {

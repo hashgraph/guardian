@@ -121,7 +121,7 @@ export class PolicyEngine extends NatsService {
 
         const policies = await DatabaseServer.getPolicies({
             where: {
-                status: { $in: [PolicyType.PUBLISH, PolicyType.DRY_RUN] }
+                status: { $in: [PolicyType.PUBLISH, PolicyType.DRY_RUN, PolicyType.DISCONTINUED] }
             }
         });
         await Promise.all(policies.map(async (policy) => {
@@ -838,6 +838,9 @@ export class PolicyEngine extends NatsService {
         if (policy.status === PolicyType.PUBLISH) {
             throw new Error(`Policy already published`);
         }
+        if (policy.status === PolicyType.DISCONTINUED) {
+            throw new Error(`Policy is discontinued`);
+        }
         if (!ModelHelper.checkVersionFormat(version)) {
             throw new Error('Invalid version format');
         }
@@ -1068,6 +1071,15 @@ export class PolicyEngine extends NatsService {
         } else {
             return Promise.resolve();
         }
+    }
+
+    /**
+     * Regenerate policy model
+     * @param policyId Policy identifier
+     */
+    public async regenerateModel(policyId: string): Promise<any> {
+        await this.destroyModel(policyId);
+        return await this.generateModel(policyId);
     }
 
     /**

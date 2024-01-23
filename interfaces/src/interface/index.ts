@@ -37,3 +37,4 @@ export * from './wallet-account.interface';
 export * from './wizard-config.interface';
 export * from './schema-node.interface';
 export * from './policy-category-export.interface';
+export * from './migration-config.interface';

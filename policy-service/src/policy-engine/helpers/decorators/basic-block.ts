@@ -354,6 +354,9 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param {IPolicyEvent} event
              */
             public async runAction(event: IPolicyEvent<any>): Promise<any> {
+                if (this.policyInstance.status === PolicyType.DISCONTINUED) {
+                    return;
+                }
                 const parent = this.parent as any;
                 if (parent && (typeof parent.changeStep === 'function')) {
                     await parent.changeStep(event.user, event.data, this);

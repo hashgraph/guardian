@@ -81,6 +81,7 @@ export class TaskManager {
         [TaskAction.CREATE_TOOL, 8],
         [TaskAction.IMPORT_TOOL_FILE, 9],
         [TaskAction.IMPORT_TOOL_MESSAGE, 11],
+        [TaskAction.MIGRATE_DATA, 4]
     ]);
 
     /**
@@ -131,7 +132,6 @@ export class TaskManager {
         if (this.tasks[taskId]) {
             throw new Error(`Task ${taskId} exists.`);
         }
-
         const expectation = this.getExpectation(action);
         this.tasks[taskId] = new Task(action, userId, expectation, taskId);
         this.channel.publish(MessageAPI.PUBLISH_TASK, {

@@ -11,6 +11,7 @@ import { TagEngineModule } from '../tag-engine/tag-engine.module';
 import { ArtifactEngineModule } from '../artifact-engine/artifact-engine.module';
 import { CompareModule } from '../analytics/analytics.module';
 import { AppRoutingModule } from 'src/app/app-routing.module';
+import { PaginatorModule } from 'primeng/paginator';
 //Configuration
 import { CommonPropertiesComponent } from './policy-configuration/common-properties/common-properties.component';
 import { DocumentSourceComponent } from './policy-configuration/blocks/documents/document-viewer-config/document-viewer-config.component';
@@ -103,6 +104,10 @@ import { SelectSchema } from './helpers/select-schema/select-schema.component';
 //Modules
 import { ModulesListComponent } from './modules-list/modules-list.component';
 import { ToolsListComponent } from './tools-list/tools-list.component';
+import { SelectButtonModule } from 'primeng/selectbutton';
+import { CalendarModule } from 'primeng/calendar';
+import { StepsModule } from 'primeng/steps';
+import { CheckboxModule } from 'primeng/checkbox';
 //Services
 import { RegisteredService } from './services/registered.service';
 import { WizardService } from './services/wizard.service';
@@ -129,6 +134,9 @@ import { AngularSvgIconModule } from 'angular-svg-icon';
 // Directives
 import { ResizingDirective } from './directives/resizing.directive';
 import { CONFIGURATION_ERRORS } from './injectors/configuration.errors.injector';
+// Dialogs
+import { DiscontinuePolicy } from './dialogs/discontinue-policy/discontinue-policy.component';
+import { MigrateData } from './dialogs/migrate-data/migrate-data.component';
 
 @NgModule({
     declarations: [
@@ -223,7 +231,9 @@ import { CONFIGURATION_ERRORS } from './injectors/configuration.errors.injector'
         RecordControllerComponent,
         RecordResultDialog,
         RecordResultsComponent,
-        ResizingDirective
+        ResizingDirective,
+        DiscontinuePolicy,
+        MigrateData,
     ],
     imports: [
         CommonModule,
@@ -252,7 +262,12 @@ import { CONFIGURATION_ERRORS } from './injectors/configuration.errors.injector'
         AppRoutingModule,
         DialogModule,
         OverlayPanelModule,
-        AngularSvgIconModule.forRoot()
+        SelectButtonModule,
+        CalendarModule,
+        StepsModule,
+        CheckboxModule,
+        PaginatorModule,
+        AngularSvgIconModule.forRoot(),
     ],
     exports: [],
     providers: [
