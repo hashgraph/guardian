@@ -44,6 +44,7 @@ import { GuardiansService } from '@helpers/guardians';
 import { Inject } from '@helpers/decorators/inject';
 import { findAndDryRunSchema, findAndPublishSchema, publishSystemSchemas } from '@api/helpers/schema-publish-helper';
 import { deleteSchema, incrementSchemaVersion, sendSchemaMessage } from '@api/helpers/schema-helper';
+import { AISuggestionsService } from '@helpers/ai-suggestions';
 
 /**
  * Result of publishing
@@ -862,6 +863,11 @@ export class PolicyEngine extends NatsService {
                 await DatabaseServer.clearDryRun(policy.id.toString());
             }
             const newPolicy = await this.publishPolicy(policy, owner, version, notifier);
+
+            if (newPolicy.status === PolicyType.PUBLISH) {
+                new AISuggestionsService().rebuildAIVector().then();
+            }
+
             await this.generateModel(newPolicy.id.toString());
             const users = await new Users().getUsersBySrId(owner);
 
