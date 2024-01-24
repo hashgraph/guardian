@@ -5543,10 +5543,10 @@ factory.ts@^0.5.1:
     clone-deep "^4.0.1"
     source-map-support "^0.5.19"
 
-faiss-node@^0.3.0:
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/faiss-node/-/faiss-node-0.3.0.tgz#9f58b6e102e71dbdaa19dfbeb75188f2d04b7dc7"
-  integrity sha512-ozqt6H92+dqFtmLXnQsu7Rle73HYjls3Ub7j/0otlQBpQtM8D7EZddCcq/X6p5pSg/Te6+R73JPIIt5o0FOv0g==
+faiss-node@^0.5.1:
+  version "0.5.1"
+  resolved "https://registry.yarnpkg.com/faiss-node/-/faiss-node-0.5.1.tgz#7b200d09313b7c225ff29800dfe8afbb5fe49393"
+  integrity sha512-zD8wobJn8C6OLWo68Unho+Ih8l6nSRB2w3Amj01a+xc4bsEvd2mBDLklAn7VocA9XO3WDvQL/bLpi5flkCn/XQ==
   dependencies:
     bindings "^1.5.0"
     node-addon-api "^6.0.0"
