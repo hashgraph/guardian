@@ -177,7 +177,6 @@ services:
     depends_on:
       - mongo
       - message-broker
-      - guardian-service
       - logger-service
     volumes:
       - ./ai-service/data:/usr/local/ai-service/data:rw
