@@ -78,6 +78,9 @@ a.go-back-link mat-icon {
             color: #ffffff;
             border-radius: 8px;
             border: 1px solid #fff;
+            &.p-button-outlined:enabled:hover {
+               color: #d5d5d5;
+            }
         }
     }
 }

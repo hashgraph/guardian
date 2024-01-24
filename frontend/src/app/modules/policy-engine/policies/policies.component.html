@@ -198,7 +198,7 @@
                                 </td>
                                 <td *ngIf="canDisplayColumn('status')" style="min-width: 140px;">
                                     <div *ngIf="role === 'USER'"
-                                        [pTooltip]="policy.discontinuedDate?.toDateString()" tooltipPosition="bottom"
+                                        [pTooltip]="getDiscontinuedTooltip(policy.discontinuedDate)" tooltipPosition="bottom"
                                         [tooltipDisabled]="!policy.discontinuedDate"
                                         class="chip chip-color-{{getColor(policy.status, !!policy.discontinuedDate)}}">
                                         {{ getLabelStatus(policy.status, !!policy.discontinuedDate) }}
@@ -219,7 +219,7 @@
                                             class="status-actions-dropdown"
                                             [attr.published]="policy.status == 'PUBLISH'"
                                             [attr.expired]="!!policy.discontinuedDate"
-                                            [pTooltip]="policy.discontinuedDate?.toDateString()" tooltipPosition="bottom"
+                                            [pTooltip]="getDiscontinuedTooltip(policy.discontinuedDate)" tooltipPosition="bottom"
                                             [tooltipDisabled]="!policy.discontinuedDate"
                                         >
 
@@ -239,7 +239,7 @@
                                         </p-dropdown>
                                         <div *ngIf="policy.status == 'DISCONTINUED'"
                                             class="discontinued-status"
-                                            [pTooltip]="policy.discontinuedDate?.toDateString()"
+                                            [pTooltip]="getDiscontinuedTooltip(policy.discontinuedDate)"
                                             tooltipPosition="bottom">
                                             Discontinued
                                         </div>

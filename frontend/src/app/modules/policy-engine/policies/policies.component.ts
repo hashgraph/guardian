@@ -975,4 +975,8 @@ export class PoliciesComponent implements OnInit {
             return this.publishErrorMenuOption;
         }
     }
+
+    public getDiscontinuedTooltip(date: Date) {
+        return date ? `Discontinue date is ${date.toDateString()}` : '';
+    }
 }
