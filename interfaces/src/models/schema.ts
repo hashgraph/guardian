@@ -312,6 +312,37 @@ export class Schema implements ISchema {
     }
 
     /**
+     * Set new fields
+     * @param fields
+     * @param conditions
+     * @param force
+     */
+    public setFields(
+        fields?: SchemaField[],
+        conditions?: SchemaCondition[],
+        force = false
+    ): void {
+        if (force) {
+            this.fields = fields || [];
+            this.conditions = conditions || [];
+        } else {
+            if (Array.isArray(fields)) {
+                this.fields = fields;
+            }
+            if (Array.isArray(conditions)) {
+                this.conditions = conditions;
+            }
+        }
+    }
+
+    /**
+     * Update Document
+     */
+    public updateDocument(): void {
+        this.document = SchemaHelper.buildDocument(this, this.fields, this.conditions);
+    }
+
+    /**
      * Update
      * @param fields
      * @param conditions
@@ -324,6 +355,7 @@ export class Schema implements ISchema {
         if (!this.fields) {
             return null;
         }
+
         this.document = SchemaHelper.buildDocument(this, fields, conditions);
     }
 

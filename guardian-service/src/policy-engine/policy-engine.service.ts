@@ -993,9 +993,7 @@ export class PolicyEngineService {
                 notifier.start('File parsing');
 
                 const policyToImport = await XlsxToJson.parse(Buffer.from(xlsx.data));
-                console.debug(policyToImport.getToolIds())
                 const { tools, errors } = await importSubTools(root, policyToImport.getToolIds(), notifier);
-                console.debug(tools, errors)
                 for (const tool of tools) {
                     const subSchemas = await DatabaseServer.getSchemas({ topicId: tool.topicId });
                     policyToImport.updateTool(tool, subSchemas);
@@ -1011,6 +1009,9 @@ export class PolicyEngineService {
                     policy.topicId,
                     notifier
                 );
+
+                await PolicyImportExportHelper.addPolicyTools(policy, tools);
+                await PolicyImportExportHelper.updatePolicyComponents(policy);
 
                 notifier.result({
                     policyId: policy.id,

@@ -109,7 +109,6 @@ export class XlsxResult {
 
     public addLink(name: string, hyperlink?: Hyperlink): string {
         const id = `link_${this._linkCache.size}`;
-        console.log('--- hyperlink', hyperlink);
         const worksheet = hyperlink ? hyperlink.worksheet : null;
         this._linkCache.set(id, {
             name,
@@ -179,13 +178,14 @@ export class XlsxResult {
                 return cache.iri;
             }
         }
+        console.debug(' --- error ', JSON.stringify(field, null, 4));
         this.addError({
             type: 'error',
             text: `Sub-schema (${field.type}) not found.`,
             message: `Sub-schema (${field.type}) not found.`,
             worksheet: ''
         }, field);
-        field.type = null;
+        return null;
     }
 
     public updateSchemas(): void {
@@ -196,9 +196,11 @@ export class XlsxResult {
                         field.type = this.getSubSchema(field);
                     }
                 }
+                schema.updateDocument();
                 schema.updateRefs(this._schemas);
             }
         } catch (error) {
+            console.debug(' --- updateSchemas error ', error);
             this.addError({
                 type: 'error',
                 text: 'Failed to parse file.',
@@ -357,7 +359,7 @@ export class XlsxToJson {
             }
 
             const conditions = conditionCache.map(c => c.toJson())
-            schema.update(fields, conditions);
+            schema.setFields(fields, conditions);
             SchemaHelper.updateIRI(schema);
             return schema;
         } catch (error) {

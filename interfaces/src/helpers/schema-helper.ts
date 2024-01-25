@@ -835,7 +835,9 @@ export class SchemaHelper {
                 }
                 schema.iri = document.$id || null;
             } else {
-                schema.iri = null;
+                const type = SchemaHelper.buildType(schema.uuid, schema.version);
+                const ref = SchemaHelper.buildRef(type);
+                schema.iri = ref;
             }
             return schema;
         } catch (error) {
