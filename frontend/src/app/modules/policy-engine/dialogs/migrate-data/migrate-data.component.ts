@@ -48,7 +48,7 @@ class MigrationConfig {
         this._rolesValidity = Object.values(this._roles).every((val) => !!val);
     }
 
-    updateGroupValidity() {
+    updateGroupsValidity() {
         this._groupsValidity = Object.values(this._groups).every(
             (val) => !!val
         );
@@ -71,7 +71,7 @@ class MigrationConfig {
 
     setGroup(key: string, value?: string) {
         this._groups[key] = value;
-        this.updateGroupValidity();
+        this.updateGroupsValidity();
     }
 
     clearRoles() {
@@ -81,7 +81,7 @@ class MigrationConfig {
 
     clearGroups() {
         this._groups = {};
-        this.updateGroupValidity();
+        this.updateGroupsValidity();
     }
 
     clearVCs() {
@@ -179,6 +179,7 @@ class MigrationConfig {
             this._schemas[vc.schema] = '';
         }
         this.updateVcValidity();
+        this.updateSchemasValidity();
     }
 
     removeVC(vc: any) {

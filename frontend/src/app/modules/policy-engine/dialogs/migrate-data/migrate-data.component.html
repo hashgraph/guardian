@@ -106,7 +106,7 @@
                         </div>
                         <span>:</span>
                         <div class="map-right">
-                            <p-dropdown (onChange)="migrationConfig.setSchema(schema, $event.value)"
+                            <p-dropdown [(ngModel)]="migrationConfig.schemas[schema]" (onChange)="migrationConfig.updateSchemasValidity()"
                                 [options]="dstSchemas" [showClear]="true" optionLabel="name" optionValue="iri"
                                 placeholder="Select schema"></p-dropdown>
                         </div>
@@ -121,7 +121,7 @@
                         </div>
                         <span>:</span>
                         <div class="map-right">
-                            <p-dropdown (onChange)="migrationConfig.setRole(role, $event.value)" [options]="dstRoles"
+                            <p-dropdown [(ngModel)]="migrationConfig.roles[role]" (onChange)="migrationConfig.updateRolesValidity()" [options]="dstRoles"
                                 [showClear]="true" placeholder="Select role"></p-dropdown>
                         </div>
                     </div>
@@ -135,7 +135,7 @@
                         </div>
                         <span>:</span>
                         <div class="map-right">
-                            <p-dropdown (onChange)="migrationConfig.setGroup(group, $event.value)" [options]="dstGroups"
+                            <p-dropdown [(ngModel)]="migrationConfig.groups[group]" (onChange)="migrationConfig.updateGroupsValidity()" [options]="dstGroups"
                                 [showClear]="true" placeholder="Select group"></p-dropdown>
                         </div>
                     </div>
