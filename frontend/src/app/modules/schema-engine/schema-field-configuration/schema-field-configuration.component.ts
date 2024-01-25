@@ -101,7 +101,6 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
                 e.target.type === 'field' &&
                 e.target.field === this.field.controlKey?.value
             );
-            console.log(this.error);
         }
         this.fieldTypeSub = this.fieldType.valueChanges.subscribe(value => {
             switch (value) {
@@ -143,7 +142,11 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
         }
         if (changes?.schemaTypes?.firstChange && this.schemaTypes) {
             const newSchemasTypes = this.schemaTypes.map((schemaType: any) => {
-                return { label: schemaType.name, value: schemaType.value };
+                return { 
+                    ...schemaType,
+                    label: schemaType.name, 
+                    value: schemaType.value 
+                };
             });
             this.groupedFieldTypes.push({
                 label: 'Schema defined',

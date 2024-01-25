@@ -14,6 +14,7 @@ export class PreviewPolicyDialog {
     public policy!: any;
     public schemas!: string;
     public tokens!: string;
+    public tools!: string;
     public policyGroups!: string;
     public newVersions: any[] = [];
     public versionOfTopicId: any;
@@ -82,6 +83,15 @@ export class PreviewPolicyDialog {
                     return s.name;
                 })
                 .join(', ');
+
+                const tools = this.xlsx.tools || [];
+                this.tools = tools
+                    .map((s: any) => {
+                        return s.name;
+                    })
+                    .join(', ');
+
+                tools
             this.errors = this.xlsx.errors || [];
             for (const error of this.errors) {
                 if (error.cell) {

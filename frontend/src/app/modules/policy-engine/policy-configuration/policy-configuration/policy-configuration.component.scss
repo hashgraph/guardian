@@ -1634,6 +1634,10 @@
     &[status="TOOL"] {
         color: var(--pc-tool-block-color);
     }
+
+    &[status="ERROR"] {
+        color: var(--color-accent-red-1);
+    }
 }
 
 .resizing,
@@ -1682,6 +1686,7 @@
 
 ::ng-deep {
     .cdk-drag-placeholder {
+
         &.left-toolbar,
         &.center-container,
         &.right-toolbar,

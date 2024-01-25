@@ -24,6 +24,8 @@ export enum Dictionary {
     SCHEMA_DESCRIPTION = 'Description',
     VISIBILITY = 'Visibility',
     SCHEMA_TYPE = 'Schema Type',
+    SCHEMA_TOOL = 'Tool',
+    SCHEMA_TOOL_ID = 'Tool Id',
 }
 
 export class FieldTypes {

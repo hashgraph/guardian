@@ -228,12 +228,22 @@ export class Cell {
         return this;
     }
 
-    public setLink(text: string, hyperlink: string): Cell {
+    public setLink(text: string, hyperlink: Hyperlink): Cell {
         this.cell.value = {
             text,
-            hyperlink
+            hyperlink: hyperlink.link
         };
         return this;
+    }
+
+    public getLink(): Hyperlink {
+        if (this.cell?.hyperlink) {
+            return Hyperlink.from(this.cell.hyperlink);
+        }
+        if ((this.cell?.value as ExcelJS.CellHyperlinkValue)?.hyperlink) {
+            return Hyperlink.from((this.cell.value as ExcelJS.CellHyperlinkValue).hyperlink);
+        }
+        return null;
     }
 
     public setList(items: string[]): Cell {
@@ -314,5 +324,32 @@ export class Column {
             this.column.width = width;
         }
         return this;
+    }
+}
+
+export class Hyperlink {
+    public readonly worksheet: string;
+    public readonly cell: string;
+    public readonly link: string;
+
+    constructor(worksheet: string, cell: string) {
+        this.worksheet = worksheet;
+        this.cell = cell
+        this.link = `#'${worksheet}'!${cell}`;
+    }
+
+    public static from(link: string): Hyperlink | null {
+        try {
+            if (link) {
+                let [worksheet, cell] = link.split('!');
+                worksheet = worksheet.slice(2, -1);
+                if (worksheet && cell) {
+                    return new Hyperlink(worksheet, cell);
+                }
+            }
+            return null;
+        } catch (error) {
+            return null;
+        }
     }
 }

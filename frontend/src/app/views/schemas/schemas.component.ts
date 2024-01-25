@@ -25,6 +25,7 @@ import { AlertComponent, AlertType } from 'src/app/modules/common/alert/alert.co
 import { CopySchemaDialog } from '../../modules/schema-engine/copy-schema-dialog/copy-schema-dialog';
 import { SchemaTreeComponent } from 'src/app/modules/schema-engine/schema-tree/schema-tree.component';
 import { DialogService } from 'primeng/dynamicdialog';
+import { ProjectComparisonService } from 'src/app/services/project-comparison.service';
 
 enum SchemaType {
     System = 'system',
@@ -111,6 +112,7 @@ export class SchemaConfigComponent implements OnInit {
     public draftTools: any[] = [];
     public columns: string[] = [];
     public compareList: any[] = [];
+    public properties: any[] = [];
     public schemasTypes: { label: string; value: SchemaType }[] = [
         { label: 'Policy Schemas', value: SchemaType.Policy },
         { label: 'Module Schemas', value: SchemaType.Module },
@@ -126,6 +128,7 @@ export class SchemaConfigComponent implements OnInit {
         private policyEngineService: PolicyEngineService,
         private moduleService: ModulesService,
         private toolService: ToolsService,
+        private projectComparisonService: ProjectComparisonService,
         private route: ActivatedRoute,
         private router: Router,
         private dialog: MatDialog,
@@ -285,8 +288,10 @@ export class SchemaConfigComponent implements OnInit {
             this.moduleService.page(),
             this.toolService.page(),
             //Compare
-            this.schemaService.list()
-        ]).subscribe((value) => {
+            this.schemaService.list(),
+            //Properties
+            this.projectComparisonService.getProperties()
+        ]).subscribe((value: any[]) => {
             try {
                 //Profile
                 const profile: IUser | null = value[0];
@@ -374,6 +379,10 @@ export class SchemaConfigComponent implements OnInit {
                     }
                 }
                 this.compareList = list;
+
+                //Properties
+                const properties: any[] = value[6] || [];
+                this.properties = properties;
 
                 //LoadData
                 this.loadSchemas();
@@ -793,7 +802,8 @@ export class SchemaConfigComponent implements OnInit {
                 topicId: this.currentTopic,
                 policies: this.policies,
                 modules: this.modules,
-                tools: this.draftTools
+                tools: this.draftTools,
+                properties: this.properties
             }
         });
         dialogRef.onClose.subscribe(async (schema: Schema | null) => {
@@ -864,6 +874,7 @@ export class SchemaConfigComponent implements OnInit {
                 policies: this.policies,
                 modules: this.modules,
                 tools: this.draftTools,
+                properties: this.properties,
                 scheme: element
             }
         });
@@ -931,6 +942,7 @@ export class SchemaConfigComponent implements OnInit {
                 policies: this.policies,
                 modules: this.modules,
                 tools: this.draftTools,
+                properties: this.properties,
                 scheme: element
             }
         });
@@ -959,6 +971,7 @@ export class SchemaConfigComponent implements OnInit {
                 policies: this.policies,
                 modules: this.modules,
                 tools: this.draftTools,
+                properties: this.properties,
                 scheme: newDocument
             }
         });
@@ -987,6 +1000,7 @@ export class SchemaConfigComponent implements OnInit {
                 policies: this.policies,
                 modules: this.modules,
                 tools: this.draftTools,
+                properties: this.properties,
                 scheme: newDocument
             }
         });

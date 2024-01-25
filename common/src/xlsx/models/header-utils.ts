@@ -157,19 +157,30 @@ export class Table {
                 .setStyle(this.fieldHeadersStyle)
                 .setWidth(50)
         );
+
         this._schemaHeaders = new Map<string, TableHeader>();
         this._schemaHeaders.set(Dictionary.SCHEMA_NAME,
-            new TableHeader(Dictionary.ANSWER, false)
+            new TableHeader(Dictionary.SCHEMA_NAME, false)
                 .setStyle(this.schemaNameStyle)
         );
         this._schemaHeaders.set(Dictionary.SCHEMA_DESCRIPTION,
-            new TableHeader(Dictionary.ANSWER, false)
+            new TableHeader(Dictionary.SCHEMA_DESCRIPTION, false)
                 .setStyle(this.fieldHeadersStyle)
         );
         this._schemaHeaders.set(Dictionary.SCHEMA_TYPE,
-            new TableHeader(Dictionary.ANSWER, false)
+            new TableHeader(Dictionary.SCHEMA_TYPE, false)
                 .setStyle(this.fieldHeadersStyle)
         );
+
+        this._schemaHeaders.set(Dictionary.SCHEMA_TOOL,
+            new TableHeader(Dictionary.SCHEMA_TOOL, false)
+                .setStyle(this.fieldHeadersStyle)
+        );
+        this._schemaHeaders.set(Dictionary.SCHEMA_TOOL_ID,
+            new TableHeader(Dictionary.SCHEMA_TOOL_ID, false)
+                .setStyle(this.fieldHeadersStyle)
+        );
+
         this.end = this.start;
     }
 
@@ -197,13 +208,21 @@ export class Table {
         this._schemaHeaders.get(name)?.setPoint(-1, row);
     }
 
-    public setDefault(): void {
+    public setDefault(tool: boolean): void {
         let row = this.start.c;
         let col = this.start.c;
 
         this._schemaHeaders.get(Dictionary.SCHEMA_NAME).setPoint(col, row++);
         this._schemaHeaders.get(Dictionary.SCHEMA_DESCRIPTION).setPoint(col, row++);
         this._schemaHeaders.get(Dictionary.SCHEMA_TYPE).setPoint(col, row++);
+
+        if (tool) {
+            this._schemaHeaders.get(Dictionary.SCHEMA_TOOL).setPoint(col, row++);
+            this._schemaHeaders.get(Dictionary.SCHEMA_TOOL_ID).setPoint(col, row++);
+        } else {
+            this._schemaHeaders.delete(Dictionary.SCHEMA_TOOL);
+            this._schemaHeaders.delete(Dictionary.SCHEMA_TOOL_ID);
+        }
 
         this._fieldHeaders.get(Dictionary.REQUIRED_FIELD).setPoint(col++, row);
         this._fieldHeaders.get(Dictionary.FIELD_TYPE).setPoint(col++, row);

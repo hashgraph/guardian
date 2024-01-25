@@ -1,8 +1,9 @@
 import { Dictionary, FieldTypes } from './models/dictionary';
 import { anyToXlsx, examplesToXlsx, booleanToXlsx, entityToXlsx, fontToXlsx, stringToXlsx, typeToXlsx, unitToXlsx, valueToFormula } from './models/value-converters';
-import { Range, Workbook, Worksheet } from './models/workbook';
+import { Hyperlink, Range, Workbook, Worksheet } from './models/workbook';
 import { Table } from './models/header-utils';
 import { ISchema, Schema, SchemaCondition, SchemaField } from '@guardian/interfaces';
+import { PolicyTool } from '../entity';
 
 interface IRowField {
     name: string,
@@ -10,24 +11,79 @@ interface IRowField {
     row: number
 }
 
+class SheetName {
+    private readonly nameCache = new Set<string>();
+
+    public getSheetName(name: string, size: number): string {
+        const id = ((name || '')
+            .replace(/[\*,\?,\:,\\,\/,\[,\]]/ig, '')
+            .slice(0, Math.min(size, 30)));
+        if (this.nameCache.has(id)) {
+            const base = id.slice(0, Math.min(size - 3, 27));
+
+            let index = 0;
+            let newId = base;
+            do {
+                index++;
+                newId = base + ' ' + index;
+            } while (this.nameCache.has(newId))
+
+            this.nameCache.add(newId);
+            return newId;
+
+        } else {
+            this.nameCache.add(id);
+            return id;
+        }
+    }
+}
+
 export class JsonToXlsx {
-    public static async generate(json: ISchema[]): Promise<ArrayBuffer> {
+    public static async generate(
+        schemas: ISchema[],
+        tools: PolicyTool[],
+        toolSchemas: ISchema[]
+    ): Promise<ArrayBuffer> {
         const workbook = new Workbook();
-        const items = [];
-        const map = new Map<string, string>();
-        for (const item of json) {
+        const items: any = [];
+        const schemaCache = new Map<string, string>();
+        const toolCache = new Map<string, PolicyTool>();
+        const names = new SheetName();
+        for (const item of schemas) {
             const schema = new Schema(item);
-            const sheetName = schema.name.slice(0, 30);
+            const sheetName = names.getSheetName(schema.name, 30);
             const worksheet = workbook.createWorksheet(sheetName);
             items.push({
                 schema,
                 worksheet,
                 sheetName
             });
-            map.set(schema.iri, sheetName);
+            schemaCache.set(schema.iri, sheetName);
         }
+        for (const item of tools) {
+            toolCache.set(item.topicId, item);
+        }
+        for (const item of toolSchemas) {
+            const schema = new Schema(item);
+            const sheetName = names.getSheetName(schema.name, 23) + ' (tool)';
+            const worksheet = workbook.createWorksheet(sheetName);
+            const tool = toolCache.get(item.topicId);
+            items.push({
+                schema,
+                worksheet,
+                sheetName,
+                tool
+            });
+            schemaCache.set(schema.iri, sheetName);
+        }
+
         for (const item of items) {
-            await JsonToXlsx.parseSheet(item.worksheet, item.schema, map);
+            await JsonToXlsx.parseSheet(
+                item.worksheet,
+                item.schema,
+                item.tool,
+                schemaCache
+            );
         }
         return await workbook.write();
     }
@@ -35,12 +91,13 @@ export class JsonToXlsx {
     public static async parseSheet(
         worksheet: Worksheet,
         schema: Schema,
+        tool: PolicyTool,
         schemaCache: Map<string, string>
     ): Promise<void> {
         const range = worksheet.getRange();
 
         const table = new Table(range.s);
-        table.setDefault();
+        table.setDefault(!!tool);
 
         //Schema headers
         for (const header of table.schemaHeaders) {
@@ -49,13 +106,21 @@ export class JsonToXlsx {
                 .setStyle(header.style);
         }
         worksheet.setValue(schema.name, table.start.c, table.getRow(Dictionary.SCHEMA_NAME));
+        worksheet.mergeCells(Range.fromColumns(table.start.c, table.end.c - 1, table.getRow(Dictionary.SCHEMA_NAME)));
         worksheet.setValue(Dictionary.SCHEMA_DESCRIPTION, table.start.c, table.getRow(Dictionary.SCHEMA_DESCRIPTION));
         worksheet.setValue(Dictionary.SCHEMA_TYPE, table.start.c, table.getRow(Dictionary.SCHEMA_TYPE));
         worksheet.setValue(schema.description, table.start.c + 1, table.getRow(Dictionary.SCHEMA_DESCRIPTION));
         worksheet.setValue(entityToXlsx(schema.entity), table.start.c + 1, table.getRow(Dictionary.SCHEMA_TYPE));
-        worksheet.mergeCells(Range.fromColumns(table.start.c, table.end.c - 1, table.getRow(Dictionary.SCHEMA_NAME)));
         worksheet.mergeCells(Range.fromColumns(table.start.c + 1, table.end.c - 1, table.getRow(Dictionary.SCHEMA_DESCRIPTION)));
         worksheet.mergeCells(Range.fromColumns(table.start.c + 1, table.end.c - 1, table.getRow(Dictionary.SCHEMA_TYPE)));
+        if (tool) {
+            worksheet.setValue(Dictionary.SCHEMA_TOOL, table.start.c, table.getRow(Dictionary.SCHEMA_TOOL));
+            worksheet.setValue(Dictionary.SCHEMA_TOOL_ID, table.start.c, table.getRow(Dictionary.SCHEMA_TOOL_ID));
+            worksheet.setValue(tool.name, table.start.c + 1, table.getRow(Dictionary.SCHEMA_TOOL));
+            worksheet.setValue(tool.messageId, table.start.c + 1, table.getRow(Dictionary.SCHEMA_TOOL_ID));
+            worksheet.mergeCells(Range.fromColumns(table.start.c + 1, table.end.c - 1, table.getRow(Dictionary.SCHEMA_TOOL)));
+            worksheet.mergeCells(Range.fromColumns(table.start.c + 1, table.end.c - 1, table.getRow(Dictionary.SCHEMA_TOOL_ID)));
+        }
 
         //Field headers
         for (const header of table.fieldHeaders) {
@@ -127,7 +192,7 @@ export class JsonToXlsx {
             const sheetName = schemaCache.get(field.type);
             worksheet
                 .getCell(table.getCol(Dictionary.FIELD_TYPE), row)
-                .setLink(sheetName, `#'${sheetName}'!A1`)
+                .setLink(sheetName, new Hyperlink(sheetName, 'A1'))
                 .setStyle(table.linkStyle);
         }
 

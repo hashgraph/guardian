@@ -104,7 +104,10 @@
             <div class="field-name">Schemas Overview</div>
             <div class="field-value full">{{ schemas }}</div>
         </div>
-
+        <div *ngIf="tools" class="fields-container">
+            <div class="field-name">Tools Overview</div>
+            <div class="field-value full">{{ tools }}</div>
+        </div>
         <div *ngIf="errors?.length" class="fields-container">
             <div class="field-name">Errors</div>
             <div class="field-array">

@@ -1,62 +1,269 @@
-import { Workbook, Worksheet } from './models/workbook';
+import { Hyperlink, Workbook, Worksheet } from './models/workbook';
 import { Dictionary, FieldTypes, IFieldTypes } from './models/dictionary';
 import { xlsxToArray, xlsxToBoolean, xlsxToEntity, xlsxToFont, xlsxToUnit } from './models/value-converters';
 import { Table } from './models/header-utils';
 import * as mathjs from 'mathjs';
 import { XlsxSchemaConditions } from './models/schema-condition';
-import { Schema, SchemaCondition, SchemaField, SchemaHelper } from '@guardian/interfaces';
+import { ISchema, Schema, SchemaCategory, SchemaCondition, SchemaField, SchemaHelper } from '@guardian/interfaces';
 import { XlsxError } from './models/error';
+import { PolicyTool } from '../entity';
 
-interface IResult {
-    schemas?: Schema[];
-    errors: XlsxError[];
+interface ICache {
+    name: string,
+    iri?: string,
+    toolId?: string
+}
+
+interface ITool {
+    uuid?: string,
+    name?: string,
+    messageId?: string
+}
+
+interface ILink {
+    name?: string,
+    worksheet?: string
+}
+
+export class XlsxResult {
+    private readonly _schemas: Schema[];
+    private readonly _tools: PolicyTool[];
+    private readonly _errors: XlsxError[];
+    private readonly _toolsCache: Map<string, ITool>;
+    private readonly _schemaWorksheetCache: Map<string, ICache>;
+    private readonly _schemaNameCache: Map<string, ICache>;
+    private readonly _linkCache: Map<string, ILink>;
+
+    constructor() {
+        this._schemas = [];
+        this._tools = [];
+        this._errors = [];
+        this._schemaWorksheetCache = new Map<string, ICache>();
+        this._schemaNameCache = new Map<string, ICache>();
+        this._toolsCache = new Map<string, ITool>();
+        this._linkCache = new Map<string, ILink>();
+    }
+
+    public get schemas(): Schema[] {
+        return this._schemas;
+    }
+
+    public get tools(): PolicyTool[] {
+        return this._tools;
+    }
+
+    public addTool(
+        worksheet: Worksheet,
+        name: string,
+        messageId: string
+    ): void {
+        this._toolsCache.set(messageId, {
+            uuid: messageId,
+            name: messageId,
+            messageId: messageId
+        });
+        const cache: ICache = {
+            name: name,
+            toolId: messageId,
+        }
+        this._schemaWorksheetCache.set(worksheet.name, cache);
+        this._schemaNameCache.set(`tool-schema:${name}`, cache);
+    }
+
+    public addSchema(
+        worksheet: Worksheet,
+        name: string,
+        schema: Schema
+    ): void {
+        this._schemas.push(schema);
+        const cache: ICache = {
+            name: name,
+            iri: schema.iri,
+        }
+        this._schemaWorksheetCache.set(worksheet.name, cache);
+        this._schemaNameCache.set(name, cache);
+    }
+
+    public addError(
+        error: XlsxError,
+        target: SchemaField | Schema | SchemaCondition
+    ): void {
+        this._errors.push(error);
+        if (target) {
+            if (target.errors) {
+                target.errors.push(error);
+            } else {
+                target.errors = [error];
+            }
+        }
+    }
+
+    public addErrors(errors: any[]) {
+        for (const error of errors) {
+            this._errors.push({
+                ...error,
+                type: 'error'
+            });
+        }
+    }
+
+    public addLink(name: string, hyperlink?: Hyperlink): string {
+        const id = `link_${this._linkCache.size}`;
+        console.log('--- hyperlink', hyperlink);
+        const worksheet = hyperlink ? hyperlink.worksheet : null;
+        this._linkCache.set(id, {
+            name,
+            worksheet
+        });
+        return id;
+    }
+
+    public clear(): void {
+        this._schemas.length = 0;
+        this._tools.length = 0;
+        this._toolsCache.clear();
+        this._schemaWorksheetCache.clear();
+        this._schemaNameCache.clear();
+        this._linkCache.clear();
+    }
+
+    public getToolIds(): ITool[] {
+        return Array.from(this._toolsCache.values());
+    }
+
+    public updateTool(tool: PolicyTool, schemas: ISchema[]): void {
+        try {
+            this._tools.push(tool);
+            this._toolsCache.set(tool.messageId, {
+                uuid: tool.uuid,
+                name: tool.name,
+                messageId: tool.messageId
+            });
+            for (const cache of this._schemaWorksheetCache.values()) {
+                if (cache.toolId === tool.messageId) {
+                    const schema = schemas.find(s => s.name === cache.name);
+                    cache.iri = schema?.iri;
+                }
+            }
+            for (const cache of this._schemaNameCache.values()) {
+                if (cache.toolId === tool.messageId) {
+                    const schema = schemas.find(s => s.name === cache.name);
+                    cache.iri = schema?.iri;
+                }
+            }
+        } catch (error) {
+            this.addError({
+                type: 'error',
+                text: 'Failed to parse file.',
+                message: error?.toString()
+            }, null);
+        }
+    }
+
+    private getSubSchema(field: SchemaField): string {
+        if (field.type === '#GeoJSON') {
+            return '#GeoJSON';
+        }
+        const link = this._linkCache.get(field.type);
+        if (link) {
+            let cache: ICache;
+            if (link.worksheet) {
+                cache = this._schemaWorksheetCache.get(link.worksheet);
+            }
+            if (!cache && link.name) {
+                cache =
+                    this._schemaNameCache.get(link.name) ||
+                    this._schemaNameCache.get(`tool-schema:${link.name}`);
+            }
+            if (cache && cache.iri) {
+                return cache.iri;
+            }
+        }
+        this.addError({
+            type: 'error',
+            text: `Sub-schema (${field.type}) not found.`,
+            message: `Sub-schema (${field.type}) not found.`,
+            worksheet: ''
+        }, field);
+        field.type = null;
+    }
+
+    public updateSchemas(): void {
+        try {
+            for (const schema of this._schemas) {
+                for (const field of schema.fields) {
+                    if (field.isRef) {
+                        field.type = this.getSubSchema(field);
+                    }
+                }
+                schema.updateRefs(this._schemas);
+            }
+        } catch (error) {
+            this.addError({
+                type: 'error',
+                text: 'Failed to parse file.',
+                message: error?.toString()
+            }, null);
+        }
+    }
+
+    public toJson() {
+        const tools = Array.from(this._toolsCache.values());
+        const schemas = this._schemas.map((s) => {
+            return {
+                id: s.id,
+                iri: s.iri,
+                name: s.name,
+                description: s.description,
+                version: s.version,
+                status: s.status
+            }
+        });
+        return {
+            schemas,
+            tools,
+            errors: this._errors,
+        }
+    }
 }
 
 export class XlsxToJson {
-    public static async parse(buffer: Buffer): Promise<IResult> {
+    public static async parse(buffer: Buffer): Promise<XlsxResult> {
+        const xlsxResult = new XlsxResult();
         try {
-            const errors: XlsxError[] = [];
             const workbook = new Workbook();
             await workbook.read(buffer)
-            const schemas: Schema[] = [];
-            const map = new Map<string, string>();
             const worksheets = workbook.getWorksheets();
             for (const worksheet of worksheets) {
-                const schema = await XlsxToJson.parseSheet(worksheet, errors);
+                const schema = await XlsxToJson.parseSheet(worksheet, xlsxResult);
                 if (schema) {
-                    schemas.push(schema);
-                    map.set(worksheet.name, schema.iri);
-                    map.set(schema.name, schema.iri);
-                }
-            }
-            map.set('#GeoJSON', '#GeoJSON');
-            for (const schema of schemas) {
-                for (const field of schema.fields) {
-                    if (field.isRef) {
-                        field.type = map.get(field.type);
+                    if (schema.category === SchemaCategory.TOOL) {
+                        xlsxResult.addTool(worksheet, schema.name, schema.messageId);
+                    } else {
+                        xlsxResult.addSchema(worksheet, schema.name, schema);
                     }
                 }
-                schema.updateRefs(schemas);
             }
-            return { schemas, errors };
+            return xlsxResult;
         } catch (error) {
-            return {
-                errors: [{
-                    type: 'error',
-                    text: 'Failed to parse file.',
-                    message: error?.toString()
-                }]
-            };
+            xlsxResult.addError({
+                type: 'error',
+                text: 'Failed to parse file.',
+                message: error?.toString()
+            }, null);
+            xlsxResult.clear();
+            return xlsxResult;
         }
     }
 
     private static async parseSheet(
         worksheet: Worksheet,
-        errors: XlsxError[]
+        xlsxResult: XlsxResult
     ): Promise<Schema | null> {
         const schema: Schema = new Schema();
         try {
             schema.name = worksheet.name;
+            schema.category = SchemaCategory.POLICY;
             const range = worksheet.getRange();
             const table = new Table(range.s);
 
@@ -88,12 +295,12 @@ export class XlsxToJson {
 
             const errorHeader = table.getErrorHeader();
             if (errorHeader) {
-                XlsxToJson.addError(errors, {
+                xlsxResult.addError({
                     type: 'error',
                     text: `Invalid headers. Header "${errorHeader.title}" not set.`,
                     message: `Invalid headers. Header "${errorHeader.title}" not set.`,
                     worksheet: worksheet.name
-                }, schema)
+                }, schema);
                 return schema;
             }
 
@@ -109,11 +316,24 @@ export class XlsxToJson {
                 schema.entity = xlsxToEntity(worksheet.getValue<string>(startCol + 1, table.getRow(Dictionary.SCHEMA_TYPE)));
             }
 
+            let toolName: string, messageId: string;
+            if (table.getRow(Dictionary.SCHEMA_TOOL) !== -1) {
+                toolName = worksheet.getValue<string>(startCol + 1, table.getRow(Dictionary.SCHEMA_TOOL));
+            }
+            if (table.getRow(Dictionary.SCHEMA_TOOL_ID) !== -1) {
+                messageId = worksheet.getValue<string>(startCol + 1, table.getRow(Dictionary.SCHEMA_TOOL_ID));
+            }
+            if (toolName || messageId) {
+                schema.category = SchemaCategory.TOOL;
+                schema.messageId = messageId;
+                return schema;
+            }
+
             row = table.end.r + 1;
             const fields: SchemaField[] = [];
             const fieldCache = new Map<string, SchemaField>();
             for (; row < range.e.r; row++) {
-                const field: SchemaField = XlsxToJson.readField(worksheet, table, row, errors);
+                const field: SchemaField = XlsxToJson.readField(worksheet, table, row, xlsxResult);
                 if (field) {
                     fields.push(field);
                     fieldCache.set(field.name, field);
@@ -129,7 +349,7 @@ export class XlsxToJson {
                     fieldCache,
                     conditionCache,
                     row,
-                    errors
+                    xlsxResult
                 );
                 if (condition) {
                     conditionCache.push(condition);
@@ -141,7 +361,7 @@ export class XlsxToJson {
             SchemaHelper.updateIRI(schema);
             return schema;
         } catch (error) {
-            XlsxToJson.addError(errors, {
+            xlsxResult.addError({
                 type: 'error',
                 text: 'Failed to parse sheet.',
                 message: error?.toString(),
@@ -155,7 +375,7 @@ export class XlsxToJson {
         worksheet: Worksheet,
         table: Table,
         row: number,
-        errors: XlsxError[]
+        xlsxResult: XlsxResult
     ): SchemaField {
         const field: SchemaField = {
             name: '',
@@ -202,13 +422,16 @@ export class XlsxToJson {
                     field,
                     fieldType,
                     row,
-                    errors
+                    xlsxResult
                 );
             } else if (type) {
-                field.type = type;
+                const hyperlink = worksheet
+                    .getCell(table.getCol(Dictionary.FIELD_TYPE), row)
+                    .getLink();
+                field.type = xlsxResult.addLink(type, hyperlink);
                 field.isRef = true;
             } else {
-                XlsxToJson.addError(errors, {
+                xlsxResult.addError({
                     type: 'error',
                     text: 'Unknown field type.',
                     message: 'Unknown field type.',
@@ -231,7 +454,7 @@ export class XlsxToJson {
 
             return field;
         } catch (error) {
-            XlsxToJson.addError(errors, {
+            xlsxResult.addError({
                 type: 'error',
                 text: 'Failed to parse field.',
                 message: error?.toString(),
@@ -248,7 +471,7 @@ export class XlsxToJson {
         field: SchemaField,
         fieldType: IFieldTypes,
         row: number,
-        errors: XlsxError[]
+        xlsxResult: XlsxResult
     ): void {
         try {
             const param = worksheet.getValue<string>(table.getCol(Dictionary.PARAMETER), row);
@@ -300,7 +523,7 @@ export class XlsxToJson {
                 }
             }
         } catch (error) {
-            XlsxToJson.addError(errors, {
+            xlsxResult.addError({
                 type: 'error',
                 text: 'Failed to parse params.',
                 message: error?.toString(),
@@ -316,7 +539,7 @@ export class XlsxToJson {
         fieldCache: Map<string, SchemaField>,
         conditionCache: XlsxSchemaConditions[],
         row: number,
-        errors: XlsxError[]
+        xlsxResult: XlsxResult
     ): XlsxSchemaConditions | undefined {
         const name = worksheet.getPath(table.getCol(Dictionary.ANSWER), row);
         const field = fieldCache.get(name);
@@ -336,7 +559,7 @@ export class XlsxToJson {
                     result = XlsxToJson.parseCondition(xlsxToBoolean(cell.getValue<string>()));
                 }
             } catch (error) {
-                XlsxToJson.addError(errors, {
+                xlsxResult.addError({
                     type: 'error',
                     text: `Failed to parse condition.`,
                     message: error?.toString(),
@@ -363,7 +586,7 @@ export class XlsxToJson {
                 return condition;
             }
         } catch (error) {
-            XlsxToJson.addError(errors, {
+            xlsxResult.addError({
                 type: 'error',
                 text: 'Failed to parse condition.',
                 message: error?.toString(),
@@ -438,19 +661,6 @@ export class XlsxToJson {
             }
         } else {
             throw new Error(`Failed to parse formulae: ${formulae}.`)
-        }
-    }
-
-    public static addError(
-        errors: XlsxError[],
-        error: XlsxError,
-        target: SchemaField | Schema | SchemaCondition
-    ) {
-        errors.push(error);
-        if (target.errors) {
-            target.errors.push(error);
-        } else {
-            target.errors = [error];
         }
     }
 }

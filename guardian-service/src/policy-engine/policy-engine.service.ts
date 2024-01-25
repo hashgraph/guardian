@@ -38,7 +38,7 @@ import { GuardiansService } from '@helpers/guardians';
 import { Inject } from '@helpers/decorators/inject';
 import { BlockAboutString } from './block-about';
 import { HashComparator } from '@analytics';
-import { getSchemaCategory, importSchemaByFiles, importSchemasByMessages } from '@api/helpers';
+import { getSchemaCategory, importSchemaByFiles, importSubTools } from '@api/helpers';
 
 /**
  * PolicyEngineChannel
@@ -828,7 +828,16 @@ export class PolicyEngineService {
                 const { policyId } = msg;
                 const policy = await DatabaseServer.getPolicyById(policyId);
                 const components = await PolicyImportExport.loadPolicyComponents(policy);
-                const buffer = await JsonToXlsx.generate(components.schemas);
+                const schemas = components.schemas;
+                const tools = components.tools;
+                const toolSchemas = [];
+                for (const tool of tools) {
+                    const _schemas = await DatabaseServer.getSchemas({ topicId: tool.topicId });
+                    for (const schemas of _schemas) {
+                        toolSchemas.push(schemas);
+                    }
+                }
+                const buffer = await JsonToXlsx.generate(schemas, tools, toolSchemas);
                 return new BinaryMessageResponse(buffer);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -911,27 +920,24 @@ export class PolicyEngineService {
             return new MessageResponse(task);
         });
 
-
-
-
-
         this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_XLSX_FILE_PREVIEW, async (msg) => {
             try {
                 const { xlsx } = msg;
                 if (!xlsx) {
                     throw new Error('file in body is empty');
                 }
-                const policyToImport = await XlsxToJson.parse(Buffer.from(xlsx.data));
-                return new MessageResponse(policyToImport);
+                const result = await XlsxToJson.parse(Buffer.from(xlsx.data));
+                return new MessageResponse(result.toJson());
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
 
-        this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_XLSX_FILE_PREVIEW, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_XLSX, async (msg) => {
             try {
                 const { xlsx, policyId, user } = msg;
+                const notifier = emptyNotifier();
                 const policy = await DatabaseServer.getPolicyById(policyId);
                 if (!xlsx) {
                     throw new Error('file in body is empty');
@@ -940,17 +946,23 @@ export class PolicyEngineService {
                     throw new Error('Unknown policy');
                 }
                 const owner = await this.getUserDid(user.username);
+                const root = await this.users.getHederaAccount(owner);
                 const policyToImport = await XlsxToJson.parse(Buffer.from(xlsx.data));
-
+                const { tools, errors } = await importSubTools(root, policyToImport.getToolIds(), notifier);
+                for (const tool of tools) {
+                    const subSchemas = await DatabaseServer.getSchemas({ topicId: tool.topicId });
+                    policyToImport.updateTool(tool, subSchemas);
+                }
+                policyToImport.addErrors(errors);
+                policyToImport.updateSchemas();
                 const category = await getSchemaCategory(policy.topicId);
                 const result = await importSchemaByFiles(
                     category,
                     owner,
                     policyToImport.schemas,
                     policy.topicId,
-                    emptyNotifier()
+                    notifier
                 );
-
                 return new MessageResponse({
                     policyId: policy.id,
                     errors: result.errors
@@ -977,9 +989,19 @@ export class PolicyEngineService {
 
                 new Logger().info(`Import policy by xlsx`, ['GUARDIAN_SERVICE']);
                 const owner = await this.getUserDid(user.username);
+                const root = await this.users.getHederaAccount(owner);
                 notifier.start('File parsing');
 
                 const policyToImport = await XlsxToJson.parse(Buffer.from(xlsx.data));
+                console.debug(policyToImport.getToolIds())
+                const { tools, errors } = await importSubTools(root, policyToImport.getToolIds(), notifier);
+                console.debug(tools, errors)
+                for (const tool of tools) {
+                    const subSchemas = await DatabaseServer.getSchemas({ topicId: tool.topicId });
+                    policyToImport.updateTool(tool, subSchemas);
+                }
+                policyToImport.addErrors(errors);
+                policyToImport.updateSchemas();
 
                 const category = await getSchemaCategory(policy.topicId);
                 const result = await importSchemaByFiles(

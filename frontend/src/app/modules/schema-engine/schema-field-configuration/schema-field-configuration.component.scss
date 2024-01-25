@@ -458,3 +458,23 @@
 .mat-checkbox-inner-container {
     background: #fff;
 }
+
+.sub-schema-component {
+    color: #c37a29;
+    font-weight: bold;
+    padding-right: 5px;
+}
+
+.sub-schema-name {
+    color: #3f51b5;
+}
+
+.sub-schema-version {
+    font-size: 12px;
+    background: #e0e0e0;
+    padding: 2px 9px;
+    border-radius: 10px;
+    position: relative;
+    top: -1px;
+    margin-left: 5px;
+}

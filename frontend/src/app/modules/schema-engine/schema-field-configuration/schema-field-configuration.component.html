@@ -128,7 +128,15 @@
                     optionLabel="label"
                     optionValue="value"
                     placeholder="Type"
-                ></p-dropdown>
+                >
+                    <ng-template let-item pTemplate="item">
+                        <div class="flex align-items-center gap-2">
+                            <span *ngIf="item.component" class="sub-schema-component">{{item.component}}:</span>
+                            <span class="sub-schema-name">{{item.label}}</span>
+                            <span *ngIf="item.version" class="sub-schema-version">{{item.version}}</span>
+                        </div>
+                    </ng-template>
+                </p-dropdown>
             </div>
 
             <div *ngIf="unit" class="input-field-container">
