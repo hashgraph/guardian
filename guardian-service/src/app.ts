@@ -70,6 +70,7 @@ import { suggestionsAPI } from '@api/suggestions.service';
 import { SynchronizationTask } from '@helpers/synchronization-task';
 import { recordAPI } from '@api/record.service';
 import { projectsAPI } from '@api/projects.service';
+import { AISuggestionsService } from '@helpers/ai-suggestions';
 
 export const obj = {};
 
@@ -138,6 +139,7 @@ Promise.all([
         })
 
     }
+    await new AISuggestionsService().setConnection(cn).init();
 
     await state.updateState(ApplicationStates.STARTED);
 

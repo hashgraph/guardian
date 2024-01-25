@@ -166,6 +166,25 @@ services:
     volumes:
       - ./api-gateway/configs:/usr/local/api-gateway/configs:ro
 
+  ai-service:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
+    build:
+      context: .
+      dockerfile: ./ai-service/Dockerfile
+    expose:
+      - 3013
+    depends_on:
+      - mongo
+      - message-broker
+      - logger-service
+    volumes:
+      - ./ai-service/data:/usr/local/ai-service/data:rw
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+      - VECTOR_STORAGE_PATH=./faiss-vector
+      - DOCS_STORAGE_PATH=./data/generated-data
+
   policy-service:
     env_file:
       - ./configs/.env.${GUARDIAN_ENV}.guardian.system
@@ -208,6 +227,7 @@ services:
       - worker-service-1
       - worker-service-2
       - policy-service
+      - ai-service
     environment:
       - GUARDIAN_ENV=${GUARDIAN_ENV}
     expose:
