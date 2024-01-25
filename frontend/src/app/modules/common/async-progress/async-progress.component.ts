@@ -286,6 +286,12 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 break;
             case TaskAction.DELETE_POLICY:
             case TaskAction.MIGRATE_DATA:
+                if (result?.length > 0) {
+                    this.informService.warnMessage(
+                        'There are some errors while migrating',
+                        'Migration warning'
+                    );
+                }
                 this.router.navigate(['policy-viewer'], {
                     replaceUrl: true,
                 });

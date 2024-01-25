@@ -1551,7 +1551,11 @@ export class PolicyEngineService {
             PolicyEngineEvents.MIGRATE_DATA,
             async (msg) => {
                 try {
-                    return new MessageResponse(await migratePolicyData(msg));
+                    const migrationErrors = await migratePolicyData(msg);
+                    if (migrationErrors.length > 0) {
+                        new Logger().warn(migrationErrors.map((error) => `${error.id}: ${error.error}`).join('\r\n'), ['GUARDIAN_SERVICE']);
+                    }
+                    return new MessageResponse(migrationErrors);
                 } catch (error) {
                     return new MessageError(error);
                 }
@@ -1563,7 +1567,11 @@ export class PolicyEngineService {
                 const { task } = msg;
                 const notifier = await initNotifier(task);
                 RunFunctionAsync(async () => {
-                    notifier.result(await migratePolicyData(msg, notifier));
+                    const migrationErrors = await migratePolicyData(msg, notifier);
+                    if (migrationErrors.length > 0) {
+                        new Logger().warn(migrationErrors.map((error) => `${error.id}: ${error.error}`).join('\r\n'), ['GUARDIAN_SERVICE']);
+                    }
+                    notifier.result(migrationErrors);
                 }, async (error) => {
                     notifier.error(error);
                 });

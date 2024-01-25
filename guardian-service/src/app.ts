@@ -41,7 +41,7 @@ import {
     WiperRequest,
     Workers
 } from '@guardian/common';
-import { ApplicationStates, PolicyType, WorkerTaskType } from '@guardian/interfaces';
+import { ApplicationStates, PolicyEvents, PolicyType, WorkerTaskType } from '@guardian/interfaces';
 import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
 import { ipfsAPI } from '@api/ipfs.service';
 import { artifactAPI } from '@api/artifact.service';
@@ -380,8 +380,8 @@ Promise.all([
                 policy.status = PolicyType.DISCONTINUED;
                 return policy;
             }));
-            await Promise.all(policiesToDiscontunie.map(async policy =>
-                await policyEngine?.regenerateModel(policy.id)
+            await Promise.all(policiesToDiscontunie.map(policy =>
+                new GuardiansService().sendPolicyMessage(PolicyEvents.REFRESH_MODEL, policy.id, {})
             ));
         },
         process.env.POLICY_DISCONTINUE_TASK_MASK || '* 0 * * *',
