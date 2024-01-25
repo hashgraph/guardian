@@ -1342,8 +1342,16 @@ export class PolicyEngineService {
                             rs
                         );
                     }
-                    doc.relationships[i] =
-                        republishedDocument.messageId;
+                    if (republishedDocument) {
+                        doc.relationships[i] =
+                            republishedDocument.messageId;
+                    } else {
+                        if (doc instanceof VcDocument) {
+                            doc.relationships.splice(i, 1);
+                            i--;
+                        }
+                        continue;
+                    }
                 }
 
                 if (publishedDocuments.has(doc.messageId)) {
@@ -1402,6 +1410,7 @@ export class PolicyEngineService {
                                 error: res.error.type,
                                 id: doc.id
                             });
+                            return;
                         }
                         vc = await _vcHelper.createVcDocument(
                             credentialSubject,
@@ -1445,7 +1454,6 @@ export class PolicyEngineService {
                 }
 
                 if (doc instanceof VpDocument) {
-                    notifier?.info(`Resigning VP ${doc.id}`);
                     // tslint:disable-next-line:no-shadowed-variable
                     const vcs = doc.document.verifiableCredential.map(
                         (item) =>
@@ -1475,6 +1483,7 @@ export class PolicyEngineService {
 
                     let vp;
                     if (vpChanged) {
+                        notifier?.info(`Resigning VP ${doc.id}`);
                         const _vcHelper = new VcHelper();
                         vp = await _vcHelper.createVpDocument(
                             vcs,
@@ -1522,8 +1531,10 @@ export class PolicyEngineService {
                 // const documentStates = await databaseServer.getDocumentStates({
                 //     documentId: doc.id
                 // });
-                delete doc.id;
-                delete doc._id;
+                if (doc) {
+                    delete doc.id;
+                    delete doc._id;
+                }
                 // doc = await databaseServer.saveVC(doc as any);
                 // await Promise.all(documentStates.map(async docState => {
                 //     delete docState.id;
