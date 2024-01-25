@@ -16,7 +16,7 @@ RUN yarn install
 ADD ./common/src ./src/.
 RUN yarn pack
 
-FROM node:18 AS apiAIServiceBuilder
+FROM node:20 AS apiAIServiceBuilder
 WORKDIR /usr/local/ai-service
 COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.tgz /tmp/interfaces.tgz
 COPY --from=commonModuleBuilder /usr/local/common/guardian-common-*.tgz /tmp/common.tgz
@@ -31,7 +31,7 @@ RUN yarn install
 ADD ./ai-service/src ./src/.
 RUN yarn run build:prod
 
-FROM node:18
+FROM node:20
 ENV PLATFORM="docker"
 ENV NODE_ENV="production"
 WORKDIR /usr/local/ai-service

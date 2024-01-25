@@ -8998,6 +8998,43 @@ paths:
       security:
         - bearerAuth: []
         - bearer: []
+  /ai-suggestions/ask:
+    get:
+      operationId: AISuggestionsAPI_getAIAnswer
+      summary: Get methodology suggestion
+      description: Returns AI response to the current question
+      parameters:
+        - name: q
+          required: true
+          in: path
+          description: The question of choosing a methodology
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                example: ACM0001, ACM0002, ACM0006, ACM0007, ACM0018
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: &ref_15
+        - ai-suggestions
+  /ai-suggestions/rebuild-vector:
+    put:
+      operationId: AISuggestionsAPI_rebuildVector
+      summary: Rebuild AI vector
+      description: Rebuilds vector based on policy data in the DB
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_15
   /schemas/type/{type}:
     get:
       tags:
