@@ -157,6 +157,9 @@ export class XlsxToJson {
         row: number,
         xlsxResult: XlsxResult
     ): SchemaField {
+        if (worksheet.empty(table.start.c, table.end.c, row)) {
+            return null;
+        }
         const field: SchemaField = {
             name: '',
             description: '',
@@ -171,7 +174,8 @@ export class XlsxToJson {
             unitSystem: null,
             customType: null,
             property: null,
-            isRef: null
+            isRef: null,
+            order: row
         };
         try {
             const name = worksheet.getPath(table.getCol(Dictionary.ANSWER), row);
@@ -321,6 +325,10 @@ export class XlsxToJson {
         row: number,
         xlsxResult: XlsxResult
     ): XlsxSchemaConditions | undefined {
+        if (worksheet.empty(table.start.c, table.end.c, row)) {
+            return null;
+        }
+
         const name = worksheet.getPath(table.getCol(Dictionary.ANSWER), row);
         const field = fieldCache.get(name);
 

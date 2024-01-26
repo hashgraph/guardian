@@ -128,12 +128,21 @@
     .field-array-item {
         display: grid;
         grid-template-columns: 175px 105px 380px;
-        margin-bottom: 10px;
+        border-right: 1px solid #bbb;
 
         &>div {
             white-space: break-spaces;
-            padding: 0px 10px 0px 0px;
-            color: var(--color-accent-red-1, #FF432A);
+            padding: 0px 8px 12px 8px;
+            border-left: 1px solid #bbb;
         }
+    }
+
+    .error-type-warning>div {
+        color: var(--color-accent-yellow-1, #DA9B22);
+    }
+
+
+    .error-type-error>div {
+        color: var(--color-accent-red-1, #FF432A);
     }
 }

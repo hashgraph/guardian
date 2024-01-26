@@ -511,11 +511,15 @@ export class SchemaConfigComponent implements OnInit {
         this.page = this.page.slice();
     }
 
+    public ifDraft(element: Schema): boolean {
+        return (element.status === 'DRAFT' || element.status === 'ERROR');
+    }
+
     public ifCanDelete(element: Schema): boolean {
         if (this.type === SchemaType.System) {
             return !element.readonly && !element.active;
         } else {
-            return element.status === 'DRAFT';
+            return this.ifDraft(element);
         }
     }
 
@@ -535,9 +539,9 @@ export class SchemaConfigComponent implements OnInit {
         if (this.type === SchemaType.System) {
             return !element.readonly && !element.active;
         } else if (this.type === SchemaType.Tag) {
-            return element.status === 'DRAFT';
+            return this.ifDraft(element);
         } else {
-            return element.status === 'DRAFT' || !this.readonly;
+            return this.ifDraft(element) || !this.readonly;
         }
     }
 
@@ -848,10 +852,10 @@ export class SchemaConfigComponent implements OnInit {
         if (this.type === SchemaType.System && !element.readonly && !element.active) {
             return this.onEditDocument(element);
         }
-        if (this.type === SchemaType.Tag && element.status === 'DRAFT') {
+        if (this.type === SchemaType.Tag && this.ifDraft(element)) {
             return this.onEditDocument(element);
         }
-        if (element.status === 'DRAFT') {
+        if (this.ifDraft(element)) {
             return this.onEditDocument(element);
         }
         if (element.isCreator && !this.readonly) {

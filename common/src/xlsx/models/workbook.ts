@@ -183,6 +183,16 @@ export class Worksheet {
         this.worksheet.mergeCells(range.startRow, range.startColumn, range.endRow, range.endColumn);
         return this;
     }
+
+    public empty(startCol: number, endCol: number, row: number): boolean {
+        for (let col = startCol; col < endCol; col++) {
+            const value = this.getValue(col, row);
+            if (value) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
 
 export class Cell {
@@ -342,7 +352,15 @@ export class Hyperlink {
         try {
             if (link) {
                 let [worksheet, cell] = link.split('!');
-                worksheet = worksheet.slice(2, -1);
+                if (worksheet.startsWith('#')) {
+                    worksheet = worksheet.slice(1);
+                }
+                if (worksheet.startsWith('\'')) {
+                    worksheet = worksheet.slice(1, -1);
+                }
+                if (worksheet.startsWith('\"')) {
+                    worksheet = worksheet.slice(1, -1);
+                }
                 if (worksheet && cell) {
                     return new Hyperlink(worksheet, cell);
                 }

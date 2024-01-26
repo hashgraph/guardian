@@ -109,9 +109,9 @@
             <div class="field-value full">{{ tools }}</div>
         </div>
         <div *ngIf="errors?.length" class="fields-container">
-            <div class="field-name">Errors</div>
+            <div class="field-name">Warning & Errors</div>
             <div class="field-array">
-                <div *ngFor="let error of errors" class="field-array-item">
+                <div *ngFor="let error of errors" class="field-array-item error-type-{{error.type}}">
                     <div>{{error.worksheet}}</div>
                     <div>{{error.__path}}</div>
                     <div>{{error.text}}</div>

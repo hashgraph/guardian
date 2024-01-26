@@ -2,7 +2,7 @@ import { Hyperlink, Worksheet } from './workbook';
 import { ISchema, Schema, SchemaCondition, SchemaField } from '@guardian/interfaces';
 import { XlsxError } from '../interfaces/error.interface';
 import { Policy, PolicyTool } from '../../entity';
-import { ICache } from '../interfaces/cache.interface';
+import { ISchemaCache } from '../interfaces/cache.interface';
 import { ITool } from '../interfaces/tool.interface';
 import { ILink } from '../interfaces/link.interface';
 
@@ -12,16 +12,14 @@ export class XlsxResult {
     private _tools: PolicyTool[];
     private _errors: XlsxError[];
     private _toolsCache: Map<string, ITool>;
-    private _schemaWorksheetCache: Map<string, ICache>;
-    private _schemaNameCache: Map<string, ICache>;
     private _linkCache: Map<string, ILink>;
+    private _schemaCache: ISchemaCache[];
 
     constructor() {
         this._schemas = [];
         this._tools = [];
         this._errors = [];
-        this._schemaWorksheetCache = new Map<string, ICache>();
-        this._schemaNameCache = new Map<string, ICache>();
+        this._schemaCache = [];
         this._toolsCache = new Map<string, ITool>();
         this._linkCache = new Map<string, ILink>();
     }
@@ -48,12 +46,11 @@ export class XlsxResult {
             name: messageId,
             messageId: messageId
         });
-        const cache: ICache = {
-            name: name,
-            toolId: messageId,
-        };
-        this._schemaWorksheetCache.set(worksheet.name, cache);
-        this._schemaNameCache.set(`tool-schema:${name}`, cache);
+        this._schemaCache.push({
+            name,
+            worksheet: worksheet.name,
+            toolId: messageId
+        });
     }
 
     public addSchema(
@@ -62,12 +59,11 @@ export class XlsxResult {
         schema: Schema
     ): void {
         this._schemas.push(schema);
-        const cache: ICache = {
-            name: name,
-            iri: schema.iri,
-        };
-        this._schemaWorksheetCache.set(worksheet.name, cache);
-        this._schemaNameCache.set(name, cache);
+        this._schemaCache.push({
+            name,
+            worksheet: worksheet.name,
+            iri: schema.iri
+        });
     }
 
     public addError(
@@ -106,43 +102,13 @@ export class XlsxResult {
     public clear(): void {
         this._schemas.length = 0;
         this._tools.length = 0;
+        this._schemaCache.length = 0;
         this._toolsCache.clear();
-        this._schemaWorksheetCache.clear();
-        this._schemaNameCache.clear();
         this._linkCache.clear();
     }
 
     public getToolIds(): ITool[] {
         return Array.from(this._toolsCache.values());
-    }
-
-    private getSubSchema(field: SchemaField): string {
-        if (field.type === '#GeoJSON') {
-            return '#GeoJSON';
-        }
-        const link = this._linkCache.get(field.type);
-        if (link) {
-            let cache: ICache;
-            if (link.worksheet) {
-                cache = this._schemaWorksheetCache.get(link.worksheet);
-            }
-            if (!cache && link.name) {
-                cache =
-                    this._schemaNameCache.get(link.name) ||
-                    this._schemaNameCache.get(`tool-schema:${link.name}`);
-            }
-            if (cache && cache.iri) {
-                return cache.iri;
-            }
-        }
-        console.debug(' --- error ', JSON.stringify(field, null, 4));
-        this.addError({
-            type: 'error',
-            text: `Sub-schema (${field.type}) not found.`,
-            message: `Sub-schema (${field.type}) not found.`,
-            worksheet: ''
-        }, field);
-        return null;
     }
 
     public toJson() {
@@ -176,13 +142,7 @@ export class XlsxResult {
                 name: tool.name,
                 messageId: tool.messageId
             });
-            for (const cache of this._schemaWorksheetCache.values()) {
-                if (cache.toolId === tool.messageId) {
-                    const schema = schemas.find(s => s.name === cache.name);
-                    cache.iri = schema?.iri;
-                }
-            }
-            for (const cache of this._schemaNameCache.values()) {
+            for (const cache of this._schemaCache) {
                 if (cache.toolId === tool.messageId) {
                     const schema = schemas.find(s => s.name === cache.name);
                     cache.iri = schema?.iri;
@@ -197,19 +157,69 @@ export class XlsxResult {
         }
     }
 
-    public updateSchemas(): void {
+    public updateSchemas(skipTools: boolean = false): void {
         try {
+            const schemaNames = new Set<string>();
+            for (const cache of this._schemaCache) {
+                if (schemaNames.has(cache.name)) {
+                    this.addError({
+                        type: 'warning',
+                        text: `Duplicate schema name (${cache.name}).`,
+                        message: `Duplicate schema name (${cache.name}).`,
+                        worksheet: cache?.worksheet
+                    }, null);
+                }
+                schemaNames.add(cache.name);
+            }
             for (const schema of this._schemas) {
+                const schemaCache = this._schemaCache.find(c => c.iri === schema.iri);
                 for (const field of schema.fields) {
                     if (field.isRef) {
-                        field.type = this.getSubSchema(field);
+                        if (field.type === '#GeoJSON') {
+                            continue;
+                        }
+                        const link = this._linkCache.get(field.type);
+                        if (!link) {
+                            this.addError({
+                                type: 'error',
+                                text: `Unknown field type.`,
+                                message: `Unknown field type.`,
+                                worksheet: schemaCache?.worksheet,
+                                row: field.order
+                            }, field);
+                        }
+
+                        let subSchemaCache: ISchemaCache;
+                        if (link.worksheet) {
+                            subSchemaCache = this._schemaCache.find(c => c.worksheet === link.worksheet);
+                        }
+                        if (link.name && !subSchemaCache) {
+                            subSchemaCache = this._schemaCache.find(c => c.worksheet === link.name);
+                        }
+                        if (link.name && !subSchemaCache) {
+                            subSchemaCache = this._schemaCache.find(c => c.name === link.name);
+                        }
+
+                        if (subSchemaCache && subSchemaCache.iri) {
+                            field.type = subSchemaCache.iri;
+                        } else {
+                            if (!subSchemaCache || !subSchemaCache.toolId || !skipTools) {
+                                this.addError({
+                                    type: 'error',
+                                    text: `Sub-schema (${link.name}) not found.`,
+                                    message: `Sub-schema (${link.name}) not found.`,
+                                    worksheet: schemaCache?.worksheet,
+                                    row: field.order
+                                }, field);
+                            }
+                            field.type = null;
+                        }
                     }
                 }
                 schema.updateDocument();
                 schema.updateRefs(this._schemas);
             }
         } catch (error) {
-            console.debug(' --- updateSchemas error ', error);
             this.addError({
                 type: 'error',
                 text: 'Failed to parse file.',

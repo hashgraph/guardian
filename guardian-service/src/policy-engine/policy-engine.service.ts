@@ -928,6 +928,7 @@ export class PolicyEngineService {
                     throw new Error('file in body is empty');
                 }
                 const result = await XlsxToJson.parse(Buffer.from(xlsx.data));
+                result.updateSchemas(true);
                 return new MessageResponse(result.toJson());
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -955,7 +956,7 @@ export class PolicyEngineService {
                     const subSchemas = await DatabaseServer.getSchemas({ topicId: tool.topicId });
                     xlsxResult.updateTool(tool, subSchemas);
                 }
-                xlsxResult.updateSchemas();
+                xlsxResult.updateSchemas(false);
                 xlsxResult.updatePolicy(policy);
                 xlsxResult.addErrors(errors);
                 GenerateBlocks.generate(xlsxResult);
@@ -1004,7 +1005,7 @@ export class PolicyEngineService {
                     const subSchemas = await DatabaseServer.getSchemas({ topicId: tool.topicId });
                     xlsxResult.updateTool(tool, subSchemas);
                 }
-                xlsxResult.updateSchemas();
+                xlsxResult.updateSchemas(false);
                 xlsxResult.updatePolicy(policy);
                 xlsxResult.addErrors(errors);
                 GenerateBlocks.generate(xlsxResult);
