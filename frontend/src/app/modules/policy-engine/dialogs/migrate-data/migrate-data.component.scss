@@ -127,22 +127,22 @@
 }
 
 .mapping {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 30px 1fr;
     align-items: center;
-    justify-content: space-between;
-    gap: 10px;
     margin-top: 10px;
+    justify-items: center;
 
     .map-left {
-        width: 100%;
         text-overflow: ellipsis;
         white-space: nowrap;
         overflow: hidden;
         text-align: center;
     }
 
-    .map-right {
-        max-width: 50%;
-        min-width: 50%;
+    .map-right, .map-left {
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
     }
 }

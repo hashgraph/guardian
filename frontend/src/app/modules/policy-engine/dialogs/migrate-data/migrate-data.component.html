@@ -106,9 +106,12 @@
                         </div>
                         <span>:</span>
                         <div class="map-right">
-                            <p-dropdown [(ngModel)]="migrationConfig.schemas[schema]" (onChange)="migrationConfig.updateSchemasValidity()"
-                                [options]="dstSchemas" [showClear]="true" optionLabel="name" optionValue="iri"
-                                placeholder="Select schema"></p-dropdown>
+                            <div>
+                                <p-dropdown appendTo="body" [(ngModel)]="migrationConfig.schemas[schema]"
+                                    (onChange)="migrationConfig.updateSchemasValidity()" [options]="dstSchemas"
+                                    [showClear]="true" optionLabel="name" optionValue="iri"
+                                    placeholder="Select schema"></p-dropdown>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -121,8 +124,11 @@
                         </div>
                         <span>:</span>
                         <div class="map-right">
-                            <p-dropdown [(ngModel)]="migrationConfig.roles[role]" (onChange)="migrationConfig.updateRolesValidity()" [options]="dstRoles"
-                                [showClear]="true" placeholder="Select role"></p-dropdown>
+                            <div>
+                                <p-dropdown appendTo="body" [(ngModel)]="migrationConfig.roles[role]"
+                                    (onChange)="migrationConfig.updateRolesValidity()" [options]="dstRoles"
+                                    [showClear]="true" placeholder="Select role"></p-dropdown>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -135,8 +141,11 @@
                         </div>
                         <span>:</span>
                         <div class="map-right">
-                            <p-dropdown [(ngModel)]="migrationConfig.groups[group]" (onChange)="migrationConfig.updateGroupsValidity()" [options]="dstGroups"
-                                [showClear]="true" placeholder="Select group"></p-dropdown>
+                            <div>
+                                <p-dropdown appendTo="body" [(ngModel)]="migrationConfig.groups[group]"
+                                    (onChange)="migrationConfig.updateGroupsValidity()" [options]="dstGroups"
+                                    [showClear]="true" placeholder="Select group"></p-dropdown>
+                            </div>
                         </div>
                     </div>
                 </div>
