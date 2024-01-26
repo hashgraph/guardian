@@ -10,6 +10,7 @@ Guardian is a modular open-source solution that includes best-in-class identity 
 
 ## Discovering Digital Environmental Assets assets on Hedera
 
+
 As identified in Hedera Improvement Proposal 19 (HIP-19), each entity on the Hedera network may contain a specific identifier in the memo field for discoverability. Guardian demonstrates this when every Hedera Consensus Service transaction is logged to a Hedera Consensus Service (HCS) Topic. Observing the Hedera Consensus Service Topic, you can discover newly minted tokens. 
 
 In the memo field of each token mint transaction you will find a unique Hedera message timestamp. This message contains the url of the Verifiable Presentation (VP) associated with the token. The VP can serve as a starting point from which you can traverse the entire sequence of documents produced by Guardian policy workflow, which led to the creation of the token. This includes a digital Methodology (Policy) HCS Topic, an associated Registry HCS Topic for that Policy, and a Project HCS Topic.
@@ -28,6 +29,7 @@ To get a local copy up and running quickly, follow the steps below. Please refer
 
 * [Hedera Testnet Account](https://portal.hedera.com)
 * [Web3.Storage Account](https://web3.storage/)
+* [Filebase Account](https://filebase.com/)
 
 When building the reference implementation, you can [manually build every component](#manual-installation) or run a single command with Docker.
 
@@ -161,7 +163,11 @@ To let the Multi-environment transition happen in a transparent way the `GUARDIA
 
 > **_NOTE:_**  for any other GUARDIAN\_ENV name of your choice just copy and paste the file `./configs/.env.template.guardian.system` and rename as `./configs/.env.<choosen name>.guardian.system`
    
-4. Now, we have two options to setup IPFS node :  1. Local node 2. IPFS Web3Storage node.
+4. Now, we have a range of options to setup IPFS node :
+   1. Local node 
+   2. IPFS Web3Storage node.
+   3. Filebase Bucket
+   4. Custom IPFS Provider
 
 #### 4.1 Setting up IPFS Local node:
 
@@ -178,7 +184,7 @@ To let the Multi-environment transition happen in a transparent way the `GUARDIA
    
 
 
-#### 4.2 Setting up IPFS Web3Storage node:**
+#### 4.2 Setting up IPFS Web3Storage node:
    
 For setup IPFS web3storage node you need to set variables in file `./configs/.env.develop.guardian.system`:
    
@@ -188,7 +194,33 @@ For setup IPFS web3storage node you need to set variables in file `./configs/.en
    ```
  
    To generate Web3.Storage API KEY please follow the steps from <https://web3.storage/docs/#quickstart>. To know complete information on generating API Key please check: [How to Create Web3.Storage API Key](https://docs.hedera.com/guardian/guardian/readme/getting-started/how-to-generate-web3.storage-api-key).
-  
+
+#### 4.3 Setting up IPFS Filebase Bucket:
+
+To configure the Filebase IPFS provider, set the following variables in the file **./configs/.env.develop.guardian.system:**
+   ```
+   IPFS_STORAGE_API_KEY="Generated Firebase Bucket Token"
+   IPFS_PROVIDER="filebase"
+   ```
+
+Create a new "bucket" on Filebase since we utilize the **IPFS Pinning Service API Endpoint** service. The **token** generated for a bucket corresponds to the **IPFS_STORAGE_API_KEY** environment variable within the guardian's configuration.
+
+For detailed setup instructions, refer to the official <https://docs.filebase.com/api-documentation/ipfs-pinning-service-api>. 
+
+#### 4.4 Implement and test a custom IPFS provider:
+
+We provide a flexible workflow for integrating additional IPFS providers:
+
+- Configure your environment variables under "configs/". 
+- In the "worker-service" directory, execute `yarn test:ipfs` to:
+  - Build the project within the directory.
+  - Run tests to verify the validity of your configuration without needing to build the entire Guardian system.
+- To add a new provider, extend the "IpfsProvider" enum in the "ipfs-client" with your provider's enum value and implement your logic following the given examples. Consider the following recommendations:
+  - Design your logic based on interfaces for greater simplicity and maintainability **_(This requires more work in v2.20.x)_**.
+  - Ensure that a custom validator for your new client is present in the "worker-service".
+  - Test iteratively by running `yarn test:ipfs` in the "worker-service" directory until your client is fully functional with your desired configuration.
+
+This streamlined process allows any product team to swiftly integrate new IPFS clients into the Guardian system, significantly reducing development time.
 5. Build and launch with Docker. Please note that this build is meant to be used in production and will not contain any debug information. From the project's root folder:
 
    ```shell
