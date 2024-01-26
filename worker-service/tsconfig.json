@@ -3,7 +3,8 @@
         "module": "esnext",
         "target": "esnext",
         "lib": [
-            "esnext"
+            "esnext",
+            "DOM"
         ],
         "moduleResolution": "node",
         "sourceMap": true,
@@ -13,11 +14,12 @@
         "esModuleInterop": true,
         "skipLibCheck": true,
         "baseUrl": "./src",
-        "paths": {
-        }
+        "paths": {}
     },
     "include": [
-        "src/**/*", "../interfaces/src/type/TopicType.ts"],
+        "src/**/*",
+        "../interfaces/src/type/TopicType.ts"
+    ],
     "exclude": [
         "node_modules"
     ],

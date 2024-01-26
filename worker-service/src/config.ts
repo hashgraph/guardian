@@ -2,6 +2,12 @@ import dotenv from 'dotenv';
 import 'reflect-metadata';
 import fs from 'fs';
 
+declare global {
+    // tslint:disable-next-line:no-empty-interface
+    interface ReadableStream {
+    }
+}
+
 dotenv.config();
 
 const envPath = process.env.GUARDIAN_ENV ? `./configs/.env.worker.${process.env.GUARDIAN_ENV}` : './configs/.env.worker';

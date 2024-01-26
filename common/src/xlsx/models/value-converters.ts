@@ -1,5 +1,5 @@
-import { DocumentGenerator, SchemaEntity, SchemaField } from "@guardian/interfaces";
-import { FieldTypes, IFieldTypes } from "./dictionary";
+import { DocumentGenerator, SchemaEntity, SchemaField } from '@guardian/interfaces';
+import { FieldTypes, IFieldTypes } from './dictionary';
 
 export function entityToXlsx(entity: SchemaEntity): string {
     if (entity === SchemaEntity.VC) {

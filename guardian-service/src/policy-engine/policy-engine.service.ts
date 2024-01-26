@@ -25,7 +25,8 @@ import {
     Users,
     Schema as SchemaCollection,
     XlsxToJson,
-    JsonToXlsx
+    JsonToXlsx,
+    GenerateBlocks
 } from '@guardian/common';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 import { PolicyComponentsUtils } from './policy-components-utils';
@@ -947,22 +948,27 @@ export class PolicyEngineService {
                 }
                 const owner = await this.getUserDid(user.username);
                 const root = await this.users.getHederaAccount(owner);
-                const policyToImport = await XlsxToJson.parse(Buffer.from(xlsx.data));
-                const { tools, errors } = await importSubTools(root, policyToImport.getToolIds(), notifier);
+                
+                const xlsxResult = await XlsxToJson.parse(Buffer.from(xlsx.data));
+                const { tools, errors } = await importSubTools(root, xlsxResult.getToolIds(), notifier);
                 for (const tool of tools) {
                     const subSchemas = await DatabaseServer.getSchemas({ topicId: tool.topicId });
-                    policyToImport.updateTool(tool, subSchemas);
+                    xlsxResult.updateTool(tool, subSchemas);
                 }
-                policyToImport.addErrors(errors);
-                policyToImport.updateSchemas();
+                xlsxResult.updateSchemas();
+                xlsxResult.updatePolicy(policy);
+                xlsxResult.addErrors(errors);
+                GenerateBlocks.generate(xlsxResult);
                 const category = await getSchemaCategory(policy.topicId);
                 const result = await importSchemaByFiles(
                     category,
                     owner,
-                    policyToImport.schemas,
+                    xlsxResult.schemas,
                     policy.topicId,
                     notifier
                 );
+                await PolicyImportExportHelper.updatePolicyComponents(policy);
+
                 return new MessageResponse({
                     policyId: policy.id,
                     errors: result.errors
@@ -992,25 +998,24 @@ export class PolicyEngineService {
                 const root = await this.users.getHederaAccount(owner);
                 notifier.start('File parsing');
 
-                const policyToImport = await XlsxToJson.parse(Buffer.from(xlsx.data));
-                const { tools, errors } = await importSubTools(root, policyToImport.getToolIds(), notifier);
+                const xlsxResult = await XlsxToJson.parse(Buffer.from(xlsx.data));
+                const { tools, errors } = await importSubTools(root, xlsxResult.getToolIds(), notifier);
                 for (const tool of tools) {
                     const subSchemas = await DatabaseServer.getSchemas({ topicId: tool.topicId });
-                    policyToImport.updateTool(tool, subSchemas);
+                    xlsxResult.updateTool(tool, subSchemas);
                 }
-                policyToImport.addErrors(errors);
-                policyToImport.updateSchemas();
-
+                xlsxResult.updateSchemas();
+                xlsxResult.updatePolicy(policy);
+                xlsxResult.addErrors(errors);
+                GenerateBlocks.generate(xlsxResult);
                 const category = await getSchemaCategory(policy.topicId);
                 const result = await importSchemaByFiles(
                     category,
                     owner,
-                    policyToImport.schemas,
+                    xlsxResult.schemas,
                     policy.topicId,
                     notifier
                 );
-
-                await PolicyImportExportHelper.addPolicyTools(policy, tools);
                 await PolicyImportExportHelper.updatePolicyComponents(policy);
 
                 notifier.result({

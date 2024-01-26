@@ -1,42 +1,11 @@
 import { Dictionary, FieldTypes } from './models/dictionary';
 import { anyToXlsx, examplesToXlsx, booleanToXlsx, entityToXlsx, fontToXlsx, stringToXlsx, typeToXlsx, unitToXlsx, valueToFormula } from './models/value-converters';
 import { Hyperlink, Range, Workbook, Worksheet } from './models/workbook';
-import { Table } from './models/header-utils';
+import { Table } from './models/table';
 import { ISchema, Schema, SchemaCondition, SchemaField } from '@guardian/interfaces';
 import { PolicyTool } from '../entity';
-
-interface IRowField {
-    name: string,
-    path: string,
-    row: number
-}
-
-class SheetName {
-    private readonly nameCache = new Set<string>();
-
-    public getSheetName(name: string, size: number): string {
-        const id = ((name || '')
-            .replace(/[\*,\?,\:,\\,\/,\[,\]]/ig, '')
-            .slice(0, Math.min(size, 30)));
-        if (this.nameCache.has(id)) {
-            const base = id.slice(0, Math.min(size - 3, 27));
-
-            let index = 0;
-            let newId = base;
-            do {
-                index++;
-                newId = base + ' ' + index;
-            } while (this.nameCache.has(newId))
-
-            this.nameCache.add(newId);
-            return newId;
-
-        } else {
-            this.nameCache.add(id);
-            return id;
-        }
-    }
-}
+import { IRowField } from './interfaces/row-field.interface';
+import { SheetName } from './models/sheet-name';
 
 export class JsonToXlsx {
     public static async generate(
@@ -59,6 +28,9 @@ export class JsonToXlsx {
                 sheetName
             });
             schemaCache.set(schema.iri, sheetName);
+        }
+        if(schemas.length === 0) {
+            workbook.createWorksheet('blank');
         }
         for (const item of tools) {
             toolCache.set(item.topicId, item);

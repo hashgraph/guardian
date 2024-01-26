@@ -1,4 +1,4 @@
-import { SchemaCondition, SchemaField } from "@guardian/interfaces";
+import { SchemaCondition, SchemaField } from '@guardian/interfaces';
 
 export class XlsxSchemaConditions {
     public readonly field: SchemaField;
