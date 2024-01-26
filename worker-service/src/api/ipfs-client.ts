@@ -1,12 +1,18 @@
 import { Web3Storage } from 'web3.storage';
+import { FilebaseClient } from '@filebase/client';
 import Blob from 'cross-blob';
 import axios from 'axios';
 import { create } from 'ipfs-client'
 
 /**
- * Providers type
+ * Providers enum, add a new provider enum type here.
  */
-type IpfsProvider = 'web3storage' | 'local';
+enum IpfsProvider {
+  FILEBASE = 'filebase',
+  WEB3STORAGE = 'web3storage',
+  LOCAL = 'local',
+}
+
 /**
  * IPFS Client helper
  */
@@ -16,7 +22,7 @@ export class IpfsClient {
      * IPFS provider
      * @private
      */
-    private readonly IPFS_PROVIDER: IpfsProvider = process.env.IPFS_PROVIDER as IpfsProvider || 'web3storage'
+    private readonly IPFS_PROVIDER: IpfsProvider = process.env.IPFS_PROVIDER as IpfsProvider
 
     /**
      * IPFS public gateway
@@ -51,7 +57,7 @@ export class IpfsClient {
         let client;
 
         switch (this.IPFS_PROVIDER) {
-            case 'web3storage': {
+            case IpfsProvider.WEB3STORAGE: {
                 if (!this.options.token) {
                     throw new Error('Web3Storage token is not set')
                 }
@@ -60,7 +66,17 @@ export class IpfsClient {
                 break;
             }
 
-            case 'local': {
+            case IpfsProvider.FILEBASE: {
+                if (!this.options.token) {
+                    throw new Error('Filebase Bucket token is not set')
+                }
+
+                client = new FilebaseClient({ token: this.options.token } as any)
+
+                break;
+            }
+
+            case IpfsProvider.LOCAL: {
                 if (!this.options.nodeAddress) {
                     throw new Error('IPFS_NODE_ADDRESS variable is not set');
                 }
@@ -86,12 +102,17 @@ export class IpfsClient {
     public async addFile(file: Blob): Promise<string> {
         let cid;
         switch (this.IPFS_PROVIDER) {
-            case 'web3storage': {
+            case IpfsProvider.WEB3STORAGE: {
                 cid = await this.client.put([file] as any, { wrapWithDirectory: false });
                 break;
             }
 
-            case 'local': {
+            case IpfsProvider.FILEBASE: {
+                cid =  await this.client.storeBlob(file)
+                break;
+            }
+
+            case IpfsProvider.LOCAL: {
                 const { path } = await this.client.add(await file.arrayBuffer());
                 cid = path;
                 break;
