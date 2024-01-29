@@ -145,4 +145,9 @@ export interface SchemaField {
      * Errors
      */
     errors?: any[];
+
+    /**
+     * Formulae
+     */
+    formulae?: string;
 }

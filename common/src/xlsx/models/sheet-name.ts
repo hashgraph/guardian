@@ -24,4 +24,16 @@ export class SheetName {
             return id;
         }
     }
+
+    public getSchemaName(name: string): string {
+        return this.getSheetName(name, 30);
+    }
+
+    public getToolName(name: string): string {
+        return this.getSheetName(name, 23) + ' (tool)';
+    }
+
+    public getEnumName(name: string): string {
+        return this.getSheetName(name, 23) + ' (enum)';
+    }
 }

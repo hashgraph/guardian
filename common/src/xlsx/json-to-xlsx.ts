@@ -6,6 +6,8 @@ import { ISchema, Schema, SchemaCondition, SchemaField } from '@guardian/interfa
 import { PolicyTool } from '../entity';
 import { IRowField } from './interfaces/row-field.interface';
 import { SheetName } from './models/sheet-name';
+import { XlsxEnum } from './models/xlsx-enum';
+import { EnumTable } from './models/enum-table';
 
 export class JsonToXlsx {
     public static async generate(
@@ -14,58 +16,93 @@ export class JsonToXlsx {
         toolSchemas: ISchema[]
     ): Promise<ArrayBuffer> {
         const workbook = new Workbook();
-        const items: any = [];
-        const schemaCache = new Map<string, string>();
-        const toolCache = new Map<string, PolicyTool>();
         const names = new SheetName();
+
+        const _schemas: any = [];
+        const _enums: XlsxEnum[] = [];
+        const _schemaCache = new Map<string, string>();
+        const _enumsCache = new Map<string, XlsxEnum>();
+
+        //Schemas
         for (const item of schemas) {
             const schema = new Schema(item);
-            const sheetName = names.getSheetName(schema.name, 30);
+            const sheetName = names.getSchemaName(schema.name);
             const worksheet = workbook.createWorksheet(sheetName);
-            items.push({
+            _schemas.push({
                 schema,
                 worksheet,
                 sheetName
             });
-            schemaCache.set(schema.iri, sheetName);
+            _schemaCache.set(schema.iri, sheetName);
         }
-        if (schemas.length === 0) {
-            workbook.createWorksheet('blank');
-        }
-        for (const item of tools) {
-            toolCache.set(item.topicId, item);
-        }
+
+        //Tools
         for (const item of toolSchemas) {
             const schema = new Schema(item);
-            const sheetName = names.getSheetName(schema.name, 23) + ' (tool)';
+            const sheetName = names.getToolName(schema.name);
             const worksheet = workbook.createWorksheet(sheetName);
-            const tool = toolCache.get(item.topicId);
-            items.push({
+            const tool = tools.find((t) => t.topicId === item.topicId);
+            _schemas.push({
                 schema,
                 worksheet,
                 sheetName,
                 tool
             });
-            schemaCache.set(schema.iri, sheetName);
+            _schemaCache.set(schema.iri, sheetName);
         }
 
-        for (const item of items) {
-            await JsonToXlsx.parseSheet(
+        //Enums
+        for (const item of _schemas) {
+            const schema = item.schema as Schema;
+            for (const field of schema.fields) {
+                if (field.enum) {
+                    const sheetName = names.getEnumName(field.description);
+                    const worksheet = workbook.createWorksheet(sheetName);
+                    const _enum = new XlsxEnum(worksheet);
+                    _enum.setSchema(schema);
+                    _enum.setField(field);
+                    _enum.setData(field.enum);
+                    field.enum = [_enum.id];
+                    _enums.push(_enum);
+                    _enumsCache.set(_enum.id, _enum);
+                }
+            }
+        }
+
+        //Write Enums
+        for (const item of _enums) {
+            JsonToXlsx.writeEnum(
+                item.worksheet,
+                item.schema,
+                item.field,
+                item
+            );
+        }
+
+        //Write Fields
+        for (const item of _schemas) {
+            JsonToXlsx.writeSchema(
                 item.worksheet,
                 item.schema,
                 item.tool,
-                schemaCache
+                _schemaCache,
+                _enumsCache
             );
+        }
+        //Write
+        if (workbook.sheetLength === 0) {
+            workbook.createWorksheet('blank');
         }
         return await workbook.write();
     }
 
-    public static async parseSheet(
+    public static writeSchema(
         worksheet: Worksheet,
         schema: Schema,
         tool: PolicyTool,
-        schemaCache: Map<string, string>
-    ): Promise<void> {
+        schemaCache: Map<string, string>,
+        enumsCache: Map<string, XlsxEnum>
+    ): void {
         const range = worksheet.getRange();
 
         const table = new Table(range.s);
@@ -127,6 +164,7 @@ export class JsonToXlsx {
                 table,
                 field,
                 schemaCache,
+                enumsCache,
                 fieldCache,
                 row
             );
@@ -147,6 +185,7 @@ export class JsonToXlsx {
         table: Table,
         field: SchemaField,
         schemaCache: Map<string, string>,
+        enumsCache: Map<string, XlsxEnum>,
         fieldCache: Map<string, IRowField>,
         row: number
     ) {
@@ -183,12 +222,6 @@ export class JsonToXlsx {
             throw new Error(`Unknown field type (${worksheet.name}: ${field.name}).`);
         }
 
-        if (type && !field.isRef) {
-            worksheet
-                .getCell(table.getCol(Dictionary.ANSWER), row)
-                .setValue(type.pars(examplesToXlsx(field)))
-                .setStyle(table.fieldStyle);
-        }
         if (type && type.pattern === true) {
             worksheet
                 .getCell(table.getCol(Dictionary.PARAMETER), row)
@@ -213,12 +246,21 @@ export class JsonToXlsx {
                 .setStyle(fontToXlsx(field.font, table.fieldStyle));
         }
         if (field.enum) {
+            const _enum = enumsCache.get(field.enum[0]);
+            field.enum = _enum.data;
             worksheet
                 .getCell(table.getCol(Dictionary.PARAMETER), row)
-                .setValue(field.enum.join('\r\n'))
-                .setStyle(table.paramStyle);
-            // worksheet.getCell(table.getCol(Dictionary.ANSWER), row)
-            //     .setList(field.enum);
+                .setLink(_enum.sheetName, new Hyperlink(_enum.sheetName, 'A3'))
+                .setStyle(table.linkStyle);
+            worksheet
+                .getCell(table.getCol(Dictionary.ANSWER), row)
+                .setList2(_enum.getData());
+        }
+        if (type && !field.isRef) {
+            worksheet
+                .getCell(table.getCol(Dictionary.ANSWER), row)
+                .setValue(type.pars(examplesToXlsx(field)))
+                .setStyle(table.fieldStyle);
         }
 
         const name = worksheet.getPath(table.getCol(Dictionary.ANSWER), row);
@@ -254,5 +296,49 @@ export class JsonToXlsx {
                     .setStyle(table.fieldStyle);
             }
         }
+    }
+
+    public static writeEnum(
+        worksheet: Worksheet,
+        schema: Schema,
+        field: SchemaField,
+        xlsxEnum: XlsxEnum
+    ) {
+        const range = worksheet.getRange();
+
+        const table = new EnumTable(range.s);
+        table.setDefault();
+
+        for (const header of table.headers) {
+            worksheet
+                .setValue(header.title, header.column, header.row)
+                .setStyle(header.style);
+            worksheet
+                .getCol(header.column)
+                .setWidth(header.width)
+        }
+        worksheet
+            .getCell(table.start.c + 1, table.getRow(Dictionary.ENUM_SCHEMA_NAME))
+            .setStyle(table.descriptionStyle)
+            .setValue(schema.name);
+        worksheet
+            .getCell(table.start.c + 1, table.getRow(Dictionary.ENUM_FIELD_NAME))
+            .setStyle(table.descriptionStyle)
+            .setValue(field.description);
+        worksheet
+            .getCol(table.start.c + 1)
+            .setWidth(50)
+
+        let row = table.end.r;
+        for (const item of xlsxEnum.data) {
+            worksheet
+                .mergeCells(Range.fromColumns(table.start.c, table.end.c - 1, row));
+            worksheet
+                .getCell(table.getCol(), row)
+                .setValue(stringToXlsx(item))
+                .setStyle(table.itemStyle);
+            row++
+        }
+        xlsxEnum.setRange(Range.fromRows(table.end.r, row - 1, table.getCol()));
     }
 }

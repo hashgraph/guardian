@@ -6,6 +6,8 @@ import * as mathjs from 'mathjs';
 import { XlsxSchemaConditions } from './models/schema-condition';
 import { Schema, SchemaCategory, SchemaField, SchemaHelper } from '@guardian/interfaces';
 import { XlsxResult } from './models/xlsx-result';
+import { XlsxEnum } from './models/xlsx-enum';
+import { EnumTable } from './models/enum-table';
 
 export class XlsxToJson {
     public static async parse(buffer: Buffer): Promise<XlsxResult> {
@@ -14,16 +16,29 @@ export class XlsxToJson {
             const workbook = new Workbook();
             await workbook.read(buffer)
             const worksheets = workbook.getWorksheets();
+
             for (const worksheet of worksheets) {
-                const schema = await XlsxToJson.parseSheet(worksheet, xlsxResult);
-                if (schema) {
-                    if (schema.category === SchemaCategory.TOOL) {
-                        xlsxResult.addTool(worksheet, schema.name, schema.messageId);
-                    } else {
-                        xlsxResult.addSchema(worksheet, schema.name, schema);
+                if (XlsxToJson.isEnum(worksheet)) {
+                    const item = await XlsxToJson.readEnumSheet(worksheet, xlsxResult);
+                    if (item) {
+                        xlsxResult.addEnum(item);
                     }
                 }
             }
+
+            for (const worksheet of worksheets) {
+                if (XlsxToJson.isSchema(worksheet)) {
+                    const schema = await XlsxToJson.readSchemaSheet(worksheet, xlsxResult);
+                    if (schema) {
+                        if (schema.category === SchemaCategory.TOOL) {
+                            xlsxResult.addTool(worksheet, schema.name, schema.messageId);
+                        } else {
+                            xlsxResult.addSchema(worksheet, schema.name, schema);
+                        }
+                    }
+                }
+            }
+
             return xlsxResult;
         } catch (error) {
             xlsxResult.addError({
@@ -36,7 +51,77 @@ export class XlsxToJson {
         }
     }
 
-    private static async parseSheet(
+    private static isEnum(worksheet: Worksheet): boolean {
+        return !this.isSchema(worksheet);
+    }
+
+    private static isSchema(worksheet: Worksheet): boolean {
+        const range = worksheet.getRange();
+        const startCol = range.s.c;
+        const startRow = range.s.r;
+        const endCol = Math.min(range.e.c, startCol + 10);
+        const endRow = Math.min(range.e.r, startRow + 10);
+        for (let c = startCol; c < endCol; c++) {
+            for (let r = startRow; r < endRow; r++) {
+                const title = worksheet.getValue<string>(c, r);
+                if (title === Dictionary.FIELD_TYPE) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static async readEnumSheet(
+        worksheet: Worksheet,
+        xlsxResult: XlsxResult
+    ): Promise<XlsxEnum | null> {
+        const _enum = new XlsxEnum(worksheet);
+        const range = worksheet.getRange();
+        const table = new EnumTable(range.s);
+
+        const startCol = range.s.c;
+        const startRow = range.s.r;
+
+        let row = startRow;
+        for (; row < range.e.r; row++) {
+            const title = worksheet.getValue<string>(startCol, row);
+            if (table.isHeader(title)) {
+                table.setRow(title, row);
+            }
+        }
+
+        if (table.getRow(Dictionary.ENUM_SCHEMA_NAME) !== -1) {
+            _enum.setSchemaName(worksheet.getValue<string>(startCol + 1, table.getRow(Dictionary.ENUM_SCHEMA_NAME)));
+        }
+        if (table.getRow(Dictionary.ENUM_FIELD_NAME) !== -1) {
+            _enum.setFieldName(worksheet.getValue<string>(startCol + 1, table.getRow(Dictionary.ENUM_FIELD_NAME)));
+        }
+
+        row = table.end.r + 1;
+
+        const items: Set<string> = new Set<string>();
+        for (; row < range.e.r; row++) {
+            const item = worksheet.getValue<string>(startCol, row);
+            if (item) {
+                if (items.has(item)) {
+                    xlsxResult.addError({
+                        type: 'warning',
+                        text: 'Duplicate value.',
+                        message: 'Duplicate value.',
+                        worksheet: worksheet.name,
+                        row
+                    }, null);
+                } else {
+                    items.add(item);
+                }
+            }
+        }
+        _enum.setData(Array.from(items));
+        return _enum;
+    }
+
+    private static async readSchemaSheet(
         worksheet: Worksheet,
         xlsxResult: XlsxResult
     ): Promise<Schema | null> {
@@ -113,7 +198,12 @@ export class XlsxToJson {
             const fields: SchemaField[] = [];
             const fieldCache = new Map<string, SchemaField>();
             for (; row < range.e.r; row++) {
-                const field: SchemaField = XlsxToJson.readField(worksheet, table, row, xlsxResult);
+                const field: SchemaField = XlsxToJson.readField(
+                    worksheet,
+                    table,
+                    row,
+                    xlsxResult
+                );
                 if (field) {
                     fields.push(field);
                     fieldCache.set(field.name, field);
@@ -228,11 +318,16 @@ export class XlsxToJson {
 
             //Formulae
             if (!field.isRef) {
-                const answer = worksheet.getValue<string>(table.getCol(Dictionary.ANSWER), row);
                 if (type === Dictionary.AUTO_CALCULATE) {
-                    // field.value = sheet.getFormulae(header.get(Dictionary.ANSWER), row);
-                } else if (answer) {
-                    field.examples = xlsxToArray(answer, field.isArray);
+                    const formulae = worksheet.getFormulae(table.getCol(Dictionary.ANSWER), row);
+                    if (formulae) {
+                        field.formulae = formulae;
+                    }
+                } else {
+                    const answer = worksheet.getValue<string>(table.getCol(Dictionary.ANSWER), row);
+                    if (answer) {
+                        field.examples = xlsxToArray(answer, field.isArray);
+                    }
                 }
             }
 
@@ -272,10 +367,27 @@ export class XlsxToJson {
                 field.unit = xlsxToUnit(format);
             }
             if (fieldType.name === 'Enum') {
-                field.enum = worksheet
-                    .getCell(table.getCol(Dictionary.ANSWER), row)
-                    .getList()
+                // field.enum = worksheet
+                //     .getCell(table.getCol(Dictionary.ANSWER), row)
+                //     .getList()
+                // field.enum = param.split(/\r?\n/);
+                const hyperlink = worksheet
+                    .getCell(table.getCol(Dictionary.PARAMETER), row)
+                    .getLink();
+                const enumName = hyperlink?.worksheet || param;
+                field.enum = xlsxResult.getEnum(enumName);
+                if (!field.enum) {
+                    field.enum = [];
+                    xlsxResult.addError({
+                        type: 'error',
+                        text: `Enum named "${enumName}" not found.`,
+                        message: `Enum named "${enumName}" not found.`,
+                        worksheet: worksheet.name,
+                        row: row
+                    }, field);
+                }
             }
+
             if (fieldType.name === 'Help Text') {
                 const format = worksheet
                     .getCell(table.getCol(Dictionary.QUESTION), row)
@@ -293,9 +405,6 @@ export class XlsxToJson {
                 }
                 if (fieldType.name === 'Postfix') {
                     field.unit = param;
-                }
-                if (fieldType.name === 'Enum') {
-                    field.enum = param.split(/\r?\n/);
                 }
                 if (fieldType.name === 'Help Text') {
                     const font = xlsxToFont(param);

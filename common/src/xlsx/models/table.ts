@@ -247,7 +247,7 @@ export class Table {
     }
 
     public setDefault(tool: boolean): void {
-        let row = this.start.c;
+        let row = this.start.r;
         let col = this.start.c;
 
         this._schemaHeaders.get(Dictionary.SCHEMA_NAME).setPoint(col, row++);

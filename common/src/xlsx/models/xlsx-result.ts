@@ -5,12 +5,14 @@ import { Policy, PolicyTool } from '../../entity';
 import { ISchemaCache } from '../interfaces/cache.interface';
 import { ITool } from '../interfaces/tool.interface';
 import { ILink } from '../interfaces/link.interface';
+import { XlsxEnum } from './xlsx-enum';
 
 export class XlsxResult {
     private _policy: Policy;
     private _schemas: Schema[];
     private _tools: PolicyTool[];
     private _errors: XlsxError[];
+    private _enums: XlsxEnum[];
     private _toolsCache: Map<string, ITool>;
     private _linkCache: Map<string, ILink>;
     private _schemaCache: ISchemaCache[];
@@ -20,6 +22,7 @@ export class XlsxResult {
         this._tools = [];
         this._errors = [];
         this._schemaCache = [];
+        this._enums = [];
         this._toolsCache = new Map<string, ITool>();
         this._linkCache = new Map<string, ILink>();
     }
@@ -226,5 +229,18 @@ export class XlsxResult {
                 message: error?.toString()
             }, null);
         }
+    }
+
+    public addEnum(item: XlsxEnum): void {
+        this._enums.push(item);
+    }
+
+    public getEnum(worksheet: string): string[] {
+        for (const item of this._enums) {
+            if(item.worksheet.name === worksheet) {
+                return item.data;
+            }
+        }
+
     }
 }

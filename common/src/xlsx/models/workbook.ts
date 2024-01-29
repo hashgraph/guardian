@@ -211,8 +211,12 @@ export class Cell {
         return this;
     }
 
-    public setFormulae(formula: string): Cell {
-        this.cell.value = { formula };
+    public setFormulae(formula: string, result?: any): Cell {
+        if (result) {
+            this.cell.value = { formula, result };
+        } else {
+            this.cell.value = { formula };
+        }
         return this;
     }
 
@@ -264,6 +268,15 @@ export class Cell {
                 formulae: [`"${items.join(',')}"`]
             };
         }
+        return this;
+    }
+
+    public setList2(formulae: string): Cell {
+        this.cell.dataValidation = {
+            type: 'list',
+            allowBlank: true,
+            formulae: [formulae]
+        };
         return this;
     }
 
