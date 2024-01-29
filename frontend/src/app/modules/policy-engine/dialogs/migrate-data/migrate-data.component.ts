@@ -11,7 +11,21 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { SchemaService } from 'src/app/services/schema.service';
 
 class MigrationConfig {
-    private readonly _systemSchemas = ['#MintToken', '#UserRole'];
+    private readonly _systemSchemas = [
+        '#ActivityImpact',
+        '#TokenDataSource',
+        '#Chunk',
+        '#Issuer',
+        '#PolicyIssuer',
+        '#WipeToken',
+        '#StandardRegistry',
+        '#Policy',
+        '#Token',
+        '#Retire',
+        '#MintNFToken',
+        '#MintToken',
+        '#UserRole',
+    ];
 
     private _vcs: { id: string; schema: string }[] = [];
     private _vps: string[] = [];
