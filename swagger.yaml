@@ -9476,7 +9476,7 @@ info:
     url: http://www.apache.org/licenses/LICENSE-2.0.html
 tags: []
 servers:
-  - url: /
+  - url: /api/v1
     description: version 1.0
 components:
   securitySchemes:
