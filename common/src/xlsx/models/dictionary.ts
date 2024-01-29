@@ -2,7 +2,7 @@ export interface IFieldTypes {
     name?: string;
     type?: string;
     format?: string;
-    pattern?: string;
+    pattern?: any;
     isRef?: boolean;
     hidden?: boolean;
     unit?: string;
@@ -40,7 +40,7 @@ export class FieldTypes {
             unitSystem: undefined,
             customType: undefined,
             hidden: false,
-            pars: (value: any) =>{ 
+            pars: (value: any) => {
                 const v = Number(value);
                 return Number.isFinite(v) ? v : ''
             }
@@ -55,7 +55,7 @@ export class FieldTypes {
             unitSystem: undefined,
             customType: undefined,
             hidden: false,
-            pars: (value: any) =>{ 
+            pars: (value: any) => {
                 const v = Number(value);
                 return Number.isInteger(v) ? v : ''
             }
@@ -226,7 +226,7 @@ export class FieldTypes {
             unitSystem: 'postfix',
             customType: undefined,
             hidden: false,
-            pars: (value: any) =>{ 
+            pars: (value: any) => {
                 const v = Number(value);
                 return Number.isFinite(v) ? v : ''
             }
@@ -241,7 +241,7 @@ export class FieldTypes {
             unitSystem: 'prefix',
             customType: undefined,
             hidden: false,
-            pars: (value: any) =>{ 
+            pars: (value: any) => {
                 const v = Number(value);
                 return Number.isFinite(v) ? v : ''
             }
@@ -270,21 +270,40 @@ export class FieldTypes {
             hidden: true,
             pars: (value: any) => (value)
         },
+        {
+            name: 'Pattern',
+            type: 'string',
+            format: undefined,
+            pattern: true,
+            isRef: false,
+            unit: undefined,
+            unitSystem: undefined,
+            customType: undefined,
+            hidden: false,
+            pars: (value: any) => String(value)
+        },
     ];
 
     private static _equal(a: any, b: any): boolean {
         return (a === b) || (!a && !b);
     }
 
-    public static equal(a: IFieldTypes, b: IFieldTypes): boolean {
+    private static _equalPattern(defaultType: any, field: any): boolean {
+        return (defaultType === true && !!field);
+    }
+
+    public static equal(
+        defaultType: IFieldTypes,
+        field: IFieldTypes
+    ): boolean {
         return (
-            FieldTypes._equal(a.type, b.type) &&
-            FieldTypes._equal(a.format, b.format) &&
-            FieldTypes._equal(a.pattern, b.pattern) &&
-            FieldTypes._equal(a.isRef, b.isRef) &&
-            FieldTypes._equal(a.unitSystem, b.unitSystem) &&
-            FieldTypes._equal(a.customType, b.customType) &&
-            FieldTypes._equal(a.hidden, b.hidden)
+            FieldTypes._equal(defaultType.type, field.type) &&
+            FieldTypes._equal(defaultType.format, field.format) &&
+            FieldTypes._equal(defaultType.isRef, field.isRef) &&
+            FieldTypes._equal(defaultType.unitSystem, field.unitSystem) &&
+            FieldTypes._equal(defaultType.customType, field.customType) &&
+            FieldTypes._equal(defaultType.hidden, field.hidden) &&
+            FieldTypes._equalPattern(defaultType.pattern, field.pattern)
         )
     }
 
@@ -297,10 +316,10 @@ export class FieldTypes {
         return null;
     }
 
-    public static findByValue(value: IFieldTypes): IFieldTypes {
-        for (const type of FieldTypes.default) {
-            if (FieldTypes.equal(value, type)) {
-                return type;
+    public static findByValue(field: IFieldTypes): IFieldTypes {
+        for (const defaultType of FieldTypes.default) {
+            if (FieldTypes.equal(defaultType, field)) {
+                return defaultType;
             }
         }
         return null;

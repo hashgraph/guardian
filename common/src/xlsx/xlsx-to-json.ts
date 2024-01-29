@@ -259,7 +259,6 @@ export class XlsxToJson {
     ): void {
         try {
             const param = worksheet.getValue<string>(table.getCol(Dictionary.PARAMETER), row);
-
             if (fieldType.name === 'Prefix') {
                 const format = worksheet
                     .getCell(table.getCol(Dictionary.ANSWER), row)
@@ -304,6 +303,9 @@ export class XlsxToJson {
                     field.textBold = font.bold;
                     field.textColor = font.color;
                     field.textSize = font.size;
+                }
+                if (fieldType.name === 'Pattern') {
+                    field.pattern = param;
                 }
             }
         } catch (error) {

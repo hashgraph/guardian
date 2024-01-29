@@ -966,7 +966,8 @@ export class PolicyEngineService {
                     owner,
                     xlsxResult.schemas,
                     policy.topicId,
-                    notifier
+                    notifier,
+                    true
                 );
                 await PolicyImportExportHelper.updatePolicyComponents(policy);
 
@@ -1015,7 +1016,8 @@ export class PolicyEngineService {
                     owner,
                     xlsxResult.schemas,
                     policy.topicId,
-                    notifier
+                    notifier,
+                    true
                 );
                 await PolicyImportExportHelper.updatePolicyComponents(policy);
 

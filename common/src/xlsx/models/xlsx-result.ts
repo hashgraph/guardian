@@ -206,8 +206,8 @@ export class XlsxResult {
                             if (!subSchemaCache || !subSchemaCache.toolId || !skipTools) {
                                 this.addError({
                                     type: 'error',
-                                    text: `Sub-schema (${link.name}) not found.`,
-                                    message: `Sub-schema (${link.name}) not found.`,
+                                    text: `Sub-schema named "${link.name}" not found.`,
+                                    message: `Sub-schema named "${link.name}" not found.`,
                                     worksheet: schemaCache?.worksheet,
                                     row: field.order
                                 }, field);

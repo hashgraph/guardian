@@ -29,7 +29,7 @@ export class JsonToXlsx {
             });
             schemaCache.set(schema.iri, sheetName);
         }
-        if(schemas.length === 0) {
+        if (schemas.length === 0) {
             workbook.createWorksheet('blank');
         }
         for (const item of tools) {
@@ -166,12 +166,20 @@ export class JsonToXlsx {
                 .getCell(table.getCol(Dictionary.FIELD_TYPE), row)
                 .setLink(sheetName, new Hyperlink(sheetName, 'A1'))
                 .setStyle(table.linkStyle);
+        } else {
+            throw new Error('Unknown field type.');
         }
 
-        if (!field.isRef) {
+        if (type && !field.isRef) {
             worksheet
                 .getCell(table.getCol(Dictionary.ANSWER), row)
                 .setValue(type.pars(examplesToXlsx(field)))
+                .setStyle(table.fieldStyle);
+        }
+        if (type && type.pattern === true) {
+            worksheet
+                .getCell(table.getCol(Dictionary.PARAMETER), row)
+                .setValue(stringToXlsx(field.pattern))
                 .setStyle(table.fieldStyle);
         }
         if (field.unit) {
