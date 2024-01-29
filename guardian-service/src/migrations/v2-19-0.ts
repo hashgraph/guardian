@@ -16,6 +16,10 @@ export class ReleaseMigration extends Migration {
      */
     async removeVpHashIndex() {
         const vpDocumentCollection = this.getCollection('VpDocument');
-        vpDocumentCollection.dropIndex('hash_1');
+        try {
+            vpDocumentCollection.dropIndex('hash_1');
+        } catch (error) {
+            console.log(error);
+        }
     }
 }
