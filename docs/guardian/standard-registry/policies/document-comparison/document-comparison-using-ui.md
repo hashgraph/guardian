@@ -1,5 +1,10 @@
 # 💻 Document Comparison using UI
 
+1. [Step By Step Process](document-comparison-using-ui.md#id-1.-step-by-step-process)
+2. [Demo Video](document-comparison-using-ui.md#id-2.-demo-video)
+
+## 1. Step By Step Process
+
 We can now compare VC and VP documents.
 
 {% hint style="info" %}
@@ -19,3 +24,7 @@ When documents are compared the entire chain of linked documents is compared alo
 <figure><img src="../../../../.gitbook/assets/image (208).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../../.gitbook/assets/image (209).png" alt=""><figcaption></figcaption></figure>
+
+## 2. Demo Video
+
+[Youtube](https://www.youtube.com/watch?v=2ABlV3amPVo\&list=PLnld0e1pwLhqb69cELqQrW87JFVIDfocL\&index=10\&t=288s)
