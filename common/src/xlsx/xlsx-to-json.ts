@@ -318,7 +318,7 @@ export class XlsxToJson {
 
             //Formulae
             if (!field.isRef) {
-                if (type === Dictionary.AUTO_CALCULATE) {
+                if (type === Dictionary.AUTO_CALCULATE && field.hidden) {
                     const formulae = worksheet.getFormulae(table.getCol(Dictionary.ANSWER), row);
                     if (formulae) {
                         field.formulae = formulae;

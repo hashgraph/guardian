@@ -308,7 +308,7 @@ export class FieldTypes {
             FieldTypes._equal(defaultType.isRef, field.isRef) &&
             FieldTypes._equal(defaultType.unitSystem, field.unitSystem) &&
             FieldTypes._equal(defaultType.customType, field.customType) &&
-            FieldTypes._equal(defaultType.hidden, field.hidden) &&
+            // FieldTypes._equal(defaultType.hidden, field.hidden) &&
             FieldTypes._equalPattern(defaultType.pattern, field.pattern)
         )
     }

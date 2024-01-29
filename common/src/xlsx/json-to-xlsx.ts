@@ -262,6 +262,12 @@ export class JsonToXlsx {
                 .setValue(type.pars(examplesToXlsx(field)))
                 .setStyle(table.fieldStyle);
         }
+        if (field.hidden) {
+            worksheet
+                .getCell(table.getCol(Dictionary.VISIBILITY), row)
+                .setValue(booleanToXlsx(false))
+                .setStyle(table.fieldStyle);
+        }
 
         const name = worksheet.getPath(table.getCol(Dictionary.ANSWER), row);
         const path = worksheet.getFullPath(table.getCol(Dictionary.ANSWER), row);

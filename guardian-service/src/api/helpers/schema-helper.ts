@@ -541,7 +541,7 @@ export async function deleteSchema(schemaId: any, notifier: INotifier) {
     if (!item) {
         throw new Error('Schema not found');
     }
-    if (item.status !== SchemaStatus.DRAFT) {
+    if (item.status !== SchemaStatus.DRAFT && item.status !== SchemaStatus.ERROR) {
         throw new Error('Schema is not in draft status');
     }
 
