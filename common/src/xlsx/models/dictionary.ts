@@ -289,7 +289,11 @@ export class FieldTypes {
     }
 
     private static _equalPattern(defaultType: any, field: any): boolean {
-        return (defaultType === true && !!field);
+        if (defaultType === true) {
+            return !!field;
+        } else {
+            return FieldTypes._equal(defaultType, field);
+        }
     }
 
     public static equal(

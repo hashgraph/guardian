@@ -81,17 +81,30 @@ export class JsonToXlsx {
         worksheet.mergeCells(Range.fromColumns(table.start.c, table.end.c - 1, table.getRow(Dictionary.SCHEMA_NAME)));
         worksheet.setValue(Dictionary.SCHEMA_DESCRIPTION, table.start.c, table.getRow(Dictionary.SCHEMA_DESCRIPTION));
         worksheet.setValue(Dictionary.SCHEMA_TYPE, table.start.c, table.getRow(Dictionary.SCHEMA_TYPE));
-        worksheet.setValue(schema.description, table.start.c + 1, table.getRow(Dictionary.SCHEMA_DESCRIPTION));
-        worksheet.setValue(entityToXlsx(schema.entity), table.start.c + 1, table.getRow(Dictionary.SCHEMA_TYPE));
         worksheet.mergeCells(Range.fromColumns(table.start.c + 1, table.end.c - 1, table.getRow(Dictionary.SCHEMA_DESCRIPTION)));
         worksheet.mergeCells(Range.fromColumns(table.start.c + 1, table.end.c - 1, table.getRow(Dictionary.SCHEMA_TYPE)));
+        worksheet
+            .getCell(table.start.c + 1, table.getRow(Dictionary.SCHEMA_DESCRIPTION))
+            .setStyle(table.schemaStyle)
+            .setValue(schema.description);
+        worksheet
+            .getCell(table.start.c + 1, table.getRow(Dictionary.SCHEMA_TYPE))
+            .setStyle(table.schemaStyle)
+            .setValue(entityToXlsx(schema.entity));
+
         if (tool) {
             worksheet.setValue(Dictionary.SCHEMA_TOOL, table.start.c, table.getRow(Dictionary.SCHEMA_TOOL));
             worksheet.setValue(Dictionary.SCHEMA_TOOL_ID, table.start.c, table.getRow(Dictionary.SCHEMA_TOOL_ID));
-            worksheet.setValue(tool.name, table.start.c + 1, table.getRow(Dictionary.SCHEMA_TOOL));
-            worksheet.setValue(tool.messageId, table.start.c + 1, table.getRow(Dictionary.SCHEMA_TOOL_ID));
             worksheet.mergeCells(Range.fromColumns(table.start.c + 1, table.end.c - 1, table.getRow(Dictionary.SCHEMA_TOOL)));
             worksheet.mergeCells(Range.fromColumns(table.start.c + 1, table.end.c - 1, table.getRow(Dictionary.SCHEMA_TOOL_ID)));
+            worksheet
+                .getCell(table.start.c + 1, table.getRow(Dictionary.SCHEMA_TOOL))
+                .setStyle(table.schemaStyle)
+                .setValue(tool.name);
+            worksheet
+                .getCell(table.start.c + 1, table.getRow(Dictionary.SCHEMA_TOOL_ID))
+                .setStyle(table.schemaStyle)
+                .setValue(tool.messageId);
         }
 
         //Field headers
@@ -167,7 +180,7 @@ export class JsonToXlsx {
                 .setLink(sheetName, new Hyperlink(sheetName, 'A1'))
                 .setStyle(table.linkStyle);
         } else {
-            throw new Error('Unknown field type.');
+            throw new Error(`Unknown field type (${worksheet.name}: ${field.name}).`);
         }
 
         if (type && !field.isRef) {
@@ -204,8 +217,8 @@ export class JsonToXlsx {
                 .getCell(table.getCol(Dictionary.PARAMETER), row)
                 .setValue(field.enum.join('\r\n'))
                 .setStyle(table.paramStyle);
-            worksheet.getCell(table.getCol(Dictionary.ANSWER), row)
-                .setList(field.enum);
+            // worksheet.getCell(table.getCol(Dictionary.ANSWER), row)
+            //     .setList(field.enum);
         }
 
         const name = worksheet.getPath(table.getCol(Dictionary.ANSWER), row);

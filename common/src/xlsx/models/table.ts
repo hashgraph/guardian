@@ -11,6 +11,7 @@ export class Table {
     public readonly schemaNameStyle: Partial<ExcelJS.Style>;
     public readonly schemaDescriptionStyle: Partial<ExcelJS.Style>;
     public readonly fieldStyle: Partial<ExcelJS.Style>;
+    public readonly schemaStyle: Partial<ExcelJS.Style>;
     public readonly linkStyle: Partial<ExcelJS.Style>;
     public readonly paramStyle: Partial<ExcelJS.Style>;
 
@@ -24,6 +25,32 @@ export class Table {
             font: {
                 size: 14,
                 bold: true
+            },
+            border: {
+                left: {
+                    style: 'thin',
+                    color: {
+                        argb: 'FF000000'
+                    }
+                },
+                right: {
+                    style: 'thin',
+                    color: {
+                        argb: 'FF000000'
+                    }
+                },
+                top: {
+                    style: 'thin',
+                    color: {
+                        argb: 'FF000000'
+                    }
+                },
+                bottom: {
+                    style: 'thin',
+                    color: {
+                        argb: 'FF000000'
+                    }
+                }
             }
         }
         this.schemaNameStyle = {
@@ -65,6 +92,49 @@ export class Table {
             },
             alignment: {
                 wrapText: true
+            },
+            border: {
+                left: {
+                    style: 'thin',
+                    color: {
+                        argb: 'FF000000'
+                    }
+                },
+                right: {
+                    style: 'thin',
+                    color: {
+                        argb: 'FF000000'
+                    }
+                }
+            }
+        }
+        this.schemaStyle = {
+            font: {
+                size: 11,
+                bold: false
+            },
+            alignment: {
+                wrapText: true
+            },
+            border: {
+                top: {
+                    style: 'thin',
+                    color: {
+                        argb: 'FF000000'
+                    }
+                },
+                bottom: {
+                    style: 'thin',
+                    color: {
+                        argb: 'FF000000'
+                    }
+                },
+                right: {
+                    style: 'thin',
+                    color: {
+                        argb: 'FF000000'
+                    }
+                }
             }
         }
         this.linkStyle = {
