@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, OnInit } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 
 @Component({
@@ -6,12 +6,13 @@ import { FormGroup } from '@angular/forms';
     templateUrl: './token-configuration.component.html',
     styleUrls: ['./token-configuration.component.css'],
 })
-export class TokenConfigurationComponent implements OnInit {
+export class TokenConfigurationComponent implements OnInit, OnChanges {
     @Input('preset') preset?: any;
     @Input('dataForm') dataForm!: FormGroup;
     @Input('readonly') readonly?: any;
     @Input('hide-type') hideType: boolean = false;
     @Input() contracts: any[];
+    displayContracts: any[];
     ft: any;
 
     test: any;
@@ -83,6 +84,16 @@ export class TokenConfigurationComponent implements OnInit {
             }
         }
         this.onChangeType();
+    }
+
+    ngOnChanges() {
+        this.displayContracts =
+            this.wipeContractId &&
+            this.contracts.findIndex(
+                (contract) => contract.contractId === this.wipeContractId
+            ) < 0
+                ? this.contracts.concat([{ contractId: this.wipeContractId }])
+                : this.contracts;
     }
 
     onChangeType() {

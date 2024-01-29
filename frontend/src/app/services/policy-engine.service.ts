@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
+import { MigrationConfig } from '@guardian/interfaces';
 
 /**
  * Services for working from policy and separate blocks.
@@ -50,6 +51,10 @@ export class PolicyEngineService {
 
     public dryRun(policyId: string): Observable<any> {
         return this.http.put<any>(`${this.url}/${policyId}/dry-run`, null);
+    }
+
+    public discontinue(policyId: string, details: { date?: Date }): Observable<any> {
+        return this.http.put<any>(`${this.url}/${policyId}/discontinue`, details);
     }
 
     public draft(policyId: string): Observable<any> {
@@ -179,6 +184,37 @@ export class PolicyEngineService {
             return this.http.get<any>(`${this.url}/${policyId}/dry-run/${documentType}?pageIndex=${pageIndex}&pageSize=${pageSize}`, { observe: 'response' });
         }
         return this.http.get<any>(`${this.url}/${policyId}/dry-run/${documentType}`, { observe: 'response' });
+    }
+
+    public documents(
+        policyId: string,
+        includeDocument: boolean = false,
+        type: string,
+        pageIndex?: number,
+        pageSize?: number
+    ): Observable<HttpResponse<any[]>> {
+        const params: any = {}
+        if (includeDocument) {
+            params.includeDocument = includeDocument;
+        }
+        if (type) {
+            params.type = type;
+        }
+        if (Number.isInteger(pageIndex)) {
+            params.pageIndex = pageIndex;
+        }
+        if (Number.isInteger(pageSize)) {
+            params.pageSize = pageSize;
+        }
+        return this.http.get<any>(`${this.url}/${policyId}/documents`, { observe: 'response', params });
+    }
+
+    public migrateData(migrationConfig: MigrationConfig) {
+        return this.http.post<{ error: string, id: string }[]>(`${this.url}/migrate-data`, migrationConfig);
+    }
+
+    public migrateDataAsync(migrationConfig: MigrationConfig) {
+        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/migrate-data`, migrationConfig);
     }
 
     public getGroups(policyId: string): Observable<any[]> {

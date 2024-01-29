@@ -111,6 +111,8 @@ import { ContractEngineModule } from './modules/contract-engine/contract-engine.
 import { ProjectComparisonService } from './services/project-comparison.service';
 import { ProjectComparisonModule } from './modules/project-comparison/project-comparison.module';
 import { AngularSvgIconModule } from 'angular-svg-icon';
+// Prototypes
+import '../prototypes/date-prototype';
 
 @NgModule({
     declarations: [

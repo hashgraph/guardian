@@ -3626,6 +3626,76 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /policies/migrate-data:
+    post:
+      operationId: PolicyApi_migrateData
+      summary: Migrate policy data.
+      description: >-
+        Migrate policy data. Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters: []
+      requestBody:
+        required: true
+        description: Migration config.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MigrationConfigDTO'
+      responses:
+        '200':
+          description: Errors while migration.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    error:
+                      type: string
+                    id:
+                      type: string
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: &ref_6
+        - policies
+      security:
+        - bearerAuth: []
+  /policies/push/migrate-data:
+    post:
+      operationId: PolicyApi_migrateDataAsync
+      summary: Migrate policy data asynchronous.
+      description: >-
+        Migrate policy data asynchronous. Only users with the Standard Registry
+        role are allowed to make the request.
+      parameters: []
+      requestBody:
+        required: true
+        description: Migration config.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MigrationConfigDTO'
+      responses:
+        '202':
+          description: Created task.
+          content:
+            application/json:
+              schema:
+                type: object
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_6
+      security:
+        - bearerAuth: []
   /policies/push:
     post:
       tags:
@@ -3678,8 +3748,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_6
-        - policies
+      tags: *ref_6
       security:
         - bearerAuth: []
         - bearerAuth: []
@@ -3903,6 +3972,48 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /policies/{policyId}/discontinue:
+    put:
+      operationId: PolicyApi_discontinuePolicy
+      summary: Discontunue policy.
+      description: >-
+        Discontunue policy. Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy identifier.
+          schema: {}
+      requestBody:
+        required: true
+        description: Discontinue details.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                date:
+                  type: date
+      responses:
+        '200':
+          description: Policies.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_6
+      security:
+        - bearerAuth: []
+        - bearerAuth: []
   /policies/{policyId}/draft:
     put:
       tags:
@@ -4080,6 +4191,68 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /policies/{policyId}/documents:
+    get:
+      operationId: PolicyApi_getPolicyDocuments
+      summary: Get policy documents.
+      description: >-
+        Get policy documents. Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters:
+        - name: pageSize
+          required: true
+          in: query
+          description: Page size.
+          schema:
+            type: number
+        - name: pageIndex
+          required: true
+          in: query
+          description: Page index.
+          schema:
+            type: number
+        - name: type
+          required: true
+          in: query
+          description: Document type.
+          schema:
+            enum:
+              - VC
+              - VP
+            type: string
+        - name: includeDocument
+          required: true
+          in: query
+          description: Include document field.
+          schema:
+            type: boolean
+        - name: policyId
+          required: true
+          in: path
+          description: Policy identifier.
+          schema: {}
+      responses:
+        '200':
+          description: Documents.
+          headers:
+            X-Total-Count:
+              description: Total documents count.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_6
+      security:
+        - bearerAuth: []
+        - bearerAuth: []
   /policies/{policyId}/blocks:
     get:
       tags:
@@ -9303,7 +9476,7 @@ info:
     url: http://www.apache.org/licenses/LICENSE-2.0.html
 tags: []
 servers:
-  - url: /api/v1
+  - url: /
     description: version 1.0
 components:
   securitySchemes:
@@ -9941,6 +10114,42 @@ components:
         - token
         - count
         - serials
+    MigrationConfigPoliciesDTO:
+      type: object
+      properties:
+        src:
+          type: string
+        dst:
+          type: string
+      required:
+        - src
+        - dst
+    MigrationConfigDTO:
+      type: object
+      properties:
+        policies:
+          $ref: '#/components/schemas/MigrationConfigPoliciesDTO'
+        vcs:
+          type: array
+          items:
+            type: string
+        vps:
+          type: array
+          items:
+            type: string
+        schemas:
+          type: object
+        groups:
+          type: object
+        roles:
+          type: object
+      required:
+        - policies
+        - vcs
+        - vps
+        - schemas
+        - groups
+        - roles
     PolicyCategoryDTO:
       type: object
       properties:

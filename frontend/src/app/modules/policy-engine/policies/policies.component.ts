@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, Inject, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { IUser, Schema, SchemaHelper, TagType, Token, UserRole } from '@guardian/interfaces';
+import { IUser, PolicyType, Schema, SchemaHelper, TagType, Token, UserRole } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TokenService } from 'src/app/services/token.service';
@@ -26,6 +26,8 @@ import { SuggestionsConfigurationComponent } from '../../../views/suggestions-co
 import { DeletePolicyDialogComponent } from '../helpers/delete-policy-dialog/delete-policy-dialog.component';
 import { SetVersionDialog } from '../../schema-engine/set-version-dialog/set-version-dialog.component';
 import { CONFIGURATION_ERRORS } from '../injectors/configuration.errors.injector';
+import { DiscontinuePolicy } from '../dialogs/discontinue-policy/discontinue-policy.component';
+import { MigrateData } from '../dialogs/migrate-data/migrate-data.component';
 
 /**
  * Component for choosing a policy and
@@ -95,6 +97,16 @@ export class PoliciesComponent implements OnInit {
             title: 'Publish',
             description: 'Release version into public domain.',
             color: '#4caf50',
+        },
+    ];
+
+    publishedMenuOption = [
+        {
+            id: 'Discontinue',
+            title: 'Discontinue',
+            description:
+                'Discontinue policy flow.',
+            color: 'red',
         },
     ];
 
@@ -219,7 +231,12 @@ export class PoliciesComponent implements OnInit {
         this.tagOptions = [];
         this.policyEngineService.page(this.pageIndex, this.pageSize).subscribe(
             (policiesResponse) => {
-                this.policies = policiesResponse.body || [];
+                this.policies = policiesResponse.body?.map(policy => {
+                    if (policy.discontinuedDate) {
+                        policy.discontinuedDate = new Date(policy.discontinuedDate);
+                    }
+                    return policy;
+                }) || [];
                 this.policiesCount =
                     policiesResponse.headers.get('X-Total-Count') ||
                     this.policies.length;
@@ -531,6 +548,26 @@ export class PoliciesComponent implements OnInit {
         setTimeout(() => this.publishMenuSelector = null, 0);
     }
 
+    onPublishedAction(event: any, element: any) {
+        if (event.value.id === 'Discontinue') {
+            const dialogRef = this.dialogService.open(DiscontinuePolicy, {
+                header: 'Discontinue policy',
+                width: 'auto',
+            });
+            dialogRef.onClose.subscribe((result) => {
+                if (!result) {
+                    return;
+                }
+                this.loading = true;
+                this.policyEngineService.discontinue(element.id, result).subscribe((policies) => {
+                    this.loadAllPolicy();
+                }, () => this.loading = false);
+            });
+        }
+
+        setTimeout(() => this.publishMenuSelector = null, 0);
+    }
+
     onDryRunAction(event: any, element: any) {
         if (event.value.id === 'Publish') {
             this.setVersion(element);
@@ -552,22 +589,23 @@ export class PoliciesComponent implements OnInit {
         setTimeout(() => this.publishMenuSelector = null, 0);
     }
 
-    getColor(status: string) {
+    getColor(status: string, expired: boolean = false) {
         switch (status) {
             case 'DRAFT':
                 return 'grey';
             case 'DRY-RUN':
                 return 'grey';
+            case 'DISCONTINUED':
             case 'PUBLISH_ERROR':
                 return 'red';
             case 'PUBLISH':
-                return 'green';
+                return expired ? 'yellow' : 'green';
             default:
                 return 'grey';
         }
     }
 
-    getLabelStatus(status: string) {
+    getLabelStatus(status: string, expired: boolean = false) {
         switch (status) {
             case 'DRAFT':
                 return 'Draft';
@@ -576,7 +614,9 @@ export class PoliciesComponent implements OnInit {
             case 'PUBLISH_ERROR':
                 return 'Publish Error';
             case 'PUBLISH':
-                return 'Publish';
+                return `Published${expired ? '*' : ''}`;
+            case 'DISCONTINUED':
+                return `Discontinued`;
             default:
                 return 'Incorrect status';
         }
@@ -665,6 +705,37 @@ export class PoliciesComponent implements OnInit {
                     });
                 }
             }
+        });
+    }
+
+    migrateData(policyId?: any) {
+        const item = this.policies?.find((e) => e.id === policyId);
+        const dialogRef = this.dialogService.open(MigrateData, {
+            header: 'Migrate Data',
+            width: '650px',
+            styleClass: 'custom-dialog',
+            data: {
+                policy: item,
+                policies: this.policies?.filter(item => [PolicyType.PUBLISH, PolicyType.DISCONTINUED].includes(item.status)),
+            },
+        });
+        dialogRef.onClose.subscribe(async (result) => {
+            if (!result) {
+                return;
+            }
+            this.policyEngineService.migrateDataAsync(result).subscribe(
+                (result) => {
+                    const { taskId } = result;
+                    this.router.navigate(['task', taskId], {
+                        queryParams: {
+                            last: btoa(location.href),
+                        },
+                    });
+                },
+                (e) => {
+                    this.loading = false;
+                }
+            );
         });
     }
 
@@ -872,27 +943,22 @@ export class PoliciesComponent implements OnInit {
             return 'In Dry Run';
         }
         if (policy.status == 'PUBLISH') {
-            return 'Published';
+            return `Published${!!policy.discontinuedDate ? '*' : ''}`;
         }
         return 'Not published';
     }
 
     public onChangeStatus(event: any, policy: any): void {
-        switch (policy.status) {
-            case 'DRAFT':
-                this.onPublishAction(event, policy);
-                break;
-
-            case 'DRY-RUN':
-                this.onDryRunAction(event, policy);
-                break;
-
-            case 'PUBLISH':
-                break;
-
-            default:
-                this.onPublishErrorAction(event, policy);
-                break;
+        if (policy.status == 'DRAFT') {
+            this.onPublishAction(event, policy);
+        }
+        if (policy.status == 'DRY-RUN') {
+            this.onDryRunAction(event, policy);
+        }
+        if (policy.status == 'PUBLISH') {
+            this.onPublishedAction(event, policy);
+        } else {
+            this.onPublishErrorAction(event, policy)
         }
     }
 
@@ -904,9 +970,13 @@ export class PoliciesComponent implements OnInit {
             return this.draftMenuOption;
         }
         if (policy.status == 'PUBLISH') {
-            return [];
+            return this.publishedMenuOption;
         } else {
             return this.publishErrorMenuOption;
         }
+    }
+
+    public getDiscontinuedTooltip(date: Date) {
+        return date ? `Discontinue date is ${date.toDateString()}` : '';
     }
 }

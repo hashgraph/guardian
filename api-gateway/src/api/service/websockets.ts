@@ -173,7 +173,7 @@ export class WebSocketsService {
                     MessageAPI.SEND_STATUS,
                     // tslint:disable-next-line:no-shadowed-variable
                     (msg) => {
-                        const {name, state, serviceName} = msg;
+                        const {name, state} = msg;
 
                         if (!statuses[name]) {
                             statuses[name] = [];

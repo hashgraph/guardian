@@ -222,6 +222,12 @@ export class Policy extends BaseEntity {
     tools?: any;
 
     /**
+     * Discontinued date
+     */
+    @Property({ nullable: true })
+    discontinuedDate?: Date;
+
+    /**
      * Set policy defaults
      */
     @BeforeCreate()

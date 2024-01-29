@@ -62,8 +62,8 @@
                 The contract which can call wipe for token. If empty, wipe key will be used.
             </div>
             <p-dropdown class="wipe-contract-dropdown" [disabled]="readonly" formControlName="wipeContractId"
-                        [options]="!readonly ? [{ contractId: '' }].concat(contracts) : [{ contractId: wipeContractId }]"
-                        optionLabel="contractId" optionValue="contractId" [showClear]="true">
+                        [options]="displayContracts" optionLabel="contractId" optionValue="contractId"
+                        [showClear]="true" placeholder="Select wipe contract" emptyMessage="There are no wipe contracts">
             </p-dropdown>
         </div>
         <div class="key-value">

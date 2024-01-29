@@ -1,7 +1,7 @@
 import { IPolicyBlock, IPolicyInstance, IPolicyInterfaceBlock, IPolicyNavigationStep } from './policy-engine.interface';
 import { PolicyComponentsUtils } from './policy-components-utils';
 import { GenerateUUIDv4, IUser, PolicyEvents, UserRole } from '@guardian/interfaces';
-import { DatabaseServer, Logger, MessageError, MessageResponse, NatsService, Policy, Singleton, Users, } from '@guardian/common';
+import { DataBaseHelper, DatabaseServer, Logger, MessageError, MessageResponse, NatsService, Policy, Singleton, Users, } from '@guardian/common';
 import { IPolicyUser, PolicyUser } from './policy-user';
 import { PolicyValidator } from '@policy-engine/block-validators';
 import { headers } from 'nats';
@@ -99,7 +99,7 @@ export class BlockTreeGenerator extends NatsService {
     /**
      * Init policy events
      */
-    async initPolicyEvents(policyId: string, policyInstance: IPolicyInterfaceBlock): Promise<void> {
+    async initPolicyEvents(policyId: string, policyInstance: IPolicyInterfaceBlock, policy: Policy): Promise<void> {
         this.getPolicyMessages(PolicyEvents.CHECK_IF_ALIVE, policyId, async (msg: any) => {
             return new MessageResponse(true);
         });
@@ -267,6 +267,11 @@ export class BlockTreeGenerator extends NatsService {
             await RecordUtils.RecordSetUser(policyId, did);
             return new MessageResponse({});
         });
+
+        this.getPolicyMessages(PolicyEvents.REFRESH_MODEL, policyId, async () => {
+            await DataBaseHelper.orm.em.fork().refresh(policy);
+            return new MessageResponse(policy);
+        });
     }
 
     /**
@@ -369,7 +374,7 @@ export class BlockTreeGenerator extends NatsService {
                 await PolicyComponentsUtils.RegisterBlockTree(allInstances);
                 this.models.set(policyId, rootInstance);
             }
-            await this.initPolicyEvents(policyId, rootInstance);
+            await this.initPolicyEvents(policyId, rootInstance, policy);
             await this.initRecordEvents(policyId);
 
             await PolicyComponentsUtils.RegisterNavigation(policyId, policy.policyNavigation);
