@@ -50,18 +50,18 @@
 
             <div class="delimiter"></div>
 
-            <div 
-                class="dry-run-action-btn record-btn" 
-                (click)="startRecord()" 
+            <div
+                class="dry-run-action-btn record-btn"
+                (click)="startRecord()"
                 title="Start Record"
                 [attr.disabled]="recordingActive">
                 <mat-icon>radio_button_checked</mat-icon>
                 <span>Record</span>
             </div>
 
-            <div 
-                class="dry-run-action-btn run-btn" 
-                (click)="runRecord()" 
+            <div
+                class="dry-run-action-btn run-btn"
+                (click)="runRecord()"
                 title="Run Record"
                 [attr.disabled]="recordingActive">
                 <mat-icon>play_arrow</mat-icon>
@@ -102,11 +102,11 @@
             <div class="delimiter"></div>
         </div>
 
-        <div class="policy-header" [attr.policy-status]="policyInfo.status">
+        <div class="policy-header" [attr.policy-status]="policyInfo.status" [attr.expired]="!!policyInfo.discontinuedDate">
             <div>
                 <a routerLink="/policy-viewer">
                     <p-button
-                        [ngClass]="policyInfo.status === 'DRY-RUN' ? 'back-button' : ''"
+                        [ngClass]="{ 'back-button': policyInfo.status === 'DRY-RUN' || !!policyInfo.discontinuedDate }"
                         icon="pi pi-arrow-left"
                         label="Back to Manage Policies"
                         styleClass="p-button-outlined p-button-sm"
@@ -121,14 +121,14 @@
                 <div class="policy-additional-info-container">
                     <span
                         *ngIf="policyInfo && policyInfo.version"
-                        [ngClass]="policyInfo.status === 'DRY-RUN' ? 'white-additional-policy-info-text' : ''"
+                        [ngClass]="{ 'white-additional-policy-info-text': policyInfo.status === 'DRY-RUN' || !!policyInfo.discontinuedDate }"
                         class="additional-policy-info-text"
                     >
                         Version: ({{ policyInfo.version }})
                     </span>
                     <span
                         *ngIf="!groups.length && !isMultipleGroups"
-                        [ngClass]="policyInfo.status === 'DRY-RUN' ? 'white-additional-policy-info-text' : ''"
+                        [ngClass]="{ 'white-additional-policy-info-text': policyInfo.status === 'DRY-RUN' || !!policyInfo.discontinuedDate }"
                         class="additional-policy-info-text"
                     >
                         Role: {{ policyInfo.userRoles.join(", ") }}
@@ -253,9 +253,9 @@
                 </table>
             </div>
 
-            <app-paginator 
-                [pageIndex]="pageIndex" 
-                [pageSize]="pageSize" 
+            <app-paginator
+                [pageIndex]="pageIndex"
+                [pageSize]="pageSize"
                 [length]="documentCount"
                 (page)="onPage($event)"
             ></app-paginator>

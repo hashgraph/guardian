@@ -1,5 +1,10 @@
 # 💻 Modules using UI
 
+1. [Step By Step Process](modules-using-ui.md#id-1.-step-by-step-process)
+2. [Demo Video](modules-using-ui.md#id-2.-demo-video)
+
+## 1. Step By Step Process
+
 For a demo example of following steps, here is the policy timestamp: **1677851599.493646003**
 
 ## **Policy Modules**
@@ -127,3 +132,7 @@ Module added to the policy can be freely edited and changed. Module can be opene
 Modules added or created in the policy are ‘instances’ of the module and can only exist inside the policy until they are explicitly saved which adds them to the module library.
 
 <figure><img src="../../../../.gitbook/assets/20 (2).png" alt=""><figcaption></figcaption></figure>
+
+## 2. Demo Video
+
+[Youtube](https://www.youtube.com/watch?v=YS0XgdnHWzc\&list=PLnld0e1pwLhqb69cELqQrW87JFVIDfocL\&index=23\&t=387s)

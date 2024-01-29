@@ -41,7 +41,7 @@ import {
     WiperRequest,
     Workers
 } from '@guardian/common';
-import { ApplicationStates, WorkerTaskType } from '@guardian/interfaces';
+import { ApplicationStates, PolicyEvents, PolicyType, WorkerTaskType } from '@guardian/interfaces';
 import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
 import { ipfsAPI } from '@api/ipfs.service';
 import { artifactAPI } from '@api/artifact.service';
@@ -95,7 +95,8 @@ Promise.all([
         'v2-13-0',
         'v2-16-0',
         'v2-17-0',
-        'v2-18-0'
+        'v2-18-0',
+        'v2-19-0',
     ]),
     MessageBrokerChannel.connect('GUARDIANS_SERVICE'),
     NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
@@ -274,6 +275,7 @@ Promise.all([
 
         return true;
     });
+    let policyEngine: PolicyEngine;
     validator.setValidAction(async () => {
         if (!process.env.INITIALIZATION_TOPIC_ID && process.env.HEDERA_NET === 'localnode') {
             process.env.INITIALIZATION_TOPIC_ID = await workersHelper.addRetryableTask({
@@ -290,7 +292,7 @@ Promise.all([
         state.updateState(ApplicationStates.INITIALIZING);
 
         try {
-            const policyEngine = new PolicyEngine();
+            policyEngine = new PolicyEngine();
             await policyEngine.setConnection(cn).init();
             const policyService = new PolicyEngineService(cn);
             await policyService.init();
@@ -368,6 +370,26 @@ Promise.all([
         channel
     );
     wipeSync.start();
+    const policyDiscontinueTask = new SynchronizationTask(
+        'policy-discontinue',
+        async () => {
+            const date = new Date();
+            const policiesToDiscontunie = await policyRepository.find({
+                discontinuedDate: { $lte: date },
+                status: PolicyType.PUBLISH
+            });
+            await policyRepository.update(policiesToDiscontunie.map(policy => {
+                policy.status = PolicyType.DISCONTINUED;
+                return policy;
+            }));
+            await Promise.all(policiesToDiscontunie.map(policy =>
+                new GuardiansService().sendPolicyMessage(PolicyEvents.REFRESH_MODEL, policy.id, {})
+            ));
+        },
+        process.env.POLICY_DISCONTINUE_TASK_MASK || '* 0 * * *',
+        channel
+    );
+    policyDiscontinueTask.start();
 
     startMetricsServer();
 }, (reason) => {

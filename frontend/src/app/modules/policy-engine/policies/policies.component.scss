@@ -512,15 +512,15 @@
     }
 }
 
-.published-status {
+.discontinued-status {
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 6px;
-    background: var(--color-accent-green-2);
+    background: var(--color-accent-red-2);
     height: 28px;
     padding: 4px 10px;
-    color: var(--color-accent-green-1);
+    color: var(--color-accent-red-1);
     font-family: Inter, sans-serif;
     font-size: 14px;
     font-style: normal;
@@ -564,7 +564,7 @@
 
 :host ::ng-deep {
     .p-dropdown {
-        width: 125px;
+        width: 128px;
         height: 40px;
         border-radius: 8px;
     }
@@ -675,6 +675,29 @@
             color: var(--color-primary);
         }
     }
+
+    &[published="true"] {
+        ::ng-deep {
+            .p-component {
+                background: var(--color-accent-green-2);
+            }
+
+            .p-dropdown-label, .p-dropdown-trigger .p-dropdown-trigger-icon {
+                color: var(--color-accent-green-1);
+            }
+        }
+        &[expired="true"] {
+            ::ng-deep {
+                .p-component {
+                    background: var(--color-accent-yellow-2);
+                }
+
+                .p-dropdown-label, .p-dropdown-trigger .p-dropdown-trigger-icon {
+                    color: var(--color-accent-yellow-1);
+                }
+            }
+        }
+    }
 }
 
 .dropdown-item-title {
@@ -719,6 +742,16 @@
 .chip-color-green {
     color: #19be47;
     background: #cafdd9;
+}
+
+.chip-color-red {
+    color: var(--color-accent-red-1);
+    background: var(--color-accent-red-2);
+}
+
+.chip-color-yellow {
+    color: var(--color-accent-yellow-1);
+    background: var(--color-accent-yellow-2);
 }
 
 .btn-go-policy {

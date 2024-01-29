@@ -388,7 +388,7 @@ export async function analyticsAPI(): Promise<void> {
             }
 
             const policyModels: PolicySearchModel[] = [];
-            const policies = await DatabaseServer.getPolicies({ status: PolicyType.PUBLISH });
+            const policies = await DatabaseServer.getPolicies({ status: { $in: [PolicyType.PUBLISH, PolicyType.DISCONTINUED] }});
             for (const row of policies) {
                 try {
                     const model = new PolicySearchModel(row);

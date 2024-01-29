@@ -1,18 +1,32 @@
-import { PolicyType, TaskAction, UserRole } from '@guardian/interfaces';
-import { PolicyEngine } from '@helpers/policy-engine';
-import { Users } from '@helpers/users';
-import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
-import { TaskManager } from '@helpers/task-manager';
-import { ServiceError } from '@helpers/service-requests-base';
-import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response, Body, Param, Query } from '@nestjs/common';
-import { ApiBody, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath } from '@nestjs/swagger';
-import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator';
-import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
-import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator';
-import { ProjectService } from '@helpers/projects';
-import { PolicyCategoryDTO } from '@middlewares/validation/schemas/policies';
 import { Auth } from '@auth/auth.decorator';
 import { AuthUser, checkPermission } from '@auth/authorization-helper';
+import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
+import { DocumentType, PolicyType, TaskAction, UserRole } from '@guardian/interfaces';
+import { PolicyEngine } from '@helpers/policy-engine';
+import { ProjectService } from '@helpers/projects';
+import { ServiceError } from '@helpers/service-requests-base';
+import { TaskManager } from '@helpers/task-manager';
+import { Users } from '@helpers/users';
+import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
+import { MigrationConfigDTO, PolicyCategoryDTO } from '@middlewares/validation/schemas/policies';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response } from '@nestjs/common';
+import {
+    ApiBody,
+    ApiAcceptedResponse,
+    ApiExtraModels,
+    ApiForbiddenResponse,
+    ApiInternalServerErrorResponse,
+    ApiOkResponse,
+    ApiOperation,
+    ApiParam,
+    ApiQuery,
+    ApiSecurity,
+    ApiTags,
+    ApiUnauthorizedResponse,
+    getSchemaPath
+} from '@nestjs/swagger';
+import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator';
+import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator';
 
 const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
 
@@ -78,7 +92,7 @@ export class PolicyApi {
                 });
             } else if (user.role === UserRole.AUDITOR) {
                 const filters: any = {
-                    status: PolicyType.PUBLISH,
+                    status: { $in: [PolicyType.PUBLISH, PolicyType.DISCONTINUED] },
                 }
                 result = await engineService.getPolicies({
                     filters,
@@ -88,7 +102,7 @@ export class PolicyApi {
                 });
             } else {
                 const filters: any = {
-                    status: PolicyType.PUBLISH,
+                    status: { $in: [PolicyType.PUBLISH, PolicyType.DISCONTINUED] },
                 }
                 if (user.parent) {
                     filters.owner = user.parent;
@@ -138,6 +152,98 @@ export class PolicyApi {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @ApiOperation({
+        summary: 'Migrate policy data.',
+        description: 'Migrate policy data. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiExtraModels(MigrationConfigDTO, InternalServerErrorDTO)
+    @ApiBody({
+        description: 'Migration config.',
+        schema: {
+            $ref: getSchemaPath(MigrationConfigDTO)
+        }
+    })
+    @ApiOkResponse({
+        description: 'Errors while migration.',
+        schema: {
+            type: 'array',
+            items: {
+                type: 'object',
+                properties: {
+                    error: {
+                        type: 'string'
+                    },
+                    id: {
+                        type: 'string'
+                    }
+                }
+            }
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
+    @Post('/migrate-data')
+    @HttpCode(HttpStatus.OK)
+    async migrateData(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const engineService = new PolicyEngine();
+        try {
+            return res.send(await engineService.migrateData(
+                req.user.did,
+                req.body
+            ));
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @ApiOperation({
+        summary: 'Migrate policy data asynchronous.',
+        description: 'Migrate policy data asynchronous. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiExtraModels(MigrationConfigDTO, InternalServerErrorDTO)
+    @ApiBody({
+        description: 'Migration config.',
+        schema: {
+            $ref: getSchemaPath(MigrationConfigDTO)
+        }
+    })
+    @ApiAcceptedResponse({
+        description: 'Created task.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
+    @Post('/push/migrate-data')
+    @HttpCode(HttpStatus.ACCEPTED)
+    async migrateDataAsync(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const user = req.user;
+        const taskManager = new TaskManager();
+        const task = taskManager.start(TaskAction.MIGRATE_DATA, user.id);
+        RunFunctionAsync<ServiceError>(async () => {
+            const engineService = new PolicyEngine();
+            await engineService.migrateDataAsync(req.user.did, req.body, task);
+        }, async (error) => {
+            new Logger().error(error, ['API_GATEWAY']);
+            taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
+        });
+        return res.status(202).send(task);
     }
 
     @ApiOperation({
@@ -422,6 +528,57 @@ export class PolicyApi {
     }
 
     @ApiOperation({
+        summary: 'Discontunue policy.',
+        description: 'Discontunue policy. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiParam({
+        name: 'policyId',
+        description: 'Policy identifier.',
+        required: true
+    })
+    @ApiBody({
+        description: 'Discontinue details.',
+        schema: {
+            type: 'object',
+            properties: {
+                'date': {
+                    type: 'date'
+                }
+            }
+        }
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Policies.',
+        schema: {
+            'type': 'array',
+            items: {
+                type: 'object'
+            }
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
+    @Put('/:policyId/discontinue')
+    @HttpCode(HttpStatus.OK)
+    async discontinuePolicy(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const engineService = new PolicyEngine();
+        try {
+            return res.json(await engineService.discontinuePolicy(req.user, req.params.policyId, req.body?.date));
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @ApiOperation({
         summary: 'Dry Run policy.',
         description: 'Run policy without making any persistent changes or executing transaction.' + ONLY_SR,
     })
@@ -539,6 +696,79 @@ export class PolicyApi {
         const engineService = new PolicyEngine();
         try {
             return res.send(await engineService.getGroups(req.user, req.params.policyId));
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @ApiOperation({
+        summary: 'Get policy documents.',
+        description: 'Get policy documents. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiParam({
+        description: 'Policy identifier.',
+        name: 'policyId',
+        required: true
+    })
+    @ApiQuery({
+        description: 'Include document field.',
+        name: 'includeDocument',
+        type: 'boolean'
+    })
+    @ApiQuery({
+        description: 'Document type.',
+        name: 'type',
+        enum: DocumentType
+    })
+    @ApiQuery({
+        description: 'Page index.',
+        name: 'pageIndex',
+        type: 'number'
+    })
+    @ApiQuery({
+        description: 'Page size.',
+        name: 'pageSize',
+        type: 'number'
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Documents.',
+        schema: {
+            'type': 'array',
+            items: {
+                type: 'object'
+            }
+        },
+        headers: {
+            'X-Total-Count': {
+                description: 'Total documents count.'
+            }
+        }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
+    @Get('/:policyId/documents')
+    @HttpCode(HttpStatus.OK)
+    async getPolicyDocuments(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const engineService = new PolicyEngine();
+        try {
+            const [documents, count] = await engineService.getDocuments(
+                req.user.did,
+                req.params.policyId,
+                req.query?.includeDocument?.toLowerCase() === 'true',
+                req.query?.type,
+                req.query?.pageIndex,
+                req.query?.pageSize,
+            );
+            return res.setHeader('X-Total-Count', count).json(documents);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -777,13 +1007,6 @@ export class PolicyApi {
         }
     }
 
-
-
-
-
-
-
-
     /**
      * Export policy in a zip file.
      */
@@ -1013,10 +1236,6 @@ export class PolicyApi {
         });
         return res.status(202).send(task);
     }
-
-
-
-
 
     @ApiOperation({
         summary: 'Policy preview from IPFS.',
@@ -1409,10 +1628,6 @@ export class PolicyApi {
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
-
-
-
 
     @Get('/blocks/about')
     @HttpCode(HttpStatus.OK)

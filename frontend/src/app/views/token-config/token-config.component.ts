@@ -66,7 +66,7 @@ export class TokenConfigComponent implements OnInit {
         enableFreeze: new FormControl(false, [Validators.required]),
         enableKYC: new FormControl(false, [Validators.required]),
         enableWipe: new FormControl(true, [Validators.required]),
-        wipeContractId: new FormControl(''),
+        wipeContractId: new FormControl(),
     });
     public dataFormPristine: any = this.dataForm.value;
     public readonlyForm: boolean = false;

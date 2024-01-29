@@ -1,4 +1,4 @@
-import { IPolicyComponents, Logger, Policy } from '@guardian/common';
+import { Logger, Policy } from '@guardian/common';
 import { PolicyModel } from '../models/policy.model';
 import { SchemaModel } from '../models/schema.model';
 import { TokenModel } from '../models/token.model';

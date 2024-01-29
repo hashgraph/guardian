@@ -216,5 +216,3 @@ export class GenerateBlocks {
         return '';
     }
 }
-
-

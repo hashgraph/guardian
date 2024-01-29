@@ -32,6 +32,14 @@ export class XlsxEnum {
         return this._field;
     }
 
+    public get schemaName(): string {
+        return this._schemaName;
+    }
+
+    public get fieldName(): string {
+        return this._fieldName;
+    }
+
     public setSchema(schema: Schema) {
         this._schema = schema;
         this._schemaName = schema.name;

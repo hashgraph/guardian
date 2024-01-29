@@ -8,3 +8,4 @@ export * from './tool-import-export-helper';
 export * from './token-import-export-helper';
 export * from './artifact-import-export-helper';
 export * from './tag-import-export-helper';
+export * from './contract-api';

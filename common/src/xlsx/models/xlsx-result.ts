@@ -9,13 +9,13 @@ import { XlsxEnum } from './xlsx-enum';
 
 export class XlsxResult {
     private _policy: Policy;
-    private _schemas: Schema[];
-    private _tools: PolicyTool[];
-    private _errors: XlsxError[];
-    private _enums: XlsxEnum[];
-    private _toolsCache: Map<string, ITool>;
-    private _linkCache: Map<string, ILink>;
-    private _schemaCache: ISchemaCache[];
+    private readonly _schemas: Schema[];
+    private readonly _tools: PolicyTool[];
+    private readonly _errors: XlsxError[];
+    private readonly _enums: XlsxEnum[];
+    private readonly _toolsCache: Map<string, ITool>;
+    private readonly _linkCache: Map<string, ILink>;
+    private readonly _schemaCache: ISchemaCache[];
 
     constructor() {
         this._schemas = [];
@@ -47,7 +47,7 @@ export class XlsxResult {
         this._toolsCache.set(messageId, {
             uuid: messageId,
             name: messageId,
-            messageId: messageId
+            messageId
         });
         this._schemaCache.push({
             name,
@@ -237,7 +237,7 @@ export class XlsxResult {
 
     public getEnum(worksheet: string): string[] {
         for (const item of this._enums) {
-            if(item.worksheet.name === worksheet) {
+            if (item.worksheet.name === worksheet) {
                 return item.data;
             }
         }

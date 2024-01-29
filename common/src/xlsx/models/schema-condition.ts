@@ -10,7 +10,7 @@ export class XlsxSchemaConditions {
         this.value = value;
         this.condition = {
             ifCondition: {
-                field: field,
+                field,
                 fieldValue: value
             },
             thenFields: [],

@@ -1,5 +1,10 @@
 # 💻 Creating Roles and Groups using Policy Configurator UI
 
+1. [Step By Step Process](roles-and-groups.md#id-1.-step-by-step-process)
+2. [Demo Video](roles-and-groups.md#id-2.-demo-video)
+
+## 1. Step By Step Process
+
 ### 1. Roles
 
 Set of textual constants that are used to separate users into different roles.
@@ -66,3 +71,7 @@ Groups are separate sets of documents access , which can be limited to users who
 When a policy contains multiple groups, users have an option to switch between those they are included in. The selection menu also allows to switch to the ‘no group’ default state, i.e. the state in which the user is not acting as a member of any group.
 
 <figure><img src="../../../../.gitbook/assets/image (32).png" alt=""><figcaption></figcaption></figure>
+
+## 2. Demo Video
+
+[Youtube](https://www.youtube.com/watch?v=Gnwftf-WTOc\&list=PLnld0e1pwLhqb69cELqQrW87JFVIDfocL\&index=35\&t=443s)

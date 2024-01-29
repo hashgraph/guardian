@@ -285,6 +285,13 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 }
                 break;
             case TaskAction.DELETE_POLICY:
+            case TaskAction.MIGRATE_DATA:
+                if (result?.length > 0) {
+                    this.informService.warnMessage(
+                        'There are some errors while migrating',
+                        'Migration warning'
+                    );
+                }
                 this.router.navigate(['policy-viewer'], {
                     replaceUrl: true,
                 });
@@ -341,6 +348,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.WIZARD_CREATE_POLICY:
             case TaskAction.PUBLISH_POLICY:
             case TaskAction.DELETE_POLICY:
+            case TaskAction.MIGRATE_DATA:
                 this.router.navigate(['policy-viewer'], {
                     replaceUrl: true,
                 });

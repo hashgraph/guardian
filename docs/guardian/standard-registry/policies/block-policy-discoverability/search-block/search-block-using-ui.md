@@ -1,5 +1,10 @@
 # 💻 Search Block using UI
 
+1. [Step By Step Process](search-block-using-ui.md#id-1.-step-by-step-process)
+2. [Demo Video](search-block-using-ui.md#id-2.-demo-video)
+
+## 1. Step By Step Process
+
 ## 1. Search Example
 
 Blocks of similar configuration can be searched by clicking on search icon with respect to the block as shown below:
@@ -45,3 +50,7 @@ The results are sorted by (in the correct order):
 2\.     Cumulative similarity score (%%) of the blocks
 
 <figure><img src="../../../../../.gitbook/assets/image (5) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+
+## 2. Demo Video
+
+[Youtube](https://www.youtube.com/watch?v=qvmSPYIZx8k\&list=PLnld0e1pwLhqb69cELqQrW87JFVIDfocL\&index=8\&t=237s)

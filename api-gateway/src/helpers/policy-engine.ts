@@ -1,5 +1,5 @@
 import { Singleton } from '@helpers/decorators/singleton';
-import { GenerateUUIDv4, PolicyEngineEvents } from '@guardian/interfaces';
+import { DocumentType, GenerateUUIDv4, MigrationConfig, PolicyEngineEvents } from '@guardian/interfaces';
 import { IAuthUser, NatsService } from '@guardian/common';
 import { NewTask } from './task-manager';
 
@@ -314,7 +314,6 @@ export class PolicyEngine extends NatsService {
         return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_FILE_PREVIEW, { zip, user });
     }
 
-
     /**
      * Load xlsx file for import
      * @param user
@@ -484,5 +483,62 @@ export class PolicyEngine extends NatsService {
      */
     public async setMultiPolicy(user: IAuthUser, policyId: string, data: any) {
         return await this.sendMessage(PolicyEngineEvents.SET_MULTI_POLICY, { user, policyId, data });
+    }
+
+    /**
+     * Discontinue policy
+     * @param user
+     * @param policyId
+     */
+    public async discontinuePolicy(user: any, policyId: string, date?: string) {
+        return await this.sendMessage(PolicyEngineEvents.DISCONTINUE_POLICY, { user, policyId, date });
+    }
+
+    /**
+     * Get policy documents
+     * @param owner Owner
+     * @param policyId Policy identifier
+     * @param includeDocument Include document
+     * @param type Type
+     * @param pageIndex Page index
+     * @param pageSize Page size
+     * @returns Documents and count
+     */
+    public async getDocuments(
+        owner: string,
+        policyId: string,
+        includeDocument: boolean = false,
+        type?: DocumentType,
+        pageIndex?: string,
+        pageSize?: string
+    ): Promise<[any[], number]> {
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_DOCUMENTS, { owner, policyId, includeDocument, type, pageIndex, pageSize });
+    }
+
+    /**
+     * Migrate data
+     * @param owner Owner
+     * @param migrationConfig Migration config
+     * @returns Errors
+     */
+    public async migrateData(
+        owner: string,
+        migrationConfig: MigrationConfig,
+    ): Promise<{ error: string, id: string }[]> {
+        return await this.sendMessage(PolicyEngineEvents.MIGRATE_DATA, { owner, migrationConfig });
+    }
+
+    /**
+     * Migrate data async
+     * @param owner Owner
+     * @param migrationConfig Migration config
+     * @param task Task
+     */
+    public async migrateDataAsync(
+        owner: string,
+        migrationConfig: MigrationConfig,
+        task
+    ): Promise<void> {
+        await this.sendMessage(PolicyEngineEvents.MIGRATE_DATA_ASYNC, { owner, migrationConfig, task });
     }
 }

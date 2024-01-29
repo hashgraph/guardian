@@ -48,8 +48,8 @@ export class EnumTable {
                     }
                 }
             }
-        }
-    
+        };
+
         this.descriptionStyle = {
             font: {
                 size: 11,
@@ -79,7 +79,7 @@ export class EnumTable {
                 }
             }
         }
-    
+
         this.itemStyle = {
             font: {
                 size: 11,
@@ -140,8 +140,8 @@ export class EnumTable {
     }
 
     public setDefault(): void {
+        const col = this.start.c;
         let row = this.start.r;
-        let col = this.start.c;
 
         this._headers.get(Dictionary.ENUM_SCHEMA_NAME).setPoint(col, row++);
         this._headers.get(Dictionary.ENUM_FIELD_NAME).setPoint(col, row++);

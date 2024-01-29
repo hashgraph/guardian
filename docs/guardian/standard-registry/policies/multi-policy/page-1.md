@@ -1,5 +1,10 @@
 # 💻 Configuring Multi Policy using UI
 
+1. [Step By Step Process](page-1.md#id-1.-step-by-step-process)
+2. [Demo Video](page-1.md#demo-video)
+
+## 1. Step By Step Process
+
 ### 1. Registration of Primary Policy
 
 Step 1: Need to click on the linking icon for the policy, which you wanted to be a primary one as shown below:
@@ -62,3 +67,7 @@ Synchronization topic contains two types of messages:
 | amount       | Amount of tokens to mint                                         | 5                                      |
 | memo         | Memo                                                             | "1669634325.005962003"                 |
 | target       | User account ID to receive the minted tokens (Hedera Account ID) | "0.0.47678906"                         |
+
+## Demo Video
+
+[Youtube](https://www.youtube.com/watch?v=wcOb19Pr-yo\&list=PLnld0e1pwLhqb69cELqQrW87JFVIDfocL\&index=31\&t=347s)

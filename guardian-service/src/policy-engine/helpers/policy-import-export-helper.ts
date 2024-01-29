@@ -22,7 +22,6 @@ import {
     MessageType,
     Policy,
     PolicyMessage,
-    PolicyTool,
     regenerateIds,
     replaceAllEntities,
     replaceAllVariables,

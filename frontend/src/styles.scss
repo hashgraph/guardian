@@ -208,6 +208,34 @@ button.mat-button {
     color: #fa1905 !important;
 }
 
+.warn-message-toastr {
+    background-color: #fff6c8 !important;
+    border: 1px solid gold !important;
+    color: goldenrod !important;
+    box-shadow: 0 0 0px 1px #ffffff, 0 0 8px 1px #999999 !important;
+    margin: 1px 1px 6px 1px !important;
+
+    &.toast-warning {
+        background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgLTk2MCA5NjAgOTYwIiB3aWR0aD0iMjQiPjxwYXRoIGZpbGw9IiNGRkQ3MDAiIGQ9Im00MC0xMjAgNDQwLTc2MCA0NDAgNzYwSDQwWm00NDAtMTIwcTE3IDAgMjguNS0xMS41VDUyMC0yODBxMC0xNy0xMS41LTI4LjVUNDgwLTMyMHEtMTcgMC0yOC41IDExLjVUNDQwLTI4MHEwIDE3IDExLjUgMjguNVQ0ODAtMjQwWm0tNDAtMTIwaDgwdi0yMDBoLTgwdjIwMFoiLz48L3N2Zz4=");
+    }
+}
+
+.warn-message-toastr .toast-title {
+    color: gold !important;
+    font-size: 16px !important;
+    margin-bottom: 3px !important;
+}
+
+.warn-message-toastr a {
+    color: #126db3 !important;
+    font-weight: 500 !important;
+    padding: 0px 2px !important;
+}
+
+.warn-message-toastr .toast-close-button {
+    color: gold !important;
+}
+
 .info-message-toastr {
     background-color: #ffffff !important;
     border: 1px solid #3f51b5 !important;

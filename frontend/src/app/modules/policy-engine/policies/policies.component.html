@@ -29,15 +29,14 @@
                     formControlName="tag"
                     placeholder="Tags"></p-dropdown>
                 <button (click)="applyFilters()" 
-                        [disabled]="filtersForm.invalid" 
-                        class="button ml-8"
-                        label="Apply Filters" 
-                        pButton></button>
+			class="button ml-8" 
+			label="Apply Filters" 
+			pButton></button>
                 <button (click)="clearFilters()"
-                        [disabled]="!filtersForm.dirty"
-                        class="button secondary ml-8"
-                        label="Clear filters"
-                        pButton></button>
+                    [disabled]="!filtersForm.dirty"
+                    class="button secondary ml-8"
+                    label="Clear filters"
+                    pButton></button>
             </form>
 
             <div style="margin-left: auto;">
@@ -69,6 +68,14 @@
                     styleClass="p-button-outlined"
                     tooltipPosition="bottom">
                     <svg-icon src="/assets/images/icons/compare.svg" svgClass="primary-color"></svg-icon>
+                </p-button>
+                <p-button
+                    (click)="migrateData()"
+                    [pTooltip]="'Migrate data'"
+                    class="toolbar-btn-secondary"
+                    styleClass="p-button-outlined"
+                    tooltipPosition="bottom">
+                    <svg-icon src="/assets/images/icons/move-down.svg" svgClass="primary-color"></svg-icon>
                 </p-button>
                 <p-button
                     (click)="openSuggestionsDialog()"
@@ -193,8 +200,11 @@
                                     </a>
                                 </td>
                                 <td *ngIf="canDisplayColumn('status')" style="min-width: 140px;">
-                                    <div *ngIf="role === 'USER'" class="chip chip-color-{{getColor(policy.status)}}">
-                                        {{ getLabelStatus(policy.status) }}
+                                    <div *ngIf="role === 'USER'"
+                                        [pTooltip]="getDiscontinuedTooltip(policy.discontinuedDate)" tooltipPosition="bottom"
+                                        [tooltipDisabled]="!policy.discontinuedDate"
+                                        class="chip chip-color-{{getColor(policy.status, !!policy.discontinuedDate)}}">
+                                        {{ getLabelStatus(policy.status, !!policy.discontinuedDate) }}
                                     </div>
                                     <div *ngIf="role === 'STANDARD_REGISTRY'">
                                         <p-dropdown
@@ -202,20 +212,25 @@
                                             *ngIf="
                                                 policy.status == 'DRAFT' ||
                                                 policy.status == 'DRY-RUN' ||
-                                                policy.status == 'PUBLISH_ERROR'
+                                                policy.status == 'PUBLISH_ERROR' ||
+                                                policy.status == 'PUBLISH'
                                             "
                                             [(ngModel)]="publishMenuSelector"
                                             [options]="getStatusOptions(policy)"
                                             [placeholder]="getStatusName(policy)"
                                             appendTo="body"
                                             class="status-actions-dropdown"
+                                            [attr.published]="policy.status == 'PUBLISH'"
+                                            [attr.expired]="!!policy.discontinuedDate"
+                                            [pTooltip]="getDiscontinuedTooltip(policy.discontinuedDate)" tooltipPosition="bottom"
+                                            [tooltipDisabled]="!policy.discontinuedDate"
                                         >
                                             <ng-template pTemplate="selectedItem">
                                                 {{getStatusName(policy)}}
                                             </ng-template>
                                             <ng-template let-option pTemplate="item">
                                                 <div>
-                                                    <div class="dropdown-item-title">
+                                                    <div class="dropdown-item-title" [ngStyle]="{ color: option.color }">
                                                         {{ option.title }}
                                                     </div>
                                                     <span class="dropdown-item-description">
@@ -224,8 +239,11 @@
                                                 </div>
                                             </ng-template>
                                         </p-dropdown>
-                                        <div *ngIf="policy.status == 'PUBLISH'" class="published-status">
-                                            Published
+                                        <div *ngIf="policy.status == 'DISCONTINUED'"
+                                            class="discontinued-status"
+                                            [pTooltip]="getDiscontinuedTooltip(policy.discontinuedDate)"
+                                            tooltipPosition="bottom">
+                                            Discontinued
                                         </div>
                                     </div>
                                 </td>
@@ -234,7 +252,7 @@
                                         <div *ngIf="role === 'USER'" style="width: 85px;">
                                             <!-- todo condition -->
                                             <button
-                                                [label]="policy.status == 'PUBLISH' ? 'Open' : 'Dry run'"
+                                                [label]="['PUBLISH', 'DISCONTINUED'].includes(policy.status)  ? 'Open' : 'Dry run'"
                                                 [routerLink]="['/policy-viewer', policy.id]"
                                                 class="p-button btn-go-policy"
                                                 pButton
@@ -371,6 +389,16 @@
             [pTooltip]="'Compare policies'"
             tooltipPosition="bottom">
             <svg-icon src="/assets/images/icons/compare.svg" svgClass="primary-color"></svg-icon>
+        </p-button>
+
+        <p-button
+            (click)="migrateData(id)"
+            label="Migrate data"
+            class="policy-menu-btn"
+            styleClass="p-button-outlined"
+            [pTooltip]="'Migrate policy data'"
+            tooltipPosition="bottom">
+            <svg-icon src="/assets/images/icons/move-down.svg" svgClass="primary-color"></svg-icon>
         </p-button>
 
         <div class="policy-menu-delimiter"></div>

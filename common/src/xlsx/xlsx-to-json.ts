@@ -52,7 +52,7 @@ export class XlsxToJson {
     }
 
     private static isEnum(worksheet: Worksheet): boolean {
-        return !this.isSchema(worksheet);
+        return !XlsxToJson.isSchema(worksheet);
     }
 
     private static isSchema(worksheet: Worksheet): boolean {
@@ -181,7 +181,8 @@ export class XlsxToJson {
                 schema.entity = xlsxToEntity(worksheet.getValue<string>(startCol + 1, table.getRow(Dictionary.SCHEMA_TYPE)));
             }
 
-            let toolName: string, messageId: string;
+            let toolName: string;
+            let messageId: string;
             if (table.getRow(Dictionary.SCHEMA_TOOL) !== -1) {
                 toolName = worksheet.getValue<string>(startCol + 1, table.getRow(Dictionary.SCHEMA_TOOL));
             }
@@ -269,7 +270,7 @@ export class XlsxToJson {
         };
         try {
             const name = worksheet.getPath(table.getCol(Dictionary.ANSWER), row);
-            const path = worksheet.getFullPath(table.getCol(Dictionary.ANSWER), row);
+            // const path = worksheet.getFullPath(table.getCol(Dictionary.ANSWER), row);
             const type = worksheet.getValue<string>(table.getCol(Dictionary.FIELD_TYPE), row);
             const description = worksheet.getValue<string>(table.getCol(Dictionary.QUESTION), row);
             const required = xlsxToBoolean(worksheet.getValue<string>(table.getCol(Dictionary.REQUIRED_FIELD), row));
@@ -311,7 +312,7 @@ export class XlsxToJson {
                     message: 'Unknown field type.',
                     worksheet: worksheet.name,
                     cell: worksheet.getPath(table.getCol(Dictionary.FIELD_TYPE), row),
-                    row: row,
+                    row,
                     col: table.getCol(Dictionary.FIELD_TYPE),
                 }, field);
             }
@@ -338,7 +339,7 @@ export class XlsxToJson {
                 text: 'Failed to parse field.',
                 message: error?.toString(),
                 worksheet: worksheet.name,
-                row: row
+                row
             }, field);
             return null;
         }
@@ -383,7 +384,7 @@ export class XlsxToJson {
                         text: `Enum named "${enumName}" not found.`,
                         message: `Enum named "${enumName}" not found.`,
                         worksheet: worksheet.name,
-                        row: row
+                        row
                     }, field);
                 }
             }
@@ -423,7 +424,7 @@ export class XlsxToJson {
                 text: 'Failed to parse params.',
                 message: error?.toString(),
                 worksheet: worksheet.name,
-                row: row
+                row
             }, field);
         }
     }
@@ -464,7 +465,7 @@ export class XlsxToJson {
                     message: error?.toString(),
                     worksheet: worksheet.name,
                     cell: worksheet.getPath(table.getCol(Dictionary.VISIBILITY), row),
-                    row: row,
+                    row,
                     col: table.getCol(Dictionary.VISIBILITY),
                 }, field);
             }
@@ -491,7 +492,7 @@ export class XlsxToJson {
                 message: error?.toString(),
                 worksheet: worksheet.name,
                 cell: worksheet.getPath(table.getCol(Dictionary.VISIBILITY), row),
-                row: row,
+                row,
                 col: table.getCol(Dictionary.VISIBILITY),
             }, field);
             return;
@@ -549,8 +550,8 @@ export class XlsxToJson {
             }
             return null;
         }
-        const tree = mathjs.parse(formulae);
-        const node = parsFn(tree, false);
+        const nodes = mathjs.parse(formulae);
+        const node = parsFn(nodes, false);
         if (node) {
             return {
                 type: 'formulae',

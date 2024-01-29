@@ -364,6 +364,7 @@ export class Hyperlink {
     public static from(link: string): Hyperlink | null {
         try {
             if (link) {
+                // tslint:disable-next-line
                 let [worksheet, cell] = link.split('!');
                 if (worksheet.startsWith('#')) {
                     worksheet = worksheet.slice(1);
