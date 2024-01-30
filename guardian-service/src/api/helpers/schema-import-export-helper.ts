@@ -1,32 +1,10 @@
-import {
-    GenerateUUIDv4,
-    ISchema,
-    ModelHelper,
-    ModuleStatus,
-    Schema,
-    SchemaCategory,
-    SchemaEntity,
-    SchemaHelper,
-    SchemaStatus
-} from '@guardian/interfaces';
-import {
-    DatabaseServer,
-    Logger,
-    MessageAction,
-    MessageServer,
-    MessageType,
-    replaceValueRecursive,
-    Schema as SchemaCollection,
-    SchemaConverterUtils,
-    SchemaMessage,
-    Tag,
-    TagMessage,
-    UrlType
-} from '@guardian/common';
+import { GenerateUUIDv4, ISchema, ModelHelper, ModuleStatus, Schema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
+import { DatabaseServer, Logger, MessageAction, MessageServer, MessageType, replaceValueRecursive, Schema as SchemaCollection, SchemaConverterUtils, SchemaMessage, Tag, TagMessage, UrlType } from '@guardian/common';
 import { emptyNotifier, INotifier } from '@helpers/notifier';
 import { importTag } from '@api/helpers/tag-import-export-helper';
 import { createSchema, fixSchemaDefsOnImport, getDefs, ImportResult, onlyUnique, SchemaImportResult } from './schema-helper';
 import geoJson from '@guardian/interfaces/dist/helpers/geojson-schema/geo-json';
+import sentinelHub from '@guardian/interfaces/dist/helpers/sentinel-hub/sentinel-hub-schema';
 
 export class SchemaCache {
     /**
@@ -236,7 +214,8 @@ export async function importSchemaByFiles(
     const tools = await DatabaseServer.getTools({ status: ModuleStatus.PUBLISHED }, { fields: ['topicId'] });
     const toolSchemas = await DatabaseServer.getSchemas({ topicId: { $in: tools.map(t => t.topicId) } });
     const updatedSchemasMap = {
-        '#GeoJSON': geoJson
+        '#GeoJSON': geoJson,
+        '#SentinelHUB': sentinelHub
     };
     const parsedSchemas: Schema[] = [];
     for (const item of files) {

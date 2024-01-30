@@ -1,11 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import {
-    NgxMatDatetimePickerModule,
-    NgxMatNativeDateModule,
-    NgxMatTimepickerModule,
-} from '@angular-material-components/datetime-picker';
+import { NgxMatDatetimePickerModule, NgxMatNativeDateModule, NgxMatTimepickerModule, } from '@angular-material-components/datetime-picker';
 import { ClipboardModule } from '@angular/cdk/clipboard';
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 import { GoogleMapsModule } from '@angular/google-maps';
@@ -40,6 +36,7 @@ import { SchemaFormDialog } from './schema-form-dialog/schema-form-dialog.compon
 import { SchemaTreeComponent } from './schema-tree/schema-tree.component';
 import { CopySchemaDialog } from './copy-schema-dialog/copy-schema-dialog';
 import { AngularSvgIconModule } from 'angular-svg-icon';
+import { SentinelHubTypeComponent } from './sentinel-hub-type/sentinel-hub-type.component';
 
 @NgModule({
     declarations: [
@@ -58,6 +55,7 @@ import { AngularSvgIconModule } from 'angular-svg-icon';
         EnumEditorDialog,
         CompareSchemaDialog,
         GeojsonTypeComponent,
+        SentinelHubTypeComponent,
         DeleteSchemaDialogComponent,
         ServiceUnavailableDialog,
         SchemaTreeComponent,

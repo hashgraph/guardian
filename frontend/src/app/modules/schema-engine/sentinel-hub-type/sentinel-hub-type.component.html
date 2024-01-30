@@ -1,0 +1,6 @@
+<mat-form-field appearance="outline" class="type-selector">
+    <mat-label>Coordinates</mat-label>
+    <mat-select (selectionChange)="onTypeChange()" [(ngModel)]="type" [disabled]="isDisabled" required>
+        <mat-option>NATURAL-COLOR</mat-option>
+    </mat-select>
+</mat-form-field>
