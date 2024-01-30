@@ -216,8 +216,8 @@ export async function importSchemaByFiles(
     const toolSchemas = await DatabaseServer.getSchemas({ topicId: { $in: tools.map(t => t.topicId) } });
 
     const updatedSchemasMap = {
-        '#GeoJSON': geoJson,
-        '#SentinelHUB': sentinelHub
+        '#GeoJSON': geoJson as any as Schema,
+        '#SentinelHUB': sentinelHub as any as Schema
     };
     const parsedSchemas: Schema[] = [];
     for (const item of files) {
