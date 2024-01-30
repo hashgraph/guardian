@@ -208,10 +208,11 @@ export class JsonToXlsx {
         row: number,
         parent?: SchemaField
     ) {
+        const fieldItemStyle = parent ? table.subItemStyle : table.fieldItemStyle;
         for (const header of table.fieldHeaders) {
             worksheet
                 .getCell(header.column, row)
-                .setStyle(parent ? table.subItemStyle : table.fieldItemStyle);
+                .setStyle(fieldItemStyle);
         }
         worksheet
             .getCell(table.getCol(Dictionary.QUESTION), row)
@@ -264,7 +265,7 @@ export class JsonToXlsx {
                 .setStyle(table.paramStyle);
             worksheet
                 .getCell(table.getCol(Dictionary.QUESTION), row)
-                .setStyle(fontToXlsx(field.font, table.fieldItemStyle));
+                .setStyle(fontToXlsx(field.font, fieldItemStyle));
         }
         if (field.enum) {
             const _enum = enumsCache.get(field.path);
@@ -379,12 +380,6 @@ export class JsonToXlsx {
         if (!parent || !parent.isRef || !Array.isArray(parent.fields) || parent.fields.length === 0) {
             return row;
         }
-
-        // for (const header of table.fieldHeaders) {
-        //     worksheet
-        //         .getCell(header.column, row)
-        //         .setStyle(table.subHeaderStyle);
-        // }
 
         const lvl = worksheet.getRow(row).getOutline() + 1;
         if (lvl > 7) {
