@@ -11,4 +11,11 @@ export class MapApi {
         const guardians = new Guardians();
         return await guardians.getMapApiKey();
     }
+
+    @Get('/sh')
+    @HttpCode(HttpStatus.OK)
+    async getSentinelKey() {
+        const guardians = new Guardians();
+        return await guardians.getSentinelApiKey();
+    }
 }

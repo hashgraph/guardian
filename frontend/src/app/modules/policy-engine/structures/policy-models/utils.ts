@@ -39,7 +39,8 @@ export class TemplateUtils {
 
     public static checkSchemaVariables(variables: SchemaVariables[]): void {
         const map = new Set<string>([
-            '#GeoJSON'
+            '#GeoJSON',
+            '#SentinelHUB'
         ]);
         for (const variable of variables) {
             variable.disable = false;

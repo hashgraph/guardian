@@ -2,23 +2,8 @@ import { ApiResponse } from '@api/helpers/api-response';
 import { emptyNotifier, initNotifier } from '@helpers/notifier';
 import { Controller } from '@nestjs/common';
 import { DatabaseServer, Logger, MessageError, MessageResponse, RunFunctionAsync, Users } from '@guardian/common';
-import { ISchema, MessageAPI, ModuleStatus, SchemaCategory, SchemaHelper, SchemaStatus, TopicType, Schema, SchemaNode } from '@guardian/interfaces';
-import {
-    checkForCircularDependency,
-    copySchemaAsync,
-    createSchemaAndArtifacts,
-    deleteSchema,
-    exportSchemas,
-    findAndPublishSchema,
-    getPageOptions,
-    getSchemaCategory,
-    importSchemaByFiles,
-    importSchemasByMessages,
-    importTagsByFiles,
-    incrementSchemaVersion,
-    prepareSchemaPreview,
-    updateSchemaDefs
-} from './helpers';
+import { ISchema, MessageAPI, ModuleStatus, Schema, SchemaCategory, SchemaHelper, SchemaNode, SchemaStatus, TopicType } from '@guardian/interfaces';
+import { checkForCircularDependency, copySchemaAsync, createSchemaAndArtifacts, deleteSchema, exportSchemas, findAndPublishSchema, getPageOptions, getSchemaCategory, importSchemaByFiles, importSchemasByMessages, importTagsByFiles, incrementSchemaVersion, prepareSchemaPreview, updateSchemaDefs } from './helpers';
 
 @Controller()
 export class SchemaService { }
@@ -207,7 +192,7 @@ export async function schemaAPI(): Promise<void> {
 
             // tslint:disable-next-line:no-shadowed-variable
             const getChildrenTypes = (schema: any) => {
-                return (new Schema(schema)).fields.filter(field => field.isRef && field.type !== '#GeoJSON').map(field => field.type);
+                return (new Schema(schema)).fields.filter(field => field.isRef && field.type !== '#GeoJSON' && field.type !== '#SentinelHUB').map(field => field.type);
             }
             // tslint:disable-next-line:no-shadowed-variable
             const createNode = async (schema: any) => {

@@ -113,6 +113,7 @@ export class ModuleValidator {
      */
     private async registerSchemas(): Promise<void> {
         this.schemas.set('#GeoJSON', SchemaValidator.fromSystem('#GeoJSON'));
+        this.schemas.set('#SentinelHUB', SchemaValidator.fromSystem('#SentinelHUB'));
         for (const validator of this.schemas.values()) {
             await validator.load();
         }

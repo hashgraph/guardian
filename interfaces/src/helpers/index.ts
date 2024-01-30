@@ -6,3 +6,4 @@ export * from './schema-helper';
 export * from './sort-objects-array';
 export * from './geojson-schema';
 export * from './generate-document';
+export * from './sentinel-hub';

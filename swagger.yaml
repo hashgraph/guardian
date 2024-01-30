@@ -2291,6 +2291,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /map/sh:
+    get:
+      operationId: MapApi_getSentinelKey
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags:
+        - map
   /metrics:
     get:
       operationId: MetricsApi_getMetrics
