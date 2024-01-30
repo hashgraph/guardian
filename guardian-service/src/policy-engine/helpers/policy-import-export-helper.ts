@@ -298,7 +298,7 @@ export class PolicyImportExportHelper {
             replaceAllEntities(policy.config, SchemaFields, item.oldIRI, item.newIRI);
             replaceAllVariables(policy.config, 'Schema', item.oldIRI, item.newIRI);
 
-            if(policy.projectSchema === item.oldIRI) {
+            if (policy.projectSchema === item.oldIRI) {
                 policy.projectSchema = item.newIRI
             }
         }

@@ -17,50 +17,41 @@
             <div class="policy-dropdown-container">
                 <ng-container *ngIf="isPolicy">
                     <p-dropdown
-                            (onChange)="onFilter($event)"
-                            [(ngModel)]="currentTopic"
+                        (onChange)="onFilter($event)"
+                        [(ngModel)]="currentTopic"
                         [options]="policies"
-                            [showClear]="false"
-                            class="policy-dropdown"
-                            optionLabel="name"
+                        [showClear]="false"
+                        class="policy-dropdown"
+                        optionLabel="name"
                         optionValue="topicId"
                         placeholder="Policy"></p-dropdown>
                 </ng-container>
                 <ng-container *ngIf="isTool">
                     <p-dropdown
-                            (onChange)="onFilter($event)"
-                            [(ngModel)]="currentTopic"
+                        (onChange)="onFilter($event)"
+                        [(ngModel)]="currentTopic"
                         [options]="tools"
-                            [showClear]="true"
-                            class="policy-dropdown"
-                            optionLabel="name"
+                        [showClear]="true"
+                        class="policy-dropdown"
+                        optionLabel="name"
                         optionValue="topicId"
                         placeholder="Tool"></p-dropdown>
                 </ng-container>
             </div>
             <div class="schema-actions-buttons-container">
-                <p-button
-                        (click)="onCreateSchemas()"
-                        *ngIf="canCreate"
-                    class="toolbar-btn"
-                >
+                <p-button (click)="onCreateSchemas()" *ngIf="canCreate" class="toolbar-btn">
                     <mat-icon class="toolbar-icons">add</mat-icon>
                     <span>Create a Schema</span>
                 </p-button>
-                <p-button
-                        (click)="onImportSchemas()"
-                        *ngIf="canImport"
-                    class="toolbar-btn"
-                >
+                <p-button (click)="onImportSchemas()" *ngIf="canImport" class="toolbar-btn">
                     <mat-icon class="toolbar-icons">file_open</mat-icon>
                     <span>Import</span>
                 </p-button>
                 <p-button
-                        (click)="onCompare()"
+                    (click)="onCompare()"
                     *ngIf="isPolicy || isModule || isTool"
-                        class="toolbar-btn compare-button"
-                    styleClass="p-button-outlined"
-                >
+                    class="toolbar-btn compare-button"
+                    styleClass="p-button-outlined">
                     <mat-icon class="toolbar-icons">compare</mat-icon>
                     <span>Compare</span>
                 </p-button>
@@ -159,13 +150,16 @@
                 </tr>
             </ng-template>
             <ng-template let-schema pTemplate="body">
-                <tr class="schemas-grid-row">
+                <tr class="schemas-grid-row" [attr.schema-status]="schema.status">
 
                     <ng-container *ngIf="type === 'policy'">
                         <td class="first-schema-grid-cell text-truncate" style="min-width: 140px; max-width: 150px;">
-                            <a [queryParams]="{
-                                policyId: policyIdByTopic[schema.topicId]
-                            }" [routerLink]="['/policy-configuration']">{{policyNameByTopic[schema.topicId]}}</a>
+                            <a 
+                                [queryParams]="{ policyId: policyIdByTopic[schema.topicId] }" 
+                                [routerLink]="['/policy-configuration']"
+                            >
+                                {{policyNameByTopic[schema.topicId]}}
+                            </a>
                         </td>
                         <td [pTooltip]="schema.name" class="text-truncate" style="min-width: 140px; max-width: 150px;">
                             {{ schema.name }}
@@ -186,11 +180,11 @@
                         </td>
                         <td style="min-width: 185px;">
                             <tags-explorer
-                                    [data]="schema._tags"
-                                    [entity]="tagEntity"
-                                    [owner]="owner"
+                                [data]="schema._tags"
+                                [entity]="tagEntity"
+                                [owner]="owner"
                                 [schemas]="tagSchemas"
-                                    [service]="tagsService"
+                                [service]="tagsService"
                                 [target]="schema.id"></tags-explorer>
                         </td>
                         <td style="min-width: 100px;">
@@ -204,6 +198,9 @@
                                 <div *ngSwitchCase="'UNPUBLISHED'">
                                     <span class="schema-status status-UNPUBLISHED">Unpublished</span>
                                 </div>
+                                <div *ngSwitchCase="'ERROR'">
+                                    <span class="schema-status status-ERROR">Incomplete</span>
+                                </div>
                                 <div *ngSwitchDefault>
                                     <span class="schema-status">{{schema.status}}</span>
                                 </div>
@@ -213,19 +210,15 @@
                             <div class="operations-row-container">
                                 <div>
                                     <div
-                                            (click)="onPublish(schema)"
+                                        (click)="onPublish(schema)"
                                         *ngIf="schema.status == 'DRAFT'"
-                                            [attr.disabled]="schema.topicId === 'draft'"
-                                        class="btn-approve">
-                                        Publish
-                                    </div>
+                                        [attr.disabled]="schema.topicId === 'draft'"
+                                        class="btn-approve">Publish</div>
                                     <div
-                                            (click)="onPublish(schema)"
+                                        (click)="onPublish(schema)"
                                         *ngIf="schema.status == 'UNPUBLISHED'"
-                                            [attr.disabled]="schema.topicId === 'draft'"
-                                        class="btn-approve">
-                                        Publish
-                                    </div>
+                                        [attr.disabled]="schema.topicId === 'draft'"
+                                        class="btn-approve">Publish</div>
                                 </div>
                             </div>
                         </td>
@@ -245,6 +238,9 @@
                                 <div *ngSwitchCase="'UNPUBLISHED'">
                                     <span class="schema-status status-UNPUBLISHED">Unpublished</span>
                                 </div>
+                                <div *ngSwitchCase="'ERROR'">
+                                    <span class="schema-status status-ERROR">Incomplete</span>
+                                </div>
                                 <div *ngSwitchDefault>
                                     <span class="schema-status">{{schema.status}}</span>
                                 </div>
@@ -254,19 +250,15 @@
                             <div class="operations-row-container">
                                 <div>
                                     <div
-                                            (click)="onPublish(schema)"
+                                        (click)="onPublish(schema)"
                                         *ngIf="schema.status == 'DRAFT'"
-                                            [attr.disabled]="schema.topicId === 'draft'"
-                                        class="btn-approve">
-                                        Publish
-                                    </div>
+                                        [attr.disabled]="schema.topicId === 'draft'"
+                                        class="btn-approve">Publish</div>
                                     <div
-                                            (click)="onPublish(schema)"
+                                        (click)="onPublish(schema)"
                                         *ngIf="schema.status == 'UNPUBLISHED'"
-                                            [attr.disabled]="schema.topicId === 'draft'"
-                                        class="btn-approve">
-                                        Publish
-                                    </div>
+                                        [attr.disabled]="schema.topicId === 'draft'"
+                                        class="btn-approve">Publish</div>
                                 </div>
                             </div>
                         </td>
@@ -292,6 +284,9 @@
                                 <div *ngSwitchCase="'UNPUBLISHED'">
                                     <span class="schema-status status-UNPUBLISHED">Unpublished</span>
                                 </div>
+                                <div *ngSwitchCase="'ERROR'">
+                                    <span class="schema-status status-ERROR">Incomplete</span>
+                                </div>
                                 <div *ngSwitchDefault>
                                     <span class="schema-status">{{schema.status}}</span>
                                 </div>
@@ -301,19 +296,15 @@
                             <div class="operations-row-container">
                                 <div>
                                     <div
-                                            (click)="onPublish(schema)"
+                                        (click)="onPublish(schema)"
                                         *ngIf="schema.status == 'DRAFT'"
-                                            [attr.disabled]="schema.topicId === 'draft'"
-                                        class="btn-approve">
-                                        Publish
-                                    </div>
+                                        [attr.disabled]="schema.topicId === 'draft'"
+                                        class="btn-approve">Publish</div>
                                     <div
-                                            (click)="onPublish(schema)"
+                                        (click)="onPublish(schema)"
                                         *ngIf="schema.status == 'UNPUBLISHED'"
-                                            [attr.disabled]="schema.topicId === 'draft'"
-                                        class="btn-approve">
-                                        Publish
-                                    </div>
+                                        [attr.disabled]="schema.topicId === 'draft'"
+                                        class="btn-approve">Publish</div>
                                 </div>
                             </div>
                         </td>
@@ -366,6 +357,9 @@
                                 <div *ngSwitchCase="'UNPUBLISHED'">
                                     <span class="schema-status status-UNPUBLISHED">Unpublished</span>
                                 </div>
+                                <div *ngSwitchCase="'ERROR'">
+                                    <span class="schema-status status-ERROR">Incomplete</span>
+                                </div>
                                 <div *ngSwitchDefault>
                                     <span class="schema-status">{{schema.status}}</span>
                                 </div>
@@ -375,19 +369,15 @@
                             <div class="operations-row-container">
                                 <div>
                                     <div
-                                            (click)="onPublishTagSchema(schema)"
+                                        (click)="onPublishTagSchema(schema)"
                                         *ngIf="schema.status == 'DRAFT'"
-                                            [attr.disabled]="schema.topicId === 'draft'"
-                                        class="btn-approve">
-                                        Publish
-                                    </div>
+                                        [attr.disabled]="schema.topicId === 'draft'"
+                                        class="btn-approve">Publish</div>
                                     <div
-                                            (click)="onPublishTagSchema(schema)"
+                                        (click)="onPublishTagSchema(schema)"
                                         *ngIf="schema.status == 'UNPUBLISHED'"
-                                            [attr.disabled]="schema.topicId === 'draft'"
-                                        class="btn-approve">
-                                        Publish
-                                    </div>
+                                        [attr.disabled]="schema.topicId === 'draft'"
+                                        class="btn-approve">Publish</div>
                                 </div>
                             </div>
                         </td>
@@ -416,13 +406,12 @@
                             </div>
                             <div>
                                 <div
-                                        class="btn-settings"
+                                    class="btn-settings"
                                     [matMenuTriggerFor]="schemaMenu"
                                     [matMenuTriggerData]="{ schema }"
                                     matTooltip="Menu"
-                                        matTooltipClass="guardian-tooltip"
-                                    matTooltipPosition="above"
-                                >
+                                    matTooltipClass="guardian-tooltip"
+                                    matTooltipPosition="above">
                                     <svg-icon src="/assets/images/icons/menu.svg" svgClass="color-primary"></svg-icon>
                                 </div>
                             </div>
@@ -497,9 +486,5 @@
             <mat-icon>delete</mat-icon>
             <span>Delete schema</span>
         </button>
-        <!--        <button *ngIf="!ifCanDelete(element)" mat-menu-item class="schema-menu-btn-des">-->
-        <!--            <mat-icon>delete</mat-icon>-->
-        <!--            <span>Delete schema</span>-->
-        <!--        </button>-->
     </ng-template>
 </mat-menu>

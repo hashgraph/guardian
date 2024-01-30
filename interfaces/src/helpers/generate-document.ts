@@ -226,4 +226,13 @@ export class DocumentGenerator {
         json['@context'] = context;
         return json;
     }
+
+    /**
+     * Generate example
+     * @param field field
+     * @returns example
+     */
+    public static generateExample(field: SchemaField) {
+        return DocumentGenerator._generateSimpleField(field, null, null);
+    }
 }

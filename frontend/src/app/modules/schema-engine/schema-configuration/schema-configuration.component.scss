@@ -3,7 +3,7 @@ form {
     flex-direction: column;
     width: 100%;
     font-size: 16px;
-  color: var(--color-grey-5);
+    color: var(--color-grey-5);
 }
 
 .context {
@@ -12,18 +12,18 @@ form {
 }
 
 .loading {
-  background: #fff;
-  position: absolute;
-  z-index: 99;
-  top: 8px;
-  left: 8px;
-  bottom: 8px;
-  right: 8px;
-  display: flex;
-  align-items: center;
-  justify-items: center;
-  justify-content: center;
-  align-content: center;
+    background: #fff;
+    position: absolute;
+    z-index: 99;
+    top: 8px;
+    left: 8px;
+    bottom: 8px;
+    right: 8px;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
 }
 
 .custom-fields-row {
@@ -94,7 +94,7 @@ form {
     align-content: center;
     align-items: center;
     display: flex;
-  color: var(--color-accent-red-1);
+    color: var(--color-accent-red-1);
     cursor: pointer;
     font-size: 25px;
 }
@@ -146,7 +146,7 @@ form {
     flex: 25;
     padding: 15px 20px;
     margin: 3px 0 0 0;
-  border: 1px solid var(--color-grey-3);
+    border: 1px solid var(--color-grey-3);
     border-radius: 6px;
     height: 60px;
     position: relative;
@@ -160,7 +160,7 @@ form {
     flex: 32;
     padding: 15px 20px;
     margin: 3px 0 0 0;
-  border: 1px solid var(--color-grey-3);
+    border: 1px solid var(--color-grey-3);
     border-radius: 6px;
     height: 60px;
     position: relative;
@@ -175,10 +175,10 @@ form {
     display: flex;
     flex-wrap: wrap;
     gap: 38px;
-  margin-bottom: 24px;
+    margin-bottom: 24px;
 }
 
-.optional-row > * {
+.optional-row>* {
     flex: 1;
 }
 
@@ -191,13 +191,13 @@ form {
 }
 
 .delimiter::after {
-  content: "";
+    content: "";
     position: absolute;
     height: 2px;
     top: 35px;
     left: 150px;
     right: 150px;
-  border-top: 1px solid var(--color-grey-4);
+    border-top: 1px solid var(--color-grey-4);
 }
 
 .block-delimiter {
@@ -210,7 +210,7 @@ form {
 .block-delimiter::after {
     content: attr(data-label);
     position: absolute;
-  color: var(--color-primary);
+    color: var(--color-primary);
     font-size: 20px;
     font-weight: 500;
     padding: 10px;
@@ -221,37 +221,37 @@ form {
 }
 
 .block-delimiter::before {
-  content: "";
+    content: "";
     position: absolute;
     height: 2px;
     top: 50px;
     left: 0px;
     right: 0px;
-  border-top: 2px solid var(--color-grey-4);
+    border-top: 2px solid var(--color-grey-4);
 }
 
 .add-btn {
-  color: var(--color-primary);
-  border: 1px solid #cdddfd;
+    color: var(--color-primary);
+    border: 1px solid #cdddfd;
 }
 
 .rmv-btn {
-  border: 1px solid #f5d7d7;
-  color: #ff432a;
+    border: 1px solid #f5d7d7;
+    color: #ff432a;
 }
 
 .add-btn,
 .rmv-btn {
-  background: #fff;
-  margin-bottom: 48px;
-  height: 40px;
+    background: #fff;
+    margin-bottom: 48px;
+    height: 40px;
     width: 100%;
-  border-radius: 8px;
+    border-radius: 8px;
     box-sizing: border-box;
     cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     padding: 15px;
     text-align: center;
 }
@@ -261,27 +261,27 @@ form {
 }
 
 .condition-label {
-  color: var(--color-grey-5);
-  font-family: Inter, sans-serif;
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: 18px;
+    color: var(--color-grey-5);
+    font-family: Inter, sans-serif;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 18px;
 }
 
 .equal-label {
-  margin-left: 24px;
-  margin-right: 24px;
+    margin-left: 24px;
+    margin-right: 24px;
 }
 
 .condition-if-container {
     display: flex;
-  flex-direction: column;
-  margin-bottom: 24px;
+    flex-direction: column;
+    margin-bottom: 24px;
 }
 
 .condition-item {
-  padding: 16px;
+    padding: 16px;
 }
 
 .choose-field {
@@ -296,7 +296,7 @@ form {
     display: flex;
     align-items: center;
     font-size: 14px;
-  color: #efc900;
+    color: #efc900;
 }
 
 .custom-field-required-warn mat-icon {
@@ -304,11 +304,11 @@ form {
 }
 
 .conditions-container {
-  border-radius: 8px;
-  border: 1px solid #e1e7ef;
-  background: #f9fafc;
+    border-radius: 8px;
+    border: 1px solid #e1e7ef;
+    background: #f9fafc;
     margin-top: 10px;
-  margin-bottom: 32px;
+    margin-bottom: 32px;
 }
 
 .re-order-handler {
@@ -322,7 +322,7 @@ form {
     position: relative;
 }
 
-.condition-container > .custom-fields {
+.condition-container>.custom-fields {
     padding-left: 25px;
 }
 
@@ -334,7 +334,7 @@ form {
     background-color: white;
     border-radius: 6px;
     box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
-    0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12);
+        0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12);
 }
 
 .cdk-drag-animating {
@@ -342,67 +342,67 @@ form {
 }
 
 .configurator-block-title {
-  color: #000;
-  font-family: Inter, sans-serif;
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: 18px;
-  margin-bottom: 32px;
+    color: #000;
+    font-family: Inter, sans-serif;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 18px;
+    margin-bottom: 32px;
 }
 
 .form-label {
-  color: #181818;
-  font-family: Inter, sans-serif;
-  font-size: 12px;
-  font-style: normal;
-  font-weight: 500;
+    color: #181818;
+    font-family: Inter, sans-serif;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 500;
 }
 
 .dropdown-field {
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
 
-  ::ng-deep {
-    .p-dropdown {
-      width: 100%;
+    ::ng-deep {
+        .p-dropdown {
+            width: 100%;
+        }
     }
-  }
 }
 
 .if-dropdown-field {
-  display: flex;
-  flex-direction: column;
-  width: 68%;
-  max-width: 68%;
+    display: flex;
+    flex-direction: column;
+    width: 68%;
+    max-width: 68%;
 
-  ::ng-deep {
-    .p-dropdown {
-      width: 100%;
+    ::ng-deep {
+        .p-dropdown {
+            width: 100%;
+        }
     }
-  }
 }
 
 .input-field-container {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 24px;
 }
 
 .if-condition-equality-container {
-  display: flex;
-  align-items: center;
-  margin-top: 24px;
+    display: flex;
+    align-items: center;
+    margin-top: 24px;
 }
 
 .no-conditions-label {
-  color: var(--color-grey-5);
-  text-align: center;
-  font-family: Inter, sans-serif;
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 16px;
+    color: var(--color-grey-5);
+    text-align: center;
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 16px;
 }
 
 .ng-invalid {

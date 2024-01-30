@@ -165,7 +165,8 @@ export async function importSchemaByFiles(
     owner: string,
     files: ISchema[],
     topicId: string,
-    notifier: INotifier
+    notifier: INotifier,
+    skipGenerateId = false
 ): Promise<ImportResult> {
     notifier.start('Import schemas');
 
@@ -174,7 +175,7 @@ export async function importSchemaByFiles(
 
     for (const file of files) {
         const oldUUID = file.iri ? file.iri.substring(1) : null;
-        const newUUID = GenerateUUIDv4();
+        const newUUID = skipGenerateId ? oldUUID : GenerateUUIDv4();
         schemasMap.push({
             oldID: file.id,
             newID: null,
@@ -213,6 +214,7 @@ export async function importSchemaByFiles(
 
     const tools = await DatabaseServer.getTools({ status: ModuleStatus.PUBLISHED }, { fields: ['topicId'] });
     const toolSchemas = await DatabaseServer.getSchemas({ topicId: { $in: tools.map(t => t.topicId) } });
+
     const updatedSchemasMap = {
         '#GeoJSON': geoJson,
         '#SentinelHUB': sentinelHub

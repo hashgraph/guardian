@@ -84,10 +84,14 @@ export async function replaceConfig(
  */
 export async function importSubTools(
     hederaAccount: IRootConfig,
-    messages: PolicyTool[] = [],
+    messages: {
+        uuid?: string,
+        name?: string,
+        messageId?: string
+    }[],
     notifier: INotifier,
 ): Promise<ImportResults> {
-    if (!messages.length) {
+    if (!messages?.length) {
         return { tools: [], errors: [] };
     }
 
@@ -114,6 +118,7 @@ export async function importSubTools(
                 type: 'tool',
                 hash: message.uuid,
                 name: message.name,
+                messageId: message.messageId,
                 error: 'Invalid tool'
             });
         }

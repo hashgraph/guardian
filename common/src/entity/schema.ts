@@ -175,6 +175,12 @@ export class Schema extends BaseEntity implements ISchema {
     defs?: string[]
 
     /**
+     * Errors
+     */
+    @Property({ nullable: true })
+    errors?: any[]
+
+    /**
      * Schema defaults
      */
     @BeforeCreate()

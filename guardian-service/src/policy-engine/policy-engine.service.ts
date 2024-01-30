@@ -41,7 +41,10 @@ import {
     VCMessage,
     VPMessage,
     VcDocumentDefinition,
-    VpDocumentDefinition
+    VpDocumentDefinition,
+    XlsxToJson,
+    JsonToXlsx,
+    GenerateBlocks
 } from '@guardian/common';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 import { PolicyComponentsUtils } from './policy-components-utils';
@@ -54,6 +57,7 @@ import { GuardiansService } from '@helpers/guardians';
 import { Inject } from '@helpers/decorators/inject';
 import { BlockAboutString } from './block-about';
 import { HashComparator } from '@analytics';
+import { getSchemaCategory, importSchemaByFiles, importSubTools } from '@api/helpers';
 
 /**
  * PolicyEngineChannel
@@ -550,7 +554,7 @@ export class PolicyEngineService {
                 if (msg.date) {
                     const date = new Date(msg.date);
                     model.discontinuedDate = date;
-                    message = new PolicyMessage(MessageType.Policy, MessageAction.DefferedDiscontinuePolicy);
+                    message = new PolicyMessage(MessageType.Policy, MessageAction.DeferredDiscontinuePolicy);
                 } else {
                     model.status = PolicyType.DISCONTINUED;
                     model.discontinuedDate = new Date();
@@ -893,6 +897,29 @@ export class PolicyEngineService {
             }
         });
 
+        this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_EXPORT_XLSX, async (msg) => {
+            try {
+                const { policyId } = msg;
+                const policy = await DatabaseServer.getPolicyById(policyId);
+                const components = await PolicyImportExport.loadPolicyComponents(policy);
+                const schemas = components.schemas;
+                const tools = components.tools;
+                const toolSchemas = [];
+                for (const tool of tools) {
+                    const _schemas = await DatabaseServer.getSchemas({ topicId: tool.topicId });
+                    for (const schema of _schemas) {
+                        toolSchemas.push(schema);
+                    }
+                }
+                const buffer = await JsonToXlsx.generate(schemas, tools, toolSchemas);
+                return new BinaryMessageResponse(buffer);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                console.error(error);
+                return new MessageError(error);
+            }
+        });
+
         this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_FILE_PREVIEW, async (msg) => {
             try {
                 const { zip, user } = msg;
@@ -957,6 +984,118 @@ export class PolicyEngineService {
                 }
                 notifier.result({
                     policyId: result.policy.id,
+                    errors: result.errors
+                });
+            }, async (error) => {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                notifier.error(error);
+            });
+
+            return new MessageResponse(task);
+        });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_XLSX_FILE_PREVIEW, async (msg) => {
+            try {
+                const { xlsx } = msg;
+                if (!xlsx) {
+                    throw new Error('file in body is empty');
+                }
+                const result = await XlsxToJson.parse(Buffer.from(xlsx.data));
+                result.updateSchemas(true);
+                return new MessageResponse(result.toJson());
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_XLSX, async (msg) => {
+            try {
+                const { xlsx, policyId, user } = msg;
+                const notifier = emptyNotifier();
+                const policy = await DatabaseServer.getPolicyById(policyId);
+                if (!xlsx) {
+                    throw new Error('file in body is empty');
+                }
+                if (!policy) {
+                    throw new Error('Unknown policy');
+                }
+                const owner = await this.getUserDid(user.username);
+                const root = await this.users.getHederaAccount(owner);
+
+                const xlsxResult = await XlsxToJson.parse(Buffer.from(xlsx.data));
+                const { tools, errors } = await importSubTools(root, xlsxResult.getToolIds(), notifier);
+                for (const tool of tools) {
+                    const subSchemas = await DatabaseServer.getSchemas({ topicId: tool.topicId });
+                    xlsxResult.updateTool(tool, subSchemas);
+                }
+                xlsxResult.updateSchemas(false);
+                xlsxResult.updatePolicy(policy);
+                xlsxResult.addErrors(errors);
+                GenerateBlocks.generate(xlsxResult);
+                const category = await getSchemaCategory(policy.topicId);
+                const result = await importSchemaByFiles(
+                    category,
+                    owner,
+                    xlsxResult.schemas,
+                    policy.topicId,
+                    notifier,
+                    true
+                );
+                await PolicyImportExportHelper.updatePolicyComponents(policy);
+
+                return new MessageResponse({
+                    policyId: policy.id,
+                    errors: result.errors
+                });
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_XLSX_ASYNC, async (msg) => {
+            const { xlsx, policyId, user, task } = msg;
+            const notifier = await initNotifier(task);
+
+            RunFunctionAsync(async () => {
+                const policy = await DatabaseServer.getPolicyById(policyId);
+
+                if (!xlsx) {
+                    throw new Error('file in body is empty');
+                }
+                if (!policy) {
+                    throw new Error('Unknown policy');
+                }
+
+                new Logger().info(`Import policy by xlsx`, ['GUARDIAN_SERVICE']);
+                const owner = await this.getUserDid(user.username);
+                const root = await this.users.getHederaAccount(owner);
+                notifier.start('File parsing');
+
+                const xlsxResult = await XlsxToJson.parse(Buffer.from(xlsx.data));
+                const { tools, errors } = await importSubTools(root, xlsxResult.getToolIds(), notifier);
+                for (const tool of tools) {
+                    const subSchemas = await DatabaseServer.getSchemas({ topicId: tool.topicId });
+                    xlsxResult.updateTool(tool, subSchemas);
+                }
+                xlsxResult.updateSchemas(false);
+                xlsxResult.updatePolicy(policy);
+                xlsxResult.addErrors(errors);
+                GenerateBlocks.generate(xlsxResult);
+                const category = await getSchemaCategory(policy.topicId);
+                const result = await importSchemaByFiles(
+                    category,
+                    owner,
+                    xlsxResult.schemas,
+                    policy.topicId,
+                    notifier,
+                    true
+                );
+                await PolicyImportExportHelper.updatePolicyComponents(policy);
+
+                notifier.result({
+                    policyId: policy.id,
                     errors: result.errors
                 });
             }, async (error) => {
@@ -1290,7 +1429,7 @@ export class PolicyEngineService {
                 policyId: src,
                 id: { $in: vcs }
             });
-            const srcVPs = await new DataBaseHelper(VpDocument).find( {
+            const srcVPs = await new DataBaseHelper(VpDocument).find({
                 policyId: src,
                 id: { $in: vps }
             });
@@ -1472,7 +1611,7 @@ export class PolicyEngineService {
                                 if (
                                     (element.getId() === vcDef.getId()) &&
                                     (element.toCredentialHash() !==
-                                    vcDef.toCredentialHash())
+                                        vcDef.toCredentialHash())
                                 ) {
                                     vpChanged = true;
                                     vcs[j] = vcDef

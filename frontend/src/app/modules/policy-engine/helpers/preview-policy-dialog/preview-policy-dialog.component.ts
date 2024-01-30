@@ -14,6 +14,7 @@ export class PreviewPolicyDialog {
     public policy!: any;
     public schemas!: string;
     public tokens!: string;
+    public tools!: string;
     public policyGroups!: string;
     public newVersions: any[] = [];
     public versionOfTopicId: any;
@@ -21,6 +22,8 @@ export class PreviewPolicyDialog {
     public similar!: any[];
     public module!: any;
     public tool!: any;
+    public xlsx!: any;
+    public errors!: any;
 
     constructor(
         public ref: DynamicDialogRef,
@@ -67,6 +70,38 @@ export class PreviewPolicyDialog {
 
         if (this.config.data.tool) {
             this.tool = this.config.data.tool?.tool;
+        }
+
+        if (this.config.data.xlsx) {
+            this.xlsx = this.config.data.xlsx;
+            const schemas = this.xlsx.schemas || [];
+            this.schemas = schemas
+                .map((s: any) => {
+                    if (s.version) {
+                        return `${s.name} (${s.version})`;
+                    }
+                    return s.name;
+                })
+                .join(', ');
+
+                const tools = this.xlsx.tools || [];
+                this.tools = tools
+                    .map((s: any) => {
+                        return s.name;
+                    })
+                    .join(', ');
+
+                tools
+            this.errors = this.xlsx.errors || [];
+            for (const error of this.errors) {
+                if (error.cell) {
+                    error.__path = `Cell: ${error.cell}`;
+                } else if (error.row) {
+                    error.__path = `Row: ${error.row}`;
+                } else if (error.col) {
+                    error.__path = `Col: ${error.col}`;
+                }
+            }
         }
 
         this.policies = this.config.data.policies || [];

@@ -47,6 +47,7 @@ export class SchemaHelper {
         field.description = _property.description || name;
         field.isArray = _property.type === SchemaDataTypes.array;
         field.comment = _property.$comment;
+        field.examples = Array.isArray(_property.examples) ? _property.examples : null;
         if (field.isArray) {
             _property = _property.items;
         }
@@ -59,7 +60,6 @@ export class SchemaHelper {
             field.pattern = _property.pattern ? String(_property.pattern) : null;
             field.enum = _property.enum;
             field.remoteLink = _property.$ref;
-            field.examples = Array.isArray(_property.examples) ? _property.examples : null;
         }
         field.readOnly = !!(_property.readOnly || readonly);
         return field;
@@ -73,7 +73,7 @@ export class SchemaHelper {
      * @param hidden
      * @param url
      */
-    public static parseField(name: string, prop: any, required: boolean, url: string): [SchemaField, number] {
+    public static parseField(name: string, prop: any, required: boolean, url: string): SchemaField {
         const field: SchemaField = SchemaHelper.parseProperty(name, prop);
         const {
             unit,
@@ -100,12 +100,31 @@ export class SchemaHelper {
             field.textColor = textColor;
             field.textSize = textSize;
             field.textBold = textBold;
+            if (textColor) {
+                if (!field.font) {
+                    field.font = {};
+                }
+                field.font.color = textColor;
+            }
+            if (textSize) {
+                if (!field.font) {
+                    field.font = {};
+                }
+                field.font.size = textSize;
+            }
+            if (textBold) {
+                if (!field.font) {
+                    field.font = {};
+                }
+                field.font.bold = textBold;
+            }
         }
         field.customType = customType ? String(customType) : null;
         field.isPrivate = isPrivate;
         field.required = required;
         field.hidden = !!hidden;
-        return [field, orderPosition];
+        field.order = orderPosition || -1;
+        return field;
     }
 
     /**
@@ -285,6 +304,7 @@ export class SchemaHelper {
         includeSystemProperties: boolean = false
     ): SchemaField[] {
         const fields: SchemaField[] = [];
+        const fieldsWithPositions: SchemaField[] = [];
 
         if (!document || !document.properties) {
             return fields;
@@ -297,14 +317,13 @@ export class SchemaHelper {
             }
         }
 
-        const fieldsWithPositions = [];
         const properties = Object.keys(document.properties);
         for (const name of properties) {
             const property = document.properties[name];
             if (!includeSystemProperties && property.readOnly) {
                 continue;
             }
-            const [field, orderPosition] = SchemaHelper.parseField(name, property, !!required[name], contextURL);
+            const field = SchemaHelper.parseField(name, property, !!required[name], contextURL);
             if (field.isRef) {
                 if (schemaCache.has(field.type)) {
                     const schema = schemaCache.get(field.type);
@@ -334,19 +353,14 @@ export class SchemaHelper {
                     });
                 }
             }
-            if (orderPosition) {
-                fieldsWithPositions.push({ field, orderPosition });
-            } else {
+            if (field.order === -1) {
                 fields.push(field);
+            } else {
+                fieldsWithPositions.push(field);
             }
-
         }
-
-        return fields.concat(
-            fieldsWithPositions
-                .sort((a, b) => a.orderPosition - b.orderPosition)
-                .map(item => item.field)
-        );
+        fieldsWithPositions.sort((a, b) => a.order < b.order ? -1 : 1);
+        return [...fields, ...fieldsWithPositions];
     }
 
     /**
@@ -823,7 +837,9 @@ export class SchemaHelper {
                 }
                 schema.iri = document.$id || null;
             } else {
-                schema.iri = null;
+                const type = SchemaHelper.buildType(schema.uuid, schema.version);
+                const ref = SchemaHelper.buildRef(type);
+                schema.iri = ref;
             }
             return schema;
         } catch (error) {
@@ -994,5 +1010,58 @@ export class SchemaHelper {
             result += ` (${status})`;
         }
         return result;
+    }
+
+    /**
+     * Get schema name with detailed information
+     * @param name Name
+     * @param version Version
+     * @param status Status
+     * @returns Name
+     */
+    public static checkErrors(schema: Schema): any[] {
+        const errors = [];
+        if (Array.isArray(schema.errors)) {
+            for (const error of schema.errors) {
+                errors.push({
+                    target: {
+                        type: 'schema'
+                    },
+                    ...error
+                });
+            }
+        }
+        if (Array.isArray(schema.fields)) {
+            for (const field of schema.fields) {
+                if (Array.isArray(field.errors)) {
+                    for (const error of field.errors) {
+                        errors.push({
+                            ...error,
+                            target: {
+                                type: 'field',
+                                field: field.name,
+                            }
+                        });
+                    }
+                }
+            }
+        }
+        if (Array.isArray(schema.conditions)) {
+            for (const condition of schema.conditions) {
+                if (Array.isArray(condition.errors)) {
+                    for (const error of condition.errors) {
+                        errors.push({
+                            ...error,
+                            target: {
+                                type: 'condition',
+                                field: condition.ifCondition?.field?.name,
+                                fieldValue: condition.ifCondition?.fieldValue
+                            }
+                        });
+                    }
+                }
+            }
+        }
+        return errors;
     }
 }

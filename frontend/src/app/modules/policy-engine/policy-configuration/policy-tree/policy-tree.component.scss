@@ -115,6 +115,8 @@
 
 .block-container[collapsed="true"] .block-expand mat-icon {
     transform: rotate(-90deg);
+    left: 4px;
+    top: 10px;
 }
 
 .block-container[selected="true"] .block-item {

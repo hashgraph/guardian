@@ -76,6 +76,7 @@ export async function schemaAPI(): Promise<void> {
                 item.entity = msg.entity;
                 item.document = msg.document;
                 item.status = SchemaStatus.DRAFT;
+                item.errors = [];
                 SchemaHelper.setVersion(item, null, item.version);
                 SchemaHelper.updateIRI(item);
                 await DatabaseServer.updateSchema(item.id, item);

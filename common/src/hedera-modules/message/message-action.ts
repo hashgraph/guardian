@@ -28,7 +28,7 @@ export enum MessageAction {
     CreateTool = 'create-tool',
     CreateContract = 'create-contract',
     DiscontinuePolicy = 'discontinue-policy',
-    DefferedDiscontinuePolicy = 'deffered-discontinue-policy',
+    DeferredDiscontinuePolicy = 'deferred-discontinue-policy',
     MigrateVC = 'migrate-vc-document',
     MigrateVP = 'migrate-vp-document',
 }

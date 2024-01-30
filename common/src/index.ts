@@ -11,4 +11,5 @@ export * from './hedera-modules';
 export * from './database-modules';
 export * from './secret-manager';
 export * from './import-export';
+export * from './xlsx';
 export const entities = Object.values(ent);

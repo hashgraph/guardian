@@ -29,43 +29,41 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     @Input('value') value!: any;
     @Input('private') canBePrivate!: boolean;
     @Input('properties') properties: { title: string; _id: string; value: string }[];
+    @Input('errors') errors!: any[];
 
     @Output('remove') remove = new EventEmitter<any>();
 
-    unit: boolean = true;
-    enum: boolean = false;
-    helpText: boolean = false;
-    loading: boolean = false;
-    keywords: string[] = [];
-    isString: boolean = false;
-
-    fieldType: FormControl;
-    fieldTypeSub: Subscription;
-
-    groupedFieldTypes: any = [
+    public unit: boolean = true;
+    public enum: boolean = false;
+    public helpText: boolean = false;
+    public loading: boolean = false;
+    public keywords: string[] = [];
+    public isString: boolean = false;
+    public fieldType: FormControl;
+    public property: FormControl;
+    public groupedFieldTypes: any = [
         {
             label: 'Units of measure',
             value: 'uom',
             items: [
-                {label: 'Prefix', value: 'prefix'},
-                {label: 'Postfix', value: 'postfix'},
+                { label: 'Prefix', value: 'prefix' },
+                { label: 'Postfix', value: 'postfix' },
             ],
         },
         {
             label: 'Hedera',
             value: 'h',
-            items: [{label: 'Account', value: 'hederaAccount'}],
+            items: [{ label: 'Account', value: 'hederaAccount' }],
         },
     ];
-
-    fieldTypes: any = [
-        {label: 'None', value: 'none'},
-        {label: 'Hidden', value: 'hidden'},
-        {label: 'Required', value: 'required'},
+    public fieldTypes: any = [
+        { label: 'None', value: 'none' },
+        { label: 'Hidden', value: 'hidden' },
+        { label: 'Required', value: 'required' },
 
     ];
-
-    property: FormControl;
+    public error: any;
+    private fieldTypeSub: Subscription;
     private fieldPropertySub: Subscription;
 
     constructor(
@@ -98,6 +96,11 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
                 this.fieldType.setValue('none')
             }
             this.property.setValue(this.field.property.value);
+            this.error = this.errors?.find((e) =>
+                e.target &&
+                e.target.type === 'field' &&
+                e.target.field === this.field.controlKey?.value
+            );
         }
         this.fieldTypeSub = this.fieldType.valueChanges.subscribe(value => {
             switch (value) {
@@ -129,7 +132,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     ngOnChanges(changes: SimpleChanges): void {
         if (changes?.types?.firstChange && this.types) {
             const newSimpleTypes = this.types.map((type: any) => {
-                return {label: type.name, value: type.value};
+                return { label: type.name, value: type.value };
             });
             this.groupedFieldTypes.unshift({
                 label: 'Simple Types',
@@ -139,7 +142,11 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
         }
         if (changes?.schemaTypes?.firstChange && this.schemaTypes) {
             const newSchemasTypes = this.schemaTypes.map((schemaType: any) => {
-                return {label: schemaType.name, value: schemaType.value};
+                return { 
+                    ...schemaType,
+                    label: schemaType.name, 
+                    value: schemaType.value 
+                };
             });
             this.groupedFieldTypes.push({
                 label: 'Schema defined',

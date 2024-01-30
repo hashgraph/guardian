@@ -127,6 +127,10 @@ export class Schema implements ISchema {
      */
     public component?: string;
     /**
+     * Errors
+     */
+    public errors?: any[];
+    /**
      * User DID
      * @private
      */
@@ -190,6 +194,7 @@ export class Schema implements ISchema {
                 this.context = null;
             }
             this.component = (schema as any).component || (schema as any).__component;
+            this.errors = schema.errors;
         } else {
             this._id = undefined;
             this.id = undefined;
@@ -213,6 +218,7 @@ export class Schema implements ISchema {
             this.documentURL = '';
             this.contextURL = '';
             this.iri = '';
+            this.errors = [];
         }
         if (this.document) {
             this.parseDocument(includeSystemProperties);
@@ -306,6 +312,37 @@ export class Schema implements ISchema {
     }
 
     /**
+     * Set new fields
+     * @param fields
+     * @param conditions
+     * @param force
+     */
+    public setFields(
+        fields?: SchemaField[],
+        conditions?: SchemaCondition[],
+        force = false
+    ): void {
+        if (force) {
+            this.fields = fields || [];
+            this.conditions = conditions || [];
+        } else {
+            if (Array.isArray(fields)) {
+                this.fields = fields;
+            }
+            if (Array.isArray(conditions)) {
+                this.conditions = conditions;
+            }
+        }
+    }
+
+    /**
+     * Update Document
+     */
+    public updateDocument(): void {
+        this.document = SchemaHelper.buildDocument(this, this.fields, this.conditions);
+    }
+
+    /**
      * Update
      * @param fields
      * @param conditions
@@ -318,6 +355,7 @@ export class Schema implements ISchema {
         if (!this.fields) {
             return null;
         }
+
         this.document = SchemaHelper.buildDocument(this, fields, conditions);
     }
 

@@ -18,25 +18,22 @@ import { ToolsService } from 'src/app/services/tools.service';
     styleUrls: ['./import-policy-dialog.component.scss'],
 })
 export class ImportPolicyDialog {
-    type?: string;
-    importType?: ImportType = 0;
-    dataForm = this.fb.group({
+    public type?: string;
+    public importType?: ImportType = 0;
+    public dataForm = this.fb.group({
         timestamp: ['', Validators.required],
     });
-    loading: boolean = false;
-    taskId: string | undefined = undefined;
-    expectedTaskMessages: number = 0;
+    public loading: boolean = false;
+    public taskId: string | undefined = undefined;
+    public expectedTaskMessages: number = 0;
 
     public isImportTypeSelected: boolean = false;
 
-    items: MenuItem[] = [
-        {label: 'Import from file'},
-        {label: 'Import from IPFS'},
+    public items: MenuItem[] = [
+        { label: 'Import from file' },
+        { label: 'Import from IPFS' },
         // { label: 'Open Source Policies' },
     ];
-
-    public innerWidth: any;
-    public innerHeight: any;
 
     public openSourcePolicies: any[] = [];
     public selectedOpenSourcePolicy: any;
@@ -61,6 +58,9 @@ export class ImportPolicyDialog {
             case 'tool':
                 this.type = 'tool';
                 break;
+            case 'xlsx':
+                this.type = 'xlsx';
+                break;
             default:
                 this.type = 'policy';
                 break;
@@ -73,11 +73,9 @@ export class ImportPolicyDialog {
             });
             this.importFromMessage();
         }
-    }
-
-    ngOnInit() {
-        this.innerWidth = window.innerWidth;
-        this.innerHeight = window.innerHeight;
+        if (this.type === 'xlsx') {
+            this.importType = ImportType.FILE;
+        }
     }
 
     handleChangeTab(order: number): void {
@@ -106,7 +104,7 @@ export class ImportPolicyDialog {
             this.taskService.get(taskId).subscribe(
                 (task) => {
                     this.loading = false;
-                    const {result} = task;
+                    const { result } = task;
                     this.ref.close({
                         type: 'message',
                         data: this.dataForm.get('timestamp')?.value,
@@ -131,7 +129,9 @@ export class ImportPolicyDialog {
     }
 
     public importFromFile(file: any) {
-        if (this.type === 'module') {
+        if (this.type === 'xlsx') {
+            this.fromExcel(file);
+        } else if (this.type === 'module') {
             this.moduleFromFile(file);
         } else if (this.type === 'tool') {
             this.toolFromFile(file);
@@ -191,7 +191,7 @@ export class ImportPolicyDialog {
         const messageId = this.dataForm.get('timestamp')?.value;
         this.policyEngineService.pushPreviewByMessage(messageId).subscribe(
             (result) => {
-                const {taskId, expectation} = result;
+                const { taskId, expectation } = result;
                 this.taskId = taskId;
                 this.expectedTaskMessages = expectation;
             },
@@ -261,11 +261,22 @@ export class ImportPolicyDialog {
         });
     }
 
-    // public OnViewDocumentation(): void {
-
-    // }
-
-    // public OnDirectDownload(): void {
-
-    // }
+    private fromExcel(file: any) {
+        const reader = new FileReader()
+        reader.readAsArrayBuffer(file);
+        reader.addEventListener('load', (e: any) => {
+            const arrayBuffer = e.target.result;
+            this.loading = true;
+            this.policyEngineService.previewByXlsx(arrayBuffer).subscribe((result) => {
+                this.loading = false;
+                this.ref.close({
+                    type: 'xlsx',
+                    data: arrayBuffer,
+                    xlsx: result
+                });
+            }, (e) => {
+                this.loading = false;
+            });
+        });
+    }
 }

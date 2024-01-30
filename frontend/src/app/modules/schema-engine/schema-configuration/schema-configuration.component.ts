@@ -1,8 +1,32 @@
 import { NGX_MAT_DATE_FORMATS, NgxMatDateAdapter } from '@angular-material-components/datetime-picker';
 import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, } from '@angular/core';
-import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators, } from '@angular/forms';
-import { FieldTypesDictionary, Schema, SchemaCategory, SchemaCondition, SchemaEntity, SchemaField, SchemaHelper, UnitSystem, } from '@guardian/interfaces';
+import {
+    Component,
+    EventEmitter,
+    Input,
+    OnInit,
+    Output,
+    SimpleChanges,
+} from '@angular/core';
+import {
+    AbstractControl,
+    FormBuilder,
+    FormControl,
+    FormGroup,
+    ValidationErrors,
+    ValidatorFn,
+    Validators,
+} from '@angular/forms';
+import {
+    FieldTypesDictionary,
+    Schema,
+    SchemaCategory,
+    SchemaCondition,
+    SchemaEntity,
+    SchemaField,
+    SchemaHelper,
+    UnitSystem,
+} from '@guardian/interfaces';
 import * as moment from 'moment';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -29,7 +53,7 @@ enum SchemaType {
     styleUrls: ['./schema-configuration.component.scss'],
     providers: [
         { provide: NgxMatDateAdapter, useClass: NgxMatMomentAdapter },
-        {provide: NGX_MAT_DATE_FORMATS, useValue: DATETIME_FORMATS}
+        { provide: NGX_MAT_DATE_FORMATS, useValue: DATETIME_FORMATS }
     ]
 })
 export class SchemaConfigurationComponent implements OnInit {
@@ -48,10 +72,8 @@ export class SchemaConfigurationComponent implements OnInit {
 
     public started = false;
     public loading: boolean = true;
-
     public fields!: FieldControl[];
     public conditions!: ConditionControl[];
-
     public fieldsForm!: FormGroup;
     public conditionsForm!: FormGroup;
     public dataForm!: FormGroup;
@@ -59,27 +81,75 @@ export class SchemaConfigurationComponent implements OnInit {
     public typesMap!: any;
     public types!: any[];
     public measureTypes!: any[];
-
+    public errors!: any[];
     public schemaTypes!: any[];
     public schemaTypeMap!: any;
     public subSchemas!: Schema[];
     public destroy$: Subject<boolean> = new Subject<boolean>();
-
     private _patternByNumberType: any = {
         duration: /^[0-9]+$/,
         number: /^-?\d*(\.\d+)?$/,
         integer: /^-?\d*$/
     };
+    public systemEntityOptions: { label: string; value: string }[] = [
+        { label: 'STANDARD REGISTRY', value: 'STANDARD_REGISTRY' },
+        { label: 'USER', value: 'USER' },
+    ];
+    public policyModuleEntityOptions: { label: string; value: string }[] = [
+        { label: 'Default', value: 'NONE' },
+        { label: 'Verifiable Credential', value: 'VC' },
+        { label: 'Encrypted Verifiable Credential', value: 'EVC' },
+    ];
 
-    systemEntityOptions: { label: string; value: string }[] = [
-        {label: 'STANDARD REGISTRY', value: 'STANDARD_REGISTRY'},
-        {label: 'USER', value: 'USER'},
-    ];
-    policyModuleEntityOptions: { label: string; value: string }[] = [
-        {label: 'Default', value: 'NONE'},
-        {label: 'Verifiable Credential', value: 'VC'},
-        {label: 'Encrypted Verifiable Credential', value: 'EVC'},
-    ];
+    public get isSystem(): boolean {
+        return this.schemaType === SchemaType.System;
+    }
+
+    public get isTag(): boolean {
+        return this.schemaType === SchemaType.Tag;
+    }
+
+    public get isModule(): boolean {
+        return this.schemaType === SchemaType.Module;
+    }
+
+    public get isTool(): boolean {
+        return this.schemaType === SchemaType.Tool;
+    }
+
+    public get isPolicy(): boolean {
+        return (
+            this.schemaType !== SchemaType.System &&
+            this.schemaType !== SchemaType.Tag &&
+            this.schemaType !== SchemaType.Module &&
+            this.schemaType !== SchemaType.Tool
+        );
+    }
+
+    public get isEdit(): boolean {
+        return this.type === 'version' || this.type === 'edit';
+    }
+
+    public get isNewVersion(): boolean {
+        return this.type === 'version';
+    }
+
+    public get category(): SchemaCategory {
+        switch (this.schemaType) {
+            case SchemaType.Tag:
+                return SchemaCategory.TAG;
+            case SchemaType.Policy:
+                return SchemaCategory.POLICY;
+            case SchemaType.Module:
+                return SchemaCategory.MODULE;
+            case SchemaType.Tool:
+                return SchemaCategory.TOOL;
+            case SchemaType.System:
+                return SchemaCategory.SYSTEM;
+            default:
+                return SchemaCategory.POLICY;
+        }
+    }
 
     constructor(
         private schemaService: SchemaService,
@@ -148,56 +218,6 @@ export class SchemaConfigurationComponent implements OnInit {
         console.log(this);
     }
 
-    public get isSystem(): boolean {
-        return this.schemaType === SchemaType.System;
-    }
-
-    public get isTag(): boolean {
-        return this.schemaType === SchemaType.Tag;
-    }
-
-    public get isModule(): boolean {
-        return this.schemaType === SchemaType.Module;
-    }
-
-    public get isTool(): boolean {
-        return this.schemaType === SchemaType.Tool;
-    }
-
-    public get isPolicy(): boolean {
-        return (
-            this.schemaType !== SchemaType.System &&
-            this.schemaType !== SchemaType.Tag &&
-            this.schemaType !== SchemaType.Module &&
-            this.schemaType !== SchemaType.Tool
-        );
-    }
-
-    public get isEdit(): boolean {
-        return this.type === 'version' || this.type === 'edit';
-    }
-
-    public get isNewVersion(): boolean {
-        return this.type === 'version';
-    }
-
-    public get category(): SchemaCategory {
-        switch (this.schemaType) {
-            case SchemaType.Tag:
-                return SchemaCategory.TAG;
-            case SchemaType.Policy:
-                return SchemaCategory.POLICY;
-            case SchemaType.Module:
-                return SchemaCategory.MODULE;
-            case SchemaType.Tool:
-                return SchemaCategory.TOOL;
-            case SchemaType.System:
-                return SchemaCategory.SYSTEM;
-            default:
-                return SchemaCategory.POLICY;
-        }
-    }
-
     get currentEntity(): any {
         return this.dataForm?.get('entity')?.value;
     }
@@ -235,267 +255,6 @@ export class SchemaConfigurationComponent implements OnInit {
     public ngOnDestroy() {
         this.destroy$.next(true);
         this.destroy$.unsubscribe();
-    }
-
-    public onFilter(event: any) {
-        const topicId = event.value;
-        this.loading = true;
-        this.updateSubSchemas(topicId).then(() => {
-            setTimeout(() => {
-                this.loading = false;
-            }, 500);
-        });
-    }
-
-    public onConditionFieldRemove(
-        condition: ConditionControl,
-        conditionField: FieldControl,
-        type: 'then' | 'else'
-    ) {
-        condition.removeControl(type, conditionField);
-    }
-
-    public onConditionFieldAdd(condition: ConditionControl, type: 'then' | 'else') {
-        const field = new FieldControl(
-            null,
-            this.getType(null),
-            this.destroy$,
-            this.defaultFieldsMap,
-            this.dataForm?.get('entity') as FormControl,
-            this.getFieldName()
-        );
-        condition.addControl(type, field);
-    }
-
-    private updateSubSchemas(topicId?: string): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
-            if (!topicId || topicId === 'draft') {
-                this.mappingSubSchemas();
-                resolve();
-            }
-            this.schemaService.getSubSchemas(topicId, this.category).subscribe((data) => {
-                const subSchemas = SchemaHelper.map(data || []);
-                this.mappingSubSchemas(subSchemas, topicId);
-                resolve();
-            }, (error) => {
-                console.error(error);
-                resolve();
-            });
-        })
-    }
-
-    private mappingSubSchemas(data?: Schema[], topicId?: string): void {
-        this.subSchemas = [];
-        this.schemaTypes = [];
-        if (Array.isArray(data)) {
-            const currentSchemaId = this.value?.document?.$id;
-            for (const schema of data) {
-                if (this.checkDependencies(currentSchemaId, schema)) {
-                    this.subSchemas.push(schema);
-                }
-            }
-            for (const schema of this.subSchemas) {
-                const value = this.getId('schemas');
-                const type = schema.topicId === topicId ? 'main' : 'sub';
-                const name = schema.name;
-                const version = schema.version ? `v${schema.version}` : '';
-                const component = (schema.topicId !== topicId && schema.component) ? schema.component : '';
-                let title = name;
-                if (component) {
-                    title = component + ': ' + title;
-                }
-                if (version) {
-                    title = title + ` (${version})`;
-                }
-                this.schemaTypes.push({
-                    type,
-                    name,
-                    version,
-                    component,
-                    title,
-                    value
-                });
-                this.schemaTypeMap[value] = {
-                    type: schema.iri,
-                    format: undefined,
-                    pattern: undefined,
-                    isRef: true,
-                }
-            }
-        }
-    }
-
-    public onConditionAdd() {
-        const condition = new ConditionControl(undefined, '');
-        this.conditions.push(condition);
-        this.conditionsForm.addControl(condition.name, condition.createGroup());
-    }
-
-    public onConditionRemove(condition: ConditionControl) {
-        this.conditions = this.conditions.filter((e) => e != condition);
-        this.conditionsForm.removeControl(condition.name);
-    }
-
-    public onAdd(event: MouseEvent) {
-        event.preventDefault();
-        const control = new FieldControl(
-            null,
-            this.getType(null),
-            this.destroy$,
-            this.defaultFieldsMap,
-            this.dataForm?.get('entity') as FormControl,
-            this.getFieldName()
-        );
-        control.append(this.fieldsForm);
-        this.fields.push(control);
-        this.fields = this.fields.slice();
-        this.changeFields.emit(this.fields);
-    }
-
-    public onRemove(item: FieldControl) {
-        this.removeConditionsByField(item);
-        this.fields = this.fields.filter((e) => e != item);
-        this.changeFields.emit(this.fields);
-        item.remove(this.fieldsForm);
-    }
-
-    public getSchema() {
-        const value = this.dataForm.value;
-        const schema = this.buildSchema(value);
-        schema.topicId = value.topicId;
-        schema.system = this.isSystem;
-        schema.active = false;
-        schema.readonly = false;
-        schema.category = this.isPolicy ? SchemaCategory.POLICY : (
-            this.isTag ? SchemaCategory.TAG : SchemaCategory.SYSTEM
-        );
-        return schema;
-    }
-
-    private getFieldName(): string | undefined {
-        const map: any = {};
-        for (const f of this.fields) {
-            map[f.key] = true;
-        }
-        for (const c of this.conditions) {
-            for (const f of c.thenControls) {
-                map[f.key] = true;
-            }
-            for (const f of c.elseControls) {
-                map[f.key] = true;
-            }
-        }
-        for (let index = 0; index < 1000; index++) {
-            const element = `field${index}`;
-            if (!map[element]) {
-                return element;
-            }
-        }
-        return undefined;
-    }
-
-    public onIfConditionFieldChange(condition: ConditionControl, field: FieldControl) {
-        if (condition.changeEvents) {
-            condition.fieldValue.patchValue('', {
-                emitEvent: false
-            });
-            condition.changeEvents.forEach((item: any) => item.unsubscribe());
-        }
-
-        condition.changeEvents = [];
-        condition.changeEvents.push(field.controlType.valueChanges
-            .pipe(takeUntil(this.destroy$))
-            .subscribe(() => {
-                condition.fieldValue.patchValue('', {
-                    emitEvent: false
-                });
-                this.ifFormatValue(condition, field);
-            }));
-        condition.changeEvents.push(field.controlRequired.valueChanges
-            .pipe(takeUntil(this.destroy$))
-            .subscribe(() => {
-                this.ifFormatValue(condition, field);
-            }));
-        condition.changeEvents.push(field.controlArray.valueChanges
-            .pipe(takeUntil(this.destroy$))
-            .subscribe(() => {
-                this.ifFormatValue(condition, field);
-            }));
-
-        this.ifFormatValue(condition, field);
-    }
-
-    public isNumberOrEmptyValidator(): ValidatorFn {
-        return (control: AbstractControl): ValidationErrors | null => {
-            const value = control.value;
-            if (!value || typeof (value) === 'number') {
-                return null;
-            }
-            return {
-                isNotNumber: {
-                    valid: false
-                }
-            };
-        };
-    }
-
-    public getFieldsForCondition(): FieldControl[] {
-        return this.fields.filter(item => item.isCondition(this.schemaTypeMap));
-    }
-
-    public isConditionType1(condition: ConditionControl): boolean {
-        const type = condition.fieldControl?.type;
-        return (
-            !!type &&
-            'boolean' !== this.schemaTypeMap[type].type &&
-            !['time', 'date-time', 'date'].includes(this.schemaTypeMap[type].format)
-        );
-    }
-
-    public isConditionType2(condition: ConditionControl): boolean {
-        const type = condition.fieldControl?.type;
-        return (
-            !!type &&
-            this.schemaTypeMap[type].type === 'string' &&
-            this.schemaTypeMap[type].format === 'time'
-        );
-    }
-
-    public isConditionType3(condition: ConditionControl): boolean {
-        const type = condition.fieldControl?.type;
-        return (
-            !!type &&
-            this.schemaTypeMap[type].type === 'string' &&
-            this.schemaTypeMap[type].format === 'date-time'
-        );
-    }
-
-    private removeConditionsByField(field: FieldControl) {
-        const conditionsToRemove = this.conditions.filter((item) => {
-            return item.field.value === field;
-        });
-        for (const condition of conditionsToRemove) {
-            this.conditions = this.conditions.filter((e) => e != condition);
-            this.conditionsForm.removeControl(condition.name);
-        }
-    }
-
-    public isConditionType4(condition: ConditionControl): boolean {
-        const type = condition.fieldControl?.type;
-        return (
-            !!type &&
-            this.schemaTypeMap[type].type === 'string' &&
-            this.schemaTypeMap[type].format === 'date'
-        );
-    }
-
-    public isConditionType5(condition: ConditionControl): boolean {
-        const type = condition.fieldControl?.type;
-        return !!type && this.schemaTypeMap[type].type === 'boolean';
-    }
-
-    public drop(event: CdkDragDrop<any[]>) {
-        moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
     }
 
     private getId(type: 'default' | 'measure' | 'schemas'): string {
@@ -587,6 +346,74 @@ export class SchemaConfigurationComponent implements OnInit {
             this.fields = [];
             this.changeFields.emit(this.fields);
             this.conditions = [];
+        }
+    }
+
+    public onFilter(event: any) {
+        const topicId = event.value;
+        this.loading = true;
+        this.updateSubSchemas(topicId).then(() => {
+            setTimeout(() => {
+                this.loading = false;
+            }, 500);
+        });
+    }
+
+    private updateSubSchemas(topicId?: string): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            if (!topicId || topicId === 'draft') {
+                this.mappingSubSchemas();
+                resolve();
+            }
+            this.schemaService.getSubSchemas(topicId, this.category).subscribe((data) => {
+                const subSchemas = SchemaHelper.map(data || []);
+                this.mappingSubSchemas(subSchemas, topicId);
+                resolve();
+            }, (error) => {
+                console.error(error);
+                resolve();
+            });
+        })
+    }
+
+    private mappingSubSchemas(data?: Schema[], topicId?: string): void {
+        this.subSchemas = [];
+        this.schemaTypes = [];
+        if (Array.isArray(data)) {
+            const currentSchemaId = this.value?.document?.$id;
+            for (const schema of data) {
+                if (this.checkDependencies(currentSchemaId, schema)) {
+                    this.subSchemas.push(schema);
+                }
+            }
+            for (const schema of this.subSchemas) {
+                const value = this.getId('schemas');
+                const type = schema.topicId === topicId ? 'main' : 'sub';
+                const name = schema.name;
+                const version = schema.version ? `v${schema.version}` : '';
+                const component = (schema.topicId !== topicId && schema.component) ? schema.component : '';
+                let title = name;
+                if (component) {
+                    title = component + ': ' + title;
+                }
+                if (version) {
+                    title = title + ` (${version})`;
+                }
+                this.schemaTypes.push({
+                    type,
+                    name,
+                    version,
+                    component,
+                    title,
+                    value
+                });
+                this.schemaTypeMap[value] = {
+                    type: schema.iri,
+                    format: undefined,
+                    pattern: undefined,
+                    isRef: true,
+                }
+            }
         }
     }
 
@@ -702,8 +529,10 @@ export class SchemaConfigurationComponent implements OnInit {
                 conditions: {}
             });
         }
+
         const fields = this.value.fields;
         const conditions = this.value.conditions || [];
+        const errors = this.value.errors || [];
         const conditionsFields: string[] = [];
         conditions.forEach((item) => {
             conditionsFields.push(
@@ -716,13 +545,7 @@ export class SchemaConfigurationComponent implements OnInit {
 
         this.updateFieldControls(fields, conditionsFields);
         this.updateConditionControls(conditions);
-    }
-
-    public isValid(): boolean {
-        if (this.dataForm) {
-            return this.dataForm.valid;
-        }
-        return false;
+        this.errors = errors;
     }
 
     private getType(field: SchemaField | null): string {
@@ -762,6 +585,92 @@ export class SchemaConfigurationComponent implements OnInit {
         const stringType = this.types.find((type) => type.name === 'String')
             ?.value;
         return (field.type === 'string' && stringType) || '';
+    }
+
+    private getFieldName(): string | undefined {
+        const map: any = {};
+        for (const f of this.fields) {
+            map[f.key] = true;
+        }
+        for (const c of this.conditions) {
+            for (const f of c.thenControls) {
+                map[f.key] = true;
+            }
+            for (const f of c.elseControls) {
+                map[f.key] = true;
+            }
+        }
+        for (let index = 0; index < 1000; index++) {
+            const element = `field${index}`;
+            if (!map[element]) {
+                return element;
+            }
+        }
+        return undefined;
+    }
+
+    public onConditionFieldRemove(
+        condition: ConditionControl,
+        conditionField: FieldControl,
+        type: 'then' | 'else'
+    ) {
+        condition.removeControl(type, conditionField);
+    }
+
+    public onConditionFieldAdd(condition: ConditionControl, type: 'then' | 'else') {
+        const field = new FieldControl(
+            null,
+            this.getType(null),
+            this.destroy$,
+            this.defaultFieldsMap,
+            this.dataForm?.get('entity') as FormControl,
+            this.getFieldName()
+        );
+        condition.addControl(type, field);
+    }
+
+    public onConditionAdd() {
+        const condition = new ConditionControl(undefined, '');
+        this.conditions.push(condition);
+        this.conditionsForm.addControl(condition.name, condition.createGroup());
+    }
+
+    public onConditionRemove(condition: ConditionControl) {
+        this.conditions = this.conditions.filter((e) => e != condition);
+        this.conditionsForm.removeControl(condition.name);
+    }
+
+    public onAdd(event: MouseEvent) {
+        event.preventDefault();
+        const control = new FieldControl(
+            null,
+            this.getType(null),
+            this.destroy$,
+            this.defaultFieldsMap,
+            this.dataForm?.get('entity') as FormControl,
+            this.getFieldName()
+        );
+        control.append(this.fieldsForm);
+        this.fields.push(control);
+        this.fields = this.fields.slice();
+        this.changeFields.emit(this.fields);
+    }
+
+    public onRemove(item: FieldControl) {
+        this.removeConditionsByField(item);
+        this.fields = this.fields.filter((e) => e != item);
+        this.changeFields.emit(this.fields);
+        item.remove(this.fieldsForm);
+    }
+
+    private removeConditionsByField(field: FieldControl) {
+        const conditionsToRemove = this.conditions.filter((item) => {
+            return item.field.value === field;
+        });
+        for (const condition of conditionsToRemove) {
+            this.conditions = this.conditions.filter((e) => e != condition);
+            this.conditionsForm.removeControl(condition.name);
+        }
     }
 
     private buildSchemaField(fieldConfig: FieldControl, data: any): SchemaField {
@@ -887,6 +796,50 @@ export class SchemaConfigurationComponent implements OnInit {
         return schema;
     }
 
+    public getSchema() {
+        const value = this.dataForm.value;
+        const schema = this.buildSchema(value);
+        schema.topicId = value.topicId;
+        schema.system = this.isSystem;
+        schema.active = false;
+        schema.readonly = false;
+        schema.category = this.isPolicy ? SchemaCategory.POLICY : (
+            this.isTag ? SchemaCategory.TAG : SchemaCategory.SYSTEM
+        );
+        return schema;
+    }
+
+    public onIfConditionFieldChange(condition: ConditionControl, field: FieldControl) {
+        if (condition.changeEvents) {
+            condition.fieldValue.patchValue('', {
+                emitEvent: false
+            });
+            condition.changeEvents.forEach((item: any) => item.unsubscribe());
+        }
+
+        condition.changeEvents = [];
+        condition.changeEvents.push(field.controlType.valueChanges
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(() => {
+                condition.fieldValue.patchValue('', {
+                    emitEvent: false
+                });
+                this.ifFormatValue(condition, field);
+            }));
+        condition.changeEvents.push(field.controlRequired.valueChanges
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(() => {
+                this.ifFormatValue(condition, field);
+            }));
+        condition.changeEvents.push(field.controlArray.valueChanges
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(() => {
+                this.ifFormatValue(condition, field);
+            }));
+
+        this.ifFormatValue(condition, field);
+    }
+
     private ifFormatValue(condition: ConditionControl, field: FieldControl) {
         const type = this.schemaTypeMap[field.controlType.value];
         const isNumber = ['number', 'integer'].includes(type.type) || type.format === 'duration';
@@ -996,6 +949,72 @@ export class SchemaConfigurationComponent implements OnInit {
             });
     }
 
+    public isNumberOrEmptyValidator(): ValidatorFn {
+        return (control: AbstractControl): ValidationErrors | null => {
+            const value = control.value;
+            if (!value || typeof (value) === 'number') {
+                return null;
+            }
+            return {
+                isNotNumber: {
+                    valid: false
+                }
+            };
+        };
+    }
+
+    public getFieldsForCondition(): FieldControl[] {
+        return this.fields.filter(item => item.isCondition(this.schemaTypeMap));
+    }
+
+    public isValid(): boolean {
+        if (this.dataForm) {
+            return this.dataForm.valid;
+        }
+        return false;
+    }
+
+    public isConditionType1(condition: ConditionControl): boolean {
+        const type = condition.fieldControl?.type;
+        return (
+            !!type &&
+            'boolean' !== this.schemaTypeMap[type].type &&
+            !['time', 'date-time', 'date'].includes(this.schemaTypeMap[type].format)
+        );
+    }
+
+    public isConditionType2(condition: ConditionControl): boolean {
+        const type = condition.fieldControl?.type;
+        return (
+            !!type &&
+            this.schemaTypeMap[type].type === 'string' &&
+            this.schemaTypeMap[type].format === 'time'
+        );
+    }
+
+    public isConditionType3(condition: ConditionControl): boolean {
+        const type = condition.fieldControl?.type;
+        return (
+            !!type &&
+            this.schemaTypeMap[type].type === 'string' &&
+            this.schemaTypeMap[type].format === 'date-time'
+        );
+    }
+
+    public isConditionType4(condition: ConditionControl): boolean {
+        const type = condition.fieldControl?.type;
+        return (
+            !!type &&
+            this.schemaTypeMap[type].type === 'string' &&
+            this.schemaTypeMap[type].format === 'date'
+        );
+    }
+
+    public isConditionType5(condition: ConditionControl): boolean {
+        const type = condition.fieldControl?.type;
+        return !!type && this.schemaTypeMap[type].type === 'boolean';
+    }
+
     private fieldNameValidator(): ValidatorFn {
         return (group: any): ValidationErrors | null => {
             const all: FormControl[] = [];
@@ -1039,5 +1058,9 @@ export class SchemaConfigurationComponent implements OnInit {
 
             return error;
         };
+    }
+
+    public drop(event: CdkDragDrop<any[]>) {
+        moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
     }
 }

@@ -468,7 +468,6 @@ export class DocumentPropertyModel extends PropertyModel<any> {
     ) {
         super(name, PropertyType.Property, value, lvl, path);
         this.isSystem = this.checkSystemField(name, path, type, value);
-        console.debug(this.isSystem, path, type);
     }
 
     private checkSystemField(

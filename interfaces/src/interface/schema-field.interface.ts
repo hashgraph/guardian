@@ -130,4 +130,24 @@ export interface SchemaField {
      * Examples data
      */
     examples?: any[];
+
+    /**
+     * Order
+     */
+    order?: number;
+
+    /**
+     * Font style
+     */
+    font?: any;
+
+    /**
+     * Errors
+     */
+    errors?: any[];
+
+    /**
+     * Formulae
+     */
+    formulae?: string;
 }

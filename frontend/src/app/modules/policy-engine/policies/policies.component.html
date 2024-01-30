@@ -28,7 +28,10 @@
                     class="tags-dropdown"
                     formControlName="tag"
                     placeholder="Tags"></p-dropdown>
-                <button (click)="applyFilters()" class="button ml-8" label="Apply Filters" pButton></button>
+                <button (click)="applyFilters()" 
+			class="button ml-8" 
+			label="Apply Filters" 
+			pButton></button>
                 <button (click)="clearFilters()"
                     [disabled]="!filtersForm.dirty"
                     class="button secondary ml-8"
@@ -222,7 +225,6 @@
                                             [pTooltip]="getDiscontinuedTooltip(policy.discontinuedDate)" tooltipPosition="bottom"
                                             [tooltipDisabled]="!policy.discontinuedDate"
                                         >
-
                                             <ng-template pTemplate="selectedItem">
                                                 {{getStatusName(policy)}}
                                             </ng-template>
@@ -279,7 +281,6 @@
                                         </div>
                                     </div>
                                 </td>
-
 
                                 <td *ngIf="canDisplayColumn('operations')" class="last-policy-grid-cell"
                                     style="min-width: 130px; width: 130px; max-width: 130px;">
@@ -339,6 +340,27 @@
             <svg-icon src="/assets/images/icons/export.svg" svgClass="primary-color"></svg-icon>
         </p-button>
 
+        <p-button
+            (click)="exportToExcel(id)"
+            label="Export schemas to Excel"
+            class="policy-menu-btn"
+            styleClass="p-button-outlined"
+            [pTooltip]="'Export schemas to Excel'"
+            tooltipPosition="bottom">
+            <svg-icon src="/assets/images/icons/export.svg" svgClass="primary-color"></svg-icon>
+        </p-button>
+
+        <p-button
+            (click)="importFromExcel(id)"
+            label="Import schemas from Excel"
+            class="policy-menu-btn"
+            styleClass="p-button-outlined"
+            [pTooltip]="'Import schemas from excel'"
+            tooltipPosition="bottom">
+            <svg-icon src="/assets/images/icons/import.svg" svgClass="primary-color"></svg-icon>
+        </p-button>
+
+        
         <div class="policy-menu-delimiter"></div>
 
         <p-button

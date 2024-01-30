@@ -1,5 +1,5 @@
-<div class="dialog-body">
-    <p-tabView>
+<div class="dialog-body" [attr.file-type]="type">
+    <p-tabView class="action-tabs">
         <p-tabPanel *ngFor="let tab of items; let i = index">
             <ng-template pTemplate="header">
                 <div (click)="handleChangeTab(i)" class="tabview-label">
@@ -9,25 +9,31 @@
         </p-tabPanel>
     </p-tabView>
 
-    <ng-container [ngSwitch]="this.importType">
+    <ng-container [ngSwitch]="importType">
         <ng-template [ngSwitchCase]="0">
             <app-file-drag-n-drop
-                    (onFileLoaded)="importFromFile($event)"
                     *ngIf="type === 'policy'"
+                    (onFileLoaded)="importFromFile($event)"
                     dropZoneLabel="Import Policy .policy file"
                     fileExtension="policy"
             ></app-file-drag-n-drop>
             <app-file-drag-n-drop
-                    (onFileLoaded)="importFromFile($event)"
                     *ngIf="type === 'module'"
+                    (onFileLoaded)="importFromFile($event)"
                     dropZoneLabel="Import Module .module file"
                     fileExtension="module"
             ></app-file-drag-n-drop>
             <app-file-drag-n-drop
-                    (onFileLoaded)="importFromFile($event)"
                     *ngIf="type==='tool'"
+                    (onFileLoaded)="importFromFile($event)"
                     dropZoneLabel="Import Tool .tool file"
                     fileExtension="tool">
+            </app-file-drag-n-drop>
+            <app-file-drag-n-drop
+                    *ngIf="type==='xlsx'"
+                    (onFileLoaded)="importFromFile($event)"
+                    dropZoneLabel="Import .xlsx file"
+                    fileExtension="xlsx">
             </app-file-drag-n-drop>
         </ng-template>
         <ng-template [ngSwitchCase]="1">
@@ -92,7 +98,7 @@
             ></button>
         </div>
         <div>
-            <button (click)="this.importType === 1 ? importFromMessage() : ''" class="button"
+            <button (click)="importType === 1 ? importFromMessage() : ''" class="button"
                     label="Import"
                     pButton
             ></button>

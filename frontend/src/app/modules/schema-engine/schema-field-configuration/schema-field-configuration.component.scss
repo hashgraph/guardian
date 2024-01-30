@@ -1,68 +1,68 @@
 .custom-field {
     width: 100%;
     display: flex;
-  border-radius: 8px;
-  border: 1px solid #e1e7ef;
-  background: #fff;
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.08);
-  margin-bottom: 32px;
-  overflow-x: hidden;
-  //flex-wrap: wrap;
-  //grid-gap: 6px;
-  //column-gap: 14px;
-  //position: relative;
-  //margin-bottom: 0px;
-  //
-  //padding: 15px;
-  //border: 1px solid #c5c5c5;
-  //border-radius: 6px;
-  //margin-bottom: 30px;
-  //box-shadow: 3px 3px 6px 0px #00000025;
-  //box-sizing: border-box;
+    border-radius: 8px;
+    border: 1px solid #e1e7ef;
+    background: #fff;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.08);
+    margin-bottom: 32px;
+    overflow-x: hidden;
+    //flex-wrap: wrap;
+    //grid-gap: 6px;
+    //column-gap: 14px;
+    //position: relative;
+    //margin-bottom: 0px;
+    //
+    //padding: 15px;
+    //border: 1px solid #c5c5c5;
+    //border-radius: 6px;
+    //margin-bottom: 30px;
+    //box-shadow: 3px 3px 6px 0px #00000025;
+    //box-sizing: border-box;
 }
 
 .readonly-custom-field {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  border-radius: 8px;
-  border: 1px solid #e1e7ef;
-  background: #fff;
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.08);
-  margin-bottom: 32px;
-  padding: 16px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    border-radius: 8px;
+    border: 1px solid #e1e7ef;
+    background: #fff;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.08);
+    margin-bottom: 32px;
+    padding: 16px;
 }
 
 .input-field-container {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 24px;
-  width: 100%;
-  margin-right: 20px;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 24px;
+    width: 100%;
+    margin-right: 20px;
 }
 
 .checkbox-field-container {
-  width: 100%;
-  display: flex;
-  align-items: center;
+    width: 100%;
+    display: flex;
+    align-items: center;
 }
 
 .form-label {
-  color: #181818;
-  font-family: Inter, sans-serif;
-  font-size: 12px;
-  font-style: normal;
-  font-weight: 500;
+    color: #181818;
+    font-family: Inter, sans-serif;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 500;
 }
 
 .checkbox-label {
-  margin-left: 12px;
-  color: #23252e;
-  font-family: Inter, sans-serif;
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 16px;
+    margin-left: 12px;
+    color: #23252e;
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 16px;
 }
 
 .custom-field-name {
@@ -155,8 +155,8 @@
 }
 
 .extended-config {
-  display: flex;
-  align-items: center;
+    display: flex;
+    align-items: center;
 }
 
 .f1 {
@@ -271,7 +271,7 @@
 
 .enum-edit-button,
 .reset-btn {
-  height: 39px;
+    height: 39px;
     color: var(--primary-color);
     padding: 18px 27px;
     border: 1px solid #e9e9e9;
@@ -286,7 +286,7 @@
 
 .reset-btn {
     padding: 17px 15px;
-  margin-top: 20px;
+    margin-top: 20px;
 }
 
 .mat-chip-value-label {
@@ -322,8 +322,8 @@
 }
 
 .readonly-extended-config {
-  display: flex;
-  justify-content: space-between;
+    display: flex;
+    justify-content: space-between;
 }
 
 :host .custom-field-color ::ng-deep div.mat-form-field-infix {
@@ -338,19 +338,11 @@
     top: 7px;
 }
 
-:host
-.custom-field-color
-::ng-deep
-.mat-form-field-appearance-outline.mat-form-field-can-float.mat-form-field-should-float
-.mat-form-field-label {
+:host .custom-field-color::ng-deep .mat-form-field-appearance-outline.mat-form-field-can-float.mat-form-field-should-float .mat-form-field-label {
     transform: translate(-23px, -25px) scale(0.75);
 }
 
-:host
-.custom-field-font-size
-::ng-deep
-.mat-form-field-appearance-outline.mat-form-field-can-float.mat-form-field-should-float
-.mat-form-field-label {
+:host .custom-field-font-size::ng-deep .mat-form-field-appearance-outline.mat-form-field-can-float.mat-form-field-should-float .mat-form-field-label {
     transform: translate(-5px, -25px) scale(0.75);
     margin-top: -5px;
     margin-left: 0px;
@@ -377,10 +369,7 @@
     flex: 10;
 }
 
-:host
-.custom-field-font-size
-::ng-deep
-.mat-form-field-empty.mat-form-field-label {
+:host .custom-field-font-size::ng-deep .mat-form-field-empty.mat-form-field-label {
     margin-top: 0px;
     margin-left: 5px;
 }
@@ -402,51 +391,96 @@
 }
 
 .fields-main-container {
-  width: 100%;
-  padding: 16px;
+    width: 100%;
+    padding: 16px;
 }
 
 .left-side-panel {
-  display: flex;
-  width: 32px;
-  min-width: 32px;
-  justify-content: center;
-  align-items: center;
-  background: #eff3f7;
+    display: flex;
+    width: 32px;
+    min-width: 32px;
+    justify-content: center;
+    align-items: center;
+    background: #eff3f7;
 }
 
 .equal-icon {
-  width: 16px;
-  height: 16px;
+    width: 16px;
+    height: 16px;
 }
 
 .custom-fields-main-container {
-  display: flex;
+    display: flex;
 }
 
 .dropdown-field {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  margin-right: 20px;
-  margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-right: 20px;
+    margin-bottom: 24px;
 
-  ::ng-deep {
-    .p-dropdown {
-      width: 100%;
+    ::ng-deep {
+        .p-dropdown {
+            width: 100%;
+        }
     }
-  }
 }
 
 .color-accent-red {
-  fill: var(--color-accent-red-1);
-  color: var(--color-accent-red-1);
+    fill: var(--color-accent-red-1);
+    color: var(--color-accent-red-1);
 }
 
 .max-width-50 {
-  max-width: 30%;
+    max-width: 30%;
 }
+
+.error-text {
+    color: var(--color-accent-red-1) !important;
+    background: #fff0f0 !important;
+    padding: 6px 12px;
+    border: 1px solid #f5d7d7;
+    border-radius: 4px;
+    font-weight: 500;
+
+    .error-text-message {
+        font-size: 14px;
+        margin-top: 6px;
+        font-weight: normal;
+    }
+}
+
+.custom-field[error="true"] .left-side-panel {
+    background: var(--color-accent-red-2) !important;
+}
+
 
 .ng-invalid {
   border-color: #f44336;
 }
+
+.mat-checkbox-inner-container {
+    background: #fff;
+}
+
+.sub-schema-component {
+    color: #c37a29;
+    font-weight: bold;
+    padding-right: 5px;
+}
+
+.sub-schema-name {
+    color: #3f51b5;
+}
+
+.sub-schema-version {
+    font-size: 12px;
+    background: #e0e0e0;
+    padding: 2px 9px;
+    border-radius: 10px;
+    position: relative;
+    top: -1px;
+    margin-left: 5px;
+}
+

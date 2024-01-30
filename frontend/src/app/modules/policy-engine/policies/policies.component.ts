@@ -39,22 +39,22 @@ import { MigrateData } from '../dialogs/migrate-data/migrate-data.component';
     styleUrls: ['./policies.component.scss'],
 })
 export class PoliciesComponent implements OnInit {
-    policies: any[] | null;
-    columns: string[] = [];
-    columnsRole: any = {};
-    role!: any;
-    loading: boolean = true;
-    isConfirmed: boolean = false;
-    pageIndex: number;
-    pageSize: number;
-    policiesCount: any;
-    owner: any;
-    tagEntity = TagType.Policy;
-    tagSchemas: any[] = [];
-
-    value: any;
-
-    publishMenuOption = [
+    public policies: any[] | null;
+    public role!: any;
+    public loading: boolean = true;
+    public isConfirmed: boolean = false;
+    public pageIndex: number;
+    public pageSize: number;
+    public policiesCount: any;
+    public owner: any;
+    public tagEntity = TagType.Policy;
+    public tagSchemas: any[] = [];
+    public tagOptions: string[] = [];
+    public publishMenuSelector: any = null;
+    public noFilterResults: boolean = false;
+    private columns: string[] = [];
+    private columnsRole: any = {};
+    private publishMenuOption = [
         {
             id: 'Publish',
             title: 'Publish',
@@ -69,8 +69,7 @@ export class PoliciesComponent implements OnInit {
             color: '#3f51b5',
         },
     ];
-
-    draftMenuOption = [
+    private draftMenuOption = [
         {
             id: 'Draft',
             title: 'Stop',
@@ -84,8 +83,7 @@ export class PoliciesComponent implements OnInit {
             color: '#4caf50',
         },
     ];
-
-    publishErrorMenuOption = [
+    private publishErrorMenuOption = [
         // {
         //     id: 'Draft',
         //     title: 'Stop',
@@ -100,7 +98,7 @@ export class PoliciesComponent implements OnInit {
         },
     ];
 
-    publishedMenuOption = [
+    private publishedMenuOption = [
         {
             id: 'Discontinue',
             title: 'Discontinue',
@@ -110,13 +108,8 @@ export class PoliciesComponent implements OnInit {
         },
     ];
 
-    publishMenuSelector: any = null;
-
-    public innerWidth: number;
-    public innerHeight: number;
-    tagOptions: string[] = [];
-    filteredPolicies: any[] = [];
-    filtersForm = new FormGroup({
+    private filteredPolicies: any[] = [];
+    public filtersForm = new FormGroup({
         policyName: new FormControl(''),
         tag: new FormControl(''),
     }, (fg) => {
@@ -134,7 +127,6 @@ export class PoliciesComponent implements OnInit {
             policyName: 'At least one value must be set'
         };
     });
-    noFilterResults: boolean = false;
 
     constructor(
         public tagsService: TagsService,
@@ -184,13 +176,11 @@ export class PoliciesComponent implements OnInit {
 
     ngOnInit() {
         this.loading = true;
-        this.innerWidth = window.innerWidth;
-        this.innerHeight = window.innerHeight;
         this.loadPolicy();
         this.handleTagsUpdate();
     }
 
-    loadPolicy() {
+    private loadPolicy() {
         this.policies = null;
         this.isConfirmed = false;
         this.loading = true;
@@ -226,7 +216,7 @@ export class PoliciesComponent implements OnInit {
         );
     }
 
-    loadAllPolicy() {
+    private loadAllPolicy() {
         this.loading = true;
         this.tagOptions = [];
         this.policyEngineService.page(this.pageIndex, this.pageSize).subscribe(
@@ -284,11 +274,11 @@ export class PoliciesComponent implements OnInit {
         this.loadPolicy();
     }
 
-    canDisplayColumn(columnName: string): boolean {
+    public canDisplayColumn(columnName: string): boolean {
         return !!this.columns.find((column) => column === columnName);
     }
 
-    dryRun(element: any) {
+    private dryRun(element: any) {
         this.loading = true;
         this.policyEngineService.dryRun(element.id).subscribe(
             (data: any) => {
@@ -330,7 +320,7 @@ export class PoliciesComponent implements OnInit {
         );
     }
 
-    draft(element: any) {
+    private draft(element: any) {
         this.loading = true;
         this.policyEngineService.draft(element.id).subscribe(
             (data: any) => {
@@ -343,7 +333,7 @@ export class PoliciesComponent implements OnInit {
         );
     }
 
-    setVersion(element: any) {
+    private setVersion(element: any) {
         const dialogRef = this.dialog.open(SetVersionDialog, {
             width: '350px',
             disableClose: false,
@@ -406,7 +396,7 @@ export class PoliciesComponent implements OnInit {
         });
     }
 
-    exportPolicy(policyId: any) {
+    public exportPolicy(policyId: any) {
         this.policyEngineService
             .exportInMessage(policyId)
             .subscribe((exportedPolicy) =>
@@ -421,7 +411,7 @@ export class PoliciesComponent implements OnInit {
             );
     }
 
-    importPolicy(messageId?: string) {
+    public importPolicy(messageId?: string) {
         const dialogRef = this.dialogService.open(ImportPolicyDialog, {
             header: 'Select action',
             width: '720px',
@@ -437,18 +427,18 @@ export class PoliciesComponent implements OnInit {
         });
     }
 
-    importPolicyDetails(result: any) {
+    private importPolicyDetails(result: any) {
         const { type, data, policy } = result;
         const distinctPolicies = this.getDistinctPolicy();
         let dialogRef;
-        if (this.innerWidth <= 810) {
+        if (window.innerWidth <= 810) {
             const bodyStyles = window.getComputedStyle(document.body);
             const headerHeight: number = parseInt(
                 bodyStyles.getPropertyValue('--header-height')
             );
             dialogRef = this.dialogService.open(PreviewPolicyDialog, {
                 header: 'Preview',
-                width: `${this.innerWidth.toString()}px`,
+                width: `${window.innerWidth.toString()}px`,
                 styleClass: 'custom-dialog',
                 data: {
                     policy: policy,
@@ -512,6 +502,95 @@ export class PoliciesComponent implements OnInit {
         });
     }
 
+    private importExcelDetails(result: any, policyId: string) {
+        const { type, data, xlsx } = result;
+        let dialogRef;
+        if (window.innerWidth <= 810) {
+            const bodyStyles = window.getComputedStyle(document.body);
+            const headerHeight: number = parseInt(
+                bodyStyles.getPropertyValue('--header-height')
+            );
+            dialogRef = this.dialogService.open(PreviewPolicyDialog, {
+                header: 'Preview',
+                width: `${window.innerWidth.toString()}px`,
+                styleClass: 'custom-dialog',
+                data: {
+                    xlsx: xlsx,
+                },
+            });
+        } else {
+            dialogRef = this.dialogService.open(PreviewPolicyDialog, {
+                header: 'Preview',
+                width: '720px',
+                styleClass: 'custom-dialog',
+                data: {
+                    xlsx: xlsx,
+                },
+            });
+        }
+        dialogRef.onClose.subscribe(async (result) => {
+            if (result) {
+                this.policyEngineService
+                    .pushImportByXlsx(data, policyId)
+                    .subscribe(
+                        (result) => {
+                            const { taskId, expectation } = result;
+                            this.router.navigate(['task', taskId], {
+                                queryParams: {
+                                    last: btoa(location.href),
+                                },
+                            });
+                        },
+                        (e) => {
+                            this.loading = false;
+                        }
+                    );
+            }
+        });
+    }
+
+    public exportToExcel(policyId: any) {
+        this.policyEngineService
+            .exportToExcel(policyId)
+            .subscribe((fileBuffer) => {
+                let downloadLink = document.createElement('a');
+                downloadLink.href = window.URL.createObjectURL(
+                    new Blob([new Uint8Array(fileBuffer)], {
+                        type: 'application/guardian-policy',
+                    })
+                );
+                downloadLink.setAttribute(
+                    'download',
+                    `policy_${Date.now()}.xlsx`
+                );
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            },
+                (error) => {
+                    this.loading = false;
+                }
+            );
+    }
+
+    public importFromExcel(policyId: any) {
+        const dialogRef = this.dialogService.open(ImportPolicyDialog, {
+            header: 'Select action',
+            width: '720px',
+            styleClass: 'custom-dialog',
+            data: {
+                type: 'xlsx'
+            },
+        });
+        dialogRef.onClose.subscribe(async (result) => {
+            if (result) {
+                this.importExcelDetails(result, policyId);
+            }
+        });
+    }
+
     private getDistinctPolicy(): any[] {
         const policyByTopic: any = {};
         if (this.policies) {
@@ -538,7 +617,7 @@ export class PoliciesComponent implements OnInit {
         );
     }
 
-    onPublishAction(event: any, element: any) {
+    private onPublishAction(event: any, element: any) {
         if (event.value.id === 'Publish') {
             this.setVersion(element);
         } else if (event.value.id === 'Dry-run') {
@@ -568,7 +647,7 @@ export class PoliciesComponent implements OnInit {
         setTimeout(() => this.publishMenuSelector = null, 0);
     }
 
-    onDryRunAction(event: any, element: any) {
+    private onDryRunAction(event: any, element: any) {
         if (event.value.id === 'Publish') {
             this.setVersion(element);
         } else if (event.value.id === 'Draft') {
@@ -578,7 +657,7 @@ export class PoliciesComponent implements OnInit {
         setTimeout(() => this.publishMenuSelector = null, 0);
     }
 
-    onPublishErrorAction(event: any, element: any) {
+    private onPublishErrorAction(event: any, element: any) {
         if (event.value.id === 'Publish') {
             this.setVersion(element);
         }
@@ -589,7 +668,7 @@ export class PoliciesComponent implements OnInit {
         setTimeout(() => this.publishMenuSelector = null, 0);
     }
 
-    getColor(status: string, expired: boolean = false) {
+    public getColor(status: string, expired: boolean = false) {
         switch (status) {
             case 'DRAFT':
                 return 'grey';
@@ -605,7 +684,7 @@ export class PoliciesComponent implements OnInit {
         }
     }
 
-    getLabelStatus(status: string, expired: boolean = false) {
+    public getLabelStatus(status: string, expired: boolean = false) {
         switch (status) {
             case 'DRAFT':
                 return 'Draft';
@@ -656,7 +735,7 @@ export class PoliciesComponent implements OnInit {
         });
     }
 
-    createMultiPolicy(element: any) {
+    public createMultiPolicy(element: any) {
         const dialogRef = this.dialog.open(MultiPolicyDialogComponent, mobileDialog({
             width: '650px',
             panelClass: 'g-dialog',
@@ -674,7 +753,7 @@ export class PoliciesComponent implements OnInit {
         });
     }
 
-    comparePolicy(policyId?: any) {
+    public comparePolicy(policyId?: any) {
         const item = this.policies?.find((e) => e.id === policyId);
         const dialogRef = this.dialogService.open(ComparePolicyDialog, {
             header: 'Compare Policy',
@@ -707,8 +786,8 @@ export class PoliciesComponent implements OnInit {
             }
         });
     }
-
-    migrateData(policyId?: any) {
+	
+    public migrateData(policyId?: any) {
         const item = this.policies?.find((e) => e.id === policyId);
         const dialogRef = this.dialogService.open(MigrateData, {
             header: 'Migrate Data',
@@ -739,7 +818,7 @@ export class PoliciesComponent implements OnInit {
         });
     }
 
-    createNewPolicy() {
+    public createNewPolicy() {
         const dialogRef = this.dialogService.open(NewPolicyDialog, {
             header: 'New Policy',
             width: '650px',
@@ -761,7 +840,7 @@ export class PoliciesComponent implements OnInit {
         });
     }
 
-    openPolicyWizardDialog() {
+    public openPolicyWizardDialog() {
         this.loading = true;
         forkJoin([
             this.tokenService.getTokens(),
@@ -805,7 +884,7 @@ export class PoliciesComponent implements OnInit {
         );
     }
 
-    applyFilters(): void {
+    public applyFilters(): void {
         if (this.filters.policyName && this.filters.tag) {
             this.filterByNameAndTag();
             this.noFilterResults = this.filteredPolicies.length === 0;
@@ -818,7 +897,7 @@ export class PoliciesComponent implements OnInit {
         this.noFilterResults = this.filteredPolicies.length === 0;
     }
 
-    clearFilters(): void {
+    public clearFilters(): void {
         this.filtersForm.reset({ policyName: '', tag: '' });
         this.filteredPolicies = [];
         this.noFilterResults = false;
@@ -949,16 +1028,18 @@ export class PoliciesComponent implements OnInit {
     }
 
     public onChangeStatus(event: any, policy: any): void {
-        if (policy.status == 'DRAFT') {
-            this.onPublishAction(event, policy);
-        }
-        if (policy.status == 'DRY-RUN') {
-            this.onDryRunAction(event, policy);
-        }
-        if (policy.status == 'PUBLISH') {
-            this.onPublishedAction(event, policy);
-        } else {
-            this.onPublishErrorAction(event, policy)
+        switch(policy.status) {
+            case 'DRAFT':
+                this.onPublishAction(event, policy);
+                break;
+            case 'DRY-RUN':
+                this.onDryRunAction(event, policy);
+                break;
+            case 'PUBLISH':
+                this.onPublishedAction(event, policy);
+                break;
+            default:
+                this.onPublishErrorAction(event, policy)
         }
     }
 
