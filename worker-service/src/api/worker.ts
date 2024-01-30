@@ -97,8 +97,8 @@ export class Worker extends NatsService {
     private readonly taskTimeout: number;
 
     constructor(
-        private w3cKey: string,
-        private w3cProof: string
+        private readonly w3cKey: string,
+        private readonly w3cProof: string
     ) {
         super();
         this.ipfsClient = new IpfsClientClass(
