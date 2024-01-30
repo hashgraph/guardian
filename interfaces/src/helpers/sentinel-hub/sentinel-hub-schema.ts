@@ -1,7 +1,7 @@
 export default {
-    $id: '#SentinelHub',
+    $id: '#SentinelHUB',
     type: 'object',
-    title: 'SentinelHub',
+    title: '#SentinelHUB',
     properties: {
         layers: {
             type: 'string',
@@ -21,6 +21,9 @@ export default {
             type: 'number'
         },
         time: {
+            type: 'string'
+        },
+        bbox: {
             type: 'string'
         }
     }

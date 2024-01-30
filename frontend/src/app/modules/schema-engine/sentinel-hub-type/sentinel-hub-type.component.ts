@@ -1,496 +1,90 @@
 import { ChangeDetectorRef, Component, Input, OnChanges, OnInit, SimpleChanges, } from '@angular/core';
-import { FormControl } from '@angular/forms';
-import { GeoJsonSchema, GeoJsonType } from '@guardian/interfaces';
-import ajv from 'ajv';
-import { Subject } from 'rxjs';
-import { MapService } from 'src/app/services/map.service';
-import { ajvSchemaValidator } from 'src/app/validators/ajv-schema.validator';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { DATETIME_FORMATS } from '../schema-form/schema-form.component';
+import { NGX_MAT_DATE_FORMATS, NgxMatDateAdapter } from '@angular-material-components/datetime-picker';
+import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
+import { Subscription } from 'rxjs';
+import { MapService } from '../../../services/map.service';
 
 @Component({
     selector: 'app-sentinel-hub-type',
     templateUrl: './sentinel-hub-type.component.html',
     styleUrls: ['./sentinel-hub-type.component.scss'],
+    providers: [
+        {provide: NgxMatDateAdapter, useClass: NgxMatMomentAdapter},
+        {provide: NGX_MAT_DATE_FORMATS, useValue: DATETIME_FORMATS}
+    ]
 })
 export class SentinelHubTypeComponent implements OnInit, OnChanges {
-    @Input('formGroup') control?: FormControl;
+    public key: string;
+    subscription = new Subscription();
+    @Input('formGroup') control: FormGroup;
+    public formattedImageLink = ''
     @Input('preset') presetDocument: any = null;
     @Input('disabled') isDisabled: boolean = false;
-
-    updateCoordinates: Subject<any> = new Subject<any>();
-
-    mapOptions: google.maps.MapOptions = {
-        clickableIcons: false,
-        disableDoubleClickZoom: true,
-        minZoom: 5,
-    };
-    center: google.maps.LatLngLiteral = {
-        lat: 37,
-        lng: -121,
-    };
-    markers: {
-        position: google.maps.LatLngLiteral;
-    }[] = [];
-    polygons: {
-        paths: google.maps.LatLngLiteral[];
-    }[] = [];
-    lines: {
-        path: google.maps.LatLngLiteral[];
-    }[] = [];
-    commonOptions: google.maps.MarkerOptions &
-        google.maps.PolygonOptions &
-        google.maps.PolylineOptions = {
-        animation: 2,
-        clickable: false,
-    };
-    type: GeoJsonType = GeoJsonType.POINT;
-    coordinatesPlaceholder!: string;
-    pointConstructor: any = [];
-    pointMarkerOptions: google.maps.MarkerOptions = {
-        icon: {
-            path: 0,
-            scale: 5,
-        },
-        clickable: false,
-    };
-    coordinates: string = '';
-    isJSON: boolean = false;
-    jsonInput: string = '';
+    public datePicker = new FormGroup({
+        from: new FormControl(),
+        to: new FormControl()
+    });
+    protected readonly FormControl = FormControl;
 
     constructor(
-        public mapService: MapService,
-        private cdkRef: ChangeDetectorRef
+        private cdkRef: ChangeDetectorRef,
+        private mapService: MapService
     ) {
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes?.isDisabled && !changes?.isDisabled.firstChange) {
-            this.onViewTypeChange(this.control?.value);
-        }
+    }
+
+    get formControl(): FormGroup {
+        return this.control || new FormGroup({})
+    }
+
+    getControlByName(name: string): FormControl {
+        return this.control.get(name) as FormControl;
+    }
+
+    getDateByName(name: string): FormControl {
+        return this.datePicker.get(name) as FormControl;
+    }
+
+    ngOnDestroy() {
+        this.subscription.unsubscribe();
     }
 
     ngOnInit(): void {
-        this.onTypeChange();
-        this.control?.setValidators(
-            ajvSchemaValidator(new ajv().compile(GeoJsonSchema))
+        this.control.registerControl('layers', new FormControl('NATURAL-COLOR', Validators.required));
+        this.control.registerControl('format', new FormControl('image/jpeg', Validators.required));
+        this.control.registerControl('maxcc', new FormControl(30, Validators.required));
+        this.control.registerControl('width', new FormControl(512, Validators.required));
+        this.control.registerControl('height', new FormControl(512, Validators.required));
+        this.control.registerControl('bbox', new FormControl('', Validators.required));
+        this.control.registerControl('time', new FormControl(undefined, Validators.required));
+
+        this.subscription.add(
+            this.mapService.getSentinelKey().subscribe(value => {
+                this.key = value;
+            })
+        )
+
+        this.subscription.add(
+            this.datePicker.valueChanges.subscribe(value => {
+                this.getControlByName('time').setValue(value.from?.format('YYYY-MM-DD') + '/' + value.to?.format('YYYY-MM-DD'))
+            })
         );
-        this.control?.updateValueAndValidity();
-        this.updateCoordinates.subscribe(this.onCoordinatesUpdate.bind(this));
-        this.onViewTypeChange(this.presetDocument);
-    }
 
-    onCoordinatesUpdate(value: any) {
-        if (!value) {
-            this.coordinates = '';
-            this.control?.patchValue({});
-            return;
-        }
+        this.subscription.add(
+            this.control.valueChanges.subscribe(value => {
+                if (!this.key) {
+                    this.formattedImageLink = '';
+                    return;
+                }
 
-        this.coordinates = JSON.stringify(value, null, 4);
-        this.control?.patchValue({
-            type: this.type,
-            coordinates: value,
-        });
-    }
-
-    mapClick(event: any) {
-        if (this.isDisabled) {
-            return;
-        }
-
-        switch (this.type) {
-            case GeoJsonType.POINT:
-                this.markers[0] = {
-                    position: {
-                        lat: event.latLng.lat(),
-                        lng: event.latLng.lng(),
-                    },
-                };
-                this.updateCoordinates.next([
-                    event.latLng.lng(),
-                    event.latLng.lat(),
-                ]);
-                break;
-            case GeoJsonType.MULTI_POINT:
-                this.markers.push({
-                    position: {
-                        lat: event.latLng.lat(),
-                        lng: event.latLng.lng(),
-                    },
-                });
-                this.updateCoordinates.next(
-                    this.markers.map((item: any) => [
-                        item.position.lng,
-                        item.position.lat,
-                    ])
-                );
-                break;
-            case GeoJsonType.MULTI_POLYGON:
-            case GeoJsonType.MULTI_LINE_STRING:
-            case GeoJsonType.LINE_STRING:
-            case GeoJsonType.POLYGON:
-                this.pointConstructor.push({
-                    lng: event.latLng.lng(),
-                    lat: event.latLng.lat(),
-                });
-                break;
-            default:
-                break;
-        }
-    }
-
-    mapDblclick() {
-        if (this.isDisabled) {
-            return;
-        }
-
-        switch (this.type) {
-            case GeoJsonType.POLYGON:
-                this.pointConstructor.push(this.pointConstructor[0]);
-                this.polygons[0] = {
-                    paths: this.pointConstructor,
-                };
-                this.updateCoordinates.next([
-                    this.polygons[0].paths.map((path: any) => [
-                        path.lng,
-                        path.lat,
-                    ]),
-                ]);
-                break;
-            case GeoJsonType.MULTI_POLYGON:
-                this.pointConstructor.push(this.pointConstructor[0]);
-                this.polygons.push({
-                    paths: this.pointConstructor,
-                });
-                this.updateCoordinates.next(
-                    this.polygons.map((polygon: any) => [
-                        polygon.paths.map((path: any) => [path.lng, path.lat]),
-                    ])
-                );
-                break;
-            case GeoJsonType.LINE_STRING:
-                this.lines[0] = {
-                    path: this.pointConstructor,
-                };
-                this.updateCoordinates.next(
-                    this.lines[0].path.map((path: any) => [path.lng, path.lat])
-                );
-                break;
-            case GeoJsonType.MULTI_LINE_STRING:
-                this.lines.push({
-                    path: this.pointConstructor,
-                });
-                this.updateCoordinates.next(
-                    this.lines.map((line: any) =>
-                        line.path.map((path: any) => [path.lng, path.lat])
-                    )
-                );
-                break;
-            default:
-                break;
-        }
-
-        this.pointConstructor = [];
-    }
-
-    mapRightclick() {
-        if (this.pointConstructor?.length) {
-            this.pointConstructor.pop();
-            return;
-        }
-
-        switch (this.type) {
-            case GeoJsonType.POINT:
-                this.markers.pop();
-                this.updateCoordinates.next(
-                    this.markers[0]
-                        ? [
-                            this.markers[0].position.lng,
-                            this.markers[0].position.lat,
-                        ]
-                        : null
-                );
-                break;
-            case GeoJsonType.MULTI_POINT:
-                this.markers.pop();
-                this.updateCoordinates.next(
-                    this.markers.length
-                        ? this.markers.map((item: any) => [
-                            item.position.lng,
-                            item.position.lat,
-                        ])
-                        : null
-                );
-                break;
-            case GeoJsonType.POLYGON:
-                this.polygons?.pop();
-                this.updateCoordinates.next(
-                    this.polygons[0]
-                        ? [
-                            this.polygons[0].paths.map((path: any) => [
-                                path.lng,
-                                path.lat,
-                            ]),
-                        ]
-                        : null
-                );
-                break;
-            case GeoJsonType.MULTI_POLYGON:
-                this.polygons?.pop();
-                this.updateCoordinates.next(
-                    this.polygons.length
-                        ? this.polygons.map((polygon: any) => [
-                            polygon.paths.map((path: any) => [
-                                path.lng,
-                                path.lat,
-                            ]),
-                        ])
-                        : null
-                );
-                break;
-            case GeoJsonType.LINE_STRING:
-                this.lines?.pop();
-                this.updateCoordinates.next(
-                    this.lines[0]?.path.map((path: any) => [
-                        path.lng,
-                        path.lat,
-                    ]) || null
-                );
-                break;
-            case GeoJsonType.MULTI_LINE_STRING:
-                this.lines?.pop();
-                this.updateCoordinates.next(
-                    this.lines.length
-                        ? this.lines.map((line: any) =>
-                            line.path.map((path: any) => [path.lng, path.lat])
-                        )
-                        : null
-                );
-                break;
-            default:
-                break;
-        }
-    }
-
-    onTypeChange() {
-        this.control?.patchValue({});
-        this.coordinates = '';
-        this.markers = [];
-        this.polygons = [];
-        this.lines = [];
-        this.pointConstructor = [];
-
-        switch (this.type) {
-            case GeoJsonType.POINT:
-                this.coordinatesPlaceholder = JSON.stringify(
-                    [1.23, 4.56],
-                    null,
-                    4
-                );
-                break;
-            case GeoJsonType.POLYGON:
-                this.coordinatesPlaceholder = JSON.stringify(
-                    [
-                        [
-                            [1.23, 4.56],
-                            [1.23, 4.56],
-                            [1.23, 4.56],
-                            [1.23, 4.56],
-                        ],
-                    ],
-                    null,
-                    4
-                );
-                break;
-            case GeoJsonType.LINE_STRING:
-                this.coordinatesPlaceholder = JSON.stringify(
-                    [
-                        [1.23, 4.56],
-                        [1.23, 4.56],
-                        [1.23, 4.56],
-                    ],
-                    null,
-                    4
-                );
-                break;
-            case GeoJsonType.MULTI_POINT:
-                this.coordinatesPlaceholder = JSON.stringify(
-                    [
-                        [1.23, 4.56],
-                        [1.23, 4.56],
-                        [1.23, 4.56],
-                        [1.23, 4.56],
-                    ],
-                    null,
-                    4
-                );
-                break;
-            case GeoJsonType.MULTI_POLYGON:
-                this.coordinatesPlaceholder = JSON.stringify(
-                    [
-                        [
-                            [
-                                [1.23, 4.56],
-                                [1.23, 4.56],
-                                [1.23, 4.56],
-                                [1.23, 4.56],
-                            ],
-                        ],
-                        [
-                            [
-                                [1.23, 4.56],
-                                [1.23, 4.56],
-                                [1.23, 4.56],
-                                [1.23, 4.56],
-                            ],
-                        ],
-                    ],
-                    null,
-                    4
-                );
-                break;
-            case GeoJsonType.MULTI_LINE_STRING:
-                this.coordinatesPlaceholder = JSON.stringify(
-                    [
-                        [
-                            [1.23, 4.56],
-                            [1.23, 4.56],
-                            [1.23, 4.56],
-                        ],
-                        [
-                            [1.23, 4.56],
-                            [1.23, 4.56],
-                            [1.23, 4.56],
-                        ],
-                    ],
-                    null,
-                    4
-                );
-                break;
-            default:
-                break;
-        }
-    }
-
-    onViewTypeChange(value: any) {
-        if (!value) {
-            return;
-        }
-
-        if (this.isJSON || this.isDisabled) {
-            this.jsonInput = JSON.stringify(value, null, 4);
-        }
-
-        if (!this.isJSON || this.isDisabled) {
-            this.type = value?.type;
-            this.onTypeChange();
-            this.coordinates = JSON.stringify(value?.coordinates, null, 4);
-            this.coordinatesChanged();
-        }
-    }
-
-    jsonChanged() {
-        try {
-            this.control?.patchValue(JSON.parse(this.jsonInput));
-        } catch {
-            this.control?.patchValue({});
-        }
-    }
-
-    coordinatesChanged() {
-        this.markers = [];
-        this.polygons = [];
-        this.lines = [];
-        try {
-            const parsedCoordinates = JSON.parse(this.coordinates);
-            this.control?.patchValue({
-                type: this.type,
-                coordinates: parsedCoordinates,
-            });
-            switch (this.type) {
-                case GeoJsonType.POINT:
-                    this.markers.push({
-                        position: {
-                            lat: parsedCoordinates[1],
-                            lng: parsedCoordinates[0],
-                        },
-                    });
-                    this.center = {
-                        lat: parsedCoordinates[1],
-                        lng: parsedCoordinates[0],
-                    };
-                    break;
-                case GeoJsonType.POLYGON:
-                    this.polygons.push({
-                        paths: parsedCoordinates[0].map((path: any) => {
-                            return {lat: path[1], lng: path[0]};
-                        }),
-                    });
-                    this.center = {
-                        lat: parsedCoordinates[0][0][1],
-                        lng: parsedCoordinates[0][0][0],
-                    };
-                    break;
-                case GeoJsonType.LINE_STRING:
-                    this.lines.push({
-                        path: parsedCoordinates.map((path: any) => {
-                            return {lat: path[1], lng: path[0]};
-                        }),
-                    });
-                    this.center = {
-                        lat: parsedCoordinates[0][1],
-                        lng: parsedCoordinates[0][0],
-                    };
-                    break;
-                case GeoJsonType.MULTI_POINT:
-                    for (const coordinate of parsedCoordinates) {
-                        this.markers.push({
-                            position: {
-                                lat: coordinate[1],
-                                lng: coordinate[0],
-                            },
-                        });
-                    }
-                    this.center = {
-                        lat: parsedCoordinates[0][1],
-                        lng: parsedCoordinates[0][0],
-                    };
-                    break;
-                case GeoJsonType.MULTI_POLYGON:
-                    for (const paths of parsedCoordinates) {
-                        this.polygons.push({
-                            paths: paths[0].map((path: any) => {
-                                return {lat: path[1], lng: path[0]};
-                            }),
-                        });
-                    }
-                    this.center = {
-                        lat: parsedCoordinates[0][0][0][1],
-                        lng: parsedCoordinates[0][0][0][0],
-                    };
-                    break;
-                case GeoJsonType.MULTI_LINE_STRING:
-                    for (const paths of parsedCoordinates) {
-                        this.lines.push({
-                            path: paths.map((path: any) => {
-                                return {lat: path[1], lng: path[0]};
-                            }),
-                        });
-                    }
-                    this.center = {
-                        lat: parsedCoordinates[0][0][1],
-                        lng: parsedCoordinates[0][0][0],
-                    };
-                    break;
-                default:
-                    break;
-            }
-        } catch {
-            this.control?.patchValue({});
-        }
-    }
-
-    authFailed() {
-        this.mapService.mapLoaded = false;
-        this.cdkRef.detectChanges();
+                if (this.control.valid) {
+                    this.formattedImageLink = `https://services.sentinel-hub.com/ogc/wms/${this.key}?REQUEST=GetMap&BBOX=${value.bbox}&FORMAT=${value.format}&LAYERS=${value.layers}&MAXCC=${value.maxcc}&WIDTH=${value.width}&HEIGHT=${value.height}&TIME=${value.time}`
+                }
+            })
+        )
     }
 }

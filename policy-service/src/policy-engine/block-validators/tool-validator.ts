@@ -116,6 +116,7 @@ export class ToolValidator {
      */
     private async registerSchemas(): Promise<void> {
         this.schemas.set('#GeoJSON', SchemaValidator.fromSystem('#GeoJSON'));
+        this.schemas.set('#SentinelHUB', SchemaValidator.fromSystem('#SentinelHUB'));
         const schemas = await DatabaseServer.getSchemas({ topicId: this.topicId });
         for (const schema of schemas) {
             this.schemas.set(schema.iri, SchemaValidator.fromSchema(schema));

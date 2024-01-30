@@ -52,6 +52,25 @@ export class DocumentGenerator {
      * @param option option
      * @returns document
      */
+    private static _generateSentinelHub(
+        subSchema: SchemaField,
+        context: string[],
+        option: GenerateOption
+    ): any {
+        const json: any = {};
+        // json.type = 'Point';
+        json['@context'] = context;
+        // json.coordinates = [0.0, 0.0];
+        return json;
+    }
+
+    /**
+     * Generate new field
+     * @param field field
+     * @param context context
+     * @param option option
+     * @returns document
+     */
     private static _generateSubDocument(
         subSchema: SchemaField,
         context: string[],
@@ -150,6 +169,8 @@ export class DocumentGenerator {
         if (field.isRef) {
             if (field.type === '#GeoJSON') {
                 return DocumentGenerator._generateGeoJSON(field, context, option);
+            } else if (field.type === '#SentinelHUB') {
+                return DocumentGenerator._generateSentinelHub(field, context, option);
             } else {
                 return DocumentGenerator._generateSubDocument(field, context, option);
             }

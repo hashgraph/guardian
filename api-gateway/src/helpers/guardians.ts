@@ -1989,6 +1989,13 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Get sentinel api key
+     */
+    public async getSentinelApiKey(): Promise<string> {
+        return await this.sendMessage<string>(MessageAPI.GET_SENTINEL_API_KEY);
+    }
+
+    /**
      * Create tag
      * @param tag
      * @param owner
