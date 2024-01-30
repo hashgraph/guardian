@@ -15,7 +15,7 @@ export function xlsxToEntity(value: string): SchemaEntity {
     if (value === 'VC' || value === 'Verifiable Credentials') {
         return SchemaEntity.VC;
     } else if (value === 'EVC' || value === 'Encrypted Verifiable Credential') {
-        return SchemaEntity.VC;
+        return SchemaEntity.EVC;
     } else {
         return SchemaEntity.NONE;
     }
