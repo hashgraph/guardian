@@ -11,10 +11,10 @@ import { DynamicDialogRef } from 'primeng/dynamicdialog';
 })
 export class DiscontinuePolicy {
     stateOptions = [
-        { label: 'Deffered', value: true },
+        { label: 'Deferred', value: true },
         { label: 'Immediate', value: false },
     ];
-    isDiscontinuingDeffered: boolean = true;
+    isDiscontinuingDeferred: boolean = true;
     date: Date;
     minDate: Date = new Date().addDays(1);
 
@@ -28,7 +28,7 @@ export class DiscontinuePolicy {
 
     onSubmit() {
         this.ref.close({
-            date: this.isDiscontinuingDeffered ? this.date : undefined,
+            date: this.isDiscontinuingDeferred ? this.date : undefined,
         });
     }
 }

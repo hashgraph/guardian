@@ -1,5 +1,10 @@
 # 💻 Tagging using UI
 
+1. [Step By Step Process](tagging-using-ui.md#id-1.-step-by-step-process)
+2. [Demo Video](tagging-using-ui.md#id-2.-demo-video)
+
+## 1. Step By Step Process
+
 ## Tags
 
 Document objects which can be attached to Schemas, Policies, Modules, Tokens, DID, VC and VP Documents by any credentialed entity at any time.
@@ -90,3 +95,7 @@ Tags which have been imported with the Policy or Schema are marked as _**History
 Any credentialed entity can create/remove a tag on any object at any point of time independently from the Guardian instance where this tagable object (document etc) has been created. This presents a challenge for displaying the up-to-date state of 3rd party tags associated with the object, since continuous search and import/updates of such tags can affect UI responsiveness and general UX. Guardian users can refresh (or ‘pull’) 3rd party tags and update their display in their local Guardian instance by clicking on the corresponding icon (highlighted on the screenshot below).
 
 ![synchronization icon](<../../../../.gitbook/assets/8 (1).png>)
+
+## 2. Demo Video
+
+[Youtube](https://www.youtube.com/watch?v=4-ZEpLBPCXc\&list=PLnld0e1pwLhqb69cELqQrW87JFVIDfocL\&index=21\&t=556s)

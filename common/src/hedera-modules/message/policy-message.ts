@@ -118,7 +118,7 @@ export class PolicyMessage extends Message {
             cid: this.getDocumentUrl(UrlType.cid),
             uri: this.getDocumentUrl(UrlType.url)
         };
-        if ([MessageAction.DefferedDiscontinuePolicy, MessageAction.DiscontinuePolicy].includes(this.action)) {
+        if ([MessageAction.DeferredDiscontinuePolicy, MessageAction.DiscontinuePolicy].includes(this.action)) {
             messageObject.effectiveDate = this.discontinuedDate?.toISOString();
         }
         return messageObject;
@@ -188,7 +188,7 @@ export class PolicyMessage extends Message {
         message.policyTopicId = json.topicId;
         message.instanceTopicId = json.instanceTopicId;
         message.synchronizationTopicId = json.synchronizationTopicId;
-        if ([MessageAction.DefferedDiscontinuePolicy, MessageAction.DiscontinuePolicy].includes(json.action)
+        if ([MessageAction.DeferredDiscontinuePolicy, MessageAction.DiscontinuePolicy].includes(json.action)
             && json.effectiveDate) {
             message.discontinuedDate = new Date(json.effectiveDate)
         }
@@ -243,7 +243,7 @@ export class PolicyMessage extends Message {
         result.policyTopicId = this.policyTopicId;
         result.instanceTopicId = this.instanceTopicId;
         result.synchronizationTopicId = this.synchronizationTopicId;
-        if ([MessageAction.DefferedDiscontinuePolicy, MessageAction.DiscontinuePolicy].includes(this.action)) {
+        if ([MessageAction.DeferredDiscontinuePolicy, MessageAction.DiscontinuePolicy].includes(this.action)) {
             result.effectiveDate = this.discontinuedDate;
         }
         result.document = this.document;

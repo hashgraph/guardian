@@ -4,13 +4,13 @@
             Time to discontinuing the policy:
         </span>
         <div class="form-value">
-            <p-selectButton [options]="stateOptions" [(ngModel)]="isDiscontinuingDeffered" optionLabel="label"
+            <p-selectButton [options]="stateOptions" [(ngModel)]="isDiscontinuingDeferred" optionLabel="label"
                 optionValue="value"></p-selectButton>
         </div>
-        <span class="form-label" *ngIf="isDiscontinuingDeffered">
+        <span class="form-label" *ngIf="isDiscontinuingDeferred">
             Please select date:
         </span>
-        <div class="form-value" *ngIf="isDiscontinuingDeffered">
+        <div class="form-value" *ngIf="isDiscontinuingDeferred">
             <p-calendar [minDate]="minDate" [(ngModel)]="date"></p-calendar>
         </div>
     </div>
