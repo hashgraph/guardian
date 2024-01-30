@@ -205,6 +205,10 @@ export class JsonToXlsx {
             .getCell(table.getCol(Dictionary.PARAMETER), row)
             .setValue(anyToXlsx(undefined))
             .setStyle(table.fieldStyle);
+        worksheet
+            .getCell(table.getCol(Dictionary.ANSWER), row)
+            .setValue(anyToXlsx(undefined))
+            .setStyle(table.fieldStyle);
 
         const type = FieldTypes.findByValue(field);
         if (type) {

@@ -4,6 +4,8 @@ import { FieldTypes, IFieldTypes } from './dictionary';
 export function entityToXlsx(entity: SchemaEntity): string {
     if (entity === SchemaEntity.VC) {
         return 'Verifiable Credentials';
+    } else if (entity === SchemaEntity.EVC) {
+        return 'Encrypted Verifiable Credential';
     } else {
         return 'Sub-Schema';
     }
@@ -11,6 +13,8 @@ export function entityToXlsx(entity: SchemaEntity): string {
 
 export function xlsxToEntity(value: string): SchemaEntity {
     if (value === 'VC' || value === 'Verifiable Credentials') {
+        return SchemaEntity.VC;
+    } else if (value === 'EVC' || value === 'Encrypted Verifiable Credential') {
         return SchemaEntity.VC;
     } else {
         return SchemaEntity.NONE;
