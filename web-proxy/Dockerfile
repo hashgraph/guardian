@@ -1,20 +1,17 @@
 FROM node:20 AS interfacesModuleBuilder
 WORKDIR /usr/local/interfaces
-COPY ./interfaces/package.json ./
+COPY ./interfaces/package*.json ./
 COPY ./interfaces/tsconfig*.json ./
-COPY ./yarn.lock ./
-COPY ./package-lock.json ./
 ADD ./interfaces/src ./src/.
-RUN yarn install
-RUN yarn pack
+RUN npm install
+RUN npm pack
 
 FROM node:20 as frontendBuilder
 ENV NODE_OPTIONS="--openssl-legacy-provider"
 WORKDIR /usr/local/frontend
 COPY ./frontend/. /usr/local/frontend
-COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.tgz /tmp/interfaces.tgz
-RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@guardian/interfaces']='file:/tmp/interfaces.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
-RUN npm install
+COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.tgz ./
+RUN npm install guardian-interfaces-*.tgz
 RUN npm run build
 
 FROM nginx:1.25.1
