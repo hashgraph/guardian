@@ -26,6 +26,7 @@ export class JsonToXlsx {
         //Schemas
         for (const item of schemas) {
             const schema = new Schema(item);
+            JsonToXlsx.updateFieldPaths(schema.fields, schema.iri);
             const sheetName = names.getSchemaName(schema.name);
             const worksheet = workbook.createWorksheet(sheetName);
             _schemas.push({
@@ -39,6 +40,7 @@ export class JsonToXlsx {
         //Tools
         for (const item of toolSchemas) {
             const schema = new Schema(item);
+            JsonToXlsx.updateFieldPaths(schema.fields, schema.iri);
             const sheetName = names.getToolName(schema.name);
             const worksheet = workbook.createWorksheet(sheetName);
             const tool = tools.find((t) => t.topicId === item.topicId);
@@ -62,9 +64,8 @@ export class JsonToXlsx {
                     _enum.setSchema(schema);
                     _enum.setField(field);
                     _enum.setData(field.enum);
-                    field.enum = [_enum.id];
                     _enums.push(_enum);
-                    _enumsCache.set(_enum.id, _enum);
+                    _enumsCache.set(field.path, _enum);
                 }
             }
         }
@@ -96,6 +97,15 @@ export class JsonToXlsx {
         return await workbook.write();
     }
 
+    private static updateFieldPaths(fields: SchemaField[], parent: string) {
+        for (const field of fields) {
+            field.path = `${parent}:${field.name}`;
+            if (field.isRef && field.fields) {
+                JsonToXlsx.updateFieldPaths(field.fields, field.type);
+            }
+        }
+    }
+
     public static writeSchema(
         worksheet: Worksheet,
         schema: Schema,
@@ -122,11 +132,11 @@ export class JsonToXlsx {
         worksheet.mergeCells(Range.fromColumns(table.start.c + 1, table.end.c - 1, table.getRow(Dictionary.SCHEMA_TYPE)));
         worksheet
             .getCell(table.start.c + 1, table.getRow(Dictionary.SCHEMA_DESCRIPTION))
-            .setStyle(table.schemaStyle)
+            .setStyle(table.schemaItemStyle)
             .setValue(schema.description);
         worksheet
             .getCell(table.start.c + 1, table.getRow(Dictionary.SCHEMA_TYPE))
-            .setStyle(table.schemaStyle)
+            .setStyle(table.schemaItemStyle)
             .setValue(entityToXlsx(schema.entity));
 
         if (tool) {
@@ -136,11 +146,11 @@ export class JsonToXlsx {
             worksheet.mergeCells(Range.fromColumns(table.start.c + 1, table.end.c - 1, table.getRow(Dictionary.SCHEMA_TOOL_ID)));
             worksheet
                 .getCell(table.start.c + 1, table.getRow(Dictionary.SCHEMA_TOOL))
-                .setStyle(table.schemaStyle)
+                .setStyle(table.schemaItemStyle)
                 .setValue(tool.name);
             worksheet
                 .getCell(table.start.c + 1, table.getRow(Dictionary.SCHEMA_TOOL_ID))
-                .setStyle(table.schemaStyle)
+                .setStyle(table.schemaItemStyle)
                 .setValue(tool.messageId);
         }
 
@@ -168,6 +178,14 @@ export class JsonToXlsx {
                 fieldCache,
                 row
             );
+            row = JsonToXlsx.writeSubFields(
+                worksheet,
+                table,
+                field,
+                schemaCache,
+                enumsCache,
+                row
+            );
         }
 
         for (const condition of schema.conditions) {
@@ -187,35 +205,35 @@ export class JsonToXlsx {
         schemaCache: Map<string, string>,
         enumsCache: Map<string, XlsxEnum>,
         fieldCache: Map<string, IRowField>,
-        row: number
+        row: number,
+        parent?: SchemaField
     ) {
+        for (const header of table.fieldHeaders) {
+            worksheet
+                .getCell(header.column, row)
+                .setStyle(parent ? table.subItemStyle : table.fieldItemStyle);
+        }
         worksheet
             .getCell(table.getCol(Dictionary.QUESTION), row)
-            .setValue(stringToXlsx(field.description))
-            .setStyle(table.fieldStyle);
+            .setValue(stringToXlsx(field.description));
         worksheet
             .getCell(table.getCol(Dictionary.REQUIRED_FIELD), row)
-            .setValue(booleanToXlsx(field.required))
-            .setStyle(table.fieldStyle);
+            .setValue(booleanToXlsx(field.required));
         worksheet
             .getCell(table.getCol(Dictionary.ALLOW_MULTIPLE_ANSWERS), row)
-            .setValue(booleanToXlsx(field.isArray))
-            .setStyle(table.fieldStyle);
+            .setValue(booleanToXlsx(field.isArray));
         worksheet
             .getCell(table.getCol(Dictionary.PARAMETER), row)
-            .setValue(anyToXlsx(undefined))
-            .setStyle(table.fieldStyle);
+            .setValue(anyToXlsx(undefined));
         worksheet
             .getCell(table.getCol(Dictionary.ANSWER), row)
-            .setValue(anyToXlsx(undefined))
-            .setStyle(table.fieldStyle);
+            .setValue(anyToXlsx(undefined));
 
         const type = FieldTypes.findByValue(field);
         if (type) {
             worksheet
                 .getCell(table.getCol(Dictionary.FIELD_TYPE), row)
-                .setValue(typeToXlsx(type))
-                .setStyle(table.fieldStyle);
+                .setValue(typeToXlsx(type));
         } else if (field.isRef) {
             const sheetName = schemaCache.get(field.type);
             worksheet
@@ -229,8 +247,7 @@ export class JsonToXlsx {
         if (type && type.pattern === true) {
             worksheet
                 .getCell(table.getCol(Dictionary.PARAMETER), row)
-                .setValue(stringToXlsx(field.pattern))
-                .setStyle(table.fieldStyle);
+                .setValue(stringToXlsx(field.pattern));
         }
         if (field.unit) {
             worksheet
@@ -247,30 +264,31 @@ export class JsonToXlsx {
                 .setStyle(table.paramStyle);
             worksheet
                 .getCell(table.getCol(Dictionary.QUESTION), row)
-                .setStyle(fontToXlsx(field.font, table.fieldStyle));
+                .setStyle(fontToXlsx(field.font, table.fieldItemStyle));
         }
         if (field.enum) {
-            const _enum = enumsCache.get(field.enum[0]);
-            field.enum = _enum.data;
-            worksheet
-                .getCell(table.getCol(Dictionary.PARAMETER), row)
-                .setLink(_enum.sheetName, new Hyperlink(_enum.sheetName, 'A3'))
-                .setStyle(table.linkStyle);
-            worksheet
-                .getCell(table.getCol(Dictionary.ANSWER), row)
-                .setList2(_enum.getData());
+            const _enum = enumsCache.get(field.path);
+            if (_enum) {
+                worksheet
+                    .getCell(table.getCol(Dictionary.PARAMETER), row)
+                    .setLink(_enum.sheetName, new Hyperlink(_enum.sheetName, 'A3'))
+                    .setStyle(table.linkStyle);
+                worksheet
+                    .getCell(table.getCol(Dictionary.ANSWER), row)
+                    .setList2(_enum.getData());
+            } else {
+                console.debug('!enum 2', field.path)
+            }
         }
         if (type && !field.isRef) {
             worksheet
                 .getCell(table.getCol(Dictionary.ANSWER), row)
-                .setValue(type.pars(examplesToXlsx(field)))
-                .setStyle(table.fieldStyle);
+                .setValue(type.pars(examplesToXlsx(field)));
         }
         if (field.hidden) {
             worksheet
                 .getCell(table.getCol(Dictionary.VISIBILITY), row)
-                .setValue(booleanToXlsx(false))
-                .setStyle(table.fieldStyle);
+                .setValue(booleanToXlsx(false));
         }
 
         const name = worksheet.getPath(table.getCol(Dictionary.ANSWER), row);
@@ -293,8 +311,7 @@ export class JsonToXlsx {
                 const thenField = fieldCache.get(field.name);
                 worksheet
                     .getCell(table.getCol(Dictionary.VISIBILITY), thenField.row)
-                    .setFormulae(thenFormula)
-                    .setStyle(table.fieldStyle);
+                    .setFormulae(thenFormula);
             }
         }
         if (Array.isArray(condition.elseFields)) {
@@ -302,8 +319,7 @@ export class JsonToXlsx {
                 const elseField = fieldCache.get(field.name);
                 worksheet
                     .getCell(table.getCol(Dictionary.VISIBILITY), elseField.row)
-                    .setFormulae(elseFormula)
-                    .setStyle(table.fieldStyle);
+                    .setFormulae(elseFormula);
             }
         }
     }
@@ -350,5 +366,72 @@ export class JsonToXlsx {
             row++
         }
         xlsxEnum.setRange(Range.fromRows(table.end.r, row - 1, table.getCol()));
+    }
+
+    public static writeSubFields(
+        worksheet: Worksheet,
+        table: Table,
+        parent: SchemaField,
+        schemaCache: Map<string, string>,
+        enumsCache: Map<string, XlsxEnum>,
+        row: number
+    ): number {
+        if (!parent || !parent.isRef || !Array.isArray(parent.fields) || parent.fields.length === 0) {
+            return row;
+        }
+
+        // for (const header of table.fieldHeaders) {
+        //     worksheet
+        //         .getCell(header.column, row)
+        //         .setStyle(table.subHeaderStyle);
+        // }
+
+        const lvl = worksheet.getRow(row).getOutline() + 1;
+        if (lvl > 7) {
+            return row;
+        }
+        if (lvl > 1) {
+            for (const header of table.fieldHeaders) {
+                worksheet
+                    .getCell(header.column, row)
+                    .setStyle(table.subHeadersStyle);
+            }
+        }
+        const fieldCache = new Map<string, IRowField>();
+        for (const field of parent.fields) {
+            row++
+            JsonToXlsx.writeField(
+                worksheet,
+                table,
+                field,
+                schemaCache,
+                enumsCache,
+                fieldCache,
+                row,
+                parent
+            );
+            worksheet
+                .getRow(row)
+                .setOutline(lvl);
+            row = JsonToXlsx.writeSubFields(
+                worksheet,
+                table,
+                field,
+                schemaCache,
+                enumsCache,
+                row
+            );
+        }
+
+        for (const condition of parent.conditions) {
+            JsonToXlsx.writeCondition(
+                worksheet,
+                table,
+                condition,
+                fieldCache
+            );
+        }
+
+        return row;
     }
 }

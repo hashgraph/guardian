@@ -1,17 +1,36 @@
-import ExcelJS from 'exceljs';
+import ExcelJS, { Border } from 'exceljs';
 import { Dictionary } from './dictionary';
 import { IPoint } from './workbook';
 import { TableHeader } from './table-header';
+
+const color = function (rgb: string): any {
+    return {
+        argb: ('FF' + rgb)
+    }
+}
+
+const background = function (rgb: string): any {
+    return {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: color(rgb)
+    }
+}
 
 export class Table {
     private readonly _fieldHeaders: Map<string, TableHeader>;
     private readonly _schemaHeaders: Map<string, TableHeader>;
 
-    public readonly fieldHeadersStyle: Partial<ExcelJS.Style>;
     public readonly schemaNameStyle: Partial<ExcelJS.Style>;
-    public readonly schemaDescriptionStyle: Partial<ExcelJS.Style>;
-    public readonly fieldStyle: Partial<ExcelJS.Style>;
-    public readonly schemaStyle: Partial<ExcelJS.Style>;
+    public readonly schemaHeadersStyle: Partial<ExcelJS.Style>;
+    public readonly schemaItemStyle: Partial<ExcelJS.Style>;
+
+    public readonly fieldHeadersStyle: Partial<ExcelJS.Style>;
+    public readonly fieldItemStyle: Partial<ExcelJS.Style>;
+
+    public readonly subHeadersStyle: Partial<ExcelJS.Style>;
+    public readonly subItemStyle: Partial<ExcelJS.Style>;
+
     public readonly linkStyle: Partial<ExcelJS.Style>;
     public readonly paramStyle: Partial<ExcelJS.Style>;
 
@@ -21,128 +40,122 @@ export class Table {
     constructor(start: IPoint) {
         this.start = start;
 
-        this.fieldHeadersStyle = {
-            font: {
-                size: 14,
-                bold: true
-            },
-            border: {
-                left: {
-                    style: 'thin',
-                    color: {
-                        argb: 'FF000000'
-                    }
-                },
-                right: {
-                    style: 'thin',
-                    color: {
-                        argb: 'FF000000'
-                    }
-                },
-                top: {
-                    style: 'thin',
-                    color: {
-                        argb: 'FF000000'
-                    }
-                },
-                bottom: {
-                    style: 'thin',
-                    color: {
-                        argb: 'FF000000'
-                    }
-                }
-            }
-        }
+        const headerColor1 = 'D8E4BC';
+        const backgroundColor1 = 'FFFFFF';
+        const headerColor2 = 'FABF8F';
+        const backgroundColor2 = 'FDE9D9';
+        const headerColor3 = 'E2E2E2';
+        const backgroundColor3 = 'F2F2F2';
+        const headerFont = {
+            size: 14,
+            bold: true
+        };
+        const itemFont = {
+            size: 11,
+            bold: false
+        };
+
+        const border1: Partial<Border> = {
+            style: 'thin',
+            color: color('000000')
+        };
+        const border2: Partial<Border> = {
+            style: 'thin',
+            color: color('BBBBBB')
+        };
+        const border3: Partial<Border> = {
+            style: 'dashed',
+            color: color('888888')
+        };
+
+        //Schema Table
         this.schemaNameStyle = {
-            font: {
-                size: 14,
-                bold: true
-            },
+            font: headerFont,
             alignment: {
                 horizontal: 'center'
             },
-            fill: {
-                type: 'pattern',
-                pattern: 'solid',
-                fgColor: {
-                    argb: 'FFBBBBBB'
-                }
+            fill: background(headerColor1),
+            border: {
+                left: border1,
+                right: border1,
+                top: border1,
+                bottom: border1
             }
-        }
-        this.schemaDescriptionStyle = {
-            font: {
-                size: 14,
-                bold: false
-            },
-            alignment: {
-                horizontal: 'center'
-            },
-            fill: {
-                type: 'pattern',
-                pattern: 'solid',
-                fgColor: {
-                    argb: 'FFBBBBBB'
-                }
+        };
+
+        this.schemaHeadersStyle = {
+            font: headerFont,
+            fill: background(headerColor1),
+            border: {
+                left: border1,
+                right: border1,
+                top: border1,
+                bottom: border1
             }
-        }
-        this.fieldStyle = {
-            font: {
-                size: 11,
-                bold: false
-            },
+        };
+
+        this.schemaItemStyle = {
+            font: itemFont,
+            fill: background(backgroundColor1),
             alignment: {
                 wrapText: true
             },
             border: {
-                left: {
-                    style: 'thin',
-                    color: {
-                        argb: 'FF000000'
-                    }
-                },
-                right: {
-                    style: 'thin',
-                    color: {
-                        argb: 'FF000000'
-                    }
-                }
+                left: border1,
+                right: border1,
+                top: border1,
+                bottom: border1
             }
-        }
-        this.schemaStyle = {
-            font: {
-                size: 11,
-                bold: false
-            },
+        };
+
+        //Field Table
+        this.fieldHeadersStyle = {
+            font: headerFont,
+            fill: background(headerColor2),
+            border: {
+                left: border1,
+                right: border1,
+                top: border1,
+                bottom: border1
+            }
+        };
+        this.fieldItemStyle = {
+            font: itemFont,
+            fill: background(backgroundColor2),
             alignment: {
                 wrapText: true
             },
             border: {
-                top: {
-                    style: 'thin',
-                    color: {
-                        argb: 'FF000000'
-                    }
-                },
-                bottom: {
-                    style: 'thin',
-                    color: {
-                        argb: 'FF000000'
-                    }
-                },
-                right: {
-                    style: 'thin',
-                    color: {
-                        argb: 'FF000000'
-                    }
-                }
+                left: border1,
+                right: border1,
+                bottom: border2
             }
         }
+
+        //Sub-Field Table
+        this.subHeadersStyle = {
+            fill: background(headerColor3),
+        };
+        this.subItemStyle = {
+            font: itemFont,
+            fill: background(backgroundColor3),
+            alignment: {
+                wrapText: true
+            },
+            border: {
+                left: border3,
+                right: border3,
+                bottom: border2
+            }
+        }
+
+        //Other
         this.linkStyle = {
             font: {
                 size: 11,
                 bold: false,
                 underline: true,
-                color: { argb: 'FF0000FF' }
+                color: color('0000FF')
             },
             alignment: {
                 wrapText: true
@@ -154,7 +167,6 @@ export class Table {
                 bold: false
             },
             alignment: {
-                // horizontal: 'fill',
                 wrapText: false
             }
         }
@@ -168,7 +180,7 @@ export class Table {
         this._fieldHeaders.set(Dictionary.FIELD_TYPE,
             new TableHeader(Dictionary.FIELD_TYPE, true)
                 .setStyle(this.fieldHeadersStyle)
-                .setWidth(20)
+                .setWidth(40)
         );
         this._fieldHeaders.set(Dictionary.PARAMETER,
             new TableHeader(Dictionary.PARAMETER, true)
@@ -183,7 +195,7 @@ export class Table {
         this._fieldHeaders.set(Dictionary.QUESTION,
             new TableHeader(Dictionary.QUESTION, true)
                 .setStyle(this.fieldHeadersStyle)
-                .setWidth(50)
+                .setWidth(70)
         );
         this._fieldHeaders.set(Dictionary.ALLOW_MULTIPLE_ANSWERS,
             new TableHeader(Dictionary.ALLOW_MULTIPLE_ANSWERS, true)
@@ -203,20 +215,20 @@ export class Table {
         );
         this._schemaHeaders.set(Dictionary.SCHEMA_DESCRIPTION,
             new TableHeader(Dictionary.SCHEMA_DESCRIPTION, false)
-                .setStyle(this.fieldHeadersStyle)
+                .setStyle(this.schemaHeadersStyle)
         );
         this._schemaHeaders.set(Dictionary.SCHEMA_TYPE,
             new TableHeader(Dictionary.SCHEMA_TYPE, false)
-                .setStyle(this.fieldHeadersStyle)
+                .setStyle(this.schemaHeadersStyle)
         );
 
         this._schemaHeaders.set(Dictionary.SCHEMA_TOOL,
             new TableHeader(Dictionary.SCHEMA_TOOL, false)
-                .setStyle(this.fieldHeadersStyle)
+                .setStyle(this.schemaHeadersStyle)
         );
         this._schemaHeaders.set(Dictionary.SCHEMA_TOOL_ID,
             new TableHeader(Dictionary.SCHEMA_TOOL_ID, false)
-                .setStyle(this.fieldHeadersStyle)
+                .setStyle(this.schemaHeadersStyle)
         );
 
         this.end = this.start;

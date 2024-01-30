@@ -100,6 +100,10 @@ export class Worksheet {
     constructor(name: string, worksheet: ExcelJS.Worksheet) {
         this.name = name;
         this.worksheet = worksheet;
+        this.worksheet.properties.outlineProperties = {
+            summaryBelow: false,
+            summaryRight: false,
+        };
     }
 
     public get rowCount(): number {
@@ -147,6 +151,11 @@ export class Worksheet {
     public getCol(c: number): Column {
         this.checkColumnRange(c);
         return new Column(this.worksheet.getColumn(c));
+    }
+
+    public getRow(r: number): Row {
+        this.checkRowRange(r);
+        return new Row(this.worksheet.getRow(r));
     }
 
     public getCell(c: number, r: number): Cell {
@@ -347,6 +356,22 @@ export class Column {
             this.column.width = width;
         }
         return this;
+    }
+}
+
+export class Row {
+    private readonly row: ExcelJS.Row;
+
+    constructor(row: ExcelJS.Row) {
+        this.row = row;
+    }
+
+    public setOutline(lvl: number): void {
+        this.row.outlineLevel = lvl;
+    }
+
+    public getOutline(): number {
+        return this.row.outlineLevel || 0;
     }
 }
 
