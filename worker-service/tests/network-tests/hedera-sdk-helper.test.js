@@ -1,15 +1,9 @@
 const dotenv = require('dotenv');
 dotenv.config();
 
-const {
-    HederaSDKHelper
-} = require('../../dist/api/helpers/hedera-sdk-helper');
-const {
-    HederaUtils
-} = require('../../dist/api/helpers/utils');
-
-const { Client, AccountBalanceQuery } = require('@hashgraph/sdk');
-const { expect, assert } = require('chai');
+import {HederaSDKHelper} from '../../dist/api/helpers/hedera-sdk-helper.js'
+import {HederaUtils} from '../../dist/api/helpers/utils.js';
+import {assert} from 'chai';
 
 async function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
