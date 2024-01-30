@@ -6,6 +6,11 @@ Themes are used to change visual display of Policy blocks in the Policy Configur
 
 Block’s display style is determined by their matching of the criteria defined in the theme.
 
+1. [Step By Step Process](themes-using-ui.md#id-1.-step-by-step-process)
+2. [Demo video](themes-using-ui.md#id-2.-demo-video)
+
+## 1. Step By Step Process
+
 ### **1. Theme management**
 
 Policy Configurator contains a section, it can be navigated to by clicking the corresponding button named **Settings** in the top panel.
@@ -141,3 +146,7 @@ Themes can be selected from the drop down button as shown below:
 Explainer drop-down button is highlighted as shown below:
 
 ![](<../../../../.gitbook/assets/18 (4).png>)
+
+## 2. Demo Video
+
+[Youtube](https://www.youtube.com/watch?v=4-ZEpLBPCXc\&list=PLnld0e1pwLhqb69cELqQrW87JFVIDfocL\&index=21\&t=556s)
