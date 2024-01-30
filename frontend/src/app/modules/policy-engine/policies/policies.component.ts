@@ -949,16 +949,18 @@ export class PoliciesComponent implements OnInit {
     }
 
     public onChangeStatus(event: any, policy: any): void {
-        if (policy.status == 'DRAFT') {
-            this.onPublishAction(event, policy);
-        }
-        if (policy.status == 'DRY-RUN') {
-            this.onDryRunAction(event, policy);
-        }
-        if (policy.status == 'PUBLISH') {
-            this.onPublishedAction(event, policy);
-        } else {
-            this.onPublishErrorAction(event, policy)
+        switch(policy.status) {
+            case 'DRAFT':
+                this.onPublishAction(event, policy);
+                break;
+            case 'DRY-RUN':
+                this.onDryRunAction(event, policy);
+                break;
+            case 'PUBLISH':
+                this.onPublishedAction(event, policy);
+                break;
+            default:
+                this.onPublishErrorAction(event, policy)
         }
     }
 
