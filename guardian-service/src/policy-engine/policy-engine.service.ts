@@ -550,7 +550,7 @@ export class PolicyEngineService {
                 if (msg.date) {
                     const date = new Date(msg.date);
                     model.discontinuedDate = date;
-                    message = new PolicyMessage(MessageType.Policy, MessageAction.DefferedDiscontinuePolicy);
+                    message = new PolicyMessage(MessageType.Policy, MessageAction.DeferredDiscontinuePolicy);
                 } else {
                     model.status = PolicyType.DISCONTINUED;
                     model.discontinuedDate = new Date();
