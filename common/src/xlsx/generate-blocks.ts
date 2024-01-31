@@ -280,7 +280,7 @@ export class GenerateBlocks {
         //Expressions
         body += `    //Expressions\r\n`;
         for (const expression of expressions) {
-            body += `    document.${expression.symbol} = ${expression.formulae};\r\n \\${xlsxSchema.worksheet.name}: ${expression.symbol} = ${expression.formulae}`;
+            body += `    document.${expression.symbol} = ${expression.formulae};\r\n \\\\${xlsxSchema.worksheet.name}: ${expression.symbol} = ${expression.formulae}`;
         }
         body += `\r\n`;
         //Main
