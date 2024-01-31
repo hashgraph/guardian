@@ -231,7 +231,16 @@ export class XlsxResult {
                 schema.updateRefs(schemas);
             }
             for (const schema of this._schemas) {
-                schema.updateExpressions(schemas);
+                try {
+                    schema.updateExpressions(schemas);
+                } catch (error) {
+                    this.addError({
+                        type: 'error',
+                        text: 'Failed to parse variables.',
+                        message: error?.toString(),
+                        worksheet: schema.worksheet.name,
+                    }, schema);
+                }
             }
         } catch (error) {
             this.addError({

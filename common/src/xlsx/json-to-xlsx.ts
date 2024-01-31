@@ -278,7 +278,7 @@ export class JsonToXlsx {
                     .getCell(table.getCol(Dictionary.ANSWER), row)
                     .setList2(_enum.getData());
             } else {
-                console.debug('!enum 2', field.path)
+                throw new Error(`Enum (field.path) not found.`);
             }
         }
         if (type && !field.isRef) {

@@ -1,4 +1,4 @@
-import { Schema, SchemaField } from "@guardian/interfaces";
+import { Schema, SchemaField } from '@guardian/interfaces';
 
 export class XlsxVariable {
     public readonly name: string;
@@ -7,8 +7,8 @@ export class XlsxVariable {
 
     private schema: Schema;
     private field: SchemaField;
-    private children: XlsxVariable[];
     private parent: XlsxVariable;
+    private readonly children: XlsxVariable[];
 
     constructor(
         name: string,
@@ -47,8 +47,7 @@ export class XlsxVariable {
 
     public update(schemas: Schema[]) {
         if (!this.schema) {
-            console.debug('! error 5');
-            throw new Error("! error 5"); 
+            throw new Error('Schema not found.');
         }
         if (this.lvl) {
             this.field = this.schema.fields.find((f) => f.description === this.description);
@@ -56,14 +55,12 @@ export class XlsxVariable {
             this.field = this.schema.fields.find((f) => f.name === this.name);
         }
         if (!this.field) {
-            console.debug('! error 4');
-            throw new Error("! error 4"); 
+            throw new Error('Invalid variable name.');
         }
         if (this.children.length) {
             const subSchema = schemas.find((s) => s.iri === this.field.type);
             if (!subSchema) {
-                console.debug('! error 3');
-                throw new Error("! error 3"); 
+                throw new Error('Invalid variable type.');
             }
             for (const child of this.children) {
                 child.setSchema(subSchema);
@@ -102,10 +99,10 @@ export class XlsxExpressions {
                 if (parent) {
                     parent.add(variable);
                 } else {
-                    console.debug('! error 1');
+                    throw new Error('Parent not found.');
                 }
             } else {
-                console.debug('! error 2');
+                throw new Error('Invalid group level.');
             }
             last = variable;
             parents.set(variable.lvl, variable);

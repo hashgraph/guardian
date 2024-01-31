@@ -3,13 +3,13 @@ import { Dictionary } from './dictionary';
 import { IPoint } from './workbook';
 import { TableHeader } from './table-header';
 
-const color = function (rgb: string): any {
+const color = (rgb: string): any => {
     return {
         argb: ('FF' + rgb)
     }
 }
 
-const background = function (rgb: string): any {
+const background = (rgb: string): any => {
     return {
         type: 'pattern',
         pattern: 'solid',

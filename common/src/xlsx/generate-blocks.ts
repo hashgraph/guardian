@@ -1,4 +1,4 @@
-import { BlockType, GenerateUUIDv4, Schema, SchemaEntity } from '@guardian/interfaces';
+import { BlockType, GenerateUUIDv4, SchemaEntity } from '@guardian/interfaces';
 import { XlsxResult } from './models/xlsx-result';
 import { Policy, PolicyTool } from '../entity';
 import { IBlock } from './interfaces/block-interface';
@@ -39,7 +39,7 @@ export class GenerateBlocks {
         const tags = new TagIndexer();
         const parent = GenerateBlocks.generateContainer(xlsxResult.policy, tags);
         GenerateBlocks.addPolicyTools(xlsxResult.policy, xlsxResult.tools, parent, tags);
-        GenerateBlocks.generateRequests(xlsxResult.xlsxSchemas, parent, tags);
+        GenerateBlocks.generateRequests(xlsxResult.xlsxSchemas, parent, tags, xlsxResult);
     }
 
     /**
@@ -161,7 +161,8 @@ export class GenerateBlocks {
     private static generateRequests(
         schemas: XlsxSchema[],
         parent: IBlock,
-        tags: TagIndexer
+        tags: TagIndexer,
+        xlsxResult: XlsxResult
     ): void {
         for (const schema of schemas) {
             if (schema.entity === SchemaEntity.VC) {
@@ -170,7 +171,7 @@ export class GenerateBlocks {
                     blockType: BlockType.Container
                 });
                 GenerateBlocks.generateRequest(requestContainer, schema, tags);
-                GenerateBlocks.generateCalculation(requestContainer, schema, tags);
+                GenerateBlocks.generateCalculation(requestContainer, schema, tags, xlsxResult);
                 GenerateBlocks.pushBlock(parent, requestContainer);
             }
         }
@@ -204,9 +205,10 @@ export class GenerateBlocks {
     private static generateCalculation(
         parent: IBlock,
         schema: XlsxSchema,
-        tags: TagIndexer
+        tags: TagIndexer,
+        xlsxResult: XlsxResult
     ): void {
-        const expression = GenerateBlocks.generateExpression(schema);
+        const expression = GenerateBlocks.generateExpression(schema, xlsxResult);
         if (expression) {
             const calculation = GenerateBlocks.generateBlock({
                 tag: tags.getTag(),
@@ -224,7 +226,10 @@ export class GenerateBlocks {
      * Generate Expression
      * @param schema
      */
-    private static generateExpression(xlsxSchema: XlsxSchema): string {
+    private static generateExpression(
+        xlsxSchema: XlsxSchema,
+        xlsxResult: XlsxResult
+    ): string {
         const expressions: IExpression[] = [];
         for (const field of xlsxSchema.fields) {
             if (field.formulae) {
@@ -253,7 +258,12 @@ export class GenerateBlocks {
                     path: paths.get(symbol)
                 });
             } else {
-                console.debug('! error 2');
+                xlsxResult.addError({
+                    type: 'error',
+                    text: `Variable ${symbol} is not defined.`,
+                    message: `Variable ${symbol} is not defined.`,
+                    worksheet: xlsxSchema.worksheet.name
+                }, null);
                 return null;
             }
         }
@@ -270,7 +280,7 @@ export class GenerateBlocks {
         //Expressions
         body += `    //Expressions\r\n`;
         for (const expression of expressions) {
-            body += `    document.${expression.symbol} = ${expression.formulae};\r\n`;
+            body += `    document.${expression.symbol} = ${expression.formulae};\r\n \\${xlsxSchema.worksheet.name}: ${expression.symbol} = ${expression.formulae}`;
         }
         body += `\r\n`;
         //Main
@@ -279,11 +289,10 @@ export class GenerateBlocks {
         body += `}\r\n`;
         body += `(function calc() {\r\n`;
         body += `    return done(documents.map((document) =>\r\n`;
-        body += `        main(document.document.credentialSubject[0])\r\n`;
+        body += `        main(document.document.credentialSubject[0]);\r\n`;
         body += `    ));\r\n`;
         body += `})();`;
 
-        console.debug(body);
         return body;
     }
 

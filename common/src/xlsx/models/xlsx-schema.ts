@@ -1,6 +1,6 @@
-import { Schema, SchemaCategory, SchemaCondition, SchemaEntity, SchemaField, SchemaHelper } from "@guardian/interfaces";
-import { Worksheet } from "./workbook";
-import { XlsxExpressions } from "./xlsx-expressions";
+import { Schema, SchemaCategory, SchemaCondition, SchemaEntity, SchemaField, SchemaHelper } from '@guardian/interfaces';
+import { Worksheet } from './workbook';
+import { XlsxExpressions } from './xlsx-expressions';
 
 export class XlsxSchema {
     public readonly worksheet: Worksheet;
