@@ -181,6 +181,7 @@ export class DocumentModel implements IWeightModel {
         this._weight = [];
         this._weightMap = {};
         this._hash = '';
+        this._relationships = [];
     }
 
     /**

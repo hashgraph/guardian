@@ -13,6 +13,10 @@ body {
     background-color: #F9FAFC;
 }
 
+.p-dialog-mask {
+    pointer-events: all !important;
+}
+
 body {
     margin: 0;
     font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue",
