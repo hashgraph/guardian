@@ -351,13 +351,15 @@
         </p-button>
 
         <p-button
-            (click)="importFromExcel(id)"
+            (click)="status === 'DRAFT' ? importFromExcel(id) : null"
+            [disabled]="status !=='DRAFT'"
             label="Import schemas from Excel"
             class="policy-menu-btn"
             styleClass="p-button-outlined"
             [pTooltip]="'Import schemas from excel'"
             tooltipPosition="bottom">
-            <svg-icon src="/assets/images/icons/import.svg" svgClass="primary-color"></svg-icon>
+            <svg-icon src="/assets/images/icons/import.svg" 
+                [svgClass]="status === 'DRAFT' ? 'primary-color' : 'disabled-color'"></svg-icon>
         </p-button>
 
         
