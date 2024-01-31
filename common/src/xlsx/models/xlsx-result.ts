@@ -6,10 +6,11 @@ import { ISchemaCache } from '../interfaces/cache.interface';
 import { ITool } from '../interfaces/tool.interface';
 import { ILink } from '../interfaces/link.interface';
 import { XlsxEnum } from './xlsx-enum';
+import { XlsxSchema, XlsxTool } from './xlsx-schema';
 
 export class XlsxResult {
     private _policy: Policy;
-    private readonly _schemas: Schema[];
+    private readonly _schemas: XlsxSchema[];
     private readonly _tools: PolicyTool[];
     private readonly _errors: XlsxError[];
     private readonly _enums: XlsxEnum[];
@@ -32,46 +33,52 @@ export class XlsxResult {
     }
 
     public get schemas(): Schema[] {
-        return this._schemas;
+        return this._schemas.map((s) => s.schema);
     }
 
     public get tools(): PolicyTool[] {
         return this._tools;
     }
 
+    public get xlsxSchemas(): XlsxSchema[] {
+        return this._schemas;
+    }
+
     public addTool(
         worksheet: Worksheet,
-        name: string,
-        messageId: string
+        schema: XlsxTool,
     ): void {
-        this._toolsCache.set(messageId, {
-            uuid: messageId,
-            name: messageId,
-            messageId
+        this._toolsCache.set(schema.messageId, {
+            uuid: schema.messageId,
+            name: schema.messageId,
+            messageId: schema.messageId
         });
         this._schemaCache.push({
-            name,
+            name: schema.name,
             worksheet: worksheet.name,
-            toolId: messageId
+            toolId: schema.messageId
         });
     }
 
     public addSchema(
         worksheet: Worksheet,
-        name: string,
-        schema: Schema
+        schema: XlsxSchema
     ): void {
         this._schemas.push(schema);
         this._schemaCache.push({
-            name,
+            name: schema.schema.name,
             worksheet: worksheet.name,
-            iri: schema.iri
+            iri: schema.schema.iri
         });
     }
 
     public addError(
         error: XlsxError,
-        target: SchemaField | Schema | SchemaCondition
+        target:
+            XlsxSchema |
+            SchemaField |
+            Schema |
+            SchemaCondition
     ): void {
         this._errors.push(error);
         if (target) {
@@ -118,12 +125,12 @@ export class XlsxResult {
         const tools = Array.from(this._toolsCache.values());
         const schemas = this._schemas.map((s) => {
             return {
-                id: s.id,
-                iri: s.iri,
-                name: s.name,
-                description: s.description,
-                version: s.version,
-                status: s.status
+                id: s.schema.id,
+                iri: s.schema.iri,
+                name: s.schema.name,
+                description: s.schema.description,
+                version: s.schema.version,
+                status: s.schema.status
             };
         });
         return {
@@ -174,7 +181,8 @@ export class XlsxResult {
                 }
                 schemaNames.add(cache.name);
             }
-            for (const schema of this._schemas) {
+            const schemas = this.schemas;
+            for (const schema of schemas) {
                 const schemaCache = this._schemaCache.find(c => c.iri === schema.iri);
                 for (const field of schema.fields) {
                     if (field.isRef) {
@@ -220,7 +228,10 @@ export class XlsxResult {
                     }
                 }
                 schema.updateDocument();
-                schema.updateRefs(this._schemas);
+                schema.updateRefs(schemas);
+            }
+            for (const schema of this._schemas) {
+                schema.updateExpressions(schemas);
             }
         } catch (error) {
             this.addError({

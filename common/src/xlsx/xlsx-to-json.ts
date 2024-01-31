@@ -4,10 +4,12 @@ import { xlsxToArray, xlsxToBoolean, xlsxToEntity, xlsxToFont, xlsxToUnit } from
 import { Table } from './models/table';
 import * as mathjs from 'mathjs';
 import { XlsxSchemaConditions } from './models/schema-condition';
-import { Schema, SchemaCategory, SchemaField, SchemaHelper } from '@guardian/interfaces';
+import { SchemaCategory, SchemaField } from '@guardian/interfaces';
 import { XlsxResult } from './models/xlsx-result';
 import { XlsxEnum } from './models/xlsx-enum';
 import { EnumTable } from './models/enum-table';
+import { XlsxSchema, XlsxTool } from './models/xlsx-schema';
+import { XlsxExpressions } from './models/xlsx-expressions';
 
 export class XlsxToJson {
     public static async parse(buffer: Buffer): Promise<XlsxResult> {
@@ -31,9 +33,9 @@ export class XlsxToJson {
                     const schema = await XlsxToJson.readSchemaSheet(worksheet, xlsxResult);
                     if (schema) {
                         if (schema.category === SchemaCategory.TOOL) {
-                            xlsxResult.addTool(worksheet, schema.name, schema.messageId);
+                            xlsxResult.addTool(worksheet, schema as XlsxTool);
                         } else {
-                            xlsxResult.addSchema(worksheet, schema.name, schema);
+                            xlsxResult.addSchema(worksheet, schema as XlsxSchema);
                         }
                     }
                 }
@@ -124,11 +126,9 @@ export class XlsxToJson {
     private static async readSchemaSheet(
         worksheet: Worksheet,
         xlsxResult: XlsxResult
-    ): Promise<Schema | null> {
-        const schema: Schema = new Schema();
+    ): Promise<XlsxSchema | XlsxTool> {
+        const schema: XlsxSchema = new XlsxSchema(worksheet);
         try {
-            schema.name = worksheet.name;
-            schema.category = SchemaCategory.POLICY;
             const range = worksheet.getRange();
             const table = new Table(range.s);
 
@@ -190,9 +190,7 @@ export class XlsxToJson {
                 messageId = worksheet.getValue<string>(startCol + 1, table.getRow(Dictionary.SCHEMA_TOOL_ID));
             }
             if (toolName || messageId) {
-                schema.category = SchemaCategory.TOOL;
-                schema.messageId = messageId;
-                return schema;
+                return new XlsxTool(worksheet, messageId);
             }
 
             row = table.end.r + 1;
@@ -227,9 +225,21 @@ export class XlsxToJson {
                 }
             }
 
-            const conditions = conditionCache.map(c => c.toJson())
-            schema.setFields(fields, conditions);
-            SchemaHelper.updateIRI(schema);
+            row = table.end.r + 1;
+            const expressions: XlsxExpressions = new XlsxExpressions();
+            for (; row < range.e.r; row++) {
+                XlsxToJson.readExpression(
+                    worksheet,
+                    table,
+                    fieldCache,
+                    expressions,
+                    row,
+                    xlsxResult
+                );
+            }
+
+            const conditions = conditionCache.map(c => c.toJson());
+            schema.update(fields, conditions, expressions);
             return schema;
         } catch (error) {
             xlsxResult.addError({
@@ -318,21 +328,6 @@ export class XlsxToJson {
                     row,
                     col: table.getCol(Dictionary.FIELD_TYPE),
                 }, field);
-            }
-
-            //Formulae
-            if (!field.isRef) {
-                if (type === Dictionary.AUTO_CALCULATE && field.hidden) {
-                    const formulae = worksheet.getFormulae(table.getCol(Dictionary.ANSWER), row);
-                    if (formulae) {
-                        field.formulae = formulae;
-                    }
-                } else {
-                    const answer = worksheet.getValue<string>(table.getCol(Dictionary.ANSWER), row);
-                    if (answer) {
-                        field.examples = xlsxToArray(answer, field.isArray);
-                    }
-                }
             }
 
             return field;
@@ -497,6 +492,53 @@ export class XlsxToJson {
                 cell: worksheet.getPath(table.getCol(Dictionary.VISIBILITY), row),
                 row,
                 col: table.getCol(Dictionary.VISIBILITY),
+            }, field);
+            return;
+        }
+    }
+
+    private static readExpression(
+        worksheet: Worksheet,
+        table: Table,
+        fieldCache: Map<string, SchemaField>,
+        expressionCache: XlsxExpressions,
+        row: number,
+        xlsxResult: XlsxResult
+    ): XlsxSchemaConditions | undefined {
+        if (worksheet.empty(table.start.c, table.end.c, row)) {
+            return null;
+        }
+
+        const path = worksheet.getPath(table.getCol(Dictionary.ANSWER), row);
+        const description = worksheet.getValue<string>(table.getCol(Dictionary.QUESTION), row);
+        const lvl = worksheet.getRow(row).getOutline();
+
+        expressionCache.addVariable(path, description, lvl);
+
+        const field = fieldCache.get(path);
+        try {
+            if (field && !field.isRef) {
+                if (field.hidden) {
+                    const formulae = worksheet.getFormulae(table.getCol(Dictionary.ANSWER), row);
+                    if (formulae) {
+                        field.formulae = formulae;
+                    }
+                } else {
+                    const answer = worksheet.getValue<string>(table.getCol(Dictionary.ANSWER), row);
+                    if (answer) {
+                        field.examples = xlsxToArray(answer, field.isArray);
+                    }
+                }
+            }
+        } catch (error) {
+            xlsxResult.addError({
+                type: 'error',
+                text: 'Failed to parse expression.',
+                message: error?.toString(),
+                worksheet: worksheet.name,
+                cell: worksheet.getPath(table.getCol(Dictionary.ANSWER), row),
+                row,
+                col: table.getCol(Dictionary.ANSWER),
             }, field);
             return;
         }
