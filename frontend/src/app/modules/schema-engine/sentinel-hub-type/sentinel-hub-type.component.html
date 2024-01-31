@@ -30,13 +30,13 @@
     <input [disabled]="isDisabled" [formControl]="getDateByName('from')" [ngxMatDatetimePicker]="dateTimePicker1"
            matInput>
     <mat-datepicker-toggle [for]="$any(dateTimePicker1)" matSuffix></mat-datepicker-toggle>
-    <ngx-mat-datetime-picker #dateTimePicker1 [enableMeridian]="true"></ngx-mat-datetime-picker>
+    <ngx-mat-datetime-picker #dateTimePicker1 [enableMeridian]="true" [hideTime]="true"></ngx-mat-datetime-picker>
 </mat-form-field>
 <mat-form-field appearance="outline" class="type-selector">
     <mat-label>To</mat-label>
     <input [disabled]="isDisabled" [formControl]="getDateByName('to')" [ngxMatDatetimePicker]="dateTimePicker2"
            matInput>
     <mat-datepicker-toggle [for]="$any(dateTimePicker2)" matSuffix></mat-datepicker-toggle>
-    <ngx-mat-datetime-picker #dateTimePicker2 [enableMeridian]="true"></ngx-mat-datetime-picker>
+    <ngx-mat-datetime-picker #dateTimePicker2 [enableMeridian]="true" [hideTime]="true"></ngx-mat-datetime-picker>
 </mat-form-field>
 <img *ngIf="formattedImageLink" [src]="formattedImageLink" class="image">
