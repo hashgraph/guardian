@@ -22,7 +22,8 @@
 </mat-form-field>
 <mat-form-field appearance="outline" class="type-selector">
     <mat-label>BBox</mat-label>
-    <input [disabled]="isDisabled" [formControl]="getControlByName('bbox')" matInput required/>
+    <input [disabled]="isDisabled" [formControl]="getControlByName('bbox')" matInput pattern="\d+,\d+,\d+,\d+" placeholder="11111,22222,33333,44444"
+           required/>
 </mat-form-field>
 <mat-form-field appearance="outline" class="type-selector">
     <mat-label>From</mat-label>
