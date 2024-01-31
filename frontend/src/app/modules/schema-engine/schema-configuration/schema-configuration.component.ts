@@ -215,6 +215,7 @@ export class SchemaConfigurationComponent implements OnInit {
             isRef: false,
             customType: 'hederaAccount'
         };
+        console.log(this);
     }
 
     get currentEntity(): any {
@@ -330,7 +331,7 @@ export class SchemaConfigurationComponent implements OnInit {
                 props = {
                     name: ['', Validators.required],
                     description: [''],
-                    topicId: [this.topicId, Validators.required],
+                    topicId: [this.topicId],
                     entity: new FormControl(SchemaEntity.VC, Validators.required),
                     fields: this.fieldsForm,
                     conditions: this.conditionsForm

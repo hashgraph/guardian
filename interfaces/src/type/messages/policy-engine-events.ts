@@ -51,7 +51,7 @@ export enum PolicyEngineEvents {
     GET_POLICIES_BY_CATEGORY = 'policy-engine-event-get-policies-category',
     GET_POLICY_NAVIGATION = 'policy-engine-event-get-policies-navigation',
     GET_PUBLISH_POLICIES = 'policy-engine-event-get-publish-policies',
-    GET_FIELDS_DESCRIPTIONS = 'policy-engine-event-get-fields-description',
+    GET_FIELDS_DESCRIPTIONS = 'policy-engine-event-get-fields-descriptions',
     DISCONTINUE_POLICY = 'policy-engine-event-discontinue-policy',
     GET_POLICY_DOCUMENTS = 'policy-engine-event-get-policy-documents',
     MIGRATE_DATA = 'policy-engine-event-migrate-data',

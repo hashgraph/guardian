@@ -1,8 +1,8 @@
-<form 
-    *ngIf="options" 
-    [formGroup]="options" 
-    [attr.dialogForm]="comesFromDialog" 
-    [attr.childSchema]="isChildSchema" 
+<form
+        *ngIf="options"
+        [attr.childSchema]="isChildSchema"
+        [attr.dialogForm]="comesFromDialog"
+        [formGroup]="options"
     [attr.showButtons]="showButtons"
     [attr.pageButtons]="fields && showButtons && !isChildSchema"
     [attr.example]="example"
@@ -129,6 +129,10 @@
                             <app-geojson-type *ngSwitchCase="'geo'" [formGroup]="item.control" [preset]="item.preset"
                                 [disabled]="item.control?.disabled">
                             </app-geojson-type>
+                            <app-sentinel-hub-type *ngSwitchCase="'sentinel'" [disabled]="item.control?.disabled"
+                                                   [formGroup]="item.control"
+                                                   [preset]="item.preset">
+                            </app-sentinel-hub-type>
                             <app-schema-form *ngSwitchDefault [formGroup]="item.control" [fields]="item.fields" [private-fields]="hide"
                                 [delimiter-hide]="true" [conditions]="item.conditions" [preset]="item.preset" [isChildSchema]="true">
                             </app-schema-form>
@@ -270,6 +274,9 @@
                             <app-geojson-type *ngSwitchCase="'geo'" [formGroup]="listItem.control"
                                 [disabled]="item.control?.disabled" [preset]="listItem.preset">
                             </app-geojson-type>
+                            <app-sentinel-hub-type *ngSwitchCase="'sentinel'" [disabled]="item.control?.disabled"
+                                                   [formGroup]="listItem.control" [preset]="listItem.preset">
+                            </app-sentinel-hub-type>
                             <app-schema-form *ngSwitchDefault [formGroup]="listItem.control" [fields]="item.fields" [private-fields]="hide"
                                 [delimiter-hide]="true" [conditions]="item.conditions" [preset]="listItem.preset" [isChildSchema]="true">
                             </app-schema-form>

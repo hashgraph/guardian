@@ -3,6 +3,7 @@ import { SchemaDataTypes } from '../interface/schema-document.interface';
 import { Schema } from '../models/schema';
 import geoJson from './geojson-schema/geo-json';
 import { ModelHelper } from './model-helper';
+import SentinelHubSchema from './sentinel-hub/sentinel-hub-schema';
 
 /**
  * Schema helper class
@@ -733,7 +734,8 @@ export class SchemaHelper {
     public static findRefs(target: Schema, schemas: Schema[]) {
         const map = {};
         const schemaMap = {
-            '#GeoJSON': geoJson
+            '#GeoJSON': geoJson,
+            '#SentinelHUB': SentinelHubSchema
         };
         for (const element of schemas) {
             schemaMap[element.iri] = element.document;

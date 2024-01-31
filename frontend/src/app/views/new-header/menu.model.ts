@@ -54,15 +54,6 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
             },
         ],
     },
-
-    {
-        title: 'Projects',
-        iconUrl: '',
-        allowedUserRoles: [UserRole.STANDARD_REGISTRY],
-        active: false,
-        routerLink: '/projects'
-    },
-
     {
         title: 'Administration',
         allowedUserRoles: [UserRole.STANDARD_REGISTRY],
@@ -80,6 +71,10 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
             {
                 title: 'Status',
                 routerLink: '/admin/status'
+            },
+            {
+                title: 'About',
+                routerLink: '/admin/about'
             },
         ],
     },
