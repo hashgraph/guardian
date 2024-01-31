@@ -1,6 +1,7 @@
 <div class="content" [hidden]="!isActive">
     <div>
         <h2>{{ title }}</h2>
+        <h3>{{ description }}</h3>
         <form [formGroup]="roleForm" (ngSubmit)="onSubmit()">
             <div class="roles-form">
 
