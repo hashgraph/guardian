@@ -200,8 +200,8 @@ const routes: Routes = [
 
     { path: 'branding', component: BrandingComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
 
-    { path: 'projects', component: AnnotationBlockComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard], data: { title: 'GUARDIAN / Project Overview' } },
-    { path: 'projects/comparison', component: ProjectsComparisonTableComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard], data: { title: 'GUARDIAN / Project Comparison' } },
+    {path: 'projects', component: AnnotationBlockComponent, data: {title: 'GUARDIAN / Project Overview'}},
+    {path: 'projects/comparison', component: ProjectsComparisonTableComponent, data: {title: 'GUARDIAN / Project Comparison'}},
 
     { path: '', component: HomeComponent },
     { path: 'info', component: InfoComponent },
