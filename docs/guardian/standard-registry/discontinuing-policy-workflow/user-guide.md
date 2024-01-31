@@ -13,11 +13,11 @@
 
 ![image1.png](<../../../.gitbook/assets/1 (14).png>)
 
-3. In the UI policies, which were set to discontinue immediately are displayed with the red color in the status block, policies which are set to deferred discontinue are displayed with the gold warning color in the status block.
+3. In the UI policies, which were set to discontinue immediately are displayed with the red color in the status block and policies which are set to deferred discontinue are displayed with the gold warning color in the status block.
 
 ![image10.png](<../../../.gitbook/assets/2 (16).png>)
 
-4. Discontinue actions in the UI trigger the issuance of the \[deferred-]discontinue-policy messages in the corresponding policy topic
+4. Discontinue actions in the UI triggers the issuance of the \[deferred-]discontinue-policy messages in the corresponding policy topic
 
 ![image12.png](<../../../.gitbook/assets/3 (13).png>)
 
@@ -41,9 +41,11 @@
 6. Groups (displayed when both policies contain groups) : Map the source policy groups with the destination policy groups.
 7. Clicking OK you will start an asynchronous migration task
 
+<figure><img src="../../../.gitbook/assets/image (420).png" alt=""><figcaption></figcaption></figure>
+
 ![image9.png](<../../../.gitbook/assets/7 (13).png>)
 
-3. When the task completes a success or warning (in case of issues) notification is displayed.
+3. When the task completes, a success or warning (in case of issues) notification is displayed.
 
 ![image8.png](<../../../.gitbook/assets/8 (14).png>)
 
