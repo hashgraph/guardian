@@ -7,6 +7,13 @@ form {
     z-index: 9999;
     top: 10px;
     right: 10px;
+    display: flex;
+}
+
+.projects-link {
+    cursor: pointer;
+    color: #4169E2;
+    margin-right: 10px;
 }
 
 .demo-users {
