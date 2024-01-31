@@ -1522,9 +1522,7 @@ export class PolicyEngineService {
                         item.groupName === groups[srcGroup.groupName]
                         || item.role === roles[srcGroup.role]
                     );
-                    if (userRole) {
-                        doc.group = userRole.uuid;
-                    }
+                    doc.group = userRole ? userRole.uuid : null;
                 }
 
                 if (doc instanceof VcDocument) {
