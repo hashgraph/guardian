@@ -10,6 +10,7 @@ import { Policy } from './models/common/policy';
 import { PolicyDescription } from './models/models';
 
 import * as dotenv from 'dotenv';
+import { Logger } from '@guardian/common';
 
 dotenv.config();
 
@@ -53,7 +54,7 @@ export class AIManager {
 
     async rebuildVector() {
         try {
-            console.log('rebuild vector');
+            new Logger().info('rebuild vector', ['AI_SERVICE']);
 
             this.vector = null;
             this.chain = null;
@@ -62,9 +63,9 @@ export class AIManager {
             await FilesManager.generateData(this.docPath, this.policies, this.categories, this.policyDescriptions);
             await VectorStorage.create(this.docPath, this.vectorPath);
 
-            console.log('end rebuild vector');
+            new Logger().info('end rebuild vector', ['AI_SERVICE']);
         } catch (e) {
-            console.log(e);
+            new Logger().error(e.message, ['AI_SERVICE']);
         }
     }
 
@@ -72,13 +73,13 @@ export class AIManager {
         const dbRequests = new AISuggestionsDB();
 
         this.categories = await dbRequests.getPolicyCategories();
-        console.log('fetched categories');
+        new Logger().info('fetched categories', ['AI_SERVICE']);
 
         this.policies = await dbRequests.getAllPolicies();
-        console.log('fetched policies');
+        new Logger().info('fetched policies', ['AI_SERVICE']);
 
         this.policyDescriptions = await dbRequests.getFieldDescriptions(this.policies);
-        console.log('fetched fields descriptions');
+        new Logger().info('fetched fields descriptions', ['AI_SERVICE']);
 
     }
 }

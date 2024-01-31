@@ -5,6 +5,7 @@ import { GroupCategories } from './general-helper';
 import { Policy } from '../models/common/policy';
 import { PolicyCategoryType } from '@guardian/interfaces';
 import { PolicyDescription } from '../models/models';
+import { Logger } from '@guardian/common';
 
 const MIN_DESCRIPTION_WORDS = 5;
 
@@ -166,7 +167,7 @@ export class FilesManager {
                     console.error(err);
                     reject();
                 } else {
-                    console.log(`File ${filePath} was created`);
+                    new Logger().info(`File ${filePath} was created`, ['AI_SERVICE']);
                     resolve(true);
                 }
             });
