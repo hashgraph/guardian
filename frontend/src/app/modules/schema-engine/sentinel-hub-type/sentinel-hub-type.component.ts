@@ -1,10 +1,21 @@
 import { AfterViewInit, ChangeDetectorRef, Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { DATETIME_FORMATS } from '../schema-form/schema-form.component';
 import { NGX_MAT_DATE_FORMATS, NgxMatDateAdapter } from '@angular-material-components/datetime-picker';
 import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
 import { Subscription } from 'rxjs';
 import { MapService } from '../../../services/map.service';
+
+const MY_FORMATS = {
+    parse: {
+        dateInput: 'l, LT',
+    },
+    display: {
+        dateInput: 'YYYY-MM-DD',
+        monthYearLabel: 'MM yyyy',
+        dateA11yLabel: 'LL',
+        monthYearA11yLabel: 'MMMM YYYY',
+    }
+};
 
 @Component({
     selector: 'app-sentinel-hub-type',
@@ -12,8 +23,8 @@ import { MapService } from '../../../services/map.service';
     styleUrls: ['./sentinel-hub-type.component.scss'],
     providers: [
         {provide: NgxMatDateAdapter, useClass: NgxMatMomentAdapter},
-        {provide: NGX_MAT_DATE_FORMATS, useValue: DATETIME_FORMATS}
-    ]
+        {provide: NGX_MAT_DATE_FORMATS, useValue: MY_FORMATS},
+    ],
 })
 export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewInit {
     public key: string;
