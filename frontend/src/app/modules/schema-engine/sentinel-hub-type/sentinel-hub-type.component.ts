@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input, OnChanges, OnInit, SimpleChanges, } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { DATETIME_FORMATS } from '../schema-form/schema-form.component';
 import { NGX_MAT_DATE_FORMATS, NgxMatDateAdapter } from '@angular-material-components/datetime-picker';
@@ -15,7 +15,7 @@ import { MapService } from '../../../services/map.service';
         {provide: NGX_MAT_DATE_FORMATS, useValue: DATETIME_FORMATS}
     ]
 })
-export class SentinelHubTypeComponent implements OnInit, OnChanges {
+export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewInit {
     public key: string;
     subscription = new Subscription();
     @Input('formGroup') control: FormGroup;
@@ -65,6 +65,9 @@ export class SentinelHubTypeComponent implements OnInit, OnChanges {
         this.subscription.add(
             this.mapService.getSentinelKey().subscribe(value => {
                 this.key = value;
+                if (this.presetDocument) {
+                    this.generateImageLink(this.control.value, true);
+                }
             })
         )
 
@@ -75,16 +78,27 @@ export class SentinelHubTypeComponent implements OnInit, OnChanges {
         );
 
         this.subscription.add(
-            this.control.valueChanges.subscribe(value => {
-                if (!this.key) {
-                    this.formattedImageLink = '';
-                    return;
-                }
-
-                if (this.control.valid) {
-                    this.formattedImageLink = `https://services.sentinel-hub.com/ogc/wms/${this.key}?REQUEST=GetMap&BBOX=${value.bbox}&FORMAT=${value.format}&LAYERS=${value.layers}&MAXCC=${value.maxcc}&WIDTH=${value.width}&HEIGHT=${value.height}&TIME=${value.time}`
-                }
-            })
+            this.control.valueChanges.subscribe(value => this.generateImageLink(value))
         )
+    }
+
+    ngAfterViewInit(): void {
+        if (this.presetDocument) {
+            this.control.patchValue(this.presetDocument);
+            const [from, to] = this.control.get('time')?.value?.split('/') || [];
+            this.datePicker.patchValue({from, to});
+            this.generateImageLink(this.control.value, true);
+        }
+    }
+
+    generateImageLink(value: any, skipValidation = false): void {
+        if (!this.key) {
+            this.formattedImageLink = '';
+            return;
+        }
+
+        if (skipValidation || this.control.valid) {
+            this.formattedImageLink = `https://services.sentinel-hub.com/ogc/wms/${this.key}?REQUEST=GetMap&BBOX=${value.bbox}&FORMAT=${value.format}&LAYERS=${value.layers}&MAXCC=${value.maxcc}&WIDTH=${value.width}&HEIGHT=${value.height}&TIME=${value.time}`
+        }
     }
 }
