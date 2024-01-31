@@ -184,6 +184,7 @@ export class SchemaConfigComponent implements OnInit {
         const topic = this.route.snapshot.queryParams['topic'];
         this.type = this.getType(type);
         this.currentTopic = topic && topic !== 'all' ? topic : '';
+        console.log(this);
         this.loadProfile();
     }
 
@@ -312,8 +313,8 @@ export class SchemaConfigComponent implements OnInit {
                 this.policyNameByTopic = {};
                 this.policyIdByTopic = {};
                 this.policies = [{
-                    name: 'Not set',
-                    topicId: null
+                    name: 'No binding',
+                    topicId: ''
                 }];
                 for (const policy of policies) {
                     if (policy.topicId) {
