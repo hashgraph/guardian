@@ -99,7 +99,7 @@
             <div *ngSwitchCase="'schemas'" class="step-container">
                 <ng-template [ngTemplateOutlet]="spinner"
                     [ngTemplateOutletContext]="{ loading: loadings.schemas }"></ng-template>
-                <div class="mapping-content">
+                <div class="mapping-content" *ngIf="getObjectKeys(this.migrationConfig.schemas).length > 0; else noSchemas">
                     <div *ngFor="let schema of getObjectKeys(this.migrationConfig.schemas)" class="mapping">
                         <div class="map-left">
                             <span>{{getSchemaName(srcSchemas, schema)}}</span>
@@ -115,9 +115,10 @@
                         </div>
                     </div>
                 </div>
+                <ng-template #noSchemas><span>There are no schemas to map</span></ng-template>
             </div>
             <div *ngSwitchCase="'roles'" class="step-container">
-                <div class="mapping-content">
+                <div class="mapping-content" *ngIf="getObjectKeys(this.migrationConfig.roles).length > 0; else noRoles">
                     <div *ngFor="let role of getObjectKeys(this.migrationConfig.roles)" class="mapping">
                         <div class="map-left">
                             <span>{{role}}</span>
@@ -126,15 +127,15 @@
                         <div class="map-right">
                             <div>
                                 <p-dropdown appendTo="body" [(ngModel)]="migrationConfig.roles[role]"
-                                    (onChange)="migrationConfig.updateRolesValidity()" [options]="dstRoles"
-                                    [showClear]="true" placeholder="Select role"></p-dropdown>
+                                    [options]="dstRoles" [showClear]="true" placeholder="Select role"></p-dropdown>
                             </div>
                         </div>
                     </div>
                 </div>
+                <ng-template #noRoles><span>There are no roles to map</span></ng-template>
             </div>
             <div *ngSwitchCase="'groups'" class="step-container">
-                <div class="mapping-content">
+                <div class="mapping-content" *ngIf="getObjectKeys(this.migrationConfig.groups).length > 0; else noGroups">
                     <div *ngFor="let group of getObjectKeys(this.migrationConfig.groups)" class="mapping">
                         <div class="map-left">
                             <span>{{group}}</span>
@@ -143,12 +144,12 @@
                         <div class="map-right">
                             <div>
                                 <p-dropdown appendTo="body" [(ngModel)]="migrationConfig.groups[group]"
-                                    (onChange)="migrationConfig.updateGroupsValidity()" [options]="dstGroups"
-                                    [showClear]="true" placeholder="Select group"></p-dropdown>
+                                    [options]="dstGroups" [showClear]="true" placeholder="Select group"></p-dropdown>
                             </div>
                         </div>
                     </div>
                 </div>
+                <ng-template #noGroups><span>There are no groups to map</span></ng-template>
             </div>
         </div>
     </div>
@@ -206,9 +207,9 @@
             </div>
             <div>
                 <p-button label="Next" *ngIf="items.length - 1 > activeIndex"
-                    [disabled]="!migrationConfig.rolesValidity" (onClick)="nextStep()"></p-button>
+                    (onClick)="nextStep()"></p-button>
                 <p-button label="OK" *ngIf="items.length - 1 === activeIndex"
-                    [disabled]="!migrationConfig.rolesValidity" (onClick)="onSubmit()"
+                    (onClick)="onSubmit()"
                     styleClass="p-button-success"></p-button>
             </div>
         </div>
@@ -219,9 +220,9 @@
             </div>
             <div>
                 <p-button label="Next" *ngIf="items.length - 1 > activeIndex"
-                    [disabled]="!migrationConfig.groupsValidity" (onClick)="nextStep()"></p-button>
+                    (onClick)="nextStep()"></p-button>
                 <p-button label="OK" *ngIf="items.length - 1 === activeIndex"
-                    [disabled]="!migrationConfig.groupsValidity" (onClick)="onSubmit()"
+                    (onClick)="onSubmit()"
                     styleClass="p-button-success"></p-button>
             </div>
         </div>

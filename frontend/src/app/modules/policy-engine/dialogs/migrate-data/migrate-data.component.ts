@@ -36,8 +36,6 @@ class MigrationConfig {
     private _policiesValidity: boolean = false;
     private _vcsValidity: boolean = false;
     private _schemasValidity: boolean = true;
-    private _rolesValidity: boolean = true;
-    private _groupsValidity: boolean = true;
 
     constructor(
         private _src: string = '',
@@ -58,16 +56,6 @@ class MigrationConfig {
         );
     }
 
-    updateRolesValidity() {
-        this._rolesValidity = Object.values(this._roles).every((val) => !!val);
-    }
-
-    updateGroupsValidity() {
-        this._groupsValidity = Object.values(this._groups).every(
-            (val) => !!val
-        );
-    }
-
     setSchema(key: string, value: string) {
         this._schemas[key] = value;
         this.updateSchemasValidity();
@@ -80,22 +68,18 @@ class MigrationConfig {
 
     setRole(key: string, value?: string) {
         this._roles[key] = value;
-        this.updateRolesValidity();
     }
 
     setGroup(key: string, value?: string) {
         this._groups[key] = value;
-        this.updateGroupsValidity();
     }
 
     clearRoles() {
         this._roles = {};
-        this.updateRolesValidity();
     }
 
     clearGroups() {
         this._groups = {};
-        this.updateGroupsValidity();
     }
 
     clearVCs() {
@@ -157,14 +141,6 @@ class MigrationConfig {
 
     get schemasValidity() {
         return this._schemasValidity;
-    }
-
-    get rolesValidity() {
-        return this._rolesValidity;
-    }
-
-    get groupsValidity() {
-        return this._groupsValidity;
     }
 
     get value() {
@@ -261,6 +237,10 @@ export class MigrateData {
             id: 'roles',
             label: 'Roles',
         },
+        {
+            id: 'groups',
+            label: 'Groups',
+        }
     ];
 
     vps: any[] = [];
@@ -381,34 +361,8 @@ export class MigrateData {
     }
 
     onChange() {
-        if (this.migrationConfig.src) {
-            this.pList2 = this.policies.filter(
-                (s) => s.id !== this.migrationConfig.src
-            );
-            this.loadVCs();
-            this.loadVPs();
-            this.migrationConfig.clearRoles();
-            this.migrationConfig.clearGroups();
-            this.srcRoles =
-                this.policies.find(
-                    (item) => item.id === this.migrationConfig.src
-                ).policyRoles || [];
-            this.srcRoles?.forEach((role) => {
-                this.migrationConfig.setRole(role);
-            });
-            this.srcGroups =
-                this.policies
-                    .find((item) => item.id === this.migrationConfig.src)
-                    .policyGroups?.map(
-                        (group: { name: string }) => group.name
-                    ) || [];
-            this.srcGroups?.forEach((group) => {
-                this.migrationConfig.setGroup(group);
-            });
-        } else {
-            this.migrationConfig.clearGroups();
-            this.migrationConfig.clearRoles();
-        }
+        this.migrationConfig.clearGroups();
+        this.migrationConfig.clearRoles();
         if (this.migrationConfig.dst) {
             this.pList1 = this.policies.filter(
                 (s) => s.id !== this.migrationConfig.dst
@@ -427,19 +381,37 @@ export class MigrateData {
             this.pList1 = this.policies;
         }
 
-        this.loadSchemas();
-
-        if (this.srcGroups.length > 0 && this.dstGroups.length > 0) {
-            if (this.items.findIndex((item) => item.id === 'groups') < 0) {
-                this.items.push({
-                    id: 'groups',
-                    label: 'Groups',
+        if (this.migrationConfig.src) {
+            this.pList2 = this.policies.filter(
+                (s) => s.id !== this.migrationConfig.src
+            );
+            this.loadVCs();
+            this.loadVPs();
+            this.srcRoles =
+                this.policies.find(
+                    (item) => item.id === this.migrationConfig.src
+                ).policyRoles || [];
+            if (this.dstRoles.length > 0) {
+                this.srcRoles?.forEach((role) => {
+                    this.migrationConfig.setRole(role);
                 });
             }
-        } else {
-            this.items = this.items.filter((item) => item.id !== 'groups');
-            this.migrationConfig.clearGroups();
+
+            this.srcGroups =
+                this.policies
+                    .find((item) => item.id === this.migrationConfig.src)
+                    .policyGroups?.map(
+                        (group: { name: string }) => group.name
+                    ) || [];
+            if (this.dstGroups.length > 0) {
+                this.srcGroups?.forEach((group) => {
+                    this.migrationConfig.setGroup(group);
+                });
+            }
         }
+
+        this.loadSchemas();
+
         setTimeout(() => {
             this._changeDetector.detectChanges();
         });
