@@ -119,7 +119,11 @@ export class Worker extends NatsService {
         await super.init();
         this.channel = new MessageBrokerChannel(this.connection, 'worker');
 
-        await this.ipfsClient.createClient()
+        try {
+            await this.ipfsClient.createClient()
+        } catch (e) {
+            this.logger.error(`Could not create ipfs client instance. ${e.message}`, [process.env.SERVICE_CHANNEL, 'WORKER'])
+        }
 
         this.subscribe(WorkerEvents.GET_FREE_WORKERS, async (msg) => {
             if (!this.isInUse) {
