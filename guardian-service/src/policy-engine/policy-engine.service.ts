@@ -1002,6 +1002,7 @@ export class PolicyEngineService {
                 }
                 const result = await XlsxToJson.parse(Buffer.from(xlsx.data));
                 result.updateSchemas(true);
+                GenerateBlocks.generate(result);
                 return new MessageResponse(result.toJson());
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);

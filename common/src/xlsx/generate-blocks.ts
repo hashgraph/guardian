@@ -36,9 +36,10 @@ export class GenerateBlocks {
      * @param xlsxResult
      */
     public static generate(xlsxResult: XlsxResult) {
+        const config: IBlock = xlsxResult.policy?.config || {};
         const tags = new TagIndexer();
-        const parent = GenerateBlocks.generateContainer(xlsxResult.policy, tags);
-        GenerateBlocks.addPolicyTools(xlsxResult.policy, xlsxResult.tools, parent, tags);
+        const parent = GenerateBlocks.generateContainer(config, tags);
+        GenerateBlocks.addPolicyTools(config, xlsxResult.tools, parent, tags);
         GenerateBlocks.generateRequests(xlsxResult.xlsxSchemas, parent, tags, xlsxResult);
     }
 
@@ -111,13 +112,13 @@ export class GenerateBlocks {
      * @param tools
      */
     private static addPolicyTools(
-        policy: Policy,
+        config: IBlock,
         tools: PolicyTool[],
         parent: IBlock,
         tags: TagIndexer
     ): void {
         const toolIds = new Set<string>();
-        GenerateBlocks.findTools(policy.config, toolIds);
+        GenerateBlocks.findTools(config, toolIds);
         for (const tool of tools) {
             if (!toolIds.has(tool.messageId)) {
                 toolIds.add(tool.messageId);
@@ -142,14 +143,14 @@ export class GenerateBlocks {
      * @param schemas
      */
     private static generateContainer(
-        policy: Policy,
+        config: IBlock,
         tags: TagIndexer
     ): IBlock {
         const parent = GenerateBlocks.generateBlock({
             tag: tags.getTag(),
             blockType: BlockType.Container
         });
-        GenerateBlocks.unshiftBlock(policy.config, parent);
+        GenerateBlocks.unshiftBlock(config, parent);
         return parent;
     }
 
