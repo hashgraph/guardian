@@ -4,20 +4,28 @@ import { aiSuggestionsAPI } from './api/service/ai-suggestions-service';
 import { AISuggestionsDB } from './helpers/ai-suggestions-db';
 import { AIManager } from './ai-manager';
 import * as process from 'process';
+import { ApplicationState, Logger } from '@guardian/common';
+import { ApplicationStates } from '@guardian/interfaces';
 
 Promise.all([
     MessageBrokerChannel.connect('AI_SERVICE')
 ]).then(async values => {
     const [cn] = values;
 
+    const state = new ApplicationState();
+    await state.setServiceName('AI_SERVICE').setConnection(cn).init();
+
+    state.updateState(ApplicationStates.INITIALIZING);
+    new Logger().setConnection(cn);
     await new AISuggestionService().setConnection(cn).init();
     await new AISuggestionsDB().setConnection(cn).init();
 
-    console.log('ai service');
     const aiManager = new AIManager();
 
     try {
         await aiSuggestionsAPI(aiManager);
+        state.updateState(ApplicationStates.READY);
+        new Logger().info('Ai service started', ['AI_SERVICE']);
     } catch (error) {
         console.log(error);
         console.error(error);
