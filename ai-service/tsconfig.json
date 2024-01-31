@@ -18,7 +18,8 @@
     "exclude": [
         "node_modules",
         "dist",
-        "data"
+        "data",
+        "faiss-vector"
     ],
     "include": [
         "src/**/*.ts"
