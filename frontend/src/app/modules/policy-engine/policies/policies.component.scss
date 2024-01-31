@@ -269,7 +269,7 @@
         font-style: normal;
         font-weight: 500;
         background-color: #ffffff;
-        height: 40px;
+        min-height: 40px;
         border: none !important;
         border-radius: 8px;
         width: 100%;
@@ -682,17 +682,20 @@
                 background: var(--color-accent-green-2);
             }
 
-            .p-dropdown-label, .p-dropdown-trigger .p-dropdown-trigger-icon {
+            .p-dropdown-label,
+            .p-dropdown-trigger .p-dropdown-trigger-icon {
                 color: var(--color-accent-green-1);
             }
         }
+
         &[expired="true"] {
             ::ng-deep {
                 .p-component {
                     background: var(--color-accent-yellow-2);
                 }
 
-                .p-dropdown-label, .p-dropdown-trigger .p-dropdown-trigger-icon {
+                .p-dropdown-label,
+                .p-dropdown-trigger .p-dropdown-trigger-icon {
                     color: var(--color-accent-yellow-1);
                 }
             }

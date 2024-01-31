@@ -371,7 +371,7 @@ export class Row {
     }
 
     public getOutline(): number {
-        return this.row.outlineLevel || 0;
+        return this.row?.outlineLevel || 0;
     }
 }
 

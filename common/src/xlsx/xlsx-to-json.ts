@@ -251,6 +251,9 @@ export class XlsxToJson {
         if (worksheet.empty(table.start.c, table.end.c, row)) {
             return null;
         }
+        if (worksheet.getRow(row).getOutline()) {
+            return null;
+        }
         const field: SchemaField = {
             name: '',
             description: '',
