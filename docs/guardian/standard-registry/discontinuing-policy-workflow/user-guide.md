@@ -38,7 +38,7 @@
 3. VC Documents : Select VCs which are to be migrated from the source policy.
 4. Schemas : Map the source policy schemas with the destination policy schemas.
 5. Roles : Map source policy roles with the destination policy roles.
-6. Groups (displayed when both policies contain groups) : Map the source policy groups with the destination policy groups.
+6. Groups : Map the source policy groups with the destination policy groups.
 7. Clicking OK you will start an asynchronous migration task
 
 <figure><img src="../../../.gitbook/assets/image (420).png" alt=""><figcaption></figcaption></figure>

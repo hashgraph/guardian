@@ -1,40 +1,16 @@
 import { NGX_MAT_DATE_FORMATS, NgxMatDateAdapter } from '@angular-material-components/datetime-picker';
 import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
-import {
-    Component,
-    EventEmitter,
-    Input,
-    OnInit,
-    Output,
-    SimpleChanges,
-} from '@angular/core';
-import {
-    AbstractControl,
-    FormBuilder,
-    FormControl,
-    FormGroup,
-    ValidationErrors,
-    ValidatorFn,
-    Validators,
-} from '@angular/forms';
-import {
-    FieldTypesDictionary,
-    Schema,
-    SchemaCategory,
-    SchemaCondition,
-    SchemaEntity,
-    SchemaField,
-    SchemaHelper,
-    UnitSystem,
-} from '@guardian/interfaces';
+import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, } from '@angular/core';
+import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators, } from '@angular/forms';
+import { FieldTypesDictionary, Schema, SchemaCategory, SchemaCondition, SchemaEntity, SchemaField, SchemaHelper, UnitSystem, } from '@guardian/interfaces';
 import * as moment from 'moment';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { DATETIME_FORMATS } from '../schema-form/schema-form.component';
 import { ConditionControl } from '../condition-control';
 import { FieldControl } from '../field-control';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { SchemaService } from 'src/app/services/schema.service';
+import { GUARDIAN_DATETIME_FORMAT } from '../../../utils/datetime-format';
 
 enum SchemaType {
     System = 'system',
@@ -53,7 +29,7 @@ enum SchemaType {
     styleUrls: ['./schema-configuration.component.scss'],
     providers: [
         { provide: NgxMatDateAdapter, useClass: NgxMatMomentAdapter },
-        { provide: NGX_MAT_DATE_FORMATS, useValue: DATETIME_FORMATS }
+        {provide: NGX_MAT_DATE_FORMATS, useValue: GUARDIAN_DATETIME_FORMAT}
     ]
 })
 export class SchemaConfigurationComponent implements OnInit {

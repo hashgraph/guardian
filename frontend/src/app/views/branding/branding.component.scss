@@ -506,3 +506,17 @@ button[disabled] {
         }
     }
 }
+
+.vertical-cards {
+    & > div {
+        margin-bottom: 30px;
+    }
+
+    & > div:last-of-type {
+        margin-top: unset;
+    }
+}
+
+.terms-input {
+    width: 100%;
+}

@@ -149,7 +149,7 @@ export async function _contractCall(
             : CONTRACT_GAS_DEFAULT_VALUES.get(`CREATE_${type}_CONTRACT_GAS`);
     } else {
         task.data.gas = process.env[`${event}_GAS`]
-            ? Number(process.env[`${event}_${type},GAS`])
+            ? Number(process.env[`${event}_GAS`])
             : CONTRACT_GAS_DEFAULT_VALUES.get(event);
     }
     try {

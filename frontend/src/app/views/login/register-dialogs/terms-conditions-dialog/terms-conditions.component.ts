@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { fa } from 'cronstrue/dist/i18n/locales/fa';
+import { BrandingService } from '../../../../services/branding.service';
 
 @Component({
     selector: 'app-terms-conditions',
@@ -9,7 +9,15 @@ import { fa } from 'cronstrue/dist/i18n/locales/fa';
 })
 export class TermsConditionsComponent implements OnInit {
 
-    constructor(private dialogRef: DynamicDialogRef, private dialogConfig: DynamicDialogConfig,) {
+    constructor(
+        private dialogRef: DynamicDialogRef,
+        private dialogConfig: DynamicDialogConfig,
+        private brandingService: BrandingService
+    ) {
+    }
+
+    get termsAndConditions(): string {
+        return this.brandingService.termsAndConditions;
     }
 
     ngOnInit(): void {
@@ -25,8 +33,8 @@ export class TermsConditionsComponent implements OnInit {
 
     downloadDocument() {
         const link = document.createElement('a');
-        link.setAttribute('download', 'Terms and Conditions.docx');
-        link.href = 'assets/docs/Terms and Conditions.docx';
+        link.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(this.termsAndConditions));
+        link.setAttribute('download', 'Terms and Conditions.txt');
         link.click();
         link.remove();
     }

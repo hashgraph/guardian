@@ -32,7 +32,7 @@ export class SynchronizationTask {
     /**
      * Start synchronization task
      */
-    public start() {
+    public start(firstExecution: boolean = false) {
         this.remove();
         let exists = false;
         this._subscriptions.push(
@@ -61,7 +61,7 @@ export class SynchronizationTask {
                     )
                 );
                 let isTaskRunning = false;
-                this._job = new CronJob(this._mask, async () => {
+                const taskExecution = async () => {
                     try {
                         if (!isTaskRunning) {
                             isTaskRunning = true;
@@ -73,8 +73,12 @@ export class SynchronizationTask {
                         isTaskRunning = false;
                         new Logger().error(error, ['GUARDIAN_SERVICE']);
                     }
-                });
+                }
+                this._job = new CronJob(this._mask, taskExecution);
                 this._job.start();
+                if (firstExecution) {
+                    taskExecution();
+                }
             } else {
                 this.remove();
             }
