@@ -1,15 +1,4 @@
-import {
-    ChangeDetectorRef,
-    Component,
-    ComponentFactoryResolver,
-    ComponentRef,
-    ElementRef,
-    Input,
-    Renderer2,
-    TemplateRef,
-    ViewChild,
-    ViewContainerRef
-} from '@angular/core';
+import { ChangeDetectorRef, Component, ComponentFactoryResolver, ComponentRef, ElementRef, Input, Renderer2, TemplateRef, ViewChild, ViewContainerRef } from '@angular/core';
 import { RegisteredService } from '../../services/registered.service';
 import { IBlock } from '../../structures';
 import { PolicyProgressService } from '../../services/policy-progress.service';
@@ -27,7 +16,7 @@ export class RenderBlockComponent {
     @Input('static') static!: any;
     @Input('policyId') policyId!: any;
     @Input('dryRun') dryRun!: any;
-    
+
     @ViewChild('target', { read: ViewContainerRef }) target!: ViewContainerRef;
     @ViewChild('empty', { read: TemplateRef }) empty!: TemplateRef<any>;
 
