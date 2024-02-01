@@ -113,7 +113,7 @@ import { ProjectComparisonModule } from './modules/project-comparison/project-co
 import { AngularSvgIconModule } from 'angular-svg-icon';
 // Prototypes
 import '../prototypes/date-prototype';
-import { OnlyForDemoDirective } from './components/onlyfordemo.directive';
+import { OnlyForDemoDirective } from './directives/onlyfordemo.directive';
 
 @NgModule({
     declarations: [
