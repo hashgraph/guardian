@@ -113,6 +113,7 @@ import { ProjectComparisonModule } from './modules/project-comparison/project-co
 import { AngularSvgIconModule } from 'angular-svg-icon';
 // Prototypes
 import '../prototypes/date-prototype';
+import { OnlyForDemoDirective } from './components/onlyfordemo.directive';
 
 @NgModule({
     declarations: [
@@ -152,6 +153,7 @@ import '../prototypes/date-prototype';
         TermsConditionsComponent,
         AccountTypeSelectorDialogComponent,
         ForgotPasswordDialogComponent,
+        OnlyForDemoDirective
     ],
     imports: [
         BrowserModule,
