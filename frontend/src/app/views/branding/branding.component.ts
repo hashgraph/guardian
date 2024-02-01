@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -6,18 +6,20 @@ import { InformService } from 'src/app/services/inform.service';
 import { BrandingPayload, BrandingService } from 'src/app/services/branding.service';
 import { MatDialog } from '@angular/material/dialog';
 import { colorToGradient } from '../../static/color-remoter.function';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-branding',
     templateUrl: './branding.component.html',
     styleUrls: ['./branding.component.scss']
 })
-export class BrandingComponent implements OnInit {
+export class BrandingComponent implements OnInit, OnDestroy{
 
     isPreviewOn: boolean = false;
     loading: boolean = false;
     public isChangesMade: boolean = false;
     public innerWidth: any;
+    public termsAndConditions = new FormControl('', [Validators.required]);
 
     faviconLinks = document.querySelectorAll<HTMLLinkElement>('link[rel="shortcut icon"],link[rel="icon"]');
 
@@ -55,6 +57,8 @@ export class BrandingComponent implements OnInit {
 
     initResetDialog: boolean = false;
 
+    private subscription = new Subscription();
+
     constructor(
         private router: Router,
         private elRef: ElementRef,
@@ -81,8 +85,13 @@ export class BrandingComponent implements OnInit {
             this.primaryHexColorControl.setValue(brandingData.primaryColor);
             this.primaryColorControl.setValue(brandingData.primaryColor);
             this.companyNameControl.setValue(brandingData.companyName || 'GUARDIAN');
+            this.termsAndConditions.setValue(brandingData.termsAndConditions);
             this.loading = false;
         });
+    }
+
+    ngOnDestroy() {
+        this.subscription.unsubscribe();
     }
 
     updateCompanyName(companyNameControl: FormControl) {
@@ -190,7 +199,8 @@ export class BrandingComponent implements OnInit {
             companyName: this.companyNameControl.value ? this.companyNameControl.value : brandingData.companyName,
             companyLogoUrl: this.companyLogoUrl,
             loginBannerUrl: this.loginBannerUrl,
-            faviconUrl: this.faviconUrl ? this.faviconUrl : ''
+            faviconUrl: this.faviconUrl ? this.faviconUrl : '',
+            termsAndConditions: this.termsAndConditions.value
         };
 
         this.brandingService.saveBrandingData(payload);

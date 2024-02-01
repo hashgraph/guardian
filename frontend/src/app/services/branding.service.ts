@@ -10,7 +10,8 @@ export interface BrandingPayload {
     companyName: string
     companyLogoUrl: string
     loginBannerUrl: string
-    faviconUrl: string
+    faviconUrl: string,
+    termsAndConditions: string
 }
 
 @Injectable({
@@ -25,11 +26,16 @@ export class BrandingService {
         companyLogoUrl: '',
         loginBannerUrl: '',
         faviconUrl: '',
+        termsAndConditions: '',
     };
 
     constructor(
         private http: HttpClient
     ) {
+    }
+
+    get termsAndConditions(): string {
+        return this.brandingData.termsAndConditions;
     }
 
     saveBrandingData(payload: any): boolean {
