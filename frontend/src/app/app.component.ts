@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { AfterContentInit, AfterViewChecked, Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
 import { AuthStateService } from './services/auth-state.service';
 import { MapService } from './services/map.service';
 import { WebSocketService } from './services/web-socket.service';
@@ -45,9 +45,11 @@ export class AppComponent implements OnInit {
                     }`,
                     'callback'
                 )
-                .subscribe();
+                .subscribe((result) => {
+                    this.mapService.mapLoaded = true;
+                });
         };
-        mapService.getApiKey().subscribe(mapRequest, () => mapRequest());
+        mapService.getApiKey().subscribe(mapRequest);
         this.matIconRegistry.addSvgIconLiteral('policy-module', this.domSanitizer.bypassSecurityTrustHtml(`
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                 <path style="fill:#e1933c" d="M 12,0.83007812 3.0507812,6 12,11.160156 20.949219,6 Z" />

@@ -1,7 +1,7 @@
 <div class="content" [hidden]="!isActive">
     <ng-container *ngIf="type != 'tabs'">
         <div *ngFor="let block of blocks" class="block-item">
-            <render-block [block]="block" [policyId]="policyId"></render-block>
+            <render-block [block]="block" [dryRun]="dryRun" [policyId]="policyId"></render-block>
         </div>
     </ng-container>
 
@@ -12,7 +12,7 @@
             </mat-tab-group>
         </div>
         <div *ngIf="activeBlock" class="body">
-            <render-block [block]="activeBlock" [policyId]="policyId"></render-block>
+            <render-block [block]="activeBlock" [dryRun]="dryRun" [policyId]="policyId"></render-block>
         </div>
     </ng-container>
 </div>
