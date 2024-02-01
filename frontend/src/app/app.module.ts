@@ -246,7 +246,7 @@ import { OnlyForDemoDirective } from './directives/onlyfordemo.directive';
             provide: HTTP_INTERCEPTORS,
             useClass: AuthInterceptor,
             multi: true,
-        },
+        }
     ],
     bootstrap: [AppComponent],
 })
