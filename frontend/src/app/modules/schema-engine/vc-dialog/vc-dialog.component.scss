@@ -1,7 +1,6 @@
 .json {
     word-break: keep-all;
     white-space: pre;
-    margin-bottom: 8px;
     font-family: monospace;
     cursor: text;
     height: 100%;
@@ -10,8 +9,8 @@
     border: 1px solid #eee;
     border-radius: 4px;
     padding: 10px;
+    max-height: calc(80vh - 24px - 104px - 64px);
     box-sizing: border-box;
-    margin-top: 10px;
 }
 
 .toggle-container {

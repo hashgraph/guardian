@@ -52,5 +52,7 @@ textarea {
 
 .g-dialog-body {
     position: relative;
-    padding: 8px 0px 0px 0px;
+    padding: 0px 0px 0px 0px;
+    overflow-y: hidden;
+    margin: 25px 8px 25px 2px;
 }
