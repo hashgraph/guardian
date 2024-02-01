@@ -18,7 +18,7 @@ class TagIndexer {
         }
         if (type === BlockType.Container) {
             if (data) {
-                const name = (data.name).slice(0, 20).replaceAll(' ', '_')
+                const name = (data.name).slice(0, 20).replace(/ /ig, '_')
                 return `${name}_Schema_Holder_${++this.index}`;
             } else {
                 return `Root_Holder_${++this.index}`;

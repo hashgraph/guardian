@@ -84,14 +84,18 @@ export class XlsxToJson {
 
         const startCol = range.s.c;
         const startRow = range.s.r;
+        const endCol = range.e.c;
 
         let row = startRow;
         for (; row < range.e.r; row++) {
             const title = worksheet.getValue<string>(startCol, row);
             if (table.isHeader(title)) {
                 table.setRow(title, row);
+            } else {
+                break;
             }
         }
+        table.setEnd(endCol, row);
 
         if (table.getRow(Dictionary.ENUM_SCHEMA_NAME) !== -1) {
             _enum.setSchemaName(worksheet.getValue<string>(startCol + 1, table.getRow(Dictionary.ENUM_SCHEMA_NAME)));
@@ -100,8 +104,7 @@ export class XlsxToJson {
             _enum.setFieldName(worksheet.getValue<string>(startCol + 1, table.getRow(Dictionary.ENUM_FIELD_NAME)));
         }
 
-        row = table.end.r + 1;
-
+        row = table.end.r;
         const items: Set<string> = new Set<string>();
         for (; row < range.e.r; row++) {
             const item = worksheet.getValue<string>(startCol, row);
@@ -147,7 +150,7 @@ export class XlsxToJson {
                     table.setRow(title, row);
                 }
                 if (table.isFieldHeader(title)) {
-                    break
+                    break;
                 }
             }
 
@@ -478,13 +481,16 @@ export class XlsxToJson {
             if (result.type === 'const') {
                 field.hidden = field.hidden || !result.value;
             } else {
-                let condition = conditionCache.find(c => c.equal(result.field, result.value))
-                if (!condition) {
+                const condition = conditionCache.find(c => c.equal(result.field, result.value));
+                if (condition) {
+                    condition.addField(field, result.invert);
+                    return null;
+                } else {
                     const target = fieldCache.get(result.field);
-                    condition = new XlsxSchemaConditions(target, result.value);
+                    const newCondition = new XlsxSchemaConditions(target, result.value);
+                    newCondition.addField(field, result.invert);
+                    return newCondition;
                 }
-                condition.addField(field, result.invert);
-                return condition;
             }
         } catch (error) {
             xlsxResult.addError({
