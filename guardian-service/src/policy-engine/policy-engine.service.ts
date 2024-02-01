@@ -553,6 +553,11 @@ export class PolicyEngineService {
                 let message: PolicyMessage;
                 if (msg.date) {
                     const date = new Date(msg.date);
+                    date.setHours(0, 0, 0, 0);
+                    const now = new Date();
+                    if (date.getTime() < now.getTime()) {
+                        throw new Error('Date must be more than today');
+                    }
                     model.discontinuedDate = date;
                     message = new PolicyMessage(MessageType.Policy, MessageAction.DeferredDiscontinuePolicy);
                 } else {
