@@ -10,18 +10,7 @@ import { takeUntil } from 'rxjs/operators';
 import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from 'src/app/services/api';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { uriValidator } from 'src/app/validators/uri.validator';
-
-export const DATETIME_FORMATS = {
-    parse: {
-        dateInput: 'l, LT',
-    },
-    display: {
-        dateInput: 'l, LT',
-        monthYearLabel: 'MM yyyy',
-        dateA11yLabel: 'LL',
-        monthYearA11yLabel: 'MMMM YYYY',
-    }
-};
+import { GUARDIAN_DATETIME_FORMAT } from '../../../utils/datetime-format';
 
 enum PlaceholderByFieldType {
     Email = "example@email.com",
@@ -67,7 +56,7 @@ enum ErrorArrayMessageByFieldType {
     styleUrls: ['./schema-form.component.scss'],
     providers: [
         { provide: NgxMatDateAdapter, useClass: NgxMatMomentAdapter },
-        { provide: NGX_MAT_DATE_FORMATS, useValue: DATETIME_FORMATS }
+        {provide: NGX_MAT_DATE_FORMATS, useValue: GUARDIAN_DATETIME_FORMAT}
     ]
 })
 export class SchemaFormComponent implements OnInit {
