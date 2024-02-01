@@ -57,7 +57,7 @@ import { GuardiansService } from '@helpers/guardians';
 import { Inject } from '@helpers/decorators/inject';
 import { BlockAboutString } from './block-about';
 import { HashComparator } from '@analytics';
-import { getSchemaCategory, importSchemaByFiles, importSubTools } from '@api/helpers';
+import { getSchemaCategory, importSchemaByFiles, importSubTools, previewToolByMessage } from '@api/helpers';
 
 /**
  * PolicyEngineChannel
@@ -1000,10 +1000,22 @@ export class PolicyEngineService {
                 if (!xlsx) {
                     throw new Error('file in body is empty');
                 }
-                const result = await XlsxToJson.parse(Buffer.from(xlsx.data));
-                result.updateSchemas(true);
-                GenerateBlocks.generate(result);
-                return new MessageResponse(result.toJson());
+                const xlsxResult = await XlsxToJson.parse(Buffer.from(xlsx.data));
+                for (const toolId of xlsxResult.getToolIds()) {
+                    try {
+                        const tool = await previewToolByMessage(toolId.messageId);
+                        xlsxResult.updateTool(tool.tool, tool.schemas);
+                    } catch (error) {
+                        xlsxResult.addErrors([{
+                            text: `Failed to load tool (${toolId.messageId})`,
+                            worksheet: toolId.worksheet,
+                            message: error?.toString()
+                        }]);
+                    }
+                }
+                xlsxResult.updateSchemas(false);
+                GenerateBlocks.generate(xlsxResult);
+                return new MessageResponse(xlsxResult.toJson());
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);

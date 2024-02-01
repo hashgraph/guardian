@@ -190,7 +190,7 @@ export class XlsxToJson {
                 messageId = worksheet.getValue<string>(startCol + 1, table.getRow(Dictionary.SCHEMA_TOOL_ID));
             }
             if (toolName || messageId) {
-                return new XlsxTool(worksheet, messageId);
+                return new XlsxTool(worksheet, schema.name, messageId);
             }
 
             row = table.end.r + 1;
@@ -438,6 +438,9 @@ export class XlsxToJson {
         if (worksheet.empty(table.start.c, table.end.c, row)) {
             return null;
         }
+        if (worksheet.getRow(row).getOutline()) {
+            return null;
+        }
 
         const name = worksheet.getPath(table.getCol(Dictionary.ANSWER), row);
         const field = fieldCache.get(name);
@@ -512,13 +515,14 @@ export class XlsxToJson {
         const path = worksheet.getPath(table.getCol(Dictionary.ANSWER), row);
         const description = worksheet.getValue<string>(table.getCol(Dictionary.QUESTION), row);
         const lvl = worksheet.getRow(row).getOutline();
+        const type = worksheet.getValue<string>(table.getCol(Dictionary.FIELD_TYPE), row);
 
         expressionCache.addVariable(path, description, lvl);
 
         const field = fieldCache.get(path);
         try {
             if (field && !field.isRef) {
-                if (field.hidden) {
+                if (type === 'Auto-Calculate') {
                     const formulae = worksheet.getFormulae(table.getCol(Dictionary.ANSWER), row);
                     if (formulae) {
                         field.formulae = formulae;

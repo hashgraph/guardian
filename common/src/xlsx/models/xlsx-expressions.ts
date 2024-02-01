@@ -47,7 +47,7 @@ export class XlsxVariable {
 
     public update(schemas: Schema[]) {
         if (!this.schema) {
-            throw new Error('Schema not found.');
+            throw new Error(`${this.name}: Schema not found.`);
         }
         if (this.lvl) {
             this.field = this.schema.fields.find((f) => f.description === this.description);
@@ -55,12 +55,12 @@ export class XlsxVariable {
             this.field = this.schema.fields.find((f) => f.name === this.name);
         }
         if (!this.field) {
-            throw new Error('Invalid variable name.');
+            throw new Error(`${this.name}: Fields not found.`);
         }
         if (this.children.length) {
             const subSchema = schemas.find((s) => s.iri === this.field.type);
             if (!subSchema) {
-                throw new Error('Invalid variable type.');
+                throw new Error(`${this.name}: Type not found.`);
             }
             for (const child of this.children) {
                 child.setSchema(subSchema);

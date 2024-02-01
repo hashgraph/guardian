@@ -11,6 +11,7 @@ import { XlsxSchema, XlsxTool } from './xlsx-schema';
 export class XlsxResult {
     private _policy: Policy;
     private readonly _schemas: XlsxSchema[];
+    private readonly _toolSchemas: Schema[];
     private readonly _tools: PolicyTool[];
     private readonly _errors: XlsxError[];
     private readonly _enums: XlsxEnum[];
@@ -20,6 +21,7 @@ export class XlsxResult {
 
     constructor() {
         this._schemas = [];
+        this._toolSchemas = [];
         this._tools = [];
         this._errors = [];
         this._schemaCache = [];
@@ -34,6 +36,10 @@ export class XlsxResult {
 
     public get schemas(): Schema[] {
         return this._schemas.map((s) => s.schema);
+    }
+
+    public get toolSchemas(): Schema[] {
+        return this._toolSchemas;
     }
 
     public get tools(): PolicyTool[] {
@@ -51,7 +57,8 @@ export class XlsxResult {
         this._toolsCache.set(schema.messageId, {
             uuid: schema.messageId,
             name: schema.messageId,
-            messageId: schema.messageId
+            messageId: schema.messageId,
+            worksheet: worksheet.name
         });
         this._schemaCache.push({
             name: schema.name,
@@ -158,10 +165,13 @@ export class XlsxResult {
                     cache.iri = schema?.iri;
                 }
             }
+            for (const schema of schemas) {
+                this._toolSchemas.push(new Schema(schema));
+            }
         } catch (error) {
             this.addError({
                 type: 'error',
-                text: 'Failed to parse file.',
+                text: 'Failed to update tools.',
                 message: error?.toString()
             }, null);
         }
@@ -182,6 +192,8 @@ export class XlsxResult {
                 schemaNames.add(cache.name);
             }
             const schemas = this.schemas;
+            const toolSchemas = this.toolSchemas;
+            const allSchemas = [...schemas, ...toolSchemas];
             for (const schema of schemas) {
                 const schemaCache = this._schemaCache.find(c => c.iri === schema.iri);
                 for (const field of schema.fields) {
@@ -232,20 +244,20 @@ export class XlsxResult {
             }
             for (const schema of this._schemas) {
                 try {
-                    schema.updateExpressions(schemas);
+                    schema.updateExpressions(allSchemas);
                 } catch (error) {
                     this.addError({
                         type: 'error',
                         text: 'Failed to parse variables.',
                         message: error?.toString(),
-                        worksheet: schema.worksheet.name,
+                        worksheet: schema.worksheet.name
                     }, schema);
                 }
             }
         } catch (error) {
             this.addError({
                 type: 'error',
-                text: 'Failed to parse file.',
+                text: 'Failed to update schemas.',
                 message: error?.toString()
             }, null);
         }

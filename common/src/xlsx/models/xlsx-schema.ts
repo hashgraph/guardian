@@ -84,11 +84,15 @@ export class XlsxTool {
     public readonly messageId: string;
     public readonly category: SchemaCategory;
 
-    constructor(worksheet: Worksheet, messageId: string) {
+    constructor(
+        worksheet: Worksheet,
+        name: string,
+        messageId: string
+    ) {
         this.worksheet = worksheet;
         this.sheetName = worksheet.name;
-        this.name = worksheet.name;
+        this.name = name || worksheet.name;
         this.messageId = messageId;
-        this.category = SchemaCategory.POLICY;
+        this.category = SchemaCategory.TOOL;
     }
 }

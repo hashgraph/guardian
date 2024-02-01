@@ -136,6 +136,42 @@ export async function importSubTools(
  * @param messages
  * @param notifier
  */
+export async function previewToolByMessage(messageId: string): Promise<IToolComponents> {
+    const oldTool = await DatabaseServer.getTool({ messageId });
+    if (oldTool) {
+        const subSchemas = await DatabaseServer.getSchemas({ topicId: oldTool.topicId });
+        return {
+            tool: oldTool,
+            schemas: subSchemas,
+            tags: [],
+            tools: []
+        }
+    }
+
+    messageId = messageId.trim();
+    const message = await MessageServer.getMessage<ToolMessage>(messageId);
+    if (!message) {
+        throw new Error('Invalid Message');
+    }
+    if (message.type !== MessageType.Tool) {
+        throw new Error('Invalid Message Type');
+    }
+    if (message.action !== MessageAction.PublishTool) {
+        throw new Error('Invalid Message Action');
+    }
+    if (!message.document) {
+        throw new Error('File in body is empty');
+    }
+
+    return await ToolImportExport.parseZipFile(message.document);
+}
+
+/**
+ * Import tool by message
+ * @param owner
+ * @param messages
+ * @param notifier
+ */
 export async function importToolByMessage(
     hederaAccount: IRootConfig,
     messageId: string,
