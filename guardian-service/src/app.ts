@@ -386,10 +386,10 @@ Promise.all([
                 new GuardiansService().sendPolicyMessage(PolicyEvents.REFRESH_MODEL, policy.id, {})
             ));
         },
-        process.env.POLICY_DISCONTINUE_TASK_MASK || '* 0 * * *',
+        '0 * * * *',
         channel
     );
-    policyDiscontinueTask.start();
+    policyDiscontinueTask.start(true);
 
     startMetricsServer();
 }, (reason) => {
